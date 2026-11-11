@@ -8,6 +8,7 @@ pub mod api;
 pub mod boards;
 pub mod bridge;
 pub mod fingerprint;
+pub mod game_replay;
 pub mod integrity;
 pub mod queue;
 pub mod swlap;

@@ -226,6 +226,14 @@ struct CustomDto {
 }
 
 #[derive(Deserialize)]
+struct GameReplayDto {
+    #[serde(default)]
+    size: u64,
+    #[serde(default)]
+    setup: serde_json::Value,
+}
+
+#[derive(Deserialize)]
 struct BoardRowDto {
     rank: u32,
     lap_id: String,
@@ -243,6 +251,8 @@ struct BoardRowDto {
     assists: Option<serde_json::Value>,
     #[serde(default)]
     input: Option<serde_json::Value>,
+    #[serde(default)]
+    game_replay: Option<GameReplayDto>,
 }
 
 #[derive(Deserialize)]
@@ -290,6 +300,7 @@ fn row(r: BoardRowDto) -> Row {
         input: input_of(r.input.as_ref(), r.assists.as_ref()),
         aids: aids_of(r.assists.as_ref()),
         setup: r.setup.as_ref().and_then(setup_of),
+        game_replay: r.game_replay.is_some_and(|g| g.size > 0 && g.setup.is_object()),
     }
 }
 

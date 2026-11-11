@@ -11,6 +11,7 @@ use serde_json::Value;
 
 use super::api::{Api, Boards, Nonce};
 use super::bridge::Pump;
+use super::game_replay;
 use super::queue::{Event, Folder, Limits, Queue, Report, unix_now};
 use super::toast;
 use super::{laps_dir, token};
@@ -96,20 +97,36 @@ pub fn sweep(
     }
 }
 
-/// The pass the launcher makes when it starts, for laps a session left queued.
-pub fn flush(data: &Path, config: &Config) -> Report {
+/// The pass the launcher makes when it starts, for laps and game replays a session left queued.
+pub fn flush(data: &Path, game: Option<&Path>, config: &Config) -> Report {
     let api = token(data, config).map(|t| Api::new(&t));
-    sweep(
+    let report = sweep(
         data,
         None,
         api.as_ref().map(|a| a as &dyn Boards),
         None,
         None,
         &mut |_| {},
-    )
+    );
+    if let (Some(game), Some(api)) = (game, &api) {
+        game_replay::send(&Queue::new(data), game, api, unix_now(), &|| false, &mut |_| {});
+    }
+    report
+}
+
+/// Upload the game replays the core saved in `game` whose laps the server has, if someone is signed in.
+pub fn replays(data: &Path, game: &Path, config: &Config, stop: &dyn Fn() -> bool, say: &dyn Fn(&str)) {
+    if !game_replay::any(game) {
+        return;
+    }
+    let Some(api) = token(data, config).map(|t| Api::new(&t)) else {
+        return;
+    };
+    game_replay::send(&Queue::new(data), game, &api, unix_now(), stop, &mut |l| say(l));
 }
 
 /// Sweeps while the game runs. [`Watcher::finish`] makes the last sweep, with a few seconds at most.
+/// Game replays upload on a thread of their own that the finish does not wait for.
 pub struct Watcher {
     stop: Arc<AtomicBool>,
     thread: Option<JoinHandle<()>>,
@@ -163,6 +180,21 @@ impl Watcher {
                     }
                     let until = Instant::now() + WATCH_EVERY;
                     while Instant::now() < until && !stop.load(Ordering::Relaxed) {
+                        std::thread::sleep(Duration::from_millis(200));
+                    }
+                }
+            })
+            .ok();
+        let (stop, data, game, config) = (w.stop.clone(), w.data.clone(), w.game.clone(), w.config.clone());
+        let say = w.say.clone();
+        std::thread::Builder::new()
+            .name("tt-replays".into())
+            .spawn(move || {
+                let stopped = || stop.load(Ordering::Relaxed);
+                while !stopped() {
+                    replays(&data, &game, &config, &stopped, &*say);
+                    let until = Instant::now() + WATCH_EVERY;
+                    while Instant::now() < until && !stopped() {
                         std::thread::sleep(Duration::from_millis(200));
                     }
                 }

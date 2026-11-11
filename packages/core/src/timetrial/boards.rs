@@ -14,6 +14,15 @@ pub struct Driver {
     pub avatar: Option<String>,
 }
 
+/// The game's own replay file a lap carries.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct GameReplay {
+    #[serde(default)]
+    pub size: u64,
+    #[serde(default)]
+    pub setup: serde_json::Value,
+}
+
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
 pub struct Row {
     #[serde(default)]
@@ -27,6 +36,8 @@ pub struct Row {
     pub status: String,
     #[serde(default)]
     pub reasons: Vec<String>,
+    #[serde(default)]
+    pub game_replay: Option<GameReplay>,
 }
 
 impl Row {
@@ -111,6 +122,8 @@ pub struct Run {
     pub launcher: Option<String>,
     #[serde(default)]
     pub core: Option<String>,
+    #[serde(default)]
+    pub game_replay: Option<GameReplay>,
 }
 
 impl Run {
@@ -362,6 +375,21 @@ mod tests {
     }
 
     #[test]
+    fn a_lap_reads_its_game_replay() {
+        let with = r#"{"lap_id":"a","driver":{"id":"1","name":"X"},"time_ms":1,"game_replay":{"size":9,"setup":{"lap_ms":1}}}"#;
+        let row: Row = serde_json::from_str(with).unwrap();
+        assert_eq!(row.game_replay.map(|g| g.size), Some(9));
+        let without = r#"{"lap_id":"a","driver":{"id":"1","name":"X"},"time_ms":1,"game_replay":null}"#;
+        assert!(
+            serde_json::from_str::<Row>(without)
+                .unwrap()
+                .game_replay
+                .is_none()
+        );
+        assert!(serde_json::from_str::<Run>(with).unwrap().game_replay.is_some());
+    }
+
+    #[test]
     fn reads_a_bare_list_or_a_wrapped_one() {
         let bare = r#"[{"lap_id":"a","driver":{"id":"1","name":"X"},"time_ms":1,"status":"ranked"}]"#;
         let wrapped = format!(r#"{{"rows":{bare}}}"#);
@@ -392,6 +420,7 @@ mod tests {
             date: String::new(),
             status: "ranked".into(),
             reasons: Vec::new(),
+            game_replay: None,
         };
         let rows = vec![row("Swofty"), row("Max"), row("swofty2")];
         assert_eq!(by_driver(&rows, "").len(), 3);

@@ -136,6 +136,11 @@ fn list(store: &Store) {
     if !any {
         println!("no Time Trial laps yet");
     }
+    if let Ok(game) = crate::build::game(store, None) {
+        for pair in timetrial::game_replay::ready(&game.dir, unix_now()) {
+            println!("game replay of a {} lap  waiting", clock(pair.lap_ms));
+        }
+    }
     if token(&store.root, &store.config()).is_none() {
         println!(
             "Time Trial boards uploads are off: sign in with Discord and leave Time Trial boards on in Settings"
@@ -187,6 +192,11 @@ fn send(store: &Store, profile: &str, file: Option<PathBuf>) -> Result<()> {
                 "{} uploaded, {} still waiting, {} not sent",
                 report.uploaded, report.waiting, report.rejected
             );
+            if let Ok(game) = crate::build::game(store, None) {
+                timetrial::game_replay::send(&queue, &game.dir, &api, unix_now(), &|| false, &mut |l| {
+                    println!("{l}")
+                });
+            }
         }
     }
     Ok(())

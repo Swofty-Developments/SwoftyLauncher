@@ -319,7 +319,7 @@ impl Shell {
                     .flex_shrink_0()
                     .justify_end()
                     .gap(px(4.))
-                    .child(self.lap_buttons(&format!("{idx}-{}", r.lap_id), &r.lap_id, cx))
+                    .child(self.lap_buttons(&format!("{idx}-{}", r.lap_id), &r.lap_id, r.game_replay, cx))
                     .children(SHOW_SETUPS.then(|| {
                         self.setup_button(&format!("{idx}-{}", r.lap_id), &r.lap_id, r.setup.is_some(), cx)
                     })),
@@ -327,11 +327,18 @@ impl Shell {
             .into_any_element()
     }
 
-    pub(super) fn lap_buttons(&self, key: &str, lap_id: &str, cx: &mut Context<Self>) -> AnyElement {
+    pub(super) fn lap_buttons(
+        &self,
+        key: &str,
+        lap_id: &str,
+        game_replay: bool,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
         let url = lap_url(lap_id);
         let running = self.online_game_running();
         let ready = running && self.install.is_some();
         let id = lap_id.to_owned();
+        let add = self.add_to_game_button(&format!("add-{key}"), lap_id, game_replay, cx);
         h_flex()
             .flex_shrink_0()
             .gap(px(6.))
@@ -361,7 +368,34 @@ impl Shell {
                         this.online_watch(id.clone(), cx);
                     })),
             )
+            .child(add.tap_xs())
             .into_any_element()
+    }
+
+    pub(crate) fn add_to_game_button(
+        &self,
+        key: &str,
+        lap_id: &str,
+        game_replay: bool,
+        cx: &mut Context<Self>,
+    ) -> Button {
+        let known = self.install.is_some();
+        let id = lap_id.to_owned();
+        Button::new(SharedString::from(key.to_owned()))
+            .outline()
+            .icon(IconName::Download)
+            .label(tr("Add to game"))
+            .disabled(!(game_replay && known))
+            .tooltip(if !game_replay {
+                tr("This lap has no game replay")
+            } else if known {
+                tr("Put this lap's replay into the game's Theatre")
+            } else {
+                tr("The game folder is not known")
+            })
+            .on_click(cx.listener(move |this, _, _, cx| {
+                this.online_add_to_game(id.clone(), cx);
+            }))
     }
 
     fn history_strip(&self, page: &BoardPage, p: Palette) -> Option<AnyElement> {

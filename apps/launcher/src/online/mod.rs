@@ -43,6 +43,7 @@ pub(crate) enum Target {
 pub(crate) struct Online {
     api: Arc<dyn BoardsApi>,
     watch_notice: Option<(bool, String)>,
+    watch_lap: Option<String>,
     pretend_running: bool,
     trail: Trail,
     overview: Load<Overview>,
@@ -77,6 +78,7 @@ impl Online {
         Self {
             api,
             watch_notice: None,
+            watch_lap: None,
             pretend_running,
             trail: Trail::new(),
             overview: Load::Idle,
@@ -502,6 +504,7 @@ impl Shell {
             return;
         };
         self.online.watch_notice = Some((true, swofty_i18n::tr("Sending the lap to the game…").to_owned()));
+        self.online.watch_lap = None;
         cx.notify();
         cx.spawn(async move |this, cx| {
             let done = cx
@@ -529,8 +532,61 @@ impl Shell {
         .detach();
     }
 
+    /// Put the game replay of lap `id` where the game's Theatre finds it.
+    pub(crate) fn online_add_to_game(&mut self, id: String, cx: &mut Context<Self>) {
+        let (Some(api), Some(game)) = (
+            self.mp
+                .as_ref()
+                .map(|s| swofty_core::timetrial::api::Api::new(&s.token)),
+            self.install.as_ref().map(|i| i.dir.clone()),
+        ) else {
+            return;
+        };
+        self.online.watch_notice = Some((true, swofty_i18n::tr("Adding the replay to the game…").to_owned()));
+        self.online.watch_lap = Some(id.clone());
+        cx.notify();
+        cx.spawn(async move |this, cx| {
+            let lap = id.clone();
+            let done = cx
+                .background_executor()
+                .spawn(async move { swofty_core::timetrial::game_replay::add(&api, &game, &lap) })
+                .await;
+            this.update(cx, |s, cx| {
+                s.online.watch_notice = Some(match done {
+                    Ok(()) => (
+                        true,
+                        swofty_i18n::tr("Added. Open Theatre in the game to watch it.").to_owned(),
+                    ),
+                    Err(e) => {
+                        crate::app_log::action("add a lap's replay to the game").failed(&e);
+                        (
+                            false,
+                            if e == swofty_core::timetrial::game_replay::NO_REPLAY {
+                                swofty_i18n::tr("This lap has no game replay").to_owned()
+                            } else {
+                                e
+                            },
+                        )
+                    }
+                });
+                s.online.watch_lap = Some(id);
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+    }
+
     pub(crate) fn online_watch_notice(&self) -> Option<&(bool, String)> {
         self.online.watch_notice.as_ref()
+    }
+
+    /// The notice of "Add to game" for lap `id`, if that was the last lap it ran for.
+    pub(crate) fn online_replay_notice(&self, id: &str) -> Option<&(bool, String)> {
+        self.online
+            .watch_notice
+            .as_ref()
+            .filter(|_| self.online.watch_lap.as_deref() == Some(id))
     }
 
     pub(crate) fn online_game_running(&self) -> bool {

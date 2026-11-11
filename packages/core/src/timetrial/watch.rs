@@ -15,7 +15,7 @@ pub fn dir(game: &Path) -> PathBuf {
     game.join("swofty").join("tt").join("ghost")
 }
 
-fn valid_id(id: &str) -> bool {
+pub(super) fn valid_id(id: &str) -> bool {
     id.len() == 16 && id.bytes().all(|b| b.is_ascii_hexdigit())
 }
 

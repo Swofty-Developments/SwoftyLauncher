@@ -13,6 +13,8 @@ const CALL_TIMEOUT: Duration = Duration::from_secs(4);
 const GAME_TIMEOUT: Duration = Duration::from_secs(5);
 const BOARD_TIMEOUT: Duration = Duration::from_secs(15);
 const UPLOAD_TIMEOUT: Duration = Duration::from_secs(60);
+const REPLAY_TIMEOUT: Duration = Duration::from_secs(600);
+const REPLAY_MAX: u64 = 64 * 1024 * 1024;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct ApiError {
@@ -204,6 +206,28 @@ impl Api {
         )
     }
 
+    /// A lap's game replay file.
+    pub fn game_replay(&self, id: &str) -> Result<Vec<u8>, ApiError> {
+        self.get(
+            &format!("/v1/tt/laps/{id}/game-replay"),
+            REPLAY_TIMEOUT,
+            REPLAY_MAX,
+        )
+    }
+
+    /// Store `file` as the game replay of lap `id`, recorded with `setup` (a compact JSON object).
+    pub fn put_game_replay(&self, id: &str, setup: &str, file: &[u8]) -> Result<(), ApiError> {
+        self.request::<Value>(
+            "PUT",
+            &format!("/v1/tt/laps/{id}/game-replay"),
+            &[("X-Swofty-Replay-Setup", setup)],
+            "application/octet-stream",
+            file,
+            REPLAY_TIMEOUT,
+        )
+        .map(|_| ())
+    }
+
     /// A JSON document of the boards server, read with the sign-in.
     pub fn get_json<T: serde::de::DeserializeOwned>(&self, path: &str) -> Result<T, ApiError> {
         let bytes = self.get(path, BOARD_TIMEOUT, 8 * 1024 * 1024)?;
@@ -280,6 +304,19 @@ impl Api {
         body: Option<(String, Vec<u8>)>,
         timeout: Duration,
     ) -> Result<T, ApiError> {
+        let (content_type, bytes) = body.unwrap_or_else(|| ("application/json".into(), Vec::new()));
+        self.request(method, path, &[], &content_type, &bytes, timeout)
+    }
+
+    fn request<T: serde::de::DeserializeOwned>(
+        &self,
+        method: &str,
+        path: &str,
+        headers: &[(&str, &str)],
+        content_type: &str,
+        bytes: &[u8],
+        timeout: Duration,
+    ) -> Result<T, ApiError> {
         if !http::bearer_allowed(&self.server) {
             return Err(ApiError::network(format!(
                 "refusing to send the session token to {} over plain http; use https",
@@ -288,18 +325,24 @@ impl Api {
         }
         let url = format!("{}{path}", self.server);
         let auth = format!("Bearer {}", self.token);
-        let (content_type, bytes) = body.unwrap_or_else(|| ("application/json".into(), Vec::new()));
-        let sent = ureq::post(&url)
-            .header("Authorization", &auth)
-            .header("User-Agent", "swofty-launcher")
-            .header("Content-Type", &content_type)
+        let mut request = match method {
+            "PUT" => ureq::put(&url),
+            _ => ureq::post(&url),
+        }
+        .header("Authorization", &auth)
+        .header("User-Agent", "swofty-launcher")
+        .header("Content-Type", content_type);
+        for (name, value) in headers {
+            request = request.header(*name, *value);
+        }
+        let sent = request
             .config()
             .timeout_global(Some(timeout))
             .timeout_connect(Some(Duration::from_secs(10)))
             .max_redirects(0)
             .http_status_as_error(false)
             .build()
-            .send(&bytes[..]);
+            .send(bytes);
         let mut response =
             sent.map_err(|e| ApiError::network(format!("couldn't reach {}: {e}", self.server)))?;
         let status = response.status().as_u16();
@@ -463,6 +506,27 @@ mod tests {
         assert!(request.contains(r#""gzip":true"#));
         assert!(request.contains(r#""session":"n0nce""#));
         assert!(request.contains("name=\"lap\"; filename="));
+    }
+
+    #[test]
+    fn puts_a_game_replay_with_its_setup_header() {
+        let (url, t) = serve("200 OK", r#"{"size":9}"#);
+        Api::with_server(&url, "tok")
+            .put_game_replay("2949b7d7eaf78422", r#"{"lap_ms":5}"#, b"FRR bytes")
+            .unwrap();
+        let request = String::from_utf8_lossy(&t.join().unwrap()).into_owned();
+        assert!(request.starts_with("PUT /v1/tt/laps/2949b7d7eaf78422/game-replay HTTP/1.1"));
+        let lower = request.to_ascii_lowercase();
+        assert!(lower.contains("authorization: bearer tok"));
+        assert!(lower.contains("content-type: application/octet-stream"));
+        assert!(lower.contains(r#"x-swofty-replay-setup: {"lap_ms":5}"#));
+        assert!(request.ends_with("FRR bytes"));
+        let (url, t) = serve("413 Payload Too Large", "");
+        let e = Api::with_server(&url, "tok")
+            .put_game_replay("2949b7d7eaf78422", "{}", b"x")
+            .unwrap_err();
+        assert!(e.status == 413 && !e.transient());
+        t.join().unwrap();
     }
 
     #[test]

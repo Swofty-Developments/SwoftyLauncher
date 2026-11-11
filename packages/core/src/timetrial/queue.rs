@@ -215,6 +215,23 @@ impl Queue {
             .collect()
     }
 
+    /// The laps the server took, as `(uploaded at, lap time in ms, lap id)`.
+    pub fn uploaded(&self) -> Vec<(u64, u64, String)> {
+        let Ok(read) = std::fs::read_dir(self.dir(Folder::Sent)) else {
+            return Vec::new();
+        };
+        read.filter_map(|e| e.ok().map(|e| e.path()))
+            .filter(|p| p.extension().is_some_and(|x| x == "json"))
+            .filter_map(|p| read_json::<Done>(&p))
+            .filter_map(|d| Some((d.at, d.time_ms, d.answer?.id)))
+            .collect()
+    }
+
+    /// Where the retry state of the game replays waiting to upload is kept.
+    pub fn replays_state(&self) -> PathBuf {
+        self.root.join("replays.json")
+    }
+
     /// Upload the outbox, oldest first. A refusal of one lap moves it to `rejected` and goes on; a lap
     /// the server could not take for now (unreachable, busy, signed out) stays queued and ends the
     /// drain, since the next lap would meet the same answer.
@@ -387,7 +404,7 @@ impl Queue {
     }
 }
 
-fn backoff(attempts: u32) -> u64 {
+pub(super) fn backoff(attempts: u32) -> u64 {
     BACKOFF_FIRST
         .saturating_mul(1u64 << attempts.saturating_sub(1).min(10))
         .min(BACKOFF_MAX)
@@ -433,11 +450,11 @@ fn move_file(from: &Path, to: &Path) -> std::io::Result<()> {
     std::fs::remove_file(from)
 }
 
-fn read_json<T: serde::de::DeserializeOwned>(path: &Path) -> Option<T> {
+pub(super) fn read_json<T: serde::de::DeserializeOwned>(path: &Path) -> Option<T> {
     serde_json::from_slice(&std::fs::read(path).ok()?).ok()
 }
 
-fn write_json<T: Serialize>(path: &Path, value: &T) -> std::io::Result<()> {
+pub(super) fn write_json<T: Serialize>(path: &Path, value: &T) -> std::io::Result<()> {
     let tmp = path.with_extension("json.tmp");
     std::fs::write(&tmp, serde_json::to_vec_pretty(value).unwrap_or_default())?;
     std::fs::rename(&tmp, path)

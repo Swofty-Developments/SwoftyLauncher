@@ -412,6 +412,7 @@ impl BoardsApi for MockBoards {
                     car: Some(["ferrari sf-22", "mercedes w13", "red bull rb18"][d % 3].to_owned()),
                     date: format!("2026-11-{:02}T04:10:11Z", 10 - (d % 9)),
                     setup: (place % 5 != 4).then(|| mock_setup(d, s)),
+                    game_replay: place % 3 == 0,
                 }
             })
             .collect();

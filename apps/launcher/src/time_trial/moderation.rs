@@ -265,7 +265,14 @@ impl Shell {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let actions = self.tt_actions(&run.lap_id, &run.reasons, p, window, cx);
+        let actions = self.tt_actions(
+            &run.lap_id,
+            &run.reasons,
+            run.game_replay.is_some(),
+            p,
+            window,
+            cx,
+        );
         let title = |text: &'static str| {
             div()
                 .pt(px(8.))
@@ -407,6 +414,7 @@ impl Shell {
         &mut self,
         lap: &str,
         reasons: &[String],
+        game_replay: bool,
         p: Palette,
         window: &mut Window,
         cx: &mut Context<Self>,
@@ -454,6 +462,7 @@ impl Shell {
                 )
         } else {
             let (accept, deny) = (id.clone(), id.clone());
+            let add = self.add_to_game_button("tt-add-to-game", lap, game_replay, cx);
             h_flex()
                 .gap(px(8.))
                 .child(
@@ -464,6 +473,7 @@ impl Shell {
                         .label(tr("Watch Replay"))
                         .on_click(move |_, _, cx| cx.open_url(&url)),
                 )
+                .child(add.small())
                 .child(
                     Button::new("tt-accept")
                         .small()
@@ -497,6 +507,14 @@ impl Shell {
                 )
         };
         panel = panel.child(buttons);
+        if let Some((ok, text)) = self.online_replay_notice(lap) {
+            panel = panel.child(
+                div()
+                    .text_size(px(12.))
+                    .text_color(if *ok { p.text_muted } else { p.error })
+                    .child(text.clone()),
+            );
+        }
         if let Some(note) = &self.tt.notice {
             panel = panel.child(div().text_size(px(12.)).text_color(p.error).child(note.clone()));
         }

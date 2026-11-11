@@ -299,7 +299,16 @@ impl Shell {
                     .text_color(p.text_muted)
                     .child(row.date.chars().take(10).collect::<String>()),
             );
-        let panel = open.then(|| self.tt_actions(&row.lap_id, &row.reasons, p, window, cx));
+        let panel = open.then(|| {
+            self.tt_actions(
+                &row.lap_id,
+                &row.reasons,
+                row.game_replay.is_some(),
+                p,
+                window,
+                cx,
+            )
+        });
         v_flex()
             .when(i > 0, |d| d.border_t_1().border_color(p.border_variant))
             .child(line)

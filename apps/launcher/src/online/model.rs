@@ -232,6 +232,7 @@ pub struct Row {
     pub input: Option<InputDevice>,
     pub aids: Option<Assists>,
     pub setup: Option<Setup>,
+    pub game_replay: bool,
 }
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -825,6 +826,7 @@ mod tests {
             input: None,
             aids: None,
             setup: None,
+            game_replay: false,
         };
         let rows = [row(vec![30, 31, 32]), row(vec![29, 33, 31])];
         assert_eq!(best_sectors(&rows, 3), [Some(29), Some(31), Some(31)]);

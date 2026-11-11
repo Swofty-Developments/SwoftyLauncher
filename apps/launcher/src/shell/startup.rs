@@ -354,11 +354,19 @@ impl Shell {
                     s.sync_avatar(cx);
                 })
                 .ok();
-                let data = this.update(cx, |s, _| s.store.clone()).ok();
-                if let Some(store) = data {
+                let data = this
+                    .update(cx, |s, _| {
+                        (s.store.clone(), s.install.as_ref().map(|i| i.dir.clone()))
+                    })
+                    .ok();
+                if let Some((store, game)) = data {
                     cx.background_executor()
                         .spawn(async move {
-                            swofty_core::timetrial::upload::flush(&store.root, &store.config());
+                            swofty_core::timetrial::upload::flush(
+                                &store.root,
+                                game.as_deref(),
+                                &store.config(),
+                            );
                         })
                         .await;
                 }
