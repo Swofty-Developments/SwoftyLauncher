@@ -9,6 +9,7 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use md5::{Digest, Md5};
+use swofty_formats::animclip::Channel;
 use sha1::Sha1;
 use swofty_formats::pkg::{Node, Pkg, Val, Value};
 
@@ -80,18 +81,14 @@ pub struct ShowItem {
 }
 
 #[derive(Debug, Clone)]
-pub struct Channel {
-    pub interp: u32,
-    pub typ: u32,
-    pub flags: u32,
-    pub times: Vec<f32>,
-    pub keys: Vec<Vec<f32>>,
-}
-
-#[derive(Debug, Clone)]
 pub struct ClipSpec {
     pub node: String,
     pub channels: Vec<Channel>,
+}
+
+fn clip_channel(mut c: Channel) -> Channel {
+    c.max_time = geom::ANIM_T as f32;
+    c
 }
 
 /// What one record put in a scene, for the template, the clips and the editor preview.
@@ -737,17 +734,16 @@ impl Builder {
         if !preview {
             let r = template::resolve(&bind, Usage::Fraction, name)?;
             cx.plan.known.push((r.db.clone(), r.tag));
-            let ident = vec![0.0f32, 0.0, 0.0, -1.0];
-            let one = vec![1.0f32; 3];
-            let win_keys: Vec<Vec<f32>> = keys.iter().map(|k| k.iter().map(|v| *v as f32).collect()).collect();
-            let ctr_keys: Vec<Vec<f32>> = keys.iter().map(|k| vec![-k[0] as f32, -k[1] as f32, 0.12]).collect();
+            let times = vec![0.0, geom::ANIM_T as f32];
+            let win_keys: Vec<[f32; 3]> = keys.iter().map(|k| [k[0] as f32, k[1] as f32, k[2] as f32]).collect();
+            let ctr_keys: Vec<[f32; 3]> = keys.iter().map(|k| [-k[0] as f32, -k[1] as f32, 0.12]).collect();
             for (node, ks) in [(wn.clone(), win_keys), (cn.clone(), ctr_keys)] {
                 cx.plan.clips.push(ClipSpec {
                     node: node.clone(),
                     channels: vec![
-                        Channel { interp: 5, typ: 3, flags: 0x80, times: vec![0.0, geom::ANIM_T as f32], keys: ks },
-                        Channel { interp: 2, typ: 1, flags: 0x84, times: vec![0.0], keys: vec![ident.clone()] },
-                        Channel { interp: 5, typ: 2, flags: 0x80, times: vec![0.0], keys: vec![one.clone()] },
+                        clip_channel(Channel::position(times.clone(), ks)),
+                        clip_channel(Channel::rotation(vec![0.0], vec![[0.0, 0.0, 0.0, -1.0]])),
+                        clip_channel(Channel::scale(vec![0.0], vec![[1.0; 3]])),
                     ],
                 });
                 cx.plan.fractions.push(FracItem {
@@ -801,17 +797,17 @@ impl Builder {
             let r = template::resolve(&bind, Usage::Fraction, name)?;
             cx.plan.known.push((r.db.clone(), r.tag));
             let times: Vec<f32> = sw.keys.iter().map(|(f, _)| (*f * geom::ANIM_T) as f32).collect();
-            let quats: Vec<Vec<f32>> = sw
+            let quats: Vec<[f32; 4]> = sw
                 .keys
                 .iter()
-                .map(|(_, a)| geom::quat_z(a.to_degrees()).iter().map(|v| *v as f32).collect())
+                .map(|(_, a)| geom::quat_z(a.to_degrees()).map(|v| v as f32))
                 .collect();
             cx.plan.clips.push(ClipSpec {
                 node: anim_name.clone(),
                 channels: vec![
-                    Channel { interp: 5, typ: 3, flags: 0x80, times: vec![0.0], keys: vec![rel.iter().map(|v| *v as f32).collect()] },
-                    Channel { interp: 2, typ: 1, flags: 0x84, times, keys: quats },
-                    Channel { interp: 5, typ: 2, flags: 0x80, times: vec![0.0], keys: vec![vec![1.0, 1.0, 1.0]] },
+                    clip_channel(Channel::position(vec![0.0], vec![[rel[0] as f32, rel[1] as f32, rel[2] as f32]])),
+                    clip_channel(Channel::rotation(times, quats)),
+                    clip_channel(Channel::scale(vec![0.0], vec![[1.0; 3]])),
                 ],
             });
             cx.plan.fractions.push(FracItem {

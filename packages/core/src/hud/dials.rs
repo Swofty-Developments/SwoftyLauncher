@@ -62,7 +62,7 @@ pub const F126: DialFacts = DialFacts {
     quad: "central_bg_fill",
     race_parent: "hud_f1_dial_om_xm.osd_visibility_option.f1_om_xm_dial_child",
     spectator_parent: "hud_spectator_2.content.bottom_right.f1_26_dial",
-    bottom_y: -0.288,
+    bottom_y: -0.28837,
     quad_size: Some((4.48, 1.92)),
 };
 
@@ -74,7 +74,7 @@ pub const F125: DialFacts = DialFacts {
     quad: "central_bg_fill",
     race_parent: "hud_f1_dial.osd_visibility_option.f1_dial_child",
     spectator_parent: "hud_spectator_2.content.bottom_right.modern_dial",
-    bottom_y: -0.288,
+    bottom_y: -0.28837,
     quad_size: Some((4.48, 1.92)),
 };
 
@@ -86,7 +86,7 @@ pub const F2: DialFacts = DialFacts {
     quad: "central_bg_edge",
     race_parent: "hud_f2_dial.osd_visibility_option.f2_dial_child",
     spectator_parent: "hud_spectator_2.content.bottom_right.f2_dial",
-    bottom_y: -0.288,
+    bottom_y: -0.28837,
     quad_size: None,
 };
 

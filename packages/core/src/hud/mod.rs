@@ -9,7 +9,6 @@
 //! the headers of `scene.rs`, `template.rs` and `editor.rs`. Uses work from Project Halo by
 //! nyannoying (https://github.com/nyannoying1337/f1-25-project-halo).
 
-pub mod anim;
 pub mod check;
 pub mod dials;
 pub mod editor;
@@ -26,6 +25,7 @@ use std::rc::Rc;
 
 use swofty_addon::asset::{Root, Source};
 use swofty_addon::ops::ErpOp;
+use swofty_formats::animclip;
 use swofty_formats::erp::{Erp, ErpFile, Resource};
 use swofty_formats::pkg::Pkg;
 
@@ -72,11 +72,23 @@ impl GameStock {
     /// Swofty has built may already carry composed HUD archives, and the composer starts from stock.
     pub fn with_baseline(game: impl Into<PathBuf>, data: &Path) -> Result<Self> {
         let game = game.into();
-        let id = crate::baseline::Identity::detect_cached(data, &game, None)?;
-        let base = crate::baseline::Baseline::load_or_new(data, &id)?;
-        let objects = crate::baseline::Objects {
-            root: data.join("baseline/objects"),
-        };
+        let exe = crate::baseline::sha256_file(&game.join(crate::GAME_EXE))?;
+        let mut best: Option<crate::baseline::Baseline> = None;
+        let dir = data.join("baseline");
+        let entries = std::fs::read_dir(&dir).map_err(|e| Error::Io { path: dir.clone(), source: e })?;
+        for e in entries.flatten() {
+            let Ok(text) = std::fs::read_to_string(e.path().join("baseline.json")) else {
+                continue;
+            };
+            let Ok(b) = serde_json::from_str::<crate::baseline::Baseline>(&text) else {
+                continue;
+            };
+            if b.exe_sha256 == exe && best.as_ref().is_none_or(|o| b.files.len() > o.files.len()) {
+                best = Some(b);
+            }
+        }
+        let base = best.ok_or_else(|| err("the launcher has no record of the game's original files"))?;
+        let objects = crate::baseline::Objects { root: dir.join("objects") };
         let originals = base
             .files
             .iter()
@@ -487,17 +499,18 @@ pub fn compose(stock: &dyn Stock, inputs: &[Input]) -> Result<Output> {
         let strtab = first(stock.read(dials::STOCK_ERP, facts.strtab)?, facts.strtab)?;
         let mut new_scene = b.finish(footprint)?;
         if !names.is_empty() {
-            let (tab, index) = anim::append_names(&strtab, &names)?;
+            let refs: Vec<&str> = names.iter().map(String::as_str).collect();
+            let (tab, first) = animclip::append_strings(&strtab, &refs)?;
             scene_resources.push((facts.strtab.to_owned(), "ACStringTable", vec![tab]));
             for (_, plan) in &plans {
                 for c in &plan.clips {
-                    let (temp, syst) = anim::clip(
+                    let at = names.iter().position(|n| *n == c.node).expect("collected above");
+                    let (temp, syst) = animclip::build_clip(
                         &clip_template,
                         &c.node,
-                        index[&c.node],
-                        &c.channels,
-                        geom::ANIM_T,
+                        (first + at) as i32,
                         facts.strtab,
+                        &c.channels,
                     )?;
                     scene_resources.push((
                         format!("{}/{}?context=animation", facts.scene, c.node),
@@ -739,6 +752,17 @@ mod tests {
         let t = Pkg::parse(&tmpl.find(dials::TEMPLATE).unwrap().fragments[0].data().unwrap()).unwrap();
         let at = crate::ui::node::find_path(&t.root, &format!("{}.test_hud_ctl", dials::F126.race_parent)).unwrap();
         assert!(!at.is_empty());
+        let ours: std::collections::BTreeSet<String> = ["test_hud_ctl", "test_hud_pv_ctl"].map(String::from).into();
+        let stock_t = Pkg::parse(&stock.read(dials::STOCK_ERP, dials::TEMPLATE).unwrap()[0]).unwrap();
+        assert!(check::stock_kept(&stock_t, &t, &ours).unwrap(), "a stock template node changed");
+        let spec = Erp::parse(&out.archives[2].bytes).unwrap();
+        let s = Pkg::parse(&spec.find(dials::SPECTATOR).unwrap().fragments[0].data().unwrap()).unwrap();
+        let stock_s = Pkg::parse(&stock.read(dials::STOCK_ERP, dials::SPECTATOR).unwrap()[0]).unwrap();
+        assert!(check::stock_kept(&stock_s, &s, &ours).unwrap(), "a stock spectator node changed");
+        for (d, ctl) in [(Dial::F126, "test_hud_ctl"), (Dial::F125, "test_hud_pv_ctl"), (Dial::F2, "test_hud_ctl")] {
+            let parent = dials::facts(d).spectator_parent;
+            assert!(crate::ui::node::find_path(&s.root, &format!("{parent}.{ctl}")).is_ok(), "{parent}");
+        }
         std::fs::remove_dir_all(dir).ok();
     }
 

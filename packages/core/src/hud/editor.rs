@@ -11,76 +11,39 @@
 
 use std::collections::BTreeSet;
 
-use swofty_formats::hash::djb2;
-use swofty_formats::pkg::{Node, Pkg, Value};
+use swofty_formats::pkg::Node;
+use swofty_formats::uipre::{self, Uipre};
 
-use super::dials::TEMPLATE_UIPRE_KEYS;
 use super::scene::Plan;
-use crate::ui::idf::detached;
-use crate::ui::node::{self, NodeExt, ObjExt};
+use crate::ui::idf;
+use crate::ui::node::{self, NodeExt};
 use crate::{Error, Result};
 
 fn err(msg: impl std::fmt::Display) -> Error {
     Error::Other(format!("hud: {msg}"))
 }
 
-fn model<'a>(els: &'a [Node], key: u32, ty: [u8; 4]) -> Option<(&'a Node, &'a Node)> {
-    for el in els {
-        let Some(setters) = el.as_obj().and_then(|o| o.get("Setters")).and_then(Node::as_arr) else {
-            continue;
-        };
-        for st in &setters.items {
-            let o = st.as_obj()?;
-            let k = o.get("Key").and_then(Node::as_val).and_then(|v| v.as_u32());
-            let t = o.get("Value").and_then(Node::as_val).map(|v| v.ty);
-            if k == Some(key) && t == Some(ty) {
-                return Some((el, st));
-            }
-        }
-    }
-    None
-}
-
 /// The `.uipre` of the editor's scene with the stock `hide` parts hidden and each `(element,
-/// text)` set. Every setter is a copy of a stock one.
+/// text)` set. The setters are the shape of the stock ones (`Id` and `Setters` of `Key`, `Value`).
 pub fn uipre(stock: &[u8], scene: &str, hide: &[String], texts: &[(String, String)]) -> Result<Vec<u8>> {
-    let mut p = Pkg::parse(stock)?;
-    let target = match &p.root.o()?.at("TargetId")?.v()?.value {
-        Value::Raw(b) if b.len() >= 8 => u64::from_le_bytes(b[..8].try_into().expect("8 bytes")),
-        _ => 0,
-    };
-    if target != node::component_id(scene) {
+    let mut p = Uipre::parse(stock)?;
+    if p.target_id() != Some(idf::scene_id(scene)) {
         return Err(err(format!("the .uipre is not the preview data of {scene}")));
     }
-    let (text_key, visible_key) = TEMPLATE_UIPRE_KEYS;
-    let elements = p.root.o_mut()?.at_mut("Elements")?.a_mut()?;
-    let mut have: BTreeSet<u32> = elements
-        .iter()
-        .filter_map(|e| e.as_obj()?.get("Id")?.as_val()?.as_u32())
-        .collect();
-    let mut add = Vec::new();
-    let jobs = hide
-        .iter()
-        .map(|n| (n.as_str(), visible_key, *b"bool", None))
-        .chain(texts.iter().map(|(e, t)| (e.as_str(), text_key, *b"stri", Some(t.as_str()))));
-    for (name, key, ty, text) in jobs {
-        let (el_m, st_m) = model(elements, key, ty)
-            .ok_or_else(|| err(format!("no stock {} setter with key {key} to copy", String::from_utf8_lossy(&ty))))?;
-        let (mut el, mut st) = (detached(el_m), detached(st_m));
-        let id = djb2(name);
-        if !have.insert(id) {
+    let have: BTreeSet<u32> = p.element_ids().into_iter().collect();
+    let mut added = BTreeSet::new();
+    for name in hide.iter().chain(texts.iter().map(|(e, _)| e)) {
+        let id = uipre::element_id(name);
+        if have.contains(&id) || !added.insert(id) {
             return Err(err(format!("the preview element id of {name} is already used")));
         }
-        el.o_mut()?.at_mut("Id")?.v_mut()?.set_u32(id);
-        let v = st.o_mut()?.at_mut("Value")?.v_mut()?;
-        match text {
-            Some(t) => v.set_str(t),
-            None => v.value = Value::Raw(vec![0]),
-        }
-        *el.o_mut()?.at_mut("Setters")?.a_mut()? = vec![st];
-        add.push(el);
     }
-    elements.extend(add);
+    for name in hide {
+        p.set_visible(name, false)?;
+    }
+    for (el, text) in texts {
+        p.set_text(el, text)?;
+    }
     Ok(p.to_bytes()?)
 }
 

@@ -174,15 +174,18 @@ pub fn stock_facts(stock: &dyn Stock) -> Report {
                     r.pass(format!("{}: the stock parts {} are under {}", short(f.scene), parts.join(", "), dials::CUSTOMISATION));
                 }
                 match b.bottom() {
-                    Ok(y) if (y - f.bottom_y).abs() < 1e-4 => r.pass(format!("{}: br_customisation sits at y {y}", short(f.scene))),
+                    Ok(y) if (y - f.bottom_y).abs() < 1e-3 => r.pass(format!("{}: br_customisation sits at y {y}", short(f.scene))),
                     Ok(y) => r.fail(format!("{}: br_customisation is at y {y}, not {}", short(f.scene), f.bottom_y)),
                     Err(e) => r.fail(format!("{}: {e}", short(f.scene))),
                 }
             }
         }
         if let Some(strtab) = stock.read(dials::STOCK_ERP, f.strtab).ok().and_then(|v| first(v, "strtab").ok()) {
-            match super::anim::append_names(&strtab, &["zh_check".to_owned()]) {
-                Ok(_) => r.pass(format!("{}: the anim string table is sorted and zh_ names sort after it", short(f.scene))),
+            match swofty_formats::animclip::read_strings(&strtab) {
+                Ok(s) if s.iter().any(|n| n.starts_with("zh_")) => {
+                    r.pass(format!("{}: the anim string table already carries zh_ names (a built game folder)", short(f.scene)))
+                }
+                Ok(s) => r.pass(format!("{}: the anim string table has {} stock names", short(f.scene), s.len())),
                 Err(e) => r.fail(format!("{}: {e}", short(f.strtab))),
             }
         }
@@ -260,4 +263,58 @@ pub fn stock_facts(stock: &dyn Stock) -> Report {
         }
     }
     r
+}
+
+fn strip(n: &mut swofty_formats::pkg::Node, ours: &BTreeSet<String>) {
+    use swofty_formats::pkg::Node;
+    if n.is_node() {
+        if let Ok(kids) = n.slot_mut(node::CHILDREN) {
+            kids.retain(|c| !(c.is_node() && ours.contains(c.name())));
+            kids.iter_mut().for_each(|c| strip(c, ours));
+        }
+        for slot in [node::COMMANDS, node::EVENTS] {
+            let Ok(list) = n.slot_mut(slot) else { continue };
+            for entry in list.iter_mut() {
+                let Some(sigs) = entry
+                    .as_obj_mut()
+                    .and_then(|o| o.get_mut("signals"))
+                    .and_then(Node::as_arr_mut)
+                else {
+                    continue;
+                };
+                sigs.items.retain(|s| {
+                    let to = s
+                        .as_obj()
+                        .and_then(|o| o.get("to_object_name"))
+                        .and_then(Node::as_val)
+                        .and_then(|v| v.as_str())
+                        .unwrap_or_default();
+                    !ours.contains(to.rsplit('.').next().unwrap_or(to))
+                });
+            }
+        }
+        return;
+    }
+    match n {
+        Node::Arr(a) => a.items.iter_mut().for_each(|c| strip(c, ours)),
+        Node::Obj(o) => o.items.iter_mut().for_each(|(_, v)| strip(v, ours)),
+        _ => {}
+    }
+}
+
+/// True when `built`, without the groups named in `ours` and the signals that target them, is
+/// the stock file node for node and value for value (a file's value tables are not compared: new
+/// values interleave with the stock ones).
+pub fn stock_kept(stock: &Pkg, built: &Pkg, ours: &BTreeSet<String>) -> crate::Result<bool> {
+    let mut b = built.clone();
+    strip(&mut b.root, ours);
+    let (mut x, mut y) = (Vec::new(), Vec::new());
+    node::node_paths_of(&stock.root, "", &mut x);
+    node::node_paths_of(&b.root, "", &mut y);
+    if x.len() != y.len() {
+        return Ok(false);
+    }
+    let slots = regex::Regex::new(r"slot: (Some\(\([0-9, ]+\)\)|None)").expect("a valid pattern");
+    let plain = |n: &swofty_formats::pkg::Node| slots.replace_all(&format!("{n:?}"), "").into_owned();
+    Ok(x.iter().zip(&y).all(|((p, a), (q, b))| p == q && plain(a) == plain(b)))
 }

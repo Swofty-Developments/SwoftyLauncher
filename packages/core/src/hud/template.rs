@@ -471,7 +471,10 @@ mod tests {
         let r = resolve(&b, Usage::Visible, "t").unwrap();
         assert_eq!((r.db.as_str(), r.tag, r.leaf), ("#view_model_data.hud_x_boost", *b"bool", true));
         assert_eq!(resolve(&b, Usage::Text, "t").unwrap().tag, *b"stri");
-        assert_eq!(resolve(&b, Usage::Fraction, "t").unwrap_err().to_string().contains("declared"), false);
+        assert_eq!(resolve(&b, Usage::Fraction, "t").unwrap().tag, *b"fp32");
+        let mut t = b.clone();
+        t.ty = Some(Ty::Text);
+        assert!(resolve(&t, Usage::Fraction, "t").unwrap_err().to_string().contains("declared"));
         let mut i = b.clone();
         i.ty = Some(Ty::I32);
         assert_eq!(resolve(&i, Usage::Text, "t").unwrap().tag, *b"ui32");
