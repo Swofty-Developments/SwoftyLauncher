@@ -607,7 +607,7 @@ mod tests {
             .collect();
         let mut want: Vec<u32> = ["root", "a", "ours_box", "theirs_box"]
             .iter()
-            .map(|n| swofty_formats::hash::djb2(n))
+            .map(swofty_formats::hash::djb2)
             .collect();
         want.sort_unstable();
         assert_eq!(lookup, want);

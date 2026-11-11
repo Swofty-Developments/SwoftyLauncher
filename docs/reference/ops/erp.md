@@ -209,6 +209,40 @@ The in-game loader patches only archives under `2025_asset_groups`. Every ERP op
 erp: shader_package_2025/object_flag.nefx2.sm51.erp built into the game files; the in-game loader patches only archives under 2025_asset_groups
 ```
 
+## Two addons replacing one UI resource
+
+Two addons that each replace the same UI resource whole, with an `overlay` archive that carries it, a `replace-resource` or a `put-resource`, no longer leave the later one the winner. A template (`.ui`) or a scene (`.idf`) that two or more addons replace in full is merged node by node against the game's own copy, read through the launcher's baseline and never from a modified game folder:
+
+```text
+base    the game's resource, from the launcher's baseline
+ours    what the earlier addons left, already merged
+theirs  the next addon's replacement
+```
+
+The merge keeps every node an addon added and every change an addon made to a stock node, so an addon that adds six labels under `hud_mfd_dynamic.mfd.attacher.car_damage_panel` and an addon that adds a whole timing tower stay in one template. A node the two changed differently is a conflict, and the later addon's version is kept for that node only. A node one addon deleted stays deleted unless the other addon edited it; then that is a conflict too.
+
+Nodes are matched by name below their parent: UI nodes by their `name`, scene elements by their element name and scenes by their scene id. A scene's `nodeidlookup` is rebuilt from the merged elements. A list that has no such names (an `events` list entry without a `name`, say) is merged as a whole.
+
+The merge runs in load order, so the result is the same on every build, and it only runs when two or more addons replace the same UI resource whole. One addon replacing the resource twice (an addon that ships an early and a final template) keeps its last file and is not merged with itself. The build says so in its lines:
+
+```text
+ui: 2025_asset_groups/ui_package/flow_race.erp: eaid://ui_package/templates/hud_dynamic_templates.ui merged node by node against the game's own copy: Project Halo then Planked + Brake Check Damage Panel (0 added, 1 changed, 0 removed by Planked + Brake Check Damage Panel; 0 conflict(s))
+```
+
+The counts are what the later addon's file changed in the result of the earlier ones. Each node the two changed differently is a warning that names both addons and the node:
+
+```text
+ui: Project Halo and Other Panel both change hud_mfd_dynamic.mfd.attacher.car_damage_panel [props/visible] in eaid://ui_package/templates/hud_dynamic_templates.ui; Other Panel's version is kept there because it loads later
+```
+
+A resource that is merged without a conflict is not an override: it does not appear in `swofty conflicts`. With conflicts the later addon still shows as overriding the earlier one.
+
+On the runtime route an `overlay` archive that carries a resource other addons replace whole goes in resource by resource, so the merge can read it, and the build prints `erp: <addon>: its overlay archive goes in resource by resource; another addon replaces <resource> whole too, and the two are merged node by node`. A [`hud.element`](/reference/ops/hud) composition starts from the merged resource and puts its own nodes on top.
+
+Bridge addons that only exist to splice two addons' copies of a template together, such as "Project Halo + Planked + Brake Check Panel", are not needed: enable the two addons.
+
+An addon with nothing to merge against, such as a resource the game does not have, or a file that is not a valid `!pkg`, still replaces the earlier one whole.
+
 ## Mip files
 
 A texture (`GfxSurfaceRes`) with three fragments keeps the rest of its mip chain in a loose file. Fragment 2 starts with a length byte and that file's path, relative to the game folder, such as `f1_safetycar_package/safety_car_2/textures/safety_car_2_decal_da.tif.mipmaps`.

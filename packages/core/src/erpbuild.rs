@@ -734,7 +734,7 @@ impl<'a> ErpBuild<'a> {
         if !earlier || self.baseline.is_none() {
             return Ok(None);
         }
-        Ok(self.fragment_zero(erp, resource)?)
+        self.fragment_zero(erp, resource)
     }
 
     fn fragment_zero(&mut self, erp: &str, resource: &str) -> Result<Option<Vec<u8>>> {
