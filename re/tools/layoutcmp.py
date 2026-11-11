@@ -118,7 +118,9 @@ EXTRA_FUNCS = {
     ('CarErs', 'deploy_power'): [0x142d00060],
     ('CarF1Aero', 'drs_flags'): [0x142cf9820, 0x142d00060],
     ('SpectatorDirector', 'ui_active'): [0x14f2f41c0],
+    ('VehicleTyreComponent', 'set_begin'): [0x142d00060],
 }
+
 
 EXTRA_FIELDS = ['CarLive.vehicle_id', 'CarLive.is_ai', 'CarLive.systems_vtable', 'CarLive.teleport_lock', 'CarLive.engine',
                 'CarLive.gearbox', 'CarLive.chassis', 'CarLive.steering', 'CarLive.f1_aero', 'CarLive.ers',
@@ -133,6 +135,9 @@ STRIDES = [
     ('stop-go stride', 0x4, ['StopGoObject']),
     ('marshal slot stride', 0x10, ['MarshalZoneSlot', 'MarshalZoneMonitor', 'MarshalZone', 'MarshalZoneDef']),
     ('registry slot stride', 0x10, ['NeRobinHoodMapU64']),
+    ('entrant view stride', 0x88, ['SessionEntrantView', 'EntrantsManager']),
+    ('tyre descriptor stride', 0x18, ['TyreSlot', 'TyreSystem']),
+    ('pit lane slot stride', 0x10, ['PitLaneVehicleSlot', 'PitLaneTrack']),
 ]
 
 
@@ -149,9 +154,14 @@ FUNCS = [
 ]
 
 
+INSN_CHECKS = [
+    ('tyre set stride 0x78 (id at set_end - 0x6c, record start + 0xc)', 0x142ea2afa, 0x142ea2a90),
+]
+
 LIVE_BINDINGS = ['g_Sess_VehicleTable', 'g_Sess_VehicleCount', 'g_Game_Manager', 'g_Game_TrackLength',
                  'g_Sess_TyreRulesSessionType', 'g_Live_ControllerSystem', 'g_Live_SectorEnds', 'g_Live_SectorCount',
-                 'g_Game_MessageBus', 'Ne_Subscribe_BusMessage', 'vt_Sess_ControllerSystem', 'vt_Sess_HumanController']
+                 'g_Game_MessageBus', 'Ne_Subscribe_BusMessage', 'vt_Sess_ControllerSystem', 'vt_Sess_HumanController',
+                 'g_Live_RacingVehicles', 'vt_Car_SystemsContainer']
 VTABLES = ['vt_Sess_ControllerSystem', 'vt_Sess_HumanController']
 VT_SLOTS = {'vt_Sess_ControllerSystem': 12, 'vt_Sess_HumanController': 4}
 
@@ -333,6 +343,9 @@ def main(argv=None):
                 hits = [k for k, i in enumerate(fr['sins']) if covers(i, off) and not i.group(x86.X86_GRP_JUMP)]
                 kind = 'fn'
             if not hits:
+                hits = [k for k, i in enumerate(fr['sins']) if i.address in xr and mem_span(i) is not None]
+                kind = 'xref insn near'
+            if not hits:
                 why.append(f'{st + BASE:#x}: no insn with displacement {off:#x}')
                 continue
             diffs = []
@@ -345,7 +358,11 @@ def main(argv=None):
                         diffs.append((si, None))
                     continue
                 ei = fr['eins'][e]
-                if not (same_slot(si, ei) and (norm(ei) == norm(si) or covers(ei, off))):
+                if kind == 'xref insn near':
+                    ok = norm(ei) == norm(si) and disp_of(ei) == disp_of(si)
+                else:
+                    ok = same_slot(si, ei) and (norm(ei) == norm(si) or covers(ei, off))
+                if not ok:
                     diffs.append((si, ei))
             k = hits[0]
             si = fr['sins'][k]
@@ -363,7 +380,8 @@ def main(argv=None):
                 rows.append((T, f, hex(off), f'{d0[0].address + BASE:#x} {d0[0].mnemonic} {d0[0].op_str}',
                              f'{d0[1].address:#x} {e0}' if d0[1] else '-', f'NO: {len(diffs)}/{len(hits)} insn(s) differ in {st + BASE:#x}'))
             else:
-                rows.append((T, f, hex(off), sfmt, efmt, f'yes ({kind}, {len(hits)} insn(s), fn {st + BASE:#x} ratio {fr["ratio"]:.2f})'))
+                weak = ', offset below 0x10: only the identical stream proves it' if off < 0x10 and kind == 'fn' else ''
+                rows.append((T, f, hex(off), sfmt, efmt, f'yes ({kind}, {len(hits)} insn(s), fn {st + BASE:#x} ratio {fr["ratio"]:.2f}{weak})'))
             shown = True
             break
         if not shown:
@@ -412,6 +430,18 @@ def main(argv=None):
         unal = len(fr['sins']) - len(fr['amap'])
         frows.append((label, hex(va), hex(fr['erva']), f'{fr["n"]} insns, {fr["same"]} identical, {dd} aligned-but-different, {unal} unaligned (ratio {fr["ratio"]:.3f})'))
     brows = [] if a.field else binding_table(steam, other)
+    for label, va, fva in INSN_CHECKS:
+        fr = compare_function(steam, other, loc, fva - BASE, cache)
+        ok = fr['ok'] and (va - BASE) in fr['sidx'] and fr['sidx'][va - BASE] in fr['amap']
+        if ok:
+            si = fr['sins'][fr['sidx'][va - BASE]]
+            ei = fr['eins'][fr['amap'][fr['sidx'][va - BASE]]]
+            same = norm(si) == norm(ei)
+            srows.append((label, '-', f'{si.address + BASE:#x} {si.mnemonic} {si.op_str}', f'{ei.address:#x} {ei.mnemonic} {ei.op_str}',
+                          f'{"yes" if same else "NO"} (fn {fva:#x} ratio {fr["ratio"]:.2f})'))
+            bad += not same
+        else:
+            srows.append((label, '-', '-', '-', 'not proven'))
     lines = ['| struct.field | off | Steam insn | EA insn | same |', '|---|---|---|---|---|']
     for T, f, off, s, e, ok in rows:
         lines.append(f'| {T}.{f} | {off} | `{s}` | `{e}` | {ok} |')
