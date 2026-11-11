@@ -806,6 +806,8 @@ inline constexpr address<"Ne_String_ParseTokens"> Ne_String_ParseTokens{}; // L2
 inline constexpr address<"Ne_String_Reserve"> Ne_String_Reserve{}; // L2 experimental
 inline constexpr address<"Ne_String_Utf8ToWide"> Ne_String_Utf8ToWide{}; // L2 experimental
 inline constexpr address<"Ne_Struct_CopyConstructInlineStrings"> Ne_Struct_CopyConstructInlineStrings{}; // L2 experimental
+using Ne_Subscribe_BusMessage_t = void(void *bus, const char *message_name, const void *delegate);
+inline constexpr fn<"Ne_Subscribe_BusMessage", Ne_Subscribe_BusMessage_t> Ne_Subscribe_BusMessage{}; // L2 experimental
 inline constexpr address<"Ne_Sync_WaitObject"> Ne_Sync_WaitObject{}; // L2 experimental
 using Ne_TempPool_Alloc_t = void *(void *pool, uint64_t size, uint64_t align);
 inline constexpr fn<"Ne_TempPool_Alloc", Ne_TempPool_Alloc_t> Ne_TempPool_Alloc{}; // L2 experimental

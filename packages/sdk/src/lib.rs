@@ -22,6 +22,16 @@ pub const CAREER_WIZARD_HEADER: &str = include_str!("../include/swofty/career_wi
 pub const ERA_HEADER: &str = include_str!("../include/swofty/era.hpp");
 pub const HUD_HEADER: &str = include_str!("../include/swofty/hud.hpp");
 pub const POSTFX_HEADER: &str = include_str!("../include/swofty/postfx.hpp");
+pub const EASE_HEADER: &str = include_str!("../include/swofty/ease.hpp");
+pub const HUD_FORMAT_HEADER: &str = include_str!("../include/swofty/hud_format.hpp");
+pub const HUD_FRAME_HEADER: &str = include_str!("../include/swofty/hud_frame.hpp");
+pub const HUD_LEAVES_HEADER: &str = include_str!("../include/swofty/hud_leaves.hpp");
+pub const LOG_CSV_HEADER: &str = include_str!("../include/swofty/log_csv.hpp");
+pub const SETTINGS_STRUCT_HEADER: &str = include_str!("../include/swofty/settings_struct.hpp");
+pub const TIMING_HEADER: &str = include_str!("../include/swofty/timing.hpp");
+pub const FAKE_HUD_HEADER: &str = include_str!("../include/swofty/fake_hud.hpp");
+pub const LIVE_HEADER: &str = include_str!("../include/swofty/live.hpp");
+pub const FAKE_LIVE_HEADER: &str = include_str!("../include/swofty/fake_live.hpp");
 
 pub const CAREER_START_PICK: u32 = 0;
 pub const CAREER_START_NEW: u32 = 1;
@@ -960,6 +970,10 @@ mod tests {
             TELEMETRY_HEADER
         );
         assert_eq!(
+            include_str!("../../../templates/addon/native/include/swofty/live.hpp"),
+            LIVE_HEADER
+        );
+        assert_eq!(
             include_str!("../../../templates/addon/native/include/swofty/db.hpp"),
             DB_HEADER
         );
@@ -1007,6 +1021,42 @@ mod tests {
         assert_eq!(
             include_str!("../../../templates/addon/native/include/swofty/postfx.hpp"),
             POSTFX_HEADER
+        );
+        assert_eq!(
+            include_str!("../../../templates/addon/native/include/swofty/ease.hpp"),
+            EASE_HEADER
+        );
+        assert_eq!(
+            include_str!("../../../templates/addon/native/include/swofty/hud_format.hpp"),
+            HUD_FORMAT_HEADER
+        );
+        assert_eq!(
+            include_str!("../../../templates/addon/native/include/swofty/hud_frame.hpp"),
+            HUD_FRAME_HEADER
+        );
+        assert_eq!(
+            include_str!("../../../templates/addon/native/include/swofty/hud_leaves.hpp"),
+            HUD_LEAVES_HEADER
+        );
+        assert_eq!(
+            include_str!("../../../templates/addon/native/include/swofty/log_csv.hpp"),
+            LOG_CSV_HEADER
+        );
+        assert_eq!(
+            include_str!("../../../templates/addon/native/include/swofty/settings_struct.hpp"),
+            SETTINGS_STRUCT_HEADER
+        );
+        assert_eq!(
+            include_str!("../../../templates/addon/native/include/swofty/timing.hpp"),
+            TIMING_HEADER
+        );
+        assert_eq!(
+            include_str!("../../../templates/addon/native/include/swofty/fake_hud.hpp"),
+            FAKE_HUD_HEADER
+        );
+        assert_eq!(
+            include_str!("../../../templates/addon/native/include/swofty/fake_live.hpp"),
+            FAKE_LIVE_HEADER
         );
     }
 

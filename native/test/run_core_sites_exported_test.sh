@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
-# Host-only. Every "site_*" name in native/src/core that the core resolves by name must be exported in
-# native/include/swofty/game/*.hpp, or sit in native/test/core_sites_unexported.txt with a reason. A name
-# written as Sig{"site_X", "<byte pattern>", ...} is found by signature scan and needs no export.
+# Host-only. Every "site_*" name in native/src/core that the core resolves by name, and every name in the live
+# state's SITE_NAMES table (live_state.cpp), must be exported in native/include/swofty/game/*.hpp, or sit in
+# native/test/core_sites_unexported.txt with a reason. A name written as Sig{"site_X", "<byte pattern>", ...} is
+# found by signature scan and needs no export.
 set -euo pipefail
 cd "$(dirname "$0")/../.."
 python3 - <<'PY'
@@ -18,13 +19,15 @@ for line in open('native/test/core_sites_unexported.txt'):
 exported, bound = set(), set()
 for f in glob.glob('native/include/swofty/game/*.hpp'):
     text = open(f).read()
-    exported |= set(re.findall(r'"(site_\w+)"', text))
+    exported |= set(re.findall(r'<"(\w+)"', text))
     bound |= set(re.findall(r'^inline constexpr address<"(\w+)">', text, re.M))
 
 named, scanned = {}, set()
 for f in glob.glob('native/src/core/**/*.[ch]pp', recursive=True):
     text = open(f).read()
     for m in re.finditer(r'"(site_\w+)"', text):
+        named.setdefault(m.group(1), set()).add(f)
+    for m in re.finditer(r'\{"(\w+)",\s*&\w+::Sites::', text):
         named.setdefault(m.group(1), set()).add(f)
     scanned |= set(re.findall(r'"(site_\w+)"\s*,\s*"(?:[0-9A-Fa-f?]{2}\s*)+', text))
 

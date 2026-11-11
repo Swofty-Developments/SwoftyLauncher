@@ -732,6 +732,12 @@ static void test_guard()
     CHECK(fg_in({"sl.dlss_g.dll", "sl.interposer.dll", "F1_25.exe"}).empty() &&
               streamline_in({"sl.dlss_g.dll", "sl.interposer.dll", "F1_25.exe"}),
           "streamline's frame generation hook alone is not a frame generation swapchain");
+    CHECK(streamline_caller("C:\\Games\\F1 25\\sl.common.dll") && streamline_caller("SL.INTERPOSER.DLL") &&
+              streamline_caller("sl.dlss_g.dll") && !streamline_caller("F1_25.exe") && !streamline_caller("medal-hook64-v2.dll"),
+          "streamline's modules are read off the module that calls Present");
+    CHECK(learned_fg(true, "").empty() && learned_fg(false, "") == "a non-direct present queue" &&
+              learned_fg(true, "nvngx_dlssg.dll") == "nvngx_dlssg.dll (calls Present)",
+          "a queue read from a swapchain is drawn on only when it is direct and no frame generation module presents");
     std::string hw = "<x>\n\t<antialiasing taa=\"true\" dlss=\"false\" />\n\t<frame_gen mode=\"0\" />\n\t"
                      "<multi_frame_gen value=\"0\" />\n</x>";
     FgSetting fs = fg_setting(hw);

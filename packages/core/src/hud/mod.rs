@@ -1,0 +1,1008 @@
+//! The HUD composer: every enabled addon's `hud.element` records, composed per dial into one set of
+//! ready overlay archives (`docs/reference/ops/hud.md`).
+//!
+//! One scene growth, one template pass and one string table per dial, whatever the number of
+//! addons, with a unique `<addon>_` prefix on every element and template node. Whole-file overlays
+//! of the dial scenes and the template would overwrite each other; this does not.
+//!
+//! Parts of the pipeline are ported from Project Halo's `halo_native.py` and `build_native.py`; see
+//! the headers of `scene.rs`, `template.rs` and `editor.rs`. Uses work from Project Halo by
+//! nyannoying (https://github.com/nyannoying1337/f1-25-project-halo).
+
+pub mod check;
+pub mod dials;
+pub mod editor;
+pub mod geom;
+pub mod integrate;
+pub mod model;
+pub mod scene;
+pub mod template;
+pub mod textures;
+
+use std::cell::RefCell;
+use std::collections::BTreeMap;
+use std::path::{Path, PathBuf};
+use std::rc::Rc;
+
+use swofty_addon::asset::{Root, Source};
+use swofty_addon::ops::ErpOp;
+use swofty_formats::animclip;
+use swofty_formats::erp::{Erp, ErpFile, Resource};
+use swofty_formats::pkg::Pkg;
+
+use dials::DialFacts;
+use model::{Bind, Dial, HudElement, StockMode};
+use scene::{Builder, Mode, Plan, SpriteInfo, Sprites};
+use template::StockTags;
+use textures::Res;
+
+use crate::{Error, Result};
+
+fn err(msg: impl std::fmt::Display) -> Error {
+    Error::Other(format!("hud: {msg}"))
+}
+
+/// Where the stock resources come from.
+pub trait Stock {
+    /// Every fragment of a resource of an archive, decoded.
+    fn read(&self, erp: &str, resource: &str) -> Result<Vec<Vec<u8>>>;
+    /// An index-only resource whose layout (type argument, fragment names, flags, compression) a
+    /// new resource of `kind` with `fragments` fragments copies. A resource that exists in the
+    /// stock archive under `name` keeps its own layout.
+    fn layout(&self, name: &str, kind: &str, fragments: usize) -> Result<Resource>;
+    fn header(&self) -> Result<([u8; swofty_formats::erp::HEADER_LEN], u32)>;
+}
+
+/// The stock archives of a game folder.
+pub struct GameStock {
+    game: PathBuf,
+    originals: BTreeMap<String, PathBuf>,
+    files: RefCell<BTreeMap<String, Rc<ErpFile>>>,
+}
+
+impl GameStock {
+    pub fn new(game: impl Into<PathBuf>) -> Self {
+        Self {
+            game: game.into(),
+            originals: BTreeMap::new(),
+            files: RefCell::new(BTreeMap::new()),
+        }
+    }
+
+    /// The game folder with each file the launcher keeps an original of read from there: a folder
+    /// Swofty has built may already carry composed HUD archives, and the composer starts from stock.
+    pub fn with_baseline(game: impl Into<PathBuf>, data: &Path) -> Result<Self> {
+        let game = game.into();
+        let exe = crate::baseline::sha256_file(&game.join(crate::GAME_EXE))?;
+        let mut best: Option<crate::baseline::Baseline> = None;
+        let dir = data.join("baseline");
+        let entries = std::fs::read_dir(&dir).map_err(|e| Error::Io {
+            path: dir.clone(),
+            source: e,
+        })?;
+        for e in entries.flatten() {
+            let Ok(text) = std::fs::read_to_string(e.path().join("baseline.json")) else {
+                continue;
+            };
+            let Ok(b) = serde_json::from_str::<crate::baseline::Baseline>(&text) else {
+                continue;
+            };
+            if b.exe_sha256 == exe && best.as_ref().is_none_or(|o| b.files.len() > o.files.len()) {
+                best = Some(b);
+            }
+        }
+        let base = best.ok_or_else(|| err("the launcher has no record of the game's original files"))?;
+        let objects = crate::baseline::Objects {
+            root: dir.join("objects"),
+        };
+        let originals = base
+            .files
+            .iter()
+            .map(|(rel, rec)| (rel.clone(), objects.path(&rec.sha256)))
+            .filter(|(_, p)| p.is_file())
+            .collect();
+        Ok(Self {
+            game,
+            originals,
+            files: RefCell::new(BTreeMap::new()),
+        })
+    }
+
+    /// The file the composer reads `rel` from: the launcher's original when it keeps one, else the game folder's.
+    pub fn original(&self, rel: &str) -> PathBuf {
+        self.originals
+            .get(rel)
+            .cloned()
+            .unwrap_or_else(|| self.game.join(rel))
+    }
+
+    fn file(&self, erp: &str) -> Result<Rc<ErpFile>> {
+        if let Some(f) = self.files.borrow().get(erp) {
+            return Ok(f.clone());
+        }
+        let path = self
+            .originals
+            .get(erp)
+            .cloned()
+            .unwrap_or_else(|| self.game.join(erp));
+        let f = Rc::new(ErpFile::open(&path)?);
+        self.files.borrow_mut().insert(erp.to_owned(), f.clone());
+        Ok(f)
+    }
+}
+
+impl Stock for GameStock {
+    fn read(&self, erp: &str, resource: &str) -> Result<Vec<Vec<u8>>> {
+        let f = self.file(erp)?;
+        let res = f
+            .erp
+            .resources
+            .iter()
+            .find(|r| r.name == resource)
+            .ok_or_else(|| Error::ResourceMissing {
+                erp: erp.to_owned(),
+                resource: resource.to_owned(),
+            })?;
+        let loaded = f.load(res)?;
+        Ok(loaded
+            .fragments
+            .iter()
+            .map(|fr| fr.data())
+            .collect::<std::result::Result<_, _>>()?)
+    }
+
+    fn layout(&self, name: &str, kind: &str, fragments: usize) -> Result<Resource> {
+        let f = self.file(dials::STOCK_ERP)?;
+        let same = |r: &&Resource| r.kind() == kind && r.fragments.len() == fragments;
+        f.erp
+            .resources
+            .iter()
+            .filter(same)
+            .find(|r| r.name == name)
+            .or_else(|| f.erp.resources.iter().find(same))
+            .cloned()
+            .ok_or_else(|| {
+                err(format!(
+                    "no stock {kind} with {fragments} fragment(s) to copy a layout from"
+                ))
+            })
+    }
+
+    fn header(&self) -> Result<([u8; swofty_formats::erp::HEADER_LEN], u32)> {
+        let f = self.file(dials::STOCK_ERP)?;
+        Ok((f.erp.header, f.erp.version))
+    }
+}
+
+/// The stock archives with the changes other addons make to the resources the composer writes whole.
+/// The composer starts from these, so its overlay carries those changes instead of overwriting them.
+pub struct Layered<'a> {
+    pub inner: &'a dyn Stock,
+    pub build: &'a crate::erpbuild::ErpBuild<'a>,
+}
+
+impl Stock for Layered<'_> {
+    fn read(&self, erp: &str, resource: &str) -> Result<Vec<Vec<u8>>> {
+        match self.build.fragments(erp, resource)? {
+            Some(f) => Ok(f),
+            None => self.inner.read(erp, resource),
+        }
+    }
+
+    fn layout(&self, name: &str, kind: &str, fragments: usize) -> Result<Resource> {
+        self.inner.layout(name, kind, fragments)
+    }
+
+    fn header(&self) -> Result<([u8; swofty_formats::erp::HEADER_LEN], u32)> {
+        self.inner.header()
+    }
+}
+
+/// An edit another part of the launcher makes to the HUD template, applied to the template before the
+/// composer adds its nodes (the ADDONS MFD page).
+pub type TemplateBase<'a> = &'a dyn Fn(&[u8]) -> Result<Vec<u8>>;
+
+/// One record to compose.
+#[derive(Debug, Clone)]
+pub struct Input {
+    pub addon: String,
+    pub key: String,
+    pub dir: PathBuf,
+    pub record: HudElement,
+}
+
+/// A ready archive and the game archives it is overlaid on.
+#[derive(Debug, Clone)]
+pub struct Built {
+    pub file: String,
+    pub erps: Vec<String>,
+    pub bytes: Vec<u8>,
+}
+
+#[derive(Debug, Clone, Default)]
+pub struct Output {
+    pub archives: Vec<Built>,
+    pub lines: Vec<String>,
+}
+
+impl Output {
+    /// The overlay ops that put the archives written to `dir` (a folder of the cache root) in the game.
+    pub fn ops(&self, dir: &str) -> Vec<ErpOp> {
+        self.archives
+            .iter()
+            .map(|a| ErpOp::Overlay {
+                erps: a.erps.clone(),
+                source: Source {
+                    root: Root::Cache,
+                    path: format!("{dir}/{}", a.file),
+                },
+            })
+            .collect()
+    }
+
+    pub fn write(&self, dir: &Path) -> Result<()> {
+        std::fs::create_dir_all(dir).map_err(|e| Error::Io {
+            path: dir.to_path_buf(),
+            source: e,
+        })?;
+        for a in &self.archives {
+            let p = dir.join(&a.file);
+            std::fs::write(&p, &a.bytes).map_err(|e| Error::Io { path: p, source: e })?;
+        }
+        Ok(())
+    }
+}
+
+fn slug(s: &str) -> String {
+    let mut out = String::new();
+    for c in s.to_lowercase().chars() {
+        let c = if c.is_ascii_alphanumeric() { c } else { '_' };
+        if c != '_' || !out.ends_with('_') {
+            out.push(c);
+        }
+    }
+    out.trim_matches('_').to_owned()
+}
+
+/// The prefix of a record's element and template node names.
+pub fn prefix_for(addon: &str, key: &str, explicit: Option<&str>) -> Result<String> {
+    let p = match explicit {
+        Some(p) => p.to_owned(),
+        None => {
+            let tail = addon.rsplit('.').next().unwrap_or(addon);
+            let a = slug(addon);
+            if slug(tail) == slug(key) {
+                a
+            } else {
+                format!("{a}_{}", slug(key))
+            }
+        }
+    };
+    let ok = !p.is_empty()
+        && p.len() <= 24
+        && p.starts_with(|c: char| c.is_ascii_lowercase())
+        && p.bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_');
+    if ok {
+        Ok(p)
+    } else {
+        Err(err(format!(
+            "{addon}/{key}: the prefix {p:?} must be 1 to 24 characters [a-z0-9_] starting with a letter; set `prefix` in the record"
+        )))
+    }
+}
+
+struct Expanded {
+    input: usize,
+    rec: HudElement,
+    switch: Option<Bind>,
+}
+
+fn art_bounds(sprite: &model::Sprite, art: &textures::Art) -> [f64; 4] {
+    sprite.bounds.unwrap_or_else(|| {
+        let ppu = sprite.ppu.unwrap_or(3.0);
+        let (w, h) = (art.width as f64 / ppu, art.height as f64 / ppu);
+        [-w / 2.0, -h / 2.0, w / 2.0, h / 2.0]
+    })
+}
+
+struct Loaded {
+    sprites: Sprites,
+    resources: Vec<Res>,
+}
+
+fn load_sprites(
+    input: &Input,
+    pfx: &str,
+    fill_material: &[u8],
+    uses_fill: bool,
+    uses_edge: bool,
+    tinted: &std::collections::BTreeSet<String>,
+    team: [u8; 3],
+) -> Result<Loaded> {
+    let mut sprites = Sprites::new();
+    let mut resources = Vec::new();
+    for (name, s) in &input.record.sprites {
+        let path = input.dir.join(&s.png);
+        let data = std::fs::read(&path).map_err(|e| Error::Io {
+            path: path.clone(),
+            source: e,
+        })?;
+        let mut art = textures::decode_png(&data).map_err(|e| err(format!("{}: {e}", s.png)))?;
+        art.check(name)?;
+        if let Some(t) = &s.tint {
+            art = art.tinted(textures::hex_colour(t)?);
+        }
+        let key = format!("{pfx}_");
+        let names = textures::names(&key, name);
+        resources.extend(textures::sprite_resources(&names, &art, fill_material)?);
+        let mut emit = |n: &textures::Names| {
+            if uses_fill {
+                resources.push(textures::binding_resource(n, "central_bg_fill", false));
+            }
+            if uses_edge {
+                resources.push(textures::binding_resource(n, "central_bg_edge", true));
+            }
+        };
+        emit(&names);
+        let pv = if tinted.contains(name) {
+            let pv_names = textures::names(&key, &format!("{name}_pv"));
+            resources.extend(textures::sprite_resources(
+                &pv_names,
+                &art.tinted(team),
+                fill_material,
+            )?);
+            resources.push(textures::binding_resource(&pv_names, "central_bg_fill", false));
+            Some(pv_names)
+        } else {
+            None
+        };
+        sprites.insert(
+            name.clone(),
+            SpriteInfo {
+                bounds: art_bounds(s, &art),
+                names,
+                tinted: pv,
+            },
+        );
+    }
+    Ok(Loaded { sprites, resources })
+}
+
+fn tinted_sprites(elements: &[model::Element], out: &mut std::collections::BTreeSet<String>) {
+    for e in elements {
+        if e.tint.is_some() {
+            out.extend(e.sprite.clone());
+            out.extend(e.fill_sprite.clone());
+        }
+        tinted_sprites(&e.children, out);
+    }
+}
+
+fn stock_parts(rec: &HudElement) -> Vec<String> {
+    if rec.stock_parts.is_empty() {
+        dials::STOCK_KIDS.iter().map(|s| (*s).to_owned()).collect()
+    } else {
+        rec.stock_parts.clone()
+    }
+}
+
+fn first(v: Vec<Vec<u8>>, what: &str) -> Result<Vec<u8>> {
+    v.into_iter()
+        .next()
+        .ok_or_else(|| err(format!("{what} has no data")))
+}
+
+/// Composes `inputs` against the stock files into the overlay archives.
+pub fn compose(stock: &dyn Stock, inputs: &[Input]) -> Result<Output> {
+    compose_with(stock, inputs, None)
+}
+
+/// [`compose`] with `base` applied to the template the composer starts from. The composer is the last
+/// step: its nodes go on top of `base`'s edit and of whatever `stock` reads.
+pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBase>) -> Result<Output> {
+    let mut out = Output::default();
+    if inputs.is_empty() {
+        return Ok(out);
+    }
+    let mut prefixes = BTreeMap::new();
+    for (i, input) in inputs.iter().enumerate() {
+        let p = prefix_for(&input.addon, &input.key, input.record.prefix.as_deref())?;
+        if let Some(j) = prefixes.insert(p.clone(), i) {
+            return Err(err(format!(
+                "{} and {} both get the prefix {p}; set `prefix` in one of them",
+                inputs[j].addon, input.addon
+            )));
+        }
+    }
+    let pfx_of: Vec<String> = {
+        let mut v = vec![String::new(); inputs.len()];
+        for (p, i) in &prefixes {
+            v[*i] = p.clone();
+        }
+        v
+    };
+
+    let mut live: Vec<Expanded> = Vec::new();
+    for (i, input) in inputs.iter().enumerate() {
+        if input.record.scene_target().is_some() {
+            continue;
+        }
+        live.push(Expanded {
+            input: i,
+            rec: input.record.clone(),
+            switch: None,
+        });
+        for (name, v) in &input.record.variants {
+            live.push(Expanded {
+                input: i,
+                rec: input.record.with_variant(name)?,
+                switch: v.switch.clone(),
+            });
+        }
+    }
+
+    let read = |name: &str| first(stock.read(dials::STOCK_ERP, name)?, name);
+    let fill = read(dials::FILL_MATERIAL)?;
+    let mods = read(dials::MODS)?;
+    let bar = read(dials::BAR)?;
+    let clip_template = read(dials::CLIP_TEMPLATE)?;
+    let om_xm = read(dials::F126.scene)?;
+
+    let used: std::collections::BTreeSet<Dial> = live.iter().map(|e| e.rec.dial).collect();
+    let mut resources: BTreeMap<String, Res> = BTreeMap::new();
+    let mut loaded: Vec<Loaded> = Vec::new();
+    for (i, input) in inputs.iter().enumerate() {
+        let mut tinted = std::collections::BTreeSet::new();
+        tinted_sprites(&input.record.elements, &mut tinted);
+        let team = match input
+            .record
+            .editor
+            .as_ref()
+            .and_then(|e| e.team_colour.as_deref())
+        {
+            Some(c) => textures::hex_colour(c)?,
+            None => [0x27, 0xf4, 0xd2],
+        };
+        let l = load_sprites(
+            input,
+            &pfx_of[i],
+            &fill,
+            true,
+            used.contains(&Dial::F2),
+            &tinted,
+            team,
+        )?;
+        for r in &l.resources {
+            resources.insert(r.0.clone(), r.clone());
+        }
+        loaded.push(l);
+    }
+
+    let template_bytes = read(dials::TEMPLATE)?;
+    let spectator_bytes = read(dials::SPECTATOR)?;
+    let mut template = match base {
+        Some(edit) => Pkg::parse(&edit(&template_bytes)?)?,
+        None => Pkg::parse(&template_bytes)?,
+    };
+    let mut spectator = Pkg::parse(&spectator_bytes)?;
+    let race_stock = Pkg::parse(&template_bytes)?;
+    let spec_stock = Pkg::parse(&spectator_bytes)?;
+    let race_tags = StockTags::race(&race_stock.root);
+
+    let mut spectator_used = false;
+    let mut preview_hides: Vec<String> = Vec::new();
+    let mut pv_texts: Vec<(String, String)> = Vec::new();
+    let mut scene_resources: Vec<Res> = Vec::new();
+    let mut preview_plans: Vec<(usize, Plan)> = Vec::new();
+    let mut live_f125_hides = false;
+
+    for dial in Dial::ALL {
+        let facts: &'static DialFacts = dials::facts(dial);
+        let here: Vec<&Expanded> = live.iter().filter(|e| e.rec.dial == dial).collect();
+        let want_preview = dial == Dial::F125 && !live.is_empty();
+        if here.is_empty() && !want_preview {
+            continue;
+        }
+        let scene_bytes = first(stock.read(dials::STOCK_ERP, facts.scene)?, facts.scene)?;
+        let text_from = (dial != Dial::F126).then_some(om_xm.as_slice());
+        let mut b = Builder::new(facts, &scene_bytes, &mods, &bar, text_from)?;
+        let mut parked = false;
+        let mut footprint: Option<[f64; 4]> = None;
+        let mut plans: Vec<(&Expanded, Plan)> = Vec::new();
+        for e in &here {
+            let parts = stock_parts(&e.rec);
+            b.stock_parts_present(&parts)?;
+            let mode = e.rec.effective_stock();
+            if mode == StockMode::Park && !parked {
+                b.park(&parts)?;
+                parked = true;
+            }
+            let mut plan = b.add_record(&e.rec, &pfx_of[e.input], &loaded[e.input].sprites, Mode::Live)?;
+            let sw = e
+                .switch
+                .as_ref()
+                .map(|s| template::resolve(s, template::Usage::Visible, "variant switch"))
+                .transpose()?;
+            if plan.root_hidden || sw.is_some() {
+                plan.vis.insert(
+                    0,
+                    scene::VisItem {
+                        name: format!("v_{}", plan.root),
+                        element: plan.root.clone(),
+                        db: sw.as_ref().map(|s| s.db.clone()),
+                        negate: sw.as_ref().is_some_and(|s| s.negate),
+                        default: true,
+                    },
+                );
+            }
+            if mode == StockMode::Hide {
+                for part in &parts {
+                    plan.vis.push(scene::VisItem {
+                        name: format!("v_stock_{part}"),
+                        element: part.clone(),
+                        db: sw.as_ref().map(|s| s.db.clone()),
+                        negate: sw.as_ref().is_some_and(|s| !s.negate),
+                        default: false,
+                    });
+                }
+                if dial == Dial::F125 {
+                    live_f125_hides = true;
+                }
+            }
+            if mode == StockMode::Park && dial == Dial::F125 {
+                live_f125_hides = true;
+            }
+            let sb = scene::scene_box(&plan);
+            footprint = Some(footprint.map_or(sb, |f| scene::union_box(f, sb)));
+            plans.push((e, plan));
+        }
+        if want_preview {
+            for (i, input) in inputs.iter().enumerate() {
+                let rec = &input.record;
+                if rec.scene_target().is_some() {
+                    continue;
+                }
+                let state = rec.editor.as_ref().map(|e| e.preview.clone()).unwrap_or_default();
+                let plan = b.add_record(rec, &pfx_of[i], &loaded[i].sprites, Mode::Preview(&state))?;
+                let sb = match rec.editor.as_ref().and_then(|e| e.rect) {
+                    Some(r) => {
+                        let mut p = plan.clone();
+                        p.footprint = r;
+                        scene::scene_box(&p)
+                    }
+                    None => scene::scene_box(&plan),
+                };
+                footprint = Some(footprint.map_or(sb, |f| scene::union_box(f, sb)));
+                if rec
+                    .editor
+                    .as_ref()
+                    .and_then(|e| e.hide_stock_in_editor)
+                    .unwrap_or(true)
+                {
+                    for p in stock_parts(rec) {
+                        if !preview_hides.contains(&p) {
+                            preview_hides.push(p);
+                        }
+                    }
+                }
+                pv_texts.extend(plan.pv_texts.clone());
+                preview_plans.push((i, plan));
+            }
+        }
+        let mut names: Vec<String> = plans.iter().flat_map(|(_, p)| p.anim_names()).collect();
+        names.sort();
+        let strtab = first(stock.read(dials::STOCK_ERP, facts.strtab)?, facts.strtab)?;
+        let mut new_scene = b.finish(footprint)?;
+        if !names.is_empty() {
+            let refs: Vec<&str> = names.iter().map(String::as_str).collect();
+            let (tab, first) = animclip::append_strings(&strtab, &refs)?;
+            scene_resources.push((facts.strtab.to_owned(), "ACStringTable", vec![tab]));
+            for (_, plan) in &plans {
+                for c in &plan.clips {
+                    let at = names.iter().position(|n| *n == c.node).expect("collected above");
+                    let (temp, syst) = animclip::build_clip(
+                        &clip_template,
+                        &c.node,
+                        (first + at) as i32,
+                        facts.strtab,
+                        &c.channels,
+                    )?;
+                    scene_resources.push((
+                        format!("{}/{}?context=animation", facts.scene, c.node),
+                        "AnimClip",
+                        vec![temp, syst],
+                    ));
+                }
+            }
+        }
+        scene_resources.push((
+            facts.scene.to_owned(),
+            "UILayout",
+            vec![std::mem::take(&mut new_scene)],
+        ));
+        for (e, plan) in &plans {
+            template::attach(
+                &mut template.root,
+                &race_stock.root,
+                &race_tags,
+                facts.race_parent,
+                plan,
+            )?;
+            if e.rec.spectator {
+                let tags = StockTags::spectator(
+                    &spec_stock.root,
+                    facts.spectator_parent,
+                    &race_tags,
+                    facts.race_parent,
+                    &race_stock.root,
+                )?;
+                template::attach(
+                    &mut spectator.root,
+                    &spec_stock.root,
+                    &tags,
+                    facts.spectator_parent,
+                    plan,
+                )?;
+                spectator_used = true;
+            }
+            out.lines.push(format!(
+                "{}: {} in {}: {} template nodes, {} clips",
+                pfx_of[e.input],
+                facts.dial.key(),
+                facts.scene.rsplit('/').next().unwrap_or(facts.scene),
+                plan.vis.len()
+                    + plan.texts.len()
+                    + plan.fractions.len()
+                    + plan.colours.len()
+                    + plan.shows.len(),
+                plan.clips.len()
+            ));
+        }
+    }
+
+    let f125 = dials::facts(Dial::F125);
+    let keep_stock: Vec<String> = if live_f125_hides {
+        Vec::new()
+    } else {
+        dials::STOCK_KIDS.iter().map(|s| (*s).to_owned()).collect()
+    };
+    for (i, plan) in &preview_plans {
+        editor::attach_control(&mut template.root, f125.race_parent, plan, &keep_stock)?;
+        if inputs[*i].record.spectator {
+            editor::attach_control(&mut spectator.root, f125.spectator_parent, plan, &keep_stock)?;
+            spectator_used = true;
+        }
+    }
+    if !preview_plans.is_empty() {
+        let stock_uipre = first(stock.read(dials::STOCK_ERP, f125.uipre)?, f125.uipre)?;
+        let new = editor::uipre(&stock_uipre, f125.scene, &preview_hides, &pv_texts)?;
+        scene_resources.push((f125.uipre.to_owned(), "UIPR", vec![new]));
+    }
+    let mut targets: BTreeMap<(String, String), Vec<usize>> = BTreeMap::new();
+    for (i, input) in inputs.iter().enumerate() {
+        if let Some((scene, parent)) = input.record.scene_target() {
+            targets
+                .entry((scene.to_owned(), parent.to_owned()))
+                .or_default()
+                .push(i);
+        }
+    }
+    let mut target_scenes: Vec<Res> = Vec::new();
+    for ((scene, parent), members) in &targets {
+        let facts = dials::target_facts(scene, parent);
+        let bytes = first(stock.read(dials::STOCK_ERP, scene)?, scene)?;
+        let mut b = Builder::for_scene(facts, &bytes, &om_xm, &mods, &bar)?;
+        let mut plans = Vec::new();
+        for &i in members {
+            let plan = b.add_scene_record(&inputs[i].record, &pfx_of[i], &loaded[i].sprites)?;
+            plans.push((i, plan));
+        }
+        target_scenes.push((scene.clone(), "UILayout", vec![b.finish(None)?]));
+        for (i, plan) in &plans {
+            let checked = template::attach_scene(&mut template.root, &race_tags, parent, scene, plan)?;
+            out.lines.push(format!(
+                "{}: {} in {}: {} template nodes, {checked} bindings checked against the stock template",
+                pfx_of[*i],
+                parent,
+                scene.rsplit('/').next().unwrap_or(scene),
+                plan.vis.len() + plan.texts.len() + plan.shows.len(),
+            ));
+        }
+    }
+    let mut all: Vec<Res> = resources.into_values().collect();
+    all.extend(scene_resources);
+    if !all.is_empty() {
+        out.archives.push(Built {
+            file: "hud_scene.erp".into(),
+            erps: dials::SCENE_ERPS.iter().map(|s| (*s).to_owned()).collect(),
+            bytes: archive(stock, all)?,
+        });
+    }
+    if !target_scenes.is_empty() {
+        let erps: Vec<String> = dials::TEMPLATE_ERPS
+            .iter()
+            .filter(|erp| targets.keys().all(|(scene, _)| stock.read(erp, scene).is_ok()))
+            .map(|e| (*e).to_owned())
+            .collect();
+        if erps.is_empty() {
+            return Err(err(
+                "no archive that has the template also has every scene a record targets",
+            ));
+        }
+        out.archives.push(Built {
+            file: "hud_target_scene.erp".into(),
+            erps,
+            bytes: archive(stock, target_scenes)?,
+        });
+    }
+    out.archives.push(Built {
+        file: "hud_template.erp".into(),
+        erps: dials::TEMPLATE_ERPS.iter().map(|s| (*s).to_owned()).collect(),
+        bytes: archive(
+            stock,
+            vec![(dials::TEMPLATE.to_owned(), "UIDF", vec![template.to_bytes()?])],
+        )?,
+    });
+    if spectator_used {
+        out.archives.push(Built {
+            file: "hud_spectator.erp".into(),
+            erps: dials::SPECTATOR_ERPS.iter().map(|s| (*s).to_owned()).collect(),
+            bytes: archive(
+                stock,
+                vec![(dials::SPECTATOR.to_owned(), "UIDF", vec![spectator.to_bytes()?])],
+            )?,
+        });
+    }
+    Ok(out)
+}
+
+/// A ready archive of `resources`, each laid out like the stock resource it is made after.
+pub fn archive(stock: &dyn Stock, resources: Vec<Res>) -> Result<Vec<u8>> {
+    let (header, version) = stock.header()?;
+    let mut out = Vec::with_capacity(resources.len());
+    let mut seen = std::collections::BTreeSet::new();
+    for (name, kind, frags) in resources {
+        if !seen.insert(name.clone()) {
+            return Err(err(format!("the resource {name} is made twice")));
+        }
+        let template = stock.layout(&name, kind, frags.len())?;
+        out.push(Resource::like(&name, &template, &frags)?);
+    }
+    let mut erp = Erp {
+        header,
+        version,
+        resources: out,
+    };
+    Ok(erp.to_bytes())
+}
+
+/// Reads the records of an addon's hud file into inputs.
+pub fn inputs_of(addon: &str, dir: &Path, file: &str) -> Result<Vec<Input>> {
+    let path = dir.join(file);
+    let text = std::fs::read_to_string(&path).map_err(|e| Error::Io {
+        path: path.clone(),
+        source: e,
+    })?;
+    let doc = swofty_addon::ops::HudFile::parse(&text)?;
+    let mut out = Vec::new();
+    for (id, value) in doc.elements {
+        let key = id.rsplit('/').next().unwrap_or(&id).to_owned();
+        let record = HudElement::parse(&value).map_err(|e| err(format!("{path:?}: {id}: {e}")))?;
+        out.push(Input {
+            addon: addon.to_owned(),
+            key,
+            dir: dir.to_path_buf(),
+            record,
+        });
+    }
+    Ok(out)
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    fn game() -> Option<GameStock> {
+        let Some(dir) = std::env::var_os("F1_25_DIR") else {
+            eprintln!("F1_25_DIR is not set; skipping");
+            return None;
+        };
+        let game = PathBuf::from(dir);
+        let data = crate::store::Store::open_default().root;
+        Some(GameStock::with_baseline(&game, &data).unwrap_or_else(|_| GameStock::new(game)))
+    }
+
+    fn png(path: &Path, w: u32, h: u32, rgba: [u8; 4]) {
+        let mut out = Vec::new();
+        {
+            let mut enc = png::Encoder::new(&mut out, w, h);
+            enc.set_color(png::ColorType::Rgba);
+            enc.set_depth(png::BitDepth::Eight);
+            let data: Vec<u8> = rgba.iter().copied().cycle().take((w * h * 4) as usize).collect();
+            enc.write_header().unwrap().write_image_data(&data).unwrap();
+        }
+        std::fs::write(path, out).unwrap();
+    }
+
+    fn addon_dir(tag: &str) -> PathBuf {
+        let dir = std::env::temp_dir().join(format!("swofty-hud-{tag}-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        std::fs::create_dir_all(dir.join("art")).unwrap();
+        for (n, w, h) in [
+            ("base", 64, 28),
+            ("lit", 16, 8),
+            ("fill", 16, 8),
+            ("mask", 32, 32),
+            ("solid", 8, 8),
+        ] {
+            png(&dir.join(format!("art/{n}.png")), w, h, [255, 255, 255, 255]);
+        }
+        dir
+    }
+
+    fn record() -> serde_json::Value {
+        serde_json::json!({
+            "dial": "f1_26",
+            "sprites": {
+                "base": { "png": "art/base.png", "bounds": [-60, -20, 60, 20] },
+                "lit": { "png": "art/lit.png", "bounds": [-50, -10, -34, -2] },
+                "fill": { "png": "art/fill.png", "bounds": [-20, 8, -4, 16] },
+                "mask": { "png": "art/mask.png", "bounds": [10, -30, 42, 2] },
+                "solid": { "png": "art/solid.png", "bounds": [-4, -4, 4, 4] }
+            },
+            "elements": [
+                { "kind": "sprite", "id": "base", "sprite": "base", "layer": 20 },
+                { "kind": "group", "id": "std", "visible": { "view_model": "view_model_data.hud_t_std", "default": true }, "children": [
+                    { "kind": "sprite", "id": "boost", "sprite": "lit", "visible": { "view_model": "view_model_data.hud_t_boost" } },
+                    { "kind": "text", "id": "speed", "style": "OSD_24_bold", "align": "centre", "box": 40, "cap_height": 9.5, "at": [0, -6], "value": { "game": "speed_str" } },
+                    { "kind": "text", "id": "pos", "style": "17_bold", "align": "right", "box": 14, "cap_height": 6, "at": [-40, 12], "value": { "session": "current_car.position" } },
+                    { "kind": "levels", "id": "dp", "sprite": "lit", "count": 4, "show": "view_model_data.hud_t_dp{nn}" },
+                    { "kind": "slats", "id": "th", "sprites": ["lit", "lit"], "show": "view_model_data.hud_t_th{nn}" },
+                    { "kind": "gauge", "id": "batt", "sprite": "fill", "path": [[-20, 12], [-4, 12]], "value": { "game": "ers_stored" } },
+                    { "kind": "sweep", "id": "rpm", "mask_sprite": "mask", "fill_sprite": "solid", "pivot": [0, 0], "start": 225, "arc": [[0, 0], [1, -270]], "value": { "game": "revs" }, "tint": { "session": "current_car.nub_colour" } }
+                ] }
+            ],
+            "editor": { "preview": { "game.revs": 0.5, "game.speed_str": "135", "game.ers_stored": 0.75,
+                                     "view_model_data.hud_t_boost": true, "view_model_data.hud_t_dp02": true,
+                                     "session.current_car.position": "1" }, "team_colour": "#27F4D2" },
+            "variants": { "f2": { "dial": "f2", "remove": ["batt"] } }
+        })
+    }
+
+    #[test]
+    fn prefixes_come_from_the_addon_and_the_key() {
+        assert_eq!(
+            prefix_for("nyannoying.halo", "halo", None).unwrap(),
+            "nyannoying_halo"
+        );
+        assert_eq!(
+            prefix_for("swofty.gauges", "dial_a", None).unwrap(),
+            "swofty_gauges_dial_a"
+        );
+        assert_eq!(prefix_for("a.b", "c", Some("mine")).unwrap(), "mine");
+        assert!(prefix_for("a.b", "c", Some("Mine")).is_err());
+        assert!(prefix_for("swofty.a-very-long-addon-name", "and_a_long_key", None).is_err());
+    }
+
+    #[test]
+    fn the_stock_facts_hold_in_the_game_files() {
+        let Some(stock) = game() else { return };
+        let r = check::stock_facts(&stock);
+        for l in &r.ok {
+            eprintln!("ok   {l}");
+        }
+        for l in &r.problems {
+            eprintln!("FAIL {l}");
+        }
+        assert!(r.is_ok(), "{:#?}", r.problems);
+    }
+
+    #[test]
+    fn composes_every_element_kind_against_the_stock_dials() {
+        let Some(stock) = game() else { return };
+        let dir = addon_dir("all");
+        let rec = HudElement::parse(&record()).unwrap();
+        let input = Input {
+            addon: "test.hud".into(),
+            key: "hud".into(),
+            dir: dir.clone(),
+            record: rec,
+        };
+        let out = compose(&stock, &[input]).unwrap();
+        for l in &out.lines {
+            eprintln!("{l}");
+        }
+        let names: Vec<&str> = out.archives.iter().map(|a| a.file.as_str()).collect();
+        assert_eq!(names, ["hud_scene.erp", "hud_template.erp", "hud_spectator.erp"]);
+        let scene = Erp::parse(&out.archives[0].bytes).unwrap();
+        for dial in Dial::ALL {
+            let f = dials::facts(dial);
+            let res = scene.find(f.scene).unwrap();
+            let p = Pkg::parse(&res.fragments[0].data().unwrap()).unwrap();
+            assert!(crate::ui::idf::id_problems(&p).unwrap().is_empty(), "{}", f.scene);
+            let root = crate::ui::idf::scenes(&p).unwrap()[0]
+                .as_obj()
+                .unwrap()
+                .get("scene")
+                .unwrap();
+            assert!(
+                crate::ui::idf::find(root, "test_hud_speed").is_some() || dial == Dial::F125,
+                "{}",
+                f.scene
+            );
+        }
+        let f126 = dials::facts(Dial::F126);
+        let anim = scene.find(&format!(
+            "{}/zh_test_hud_batt_win_win?context=animation",
+            f126.scene
+        ));
+        assert!(
+            anim.is_ok()
+                || scene
+                    .resources
+                    .iter()
+                    .any(|r| r.name.contains("context=animation"))
+        );
+        assert!(
+            scene
+                .resources
+                .iter()
+                .any(|r| r.name.ends_with("test_hud_base.tif.image"))
+        );
+        let tmpl = Erp::parse(&out.archives[1].bytes).unwrap();
+        let t = Pkg::parse(&tmpl.find(dials::TEMPLATE).unwrap().fragments[0].data().unwrap()).unwrap();
+        let at = crate::ui::node::find_path(&t.root, &format!("{}.test_hud_ctl", dials::F126.race_parent))
+            .unwrap();
+        assert!(!at.is_empty());
+        let ours: std::collections::BTreeSet<String> =
+            ["test_hud_ctl", "test_hud_pv_ctl"].map(String::from).into();
+        let stock_t = Pkg::parse(&stock.read(dials::STOCK_ERP, dials::TEMPLATE).unwrap()[0]).unwrap();
+        assert!(
+            check::stock_kept(&stock_t, &t, &ours).unwrap(),
+            "a stock template node changed"
+        );
+        let spec = Erp::parse(&out.archives[2].bytes).unwrap();
+        let s = Pkg::parse(&spec.find(dials::SPECTATOR).unwrap().fragments[0].data().unwrap()).unwrap();
+        let stock_s = Pkg::parse(&stock.read(dials::STOCK_ERP, dials::SPECTATOR).unwrap()[0]).unwrap();
+        assert!(
+            check::stock_kept(&stock_s, &s, &ours).unwrap(),
+            "a stock spectator node changed"
+        );
+        for (d, ctl) in [
+            (Dial::F126, "test_hud_ctl"),
+            (Dial::F125, "test_hud_pv_ctl"),
+            (Dial::F2, "test_hud_ctl"),
+        ] {
+            let parent = dials::facts(d).spectator_parent;
+            assert!(
+                crate::ui::node::find_path(&s.root, &format!("{parent}.{ctl}")).is_ok(),
+                "{parent}"
+            );
+        }
+        std::fs::remove_dir_all(dir).ok();
+    }
+
+    #[test]
+    fn two_addons_share_one_scene_and_one_template_pass() {
+        let Some(stock) = game() else { return };
+        let dir = addon_dir("two");
+        let mk = |addon: &str| Input {
+            addon: addon.into(),
+            key: "hud".into(),
+            dir: dir.clone(),
+            record: HudElement::parse(&record()).unwrap(),
+        };
+        let out = compose(&stock, &[mk("one.hud"), mk("two.hud")]).unwrap();
+        let tmpl = Erp::parse(&out.archives[1].bytes).unwrap();
+        let t = Pkg::parse(&tmpl.find(dials::TEMPLATE).unwrap().fragments[0].data().unwrap()).unwrap();
+        for p in ["one_hud", "two_hud"] {
+            assert!(
+                crate::ui::node::find_path(&t.root, &format!("{}.{p}_ctl", dials::F126.race_parent)).is_ok()
+            );
+        }
+        let clash = compose(&stock, &[mk("one.hud"), mk("one.hud")]);
+        assert!(clash.unwrap_err().to_string().contains("both get the prefix"));
+        std::fs::remove_dir_all(dir).ok();
+    }
+}

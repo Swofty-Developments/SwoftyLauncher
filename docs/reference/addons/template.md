@@ -1,6 +1,6 @@
 ---
 title: Templates
-description: Four starting points in the repository. templates/addon for data and an engine plugin, templates/launcher-addon for a launcher plugin, templates/postfx-pass for a post-process pass and templates/shader-pack for colour looks. What each file is and how to build it.
+description: Five starting points in the repository. templates/addon for data and an engine plugin, templates/hud-dial for a HUD dial, templates/launcher-addon for a launcher plugin, templates/postfx-pass for a post-process pass and templates/shader-pack for colour looks. What each file is and how to build it.
 ---
 
 # Templates
@@ -16,9 +16,10 @@ swofty addons enable yourname.my-addon
 swofty run --apply
 ```
 
-All four templates are MIT-licensed; your addon can use any licence.
+All five templates are MIT-licensed; your addon can use any licence.
 
 - [`templates/addon`](#templates-addon): [data](/reference/data/) and an [engine plugin](./native-plugins). Database and UI edits driven by settings, plus a C++ plugin.
+- [`templates/hud-dial`](#templates-hud-dial): a [HUD element](/make/hud-element). A dial with a speed text, a gear text, an RPM sweep, an ERS bar and a pit lamp, driven by game values and the live state.
 - [`templates/launcher-addon`](#templates-launcher-addon): a [launcher plugin](./launcher-api). A dashboard page, a page with a switch per item, an importer, a build hook and a command.
 - [`templates/postfx-pass`](#templates-postfx-pass): a [post-process pass](./postfx). A vignette with saturation, and a glow made in two passes through a half-size texture.
 - [`templates/shader-pack`](#templates-shader-pack): a [shader pack](./shader-packs). Three colour looks, with settings to pick one and its strength.
@@ -87,6 +88,22 @@ built /path/to/my-addon/native/sample_plugin.dll
 For data edits only, remove the `native` entry from `swofty.json` and the `native/` directory. The folder then installs as it is, without a compiler.
 
 [Settings](./settings) explains the template's four settings and the plugin code that reads them.
+
+## templates/hud-dial
+
+[`templates/hud-dial`](https://github.com/Swofty-Developments/SwoftyLauncher/tree/main/templates/hud-dial) is the finished addon of [Build a HUD element](/make/hud-element). A `hud.element` record binds the game's own speed, RPM and ERS values, and a plugin writes the gear and the pit lamp as leaves from the live state.
+
+```text
+templates/hud-dial/
+├── swofty.json                  operations.hud and a native DLL
+├── registry/hud.json            the hud.element record
+├── art/                         five PNG sprites, written by tools/make_art.py
+└── native/
+    ├── src/dial.hpp             leaves, live reads and the frame logic
+    ├── src/addon.cpp            hooks the frame callback
+    ├── test/dial_test.cpp       host test over fake::Live and fake::Hud
+    └── build.sh                 builds native/hud_dial.dll with zig c++
+```
 
 ## templates/launcher-addon
 

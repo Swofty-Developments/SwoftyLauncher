@@ -30,6 +30,7 @@ pub mod heads;
 pub mod helper;
 pub mod home_menu;
 pub mod http;
+pub mod hud;
 pub mod import;
 pub mod install;
 pub mod journal;

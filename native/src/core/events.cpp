@@ -113,6 +113,7 @@ void flow_mid(safetyhook::Context &)
         }
     };
     step("career_tick", [] { runtime::career_tick(); });
+    step("live_tick", [] { runtime::live_tick(now_seconds()); });
     step("telemetry_tick", [] { runtime::telemetry_tick(); });
     step("lap_rec_tick", [] { runtime::lap_rec_tick(); });
     step("tt_bridge_tick", [] { runtime::tt_bridge_tick(); });
@@ -144,6 +145,7 @@ void session_enter_mid(safetyhook::Context &)
     swofty_core::apply::moments::session_load("Game_GameModule_OnSessionEnter");
     runtime::telemetry_session_enter();
     runtime::lap_rec_session_enter();
+    runtime::hud_rebuilt();
     bool restart;
     {
         std::lock_guard<std::mutex> g(lifecycle_lock);
@@ -367,6 +369,7 @@ void session_emit(const session_life::Emit &e)
     if (e.unload) {
         swofty::log("[events] session.unload (StateUnloadSession entering)");
         events_fire(SWOFTY_EVENT_SESSION_UNLOAD, 0, 0, nullptr);
+        runtime::hud_rebuilt();
     }
 }
 

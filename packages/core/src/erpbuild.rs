@@ -129,6 +129,29 @@ pub struct ErpBuild<'a> {
     notes: Vec<String>,
     kept: HashSet<(String, String)>,
     held: Vec<Held>,
+    baseline: Option<&'a dyn Fn(&str) -> PathBuf>,
+    merge_ui: bool,
+    whole: HashMap<(String, String), Vec<(String, Pkg)>>,
+    ui_base: HashMap<(String, String), Option<Pkg>>,
+    ui_merges: Vec<UiMerge>,
+}
+
+/// Where two addons that replace the same whole UI resource were merged node by node, and the nodes
+/// they changed differently (the later addon's version is kept there).
+#[derive(Debug, Clone, PartialEq)]
+pub struct UiMerge {
+    pub erp: String,
+    pub resource: String,
+    pub earlier: Vec<String>,
+    pub later: String,
+    pub stats: crate::ui::merge::Stats,
+    pub conflicts: Vec<UiConflict>,
+}
+
+#[derive(Debug, Clone, PartialEq)]
+pub struct UiConflict {
+    pub path: String,
+    pub earlier: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -433,6 +456,64 @@ fn replaces(op: &ErpOp) -> Option<(&str, &str)> {
     }
 }
 
+fn whole_write(op: &ErpOp) -> Option<(&str, &str)> {
+    match op {
+        ErpOp::ReplaceResource {
+            erp,
+            resource,
+            fragment: 0,
+            ..
+        } => Some((erp, resource)),
+        ErpOp::PutResource { .. } | ErpOp::CopyResource { source: Some(_), .. } => replaces(op),
+        _ => None,
+    }
+}
+
+pub fn addon_of(origin: &str) -> &str {
+    origin.split_once(" (").map_or(origin, |(id, _)| id)
+}
+
+/// The UI resources more than one addon replaces whole in `erp_ops`, by archive and name.
+pub fn contested_ui(
+    ops: &[crate::asset::Op],
+    dir: &dyn Fn(&crate::asset::Op, &Source) -> PathBuf,
+) -> std::collections::BTreeSet<(String, String)> {
+    let mut by: BTreeMap<(String, String), std::collections::BTreeSet<&str>> = BTreeMap::new();
+    for op in ops {
+        let crate::asset::AssetOp::Erp(e) = &op.op else {
+            continue;
+        };
+        let id = op.origin.addon.as_str();
+        match e {
+            ErpOp::Overlay { erps, source } => {
+                let Ok(path) = source.resolve(&dir(op, source)) else {
+                    continue;
+                };
+                for name in overlay_names(&path).unwrap_or_default() {
+                    if crate::ui::merge::Kind::of(&name).is_some() {
+                        for erp in erps {
+                            by.entry((erp.clone(), name.clone())).or_default().insert(id);
+                        }
+                    }
+                }
+            }
+            e => {
+                if let Some((erp, resource)) =
+                    whole_write(e).filter(|(_, r)| crate::ui::merge::Kind::of(r).is_some())
+                {
+                    by.entry((erp.to_owned(), resource.to_owned()))
+                        .or_default()
+                        .insert(id);
+                }
+            }
+        }
+    }
+    by.into_iter()
+        .filter(|(_, ids)| ids.len() > 1)
+        .map(|(k, _)| k)
+        .collect()
+}
+
 pub fn unsupported(op: &ErpOp) -> Option<&'static str> {
     match op {
         ErpOp::PatchPkg { edits, .. } => edits.iter().find(|e| !supported(e)).map(edit_name),
@@ -495,7 +576,28 @@ impl<'a> ErpBuild<'a> {
             notes: Vec::new(),
             kept: HashSet::new(),
             held: Vec::new(),
+            baseline: None,
+            merge_ui: true,
+            whole: HashMap::new(),
+            ui_base: HashMap::new(),
+            ui_merges: Vec::new(),
         }
+    }
+
+    /// The game's own files, which two addons' whole replacements of a UI resource are merged against.
+    /// Without it the later replacement wins as a whole.
+    pub fn with_baseline(mut self, baseline: &'a dyn Fn(&str) -> PathBuf) -> Self {
+        self.baseline = Some(baseline);
+        self
+    }
+
+    /// Whether whole replacements of a UI resource by different addons are merged (on by default).
+    pub fn set_merge_ui(&mut self, on: bool) {
+        self.merge_ui = on;
+    }
+
+    pub fn take_ui_merges(&mut self) -> Vec<UiMerge> {
+        std::mem::take(&mut self.ui_merges)
     }
 
     pub fn keep(&mut self, erp: &str, resource: &str) {
@@ -568,7 +670,15 @@ impl<'a> ErpBuild<'a> {
                 "{erp}: {resource} was already written by {earlier}; the add-resource from {origin} replaces it"
             ));
         }
+        let whole = whole_write(op).filter(|(_, r)| crate::ui::merge::Kind::of(r).is_some());
+        let before = match whole {
+            Some((erp, resource)) if self.merge_ui => self.earlier_whole(erp, resource, origin)?,
+            _ => None,
+        };
         self.apply(op, resolve)?;
+        if let Some((erp, resource)) = whole {
+            self.record_whole(erp, resource, origin, before)?;
+        }
         if let ErpOp::AppendSlices { erp, resource, .. } = op {
             self.appended
                 .insert((erp.clone(), resource.clone()), origin.to_owned());
@@ -592,6 +702,7 @@ impl<'a> ErpBuild<'a> {
             } => Some((erp, rename.as_deref().unwrap_or(resource))),
             ErpOp::RemoveResource { erp, resource } => {
                 self.writers.remove(&(erp.clone(), resource.clone()));
+                self.whole.remove(&(erp.clone(), resource.clone()));
                 None
             }
             ErpOp::MergeSlices { erp, resource, .. } => self
@@ -609,6 +720,135 @@ impl<'a> ErpBuild<'a> {
                 self.origins.push(origin.to_owned());
             }
         }
+        Ok(())
+    }
+
+    // The bytes of a UI resource as another addon's whole replacement left it, when this op replaces
+    // it whole again.
+    fn earlier_whole(&mut self, erp: &str, resource: &str, origin: &str) -> Result<Option<Vec<u8>>> {
+        let id = addon_of(origin);
+        let earlier = self
+            .whole
+            .get(&(erp.to_owned(), resource.to_owned()))
+            .is_some_and(|v| v.iter().any(|(a, _)| a != id));
+        if !earlier || self.baseline.is_none() {
+            return Ok(None);
+        }
+        self.fragment_zero(erp, resource)
+    }
+
+    fn fragment_zero(&mut self, erp: &str, resource: &str) -> Result<Option<Vec<u8>>> {
+        let Some(res) = self.current(erp, resource)? else {
+            return Ok(None);
+        };
+        if res.fragments.len() != 1 {
+            return Ok(None);
+        }
+        Ok(Some(res.fragments[0].data()?))
+    }
+
+    fn stock_ui(&mut self, erp: &str, resource: &str) -> Result<Option<Pkg>> {
+        let key = (erp.to_owned(), resource.to_owned());
+        if let Some(found) = self.ui_base.get(&key) {
+            return Ok(found.clone());
+        }
+        let found = match self.baseline {
+            Some(of) => {
+                let path = of(checked(erp)?);
+                Erp::read_matching(&path, |n| n == resource)
+                    .map_err(|e| fail(format!("{erp}: {e}")))?
+                    .into_iter()
+                    .next()
+                    .filter(|r| r.fragments.len() == 1)
+                    .map(|r| r.fragments[0].data())
+                    .transpose()?
+                    .and_then(|d| Pkg::parse(&d).ok())
+            }
+            None => None,
+        };
+        self.ui_base.insert(key, found.clone());
+        Ok(found)
+    }
+
+    fn record_whole(
+        &mut self,
+        erp: &str,
+        resource: &str,
+        origin: &str,
+        before: Option<Vec<u8>>,
+    ) -> Result<()> {
+        let Some(theirs_bytes) = self.fragment_zero(erp, resource)? else {
+            return Ok(());
+        };
+        let Ok(theirs) = Pkg::parse(&theirs_bytes) else {
+            self.whole.remove(&(erp.to_owned(), resource.to_owned()));
+            return Ok(());
+        };
+        let id = addon_of(origin).to_owned();
+        let key = (erp.to_owned(), resource.to_owned());
+        let earlier: Vec<(String, Pkg)> = self
+            .whole
+            .get(&key)
+            .map(|v| v.iter().filter(|(a, _)| *a != id).cloned().collect())
+            .unwrap_or_default();
+        if let (Some(ours_bytes), false) = (before, earlier.is_empty())
+            && let Some(base) = self.stock_ui(erp, resource)?
+            && let Ok(ours) = Pkg::parse(&ours_bytes)
+        {
+            let kind = crate::ui::merge::Kind::of(resource).expect("checked by the caller");
+            let merged = crate::ui::merge::merge(kind, &base, &ours, &theirs)?;
+            let bytes = merged
+                .pkg
+                .to_bytes()
+                .map_err(|e| fail(format!("{erp}: {resource}: {e}")))?;
+            let target = self.erp(erp)?;
+            let i = target.find(erp, resource)?;
+            target
+                .owned(i)?
+                .set_fragment(0, &bytes)
+                .map_err(|e| fail(format!("{erp}: {e}")))?;
+            let conflicts = merged
+                .conflicts
+                .iter()
+                .map(|c| {
+                    let keys = c.path.keys();
+                    let changed: Vec<String> = earlier
+                        .iter()
+                        .filter(|(_, p)| {
+                            let (a, b) = (
+                                crate::ui::merge::lookup(&p.root, &keys),
+                                crate::ui::merge::lookup(&base.root, &keys),
+                            );
+                            match (a, b) {
+                                (Some(a), Some(b)) => !crate::ui::merge::same(a, b),
+                                (None, None) => false,
+                                _ => true,
+                            }
+                        })
+                        .map(|(a, _)| a.clone())
+                        .collect();
+                    UiConflict {
+                        path: c.path.show(),
+                        earlier: if changed.is_empty() {
+                            earlier.iter().map(|(a, _)| a.clone()).collect()
+                        } else {
+                            changed
+                        },
+                    }
+                })
+                .collect();
+            self.ui_merges.push(UiMerge {
+                erp: erp.to_owned(),
+                resource: resource.to_owned(),
+                earlier: earlier.iter().map(|(a, _)| a.clone()).collect(),
+                later: id.clone(),
+                stats: merged.stats,
+                conflicts,
+            });
+        }
+        let versions = self.whole.entry(key).or_default();
+        versions.retain(|(a, _)| *a != id);
+        versions.push((id, theirs));
         Ok(())
     }
 
@@ -1209,6 +1449,28 @@ impl<'a> ErpBuild<'a> {
             .get(fragment)
             .ok_or_else(|| fail(format!("{resource}: no fragment {fragment}")))?;
         Ok(Some(Pkg::parse(&frag.data()?)?))
+    }
+
+    /// Every fragment of `resource` in the archive `erp` as the build stands, or `None` while the archive is
+    /// not loaded.
+    pub fn fragments(&self, erp: &str, resource: &str) -> Result<Option<Vec<Vec<u8>>>> {
+        let Some(e) = self.erps.get(erp) else {
+            return Ok(None);
+        };
+        let i = e.find(erp, resource)?;
+        let loaded;
+        let res = match &e.slots[i] {
+            Slot::Owned(r) => r,
+            Slot::Stock(j) => {
+                loaded = e.file.load(&e.file.erp.resources[*j])?;
+                &loaded
+            }
+        };
+        let mut out = Vec::with_capacity(res.fragments.len());
+        for f in &res.fragments {
+            out.push(f.data()?);
+        }
+        Ok(Some(out))
     }
 
     pub fn resources(&self) -> impl Iterator<Item = (&str, &Resource, &Erp, &str)> {
@@ -3241,5 +3503,168 @@ mod tests {
             "{err}"
         );
         assert!(err.contains("-> missing page.gone.focus"), "{err}");
+    }
+
+    mod ui_merge {
+        use super::*;
+        use crate::ui::node::find_path;
+        use crate::ui::node::{NodeExt, arr, boolv, group_node, obj, set_prop, u32v};
+
+        const TEMPLATE: &str = "eaid://ui_package/templates/t.ui";
+
+        fn tree(edit: &dyn Fn(&mut Vec<Node>)) -> Vec<u8> {
+            let mut kids = vec![group_node("a", vec![("visible", boolv(true))], &[], vec![])];
+            edit(&mut kids);
+            let panel = group_node("panel", vec![("visible", boolv(true))], &[], kids);
+            Pkg {
+                name: [0; 4],
+                root: obj(vec![("Templates", arr(vec![panel]))]),
+                vca: Vec::new(),
+                layout: None,
+            }
+            .to_bytes()
+            .unwrap()
+        }
+
+        fn set(kids: &mut [Node], x: u32) {
+            set_prop(&mut kids[0], "x", u32v(x)).unwrap();
+        }
+
+        fn leaf(name: &str) -> Node {
+            group_node(name, vec![], &[], vec![])
+        }
+
+        struct Rig {
+            root: PathBuf,
+        }
+
+        impl Rig {
+            fn new(name: &str) -> Self {
+                let root = std::env::temp_dir().join(format!("swofty-uimerge-{name}-{}", std::process::id()));
+                std::fs::remove_dir_all(&root).ok();
+                std::fs::create_dir_all(root.join("game/ui")).unwrap();
+                std::fs::create_dir_all(root.join("src")).unwrap();
+                std::fs::write(
+                    root.join("game/ui/a.erp"),
+                    typed_erp("UI", &[(TEMPLATE, tree(&|_| {}))]),
+                )
+                .unwrap();
+                for (file, bytes) in [
+                    (
+                        "one.pkg",
+                        tree(&|k| {
+                            set(k, 1);
+                            k.push(leaf("from_one"));
+                        }),
+                    ),
+                    (
+                        "two.pkg",
+                        tree(&|k| {
+                            set(k, 2);
+                            k.push(leaf("from_two"));
+                        }),
+                    ),
+                    ("three.pkg", tree(&|k| k.push(leaf("from_three")))),
+                ] {
+                    std::fs::write(root.join("src").join(file), bytes).unwrap();
+                }
+                Self { root }
+            }
+
+            fn replace(&self, build: &mut ErpBuild, origin: &str, file: &str) {
+                let op = ErpOp::ReplaceResource {
+                    erp: "ui/a.erp".into(),
+                    resource: TEMPLATE.into(),
+                    fragment: 0,
+                    source: Source {
+                        root: crate::asset::Root::Addon,
+                        path: file.into(),
+                    },
+                };
+                let src = self.root.join("src");
+                build
+                    .apply_for(&op, origin, &|s: &Source| Ok(src.join(&s.path)))
+                    .unwrap();
+            }
+
+            fn template(&self, build: &mut ErpBuild) -> Pkg {
+                let bytes = build.fragments("ui/a.erp", TEMPLATE).unwrap().unwrap().remove(0);
+                Pkg::parse(&bytes).unwrap()
+            }
+        }
+
+        impl Drop for Rig {
+            fn drop(&mut self) {
+                std::fs::remove_dir_all(&self.root).ok();
+            }
+        }
+
+        #[test]
+        fn two_addons_replacing_a_template_whole_are_merged_and_the_conflict_names_both() {
+            let rig = Rig::new("conflict");
+            let game = rig.root.join("game");
+            let original = |rel: &str| game.join(rel);
+            let mut b = ErpBuild::new(&original).with_baseline(&original);
+            rig.replace(&mut b, "a.one", "one.pkg");
+            assert!(b.take_ui_merges().is_empty(), "nothing to merge with yet");
+            rig.replace(&mut b, "b.two (ops.json)", "two.pkg");
+            let merges = b.take_ui_merges();
+            assert_eq!(merges.len(), 1);
+            assert_eq!(merges[0].earlier, ["a.one"]);
+            assert_eq!(merges[0].later, "b.two");
+            assert_eq!(merges[0].conflicts.len(), 1);
+            assert_eq!(merges[0].conflicts[0].path, "panel.a [props/x]");
+            assert_eq!(merges[0].conflicts[0].earlier, ["a.one"]);
+            let t = rig.template(&mut b);
+            for n in ["from_one", "from_two"] {
+                assert!(find_path(&t.root, &format!("panel.{n}")).is_ok(), "{n}");
+            }
+            let at = find_path(&t.root, "panel.a").unwrap();
+            let a = crate::ui::node::node_at(&t.root, &at).unwrap();
+            assert_eq!(
+                a.props().unwrap().get("x").unwrap().as_val().unwrap().as_u32(),
+                Some(2)
+            );
+            rig.replace(&mut b, "c.three", "three.pkg");
+            let merges = b.take_ui_merges();
+            assert_eq!(merges[0].earlier, ["a.one", "b.two"]);
+            assert!(merges[0].conflicts.is_empty());
+            let t = rig.template(&mut b);
+            for n in ["from_one", "from_two", "from_three"] {
+                assert!(find_path(&t.root, &format!("panel.{n}")).is_ok(), "{n}");
+            }
+        }
+
+        #[test]
+        fn one_addon_replacing_twice_and_a_build_without_a_baseline_are_not_merged() {
+            let rig = Rig::new("single");
+            let game = rig.root.join("game");
+            let original = |rel: &str| game.join(rel);
+            let mut b = ErpBuild::new(&original).with_baseline(&original);
+            rig.replace(&mut b, "a.one", "one.pkg");
+            rig.replace(&mut b, "a.one (second)", "two.pkg");
+            assert!(b.take_ui_merges().is_empty());
+            let t = rig.template(&mut b);
+            assert!(
+                find_path(&t.root, "panel.from_one").is_err(),
+                "the addon's own later file wins"
+            );
+
+            let mut b = ErpBuild::new(&original);
+            rig.replace(&mut b, "a.one", "one.pkg");
+            rig.replace(&mut b, "b.two", "two.pkg");
+            assert!(b.take_ui_merges().is_empty());
+            let t = rig.template(&mut b);
+            assert!(
+                find_path(&t.root, "panel.from_one").is_err(),
+                "the later replacement wins whole"
+            );
+
+            let mut b = ErpBuild::new(&original).with_baseline(&original);
+            b.set_merge_ui(false);
+            rig.replace(&mut b, "a.one", "one.pkg");
+            rig.replace(&mut b, "b.two", "two.pkg");
+            assert!(b.take_ui_merges().is_empty());
+        }
     }
 }

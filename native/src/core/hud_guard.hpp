@@ -65,6 +65,22 @@ inline bool ffx_loader(std::string_view fg)
     return same_name(name.substr(0, name.find(' ')), "amd_fidelityfx_dx12.dll");
 }
 
+// A swapchain made before the core's creation hooks has no creation stack, so Streamline is read off the
+// module that calls Present: its interposer, common layer or frame generation hook.
+inline bool streamline_caller(std::string_view path)
+{
+    std::string_view name = base_name(path);
+    return same_name(name, "sl.interposer.dll") || same_name(name, "sl.common.dll") || streamline_hook(name);
+}
+
+// What a queue learned from a swapchain's own GetDevice makes of the swapchain: only a direct queue is drawn on.
+inline std::string learned_fg(bool direct_queue, std::string_view present_fg)
+{
+    if (!present_fg.empty())
+        return std::string(present_fg) + " (calls Present)";
+    return direct_queue ? std::string() : std::string("a non-direct present queue");
+}
+
 inline std::string fg_in(const std::vector<std::string> &modules)
 {
     for (auto &m : modules)

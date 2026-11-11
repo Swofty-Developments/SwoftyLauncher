@@ -27238,7 +27238,7 @@
    "target": "0x14470d760",
    "kind": "func_start",
    "names": [
-    "Car_TyreDamage_Update"
+    "Car_State_Read_Snapshot"
    ],
    "verified": [
     {
@@ -38530,7 +38530,7 @@
    "target": "0x1446e4330",
    "kind": "func_start",
    "names": [
-    "Car_Suspension_PublishWheelState"
+    "Car_Ers_IntegrateAndPublishWheels"
    ],
    "verified": [
     {
@@ -162231,6 +162231,508 @@
    ],
    "used_by": [
     "native/src/core/estimate_laptime_guard.cpp"
+   ]
+  },
+  {
+   "id": "live.relative_gap_helper_key",
+   "section": ".xtls",
+   "pattern": "C7 05 ?? ?? ?? ?? 59 12 82 F3 48 89 3D ?? ?? ?? ?? 48 89 35",
+   "match": "0x14097da8c",
+   "anchor": "0x14",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x11",
+    "len": 7
+   },
+   "target": "0x14604ea90",
+   "kind": "data",
+   "names": [
+    "k_Live_RelativeGapHelperKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.game_mode_system_key",
+   "section": ".xtls",
+   "pattern": "48 89 46 68 48 85 C0 0F 84 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 48",
+   "match": "0x140207582",
+   "anchor": "0x10",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0xd",
+    "len": 7
+   },
+   "target": "0x14604ed28",
+   "kind": "data",
+   "names": [
+    "k_Live_GameModeSystemKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.entrants_system_key",
+   "section": ".xtls",
+   "pattern": "4C 8B 78 30 48 8D 05 ?? ?? ?? ?? 48 89 44 24 70",
+   "match": "0x14027998f",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x4",
+    "len": 7
+   },
+   "target": "0x14606ecd8",
+   "kind": "data",
+   "names": [
+    "k_Live_EntrantsSystemKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.session_system_key",
+   "section": ".xtls",
+   "pattern": "31 C0 48 89 86 A0 00 00 00 48 8D 05",
+   "match": "0x140213555",
+   "anchor": "0xc",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x9",
+    "len": 7
+   },
+   "target": "0x14607f1a0",
+   "kind": "data",
+   "names": [
+    "k_Live_SessionSystemKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.spectator_director_key",
+   "section": ".xtls",
+   "pattern": "C7 86 F0 1B 00 00 00 00 00 00 48 8B 05 ?? ?? ?? ?? 48 8B 78 30 48 8D 05",
+   "match": "0x140391d05",
+   "anchor": "0x18",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x15",
+    "len": 7
+   },
+   "target": "0x146080ca8",
+   "kind": "data",
+   "names": [
+    "k_Live_SpectatorDirectorKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.tyre_system_key",
+   "section": ".xtls",
+   "pattern": "48 89 46 68 48 8D 05 ?? ?? ?? ?? 48 89 44 24 20",
+   "match": "0x1403c58c5",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x4",
+    "len": 7
+   },
+   "target": "0x146080d28",
+   "kind": "data",
+   "names": [
+    "k_Live_TyreSystemKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.game_vehicle_progress_system_key",
+   "section": ".xtls",
+   "pattern": "48 89 46 08 48 85 C0 74 4B 48 8D 05",
+   "match": "0x14098df97",
+   "anchor": "0xc",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x9",
+    "len": 7
+   },
+   "target": "0x146096928",
+   "kind": "data",
+   "names": [
+    "k_Live_GameVehicleProgressSystemKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "live.vehicle_helper_system_key",
+   "section": ".xtls",
+   "pattern": "48 89 46 70 48 85 C0 0F 84 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 48",
+   "match": "0x140207492",
+   "anchor": "0x10",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0xd",
+    "len": 7
+   },
+   "target": "0x146096ac8",
+   "kind": "data",
+   "names": [
+    "k_Live_VehicleHelperSystemKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.pit_lane_system_key",
+   "section": ".xtls",
+   "pattern": "48 89 83 98 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 8D 05",
+   "match": "0x1405fcd92",
+   "anchor": "0x13",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x10",
+    "len": 7
+   },
+   "target": "0x1460fb708",
+   "kind": "data",
+   "names": [
+    "k_Live_PitLaneSystemKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.marshal_zone_monitor_key",
+   "section": ".xtls",
+   "pattern": "48 89 86 60 04 00 00 48 8B 86 20 04 00 00 48 8B 40 40 48 8B 78 30 48 8D 05",
+   "match": "0x143095afc",
+   "anchor": "0x19",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x16",
+    "len": 7
+   },
+   "target": "0x1460fdde0",
+   "kind": "data",
+   "names": [
+    "k_Live_MarshalZoneMonitorKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.red_flag_system_key",
+   "section": ".xtls",
+   "pattern": "48 8B 5B 30 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28",
+   "match": "0x140a3f054",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x4",
+    "len": 7
+   },
+   "target": "0x1460fde00",
+   "kind": "data",
+   "names": [
+    "k_Live_RedFlagSystemKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.penalty_log_key",
+   "section": ".xtls",
+   "pattern": "48 89 83 18 01 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 8D 05",
+   "match": "0x1405fd0f8",
+   "anchor": "0x13",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x10",
+    "len": 7
+   },
+   "target": "0x1460fdfe0",
+   "kind": "data",
+   "names": [
+    "k_Live_PenaltyLogKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.safety_car_logic_system_key",
+   "section": ".xtls",
+   "pattern": "48 89 83 D8 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 8D 05",
+   "match": "0x1405fccd5",
+   "anchor": "0x13",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x10",
+    "len": 7
+   },
+   "target": "0x146100bd8",
+   "kind": "data",
+   "names": [
+    "k_Live_SafetyCarLogicSystemKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.controller_system",
+   "section": ".xtls",
+   "pattern": "74 58 48 8B 0D ?? ?? ?? ?? 49 8B 57 58",
+   "match": "0x14039c7ce",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x2",
+    "len": 7
+   },
+   "target": "0x146096578",
+   "kind": "data",
+   "names": [
+    "g_Live_ControllerSystem"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.sector_ends",
+   "section": ".xtls",
+   "pattern": "48 8D 15 ?? ?? ?? ?? 31 C9 0F 1F 00 C5 FA 10 0A",
+   "match": "0x141485234",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x0",
+    "len": 7
+   },
+   "target": "0x146ce6660",
+   "kind": "data",
+   "names": [
+    "g_Live_SectorEnds"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "live.sector_count",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 8B 05 ?? ?? ?? ?? 48 85 C0 74 6F",
+   "match": "0x1414851d7",
+   "anchor": "0x7",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x5",
+    "len": 6
+   },
+   "target": "0x146ce66bc",
+   "kind": "data",
+   "names": [
+    "g_Live_SectorCount"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "car.systems_container",
+   "section": ".xtls",
+   "pattern": "C5 F8 11 B7 E9 02 00 00 C5 F8 29 B7 E0 02 00 00 48 8D 05",
+   "match": "0x144628763",
+   "anchor": "0x13",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x10",
+    "len": 7
+   },
+   "target": "0x145c040c8",
+   "kind": "data",
+   "names": [
+    "vt_Car_SystemsContainer"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "car-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live/live_rows.hpp"
+   ]
+  },
+  {
+   "id": "live.racing_vehicles",
+   "section": ".xtls",
+   "pattern": "48 C7 44 24 78 00 00 00 00 48 8B 05",
+   "match": "0x1446d0622",
+   "anchor": "0xc",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x9",
+    "len": 7
+   },
+   "target": "0x146ce72b8",
+   "kind": "data",
+   "names": [
+    "g_Live_RacingVehicles"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
    ]
   },
   {
