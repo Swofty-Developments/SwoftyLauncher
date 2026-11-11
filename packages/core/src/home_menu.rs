@@ -372,7 +372,7 @@ mod tests {
     fn a_fetch_saves_the_thumbnail_and_a_dead_server_falls_back_to_the_cache() {
         let data = temp("cache");
         let jpeg = vec![0xff, 0xd8, 0xff, 0xe0, 9, 9];
-        let registry = serve_at(free_port(), jpeg.clone(), "https://youtu.be/abc");
+        let registry = serve(jpeg.clone(), "https://youtu.be/abc");
         let card = latest_video_from(&data, &registry, &|_| true).expect("fresh card");
         assert_eq!(card.url, "https://youtu.be/abc");
         assert_eq!(std::fs::read(&card.thumbnail).unwrap(), jpeg);
@@ -385,14 +385,9 @@ mod tests {
         std::fs::remove_dir_all(&empty).ok();
     }
 
-    fn free_port() -> u16 {
+    fn serve(jpeg: Vec<u8>, url: &'static str) -> String {
         let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
-        listener.local_addr().unwrap().port()
-    }
-
-    fn serve_at(port: u16, jpeg: Vec<u8>, url: &'static str) -> String {
-        let registry = format!("http://127.0.0.1:{port}");
-        let listener = std::net::TcpListener::bind(("127.0.0.1", port)).unwrap();
+        let registry = format!("http://127.0.0.1:{}", listener.local_addr().unwrap().port());
         let thumb = format!("{registry}/t.jpg");
         std::thread::spawn(move || {
             for stream in listener.incoming() {
@@ -429,7 +424,7 @@ mod tests {
     #[test]
     fn a_video_with_a_foreign_url_is_refused() {
         let data = temp("foreign");
-        let registry = serve_at(free_port(), vec![0xff, 0xd8, 1], "https://evil.example/x");
+        let registry = serve(vec![0xff, 0xd8, 1], "https://evil.example/x");
         assert!(latest_video_from(&data, &registry, &|_| true).is_none());
         std::fs::remove_dir_all(&data).ok();
     }
@@ -451,7 +446,7 @@ mod tests {
         ));
         assert!(!https_host_in("https://i.ytimg.com/x.png", &AVATAR_HOSTS));
         let data = temp("untrusted");
-        let registry = serve_at(free_port(), vec![0xff, 0xd8, 1], "https://youtu.be/abc");
+        let registry = serve(vec![0xff, 0xd8, 1], "https://youtu.be/abc");
         assert!(
             latest_video(&data, &registry).is_none(),
             "a loopback thumbnail host is refused"
