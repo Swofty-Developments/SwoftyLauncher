@@ -119,6 +119,8 @@ EXTRA_FUNCS = {
     ('CarF1Aero', 'drs_flags'): [0x142cf9820, 0x142d00060],
     ('SpectatorDirector', 'ui_active'): [0x14f2f41c0],
     ('VehicleTyreComponent', 'set_begin'): [0x142d00060],
+    ('TeamRecord', 'timing_tower_texture_path'): [0x141760020],
+    ('TeamRecord', 'show_custom_badge_in_ui'): [0x141760020],
 }
 
 
@@ -327,9 +329,10 @@ def main(argv=None):
                 st = max(c) if c else None
             if st is not None and st not in starts:
                 starts.append(st)
-        for d in decs + EXTRA_FUNCS.get((T, f), []):
+        for d in EXTRA_FUNCS.get((T, f), []) + decs:
             if 0 <= d - BASE < steam.size and d - BASE not in starts:
                 starts.append(d - BASE)
+        starts = [e - BASE for e in EXTRA_FUNCS.get((T, f), [])] + [x for x in starts if x + BASE not in EXTRA_FUNCS.get((T, f), [])]
         why, shown = [], False
         xr = {x - BASE for x in xrefs}
         for st in starts:
@@ -430,7 +433,7 @@ def main(argv=None):
         unal = len(fr['sins']) - len(fr['amap'])
         frows.append((label, hex(va), hex(fr['erva']), f'{fr["n"]} insns, {fr["same"]} identical, {dd} aligned-but-different, {unal} unaligned (ratio {fr["ratio"]:.3f})'))
     brows = [] if a.field else binding_table(steam, other)
-    for label, va, fva in INSN_CHECKS:
+    for label, va, fva in ([] if a.field else INSN_CHECKS):
         fr = compare_function(steam, other, loc, fva - BASE, cache)
         ok = fr['ok'] and (va - BASE) in fr['sidx'] and fr['sidx'][va - BASE] in fr['amap']
         if ok:
