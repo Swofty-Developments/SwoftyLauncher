@@ -335,9 +335,6 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let url = lap_url(lap_id);
-        let running = self.online_game_running();
-        let ready = running && self.install.is_some();
-        let id = lap_id.to_owned();
         let add = self.add_to_game_button(&format!("add-{key}"), lap_id, game_replay, cx);
         h_flex()
             .flex_shrink_0()
@@ -349,24 +346,6 @@ impl Shell {
                     .icon(IconName::ExternalLink)
                     .label(tr("Web"))
                     .on_click(move |_, _, cx| cx.open_url(&url)),
-            )
-            .child(
-                Button::new(SharedString::from(format!("game-{key}")))
-                    .outline()
-                    .tap_xs()
-                    .icon(IconName::Play)
-                    .label(tr("Game"))
-                    .disabled(!ready)
-                    .tooltip(if ready {
-                        tr("Play this lap's replay in the running game")
-                    } else if running {
-                        tr("The game folder is not known")
-                    } else {
-                        tr("Start the game to watch this lap")
-                    })
-                    .on_click(cx.listener(move |this, _, _, cx| {
-                        this.online_watch(id.clone(), cx);
-                    })),
             )
             .child(add.tap_xs())
             .into_any_element()

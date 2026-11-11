@@ -44,7 +44,6 @@ pub(crate) struct Online {
     api: Arc<dyn BoardsApi>,
     watch_notice: Option<(bool, String)>,
     watch_lap: Option<String>,
-    pretend_running: bool,
     trail: Trail,
     overview: Load<Overview>,
     seasons: HashMap<String, Load<SeasonPage>>,
@@ -71,15 +70,14 @@ pub(crate) struct Online {
 
 impl Online {
     pub(crate) fn new(data: &std::path::Path) -> Self {
-        let (api, pretend_running): (Arc<dyn BoardsApi>, bool) = match mock_mode() {
-            Some(mode) => (Arc::new(mock::MockBoards { mode }), true),
-            None => (Arc::new(HttpBoards::new()), false),
+        let api: Arc<dyn BoardsApi> = match mock_mode() {
+            Some(mode) => Arc::new(mock::MockBoards { mode }),
+            None => Arc::new(HttpBoards::new()),
         };
         Self {
             api,
             watch_notice: None,
             watch_lap: None,
-            pretend_running,
             trail: Trail::new(),
             overview: Load::Idle,
             seasons: HashMap::new(),
@@ -494,45 +492,6 @@ impl Shell {
     }
 
     /// Ask the running game to play lap `id` as the ghost in Time Trial.
-    pub(crate) fn online_watch(&mut self, id: String, cx: &mut Context<Self>) {
-        let (Some(api), Some(game)) = (
-            self.mp
-                .as_ref()
-                .map(|s| swofty_core::timetrial::api::Api::new(&s.token)),
-            self.install.as_ref().map(|i| i.dir.clone()),
-        ) else {
-            return;
-        };
-        self.online.watch_notice = Some((true, swofty_i18n::tr("Sending the lap to the game…").to_owned()));
-        self.online.watch_lap = None;
-        cx.notify();
-        cx.spawn(async move |this, cx| {
-            let done = cx
-                .background_executor()
-                .spawn(async move { swofty_core::timetrial::watch::request(&api, &game, &id) })
-                .await;
-            this.update(cx, |s, cx| {
-                s.online.watch_notice = Some(match done {
-                    Ok(()) => (
-                        true,
-                        swofty_i18n::tr(
-                            "Sent. Start a Time Trial on this lap's track and it plays as the ghost.",
-                        )
-                        .to_owned(),
-                    ),
-                    Err(e) => {
-                        crate::app_log::action("watch a lap in game").failed(&e);
-                        (false, e)
-                    }
-                });
-                cx.notify();
-            })
-            .ok();
-        })
-        .detach();
-    }
-
-    /// Put the game replay of lap `id` where the game's Theatre finds it.
     pub(crate) fn online_add_to_game(&mut self, id: String, cx: &mut Context<Self>) {
         let (Some(api), Some(game)) = (
             self.mp
@@ -587,10 +546,6 @@ impl Shell {
             .watch_notice
             .as_ref()
             .filter(|_| self.online.watch_lap.as_deref() == Some(id))
-    }
-
-    pub(crate) fn online_game_running(&self) -> bool {
-        self.online.pretend_running || matches!(self.play_state(), crate::shell::PlayState::Running)
     }
 
     pub(crate) fn online_has_cursor(&self) -> bool {
