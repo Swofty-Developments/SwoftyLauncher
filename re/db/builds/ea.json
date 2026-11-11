@@ -837,6 +837,9 @@
   "Ne_StringTable_Lookup": {
    "match": "0x3917940"
   },
+  "Ne_Subscribe_BusMessage": {
+   "match": "0x3974900"
+  },
   "Sess_Build_GroupResult": {
    "match": "0xaf8b90"
   },
@@ -914,6 +917,21 @@
   "g_Game_Root": {
    "match": "0x267270"
   },
+  "g_Game_TrackLength": {
+   "match": "0x360d104"
+  },
+  "g_Live_ControllerSystem": {
+   "match": "0x39cf0e"
+  },
+  "g_Live_RacingVehicles": {
+   "match": "0x46c68b2"
+  },
+  "g_Live_SectorCount": {
+   "match": "0x147f5a7"
+  },
+  "g_Live_SectorEnds": {
+   "match": "0x147f604"
+  },
   "g_Ne_DefaultAllocator": {
    "match": "0x1c805d4"
   },
@@ -932,6 +950,12 @@
   },
   "g_Sess_TyreRulesSessionType": {
    "match": "0x2e7c274"
+  },
+  "g_Sess_VehicleCount": {
+   "match": "0x1745c8"
+  },
+  "g_Sess_VehicleTable": {
+   "match": "0x1745d0"
   },
   "g_Vm_Registry": {
    "match": "0x1691f60",
@@ -1038,6 +1062,45 @@
   },
   "k_Gdb_StringXorKey": {
    "match": "0x20d520"
+  },
+  "k_Live_EntrantsSystemKey": {
+   "match": "0x27a11f"
+  },
+  "k_Live_GameModeSystemKey": {
+   "match": "0x207d12"
+  },
+  "k_Live_GameVehicleProgressSystemKey": {
+   "match": "0x98c887"
+  },
+  "k_Live_MarshalZoneMonitorKey": {
+   "match": "0x3089ebc"
+  },
+  "k_Live_PenaltyLogKey": {
+   "match": "0x5fdb08"
+  },
+  "k_Live_PitLaneSystemKey": {
+   "match": "0x5fd7a2"
+  },
+  "k_Live_RedFlagSystemKey": {
+   "match": "0xa3d9c4"
+  },
+  "k_Live_RelativeGapHelperKey": {
+   "match": "0x97c37c"
+  },
+  "k_Live_SafetyCarLogicSystemKey": {
+   "match": "0x5fd6e5"
+  },
+  "k_Live_SessionSystemKey": {
+   "match": "0x213ce5"
+  },
+  "k_Live_SpectatorDirectorKey": {
+   "match": "0x392445"
+  },
+  "k_Live_TyreSystemKey": {
+   "match": "0x3c6005"
+  },
+  "k_Live_VehicleHelperSystemKey": {
+   "match": "0x207c22"
   },
   "k_Ne_BagCodecVtbl": {
    "match": "0x29c7a89"
@@ -1683,6 +1746,9 @@
   "site_Sess_TimeTrialLeaderboard_TabDone": {
    "match": "0x2fbfaf9"
   },
+  "vt_Car_SystemsContainer": {
+   "match": "0x461e9f3"
+  },
   "vt_Career_BankTransactionMessage": {
    "match": "0xc57216"
   },
@@ -1739,6 +1805,12 @@
   },
   "vt_Game_TrackListComponent": {
    "match": "0xcfb775"
+  },
+  "vt_Sess_ControllerSystem": {
+   "match": "0x3885193"
+  },
+  "vt_Sess_HumanController": {
+   "match": "0x3883bc7"
   }
  },
  "unresolvable": {}
