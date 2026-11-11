@@ -11,6 +11,9 @@ namespace runtime::direct_start::tt {
 // the flow thread while StateFTUE is held, until it answers done or failed.
 Setup setup(const json::Value &request, std::string &why);
 
+// Starts the setup over for a saved replay's session: the same steps, without the direct start's scene changes.
+void reset_for_replay();
+
 std::string current_track();
 
 std::string session_track();

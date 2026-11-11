@@ -1202,7 +1202,15 @@ void log_stack(const char *what)
 
 uintptr_t direct_start_set_mode()
 {
-    return game.set_mode;
+    if (game.set_mode)
+        return game.set_mode;
+    static std::atomic<uintptr_t> found{0};
+    static std::atomic<bool> tried{false};
+    if (!tried.exchange(true)) {
+        found = runtime::same_build() ? runtime::find(SIG_SET_MODE, "SetCurrentGameMode", "direct") : 0;
+        swofty::log("[direct] SetCurrentGameMode for a session without a direct start: %s", found.load() ? "resolved" : "not resolved");
+    }
+    return found.load();
 }
 
 DirectStartContext direct_start_context()

@@ -92,7 +92,7 @@ struct State {
     tt::Step step = tt::Step::mode;
     uint64_t started = 0, mode_set = 0;
     uint8_t *mode = nullptr, *entity = nullptr, *list = nullptr;
-    bool placed = false;
+    bool placed = false, replay = false;
 } st;
 
 // The game modes context's modes (vector at +0x58..+0x60, each entry's mode at +0x38, its label at mode+0x278 and its
@@ -511,7 +511,8 @@ Setup setup(const json::Value &request, std::string &why)
     Setup s = apply(st.entity, request, why);
     if (s == Setup::done) {
         st.step = Step::done;
-        despawn_main_scene("at the setup");
+        if (!st.replay)
+            despawn_main_scene("at the setup");
         swofty::log("[direct] Time Trial: set up %llu ms after the mode was made current",
                     (unsigned long long)(GetTickCount64() - st.mode_set));
     }
@@ -589,6 +590,12 @@ const bool registered_at_load = (runtime::direct_start_register_time_trial(regis
 }
 
 namespace runtime::direct_start::tt {
+
+void reset_for_replay()
+{
+    st = State{};
+    st.replay = true;
+}
 
 std::string current_track()
 {

@@ -166,6 +166,20 @@ const runtime::Sig S_REPLAY_JOB{"Game_Replay_SaveFullReplay_job_142c46a00", "41 
 const runtime::Sig S_REPLAY_JOB_COMPONENT{"site_Game_Replay_SaveFullReplay_session_component_142c46c02",
         "48 8B 46 28 48 8B 80 88 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 80 60 02 00 00 48 89 84 24 98 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 4C 24 68 48 8B 84 24 98 00 00 00 4C 8B B0 08 0F 00 00 49 8D 4E 18",
         0x2c46c02, runtime::Sig::addr, 0, 64};
+const runtime::Sig S_REPLAY_JOB_WRAPPER{"site_Game_Replay_SaveFullReplay_component_wrapper_142c46c51", "84 C9 0F 84 91 00 00 00 49 8B AE 38 02 00 00 4D 8B B6 40 02 00 00 4C 39 F5", 0x2c46c51};
+const runtime::Sig S_SAVE_SLOT_CTOR{"Game_SaveSlotManager_Construct_1429cd140",
+        "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 4C 89 4C 24 78 4C 89 84 24 80 00 00 00 48 89 94 24 88 00 00 00 48 89 CE", 0x29cd140};
+const runtime::Sig S_SAVE_SLOT_SNAPSHOT{"Game_SaveSlotManager_SnapshotSlot_1429ce380",
+        "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 12 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 B4 24 10 12 00 00 F0 FF 05", 0x29ce380};
+const runtime::Sig S_SAVE_SLOT_DEFAULT{"Game_SaveSlotManager_MakeDefaultSlot_14d6e4c20", "41 57 41 56 41 54 56 57 53 48 81 EC E8 00 00 00 48 89 CE 48 8D 44 24 68 48 C7 44 24 58 80 00 00 00",
+        0xd6e4c20, runtime::Sig::addr, 0, 0, 0, ".data1"};
+const runtime::Sig S_SAVE_SLOT_REFRESH{"Game_SaveSlotManager_Refresh_14d6ef2a0", "41 57 41 56 56 57 55 53 48 83 EC 48 48 89 CE 48 8B B9 50 02 00 00 48 8D 4F 18 48 8B 47 18 FF 50 28",
+        0xd6ef2a0, runtime::Sig::addr, 0, 0, 0, ".data1"};
+const runtime::Sig S_REPLAY_LOAD_SESSION{"site_Game_Replay_LoadFullReplay_session_142c4b3dd", "41 BD 01 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 49 89 C4 48 8B 88 08 0F 00 00", 0x2c4b3dd,
+        runtime::Sig::addr, 0, 6};
+const runtime::Sig S_REPLAY_LOAD_SLOT{"site_Game_Replay_LoadFullReplay_save_slot_142c4b3fc", "48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 0F 84 ?? ?? ?? ?? 48 85 FF 74 1E 4C 8B 17", 0x2c4b3fc,
+        runtime::Sig::addr, 0, 12};
+const runtime::Sig S_REPLAY_LOAD_START{"Game_ReplayManager_StartLoadSavedReplay_142c45ec0", "56 57 53 48 81 EC 80 02 00 00 80 B9 E1 06 00 00 00 74 2B 48 89 D7 48 89 CE", 0x2c45ec0};
 const runtime::Sig S_REPLAY_JOB_SELECTED{"site_Game_Replay_SaveFullReplay_component_selected_142c46cf5", "4D 85 F6 0F 84 ?? ?? ?? ?? 4C 8B A2 C0 00 00 00 4C 8B AA D0 00 00 00", 0x2c46cf5};
 const runtime::Sig S_REPLAY_JOB_STORES{"site_Game_Replay_SaveFullReplay_backing_stores_142c46ebd", "49 83 BC 24 B8 02 00 00 00 0F 84 ?? ?? ?? ?? 49 83 BD B8 02 00 00 00 0F 84", 0x2c46ebd};
 const runtime::Sig S_REPLAY_JOB_ALLOC{"site_Game_Replay_SaveFullReplay_allocation_142c46f33", "48 85 C0 0F 84 ?? ?? ?? ?? 48 89 C5 48 8B 07 48 89 F9 FF 50 20", 0x2c46f33};
@@ -216,7 +230,7 @@ bool replay_capture_on = false;
 std::atomic<int64_t> replay_pending_ms{0};
 std::atomic<uint32_t> replay_pending_lap{0};
 safetyhook::InlineHook h_rui_start, h_rui_result;
-safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_replay_tick, h_replay_tick17, h_replay_update, h_replay_frame, h_replay_save, h_replay_job, h_job_component, h_job_selected, h_job_stores, h_job_alloc, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
+safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_replay_tick, h_replay_tick17, h_replay_update, h_replay_frame, h_replay_save, h_replay_job, h_job_component, h_job_wrapper, h_load_session, h_load_slot, h_job_selected, h_job_stores, h_job_alloc, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
     uintptr_t at = 0, resume = 0, session_global = 0;
@@ -1122,6 +1136,262 @@ void replay_job_component_mid(safetyhook::Context &c)
                     (unsigned long long)c.r14);
 }
 
+// SWOFTY_TT_REPLAY_FORCE: "self" passes a wrapper component itself to the header writer, "child" takes its first child whatever its type.
+// Test switches only. Without one the probe just logs the component, its type chain and its children.
+int replay_force = 0;
+
+// A save-slot component of our own for the replay file header, built the way the championship mode builds its one (constructor arguments
+// read from the call at 0x1407d5b62) but never added to the game mode. The game's string object is {vtable, capacity, pointer, 0x40 bytes};
+// the last argument is an obfuscated pair whose two words differ by xor 1. The component is built once per game mode object and kept.
+uintptr_t save_slot_ctor = 0;
+void describe_component(const char *what, uint64_t x);
+uint64_t replay_make_save_slot(uint64_t mgr, uint64_t owner);
+void replay_write_setup(const std::wstring &frr);
+uint64_t replay_own_owner[8], replay_own_comp[8];
+std::atomic<int> replay_own_count{0};
+bool replay_slot_is_ours(uint64_t comp)
+{
+    for (int k = 0, n = replay_own_count.load(); k < n; k++)
+        if (replay_own_comp[k] == comp)
+            return comp != 0;
+    return false;
+}
+uint64_t slot_snapshot_hook(uint64_t comp, uint64_t slot, uint64_t flag);
+safetyhook::InlineHook h_slot_snapshot, h_slot_default, h_slot_refresh;
+std::atomic<int> slot_snapshot_skip{0};
+
+struct GameString {
+    uint64_t vtable, capacity;
+    char *text;
+    char buf[0x40];
+};
+
+uint64_t replay_make_save_slot(uint64_t mgr, uint64_t owner)
+{
+    static std::mutex lock;
+    std::lock_guard<std::mutex> guard(lock);
+    for (int k = 0; k < replay_own_count; k++)
+        if (replay_own_owner[k] == owner)
+            return replay_own_comp[k];
+    if (replay_own_count >= 8) {
+        swofty::log("[replay] no save-slot component: eight are already built");
+        return 0;
+    }
+    if (!save_slot_ctor || !h_slot_snapshot || !h_slot_default || !h_slot_refresh || !runtime::readable(reinterpret_cast<void *>(mgr), 0x18)) {
+        swofty::log("[replay] no save-slot component: constructor %d, snapshot hook %d", save_slot_ctor ? 1 : 0, h_slot_snapshot ? 1 : 0);
+        return 0;
+    }
+    uint64_t alloc = peek64(mgr + 0x10);
+    if (!alloc || !runtime::readable(reinterpret_cast<void *>(alloc), 8)) {
+        swofty::log("[replay] no save-slot component: the replay manager has no allocator");
+        return 0;
+    }
+    auto alloc_fn = reinterpret_cast<void *(*)(uint64_t, uint64_t, uint64_t)>(peek64(peek64(alloc) + 0x18));
+    void *mem = alloc_fn(alloc, 0x300, 0x10);
+    if (!mem) {
+        swofty::log("[replay] no save-slot component: the allocator returned nothing");
+        return 0;
+    }
+    memset(mem, 0, 0x300);
+    uint64_t string_vtable = swofty::api->module_base() + 0x5613548;
+    static GameString name, type;
+    name = {string_vtable, 0x40, name.buf, {}};
+    type = {string_vtable, 0x40, type.buf, {}};
+    strcpy(name.buf, "time_trial");
+    strcpy(type.buf, "SaveSlotGameModeComponent");
+    static uint64_t pair[2];
+    pair[1] = 0x5357544c41500000ull | (now_ms() & 0xffff);
+    pair[0] = pair[1] ^ 1;
+    auto ctor = reinterpret_cast<uint64_t (*)(void *, uint64_t, uint64_t, uint64_t, uint64_t, GameString *, GameString *, uint64_t *)>(save_slot_ctor);
+    swofty::log("[replay] building a save-slot component: memory 0x%llx, allocator 0x%llx, owner 0x%llx", (unsigned long long)mem, (unsigned long long)alloc, (unsigned long long)owner);
+    uint64_t comp = ctor(mem, alloc, owner, alloc, alloc, &name, &type, pair);
+    swofty::log("[replay] save-slot component built: 0x%llx, vtable base+0x%llx, owner [+0x250] 0x%llx, slots [+0x268..+0x270] 0x%llx..0x%llx, next slot id [+0x2c0] %u", (unsigned long long)comp,
+                (unsigned long long)(peek64(comp) - swofty::api->module_base()), (unsigned long long)peek64(comp + 0x250), (unsigned long long)peek64(comp + 0x268), (unsigned long long)peek64(comp + 0x270),
+                unsigned(peek32(comp + 0x2c0)));
+    replay_own_owner[replay_own_count] = owner;
+    replay_own_comp[replay_own_count] = comp;
+    replay_own_count = replay_own_count + 1;
+    return comp;
+}
+
+// The slot snapshot serialises the career state of the component's owner; a Time Trial game mode has none, and the walk has no end check.
+// For our own component the snapshot is skipped (returns 0: the slot keeps no data), every other caller goes through.
+uint64_t slot_snapshot_hook(uint64_t comp, uint64_t slot, uint64_t flag)
+{
+    bool ours = replay_slot_is_ours(comp);
+    static std::atomic<int> n{0};
+    if (++n <= 12)
+        swofty::log("[replay] slot snapshot for component 0x%llx slot 0x%llx flag %llu: %s", (unsigned long long)comp, (unsigned long long)slot, (unsigned long long)flag, ours ? "skipped (ours)" : "passed on");
+    if (ours)
+        return 0;
+    return h_slot_snapshot.call<uint64_t>(comp, slot, flag);
+}
+
+// After the temporary replay slot is deleted the manager makes a default slot and refreshes its owner; both read parts of a component that
+// only an attached one has ([+0x2f0] is null in ours). For our own component they are skipped.
+uint64_t slot_default_hook(uint64_t comp)
+{
+    if (replay_slot_is_ours(comp)) {
+        swofty::log("[replay] default slot creation skipped for our own save-slot component");
+        return 0;
+    }
+    return h_slot_default.call<uint64_t>(comp);
+}
+uint64_t slot_refresh_hook(uint64_t comp)
+{
+    if (replay_slot_is_ours(comp)) {
+        swofty::log("[replay] owner refresh skipped for our own save-slot component");
+        return 0;
+    }
+    return h_slot_refresh.call<uint64_t>(comp);
+}
+
+// The loader finds the live session by the id in the file header, then asks its game mode for a save-slot component. A Time Trial game mode
+// has none, so the list in Theatre drops the file. With the switch on, our own component stands in.
+void replay_load_session_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> n{0};
+    if (++n <= 40)
+        swofty::log("[replay] load: header session id 0x%x -> session host 0x%llx%s", unsigned(peek32(c.rsp + 0xa4)), (unsigned long long)c.rax, c.rax ? "" : " (no live session has that id: the load fails)");
+}
+
+void replay_load_slot_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> n{0};
+    uint64_t mode = runtime::readable(reinterpret_cast<void *>(c.r12 + 0xf08), 8) ? peek64(c.r12 + 0xf08) : 0;
+    bool log = ++n <= 40;
+    if (log)
+        swofty::log("[replay] load: session host 0x%llx, game mode 0x%llx, its save-slot component 0x%llx", (unsigned long long)c.r12, (unsigned long long)mode, (unsigned long long)c.rax);
+    if (c.rax || replay_force != 2 || !mode)
+        return;
+    if (log)
+        describe_component("load game mode", mode);
+    uint64_t comp = replay_make_save_slot(c.rsi, mode);
+    if (comp) {
+        c.rax = comp;
+        if (log)
+            swofty::log("[replay] load: our own save-slot component 0x%llx stands in", (unsigned long long)comp);
+    }
+}
+
+// A Time Trial replay file carries no session setup, so Theatre would enter a Time Trial on whatever track and car the profile last used.
+// The setup is kept beside our copies as tt\\replays\\<replay file name>.json and applied through the direct start's Time Trial setup
+// before the game's own load starts.
+std::wstring replay_setup_path(const std::wstring &frr)
+{
+    size_t cut = frr.find_last_of(L"\\/");
+    return runtime::swofty_root() + L"tt\\replays\\" + (cut == std::wstring::npos ? frr : frr.substr(cut + 1)) + L".json";
+}
+
+void replay_write_setup(const std::wstring &frr)
+{
+    std::string box = current_content(), track = runtime::direct_start::tt::session_track(), team = runtime::direct_start::tt::player_team();
+    auto quote = [](const std::string &v) {
+        std::string out = "\"";
+        for (char ch : v)
+            if (ch != '"' && ch != '\\' && uint8_t(ch) >= 0x20)
+                out += ch;
+        return out + "\"";
+    };
+    std::string json = "{\"mode\":\"time_trial\",\"box\":" + quote(box) + ",\"track\":" + quote(track) + ",\"team\":" + quote(team) + "}";
+    bool ok = runtime::write_file(replay_setup_path(frr), json);
+    swofty::log("[replay] setup for %s: %s %s", narrow(frr.c_str()).c_str(), json.c_str(), ok ? "written" : "NOT written");
+}
+
+safetyhook::InlineHook h_load_start;
+std::mutex replay_load_lock;
+std::wstring replay_load_path;
+std::string replay_load_setup;
+uint64_t replay_load_mgr = 0;
+int64_t replay_load_since = 0;
+
+bool replay_load_start_hook(uint64_t mgr, const wchar_t *path)
+{
+    std::wstring p = path && runtime::readable(const_cast<wchar_t *>(path), 4) ? std::wstring(path) : std::wstring();
+    std::string setup = p.empty() || replay_force != 2 ? std::string() : runtime::read_file(replay_setup_path(p), size_t(1) << 16);
+    swofty::log("[replay] load requested on manager 0x%llx: %s; our setup file: %s", (unsigned long long)mgr, narrow(p.c_str()).c_str(), setup.empty() ? "none (the game's own load runs now)" : setup.c_str());
+    if (setup.empty())
+        return h_load_start.call<bool>(mgr, path);
+    std::lock_guard<std::mutex> g(replay_load_lock);
+    replay_load_path = p;
+    replay_load_setup = setup;
+    replay_load_mgr = mgr;
+    replay_load_since = now_ms();
+    runtime::direct_start::tt::reset_for_replay();
+    return true;
+}
+
+// Flow thread, every frame: the held load waits for the Time Trial setup, then goes to the game.
+void replay_load_tick()
+{
+    std::unique_lock<std::mutex> g(replay_load_lock);
+    if (!replay_load_mgr)
+        return;
+    std::string why;
+    ::json::Value request;
+    ::json::parse(replay_load_setup, request);
+    runtime::direct_start::Setup s = runtime::direct_start::tt::setup(request, why);
+    int64_t waited = now_ms() - replay_load_since;
+    if (s == runtime::direct_start::Setup::pending && waited < 8000)
+        return;
+    uint64_t mgr = replay_load_mgr;
+    std::wstring path = replay_load_path;
+    replay_load_mgr = 0;
+    g.unlock();
+    swofty::log("[replay] Time Trial setup for the load %s after %lld ms%s%s; track now '%s', team '%s'; starting the game's load", s == runtime::direct_start::Setup::done ? "done" : s == runtime::direct_start::Setup::failed ? "FAILED" : "timed out",
+                (long long)waited, why.empty() ? "" : ": ", why.c_str(), runtime::direct_start::tt::current_track().c_str(), runtime::direct_start::tt::player_team().c_str());
+    bool ok = h_load_start.call<bool>(mgr, path.c_str());
+    swofty::log("[replay] the game's load start returned %d", ok ? 1 : 0);
+}
+
+void describe_component(const char *what, uint64_t x)
+{
+    if (!x || !runtime::readable(reinterpret_cast<void *>(x), 0x248)) {
+        swofty::log("[replay] %s 0x%llx is not readable", what, (unsigned long long)x);
+        return;
+    }
+    uint64_t base = swofty::api->module_base();
+    uint64_t vt = peek64(x), vt18 = peek64(x + 0x18), begin = peek64(x + 0x238), end = peek64(x + 0x240);
+    swofty::log("[replay] %s 0x%llx: vtable base+0x%llx, type interface vtable [+0x18] base+0x%llx, children [+0x238..+0x240] 0x%llx..0x%llx (%lld)", what, (unsigned long long)x,
+                (unsigned long long)(vt - base), (unsigned long long)(vt18 - base), (unsigned long long)begin, (unsigned long long)end, (long long)(end >= begin ? (end - begin) / 8 : -1));
+    std::string words;
+    for (int k = 0; k < 0x60; k += 8) {
+        char b[40];
+        snprintf(b, sizeof b, " +%02x=%llx", k, (unsigned long long)peek64(x + k));
+        words += b;
+    }
+    swofty::log("[replay] %s first words:%s", what, words.c_str());
+}
+
+void replay_job_wrapper_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> n{0};
+    if (++n > 8)
+        return;
+    uint64_t x = c.r14;
+    bool wrapper = (c.rcx & 0xff) != 0;
+    swofty::log("[replay] save job type check: component 0x%llx is %s", (unsigned long long)x, wrapper ? "a wrapper (its first plain child is used)" : "plain (used itself)");
+    describe_component("component", x);
+    uint64_t begin = runtime::readable(reinterpret_cast<void *>(x), 0x248) ? peek64(x + 0x238) : 0, end = begin ? peek64(x + 0x240) : 0;
+    for (uint64_t at = begin, k = 0; begin && at < end && k < 12; at += 8, k++)
+        if (runtime::readable(reinterpret_cast<void *>(at), 8))
+            describe_component("child", peek64(at));
+    if (!wrapper || !tb::replay_ui_suppressed(replay_ui_until_ms.load(), now_ms()))
+        return;
+    if (replay_force == 2) {
+        uint64_t comp = replay_make_save_slot(c.rsi, x);
+        if (comp) {
+            c.r14 = comp;
+            c.rcx &= ~0xffull;
+            swofty::log("[replay] SWOFTY_TT_REPLAY_FORCE=slot: our own save-slot component 0x%llx goes to the header writer", (unsigned long long)comp);
+        }
+    }
+    if (replay_force == 1) {
+        c.rcx &= ~0xffull;
+        swofty::log("[replay] SWOFTY_TT_REPLAY_FORCE=self: the wrapper component itself goes to the header writer");
+    }
+}
+
 void replay_job_selected_mid(safetyhook::Context &c)
 {
     static std::atomic<int> n{0};
@@ -1231,6 +1501,7 @@ void replay_watch(std::wstring path, uint32_t lap_ms, uint64_t stamp)
         }
         int magic = tb::replay_magic_offset(head, got);
         bool copied = CopyFileW(path.c_str(), dest.c_str(), FALSE) != 0;
+        replay_write_setup(path);
         swofty::log("[replay] capture: game save %s settled at %llu bytes; header %s; magic 0xe32fcaa8 %s; copy to tt/replays/%s %s", narrow(path.c_str()).c_str(), (unsigned long long)size,
                     hex_dump(head, got).c_str(), magic >= 0 ? ("found at +" + std::to_string(magic)).c_str() : "NOT found", name.c_str(), copied ? "done" : "FAILED");
         return;
@@ -1295,6 +1566,7 @@ void replay_save_entry_mid(safetyhook::Context &c)
                     runtime::readable(reinterpret_cast<void *>(c.rdx), 2) ? narrow(reinterpret_cast<const wchar_t *>(c.rdx)).c_str() : "?");
 }
 
+int64_t replay_after_ms = 0;
 std::atomic<int64_t> replay_session_best_ms{0};
 bool replay_capture_any = false;
 
@@ -1334,6 +1606,21 @@ void replay_tick(uint64_t sys, const char *slot)
     if (n <= 5 || n % 20000 == 0)
         swofty::log("[replay] tick %s entry %llu (replay system 0x%llx, GameReplaySystem vtable %s, %llu such entries); pending mark %lld", slot, (unsigned long long)n, (unsigned long long)sys,
                     vt_ok ? "yes" : "no", (unsigned long long)ours_entries[which].load(), (long long)replay_pending_ms.load());
+    // SWOFTY_TT_REPLAY_AFTER=<seconds> is a test switch: a save is marked that long after our content's session first ticks, and again
+    // after each further interval (three times at most), without waiting for a finished lap.
+    if (vt_ok && replay_after_ms > 0 && bridge_on && content_ours()) {
+        static std::atomic<int64_t> next_at{0};
+        static std::atomic<int> fired{0};
+        int64_t now = now_ms(), due = next_at.load();
+        if (!due)
+            next_at = now + replay_after_ms;
+        else if (now >= due && fired.load() < 3 && !replay_pending_ms.load() && next_at.compare_exchange_strong(due, now + replay_after_ms)) {
+            fired++;
+            replay_pending_lap = 1000 * uint32_t(fired.load());
+            replay_pending_ms = now;
+            swofty::log("[replay] SWOFTY_TT_REPLAY_AFTER: test save %d marked", fired.load());
+        }
+    }
     int64_t pending = replay_pending_ms.load();
     if (!vt_ok || !tb::replay_capture_due(pending, now_ms(), REPLAY_SAVE_DELAY_MS))
         return;
@@ -1767,6 +2054,12 @@ void setup()
         DWORD rn = GetEnvironmentVariableA("SWOFTY_TT_REPLAY_CAPTURE", rv, sizeof rv);
         replay_capture_on = rn && rn < sizeof rv && (!strcmp(rv, "1") || !strcmp(rv, "any"));
         replay_capture_any = rn && rn < sizeof rv && !strcmp(rv, "any");
+        char av[8] = {};
+        DWORD an = GetEnvironmentVariableA("SWOFTY_TT_REPLAY_AFTER", av, sizeof av);
+        replay_after_ms = an && an < sizeof av ? int64_t(atoi(av)) * 1000 : 0;
+        char fv[8] = {};
+        DWORD fn = GetEnvironmentVariableA("SWOFTY_TT_REPLAY_FORCE", fv, sizeof fv);
+        replay_force = fn && fn < sizeof fv ? (!strcmp(fv, "self") ? 1 : !strcmp(fv, "slot") ? 2 : 0) : 0;
     }
     track_watch = bridge_on || guards_on || diag_on;
     table = tb::Table(unix_seconds() * 100);
@@ -1876,11 +2169,32 @@ void setup()
                 if (uintptr_t j = runtime::find(S_REPLAY_JOB, "boards", "boards"))
                     hook_mid(h_replay_job, j, replay_job_mid, "replay save job observer");
                 for (auto [sig, hook, fn, label] : {std::tuple<const runtime::Sig *, safetyhook::MidHook *, safetyhook::MidHookFn, const char *>{&S_REPLAY_JOB_COMPONENT, &h_job_component, replay_job_component_mid, "save job check 1"},
+                                                    {&S_REPLAY_JOB_WRAPPER, &h_job_wrapper, replay_job_wrapper_mid, "save job type check"},
+                                                    {&S_REPLAY_LOAD_SESSION, &h_load_session, replay_load_session_mid, "load session lookup"},
+                                                    {&S_REPLAY_LOAD_SLOT, &h_load_slot, replay_load_slot_mid, "load save-slot lookup"},
                                                     {&S_REPLAY_JOB_SELECTED, &h_job_selected, replay_job_selected_mid, "save job check 2"},
                                                     {&S_REPLAY_JOB_STORES, &h_job_stores, replay_job_stores_mid, "save job check 3"},
                                                     {&S_REPLAY_JOB_ALLOC, &h_job_alloc, replay_job_alloc_mid, "save job check 4"}})
                     if (uintptr_t at = runtime::find(*sig, "boards", "boards"))
                         hook_mid(*hook, at, fn, label);
+                if (replay_force == 2) {
+                    save_slot_ctor = runtime::find(S_SAVE_SLOT_CTOR, "boards", "boards");
+                    if (uintptr_t snap = runtime::find(S_SAVE_SLOT_SNAPSHOT, "boards", "boards"))
+                        if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(snap), reinterpret_cast<void *>(&slot_snapshot_hook)))
+                            h_slot_snapshot = std::move(*h);
+                    if (uintptr_t a = runtime::find(S_REPLAY_LOAD_START, "boards", "boards"))
+                        if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&replay_load_start_hook)))
+                            h_load_start = std::move(*h);
+                    swofty::log("[replay] load start hook %s", h_load_start ? "armed" : "NOT armed");
+                    if (uintptr_t a = runtime::find(S_SAVE_SLOT_DEFAULT, "boards", "boards"))
+                        if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&slot_default_hook)))
+                            h_slot_default = std::move(*h);
+                    if (uintptr_t a = runtime::find(S_SAVE_SLOT_REFRESH, "boards", "boards"))
+                        if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&slot_refresh_hook)))
+                            h_slot_refresh = std::move(*h);
+                    swofty::log("[replay] SWOFTY_TT_REPLAY_FORCE=slot: save-slot constructor %s, snapshot hook %s, default slot hook %s, refresh hook %s", save_slot_ctor ? "found" : "NOT found",
+                                h_slot_snapshot ? "armed" : "NOT armed", h_slot_default ? "armed" : "NOT armed", h_slot_refresh ? "armed" : "NOT armed");
+                }
                 uintptr_t ui_start = runtime::find(S_REPLAY_UI_START, "boards", "boards"), ui_result = runtime::find(S_REPLAY_UI_RESULT, "boards", "boards");
                 if (ui_start && ui_result) {
                     auto a = safetyhook::InlineHook::create(reinterpret_cast<void *>(ui_start), reinterpret_cast<void *>(&replay_ui_start_hook));
@@ -2061,6 +2375,7 @@ namespace runtime {
 
 void tt_bridge_tick()
 {
+    replay_load_tick();
     if (diag_on || bridge_on)
         diag_tick();
     if (track_watch.load(std::memory_order_relaxed)) {
