@@ -171,6 +171,8 @@ const runtime::Sig S_SAVE_SLOT_CTOR{"Game_SaveSlotManager_Construct_1429cd140",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 4C 89 4C 24 78 4C 89 84 24 80 00 00 00 48 89 94 24 88 00 00 00 48 89 CE", 0x29cd140};
 const runtime::Sig S_SAVE_SLOT_SNAPSHOT{"Game_SaveSlotManager_SnapshotSlot_1429ce380",
         "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 12 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 B4 24 10 12 00 00 F0 FF 05", 0x29ce380};
+const runtime::Sig S_REPLAY_META{"Game_Replay_FillMetadata_142bfd950",
+        "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 4C 89 4C 24 28 4C 89 C3 49 89 D7 48 89 CE", 0x2bfd950};
 const runtime::Sig S_SAVE_SLOT_DEFAULT{"Game_SaveSlotManager_MakeDefaultSlot_14d6e4c20", "41 57 41 56 41 54 56 57 53 48 81 EC E8 00 00 00 48 89 CE 48 8D 44 24 68 48 C7 44 24 58 80 00 00 00",
         0xd6e4c20, runtime::Sig::addr, 0, 0, 0, ".data1"};
 const runtime::Sig S_SAVE_SLOT_REFRESH{"Game_SaveSlotManager_Refresh_14d6ef2a0", "41 57 41 56 56 57 55 53 48 83 EC 48 48 89 CE 48 8B B9 50 02 00 00 48 8D 4F 18 48 8B 47 18 FF 50 28",
@@ -1160,6 +1162,25 @@ bool replay_slot_is_ours(uint64_t comp)
     return false;
 }
 uint64_t slot_snapshot_hook(uint64_t comp, uint64_t slot, uint64_t flag);
+// What the Theatre card reads (re notes: replay-card-G): the slot's track stat id, and the metadata's session type, weather and length.
+constexpr size_t SLOT_INFO_TRACK = 0xb4, SLOT_INFO_SESSION = 0xb8, META_SESSION = 0x10, META_RACE_LENGTH = 0x1c, META_WEATHER = 0x1f;
+constexpr uint32_t SESSION_TYPE_TIME_TRIAL = 18;
+safetyhook::InlineHook h_replay_meta;
+std::atomic<bool> replay_meta_ours{false};
+
+// The save job fills the replay's metadata from the session; a Time Trial session leaves the session type at 0, and the card then shows no
+// session line. For a save through our own component the type says Time Trial.
+uint64_t replay_meta_hook(uint64_t meta, uint64_t a, uint64_t b, uint64_t c, uint64_t d)
+{
+    uint64_t r = h_replay_meta.call<uint64_t>(meta, a, b, c, d);
+    if (replay_meta_ours.exchange(false) && runtime::readable(reinterpret_cast<void *>(meta), 0x20)) {
+        *reinterpret_cast<uint32_t *>(meta + META_SESSION) = SESSION_TYPE_TIME_TRIAL;
+        *reinterpret_cast<int8_t *>(meta + META_RACE_LENGTH) = 0;
+        *reinterpret_cast<uint8_t *>(meta + META_WEATHER) = 1;
+        swofty::log("[replay] metadata 0x%llx: session type Time Trial written for the Theatre card", (unsigned long long)meta);
+    }
+    return r;
+}
 safetyhook::InlineHook h_slot_snapshot, h_slot_default, h_slot_refresh;
 std::atomic<int> slot_snapshot_skip{0};
 
@@ -1225,8 +1246,16 @@ uint64_t slot_snapshot_hook(uint64_t comp, uint64_t slot, uint64_t flag)
     static std::atomic<int> n{0};
     if (++n <= 12)
         swofty::log("[replay] slot snapshot for component 0x%llx slot 0x%llx flag %llu: %s", (unsigned long long)comp, (unsigned long long)slot, (unsigned long long)flag, ours ? "skipped (ours)" : "passed on");
-    if (ours)
+    if (ours) {
+        // The Theatre card reads its track line from the slot's track stat id; a skipped snapshot leaves it unset.
+        int track = runtime::direct_start::tt::track_stat();
+        if (track >= 0 && track < 0xff && runtime::readable(reinterpret_cast<void *>(slot), 0xc0)) {
+            *reinterpret_cast<uint8_t *>(slot + SLOT_INFO_TRACK) = uint8_t(track);
+            *reinterpret_cast<uint32_t *>(slot + SLOT_INFO_SESSION) = SESSION_TYPE_TIME_TRIAL;
+        }
+        swofty::log("[replay] slot 0x%llx: track stat id %d written for the Theatre card", (unsigned long long)slot, track);
         return 0;
+    }
     return h_slot_snapshot.call<uint64_t>(comp, slot, flag);
 }
 
@@ -1402,16 +1431,16 @@ void describe_component(const char *what, uint64_t x)
 void replay_job_wrapper_mid(safetyhook::Context &c)
 {
     static std::atomic<int> n{0};
-    if (++n > 8)
-        return;
     uint64_t x = c.r14;
     bool wrapper = (c.rcx & 0xff) != 0;
-    swofty::log("[replay] save job type check: component 0x%llx is %s", (unsigned long long)x, wrapper ? "a wrapper (its first plain child is used)" : "plain (used itself)");
-    describe_component("component", x);
-    uint64_t begin = runtime::readable(reinterpret_cast<void *>(x), 0x248) ? peek64(x + 0x238) : 0, end = begin ? peek64(x + 0x240) : 0;
-    for (uint64_t at = begin, k = 0; begin && at < end && k < 12; at += 8, k++)
-        if (runtime::readable(reinterpret_cast<void *>(at), 8))
-            describe_component("child", peek64(at));
+    if (++n <= 8) {
+        swofty::log("[replay] save job type check: component 0x%llx is %s", (unsigned long long)x, wrapper ? "a wrapper (its first plain child is used)" : "plain (used itself)");
+        describe_component("component", x);
+        uint64_t begin = runtime::readable(reinterpret_cast<void *>(x), 0x248) ? peek64(x + 0x238) : 0, end = begin ? peek64(x + 0x240) : 0;
+        for (uint64_t at = begin, k = 0; begin && at < end && k < 12; at += 8, k++)
+            if (runtime::readable(reinterpret_cast<void *>(at), 8))
+                describe_component("child", peek64(at));
+    }
     if (!wrapper || !tb::replay_ui_suppressed(replay_ui_until_ms.load(), now_ms()))
         return;
     if (replay_force == 2) {
@@ -1419,6 +1448,7 @@ void replay_job_wrapper_mid(safetyhook::Context &c)
         if (comp) {
             c.r14 = comp;
             c.rcx &= ~0xffull;
+            replay_meta_ours = true;
             swofty::log("[replay] SWOFTY_TT_REPLAY_FORCE=slot: our own save-slot component 0x%llx goes to the header writer", (unsigned long long)comp);
         }
     }
@@ -2324,6 +2354,10 @@ void setup()
                         if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&replay_load_start_hook)))
                             h_load_start = std::move(*h);
                     swofty::log("[replay] load start hook %s", h_load_start ? "armed" : "NOT armed");
+                    if (uintptr_t a = runtime::find(S_REPLAY_META, "boards", "boards"))
+                        if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&replay_meta_hook)))
+                            h_replay_meta = std::move(*h);
+                    swofty::log("[replay] metadata hook %s", h_replay_meta ? "armed" : "NOT armed");
                     if (uintptr_t a = runtime::find(S_REPLAY_LOAD_READY, "boards", "boards"))
                         hook_mid(h_load_ready, a, replay_load_ready_mid, "load start readiness");
                     if (uintptr_t a = runtime::find(S_SAVE_SLOT_DEFAULT, "boards", "boards"))

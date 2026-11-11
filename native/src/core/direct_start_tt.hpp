@@ -17,6 +17,8 @@ void reset_for_replay();
 std::string current_track();
 
 std::string session_track();
+// The stat id byte of the Time Trial's track record (what a save slot stores as its track), or -1.
+int track_stat();
 
 // The entrant list the Time Trial mode has selected (the request's "box").
 std::string player_list();

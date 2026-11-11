@@ -614,6 +614,27 @@ std::string current_track()
     return name ? name : "";
 }
 
+int track_stat()
+{
+    if (!runtime::same_build())
+        return -1;
+    DirectStartContext ctx = runtime::direct_start_context();
+    if (!ctx.game_modes)
+        return -1;
+    std::vector<std::string> names;
+    uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
+    uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    if (!e || !runtime::readable(e, ENTITY_TEAMS + 8))
+        return -1;
+    uint8_t *now = rva<CurrentTrack_t>(RVA_CURRENT_TRACK)(e);
+    if (!now || !runtime::readable(now, TRACK_NAME + 8)) {
+        std::string picked = runtime::track_select_time_trial();
+        names.clear();
+        now = picked.empty() ? nullptr : track_record(e, picked, names);
+    }
+    return now && runtime::readable(now, 2) ? int(now[1]) : -1;
+}
+
 std::string session_track()
 {
     std::string code = current_track();
