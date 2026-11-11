@@ -162678,6 +162678,34 @@
    "used_by": [
     "native/src/core/live_state.cpp"
    ]
+  },
+  {
+   "id": "live.racing_vehicles",
+   "section": ".xtls",
+   "pattern": "48 C7 44 24 78 00 00 00 00 48 8B 05",
+   "match": "0x1446d0622",
+   "anchor": "0xc",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x9",
+    "len": 7
+   },
+   "target": "0x146ce72b8",
+   "kind": "data",
+   "names": [
+    "g_Live_RacingVehicles"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "osd-l1",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live_state.cpp"
+   ]
   }
  ]
 }
