@@ -249,7 +249,7 @@ bool bridge_on = false, boards_on = false, guards_on = false, request_guard = fa
 std::atomic<bool> pb_armed{false};
 std::string last_board, session_code;
 std::atomic<bool> session_custom{false}, track_watch{false}, track_session{false};
-std::atomic<int64_t> track_checked_ms{0};
+std::atomic<int64_t> track_checked_ms{0}, diag_checked_ms{0};
 std::atomic<bool> unknown_logged{false};
 std::atomic<int> pending_count{0};
 std::deque<std::unique_ptr<tb::Response>> responses;
@@ -2810,14 +2810,10 @@ void diag_tick()
     if (!sys)
         return;
     uint64_t handler = peek64(sys + 0x278);
-    // Reading the board name and describing the handler are log work of a few guarded reads each; they run when the handler changes,
-    // twice a second otherwise, and every frame only under the diagnostics switch.
-    static int64_t watched_ms = 0;
-    int64_t t = now_ms();
-    bool due = diag_on || handler != diag_handler_seen || t - watched_ms >= 500;
+    // Reading the handler, the board name and describing the handler are guarded reads; tt_bridge_tick runs this at most twice a
+    // second and only while a Time Trial session is live (tb::diag_tick_on, tb::diag_tick_due).
     std::string name;
-    if (handler && due) {
-        watched_ms = t;
+    if (handler) {
         uint64_t ctx = peek64(handler + 0x58);
         uint64_t np = ctx ? peek64(ctx + 0x68) : 0;
         name = np ? tb::read_c(game_mem(), np) : std::string();
@@ -3341,9 +3337,13 @@ void tt_bridge_track_watch(bool session_live)
 void tt_bridge_tick()
 {
     replay_load_tick();
-    if (diag_on || bridge_on)
+    int64_t t = now_ms();
+    bool time_trial_live = track_session.load(std::memory_order_relaxed);
+    if (tb::diag_tick_due(tb::diag_tick_on(bridge_on, diag_on, time_trial_live), t, diag_checked_ms.load())) {
+        diag_checked_ms = t;
         diag_tick();
-    if (int64_t t = now_ms(); tb::track_watch_due(track_watch.load(std::memory_order_relaxed) && track_session.load(std::memory_order_relaxed), t, track_checked_ms.load())) {
+    }
+    if (tb::track_watch_due(track_watch.load(std::memory_order_relaxed) && time_trial_live, t, track_checked_ms.load())) {
         track_checked_ms = t;
         read_session_track();
     }
