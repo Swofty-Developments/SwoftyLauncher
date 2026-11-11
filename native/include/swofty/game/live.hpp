@@ -214,7 +214,8 @@ static_assert(offsetof(SessionSystem, entries_begin) == 0x148);
 static_assert(offsetof(SessionSystem, entries_end) == 0x150);
 
 struct SessionVehicleEntry {
-    uint8_t _pad_0x0[0x18];
+    uint8_t vehicle_id; // L2 experimental
+    uint8_t _pad_0x1[0x17];
     uint8_t status; // L2 experimental
     uint8_t _pad_0x19[0x1f];
     uint64_t time_penalty_a; // L2 experimental
@@ -227,6 +228,7 @@ struct SessionVehicleEntry {
     uint8_t _pad_0x94[0x4];
     uint32_t grid_position_b; // L2 experimental
 };
+static_assert(offsetof(SessionVehicleEntry, vehicle_id) == 0x0);
 static_assert(offsetof(SessionVehicleEntry, status) == 0x18);
 static_assert(offsetof(SessionVehicleEntry, time_penalty_a) == 0x38);
 static_assert(offsetof(SessionVehicleEntry, time_penalty_b) == 0x40);
@@ -275,5 +277,22 @@ static_assert(offsetof(VehicleProgressEntry, progress_lap_b) == 0x50);
 static_assert(offsetof(VehicleProgressEntry, progress_lap_delta) == 0x58);
 static_assert(offsetof(VehicleProgressEntry, total_a) == 0x98);
 static_assert(offsetof(VehicleProgressEntry, total_b) == 0xa0);
+
+inline constexpr data<"g_Live_ControllerSystem", ControllerSystem *> g_Live_ControllerSystem{}; // L2 experimental
+inline constexpr data<"g_Live_SectorCount", uint32_t> g_Live_SectorCount{}; // L2 experimental
+inline constexpr data<"g_Live_SectorEnds", float[22]> g_Live_SectorEnds{}; // L2 experimental
+inline constexpr data<"k_Live_EntrantsSystemKey", uint8_t> k_Live_EntrantsSystemKey{}; // L2 experimental
+inline constexpr data<"k_Live_GameModeSystemKey", uint8_t> k_Live_GameModeSystemKey{}; // L2 experimental
+inline constexpr data<"k_Live_GameVehicleProgressSystemKey", uint8_t> k_Live_GameVehicleProgressSystemKey{}; // L2 experimental
+inline constexpr data<"k_Live_MarshalZoneMonitorKey", uint8_t> k_Live_MarshalZoneMonitorKey{}; // L2 experimental
+inline constexpr data<"k_Live_PenaltyLogKey", uint8_t> k_Live_PenaltyLogKey{}; // L2 experimental
+inline constexpr data<"k_Live_PitLaneSystemKey", uint8_t> k_Live_PitLaneSystemKey{}; // L2 experimental
+inline constexpr data<"k_Live_RedFlagSystemKey", uint8_t> k_Live_RedFlagSystemKey{}; // L2 experimental
+inline constexpr data<"k_Live_RelativeGapHelperKey", uint8_t> k_Live_RelativeGapHelperKey{}; // L2 experimental
+inline constexpr data<"k_Live_SafetyCarLogicSystemKey", uint8_t> k_Live_SafetyCarLogicSystemKey{}; // L2 experimental
+inline constexpr data<"k_Live_SessionSystemKey", uint8_t> k_Live_SessionSystemKey{}; // L2 experimental
+inline constexpr data<"k_Live_SpectatorDirectorKey", uint8_t> k_Live_SpectatorDirectorKey{}; // L2 experimental
+inline constexpr data<"k_Live_TyreSystemKey", uint8_t> k_Live_TyreSystemKey{}; // L2 experimental
+inline constexpr data<"k_Live_VehicleHelperSystemKey", uint8_t> k_Live_VehicleHelperSystemKey{}; // L2 experimental
 
 }

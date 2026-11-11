@@ -2428,7 +2428,8 @@ const _: () = assert!(core::mem::offset_of!(SessionSystem, entries_end) == 0x150
 
 #[repr(C)]
 pub struct SessionVehicleEntry {
-    _pad_0x0: [u8; 0x18],
+    pub vehicle_id: u8,
+    _pad_0x1: [u8; 0x17],
     pub status: u8,
     _pad_0x19: [u8; 0x1f],
     pub time_penalty_a: u64,
@@ -2441,6 +2442,7 @@ pub struct SessionVehicleEntry {
     _pad_0x94: [u8; 0x4],
     pub grid_position_b: u32,
 }
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, vehicle_id) == 0x0);
 const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, status) == 0x18);
 const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, time_penalty_a) == 0x38);
 const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, time_penalty_b) == 0x40);
@@ -14763,6 +14765,21 @@ pub mod bindings {
         kind: "data",
         status: Status::Experimental,
     };
+    pub const g_Live_ControllerSystem: Binding = Binding {
+        id: "g_Live_ControllerSystem",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Live_SectorCount: Binding = Binding {
+        id: "g_Live_SectorCount",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Live_SectorEnds: Binding = Binding {
+        id: "g_Live_SectorEnds",
+        kind: "data",
+        status: Status::Experimental,
+    };
     pub const g_Ne_DefaultAllocator: Binding = Binding {
         id: "g_Ne_DefaultAllocator",
         kind: "data",
@@ -15010,6 +15027,71 @@ pub mod bindings {
     };
     pub const k_Gdb_StringXorKey: Binding = Binding {
         id: "k_Gdb_StringXorKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_EntrantsSystemKey: Binding = Binding {
+        id: "k_Live_EntrantsSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_GameModeSystemKey: Binding = Binding {
+        id: "k_Live_GameModeSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_GameVehicleProgressSystemKey: Binding = Binding {
+        id: "k_Live_GameVehicleProgressSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_MarshalZoneMonitorKey: Binding = Binding {
+        id: "k_Live_MarshalZoneMonitorKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_PenaltyLogKey: Binding = Binding {
+        id: "k_Live_PenaltyLogKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_PitLaneSystemKey: Binding = Binding {
+        id: "k_Live_PitLaneSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_RedFlagSystemKey: Binding = Binding {
+        id: "k_Live_RedFlagSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_RelativeGapHelperKey: Binding = Binding {
+        id: "k_Live_RelativeGapHelperKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_SafetyCarLogicSystemKey: Binding = Binding {
+        id: "k_Live_SafetyCarLogicSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_SessionSystemKey: Binding = Binding {
+        id: "k_Live_SessionSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_SpectatorDirectorKey: Binding = Binding {
+        id: "k_Live_SpectatorDirectorKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_TyreSystemKey: Binding = Binding {
+        id: "k_Live_TyreSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_VehicleHelperSystemKey: Binding = Binding {
+        id: "k_Live_VehicleHelperSystemKey",
         kind: "data",
         status: Status::Experimental,
     };
