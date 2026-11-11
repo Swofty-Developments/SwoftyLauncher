@@ -179,8 +179,9 @@ bool before_fg_wanted()
     return on;
 }
 
-// RivaTuner Statistics Server attaches to the process when the probe window is made, so this is asked after
-// arm_swapchain; its shared memory names it when it runs but has not attached yet.
+// RivaTuner Statistics Server attaches to the process when the probe window is made, so arm_before_fg asks this
+// after arm_swapchain; its shared memory names it when it runs but has not attached yet, which is what setup
+// sees before the probe window exists.
 std::string device_hook_rival()
 {
     for (auto name : hud::guard::DEVICE_HOOK_RIVALS)
@@ -2241,14 +2242,25 @@ void setup()
     bool on = gate_on();
     bool cover = runtime::room_cover::setup();
     bool menu = runtime::main_menu::wants_overlay();
+    hud::guard::ArmReasons reasons{on, cap.on, cover, menu};
+    if (!reasons.any()) {
+        swofty::log("[overlay] the overlay feature is experimental and off; the HUD present hook is not armed");
+        return;
+    }
+    if (reasons.menu_only()) {
+        std::string rival = device_hook_rival();
+        if (hud::guard::present_hook_yields(reasons, rival)) {
+            swofty::log("[main-menu] %s hooks the game's Present, so the present hook is not armed for the main menu "
+                        "panel and video card alone: they do not draw while RivaTuner Statistics Server is running "
+                        "(the home tiles still work; an overlay addon that is on arms the hook as before)",
+                        rival.c_str());
+            return;
+        }
+    }
     if (menu)
         swofty::log("[main-menu] the present hook arms for the main menu panel and video card");
     if (cover)
         swofty::log("[cover] a direct start is requested; the present hook arms for its cover screen");
-    if (!on && !cap.on && !cover && !menu) {
-        swofty::log("[overlay] the overlay feature is experimental and off; the HUD present hook is not armed");
-        return;
-    }
     if (!on && cap.on)
         swofty::log("[overlay] the overlay is off; the present hook arms for SWOFTY_FRAME_CAPTURE only");
     implemented = on;

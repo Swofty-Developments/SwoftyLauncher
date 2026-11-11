@@ -126,6 +126,23 @@ inline bool device_hooks_allowed(std::string_view rival, int forced)
     return rival.empty() || forced > 0;
 }
 
+// What asks for the present hook at setup. An overlay addon that is on, a frame capture and a direct start's
+// cover screen need it; the main menu panel and video card only decorate the home screen.
+struct ArmReasons {
+    bool overlay = false, capture = false, cover = false, menu = false;
+    bool any() const { return overlay || capture || cover || menu; }
+    bool menu_only() const { return menu && !overlay && !capture && !cover; }
+};
+
+// Whether the present hook stays off for a rival overlay. RivaTuner's hook attaches to the probe window
+// arm_swapchain opens and patches Present over the core's hook, so the swapchain hooks are not armed when the
+// main menu panel and video card are the only reason to arm them: they draw nothing and the home tiles still
+// work. With an overlay addon, a capture or a cover the hook arms as before, rival or not.
+inline bool present_hook_yields(const ArmReasons &reasons, std::string_view rival)
+{
+    return reasons.menu_only() && !rival.empty();
+}
+
 inline bool xml_int(const std::string &text, const char *element, const char *attr, int &out)
 {
     size_t at = text.find(std::string("<") + element + " ");
