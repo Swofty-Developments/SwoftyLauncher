@@ -77,6 +77,7 @@ void flow_mid(safetyhook::Context &)
     perf::flow_tick();
     perf::Scope p(probe);
     runtime::career_tick();
+    runtime::live_tick(now_seconds());
     runtime::telemetry_tick();
     runtime::popup_tick();
     runtime::mfd_tick();
