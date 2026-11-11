@@ -1110,6 +1110,7 @@ typedef struct SwoftyContentOps {
 #define SWOFTY_LIVE_HAVE_WORLD (1ull << 23)
 #define SWOFTY_LIVE_HAVE_SECTOR (1ull << 24)
 #define SWOFTY_LIVE_HAVE_GAP_AHEAD (1ull << 25)
+#define SWOFTY_LIVE_HAVE_PIT_LANE (1ull << 26)
 
 #define SWOFTY_LIVE_CAR_PLAYER (1u << 0)
 #define SWOFTY_LIVE_CAR_AI_DRIVING (1u << 1)
@@ -1151,7 +1152,10 @@ typedef struct SwoftyLiveCar {
     uint8_t sector;
     uint8_t drs;
     uint8_t pad2;
-    uint32_t reserved[8];
+    uint8_t pit_status;
+    uint8_t pit_stops;
+    uint8_t pad3[2];
+    uint32_t reserved[7];
 } SwoftyLiveCar;
 
 #define SWOFTY_LIVE_SHAVE_TYPE (1ull << 0)
