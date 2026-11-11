@@ -679,7 +679,8 @@ struct AppendOnce {
 
 impl Progress for AppendOnce {
     fn report(&self, _: f32, text: &str) {
-        if text.ends_with("state/session.json") && !self.done.swap(true, Ordering::Relaxed) {
+        if text.replace('\\', "/").ends_with("state/session.json") && !self.done.swap(true, Ordering::Relaxed)
+        {
             let mut file = std::fs::OpenOptions::new().append(true).open(&self.path).unwrap();
             std::io::Write::write_all(&mut file, b"after the copy\n").unwrap();
         }
