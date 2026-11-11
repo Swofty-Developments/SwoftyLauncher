@@ -196,4 +196,6 @@ The site loads Open Sans, Poppins, Quicksand, Source Code Pro and Varela Round f
 
 The generic HUD runtime helpers in `packages/sdk/include/swofty/` (`hud_leaves.hpp`, `hud_format.hpp`, `ease.hpp`, `hud_frame.hpp`, `timing.hpp`, `log_csv.hpp`) port the reusable parts of Project Halo's HUD code (leaf publishing, easing, gap text, the timing tower model and leaf contract, the validation log) with the permission of its author.
 
+The UI art writers in `packages/formats` (`surface.rs`, `emb.rs`, `animclip.rs`, `uipre.rs` and the texture link part of `material.rs`) follow the file layouts and build steps of Project Halo's build tools (`tools/native/resources.py`, `emb.py`, `halo_native.py`), <https://github.com/nyannoying1337/f1-25-project-halo>. The code is written for the launcher; the layouts, setter keys and the clip packet fields are Halo's measurements of the game.
+
 Uses work from Project Halo by nyannoying, <https://github.com/nyannoying1337/f1-25-project-halo>.
