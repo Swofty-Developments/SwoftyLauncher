@@ -308,6 +308,13 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
     h.game_build = runtime::build_exe_sha();
     if (h.game_build == "-")
         h.game_build.clear();
+    if (gate.nonce.empty()) {
+        std::string late = lr::gate_of(runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20)).nonce;
+        if (!late.empty()) {
+            gate.nonce = late;
+            swofty::log("[laps] the session nonce arrived after the session started; lap %u and the ones after carry it", lap.index);
+        }
+    }
     h.nonce = gate.nonce;
     h.content = b.content;
     h.track = b.track;
