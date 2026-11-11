@@ -70,7 +70,7 @@ inline constexpr Row ROWS[G_COUNT] = {
      "CarLiveInputs, CarChassisLive, CarBodyActor/State, CarSteeringLive, CarEngine and CarGearBox fields"},
     {G_ERS, F_ERS, true, "CarErs live fields"},
     {G_WORLD, F_WORLD, true, "CarBodyState.position"},
-    {G_AERO, F_AERO, false, "CarF1Aero.drs_flags is an L1 row"},
+    {G_AERO, F_AERO, true, "CarF1Aero.drs_flags"},
     {G_PROGRESS, F_PROGRESS && F_REGISTRY, true, "GameVehicleProgressSystem and VehicleProgressEntry fields"},
     {G_CLASS, F_CLASS && F_REGISTRY, true, "SessionSystem and SessionVehicleEntry fields"},
     {G_TIMING, F_TIMING && F_REGISTRY, true, "RelativeGapHelper, RelativeGapEntry, SafetyCarLogicSystem fields"},

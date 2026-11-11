@@ -805,10 +805,13 @@ const _: () = assert!(core::mem::offset_of!(CarErs, ers_mode) == 0x1a68);
 
 #[repr(C)]
 pub struct CarF1Aero {
-    _pad_0x0: [u8; 0x19a0],
+    _pad_0x0: [u8; 0x1988],
+    pub drs_flags: u8,
+    _pad_0x1989: [u8; 0x17],
     pub drag_scale: f32,
     pub lift_scale: f32,
 }
+const _: () = assert!(core::mem::offset_of!(CarF1Aero, drs_flags) == 0x1988);
 const _: () = assert!(core::mem::offset_of!(CarF1Aero, drag_scale) == 0x19a0);
 const _: () = assert!(core::mem::offset_of!(CarF1Aero, lift_scale) == 0x19a4);
 
@@ -16515,6 +16518,11 @@ pub mod bindings {
     pub const site_Trk_TrackData_SetMatched: Binding = Binding {
         id: "site_Trk_TrackData_SetMatched",
         kind: "site",
+        status: Status::Experimental,
+    };
+    pub const vt_Car_SystemsContainer: Binding = Binding {
+        id: "vt_Car_SystemsContainer",
+        kind: "vtable",
         status: Status::Experimental,
     };
     pub const vt_Car_VehicleEnvironment: Binding = Binding {
