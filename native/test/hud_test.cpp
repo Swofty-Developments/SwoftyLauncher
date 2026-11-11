@@ -944,6 +944,25 @@ static void test_png(const char *out)
     }
 }
 
+static void test_device_hook_rival()
+{
+    using namespace hud::guard;
+    CHECK(device_hook_rival("RTSSHooks64.dll") == "RTSSHooks64.dll" &&
+              device_hook_rival("C:\\Program Files (x86)\\RivaTuner Statistics Server\\rtsshooks64.DLL") == "RTSSHooks64.dll" &&
+              device_hook_rival("RTSSHooks.dll") == "RTSSHooks.dll",
+          "rivatuner's hook module is a device hook rival by name, path and case");
+    CHECK(device_hook_rival("sl.interposer.dll").empty() && device_hook_rival("sl.dlss_g.dll").empty() &&
+              device_hook_rival("medal-hook64-v2.dll").empty() && device_hook_rival("F1_25.exe").empty() &&
+              device_hook_rival("").empty(),
+          "streamline, other overlays and the game are not rivals");
+    CHECK(device_hook_rival_in({"F1_25.exe", "sl.interposer.dll", "RTSSHooks64.dll", "dxgi.dll"}) == "RTSSHooks64.dll" &&
+              device_hook_rival_in({"F1_25.exe", "sl.interposer.dll", "dxgi.dll"}).empty() && device_hook_rival_in({}).empty(),
+          "a module list names its rival or none");
+    CHECK(device_hooks_allowed("", -1) && device_hooks_allowed("", 1) && !device_hooks_allowed("RTSSHooks64.dll", -1) &&
+              !device_hooks_allowed("RTSSHooks64.dll", 0) && device_hooks_allowed("RTSSHooks64.dll", 1),
+          "a rival keeps the device hooks off unless SWOFTY_OVERLAY_FG / overlay_fg forces them");
+}
+
 static void test_fg_gate()
 {
     using hud::guard::Gate;
@@ -1156,6 +1175,7 @@ int main(int argc, char **argv)
     test_image_decode();
     test_guard();
     test_original_dispatch();
+    test_device_hook_rival();
     test_fg_gate();
     test_fg_barriers();
     test_exec_plan();
