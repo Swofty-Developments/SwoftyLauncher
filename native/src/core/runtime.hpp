@@ -300,6 +300,8 @@ std::vector<CoreMixins> estimate_laptime_mixins();
 void estimate_laptime_commit();
 std::vector<CoreMixins> garage_setup_mixins();
 void garage_setup_commit();
+std::vector<CoreMixins> theatre_list_mixins();
+void theatre_list_commit();
 std::vector<CoreMixins> session_enter_mixins();
 std::vector<CoreMixins> ai_line_set_mixins();
 void ai_line_set_commit();

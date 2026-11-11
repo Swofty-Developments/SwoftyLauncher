@@ -162812,6 +162812,60 @@
    "used_by": [
     "native/src/core/main_menu.cpp"
    ]
+  },
+  {
+   "id": "game.theatre_list_entry_step",
+   "section": ".xtls",
+   "pattern": "48 8B B9 A8 02 00 00 48 8B 49 40 48 69 DA A0 01 00 00 8B 44 1F 08",
+   "match": "0x142bfc530",
+   "anchor": "0x173",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142bfc6a3",
+   "kind": "mid",
+   "expect": "4A 8D 14 C2 4D 8B 41 38",
+   "names": [
+    "site_Game_TheatreList_EntryStep"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "theatre-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/theatre_list.cpp"
+   ]
+  },
+  {
+   "id": "game.theatre_list_no_slot",
+   "section": ".xtls",
+   "pattern": "48 8B B9 A8 02 00 00 48 8B 49 40 48 69 DA A0 01 00 00 8B 44 1F 08",
+   "match": "0x142bfc530",
+   "anchor": "0x231",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142bfc761",
+   "kind": "mid",
+   "expect": "48 83 C4 28 5B 5D 5F 5E",
+   "names": [
+    "site_Game_TheatreList_NoSlot"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "theatre-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/theatre_list.cpp"
+   ]
   }
  ]
 }
