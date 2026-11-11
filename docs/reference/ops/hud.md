@@ -164,6 +164,41 @@ hud_spectator.erp  hud_spectator_2.ui with the same groups under its three dials
 
 Every element and template node name starts with the record's `prefix` (default: the addon id and the record key, lowercase, `_` between words, at most 24 characters), so two addons never share a name. The archives are ready `overlay` operations, so the runtime loader takes the grown scenes as they are.
 
+## Composition order
+
+The composer is the last step that writes these resources, and it builds on what the others leave:
+
+```text
+1. the game's original archives            read through the launcher's baseline, never a modified folder
+2. addons' own archive operations          replace-resource, put-resource, patch-pkg and overlay on the
+                                           template, the spectator file, the dial scenes, their string
+                                           tables and .uipre files, applied in load order to a scratch copy
+3. the ADDONS MFD page                     the launcher's own edit of hud_dynamic_templates.ui, from the
+                                           options of addons that declare `hud.mfd`
+4. the composer                            grows the scenes and adds its nodes to the result of 1 to 3
+5. the overlay operations                  the composed archives go in after every other addon's
+                                           operations, under their own origin ("<addon> (HUD composer)")
+```
+
+So the one template that ends up in the game carries every addon's `<prefix>_ctl` group, the MFD page, and the edit of an addon that replaced `hud_dynamic_templates.ui` (Planked Brake Panel's `replace-resource`, say). Step 3 is applied again by the menu build on the data route; it does nothing the second time, so the page is in the template once. On the runtime route the composed overlay archive already holds the page, so the overlay does not take it away.
+
+The build's `hud:` lines say which addon's change the composed archives were built on top of.
+
+## When another addon's change cannot be carried
+
+A change from step 2 that fails to apply to the scratch copy (a `patch-pkg` that no longer finds its node under the composed dial, say) is not carried. The build goes on and warns, naming both addons:
+
+```text
+Planked Brake Panel: its change to a HUD resource cannot be applied under Halo's composed HUD (<reason>); the composed overlay replaces that resource with a copy of the game's own
+```
+
+Two limits:
+
+- The composer reads `flow_race.erp`'s copy of each resource. A change that only another archive carries (`flow_options.erp`'s copy of the template) is not seen.
+- A whole-archive `put` of `flow_race.erp`, `flow_options.erp`, `persistent.erp` or `screens/hud_spectator_2.erp` is read as that archive, and a later put of one of them drops the composed overlay for it like any other overlay.
+
+A compose error (an unknown game value, a missing sprite, a prefix two records share) stops the build with `the HUD elements do not compose: <reason>`.
+
 ## Rules the composer keeps
 
 - `isHidden` on an element does not hide it in game or in the editor; only a template node's `visible` does. A root hidden by default has a `visible` node, and the spectator HUD gets its own groups.

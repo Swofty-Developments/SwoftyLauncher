@@ -249,6 +249,24 @@ pub fn mfd_rows(settings: &SessionSettings) -> Vec<MfdRow> {
     out
 }
 
+/// The rows of the ADDONS MFD page: a heading per addon, then its rows.
+pub fn mfd_page_rows(mfd_rows: &[MfdRow]) -> Vec<mfd::Row> {
+    let mut rows: Vec<mfd::Row> = Vec::new();
+    for (k, r) in mfd_rows.iter().enumerate() {
+        if k == 0 || mfd_rows[k - 1].addon != r.addon {
+            rows.push(mfd::Row {
+                label: r.title.clone(),
+                value: None,
+            });
+        }
+        rows.push(mfd::Row {
+            label: r.label.clone(),
+            value: Some(mfd::value_path(k)),
+        });
+    }
+    rows
+}
+
 pub fn build(
     settings: &SessionSettings,
     input: &dyn Fn(&str) -> PathBuf,
@@ -576,19 +594,7 @@ pub fn build(
     build.lines.extend(career_lines);
     build.warnings.extend(career_warnings);
     if !mfd_rows.is_empty() {
-        let mut rows: Vec<mfd::Row> = Vec::new();
-        for (k, r) in mfd_rows.iter().enumerate() {
-            if k == 0 || mfd_rows[k - 1].addon != r.addon {
-                rows.push(mfd::Row {
-                    label: r.title.clone(),
-                    value: None,
-                });
-            }
-            rows.push(mfd::Row {
-                label: r.label.clone(),
-                value: Some(mfd::value_path(k)),
-            });
-        }
+        let rows = mfd_page_rows(&mfd_rows);
         for rel in mfd::TEMPLATE_ERPS {
             let (src, dst) = erp(rel);
             write_erp(

@@ -1294,33 +1294,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         }
         outputs.insert(id.clone(), out.finish());
     }
-    if let Some(first) = hud_inputs.first() {
+    if !hud_inputs.is_empty() {
         for input in &hud_inputs {
             for sprite in input.record.sprites.values() {
                 let path = input.dir.join(&sprite.png);
                 hasher.update(&std::fs::read(&path).map_err(io_err(&path))?);
             }
-        }
-        let stock = crate::hud::GameStock::with_baseline(&game.dir, &store.root)
-            .unwrap_or_else(|_| crate::hud::GameStock::new(&game.dir));
-        let composed = crate::hud::compose(&stock, &hud_inputs)
-            .map_err(|e| Error::Other(format!("the HUD elements do not compose: {e}")))?;
-        let owner = first.addon.clone();
-        composed.write(&store.addon_cache_dir(&owner).join("hud"))?;
-        for a in &composed.archives {
-            hasher.update(&a.bytes);
-        }
-        built
-            .lines
-            .extend(composed.lines.iter().map(|l| format!("hud: {l}")));
-        for op in composed.ops("hud") {
-            planner.push(Op {
-                op: AssetOp::Erp(op),
-                origin: Origin {
-                    addon: owner.clone(),
-                    item: None,
-                },
-            });
         }
     }
     // The core applies registry records at boot only when it loads at the early stage, on the runtime and the
@@ -1990,6 +1969,46 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         built
             .warnings
             .push(stray_asset_group_line(&name(&id), &folder, n));
+    }
+    if !hud_inputs.is_empty() {
+        let stock = crate::hud::GameStock::with_baseline(&game.dir, &store.root)
+            .unwrap_or_else(|_| crate::hud::GameStock::new(&game.dir));
+        let staged = built.plan.data.clone();
+        let base = |rel: &str| {
+            staged
+                .get(rel)
+                .or_else(|| puts.get(rel).map(|p| &p.path))
+                .cloned()
+                .unwrap_or_else(|| resolve(rel))
+        };
+        let mfd_rows = match menus {
+            true => crate::ui::mfd_rows(&session),
+            false => Vec::new(),
+        };
+        let page = crate::ui::mfd_page_rows(&mfd_rows);
+        let mfd_edit = |data: &[u8]| crate::ui::mfd::templates(data, &page);
+        let put_names: Vec<String> = puts.keys().cloned().collect();
+        let composed = crate::hud::integrate::compose_in_build(
+            &crate::hud::integrate::Context {
+                store,
+                stock: &stock,
+                base: &base,
+                puts: &put_names,
+                name: &name,
+            },
+            &erp_ops,
+            &hud_inputs,
+            (!page.is_empty()).then_some(&mfd_edit as crate::hud::TemplateBase),
+        )?;
+        let owner = hud_inputs[0].addon.clone();
+        composed
+            .output
+            .write(&store.addon_cache_dir(&owner).join("hud"))?;
+        built
+            .lines
+            .extend(composed.lines.iter().map(|l| format!("hud: {l}")));
+        built.warnings.extend(composed.warnings);
+        erp_ops.extend(composed.ops);
     }
     if !erp_ops.is_empty() || !puts.is_empty() {
         let staged = built.plan.data.clone();
