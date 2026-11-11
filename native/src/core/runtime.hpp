@@ -327,6 +327,7 @@ void tt_bridge_lap_finished(int64_t lap_ms, int valid);
 void tt_bridge_lap_progress(double path_m, double elapsed_s);
 std::string tt_bridge_last_board();
 void tt_bridge_session_enter();
+void tt_bridge_track_watch(bool session_live);
 void lap_rec_ghost(uintptr_t handler);
 void lap_rec_native_trace(const uint8_t *data, size_t size);
 bool lap_rec_current_board(std::string &content, std::string &track, std::string &weather);

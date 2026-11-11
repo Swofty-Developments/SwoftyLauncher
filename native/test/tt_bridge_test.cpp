@@ -96,6 +96,13 @@ int main()
         uint8_t other[16] = {0x5e, 0x2c, 0x17, 0x57, 0xff, 0xff, 0xff, 0xff};
         expect(tb::garage_node_offset(other, sizeof other) == -1, "another node id does not match");
     }
+    expect(!tb::track_watch_on(true, false, false, false, false) && !tb::track_watch_on(true, true, true, false, false), "the track watch is off outside a session, whatever is on");
+    expect(!tb::track_watch_on(true, true, true, true, false), "a live session that is not a Time Trial does not run the track watch");
+    expect(tb::track_watch_on(true, false, false, true, true) && tb::track_watch_on(false, true, false, true, true) && tb::track_watch_on(false, false, true, true, true),
+           "a live Time Trial runs the track watch for the bridge, the guards or the diagnostics");
+    expect(!tb::track_watch_on(false, false, false, true, true), "a live Time Trial with nothing on does not run it");
+    expect(!tb::track_watch_due(false, 10000, 0) && !tb::track_watch_due(true, 10400, 10000) && tb::track_watch_due(true, 10500, 10000) && tb::track_watch_due(true, 500, 0),
+           "the watch reads the track twice a second only while on");
     expect(tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0), "a panel with seven tabs is driven once");
     expect(!tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0x1000, 7), "the same panel is not driven twice");
     expect(!tb::garage_should_drive(false, true, 0x1000, 0x2000, 0x2038, 0) && !tb::garage_should_drive(true, false, 0x1000, 0x2000, 0x2038, 0),

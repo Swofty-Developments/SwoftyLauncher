@@ -9,6 +9,7 @@
 
 #include "apply/content/lower.hpp"
 #include "apply/ids.hpp"
+#include "apply/moments.hpp"
 #include "direct_start_tt.hpp"
 #include "hooks/hooks.hpp"
 
@@ -247,7 +248,7 @@ Resolved found;
 bool bridge_on = false, boards_on = false, guards_on = false, request_guard = false, push_hooked = false;
 std::atomic<bool> pb_armed{false};
 std::string last_board, session_code;
-std::atomic<bool> session_custom{false}, track_watch{false};
+std::atomic<bool> session_custom{false}, track_watch{false}, track_session{false};
 std::atomic<int64_t> track_checked_ms{0};
 std::atomic<bool> unknown_logged{false};
 std::atomic<int> pending_count{0};
@@ -3302,22 +3303,49 @@ void complete(const tb::Completion &done)
 
 }
 
+namespace {
+
+std::string read_session_track()
+{
+    std::string code = runtime::lower(runtime::direct_start::tt::session_track());
+    session_custom = tb::board_track(swofty_core::apply::tracks::base(), code).custom;
+    std::lock_guard<std::mutex> g(lock);
+    session_code = code;
+    return code;
+}
+
+}
+
 namespace runtime {
+
+void tt_bridge_track_watch(bool session_live)
+{
+    bool time_trial = session_live && swofty_core::apply::moments::session_mode_track().first == "time_trial";
+    bool on = tb::track_watch_on(bridge_on, guards_on, diag_on, session_live, time_trial);
+    if (track_session.exchange(on) == on)
+        return;
+    if (on) {
+        track_checked_ms = now_ms();
+        std::string code = read_session_track();
+        swofty::log("[boards] track watch on: Time Trial session entered on track '%s'; the track is read twice a second until the session ends", code.c_str());
+        return;
+    }
+    std::string code;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        code = session_code;
+    }
+    swofty::log("[boards] track watch off: the session ended; the last track '%s' is kept", code.c_str());
+}
 
 void tt_bridge_tick()
 {
     replay_load_tick();
     if (diag_on || bridge_on)
         diag_tick();
-    if (track_watch.load(std::memory_order_relaxed)) {
-        int64_t t = now_ms();
-        if (t - track_checked_ms.load() >= 500) {
-            track_checked_ms = t;
-            std::string code = runtime::lower(direct_start::tt::session_track());
-            session_custom = tb::board_track(swofty_core::apply::tracks::base(), code).custom;
-            std::lock_guard<std::mutex> g(lock);
-            session_code = std::move(code);
-        }
+    if (int64_t t = now_ms(); tb::track_watch_due(track_watch.load(std::memory_order_relaxed) && track_session.load(std::memory_order_relaxed), t, track_checked_ms.load())) {
+        track_checked_ms = t;
+        read_session_track();
     }
     if (!pending_count.load(std::memory_order_relaxed))
         return;

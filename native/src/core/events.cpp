@@ -153,6 +153,7 @@ void session_enter_mid(safetyhook::Context &)
     }
     if (restart)
         runtime::session_emit({true, false, runtime::session_life::END_RESTART});
+    runtime::tt_bridge_track_watch(true);
     disp.fire(SWOFTY_EVENT_SESSION_START, 0, 0, nullptr, now_seconds());
     swofty_core::hooks::bridge_legacy(SWOFTY_EVENT_SESSION_START, 0, 0, nullptr);
 }
@@ -358,9 +359,9 @@ void session_emit(const session_life::Emit &e)
 {
     if (e.end || e.unload)
         tyre_models_drop();
-    if (e.end)
-        lap_rec_session_end();
     if (e.end) {
+        lap_rec_session_end();
+        tt_bridge_track_watch(false);
         swofty::log("[events] session.end (%s)", e.reason == session_life::END_RESTART  ? "restart"
                                                  : e.reason == session_life::END_UNLOAD ? "ended as the unload began"
                                                                                        : "StateSession exited");
