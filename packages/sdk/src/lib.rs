@@ -31,6 +31,7 @@ pub const SETTINGS_STRUCT_HEADER: &str = include_str!("../include/swofty/setting
 pub const TIMING_HEADER: &str = include_str!("../include/swofty/timing.hpp");
 pub const FAKE_HUD_HEADER: &str = include_str!("../include/swofty/fake_hud.hpp");
 pub const LIVE_HEADER: &str = include_str!("../include/swofty/live.hpp");
+pub const FAKE_LIVE_HEADER: &str = include_str!("../include/swofty/fake_live.hpp");
 
 pub const CAREER_START_PICK: u32 = 0;
 pub const CAREER_START_NEW: u32 = 1;
@@ -1052,6 +1053,10 @@ mod tests {
         assert_eq!(
             include_str!("../../../templates/addon/native/include/swofty/fake_hud.hpp"),
             FAKE_HUD_HEADER
+        );
+        assert_eq!(
+            include_str!("../../../templates/addon/native/include/swofty/fake_live.hpp"),
+            FAKE_LIVE_HEADER
         );
     }
 

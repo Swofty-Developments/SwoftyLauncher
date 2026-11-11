@@ -26,8 +26,7 @@
 //
 //   swofty::fake::Clock clock;  clock.advance(0.5);
 //
-// fake::Live is a documented stub: the live-state structs (swofty::live) are defined by the live-state work;
-// until then build timing::Car / timing::Session values from literals.
+// fake::Live (fake_live.hpp) is the fake core live state for swofty::live.
 
 namespace swofty::fake {
 
