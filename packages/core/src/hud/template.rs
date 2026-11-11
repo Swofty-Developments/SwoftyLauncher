@@ -96,15 +96,17 @@ pub fn resolve(b: &Bind, usage: Usage, what: &str) -> Result<Resolved> {
         })
     };
     if let Some(l) = &b.view_model {
+        // An int leaf is written through Vm_Set_Int (an int64 node), the family the stock template
+        // binds as si32; ui32 is the tag of the game's own unsigned values only.
         let tag = match (b.ty, usage) {
             (None | Some(Ty::Bool), Usage::Visible) => *b"bool",
             (None | Some(Ty::Text), Usage::Text | Usage::Texture) => *b"stri",
-            (Some(Ty::I32), Usage::Text) => *b"ui32",
+            (Some(Ty::I32 | Ty::Si32), Usage::Text) => *b"si32",
             (None | Some(Ty::F32), Usage::Fraction) => *b"fp32",
-            (Some(Ty::Si32), _) => {
+            (Some(Ty::Ui32), _) => {
                 return Err(err(format!(
-                    "{what}: leaf {l} is declared si32, which is for the game's own values the stock \
-                     template binds (session number_of_laps); a leaf is text or i32"
+                    "{what}: leaf {l} is declared ui32, the tag of the game's own unsigned values; an \
+                     int leaf is i32 (the core writes it as a signed int, bound si32)"
                 )));
             }
             (ty, _) => {
@@ -120,6 +122,37 @@ pub fn resolve(b: &Bind, usage: Usage, what: &str) -> Result<Resolved> {
             default: b.default_bool(),
             key: l.trim_start_matches('#').to_owned(),
             leaf: true,
+            colour,
+        });
+    }
+    if let Some(p) = &b.path {
+        let tag = match (b.ty, usage) {
+            (None | Some(Ty::Bool), Usage::Visible) => *b"bool",
+            (Some(Ty::Text), Usage::Text | Usage::Texture) => *b"stri",
+            (None, Usage::Texture) => *b"stri",
+            (Some(Ty::I32 | Ty::Si32), Usage::Text) => *b"si32",
+            (Some(Ty::Ui32), Usage::Text) => *b"ui32",
+            (None | Some(Ty::F32), Usage::Fraction) => *b"fp32",
+            (None, Usage::Colour) => *b"rgba",
+            (None, Usage::Text) => {
+                return Err(err(format!(
+                    "{what}: path {p} needs ty (text, si32 or ui32), the tag the game gives the value; a \
+                     wrong tag crashes the game, so read it from a stock node that binds the path"
+                )));
+            }
+            (ty, _) => {
+                return Err(err(format!(
+                    "{what}: path {p} is declared {ty:?}, which this binding cannot read"
+                )));
+            }
+        };
+        return Ok(Resolved {
+            db: leaf_path(p),
+            tag,
+            negate: b.negate,
+            default: b.default_bool(),
+            key: p.trim_start_matches('#').to_owned(),
+            leaf: false,
             colour,
         });
     }
@@ -431,9 +464,10 @@ fn decision_node(d: &Decision, plan: &Plan, stock_root: &Node, parent: &str, bas
 
 /// Whether a plan's text reads the session clock, so its group needs the formatter.
 pub fn needs_clock(plan: &Plan) -> bool {
+    let out = plan.clock.as_ref().and_then(|c| c.output.as_deref());
     plan.texts
         .iter()
-        .any(|t| t.db.as_deref() == Some(dials::CLOCK_STR))
+        .any(|t| t.db.as_deref() == Some(dials::CLOCK_STR) || (out.is_some() && t.db.as_deref() == out))
 }
 
 /// The stock session timer's formatter (the one UITF `hud_session_timer_dynamic…
@@ -462,6 +496,76 @@ pub fn clock_formatter(stock_root: &Node, name: &str) -> Result<Node> {
     let mut n = src.clone();
     node::rename(&mut n, name)?;
     Ok(n)
+}
+
+/// The clock formatter of a plan with its record's `clock` applied: the clone writes `output` when
+/// one is named (and the plan's texts read it), and the signals that re-format it: the group's own
+/// `trigger`, and an MVCD on the `start` bool (state `1`) when there is one. Returns the nodes to add
+/// and the signals for the group's `trigger` command, both addressed under `base`.
+pub fn clock_nodes(stock_root: &Node, plan: &Plan, base: &str) -> Result<(Vec<Node>, Vec<Node>)> {
+    let mut fmt = clock_formatter(stock_root, "clock_fmt")?;
+    let fmt_path = format!("{base}.clock_fmt");
+    let mut nodes = Vec::new();
+    let mut sigs = vec![node::sig(&fmt_path, "formatTime", "trigger")];
+    if let Some(c) = &plan.clock {
+        if let Some(out) = &c.output {
+            let p = fmt.props_mut()?;
+            p.set("database_output", node::typed_prop(*b"stri", "", out));
+        }
+        if let Some(start) = &c.start {
+            let name = "mv_clock";
+            let mv = node::mvcd_node(
+                name,
+                &start.db,
+                vec![
+                    node::event("1", vec![node::sig(&fmt_path, "formatTime", "1")]),
+                    node::event("0", vec![]),
+                ],
+            );
+            let mv_path = format!("{base}.{name}");
+            sigs.push(node::sig(&mv_path, "register", "trigger"));
+            sigs.push(node::sig(&mv_path, "query", "trigger"));
+            nodes.push(mv);
+        }
+    }
+    nodes.insert(0, fmt);
+    Ok((nodes, sigs))
+}
+
+/// Adds `sigs` to the group's `trigger` command, making the command when there is none yet.
+pub fn add_trigger_signals(grp: &mut Node, sigs: Vec<Node>) -> Result<()> {
+    if sigs.is_empty() {
+        return Ok(());
+    }
+    let cmds = grp.slot_mut(node::COMMANDS)?;
+    for c in cmds.iter_mut() {
+        let is_trigger = c
+            .as_obj()
+            .and_then(|o| o.get("commandName"))
+            .and_then(Node::as_val)
+            .and_then(Val::as_str)
+            == Some("trigger");
+        if is_trigger {
+            c.o_mut()?.at_mut("signals")?.a_mut()?.extend(sigs);
+            return Ok(());
+        }
+    }
+    cmds.push(node::command("trigger", sigs));
+    Ok(())
+}
+
+/// The plan's texts that read the stock clock, pointed at the record's own `clock.output` leaf.
+pub fn with_clock_output(plan: &Plan) -> Plan {
+    let Some(out) = plan.clock.as_ref().and_then(|c| c.output.as_deref()) else {
+        return plan.clone();
+    };
+    let mut p = plan.clone();
+    for t in &mut p.texts {
+        if t.db.as_deref() == Some(dials::CLOCK_STR) {
+            t.db = Some(out.to_owned());
+        }
+    }
+    p
 }
 
 /// The bound nodes of a plan: visibility, colour, texture, text, fraction and switch nodes. A plan
@@ -520,6 +624,9 @@ pub fn bound_nodes(plan: &Plan, tex: Option<&TexFacts>) -> Result<Vec<Node>> {
             vec![],
         ));
     }
+    for c in &plan.statics {
+        kids.push(node::static_colour_node(&c.name, &c.element, c.colour));
+    }
     Ok(kids)
 }
 
@@ -534,9 +641,13 @@ fn tex_facts(plan: &Plan, hud_template: &Node) -> Result<Option<TexFacts>> {
 /// decision nodes, with the `trigger` and `untrigger` commands.
 pub fn group(plan: &Plan, stock_root: &Node, parent: &str) -> Result<Node> {
     let base = format!("{parent}.{}", plan.ctl_name());
+    let plan = &with_clock_output(plan);
     let mut kids = bound_nodes(plan, tex_facts(plan, stock_root)?.as_ref())?;
+    let mut trigger_sigs = Vec::new();
     if needs_clock(plan) {
-        kids.push(clock_formatter(stock_root, "clock_fmt")?);
+        let (nodes, sigs) = clock_nodes(stock_root, plan, &base)?;
+        kids.extend(nodes);
+        trigger_sigs = sigs;
     }
     let mut decision_names = Vec::new();
     for d in &plan.decisions {
@@ -555,6 +666,7 @@ pub fn group(plan: &Plan, stock_root: &Node, parent: &str) -> Result<Node> {
     if !decision_names.is_empty() {
         node::decision_commands(&mut grp, &base, &decision_names)?;
     }
+    add_trigger_signals(&mut grp, trigger_sigs)?;
     Ok(grp)
 }
 
@@ -606,9 +718,11 @@ pub fn attach_scene(
     scene: &str,
     plan: &Plan,
 ) -> Result<usize> {
+    let plan = &with_clock_output(plan);
     let mut kids = bound_nodes(plan, tex_facts(plan, template)?.as_ref())?;
     if needs_clock(plan) {
-        kids.push(clock_formatter(template, "clock_fmt")?);
+        let (nodes, _) = clock_nodes(template, plan, parent)?;
+        kids.extend(nodes);
     }
     let at = node::find_path(template, parent)?;
     let target = node::node_at_mut(template, &at)?;
@@ -690,8 +804,76 @@ mod tests {
         );
         let mut i = b.clone();
         i.ty = Some(Ty::I32);
-        assert_eq!(resolve(&i, Usage::Text, "t").unwrap().tag, *b"ui32");
+        assert_eq!(resolve(&i, Usage::Text, "t").unwrap().tag, *b"si32");
         assert!(resolve(&i, Usage::Visible, "t").is_err());
+        i.ty = Some(Ty::Si32);
+        assert_eq!(resolve(&i, Usage::Text, "t").unwrap().tag, *b"si32");
+        i.ty = Some(Ty::Ui32);
+        let e = resolve(&i, Usage::Text, "t").unwrap_err().to_string();
+        assert!(e.contains("ui32"), "{e}");
+    }
+
+    #[test]
+    fn a_path_binding_carries_the_declared_tag() {
+        let p = |path: &str, ty: Option<Ty>| Bind {
+            path: Some(path.into()),
+            ty,
+            ..Bind::default()
+        };
+        let r = resolve(
+            &p("#view_model_data.hud.content.lap_times.pill_0.active", None),
+            Usage::Visible,
+            "t",
+        )
+        .unwrap();
+        assert_eq!(
+            (r.db.as_str(), r.tag, r.leaf),
+            (
+                "#view_model_data.hud.content.lap_times.pill_0.active",
+                *b"bool",
+                false
+            )
+        );
+        let e = resolve(&p("#session.number_of_laps", None), Usage::Text, "t")
+            .unwrap_err()
+            .to_string();
+        assert!(e.contains("needs ty"), "{e}");
+        assert_eq!(
+            resolve(&p("#session.number_of_laps", Some(Ty::Si32)), Usage::Text, "t")
+                .unwrap()
+                .tag,
+            *b"si32"
+        );
+        assert_eq!(
+            resolve(
+                &p("#session.current_car.position", Some(Ty::Ui32)),
+                Usage::Text,
+                "t"
+            )
+            .unwrap()
+            .tag,
+            *b"ui32"
+        );
+        assert_eq!(
+            resolve(&p("x.gap_text", Some(Ty::Text)), Usage::Text, "t")
+                .unwrap()
+                .db,
+            "#x.gap_text"
+        );
+        assert_eq!(
+            resolve(&p("x.nub_colour", None), Usage::Colour, "t").unwrap().tag,
+            *b"rgba"
+        );
+        assert_eq!(
+            resolve(&p("x.team_badge_texture", None), Usage::Texture, "t")
+                .unwrap()
+                .tag,
+            *b"stri"
+        );
+        let mut both = p("x.a", None);
+        both.view_model = Some("view_model_data.hud_x".into());
+        assert!(resolve(&both, Usage::Visible, "t").is_err());
+        assert!(resolve(&p("#a..b", None), Usage::Visible, "t").is_err());
     }
 
     #[test]
@@ -776,8 +958,7 @@ mod tests {
         assert_eq!(resolve(&laps, Usage::Text, "laps").unwrap().tag, *b"si32");
         let mut leaf = Bind::leaf("view_model_data.hud_tt_n");
         leaf.ty = Some(Ty::Si32);
-        let e = resolve(&leaf, Usage::Text, "n").unwrap_err().to_string();
-        assert!(e.contains("declared si32"), "{e}");
+        assert_eq!(resolve(&leaf, Usage::Text, "n").unwrap().tag, *b"si32");
         let clock = Bind {
             session: Some(dials::CLOCK_STR.into()),
             ..Bind::default()

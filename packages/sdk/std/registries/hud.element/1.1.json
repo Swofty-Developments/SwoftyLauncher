@@ -43,7 +43,14 @@
       "type": "object",
       "additionalProperties": {
         "type": "object",
-        "properties": { "show": { "$ref": "#/$defs/bind" } },
+        "properties": {
+          "show": { "$ref": "#/$defs/bind" },
+          "hide": {
+            "description": "Element ids hidden for good on this screen (a static visible = false inside the instance).",
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          }
+        },
         "additionalProperties": false
       }
     },
@@ -56,11 +63,25 @@
           "template": { "type": "string", "pattern": "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$" },
           "scene": { "description": "The stock scene the elements belong to, when the template node itself names none.", "type": "string", "pattern": "^eaid://.+\\.idf$" },
           "hide": { "type": "array", "items": { "type": "string", "minLength": 1 } },
+          "wrap": {
+            "description": "Elements a stock node already targets (a second visible on them would not hold): each gets a new null <prefix>_w_<element> around it in the scene, in its place and with its name, and the wrapper is hidden instead. Needs scene.",
+            "type": "array",
+            "items": { "type": "string", "minLength": 1 }
+          },
           "while": { "$ref": "#/$defs/bind" }
         },
-        "required": ["template", "hide"],
+        "required": ["template"],
         "additionalProperties": false
       }
+    },
+    "clock": {
+      "description": "With a text that reads session time_remaining_str: output is the record's own leaf the cloned stock formatter writes (view_model_data.<name>), start a bool leaf whose change re-formats it (an MVCD, state 1) besides the record's own trigger.",
+      "type": "object",
+      "properties": {
+        "output": { "type": "string", "pattern": "^#?(view_model_data|ui_menu_data)\\.[A-Za-z0-9_]+$" },
+        "start": { "$ref": "#/$defs/bind" }
+      },
+      "additionalProperties": false
     },
     "restyle": {
       "description": "Scene-level edits that add, move or rename no element: per stock scene, fill quads refilled from a sprite through their mesh slot, elements hidden (isHidden plus a static hide node under every template parent), elements scaled about a pivot, texts restyled and element params set. Or a preset: { preset: banner, sprite } is Project Halo's Race Control banner restyle with the fills from that sprite.",
@@ -235,10 +256,15 @@
       "additionalProperties": false
     },
     "bind": {
-      "description": "A value the template binds. Exactly one of view_model, game, session and session_car. view_model is one of the addon's leaves (view_model_data.<name>, or ui_menu_data.<name> where a record targets a scene); game is a name in the core's table of the dial's own values; session is a #session path; session_car reads a car of the session by vehicle id.",
+      "description": "A value the template binds. Exactly one of view_model, path, game, session and session_car. view_model is one of the addon's leaves (view_model_data.<name>, or ui_menu_data.<name> where a record targets a scene); path is any other path of the game's view model, with ty the tag the game gives it; game is a name in the core's table of the dial's own values; session is a #session path; session_car reads a car of the session by vehicle id.",
       "type": "object",
       "properties": {
         "view_model": { "type": "string", "pattern": "^#?(view_model_data|ui_menu_data)\\.[A-Za-z0-9_{}]+$" },
+        "path": {
+          "description": "A dotted path of the game's own view model (#session.number_of_laps, #view_model_data.hud.content.lap_times.pill_0.active). A visible reads it as a bool, a tint as a colour, a texture as text; a text needs ty. When a stock node binds the path the tag is checked against it; a wrong tag crashes the game.",
+          "type": "string",
+          "pattern": "^#?[A-Za-z0-9_{}]+(\\.[A-Za-z0-9_{}]+)*$"
+        },
         "game": { "type": "string", "minLength": 1 },
         "session": { "type": "string", "minLength": 1 },
         "session_car": { "type": "string", "minLength": 1 },
@@ -253,7 +279,10 @@
           "type": "string",
           "minLength": 1
         },
-        "ty": { "enum": ["bool", "text", "i32", "si32", "f32"] },
+        "ty": {
+          "description": "The value's type. On a leaf: bool, text, i32 (written as a signed int, bound si32) or f32. On a path: the tag the game gives the value, si32, ui32, text or bool.",
+          "enum": ["bool", "text", "i32", "si32", "ui32", "f32"]
+        },
         "not": { "type": "boolean", "default": false },
         "default": {
           "description": "The value while the leaf is absent: a bool for visible, a #RRGGBBAA colour for tint, a string for texture."
@@ -284,7 +313,15 @@
         "rot": { "type": "number" },
         "visible": { "$ref": "#/$defs/bind" },
         "tint": { "$ref": "#/$defs/bind" },
-        "hidden": { "type": "boolean" },
+        "hidden": {
+          "description": "Never shown: isHidden in the scene and a static visible = false template node (isHidden alone does not hide in game).",
+          "type": "boolean"
+        },
+        "colour": {
+          "description": "On a text or sprite: one fixed colour, #RRGGBB or #RRGGBBAA, as a static colourOverride node.",
+          "type": "string",
+          "pattern": "^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$"
+        },
         "style": { "type": "string" },
         "align": { "enum": ["left", "centre", "right"] },
         "box": { "type": "number", "exclusiveMinimum": 0 },
@@ -341,14 +378,15 @@
       "additionalProperties": false
     },
     "decision": {
-      "description": "A decision node of the dial template. svcd compares one game value with equals and shows the elements in yes (the others in no); mvcd shows, for each state of a game value, the elements listed for that state.",
+      "description": "A decision node of the template. svcd compares one value with equals and shows the elements in yes (the others in no); mvcd shows, for each state of a value, the elements listed for that state. The value is game (a dial's own, from the core's table) or on (a path or view_model binding; a screen record decides on paths only, and only on a screen whose parent registers decisions, the standings).",
       "type": "object",
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,23}$" },
         "type": { "enum": ["svcd", "mvcd"] },
         "game": { "type": "string", "minLength": 1 },
+        "on": { "$ref": "#/$defs/bind" },
         "equals": { "type": "integer" },
-        "ty": { "enum": ["ui32"] },
+        "ty": { "enum": ["ui32", "si32", "stri", "bool"] },
         "states": {
           "type": "object",
           "additionalProperties": { "type": "array", "items": { "type": "string" } }
@@ -356,7 +394,7 @@
         "yes": { "type": "array", "items": { "type": "string" } },
         "no": { "type": "array", "items": { "type": "string" } }
       },
-      "required": ["id", "type", "game"],
+      "required": ["id", "type"],
       "additionalProperties": false
     },
     "editor": {

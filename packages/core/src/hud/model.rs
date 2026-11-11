@@ -81,16 +81,20 @@ pub enum Ty {
     Text,
     I32,
     Si32,
+    Ui32,
     F32,
 }
 
 /// A value a template node binds: the addon's own leaf, a value of the dial's own view model
-/// (`game`), a `#session` path, or one car of the session.
+/// (`game`), a `#session` path, one car of the session, or any other path of the game's view model
+/// (`path`, with its tag declared by `ty`).
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Bind {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub view_model: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub path: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub game: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -129,6 +133,7 @@ impl Bind {
     pub fn check(&self) -> Result<()> {
         let n = [
             self.view_model.is_some(),
+            self.path.is_some(),
             self.game.is_some(),
             self.session.is_some(),
             self.session_car.is_some(),
@@ -139,8 +144,16 @@ impl Bind {
         .count();
         if n != 1 {
             return Err(err(
-                "a binding names exactly one of view_model, game, session, session_car and screen",
+                "a binding names exactly one of view_model, path, game, session, session_car and screen",
             ));
+        }
+        if let Some(p) = &self.path {
+            let body = p.trim_start_matches('#');
+            if body.is_empty() || body.split('.').any(str::is_empty) || body.contains(char::is_whitespace) {
+                return Err(err(format!(
+                    "path {p} is a dotted view-model path, such as #session.number_of_laps"
+                )));
+            }
         }
         let slots = self.slot.is_some() as u8 + self.slot_var.is_some() as u8;
         if self.session_car.is_some() != (slots == 1) {
@@ -202,6 +215,8 @@ pub struct Element {
     pub tint: Option<Bind>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hidden: Option<bool>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub colour: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub style: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -268,7 +283,12 @@ pub struct Decision {
     pub id: String,
     #[serde(rename = "type")]
     pub kind: String,
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub game: String,
+    /// In place of `game`: any value of the game's view model, decided on by its own states (an MVCD on
+    /// a bool has the states `0` and `1`).
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub on: Option<Bind>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub equals: Option<i64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -303,7 +323,12 @@ pub struct StockNodes {
     pub template: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub scene: Option<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub hide: Vec<String>,
+    /// Elements a stock node already targets: each gets a new null around it in the scene (its name
+    /// and order kept) and the wrapper is hidden instead.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub wrap: Vec<String>,
     #[serde(default, rename = "while", skip_serializing_if = "Option::is_none")]
     pub while_: Option<Bind>,
 }
@@ -391,6 +416,20 @@ pub struct RestylePreset {
 pub struct Also {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub show: Option<Bind>,
+    /// Element ids hidden for good on this screen (a static `visible = false` inside the instance).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub hide: Vec<String>,
+}
+
+/// The session clock a record's texts read through the stock formatter clone: the leaf it writes
+/// and a bool leaf whose change re-formats it, besides the record's own trigger.
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Clock {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub output: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub start: Option<Bind>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -446,6 +485,8 @@ pub struct HudElement {
     pub decisions: Vec<Decision>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub editor: Option<Editor>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub clock: Option<Clock>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub variants: BTreeMap<String, Variant>,
     #[serde(flatten)]
@@ -600,6 +641,33 @@ impl HudElement {
             let ok = matches!(d.kind.as_str(), "svcd" | "mvcd");
             if !ok {
                 return Err(err(format!("decision {}: type is svcd or mvcd", d.id)));
+            }
+            if d.game.is_empty() == d.on.is_none() {
+                return Err(err(format!(
+                    "decision {}: one of game (a value of the dial's table) and on (a path binding)",
+                    d.id
+                )));
+            }
+            if let Some(b) = &d.on {
+                b.check()?;
+                if b.path.is_none() && b.view_model.is_none() {
+                    return Err(err(format!(
+                        "decision {}: on is a path or view_model binding",
+                        d.id
+                    )));
+                }
+                if d.kind == "mvcd" && d.states.is_empty() {
+                    return Err(err(format!(
+                        "decision {}: an mvcd on a path lists its states (0 and 1 for a bool)",
+                        d.id
+                    )));
+                }
+                if d.kind == "svcd" && d.ty.is_none() {
+                    return Err(err(format!(
+                        "decision {}: an svcd on a path declares ty, the tag of the value",
+                        d.id
+                    )));
+                }
             }
             let shown = d.yes.iter().chain(&d.no).chain(d.states.values().flatten());
             for id in shown {
@@ -764,6 +832,7 @@ fn substitute_element(e: &mut Element, vars: &[(char, u32)]) -> Result<()> {
         .flatten()
     {
         text(&mut b.view_model)?;
+        text(&mut b.path)?;
         text(&mut b.session)?;
         text(&mut b.session_car)?;
         if let Some(sv) = &b.slot_var
@@ -854,6 +923,13 @@ fn check_element(e: &Element, ids: &mut std::collections::BTreeSet<String>) -> R
         Kind::Unit => need("unit and size", e.unit.is_some() && e.size.is_some())?,
     }
     super::units::check_element(e)?;
+    if let Some(c) = &e.colour {
+        need(
+            "kind text or sprite for colour",
+            matches!(kind, Kind::Text | Kind::Sprite),
+        )?;
+        super::textures::hex_rgba(c).map_err(|m| err(format!("element {}: colour: {m}", e.id)))?;
+    }
     for b in [&e.visible, &e.tint, &e.value].into_iter().flatten() {
         b.check()?;
     }

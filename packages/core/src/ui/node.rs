@@ -975,6 +975,19 @@ pub fn colour_node(name: &str, element: &str, db: &str, default: [u8; 4]) -> Nod
     )
 }
 
+/// The node that tints a scene element with one fixed colour (a text's own colour, a quad's tint).
+pub fn static_colour_node(name: &str, element: &str, colour: [u8; 4]) -> Node {
+    group_node(
+        name,
+        vec![(
+            "colourOverride",
+            obj(vec![("value", Node::Val(Val::raw(*b"rgba", colour)))]),
+        )],
+        &[element],
+        vec![],
+    )
+}
+
 /// The node that sets a scene element's texture from a bound value: `textureOverride` on `layout`
 /// (an eXRef, then the quad inside its unit) with the tag the stock node binds it with.
 pub fn texture_node(name: &str, layout: &[&str], tag: [u8; 4], default: &str, db: &str) -> Node {

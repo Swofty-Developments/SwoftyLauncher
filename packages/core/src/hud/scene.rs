@@ -90,6 +90,21 @@ pub struct ShowItem {
     pub default: bool,
 }
 
+/// A fixed colour on one element (`colour` on a text or sprite).
+#[derive(Debug, Clone)]
+pub struct StaticColour {
+    pub name: String,
+    pub element: String,
+    pub colour: [u8; 4],
+}
+
+/// The record's `clock`, resolved: the output leaf path and the start bool.
+#[derive(Debug, Clone)]
+pub struct ClockSpec {
+    pub output: Option<String>,
+    pub start: Option<Resolved>,
+}
+
 #[derive(Debug, Clone)]
 pub struct ClipSpec {
     pub node: String,
@@ -117,6 +132,8 @@ pub struct Plan {
     pub clips: Vec<ClipSpec>,
     pub pv_texts: Vec<(String, String)>,
     pub known: Vec<(String, [u8; 4])>,
+    pub statics: Vec<StaticColour>,
+    pub clock: Option<ClockSpec>,
     pub root_hidden: bool,
     pub root_y: f64,
     pub footprint: [f64; 4],
@@ -369,6 +386,30 @@ impl Builder {
 
     /// Adds one record's elements under the scene's root element, in HUD units from the scene's origin,
     /// and returns its plan.
+    fn clock_of(rec: &HudElement) -> Result<Option<ClockSpec>> {
+        let Some(c) = &rec.clock else { return Ok(None) };
+        let output = match &c.output {
+            Some(o) => {
+                let r = template::resolve(&Bind::leaf(o), Usage::Text, "clock output")?;
+                Some(r.db)
+            }
+            None => None,
+        };
+        let start = match &c.start {
+            Some(b) => Some(template::resolve(b, Usage::Visible, "clock start")?),
+            None => None,
+        };
+        Ok(Some(ClockSpec { output, start }))
+    }
+
+    fn switched_of(rec: &HudElement) -> BTreeSet<String> {
+        rec.decisions
+            .iter()
+            .flat_map(|d| d.yes.iter().chain(&d.no).chain(d.states.values().flatten()))
+            .cloned()
+            .collect()
+    }
+
     pub fn add_scene_record(&mut self, rec: &HudElement, pfx: &str, sprites: &Sprites) -> Result<Plan> {
         self.add_scene_record_in(rec, pfx, sprites, Mode::Live)
     }
@@ -392,6 +433,7 @@ impl Builder {
             pfx: pfx.to_owned(),
             root: root_name.clone(),
             preview,
+            clock: Self::clock_of(rec)?,
             ..Plan::default()
         };
         let mut root = self.null(&root_name, [0.0; 3], None, false, false)?;
@@ -404,9 +446,10 @@ impl Builder {
             names: format!("{root_name}_"),
             sprites,
             mode,
-            switched: BTreeSet::new(),
+            switched: Self::switched_of(rec),
             plan: &mut plan,
         };
+        cx.plan.decisions = rec.decisions.clone();
         let mut kids = Vec::new();
         for e in &model::expand(&rec.elements, rows)? {
             if let Some(n) = self.element(&mut cx, e)? {
@@ -636,6 +679,7 @@ impl Builder {
             preview,
             root_y,
             footprint,
+            clock: Self::clock_of(rec)?,
             ..Plan::default()
         };
         let mut root = self.null(&root_name, [0.0, root_y, 0.0], None, false, live_hidden)?;
@@ -643,12 +687,7 @@ impl Builder {
             names: format!("{root_name}_"),
             sprites,
             mode,
-            switched: rec
-                .decisions
-                .iter()
-                .flat_map(|d| d.yes.iter().chain(&d.no).chain(d.states.values().flatten()))
-                .cloned()
-                .collect(),
+            switched: Self::switched_of(rec),
             plan: &mut plan,
         };
         cx.plan.decisions = rec.decisions.clone();
@@ -890,9 +929,24 @@ impl Builder {
                 negate: r.negate,
                 default: r.default,
             });
+        } else if e.hidden == Some(true) {
+            // isHidden alone does not hide in game: a static visible = false node does
+            cx.plan.shows.push(ShowItem {
+                name: format!("v_{}", e.id),
+                element: outer.clone(),
+                default: false,
+            });
+        }
+        if let Some(c) = &e.colour {
+            cx.plan.statics.push(StaticColour {
+                name: format!("c_{}", e.id),
+                element: outer.clone(),
+                colour: super::textures::hex_rgba(c)?,
+            });
         }
         if let Some(b) = &e.tint {
             let r = template::resolve(b, Usage::Colour, name)?;
+            cx.plan.known.push((r.db.clone(), r.tag));
             let target = if e.kind == Some(Kind::Sweep) {
                 format!("{name}_fill")
             } else {
@@ -975,6 +1029,20 @@ impl Builder {
             localise,
             visible,
         });
+        if e.hidden == Some(true) && e.visible.is_none() {
+            plan.shows.push(ShowItem {
+                name: format!("v_{}", e.id),
+                element: idf::elem_name(&holder).to_owned(),
+                default: false,
+            });
+        }
+        if let Some(c) = &e.colour {
+            plan.statics.push(StaticColour {
+                name: format!("c_{}", e.id),
+                element: name.to_owned(),
+                colour: super::textures::hex_rgba(c)?,
+            });
+        }
         Ok(Some(holder))
     }
 
@@ -1222,7 +1290,7 @@ pub(crate) struct Cx<'a, 'p> {
 }
 
 pub fn preview_key(b: &Bind) -> String {
-    if let Some(l) = &b.view_model {
+    if let Some(l) = b.view_model.as_ref().or(b.path.as_ref()) {
         return l.trim_start_matches('#').to_owned();
     }
     if let Some(g) = &b.game {
