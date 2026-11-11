@@ -84,6 +84,13 @@ pub fn compose_in_build(
 ) -> Result<Composed> {
     let mut written: BTreeSet<&str> = dials::written().into_iter().collect();
     written.extend(inputs.iter().filter_map(|i| i.record.scene.as_deref()));
+    written.extend(
+        inputs
+            .iter()
+            .flat_map(|i| i.record.stock_nodes.iter())
+            .filter(|s| !s.wrap.is_empty())
+            .filter_map(|s| s.scene.as_deref()),
+    );
     if inputs.iter().any(|i| i.record.screen.is_some()) {
         written.extend(screen_build::written());
     }

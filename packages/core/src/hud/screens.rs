@@ -377,6 +377,8 @@ impl ScreenFacts {
 pub struct Target {
     pub facts: ScreenFacts,
     pub show: Bind,
+    /// Element ids hidden for good on this screen.
+    pub hide: Vec<String>,
 }
 
 /// A record's `screen`, `show` and `also` fields as the screens it shows its elements on.
@@ -405,6 +407,7 @@ pub fn targets(rec: &HudElement) -> Result<Option<Vec<Target>>> {
     let mut out = vec![Target {
         facts: ScreenFacts::parse(screen)?,
         show: show_of(rec.show.as_ref(), "screen")?,
+        hide: Vec::new(),
     }];
     for (k, v) in &rec.also {
         let facts = ScreenFacts::parse(&serde_json::Value::String(k.clone()))?;
@@ -412,7 +415,11 @@ pub fn targets(rec: &HudElement) -> Result<Option<Vec<Target>>> {
         if out.iter().any(|t| t.facts.key == facts.key) {
             return Err(err(format!("also.{k}: the record already targets {k}")));
         }
-        out.push(Target { facts, show });
+        out.push(Target {
+            facts,
+            show,
+            hide: v.hide.clone(),
+        });
     }
     Ok(Some(out))
 }

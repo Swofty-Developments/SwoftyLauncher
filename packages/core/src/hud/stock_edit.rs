@@ -37,14 +37,153 @@ pub fn stock_nodes(rec: &HudElement) -> Result<Vec<StockNodes>> {
                 s.template
             )));
         }
-        if s.hide.is_empty() {
+        if s.hide.is_empty() && s.wrap.is_empty() {
             return Err(err(format!("stock_nodes: {} hides nothing", s.template)));
+        }
+        if !s.wrap.is_empty() && s.scene.is_none() {
+            return Err(err(format!(
+                "stock_nodes {}: wrap rewrites the scene, so name it with scene",
+                s.template
+            )));
+        }
+        if let Some(w) = s.wrap.iter().find(|w| s.hide.contains(w)) {
+            return Err(err(format!(
+                "stock_nodes {}: {w} is both hidden and wrapped",
+                s.template
+            )));
         }
         if let Some(b) = &s.while_ {
             b.check()?;
         }
     }
     Ok(list)
+}
+
+/// The name of the null wrapped around a stock element.
+pub fn wrap_name(pfx: &str, element: &str) -> String {
+    format!("{pfx}_w_{element}")
+}
+
+fn find_parent_index(e: &Node, name: &str) -> Option<(Vec<usize>, usize)> {
+    let kids = e.as_obj()?.get("children")?.as_arr()?;
+    for (i, c) in kids.items.iter().enumerate() {
+        if c.as_obj().is_none() {
+            continue;
+        }
+        if idf::elem_name(c) == name {
+            return Some((Vec::new(), i));
+        }
+        if let Some((mut path, j)) = find_parent_index(c, name) {
+            path.insert(0, i);
+            return Some((path, j));
+        }
+    }
+    None
+}
+
+fn child_at_mut<'a>(e: &'a mut Node, path: &[usize]) -> Result<&'a mut Node> {
+    let mut cur = e;
+    for i in path {
+        cur = cur
+            .o_mut()?
+            .at_mut("children")?
+            .a_mut()?
+            .get_mut(*i)
+            .ok_or_else(|| err("the wrap path left the scene"))?;
+    }
+    Ok(cur)
+}
+
+/// The scene with a new null `<pfx>_w_<element>` around each of `s.wrap`, in the element's place
+/// in its parent's children, so every stock name and the drawing order stay; the ids of the moved
+/// subtrees follow their new paths and the lookup grows by the wrappers. Returns the bytes and the
+/// wrapper names.
+pub fn wrap_scene(bytes: &[u8], s: &StockNodes, pfx: &str) -> Result<(Vec<u8>, Vec<String>)> {
+    let mut pkg = Pkg::parse(bytes)?;
+    let root = scene_root(&pkg)?;
+    let all = idf::elements(root);
+    let tmpl = all
+        .iter()
+        .find(|(_, e)| crate::ui::catalog::element_type(e) == "eNull")
+        .map(|(_, e)| idf::detached(e))
+        .ok_or_else(|| {
+            err(format!(
+                "stock_nodes {}: the scene has no eNull to clone a wrapper from",
+                s.template
+            ))
+        })?;
+    let scene = s.scene.clone().unwrap_or_default();
+    let mut names = Vec::new();
+    for el in &s.wrap {
+        let hits: Vec<&Node> = all
+            .iter()
+            .filter(|(_, e)| idf::elem_name(e) == el)
+            .map(|(_, e)| *e)
+            .collect();
+        let [e] = hits[..] else {
+            return Err(err(format!(
+                "stock_nodes {}: {} elements named {el} in the scene, one expected",
+                s.template,
+                hits.len()
+            )));
+        };
+        if is_hidden(e) {
+            return Err(err(format!(
+                "stock_nodes {}: {el} is hidden by default already",
+                s.template
+            )));
+        }
+        let name = wrap_name(pfx, el);
+        if idf::find(root, &name).is_some() {
+            return Err(err(format!(
+                "stock_nodes {}: the scene already has {name}",
+                s.template
+            )));
+        }
+        names.push(name);
+    }
+    let stock_ids = idf::id_map(root);
+    let wrapped: BTreeSet<String> = s.wrap.iter().cloned().collect();
+    let root = idf::scenes_mut(&mut pkg)?
+        .first_mut()
+        .ok_or_else(|| err("the file has no scene"))?
+        .o_mut()?
+        .at_mut("scene")?;
+    for (el, name) in s.wrap.iter().zip(&names) {
+        let (path, i) = find_parent_index(root, el).ok_or_else(|| err(format!("{el} went missing")))?;
+        let parent = child_at_mut(root, &path)?;
+        let kids = parent.o_mut()?.at_mut("children")?.a_mut()?;
+        let inner = std::mem::replace(&mut kids[i], Node::Val(Val::bool(false)));
+        let mut w = idf::detached(&tmpl);
+        idf::rename(&mut w, name)?;
+        idf::set_param_like(&mut w, "guid", Val::str(guid(&scene, name)))?;
+        idf::set_transform(&mut w, [0.0; 3], super::geom::QUAT_IDENTITY, [1.0; 3])?;
+        idf::clear_list(&mut w, "children")?;
+        idf::clear_list(&mut w, "anims")?;
+        if idf::param(&w, "isHidden").is_some() {
+            idf::set_param_like(&mut w, "isHidden", Val::bool(false))?;
+        }
+        idf::children_mut(&mut w)?.push(inner);
+        kids[i] = w;
+    }
+    for kid in idf::children_mut(root)? {
+        let n = idf::elem_name(kid).to_owned();
+        idf::recompute_ids(kid, &n)?;
+    }
+    let entry = &mut idf::scenes_mut(&mut pkg)?[0];
+    idf::relookup(entry)?;
+    let after = idf::id_map(scene_root(&pkg)?);
+    for (k, v) in &stock_ids {
+        let last = k.rsplit('.').next().unwrap_or(k);
+        let moved = k.split('.').any(|part| wrapped.contains(part));
+        if !moved && after.get(k) != Some(v) {
+            return Err(err(format!(
+                "stock_nodes {}: the stock element {last} changed its id",
+                s.template
+            )));
+        }
+    }
+    Ok((pkg.to_bytes()?, names))
 }
 
 /// The scene a template node instances, by the component `debugName` of the node or its nearest
@@ -160,7 +299,7 @@ pub fn check_stock_nodes(scene_root: &Node, template_root: &Node, s: &StockNodes
 
 /// The group of hide nodes for one `stock_nodes` entry: `visible <- NOT while` (default true) per
 /// element, or a static `visible = false` when there is no leaf.
-pub fn stock_nodes_group(s: &StockNodes, name: &str) -> Result<Node> {
+pub fn stock_nodes_group(s: &StockNodes, name: &str, wraps: &[String]) -> Result<Node> {
     let sw = s
         .while_
         .as_ref()
@@ -173,6 +312,13 @@ pub fn stock_nodes_group(s: &StockNodes, name: &str) -> Result<Node> {
             None => node::hidden(&format!("v_{el}"), &[el]),
         });
     }
+    for w in wraps {
+        let el = w.rsplit("_w_").next().unwrap_or(w);
+        kids.push(match &sw {
+            Some(r) => node::visible_node(&format!("v_w_{el}"), w, true, Some(&r.db), !r.negate),
+            None => node::hidden(&format!("v_w_{el}"), &[w]),
+        });
+    }
     Ok(node::group_node(name, vec![], &[], kids))
 }
 
@@ -183,6 +329,7 @@ pub fn attach_stock_nodes(
     scene_root: &Node,
     s: &StockNodes,
     name: &str,
+    wraps: &[String],
 ) -> Result<usize> {
     check_stock_nodes(scene_root, stock_template, s)?;
     let at = node::find_path(template, &s.template)?;
@@ -194,10 +341,10 @@ pub fn attach_stock_nodes(
     {
         return Err(err(format!("{} already has a {name}", s.template)));
     }
-    let mut grp = stock_nodes_group(s, name)?;
+    let mut grp = stock_nodes_group(s, name, wraps)?;
     node::fix_ids(&mut grp, Some(&s.template));
     target.slot_mut(node::CHILDREN)?.push(grp);
-    Ok(s.hide.len())
+    Ok(s.hide.len() + wraps.len())
 }
 
 pub const TWIN_LAYER: i32 = 60;
@@ -721,6 +868,7 @@ mod tests {
 
     fn entry() -> StockNodes {
         StockNodes {
+            wrap: Vec::new(),
             template: "hud_lap_counter.osd_visibility_option".into(),
             scene: None,
             hide: vec!["lap_bg".into(), "lockup".into()],
@@ -733,7 +881,7 @@ mod tests {
         let scene = elem("Scene Root", vec![elem("lap_bg", vec![]), elem("lockup", vec![])]);
         let stock = template(vec![]);
         let mut t = stock.clone();
-        let n = attach_stock_nodes(&mut t, &stock, &scene, &entry(), "tt_sn0").unwrap();
+        let n = attach_stock_nodes(&mut t, &stock, &scene, &entry(), "tt_sn0", &[]).unwrap();
         assert_eq!(n, 2);
         let at = node::find_path(&t, "hud_lap_counter.osd_visibility_option.tt_sn0").unwrap();
         let grp = node::node_at(&t, &at).unwrap();
@@ -767,7 +915,7 @@ mod tests {
             Some("#x.y"),
             false,
         )]);
-        let e = attach_stock_nodes(&mut bound.clone(), &bound, &scene, &entry(), "tt_sn0")
+        let e = attach_stock_nodes(&mut bound.clone(), &bound, &scene, &entry(), "tt_sn0", &[])
             .unwrap_err()
             .to_string();
         assert!(e.contains("already shows or hides lap_bg"), "{e}");
@@ -779,11 +927,11 @@ mod tests {
                 elem("lockup", vec![]),
             ],
         );
-        assert!(attach_stock_nodes(&mut stock.clone(), &stock, &twice, &entry(), "tt_sn0").is_err());
+        assert!(attach_stock_nodes(&mut stock.clone(), &stock, &twice, &entry(), "tt_sn0", &[]).is_err());
         let mut st = entry();
         st.while_ = None;
         let mut t = stock.clone();
-        attach_stock_nodes(&mut t, &stock, &scene, &st, "tt_sn1").unwrap();
+        attach_stock_nodes(&mut t, &stock, &scene, &st, "tt_sn1", &[]).unwrap();
         let at = node::find_path(&t, "hud_lap_counter.osd_visibility_option.tt_sn1.v_lap_bg").unwrap();
         let v = node::node_at(&t, &at)
             .unwrap()

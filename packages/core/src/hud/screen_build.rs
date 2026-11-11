@@ -14,7 +14,7 @@ use swofty_formats::emb;
 use swofty_formats::pkg::{Node, Pkg, Val};
 
 use super::dials::{self, DialFacts};
-use super::model::{Bind, Dial};
+use super::model::{Bind, Decision, Dial};
 use super::scene::{Builder, Mode, Plan, SpriteInfo, Sprites};
 use super::screens::{self, At, ScreenFacts, Target};
 use super::stock_edit::{self, Restyle, StockNodes};
@@ -280,6 +280,61 @@ pub fn add_instances(
 /// Bindings the control group adds beyond the plan's, with their tags.
 pub type Known = Vec<(String, [u8; 4])>;
 
+/// A decision of a screen record: an MVCD or SVCD on the path `on` names (no dial value, no stock
+/// copy), its events showing and hiding the plan's switched elements under `base`.
+fn path_decision(d: &Decision, plan: &Plan, base: &str) -> Result<Node> {
+    let on = d.on.as_ref().ok_or_else(|| {
+        err(format!(
+            "decision {}: a screen record decides on a path (on), not a dial value (game)",
+            d.id
+        ))
+    })?;
+    let usage = match on.ty {
+        None | Some(super::model::Ty::Bool) => Usage::Visible,
+        _ => Usage::Text,
+    };
+    let r = template::resolve(on, usage, &format!("decision {}", d.id))?;
+    let signals = |show: &BTreeSet<&String>, all: &[&String], ev: &str| -> Result<Vec<Node>> {
+        let mut out = Vec::new();
+        for id in all {
+            let pin = if show.contains(id) { "show" } else { "hide" };
+            out.push(node::sig(&format!("{base}.{}", plan.switched_node(id)?), pin, ev));
+        }
+        Ok(out)
+    };
+    let name = format!("d_{}", d.id);
+    if d.kind == "mvcd" {
+        let all: Vec<&String> = d
+            .states
+            .values()
+            .flatten()
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect();
+        let mut events = Vec::new();
+        for (ev, shown) in &d.states {
+            let show: BTreeSet<&String> = shown.iter().collect();
+            events.push(node::event(ev, signals(&show, &all, ev)?));
+        }
+        return Ok(node::mvcd_node(&name, &r.db, events));
+    }
+    let tag = template::parse_tag(d.ty.as_deref().unwrap_or("ui32"));
+    let all: Vec<&String> = d.yes.iter().chain(&d.no).collect();
+    let yes: BTreeSet<&String> = d.yes.iter().collect();
+    let no: BTreeSet<&String> = d.no.iter().collect();
+    let events = vec![
+        node::event("yes", signals(&yes, &all, "yes")?),
+        node::event("no", signals(&no, &all, "no")?),
+    ];
+    Ok(node::svcd_node(
+        &name,
+        tag,
+        &d.equals.unwrap_or(0).to_string(),
+        &r.db,
+        events,
+    ))
+}
+
 /// The `<prefix>_ctl` group of one record on one screen: the masks (visible <- NOT show, default
 /// true), the host switch `host_n` (visible <- show, default false) holding the cap's own graphics
 /// and the editor copy hidden, the root shown (or following the screen's own switch) and every bound
@@ -290,12 +345,15 @@ pub type Known = Vec<(String, [u8; 4])>;
 pub fn control_group(
     facts: &ScreenFacts,
     show: &Bind,
+    hide: &[String],
     plan: &Plan,
     pfx: &str,
     hud_root: &Node,
 ) -> Result<(Node, Known)> {
     let sw = template::resolve(show, Usage::Visible, "show")?;
     let host = facts.host_name(pfx);
+    let base = format!("{}.{pfx}_ctl", facts.parent_ui);
+    let plan = &template::with_clock_output(plan);
     let mut known = Vec::new();
     let mut kids = Vec::new();
     for (i, chain) in facts.masks.iter().enumerate() {
@@ -332,6 +390,14 @@ pub fn control_group(
             None => TexFacts::hud(hud_root)?,
         })
     };
+    if let Some(t) = &tex
+        && let Some((db, _)) = &t.series
+    {
+        known.push((db.clone(), t.series_tag));
+    }
+    for id in hide {
+        inner.push(node::hidden(&format!("h_{id}"), &[&format!("{pfx}_{id}")]));
+    }
     inner.extend(template::bound_nodes(plan, tex.as_ref())?);
     kids.push(node::group_node(
         "host_n",
@@ -350,8 +416,19 @@ pub fn control_group(
             vec![],
         ));
     }
+    let mut trigger_sigs = Vec::new();
     if template::needs_clock(plan) {
-        kids.push(template::clock_formatter(hud_root, "clock_fmt")?);
+        let (nodes, sigs) = template::clock_nodes(hud_root, plan, &base)?;
+        kids.extend(nodes);
+        trigger_sigs = sigs;
+    }
+    let mut decision_names = Vec::new();
+    if facts.wire.is_some() {
+        for d in &plan.decisions {
+            let n = path_decision(d, plan, &base)?;
+            decision_names.push(n.name().to_owned());
+            kids.push(n);
+        }
     }
     let mut names = BTreeSet::new();
     fn walk(n: &Node, names: &mut BTreeSet<String>) -> Result<()> {
@@ -365,9 +442,27 @@ pub fn control_group(
         }
         Ok(())
     }
-    let grp = node::group_node(&format!("{pfx}_ctl"), vec![], &[], kids);
+    let mut grp = node::group_node(&format!("{pfx}_ctl"), vec![], &[], kids);
     for c in grp.slot(node::CHILDREN)? {
         walk(c, &mut names)?;
+    }
+    if !decision_names.is_empty() {
+        node::decision_commands(&mut grp, &base, &decision_names)?;
+    }
+    template::add_trigger_signals(&mut grp, trigger_sigs)?;
+    for d in &plan.decisions {
+        if let Some(on) = &d.on {
+            let r = template::resolve(
+                on,
+                if matches!(on.ty, None | Some(super::model::Ty::Bool)) {
+                    Usage::Visible
+                } else {
+                    Usage::Text
+                },
+                "decision",
+            )?;
+            known.push((r.db, r.tag));
+        }
     }
     Ok((grp, known))
 }
@@ -380,6 +475,7 @@ pub fn attach(
     stock: &StockTags,
     facts: &ScreenFacts,
     show: &Bind,
+    hide: &[String],
     plan: &Plan,
     pfx: &str,
     hud_root: &Node,
@@ -393,7 +489,7 @@ pub fn attach(
             "{parent}: the node's id is not the hash of its path"
         )));
     }
-    let (mut grp, known) = control_group(facts, show, plan, pfx, hud_root)?;
+    let (mut grp, known) = control_group(facts, show, hide, plan, pfx, hud_root)?;
     if target
         .slot(node::CHILDREN)?
         .iter()
@@ -446,13 +542,15 @@ pub fn compose_screens(
         };
         let what = format!("{}/{}", input.addon, input.key);
         let rec = &input.record;
-        if !rec.decisions.is_empty()
-            || !rec.variants.is_empty()
-            || rec.stock.is_some()
-            || !rec.stock_parts.is_empty()
-        {
+        if !rec.variants.is_empty() || rec.stock.is_some() || !rec.stock_parts.is_empty() {
             return Err(err(format!(
-                "{what}: a screen record takes no decisions, variants, stock or stock_parts yet"
+                "{what}: a screen record takes no variants, stock or stock_parts yet"
+            )));
+        }
+        if let Some(d) = rec.decisions.iter().find(|d| d.on.is_none()) {
+            return Err(err(format!(
+                "{what}: decision {}: a screen record decides on a path (on), not a dial value (game)",
+                d.id
             )));
         }
         let sprites = load_sprites(stock, input, &pfx_of[i], fill_material, &mut out.scene)?;
@@ -474,6 +572,7 @@ pub fn compose_screens(
 
     let cap_bytes = race_read(screens::CAP)?;
     let mut cap = Builder::new(&CAP_FACTS, &cap_bytes, mods, bar, Some(om_xm))?;
+    cap.with_donors(&race_read(screens::STACKED)?, &race_read(screens::LAPC_SCENE)?)?;
     if recs.iter().any(|r| units::used(&r.input.record.elements)) {
         cap.units = units::load(stock, screens::FLOW_RACE)?;
     }
@@ -534,12 +633,9 @@ pub fn compose_screens(
         }
         for &ri in members {
             let r = &recs[ri];
-            let show = &r
-                .targets
-                .iter()
-                .find(|t| t.facts.key == *key)
-                .expect("a member")
-                .show;
+            let target = r.targets.iter().find(|t| t.facts.key == *key).expect("a member");
+            let show = &target.show;
+            let hide = &target.hide;
             let checked = match template_of_path(&facts.parent_ui) {
                 "spectator" => {
                     let tags = StockTags::spectator(
@@ -555,6 +651,7 @@ pub fn compose_screens(
                         &tags,
                         facts,
                         show,
+                        hide,
                         &plans[ri],
                         &r.pfx,
                         &race_stock.root,
@@ -578,6 +675,7 @@ pub fn compose_screens(
                         &tags,
                         facts,
                         show,
+                        hide,
                         &plans[ri],
                         &r.pfx,
                         &race_stock.root,
@@ -588,6 +686,7 @@ pub fn compose_screens(
                     &race_tags,
                     facts,
                     show,
+                    hide,
                     &plans[ri],
                     &r.pfx,
                     &race_stock.root,
@@ -641,6 +740,7 @@ pub fn compose_screens(
     }
 
     let mut scene_cache: BTreeMap<String, Node> = BTreeMap::new();
+    let mut wrapped: BTreeSet<String> = BTreeSet::new();
     for r in &recs {
         let mut nodes: Vec<StockNodes> = r.stock_nodes.clone();
         if r.targets.iter().any(|t| t.facts.key == "standings") {
@@ -648,6 +748,7 @@ pub fn compose_screens(
                 template: screens::STANDINGS_CAP_NODE.to_owned(),
                 scene: Some(screens::CAP.to_owned()),
                 hide: vec![r.pfx.clone(), preview_root(&r.pfx)],
+                wrap: Vec::new(),
                 while_: None,
             });
         }
@@ -692,7 +793,7 @@ pub fn compose_screens(
                 let name = format!("{}_sn{i}", r.pfx);
                 let at = node::find_path(&live.root, &s.template)?;
                 let target = node::node_at_mut(&mut live.root, &at)?;
-                let mut grp = stock_edit::stock_nodes_group(s, &name)?;
+                let mut grp = stock_edit::stock_nodes_group(s, &name, &[])?;
                 node::fix_ids(&mut grp, Some(&s.template));
                 target.slot_mut(node::CHILDREN)?.push(grp);
                 out.lines.push(format!(
@@ -703,18 +804,42 @@ pub fn compose_screens(
             } else {
                 s
             };
+            let mut wraps = Vec::new();
+            if !s.wrap.is_empty() {
+                if wrapped.contains(&scene) {
+                    return Err(err(format!(
+                        "{}: {} is wrapped by another record already; one record wraps a scene",
+                        r.pfx,
+                        scene.rsplit('/').next().unwrap_or(&scene)
+                    )));
+                }
+                let bytes = race_read(&scene).or_else(|_| read_from(screens::FLOW_REPLAY, &scene))?;
+                let (new, names) = stock_edit::wrap_scene(&bytes, s, &r.pfx)?;
+                wraps = names;
+                wrapped.insert(scene.clone());
+                match template_of_path(&s.template) {
+                    "spectator" => out.spectator_scene.push((scene.clone(), "UILayout", vec![new])),
+                    _ => out.scene.push((scene.clone(), "UILayout", vec![new])),
+                }
+            }
             let n = stock_edit::attach_stock_nodes(
                 &mut live.root,
                 &stock_pkg.root,
                 &root,
                 s,
                 &format!("{}_sn{i}", r.pfx),
+                &wraps,
             )?;
             out.lines.push(format!(
-                "{}: {} hides {n} elements of {}{}",
+                "{}: {} hides {n} elements of {}{}{}",
                 r.pfx,
                 s.template,
                 scene.rsplit('/').next().unwrap_or(&scene),
+                if wraps.is_empty() {
+                    String::new()
+                } else {
+                    format!(" ({} through a new wrapper null)", wraps.len())
+                },
                 if s.while_.is_some() {
                     " while the leaf is true"
                 } else {
@@ -877,8 +1002,15 @@ mod tests {
     #[test]
     fn the_control_group_masks_the_board_and_switches_the_host() {
         let show = Bind::leaf("view_model_data.hud_tt_show");
-        let (grp, known) =
-            control_group(&screens::standings(), &show, &plan("tt"), "tt", &fake_template()).unwrap();
+        let (grp, known) = control_group(
+            &screens::standings(),
+            &show,
+            &[],
+            &plan("tt"),
+            "tt",
+            &fake_template(),
+        )
+        .unwrap();
         assert_eq!(grp.name(), "tt_ctl");
         let kids = grp.slot(node::CHILDREN).unwrap();
         let names: Vec<&str> = kids.iter().map(|k| k.name()).collect();
@@ -916,8 +1048,15 @@ mod tests {
         assert_eq!(neg(&kids[0]), Some(true));
         assert_eq!(neg(&kids[1]), None);
 
-        let (grp, known) =
-            control_group(&screens::replay(), &show, &plan("tt"), "tt", &fake_template()).unwrap();
+        let (grp, known) = control_group(
+            &screens::replay(),
+            &show,
+            &[],
+            &plan("tt"),
+            "tt",
+            &fake_template(),
+        )
+        .unwrap();
         let kids = grp.slot(node::CHILDREN).unwrap();
         let names: Vec<&str> = kids.iter().map(|k| k.name()).collect();
         assert_eq!(names, ["mask_0", "mask_1", "host_n", "extra_hide"]);
@@ -930,8 +1069,15 @@ mod tests {
             vec![vec!["tt_host".to_owned(), "Scene Root".to_owned()]]
         );
         assert_eq!(known.len(), 2);
-        let (grp, _) =
-            control_group(&screens::spectator(), &show, &plan("tt"), "tt", &fake_template()).unwrap();
+        let (grp, _) = control_group(
+            &screens::spectator(),
+            &show,
+            &[],
+            &plan("tt"),
+            "tt",
+            &fake_template(),
+        )
+        .unwrap();
         let kids = grp.slot(node::CHILDREN).unwrap();
         assert_eq!(
             layout_of(&kids[0]),
@@ -954,6 +1100,7 @@ mod tests {
             &tags,
             &screens::standings(),
             &show,
+            &[],
             &plan("tt"),
             "tt",
             &fake_template(),
@@ -986,6 +1133,7 @@ mod tests {
             &tags,
             &screens::standings(),
             &show,
+            &[],
             &plan("tt"),
             "tt",
             &fake_template(),

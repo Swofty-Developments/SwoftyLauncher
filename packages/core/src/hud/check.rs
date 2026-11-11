@@ -526,6 +526,7 @@ pub fn screen_facts(stock: &dyn Stock, r: &mut Report) {
                 template: screens::LAPC_PARENT.to_owned(),
                 scene: Some(screens::LAPC_SCENE.to_owned()),
                 hide: screens::LAPC_HIDE.iter().map(|s| (*s).to_owned()).collect(),
+                wrap: Vec::new(),
                 while_: None,
             };
             match stock_edit::check_stock_nodes(&root, &p.root, &s) {
