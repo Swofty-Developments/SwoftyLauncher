@@ -298,3 +298,210 @@ fn a_compose_error_stops_the_build_with_the_reason() {
     assert!(err.contains("the HUD elements do not compose"), "{err}");
     assert!(err.contains("no_such_value"), "{err}");
 }
+
+const DAMAGE_SCENE: &str = "eaid://ui_package/art/osd/components/dial/mfd_car_damage_panel.idf";
+const DAMAGE_PARENT: &str = "hud_mfd_dynamic.mfd.attacher.car_damage_panel";
+
+fn damage_record() -> serde_json::Value {
+    serde_json::json!({
+        "scene": DAMAGE_SCENE,
+        "parent_ui": DAMAGE_PARENT,
+        "elements": [
+            { "kind": "text", "id": "fl", "style": "OSD_17_bold", "align": "left", "box": 30,
+              "cap_height": 6.0, "at": [-60, 40],
+              "value": { "view_model": "ui_menu_data.hud_brake_check_fl" },
+              "visible": { "view_model": "ui_menu_data.hud_brake_check_visible" } },
+            { "kind": "text", "id": "speed", "cap_height": 6.0, "at": [0, 50],
+              "value": { "game": "speed_str" } }
+        ]
+    })
+}
+
+fn damage_input(record: &serde_json::Value) -> hud::Input {
+    hud::Input {
+        addon: "a.panel".into(),
+        key: "readouts".into(),
+        dir: std::env::temp_dir(),
+        record: hud::model::HudElement::parse(record).unwrap(),
+    }
+}
+
+#[test]
+fn a_scene_target_adds_readouts_to_the_stock_damage_panel() {
+    let Some(game) = real() else { return };
+    let stock = GameStock::with_baseline(&game, &Store::open_default().root).unwrap();
+    let out = hud::compose(&stock, &[damage_input(&damage_record())]).unwrap();
+    let files: Vec<&str> = out.archives.iter().map(|a| a.file.as_str()).collect();
+    assert_eq!(files, ["hud_target_scene.erp", "hud_template.erp"], "{files:?}");
+    let pfx = "a_panel_readouts";
+
+    let scene_archive = out
+        .archives
+        .iter()
+        .find(|a| a.file == "hud_target_scene.erp")
+        .unwrap();
+    let erp = Erp::parse(&scene_archive.bytes).unwrap();
+    let scene = Pkg::parse(&erp.find(DAMAGE_SCENE).unwrap().fragments[0].data().unwrap()).unwrap();
+    let entry = &swofty_core::ui::idf::scenes(&scene).unwrap()[0];
+    let names: Vec<String> = swofty_core::ui::idf::elements(entry.o().unwrap().at("scene").unwrap())
+        .into_iter()
+        .map(|(p, _)| p)
+        .collect();
+    for n in [
+        pfx.to_owned(),
+        format!("{pfx}.{pfx}_fl_n"),
+        format!("{pfx}.{pfx}_fl_n.{pfx}_fl"),
+        format!("{pfx}.{pfx}_speed_n.{pfx}_speed"),
+    ] {
+        assert!(names.contains(&n), "{n} in {names:?}");
+    }
+    assert!(
+        names.iter().any(|n| n == "boundless.brake_check_fl")
+            || names.iter().any(|n| n.starts_with("boundless"))
+    );
+    assert!(swofty_core::ui::idf::id_problems(&scene).unwrap().is_empty());
+
+    let template = out
+        .archives
+        .iter()
+        .find(|a| a.file == "hud_template.erp")
+        .unwrap();
+    let erp = Erp::parse(&template.bytes).unwrap();
+    let t = Pkg::parse(&erp.find(dials::TEMPLATE).unwrap().fragments[0].data().unwrap()).unwrap();
+    let at = find_path(&t.root, &format!("{DAMAGE_PARENT}.{pfx}_t_fl")).unwrap();
+    let label = swofty_core::ui::node::node_at(&t.root, &at).unwrap();
+    assert_eq!(label.type_code(), "UILB");
+    assert!(
+        swofty_core::ui::node::canonical(label).contains("#ui_menu_data.hud_brake_check_fl"),
+        "the label binds the leaf"
+    );
+    assert!(find_path(&t.root, &format!("{DAMAGE_PARENT}.{pfx}_t_speed")).is_ok());
+    assert!(
+        !has(&t, &format!("{DAMAGE_PARENT}.{pfx}_ctl")),
+        "no ctl group on a scene target"
+    );
+
+    let race = template_of(&stock.original(FLOW_RACE));
+    assert!(
+        !has(&race, &format!("{DAMAGE_PARENT}.{pfx}_t_fl")),
+        "the stock template is untouched"
+    );
+}
+
+#[test]
+fn a_scene_target_is_held_to_the_stock_scene_the_parent_and_the_binding_types() {
+    let Some(game) = real() else { return };
+    let stock = GameStock::with_baseline(&game, &Store::open_default().root).unwrap();
+    let compose = |edit: &dyn Fn(&mut serde_json::Value)| {
+        let mut rec = damage_record();
+        edit(&mut rec);
+        hud::compose(&stock, &[damage_input(&rec)])
+            .map(|_| ())
+            .unwrap_err()
+            .to_string()
+    };
+    let e = compose(&|r| r["parent_ui"] = "hud_mfd_dynamic.mfd.attacher".into());
+    assert!(e.contains("instances") && e.contains("not eaid://"), "{e}");
+    let e = compose(&|r| r["parent_ui"] = "hud_mfd_dynamic.mfd.no_such_node".into());
+    assert!(e.contains("no_such_node"), "{e}");
+    let e = compose(&|r| {
+        r["scene"] = "eaid://ui_package/art/osd/components/dial/no_such_scene.idf".into();
+    });
+    assert!(e.contains("no_such_scene"), "{e}");
+    let e = compose(&|r| r["elements"][1]["value"] = serde_json::json!({ "game": "revs" }));
+    assert!(e.contains("revs"), "{e}");
+    let e = compose(&|r| r["elements"][1]["value"] = serde_json::json!({ "game": "ers_mode" }));
+    assert!(e.contains("ers_mode"), "{e}");
+}
+
+#[test]
+fn a_scene_target_record_is_checked_when_it_is_read() {
+    let parse = |edit: &dyn Fn(&mut serde_json::Value)| {
+        let mut rec = damage_record();
+        edit(&mut rec);
+        hud::model::HudElement::parse(&rec).unwrap_err().to_string()
+    };
+    assert!(parse(&|r| r["dial"] = "f2".into()).contains("not both"));
+    assert!(
+        parse(&|r| {
+            r.as_object_mut().unwrap().remove("parent_ui");
+        })
+        .contains("go together")
+    );
+    assert!(parse(&|r| r["elements"][0]["kind"] = "sprite".into()).contains("text and group"));
+    assert!(parse(&|r| r["sprites"] = serde_json::json!({ "a": { "png": "a.png" } })).contains("sprites"));
+    assert!(parse(&|r| r["scene"] = "dial_om_xm.idf".into()).contains("eaid://"));
+    let neither = hud::model::HudElement::parse(&serde_json::json!({ "elements": [] }))
+        .unwrap_err()
+        .to_string();
+    assert!(neither.contains("dial"), "{neither}");
+}
+
+fn with_marker(scene: &[u8]) -> Vec<u8> {
+    use swofty_core::ui::idf;
+    let mut p = Pkg::parse(scene).unwrap();
+    let entry = &mut idf::scenes_mut(&mut p).unwrap()[0];
+    let root = entry.o_mut().unwrap().at_mut("scene").unwrap();
+    let mut marker = idf::find(root, "point_top").unwrap().clone();
+    idf::rename(&mut marker, "planked_marker").unwrap();
+    idf::recompute_ids(&mut marker, "planked_marker").unwrap();
+    idf::children_mut(root).unwrap().push(marker);
+    idf::relookup(entry).unwrap();
+    p.to_bytes().unwrap()
+}
+
+#[test]
+fn a_scene_target_grows_the_scene_another_addon_replaced() {
+    let Some(game) = real() else { return };
+    let f = Fixture::new("scene-target", &game);
+    let stock = GameStock::with_baseline(&game, &Store::open_default().root).unwrap();
+    let scene = ErpFile::open(&stock.original(FLOW_RACE)).unwrap();
+    let bytes = scene
+        .load(scene.erp.find(DAMAGE_SCENE).unwrap())
+        .unwrap()
+        .fragments[0]
+        .data()
+        .unwrap();
+    let ops = serde_json::json!({ "schema_version": 1, "ops": [
+        { "op": "erp.replace-resource", "erp": FLOW_RACE, "resource": DAMAGE_SCENE, "source": "damage.idf" }
+    ] });
+    f.install(
+        "d.damage",
+        serde_json::json!({ "operations": { "assets": ["ops.json"] } }),
+        vec![
+            ("ops.json", ops.to_string().into_bytes()),
+            ("damage.idf", with_marker(&bytes)),
+        ],
+    );
+    let hud = serde_json::json!({ "hud.element": { "readouts": damage_record() } });
+    f.install(
+        "c.readouts",
+        serde_json::json!({ "operations": { "hud": ["hud.json"] } }),
+        vec![("hud.json", hud.to_string().into_bytes())],
+    );
+    let built = build(&f.store, "default", &f.game).unwrap();
+    let cached = f
+        .store
+        .addon_cache_dir("c.readouts")
+        .join("hud/hud_target_scene.erp");
+    let erp = Erp::parse(&std::fs::read(cached).unwrap()).unwrap();
+    let grown = Pkg::parse(&erp.find(DAMAGE_SCENE).unwrap().fragments[0].data().unwrap()).unwrap();
+    let entry = &swofty_core::ui::idf::scenes(&grown).unwrap()[0];
+    let names: Vec<String> = swofty_core::ui::idf::elements(entry.o().unwrap().at("scene").unwrap())
+        .into_iter()
+        .map(|(p, _)| p)
+        .collect();
+    assert!(
+        names.contains(&"planked_marker".to_owned()),
+        "the other addon's element stays: {names:?}"
+    );
+    assert!(names.contains(&"c_readouts".to_owned()), "{names:?}");
+    assert!(
+        built
+            .lines
+            .iter()
+            .any(|l| l.contains("d.damage") && l.contains("on top of that change")),
+        "{:#?}",
+        built.lines
+    );
+}

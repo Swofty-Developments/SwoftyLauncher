@@ -12,6 +12,16 @@
       "description": "The car class dial the elements live in: f1_26 (the 2026 dial), f1_25 (the 2025 dial) or f2. The spectator HUD's dial of the same class runs the same elements.",
       "enum": ["f1_26", "f1_25", "f2"]
     },
+    "scene": {
+      "description": "Advanced target, in place of dial: the eaid:// path of a stock scene (.idf) the elements grow. Takes text and group elements only. Needs parent_ui and no dial.",
+      "type": "string",
+      "pattern": "^eaid://.+\\.idf$"
+    },
+    "parent_ui": {
+      "description": "With scene: the dotted path in the HUD template of the node that instances the scene (the root name first), such as hud_mfd_dynamic.mfd.attacher.car_damage_panel. The bound nodes go straight under it, named <prefix>_<name>.",
+      "type": "string",
+      "pattern": "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$"
+    },
     "spectator": {
       "description": "False leaves the spectator HUD's dial of this class without the elements.",
       "type": "boolean",
@@ -64,7 +74,10 @@
       }
     }
   },
-  "required": ["dial"],
+  "oneOf": [
+    { "required": ["dial"] },
+    { "required": ["scene", "parent_ui"] }
+  ],
   "additionalProperties": true,
   "$defs": {
     "point": {
@@ -102,10 +115,10 @@
       "additionalProperties": false
     },
     "bind": {
-      "description": "A value the template binds. Exactly one of view_model, game, session and session_car. view_model is one of the addon's leaves (view_model_data.<name>); game is a name in the core's table of the dial's own values; session is a #session path; session_car reads a car of the session by vehicle id.",
+      "description": "A value the template binds. Exactly one of view_model, game, session and session_car. view_model is one of the addon's leaves (view_model_data.<name>, or ui_menu_data.<name> where a record targets a scene); game is a name in the core's table of the dial's own values; session is a #session path; session_car reads a car of the session by vehicle id.",
       "type": "object",
       "properties": {
-        "view_model": { "type": "string", "pattern": "^#?view_model_data\\.[A-Za-z0-9_{}]+$" },
+        "view_model": { "type": "string", "pattern": "^#?(view_model_data|ui_menu_data)\\.[A-Za-z0-9_{}]+$" },
         "game": { "type": "string", "minLength": 1 },
         "session": { "type": "string", "minLength": 1 },
         "session_car": { "type": "string", "minLength": 1 },
@@ -141,7 +154,7 @@
         "axis": { "enum": ["y"] },
         "from": { "type": "number" },
         "to": { "type": "number" },
-        "show": { "type": "string", "pattern": "^#?view_model_data\\.[A-Za-z0-9_{}]+$" },
+        "show": { "type": "string", "pattern": "^#?(view_model_data|ui_menu_data)\\.[A-Za-z0-9_{}]+$" },
         "sprites": { "type": "array", "items": { "type": "string" } },
         "window": { "$ref": "#/$defs/point" },
         "path": { "type": "array", "items": { "$ref": "#/$defs/point" }, "minItems": 2, "maxItems": 2 },

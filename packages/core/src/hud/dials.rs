@@ -90,6 +90,34 @@ pub const F2: DialFacts = DialFacts {
     quad_size: None,
 };
 
+/// The facts of a record's scene target: no dial parts, quad or strings, only the scene and the
+/// template node that instances it. One leaked copy per distinct target for the life of the process.
+pub fn target_facts(scene: &str, parent: &str) -> &'static DialFacts {
+    use std::collections::BTreeMap;
+    use std::sync::{Mutex, OnceLock};
+    static KNOWN: OnceLock<Mutex<BTreeMap<(String, String), &'static DialFacts>>> = OnceLock::new();
+    let mut known = KNOWN
+        .get_or_init(Default::default)
+        .lock()
+        .unwrap_or_else(|e| e.into_inner());
+    known
+        .entry((scene.to_owned(), parent.to_owned()))
+        .or_insert_with(|| {
+            let leak = |s: String| -> &'static str { Box::leak(s.into_boxed_str()) };
+            Box::leak(Box::new(DialFacts {
+                dial: Dial::F126,
+                scene: leak(scene.to_owned()),
+                strtab: leak(format!("{scene}?context=animstringtable&file=0")),
+                uipre: leak(scene.replace(".idf", ".uipre")),
+                quad: "central_bg_fill",
+                race_parent: leak(parent.to_owned()),
+                spectator_parent: "",
+                bottom_y: 0.0,
+                quad_size: None,
+            }))
+        })
+}
+
 pub fn facts(dial: Dial) -> &'static DialFacts {
     match dial {
         Dial::F126 => &F126,

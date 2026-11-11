@@ -425,6 +425,9 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
 
     let mut live: Vec<Expanded> = Vec::new();
     for (i, input) in inputs.iter().enumerate() {
+        if input.record.scene_target().is_some() {
+            continue;
+        }
         live.push(Expanded {
             input: i,
             rec: input.record.clone(),
@@ -497,7 +500,7 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
     for dial in Dial::ALL {
         let facts: &'static DialFacts = dials::facts(dial);
         let here: Vec<&Expanded> = live.iter().filter(|e| e.rec.dial == dial).collect();
-        let want_preview = dial == Dial::F125;
+        let want_preview = dial == Dial::F125 && !live.is_empty();
         if here.is_empty() && !want_preview {
             continue;
         }
@@ -557,6 +560,9 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         if want_preview {
             for (i, input) in inputs.iter().enumerate() {
                 let rec = &input.record;
+                if rec.scene_target().is_some() {
+                    continue;
+                }
                 let state = rec.editor.as_ref().map(|e| e.preview.clone()).unwrap_or_default();
                 let plan = b.add_record(rec, &pfx_of[i], &loaded[i].sprites, Mode::Preview(&state))?;
                 let sb = match rec.editor.as_ref().and_then(|e| e.rect) {
@@ -673,13 +679,63 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         let new = editor::uipre(&stock_uipre, f125.scene, &preview_hides, &pv_texts)?;
         scene_resources.push((f125.uipre.to_owned(), "UIPR", vec![new]));
     }
+    let mut targets: BTreeMap<(String, String), Vec<usize>> = BTreeMap::new();
+    for (i, input) in inputs.iter().enumerate() {
+        if let Some((scene, parent)) = input.record.scene_target() {
+            targets
+                .entry((scene.to_owned(), parent.to_owned()))
+                .or_default()
+                .push(i);
+        }
+    }
+    let mut target_scenes: Vec<Res> = Vec::new();
+    for ((scene, parent), members) in &targets {
+        let facts = dials::target_facts(scene, parent);
+        let bytes = first(stock.read(dials::STOCK_ERP, scene)?, scene)?;
+        let mut b = Builder::for_scene(facts, &bytes, &om_xm, &mods, &bar)?;
+        let mut plans = Vec::new();
+        for &i in members {
+            let plan = b.add_scene_record(&inputs[i].record, &pfx_of[i], &loaded[i].sprites)?;
+            plans.push((i, plan));
+        }
+        target_scenes.push((scene.clone(), "UILayout", vec![b.finish(None)?]));
+        for (i, plan) in &plans {
+            let checked = template::attach_scene(&mut template.root, &race_tags, parent, scene, plan)?;
+            out.lines.push(format!(
+                "{}: {} in {}: {} template nodes, {checked} bindings checked against the stock template",
+                pfx_of[*i],
+                parent,
+                scene.rsplit('/').next().unwrap_or(scene),
+                plan.vis.len() + plan.texts.len() + plan.shows.len(),
+            ));
+        }
+    }
     let mut all: Vec<Res> = resources.into_values().collect();
     all.extend(scene_resources);
-    out.archives.push(Built {
-        file: "hud_scene.erp".into(),
-        erps: dials::SCENE_ERPS.iter().map(|s| (*s).to_owned()).collect(),
-        bytes: archive(stock, all)?,
-    });
+    if !all.is_empty() {
+        out.archives.push(Built {
+            file: "hud_scene.erp".into(),
+            erps: dials::SCENE_ERPS.iter().map(|s| (*s).to_owned()).collect(),
+            bytes: archive(stock, all)?,
+        });
+    }
+    if !target_scenes.is_empty() {
+        let erps: Vec<String> = dials::TEMPLATE_ERPS
+            .iter()
+            .filter(|erp| targets.keys().all(|(scene, _)| stock.read(erp, scene).is_ok()))
+            .map(|e| (*e).to_owned())
+            .collect();
+        if erps.is_empty() {
+            return Err(err(
+                "no archive that has the template also has every scene a record targets",
+            ));
+        }
+        out.archives.push(Built {
+            file: "hud_target_scene.erp".into(),
+            erps,
+            bytes: archive(stock, target_scenes)?,
+        });
+    }
     out.archives.push(Built {
         file: "hud_template.erp".into(),
         erps: dials::TEMPLATE_ERPS.iter().map(|s| (*s).to_owned()).collect(),

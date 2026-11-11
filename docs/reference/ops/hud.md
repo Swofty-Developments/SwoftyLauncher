@@ -149,6 +149,41 @@ The composer writes an `MVCD` or `SVCD` node under the record's template group a
 
 The HUD editor shows `dial_complete.idf` with no template running: the scene's own state plus its `.uipre` setters. So each record also gets a static copy of the elements that `editor.preview` shows (keys: `game.<name>`, `session.<path>`, `session_car.<field>.<slot>` or the leaf), its sprites pre-tinted with `team_colour`, `.uipre` setters that hide the stock parts and fill the copy's texts, and a `<prefix>_pv_ctl` group that hides the copy in game. The spectator HUD's dial of each class runs the same template groups unless the record sets `"spectator": false`.
 
+## A scene target
+
+A record that grows one of the dials names `dial`. A record that adds readouts to some other stock scene names that scene and the template node that instances it instead:
+
+```jsonc [registry/damage_readouts.json]
+{
+  "hud.element": {
+    "readouts": {
+      "scene": "eaid://ui_package/art/osd/components/dial/mfd_car_damage_panel.idf",
+      "parent_ui": "hud_mfd_dynamic.mfd.attacher.car_damage_panel",
+      "elements": [
+        { "kind": "text", "id": "brake_fl", "style": "OSD_17_bold", "align": "left", "box": 30,
+          "cap_height": 6, "at": [-60, 40],
+          "value":   { "view_model": "ui_menu_data.hud_brake_check_fl" },
+          "visible": { "view_model": "ui_menu_data.hud_brake_check_visible" } },
+        { "kind": "text", "id": "plank", "cap_height": 6, "at": [0, 50],
+          "value": { "view_model": "ui_menu_data.hud_planked_text" } }
+      ]
+    }
+  }
+}
+```
+
+`scene` is the `eaid://` path of a stock `.idf`, read from `flow_race.erp`. `parent_ui` is the dotted path in the template (root name first) of the node whose component is that scene; the build stops unless the node instances the scene. A record has a `dial` or a `scene` and `parent_ui`, never both.
+
+The core adds the elements under the scene's root element, in HUD units from the scene's origin (`v` down, as in the dials), in a null named for the record's prefix, and one bound node per text or visibility straight under `parent_ui`, named `<prefix>_<name>` (`t_<id>` for a text, `v_<id>` for a group's visibility). There is no `<prefix>_ctl` group and no `show` or `hide` wiring, because the parent is no dial. The scene's other elements and the parent's other children are not touched.
+
+A scene target takes `text` and `group` elements with `value`, `literal`, `visible`, `at`, `style`, `align`, `box`, `case`, `wrap` and `cap_height`. It takes no sprites, decisions, variants, `stock`, `editor` or `box` on the record, and no `layer` or `tint`. Binding types are held to the stock template exactly as for the dials: a game or session value must have the tag the property reads, and a leaf has the type its use gives it. A leaf may live in `view_model_data` or in `ui_menu_data`; the second is the dictionary some addons already write their values to, so their readouts keep their paths.
+
+The scene a scene target grows is read after every other addon's whole replacement of it has been merged ([two addons replacing one UI resource](/reference/ops/erp#two-addons-replacing-one-ui-resource)), so a scene target and an addon that ships its own copy of the scene stay together. The archives are `hud_target_scene.erp` (the grown scene, overlaid on the archives that carry both the template and the scene) and `hud_template.erp`.
+
+## Bridge addons
+
+Two addons that each replace `hud_dynamic_templates.ui` whole used to leave the later one the winner, and a third addon spliced their copies together by hand (Project Halo + Planked + Brake Check Panel does that). The build now merges whole replacements of the template and of the scenes node by node, and a `hud.element` composition starts from the merged result, so that bridge is no longer needed. See [two addons replacing one UI resource](/reference/ops/erp#two-addons-replacing-one-ui-resource) for the rules and the build lines and warnings.
+
 ## What the composer writes
 
 One scene growth per dial and one template pass, whatever the number of addons:
@@ -179,6 +214,8 @@ The composer is the last step that writes these resources, and it builds on what
 5. the overlay operations                  the composed archives go in after every other addon's
                                            operations, under their own origin ("<addon> (HUD composer)")
 ```
+
+When two or more addons replace the same template or scene whole in step 2, the scratch copy holds their [node by node merge](/reference/ops/erp#two-addons-replacing-one-ui-resource), not the last one.
 
 So the one template that ends up in the game carries every addon's `<prefix>_ctl` group, the MFD page, and the edit of an addon that replaced `hud_dynamic_templates.ui` (Planked Brake Panel's `replace-resource`, say). Step 3 is applied again by the menu build on the data route; it does nothing the second time, so the page is in the template once. On the runtime route the composed overlay archive already holds the page, so the overlay does not take it away.
 
