@@ -47,7 +47,9 @@ inline constexpr bool F_TIMING = LIVE_HAS(RelativeGapHelper, entries_begin) && L
                                  LIVE_HAS(RelativeGapEntry, interval_valid) && LIVE_HAS(RelativeGapEntry, vehicle_id) &&
                                  LIVE_HAS(SafetyCarLogicSystem, deployment);
 inline constexpr bool F_PIT = LIVE_HAS(PitLaneSystem, car_slots) && LIVE_HAS(PitLaneCarState, state);
-inline constexpr bool F_PIT_LANE = LIVE_HAS(PitLaneCarState, pit_stops);
+inline constexpr bool F_PIT_LANE = LIVE_HAS(PitLaneCarState, pit_stops) && LIVE_HAS(PitLaneSystem, lane) &&
+                                   LIVE_HAS(PitLaneTrack, vehicle_slots) && LIVE_HAS(PitLaneVehicleSlot, lane) &&
+                                   LIVE_HAS(PitLaneVehicle, in_lane);
 inline constexpr bool F_PENALTIES = LIVE_HAS(PenaltyLog, records_begin) && LIVE_HAS(PenaltyRecord, vehicle_id) &&
                                     LIVE_HAS(PenaltyRecord, penalty_type) && LIVE_HAS(PenaltyRecord, infringement) &&
                                     LIVE_HAS(VehicleHelperSystem, drive_through) && LIVE_HAS(VehicleHelperSystem, stop_go) &&
@@ -55,7 +57,11 @@ inline constexpr bool F_PENALTIES = LIVE_HAS(PenaltyLog, records_begin) && LIVE_
 inline constexpr bool F_TYRES = LIVE_HAS(VehicleTyreComponent, compound_class) && LIVE_HAS(VehicleTyreComponent, slots) &&
                                 LIVE_HAS(VehicleTyreComponent, slot_count) && LIVE_HAS(VehicleTyreComponent, built_for) &&
                                 LIVE_HAS(VehicleTyreComponent, built) && LIVE_HAS(VehicleTyreComponent, set_begin) &&
-                                LIVE_HAS(VehicleTyreComponent, set_end);
+                                LIVE_HAS(VehicleTyreComponent, set_end) && LIVE_HAS(TyreSystem, vehicles_begin) &&
+                                LIVE_HAS(TyreSystem, vehicles_end) && LIVE_HAS(TyreSlot, option) &&
+                                LIVE_HAS(TyreSlot, physical) && LIVE_HAS(TyreSlot, visual) &&
+                                LIVE_HAS(VisualCompound, stat_id) && LIVE_HAS(VisualCompound, audio_compound) &&
+                                LIVE_HAS(PhysicalCompound, stat_id);
 inline constexpr bool F_FLAGS = LIVE_HAS(MarshalZoneMonitor, zones_begin) && LIVE_HAS(MarshalZoneSlot, zone) &&
                                 LIVE_HAS(MarshalZone, definition) && LIVE_HAS(MarshalZone, flag) &&
                                 LIVE_HAS(MarshalZoneDef, start_fraction) && LIVE_HAS(RedFlagSystem, state);
@@ -64,6 +70,17 @@ inline constexpr bool F_CONTROL = LIVE_HAS(ControllerSystem, sets) && LIVE_HAS(C
                                   LIVE_HAS(ControllerSet, vehicle);
 inline constexpr bool F_SPECTATE = LIVE_HAS(SpectatorDirector, ui_active) && LIVE_HAS(SpectatorDirector, active) &&
                                    LIVE_HAS(SpectatorDirector, current_driver);
+inline constexpr bool F_SPECTATE_GAP = LIVE_HAS(SpectatorDirectorGap, gap_mode);
+inline constexpr bool F_MODE = LIVE_HAS(GameModeSystem, mode) && LIVE_HAS(GameMode, name);
+inline constexpr bool F_BADGES = LIVE_HAS(GameModeSystem, mode) && LIVE_HAS(GameMode, entrants_manager) &&
+                                 LIVE_HAS(EntrantsManager, session_begin) && LIVE_HAS(EntrantsManager, session_end) &&
+                                 LIVE_HAS(SessionEntrantView, team_stat_id) && LIVE_HAS(SessionEntrantView, vehicle_id) &&
+                                 LIVE_HAS(EntrantsSystem, team_sets) && LIVE_HAS(TeamSetRef, slots) &&
+                                 LIVE_HAS(TeamSlots, begin) && LIVE_HAS(TeamSlots, end) && LIVE_HAS(TeamSlot, record) &&
+                                 LIVE_HAS(TeamRecord, timing_tower_texture_path) &&
+                                 LIVE_HAS(TeamRecord, show_custom_badge_in_ui);
+inline constexpr bool F_TRACK_NAME =
+    LIVE_HAS(RacingVehicles, owner) && LIVE_HAS(RacingOwner, track) && LIVE_HAS(RacingTrack, name);
 
 inline constexpr Row ROWS[G_COUNT] = {
     {G_CAR_SYSTEMS, F_CAR_SYSTEMS, true,
@@ -76,16 +93,17 @@ inline constexpr Row ROWS[G_COUNT] = {
     {G_TIMING, F_TIMING && F_REGISTRY, true, "RelativeGapHelper, RelativeGapEntry, SafetyCarLogicSystem fields"},
     {G_PIT, F_PIT && F_REGISTRY, true, "PitLaneSystem, PitLaneCarSlot, PitLaneCarState.state"},
     {G_PENALTIES, F_PENALTIES && F_REGISTRY, true, "PenaltyLog, VehicleHelperSystem and the misconduct objects"},
-    {G_TYRES, F_TYRES && F_REGISTRY, false, "TyreSystem per-vehicle vector and the visual record have no KB row"},
+    {G_TYRES, F_TYRES && F_REGISTRY, true, "VehicleTyreComponent, TyreSystem, TyreSlot, VisualCompound and PhysicalCompound fields"},
     {G_FLAGS, F_FLAGS && F_REGISTRY, true, "MarshalZoneMonitor, RedFlagSystem, the sector globals"},
     {G_CONTROL, F_CONTROL, true, "ControllerSystem and ControllerSet fields"},
     {G_SPECTATE, F_SPECTATE && F_REGISTRY, true, "SpectatorDirector fields"},
-    {G_MODE, F_REGISTRY, false, "GameModeContext label chain has no KB row"},
-    {G_BADGES, F_REGISTRY, false, "EntrantsSystem team table chain has no KB row"},
+    {G_MODE, F_MODE && F_REGISTRY, true, "GameModeSystem.mode and GameMode.name"},
+    {G_BADGES, F_BADGES && F_REGISTRY, true,
+     "the game mode chain, EntrantsManager entrant vector, SessionEntrantView, EntrantsSystem team tables and TeamRecord badge fields"},
     {G_TRACK, true, true, "g_Game_TrackLength, g_Sess_TyreRulesSessionType"},
-    {G_PIT_LANE, F_PIT_LANE, false, "PitLaneSystem+0x48 lane object, +0x938 flag block and +0x103 have no KB row"},
-    {G_TRACK_NAME, true, false, "the track world name chain has no KB row"},
-    {G_SPECTATE_GAP, true, false, "SpectatorDirector+0xe4 gap mode has no KB row"},
+    {G_PIT_LANE, F_PIT_LANE, true, "PitLaneSystem.lane, PitLaneTrack.vehicle_slots, PitLaneVehicle.in_lane, PitLaneCarState.pit_stops"},
+    {G_TRACK_NAME, F_TRACK_NAME, true, "RacingVehicles.owner, RacingOwner.track and RacingTrack.name"},
+    {G_SPECTATE_GAP, F_SPECTATE_GAP && F_REGISTRY, true, "SpectatorDirectorGap.gap_mode"},
     {G_BUS_EVENTS, true, true, "g_Game_MessageBus and Ne_Subscribe_BusMessage; the message layouts are the agreed Live_Subscribe_* rows (no signature, not resolved)"},
 };
 

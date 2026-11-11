@@ -47,11 +47,10 @@ const Named SITE_NAMES[] = {
     {"vt_Sess_HumanController", &lv::Sites::vt_human},
     {"g_Live_SectorEnds", &lv::Sites::sector_block},
     {"g_Live_SectorCount", &lv::Sites::sector_count},
+    {"g_Live_RacingVehicles", &lv::Sites::track_world},
     {"g_Game_MessageBus", &lv::Sites::bus_slot},
     {"Ne_Subscribe_BusMessage", &lv::Sites::bus_subscribe},
 };
-
-const char *TRACK_WORLD_PATTERN = "48 8B 05 ?? ?? ?? ?? 48 8B 80 D0 00 00 00 48 8B 80 E8 00 00 00";
 
 bool kernel_copy(void *, uintptr_t addr, void *dst, size_t n)
 {
@@ -197,11 +196,6 @@ void resolve_sites()
         g_sites.image_lo = uintptr_t(base);
         g_sites.image_hi = uintptr_t(base) + nt->OptionalHeader.SizeOfImage;
     }
-    uintptr_t at = 0;
-    int32_t disp = 0;
-    if (swofty::api && swofty::api->scan &&
-        swofty::api->scan(".xtls", TRACK_WORLD_PATTERN, &at) == 1 && at && swofty::mem::read(at + 3, disp))
-        g_sites.track_world = at + 7 + intptr_t(disp);
 }
 
 const char *unresolved_name(uintptr_t lv::Sites::*slot)

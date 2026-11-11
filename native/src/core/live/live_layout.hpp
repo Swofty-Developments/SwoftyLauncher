@@ -3,6 +3,8 @@
 #include <cstdint>
 
 #include <swofty/game/car.hpp>
+#include <swofty/game/session.hpp>
+#include <swofty/game/teams.hpp>
 
 // Layouts of the game's objects the live state reads, build of the KB (F1_25.exe, image base 0x140000000). Every
 // value is range-checked where it is read, and a failed read leaves the value's have bit clear. The CarLive fields
@@ -123,7 +125,9 @@ constexpr uintptr_t lo = 0x9bc0, hi = 0x9ca0;
 constexpr uintptr_t version = 0x9bc0, list = 0x9bd0, count = 0x9c48, built_for = 0x9c50, built = 0x9c58, set_begin = 0x9c90,
                     set_end = 0x9c98;
 constexpr size_t desc_stride = 0x18, set_stride = 0x78;
-constexpr uintptr_t visual_compound = 0x50;
+constexpr uintptr_t desc_physical = 0x8, desc_visual = 0x10;
+constexpr uintptr_t visual_stat_id = 0x0, visual_compound = 0x50;
+constexpr uintptr_t physical_stat_id = 0x0;
 }
 
 namespace controllers {
@@ -142,8 +146,8 @@ constexpr uintptr_t from_context = 0x88, label = 0x278;
 namespace badge {
 constexpr uintptr_t mode = 0x88, game = 0x260, entrants = 0x2e0;
 constexpr size_t entrant_stride = 0x88;
-constexpr uintptr_t entrant_team = 0x58, entrant_vid = 0x82, tables = 0x2c8, table_vec = 0x8, record_key = 0x4d8,
-                    record_render = 0x58d;
+constexpr uintptr_t entrant_team = 0x58, entrant_vid = 0x82, tables = 0x2c8, table_vec = 0x8, slot_record = 0x8,
+                    record_key = 0x4d8, record_render = 0x58d;
 constexpr unsigned max_kind = 2, my_team_kind = 1;
 }
 
@@ -161,6 +165,15 @@ constexpr size_t sector_block = 0x60;
 // group off (live_rows.hpp).
 #define LIVE_HAS(T, f)                                                                                                 \
     ([]<class X>() consteval { return requires { offsetof(X, f); }; }.template operator()<swofty::game::T>())
+#define LIVE_SIZE(T, n)                                                                                                \
+    static_assert(                                                                                                     \
+        []<class X>() consteval {                                                                                      \
+            if constexpr (requires { sizeof(X); })                                                                     \
+                return sizeof(X) == (n);                                                                               \
+            else                                                                                                       \
+                return true;                                                                                           \
+        }.template operator()<swofty::game::T>(),                                                                      \
+        #T " is not the size the live layout steps by")
 #define LIVE_TIE(T, f, off)                                                                                            \
     static_assert(                                                                                                     \
         []<class X>() consteval {                                                                                      \
@@ -256,5 +269,42 @@ LIVE_TIE(VehicleTyreComponent, set_end, tyres::set_end);
 LIVE_TIE(SpectatorDirector, ui_active, spectate::ui);
 LIVE_TIE(SpectatorDirector, active, spectate::active);
 LIVE_TIE(SpectatorDirector, current_driver, spectate::vehicle);
+
+LIVE_TIE(PitLaneSystem, lane, pit::lane_object);
+LIVE_TIE(PitLaneTrack, vehicle_slots, pit::lane_flags);
+LIVE_TIE(PitLaneVehicleSlot, lane, 0x0);
+LIVE_TIE(PitLaneVehicle, in_lane, pit::in_lane);
+LIVE_SIZE(PitLaneVehicleSlot, pit::lane_flag_stride);
+LIVE_TIE(SpectatorDirectorGap, gap_mode, spectate::gap);
+LIVE_TIE(TyreSystem, vehicles_begin, tyres::per_vehicle);
+LIVE_TIE(TyreSystem, vehicles_end, tyres::per_vehicle + 8);
+LIVE_TIE(TyreSlot, option, 0x0);
+LIVE_TIE(TyreSlot, physical, tyres::desc_physical);
+LIVE_TIE(TyreSlot, visual, tyres::desc_visual);
+LIVE_SIZE(TyreSlot, tyres::desc_stride);
+LIVE_TIE(VisualCompound, stat_id, tyres::visual_stat_id);
+LIVE_TIE(VisualCompound, audio_compound, tyres::visual_compound);
+LIVE_TIE(PhysicalCompound, stat_id, tyres::physical_stat_id);
+LIVE_TIE(GameModeSystem, mode, mode::from_context);
+LIVE_TIE(GameModeSystem, mode, badge::mode);
+LIVE_TIE(GameMode, name, mode::label);
+LIVE_TIE(GameMode, entrants_manager, badge::game);
+LIVE_TIE(EntrantsManager, session_begin, badge::entrants);
+LIVE_TIE(EntrantsManager, session_end, badge::entrants + 8);
+LIVE_TIE(SessionEntrantView, team_stat_id, badge::entrant_team);
+LIVE_TIE(SessionEntrantView, vehicle_id, badge::entrant_vid);
+LIVE_SIZE(SessionEntrantView, badge::entrant_stride);
+LIVE_TIE(EntrantsSystem, team_sets, badge::tables - 8);
+LIVE_TIE(TeamSetRef, slots, 0x8);
+LIVE_SIZE(TeamSetRef, 16);
+LIVE_TIE(TeamSlots, begin, badge::table_vec);
+LIVE_TIE(TeamSlots, end, badge::table_vec + 8);
+LIVE_TIE(TeamSlot, record, badge::slot_record);
+LIVE_SIZE(TeamSlot, 16);
+LIVE_TIE(TeamRecord, timing_tower_texture_path, badge::record_key);
+LIVE_TIE(TeamRecord, show_custom_badge_in_ui, badge::record_render);
+LIVE_TIE(RacingVehicles, owner, track::world_to_a);
+LIVE_TIE(RacingOwner, track, track::a_to_b);
+LIVE_TIE(RacingTrack, name, track::b_to_name);
 
 }

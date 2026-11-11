@@ -12,6 +12,18 @@ The lane exists because the memory-backed std telemetry (stream L2 of the std-os
 ## session-system
 `SessionSystem` (key 0x14607f1a0) holds one `SessionVehicleEntry` pointer per vehicle id at `[+0x148,+0x150)`: status, time penalty (XOR double), position - 1 (XOR u32), grid position - 1 (XOR u32). `Sess_RuleManager_Initialise` stores the system at rules+0x1c68; `Sess_Issue_TimePenalty` indexes it by car id and writes the penalty.
 
+## Tyres
+`TyreSystem` (key 0x146080d28, vtable 0x1457ef110) keeps one `VehicleTyreComponent *` per vehicle id at `[+0x110,+0x118)`; `TyreSystem::getCompounds` (0x142e97670) and `pitstopComplete` (0x142e946d0) bound-check the id against the count and index it. The component's slot table at `+0x9bd0` is filled by the slot build (thunk 0x142e9e540 into .data1 body 0x14f463120): per option 0..4 `{option, &PhysicalCompound, &VisualCompound}`, the tables being `[[0x1460806d8]+0xb0]` (stride 0x28) and `[[0x1460806d8]+0xd0]` (stride 0x58). `VisualCompound` byte 0 is the stat id, `+0x50` the audio label enum (Soft 3, Medium 4, Hard 5, Intermediate 7, Wet 8).
+
+## Game mode and team badges
+`GameModeSystem` (key 0x14604ed28) `+0x88` is the `GameMode` object; `+0x278` is its label C string (`time_trial`, `grand_prix*`). The timing pill (`Team_Set_TimingPillBadge` 0x141760020) is the consumer of the badge chain: `GameMode+0x260` is the `EntrantsManager`, `[+0x2e0,+0x2e8)` its 0x88-byte entrants (`+0x82` vehicle id, `+0x58` team word: byte 0 = team table 0..2, high word = index), `EntrantsSystem` (key 0x14606ecd8) `+0x2c8+table*0x10` the table, `[table+8,table+0x10)` its 0x10-byte `{allocator, TeamRecord *}` slots, `TeamRecord+0x4d8` the badge key and `+0x58d` the render-badge flag. The pill view-model init (0x141759a40) takes both systems from the registry by key.
+
+## Pit lane
+`PitLaneSystem+0x48` is the lane object; `+0x938+id*0x10` holds a pointer to the per-vehicle record whose byte `+0x103` is the in-lane flag. UDP lap data derives pit status from it (0x142cfe2b4): 0 when clear, else 2 when `PitLaneCarState.state == 4`, else 1. Ids are guarded `< 0x1b`.
+
+## Track name and spectator gap
+The racing-vehicles singleton (global 0x146ce72b8, `g_Live_RacingVehicles`, signature `live.racing_vehicles` through the ERS reader's own load) reaches the track key as `[[[g]+0xd0]+0xe8]+0xa0`; Car_Read_EnergyRecovery compares it to the TrackSettings blocks. `SpectatorDirector+0xe4` is the gap mode (see `SpectatorDirectorGap`).
+
 ## Open
 - Overtake: the game has no overtake emitter; `OVTK` has a code string and no emitter xref (checked 2026-11-11). Collision: see the inbox.
 - Not decompiled: the tower pill badge path (EntrantsSystem +0x2c8 team tables), the track-name chain, the tyre system +0x110 per-vehicle vector, the red-flag byte quirk, the Time Trial label chain.

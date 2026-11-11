@@ -143,7 +143,22 @@ pub struct DepartmentData {
 }
 
 #[repr(C)]
+pub struct EntrantsSystem {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct FEHomeViewModel {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct GameMode {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct GameModeSystem {
     _opaque: [u8; 0],
 }
 
@@ -168,6 +183,41 @@ pub struct NeStr {
 }
 
 #[repr(C)]
+pub struct PhysicalCompound {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct PitLaneTrack {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct PitLaneVehicle {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct PitLaneVehicleSlot {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct RacingOwner {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct RacingTrack {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct RacingVehicles {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct RedFlagSystem {
     _opaque: [u8; 0],
 }
@@ -183,12 +233,42 @@ pub struct SafetyCarLogicSystem {
 }
 
 #[repr(C)]
+pub struct SessionEntrantView {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct SpectatorDirectorGap {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct TeamSetRef {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct TeamSlot {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct TeamSlots {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct TodCurveBinding {
     _opaque: [u8; 0],
 }
 
 #[repr(C)]
 pub struct TyreSlot {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct TyreSystem {
     _opaque: [u8; 0],
 }
 
@@ -229,6 +309,11 @@ pub struct VehiclePackageRow {
 
 #[repr(C)]
 pub struct VehicleTyreComponent {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct VisualCompound {
     _opaque: [u8; 0],
 }
 
