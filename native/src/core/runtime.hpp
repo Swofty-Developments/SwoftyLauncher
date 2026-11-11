@@ -88,6 +88,7 @@ const SwoftyOverlay *overlay_table();
 const SwoftyTelemetry *telemetry_table();
 const SwoftyDb *db_table();
 const SwoftyStorage *storage_table();
+std::wstring storage_write_path(const std::string &id, const std::string &path);
 const SwoftyCareer *career_table();
 const SwoftyPopup *popup_table();
 const SwoftyLang *lang_table();

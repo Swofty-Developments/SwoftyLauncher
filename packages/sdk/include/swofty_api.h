@@ -549,6 +549,28 @@ typedef struct SwoftyHud {
     int (*stats)(SwoftyHudStats *out);
 } SwoftyHud;
 
+/* CSV recorder (swofty/log_csv.hpp). Not part of SwoftyApi: the table comes from the core's SwoftyCoreCsv
+   export, so an addon built against this header also loads on an older core. Fields are only ever appended.
+   Version 1: open declares a file swofty/addons/<addon id>/diag/<name>-<timestamp>.csv with n columns (names
+   and SWOFTY_CSV_* types) and fills handle. The row is built on the calling thread: row_i32, row_f32 and
+   row_text (pointer and byte length, truncated to 47 bytes) set one column of the row under construction,
+   row_commit copies it into a ring read by the core's writer thread, which formats and writes it; a full ring
+   drops the row and counts it (dropped). Booleans are i32 0/1. clock is a monotonic time in seconds. One
+   writer thread per handle. */
+#define SWOFTY_CSV_VERSION 1
+enum { SWOFTY_CSV_I32 = 0, SWOFTY_CSV_F32 = 1, SWOFTY_CSV_TEXT = 2, SWOFTY_CSV_BOOL = 3 };
+typedef struct SwoftyCsv {
+    uint32_t version;
+    int (*open)(const char *name, const char *const *columns, const uint32_t *types, uint32_t n, uint32_t *handle);
+    int (*row_i32)(uint32_t handle, uint32_t column, int32_t value);
+    int (*row_f32)(uint32_t handle, uint32_t column, float value);
+    int (*row_text)(uint32_t handle, uint32_t column, const char *text, uint32_t len);
+    int (*row_commit)(uint32_t handle);
+    uint64_t (*dropped)(uint32_t handle);
+    void (*close)(uint32_t handle);
+    double (*clock)(void);
+} SwoftyCsv;
+
 /* Team HQ hub tabs (swofty/hub.hpp). Present on cores that export SwoftyCoreHub; the table is read through
    GetProcAddress, so an addon built against this header also loads on an older core and sees it absent.
    An addon's manifest `hub_tab` {name, title, options, data_group} makes the core add a Team HQ laptop tab
