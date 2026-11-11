@@ -23,6 +23,7 @@ inline uint32_t fill_feed(SwoftyTelemetryFeed &f, const SwoftyLiveSession &s, co
 {
     uint32_t groups = 0;
     constexpr uint64_t LAP = SWOFTY_LIVE_HAVE_PROGRESS | SWOFTY_LIVE_HAVE_CLASS | SWOFTY_LIVE_HAVE_PIT |
+                             SWOFTY_LIVE_HAVE_PIT_LANE |
                              SWOFTY_LIVE_HAVE_PENALTIES | SWOFTY_LIVE_HAVE_GAP_LEADER | SWOFTY_LIVE_HAVE_GAP_AHEAD;
     constexpr uint64_t TEL = SWOFTY_LIVE_HAVE_SPEED | SWOFTY_LIVE_HAVE_GEAR | SWOFTY_LIVE_HAVE_RPM | SWOFTY_LIVE_HAVE_PEDALS |
                              SWOFTY_LIVE_HAVE_STEER | SWOFTY_LIVE_HAVE_CLUTCH | SWOFTY_LIVE_HAVE_DRS | SWOFTY_LIVE_HAVE_WORLD;
@@ -96,7 +97,14 @@ inline uint32_t fill_feed(SwoftyTelemetryFeed &f, const SwoftyLiveSession &s, co
             c.gap_leader_ms = has(m, SWOFTY_LIVE_HAVE_GAP_LEADER) ? uint32_t(m.gap_leader_ms) : 0;
             c.gap_front_ms = has(m, SWOFTY_LIVE_HAVE_GAP_AHEAD) ? uint32_t(m.gap_ahead_ms) : 0;
         }
-        if (has(m, SWOFTY_LIVE_HAVE_PIT)) {
+        if (has(m, SWOFTY_LIVE_HAVE_PIT_LANE)) {
+            c.pit_status = m.pit_status;
+            c.pit_stops = m.pit_stops;
+            if (m.pit_status == 1 || m.pit_status == 2)
+                flags |= SWOFTY_CAR_FLAG_IN_PIT_LANE;
+            else
+                flags &= ~SWOFTY_CAR_FLAG_IN_PIT_LANE;
+        } else if (has(m, SWOFTY_LIVE_HAVE_PIT)) {
             if (m.pit_state >= 2 && m.pit_state <= 15)
                 flags |= SWOFTY_CAR_FLAG_IN_PIT_LANE;
             else
@@ -174,6 +182,10 @@ inline void cross_check(const SwoftyTelemetryFeed &mem, const SwoftyTelemetryFee
                 mismatch(out, i, "drive_through_pens", m.drive_through_pens, u.drive_through_pens);
             if (m.stop_go_pens != u.stop_go_pens)
                 mismatch(out, i, "stop_go_pens", m.stop_go_pens, u.stop_go_pens);
+            if (m.pit_status != u.pit_status)
+                mismatch(out, i, "pit_status", m.pit_status, u.pit_status);
+            if (m.pit_stops != u.pit_stops)
+                mismatch(out, i, "pit_stops", m.pit_stops, u.pit_stops);
         }
         if (packet == PKT_CAR_TELEMETRY && (u.speed != 0 || u.rpm != 0)) {
             if (std::fabs(m.speed - u.speed) > 0.5f)

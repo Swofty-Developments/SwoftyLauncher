@@ -119,7 +119,9 @@ typedef struct SwoftyLiveCar {
     char tyre_letter;              // 'S' 'M' 'H' 'I' 'W', 0 unknown
     uint8_t sector;                // 1-based
     uint8_t drs;
-    uint32_t reserved[8];
+    uint8_t pit_status;            // 0 on track, 1 in the pit lane, 2 in the pit box (SWOFTY_LIVE_HAVE_PIT_LANE)
+    uint8_t pit_stops;             // completed stops
+    uint32_t reserved[7];
 } SwoftyLiveCar;
 ```
 
@@ -130,7 +132,7 @@ typedef struct SwoftyLiveCar {
 | `live::player()`, `live::watched()` | from `session().player` and `.watched` |
 | `live::turn(car)` | the official turn near `car.lap_m` |
 
-`speed_kmh`, `ers_fraction`, `gap_ahead_ms`, `gap_leader_ms` and `in_pit` return `std::optional` and are empty when the value is not there.
+`speed_kmh`, `ers_fraction`, `gap_ahead_ms`, `gap_leader_ms`, `in_pit`, `pit_status` and `pit_stops` return `std::optional` and are empty when the value is not there.
 
 Gaps follow the game's rule. They are valid in a race while the car is running or finished and not in the pit; a lapped car's gap is invalid, so compute "+1 LAP" from the lap counters. In practice, qualifying and Time Trial the game's gap system is not fed, so the gaps stay empty.
 
@@ -248,7 +250,13 @@ assert(swofty::live::order().ahead(0)->vehicle == 1);
 
 ## When a group reads
 
-The core reads each group (car systems, ERS, progress, classification, timing, pit, penalties, tyres, flags, controllers, spectator, game mode, track) only when its sites resolve on the running build and its KB rows are verified. On a build whose sites do not resolve, such as the EA build until its bindings exist, the group stays off and the calls answer empty. `SWOFTY_LIVE_FORCE=1` reads the groups whose sites resolve without waiting for verification; use it on a test machine to produce the evidence that verifies them, together with `SWOFTY_TELEMETRY_VERIFY=1` (see [Telemetry](./telemetry#memory-source)).
+The core reads each group (car systems, ERS, progress, classification, timing, pit, pit lane, penalties, tyres, flags, controllers, spectator, game mode, track and the game's message bus) only when every site it needs resolves on the running build and its KB rows are verified. The two tests are the same one: the generated bindings export a site only for a row that is L2 or better with an independent `agree`, and the generated game headers declare a struct field under the same rule, so a group turns on by itself when its rows land and the headers are regenerated. The offsets the reader uses are tied to the generated structs with `static_assert`s, so a header that declares a field somewhere else fails the build.
+
+On a build whose sites do not resolve, such as the EA build until its bindings exist, the group stays off and the calls answer empty. A group with any site that does not resolve stays off even with `SWOFTY_LIVE_FORCE=1`, which reads the groups whose sites resolve without waiting for verification; use it on a test machine to produce the evidence that verifies them, together with `SWOFTY_TELEMETRY_VERIFY=1` (see [Telemetry](./telemetry#memory-source)).
+
+The groups whose chains the knowledge base has no row for yet read only under `SWOFTY_LIVE_FORCE=1`: tyres, game mode, team badges, the track name, the spectator gap mode, the pit-lane flag block behind `pit_status` and `pit_stops`, and the DRS bit.
+
+The core also subscribes to the game's `r_car_to_car_col` and `vehicle_status_changed` bus messages (the bus group) to fire `telemetry.collision` and `telemetry.retirement` without UDP; see [Telemetry](./telemetry#events).
 
 ## Not read yet
 

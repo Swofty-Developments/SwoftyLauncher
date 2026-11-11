@@ -1,3 +1,4 @@
+#include "live/live_bus.hpp"
 #include "live/live_rows.hpp"
 #include "live/live_snapshot.hpp"
 #include "live/live_state.hpp"
@@ -29,22 +30,27 @@ const Named SITE_NAMES[] = {
     {"g_Game_TrackLength", &lv::Sites::track_length},
     {"g_Sess_TyreRulesSessionType", &lv::Sites::session_type},
     {"vt_Car_SystemsContainer", &lv::Sites::vt_car_systems},
-    {"k_Sess_ResultsSystemKey", &lv::Sites::key_results},
-    {"k_Sess_SpectatorDirectorKey", &lv::Sites::key_spectator},
-    {"k_Sess_TimingSystemKey", &lv::Sites::key_timing},
-    {"k_Sess_PitStateKey", &lv::Sites::key_pit},
-    {"k_Sess_SafetyCarLogicKey", &lv::Sites::key_safety_car},
-    {"k_Sess_PenaltyLogKey", &lv::Sites::key_penalty_log},
-    {"k_Sess_SessionComponentKey", &lv::Sites::key_session_component},
-    {"k_Sess_TyreSystemKey", &lv::Sites::key_tyres},
-    {"k_Sess_MarshalZonesKey", &lv::Sites::key_marshal},
-    {"k_Sess_RedFlagKey", &lv::Sites::key_red_flag},
-    {"k_Game_ModeContextKey", &lv::Sites::key_game_mode},
-    {"k_Game_TeamTablesKey", &lv::Sites::key_team_tables},
-    {"g_Sess_ControllerSystem", &lv::Sites::controllers},
+    {"k_Live_SessionSystemKey", &lv::Sites::key_results},
+    {"k_Live_SpectatorDirectorKey", &lv::Sites::key_spectator},
+    {"k_Live_RelativeGapHelperKey", &lv::Sites::key_timing},
+    {"k_Live_PitLaneSystemKey", &lv::Sites::key_pit},
+    {"k_Live_SafetyCarLogicSystemKey", &lv::Sites::key_safety_car},
+    {"k_Live_PenaltyLogKey", &lv::Sites::key_penalty_log},
+    {"k_Live_VehicleHelperSystemKey", &lv::Sites::key_session_component},
+    {"k_Live_TyreSystemKey", &lv::Sites::key_tyres},
+    {"k_Live_MarshalZoneMonitorKey", &lv::Sites::key_marshal},
+    {"k_Live_RedFlagSystemKey", &lv::Sites::key_red_flag},
+    {"k_Live_GameModeSystemKey", &lv::Sites::key_game_mode},
+    {"k_Live_EntrantsSystemKey", &lv::Sites::key_team_tables},
+    {"g_Live_ControllerSystem", &lv::Sites::controllers},
     {"vt_Sess_ControllerSystem", &lv::Sites::vt_controllers},
     {"vt_Sess_HumanController", &lv::Sites::vt_human},
-    {"g_Game_SectorTable", &lv::Sites::sector_block},
+    {"g_Live_SectorEnds", &lv::Sites::sector_block},
+    {"g_Live_SectorCount", &lv::Sites::sector_count},
+    {"g_Game_MessageBus", &lv::Sites::bus_slot},
+    {"Ne_Subscribe_BusMessage", &lv::Sites::bus_subscribe},
+    {"Live_Subscribe_CarToCarCollision", &lv::Sites::bus_collision_row},
+    {"Live_Subscribe_VehicleStatusChanged", &lv::Sites::bus_status_row},
 };
 
 const char *TRACK_WORLD_PATTERN = "48 8B 05 ?? ?? ?? ?? 48 8B 80 D0 00 00 00 48 8B 80 E8 00 00 00";
@@ -75,21 +81,26 @@ const Needs NEEDS[] = {
     {lv::G_CLASS, {&lv::Sites::game_manager, &lv::Sites::key_results}},
     {lv::G_TIMING, {&lv::Sites::game_manager, &lv::Sites::key_timing, &lv::Sites::key_safety_car}},
     {lv::G_PIT, {&lv::Sites::game_manager, &lv::Sites::key_pit}},
+    {lv::G_PIT_LANE, {&lv::Sites::game_manager, &lv::Sites::key_pit}},
     {lv::G_PENALTIES, {&lv::Sites::game_manager, &lv::Sites::key_penalty_log, &lv::Sites::key_session_component}},
     {lv::G_TYRES, {&lv::Sites::game_manager, &lv::Sites::key_tyres}},
-    {lv::G_FLAGS, {&lv::Sites::game_manager, &lv::Sites::key_marshal, &lv::Sites::key_red_flag, &lv::Sites::sector_block}},
+    {lv::G_FLAGS,
+     {&lv::Sites::game_manager, &lv::Sites::key_marshal, &lv::Sites::key_red_flag, &lv::Sites::sector_block,
+      &lv::Sites::sector_count, &lv::Sites::track_length}},
     {lv::G_CONTROL, {&lv::Sites::controllers, &lv::Sites::vt_controllers, &lv::Sites::vt_human}},
     {lv::G_SPECTATE, {&lv::Sites::game_manager, &lv::Sites::key_spectator}},
+    {lv::G_SPECTATE_GAP, {&lv::Sites::game_manager, &lv::Sites::key_spectator}},
     {lv::G_MODE, {&lv::Sites::game_manager, &lv::Sites::key_game_mode}},
     {lv::G_BADGES, {&lv::Sites::game_manager, &lv::Sites::key_game_mode, &lv::Sites::key_team_tables}},
     {lv::G_TRACK, {&lv::Sites::track_length, &lv::Sites::session_type}},
+    {lv::G_TRACK_NAME, {&lv::Sites::track_world}},
+    {lv::G_BUS_EVENTS,
+     {&lv::Sites::bus_slot, &lv::Sites::bus_subscribe, &lv::Sites::bus_collision_row, &lv::Sites::bus_status_row}},
 };
 
 constexpr lv::Group TELEMETRY_GROUPS[] = {lv::G_CAR_SYSTEMS, lv::G_ERS, lv::G_PROGRESS, lv::G_CLASS, lv::G_TIMING,
-                                          lv::G_PIT,        lv::G_PENALTIES, lv::G_TYRES, lv::G_FLAGS, lv::G_CONTROL,
+                                          lv::G_PIT,        lv::G_PIT_LANE,  lv::G_PENALTIES, lv::G_TYRES, lv::G_FLAGS, lv::G_CONTROL,
                                           lv::G_TRACK};
-
-constexpr bool COLLISION_NEEDS_UDP = true;
 
 bool g_on;
 bool g_forced;
@@ -107,6 +118,77 @@ float g_prev_track_len = -1;
 char g_prev_track_name[48];
 int g_official = -1;
 lv::turns::Table g_turns;
+lv::bus::Queue g_bus_queue;
+lv::bus::Subscriber g_bus_sub;
+std::atomic<bool> g_bus_armed;
+double g_bus_tried = -1e9;
+
+double qpc_ms()
+{
+    static LARGE_INTEGER freq;
+    LARGE_INTEGER now;
+    if (!freq.QuadPart)
+        QueryPerformanceFrequency(&freq);
+    QueryPerformanceCounter(&now);
+    return freq.QuadPart ? double(now.QuadPart) * 1000.0 / double(freq.QuadPart) : 0.0;
+}
+
+uint64_t bus_on_collision(void *, const uint8_t *msg)
+{
+    if (msg)
+        g_bus_queue.push_collision(msg, qpc_ms());
+    return 0;
+}
+
+uint64_t bus_on_status(void *, const uint8_t *msg)
+{
+    if (msg)
+        g_bus_queue.push_retirement(msg);
+    return 0;
+}
+
+uintptr_t bus_alloc(uintptr_t allocator, uintptr_t fn, uintptr_t ctx)
+{
+    uintptr_t vt = 0, call = 0;
+    if (!kernel_copy(nullptr, allocator, &vt, sizeof vt) || !vt ||
+        !kernel_copy(nullptr, vt + lv::bus::allocator_alloc, &call, sizeof call) || !call ||
+        (g_sites.image_hi && (call < g_sites.image_lo || call >= g_sites.image_hi)))
+        return 0;
+    void *p = reinterpret_cast<void *(*)(uintptr_t, size_t, size_t)>(call)(allocator, lv::bus::delegate_size,
+                                                                           lv::bus::delegate_align);
+    if (!p)
+        return 0;
+    auto *d = static_cast<uintptr_t *>(p);
+    d[0] = fn;
+    d[1] = ctx;
+    return uintptr_t(p);
+}
+
+void bus_subscribe(uintptr_t bus, const char *name, uintptr_t delegate)
+{
+    reinterpret_cast<void (*)(uintptr_t, const char *, uintptr_t)>(g_sites.bus_subscribe)(bus, name, delegate);
+}
+
+void bus_arm(double now)
+{
+    if (!g_gates[lv::G_BUS_EVENTS] || (now - g_bus_tried < 1.0 && now >= g_bus_tried))
+        return;
+    g_bus_tried = now;
+    lv::bus::Ops o;
+    o.mem.fn = kernel_copy;
+    o.bus_slot = g_sites.bus_slot;
+    o.alloc = bus_alloc;
+    o.subscribe = bus_subscribe;
+    o.collision_fn = uintptr_t(&bus_on_collision);
+    o.status_fn = uintptr_t(&bus_on_status);
+    bool was = g_bus_sub.armed();
+    if (!g_bus_sub.arm(o) || was)
+        return;
+    g_live->set_retirements_from_bus(true);
+    g_bus_armed.store(true, std::memory_order_release);
+    swofty::log("[live] subscribed to the game's message bus 0x%llx: %s, %s", (unsigned long long)g_bus_sub.bus(),
+                lv::bus::COLLISION_MESSAGE, lv::bus::STATUS_MESSAGE);
+}
 
 void resolve_sites()
 {
@@ -125,24 +207,32 @@ void resolve_sites()
         g_sites.track_world = at + 7 + intptr_t(disp);
 }
 
+const char *unresolved_name(uintptr_t lv::Sites::*slot)
+{
+    for (const Named &n : SITE_NAMES)
+        if (n.slot == slot)
+            return n.name;
+    return "a scanned site";
+}
+
 void decide_gates()
 {
     g_forced = env_on("SWOFTY_LIVE_FORCE");
     g_verify = env_on("SWOFTY_TELEMETRY_VERIFY");
     for (const Needs &n : NEEDS) {
         const lv::Row &row = lv::ROWS[n.group];
-        bool sites = true;
         const char *missing = nullptr;
         for (auto s : n.sites)
-            if (s && !(g_sites.*s)) {
-                sites = false;
-                missing = "a site that does not resolve";
-            }
-        bool ready = row.ready || g_forced;
-        g_gates.on[n.group] = sites && ready;
-        if (!g_gates.on[n.group])
-            swofty::log("[live] %s off: %s", lv::group_name(n.group),
-                        !sites ? missing : "needs a verified KB row (SWOFTY_LIVE_FORCE=1 reads it unverified)");
+            if (s && !(g_sites.*s) && !missing)
+                missing = unresolved_name(s);
+        bool verified = row.fields && row.mapped;
+        g_gates.on[n.group] = !missing && (verified || g_forced);
+        if (g_gates.on[n.group])
+            continue;
+        if (missing)
+            swofty::log("[live] %s off: %s does not resolve (no agree row exports it yet)", lv::group_name(n.group), missing);
+        else
+            swofty::log("[live] %s off: %s (SWOFTY_LIVE_FORCE=1 reads it unverified)", lv::group_name(n.group), row.needs);
     }
 }
 
@@ -333,6 +423,9 @@ void live_tick(double now)
     {
         std::lock_guard<std::mutex> g(g_lock);
         g_live->update(now);
+        bus_arm(now);
+        for (const lv::Event &e : g_bus_queue.drain())
+            g_live->add_event(e);
         refresh_turns();
         for (const lv::Event &e : g_live->take_events())
             g_events.push_back(e);
@@ -354,12 +447,17 @@ bool live_memory_verified()
 
 bool live_collision_needs_udp()
 {
-    return COLLISION_NEEDS_UDP;
+    return !(g_on && g_gates[lv::G_BUS_EVENTS]);
 }
 
 bool live_events_from_memory()
 {
     return g_on && g_gates[lv::G_CLASS];
+}
+
+bool live_bus_armed()
+{
+    return g_bus_armed.load(std::memory_order_acquire);
 }
 
 uint32_t live_fill_feed(SwoftyTelemetryFeed &f)
@@ -391,7 +489,9 @@ std::vector<LiveEvent> live_take_events()
 {
     std::vector<LiveEvent> out;
     for (const lv::Event &e : g_events)
-        out.push_back({e.kind == lv::Event::retirement ? SWOFTY_EVENT_TELEMETRY_RETIREMENT : SWOFTY_EVENT_TELEMETRY_OVERTAKE,
+        out.push_back({e.kind == lv::Event::retirement  ? SWOFTY_EVENT_TELEMETRY_RETIREMENT
+                       : e.kind == lv::Event::collision ? SWOFTY_EVENT_TELEMETRY_COLLISION
+                                                        : SWOFTY_EVENT_TELEMETRY_OVERTAKE,
                        e.a, e.b});
     g_events.clear();
     return out;

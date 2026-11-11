@@ -190,6 +190,16 @@ inline bool in_pit(const Car &c)
     return has(c, SWOFTY_LIVE_HAVE_PIT) && c.pit_state >= 2 && c.pit_state <= 15;
 }
 
+inline std::optional<uint8_t> pit_status(const Car &c)
+{
+    return has(c, SWOFTY_LIVE_HAVE_PIT_LANE) ? std::optional<uint8_t>(c.pit_status) : std::nullopt;
+}
+
+inline std::optional<uint8_t> pit_stops(const Car &c)
+{
+    return has(c, SWOFTY_LIVE_HAVE_PIT_LANE) ? std::optional<uint8_t>(c.pit_stops) : std::nullopt;
+}
+
 inline GameMode game_mode(const Session &s)
 {
     return has(s, SWOFTY_LIVE_SHAVE_GAME_MODE) ? static_cast<GameMode>(s.game_mode) : GameMode::unknown;

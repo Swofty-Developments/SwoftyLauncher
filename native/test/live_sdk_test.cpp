@@ -67,6 +67,11 @@ int main()
         CHECK(live::in_pit(*live::car(2)) == false);
         fake.car(2).have |= SWOFTY_LIVE_HAVE_PIT;
         CHECK(live::in_pit(*live::car(2)));
+        CHECK(!live::pit_status(*live::car(2)) && !live::pit_stops(*live::car(2)));
+        fake.car(2).have |= SWOFTY_LIVE_HAVE_PIT_LANE;
+        fake.car(2).pit_status = 2;
+        fake.car(2).pit_stops = 3;
+        CHECK(live::pit_status(*live::car(2)) == 2 && live::pit_stops(*live::car(2)) == 3);
         auto f0 = live::frame();
         fake.advance();
         CHECK(f0 && live::frame() && *live::frame() == *f0 + 1);

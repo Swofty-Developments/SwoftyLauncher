@@ -63,7 +63,7 @@ inline char checked_tyre_letter(uint8_t visual, int32_t compound)
 }
 
 struct Event {
-    enum Kind : uint8_t { retirement, overtake } kind;
+    enum Kind : uint8_t { retirement, overtake, collision } kind;
     int64_t a, b;
 };
 
@@ -74,9 +74,9 @@ struct Observed {
 };
 
 inline void derive_events(const Observed *prev, const Observed *now, uint32_t session_type, uint8_t safety_car,
-                          std::vector<Event> &out)
+                          std::vector<Event> &out, bool retirements_from_bus = false)
 {
-    for (unsigned i = 0; i < MAX_CARS; i++) {
+    for (unsigned i = 0; i < MAX_CARS && !retirements_from_bus; i++) {
         if (!prev[i].valid || !now[i].valid)
             continue;
         bool was = prev[i].status == 4 || prev[i].status == 7, is = now[i].status == 4 || now[i].status == 7;
@@ -138,6 +138,14 @@ public:
         std::vector<Event> e;
         e.swap(events_);
         return e;
+    }
+
+    void set_retirements_from_bus(bool on) { retire_from_bus_ = on; }
+    void add_event(const Event &e)
+    {
+        events_.push_back(e);
+        if (events_.size() > 256)
+            events_.erase(events_.begin(), events_.end() - 256);
     }
 
     bool active() const { return n_cars_ > 0; }
@@ -303,6 +311,10 @@ private:
     bool spect_found_ = false, spect_read_ = false;
     uint8_t spect_ui_ = 0, spect_active_ = 0, spect_vehicle_ = 0xff;
     uint32_t spect_gap_ = 0;
+    uint8_t pit_status_[MAX_CARS] = {};
+    uint8_t pit_stops_[MAX_CARS] = {};
+    bool pit_lane_ok_[MAX_CARS] = {};
+    bool retire_from_bus_ = false;
     uint32_t player_gen_ = 0, subject_gen_ = 0;
     uintptr_t player_ptr_ = 0, subject_ptr_ = 0;
     int player_ = -1, watched_ = -1;
@@ -315,6 +327,7 @@ private:
         std::memset(&ses, 0, sizeof ses);
         std::memset(cars, 0, sizeof cars);
         std::memset(pit_, 0xff, sizeof pit_);
+        std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
         reset_timers();
     }
 
@@ -371,6 +384,7 @@ private:
         for (auto &t : tyre_)
             t = Tyre{};
         std::memset(pit_, 0xff, sizeof pit_);
+        std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
         ++seq;
     }
 
@@ -686,16 +700,30 @@ private:
     void job_pit()
     {
         std::memset(pit_, 0xff, sizeof pit_);
+        std::memset(pit_lane_ok_, 0, sizeof pit_lane_ok_);
         uintptr_t s = find(c_pit_, s_.key_pit);
         uintptr_t rec[MAX_CARS * 2];
         if (!s || !m_.read(s + L::pit::records, rec, sizeof rec))
             return;
+        uintptr_t lane = 0;
+        if (g_[G_PIT_LANE] && (!m_.get(s + L::pit::lane_object, lane) || !lane))
+            lane = 0;
         for (unsigned vid = 0; vid < MAX_CARS; vid++) {
             uintptr_t q = rec[vid * 2];
             uint32_t st = 0;
             if (!racer(vid) || !q || (q & 3) || !m_.get(q + L::pit::state, st) || st > 15)
                 continue;
             pit_[vid] = uint8_t(st);
+            uintptr_t flags = 0;
+            uint8_t in_lane = 0;
+            uint32_t stops = 0;
+            if (g_[G_PIT_LANE] && lane && vid < L::pit::max_slots &&
+                m_.get(lane + L::pit::lane_flags + vid * L::pit::lane_flag_stride, flags) && flags &&
+                m_.get(flags + L::pit::in_lane, in_lane) && m_.get(q + L::pit::stops, stops)) {
+                pit_status_[vid] = !in_lane ? 0 : st == 4 ? 2 : 1;
+                pit_stops_[vid] = uint8_t(stops & 0xff);
+                pit_lane_ok_[vid] = true;
+            }
         }
     }
 
@@ -816,7 +844,7 @@ private:
 
     void job_flags()
     {
-        if (s_.sector_block && !sectors_ok_) {
+        if (s_.sector_block && sector_block_contiguous() && !sectors_ok_) {
             uint8_t b[L::track::sector_block];
             if (m_.read(s_.sector_block, b, sizeof b))
                 sectors_ok_ = sector_table_from(b);
@@ -866,6 +894,12 @@ private:
         uintptr_t rf = find(c_red_, s_.key_red_flag);
         uint8_t r = 0xff;
         red_raw_ = rf && m_.get(rf + L::red_flag::state, r) && r <= 2 ? r : 0xff;
+    }
+
+    bool sector_block_contiguous() const
+    {
+        return s_.sector_count == s_.sector_block + L::track::sector_count &&
+               (!s_.track_length || s_.track_length == s_.sector_block + L::track::sector_length);
     }
 
     bool sector_table_from(const uint8_t *b)
@@ -931,7 +965,7 @@ private:
         type_ok_ = s_.session_type && m_.get(s_.session_type, type) && type <= 64;
         type_ = type_ok_ ? type : 0;
         uintptr_t w = 0, a = 0, t = 0, str = 0;
-        track_name_ok_ = s_.track_world && m_.get(s_.track_world, w) && w && m_.get(w + L::track::world_to_a, a) && a &&
+        track_name_ok_ = g_[G_TRACK_NAME] && s_.track_world && m_.get(s_.track_world, w) && w && m_.get(w + L::track::world_to_a, a) && a &&
                          m_.get(a + L::track::a_to_b, t) && t && m_.get(t + L::track::b_to_name, str) && str &&
                          read_name(str);
         if (!track_name_ok_)
@@ -1172,7 +1206,8 @@ private:
             ses.have |= SWOFTY_LIVE_SHAVE_PLAYER;
         if (g_[G_SPECTATE] && spect_read_) {
             ses.have |= SWOFTY_LIVE_SHAVE_WATCHED;
-            ses.spectator_gap_mode = uint8_t(spect_gap_ > 255 ? 0 : spect_gap_);
+            if (g_[G_SPECTATE_GAP])
+                ses.spectator_gap_mode = uint8_t(spect_gap_ > 255 ? 0 : spect_gap_);
         }
         unsigned racers = 0;
         for (int i = 0; i < n_cars_; i++)
@@ -1311,6 +1346,11 @@ private:
             c.pit_state = pit_[id];
             if (pit_[id] != 0xff)
                 c.have |= SWOFTY_LIVE_HAVE_PIT;
+            if (pit_lane_ok_[id]) {
+                c.have |= SWOFTY_LIVE_HAVE_PIT_LANE;
+                c.pit_status = pit_status_[id];
+                c.pit_stops = pit_stops_[id];
+            }
             c.gap_leader_ms = c.gap_ahead_ms = SWOFTY_LIVE_NO_GAP;
             const Gap &g = gap_[id];
             bool ok_status = k.have && (k.status == 2 || k.status == 3) && !(pit_[id] >= 2 && pit_[id] <= 15);
@@ -1350,7 +1390,7 @@ private:
             }
             if (observed_valid_ && last_generation_ == player_gen_ && cls_stamp_ != cls_stamp_seen_) {
                 std::vector<Event> fresh;
-                derive_events(observed_, now_obs, ses.type, ses.safety_car, fresh);
+                derive_events(observed_, now_obs, ses.type, ses.safety_car, fresh, retire_from_bus_);
                 events_.insert(events_.end(), fresh.begin(), fresh.end());
             }
             if (cls_stamp_ != cls_stamp_seen_) {
