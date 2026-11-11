@@ -115,6 +115,7 @@ pub struct Plan {
     pub shows: Vec<ShowItem>,
     pub decisions: Vec<Decision>,
     pub clips: Vec<ClipSpec>,
+    pub motions: Vec<super::motion::MotionItem>,
     pub pv_texts: Vec<(String, String)>,
     pub known: Vec<(String, [u8; 4])>,
     pub root_hidden: bool,
@@ -775,10 +776,23 @@ impl Builder {
                     Kind::Centre => self.centre(&name, pos)?,
                     _ => self.null(&name, pos, None, false, e.hidden.unwrap_or(false) && !preview)?,
                 };
+                let mut holder = match (&e.motion, preview) {
+                    (Some(m), false) => {
+                        let hn = super::motion::holder_name(&name, m);
+                        let slides = m.track()? == super::motion::Track::Slide;
+                        let h = self.null(&hn, [0.0; 3], None, slides, false)?;
+                        super::motion::plan(cx.plan, e, m, &hn)?;
+                        Some(h)
+                    }
+                    _ => None,
+                };
                 for c in &e.children {
                     if let Some(n) = self.element(cx, c)? {
-                        idf::children_mut(&mut g)?.push(n);
+                        idf::children_mut(holder.as_mut().unwrap_or(&mut g))?.push(n);
                     }
+                }
+                if let Some(h) = holder {
+                    idf::children_mut(&mut g)?.push(h);
                 }
                 g
             }

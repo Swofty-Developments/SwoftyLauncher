@@ -15,6 +15,7 @@ pub mod editor;
 pub mod geom;
 pub mod integrate;
 pub mod model;
+pub mod motion;
 pub mod scene;
 pub mod screen_build;
 pub mod screens;
@@ -651,32 +652,9 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
                 preview_plans.push((i, plan));
             }
         }
-        let mut names: Vec<String> = plans.iter().flat_map(|(_, p)| p.anim_names()).collect();
-        names.sort();
-        let strtab = first(stock.read(dials::STOCK_ERP, facts.strtab)?, facts.strtab)?;
         let mut new_scene = b.finish(footprint)?;
-        if !names.is_empty() {
-            let refs: Vec<&str> = names.iter().map(String::as_str).collect();
-            let (tab, first) = animclip::append_strings(&strtab, &refs)?;
-            scene_resources.push((facts.strtab.to_owned(), "ACStringTable", vec![tab]));
-            for (_, plan) in &plans {
-                for c in &plan.clips {
-                    let at = names.iter().position(|n| *n == c.node).expect("collected above");
-                    let (temp, syst) = animclip::build_clip(
-                        &clip_template,
-                        &c.node,
-                        (first + at) as i32,
-                        facts.strtab,
-                        &c.channels,
-                    )?;
-                    scene_resources.push((
-                        format!("{}/{}?context=animation", facts.scene, c.node),
-                        "AnimClip",
-                        vec![temp, syst],
-                    ));
-                }
-            }
-        }
+        let planned: Vec<&Plan> = plans.iter().map(|(_, p)| p).collect();
+        clip_resources(stock, facts, &clip_template, &planned, &mut scene_resources)?;
         scene_resources.push((
             facts.scene.to_owned(),
             "UILayout",
@@ -761,6 +739,8 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
             plans.push((i, plan));
         }
         target_scenes.push((scene.clone(), "UILayout", vec![b.finish(None)?]));
+        let planned: Vec<&Plan> = plans.iter().map(|(_, p)| p).collect();
+        clip_resources(stock, facts, &clip_template, &planned, &mut target_scenes)?;
         for (i, plan) in &plans {
             let checked = template::attach_scene(&mut template.root, &race_tags, parent, scene, plan)?;
             out.lines.push(format!(
@@ -832,6 +812,45 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
     }
     out.archives.extend(screen_build::archives(stock, &screens_out)?);
     Ok(out)
+}
+
+/// The anim string table and the clips the plans put in `facts.scene`: the new names appended
+/// to the stock table in order, one `AnimClip` per clip, built on `clip_template`. Nothing when
+/// no plan has a clip.
+pub fn clip_resources(
+    stock: &dyn Stock,
+    facts: &DialFacts,
+    clip_template: &[u8],
+    plans: &[&Plan],
+    out: &mut Vec<Res>,
+) -> Result<()> {
+    let mut names: Vec<String> = plans.iter().flat_map(|p| p.anim_names()).collect();
+    names.sort();
+    if names.is_empty() {
+        return Ok(());
+    }
+    let strtab = first(stock.read(dials::STOCK_ERP, facts.strtab)?, facts.strtab)?;
+    let refs: Vec<&str> = names.iter().map(String::as_str).collect();
+    let (tab, first_index) = animclip::append_strings(&strtab, &refs)?;
+    out.push((facts.strtab.to_owned(), "ACStringTable", vec![tab]));
+    for plan in plans {
+        for c in &plan.clips {
+            let at = names.iter().position(|n| *n == c.node).expect("collected above");
+            let (temp, syst) = animclip::build_clip(
+                clip_template,
+                &c.node,
+                (first_index + at) as i32,
+                facts.strtab,
+                &c.channels,
+            )?;
+            out.push((
+                format!("{}/{}?context=animation", facts.scene, c.node),
+                "AnimClip",
+                vec![temp, syst],
+            ));
+        }
+    }
+    Ok(())
 }
 
 /// A ready archive of `resources`, each laid out like the stock resource it is made after.

@@ -260,6 +260,8 @@ pub struct Element {
     pub start: Option<f64>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub arc: Vec<[f64; 2]>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub motion: Option<super::motion::Motion>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -594,6 +596,13 @@ impl HudElement {
             for e in &v.add {
                 check_element(e, &mut ids)?;
             }
+            super::motion::check_elements(&v.add, None)?;
+        }
+        super::motion::check_elements(&self.elements, None)?;
+        if self.scene_target().is_some() && has_motion(&self.elements) {
+            return Err(err(
+                "a scene target does not take motion: its triggers need the record's control group (a dial or screen record)",
+            ));
         }
         let known: std::collections::BTreeSet<&str> = ids.iter().map(String::as_str).collect();
         for d in &self.decisions {
@@ -743,6 +752,10 @@ fn expand_into(
     Ok(())
 }
 
+fn has_motion(list: &[Element]) -> bool {
+    list.iter().any(|e| e.motion.is_some() || has_motion(&e.children))
+}
+
 fn substitute_element(e: &mut Element, vars: &[(char, u32)]) -> Result<()> {
     let id = e.id.clone();
     let text = |s: &mut Option<String>| -> Result<()> {
@@ -762,6 +775,7 @@ fn substitute_element(e: &mut Element, vars: &[(char, u32)]) -> Result<()> {
     for b in [&mut e.visible, &mut e.tint, &mut e.value, &mut e.texture]
         .into_iter()
         .flatten()
+        .chain(e.motion.iter_mut().filter_map(|m| m.play_on.as_mut()))
     {
         text(&mut b.view_model)?;
         text(&mut b.session)?;

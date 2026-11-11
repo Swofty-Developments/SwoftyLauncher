@@ -273,6 +273,27 @@
       "required": ["count", "var"],
       "additionalProperties": false
     },
+    "motion": {
+      "description": "On a group: a timed slide (position keys, HUD units, local space) or fade (two alpha keys) a stock curve times, started by the bool leaf play_on (event 1) and reversed when it falls (event 0).",
+      "type": "object",
+      "properties": {
+        "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,15}$" },
+        "keys": {
+          "type": "array",
+          "minItems": 2,
+          "items": {
+            "type": "array",
+            "minItems": 2,
+            "maxItems": 2,
+            "items": { "oneOf": [ { "type": "number", "minimum": 0 }, { "$ref": "#/$defs/point" } ] }
+          }
+        },
+        "curve": { "type": "string", "minLength": 1 },
+        "play_on": { "$ref": "#/$defs/bind" }
+      },
+      "required": ["id", "keys", "curve", "play_on"],
+      "additionalProperties": false
+    },
     "element": {
       "type": "object",
       "properties": {
@@ -299,6 +320,7 @@
           "minLength": 1
         },
         "children": { "type": "array", "items": { "$ref": "#/$defs/element" } },
+        "motion": { "$ref": "#/$defs/motion" },
         "repeat": { "$ref": "#/$defs/repeat" },
         "dir": {
           "description": "On a stack: the way its children are laid out, from the first child. Absent: down.",
