@@ -132,27 +132,19 @@ int main()
     expect(mm::open_request_json("https://youtu.be/a") == R"({"url":"https://youtu.be/a"})", "open request json");
     expect(mm::open_request_json("a\"b") == R"({"url":"a\"b"})", "open request json escapes quotes");
     expect(std::string(mm::press_route(mm::Mode::time_trial)) == "swofty_time_trial" &&
-               std::string(mm::press_route(mm::Mode::grand_prix_new)) == "swofty_grand_prix" &&
-               std::string(mm::press_route(mm::Mode::grand_prix_saves)) == "swofty_grand_prix_saves" &&
+               std::string(mm::press_route(mm::Mode::grand_prix)) == "home_to_activity" &&
                std::string(mm::press_route(mm::Mode::none)).empty(),
-           "each card has its own launcher route");
-    expect(mm::grand_prix_mode(true) == mm::Mode::grand_prix_saves, "the Grand Prix card opens the game's saves screen, saved season or not");
-    expect(mm::grand_prix_mode(false) == mm::Mode::grand_prix_new, "SWOFTY_MAIN_MENU_GPSAVES=0 opens the new Grand Prix picker directly");
-    expect(std::string(mm::press_route(mm::grand_prix_mode(true))) == "swofty_grand_prix_saves" &&
-               std::string(mm::return_command(mm::grand_prix_mode(true))) == "grand_prix_resume",
-           "the saves screen route and its session-end hand-over command belong to the default Grand Prix mode");
+           "the Time Trial card has its launcher route; the Grand Prix card fires the game's home_to_activity");
     expect(std::string(mm::return_command(mm::Mode::time_trial)) == "time_trial" &&
-               std::string(mm::return_command(mm::Mode::grand_prix_saves)) == "grand_prix_resume" &&
-               std::string(mm::return_command(mm::Mode::grand_prix_new)) == "grand_prix_new",
+               std::string(mm::return_command(mm::Mode::grand_prix)) == "solo_gp" && std::string(mm::return_command(mm::Mode::none)).empty(),
            "the session-end hand-over raises the command of the card that started the session");
     {
         auto route = mm::Back::route;
         expect(std::string(mm::back_replacement(route, mm::djb2("f1_world_activity_container"), "f1_world")) == "swofty_back_home" &&
                    std::string(mm::back_replacement(route, mm::djb2("f1_world_activity_container"), "home")) == "swofty_back_home",
                "the container's Back (to the hub or home) becomes the launcher's route home");
-        expect(std::string(mm::back_replacement(route, mm::djb2("fe_showroom"), "back_1")) == "swofty_home" &&
-                   std::string(mm::back_replacement(route, mm::djb2("grand_prix_continue"), "back_1")) == "swofty_home",
-               "the Showroom's and the saves list's Back become the launcher's route home");
+        expect(std::string(mm::back_replacement(route, mm::djb2("fe_showroom"), "back_1")) == "swofty_home",
+               "the Showroom's Back becomes the launcher's route home");
         expect(mm::back_replacement(route, mm::djb2("fe_f1_world"), "back_1") == nullptr &&
                    mm::back_replacement(route, mm::djb2("f1_world_activity_container"), "tt_track_select") == nullptr &&
                    mm::back_replacement(route, mm::djb2("fe_showroom"), "showroom_f1") == nullptr,
@@ -163,6 +155,15 @@ int main()
         expect(mm::back_replacement(mm::Back::stock, mm::djb2("f1_world_activity_container"), "f1_world") == nullptr &&
                    mm::back_replacement(mm::Back::twostep, mm::djb2("f1_world_activity_container"), "f1_world") == nullptr,
                "the stock and two-step variants leave the route alone");
+        expect(mm::back_replacement(route, mm::djb2("grand_prix_continue"), "back") == nullptr &&
+                   mm::back_replacement(route, mm::djb2("grand_prix_continue"), "back_1") == nullptr,
+               "the saves list's Back stays the game's (a front-end route home from it left a black screen)");
+        expect(mm::saves_back_leaves_home(route, mm::djb2("grand_prix_continue"), "back", mm::Mode::grand_prix) &&
+                   !mm::saves_back_leaves_home(route, mm::djb2("grand_prix_continue"), "back", mm::Mode::none) &&
+                   !mm::saves_back_leaves_home(route, mm::djb2("grand_prix_continue"), "back", mm::Mode::time_trial) &&
+                   !mm::saves_back_leaves_home(mm::Back::stock, mm::djb2("grand_prix_continue"), "back", mm::Mode::grand_prix) &&
+                   !mm::saves_back_leaves_home(route, mm::djb2("grand_prix_continue"), "accept", mm::Mode::grand_prix),
+               "after a Grand Prix card press the saves list's Back leads home through the container");
         expect(mm::back_variant_of("", true) == mm::Back::route && mm::back_variant_of("", false) == mm::Back::stock &&
                    mm::back_variant_of("home", false) == mm::Back::home && mm::back_variant_of("twostep", true) == mm::Back::twostep &&
                    mm::back_variant_of("stock", true) == mm::Back::stock,
