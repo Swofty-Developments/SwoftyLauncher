@@ -1147,6 +1147,8 @@ int replay_force = 0;
 uintptr_t save_slot_ctor = 0;
 void describe_component(const char *what, uint64_t x);
 uint64_t replay_make_save_slot(uint64_t mgr, uint64_t owner);
+std::atomic<int64_t> replay_saved_mark_ms{0}, replay_saved_job_ms{0};
+std::atomic<uint32_t> replay_saved_lap_ms{0};
 void replay_write_setup(const std::wstring &frr);
 uint64_t replay_own_owner[8], replay_own_comp[8];
 std::atomic<int> replay_own_count{0};
@@ -1294,7 +1296,12 @@ void replay_write_setup(const std::wstring &frr)
                 out += ch;
         return out + "\"";
     };
-    std::string json = "{\"mode\":\"time_trial\",\"box\":" + quote(box) + ",\"track\":" + quote(track) + ",\"team\":" + quote(team) + "}";
+    // The file holds the whole session. The lap ended tail_ms before the end of the recording and took lap_ms, which is the window a viewer plays.
+    int64_t tail = replay_saved_job_ms.load() - replay_saved_mark_ms.load();
+    if (tail < 0 || tail > 60000)
+        tail = REPLAY_SAVE_DELAY_MS;
+    std::string json = "{\"mode\":\"time_trial\",\"box\":" + quote(box) + ",\"track\":" + quote(track) + ",\"team\":" + quote(team) + ",\"lap_ms\":" + std::to_string(replay_saved_lap_ms.load()) +
+                       ",\"tail_ms\":" + std::to_string(tail) + "}";
     bool ok = runtime::write_file(replay_setup_path(frr), json);
     swofty::log("[replay] setup for %s: %s %s", narrow(frr.c_str()).c_str(), json.c_str(), ok ? "written" : "NOT written");
 }
@@ -1434,6 +1441,7 @@ void replay_job_alloc_mid(safetyhook::Context &c)
 void replay_job_mid(safetyhook::Context &c)
 {
     static std::atomic<int> logged{0};
+    replay_saved_job_ms = now_ms();
     if (++logged <= 8)
         swofty::log("[replay] the game's save job started on manager 0x%llx (ours %d)", (unsigned long long)c.rdx, tb::replay_ui_suppressed(replay_ui_until_ms.load(), now_ms()) ? 1 : 0);
 }
@@ -1601,6 +1609,8 @@ void replay_lap_finished(int64_t lap_ms, int valid)
     replay_session_best_ms = lap_ms;
     replay_pending_lap = uint32_t(lap_ms);
     replay_pending_ms = now_ms();
+    replay_saved_lap_ms = uint32_t(lap_ms);
+    replay_saved_mark_ms = replay_pending_ms.load();
 }
 
 // `sys` is the candidate replay system. The per-frame ReplayBuffer::beginFrameWrite hook has no replay system in a register (rcx is the
@@ -1698,9 +1708,18 @@ void replay_tick(uint64_t sys, const char *slot)
                 *reinterpret_cast<uint8_t *>(module + 0xfd) = 1;
                 memcpy(reinterpret_cast<void *>(module + 0x100), &zero, 4);
                 memcpy(&duration, reinterpret_cast<void *>(module + 0xe8), 4);
-                float end = duration > 0.5f ? duration : 100000.0f;
+                float end = duration > 0.5f ? duration : 100000.0f, start = 0;
+                ::json::Value setup;
+                std::wstring wide_path(replay_play_path.begin(), replay_play_path.end());
+                if (::json::parse(runtime::read_file(replay_setup_path(wide_path), size_t(1) << 16), setup) && setup["lap_ms"].n > 0 && duration > 0.5f) {
+                    float lap_end = duration - float(setup["tail_ms"].n) / 1000.0f, lap = float(setup["lap_ms"].n) / 1000.0f;
+                    end = std::min(duration, lap_end + 2.0f);
+                    start = std::max(0.0f, lap_end - lap - 2.0f);
+                }
+                memcpy(reinterpret_cast<void *>(sys + 0x7c), &start, 4);
+                memcpy(reinterpret_cast<void *>(module + 0x100), &start, 4);
                 memcpy(reinterpret_cast<void *>(module + 0x104), &end, 4);
-                swofty::log("[replay] play test: mode 0 and state 2 set, clip 0..%.3f (module duration now %.3f)", double(end), double(duration));
+                swofty::log("[replay] play test: mode 0 and state 2 set, clip %.3f..%.3f (module duration now %.3f)", double(start), double(end), double(duration));
             }
             at = now + 3000;
         } else if (stage.load() >= 2 && stage.load() < 6 && now >= at.load()) {
