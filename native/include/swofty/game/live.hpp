@@ -73,6 +73,18 @@ struct DriveThroughObject {
 static_assert(offsetof(DriveThroughObject, records_begin) == 0x68);
 static_assert(offsetof(DriveThroughObject, records_end) == 0x70);
 
+struct TeamSetRef {
+    uint8_t _pad_0x0[0x8];
+    TeamSlots *slots; // L2 experimental
+};
+static_assert(offsetof(TeamSetRef, slots) == 0x8);
+
+struct EntrantsSystem {
+    uint8_t _pad_0x0[0x2c0];
+    TeamSetRef team_sets[3]; // L2 experimental
+};
+static_assert(offsetof(EntrantsSystem, team_sets) == 0x2c0);
+
 struct GameManagerLive {
     uint8_t _pad_0x0[0x30];
     NeRobinHoodMapU64 *systems_map; // L2 experimental
@@ -81,6 +93,23 @@ struct GameManagerLive {
 };
 static_assert(offsetof(GameManagerLive, systems_map) == 0x30);
 static_assert(offsetof(GameManagerLive, progress_system) == 0x2d0);
+
+struct GameMode {
+    uint8_t _pad_0x0[0x260];
+    EntrantsManager *entrants_manager; // L2 experimental
+    uint8_t _pad_0x268[0x10];
+    char *name; // L2 experimental
+    uint8_t _pad_0x280[0x20];
+};
+static_assert(offsetof(GameMode, entrants_manager) == 0x260);
+static_assert(offsetof(GameMode, name) == 0x278);
+static_assert(sizeof(GameMode) == 0x2a0);
+
+struct GameModeSystem {
+    uint8_t _pad_0x0[0x88];
+    GameMode *mode; // L2 experimental
+};
+static_assert(offsetof(GameModeSystem, mode) == 0x88);
 
 struct GameVehicleProgressSystem {
     uint8_t _pad_0x0[0x38];
@@ -156,6 +185,11 @@ static_assert(offsetof(PenaltyRecord, vehicle_id) == 0x8);
 static_assert(offsetof(PenaltyRecord, penalty_type) == 0x9);
 static_assert(offsetof(PenaltyRecord, infringement) == 0xa);
 
+struct PhysicalCompound {
+    uint8_t stat_id; // L2 experimental
+};
+static_assert(offsetof(PhysicalCompound, stat_id) == 0x0);
+
 struct PitLaneCarSlot {
     PitLaneCarState *state; // L2 experimental
 };
@@ -171,10 +205,48 @@ static_assert(offsetof(PitLaneCarState, state) == 0x4);
 static_assert(offsetof(PitLaneCarState, pit_stops) == 0x14);
 
 struct PitLaneSystem {
-    uint8_t _pad_0x0[0x68];
+    uint8_t _pad_0x0[0x48];
+    PitLaneTrack *lane; // L2 experimental
+    uint8_t _pad_0x50[0x18];
     PitLaneCarSlot car_slots[27]; // L2 experimental
 };
+static_assert(offsetof(PitLaneSystem, lane) == 0x48);
 static_assert(offsetof(PitLaneSystem, car_slots) == 0x68);
+
+struct PitLaneVehicleSlot {
+    PitLaneVehicle *lane; // L2 experimental
+};
+static_assert(offsetof(PitLaneVehicleSlot, lane) == 0x0);
+
+struct PitLaneTrack {
+    uint8_t _pad_0x0[0x938];
+    PitLaneVehicleSlot vehicle_slots[27]; // L2 experimental
+};
+static_assert(offsetof(PitLaneTrack, vehicle_slots) == 0x938);
+
+struct PitLaneVehicle {
+    uint8_t _pad_0x0[0x103];
+    uint8_t in_lane; // L2 experimental
+};
+static_assert(offsetof(PitLaneVehicle, in_lane) == 0x103);
+
+struct RacingOwner {
+    uint8_t _pad_0x0[0xe8];
+    RacingTrack *track; // L2 experimental
+};
+static_assert(offsetof(RacingOwner, track) == 0xe8);
+
+struct RacingTrack {
+    uint8_t _pad_0x0[0xa0];
+    char *name; // L2 experimental
+};
+static_assert(offsetof(RacingTrack, name) == 0xa0);
+
+struct RacingVehicles {
+    uint8_t _pad_0x0[0xd0];
+    RacingOwner *owner; // L2 experimental
+};
+static_assert(offsetof(RacingVehicles, owner) == 0xd0);
 
 struct RelativeGapEntry {
     uint8_t _pad_0x0[0x58];
@@ -204,6 +276,15 @@ struct RelativeGapHelper {
 static_assert(offsetof(RelativeGapHelper, entries_begin) == 0x30);
 static_assert(offsetof(RelativeGapHelper, entries_end) == 0x38);
 static_assert(offsetof(RelativeGapHelper, pit_lane) == 0xd0);
+
+struct SessionEntrantView {
+    uint8_t _pad_0x0[0x58];
+    uint32_t team_stat_id; // L2 experimental
+    uint8_t _pad_0x5c[0x26];
+    uint8_t vehicle_id; // L2 experimental
+};
+static_assert(offsetof(SessionEntrantView, team_stat_id) == 0x58);
+static_assert(offsetof(SessionEntrantView, vehicle_id) == 0x82);
 
 struct SessionSystem {
     uint8_t _pad_0x0[0x148];
@@ -237,6 +318,12 @@ static_assert(offsetof(SessionVehicleEntry, position_b) == 0x50);
 static_assert(offsetof(SessionVehicleEntry, grid_position_a) == 0x90);
 static_assert(offsetof(SessionVehicleEntry, grid_position_b) == 0x98);
 
+struct SpectatorDirectorGap {
+    uint8_t _pad_0x0[0xe4];
+    uint32_t gap_mode; // L2 experimental
+};
+static_assert(offsetof(SpectatorDirectorGap, gap_mode) == 0xe4);
+
 struct StopGoObject {
     uint8_t _pad_0x0[0x68];
     uint8_t *records_begin; // L2 experimental
@@ -244,6 +331,38 @@ struct StopGoObject {
 };
 static_assert(offsetof(StopGoObject, records_begin) == 0x68);
 static_assert(offsetof(StopGoObject, records_end) == 0x70);
+
+struct TeamSlot {
+    uint8_t _pad_0x0[0x8];
+    TeamRecord *record; // L2 experimental
+};
+static_assert(offsetof(TeamSlot, record) == 0x8);
+
+struct TeamSlots {
+    uint8_t _pad_0x0[0x8];
+    TeamSlot *begin; // L2 experimental
+    TeamSlot *end; // L2 experimental
+};
+static_assert(offsetof(TeamSlots, begin) == 0x8);
+static_assert(offsetof(TeamSlots, end) == 0x10);
+
+struct TyreSlot {
+    uint32_t option; // L2 experimental
+    uint8_t _pad_0x4[0x4];
+    PhysicalCompound *physical; // L2 experimental
+    VisualCompound *visual; // L2 experimental
+};
+static_assert(offsetof(TyreSlot, option) == 0x0);
+static_assert(offsetof(TyreSlot, physical) == 0x8);
+static_assert(offsetof(TyreSlot, visual) == 0x10);
+
+struct TyreSystem {
+    uint8_t _pad_0x0[0x110];
+    VehicleTyreComponent **vehicles_begin; // L2 experimental
+    VehicleTyreComponent **vehicles_end; // L2 experimental
+};
+static_assert(offsetof(TyreSystem, vehicles_begin) == 0x110);
+static_assert(offsetof(TyreSystem, vehicles_end) == 0x118);
 
 struct VehicleHelperSystem {
     uint8_t _pad_0x0[0x568];
@@ -278,7 +397,16 @@ static_assert(offsetof(VehicleProgressEntry, progress_lap_delta) == 0x58);
 static_assert(offsetof(VehicleProgressEntry, total_a) == 0x98);
 static_assert(offsetof(VehicleProgressEntry, total_b) == 0xa0);
 
+struct VisualCompound {
+    uint8_t stat_id; // L2 experimental
+    uint8_t _pad_0x1[0x4f];
+    int32_t audio_compound; // L2 experimental
+};
+static_assert(offsetof(VisualCompound, stat_id) == 0x0);
+static_assert(offsetof(VisualCompound, audio_compound) == 0x50);
+
 inline constexpr data<"g_Live_ControllerSystem", ControllerSystem *> g_Live_ControllerSystem{}; // L2 experimental
+inline constexpr data<"g_Live_RacingVehicles", RacingVehicles *> g_Live_RacingVehicles{}; // L2 experimental
 inline constexpr data<"g_Live_SectorCount", uint32_t> g_Live_SectorCount{}; // L2 experimental
 inline constexpr data<"g_Live_SectorEnds", float[22]> g_Live_SectorEnds{}; // L2 experimental
 inline constexpr data<"k_Live_EntrantsSystemKey", uint8_t> k_Live_EntrantsSystemKey{}; // L2 experimental
