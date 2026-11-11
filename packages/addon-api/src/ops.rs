@@ -51,6 +51,20 @@ fn patterns<'de, D: serde::Deserializer<'de>>(d: D) -> std::result::Result<Vec<S
     Ok(v)
 }
 
+/// A file named by `operations.hud`: `hud.element` records keyed by record id, in the shape of a
+/// registry data file. Other registries in the same file are left to the registry loader.
+#[derive(Debug, Clone, Default, Serialize, Deserialize, PartialEq)]
+pub struct HudFile {
+    #[serde(default, rename = "hud.element")]
+    pub elements: BTreeMap<String, serde_json::Value>,
+}
+
+impl HudFile {
+    pub fn parse(text: &str) -> Result<Self> {
+        serde_json::from_str(text).map_err(|e| Error::Other(format!("hud file: {e}")))
+    }
+}
+
 #[derive(Debug, Clone, Copy, Serialize, Deserialize, PartialEq, Eq)]
 #[serde(rename_all = "kebab-case")]
 pub enum CopyMode {

@@ -549,6 +549,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
                   { text: "Adding a sponsor", link: "/reference/data/sponsors", icon: "file" },
                   { text: "File operations", link: "/reference/ops/files", icon: "file" },
                   { text: "UI patches", link: "/reference/ops/ui-patches", icon: "file" },
+                  { text: "HUD elements", link: "/reference/ops/hud", icon: "file" },
                   { text: "Asset op files", link: "/reference/addons/asset-api", icon: "file" },
                 ],
               },
