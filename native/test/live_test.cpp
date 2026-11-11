@@ -887,9 +887,11 @@ static void test_build_gate()
     Row backed[G_COUNT];
     for (unsigned g = 0; g < G_COUNT; g++)
         backed[g] = {Group(g), true, ROWS[g].mapped, ROWS[g].needs};
+    backed[G_TYRES].mapped = false;
+    backed[G_MODE].fields = false;
     uint32_t mapped = 0;
     for (unsigned g = 0; g < G_COUNT; g++)
-        mapped |= backed[g].mapped ? bit(Group(g)) : 0;
+        mapped |= backed[g].mapped && backed[g].fields ? bit(Group(g)) : 0;
     World kb;
     kb.s = resolved_everywhere(kb.s);
     Decision dk = decide(kb.s, KB_BUILD, false, backed);
@@ -901,16 +903,13 @@ static void test_build_gate()
 
     CHECK(proof_for(1789118616u) == &KB_BUILD && proof_for(1789128892u) == &EA_BUILD && !proof_for(1234u) && !proof_for(0));
     CHECK(EA_BUILD.progress_from_manager == 0x2a0 && KB_BUILD.progress_from_manager == L::progress::from_manager);
-    const Group unproven[] = {G_TYRES, G_MODE, G_BADGES, G_PIT_LANE, G_TRACK_NAME, G_SPECTATE_GAP};
-    for (Group g : unproven)
-        CHECK(!(EA_BUILD.groups & bit(g)));
+    CHECK(EA_BUILD.groups == ALL_GROUPS && KB_BUILD.groups == ALL_GROUPS);
 
     World ea(EA_BUILD.progress_from_manager);
     Sites ea_sites = ea.s;
     Decision de = decide(resolved_everywhere(ea.s), EA_BUILD, false, backed);
     CHECK(on_mask(de) == (mapped & EA_BUILD.groups) && (on_mask(de) & bit(G_PROGRESS)) && (on_mask(de) & bit(G_BUS_EVENTS)));
-    CHECK(!(on_mask(de) & bit(G_AERO)) && de.verdict[G_AERO].why == Why::row);
-    CHECK(de.verdict[G_TYRES].why == Why::row && de.verdict[G_MODE].why == Why::row);
+    CHECK(de.verdict[G_TYRES].why == Why::row && de.verdict[G_MODE].why == Why::row && de.verdict[G_BADGES].why == Why::on);
 
     Live live(ea.mem(), ea_sites, Gates::all());
     live.update(0.0);

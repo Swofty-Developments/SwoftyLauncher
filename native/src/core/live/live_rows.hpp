@@ -156,9 +156,7 @@ inline constexpr uint32_t ALL_GROUPS = (1u << G_COUNT) - 1;
 
 inline constexpr BuildProof KB_BUILD = {1789118616u, "Steam", ALL_GROUPS, layout::progress::from_manager};
 
-inline constexpr uint32_t EA_GROUPS = bit(G_CAR_SYSTEMS) | bit(G_ERS) | bit(G_WORLD) | bit(G_AERO) | bit(G_PROGRESS) |
-                                      bit(G_CLASS) | bit(G_TIMING) | bit(G_PIT) | bit(G_PENALTIES) | bit(G_FLAGS) |
-                                      bit(G_CONTROL) | bit(G_SPECTATE) | bit(G_TRACK) | bit(G_BUS_EVENTS);
+inline constexpr uint32_t EA_GROUPS = ALL_GROUPS;
 
 inline constexpr BuildProof EA_BUILD = {1789128892u, "EA", EA_GROUPS, 0x2a0};
 
