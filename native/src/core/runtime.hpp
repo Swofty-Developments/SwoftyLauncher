@@ -319,6 +319,7 @@ bool tt_bridge_presence_id(runtime::presence_id::Id &out);
 bool tt_bridge_pb_armed();
 bool tt_bridge_ours_session();
 void tt_bridge_lap_finished(int64_t lap_ms, int valid);
+void tt_bridge_lap_progress(double path_m, double elapsed_s);
 std::string tt_bridge_last_board();
 void tt_bridge_session_enter();
 void lap_rec_ghost(uintptr_t handler);

@@ -813,6 +813,8 @@ void lap_rec_tick()
             dist += std::sqrt(std::pow(f.pos[0] - last_pos[0], 2) + std::pow(f.pos[1] - last_pos[1], 2) +
                               std::pow(f.pos[2] - last_pos[2], 2));
         fill(sample.data(), c, d, recorder.elapsed(f.now_s), dist);
+        if (recorder.state() == lr::State::timing)
+            runtime::tt_bridge_lap_progress(dist, recorder.elapsed(f.now_s));
         out = recorder.step(f, sample.data(), sample.size());
         if (recorder.stalls() < stalls_logged)
             stalls_logged = 0;

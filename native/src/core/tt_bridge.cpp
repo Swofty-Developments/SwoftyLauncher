@@ -1565,7 +1565,16 @@ bool replay_precheck(uint64_t mgr)
     return !block;
 }
 
+std::atomic<bool> replay_saving{false};
+void replay_watch_file(std::wstring path, uint32_t lap_ms, uint64_t stamp);
 void replay_watch(std::wstring path, uint32_t lap_ms, uint64_t stamp)
+{
+    replay_saving = true;
+    replay_watch_file(path, lap_ms, stamp);
+    replay_saving = false;
+}
+
+void replay_watch_file(std::wstring path, uint32_t lap_ms, uint64_t stamp)
 {
     uint64_t last = 0;
     int stable = 0;
@@ -1736,6 +1745,26 @@ int64_t replay_after_ms = 0;
 std::atomic<int64_t> replay_session_best_ms{0};
 bool replay_capture_any = false;
 
+std::atomic<double> replay_lap_path{0}, replay_lap_length{0};
+std::atomic<bool> replay_lap_restarted{false};
+extern std::atomic<int> replay_restart_wanted;
+extern std::atomic<bool> replay_saving;
+
+// Called by the lap recorder with every sample of a timed lap: 250 m before the line, a lap that is already slower than the best gives
+// up its place in the recording, so the next lap's file starts a few seconds before its line.
+void replay_lap_progress(double path_m, double elapsed_s)
+{
+    replay_lap_path = path_m;
+    double length = replay_lap_length.load();
+    int64_t best = replay_session_best_ms.load();
+    if (!replay_capture_on || !bridge_on || length <= 0 || best <= 0 || path_m < length - 250 || path_m > length || replay_lap_restarted.load())
+        return;
+    if (int64_t(elapsed_s * 1000) + 2500 < best)
+        return;
+    replay_lap_restarted = true;
+    replay_restart_wanted = 1;
+}
+
 // Called from the lap recorder (flow thread) after a lap was written: a valid lap faster than the session's best marks a capture pending.
 void replay_lap_finished(int64_t lap_ms, int valid)
 {
@@ -1745,8 +1774,15 @@ void replay_lap_finished(int64_t lap_ms, int valid)
     // SWOFTY_TT_REPLAY_CAPTURE=any is a test switch: every finished lap is saved, valid or not.
     bool mark = tb::replay_lap_is_best(lap_ms, valid, best) || (replay_capture_any && lap_ms > 0);
     swofty::log("[replay] capture: lap %lld ms (valid %d), session best %lld ms: %s", (long long)lap_ms, valid, (long long)best, mark ? "marked for a replay save" : "not a new best, no save");
-    if (!mark)
+    double path = replay_lap_path.exchange(0);
+    if (path > 1000)
+        replay_lap_length = path;
+    bool early = replay_lap_restarted.exchange(false);
+    if (!mark) {
+        if (!early)
+            replay_restart_wanted = 2;
         return;
+    }
     replay_session_best_ms = lap_ms;
     replay_pending_lap = uint32_t(lap_ms);
     replay_pending_ms = now_ms();
@@ -2440,7 +2476,41 @@ void replay_tick(uint64_t sys, const char *slot)
 
 void replay_tick_mid(safetyhook::Context &c) { replay_tick(c.rcx, "vslot24"); }
 void replay_tick17_mid(safetyhook::Context &c) { replay_tick(c.rcx, "vslot17"); }
-void replay_update_mid(safetyhook::Context &c) { replay_tick(c.rcx, "updateFromModule"); }
+// The saved file holds the recording since its last restart, so the recording is restarted when what it holds cannot be part of a best
+// lap: a few seconds before the line on a lap already slower than the best, or at the line after a lap that was no best. The game
+// restarts its own recording the same way (start lights, rolling start), from this update.
+std::atomic<int> replay_restart_wanted{0};
+void replay_restart(uint64_t sys)
+{
+    int why = replay_restart_wanted.exchange(0);
+    if (!why)
+        return;
+    uintptr_t base = swofty::api->module_base();
+    uint64_t mgr = replay_manager_ptr.load();
+    bool ok = runtime::same_build() && replay_capture_on && bridge_on && content_ours() && view::stage.load() == view::off && !in_session_load.load() && !replay_pending_ms.load() &&
+              !replay_saving.load() && sys && runtime::readable(reinterpret_cast<void *>(sys), 0xc0) && peek64(sys) == base + GAME_REPLAY_SYSTEM_VTABLE_RVA && (peek32(sys + 0x88) >> 8 & 0xff) != 0 &&
+              peek32(sys + 0x20) == 0 && peek32(sys + 0x78) == 0 && mgr && replay_manager_ok(mgr, sys) && (peek32(mgr + 0x6e0) >> 8 & 0xff) == 1 && int32_t(peek32(mgr + 0x428)) == -1;
+    uint64_t queue = ok ? peek64(mgr + 0x150) : 0;
+    ok = ok && queue && runtime::readable(reinterpret_cast<void *>(queue + 0x48), 8) && peek64(queue + 0x48) == 0;
+    if (!ok) {
+        swofty::log("[replay] restart (%s): not now, a guard does not hold", why == 1 ? "before the line" : "at the line");
+        return;
+    }
+    auto *cs = reinterpret_cast<CRITICAL_SECTION *>(peek64(sys + 0xb0));
+    EnterCriticalSection(cs);
+    reinterpret_cast<void (*)(uint64_t)>(base + 0x45d4c60)(sys);
+    reinterpret_cast<void (*)(uint64_t, uint32_t, uint8_t)>(base + 0x45d5c40)(sys, 0, 1);
+    *reinterpret_cast<uint8_t *>(sys + 0x88) = 1;
+    LeaveCriticalSection(cs);
+    swofty::log("[replay] restart (%s): the recording starts again from here", why == 1 ? "before the line" : "at the line");
+}
+
+void replay_update_mid(safetyhook::Context &c)
+{
+    replay_tick(c.rcx, "updateFromModule");
+    if (replay_restart_wanted.load())
+        replay_restart(c.rcx);
+}
 // Finds a GameReplaySystem reachable from the replay buffer by plain reads: every qword of the buffer's first 0x200 bytes that is a readable
 // user-space pointer is checked for the system's vtable word, and so is every qword of the first 0x100 bytes behind such a pointer. Only
 // readable() guarded 8-byte reads; no calls. Runs once per buffer object.
@@ -3225,6 +3295,7 @@ void tt_bridge_tick()
 
 bool tt_bridge_pb_armed() { return pb_armed.load(); }
 void tt_bridge_lap_finished(int64_t lap_ms, int valid) { replay_lap_finished(lap_ms, valid); }
+void tt_bridge_lap_progress(double path_m, double elapsed_s) { replay_lap_progress(path_m, elapsed_s); }
 
 tt_bridge::BoardTrack tt_bridge_board_track(const std::string &code, int stat_hint)
 {
