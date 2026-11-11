@@ -13,6 +13,7 @@ use swofty_formats::pkg::{Node, Val};
 use super::dials::{self, GameValue, Tag, Use};
 use super::model::{Bind, Decision, Ty};
 use super::scene::Plan;
+use super::units::{self, TexFacts};
 use crate::ui::node::{self, NodeExt, ObjExt};
 use crate::{Error, Result};
 
@@ -26,6 +27,7 @@ pub enum Usage {
     Text,
     Fraction,
     Colour,
+    Texture,
 }
 
 /// A binding resolved to the path the template binds and the tag of the value it reads.
@@ -37,6 +39,8 @@ pub struct Resolved {
     pub default: bool,
     pub key: String,
     pub leaf: bool,
+    /// A colour binding's value while the game's is absent (`default: "#RRGGBBAA"`).
+    pub colour: Option<[u8; 4]>,
 }
 
 fn leaf_path(name: &str) -> String {
@@ -47,9 +51,24 @@ pub fn resolve(b: &Bind, usage: Usage, what: &str) -> Result<Resolved> {
     b.check()?;
     let want: &[Tag] = match usage {
         Usage::Visible => &[*b"bool"],
-        Usage::Text => &[*b"stri", *b"ui32"],
+        Usage::Text => &[*b"stri", *b"ui32", *b"si32"],
         Usage::Fraction => &[*b"fp32"],
         Usage::Colour => &[*b"rgba"],
+        Usage::Texture => &[*b"stri"],
+    };
+    if let Some(s) = &b.screen {
+        return Err(err(format!(
+            "{what}: a screen value ({s}) is read by a unit's texture only"
+        )));
+    }
+    let colour = match (usage, &b.default) {
+        (Usage::Colour, Some(d)) => Some(
+            d.as_str()
+                .ok_or_else(|| err(format!("{what}: a colour default is a #RRGGBBAA string")))
+                .and_then(super::textures::hex_rgba)
+                .map_err(|e| err(format!("{what}: {e}")))?,
+        ),
+        _ => None,
     };
     let from_value = |g: &GameValue, key: String, db: String| -> Result<Resolved> {
         if g.usage == Use::DecisionOnly {
@@ -73,14 +92,21 @@ pub fn resolve(b: &Bind, usage: Usage, what: &str) -> Result<Resolved> {
             default: b.default_bool(),
             key,
             leaf: false,
+            colour,
         })
     };
     if let Some(l) = &b.view_model {
         let tag = match (b.ty, usage) {
             (None | Some(Ty::Bool), Usage::Visible) => *b"bool",
-            (None | Some(Ty::Text), Usage::Text) => *b"stri",
+            (None | Some(Ty::Text), Usage::Text | Usage::Texture) => *b"stri",
             (Some(Ty::I32), Usage::Text) => *b"ui32",
             (None | Some(Ty::F32), Usage::Fraction) => *b"fp32",
+            (Some(Ty::Si32), _) => {
+                return Err(err(format!(
+                    "{what}: leaf {l} is declared si32, which is for the game's own values the stock \
+                     template binds (session number_of_laps); a leaf is text or i32"
+                )));
+            }
             (ty, _) => {
                 return Err(err(format!(
                     "{what}: leaf {l} is declared {ty:?}, which this binding cannot read"
@@ -94,6 +120,7 @@ pub fn resolve(b: &Bind, usage: Usage, what: &str) -> Result<Resolved> {
             default: b.default_bool(),
             key: l.trim_start_matches('#').to_owned(),
             leaf: true,
+            colour,
         });
     }
     if let Some(g) = &b.game {
@@ -104,7 +131,20 @@ pub fn resolve(b: &Bind, usage: Usage, what: &str) -> Result<Resolved> {
         let v = dials::session_value(s).ok_or_else(|| err(format!("{what}: no session value {s}")))?;
         return from_value(v, format!("session.{}", v.name), v.db.to_owned());
     }
-    let (field, slot) = (b.session_car.as_deref().unwrap_or_default(), b.slot.unwrap_or(0));
+    let field = b.session_car.as_deref().unwrap_or_default();
+    let slot = match (b.slot, &b.slot_var) {
+        (Some(s), _) => s,
+        (None, Some(v)) => v.parse::<u32>().map_err(|_| {
+            err(format!(
+                "{what}: slot_var {v} was not substituted; slot_var names the var of a repeat the \
+                 binding sits in"
+            ))
+        })?,
+        (None, None) => 0,
+    };
+    if slot > 63 {
+        return Err(err(format!("{what}: slot {slot} is past the session's 64 cars")));
+    }
     let v = dials::session_car_value(field)
         .ok_or_else(|| err(format!("{what}: no session car value {field}")))?;
     from_value(
@@ -389,7 +429,44 @@ fn decision_node(d: &Decision, plan: &Plan, stock_root: &Node, parent: &str, bas
     ))
 }
 
-fn bound_nodes(plan: &Plan) -> Vec<Node> {
+/// Whether a plan's text reads the session clock, so its group needs the formatter.
+pub fn needs_clock(plan: &Plan) -> bool {
+    plan.texts
+        .iter()
+        .any(|t| t.db.as_deref() == Some(dials::CLOCK_STR))
+}
+
+/// The stock session timer's formatter (the one UITF `hud_session_timer_dynamic…
+/// time_remaining_formatter`), cloned as `name`: it reads `#session.time_remaining` and writes
+/// `time_remaining_str` for the texts of the group it sits in.
+pub fn clock_formatter(stock_root: &Node, name: &str) -> Result<Node> {
+    let mut paths = Vec::new();
+    node::node_paths_of(stock_root, "", &mut paths);
+    let found: Vec<&Node> = paths
+        .iter()
+        .filter(|(p, n)| {
+            p.starts_with(&format!("{}.", dials::CLOCK_MODEL))
+                && n.name() == dials::CLOCK_FORMATTER
+                && node_type(n) == "UITF"
+        })
+        .map(|(_, n)| *n)
+        .collect();
+    let [src] = found[..] else {
+        return Err(err(format!(
+            "{} stock UITF {} under {}",
+            found.len(),
+            dials::CLOCK_FORMATTER,
+            dials::CLOCK_MODEL
+        )));
+    };
+    let mut n = src.clone();
+    node::rename(&mut n, name)?;
+    Ok(n)
+}
+
+/// The bound nodes of a plan: visibility, colour, texture, text, fraction and switch nodes. A plan
+/// with texture items needs `tex`, the stock texture tags of the screen it is built for.
+pub fn bound_nodes(plan: &Plan, tex: Option<&TexFacts>) -> Result<Vec<Node>> {
     let mut kids = Vec::new();
     for v in &plan.vis {
         kids.push(node::visible_node(
@@ -401,7 +478,23 @@ fn bound_nodes(plan: &Plan) -> Vec<Node> {
         ));
     }
     for c in &plan.colours {
-        kids.push(node::colour_node(&c.name, &c.element, &c.db));
+        kids.push(node::colour_node(
+            &c.name,
+            &c.element,
+            &c.db,
+            c.default.unwrap_or([255; 4]),
+        ));
+    }
+    if !plan.textures.is_empty() {
+        let facts = tex.ok_or_else(|| {
+            err(format!(
+                "{}: texture bindings need the stock HUD template's texture tags",
+                plan.ctl_name()
+            ))
+        })?;
+        for t in &plan.textures {
+            kids.push(units::texture_node(t, facts)?);
+        }
     }
     for t in &plan.texts {
         let visible = t
@@ -428,14 +521,24 @@ fn bound_nodes(plan: &Plan) -> Vec<Node> {
             vec![],
         ));
     }
-    kids
+    Ok(kids)
+}
+
+fn tex_facts(plan: &Plan, hud_template: &Node) -> Result<Option<TexFacts>> {
+    if plan.textures.is_empty() {
+        return Ok(None);
+    }
+    TexFacts::hud(hud_template).map(Some)
 }
 
 /// The `<prefix>_ctl` group of one record's plan: the root's switch, the bound nodes and the
 /// decision nodes, with the `trigger` and `untrigger` commands.
 pub fn group(plan: &Plan, stock_root: &Node, parent: &str) -> Result<Node> {
     let base = format!("{parent}.{}", plan.ctl_name());
-    let mut kids = bound_nodes(plan);
+    let mut kids = bound_nodes(plan, tex_facts(plan, stock_root)?.as_ref())?;
+    if needs_clock(plan) {
+        kids.push(clock_formatter(stock_root, "clock_fmt")?);
+    }
     let mut decision_names = Vec::new();
     for d in &plan.decisions {
         let n = decision_node(d, plan, stock_root, parent, &base)?;
@@ -504,6 +607,10 @@ pub fn attach_scene(
     scene: &str,
     plan: &Plan,
 ) -> Result<usize> {
+    let mut kids = bound_nodes(plan, tex_facts(plan, template)?.as_ref())?;
+    if needs_clock(plan) {
+        kids.push(clock_formatter(template, "clock_fmt")?);
+    }
     let at = node::find_path(template, parent)?;
     let target = node::node_at_mut(template, &at)?;
     let want = scene.strip_suffix(".idf").unwrap_or(scene);
@@ -534,7 +641,6 @@ pub fn attach_scene(
             "{parent}: the node's id is not the hash of its path"
         )));
     }
-    let mut kids = bound_nodes(plan);
     for k in &mut kids {
         let name = format!("{}_{}", plan.pfx, k.name());
         node::rename(k, &name).map_err(|e| err(format!("{name}: {e}")))?;
@@ -613,6 +719,74 @@ mod tests {
             "#session.cars.car5.position"
         );
         assert!(resolve(&Bind::game("nope"), Usage::Visible, "t").is_err());
+    }
+
+    #[test]
+    fn textures_colours_slots_and_si32_are_held_to_their_rules() {
+        let badge = Bind::leaf("view_model_data.hud_tt_r00_badge");
+        let r = resolve(&badge, Usage::Texture, "t").unwrap();
+        assert_eq!(
+            (r.db.as_str(), r.tag),
+            ("#view_model_data.hud_tt_r00_badge", *b"stri")
+        );
+        let mut i32_badge = badge.clone();
+        i32_badge.ty = Some(Ty::I32);
+        assert!(resolve(&i32_badge, Usage::Texture, "t").is_err());
+        let screen = Bind {
+            screen: Some("series_logo".into()),
+            ..Bind::default()
+        };
+        assert!(
+            resolve(&screen, Usage::Texture, "t")
+                .unwrap_err()
+                .to_string()
+                .contains("unit's texture")
+        );
+        let mut bar = Bind {
+            session_car: Some("nub_colour".into()),
+            slot_var: Some("V".into()),
+            default: Some("#00000000".into()),
+            ..Bind::default()
+        };
+        let e = resolve(&bar, Usage::Colour, "bar").unwrap_err().to_string();
+        assert!(e.contains("slot_var V was not substituted"), "{e}");
+        bar.slot_var = Some("7".into());
+        let r = resolve(&bar, Usage::Colour, "bar").unwrap();
+        assert_eq!(r.db, "#session.cars.car7.nub_colour");
+        assert_eq!(r.colour, Some([0, 0, 0, 0]));
+        bar.default = Some("red".into());
+        assert!(resolve(&bar, Usage::Colour, "bar").is_err());
+        bar.default = Some(serde_json::json!(true));
+        assert!(resolve(&bar, Usage::Colour, "bar").is_err());
+        bar.default = None;
+        bar.slot_var = Some("64".into());
+        assert!(resolve(&bar, Usage::Colour, "bar").is_err());
+        let code = Bind {
+            session_car: Some("driver.name_code".into()),
+            slot_var: Some("23".into()),
+            ..Bind::default()
+        };
+        assert_eq!(
+            resolve(&code, Usage::Text, "code").unwrap().db,
+            "#session.cars.car23.driver.name_code"
+        );
+        let laps = Bind {
+            session: Some("number_of_laps".into()),
+            ..Bind::default()
+        };
+        assert_eq!(resolve(&laps, Usage::Text, "laps").unwrap().tag, *b"si32");
+        let mut leaf = Bind::leaf("view_model_data.hud_tt_n");
+        leaf.ty = Some(Ty::Si32);
+        let e = resolve(&leaf, Usage::Text, "n").unwrap_err().to_string();
+        assert!(e.contains("declared si32"), "{e}");
+        let clock = Bind {
+            session: Some(dials::CLOCK_STR.into()),
+            ..Bind::default()
+        };
+        assert_eq!(
+            resolve(&clock, Usage::Text, "clock").unwrap().db,
+            "time_remaining_str"
+        );
     }
 
     #[test]
