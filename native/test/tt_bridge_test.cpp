@@ -132,10 +132,10 @@ int main()
         expect(tb::replay_magic_offset(z, 16) == -1 && tb::replay_magic_offset(z, 0) == -1, "a file without the magic is rejected");
     }
     expect(tb::replay_capture_name(1700000000, 87893) == "pb_1700000000_87893.replay", "the capture file name carries the time and the lap time");
-    expect(tb::replay_capture_allowed(true, true, true, true, 1, 0x10) && !tb::replay_capture_allowed(false, true, true, true, 1, 0x10) && !tb::replay_capture_allowed(true, false, true, true, 1, 0x10) &&
-               !tb::replay_capture_allowed(true, true, false, true, 1, 0x10) && !tb::replay_capture_allowed(true, true, true, false, 1, 0x10) &&
-               !tb::replay_capture_allowed(true, true, true, true, 0, 0x10) && !tb::replay_capture_allowed(true, true, true, true, 150, 0x10) && !tb::replay_capture_allowed(true, true, true, true, 1, 0),
-           "the save starts only behind the switch, the bridge, our content, a genuine replay system, a recording and a job queue");
+    expect(tb::replay_capture_allowed(true, true, true, 1, 0x10) && !tb::replay_capture_allowed(false, true, true, 1, 0x10) && !tb::replay_capture_allowed(true, false, true, 1, 0x10) &&
+               !tb::replay_capture_allowed(true, true, false, 1, 0x10) && !tb::replay_capture_allowed(true, true, true, 0, 0x10) && !tb::replay_capture_allowed(true, true, true, 150, 0x10) &&
+               !tb::replay_capture_allowed(true, true, true, 1, 0),
+           "the save starts only behind the switch, the bridge, a genuine replay system, a recording and a job queue, on stock content as on ours");
     expect(tb::replay_file_settled(100, 100, 3, 3) && !tb::replay_file_settled(100, 99, 3, 3) && !tb::replay_file_settled(0, 0, 9, 3) && !tb::replay_file_settled(100, 100, 2, 3),
            "a replay file is settled only when its size stopped changing");
     expect(tb::replay_lap_is_best(88505, 1, 0) && tb::replay_lap_is_best(88505, -1, 90000) && !tb::replay_lap_is_best(88505, 0, 0) && !tb::replay_lap_is_best(90000, 1, 88505) &&
