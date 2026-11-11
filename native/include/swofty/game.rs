@@ -188,11 +188,6 @@ pub struct DepartmentData {
 }
 
 #[repr(C)]
-pub struct DriveThroughObject {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct FEHomeViewModel {
     _opaque: [u8; 0],
 }
@@ -223,26 +218,6 @@ pub struct InputRecord {
 }
 
 #[repr(C)]
-pub struct MarshalZone {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct MarshalZoneDef {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct MarshalZoneMonitor {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct MarshalZoneSlot {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct NeRobinHoodMapU64 {
     _opaque: [u8; 0],
 }
@@ -253,42 +228,7 @@ pub struct NeStr {
 }
 
 #[repr(C)]
-pub struct PenaltyLog {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct PenaltyRecord {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct PitLaneCarSlot {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct PitLaneCarState {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct PitLaneSystem {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct RedFlagSystem {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct RelativeGapEntry {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct RelativeGapHelper {
     _opaque: [u8; 0],
 }
 
@@ -299,21 +239,6 @@ pub struct RnDDepartmentConfig {
 
 #[repr(C)]
 pub struct SafetyCarLogicSystem {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct SessionSystem {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct SessionVehicleEntry {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct StopGoObject {
     _opaque: [u8; 0],
 }
 
@@ -349,11 +274,6 @@ pub struct UpgradeEffectDef {
 
 #[repr(C)]
 pub struct UpgradeRecord {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct VehicleHelperSystem {
     _opaque: [u8; 0],
 }
 
@@ -1293,6 +1213,15 @@ const _: () = assert!(core::mem::offset_of!(CurvePoint, y) == 0x4);
 const _: () = assert!(core::mem::size_of::<CurvePoint>() == 0x8);
 
 #[repr(C)]
+pub struct DriveThroughObject {
+    _pad_0x0: [u8; 0x68],
+    pub records_begin: *mut u8,
+    pub records_end: *mut u8,
+}
+const _: () = assert!(core::mem::offset_of!(DriveThroughObject, records_begin) == 0x68);
+const _: () = assert!(core::mem::offset_of!(DriveThroughObject, records_end) == 0x70);
+
+#[repr(C)]
 pub struct DriverCalendar {
     _pad_0x0: [u8; 0x50],
     pub activities_begin: *mut c_void,
@@ -1900,6 +1829,38 @@ const _: () = assert!(core::mem::offset_of!(ItemVtbl, populate) == 0x20);
 const _: () = assert!(core::mem::offset_of!(ItemVtbl, get_action) == 0x28);
 
 #[repr(C)]
+pub struct MarshalZone {
+    pub definition: *mut MarshalZoneDef,
+    _pad_0x8: [u8; 0xc],
+    pub flag: u8,
+}
+const _: () = assert!(core::mem::offset_of!(MarshalZone, definition) == 0x0);
+const _: () = assert!(core::mem::offset_of!(MarshalZone, flag) == 0x14);
+
+#[repr(C)]
+pub struct MarshalZoneDef {
+    _pad_0x0: [u8; 0x10],
+    pub start_fraction: f32,
+}
+const _: () = assert!(core::mem::offset_of!(MarshalZoneDef, start_fraction) == 0x10);
+
+#[repr(C)]
+pub struct MarshalZoneMonitor {
+    _pad_0x0: [u8; 0x88],
+    pub zones_begin: *mut MarshalZoneSlot,
+    pub zones_end: *mut MarshalZoneSlot,
+}
+const _: () = assert!(core::mem::offset_of!(MarshalZoneMonitor, zones_begin) == 0x88);
+const _: () = assert!(core::mem::offset_of!(MarshalZoneMonitor, zones_end) == 0x90);
+
+#[repr(C)]
+pub struct MarshalZoneSlot {
+    _pad_0x0: [u8; 0x8],
+    pub zone: *mut MarshalZone,
+}
+const _: () = assert!(core::mem::offset_of!(MarshalZoneSlot, zone) == 0x8);
+
+#[repr(C)]
 pub struct MyTeamFacilitiesComponent {
     _pad_0x0: [u8; 0x2b8],
     pub team_slots: *mut *mut FacilityTeamEntry,
@@ -2045,6 +2006,80 @@ pub struct NeStreamVtbl {
 }
 const _: () = assert!(core::mem::offset_of!(NeStreamVtbl, write) == 0x48);
 const _: () = assert!(core::mem::offset_of!(NeStreamVtbl, write_length) == 0x50);
+
+#[repr(C)]
+pub struct PenaltyLog {
+    _pad_0x0: [u8; 0x48],
+    pub records_begin: *mut PenaltyRecord,
+    pub records_end: *mut PenaltyRecord,
+}
+const _: () = assert!(core::mem::offset_of!(PenaltyLog, records_begin) == 0x48);
+const _: () = assert!(core::mem::offset_of!(PenaltyLog, records_end) == 0x50);
+
+#[repr(C)]
+pub struct PenaltyRecord {
+    _pad_0x0: [u8; 0x8],
+    pub vehicle_id: u8,
+    pub penalty_type: u8,
+    pub infringement: u8,
+}
+const _: () = assert!(core::mem::offset_of!(PenaltyRecord, vehicle_id) == 0x8);
+const _: () = assert!(core::mem::offset_of!(PenaltyRecord, penalty_type) == 0x9);
+const _: () = assert!(core::mem::offset_of!(PenaltyRecord, infringement) == 0xa);
+
+#[repr(C)]
+pub struct PitLaneCarSlot {
+    pub state: *mut PitLaneCarState,
+}
+const _: () = assert!(core::mem::offset_of!(PitLaneCarSlot, state) == 0x0);
+
+#[repr(C)]
+pub struct PitLaneCarState {
+    _pad_0x0: [u8; 0x4],
+    pub state: u32,
+    _pad_0x8: [u8; 0xc],
+    pub pit_stops: u32,
+}
+const _: () = assert!(core::mem::offset_of!(PitLaneCarState, state) == 0x4);
+const _: () = assert!(core::mem::offset_of!(PitLaneCarState, pit_stops) == 0x14);
+
+#[repr(C)]
+pub struct PitLaneSystem {
+    _pad_0x0: [u8; 0x68],
+    pub car_slots: [PitLaneCarSlot; 27],
+}
+const _: () = assert!(core::mem::offset_of!(PitLaneSystem, car_slots) == 0x68);
+
+#[repr(C)]
+pub struct RelativeGapEntry {
+    _pad_0x0: [u8; 0x58],
+    pub leader_gap_ms: i64,
+    _pad_0x60: [u8; 0x8],
+    pub leader_gap_valid: u8,
+    _pad_0x69: [u8; 0x7],
+    pub interval_ms: i64,
+    _pad_0x78: [u8; 0x8],
+    pub interval_valid: u8,
+    _pad_0x81: [u8; 0xf],
+    pub vehicle_id: u8,
+}
+const _: () = assert!(core::mem::offset_of!(RelativeGapEntry, leader_gap_ms) == 0x58);
+const _: () = assert!(core::mem::offset_of!(RelativeGapEntry, leader_gap_valid) == 0x68);
+const _: () = assert!(core::mem::offset_of!(RelativeGapEntry, interval_ms) == 0x70);
+const _: () = assert!(core::mem::offset_of!(RelativeGapEntry, interval_valid) == 0x80);
+const _: () = assert!(core::mem::offset_of!(RelativeGapEntry, vehicle_id) == 0x90);
+
+#[repr(C)]
+pub struct RelativeGapHelper {
+    _pad_0x0: [u8; 0x30],
+    pub entries_begin: *mut RelativeGapEntry,
+    pub entries_end: *mut RelativeGapEntry,
+    _pad_0x40: [u8; 0x90],
+    pub pit_lane: *mut PitLaneSystem,
+}
+const _: () = assert!(core::mem::offset_of!(RelativeGapHelper, entries_begin) == 0x30);
+const _: () = assert!(core::mem::offset_of!(RelativeGapHelper, entries_end) == 0x38);
+const _: () = assert!(core::mem::offset_of!(RelativeGapHelper, pit_lane) == 0xd0);
 
 #[repr(C)]
 pub struct RenownAwardedMessage {
@@ -2225,6 +2260,38 @@ const _: () = assert!(core::mem::offset_of!(Session, participants_capacity) == 0
 const _: () = assert!(core::mem::size_of::<Session>() == 0xa0);
 
 #[repr(C)]
+pub struct SessionSystem {
+    _pad_0x0: [u8; 0x148],
+    pub entries_begin: *mut *mut SessionVehicleEntry,
+    pub entries_end: *mut *mut SessionVehicleEntry,
+}
+const _: () = assert!(core::mem::offset_of!(SessionSystem, entries_begin) == 0x148);
+const _: () = assert!(core::mem::offset_of!(SessionSystem, entries_end) == 0x150);
+
+#[repr(C)]
+pub struct SessionVehicleEntry {
+    _pad_0x0: [u8; 0x18],
+    pub status: u8,
+    _pad_0x19: [u8; 0x1f],
+    pub time_penalty_a: u64,
+    pub time_penalty_b: u64,
+    pub position_a: u32,
+    _pad_0x4c: [u8; 0x4],
+    pub position_b: u32,
+    _pad_0x54: [u8; 0x3c],
+    pub grid_position_a: u32,
+    _pad_0x94: [u8; 0x4],
+    pub grid_position_b: u32,
+}
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, status) == 0x18);
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, time_penalty_a) == 0x38);
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, time_penalty_b) == 0x40);
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, position_a) == 0x48);
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, position_b) == 0x50);
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, grid_position_a) == 0x90);
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, grid_position_b) == 0x98);
+
+#[repr(C)]
 pub struct SpectatorDirector {
     _pad_0x0: [u8; 0xd0],
     pub ui_active: u8,
@@ -2369,6 +2436,15 @@ pub struct StatInfo {
 const _: () = assert!(core::mem::offset_of!(StatInfo, stat_id) == 0x8);
 const _: () = assert!(core::mem::offset_of!(StatInfo, weight) == 0x130);
 const _: () = assert!(core::mem::offset_of!(StatInfo, default_value) == 0x134);
+
+#[repr(C)]
+pub struct StopGoObject {
+    _pad_0x0: [u8; 0x68],
+    pub records_begin: *mut u8,
+    pub records_end: *mut u8,
+}
+const _: () = assert!(core::mem::offset_of!(StopGoObject, records_begin) == 0x68);
+const _: () = assert!(core::mem::offset_of!(StopGoObject, records_end) == 0x70);
 
 #[repr(C)]
 pub struct TeamRecord {
@@ -2716,6 +2792,16 @@ pub struct UpgradesComponent {
 const _: () = assert!(core::mem::offset_of!(UpgradesComponent, upgrades_begin) == 0x298);
 const _: () = assert!(core::mem::offset_of!(UpgradesComponent, upgrades_end) == 0x2a0);
 const _: () = assert!(core::mem::offset_of!(UpgradesComponent, career_time) == 0x2c0);
+
+#[repr(C)]
+pub struct VehicleHelperSystem {
+    _pad_0x0: [u8; 0x568],
+    pub drive_through: *mut DriveThroughObject,
+    _pad_0x570: [u8; 0x8],
+    pub stop_go: *mut StopGoObject,
+}
+const _: () = assert!(core::mem::offset_of!(VehicleHelperSystem, drive_through) == 0x568);
+const _: () = assert!(core::mem::offset_of!(VehicleHelperSystem, stop_go) == 0x578);
 
 #[repr(C)]
 pub struct WeatherAndTimeOfDayComponent {
