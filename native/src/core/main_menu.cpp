@@ -31,11 +31,12 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 // F1 The Movie, F1 World, the challenge tile, a divider, Local Multiplayer, League Racing, Player Hub, Theatre.
 // site_FeHome_AfterCareerCall (swofty_core.cpp) runs right after the Career tile and calls add_tiles, which adds
 // Grand Prix and Time Trial as two copies of the F1 World item (their own id, title and description over the
-// stock populate), the challenge tile when the game builds it and Theatre; swofty_core then adds Addon
-// Settings last. arm_patch overwrites the first instruction of the F1 World block (lea r15d,[r12+1]) with a jmp to
-// the block's final jmp, so F1 World, the divider, Local Multiplayer, League Racing, Player Hub and the stock
-// Theatre are never added. The block is matched byte for byte first and the adders are the call targets read
-// from it; when anything does not match nothing is patched, no tile is added and the stock menu stays.
+// stock populate), Split Screen as the stock Local Multiplayer item with its own title (its route opens the
+// game's Local Multiplayer list, the lone Splitscreen tile), the challenge tile when the game builds it and
+// Theatre; swofty_core then adds Addon Settings last. arm_patch overwrites the first instruction of the F1 World
+// block (lea r15d,[r12+1]) with a jmp to the block's final jmp, so F1 World, the divider, League Racing, Player Hub
+// and the stock Theatre are never added. The block is matched byte for byte first and the adders are the call
+// targets read from it; when anything does not match nothing is patched, no tile is added and the stock menu stays.
 //
 // The status strip, the sign-in state and the latest video card are painted by the overlay frame
 // (paint) from swofty/home_menu.json while the home screen is open. Images (the Discord avatar and the video
@@ -69,7 +70,7 @@ namespace {
 using namespace swofty::game;
 namespace logic = ::runtime::main_menu;
 
-constexpr size_t OFF_F1WORLD = 11, OFF_CHALLENGE = 32, OFF_DIVIDER = 47, OFF_THEATRE = 98, OFF_END_JMP = 103;
+constexpr size_t OFF_F1WORLD = 11, OFF_CHALLENGE = 32, OFF_DIVIDER = 47, OFF_LOCAL_MP = 59, OFF_THEATRE = 98, OFF_END_JMP = 103;
 constexpr size_t NESTR_CHARS = 9;
 
 const runtime::Sig S_BLOCK{"FeHome_F1WorldBlock",
@@ -85,7 +86,7 @@ using GetAction_t = Action *(*)(HomeItem *, Action *);
 
 struct Block {
     uint8_t *at = nullptr;
-    Add_t f1world = nullptr, challenge = nullptr, divider = nullptr, theatre = nullptr;
+    Add_t f1world = nullptr, challenge = nullptr, divider = nullptr, local_mp = nullptr, theatre = nullptr;
 } block;
 
 std::atomic<bool> resolved{false}, patched{false}, home_open{false};
@@ -116,7 +117,7 @@ std::shared_ptr<const Prepared> prepared;
 uint64_t prepared_at = 0;
 std::string prepared_key;
 std::atomic<int> strip_wanted{-1}, strip_set{-1};
-void *theatre_populate = nullptr, *theatre_action = nullptr;
+void *theatre_populate = nullptr, *theatre_action = nullptr, *local_mp_populate = nullptr;
 std::mutex state_lock;
 logic::State state;
 uint64_t state_read_at = 0;
@@ -157,10 +158,11 @@ bool resolve()
         block.f1world = target(at, OFF_F1WORLD);
         block.challenge = target(at, OFF_CHALLENGE);
         block.divider = target(at, OFF_DIVIDER);
+        block.local_mp = target(at, OFF_LOCAL_MP);
         block.theatre = target(at, OFF_THEATRE);
-        swofty::log("[main-menu] home tile block at %p; adders F1 World %p, challenge %p, Theatre %p", at,
+        swofty::log("[main-menu] home tile block at %p; adders F1 World %p, challenge %p, Local Multiplayer %p, Theatre %p", at,
                     reinterpret_cast<void *>(block.f1world), reinterpret_cast<void *>(block.challenge),
-                    reinterpret_cast<void *>(block.theatre));
+                    reinterpret_cast<void *>(block.local_mp), reinterpret_cast<void *>(block.theatre));
         resolved = true;
     });
     return resolved.load();
@@ -246,7 +248,7 @@ void wrap_item(HomeItem *item)
     if (!*logic::template_for(id, rows_on()))
         return;
     if (!std::strcmp(id, logic::ID_GRAND_PRIX) || !std::strcmp(id, logic::ID_TIME_TRIAL) ||
-        !std::strcmp(id, logic::ID_SHOWROOM) || !std::strcmp(id, logic::ID_SETTINGS))
+        !std::strcmp(id, logic::ID_LOCAL) || !std::strcmp(id, logic::ID_SHOWROOM) || !std::strcmp(id, logic::ID_SETTINGS))
         return;
     auto vt = reinterpret_cast<void **>(item->vtable);
     {
@@ -310,6 +312,41 @@ void add_showroom(TileList *list, uint8_t index)
     }
     swofty::subclass(item, {{4, reinterpret_cast<void *>(showroom_populate)}, {5, reinterpret_cast<void *>(showroom_action)}});
     Ne_Make_StrFromCStr(&item->id, logic::ID_SHOWROOM, 0, 0);
+}
+
+void split_screen_populate(HomeItem *item, void *node, uint32_t a7)
+{
+    reinterpret_cast<Populate_t>(local_mp_populate)(item, node, a7);
+    auto vm_node = static_cast<uint8_t *>(item->button_node.node);
+    if (!vm_node)
+        return;
+    void *reg = *g_Vm_Registry, *parent = vm_node + 8;
+    uint8_t no = 0;
+    set_string(reg, parent, "title", logic::SPLIT_SCREEN_TITLE);
+    Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
+    set_string(reg, parent, "description", logic::SPLIT_SCREEN_DESCRIPTION);
+    Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
+    style_item(item);
+}
+
+// The stock Local Multiplayer item, titled Split Screen: its id and its action (the local_multiplayer route, which
+// opens the game's Local Multiplayer list, the lone Splitscreen tile) stay the game's.
+void add_split_screen(TileList *list, uint8_t index)
+{
+    block.local_mp(list, index);
+    HomeItem *item = last_item(list);
+    if (!item) {
+        swofty::log("[main-menu] split screen: the Local Multiplayer adder left no item");
+        return;
+    }
+    auto vt = reinterpret_cast<void **>(item->vtable);
+    if (!local_mp_populate)
+        local_mp_populate = vt[4];
+    if (vt[4] != local_mp_populate) {
+        swofty::log("[main-menu] split screen: the Local Multiplayer item's vtable changed; left as a Local Multiplayer tile");
+        return;
+    }
+    swofty::subclass(item, {{4, reinterpret_cast<void *>(split_screen_populate)}});
 }
 
 enum class Step { idle, wait_container, done };
@@ -1090,7 +1127,7 @@ bool arm_patch()
     hook_migrate();
     hook_gohome();
     hook_addtabs();
-    swofty::log("[main-menu] stock F1 World, divider, Local Multiplayer, League Racing, Player Hub and Theatre tiles skipped");
+    swofty::log("[main-menu] stock F1 World, divider, League Racing, Player Hub and Theatre tiles skipped");
     return true;
 }
 
@@ -1102,6 +1139,7 @@ uint8_t add_tiles(void *list_, uint8_t career_index, const uint8_t *flags)
     uint8_t index = career_index;
     add_card(list, ++index, logic::ID_GRAND_PRIX);
     add_card(list, ++index, logic::ID_TIME_TRIAL);
+    add_split_screen(list, ++index);
     if (flags && (flags[8] & 1))
         block.challenge(list, ++index);
     block.theatre(list, ++index);
@@ -1114,7 +1152,7 @@ uint8_t add_tiles(void *list_, uint8_t career_index, const uint8_t *flags)
         swofty::log("[main-menu] divider tile added before Addon Settings (index %u)", unsigned(index));
     }
     style_list(list);
-    swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial%s, Theatre%s (last index %u)",
+    swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial, Split Screen%s, Theatre%s (last index %u)",
                 flags && (flags[8] & 1) ? ", challenge" : "", showroom ? ", Showroom" : "", unsigned(index));
     return index;
 }

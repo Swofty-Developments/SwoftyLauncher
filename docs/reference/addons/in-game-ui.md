@@ -479,15 +479,15 @@ To open a link the core writes `swofty/open_url.json`, `{"url": "https://youtu.b
 
 ## Main menu tiles
 
-swofty_core builds the main menu's tile list in this order: Braking Point, Career, Grand Prix, Time Trial, the challenge tile when the game builds it, Theatre, Showroom, Addon Settings. The F1 World, Local Multiplayer, League Racing and Player Hub tiles and the divider are not added. Grand Prix and Time Trial are copies of the F1 World item with their own id, title and description. Showroom is a copy of the Theatre item that fires the `swofty_showroom` route, a copy of the home's `theatre` route that opens `fe_showroom`.
+swofty_core builds the main menu's tile list in this order: Braking Point, Career, Grand Prix, Time Trial, Split Screen, the challenge tile when the game builds it, Theatre, Showroom, Addon Settings. The F1 World, League Racing and Player Hub tiles and the divider are not added. Grand Prix and Time Trial are copies of the F1 World item with their own id, title and description. Split Screen is the game's Local Multiplayer item (id `local_multiplayer`) with its own title and description; its stock route opens the game's Local Multiplayer list, which is the lone Splitscreen tile, and Back from there returns to the main menu. Showroom is a copy of the Theatre item that fires the `swofty_showroom` route, a copy of the home's `theatre` route that opens `fe_showroom`.
 
-The tiles stay in the stock vertical list at the stock position, all in the large default tile style: Theatre and Showroom are copies of the Theatre item and take the type `fe_tile_button_default`, and the divider tile (the stock divider adder) sits before Addon Settings. A launcher build with the environment variable `SWOFTY_HOME_ROWS` set also adds a rows layout (scene slots in `fe_home.idf`, templates in `fe_home.ui`, flag `swofty/ui/home_rows.flag`); it is off by default.
+The tiles stay in the stock vertical list at the stock position, all in the large default tile style: Theatre and Showroom are copies of the Theatre item and, like Split Screen, take the type `fe_tile_button_default`, and the divider tile (the stock divider adder) sits before Addon Settings. A launcher build with the environment variable `SWOFTY_HOME_ROWS` set also adds a rows layout (scene slots in `fe_home.idf`, templates in `fe_home.ui`, flag `swofty/ui/home_rows.flag`); it is off by default.
 
 ```text
-[main-menu] home tile block at 0x...; adders F1 World 0x..., challenge 0x..., Theatre 0x...
-[main-menu] stock F1 World, divider, Local Multiplayer, League Racing, Player Hub and Theatre tiles skipped
+[main-menu] home tile block at 0x...; adders F1 World 0x..., challenge 0x..., Local Multiplayer 0x..., Theatre 0x...
+[main-menu] stock F1 World, divider, League Racing, Player Hub and Theatre tiles skipped
 [main-menu] the launcher's rows of cards are in this build
-[main-menu] tiles added after Career: Grand Prix, Time Trial, Theatre, Showroom (last index 6)
+[main-menu] tiles added after Career: Grand Prix, Time Trial, Split Screen, Theatre, Showroom (last index 7)
 ```
 
 When the home tile block does not match byte for byte, the core logs `the home tile block did not resolve on this build; the stock main menu stays` and changes nothing.
