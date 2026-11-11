@@ -166,8 +166,12 @@ public:
 
     // The car moved without driving there, or stopped dead in a tick: the lap in progress is thrown away and the
     // next line crossing starts a fresh one. A gap in which the car did not move at all while it was driving is a
-    // stall of the game (focus lost, a hitch) and is taken out of the lap's clock instead. A replay, a cutscene or
-    // spectating discards the lap, and so does a car that stands still for max_still_s.
+    // stall of the game (focus lost, a hitch) and is taken out of the lap's clock instead. The sample passed with the
+    // stalled frame was built with the clock before the stall was known, so it is not kept: the car is where the last
+    // sample left it, and the next frame's sample follows it on the shifted clock. Before a lap's first movement no
+    // gap is a stall: at the line the game runs on while the previous lap is written, and its lap time keeps that
+    // time, so the clock must too. A replay, a cutscene or spectating discards the lap, and so does a car that
+    // stands still for max_still_s.
     Outcome step(const Frame &in, const uint8_t *sample, size_t stride)
     {
         Outcome none;
@@ -181,16 +185,19 @@ public:
             return discarding(Discard::interrupted);
         }
         Discard bad = Discard::none;
+        bool stalled = false;
         if (have_last_) {
             double dt = f.now_s - last_.now_s;
             double dx = f.pos[0] - last_.pos[0], dy = f.pos[1] - last_.pos[1], dz = f.pos[2] - last_.pos[2];
             double step = std::sqrt(dx * dx + dy * dy + dz * dz);
-            if (dt > cfg_.stall_gap_s && step < cfg_.stall_move_m && last_.speed_ms > cfg_.stall_min_speed_ms) {
+            bool moving_lap = state_ != State::timing || path_ >= cfg_.stall_move_m;
+            if (dt > cfg_.stall_gap_s && step < cfg_.stall_move_m && last_.speed_ms > cfg_.stall_min_speed_ms && moving_lap) {
                 double gap = dt - cfg_.sample_period_s;
                 shift_ += gap;
                 f.now_s -= gap;
                 dt = cfg_.sample_period_s;
                 stalls_++;
+                stalled = true;
             }
             double allowed = cfg_.teleport_floor_m + 1.5 * std::fmax(f.speed_ms, last_.speed_ms) * std::fmax(dt, 0.0);
             if (f.speed_ms < cfg_.still_speed_ms && dt > 0)
@@ -210,7 +217,7 @@ public:
         have_last_ = true;
         if (bad != Discard::none)
             return discarding(bad);
-        if (state_ != State::timing)
+        if (state_ != State::timing || stalled)
             return none;
         if (cfg_.sample_period_s > 0 && count_ > 0 && f.now_s < next_sample_s_)
             return none;

@@ -6,6 +6,7 @@
 
 #include <cstdio>
 #include <cstring>
+#include <vector>
 #include <map>
 #include <string>
 
@@ -569,8 +570,101 @@ static void sealing()
     }
 }
 
+// Drives the recorder the way lap_rec.cpp does: the sample carries the clock as the recorder told it before the step.
+struct ClockDrive {
+    lr::Recorder rec;
+    double t = 0, x = 0, speed = 60;
+    std::vector<double> times;
+
+    lr::Outcome frame(double dt, double dx)
+    {
+        t += dt;
+        x += dx;
+        lr::Frame f;
+        f.now_s = t;
+        f.pos[0] = x;
+        f.speed_ms = speed;
+        double at = rec.elapsed(t);
+        uint8_t s[8];
+        std::memcpy(s, &at, 8);
+        return rec.step(f, s, 8);
+    }
+
+    void run(double seconds)
+    {
+        for (int i = 0, n = int(seconds * 60); i < n; i++)
+            frame(1.0 / 60, speed / 60);
+    }
+
+    void decode(const lr::Lap &lap)
+    {
+        times.clear();
+        for (uint32_t i = 0; i < lap.count; i++) {
+            double v;
+            std::memcpy(&v, lap.samples.data() + i * 8, 8);
+            times.push_back(v);
+        }
+    }
+
+    double max_gap() const
+    {
+        double worst = 0;
+        for (size_t i = 1; i < times.size(); i++)
+            worst = std::fmax(worst, times[i] - times[i - 1]);
+        return worst;
+    }
+
+    bool increasing() const
+    {
+        for (size_t i = 1; i < times.size(); i++)
+            if (times[i] <= times[i - 1])
+                return false;
+        return !times.empty();
+    }
+};
+
+static void stalls()
+{
+    {
+        ClockDrive d;
+        d.rec.begin_session();
+        d.run(2);
+        d.rec.newlap(d.t, true);
+        d.run(1);
+        lr::Outcome o = d.frame(0.7, 0);
+        expect(o.kind == lr::Outcome::none && d.rec.stalls() == 1, "a frozen car mid-lap with the clock running is a stall");
+        d.run(40);
+        lr::Outcome e = d.rec.newlap(d.t, true);
+        d.decode(e.lap);
+        expect(e.kind == lr::Outcome::completed && e.lap.count > 2400 && e.lap.count <= 2460 && d.max_gap() < 0.05,
+               "the stalled frame's sample is not kept: no sample sits in the gap and none is missing after it");
+        expect(d.increasing(), "the sample clock never steps backwards over a stall");
+        expect(std::fabs(e.lap.shift_s - (0.7 - 1.0 / 60)) < 1e-6 && std::fabs((e.lap.ended_s - e.lap.started_s) - (41.0 + 1.0 / 60)) < 0.02,
+               "the stall is taken out of the lap's clock and the samples around it are a sample period apart");
+        expect(std::fabs(d.times.back() - (e.lap.ended_s - e.lap.started_s)) < 0.05, "the last sample sits at the lap's end");
+    }
+    {
+        ClockDrive d;
+        d.rec.begin_session();
+        d.run(2);
+        d.rec.newlap(d.t, true);
+        d.frame(1.0 / 60, 0);
+        lr::Outcome o = d.frame(0.66, 0);
+        expect(o.kind == lr::Outcome::none && d.rec.stalls() == 0, "a gap before the lap's first movement is not a stall");
+        d.run(68);
+        lr::Outcome e = d.rec.newlap(d.t, true);
+        d.decode(e.lap);
+        expect(e.kind == lr::Outcome::completed && e.lap.shift_s == 0 && std::fabs((e.lap.ended_s - e.lap.started_s) - (68.0 + 0.66 + 1.0 / 60)) < 0.02,
+               "the lap keeps the game's time when its first frames stood still at the line");
+        expect(d.increasing() && d.times.size() > 2 && std::fabs(d.times[1] - (0.66 + 1.0 / 60)) < 1e-6,
+               "the samples run forward from the line: the second one sits after the gap");
+        expect(std::fabs(d.times.back() - (e.lap.ended_s - e.lap.started_s)) < 0.05, "the last sample sits at the lap's end");
+    }
+}
+
 int main()
 {
+    stalls();
     handler_free_extras();
     interruptions();
     game_laps();
