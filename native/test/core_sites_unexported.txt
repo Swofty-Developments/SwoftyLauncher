@@ -1,2 +1,3 @@
 # One line per "site_*" name, or live-state table name, that native/src/core resolves by name (swofty::api->resolve) while the generated headers do not export it: the guard that needs it logs "off ... does not resolve". Format: name, tab, reason.
 vt_Car_SystemsContainer	agreed (osd-vd) but has no signature yet; candidate in the car inbox, owner car-re registers it (sig car.systems_container)
+g_Live_RacingVehicles	awaiting agree verify (std lib: osd)
