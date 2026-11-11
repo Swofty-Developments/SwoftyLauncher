@@ -33,21 +33,6 @@ pub struct CarAssists {
 }
 
 #[repr(C)]
-pub struct CarBodyActor {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct CarBodyState {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct CarChassisLive {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct CarComponentBase {
     _opaque: [u8; 0],
 }
@@ -73,22 +58,7 @@ pub struct CarDebugSystem {
 }
 
 #[repr(C)]
-pub struct CarErs {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct CarErsMode {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct CarF1Plank {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct CarLiveInputs {
     _opaque: [u8; 0],
 }
 
@@ -104,16 +74,6 @@ pub struct CarPhysicsRecord {
 
 #[repr(C)]
 pub struct CarSetupValues {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct CarSpline {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct CarSteeringLive {
     _opaque: [u8; 0],
 }
 
@@ -613,6 +573,23 @@ const _: () = assert!(core::mem::offset_of!(CalendarActivity, activity) == 0x10)
 const _: () = assert!(core::mem::size_of::<CalendarActivity>() == 0x20);
 
 #[repr(C)]
+pub struct CarBodyActor {
+    _pad_0x0: [u8; 0x18],
+    pub state: *mut CarBodyState,
+}
+const _: () = assert!(core::mem::offset_of!(CarBodyActor, state) == 0x18);
+
+#[repr(C)]
+pub struct CarBodyState {
+    _pad_0x0: [u8; 0x1c0],
+    pub position: [f32; 3],
+    _pad_0x1cc: [u8; 0x54],
+    pub velocity: [f32; 3],
+}
+const _: () = assert!(core::mem::offset_of!(CarBodyState, position) == 0x1c0);
+const _: () = assert!(core::mem::offset_of!(CarBodyState, velocity) == 0x220);
+
+#[repr(C)]
 pub struct CarBrakeEcu {
     _pad_0x0: [u8; 0x21d8],
     pub brake_bias: f32,
@@ -630,6 +607,20 @@ pub struct CarChassis {
 }
 const _: () = assert!(core::mem::offset_of!(CarChassis, tyre_physics_group) == 0x118);
 const _: () = assert!(core::mem::offset_of!(CarChassis, mass) == 0x150);
+
+#[repr(C)]
+pub struct CarChassisLive {
+    _pad_0x0: [u8; 0x320],
+    pub g_lat: f32,
+    pub g_long: f32,
+    pub g_vert: f32,
+    _pad_0x32c: [u8; 0x14],
+    pub body: *mut CarBodyActor,
+}
+const _: () = assert!(core::mem::offset_of!(CarChassisLive, g_lat) == 0x320);
+const _: () = assert!(core::mem::offset_of!(CarChassisLive, g_long) == 0x324);
+const _: () = assert!(core::mem::offset_of!(CarChassisLive, g_vert) == 0x328);
+const _: () = assert!(core::mem::offset_of!(CarChassisLive, body) == 0x340);
 
 #[repr(C)]
 pub struct CarDamageFrontWing {
@@ -720,6 +711,122 @@ const _: () = assert!(core::mem::offset_of!(CarEngine, max_torque) == 0x2518);
 const _: () = assert!(core::mem::offset_of!(CarEngine, limiter_rotation_rate) == 0x2528);
 const _: () = assert!(core::mem::offset_of!(CarEngine, rotation_rate) == 0x2538);
 const _: () = assert!(core::mem::offset_of!(CarEngine, throttle) == 0x2574);
+
+#[repr(C)]
+pub struct CarErsMode {}
+
+#[repr(C)]
+pub struct CarSpline {}
+
+#[repr(C)]
+pub struct CarErs {
+    pub vtable: *mut c_void,
+    pub car: *mut CarLive,
+    pub allocator: *mut c_void,
+    pub data_vtable: *mut c_void,
+    _pad_0x20: [u8; 0x8],
+    pub max_deploy_power: f32,
+    pub max_derate_power: f32,
+    pub boost_mode_power_add_limit: f32,
+    pub min_initial_deploy_power: f32,
+    pub power_reduction_rate_limit: f32,
+    pub power_reduction_speed_min: f32,
+    pub full_throttle_time: f32,
+    pub off_throttle_time: f32,
+    pub off_throttle_timer_torque: f32,
+    pub harvest_torque_factor: f32,
+    pub harvest_limit_mguk: f32,
+    pub harvest_override_bonus_mguk: f32,
+    pub harvest_limit_qualifying_mguk: f32,
+    pub deploy_limit_mguk: f32,
+    pub energy_store_capacity: f32,
+    pub energy_deploy_efficiency_mguk: f32,
+    pub energy_harvest_efficiency_mguk: f32,
+    pub energy_harvest_efficiency_mguh: f32,
+    pub max_brake_torque_mguk: f32,
+    pub exhaust_power_coefficient: f32,
+    pub turbo_power_coefficient: f32,
+    pub overtake_power_efficiency: f32,
+    pub use_derate_lights: u8,
+    pub override_mode_available: u8,
+    pub allow_full_throttle_power_increase: u8,
+    _pad_0x83: [u8; 0xaa5],
+    pub base_wear_rate_es: f32,
+    _pad_0xb2c: [u8; 0x7fc],
+    pub base_wear_rate_mguk: f32,
+    _pad_0x132c: [u8; 0x654],
+    pub medium_deploy_factor: f32,
+    pub hotlap_deploy_factor: f32,
+    pub harvest_factor_mguh: f32,
+    pub medium_derate_factor: f32,
+    pub hotlap_derate_factor: f32,
+    pub override_detection_lap_progress: f32,
+    pub override_activation_lap_progress: f32,
+    _pad_0x199c: [u8; 0x4],
+    pub track_settings_found: u8,
+    _pad_0x19a1: [u8; 0x27],
+    pub harvest_lap_mguk: f32,
+    pub harvest_lap_mguh: f32,
+    pub deploy_lap: f32,
+    _pad_0x19d4: [u8; 0x1c],
+    pub energy: f32,
+    pub lap_harvest_limit: f32,
+    _pad_0x19f8: [u8; 0x8],
+    pub harvest_power_mguk: f32,
+    pub harvest_power_mguh: f32,
+    _pad_0x1a08: [u8; 0xc],
+    pub deploy_power: f32,
+    _pad_0x1a18: [u8; 0x50],
+    pub ers_mode: i32,
+}
+const _: () = assert!(core::mem::offset_of!(CarErs, vtable) == 0x0);
+const _: () = assert!(core::mem::offset_of!(CarErs, car) == 0x8);
+const _: () = assert!(core::mem::offset_of!(CarErs, allocator) == 0x10);
+const _: () = assert!(core::mem::offset_of!(CarErs, data_vtable) == 0x18);
+const _: () = assert!(core::mem::offset_of!(CarErs, max_deploy_power) == 0x28);
+const _: () = assert!(core::mem::offset_of!(CarErs, max_derate_power) == 0x2c);
+const _: () = assert!(core::mem::offset_of!(CarErs, boost_mode_power_add_limit) == 0x30);
+const _: () = assert!(core::mem::offset_of!(CarErs, min_initial_deploy_power) == 0x34);
+const _: () = assert!(core::mem::offset_of!(CarErs, power_reduction_rate_limit) == 0x38);
+const _: () = assert!(core::mem::offset_of!(CarErs, power_reduction_speed_min) == 0x3c);
+const _: () = assert!(core::mem::offset_of!(CarErs, full_throttle_time) == 0x40);
+const _: () = assert!(core::mem::offset_of!(CarErs, off_throttle_time) == 0x44);
+const _: () = assert!(core::mem::offset_of!(CarErs, off_throttle_timer_torque) == 0x48);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_torque_factor) == 0x4c);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_limit_mguk) == 0x50);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_override_bonus_mguk) == 0x54);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_limit_qualifying_mguk) == 0x58);
+const _: () = assert!(core::mem::offset_of!(CarErs, deploy_limit_mguk) == 0x5c);
+const _: () = assert!(core::mem::offset_of!(CarErs, energy_store_capacity) == 0x60);
+const _: () = assert!(core::mem::offset_of!(CarErs, energy_deploy_efficiency_mguk) == 0x64);
+const _: () = assert!(core::mem::offset_of!(CarErs, energy_harvest_efficiency_mguk) == 0x68);
+const _: () = assert!(core::mem::offset_of!(CarErs, energy_harvest_efficiency_mguh) == 0x6c);
+const _: () = assert!(core::mem::offset_of!(CarErs, max_brake_torque_mguk) == 0x70);
+const _: () = assert!(core::mem::offset_of!(CarErs, exhaust_power_coefficient) == 0x74);
+const _: () = assert!(core::mem::offset_of!(CarErs, turbo_power_coefficient) == 0x78);
+const _: () = assert!(core::mem::offset_of!(CarErs, overtake_power_efficiency) == 0x7c);
+const _: () = assert!(core::mem::offset_of!(CarErs, use_derate_lights) == 0x80);
+const _: () = assert!(core::mem::offset_of!(CarErs, override_mode_available) == 0x81);
+const _: () = assert!(core::mem::offset_of!(CarErs, allow_full_throttle_power_increase) == 0x82);
+const _: () = assert!(core::mem::offset_of!(CarErs, base_wear_rate_es) == 0xb28);
+const _: () = assert!(core::mem::offset_of!(CarErs, base_wear_rate_mguk) == 0x1328);
+const _: () = assert!(core::mem::offset_of!(CarErs, medium_deploy_factor) == 0x1980);
+const _: () = assert!(core::mem::offset_of!(CarErs, hotlap_deploy_factor) == 0x1984);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_factor_mguh) == 0x1988);
+const _: () = assert!(core::mem::offset_of!(CarErs, medium_derate_factor) == 0x198c);
+const _: () = assert!(core::mem::offset_of!(CarErs, hotlap_derate_factor) == 0x1990);
+const _: () = assert!(core::mem::offset_of!(CarErs, override_detection_lap_progress) == 0x1994);
+const _: () = assert!(core::mem::offset_of!(CarErs, override_activation_lap_progress) == 0x1998);
+const _: () = assert!(core::mem::offset_of!(CarErs, track_settings_found) == 0x19a0);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_lap_mguk) == 0x19c8);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_lap_mguh) == 0x19cc);
+const _: () = assert!(core::mem::offset_of!(CarErs, deploy_lap) == 0x19d0);
+const _: () = assert!(core::mem::offset_of!(CarErs, energy) == 0x19f0);
+const _: () = assert!(core::mem::offset_of!(CarErs, lap_harvest_limit) == 0x19f4);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_power_mguk) == 0x1a00);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_power_mguh) == 0x1a04);
+const _: () = assert!(core::mem::offset_of!(CarErs, deploy_power) == 0x1a14);
+const _: () = assert!(core::mem::offset_of!(CarErs, ers_mode) == 0x1a68);
 
 #[repr(C)]
 pub struct CarF1Aero {
@@ -924,6 +1031,20 @@ const _: () = assert!(core::mem::offset_of!(CarLive, f1_suspension_damage) == 0x
 const _: () = assert!(core::mem::offset_of!(CarLive, handling_version) == 0x9f40);
 
 #[repr(C)]
+pub struct CarLiveInputs {
+    _pad_0x0: [u8; 0x188],
+    pub throttle: f32,
+    pub clutch: f32,
+    pub brake: f32,
+    _pad_0x194: [u8; 0x90],
+    pub input_flags: u8,
+}
+const _: () = assert!(core::mem::offset_of!(CarLiveInputs, throttle) == 0x188);
+const _: () = assert!(core::mem::offset_of!(CarLiveInputs, clutch) == 0x18c);
+const _: () = assert!(core::mem::offset_of!(CarLiveInputs, brake) == 0x190);
+const _: () = assert!(core::mem::offset_of!(CarLiveInputs, input_flags) == 0x224);
+
+#[repr(C)]
 pub struct CarNumberComponent {
     _pad_0x0: [u8; 0x278],
     pub entity: *mut CareerEntity,
@@ -941,6 +1062,13 @@ pub struct CarSteering {
 }
 const _: () = assert!(core::mem::offset_of!(CarSteering, car) == 0x8);
 const _: () = assert!(core::mem::offset_of!(CarSteering, max_steering_lock) == 0x28);
+
+#[repr(C)]
+pub struct CarSteeringLive {
+    _pad_0x0: [u8; 0xe8],
+    pub steering_angle: CarObfFloat,
+}
+const _: () = assert!(core::mem::offset_of!(CarSteeringLive, steering_angle) == 0xe8);
 
 #[repr(C)]
 pub struct CarSuspAxle {
