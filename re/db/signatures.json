@@ -162784,6 +162784,966 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "career.game_value_get_bank_balance",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 8B 41 08 48 8B 80 88 00 00 00 C5 C8 57 F6 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B B8 60 02 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 89 CE 48 8B 07 48 89 F9 FF 50 28 4C 8D 35",
+   "match": "0x140aa0e20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140aa0e20",
+   "kind": "func_start",
+   "names": [
+    "Career_GameValue_GetBankBalance"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.my_team_setup_commit_team_identity",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 20 48 89 CE 48 8B 89 78 02 00 00 E8 ?? ?? ?? ?? 84 C0 74 35",
+   "match": "0x140c2c800",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c2c800",
+   "kind": "func_start",
+   "names": [
+    "Career_MyTeamSetup_CommitTeamIdentity"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.read_career_setup_data_config",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 0B 00 00 C5 F8 29 B4 24 C0 0B 00 00",
+   "match": "0x140c32080",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c32080",
+   "kind": "func_start",
+   "names": [
+    "Career_Read_CareerSetupDataConfig"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.bank_read_save_data",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 02 00 00 C5 F8 29 B4 24 20 02 00 00 4C 89 C7 48 89 D3",
+   "match": "0x140c5d990",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c5d990",
+   "kind": "func_start",
+   "names": [
+    "Career_Bank_ReadSaveData"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.bank_write_save_data",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 04 00 00 C5 78 29 84 24 B0 04 00 00 C5 F8 29 BC 24 A0 04 00 00 C5 F8 29 B4 24 90 04 00 00 4C 89 44 24 50",
+   "match": "0x140c5ed70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c5ed70",
+   "kind": "func_start",
+   "names": [
+    "Career_Bank_WriteSaveData"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.bank_unregister_message_handlers",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 80 B9 F0 03 00 00 00",
+   "match": "0x140c64aa0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c64aa0",
+   "kind": "func_start",
+   "names": [
+    "Career_Bank_UnregisterMessageHandlers"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.bank_apply_transaction_to_balance",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 83 EC 50 48 89 D7 48 89 CE 48 63 42 04",
+   "match": "0x140c66c30",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c66c30",
+   "kind": "func_start",
+   "names": [
+    "Career_Bank_ApplyTransactionToBalance"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.bank_on_bank_account_valid_transaction_message",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 80 7A 28 01",
+   "match": "0x140c684c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c684c0",
+   "kind": "func_start",
+   "names": [
+    "Career_Bank_OnBankAccountValidTransactionMessage"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.bank_collect_ledger_entries_in_range",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 44 89 4C 24 2C",
+   "match": "0x140c689e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c689e0",
+   "kind": "func_start",
+   "names": [
+    "Career_Bank_CollectLedgerEntriesInRange"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.bank_read_account",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 70 01 00 00 C5 F8 29 B4 24 60 01 00 00 4C 89 C3",
+   "match": "0x140c6d3d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c6d3d0",
+   "kind": "func_start",
+   "names": [
+    "Career_Bank_ReadAccount"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.bank_write_account",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 53 48 83 EC 78 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 D7 48 89 CE 66 83 7A 12 07",
+   "match": "0x140c6dcb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c6dcb0",
+   "kind": "func_start",
+   "names": [
+    "Career_Bank_WriteAccount"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.bank_read_facility_budget",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4D 89 C4 49 89 D7",
+   "match": "0x140c70a70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c70a70",
+   "kind": "func_start",
+   "names": [
+    "Career_Bank_ReadFacilityBudget"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.cost_cap_load_config",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 D0",
+   "match": "0x140c9cc60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c9cc60",
+   "kind": "func_start",
+   "names": [
+    "Career_CostCap_LoadConfig"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.cost_cap_read_save_data",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 78 29 8C 24 60 01 00 00 C5 78 29 84 24 50 01 00 00 C5 F8 29 BC 24 40 01 00 00 C5 F8 29 B4 24 30 01 00 00 4C 89 C7",
+   "match": "0x140c9df00",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c9df00",
+   "kind": "func_start",
+   "names": [
+    "Career_CostCap_ReadSaveData"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.contract_post_compensation_transactions",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 81 EC 80 00 00 00 4C 89 CF 4C 89 C6",
+   "match": "0x140d9d0b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140d9d0b0",
+   "kind": "func_start",
+   "names": [
+    "Career_Contract_PostCompensationTransactions"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.driver_contracts_my_team_component_open_contract_window",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 0A 00 00 C5 F8 29 B4 24 30 0A 00 00",
+   "match": "0x140dade70",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140dade70",
+   "kind": "func_start",
+   "names": [
+    "Game_DriverContractsMyTeamComponent_OpenContractWindow"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.driver_contracts_my_team_component_progress_day",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 03 00 00 C5 78 29 94 24 40 03 00 00",
+   "match": "0x140daec40",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140daec40",
+   "kind": "func_start",
+   "names": [
+    "Game_DriverContractsMyTeamComponent_ProgressDay"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.driver_contracts_my_team_add_pending_entry",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 90 00 00 00 89 D0",
+   "match": "0x140db66b0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140db66b0",
+   "kind": "func_start",
+   "names": [
+    "Career_DriverContractsMyTeam_AddPendingEntry"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.driver_contracts_my_team_submit_offer",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 0A 00 00 C5 F8 29 BC 24 B0 0A 00 00",
+   "match": "0x140dbc230",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140dbc230",
+   "kind": "func_start",
+   "names": [
+    "Career_DriverContractsMyTeam_SubmitOffer"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.team_hq_state_read_resource_points",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 30 48 89 D0 48 89 CE 48 8D 15 ?? ?? ?? ?? 48 89 C1 E8 ?? ?? ?? ?? 48 85 C0 74 48",
+   "match": "0x140ddf490",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140ddf490",
+   "kind": "func_start",
+   "names": [
+    "Career_TeamHqState_ReadResourcePoints"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.register_registry_entry",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 58 4C 89 C3",
+   "match": "0x140f37740",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140f37740",
+   "kind": "func_start",
+   "names": [
+    "Career_Register_RegistryEntry"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.get_driver_contract_record_by_key",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 48 89 C8 44 89 C1 C1 E9 10 41 C1 E0 0E 41 09 C8 41 0F B7 C8 48 0F AF 88 E8 08 00 00",
+   "match": "0x140f71230",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140f71230",
+   "kind": "func_start",
+   "names": [
+    "Career_Get_DriverContractRecordByKey"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.calc_driver_age_years",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 48 89 CE 8B BA A8 05 00 00",
+   "match": "0x140f74d50",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140f74d50",
+   "kind": "func_start",
+   "names": [
+    "Career_Calc_DriverAgeYears"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.read_facility_perk_tree_config",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 38 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 B4 24 20 11 00 00",
+   "match": "0x140f7cfe0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140f7cfe0",
+   "kind": "func_start",
+   "names": [
+    "Career_Read_FacilityPerkTreeConfig"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.load_my_team_reward_definitions",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 0C 00 00 C5 78 29 94 24 B0 0C 00 00",
+   "match": "0x140f99cd0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140f99cd0",
+   "kind": "func_start",
+   "names": [
+    "Career_Load_MyTeamRewardDefinitions"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.my_team_renown_reward_describe",
+   "section": ".xtls",
+   "pattern": "48 83 EC 28 48 89 D0 C5 FA 10 41 58",
+   "match": "0x140fc5990",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140fc5990",
+   "kind": "func_start",
+   "names": [
+    "Career_MyTeamRenownReward_Describe"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "gamedb.load_sponsor_goal_definitions",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 06 00 00 C5 78 29 84 24 F0 05 00 00",
+   "match": "0x141111fc0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141111fc0",
+   "kind": "func_start",
+   "names": [
+    "Gdb_Load_SponsorGoalDefinitions"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.calendar_advance_days",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 66 85 D2",
+   "match": "0x14111cad0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14111cad0",
+   "kind": "func_start",
+   "names": [
+    "Career_Calendar_AdvanceDays"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.resource_points_on_gain_rate_stat_changed",
+   "section": ".xtls",
+   "pattern": "56 48 83 EC 20 48 89 CE 48 8B 89 70 02 00 00 48 8B 01 FF 90 A8 00 00 00",
+   "match": "0x1412275f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1412275f0",
+   "kind": "func_start",
+   "names": [
+    "Career_ResourcePoints_OnGainRateStatChanged"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.resource_points_on_award_to_member_message",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 38 C5 F8 29 74 24 20 48 89 CF 48 8B 89 78 02 00 00",
+   "match": "0x141229e00",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141229e00",
+   "kind": "func_start",
+   "names": [
+    "Career_ResourcePoints_OnAwardToMemberMessage"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.resource_points_on_award_to_key_message",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 38 C5 F8 29 74 24 20 48 83 7A 20 00",
+   "match": "0x141229f40",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141229f40",
+   "kind": "func_start",
+   "names": [
+    "Career_ResourcePoints_OnAwardToKeyMessage"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.resource_points_on_team_wallet_delta_message",
+   "section": ".xtls",
+   "pattern": "48 83 EC 28 80 B9 B0 04 00 00 01 75 13",
+   "match": "0x14122a070",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14122a070",
+   "kind": "func_start",
+   "names": [
+    "Career_ResourcePoints_OnTeamWalletDeltaMessage"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.pick_random_upgrade",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 98 2E 00 00",
+   "match": "0x14122cf00",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14122cf00",
+   "kind": "func_start",
+   "names": [
+    "Career_Pick_RandomUpgrade"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.upgrade_definition_create_from_config",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 BC 24 70 01 00 00 C5 F8 29 B4 24 60 01 00 00 4C 89 CB",
+   "match": "0x141277150",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141277150",
+   "kind": "func_start",
+   "names": [
+    "Career_UpgradeDefinition_CreateFromConfig"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.update_department_morale_state_vm",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 53 48 81 EC 20 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 89 CE 48 8B 49 28",
+   "match": "0x1416d57c0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1416d57c0",
+   "kind": "func_start",
+   "names": [
+    "Career_Update_DepartmentMoraleStateVM"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.my_team_research_project_started_event",
+   "section": ".xtls",
+   "pattern": "56 57 48 83 EC 68 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 2B E9 3F 49",
+   "match": "0x141c70b00",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141c70b00",
+   "kind": "func_start",
+   "names": [
+    "Career_MyTeamResearchProjectStarted_Event"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.get_rn_dpurchase_block_reason",
+   "section": ".xtls",
+   "pattern": "41 56 56 57 55 53 48 83 EC 40 89 D3",
+   "match": "0x141c8cbb0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141c8cbb0",
+   "kind": "func_start",
+   "names": [
+    "Career_Get_RnDPurchaseBlockReason"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.read_resource_points_start_config",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 09 00 00 48 89 D6",
+   "match": "0x1434fd100",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1434fd100",
+   "kind": "func_start",
+   "names": [
+    "Career_Read_ResourcePointsStartConfig"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.compute_installed_upgrade_performance",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 54 56 57 53 B8 88 30 00 00",
+   "match": "0x143518350",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143518350",
+   "kind": "func_start",
+   "names": [
+    "Career_Compute_InstalledUpgradePerformance"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.purchase_upgrades_for_simulated_teams",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 0B 00 00 C5 78 29 94 24 00 0B 00 00",
+   "match": "0x14351ead0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14351ead0",
+   "kind": "func_start",
+   "names": [
+    "Career_Purchase_UpgradesForSimulatedTeams"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "vmknolle",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
