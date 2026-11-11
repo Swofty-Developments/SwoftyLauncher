@@ -71,7 +71,8 @@ pub fn compose_in_build(
     inputs: &[Input],
     template: Option<TemplateBase>,
 ) -> Result<Composed> {
-    let written: BTreeSet<&str> = dials::written().into_iter().collect();
+    let mut written: BTreeSet<&str> = dials::written().into_iter().collect();
+    written.extend(inputs.iter().filter_map(|i| i.record.scene.as_deref()));
     let mut scratch = ErpBuild::new(cx.base).with_baseline(cx.baseline);
     let mut lines = Vec::new();
     let mut warnings = Vec::new();

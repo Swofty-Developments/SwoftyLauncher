@@ -252,7 +252,14 @@ pub struct Variant {
 /// One `hud.element` record.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct HudElement {
+    #[serde(default = "no_dial")]
     pub dial: Dial,
+    /// The advanced target: a stock scene (`.idf`) the elements grow, and the template node that
+    /// instances it, instead of one of the dials.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scene: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub parent_ui: Option<String>,
     #[serde(default = "yes", skip_serializing_if = "is_true")]
     pub spectator: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -281,6 +288,10 @@ fn yes() -> bool {
     true
 }
 
+fn no_dial() -> Dial {
+    Dial::F126
+}
+
 fn is_true(b: &bool) -> bool {
     *b
 }
@@ -290,13 +301,79 @@ impl HudElement {
         let mut v = value.clone();
         if let Some(o) = v.as_object_mut() {
             o.remove("$comment");
+            match (o.contains_key("dial"), o.contains_key("scene")) {
+                (true, true) => return Err(err("record: a record has a dial or a scene target, not both")),
+                (false, false) => {
+                    return Err(err("record: missing field `dial` (or `scene` and `parent_ui`)"));
+                }
+                _ => {}
+            }
         }
         let rec: Self = serde_json::from_value(v).map_err(|e| err(format!("record: {e}")))?;
         rec.check()?;
         Ok(rec)
     }
 
+    /// The scene and template parent of a record that targets a scene instead of a dial.
+    pub fn scene_target(&self) -> Option<(&str, &str)> {
+        Some((self.scene.as_deref()?, self.parent_ui.as_deref()?))
+    }
+
+    fn check_scene_target(&self) -> Result<()> {
+        match (&self.scene, &self.parent_ui) {
+            (None, None) => return Ok(()),
+            (Some(_), Some(_)) => {}
+            _ => return Err(err("scene and parent_ui go together")),
+        }
+        let scene = self.scene.as_deref().unwrap_or_default();
+        if !scene.starts_with("eaid://") || !scene.ends_with(".idf") {
+            return Err(err(format!("scene {scene} is the eaid:// path of a stock .idf")));
+        }
+        let parent = self.parent_ui.as_deref().unwrap_or_default();
+        if parent.split('.').any(str::is_empty) {
+            return Err(err(format!(
+                "parent_ui {parent} is a dotted template path, such as hud_mfd_dynamic.mfd.attacher.car_damage_panel"
+            )));
+        }
+        let what = |w: &str| err(format!("a scene target does not take {w}"));
+        if !self.sprites.is_empty() {
+            return Err(what("sprites"));
+        }
+        if !self.decisions.is_empty() {
+            return Err(what("decisions"));
+        }
+        if !self.variants.is_empty() {
+            return Err(what("variants"));
+        }
+        if self.stock.is_some() || !self.stock_parts.is_empty() {
+            return Err(what("stock or stock_parts"));
+        }
+        if self.editor.is_some() || self.rect.is_some() {
+            return Err(what("editor or box"));
+        }
+        fn only_text(list: &[Element]) -> Result<()> {
+            for e in list {
+                if !matches!(e.kind, Some(Kind::Text | Kind::Group)) {
+                    return Err(err(format!(
+                        "element {}: a scene target takes text and group elements, not {:?}",
+                        e.id, e.kind
+                    )));
+                }
+                if e.layer.is_some() || e.tint.is_some() {
+                    return Err(err(format!(
+                        "element {}: a scene target does not take layer or tint",
+                        e.id
+                    )));
+                }
+                only_text(&e.children)?;
+            }
+            Ok(())
+        }
+        only_text(&self.elements)
+    }
+
     pub fn check(&self) -> Result<()> {
+        self.check_scene_target()?;
         let mut ids = std::collections::BTreeSet::new();
         for e in &self.elements {
             check_element(e, &mut ids)?;

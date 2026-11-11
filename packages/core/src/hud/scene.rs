@@ -285,6 +285,72 @@ impl Builder {
         })
     }
 
+    /// A builder over a stock scene that is no dial: its templates (text, null, window, mask) come from
+    /// the dial scene `dial_scene`, so only text and group elements make sense in it.
+    pub fn for_scene(
+        facts: &'static DialFacts,
+        scene: &[u8],
+        dial_scene: &[u8],
+        mods: &[u8],
+        bar: &[u8],
+    ) -> Result<Self> {
+        let pkg = Pkg::parse(scene)?;
+        let root = scene_root(&pkg)?;
+        let entry = &idf::scenes(&pkg)?[0];
+        if idf::scene_name(entry) != Some(idf::scene_id(facts.scene)) {
+            return Err(err(format!("{} is not the scene {}", facts.scene, facts.scene)));
+        }
+        let dials = Pkg::parse(dial_scene)?;
+        let dial_root = scene_root(&dials)?;
+        let stock_ids = idf::id_map(root);
+        let stock_names = idf::elements(root)
+            .into_iter()
+            .map(|(_, e)| idf::elem_name(e).to_owned())
+            .collect();
+        Ok(Self {
+            facts,
+            t: Templates {
+                quad: idf::expect(dial_root, "central_bg_fill")?.clone(),
+                text: idf::expect(dial_root, "speedo_number")?.clone(),
+                null: template_of(mods, "mod_1_icon_fill_mask_anim")?,
+                window: template_of(mods, "mod_1_icon_fill_mask")?,
+                mask: template_of(bar, "ers_battery_fill_mask")?,
+                mesh: (1.0, 1.0),
+            },
+            pkg,
+            names: BTreeSet::new(),
+            stock_ids,
+            stock_names,
+        })
+    }
+
+    /// Adds one record's elements under the scene's root element, in HUD units from the scene's origin,
+    /// and returns its plan.
+    pub fn add_scene_record(&mut self, rec: &HudElement, pfx: &str, sprites: &Sprites) -> Result<Plan> {
+        let mut plan = Plan {
+            pfx: pfx.to_owned(),
+            root: pfx.to_owned(),
+            ..Plan::default()
+        };
+        let mut root = self.null(pfx, [0.0; 3], None, false, false)?;
+        let mut cx = Cx {
+            names: format!("{pfx}_"),
+            sprites,
+            mode: Mode::Live,
+            switched: BTreeSet::new(),
+            plan: &mut plan,
+        };
+        let mut kids = Vec::new();
+        for e in &rec.elements {
+            if let Some(n) = self.element(&mut cx, e)? {
+                kids.push(n);
+            }
+        }
+        idf::children_mut(&mut root)?.extend(kids);
+        idf::children_mut(scene_root_mut(&mut self.pkg)?)?.push(root);
+        Ok(plan)
+    }
+
     pub fn bottom(&self) -> Result<f64> {
         let root = scene_root(&self.pkg)?;
         let br = idf::expect(root, "br_customisation")?;
@@ -782,7 +848,11 @@ impl Builder {
             _ => return Err(err(format!("text {} has no value", e.id))),
         };
         let visible = match &e.visible {
-            Some(b) => Some(template::resolve(b, Usage::Visible, name)?),
+            Some(b) => {
+                let r = template::resolve(b, Usage::Visible, name)?;
+                plan.known.push((r.db.clone(), r.tag));
+                Some(r)
+            }
             None => None,
         };
         plan.texts.push(TextItem {

@@ -389,10 +389,7 @@ fn decision_node(d: &Decision, plan: &Plan, stock_root: &Node, parent: &str, bas
     ))
 }
 
-/// The `<prefix>_ctl` group of one record's plan: the root's switch, the bound nodes and the
-/// decision nodes, with the `trigger` and `untrigger` commands.
-pub fn group(plan: &Plan, stock_root: &Node, parent: &str) -> Result<Node> {
-    let base = format!("{parent}.{}", plan.ctl_name());
+fn bound_nodes(plan: &Plan) -> Vec<Node> {
     let mut kids = Vec::new();
     for v in &plan.vis {
         kids.push(node::visible_node(
@@ -431,6 +428,14 @@ pub fn group(plan: &Plan, stock_root: &Node, parent: &str) -> Result<Node> {
             vec![],
         ));
     }
+    kids
+}
+
+/// The `<prefix>_ctl` group of one record's plan: the root's switch, the bound nodes and the
+/// decision nodes, with the `trigger` and `untrigger` commands.
+pub fn group(plan: &Plan, stock_root: &Node, parent: &str) -> Result<Node> {
+    let base = format!("{parent}.{}", plan.ctl_name());
+    let mut kids = bound_nodes(plan);
     let mut decision_names = Vec::new();
     for d in &plan.decisions {
         let n = decision_node(d, plan, stock_root, parent, &base)?;
@@ -487,6 +492,68 @@ pub fn attach(
     let base = format!("{parent}.{ctl}");
     node::wire_command(target, "show", &base, "trigger")?;
     node::wire_command(target, "hide", &base, "untrigger")?;
+    Ok(checked)
+}
+
+/// Adds the bound nodes of a scene target's plan straight under `parent`, the template node that
+/// instances `scene`, each named `<prefix>_<name>`. The binding types are checked against `stock`.
+pub fn attach_scene(
+    template: &mut Node,
+    stock: &StockTags,
+    parent: &str,
+    scene: &str,
+    plan: &Plan,
+) -> Result<usize> {
+    let at = node::find_path(template, parent)?;
+    let target = node::node_at_mut(template, &at)?;
+    let want = scene.strip_suffix(".idf").unwrap_or(scene);
+    let have: Vec<String> = target
+        .slot(node::COMPONENT)?
+        .iter()
+        .filter_map(|c| {
+            c.as_obj()?
+                .get("debugName")?
+                .as_val()?
+                .as_str()
+                .map(str::to_owned)
+        })
+        .collect();
+    if !have.iter().any(|h| h == want) {
+        return Err(err(format!(
+            "{parent} instances {}, not {scene}; parent_ui is the template node of that scene",
+            if have.is_empty() {
+                "no scene".to_owned()
+            } else {
+                have.join(", ")
+            }
+        )));
+    }
+    let id = target.props()?.at("id")?.v()?.as_u32();
+    if id != Some(swofty_formats::hash::djb2(parent)) {
+        return Err(err(format!(
+            "{parent}: the node's id is not the hash of its path"
+        )));
+    }
+    let mut kids = bound_nodes(plan);
+    for k in &mut kids {
+        let name = format!("{}_{}", plan.pfx, k.name());
+        node::rename(k, &name).map_err(|e| err(format!("{name}: {e}")))?;
+    }
+    let mut seen = BTreeSet::new();
+    for k in &kids {
+        let taken = target
+            .slot(node::CHILDREN)?
+            .iter()
+            .any(|c| c.is_node() && c.name() == k.name());
+        if taken || !seen.insert(k.name().to_owned()) {
+            return Err(err(format!("{parent} already has a node {}", k.name())));
+        }
+    }
+    let checked = check_types(stock, &kids, &table_of(plan))?;
+    for mut k in kids {
+        node::fix_ids(&mut k, Some(parent));
+        target.slot_mut(node::CHILDREN)?.push(k);
+    }
     Ok(checked)
 }
 
