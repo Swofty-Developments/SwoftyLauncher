@@ -721,8 +721,9 @@ pub fn attach_scene(
     let plan = &with_clock_output(plan);
     let mut kids = bound_nodes(plan, tex_facts(plan, template)?.as_ref())?;
     if needs_clock(plan) {
-        let (nodes, _) = clock_nodes(template, plan, parent)?;
-        kids.extend(nodes);
+        // a scene target has no commands to register a start node from: the formatter clone only
+        let (mut nodes, _) = clock_nodes(template, plan, parent)?;
+        kids.extend(nodes.drain(..1));
     }
     let at = node::find_path(template, parent)?;
     let target = node::node_at_mut(template, &at)?;
