@@ -389,7 +389,7 @@ fn decision_node(d: &Decision, plan: &Plan, stock_root: &Node, parent: &str, bas
     ))
 }
 
-fn bound_nodes(plan: &Plan) -> Vec<Node> {
+pub fn bound_nodes(plan: &Plan) -> Vec<Node> {
     let mut kids = Vec::new();
     for v in &plan.vis {
         kids.push(node::visible_node(
