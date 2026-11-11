@@ -27,6 +27,7 @@ pub mod exe_version;
 pub mod fast_fail;
 pub mod folders;
 pub mod heads;
+pub mod hud;
 pub mod helper;
 pub mod import;
 pub mod install;
