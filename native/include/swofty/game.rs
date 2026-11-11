@@ -178,11 +178,6 @@ pub struct CarWheelProxies {
 }
 
 #[repr(C)]
-pub struct ControllerSystem {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct DepartmentData {
     _opaque: [u8; 0],
 }
@@ -194,16 +189,6 @@ pub struct DriveThroughObject {
 
 #[repr(C)]
 pub struct FEHomeViewModel {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct GameManagerLive {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct GameVehicleProgressSystem {
     _opaque: [u8; 0],
 }
 
@@ -239,11 +224,6 @@ pub struct MarshalZoneMonitor {
 
 #[repr(C)]
 pub struct MarshalZoneSlot {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct NeRobinHoodMapU64 {
     _opaque: [u8; 0],
 }
 
@@ -364,11 +344,6 @@ pub struct VehicleIdentity {
 
 #[repr(C)]
 pub struct VehiclePackageRow {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct VehicleProgressEntry {
     _opaque: [u8; 0],
 }
 
@@ -1251,6 +1226,21 @@ const _: () = assert!(core::mem::offset_of!(ControllerSet, flags) == 0x30);
 const _: () = assert!(core::mem::offset_of!(ControllerSet, vehicle) == 0x34);
 
 #[repr(C)]
+pub struct ControllerSystem {
+    _pad_0x0: [u8; 0x30],
+    pub sets: *mut *mut ControllerSet,
+    _pad_0x38: [u8; 0x58],
+    pub vehicle_manager: *mut c_void,
+    _pad_0x98: [u8; 0x2cc],
+    pub active: u8,
+    pub sets_built: u8,
+}
+const _: () = assert!(core::mem::offset_of!(ControllerSystem, sets) == 0x30);
+const _: () = assert!(core::mem::offset_of!(ControllerSystem, vehicle_manager) == 0x90);
+const _: () = assert!(core::mem::offset_of!(ControllerSystem, active) == 0x364);
+const _: () = assert!(core::mem::offset_of!(ControllerSystem, sets_built) == 0x365);
+
+#[repr(C)]
 pub struct CostCapComponent {
     _pad_0x0: [u8; 0x2d8],
     pub team_slots: *mut *mut CostCapTeam,
@@ -1795,6 +1785,16 @@ pub struct GameManager {
 const _: () = assert!(core::mem::offset_of!(GameManager, mode_context) == 0xc0);
 
 #[repr(C)]
+pub struct GameManagerLive {
+    _pad_0x0: [u8; 0x30],
+    pub systems_map: *mut NeRobinHoodMapU64,
+    _pad_0x38: [u8; 0x298],
+    pub progress_system: *mut GameVehicleProgressSystem,
+}
+const _: () = assert!(core::mem::offset_of!(GameManagerLive, systems_map) == 0x30);
+const _: () = assert!(core::mem::offset_of!(GameManagerLive, progress_system) == 0x2d0);
+
+#[repr(C)]
 pub struct GameMessageBusHolder {
     _pad_0x0: [u8; 0x8],
     pub bus: *mut NeMessageBus,
@@ -1814,6 +1814,15 @@ pub struct GameSetupMode {
     pub drs_allowed_lap_group: *mut c_void,
 }
 const _: () = assert!(core::mem::offset_of!(GameSetupMode, drs_allowed_lap_group) == 0x1e0);
+
+#[repr(C)]
+pub struct GameVehicleProgressSystem {
+    _pad_0x0: [u8; 0x38],
+    pub entries_begin: *mut *mut c_void,
+    pub entries_end: *mut *mut c_void,
+}
+const _: () = assert!(core::mem::offset_of!(GameVehicleProgressSystem, entries_begin) == 0x38);
+const _: () = assert!(core::mem::offset_of!(GameVehicleProgressSystem, entries_end) == 0x40);
 
 #[repr(C)]
 pub struct GameWeatherSystem {
@@ -2026,6 +2035,27 @@ pub struct NePropertyVtbl {
 }
 const _: () = assert!(core::mem::offset_of!(NePropertyVtbl, r#type) == 0x8);
 const _: () = assert!(core::mem::offset_of!(NePropertyVtbl, value) == 0x38);
+
+#[repr(C)]
+pub struct NeRobinHoodMapU64 {
+    _pad_0x0: [u8; 0x10],
+    pub hash_seed: u64,
+    pub slots: *mut u8,
+    pub meta: *mut u8,
+    pub count: u64,
+    pub mask: u64,
+    pub max_count: u64,
+    pub step: u32,
+    pub shift: u32,
+}
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, hash_seed) == 0x10);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, slots) == 0x18);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, meta) == 0x20);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, count) == 0x28);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, mask) == 0x30);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, max_count) == 0x38);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, step) == 0x40);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, shift) == 0x44);
 
 #[repr(C)]
 pub struct NeSharedCtrl {
@@ -2716,6 +2746,31 @@ pub struct UpgradesComponent {
 const _: () = assert!(core::mem::offset_of!(UpgradesComponent, upgrades_begin) == 0x298);
 const _: () = assert!(core::mem::offset_of!(UpgradesComponent, upgrades_end) == 0x2a0);
 const _: () = assert!(core::mem::offset_of!(UpgradesComponent, career_time) == 0x2c0);
+
+#[repr(C)]
+pub struct VehicleProgressEntry {
+    _pad_0x0: [u8; 0x38],
+    pub lap_a: u16,
+    _pad_0x3a: [u8; 0x6],
+    pub lap_b: u16,
+    _pad_0x42: [u8; 0x6],
+    pub progress_lap_a: u16,
+    _pad_0x4a: [u8; 0x6],
+    pub progress_lap_b: u16,
+    _pad_0x52: [u8; 0x6],
+    pub progress_lap_delta: i16,
+    _pad_0x5a: [u8; 0x3e],
+    pub total_a: u32,
+    _pad_0x9c: [u8; 0x4],
+    pub total_b: u32,
+}
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, lap_a) == 0x38);
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, lap_b) == 0x40);
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, progress_lap_a) == 0x48);
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, progress_lap_b) == 0x50);
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, progress_lap_delta) == 0x58);
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, total_a) == 0x98);
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, total_b) == 0xa0);
 
 #[repr(C)]
 pub struct WeatherAndTimeOfDayComponent {
