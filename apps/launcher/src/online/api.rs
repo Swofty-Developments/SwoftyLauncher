@@ -1,5 +1,6 @@
 use serde::Deserialize;
 use std::time::Duration;
+use swofty_core::timetrial::boards::content_listed;
 use swofty_i18n::trf;
 
 use super::model::*;
@@ -335,6 +336,8 @@ pub(super) fn aids_of(assists: Option<&serde_json::Value>) -> Option<Assists> {
 #[derive(Deserialize)]
 struct StandingDto {
     #[serde(default)]
+    id: String,
+    #[serde(default)]
     name: String,
     #[serde(default)]
     rank: Option<u32>,
@@ -625,17 +628,7 @@ impl BoardsApi for HttpBoards {
 
     fn overview(&self, cat: &Category) -> Result<Overview, OnlineError> {
         let dto: OverviewDto = self.get(&["/v1/tt/overview", &lead(cat)].concat())?;
-        Ok(Overview {
-            seasons: dto.seasons.iter().map(|s| season_card(&self.server, s)).collect(),
-            global: dto.global.rows.into_iter().map(Into::into).collect(),
-            custom: dto
-                .custom
-                .tracks
-                .into_iter()
-                .map(|t| track_card(&self.server, "", t, true))
-                .collect(),
-            me: None,
-        })
+        Ok(overview_of(&self.server, dto))
     }
 
     fn season(&self, id: &str, cat: &Category) -> Result<SeasonPage, OnlineError> {
@@ -645,6 +638,7 @@ impl BoardsApi for HttpBoards {
             .tracks
             .into_iter()
             .map(|t| track_card(&self.server, id, t, false))
+            .filter(|t| content_listed(&t.key.content))
             .collect();
         Ok(SeasonPage {
             season,
@@ -703,48 +697,79 @@ impl BoardsApi for HttpBoards {
 
     fn profile(&self, id: &str, cat: &Category) -> Result<Profile, OnlineError> {
         let dto: ProfileDto = self.get(&format!("/v1/tt/users/{}{}", encode(id), lead(cat)))?;
-        let driver: Driver = dto.user.into();
-        Ok(Profile {
-            global: dto.global.map(|g| RankEntry {
-                rank: g.rank,
-                driver: driver.clone(),
-                points: g.score,
-                wins: g.wins,
-                podiums: g.podiums,
-            }),
-            driver,
-            seasons: dto
-                .seasons
-                .into_iter()
-                .filter_map(|s| {
-                    s.rank.map(|rank| SeasonStanding {
-                        season: s.name,
-                        rank,
-                        points: s.score,
-                    })
+        Ok(profile_of(dto))
+    }
+}
+
+fn overview_of(server: &str, dto: OverviewDto) -> Overview {
+    Overview {
+        seasons: dto
+            .seasons
+            .iter()
+            .filter(|s| content_listed(&s.id))
+            .map(|s| season_card(server, s))
+            .collect(),
+        global: dto.global.rows.into_iter().map(Into::into).collect(),
+        custom: dto
+            .custom
+            .tracks
+            .into_iter()
+            .map(|t| track_card(server, "", t, true))
+            .filter(|t| content_listed(&t.key.content))
+            .collect(),
+        me: None,
+    }
+}
+
+fn profile_of(dto: ProfileDto) -> Profile {
+    let driver: Driver = dto.user.into();
+    Profile {
+        global: dto.global.map(|g| RankEntry {
+            rank: g.rank,
+            driver: driver.clone(),
+            points: g.score,
+            wins: g.wins,
+            podiums: g.podiums,
+        }),
+        driver,
+        seasons: dto
+            .seasons
+            .into_iter()
+            .filter(|s| content_listed(&s.id))
+            .filter_map(|s| {
+                s.rank.map(|rank| SeasonStanding {
+                    season: s.name,
+                    rank,
+                    points: s.score,
                 })
-                .collect(),
-            bests: dto.bests.into_iter().map(best).collect(),
-            recent: dto
-                .recent
-                .into_iter()
-                .map(|r| {
-                    best(BestDto {
-                        content: r.content,
-                        name: r.name,
-                        track: r.track,
-                        track_name: r.track_name,
-                        weather: r.weather,
-                        lap_id: r.lap_id,
-                        time_ms: r.time_ms,
-                        rank: None,
-                        position: None,
-                        set_at: r.set_at,
-                        setup: None,
-                    })
+            })
+            .collect(),
+        bests: dto
+            .bests
+            .into_iter()
+            .filter(|b| content_listed(&b.content))
+            .map(best)
+            .collect(),
+        recent: dto
+            .recent
+            .into_iter()
+            .filter(|r| content_listed(&r.content))
+            .map(|r| {
+                best(BestDto {
+                    content: r.content,
+                    name: r.name,
+                    track: r.track,
+                    track_name: r.track_name,
+                    weather: r.weather,
+                    lap_id: r.lap_id,
+                    time_ms: r.time_ms,
+                    rank: None,
+                    position: None,
+                    set_at: r.set_at,
+                    setup: None,
                 })
-                .collect(),
-        })
+            })
+            .collect(),
     }
 }
 
@@ -772,6 +797,61 @@ mod tests {
         );
         assert_eq!(track.key.content, "a/f1_2022");
         assert_eq!(track.record.unwrap().time_ms, 58815);
+    }
+
+    #[test]
+    fn the_overview_and_a_profile_leave_out_unlisted_seasons() {
+        let dto: OverviewDto = serde_json::from_str(
+            r#"{"seasons":[{"id":"game/f1_2025","name":"F1 25 (stock)"},{"id":"swofty.classic-seasons-2020/f1_2020","name":"F1 2020 GP/TT Addon"},{"id":"swofty.swofty-seasons-2019/sw_2019","name":"SWOFTY 2019"}],
+              "custom":{"tracks":[{"track":"mod.nycgp:nycgp","record":{"time_ms":1,"user":{"id":"2","name":"d2"},"content":"swofty.classic-seasons-2021/f1_2021","weather":"dry"}},
+                {"track":"mod.lbcgp:lbcgp","record":{"time_ms":1,"user":{"id":"2","name":"d2"},"content":"game/f1_2025","weather":"dry"}}]}}"#,
+        )
+        .unwrap();
+        let overview = overview_of("https://s", dto);
+        assert_eq!(
+            overview.seasons.iter().map(|s| s.id.as_str()).collect::<Vec<_>>(),
+            ["game/f1_2025", "swofty.swofty-seasons-2019/sw_2019"]
+        );
+        assert_eq!(
+            overview
+                .custom
+                .iter()
+                .map(|t| t.key.track.as_str())
+                .collect::<Vec<_>>(),
+            ["mod.lbcgp:lbcgp"]
+        );
+        let dto: ProfileDto = serde_json::from_str(
+            r#"{"user":{"id":"1","name":"d"},
+              "seasons":[{"id":"swofty.swofty-seasons-2021/sw_2021","name":"SWOFTY 2021","rank":1,"score":40},{"id":"bydanix.f1-2012-season/ex_f1_2012","name":"F1 2012","rank":2,"score":9}],
+              "bests":[{"content":"msyeett.classic-seasons-2015/f1_2015","track":"monza","weather":"dry","lap_id":"a","time_ms":1},{"content":"game/f1_2025","track":"monza","weather":"dry","lap_id":"b","time_ms":2}],
+              "recent":[{"content":"swofty.classic-seasons-2017/f1_2017","lap_id":"c","time_ms":3},{"content":"swofty.swofty-seasons-2015/sw_2015","lap_id":"d","time_ms":4}]}"#,
+        )
+        .unwrap();
+        let profile = profile_of(dto);
+        assert_eq!(
+            profile
+                .seasons
+                .iter()
+                .map(|s| s.season.as_str())
+                .collect::<Vec<_>>(),
+            ["SWOFTY 2021"]
+        );
+        assert_eq!(
+            profile
+                .bests
+                .iter()
+                .map(|b| b.lap_id.as_str())
+                .collect::<Vec<_>>(),
+            ["b"]
+        );
+        assert_eq!(
+            profile
+                .recent
+                .iter()
+                .map(|b| b.lap_id.as_str())
+                .collect::<Vec<_>>(),
+            ["d"]
+        );
     }
 
     #[test]

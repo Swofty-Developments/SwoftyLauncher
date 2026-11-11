@@ -404,7 +404,7 @@ fn gzip(bytes: &[u8]) -> std::io::Result<Vec<u8>> {
 }
 
 #[cfg(test)]
-mod tests {
+pub(super) mod tests {
     use super::*;
 
     #[test]
@@ -454,7 +454,10 @@ mod tests {
         assert_eq!(out, b"SWLAP lap bytes");
     }
 
-    fn serve(status: &str, body: &'static str) -> (String, std::thread::JoinHandle<Vec<u8>>) {
+    pub(in crate::timetrial) fn serve(
+        status: &str,
+        body: &'static str,
+    ) -> (String, std::thread::JoinHandle<Vec<u8>>) {
         use std::io::Read;
         let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
         let url = format!("http://{}", listener.local_addr().unwrap());
