@@ -817,6 +817,10 @@ pub struct Operations {
     pub screens: Vec<ScreenOp>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub assets: Vec<String>,
+    /// Files of `hud.element` records the build composes into the HUD's dial scenes
+    /// (`docs/reference/ops/hud.md`).
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub hud: Vec<String>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
@@ -998,6 +1002,7 @@ impl AddonManifest {
             .iter()
             .chain(&self.operations.erp)
             .chain(&self.operations.ui)
+            .chain(&self.operations.hud)
             .chain(&self.operations.assets);
         let paths = paths
             .chain(self.operations.files.iter().map(|f| &f.source))
@@ -1390,6 +1395,28 @@ mod tests {
             assert_eq!(with(not_a_link).source_url(), None, "{not_a_link}");
         }
         assert_eq!(AddonManifest::parse(GRID24).unwrap().source_url(), None);
+    }
+
+    #[test]
+    fn operations_hud_lists_record_files_inside_the_addon() {
+        let with = |hud: &str| {
+            GRID24.replace(
+                r#""operations": { "database": ["db/grid24.json"] }"#,
+                &format!(r#""operations": {{ "hud": {hud} }}"#),
+            )
+        };
+        let m = AddonManifest::parse(&with(r#"["registry/hud.json"]"#)).unwrap();
+        assert_eq!(m.operations.hud, ["registry/hud.json"]);
+        let json = serde_json::to_string(&m.operations).unwrap();
+        assert!(json.contains(r#""hud":["registry/hud.json"]"#), "{json}");
+        assert!(AddonManifest::parse(&with(r#"["../hud.json"]"#)).is_err());
+        assert!(
+            AddonManifest::parse(&with(r#"[]"#))
+                .unwrap()
+                .operations
+                .hud
+                .is_empty()
+        );
     }
 
     #[test]
