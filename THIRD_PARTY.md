@@ -191,3 +191,9 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 Swofty UI uses the system's fonts and ships none. Its icon is a raster image and contains no font data.
 
 The site loads Open Sans, Poppins, Quicksand, Source Code Pro and Varela Round from Google Fonts. They use the SIL Open Font License 1.1.
+
+## Project Halo
+
+The UI art writers in `packages/formats` (`surface.rs`, `emb.rs`, `animclip.rs`, `uipre.rs` and the texture link part of `material.rs`) follow the file layouts and build steps of Project Halo's build tools (`tools/native/resources.py`, `emb.py`, `halo_native.py`), <https://github.com/nyannoying1337/f1-25-project-halo>. The code is written for the launcher; the layouts, setter keys and the clip packet fields are Halo's measurements of the game.
+
+Uses work from Project Halo by nyannoying, <https://github.com/nyannoying1337/f1-25-project-halo>.
