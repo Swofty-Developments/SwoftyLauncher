@@ -355,12 +355,14 @@ impl Shell {
                                     .child(run.driver.name.clone()),
                             )
                             .child(div().text_size(px(22.)).child(format_time(run.time_ms)))
-                            .child(status_dot(&run.status, p))
                             .child(
-                                div()
+                                h_flex()
+                                    .flex_shrink_0()
+                                    .items_center()
+                                    .gap(px(6.))
                                     .pb(px(3.))
-                                    .text_size(px(13.))
-                                    .child(status_name(&run.status)),
+                                    .child(status_dot(&run.status, p))
+                                    .child(div().text_size(px(13.)).child(status_name(&run.status))),
                             )
                             .when(run.banned, |d| {
                                 d.child(
