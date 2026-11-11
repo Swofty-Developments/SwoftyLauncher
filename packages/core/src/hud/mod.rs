@@ -448,6 +448,8 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
     let bar = read(dials::BAR)?;
     let clip_template = read(dials::CLIP_TEMPLATE)?;
     let om_xm = read(dials::F126.scene)?;
+    let stacked = read(scene::STACKED)?;
+    let lap_counter = read(scene::LAP_COUNTER)?;
 
     let used: std::collections::BTreeSet<Dial> = live.iter().map(|e| e.rec.dial).collect();
     let mut resources: BTreeMap<String, Res> = BTreeMap::new();
@@ -507,6 +509,7 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         let scene_bytes = first(stock.read(dials::STOCK_ERP, facts.scene)?, facts.scene)?;
         let text_from = (dial != Dial::F126).then_some(om_xm.as_slice());
         let mut b = Builder::new(facts, &scene_bytes, &mods, &bar, text_from)?;
+        b.with_donors(&stacked, &lap_counter)?;
         let mut parked = false;
         let mut footprint: Option<[f64; 4]> = None;
         let mut plans: Vec<(&Expanded, Plan)> = Vec::new();
@@ -693,6 +696,7 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         let facts = dials::target_facts(scene, parent);
         let bytes = first(stock.read(dials::STOCK_ERP, scene)?, scene)?;
         let mut b = Builder::for_scene(facts, &bytes, &om_xm, &mods, &bar)?;
+        b.with_donors(&stacked, &lap_counter)?;
         let mut plans = Vec::new();
         for &i in members {
             let plan = b.add_scene_record(&inputs[i].record, &pfx_of[i], &loaded[i].sprites)?;

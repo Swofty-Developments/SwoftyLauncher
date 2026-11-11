@@ -15,7 +15,7 @@ use swofty_formats::pkg::{Node, Pkg, Val, Value};
 
 use super::dials::{self, DialFacts};
 use super::geom::{self, K};
-use super::model::{Bind, Decision, Element, HudElement, Kind};
+use super::model::{self, Bind, Decision, Element, HudElement, Kind};
 use super::template::{self, Resolved, Usage};
 use super::textures::Names;
 use crate::ui::idf;
@@ -63,8 +63,16 @@ pub struct TextItem {
     pub tag: [u8; 4],
     pub db: Option<String>,
     pub literal: String,
+    pub localise: bool,
     pub visible: Option<Resolved>,
 }
+
+/// The stock scenes the stacker and centre elements are cloned from, in `flow_race.erp`.
+pub const STACKED: &str =
+    "eaid://ui_package/art/osd/components/driver_position_table/driver_position_table_stacked.idf";
+pub const LAP_COUNTER: &str = "eaid://ui_package/art/osd/components/lap_counter/lap_counter.idf";
+pub const STACKER_DONOR: &str = "full_stacker";
+pub const CENTRE_DONOR: &str = "centre_lap_value";
 
 #[derive(Debug, Clone)]
 pub struct FracItem {
@@ -140,6 +148,8 @@ struct Templates {
     window: Node,
     mask: Node,
     mesh: (f64, f64),
+    stacker: Option<Node>,
+    centre: Option<Node>,
 }
 
 pub struct Builder {
@@ -278,11 +288,35 @@ impl Builder {
                 window,
                 mask,
                 mesh,
+                stacker: None,
+                centre: None,
             },
             names: BTreeSet::new(),
             stock_ids,
             stock_names,
         })
+    }
+
+    /// The stacker and centre donors: `full_stacker` of the stacked standings table and
+    /// `centre_lap_value` of the lap counter, both with the facts the composer relies on.
+    pub fn with_donors(&mut self, stacked: &[u8], lap_counter: &[u8]) -> Result<()> {
+        let stacker = template_of(stacked, STACKER_DONOR)?;
+        if idf::param_str(&stacker, "stackerType") != Some("t") {
+            return Err(err(format!(
+                "{STACKER_DONOR} of {STACKED} is not a top-down stacker"
+            )));
+        }
+        let centre = template_of(lap_counter, CENTRE_DONOR)?;
+        let centre_x = idf::param(&centre, "centreX")
+            .is_some_and(|v| matches!(&v.value, Value::Raw(b) if b.first() == Some(&1)));
+        if !centre_x {
+            return Err(err(format!(
+                "{CENTRE_DONOR} of {LAP_COUNTER} does not centre on x"
+            )));
+        }
+        self.t.stacker = Some(stacker);
+        self.t.centre = Some(centre);
+        Ok(())
     }
 
     /// A builder over a stock scene that is no dial: its templates (text, null, window, mask) come from
@@ -316,6 +350,8 @@ impl Builder {
                 window: template_of(mods, "mod_1_icon_fill_mask")?,
                 mask: template_of(bar, "ers_battery_fill_mask")?,
                 mesh: (1.0, 1.0),
+                stacker: None,
+                centre: None,
             },
             pkg,
             names: BTreeSet::new(),
@@ -341,7 +377,7 @@ impl Builder {
             plan: &mut plan,
         };
         let mut kids = Vec::new();
-        for e in &rec.elements {
+        for e in &model::expand(&rec.elements, None)? {
             if let Some(n) = self.element(&mut cx, e)? {
                 kids.push(n);
             }
@@ -486,6 +522,34 @@ impl Builder {
         Ok(o)
     }
 
+    fn stack(&mut self, name: &str, pos: [f64; 3], dir: &str, gap: f64) -> Result<Node> {
+        let tmpl = self
+            .t
+            .stacker
+            .clone()
+            .ok_or_else(|| err(format!("{name}: a stack needs the stacker donor ({STACKED})")))?;
+        let kind = match dir {
+            "down" => "t",
+            "up" => "b",
+            "right" => "l",
+            "left" => "r",
+            other => return Err(err(format!("{name}: no stack dir {other}"))),
+        };
+        let mut o = self.base(&tmpl, name, pos, geom::QUAT_IDENTITY, [1.0; 3])?;
+        idf::set_param_like(&mut o, "stackerType", Val::str(kind))?;
+        idf::set_param_like(&mut o, "gap", idf::fp32(K * gap))?;
+        Ok(o)
+    }
+
+    fn centre(&mut self, name: &str, pos: [f64; 3]) -> Result<Node> {
+        let tmpl = self
+            .t
+            .centre
+            .clone()
+            .ok_or_else(|| err(format!("{name}: a centre needs the centre donor ({LAP_COUNTER})")))?;
+        self.base(&tmpl, name, pos, geom::QUAT_IDENTITY, [1.0; 3])
+    }
+
     pub fn customisation_mut(&mut self) -> Result<&mut Node> {
         let root = scene_root_mut(&mut self.pkg)?;
         idf::find_mut(root, dials::CUSTOMISATION)
@@ -557,8 +621,13 @@ impl Builder {
             plan: &mut plan,
         };
         cx.plan.decisions = rec.decisions.clone();
+        let rows = if preview {
+            rec.editor.as_ref().and_then(|e| e.rows)
+        } else {
+            None
+        };
         let mut kids = Vec::new();
-        for e in &rec.elements {
+        for e in &model::expand(&rec.elements, rows)? {
             if let Some(n) = self.element(&mut cx, e)? {
                 kids.push(n);
             }
@@ -663,14 +732,18 @@ impl Builder {
                 }
                 q
             }
-            Kind::Group => {
-                let mut g = self.null(
-                    &name,
-                    [0.0; 3],
-                    None,
-                    false,
-                    e.hidden.unwrap_or(false) && !preview,
-                )?;
+            Kind::Group | Kind::Stack | Kind::Centre => {
+                let pos = geom::scene_point(at[0], at[1]);
+                let mut g = match kind {
+                    Kind::Stack => self.stack(
+                        &name,
+                        pos,
+                        e.dir.as_deref().unwrap_or("down"),
+                        e.gap.unwrap_or(0.0),
+                    )?,
+                    Kind::Centre => self.centre(&name, pos)?,
+                    _ => self.null(&name, pos, None, false, e.hidden.unwrap_or(false) && !preview)?,
+                };
                 for c in &e.children {
                     if let Some(n) = self.element(cx, c)? {
                         idf::children_mut(&mut g)?.push(n);
@@ -748,8 +821,11 @@ impl Builder {
             }
             Kind::Gauge => self.gauge(cx, e, &name)?,
             Kind::Sweep => self.sweep(cx, e, &name)?,
-            Kind::Stack | Kind::Centre | Kind::Unit => {
-                return Err(err(format!("element {}: {kind:?} is not composed yet", e.id)));
+            Kind::Unit => {
+                return Err(err(format!(
+                    "element {}: unit elements are not composed yet",
+                    e.id
+                )));
             }
         };
         self.finish_leaf(cx, e, &name, node, switched)
@@ -826,9 +902,10 @@ impl Builder {
         idf::children_mut(&mut holder)?.push(t);
         let plan = &mut *cx.plan;
         let preview_value = if let Mode::Preview(state) = &cx.mode {
-            match (&e.value, &e.literal) {
-                (Some(b), _) => state.get(&preview_key(b)).map(show_value),
-                (None, Some(l)) => Some(l.clone()),
+            match (&e.value, &e.literal, &e.literal_id) {
+                (Some(b), _, _) => state.get(&preview_key(b)).map(show_value),
+                (None, Some(l), _) => Some(l.clone()),
+                (None, None, Some(id)) => Some(id.clone()),
                 _ => None,
             }
         } else {
@@ -841,13 +918,14 @@ impl Builder {
             plan.pv_texts.push((name.to_owned(), text));
             return Ok(Some(holder));
         }
-        let (tag, db, literal) = match (&e.value, &e.literal) {
-            (Some(b), _) => {
+        let (tag, db, literal, localise) = match (&e.value, &e.literal, &e.literal_id) {
+            (Some(b), _, _) => {
                 let r = template::resolve(b, Usage::Text, name)?;
                 plan.known.push((r.db.clone(), r.tag));
-                (r.tag, Some(r.db), String::new())
+                (r.tag, Some(r.db), String::new(), false)
             }
-            (None, Some(l)) => (*b"stri", None, l.clone()),
+            (None, Some(l), _) => (*b"stri", None, l.clone(), false),
+            (None, None, Some(id)) => (*b"stri", None, id.clone(), true),
             _ => return Err(err(format!("text {} has no value", e.id))),
         };
         let visible = match &e.visible {
@@ -864,6 +942,7 @@ impl Builder {
             tag,
             db,
             literal,
+            localise,
             visible,
         });
         Ok(Some(holder))

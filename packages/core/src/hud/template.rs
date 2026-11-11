@@ -408,14 +408,13 @@ fn bound_nodes(plan: &Plan) -> Vec<Node> {
             .visible
             .as_ref()
             .map(|v| node::bool_prop(v.default, Some(&v.db), v.negate));
-        kids.push(node::label_node(
-            &t.name,
-            &t.element,
-            t.tag,
-            t.db.as_deref(),
-            &t.literal,
-            visible,
-        ));
+        let mut label = node::label_node(&t.name, &t.element, t.tag, t.db.as_deref(), &t.literal, visible);
+        if t.localise
+            && let Ok(p) = label.props_mut()
+        {
+            p.set("localise", node::bool_prop(true, None, false));
+        }
+        kids.push(label);
     }
     for f in &plan.fractions {
         kids.push(node::fraction_node(&f.name, &f.element, &f.db));

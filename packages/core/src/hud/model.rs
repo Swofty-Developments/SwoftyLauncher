@@ -449,9 +449,36 @@ impl HudElement {
                 }
             }
         }
-        let rec: Self = serde_json::from_value(v).map_err(|e| err(format!("record: {e}")))?;
+        let mut rec: Self = serde_json::from_value(v).map_err(|e| err(format!("record: {e}")))?;
         rec.check()?;
+        rec.to_hud_units();
         Ok(rec)
+    }
+
+    /// Rewrites a `units: tower` record in HUD units, so every later step reads one unit.
+    pub fn to_hud_units(&mut self) {
+        if self.units == Units::Hud {
+            return;
+        }
+        let f = self.units.k() / super::geom::K;
+        self.units = Units::Hud;
+        self.rect = self.rect.map(|r| r.map(|v| v * f));
+        if let Some(ed) = &mut self.editor {
+            ed.rect = ed.rect.map(|r| r.map(|v| v * f));
+        }
+        for sp in self.sprites.values_mut() {
+            sp.bounds = sp.bounds.map(|r| r.map(|v| v * f));
+            sp.fit = sp.fit.map(|r| r.map(|v| v * f));
+            sp.ppu = sp.ppu.map(|p| p / f);
+        }
+        for e in &mut self.elements {
+            scale_element(e, f);
+        }
+        for v in self.variants.values_mut() {
+            for e in &mut v.add {
+                scale_element(e, f);
+            }
+        }
     }
 
     /// The scene and template parent of a record that targets a scene instead of a dial.
@@ -493,9 +520,12 @@ impl HudElement {
         }
         fn only_text(list: &[Element]) -> Result<()> {
             for e in list {
-                if !matches!(e.kind, Some(Kind::Text | Kind::Group)) {
+                if !matches!(
+                    e.kind,
+                    Some(Kind::Text | Kind::Group | Kind::Stack | Kind::Centre)
+                ) {
                     return Err(err(format!(
-                        "element {}: a scene target takes text and group elements, not {:?}",
+                        "element {}: a scene target takes text, group, stack and centre elements, not {:?}",
                         e.id, e.kind
                     )));
                 }
@@ -569,6 +599,141 @@ impl HudElement {
     }
 }
 
+fn scale_element(e: &mut Element, f: f64) {
+    let pt = |p: Option<[f64; 2]>| p.map(|p| [p[0] * f, p[1] * f]);
+    e.at = pt(e.at);
+    e.window = pt(e.window);
+    e.pivot = pt(e.pivot);
+    e.width = e.width.map(|v| v * f);
+    e.cap_height = e.cap_height.map(|v| v * f);
+    e.gap = e.gap.map(|v| v * f);
+    e.size = e.size.map(|v| v * f);
+    e.from = e.from.map(|v| v * f);
+    e.to = e.to.map(|v| v * f);
+    e.path = e.path.map(|p| p.map(|q| [q[0] * f, q[1] * f]));
+    if let Some(r) = &mut e.repeat {
+        r.pitch = pt(r.pitch);
+    }
+    for c in &mut e.children {
+        scale_element(c, f);
+    }
+}
+
+pub const REPEAT_DEPTH: usize = 2;
+pub const REPEAT_COPIES: usize = 1024;
+
+/// The elements with every `repeat` group unrolled: copy `i` of group `g` is the element `gNN` at
+/// `at + pitch * (i - from)`, its subtree's ids start with `gNN_`, and `{VV}` / `{V}` in the subtree's
+/// bindings, literals and `show` patterns read the index. With `rows`, a top-level repeat makes at
+/// most that many copies (the editor preview).
+pub fn expand(list: &[Element], rows: Option<u32>) -> Result<Vec<Element>> {
+    let mut copies = 0usize;
+    let mut out = Vec::with_capacity(list.len());
+    for e in list {
+        expand_into(e, "", &[], 0, rows, &mut copies, &mut out)?;
+    }
+    Ok(out)
+}
+
+fn expand_into(
+    e: &Element,
+    prefix: &str,
+    vars: &[(char, u32)],
+    depth: usize,
+    rows: Option<u32>,
+    copies: &mut usize,
+    out: &mut Vec<Element>,
+) -> Result<()> {
+    let Some(r) = &e.repeat else {
+        let mut c = e.clone();
+        c.id = format!("{prefix}{}", e.id);
+        c.children.clear();
+        substitute_element(&mut c, vars)?;
+        for ch in &e.children {
+            expand_into(ch, prefix, vars, depth, rows, copies, &mut c.children)?;
+        }
+        out.push(c);
+        return Ok(());
+    };
+    if depth >= REPEAT_DEPTH {
+        return Err(err(format!(
+            "element {}: repeats nest at most {REPEAT_DEPTH} deep",
+            e.id
+        )));
+    }
+    let var = r.var.chars().next().unwrap_or('N');
+    if vars.iter().any(|(v, _)| *v == var) {
+        return Err(err(format!(
+            "element {}: the repeat var {var} is already in use by an enclosing repeat",
+            e.id
+        )));
+    }
+    let count = match rows {
+        Some(n) if depth == 0 => n.min(r.count),
+        _ => r.count,
+    };
+    let from = r.from.unwrap_or(0);
+    let pitch = r.pitch.unwrap_or([0.0, 0.0]);
+    let at = e.at.unwrap_or([0.0, 0.0]);
+    for k in 0..count {
+        *copies += 1;
+        if *copies > REPEAT_COPIES {
+            return Err(err(format!(
+                "element {}: the record's repeats make more than {REPEAT_COPIES} copies",
+                e.id
+            )));
+        }
+        let i = from + k;
+        let mut vs = vars.to_vec();
+        vs.push((var, i));
+        let mut c = e.clone();
+        c.repeat = None;
+        c.id = format!("{prefix}{}{i:02}", e.id);
+        c.at = Some([at[0] + pitch[0] * k as f64, at[1] + pitch[1] * k as f64]);
+        c.children.clear();
+        substitute_element(&mut c, &vs)?;
+        let inner = format!("{}_", c.id);
+        for ch in &e.children {
+            expand_into(ch, &inner, &vs, depth + 1, None, copies, &mut c.children)?;
+        }
+        out.push(c);
+    }
+    Ok(())
+}
+
+fn substitute_element(e: &mut Element, vars: &[(char, u32)]) -> Result<()> {
+    let id = e.id.clone();
+    let text = |s: &mut Option<String>| -> Result<()> {
+        if let Some(t) = s {
+            *t = super::geom::substitute(t, vars);
+            if super::geom::has_placeholder(t) {
+                return Err(err(format!(
+                    "element {id}: {t} names a repeat var that no enclosing repeat declares"
+                )));
+            }
+        }
+        Ok(())
+    };
+    text(&mut e.literal)?;
+    text(&mut e.literal_id)?;
+    text(&mut e.show)?;
+    for b in [&mut e.visible, &mut e.tint, &mut e.value, &mut e.texture]
+        .into_iter()
+        .flatten()
+    {
+        text(&mut b.view_model)?;
+        text(&mut b.session)?;
+        text(&mut b.session_car)?;
+        if let Some(sv) = &b.slot_var
+            && let Some((_, i)) = vars.iter().find(|(v, _)| sv.starts_with(*v) && sv.len() == 1)
+        {
+            b.slot = Some(*i);
+            b.slot_var = None;
+        }
+    }
+    Ok(())
+}
+
 fn remove_ids(list: &mut Vec<Element>, ids: &[String]) {
     list.retain(|e| !ids.contains(&e.id));
     for e in list {
@@ -590,10 +755,40 @@ fn check_element(e: &Element, ids: &mut std::collections::BTreeSet<String>) -> R
             Err(err(format!("element {} ({kind:?}) needs {what}", e.id)))
         }
     };
+    if let Some(r) = &e.repeat {
+        need("kind group for repeat", kind == Kind::Group)?;
+        need("repeat.count 1..99", (1..=99).contains(&r.count))?;
+        need(
+            "repeat.var of one upper-case letter",
+            r.var.len() == 1 && r.var.chars().all(|c| c.is_ascii_uppercase()),
+        )?;
+    }
     match kind {
         Kind::Sprite => need("sprite", e.sprite.is_some())?,
-        Kind::Text => need("value or literal", e.value.is_some() || e.literal.is_some())?,
+        Kind::Text => {
+            need(
+                "value, literal or literal_id",
+                e.value.is_some() || e.literal.is_some() || e.literal_id.is_some(),
+            )?;
+            need(
+                "one of literal and literal_id",
+                !(e.literal.is_some() && e.literal_id.is_some()),
+            )?;
+        }
         Kind::Group => {}
+        Kind::Stack => {
+            need(
+                "dir down, up, right or left",
+                matches!(e.dir.as_deref(), None | Some("down" | "up" | "right" | "left")),
+            )?;
+            if let Some(c) = e.children.iter().find(|c| c.hidden == Some(true)) {
+                return Err(err(format!(
+                    "element {}: the stack child {} is hidden; a stacker lays out drawn bounds, so put a hidden part inside a child",
+                    e.id, c.id
+                )));
+            }
+        }
+        Kind::Centre => {}
         Kind::Levels => {
             need(
                 "sprite, count and show",
@@ -614,7 +809,6 @@ fn check_element(e: &Element, ids: &mut std::collections::BTreeSet<String>) -> R
                 && e.arc.len() >= 2
                 && e.value.is_some(),
         )?,
-        Kind::Stack | Kind::Centre => {}
         Kind::Unit => need("unit and size", e.unit.is_some() && e.size.is_some())?,
     }
     for b in [&e.visible, &e.tint, &e.value].into_iter().flatten() {
@@ -684,6 +878,155 @@ mod tests {
                 .to_string()
                 .contains("no element")
         );
+    }
+
+    pub fn tower_like(rows: u32, cars: u32) -> serde_json::Value {
+        let text = r##"{
+            "dial": "f1_26",
+            "sprites": { "strip": { "png": "art/strip.png", "bounds": [0, 0, 100, 20] }, "bar": { "png": "art/bar.png" } },
+            "elements": [
+                { "kind": "stack", "id": "stack", "dir": "down", "gap": 0, "children": [
+                    { "kind": "group", "id": "top", "visible": { "view_model": "view_model_data.hud_tt_hdr" }, "children": [
+                        { "kind": "text", "id": "lap", "style": "OSD_19_regular", "cap_height": 6, "literal_id": "lng_lap" } ] },
+                    { "kind": "group", "id": "rows", "at": [0, 5.73], "children": [
+                        { "kind": "group", "id": "r", "repeat": { "count": __ROWS__, "var": "N", "pitch": [0, 21.635] },
+                          "visible": { "view_model": "view_model_data.hud_tt_r{NN}_on" },
+                          "children": [
+                            { "kind": "sprite", "id": "s", "sprite": "strip", "layer": 20 },
+                            { "kind": "group", "id": "pa", "visible": { "view_model": "view_model_data.hud_tt_r{NN}_up", "not": true, "default": true },
+                              "children": [ { "kind": "text", "id": "pos", "style": "OSD_19_regular", "cap_height": 5.9, "literal": "r{N}",
+                                              "value": { "view_model": "view_model_data.hud_tt_r{NN}_pos" } } ] },
+                            { "kind": "group", "id": "cn", "at": [14.2, 14.6], "children": [
+                                { "kind": "group", "id": "v", "repeat": { "count": __CARS__, "var": "V" },
+                                  "visible": { "view_model": "view_model_data.hud_tt_r{NN}_c{VV}" },
+                                  "children": [
+                                    { "kind": "text", "id": "code", "style": "OSD_24_bold", "cap_height": 7.5,
+                                      "value": { "session_car": "driver.name_code", "slot_var": "V" } },
+                                    { "kind": "sprite", "id": "bar", "sprite": "bar", "layer": 30,
+                                      "tint": { "session_car": "nub_colour", "slot_var": "V", "default": "#00000000" } } ] } ] } ] } ] } ] }
+            ],
+            "editor": { "rows": 5, "preview": { "view_model_data.hud_tt_r00_on": true } }
+        }"##;
+        serde_json::from_str(
+            &text
+                .replace("__ROWS__", &rows.to_string())
+                .replace("__CARS__", &cars.to_string()),
+        )
+        .unwrap()
+    }
+
+    fn ids(list: &[Element]) -> Vec<&str> {
+        list.iter().map(|e| e.id.as_str()).collect()
+    }
+
+    #[test]
+    fn a_repeat_unrolls_with_padded_names_pitch_and_substitution() {
+        let r = HudElement::parse(&tower_like(22, 24)).unwrap();
+        let out = expand(&r.elements, None).unwrap();
+        let rows = &out[0].children[1].children;
+        assert_eq!(rows.len(), 22);
+        assert_eq!(rows[0].id, "r00");
+        assert_eq!(rows[21].id, "r21");
+        assert!(rows.iter().all(|r| r.repeat.is_none()));
+        assert_eq!(rows[0].at, Some([0.0, 0.0]));
+        assert!((rows[5].at.unwrap()[1] - 5.0 * 21.635).abs() < 1e-9);
+        assert_eq!(
+            rows[3].visible.as_ref().unwrap().view_model.as_deref(),
+            Some("view_model_data.hud_tt_r03_on")
+        );
+        assert_eq!(ids(&rows[3].children), ["r03_s", "r03_pa", "r03_cn"]);
+        let pos = &rows[3].children[1].children[0];
+        assert_eq!(pos.id, "r03_pos");
+        assert_eq!(pos.literal.as_deref(), Some("r3"));
+        assert_eq!(
+            pos.value.as_ref().unwrap().view_model.as_deref(),
+            Some("view_model_data.hud_tt_r03_pos")
+        );
+        let cars = &rows[3].children[2].children;
+        assert_eq!(cars.len(), 24);
+        assert_eq!(cars[0].id, "r03_v00");
+        assert_eq!(cars[23].id, "r03_v23");
+        let v17 = &cars[17];
+        assert_eq!(
+            v17.visible.as_ref().unwrap().view_model.as_deref(),
+            Some("view_model_data.hud_tt_r03_c17")
+        );
+        assert_eq!(ids(&v17.children), ["r03_v17_code", "r03_v17_bar"]);
+        let code = v17.children[0].value.as_ref().unwrap();
+        assert_eq!(code.slot, Some(17));
+        assert_eq!(code.slot_var, None);
+        let bar = v17.children[1].tint.as_ref().unwrap();
+        assert_eq!(bar.slot, Some(17));
+        let nested: usize = rows.iter().map(|r| r.children[2].children.len()).sum();
+        assert_eq!(nested, 528);
+        assert_eq!(
+            out[0].children[0].children[0].literal_id.as_deref(),
+            Some("lng_lap")
+        );
+    }
+
+    #[test]
+    fn the_preview_expands_rows_copies_only() {
+        let r = HudElement::parse(&tower_like(22, 24)).unwrap();
+        let out = expand(&r.elements, Some(5)).unwrap();
+        let rows = &out[0].children[1].children;
+        assert_eq!(rows.len(), 5);
+        assert_eq!(rows[4].children[2].children.len(), 24);
+    }
+
+    #[test]
+    fn repeats_are_capped_by_depth_and_product() {
+        let mut v = tower_like(40, 30);
+        assert!(
+            expand(&HudElement::parse(&v).unwrap().elements, None)
+                .unwrap_err()
+                .to_string()
+                .contains("more than 1024")
+        );
+        v = tower_like(2, 2);
+        v["elements"][0]["children"][1]["children"][0]["children"][2]["children"][0]["children"]
+            .as_array_mut()
+            .unwrap()
+            .push(serde_json::json!({ "kind": "group", "id": "deep", "repeat": { "count": 2, "var": "D" } }));
+        assert!(
+            expand(&HudElement::parse(&v).unwrap().elements, None)
+                .unwrap_err()
+                .to_string()
+                .contains("deep")
+        );
+        let v = tower_like(2, 2);
+        let mut r = HudElement::parse(&v).unwrap();
+        r.elements[0].children[1].children[0].children[0].visible = Some(Bind::leaf("view_model_data.x_{Q}"));
+        assert!(expand(&r.elements, None).unwrap_err().to_string().contains("{Q}"));
+    }
+
+    #[test]
+    fn a_stack_child_may_not_switch_and_a_repeat_sits_on_a_group() {
+        let mut v = tower_like(2, 2);
+        v["elements"][0]["children"][1]["hidden"] = true.into();
+        let e = HudElement::parse(&v).unwrap_err().to_string();
+        assert!(e.contains("stack child rows is hidden"), "{e}");
+        let mut v = tower_like(2, 2);
+        v["elements"][0]["children"][1]["children"][0]["kind"] = "sprite".into();
+        v["elements"][0]["children"][1]["children"][0]["sprite"] = "bar".into();
+        let e = HudElement::parse(&v).unwrap_err().to_string();
+        assert!(e.contains("kind group for repeat"), "{e}");
+    }
+
+    #[test]
+    fn tower_units_scale_to_hud_units_once() {
+        let mut v = tower_like(2, 2);
+        v["units"] = "tower".into();
+        let r = HudElement::parse(&v).unwrap();
+        assert_eq!(r.units, Units::Hud);
+        let f = 0.03 / 0.018;
+        let rows = &r.elements[0].children[1];
+        assert!((rows.at.unwrap()[1] - 5.73 * f).abs() < 1e-9);
+        let rep = rows.children[0].repeat.as_ref().unwrap();
+        assert!((rep.pitch.unwrap()[1] - 21.635 * f).abs() < 1e-9);
+        assert!((r.sprites["strip"].bounds.unwrap()[2] - 100.0 * f).abs() < 1e-9);
+        let plain = HudElement::parse(&tower_like(2, 2)).unwrap();
+        assert_eq!(plain.sprites["strip"].bounds.unwrap()[2], 100.0);
     }
 
     #[test]
