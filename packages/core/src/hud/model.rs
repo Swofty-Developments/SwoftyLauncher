@@ -301,10 +301,14 @@ impl HudElement {
         let mut v = value.clone();
         if let Some(o) = v.as_object_mut() {
             o.remove("$comment");
-            match (o.contains_key("dial"), o.contains_key("scene")) {
+            // TB hook: `screen` (hud/screens.rs) is the third target form until its typed field lands.
+            let screen = o.contains_key("screen");
+            match (o.contains_key("dial"), o.contains_key("scene") || screen) {
                 (true, true) => return Err(err("record: a record has a dial or a scene target, not both")),
                 (false, false) => {
-                    return Err(err("record: missing field `dial` (or `scene` and `parent_ui`)"));
+                    return Err(err(
+                        "record: missing field `dial` (or `scene` and `parent_ui`, or `screen`)",
+                    ));
                 }
                 _ => {}
             }
