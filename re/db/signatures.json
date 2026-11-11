@@ -163826,6 +163826,32 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "session.collect_game_mode_setup_modes",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE 48 89 11",
+   "match": "0x14245c0f0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14245c0f0",
+   "kind": "func_start",
+   "names": [
+    "Sess_Collect_GameModeSetupModes"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "engine-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/era_picker.cpp"
+   ]
   }
  ]
 }
