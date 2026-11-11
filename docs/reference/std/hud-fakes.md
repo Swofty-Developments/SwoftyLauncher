@@ -40,4 +40,4 @@ int main()
 
 - **`fake::Hud`:** applies the real core's rules (prefix, one type per leaf, change detection, groups, a mismatched write refused) and records every write as `{path, type, text, number, group, via_v1}`. `writes()`, `last(path)`, `text(path)`, `number(path)`, `writes_to(path)`, `refused()`, `generation()`.
 - **`fake::Clock`:** `advance(seconds)`, `set(seconds)`. It replaces the clock `hud::Frame` reads.
-- **`fake::Live`:** a documented stub for now. The live-state structs (`swofty::live`) are defined by the live-state work; until then build `timing::Car` and `timing::Session` values from literals, as the [timing tower](./timing) tests do.
+- **`fake::Live`:** `swofty/fake_live.hpp`, a fake core live state for `swofty::live::*`. See [Live state](./live#test-it-on-the-host). The [HUD dial template](/make/hud-element) tests a frame callback over `fake::Live` and `fake::Hud`.

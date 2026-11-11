@@ -42,7 +42,7 @@ void on_frame(float dt)
 ```
 
 - **Header:** `swofty/hud_frame.hpp`. `begin` returns `gate.live`. `has_time()` is true while the frame is under `max_us`, for jobs that can wait a frame.
-- **Gate:** filled by the addon today. When the std live state (`swofty::live`) lands, its session supplies `live`, `spectating`, `paused`, `time_trial` and the two serials; the helper does not change.
+- **Gate:** filled by the addon from [`swofty::live`](./live): `live` is true while a session runs and a car is read, `session_serial` is `session().generation`, `subject_serial` is `session().subject_generation`, and `time_trial` is `hud::format::is_time_trial(session().type)`. [Build a HUD element](/make/hud-element) shows the whole frame callback.
 - **Clock:** `swofty::clock::now()` reads a steady clock; tests replace it with [`fake::Clock`](./hud-fakes).
 
 Cadence, cost metering and transition logging are the generic parts of Project Halo's frame loop (`halo_hud.cpp`). Uses work from Project Halo by nyannoying, <https://github.com/nyannoying1337/f1-25-project-halo>.

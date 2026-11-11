@@ -274,7 +274,7 @@ ui::hud_widgets.add("tyre_letters", { .view_model = "hud.f1990.tyre_letter", .tm
 }
 ```
 
-`hud.widget` stays as the name of the template-only form and does nothing the records don't. The full format, with every element kind, binding, decision node and the HUD editor preview, is [HUD elements](/reference/ops/hud).
+`hud.widget` stays as the name of the template-only form and does nothing the records don't. The full format, with every element kind, binding, decision node and the HUD editor preview, is [HUD elements](/reference/ops/hud). To build one end to end, from the record and sprites to the plugin that writes its leaves and the host test, follow [Build a HUD element](/make/hud-element). The element templates and binding rules follow Project Halo by nyannoying. Uses work from Project Halo by nyannoying, <https://github.com/nyannoying1337/f1-25-project-halo>.
 
 ## Strings
 
