@@ -186,6 +186,80 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 `simplified.svg` is Team Simplified's mark, from Simplified for Swofty. `swoftymod.svg` and `track.svg` are the launcher's own `apps/launcher/assets/icon.svg` and `track.svg`.
 
+## Project Halo
+
+Parts of the std lib's HUD and live state are ported from, or follow, Project Halo by nyannoying, <https://github.com/nyannoying1337/f1-25-project-halo>, with its author's permission. Project Halo is under the Project Halo Attribution License 1.0, below.
+
+Uses work from Project Halo by nyannoying: <https://github.com/nyannoying1337/f1-25-project-halo>
+
+Runtime headers, `packages/sdk/include/swofty/`, mirrored in `templates/addon/native/include/swofty/`. They port the generic parts of Halo's HUD plugin: leaf publishing, easing and holds, gap and speed text, the frame loop's cadences and cost meter, the validation log and the timing tower model with its leaf contract.
+
+- `hud_leaves.hpp` from `native/src/leaves.hpp` and `tower_leaves.cpp`
+- `hud_format.hpp` and `timing.hpp` from `native/src/tower_model.cpp` and `hud_model.cpp`
+- `ease.hpp` from `native/src/hud_model.cpp` and `gmeter.cpp`
+- `hud_frame.hpp` from `native/src/halo_hud.cpp`
+- `log_csv.hpp` from the validation log of `native/src/diag_log.cpp`
+
+Formats, `packages/formats/src/`. `surface.rs`, `emb.rs`, `animclip.rs`, `uipre.rs` and the texture link part of `material.rs` follow the file layouts and build steps of Halo's `tools/native/resources.py`, `emb.py` and `halo_native.py`. The code is written for the launcher; the layouts, setter keys and clip packet fields are Halo's measurements of the game.
+
+HUD composer, `packages/core/src/hud/`. `scene.rs`, `template.rs`, `editor.rs`, `textures.rs` and `mod.rs` are ported in parts from `tools/native/halo_native.py`, `build_native.py` and `resources.py`: the element templates, the placement maths and text model, the clip keys, the binding and decision rules, the editor preview and the checks against the stock files. Their file headers carry the notice.
+
+Live state, `native/src/core/live/`. `live_corners_data.hpp` is the official corner table of Halo (`native/src/halo_corners.hpp`), moved with the namespace changed. `live_turns.hpp` adapts the track-name matching and turn lookup of `native/src/halo_track.cpp`. The object layouts and read rules in the other files follow the in-process readers of `game_state_f1_25.cpp`, `tower_reader.cpp` and `tower_state.hpp`.
+
+Documentation. These pages carry the credit line: `docs/reference/ops/hud.md`, `docs/reference/ui/art-resources.md`, `docs/reference/std/hud-leaves.md`, `hud-format.md`, `ease.md`, `hud-frame.md`, `timing.md`, `diag-csv.md`, `live.md`, `docs/make/hud-element.md` and `docs/make/halo-migration.md`.
+
+Formats and game facts, such as offsets, file layouts, setter keys and measured constants, are not covered by the licence.
+
+```
+Project Halo Attribution License 1.0
+SPDX-License-Identifier: LicenseRef-Project-Halo-Attribution-1.0
+
+Copyright (c) 2026 nyannoying
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to use,
+copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
+the Software, subject to all of the following conditions:
+
+1. The above copyright notice and this license shall be included in all copies
+   or substantial portions of the Software.
+
+2. Every publicly released mod, project, or other work incorporating a
+   substantial portion of the Software, in source or compiled form, must
+   provide the following visible attribution, including the project link:
+
+   "Uses work from Project Halo by nyannoying"
+   https://github.com/nyannoying1337/f1-25-project-halo
+
+   The attribution must appear in the work's public description, README,
+   documentation, or credits. It must be readily accessible to users and must
+   accompany redistributed copies in a readable credits or documentation file.
+   If the chosen location supports hyperlinks, the project link must be clickable.
+   An equivalent translation is permitted if the author, project name and link
+   are preserved. Private use does not require public attribution.
+
+3. Attribution must not imply endorsement by nyannoying. Modified versions must
+   be identified as modified and must not be presented as the original release.
+   Sublicensing may not remove the attribution and notice obligations applying
+   to the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+THE SOFTWARE.
+
+Scope: this license applies to original Project Halo code and documentation in
+this release. Third-party files, including the Swofty SDK, retain their own
+licenses. The official turn numbers in native/src/halo_corners.hpp come from F1
+live-timing circuit data and are not covered by this license. The game resources
+the addon's archives are built from belong to their owners. No rights to game
+assets or trademarks are granted by this license. This is a custom attribution
+license, not the MIT License or an OSI-approved standard license.
+```
+
 ## Fonts
 
 Swofty UI uses the system's fonts and ships none. Its icon is a raster image and contains no font data.

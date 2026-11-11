@@ -51,6 +51,7 @@ pub const CORE_REGISTRIES: &[(&str, &str)] = &[
     ("gloves", "1.0"),
     ("helmet", "1.0"),
     ("hub.tab", "1.0"),
+    ("hud.element", "1.0"),
     ("lang.string", "1.0"),
     ("livery", "1.0"),
     ("rules.drs", "1.0"),

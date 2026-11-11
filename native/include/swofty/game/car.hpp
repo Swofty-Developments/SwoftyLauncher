@@ -105,11 +105,129 @@ static_assert(offsetof(CarEngine, limiter_rotation_rate) == 0x2528);
 static_assert(offsetof(CarEngine, rotation_rate) == 0x2538);
 static_assert(offsetof(CarEngine, throttle) == 0x2574);
 
+struct CarErsMode {
+};
+
+struct CarSpline {
+};
+
+struct CarErs {
+    void *vtable; // L2 experimental
+    CarLive *car; // L2 experimental
+    void *allocator; // L2 experimental
+    void *data_vtable; // L2 experimental
+    uint8_t _pad_0x20[0x8];
+    float max_deploy_power; // L2 experimental
+    float max_derate_power; // L2 experimental
+    float boost_mode_power_add_limit; // L2 experimental
+    float min_initial_deploy_power; // L2 experimental
+    float power_reduction_rate_limit; // L2 experimental
+    float power_reduction_speed_min; // L2 experimental
+    float full_throttle_time; // L2 experimental
+    float off_throttle_time; // L2 experimental
+    float off_throttle_timer_torque; // L2 experimental
+    float harvest_torque_factor; // L2 experimental
+    float harvest_limit_mguk; // L2 experimental
+    float harvest_override_bonus_mguk; // L2 experimental
+    float harvest_limit_qualifying_mguk; // L2 experimental
+    float deploy_limit_mguk; // L2 experimental
+    float energy_store_capacity; // L2 experimental
+    float energy_deploy_efficiency_mguk; // L2 experimental
+    float energy_harvest_efficiency_mguk; // L2 experimental
+    float energy_harvest_efficiency_mguh; // L2 experimental
+    float max_brake_torque_mguk; // L2 experimental
+    float exhaust_power_coefficient; // L2 experimental
+    float turbo_power_coefficient; // L2 experimental
+    float overtake_power_efficiency; // L2 experimental
+    uint8_t use_derate_lights; // L2 experimental
+    uint8_t override_mode_available; // L2 experimental
+    uint8_t allow_full_throttle_power_increase; // L2 experimental
+    uint8_t _pad_0x83[0xaa5];
+    float base_wear_rate_es; // L2 experimental
+    uint8_t _pad_0xb2c[0x7fc];
+    float base_wear_rate_mguk; // L2 experimental
+    uint8_t _pad_0x132c[0x654];
+    float medium_deploy_factor; // L2 experimental
+    float hotlap_deploy_factor; // L2 experimental
+    float harvest_factor_mguh; // L2 experimental
+    float medium_derate_factor; // L2 experimental
+    float hotlap_derate_factor; // L2 experimental
+    float override_detection_lap_progress; // L2 experimental
+    float override_activation_lap_progress; // L2 experimental
+    uint8_t _pad_0x199c[0x4];
+    uint8_t track_settings_found; // L2 experimental
+    uint8_t _pad_0x19a1[0x27];
+    float harvest_lap_mguk; // L2 experimental
+    float harvest_lap_mguh; // L2 experimental
+    float deploy_lap; // L2 experimental
+    uint8_t _pad_0x19d4[0x1c];
+    float energy; // L3 experimental
+    float lap_harvest_limit; // L2 experimental
+    uint8_t _pad_0x19f8[0x8];
+    float harvest_power_mguk; // L2 experimental
+    float harvest_power_mguh; // L2 experimental
+    uint8_t _pad_0x1a08[0xc];
+    float deploy_power; // L2 experimental
+    uint8_t _pad_0x1a18[0x50];
+    int32_t ers_mode; // L3 experimental
+};
+static_assert(offsetof(CarErs, vtable) == 0x0);
+static_assert(offsetof(CarErs, car) == 0x8);
+static_assert(offsetof(CarErs, allocator) == 0x10);
+static_assert(offsetof(CarErs, data_vtable) == 0x18);
+static_assert(offsetof(CarErs, max_deploy_power) == 0x28);
+static_assert(offsetof(CarErs, max_derate_power) == 0x2c);
+static_assert(offsetof(CarErs, boost_mode_power_add_limit) == 0x30);
+static_assert(offsetof(CarErs, min_initial_deploy_power) == 0x34);
+static_assert(offsetof(CarErs, power_reduction_rate_limit) == 0x38);
+static_assert(offsetof(CarErs, power_reduction_speed_min) == 0x3c);
+static_assert(offsetof(CarErs, full_throttle_time) == 0x40);
+static_assert(offsetof(CarErs, off_throttle_time) == 0x44);
+static_assert(offsetof(CarErs, off_throttle_timer_torque) == 0x48);
+static_assert(offsetof(CarErs, harvest_torque_factor) == 0x4c);
+static_assert(offsetof(CarErs, harvest_limit_mguk) == 0x50);
+static_assert(offsetof(CarErs, harvest_override_bonus_mguk) == 0x54);
+static_assert(offsetof(CarErs, harvest_limit_qualifying_mguk) == 0x58);
+static_assert(offsetof(CarErs, deploy_limit_mguk) == 0x5c);
+static_assert(offsetof(CarErs, energy_store_capacity) == 0x60);
+static_assert(offsetof(CarErs, energy_deploy_efficiency_mguk) == 0x64);
+static_assert(offsetof(CarErs, energy_harvest_efficiency_mguk) == 0x68);
+static_assert(offsetof(CarErs, energy_harvest_efficiency_mguh) == 0x6c);
+static_assert(offsetof(CarErs, max_brake_torque_mguk) == 0x70);
+static_assert(offsetof(CarErs, exhaust_power_coefficient) == 0x74);
+static_assert(offsetof(CarErs, turbo_power_coefficient) == 0x78);
+static_assert(offsetof(CarErs, overtake_power_efficiency) == 0x7c);
+static_assert(offsetof(CarErs, use_derate_lights) == 0x80);
+static_assert(offsetof(CarErs, override_mode_available) == 0x81);
+static_assert(offsetof(CarErs, allow_full_throttle_power_increase) == 0x82);
+static_assert(offsetof(CarErs, base_wear_rate_es) == 0xb28);
+static_assert(offsetof(CarErs, base_wear_rate_mguk) == 0x1328);
+static_assert(offsetof(CarErs, medium_deploy_factor) == 0x1980);
+static_assert(offsetof(CarErs, hotlap_deploy_factor) == 0x1984);
+static_assert(offsetof(CarErs, harvest_factor_mguh) == 0x1988);
+static_assert(offsetof(CarErs, medium_derate_factor) == 0x198c);
+static_assert(offsetof(CarErs, hotlap_derate_factor) == 0x1990);
+static_assert(offsetof(CarErs, override_detection_lap_progress) == 0x1994);
+static_assert(offsetof(CarErs, override_activation_lap_progress) == 0x1998);
+static_assert(offsetof(CarErs, track_settings_found) == 0x19a0);
+static_assert(offsetof(CarErs, harvest_lap_mguk) == 0x19c8);
+static_assert(offsetof(CarErs, harvest_lap_mguh) == 0x19cc);
+static_assert(offsetof(CarErs, deploy_lap) == 0x19d0);
+static_assert(offsetof(CarErs, energy) == 0x19f0);
+static_assert(offsetof(CarErs, lap_harvest_limit) == 0x19f4);
+static_assert(offsetof(CarErs, harvest_power_mguk) == 0x1a00);
+static_assert(offsetof(CarErs, harvest_power_mguh) == 0x1a04);
+static_assert(offsetof(CarErs, deploy_power) == 0x1a14);
+static_assert(offsetof(CarErs, ers_mode) == 0x1a68);
+
 struct CarF1Aero {
-    uint8_t _pad_0x0[0x19a0];
+    uint8_t _pad_0x0[0x1988];
+    uint8_t drs_flags; // L2 experimental
+    uint8_t _pad_0x1989[0x17];
     float drag_scale; // L3 experimental
     float lift_scale; // L3 experimental
 };
+static_assert(offsetof(CarF1Aero, drs_flags) == 0x1988);
 static_assert(offsetof(CarF1Aero, drag_scale) == 0x19a0);
 static_assert(offsetof(CarF1Aero, lift_scale) == 0x19a4);
 
@@ -403,6 +521,7 @@ inline constexpr site<"site_Car_RegisterVehicleId"> site_Car_RegisterVehicleId{}
 inline constexpr site<"site_Car_SetupTuningApplied"> site_Car_SetupTuningApplied{}; // L3 stable
 inline constexpr site<"site_Car_UpgradeSectionApplyCall"> site_Car_UpgradeSectionApplyCall{}; // L2 experimental
 inline constexpr site<"site_Car_VehicleTableRemove"> site_Car_VehicleTableRemove{}; // L3 stable
+inline constexpr vtable<"vt_Car_SystemsContainer", 1> vt_Car_SystemsContainer{}; // L2 experimental
 inline constexpr vtable<"vt_Car_VehicleEnvironment", 7> vt_Car_VehicleEnvironment{}; // L2 experimental
 
 }

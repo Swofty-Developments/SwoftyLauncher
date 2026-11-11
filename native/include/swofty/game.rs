@@ -58,16 +58,6 @@ pub struct CarDebugSystem {
 }
 
 #[repr(C)]
-pub struct CarErs {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct CarErsMode {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct CarF1Plank {
     _opaque: [u8; 0],
 }
@@ -84,11 +74,6 @@ pub struct CarPhysicsRecord {
 
 #[repr(C)]
 pub struct CarSetupValues {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct CarSpline {
     _opaque: [u8; 0],
 }
 
@@ -179,11 +164,6 @@ pub struct InputRecord {
 
 #[repr(C)]
 pub struct NeStr {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct RedFlagSystem {
     _opaque: [u8; 0],
 }
 
@@ -548,6 +528,23 @@ const _: () = assert!(core::mem::offset_of!(CalendarActivity, activity) == 0x10)
 const _: () = assert!(core::mem::size_of::<CalendarActivity>() == 0x20);
 
 #[repr(C)]
+pub struct CarBodyActor {
+    _pad_0x0: [u8; 0x18],
+    pub state: *mut CarBodyState,
+}
+const _: () = assert!(core::mem::offset_of!(CarBodyActor, state) == 0x18);
+
+#[repr(C)]
+pub struct CarBodyState {
+    _pad_0x0: [u8; 0x1c0],
+    pub position: [f32; 3],
+    _pad_0x1cc: [u8; 0x54],
+    pub velocity: [f32; 3],
+}
+const _: () = assert!(core::mem::offset_of!(CarBodyState, position) == 0x1c0);
+const _: () = assert!(core::mem::offset_of!(CarBodyState, velocity) == 0x220);
+
+#[repr(C)]
 pub struct CarBrakeEcu {
     _pad_0x0: [u8; 0x21d8],
     pub brake_bias: f32,
@@ -565,6 +562,20 @@ pub struct CarChassis {
 }
 const _: () = assert!(core::mem::offset_of!(CarChassis, tyre_physics_group) == 0x118);
 const _: () = assert!(core::mem::offset_of!(CarChassis, mass) == 0x150);
+
+#[repr(C)]
+pub struct CarChassisLive {
+    _pad_0x0: [u8; 0x320],
+    pub g_lat: f32,
+    pub g_long: f32,
+    pub g_vert: f32,
+    _pad_0x32c: [u8; 0x14],
+    pub body: *mut CarBodyActor,
+}
+const _: () = assert!(core::mem::offset_of!(CarChassisLive, g_lat) == 0x320);
+const _: () = assert!(core::mem::offset_of!(CarChassisLive, g_long) == 0x324);
+const _: () = assert!(core::mem::offset_of!(CarChassisLive, g_vert) == 0x328);
+const _: () = assert!(core::mem::offset_of!(CarChassisLive, body) == 0x340);
 
 #[repr(C)]
 pub struct CarDamageFrontWing {
@@ -657,11 +668,130 @@ const _: () = assert!(core::mem::offset_of!(CarEngine, rotation_rate) == 0x2538)
 const _: () = assert!(core::mem::offset_of!(CarEngine, throttle) == 0x2574);
 
 #[repr(C)]
+pub struct CarErsMode {}
+
+#[repr(C)]
+pub struct CarSpline {}
+
+#[repr(C)]
+pub struct CarErs {
+    pub vtable: *mut c_void,
+    pub car: *mut CarLive,
+    pub allocator: *mut c_void,
+    pub data_vtable: *mut c_void,
+    _pad_0x20: [u8; 0x8],
+    pub max_deploy_power: f32,
+    pub max_derate_power: f32,
+    pub boost_mode_power_add_limit: f32,
+    pub min_initial_deploy_power: f32,
+    pub power_reduction_rate_limit: f32,
+    pub power_reduction_speed_min: f32,
+    pub full_throttle_time: f32,
+    pub off_throttle_time: f32,
+    pub off_throttle_timer_torque: f32,
+    pub harvest_torque_factor: f32,
+    pub harvest_limit_mguk: f32,
+    pub harvest_override_bonus_mguk: f32,
+    pub harvest_limit_qualifying_mguk: f32,
+    pub deploy_limit_mguk: f32,
+    pub energy_store_capacity: f32,
+    pub energy_deploy_efficiency_mguk: f32,
+    pub energy_harvest_efficiency_mguk: f32,
+    pub energy_harvest_efficiency_mguh: f32,
+    pub max_brake_torque_mguk: f32,
+    pub exhaust_power_coefficient: f32,
+    pub turbo_power_coefficient: f32,
+    pub overtake_power_efficiency: f32,
+    pub use_derate_lights: u8,
+    pub override_mode_available: u8,
+    pub allow_full_throttle_power_increase: u8,
+    _pad_0x83: [u8; 0xaa5],
+    pub base_wear_rate_es: f32,
+    _pad_0xb2c: [u8; 0x7fc],
+    pub base_wear_rate_mguk: f32,
+    _pad_0x132c: [u8; 0x654],
+    pub medium_deploy_factor: f32,
+    pub hotlap_deploy_factor: f32,
+    pub harvest_factor_mguh: f32,
+    pub medium_derate_factor: f32,
+    pub hotlap_derate_factor: f32,
+    pub override_detection_lap_progress: f32,
+    pub override_activation_lap_progress: f32,
+    _pad_0x199c: [u8; 0x4],
+    pub track_settings_found: u8,
+    _pad_0x19a1: [u8; 0x27],
+    pub harvest_lap_mguk: f32,
+    pub harvest_lap_mguh: f32,
+    pub deploy_lap: f32,
+    _pad_0x19d4: [u8; 0x1c],
+    pub energy: f32,
+    pub lap_harvest_limit: f32,
+    _pad_0x19f8: [u8; 0x8],
+    pub harvest_power_mguk: f32,
+    pub harvest_power_mguh: f32,
+    _pad_0x1a08: [u8; 0xc],
+    pub deploy_power: f32,
+    _pad_0x1a18: [u8; 0x50],
+    pub ers_mode: i32,
+}
+const _: () = assert!(core::mem::offset_of!(CarErs, vtable) == 0x0);
+const _: () = assert!(core::mem::offset_of!(CarErs, car) == 0x8);
+const _: () = assert!(core::mem::offset_of!(CarErs, allocator) == 0x10);
+const _: () = assert!(core::mem::offset_of!(CarErs, data_vtable) == 0x18);
+const _: () = assert!(core::mem::offset_of!(CarErs, max_deploy_power) == 0x28);
+const _: () = assert!(core::mem::offset_of!(CarErs, max_derate_power) == 0x2c);
+const _: () = assert!(core::mem::offset_of!(CarErs, boost_mode_power_add_limit) == 0x30);
+const _: () = assert!(core::mem::offset_of!(CarErs, min_initial_deploy_power) == 0x34);
+const _: () = assert!(core::mem::offset_of!(CarErs, power_reduction_rate_limit) == 0x38);
+const _: () = assert!(core::mem::offset_of!(CarErs, power_reduction_speed_min) == 0x3c);
+const _: () = assert!(core::mem::offset_of!(CarErs, full_throttle_time) == 0x40);
+const _: () = assert!(core::mem::offset_of!(CarErs, off_throttle_time) == 0x44);
+const _: () = assert!(core::mem::offset_of!(CarErs, off_throttle_timer_torque) == 0x48);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_torque_factor) == 0x4c);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_limit_mguk) == 0x50);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_override_bonus_mguk) == 0x54);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_limit_qualifying_mguk) == 0x58);
+const _: () = assert!(core::mem::offset_of!(CarErs, deploy_limit_mguk) == 0x5c);
+const _: () = assert!(core::mem::offset_of!(CarErs, energy_store_capacity) == 0x60);
+const _: () = assert!(core::mem::offset_of!(CarErs, energy_deploy_efficiency_mguk) == 0x64);
+const _: () = assert!(core::mem::offset_of!(CarErs, energy_harvest_efficiency_mguk) == 0x68);
+const _: () = assert!(core::mem::offset_of!(CarErs, energy_harvest_efficiency_mguh) == 0x6c);
+const _: () = assert!(core::mem::offset_of!(CarErs, max_brake_torque_mguk) == 0x70);
+const _: () = assert!(core::mem::offset_of!(CarErs, exhaust_power_coefficient) == 0x74);
+const _: () = assert!(core::mem::offset_of!(CarErs, turbo_power_coefficient) == 0x78);
+const _: () = assert!(core::mem::offset_of!(CarErs, overtake_power_efficiency) == 0x7c);
+const _: () = assert!(core::mem::offset_of!(CarErs, use_derate_lights) == 0x80);
+const _: () = assert!(core::mem::offset_of!(CarErs, override_mode_available) == 0x81);
+const _: () = assert!(core::mem::offset_of!(CarErs, allow_full_throttle_power_increase) == 0x82);
+const _: () = assert!(core::mem::offset_of!(CarErs, base_wear_rate_es) == 0xb28);
+const _: () = assert!(core::mem::offset_of!(CarErs, base_wear_rate_mguk) == 0x1328);
+const _: () = assert!(core::mem::offset_of!(CarErs, medium_deploy_factor) == 0x1980);
+const _: () = assert!(core::mem::offset_of!(CarErs, hotlap_deploy_factor) == 0x1984);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_factor_mguh) == 0x1988);
+const _: () = assert!(core::mem::offset_of!(CarErs, medium_derate_factor) == 0x198c);
+const _: () = assert!(core::mem::offset_of!(CarErs, hotlap_derate_factor) == 0x1990);
+const _: () = assert!(core::mem::offset_of!(CarErs, override_detection_lap_progress) == 0x1994);
+const _: () = assert!(core::mem::offset_of!(CarErs, override_activation_lap_progress) == 0x1998);
+const _: () = assert!(core::mem::offset_of!(CarErs, track_settings_found) == 0x19a0);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_lap_mguk) == 0x19c8);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_lap_mguh) == 0x19cc);
+const _: () = assert!(core::mem::offset_of!(CarErs, deploy_lap) == 0x19d0);
+const _: () = assert!(core::mem::offset_of!(CarErs, energy) == 0x19f0);
+const _: () = assert!(core::mem::offset_of!(CarErs, lap_harvest_limit) == 0x19f4);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_power_mguk) == 0x1a00);
+const _: () = assert!(core::mem::offset_of!(CarErs, harvest_power_mguh) == 0x1a04);
+const _: () = assert!(core::mem::offset_of!(CarErs, deploy_power) == 0x1a14);
+const _: () = assert!(core::mem::offset_of!(CarErs, ers_mode) == 0x1a68);
+
+#[repr(C)]
 pub struct CarF1Aero {
-    _pad_0x0: [u8; 0x19a0],
+    _pad_0x0: [u8; 0x1988],
+    pub drs_flags: u8,
+    _pad_0x1989: [u8; 0x17],
     pub drag_scale: f32,
     pub lift_scale: f32,
 }
+const _: () = assert!(core::mem::offset_of!(CarF1Aero, drs_flags) == 0x1988);
 const _: () = assert!(core::mem::offset_of!(CarF1Aero, drag_scale) == 0x19a0);
 const _: () = assert!(core::mem::offset_of!(CarF1Aero, lift_scale) == 0x19a4);
 
@@ -859,6 +989,20 @@ const _: () = assert!(core::mem::offset_of!(CarLive, f1_suspension_damage) == 0x
 const _: () = assert!(core::mem::offset_of!(CarLive, handling_version) == 0x9f40);
 
 #[repr(C)]
+pub struct CarLiveInputs {
+    _pad_0x0: [u8; 0x188],
+    pub throttle: f32,
+    pub clutch: f32,
+    pub brake: f32,
+    _pad_0x194: [u8; 0x90],
+    pub input_flags: u8,
+}
+const _: () = assert!(core::mem::offset_of!(CarLiveInputs, throttle) == 0x188);
+const _: () = assert!(core::mem::offset_of!(CarLiveInputs, clutch) == 0x18c);
+const _: () = assert!(core::mem::offset_of!(CarLiveInputs, brake) == 0x190);
+const _: () = assert!(core::mem::offset_of!(CarLiveInputs, input_flags) == 0x224);
+
+#[repr(C)]
 pub struct CarNumberComponent {
     _pad_0x0: [u8; 0x278],
     pub entity: *mut CareerEntity,
@@ -876,6 +1020,13 @@ pub struct CarSteering {
 }
 const _: () = assert!(core::mem::offset_of!(CarSteering, car) == 0x8);
 const _: () = assert!(core::mem::offset_of!(CarSteering, max_steering_lock) == 0x28);
+
+#[repr(C)]
+pub struct CarSteeringLive {
+    _pad_0x0: [u8; 0xe8],
+    pub steering_angle: CarObfFloat,
+}
+const _: () = assert!(core::mem::offset_of!(CarSteeringLive, steering_angle) == 0xe8);
 
 #[repr(C)]
 pub struct CarSuspAxle {
@@ -1106,6 +1257,21 @@ const _: () = assert!(core::mem::offset_of!(ControllerSet, flags) == 0x30);
 const _: () = assert!(core::mem::offset_of!(ControllerSet, vehicle) == 0x34);
 
 #[repr(C)]
+pub struct ControllerSystem {
+    _pad_0x0: [u8; 0x30],
+    pub sets: *mut *mut ControllerSet,
+    _pad_0x38: [u8; 0x58],
+    pub vehicle_manager: *mut c_void,
+    _pad_0x98: [u8; 0x2cc],
+    pub active: u8,
+    pub sets_built: u8,
+}
+const _: () = assert!(core::mem::offset_of!(ControllerSystem, sets) == 0x30);
+const _: () = assert!(core::mem::offset_of!(ControllerSystem, vehicle_manager) == 0x90);
+const _: () = assert!(core::mem::offset_of!(ControllerSystem, active) == 0x364);
+const _: () = assert!(core::mem::offset_of!(ControllerSystem, sets_built) == 0x365);
+
+#[repr(C)]
 pub struct CostCapComponent {
     _pad_0x0: [u8; 0x2d8],
     pub team_slots: *mut *mut CostCapTeam,
@@ -1146,6 +1312,15 @@ pub struct CurvePoint {
 const _: () = assert!(core::mem::offset_of!(CurvePoint, x) == 0x0);
 const _: () = assert!(core::mem::offset_of!(CurvePoint, y) == 0x4);
 const _: () = assert!(core::mem::size_of::<CurvePoint>() == 0x8);
+
+#[repr(C)]
+pub struct DriveThroughObject {
+    _pad_0x0: [u8; 0x68],
+    pub records_begin: *mut u8,
+    pub records_end: *mut u8,
+}
+const _: () = assert!(core::mem::offset_of!(DriveThroughObject, records_begin) == 0x68);
+const _: () = assert!(core::mem::offset_of!(DriveThroughObject, records_end) == 0x70);
 
 #[repr(C)]
 pub struct DriverCalendar {
@@ -1533,6 +1708,20 @@ const _: () = assert!(core::mem::offset_of!(EntrantsManager, session_begin) == 0
 const _: () = assert!(core::mem::offset_of!(EntrantsManager, session_end) == 0x2e8);
 
 #[repr(C)]
+pub struct TeamSetRef {
+    _pad_0x0: [u8; 0x8],
+    pub slots: *mut TeamSlots,
+}
+const _: () = assert!(core::mem::offset_of!(TeamSetRef, slots) == 0x8);
+
+#[repr(C)]
+pub struct EntrantsSystem {
+    _pad_0x0: [u8; 0x2c0],
+    pub team_sets: [TeamSetRef; 3],
+}
+const _: () = assert!(core::mem::offset_of!(EntrantsSystem, team_sets) == 0x2c0);
+
+#[repr(C)]
 pub struct F1SeasonStandings {
     pub vtable: *mut *mut c_void,
     _pad_0x8: [u8; 0x18],
@@ -1650,11 +1839,33 @@ pub struct GameManager {
 const _: () = assert!(core::mem::offset_of!(GameManager, mode_context) == 0xc0);
 
 #[repr(C)]
+pub struct GameManagerLive {
+    _pad_0x0: [u8; 0x30],
+    pub systems_map: *mut NeRobinHoodMapU64,
+    _pad_0x38: [u8; 0x298],
+    pub progress_system: *mut GameVehicleProgressSystem,
+}
+const _: () = assert!(core::mem::offset_of!(GameManagerLive, systems_map) == 0x30);
+const _: () = assert!(core::mem::offset_of!(GameManagerLive, progress_system) == 0x2d0);
+
+#[repr(C)]
 pub struct GameMessageBusHolder {
     _pad_0x0: [u8; 0x8],
     pub bus: *mut NeMessageBus,
 }
 const _: () = assert!(core::mem::offset_of!(GameMessageBusHolder, bus) == 0x8);
+
+#[repr(C)]
+pub struct GameMode {
+    _pad_0x0: [u8; 0x260],
+    pub entrants_manager: *mut EntrantsManager,
+    _pad_0x268: [u8; 0x10],
+    pub name: *mut c_char,
+    _pad_0x280: [u8; 0x20],
+}
+const _: () = assert!(core::mem::offset_of!(GameMode, entrants_manager) == 0x260);
+const _: () = assert!(core::mem::offset_of!(GameMode, name) == 0x278);
+const _: () = assert!(core::mem::size_of::<GameMode>() == 0x2a0);
 
 #[repr(C)]
 pub struct GameModeContext {
@@ -1664,11 +1875,27 @@ pub struct GameModeContext {
 const _: () = assert!(core::mem::offset_of!(GameModeContext, championship_holder) == 0x88);
 
 #[repr(C)]
+pub struct GameModeSystem {
+    _pad_0x0: [u8; 0x88],
+    pub mode: *mut GameMode,
+}
+const _: () = assert!(core::mem::offset_of!(GameModeSystem, mode) == 0x88);
+
+#[repr(C)]
 pub struct GameSetupMode {
     _pad_0x0: [u8; 0x1e0],
     pub drs_allowed_lap_group: *mut c_void,
 }
 const _: () = assert!(core::mem::offset_of!(GameSetupMode, drs_allowed_lap_group) == 0x1e0);
+
+#[repr(C)]
+pub struct GameVehicleProgressSystem {
+    _pad_0x0: [u8; 0x38],
+    pub entries_begin: *mut *mut c_void,
+    pub entries_end: *mut *mut c_void,
+}
+const _: () = assert!(core::mem::offset_of!(GameVehicleProgressSystem, entries_begin) == 0x38);
+const _: () = assert!(core::mem::offset_of!(GameVehicleProgressSystem, entries_end) == 0x40);
 
 #[repr(C)]
 pub struct GameWeatherSystem {
@@ -1753,6 +1980,38 @@ pub struct ItemVtbl {
 }
 const _: () = assert!(core::mem::offset_of!(ItemVtbl, populate) == 0x20);
 const _: () = assert!(core::mem::offset_of!(ItemVtbl, get_action) == 0x28);
+
+#[repr(C)]
+pub struct MarshalZone {
+    pub definition: *mut MarshalZoneDef,
+    _pad_0x8: [u8; 0xc],
+    pub flag: u8,
+}
+const _: () = assert!(core::mem::offset_of!(MarshalZone, definition) == 0x0);
+const _: () = assert!(core::mem::offset_of!(MarshalZone, flag) == 0x14);
+
+#[repr(C)]
+pub struct MarshalZoneDef {
+    _pad_0x0: [u8; 0x10],
+    pub start_fraction: f32,
+}
+const _: () = assert!(core::mem::offset_of!(MarshalZoneDef, start_fraction) == 0x10);
+
+#[repr(C)]
+pub struct MarshalZoneMonitor {
+    _pad_0x0: [u8; 0x88],
+    pub zones_begin: *mut MarshalZoneSlot,
+    pub zones_end: *mut MarshalZoneSlot,
+}
+const _: () = assert!(core::mem::offset_of!(MarshalZoneMonitor, zones_begin) == 0x88);
+const _: () = assert!(core::mem::offset_of!(MarshalZoneMonitor, zones_end) == 0x90);
+
+#[repr(C)]
+pub struct MarshalZoneSlot {
+    _pad_0x0: [u8; 0x8],
+    pub zone: *mut MarshalZone,
+}
+const _: () = assert!(core::mem::offset_of!(MarshalZoneSlot, zone) == 0x8);
 
 #[repr(C)]
 pub struct MyTeamFacilitiesComponent {
@@ -1883,6 +2142,27 @@ const _: () = assert!(core::mem::offset_of!(NePropertyVtbl, r#type) == 0x8);
 const _: () = assert!(core::mem::offset_of!(NePropertyVtbl, value) == 0x38);
 
 #[repr(C)]
+pub struct NeRobinHoodMapU64 {
+    _pad_0x0: [u8; 0x10],
+    pub hash_seed: u64,
+    pub slots: *mut u8,
+    pub meta: *mut u8,
+    pub count: u64,
+    pub mask: u64,
+    pub max_count: u64,
+    pub step: u32,
+    pub shift: u32,
+}
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, hash_seed) == 0x10);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, slots) == 0x18);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, meta) == 0x20);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, count) == 0x28);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, mask) == 0x30);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, max_count) == 0x38);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, step) == 0x40);
+const _: () = assert!(core::mem::offset_of!(NeRobinHoodMapU64, shift) == 0x44);
+
+#[repr(C)]
 pub struct NeSharedCtrl {
     pub vtable: *mut *mut c_void,
     pub strong: i32,
@@ -1900,6 +2180,137 @@ pub struct NeStreamVtbl {
 }
 const _: () = assert!(core::mem::offset_of!(NeStreamVtbl, write) == 0x48);
 const _: () = assert!(core::mem::offset_of!(NeStreamVtbl, write_length) == 0x50);
+
+#[repr(C)]
+pub struct PenaltyLog {
+    _pad_0x0: [u8; 0x48],
+    pub records_begin: *mut PenaltyRecord,
+    pub records_end: *mut PenaltyRecord,
+}
+const _: () = assert!(core::mem::offset_of!(PenaltyLog, records_begin) == 0x48);
+const _: () = assert!(core::mem::offset_of!(PenaltyLog, records_end) == 0x50);
+
+#[repr(C)]
+pub struct PenaltyRecord {
+    _pad_0x0: [u8; 0x8],
+    pub vehicle_id: u8,
+    pub penalty_type: u8,
+    pub infringement: u8,
+}
+const _: () = assert!(core::mem::offset_of!(PenaltyRecord, vehicle_id) == 0x8);
+const _: () = assert!(core::mem::offset_of!(PenaltyRecord, penalty_type) == 0x9);
+const _: () = assert!(core::mem::offset_of!(PenaltyRecord, infringement) == 0xa);
+
+#[repr(C)]
+pub struct PhysicalCompound {
+    pub stat_id: u8,
+}
+const _: () = assert!(core::mem::offset_of!(PhysicalCompound, stat_id) == 0x0);
+
+#[repr(C)]
+pub struct PitLaneCarSlot {
+    pub state: *mut PitLaneCarState,
+}
+const _: () = assert!(core::mem::offset_of!(PitLaneCarSlot, state) == 0x0);
+
+#[repr(C)]
+pub struct PitLaneCarState {
+    _pad_0x0: [u8; 0x4],
+    pub state: u32,
+    _pad_0x8: [u8; 0xc],
+    pub pit_stops: u32,
+}
+const _: () = assert!(core::mem::offset_of!(PitLaneCarState, state) == 0x4);
+const _: () = assert!(core::mem::offset_of!(PitLaneCarState, pit_stops) == 0x14);
+
+#[repr(C)]
+pub struct PitLaneSystem {
+    _pad_0x0: [u8; 0x48],
+    pub lane: *mut PitLaneTrack,
+    _pad_0x50: [u8; 0x18],
+    pub car_slots: [PitLaneCarSlot; 27],
+}
+const _: () = assert!(core::mem::offset_of!(PitLaneSystem, lane) == 0x48);
+const _: () = assert!(core::mem::offset_of!(PitLaneSystem, car_slots) == 0x68);
+
+#[repr(C)]
+pub struct PitLaneVehicleSlot {
+    pub lane: *mut PitLaneVehicle,
+}
+const _: () = assert!(core::mem::offset_of!(PitLaneVehicleSlot, lane) == 0x0);
+
+#[repr(C)]
+pub struct PitLaneTrack {
+    _pad_0x0: [u8; 0x938],
+    pub vehicle_slots: [PitLaneVehicleSlot; 27],
+}
+const _: () = assert!(core::mem::offset_of!(PitLaneTrack, vehicle_slots) == 0x938);
+
+#[repr(C)]
+pub struct PitLaneVehicle {
+    _pad_0x0: [u8; 0x103],
+    pub in_lane: u8,
+}
+const _: () = assert!(core::mem::offset_of!(PitLaneVehicle, in_lane) == 0x103);
+
+#[repr(C)]
+pub struct RacingOwner {
+    _pad_0x0: [u8; 0xe8],
+    pub track: *mut RacingTrack,
+}
+const _: () = assert!(core::mem::offset_of!(RacingOwner, track) == 0xe8);
+
+#[repr(C)]
+pub struct RacingTrack {
+    _pad_0x0: [u8; 0xa0],
+    pub name: *mut c_char,
+}
+const _: () = assert!(core::mem::offset_of!(RacingTrack, name) == 0xa0);
+
+#[repr(C)]
+pub struct RacingVehicles {
+    _pad_0x0: [u8; 0xd0],
+    pub owner: *mut RacingOwner,
+}
+const _: () = assert!(core::mem::offset_of!(RacingVehicles, owner) == 0xd0);
+
+#[repr(C)]
+pub struct RedFlagSystem {
+    _pad_0x0: [u8; 0x40],
+    pub state: u8,
+}
+const _: () = assert!(core::mem::offset_of!(RedFlagSystem, state) == 0x40);
+
+#[repr(C)]
+pub struct RelativeGapEntry {
+    _pad_0x0: [u8; 0x58],
+    pub leader_gap_ms: i64,
+    _pad_0x60: [u8; 0x8],
+    pub leader_gap_valid: u8,
+    _pad_0x69: [u8; 0x7],
+    pub interval_ms: i64,
+    _pad_0x78: [u8; 0x8],
+    pub interval_valid: u8,
+    _pad_0x81: [u8; 0xf],
+    pub vehicle_id: u8,
+}
+const _: () = assert!(core::mem::offset_of!(RelativeGapEntry, leader_gap_ms) == 0x58);
+const _: () = assert!(core::mem::offset_of!(RelativeGapEntry, leader_gap_valid) == 0x68);
+const _: () = assert!(core::mem::offset_of!(RelativeGapEntry, interval_ms) == 0x70);
+const _: () = assert!(core::mem::offset_of!(RelativeGapEntry, interval_valid) == 0x80);
+const _: () = assert!(core::mem::offset_of!(RelativeGapEntry, vehicle_id) == 0x90);
+
+#[repr(C)]
+pub struct RelativeGapHelper {
+    _pad_0x0: [u8; 0x30],
+    pub entries_begin: *mut RelativeGapEntry,
+    pub entries_end: *mut RelativeGapEntry,
+    _pad_0x40: [u8; 0x90],
+    pub pit_lane: *mut PitLaneSystem,
+}
+const _: () = assert!(core::mem::offset_of!(RelativeGapHelper, entries_begin) == 0x30);
+const _: () = assert!(core::mem::offset_of!(RelativeGapHelper, entries_end) == 0x38);
+const _: () = assert!(core::mem::offset_of!(RelativeGapHelper, pit_lane) == 0xd0);
 
 #[repr(C)]
 pub struct RenownAwardedMessage {
@@ -1935,6 +2346,13 @@ const _: () = assert!(core::mem::offset_of!(ResourcePointsComponent, wallet_enti
 const _: () = assert!(core::mem::offset_of!(ResourcePointsComponent, wallet_mode) == 0x4b0);
 const _: () = assert!(core::mem::offset_of!(ResourcePointsComponent, driver_wallets) == 0x4b8);
 const _: () = assert!(core::mem::offset_of!(ResourcePointsComponent, team_wallets) == 0x528);
+
+#[repr(C)]
+pub struct SafetyCarLogicSystem {
+    _pad_0x0: [u8; 0x108],
+    pub deployment: u8,
+}
+const _: () = assert!(core::mem::offset_of!(SafetyCarLogicSystem, deployment) == 0x108);
 
 #[repr(C)]
 pub struct SaveDataContainer {
@@ -2080,6 +2498,50 @@ const _: () = assert!(core::mem::offset_of!(Session, participants_capacity) == 0
 const _: () = assert!(core::mem::size_of::<Session>() == 0xa0);
 
 #[repr(C)]
+pub struct SessionEntrantView {
+    _pad_0x0: [u8; 0x58],
+    pub team_stat_id: u32,
+    _pad_0x5c: [u8; 0x26],
+    pub vehicle_id: u8,
+}
+const _: () = assert!(core::mem::offset_of!(SessionEntrantView, team_stat_id) == 0x58);
+const _: () = assert!(core::mem::offset_of!(SessionEntrantView, vehicle_id) == 0x82);
+
+#[repr(C)]
+pub struct SessionSystem {
+    _pad_0x0: [u8; 0x148],
+    pub entries_begin: *mut *mut SessionVehicleEntry,
+    pub entries_end: *mut *mut SessionVehicleEntry,
+}
+const _: () = assert!(core::mem::offset_of!(SessionSystem, entries_begin) == 0x148);
+const _: () = assert!(core::mem::offset_of!(SessionSystem, entries_end) == 0x150);
+
+#[repr(C)]
+pub struct SessionVehicleEntry {
+    pub vehicle_id: u8,
+    _pad_0x1: [u8; 0x17],
+    pub status: u8,
+    _pad_0x19: [u8; 0x1f],
+    pub time_penalty_a: u64,
+    pub time_penalty_b: u64,
+    pub position_a: u32,
+    _pad_0x4c: [u8; 0x4],
+    pub position_b: u32,
+    _pad_0x54: [u8; 0x3c],
+    pub grid_position_a: u32,
+    _pad_0x94: [u8; 0x4],
+    pub grid_position_b: u32,
+}
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, vehicle_id) == 0x0);
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, status) == 0x18);
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, time_penalty_a) == 0x38);
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, time_penalty_b) == 0x40);
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, position_a) == 0x48);
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, position_b) == 0x50);
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, grid_position_a) == 0x90);
+const _: () = assert!(core::mem::offset_of!(SessionVehicleEntry, grid_position_b) == 0x98);
+
+#[repr(C)]
 pub struct SpectatorDirector {
     _pad_0x0: [u8; 0xd0],
     pub ui_active: u8,
@@ -2101,6 +2563,13 @@ const _: () = assert!(core::mem::offset_of!(SpectatorDirector, current_driver) =
 const _: () = assert!(core::mem::offset_of!(SpectatorDirector, current_camera) == 0xd8);
 const _: () = assert!(core::mem::offset_of!(SpectatorDirector, requested_driver) == 0xdc);
 const _: () = assert!(core::mem::offset_of!(SpectatorDirector, requested_camera) == 0xe0);
+
+#[repr(C)]
+pub struct SpectatorDirectorGap {
+    _pad_0x0: [u8; 0xe4],
+    pub gap_mode: u32,
+}
+const _: () = assert!(core::mem::offset_of!(SpectatorDirectorGap, gap_mode) == 0xe4);
 
 #[repr(C)]
 pub struct SponsorEntry {
@@ -2226,6 +2695,15 @@ const _: () = assert!(core::mem::offset_of!(StatInfo, weight) == 0x130);
 const _: () = assert!(core::mem::offset_of!(StatInfo, default_value) == 0x134);
 
 #[repr(C)]
+pub struct StopGoObject {
+    _pad_0x0: [u8; 0x68],
+    pub records_begin: *mut u8,
+    pub records_end: *mut u8,
+}
+const _: () = assert!(core::mem::offset_of!(StopGoObject, records_begin) == 0x68);
+const _: () = assert!(core::mem::offset_of!(StopGoObject, records_end) == 0x70);
+
+#[repr(C)]
 pub struct TeamRecord {
     _pad_0x0: [u8; 0xb0],
     pub display_name: *mut c_char,
@@ -2249,7 +2727,9 @@ pub struct TeamRecord {
     pub team_wear_secondary_colour: i32,
     pub team_wear_tertiary_colour: i32,
     pub ui_team_colour: i32,
-    _pad_0x580: [u8; 0x1e8],
+    _pad_0x580: [u8; 0xd],
+    pub show_custom_badge_in_ui: bool,
+    _pad_0x58e: [u8; 0x1da],
 }
 const _: () = assert!(core::mem::offset_of!(TeamRecord, display_name) == 0xb0);
 const _: () = assert!(core::mem::offset_of!(TeamRecord, display_name_code) == 0x148);
@@ -2265,6 +2745,7 @@ const _: () = assert!(core::mem::offset_of!(TeamRecord, team_wear_primary_colour
 const _: () = assert!(core::mem::offset_of!(TeamRecord, team_wear_secondary_colour) == 0x574);
 const _: () = assert!(core::mem::offset_of!(TeamRecord, team_wear_tertiary_colour) == 0x578);
 const _: () = assert!(core::mem::offset_of!(TeamRecord, ui_team_colour) == 0x57c);
+const _: () = assert!(core::mem::offset_of!(TeamRecord, show_custom_badge_in_ui) == 0x58d);
 const _: () = assert!(core::mem::size_of::<TeamRecord>() == 0x768);
 
 #[repr(C)]
@@ -2279,6 +2760,22 @@ const _: () = assert!(core::mem::offset_of!(TeamRenownData, team) == 0x0);
 const _: () = assert!(core::mem::offset_of!(TeamRenownData, points) == 0x4);
 const _: () = assert!(core::mem::offset_of!(TeamRenownData, config) == 0x18);
 const _: () = assert!(core::mem::size_of::<TeamRenownData>() == 0x140);
+
+#[repr(C)]
+pub struct TeamSlot {
+    _pad_0x0: [u8; 0x8],
+    pub record: *mut TeamRecord,
+}
+const _: () = assert!(core::mem::offset_of!(TeamSlot, record) == 0x8);
+
+#[repr(C)]
+pub struct TeamSlots {
+    _pad_0x0: [u8; 0x8],
+    pub begin: *mut TeamSlot,
+    pub end: *mut TeamSlot,
+}
+const _: () = assert!(core::mem::offset_of!(TeamSlots, begin) == 0x8);
+const _: () = assert!(core::mem::offset_of!(TeamSlots, end) == 0x10);
 
 #[repr(C)]
 pub struct Tile {
@@ -2465,6 +2962,26 @@ const _: () = assert!(core::mem::offset_of!(TrackDataTrack, qualifying_short) ==
 const _: () = assert!(core::mem::offset_of!(TrackDataTrack, qualifying_full) == 0x1c0);
 
 #[repr(C)]
+pub struct TyreSlot {
+    pub option: u32,
+    _pad_0x4: [u8; 0x4],
+    pub physical: *mut PhysicalCompound,
+    pub visual: *mut VisualCompound,
+}
+const _: () = assert!(core::mem::offset_of!(TyreSlot, option) == 0x0);
+const _: () = assert!(core::mem::offset_of!(TyreSlot, physical) == 0x8);
+const _: () = assert!(core::mem::offset_of!(TyreSlot, visual) == 0x10);
+
+#[repr(C)]
+pub struct TyreSystem {
+    _pad_0x0: [u8; 0x110],
+    pub vehicles_begin: *mut *mut VehicleTyreComponent,
+    pub vehicles_end: *mut *mut VehicleTyreComponent,
+}
+const _: () = assert!(core::mem::offset_of!(TyreSystem, vehicles_begin) == 0x110);
+const _: () = assert!(core::mem::offset_of!(TyreSystem, vehicles_end) == 0x118);
+
+#[repr(C)]
 pub struct UpgradeInstance {
     _pad_0x0: [u8; 0x10],
     pub name: *mut c_char,
@@ -2571,6 +3088,71 @@ pub struct UpgradesComponent {
 const _: () = assert!(core::mem::offset_of!(UpgradesComponent, upgrades_begin) == 0x298);
 const _: () = assert!(core::mem::offset_of!(UpgradesComponent, upgrades_end) == 0x2a0);
 const _: () = assert!(core::mem::offset_of!(UpgradesComponent, career_time) == 0x2c0);
+
+#[repr(C)]
+pub struct VehicleHelperSystem {
+    _pad_0x0: [u8; 0x568],
+    pub drive_through: *mut DriveThroughObject,
+    _pad_0x570: [u8; 0x8],
+    pub stop_go: *mut StopGoObject,
+}
+const _: () = assert!(core::mem::offset_of!(VehicleHelperSystem, drive_through) == 0x568);
+const _: () = assert!(core::mem::offset_of!(VehicleHelperSystem, stop_go) == 0x578);
+
+#[repr(C)]
+pub struct VehicleProgressEntry {
+    _pad_0x0: [u8; 0x38],
+    pub lap_a: u16,
+    _pad_0x3a: [u8; 0x6],
+    pub lap_b: u16,
+    _pad_0x42: [u8; 0x6],
+    pub progress_lap_a: u16,
+    _pad_0x4a: [u8; 0x6],
+    pub progress_lap_b: u16,
+    _pad_0x52: [u8; 0x6],
+    pub progress_lap_delta: i16,
+    _pad_0x5a: [u8; 0x3e],
+    pub total_a: u32,
+    _pad_0x9c: [u8; 0x4],
+    pub total_b: u32,
+}
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, lap_a) == 0x38);
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, lap_b) == 0x40);
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, progress_lap_a) == 0x48);
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, progress_lap_b) == 0x50);
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, progress_lap_delta) == 0x58);
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, total_a) == 0x98);
+const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, total_b) == 0xa0);
+
+#[repr(C)]
+pub struct VehicleTyreComponent {
+    _pad_0x0: [u8; 0x9bc0],
+    pub compound_class: *mut c_void,
+    _pad_0x9bc8: [u8; 0x8],
+    pub slots: [TyreSlot; 5],
+    pub slot_count: u64,
+    pub built_for: *mut c_void,
+    pub built: *mut c_void,
+    _pad_0x9c60: [u8; 0x30],
+    pub set_begin: *mut u8,
+    pub set_end: *mut u8,
+}
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, compound_class) == 0x9bc0);
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, slots) == 0x9bd0);
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, slot_count) == 0x9c48);
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, built_for) == 0x9c50);
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, built) == 0x9c58);
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, set_begin) == 0x9c90);
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, set_end) == 0x9c98);
+
+#[repr(C)]
+pub struct VisualCompound {
+    pub stat_id: u8,
+    _pad_0x1: [u8; 0x4f],
+    pub audio_compound: i32,
+}
+const _: () = assert!(core::mem::offset_of!(VisualCompound, stat_id) == 0x0);
+const _: () = assert!(core::mem::offset_of!(VisualCompound, audio_compound) == 0x50);
 
 #[repr(C)]
 pub struct WeatherAndTimeOfDayComponent {
@@ -3006,6 +3588,8 @@ pub type Ne_SaveSystem2Win_Start_t = unsafe extern "C" fn(device: *mut c_void) -
 pub type Ne_SaveSystem_InitDevice_t = unsafe extern "C" fn(save_system: *mut c_void) -> c_int;
 pub type Ne_Set_FixedString_t = unsafe extern "C" fn(dst: *mut c_void, src: *const c_char);
 pub type Ne_StringTable_Lookup_t = unsafe extern "C" fn(table: *mut c_void, hash: u64) -> *const c_char;
+pub type Ne_Subscribe_BusMessage_t =
+    unsafe extern "C" fn(bus: *mut c_void, message_name: *const c_char, delegate: *const c_void);
 pub type Ne_TempPool_Alloc_t = unsafe extern "C" fn(pool: *mut c_void, size: u64, align: u64) -> *mut c_void;
 pub type Sess_Apply_ContentAvailability_t =
     unsafe extern "C" fn(self_: *mut c_void, availability: *mut c_void);
@@ -11474,6 +12058,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Subscribe_BusMessage: Binding = Binding {
+        id: "Ne_Subscribe_BusMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Sync_WaitObject: Binding = Binding {
         id: "Ne_Sync_WaitObject",
         kind: "func",
@@ -14349,6 +14938,26 @@ pub mod bindings {
         kind: "data",
         status: Status::Experimental,
     };
+    pub const g_Live_ControllerSystem: Binding = Binding {
+        id: "g_Live_ControllerSystem",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Live_RacingVehicles: Binding = Binding {
+        id: "g_Live_RacingVehicles",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Live_SectorCount: Binding = Binding {
+        id: "g_Live_SectorCount",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Live_SectorEnds: Binding = Binding {
+        id: "g_Live_SectorEnds",
+        kind: "data",
+        status: Status::Experimental,
+    };
     pub const g_Ne_DefaultAllocator: Binding = Binding {
         id: "g_Ne_DefaultAllocator",
         kind: "data",
@@ -14596,6 +15205,71 @@ pub mod bindings {
     };
     pub const k_Gdb_StringXorKey: Binding = Binding {
         id: "k_Gdb_StringXorKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_EntrantsSystemKey: Binding = Binding {
+        id: "k_Live_EntrantsSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_GameModeSystemKey: Binding = Binding {
+        id: "k_Live_GameModeSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_GameVehicleProgressSystemKey: Binding = Binding {
+        id: "k_Live_GameVehicleProgressSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_MarshalZoneMonitorKey: Binding = Binding {
+        id: "k_Live_MarshalZoneMonitorKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_PenaltyLogKey: Binding = Binding {
+        id: "k_Live_PenaltyLogKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_PitLaneSystemKey: Binding = Binding {
+        id: "k_Live_PitLaneSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_RedFlagSystemKey: Binding = Binding {
+        id: "k_Live_RedFlagSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_RelativeGapHelperKey: Binding = Binding {
+        id: "k_Live_RelativeGapHelperKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_SafetyCarLogicSystemKey: Binding = Binding {
+        id: "k_Live_SafetyCarLogicSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_SessionSystemKey: Binding = Binding {
+        id: "k_Live_SessionSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_SpectatorDirectorKey: Binding = Binding {
+        id: "k_Live_SpectatorDirectorKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_TyreSystemKey: Binding = Binding {
+        id: "k_Live_TyreSystemKey",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Live_VehicleHelperSystemKey: Binding = Binding {
+        id: "k_Live_VehicleHelperSystemKey",
         kind: "data",
         status: Status::Experimental,
     };
@@ -16014,6 +16688,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const vt_Car_SystemsContainer: Binding = Binding {
+        id: "vt_Car_SystemsContainer",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
     pub const vt_Car_VehicleEnvironment: Binding = Binding {
         id: "vt_Car_VehicleEnvironment",
         kind: "vtable",
@@ -16149,6 +16828,11 @@ pub mod bindings {
         kind: "vtable",
         status: Status::Experimental,
     };
+    pub const vt_Sess_ControllerSystem: Binding = Binding {
+        id: "vt_Sess_ControllerSystem",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
     pub const vt_Sess_CutsceneLocation: Binding = Binding {
         id: "vt_Sess_CutsceneLocation",
         kind: "vtable",
@@ -16226,6 +16910,11 @@ pub mod bindings {
     };
     pub const vt_Sess_GetEventToken: Binding = Binding {
         id: "vt_Sess_GetEventToken",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_HumanController: Binding = Binding {
+        id: "vt_Sess_HumanController",
         kind: "vtable",
         status: Status::Experimental,
     };

@@ -46,6 +46,11 @@ t "Loader log fallback Wine test" native/test/run_log_fallback_test.sh
 t "String override Wine test" native/test/run_lang_override_test.sh
 t "Overlay toolkit Wine test" native/test/run_toolkit_test.sh
 t "Overlay draw-list unit test" native/test/run_hud_test.sh
+t "HUD leaf table unit test" native/test/run_hud_leaves_test.sh
+t "CSV recorder unit test" native/test/run_log_csv_test.sh
+t "HUD runtime headers test" native/test/run_hud_osd_test.sh
+t "Live to timing tower adapter test" native/test/run_timing_live_test.sh
+t "HUD dial template host test" templates/hud-dial/native/test/run_test.sh
 # The 1.6 handler guard, built as build.sh builds it, against faults and SDK handlers that throw.
 t "Handler guard Wine test" native/test/run_guard_test.sh
 t "Career list Wine test" native/test/run_career_list_test.sh
@@ -58,6 +63,7 @@ t "Shader look unit test" native/test/run_grade_test.sh
 t "Post-process pass logic unit test" native/test/run_postfx_test.sh
 t "Shader rules engine unit test" native/test/run_rules_test.sh
 t "Live car signal mapping unit test" native/test/run_live_car_test.sh
+t "Live state memory reads, derivations and telemetry fill" native/test/run_live_test.sh
 t "ERS new-lap site unit test" native/test/run_ers_newlap_test.sh
 t "Round track record guard unit test" native/test/run_track_record_test.sh
 t "Team HQ track guard unit test" native/test/run_teamhq_track_test.sh

@@ -77,6 +77,7 @@ void flow_mid(safetyhook::Context &)
     perf::flow_tick();
     perf::Scope p(probe);
     runtime::career_tick();
+    runtime::live_tick(now_seconds());
     runtime::telemetry_tick();
     runtime::popup_tick();
     runtime::mfd_tick();
@@ -104,6 +105,7 @@ void session_enter_mid(safetyhook::Context &)
     swofty::mem::invalidate();
     swofty_core::apply::moments::session_load("Game_GameModule_OnSessionEnter");
     runtime::telemetry_session_enter();
+    runtime::hud_rebuilt();
     bool restart;
     {
         std::lock_guard<std::mutex> g(lifecycle_lock);
@@ -325,6 +327,7 @@ void session_emit(const session_life::Emit &e)
     if (e.unload) {
         swofty::log("[events] session.unload (StateUnloadSession entering)");
         events_fire(SWOFTY_EVENT_SESSION_UNLOAD, 0, 0, nullptr);
+        runtime::hud_rebuilt();
     }
 }
 

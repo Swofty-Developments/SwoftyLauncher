@@ -712,6 +712,11 @@ impl<'a> Planner<'a> {
         self.write(target, origin, true);
     }
 
+    /// Records that the writers of `target` were merged: none of them overrides another there.
+    pub fn merged(&mut self, target: &Target) {
+        self.planned.conflicts.retain(|c| c.target != *target);
+    }
+
     /// Records that `keeper` keeps `target`, which `lost` replaces later in load order.
     pub fn kept(&mut self, target: Target, keeper: &Origin, lost: &Origin) {
         let writers = self.writers.entry(target.clone()).or_default();
