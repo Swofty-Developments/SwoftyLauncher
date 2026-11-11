@@ -220,7 +220,7 @@ public:
             uint8_t render = 0;
             if (!tt || !m_.get(tt + L::badge::tables + kind * 16, table) || !table ||
                 !m_.read(table + L::badge::table_vec, vec, sizeof vec) || vec[1] <= vec[0] ||
-                index >= (vec[1] - vec[0]) / 16 || !m_.get(vec[0] + uintptr_t(index) * 16 + 8, rec) || !rec ||
+                index >= (vec[1] - vec[0]) / 16 || !m_.get(vec[0] + uintptr_t(index) * 16 + L::badge::slot_record, rec) || !rec ||
                 !m_.get(rec + L::badge::record_render, render) || render ||
                 !m_.get(rec + L::badge::record_key, str) || !str)
                 return false;
@@ -813,7 +813,8 @@ private:
                 desc = list + i * L::tyres::desc_stride;
         if (!desc)
             return;
-        uintptr_t actual = field<uintptr_t>(desc, 0, 8), visual = field<uintptr_t>(desc, 0, 0x10);
+        uintptr_t actual = field<uintptr_t>(desc, 0, L::tyres::desc_physical),
+                  visual = field<uintptr_t>(desc, 0, L::tyres::desc_visual);
         uint8_t vr[0x54];
         if (!visual || !m_.read(visual, vr, sizeof vr))
             return;
@@ -822,9 +823,9 @@ private:
         if (c < -1 || c > 8 || (actual && !m_.get(actual, act)))
             return;
         t.have = true;
-        t.visual = vr[0];
+        t.visual = vr[L::tyres::visual_stat_id];
         t.actual = act;
-        t.letter = checked_tyre_letter(vr[0], c);
+        t.letter = checked_tyre_letter(vr[L::tyres::visual_stat_id], c);
     }
 
     void job_tyres()

@@ -143,7 +143,22 @@ pub struct DepartmentData {
 }
 
 #[repr(C)]
+pub struct EntrantsSystem {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct FEHomeViewModel {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct GameMode {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct GameModeSystem {
     _opaque: [u8; 0],
 }
 
@@ -168,6 +183,41 @@ pub struct NeStr {
 }
 
 #[repr(C)]
+pub struct PhysicalCompound {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct PitLaneTrack {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct PitLaneVehicle {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct PitLaneVehicleSlot {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct RacingOwner {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct RacingTrack {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct RacingVehicles {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct RedFlagSystem {
     _opaque: [u8; 0],
 }
@@ -183,12 +233,42 @@ pub struct SafetyCarLogicSystem {
 }
 
 #[repr(C)]
+pub struct SessionEntrantView {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct SpectatorDirectorGap {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct TeamSetRef {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct TeamSlot {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct TeamSlots {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct TodCurveBinding {
     _opaque: [u8; 0],
 }
 
 #[repr(C)]
 pub struct TyreSlot {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct TyreSystem {
     _opaque: [u8; 0],
 }
 
@@ -229,6 +309,11 @@ pub struct VehiclePackageRow {
 
 #[repr(C)]
 pub struct VehicleTyreComponent {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct VisualCompound {
     _opaque: [u8; 0],
 }
 
@@ -805,10 +890,13 @@ const _: () = assert!(core::mem::offset_of!(CarErs, ers_mode) == 0x1a68);
 
 #[repr(C)]
 pub struct CarF1Aero {
-    _pad_0x0: [u8; 0x19a0],
+    _pad_0x0: [u8; 0x1988],
+    pub drs_flags: u8,
+    _pad_0x1989: [u8; 0x17],
     pub drag_scale: f32,
     pub lift_scale: f32,
 }
+const _: () = assert!(core::mem::offset_of!(CarF1Aero, drs_flags) == 0x1988);
 const _: () = assert!(core::mem::offset_of!(CarF1Aero, drag_scale) == 0x19a0);
 const _: () = assert!(core::mem::offset_of!(CarF1Aero, lift_scale) == 0x19a4);
 
@@ -16515,6 +16603,11 @@ pub mod bindings {
     pub const site_Trk_TrackData_SetMatched: Binding = Binding {
         id: "site_Trk_TrackData_SetMatched",
         kind: "site",
+        status: Status::Experimental,
+    };
+    pub const vt_Car_SystemsContainer: Binding = Binding {
+        id: "vt_Car_SystemsContainer",
+        kind: "vtable",
         status: Status::Experimental,
     };
     pub const vt_Car_VehicleEnvironment: Binding = Binding {

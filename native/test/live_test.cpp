@@ -949,8 +949,9 @@ static void test_readiness_rows()
         CHECK(std::strlen(group_name(Group(g))) > 0);
     }
     CHECK(ROWS[G_TRACK].fields && ROWS[G_TRACK].mapped);
-    CHECK(!ROWS[G_TYRES].mapped && !ROWS[G_MODE].mapped && !ROWS[G_BADGES].mapped && !ROWS[G_PIT_LANE].mapped);
-    CHECK(!ROWS[G_TRACK_NAME].mapped && !ROWS[G_SPECTATE_GAP].mapped && !ROWS[G_AERO].mapped);
+    CHECK(ROWS[G_TYRES].mapped && ROWS[G_MODE].mapped && ROWS[G_BADGES].mapped && ROWS[G_PIT_LANE].mapped);
+    CHECK(ROWS[G_TRACK_NAME].mapped && ROWS[G_SPECTATE_GAP].mapped);
+    CHECK(ROWS[G_AERO].fields && ROWS[G_AERO].mapped);
     CHECK(L::pit::lane_object == 0x48 && L::pit::lane_flags == 0x938 && L::pit::in_lane == 0x103);
     CHECK(L::pit::stops == 0x14 && L::pit::lane_flag_stride == 0x10);
 }

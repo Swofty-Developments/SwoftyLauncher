@@ -221,10 +221,13 @@ static_assert(offsetof(CarErs, deploy_power) == 0x1a14);
 static_assert(offsetof(CarErs, ers_mode) == 0x1a68);
 
 struct CarF1Aero {
-    uint8_t _pad_0x0[0x19a0];
+    uint8_t _pad_0x0[0x1988];
+    uint8_t drs_flags; // L2 experimental
+    uint8_t _pad_0x1989[0x17];
     float drag_scale; // L3 experimental
     float lift_scale; // L3 experimental
 };
+static_assert(offsetof(CarF1Aero, drs_flags) == 0x1988);
 static_assert(offsetof(CarF1Aero, drag_scale) == 0x19a0);
 static_assert(offsetof(CarF1Aero, lift_scale) == 0x19a4);
 
@@ -518,6 +521,7 @@ inline constexpr site<"site_Car_RegisterVehicleId"> site_Car_RegisterVehicleId{}
 inline constexpr site<"site_Car_SetupTuningApplied"> site_Car_SetupTuningApplied{}; // L3 stable
 inline constexpr site<"site_Car_UpgradeSectionApplyCall"> site_Car_UpgradeSectionApplyCall{}; // L2 experimental
 inline constexpr site<"site_Car_VehicleTableRemove"> site_Car_VehicleTableRemove{}; // L3 stable
+inline constexpr vtable<"vt_Car_SystemsContainer", 1> vt_Car_SystemsContainer{}; // L2 experimental
 inline constexpr vtable<"vt_Car_VehicleEnvironment", 7> vt_Car_VehicleEnvironment{}; // L2 experimental
 
 }
