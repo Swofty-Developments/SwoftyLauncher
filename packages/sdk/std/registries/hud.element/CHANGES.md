@@ -1,2 +1,3 @@
 1.0: first version (launcher 1.9.0).
 1.0 (additive, launcher 1.9.0): `scene` and `parent_ui` give a record a target besides the dial enum; `ui_menu_data.<name>` is a leaf path next to `view_model_data.<name>`.
+1.1 (additive, launcher 1.9.x): rows and screens for the timing tower: `repeat` on a group with `{VV}`/`{V}` substitution, the `stack`, `centre` and `unit` kinds with `dir`, `gap`, `unit`, `size` and `texture`, text `literal_id` and `case: mixed`, the record fields `units`, `screen`, `show`, `also`, `stock_nodes` and `restyle`, bind `slot_var`, `screen` and `ty: si32`, sprite `texture` and `fit`, `editor.rows`.

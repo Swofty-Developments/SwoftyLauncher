@@ -748,6 +748,9 @@ impl Builder {
             }
             Kind::Gauge => self.gauge(cx, e, &name)?,
             Kind::Sweep => self.sweep(cx, e, &name)?,
+            Kind::Stack | Kind::Centre | Kind::Unit => {
+                return Err(err(format!("element {}: {kind:?} is not composed yet", e.id)));
+            }
         };
         self.finish_leaf(cx, e, &name, node, switched)
     }
