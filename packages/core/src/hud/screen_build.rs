@@ -333,6 +333,10 @@ pub fn control_group(
         })
     };
     inner.extend(template::bound_nodes(plan, tex.as_ref())?);
+    let inner_base = format!("{}.{pfx}_ctl.host_n", facts.parent_ui);
+    let triggers = super::motion::trigger_nodes(plan, &inner_base);
+    let trigger_names: Vec<String> = triggers.iter().map(|n| n.name().to_owned()).collect();
+    inner.extend(triggers);
     kids.push(node::group_node(
         "host_n",
         vec![("visible", node::bool_prop(false, Some(&sw.db), sw.negate))],
@@ -365,7 +369,10 @@ pub fn control_group(
         }
         Ok(())
     }
-    let grp = node::group_node(&format!("{pfx}_ctl"), vec![], &[], kids);
+    let mut grp = node::group_node(&format!("{pfx}_ctl"), vec![], &[], kids);
+    if !trigger_names.is_empty() {
+        node::decision_commands(&mut grp, &inner_base, &trigger_names)?;
+    }
     for c in grp.slot(node::CHILDREN)? {
         walk(c, &mut names)?;
     }
@@ -497,6 +504,11 @@ pub fn compose_screens(
     }
     out.scene
         .push((screens::CAP.to_owned(), "UILayout", vec![cap.finish(None)?]));
+    let planned: Vec<&Plan> = plans.iter().collect();
+    if planned.iter().any(|p| !p.clips.is_empty()) {
+        let clip_template = race_read(super::dials::CLIP_TEMPLATE)?;
+        super::clip_resources(stock, &CAP_FACTS, &clip_template, &planned, &mut out.scene)?;
+    }
 
     let mut by_screen: BTreeMap<String, (ScreenFacts, Vec<usize>)> = BTreeMap::new();
     for (ri, r) in recs.iter().enumerate() {

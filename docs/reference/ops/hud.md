@@ -270,7 +270,7 @@ The scene a scene target grows is read after every other addon's whole replaceme
 
 ## Screens, textures and units
 
-A record is not bound to the dials. With `screen` in place of `dial` its elements go on the standings board, the replay screen's drivers list or the spectator tower, with `show` and `also` naming the leaf that shows them on each screen, `stock_nodes` hiding the game's own parts while they show and `restyle` reshaping the Race Control banner: [HUD screens](/reference/ops/hud-screens). Team logos, the series logo and colour bars come from the game's own textures through the `unit` kind, `texture` bindings and stock-texture sprites: [HUD textures and units](/reference/ops/hud-textures). The rows of a timing tower are the `repeat`, `stack` and `centre` fields above.
+A record is not bound to the dials. With `screen` in place of `dial` its elements go on the standings board, the replay screen's drivers list or the spectator tower, with `show` and `also` naming the leaf that shows them on each screen, `stock_nodes` hiding the game's own parts while they show and `restyle` reshaping the Race Control banner: [HUD screens](/reference/ops/hud-screens). Team logos, the series logo and colour bars come from the game's own textures through the `unit` kind, `texture` bindings and stock-texture sprites: [HUD textures and units](/reference/ops/hud-textures). The rows of a timing tower are the `repeat`, `stack` and `centre` fields above. A group that slides or fades on a bool leaf carries a `motion`: [HUD motion](/reference/ops/hud-motion).
 
 ## Bridge addons
 

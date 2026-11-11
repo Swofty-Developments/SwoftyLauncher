@@ -269,6 +269,8 @@ pub struct Element {
     /// Variant `add` entries only: the existing element this one takes the place of.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub replace: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub motion: Option<super::motion::Motion>,
 }
 
 /// Where a variant's `add` entry goes: in front of, behind or in place of an existing element.
@@ -721,6 +723,13 @@ impl HudElement {
             }
             let patched = self.with_variant(name).map_err(what)?;
             check_tree(&patched.elements, &patched.decisions).map_err(what)?;
+            super::motion::check_elements(&self.variants[name].add, None).map_err(what)?;
+        }
+        super::motion::check_elements(&self.elements, None)?;
+        if self.scene_target().is_some() && has_motion(&self.elements) {
+            return Err(err(
+                "a scene target does not take motion: its triggers need the record's control group (a dial or screen record)",
+            ));
         }
         Ok(())
     }
@@ -928,6 +937,10 @@ fn expand_into(
     Ok(())
 }
 
+fn has_motion(list: &[Element]) -> bool {
+    list.iter().any(|e| e.motion.is_some() || has_motion(&e.children))
+}
+
 fn substitute_element(e: &mut Element, vars: &[(char, u32)]) -> Result<()> {
     let id = e.id.clone();
     let text = |s: &mut Option<String>| -> Result<()> {
@@ -947,6 +960,7 @@ fn substitute_element(e: &mut Element, vars: &[(char, u32)]) -> Result<()> {
     for b in [&mut e.visible, &mut e.tint, &mut e.value, &mut e.texture]
         .into_iter()
         .flatten()
+        .chain(e.motion.iter_mut().filter_map(|m| m.play_on.as_mut()))
     {
         text(&mut b.view_model)?;
         text(&mut b.session)?;

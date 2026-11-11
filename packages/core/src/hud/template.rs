@@ -512,6 +512,7 @@ pub fn bound_nodes(plan: &Plan, tex: Option<&TexFacts>) -> Result<Vec<Node>> {
     for f in &plan.fractions {
         kids.push(node::fraction_node(&f.name, &f.element, &f.db));
     }
+    kids.extend(super::motion::player_nodes(plan));
     for s in &plan.shows {
         kids.push(node::group_node(
             &s.name,
@@ -541,6 +542,10 @@ pub fn group(plan: &Plan, stock_root: &Node, parent: &str) -> Result<Node> {
     let mut decision_names = Vec::new();
     for d in &plan.decisions {
         let n = decision_node(d, plan, stock_root, parent, &base)?;
+        decision_names.push(n.name().to_owned());
+        kids.push(n);
+    }
+    for n in super::motion::trigger_nodes(plan, &base) {
         decision_names.push(n.name().to_owned());
         kids.push(n);
     }
