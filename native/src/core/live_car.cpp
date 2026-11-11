@@ -1,6 +1,7 @@
 #include "live_car.hpp"
 
 #include "lap_rec_logic.hpp"
+#include "live_car_logic.hpp"
 #include "postfx_logic.hpp"
 #include "runtime.hpp"
 
@@ -36,13 +37,15 @@ constexpr float RAD_S_TO_RPM = 60.0f / 6.2831855f;
 
 uintptr_t table = 0, count = 0;
 bool resolved = false;
+Fields fields;
 int last_player = -1;
 
 void resolve()
 {
     resolved = true;
-    if (!runtime::same_build()) {
-        swofty::log("[shaders] live car signals are unavailable: this is not the build the car offsets are from");
+    fields = fields_of(runtime::same_build(), runtime::verified_build());
+    if (!fields.table) {
+        swofty::log("[shaders] live car signals are unavailable: this is not a build the car offsets are checked on");
         return;
     }
     if (swofty::api) {
@@ -53,7 +56,11 @@ void resolve()
         table = count = 0;
         swofty::log("[shaders] live car signals are unavailable: g_Sess_VehicleTable or g_Sess_VehicleCount does not "
                     "resolve");
+        return;
     }
+    if (!fields.wheels)
+        swofty::log("[shaders] live car signals on this build read the proven car fields only: wheel surface, wheel "
+                    "wetness, track wetness, orientation, wheel spin and slip are off until their offsets are checked on it");
 }
 
 uintptr_t car_at(int i)
@@ -138,6 +145,8 @@ int find_player(uintptr_t &car, bool &ai)
 
 void read_surface(uintptr_t car, LiveCar &out)
 {
+    if (!fields.surface)
+        return;
     uintptr_t susp = ptr(car, CAR_SUSPENSION);
     if (!susp)
         return;
@@ -176,7 +185,7 @@ bool vec3(uintptr_t at, float (&out)[3])
 
 void read_wetness(LiveCar &out)
 {
-    if (!swofty::api)
+    if (!swofty::api || !fields.wetness)
         return;
     uintptr_t state = ptr(swofty::api->module_base() + RVA_WEATHER_SURFACE_STATE, 0);
     float w = 0;
@@ -258,6 +267,20 @@ bool read(LiveCar &out)
     return true;
 }
 
+bool available()
+{
+    if (!resolved)
+        resolve();
+    return table && count;
+}
+
+bool kb_fields()
+{
+    if (!resolved)
+        resolve();
+    return fields.wheels;
+}
+
 uintptr_t player_car()
 {
     if (!resolved)
@@ -288,10 +311,10 @@ bool read_dynamics(LiveDynamics &out)
         if (uintptr_t body = ptr(ptr(chassis, CHASSIS_BODY), BODY_STATE)) {
             out.has_pos = vec3(body + BODY_POSITION, out.pos);
             out.has_vel = vec3(body + BODY_VELOCITY, out.vel);
-            out.has_angvel = vec3(body + BODY_ANGULAR, out.angvel);
+            out.has_angvel = fields.angvel && vec3(body + BODY_ANGULAR, out.angvel);
         }
         float axes[3][3];
-        bool read = true;
+        bool read = fields.orient;
         for (int c = 0; c < 3 && read; c++)
             read = vec3(chassis + CHASSIS_BASIS + BASIS_STRIDE * size_t(c), axes[c]);
         if (read && runtime::lap_rec::unit_axes(axes)) {
@@ -300,7 +323,7 @@ bool read_dynamics(LiveDynamics &out)
         }
     }
 
-    if (uintptr_t susp = ptr(car, CAR_SUSPENSION)) {
+    if (uintptr_t susp = fields.wheels ? ptr(car, CAR_SUSPENSION) : 0) {
         bool spin = true, slip = true;
         for (int i = 0; i < 4; i++) {
             uintptr_t wheel = ptr(susp, SUSPENSION_WHEELS + 8 * size_t(i));
@@ -316,7 +339,7 @@ bool read_dynamics(LiveDynamics &out)
         out.has_slip = slip;
     }
 
-    if (uintptr_t aero = ptr(car, CAR_AERO)) {
+    if (uintptr_t aero = fields.drs ? ptr(car, CAR_AERO) : 0) {
         float drs;
         if (mem::read(aero + AERO_DRS, drs) && real(drs)) {
             out.drs = drs < 0 ? 0 : drs > 1 ? 1 : drs;

@@ -31,11 +31,12 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 // F1 The Movie, F1 World, the challenge tile, a divider, Local Multiplayer, League Racing, Player Hub, Theatre.
 // site_FeHome_AfterCareerCall (swofty_core.cpp) runs right after the Career tile and calls add_tiles, which adds
 // Grand Prix and Time Trial as two copies of the F1 World item (their own id, title and description over the
-// stock populate), the challenge tile when the game builds it and Theatre; swofty_core then adds Addon
-// Settings last. arm_patch overwrites the first instruction of the F1 World block (lea r15d,[r12+1]) with a jmp to
-// the block's final jmp, so F1 World, the divider, Local Multiplayer, League Racing, Player Hub and the stock
-// Theatre are never added. The block is matched byte for byte first and the adders are the call targets read
-// from it; when anything does not match nothing is patched, no tile is added and the stock menu stays.
+// stock populate), Split Screen as the stock Local Multiplayer item with its own title (its route opens the
+// game's Local Multiplayer list, the lone Splitscreen tile), the challenge tile when the game builds it and
+// Theatre; swofty_core then adds Addon Settings last. arm_patch overwrites the first instruction of the F1 World
+// block (lea r15d,[r12+1]) with a jmp to the block's final jmp, so F1 World, the divider, League Racing, Player Hub
+// and the stock Theatre are never added. The block is matched byte for byte first and the adders are the call
+// targets read from it; when anything does not match nothing is patched, no tile is added and the stock menu stays.
 //
 // The status strip, the sign-in state and the latest video card are painted by the overlay frame
 // (paint) from swofty/home_menu.json while the home screen is open. Images (the Discord avatar and the video
@@ -56,7 +57,9 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 // layout; only single (one spawner, tile order) exists so far, and rows is logged as not built.
 // SWOFTY_MAIN_MENU_ENTRY=chain opens the pickers the old way (home_to_activity, then the command 900 ms after
 // the container is up); SWOFTY_MAIN_MENU_BACK=stock|home|twostep picks the game's Back, its home route or the two-step
-// hub Back instead of the launcher's routes; SWOFTY_MAIN_MENU_GPSAVES=0 always opens the new Grand Prix picker;
+// hub Back instead of the launcher's routes; SWOFTY_MAIN_MENU_GPSAVES=1 opens the game's Grand Prix saves screen (which
+// lists saved seasons, offers New Grand Prix and selects the save slot) instead of the new Grand Prix picker: raised from
+// the home screen, the screen's slot list crashes the game (Game_CareerContinue_ListSlots) for many players, so it is off;
 // SWOFTY_MAIN_MENU_RETURN=0 leaves the session-end hand-over on the bare container; SWOFTY_MAIN_MENU_RECOVER=0 turns
 // the recovery of a screen that did not open off; SWOFTY_MAIN_MENU_STATEFIX=0 leaves #ui_menu_data.frontend_transition_state
 // alone when leaving the container; SWOFTY_MAIN_MENU_MIGRATELOG=0 leaves the Migrate command unhooked.
@@ -68,7 +71,7 @@ namespace {
 using namespace swofty::game;
 namespace logic = ::runtime::main_menu;
 
-constexpr size_t OFF_F1WORLD = 11, OFF_CHALLENGE = 32, OFF_DIVIDER = 47, OFF_THEATRE = 98, OFF_END_JMP = 103;
+constexpr size_t OFF_F1WORLD = 11, OFF_CHALLENGE = 32, OFF_DIVIDER = 47, OFF_LOCAL_MP = 59, OFF_THEATRE = 98, OFF_END_JMP = 103;
 constexpr size_t NESTR_CHARS = 9;
 
 const runtime::Sig S_BLOCK{"FeHome_F1WorldBlock",
@@ -84,7 +87,7 @@ using GetAction_t = Action *(*)(HomeItem *, Action *);
 
 struct Block {
     uint8_t *at = nullptr;
-    Add_t f1world = nullptr, challenge = nullptr, divider = nullptr, theatre = nullptr;
+    Add_t f1world = nullptr, challenge = nullptr, divider = nullptr, local_mp = nullptr, theatre = nullptr;
 } block;
 
 std::atomic<bool> resolved{false}, patched{false}, home_open{false};
@@ -115,7 +118,7 @@ std::shared_ptr<const Prepared> prepared;
 uint64_t prepared_at = 0;
 std::string prepared_key;
 std::atomic<int> strip_wanted{-1}, strip_set{-1};
-void *theatre_populate = nullptr, *theatre_action = nullptr;
+void *theatre_populate = nullptr, *theatre_action = nullptr, *local_mp_populate = nullptr;
 std::mutex state_lock;
 logic::State state;
 uint64_t state_read_at = 0;
@@ -156,10 +159,11 @@ bool resolve()
         block.f1world = target(at, OFF_F1WORLD);
         block.challenge = target(at, OFF_CHALLENGE);
         block.divider = target(at, OFF_DIVIDER);
+        block.local_mp = target(at, OFF_LOCAL_MP);
         block.theatre = target(at, OFF_THEATRE);
-        swofty::log("[main-menu] home tile block at %p; adders F1 World %p, challenge %p, Theatre %p", at,
+        swofty::log("[main-menu] home tile block at %p; adders F1 World %p, challenge %p, Local Multiplayer %p, Theatre %p", at,
                     reinterpret_cast<void *>(block.f1world), reinterpret_cast<void *>(block.challenge),
-                    reinterpret_cast<void *>(block.theatre));
+                    reinterpret_cast<void *>(block.local_mp), reinterpret_cast<void *>(block.theatre));
         resolved = true;
     });
     return resolved.load();
@@ -245,7 +249,7 @@ void wrap_item(HomeItem *item)
     if (!*logic::template_for(id, rows_on()))
         return;
     if (!std::strcmp(id, logic::ID_GRAND_PRIX) || !std::strcmp(id, logic::ID_TIME_TRIAL) ||
-        !std::strcmp(id, logic::ID_SHOWROOM) || !std::strcmp(id, logic::ID_SETTINGS))
+        !std::strcmp(id, logic::ID_LOCAL) || !std::strcmp(id, logic::ID_SHOWROOM) || !std::strcmp(id, logic::ID_SETTINGS))
         return;
     auto vt = reinterpret_cast<void **>(item->vtable);
     {
@@ -309,6 +313,41 @@ void add_showroom(TileList *list, uint8_t index)
     }
     swofty::subclass(item, {{4, reinterpret_cast<void *>(showroom_populate)}, {5, reinterpret_cast<void *>(showroom_action)}});
     Ne_Make_StrFromCStr(&item->id, logic::ID_SHOWROOM, 0, 0);
+}
+
+void split_screen_populate(HomeItem *item, void *node, uint32_t a7)
+{
+    reinterpret_cast<Populate_t>(local_mp_populate)(item, node, a7);
+    auto vm_node = static_cast<uint8_t *>(item->button_node.node);
+    if (!vm_node)
+        return;
+    void *reg = *g_Vm_Registry, *parent = vm_node + 8;
+    uint8_t no = 0;
+    set_string(reg, parent, "title", logic::SPLIT_SCREEN_TITLE);
+    Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
+    set_string(reg, parent, "description", logic::SPLIT_SCREEN_DESCRIPTION);
+    Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
+    style_item(item);
+}
+
+// The stock Local Multiplayer item, titled Split Screen: its id and its action (the local_multiplayer route, which
+// opens the game's Local Multiplayer list, the lone Splitscreen tile) stay the game's.
+void add_split_screen(TileList *list, uint8_t index)
+{
+    block.local_mp(list, index);
+    HomeItem *item = last_item(list);
+    if (!item) {
+        swofty::log("[main-menu] split screen: the Local Multiplayer adder left no item");
+        return;
+    }
+    auto vt = reinterpret_cast<void **>(item->vtable);
+    if (!local_mp_populate)
+        local_mp_populate = vt[4];
+    if (vt[4] != local_mp_populate) {
+        swofty::log("[main-menu] split screen: the Local Multiplayer item's vtable changed; left as a Local Multiplayer tile");
+        return;
+    }
+    swofty::subclass(item, {{4, reinterpret_cast<void *>(split_screen_populate)}});
 }
 
 enum class Step { idle, wait_container, done };
@@ -778,7 +817,7 @@ void card_populate(HomeItem *item, void *node, uint32_t a7)
     style_item(item);
 }
 
-bool gp_saves_exist();
+void gp_saves_probe();
 
 Action *card_action(HomeItem *item, Action *out)
 {
@@ -792,7 +831,9 @@ Action *card_action(HomeItem *item, Action *out)
     bool gp = !std::strcmp(id_of(item), logic::ID_GRAND_PRIX);
     const char *route = route_name();
     if (entry_by_route()) {
-        logic::Mode m = gp ? logic::grand_prix_mode(gp_saves_exist(), !off("SWOFTY_MAIN_MENU_GPSAVES")) : logic::Mode::time_trial;
+        if (gp)
+            gp_saves_probe();
+        logic::Mode m = gp ? logic::grand_prix_mode(!std::strcmp(env("SWOFTY_MAIN_MENU_GPSAVES"), "1")) : logic::Mode::time_trial;
         nav.mode = int(m);
         nav.return_armed = false;
         route = logic::press_route(m);
@@ -971,44 +1012,58 @@ const runtime::Sig S_GAME_MANAGER{"game.manager",
                                   "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05", 0x604c2c8,
                                   runtime::Sig::riprel, 26, 29, 7};
 
-// The stock Grand Prix entry shows its saved seasons when GrandPrixContinueViewModel's mode lookup
-// (Game_GrandPrixContinueVm_FindModeEntity 0x141bccc00) finds a championship mode whose season registry
+// The stock Grand Prix entry (grand_prix_continue) shows its saved seasons when GrandPrixContinueViewModel's mode
+// lookup (Game_GrandPrixContinueVm_FindModeEntity 0x141bccc00) finds a championship mode whose season registry
 // (entity +0x1030, virtual +0x78) answers 1: F2_2026/F2_2025/F2_2024_Championship_Season, F1_Championship_Season,
-// F1_2026_Championship_Season, in that order. The same lookup (0x1407d0de0 on the game modes, the manager's +0xc0)
-// is asked here.
-bool gp_saves_exist()
+// F1_2026_Championship_Season, in that order. The card does not decide on this lookup any more: in the field it found
+// no entity for any name, F1_Championship_Season included, so the card never opened the saves screen (1.9.0 to 1.9.3).
+// It is asked once per session and logged (the modes pointer and every answer) so the field says which step fails.
+void gp_saves_probe()
 {
+    static std::atomic<bool> asked{false};
+    if (asked.exchange(true))
+        return;
     static const uintptr_t names[] = {0x5734370, 0x573438c, 0x57343a8, 0x570a6b2, 0x570a6c9};
     uintptr_t find = runtime::find(S_MODE_BY_NAME, "home", "core"), manager = runtime::find(S_GAME_MANAGER, "home", "core");
     if (!find || !manager) {
-        swofty::log("[main-menu] chain: the Grand Prix saves check did not resolve (mode lookup %p, game manager %p); using the new Grand Prix entry",
+        swofty::log("[main-menu] probe: the Grand Prix season lookup did not resolve (mode lookup %p, game manager %p)",
                     reinterpret_cast<void *>(find), reinterpret_cast<void *>(manager));
-        return false;
+        return;
     }
     void *mgr = *reinterpret_cast<void **>(manager);
     if (!mgr || !runtime::readable(static_cast<uint8_t *>(mgr) + 0xc0, 8)) {
-        swofty::log("[main-menu] chain: the game manager is not readable; using the new Grand Prix entry");
-        return false;
+        swofty::log("[main-menu] probe: the game manager %p is not readable", mgr);
+        return;
     }
     void *modes = *reinterpret_cast<void **>(static_cast<uint8_t *>(mgr) + 0xc0);
     uintptr_t base = swofty::api->module_base();
+    swofty::log("[main-menu] probe: game manager %p, game modes %p, mode lookup base+0x%llx", mgr, modes,
+                (unsigned long long)(find - base));
+    if (!modes || !runtime::readable(modes, 8))
+        return;
     for (uintptr_t rva : names) {
         const char *name = reinterpret_cast<const char *>(base + rva);
-        if (!runtime::readable(name, 8))
+        if (!runtime::readable(name, 8) || std::strlen(name) > 40 || std::strncmp(name, "F", 1)) {
+            swofty::log("[main-menu] probe: mode name at base+0x%llx is not a name", (unsigned long long)rva);
             continue;
+        }
         auto entity = reinterpret_cast<uint8_t *>(reinterpret_cast<void *(*)(void *, const char *)>(find)(modes, name));
-        if (!entity || !runtime::readable(entity + 0x1030, 8))
+        if (!entity) {
+            swofty::log("[main-menu] probe: Grand Prix mode %s: no entity", name);
             continue;
+        }
+        if (!runtime::readable(entity + 0x1030, 8)) {
+            swofty::log("[main-menu] probe: Grand Prix mode %s: entity %p has no readable season registry", name, entity);
+            continue;
+        }
         void **vt = *reinterpret_cast<void ***>(entity + 0x1030);
-        if (!vt || !runtime::readable(vt + 0xf, 8))
+        if (!vt || !runtime::readable(vt + 0xf, 8)) {
+            swofty::log("[main-menu] probe: Grand Prix mode %s: entity %p, registry vtable %p unreadable", name, entity, vt);
             continue;
+        }
         int answer = reinterpret_cast<int (*)(void *)>(vt[0x78 / 8])(entity + 0x1030);
-        swofty::log("[main-menu] chain: Grand Prix mode %s season registry answers %d", name, answer);
-        if (answer == 1)
-            return true;
+        swofty::log("[main-menu] probe: Grand Prix mode %s: entity %p, season registry answers %d", name, entity, answer);
     }
-    swofty::log("[main-menu] chain: no saved Grand Prix season found; using the new Grand Prix entry");
-    return false;
 }
 
 void start_chain(bool time_trial)
@@ -1020,12 +1075,9 @@ void start_chain(bool time_trial)
     std::lock_guard<std::mutex> g(chain_lock);
     chain = {};
     chain.step = Step::wait_container;
-    bool resume = false;
-    if (!time_trial) {
-        swofty::log("[main-menu] chain: checking for a saved Grand Prix season");
-        resume = gp_saves_exist();
-    }
-    logic::Mode m = time_trial ? logic::Mode::time_trial : logic::grand_prix_mode(resume, true);
+    if (!time_trial)
+        gp_saves_probe();
+    logic::Mode m = time_trial ? logic::Mode::time_trial : logic::grand_prix_mode(!std::strcmp(env("SWOFTY_MAIN_MENU_GPSAVES"), "1"));
     nav.mode = int(m);
     chain.command = logic::return_command(m);
     chain.started = GetTickCount64();
@@ -1076,7 +1128,7 @@ bool arm_patch()
     hook_migrate();
     hook_gohome();
     hook_addtabs();
-    swofty::log("[main-menu] stock F1 World, divider, Local Multiplayer, League Racing, Player Hub and Theatre tiles skipped");
+    swofty::log("[main-menu] stock F1 World, divider, League Racing, Player Hub and Theatre tiles skipped");
     return true;
 }
 
@@ -1088,6 +1140,7 @@ uint8_t add_tiles(void *list_, uint8_t career_index, const uint8_t *flags)
     uint8_t index = career_index;
     add_card(list, ++index, logic::ID_GRAND_PRIX);
     add_card(list, ++index, logic::ID_TIME_TRIAL);
+    add_split_screen(list, ++index);
     if (flags && (flags[8] & 1))
         block.challenge(list, ++index);
     block.theatre(list, ++index);
@@ -1100,7 +1153,7 @@ uint8_t add_tiles(void *list_, uint8_t career_index, const uint8_t *flags)
         swofty::log("[main-menu] divider tile added before Addon Settings (index %u)", unsigned(index));
     }
     style_list(list);
-    swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial%s, Theatre%s (last index %u)",
+    swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial, Split Screen%s, Theatre%s (last index %u)",
                 flags && (flags[8] & 1) ? ", challenge" : "", showroom ? ", Showroom" : "", unsigned(index));
     return index;
 }

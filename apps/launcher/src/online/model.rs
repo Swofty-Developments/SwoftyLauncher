@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::fmt;
+use swofty_core::timetrial::boards::content_listed;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OnlineError {
@@ -770,10 +771,12 @@ pub struct Recents {
 
 impl Recents {
     pub fn load(data: &std::path::Path) -> Self {
-        std::fs::read(Self::path(data))
+        let mut recents: Self = std::fs::read(Self::path(data))
             .ok()
             .and_then(|b| serde_json::from_slice(&b).ok())
-            .unwrap_or_default()
+            .unwrap_or_default();
+        recents.seasons.retain(|s| content_listed(&s.id));
+        recents
     }
 
     fn path(data: &std::path::Path) -> std::path::PathBuf {
@@ -791,6 +794,9 @@ impl Recents {
     }
 
     pub fn visit(&mut self, id: &str, name: &str) {
+        if !content_listed(id) {
+            return;
+        }
         self.seasons.retain(|s| s.id != id);
         self.seasons.insert(
             0,
@@ -981,24 +987,48 @@ mod tests {
 
     #[test]
     fn recent_seasons_keep_the_newest_first_without_repeats_and_survive_a_restart() {
+        let season = |i: usize| format!("swofty.swofty-seasons-{}/sw_{0}", 2000 + i);
         let mut r = Recents::default();
-        r.visit("a", "A");
-        r.visit("b", "B");
-        r.visit("a", "A");
+        r.visit("game/f1_2025", "A");
+        r.visit(&season(1), "B");
+        r.visit("game/f1_2025", "A");
         assert_eq!(
             r.list().iter().map(|s| s.id.as_str()).collect::<Vec<_>>(),
-            ["a", "b"]
+            ["game/f1_2025", season(1).as_str()]
         );
         for i in 0..20 {
-            r.visit(&format!("s{i}"), "S");
+            r.visit(&season(i), "S");
         }
         assert_eq!(r.list().len(), RECENT_CAP);
-        assert_eq!(r.list()[0].id, "s19");
+        assert_eq!(r.list()[0].id, season(19));
         let dir = std::env::temp_dir().join(format!("swofty-tt-recent-{}", std::process::id()));
         r.save(&dir);
         assert_eq!(Recents::load(&dir), r);
         std::fs::remove_dir_all(&dir).ok();
         assert_eq!(Recents::load(&dir), Recents::default());
+    }
+
+    #[test]
+    fn recent_seasons_leave_out_unlisted_content() {
+        let mut r = Recents::default();
+        r.visit("swofty.classic-seasons-2020/f1_2020", "F1 2020 GP/TT Addon");
+        assert!(r.list().is_empty());
+        let dir = std::env::temp_dir().join(format!("swofty-tt-recent-old-{}", std::process::id()));
+        std::fs::create_dir_all(dir.join("state")).unwrap();
+        std::fs::write(
+            dir.join("state").join("tt-recent.json"),
+            r#"{"seasons":[{"id":"bydanix.f1-2012-season/ex_f1_2012","name":"F1 2012"},{"id":"game/f1_2025","name":"F1 25"}]}"#,
+        )
+        .unwrap();
+        assert_eq!(
+            Recents::load(&dir)
+                .list()
+                .iter()
+                .map(|s| s.id.as_str())
+                .collect::<Vec<_>>(),
+            ["game/f1_2025"]
+        );
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     fn setup_of(front: f32, compound: &str) -> Setup {

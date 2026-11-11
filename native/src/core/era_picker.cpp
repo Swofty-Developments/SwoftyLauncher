@@ -1239,6 +1239,7 @@ void leave_front_end(uintptr_t ctx)
 void grand_prix_load(uintptr_t ctx)
 {
     static uint32_t logged;
+    swofty_core::apply::moments::grand_prix_track_check();
     auto [mode, track] = swofty_core::apply::moments::session_mode_track();
     if (mode != "grand_prix")
         return;

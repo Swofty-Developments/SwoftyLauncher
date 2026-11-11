@@ -373,6 +373,33 @@ inline BoardTrack request_track(const swofty_core::apply::tracks::Base &base, co
     return board_track(base, session_code);
 }
 
+// The session's track comes from the game's current-track getter, which costs hundreds of milliseconds per call from the front
+// end. The watch runs only while a Time Trial session is live: the bridge, the guards or the diagnostics need the track, and the
+// session entered as a Time Trial and has not ended. In the front end the last track read is kept.
+inline bool track_watch_on(bool bridge_on, bool guards_on, bool diag_on, bool session_live, bool time_trial)
+{
+    return (bridge_on || guards_on || diag_on) && session_live && time_trial;
+}
+
+inline bool track_watch_due(bool on, int64_t now_ms, int64_t checked_ms, int64_t period_ms = 500)
+{
+    return on && now_ms - checked_ms >= period_ms;
+}
+
+// The diagnostics tick reads the ghost lap handler out of the storage system and describes it. Every read is guarded (a VirtualQuery
+// each), which costs milliseconds per call on some PCs, and the storage system's onSessionEnter runs for every session kind. The tick
+// therefore runs only while the track watch says a Time Trial session is live, for the bridge or the diagnostics, and at most twice a
+// second: the flow tick runs a few hundred times a second across its threads.
+inline bool diag_tick_on(bool bridge_on, bool diag_on, bool time_trial_live)
+{
+    return (bridge_on || diag_on) && time_trial_live;
+}
+
+inline bool diag_tick_due(bool on, int64_t now_ms, int64_t checked_ms, int64_t period_ms = 500)
+{
+    return track_watch_due(on, now_ms, checked_ms, period_ms);
+}
+
 // One rule for "this board is ours": an addon's descriptor or a custom track. The request redirect and the guards use it.
 // The garage monitor's `tt_privilege_check_done` command carries one byte, the privilege result. A denied result (0) becomes
 // granted (1) for our content with the bridge on; a granted result, an unreadable value (0xff) and any other value stay.
@@ -1189,6 +1216,12 @@ inline const char *account_state_name(unsigned v)
                                         "eEAAccountSteamOverlayDisabled", "eCurrentSessionHostile"};
     return v < sizeof names / sizeof *names ? names[v] : "unknown";
 }
+
+// The account-state error handler raises a popup route only for 8 (ea_account_login_error) and 9 (the Platform Client
+// Overlay popup); with the bridge on those two, and 2 (server not accessible, the offline copies' state), are not shown.
+// 10 (a hostile session, seen on the EA app copy) runs the stock handler: it sets #ui_menu_data.online_services.error_code,
+// which is how the online-services screen (Time Trial's "checking privileges") learns the check failed and leaves.
+inline bool account_error_quiet(bool bridge_on, unsigned state) { return bridge_on && (state == 2 || state == 8 || state == 9); }
 
 }
 

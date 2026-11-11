@@ -16323,6 +16323,16 @@ pub mod bindings {
         kind: "call",
         status: Status::Experimental,
     };
+    pub const site_Game_TheatreList_EntryStep: Binding = Binding {
+        id: "site_Game_TheatreList_EntryStep",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TheatreList_NoSlot: Binding = Binding {
+        id: "site_Game_TheatreList_NoSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_ThrustmasterLcd_EntrantRecord: Binding = Binding {
         id: "site_Game_ThrustmasterLcd_EntrantRecord",
         kind: "site",

@@ -166,8 +166,24 @@ fn copy_link(src: &Path, dst: &Path) -> io::Result<()> {
     }
 }
 
+/// Whether the launcher appends to `rel` while it runs: its own logs under
+/// `state/` and the kept Send Logs under `logs/`. These grow during a copy
+/// made from a running launcher, so the copy is checked as a prefix of the
+/// source; the sync at the next start brings them up to date.
+pub fn live(rel: &Path) -> bool {
+    let mut parts = rel.components().map(|c| c.as_os_str());
+    match parts.next() {
+        Some(first) if first == "logs" => parts.next().is_some(),
+        Some(first) if first == "state" => {
+            parts.next().is_some() && rel.extension().is_some_and(|e| e == "log")
+        }
+        _ => false,
+    }
+}
+
 /// Checks that `dst` holds what `src` holds: the same entries and sizes, and
-/// the same bytes in every file up to a megabyte.
+/// the same bytes in every file up to a megabyte. A [`live`] log may have
+/// grown since it was copied: its copy must be a prefix of the source.
 pub fn verify(src: &Path, dst: &Path) -> Result<(), String> {
     let (a, b) = (
         listing(src).map_err(|e| format!("could not read {}: {e}", src.display()))?,
@@ -180,6 +196,13 @@ pub fn verify(src: &Path, dst: &Path) -> Result<(), String> {
         match (entry, b.get(rel)) {
             (Entry::Dir, Some(Entry::Dir)) => {}
             (Entry::Link(x), Some(Entry::Link(y))) if x == y => {}
+            (Entry::File { len: x, .. }, Some(Entry::File { len: y, .. })) if live(rel) => {
+                let prefix = y <= x
+                    && (*y > HASHED_UP_TO || digest_up_to(&src.join(rel), *y) == digest(&dst.join(rel)));
+                if !prefix {
+                    return Err(format!("{} changed during the copy", rel.display()));
+                }
+            }
             (Entry::File { len: x, .. }, Some(Entry::File { len: y, .. })) if x == y => {
                 if *x <= HASHED_UP_TO && digest(&src.join(rel)) != digest(&dst.join(rel)) {
                     return Err(format!("{} differs after the copy", rel.display()));
@@ -193,6 +216,12 @@ pub fn verify(src: &Path, dst: &Path) -> Result<(), String> {
 
 fn digest(path: &Path) -> Option<Vec<u8>> {
     Some(Sha256::digest(std::fs::read(path).ok()?).to_vec())
+}
+
+fn digest_up_to(path: &Path, len: u64) -> Option<Vec<u8>> {
+    let mut bytes = Vec::with_capacity(len as usize);
+    File::open(path).ok()?.take(len).read_to_end(&mut bytes).ok()?;
+    (bytes.len() as u64 == len).then(|| Sha256::digest(&bytes).to_vec())
 }
 
 /// Deletes a file, link or folder; a link is unlinked, never followed.

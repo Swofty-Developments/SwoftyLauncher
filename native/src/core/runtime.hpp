@@ -92,6 +92,9 @@ void frame_probe_name(const char *what);
 const SwoftyOverlay *overlay_table();
 const SwoftyTelemetry *telemetry_table();
 const SwoftyDb *db_table();
+// True once a db_table() call has resolved the database reader's signatures; the core's own readers check it so
+// they never initialise the reader (and log its resolve) in a run where no addon reads the game database.
+bool db_initialised();
 const SwoftyStorage *storage_table();
 std::wstring storage_write_path(const std::string &id, const std::string &path);
 const SwoftyCareer *career_table();
@@ -300,6 +303,8 @@ std::vector<CoreMixins> estimate_laptime_mixins();
 void estimate_laptime_commit();
 std::vector<CoreMixins> garage_setup_mixins();
 void garage_setup_commit();
+std::vector<CoreMixins> theatre_list_mixins();
+void theatre_list_commit();
 std::vector<CoreMixins> session_enter_mixins();
 std::vector<CoreMixins> ai_line_set_mixins();
 void ai_line_set_commit();
@@ -327,6 +332,7 @@ void tt_bridge_lap_finished(int64_t lap_ms, int valid);
 void tt_bridge_lap_progress(double path_m, double elapsed_s);
 std::string tt_bridge_last_board();
 void tt_bridge_session_enter();
+void tt_bridge_track_watch(bool session_live);
 void lap_rec_ghost(uintptr_t handler);
 void lap_rec_native_trace(const uint8_t *data, size_t size);
 bool lap_rec_current_board(std::string &content, std::string &track, std::string &weather);

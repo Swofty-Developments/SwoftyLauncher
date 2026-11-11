@@ -961,6 +961,21 @@ static void test_device_hook_rival()
     CHECK(device_hooks_allowed("", -1) && device_hooks_allowed("", 1) && !device_hooks_allowed("RTSSHooks64.dll", -1) &&
               !device_hooks_allowed("RTSSHooks64.dll", 0) && device_hooks_allowed("RTSSHooks64.dll", 1),
           "a rival keeps the device hooks off unless SWOFTY_OVERLAY_FG / overlay_fg forces them");
+    const ArmReasons none{}, menu{false, false, false, true}, overlay{true, false, false, false},
+        overlay_menu{true, false, false, true}, capture_menu{false, true, false, true}, cover_menu{false, false, true, true};
+    CHECK(!none.any() && menu.any() && overlay.any() && cover_menu.any(), "any reason asks for the present hook");
+    CHECK(menu.menu_only() && !none.menu_only() && !overlay.menu_only() && !overlay_menu.menu_only() &&
+              !capture_menu.menu_only() && !cover_menu.menu_only(),
+          "the main menu alone is menu-only; an overlay addon, a capture or a cover is not");
+    CHECK(!present_hook_yields(menu, "") && !present_hook_yields(overlay, "") && !present_hook_yields(overlay_menu, ""),
+          "without a rival the present hook arms for every reason");
+    CHECK(present_hook_yields(menu, "RTSSHooks64.dll") &&
+              present_hook_yields(menu, "RTSSHooks64.dll (RivaTuner Statistics Server is running)"),
+          "the main menu alone yields the present hook to rivatuner, by module or by its shared memory");
+    CHECK(!present_hook_yields(overlay, "RTSSHooks64.dll") && !present_hook_yields(overlay_menu, "RTSSHooks64.dll") &&
+              !present_hook_yields(capture_menu, "RTSSHooks64.dll") && !present_hook_yields(cover_menu, "RTSSHooks64.dll"),
+          "an overlay addon, a capture or a cover still arms the present hook with rivatuner in the process");
+    CHECK(!present_hook_yields(none, "RTSSHooks64.dll"), "nothing to arm yields nothing");
 }
 
 static void test_fg_gate()

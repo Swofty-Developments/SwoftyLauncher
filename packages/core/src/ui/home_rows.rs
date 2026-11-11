@@ -42,7 +42,7 @@ const fn row(template: &'static str, slot: &'static str, x: f64, y: f64, guid: &
     }
 }
 
-pub const ROWS: [Row; 9] = [
+pub const ROWS: [Row; 10] = [
     row(
         "swofty_home_top_left",
         "swofty_home_slot_top_left",
@@ -77,6 +77,13 @@ pub const ROWS: [Row; 9] = [
         RIGHT,
         2.45,
         "b2d4f6a8-2c3e-4a71-9ba2-c4d6e8f0a202",
+    ),
+    row(
+        "swofty_home_modes_third",
+        "swofty_home_slot_modes_third",
+        THIRD,
+        2.45,
+        "b3d4f6a8-2c3e-4a71-9ba2-c4d6e8f0a203",
     ),
     row(
         "swofty_home_wide_a",

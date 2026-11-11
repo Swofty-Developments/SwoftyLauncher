@@ -244,6 +244,18 @@ impl<T> Rows<T> {
     }
 }
 
+/// Whether the launcher shows Time Trial content and the rankings count it: the stock game's boxes
+/// (`game/...`) and the SWOFTY seasons (`swofty.swofty-seasons-<year>/...`). Every other addon's box,
+/// such as Classic Seasons' `swofty.classic-seasons-2020/f1_2020`, is hidden. The boards server ranks by
+/// the same rule.
+pub fn content_listed(content: &str) -> bool {
+    let addon = content.split('/').next().unwrap_or_default().to_lowercase();
+    addon == "game"
+        || addon
+            .strip_prefix("swofty.swofty-seasons-")
+            .is_some_and(|year| year.len() == 4 && year.bytes().all(|b| b.is_ascii_digit()))
+}
+
 /// `m:ss.mmm` for a lap time.
 pub fn format_time(ms: u64) -> String {
     format!("{}:{:02}.{:03}", ms / 60_000, ms / 1000 % 60, ms % 1000)
@@ -271,7 +283,9 @@ fn segment(text: &str) -> String {
 
 impl Api {
     pub fn catalog(&self) -> Result<Vec<Group>, ApiError> {
-        Ok(self.get_json::<Rows<Group>>("/v1/tt/boards")?.into_vec())
+        let mut groups = self.get_json::<Rows<Group>>("/v1/tt/boards")?.into_vec();
+        groups.retain(|g| content_listed(&g.content));
+        Ok(groups)
     }
 
     pub fn board(
@@ -310,6 +324,7 @@ impl Api {
                 _ => break,
             }
         }
+        all.retain(|l| content_listed(&l.content));
         Ok(all)
     }
 
@@ -340,12 +355,15 @@ impl Api {
                 _ => break,
             }
         }
+        all.retain(|r| content_listed(&r.content));
         Ok(all)
     }
 
     /// Every season and track that has laps.
     pub fn run_boards(&self) -> Result<Vec<RunBoard>, ApiError> {
-        Ok(self.get_json::<Rows<RunBoard>>("/v1/tt/admin/boards")?.into_vec())
+        let mut boards = self.get_json::<Rows<RunBoard>>("/v1/tt/admin/boards")?.into_vec();
+        boards.retain(|b| content_listed(&b.content));
+        Ok(boards)
     }
 
     pub fn accept_lap(&self, id: &str) -> Result<(), ApiError> {
@@ -367,6 +385,54 @@ impl Api {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn only_the_stock_game_and_the_swofty_seasons_are_listed() {
+        for listed in [
+            "game/f1_2025",
+            "GAME/f1_2025",
+            "swofty.swofty-seasons-2015/sw_2015",
+            "swofty.swofty-seasons-2024/sw_2024",
+        ] {
+            assert!(content_listed(listed), "{listed}");
+        }
+        for hidden in [
+            "swofty.classic-seasons-2020/f1_2020",
+            "bydanix.f1-2012-season/ex_f1_2012",
+            "msyeett.classic-seasons-2015/f1_2015",
+            "swofty.swofty-seasons-2021-real/sw_2021",
+            "swofty.swofty-seasons-progressive/x",
+            "swofty.swofty-seasons-20211/sw_2021",
+            "swofty.swofty-seasons-/sw",
+            "games/f1_2025",
+            "mod.game/f1_2025",
+            "",
+        ] {
+            assert!(!content_listed(hidden), "{hidden}");
+        }
+    }
+
+    #[test]
+    fn the_catalog_and_the_moderation_filters_leave_out_unlisted_seasons() {
+        let (url, t) = super::super::api::tests::serve(
+            "200 OK",
+            r#"[{"content":"game/f1_2025","name":"F1 25 (stock)","tracks":[]},{"content":"swofty.classic-seasons-2020/f1_2020","name":"F1 2020 GP/TT Addon","tracks":[]},{"content":"swofty.swofty-seasons-2021/sw_2021","name":"SWOFTY 2021","tracks":[]}]"#,
+        );
+        let groups = Api::with_server(&url, "tok").catalog().unwrap();
+        t.join().unwrap();
+        assert_eq!(
+            groups.iter().map(|g| g.content.as_str()).collect::<Vec<_>>(),
+            ["game/f1_2025", "swofty.swofty-seasons-2021/sw_2021"]
+        );
+        let (url, t) = super::super::api::tests::serve(
+            "200 OK",
+            r#"{"boards":[{"content":"bydanix.f1-2012-season/ex_f1_2012","track":"monaco","laps":3},{"content":"game/f1_2025","track":"monaco","laps":2}]}"#,
+        );
+        let boards = Api::with_server(&url, "tok").run_boards().unwrap();
+        t.join().unwrap();
+        assert_eq!(boards.len(), 1);
+        assert_eq!(boards[0].content, "game/f1_2025");
+    }
 
     #[test]
     fn formats_a_lap_time() {

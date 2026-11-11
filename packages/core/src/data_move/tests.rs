@@ -629,6 +629,122 @@ fn verify_catches_a_short_or_altered_copy() {
 }
 
 #[test]
+fn only_the_launchers_own_logs_are_live() {
+    assert!(copy::live(Path::new("state/registry.log")));
+    assert!(copy::live(Path::new("state/launcher-app.log")));
+    assert!(copy::live(Path::new("logs/swofty-logs-2026-11-12.zip")));
+    assert!(!copy::live(Path::new("state/session.json")));
+    assert!(!copy::live(Path::new("state")));
+    assert!(!copy::live(Path::new("logs")));
+    assert!(!copy::live(Path::new("addons/x/swofty.json")));
+    assert!(!copy::live(Path::new("addons/x/state/debug.log")));
+    assert!(!copy::live(Path::new("saves/career/one.bin")));
+}
+
+#[test]
+fn verify_accepts_a_live_log_that_grew_and_rejects_one_that_changed() {
+    let dir = temp("verify-live");
+    let (a, b) = (dir.join("a"), dir.join("b"));
+    seed(&a);
+    write(&a.join("state/registry.log"), "one\ntwo\n");
+    write(&a.join("logs/kept.txt"), "kept\n");
+    let never = no_cancel();
+    copy::sync(&a, &b, &never, &mut |_, _| {}).unwrap();
+    assert!(copy::verify(&a, &b).is_ok());
+    write(&a.join("state/registry.log"), "one\ntwo\nthree\n");
+    write(&a.join("logs/kept.txt"), "kept\nmore\n");
+    assert!(copy::verify(&a, &b).is_ok());
+    write(&b.join("state/registry.log"), "one\nxxx\n");
+    assert!(
+        copy::verify(&a, &b)
+            .unwrap_err()
+            .contains("changed during the copy")
+    );
+    write(&b.join("state/registry.log"), "one\ntwo\n");
+    write(&a.join("state/registry.log"), "one\n");
+    assert!(
+        copy::verify(&a, &b)
+            .unwrap_err()
+            .contains("changed during the copy")
+    );
+    write(&a.join("state/registry.log"), "one\ntwo\n");
+    write(&a.join("state/session.json"), "{\"a\":2}");
+    assert!(copy::verify(&a, &b).unwrap_err().contains("session.json differs"));
+}
+
+struct AppendOnce {
+    path: PathBuf,
+    done: AtomicBool,
+}
+
+impl Progress for AppendOnce {
+    fn report(&self, _: f32, text: &str) {
+        if text.replace('\\', "/").ends_with("state/session.json") && !self.done.swap(true, Ordering::Relaxed)
+        {
+            let mut file = std::fs::OpenOptions::new().append(true).open(&self.path).unwrap();
+            std::io::Write::write_all(&mut file, b"after the copy\n").unwrap();
+        }
+    }
+}
+
+#[test]
+fn a_log_the_launcher_appends_to_during_the_copy_does_not_fail_the_move() {
+    let dir = temp("live-log");
+    let (default, to) = (dir.join("Swofty"), dir.join("D/Data"));
+    seed(&default);
+    write(&default.join("state/registry.log"), "before the copy\n");
+    let p = plan(&loc(&default), &to, &OTHER_DRIVE).unwrap();
+    let appender = AppendOnce {
+        path: default.join("state/registry.log"),
+        done: AtomicBool::new(false),
+    };
+    let moved = move_data(&p, &OTHER_DRIVE, &appender, &no_cancel()).unwrap();
+    assert_eq!(moved.method, Method::Copied);
+    assert!(appender.done.load(Ordering::Relaxed));
+    assert_eq!(read(&to.join("state/registry.log")), "before the copy\n");
+    recover(&default, &OTHER_DRIVE).unwrap().unwrap();
+    assert_eq!(
+        read(&to.join("state/registry.log")),
+        "before the copy\nafter the copy\n"
+    );
+    whole(&to);
+}
+
+struct EditOnce {
+    path: PathBuf,
+    done: AtomicBool,
+}
+
+impl Progress for EditOnce {
+    fn report(&self, _: f32, text: &str) {
+        if text.ends_with("default.json") && !self.done.swap(true, Ordering::Relaxed) {
+            write(&self.path, "[]");
+        }
+    }
+}
+
+#[test]
+fn a_profile_changed_during_the_copy_still_fails_the_move() {
+    let dir = temp("live-profile");
+    let (default, to) = (dir.join("Swofty"), dir.join("D/Data"));
+    seed(&default);
+    let p = plan(&loc(&default), &to, &OTHER_DRIVE).unwrap();
+    let editor = EditOnce {
+        path: default.join("profiles/default.json"),
+        done: AtomicBool::new(false),
+    };
+    let e = move_data(&p, &OTHER_DRIVE, &editor, &no_cancel()).unwrap_err();
+    assert!(editor.done.load(Ordering::Relaxed));
+    assert!(
+        matches!(&e, Error::Mismatch { reason, .. } if reason.contains("default.json differs")),
+        "{e}"
+    );
+    assert!(!to.exists());
+    assert!(!journal_left(&default));
+    assert_eq!(read(&default.join("profiles/default.json")), "[]");
+}
+
+#[test]
 fn choose_uses_the_picked_folder_when_it_is_new_empty_or_named_for_swofty() {
     let dir = temp("choose");
     let empty = dir.join("empty");

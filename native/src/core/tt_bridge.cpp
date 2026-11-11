@@ -9,6 +9,7 @@
 
 #include "apply/content/lower.hpp"
 #include "apply/ids.hpp"
+#include "apply/moments.hpp"
 #include "direct_start_tt.hpp"
 #include "hooks/hooks.hpp"
 
@@ -247,8 +248,8 @@ Resolved found;
 bool bridge_on = false, boards_on = false, guards_on = false, request_guard = false, push_hooked = false;
 std::atomic<bool> pb_armed{false};
 std::string last_board, session_code;
-std::atomic<bool> session_custom{false}, track_watch{false};
-std::atomic<int64_t> track_checked_ms{0};
+std::atomic<bool> session_custom{false}, track_watch{false}, track_session{false};
+std::atomic<int64_t> track_checked_ms{0}, diag_checked_ms{0};
 std::atomic<bool> unknown_logged{false};
 std::atomic<int> pending_count{0};
 std::deque<std::unique_ptr<tb::Response>> responses;
@@ -752,11 +753,11 @@ void account_error_mid(safetyhook::Context &c)
     unsigned state = *reinterpret_cast<uint8_t *>(c.rcx + 0x1b8);
     if (state == 0 || state == 1 || state == 7)
         return;
-    bool quiet = bridge_on && (state == 2 || state == 8 || state == 9 || state == 10);
+    bool quiet = tb::gate::account_error_quiet(bridge_on, state);
     if (diag_on && ++diag_error_logged <= 16)
         swofty::log("[boards] diag: account-state error handler: state %u %s%s%s; backtrace %s", state, tb::gate::account_state_name(state),
-                    state == 9 ? " (the Platform Client Overlay popup)" : "", quiet ? "; no popup: the offline launcher's content does not need the account service" : "",
-                    backtrace_text(1, 6).c_str());
+                    state == 9 ? " (the Platform Client Overlay popup)" : "",
+                    quiet ? "; no popup: the offline launcher's content does not need the account service" : "; the game's handler runs", backtrace_text(1, 6).c_str());
     else if (quiet && ++quiet_logged <= 4)
         swofty::log("[boards] account-state error handler: state %u %s: its popup is not shown for this content (the leaderboard and ghosts use the bridge)", state,
                     tb::gate::account_state_name(state));
@@ -2809,14 +2810,10 @@ void diag_tick()
     if (!sys)
         return;
     uint64_t handler = peek64(sys + 0x278);
-    // Reading the board name and describing the handler are log work of a few guarded reads each; they run when the handler changes,
-    // twice a second otherwise, and every frame only under the diagnostics switch.
-    static int64_t watched_ms = 0;
-    int64_t t = now_ms();
-    bool due = diag_on || handler != diag_handler_seen || t - watched_ms >= 500;
+    // Reading the handler, the board name and describing the handler are guarded reads; tt_bridge_tick runs this at most twice a
+    // second and only while a Time Trial session is live (tb::diag_tick_on, tb::diag_tick_due).
     std::string name;
-    if (handler && due) {
-        watched_ms = t;
+    if (handler) {
         uint64_t ctx = peek64(handler + 0x58);
         uint64_t np = ctx ? peek64(ctx + 0x68) : 0;
         name = np ? tb::read_c(game_mem(), np) : std::string();
@@ -3302,22 +3299,53 @@ void complete(const tb::Completion &done)
 
 }
 
+namespace {
+
+std::string read_session_track()
+{
+    std::string code = runtime::lower(runtime::direct_start::tt::session_track());
+    session_custom = tb::board_track(swofty_core::apply::tracks::base(), code).custom;
+    std::lock_guard<std::mutex> g(lock);
+    session_code = code;
+    return code;
+}
+
+}
+
 namespace runtime {
+
+void tt_bridge_track_watch(bool session_live)
+{
+    bool time_trial = session_live && swofty_core::apply::moments::session_mode_track().first == "time_trial";
+    bool on = tb::track_watch_on(bridge_on, guards_on, diag_on, session_live, time_trial);
+    if (track_session.exchange(on) == on)
+        return;
+    if (on) {
+        track_checked_ms = now_ms();
+        std::string code = read_session_track();
+        swofty::log("[boards] track watch on: Time Trial session entered on track '%s'; the track is read twice a second until the session ends", code.c_str());
+        return;
+    }
+    std::string code;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        code = session_code;
+    }
+    swofty::log("[boards] track watch off: the session ended; the last track '%s' is kept", code.c_str());
+}
 
 void tt_bridge_tick()
 {
     replay_load_tick();
-    if (diag_on || bridge_on)
+    int64_t t = now_ms();
+    bool time_trial_live = track_session.load(std::memory_order_relaxed);
+    if (tb::diag_tick_due(tb::diag_tick_on(bridge_on, diag_on, time_trial_live), t, diag_checked_ms.load())) {
+        diag_checked_ms = t;
         diag_tick();
-    if (track_watch.load(std::memory_order_relaxed)) {
-        int64_t t = now_ms();
-        if (t - track_checked_ms.load() >= 500) {
-            track_checked_ms = t;
-            std::string code = runtime::lower(direct_start::tt::session_track());
-            session_custom = tb::board_track(swofty_core::apply::tracks::base(), code).custom;
-            std::lock_guard<std::mutex> g(lock);
-            session_code = std::move(code);
-        }
+    }
+    if (tb::track_watch_due(track_watch.load(std::memory_order_relaxed) && time_trial_live, t, track_checked_ms.load())) {
+        track_checked_ms = t;
+        read_session_track();
     }
     if (!pending_count.load(std::memory_order_relaxed))
         return;

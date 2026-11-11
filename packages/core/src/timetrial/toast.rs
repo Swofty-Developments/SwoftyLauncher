@@ -8,6 +8,7 @@ use serde_json::{Value, json};
 
 use super::MAILBOX_TOAST;
 use super::api::Uploaded;
+use super::boards::content_listed;
 use super::queue::{Folder, Queue};
 use super::swlap::Board;
 
@@ -35,7 +36,8 @@ pub fn previous_best(queue: &Queue, board: &Board, id: &str) -> Option<u64> {
 }
 
 /// The message for an upload reply, or `None` when no toast is due: a lap that is not accepted, not the
-/// player's best, or has no position. `previous_ms` is the best the launcher knew before this lap; a
+/// player's best, has no position, or is on content the launcher does not list
+/// ([`content_listed`]). `previous_ms` is the best the launcher knew before this lap; a
 /// reply that carries `previous_best_ms` wins over it.
 pub fn message(
     board: &Board,
@@ -44,7 +46,7 @@ pub fn message(
     previous_ms: Option<u64>,
     now: u64,
 ) -> Option<Value> {
-    if answer.status != "accepted" || answer.best != Some(true) {
+    if answer.status != "accepted" || answer.best != Some(true) || !content_listed(&board.content) {
         return None;
     }
     let position = answer.rank.filter(|r| *r >= 1)?;
@@ -188,6 +190,15 @@ mod tests {
     fn position_one_is_a_record() {
         let m = message(&board(), 1, &reply("accepted", Some(1), Some(true)), None, 0).unwrap();
         assert_eq!(m["record"], true);
+    }
+
+    #[test]
+    fn a_best_on_unlisted_content_shows_nothing() {
+        let classic = Board {
+            content: "swofty.classic-seasons-2020/f1_2020".into(),
+            ..board()
+        };
+        assert!(message(&classic, 1, &reply("accepted", Some(1), Some(true)), None, 0).is_none());
     }
 
     #[test]
