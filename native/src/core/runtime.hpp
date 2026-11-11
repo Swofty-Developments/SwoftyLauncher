@@ -166,6 +166,9 @@ swofty_core::registry::Store &older_store();
 std::string older_addon(const void *from);
 std::vector<CoreMixins> era_mixins();
 void era_commit();
+// Makes an entrant list count as the box the player pressed, for a session started without the picker (a replay of that box): the
+// session's car count follows the pressed box.
+void era_press(const char *entrant_list);
 void era_session_load();
 void era_session_trace(const char *state, int to);
 void era_session_unloaded(const char *state, int to);

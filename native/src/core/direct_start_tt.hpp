@@ -21,6 +21,8 @@ std::string session_track();
 int track_stat();
 
 // The entrant list the Time Trial mode has selected (the request's "box").
+// The Time Trial game mode object and its entity, or nulls.
+void mode_objects(void *&mode, void *&entity);
 std::string player_list();
 
 std::string player_team();

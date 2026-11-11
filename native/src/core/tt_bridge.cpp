@@ -174,6 +174,12 @@ const runtime::Sig S_SAVE_SLOT_SNAPSHOT{"Game_SaveSlotManager_SnapshotSlot_1429c
 // The fastest lap viewer's enter (0x142d9cee0), at its first check: rax = session host, rsi = the state.
 const runtime::Sig S_VIEW_ENTER{"site_Game_SessionStateViewFastestLap_enter_142d9cf10",
         "48 8B 80 60 02 00 00 80 B8 2E 0E 00 00 00 74 10 48 8B 8E 60 0D 00 00 80 B9 88 00 00 00 00 74 19", 0x2d9cf10, runtime::Sig::addr, 0, 7};
+// The pause menu's flying lap callback (0x141d59e90, no arguments): posts the request that puts the player's car on a flying lap.
+// The replay loader's save-data load of the file's info block (0x142c4c710): (manager, block, size, container) -> status, 0 = loaded.
+const runtime::Sig S_REPLAY_INFO_LOAD{"Game_Replay_LoadInfoBlock_142c4c710", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 01 00 00 48 89 CB 48 8B 49 10 48 89 4C 24 40", 0x2c4c710};
+const runtime::Sig S_FLYING_LAP{"Game_Request_PlayerFlyingLap_141d59e90",
+        "48 83 EC 38 48 8B 0D ?? ?? ?? ?? 31 D2 E8 ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 48 C7 44 24 28 00 00 00 00 48 8D 15 ?? ?? ?? ?? 48 89 54 24 20 88 44 24 30 C7 44 24 34 01 00 00 00",
+        0x1d59e90};
 // A session view model's first-update setup (0x1414bb420): it reads the game mode's current session without a null check.
 const runtime::Sig S_VM_SESSION_SETUP{"Game_SessionVm_Setup_1414bb420",
         "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 C6 41 14 FF 48 83 B9 B0 00 00 00 00 0F 84", 0x14bb420};
@@ -1348,6 +1354,7 @@ std::string replay_play_path;
 std::atomic<int64_t> replay_play_at{0}, replay_play_delay_ms{30000};
 std::atomic<int> replay_play_stage{0};
 void replay_view_arm(const std::string &path);
+std::atomic<bool> in_session_load{false};
 safetyhook::MidHook h_load_ready;
 std::atomic<bool> replay_play_forcing{false};
 // The load start asks one of two global objects whether a load may start now (virtual +0x10). It answers no on track. The probe logs the
@@ -1411,6 +1418,8 @@ void replay_load_tick()
     // The game's load is left out: Theatre goes on to start its plain Time Trial session, and the file is loaded and played there.
     // Theatre only goes on to the session once the game's own load has run; what that load put into the replay system is dropped when the
     // session starts, so the file is loaded again there.
+    // The session must hold the recording's cars: the game's stream reader walks the live vehicles and does not check the stored count.
+    runtime::era_press(request["box"].str().c_str());
     bool ok = h_load_start.call<bool>(mgr, path.c_str());
     swofty::log("[replay] Theatre pick: the game's own load start returned %d", ok ? 1 : 0);
     replay_play_path.clear();
@@ -1689,6 +1698,12 @@ std::atomic<bool> load_started{false};
 std::atomic<float> duration{0};
 std::string path;
 uint32_t held_link = 0;
+uintptr_t flying_lap_fn = 0;
+int in_game_updates = 0;
+int64_t flying_at = 0, recording_at = 0;
+uint32_t pit_seen = 0xffffffff;
+constexpr size_t IN_GAME_PIT_STATUS = 0xee4;
+constexpr uint32_t PIT_IN_GARAGE = 9;
 int64_t garage_at = 0;
 uint8_t *dumped_root = nullptr;
 std::vector<uint8_t *> route;
@@ -1818,9 +1833,31 @@ void fail(const char *why)
     replay_play_at = loaded_file ? now_ms() + 3000 : 0;
 }
 
+std::atomic<int64_t> trace_until{0};
+
+// For a while after the viewer's exit every state's status and link is logged when it changes, in any flow machine.
+void trace(uint8_t *node, uint32_t link)
+{
+    static std::mutex lock;
+    static std::map<uint8_t *, uint64_t> seen;
+    static int lines = 0;
+    uint64_t now = (uint64_t(u32(node, N_STATUS) & 0xff) << 32) | link;
+    std::lock_guard<std::mutex> g(lock);
+    auto it = seen.find(node);
+    if (it != seen.end() && it->second == now)
+        return;
+    seen[node] = now;
+    if (lines++ > 400)
+        return;
+    auto *parent = *reinterpret_cast<uint8_t **>(node + N_PARENT);
+    swofty::log("[replay] exit trace: state %08x (parent %08x) status %u returns link %08x", u32(node, N_HASH), node_ok(parent) ? u32(parent, N_HASH) : 0, unsigned(u32(node, N_STATUS) & 0xff), link);
+}
+
 void on_link(uint8_t *node, uint32_t *link)
 {
     int st = stage.load();
+    if (st == off && trace_until.load() > now_ms())
+        trace(node, *link);
     if (st == off)
         return;
     uint8_t *root = node;
@@ -1861,12 +1898,75 @@ void on_link(uint8_t *node, uint32_t *link)
                 *link = LINK_NEXT;
         } else if (hash == NODE_IN_GAME) {
             garage_at = 0;
+            in_game_updates = 0;
+            flying_at = 0;
+            pit_seen = 0xffffffff;
             load_started = false;
             since = now;
             stage = loading;
             swofty::log("[replay] viewer: the session is in its driving state; %s loads once the recorder runs", path.c_str());
         }
         return;
+    }
+    if (st == loading && hash == NODE_IN_GAME && !load_started.load()) {
+        // The driving state starts in the garage; the game's own flying lap request puts the car on track, where the recorder starts.
+        uint32_t pit = u32(node, IN_GAME_PIT_STATUS);
+        if (pit != pit_seen) {
+            swofty::log("[replay] viewer: pit status %u > %u", pit_seen, pit);
+            pit_seen = pit;
+        }
+        if (++in_game_updates > 2 && pit == PIT_IN_GARAGE && flying_lap_fn && (!flying_at || now - flying_at > 3000)) {
+            flying_at = now;
+            swofty::log("[replay] viewer: flying lap requested");
+            reinterpret_cast<void (*)()>(flying_lap_fn)();
+        }
+    }
+    if (st == loading && hash == NODE_IN_GAME && !load_started.load()) {
+        // The load job resets the replay system while it runs, and the simulation's readers crash on that if a frame runs meanwhile.
+        // The load is issued here, on the flow thread, which then waits for the job, so no frame advances during it.
+        uint64_t sys = replay_system_ptr.load(), mgr = replay_manager_ptr.load();
+        std::string how;
+        if (sys && !mgr)
+            mgr = replay_find_manager(sys, how);
+        bool recording = sys && runtime::readable(reinterpret_cast<void *>(sys), 0x100) && peek32(sys + 0x20) == 0;
+        if (!recording)
+            recording_at = 0;
+        else if (!recording_at)
+            recording_at = now;
+        if (recording && now - recording_at >= 3000 && mgr && runtime::readable(reinterpret_cast<void *>(mgr), 0x700)) {
+            uintptr_t base = swofty::api->module_base();
+            auto busy = [&] { return reinterpret_cast<int (*)(uint64_t)>(base + 0x391dda0)(peek64(mgr + 0x150)); };
+            std::wstring w(path.begin(), path.end());
+            load_started = true;
+            swofty::log("[replay] viewer: load on manager 0x%llx from the flow thread: recording flag %u, [+0x428] 0x%llx, job queue busy %d", (unsigned long long)mgr, unsigned(peek32(mgr + 0x6e1) & 0xff),
+                        (unsigned long long)peek64(mgr + 0x428), busy());
+            reinterpret_cast<void (*)(uint64_t, uint32_t, uint32_t)>(base + 0x45c74b0)(sys, 1, 1);
+            replay_play_forcing = true;
+            in_session_load = true;
+            *reinterpret_cast<int64_t *>(mgr + 0x428) = -1;
+            bool ok = h_load_start.call<bool>(mgr, w.c_str());
+            replay_play_forcing = false;
+            float length = 0;
+            int64_t began = now_ms();
+            while (ok && now_ms() - began < 8000) {
+                Sleep(5);
+                uint64_t list = peek64(sys + 0x98), module = list && runtime::readable(reinterpret_cast<void *>(list), 8) ? peek64(list) : 0;
+                if (module && runtime::readable(reinterpret_cast<void *>(module), 0x110))
+                    memcpy(&length, reinterpret_cast<void *>(module + 0xe8), 4);
+                if (now_ms() - began > 300 && busy() == 0 && length > 0.5f)
+                    break;
+            }
+            in_session_load = false;
+            swofty::log("[replay] viewer: the game's load start returned %d; the flow thread waited %lld ms, %.3f s of replay", ok ? 1 : 0, (long long)(now_ms() - began), double(length));
+            if (!ok || length < 0.5f) {
+                fail("the load failed");
+                return;
+            }
+            duration = length;
+            load_at = now_ms();
+            stage = loaded;
+            return;
+        }
     }
     if (st == loading) {
         if (hash == NODE_IN_GAME && load_started.load() && now - load_at.load() > 30000)
@@ -1915,6 +2015,7 @@ void on_link(uint8_t *node, uint32_t *link)
         // The viewer's own leave link ends the session (through the post-session group's last state to Exit) instead of going back to the results.
         *link = LINK_LEAVE;
         swofty::log("[replay] viewer exit: state %08x leaves the session by link %08x", hash, *link);
+        trace_until = now + 60000;
         stage = off;
         route.clear();
     }
@@ -1950,7 +2051,9 @@ void enter_mid(safetyhook::Context &c)
 // On the replay system's tick: the load the held SessionEnter waits for.
 void tick(uint64_t sys)
 {
-    if (stage.load() != loading)
+    // The load moved to the flow thread (on_link); this stays for the SWOFTY_TT_REPLAY_TICKLOAD=1 comparison.
+    static const bool on = [] { const char *e = getenv("SWOFTY_TT_REPLAY_TICKLOAD"); return e && *e == '1'; }();
+    if (!on || stage.load() != loading)
         return;
     uintptr_t base = swofty::api->module_base();
     uint64_t mgr = replay_manager_ptr.load();
@@ -1981,6 +2084,7 @@ void tick(uint64_t sys)
         reinterpret_cast<void (*)(uint64_t, uint32_t, uint32_t)>(base + 0x45c74b0)(sys, 1, 1);
         bool ok = false;
         replay_play_forcing = true;
+        in_session_load = true;
         // The load start refuses while the manager still names the replay Theatre loaded ([+0x428] is not -1).
         *reinterpret_cast<int64_t *>(mgr + 0x428) = -1;
         for (int k = 0; k < 4 && !ok; k++) {
@@ -1990,6 +2094,7 @@ void tick(uint64_t sys)
         replay_play_forcing = false;
         swofty::log("[replay] viewer: the game's load start returned %d", ok ? 1 : 0);
         if (!ok) {
+            in_session_load = false;
             load_started = false;
             stage = broken;
             return;
@@ -2001,8 +2106,9 @@ void tick(uint64_t sys)
     float length = 0;
     if (module && runtime::readable(reinterpret_cast<void *>(module), 0x110))
         memcpy(&length, reinterpret_cast<void *>(module + 0xe8), 4);
-    if (now_ms() - load_at.load() < 6000 || busy() != 0 || length < 0.5f)
+    if (now_ms() - load_at.load() < 2000 || busy() != 0 || length < 0.5f)
         return;
+    in_session_load = false;
     duration = length;
     int want = loading;
     if (stage.compare_exchange_strong(want, loaded))
@@ -2013,7 +2119,19 @@ void tick(uint64_t sys)
 
 // While a replay loads into a session that is still entering, the game mode has no current session for a moment, and this view model's
 // setup would read through the null. The setup is left for a later frame (its caller retries until it has run).
-safetyhook::InlineHook h_vm_session_setup;
+safetyhook::InlineHook h_vm_session_setup, h_info_load;
+
+// The info block's save data goes into the game mode's containers, which the game only does in the front end; in a live session the mode
+// loses its current session for a moment and readers on other threads crash. Theatre's own load in the front end already read the block,
+// so the load into the live session leaves it out.
+int info_load_hook(uint64_t mgr, uint64_t block, uint64_t size, uint64_t container)
+{
+    if (in_session_load.load()) {
+        swofty::log("[replay] viewer: the info block's save data is left out of the load into the live session");
+        return 0;
+    }
+    return h_info_load.call<int>(mgr, block, size, container);
+}
 
 void vm_session_setup_hook(uint8_t *vm)
 {
@@ -2749,6 +2867,10 @@ void setup()
                         if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&replay_meta_hook)))
                             h_replay_meta = std::move(*h);
                     swofty::log("[replay] metadata hook %s", h_replay_meta ? "armed" : "NOT armed");
+                    view::flying_lap_fn = runtime::find(S_FLYING_LAP, "boards", "boards");
+                    if (uintptr_t a = runtime::find(S_REPLAY_INFO_LOAD, "boards", "boards"))
+                        if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&info_load_hook)))
+                            h_info_load = std::move(*h);
                     if (uintptr_t a = runtime::find(S_VM_SESSION_SETUP, "boards", "boards"))
                         if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&vm_session_setup_hook)))
                             h_vm_session_setup = std::move(*h);

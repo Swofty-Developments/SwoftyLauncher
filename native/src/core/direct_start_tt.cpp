@@ -641,6 +641,20 @@ std::string session_track()
     return code.empty() ? runtime::track_select_time_trial() : code;
 }
 
+void mode_objects(void *&mode_out, void *&entity_out)
+{
+    mode_out = entity_out = nullptr;
+    if (!runtime::same_build())
+        return;
+    DirectStartContext ctx = runtime::direct_start_context();
+    if (!ctx.game_modes)
+        return;
+    std::vector<std::string> names;
+    uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
+    mode_out = mode;
+    entity_out = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+}
+
 std::string player_list()
 {
     if (!runtime::same_build())
