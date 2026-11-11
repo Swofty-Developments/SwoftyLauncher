@@ -198,10 +198,6 @@
           "$ref": "#/$defs/point"
         }
       },
-      "oneOf": [
-        { "required": ["png"] },
-        { "required": ["texture"] }
-      ],
       "additionalProperties": false
     },
     "bind": {
