@@ -12,6 +12,7 @@ use super::editor;
 use super::model::Dial;
 use super::scene::Builder;
 use super::template::StockTags;
+use super::units;
 use super::{Stock, first, screen_build, screens, stock_edit};
 use crate::ui::idf;
 use crate::ui::node::{self, NodeExt};
@@ -309,6 +310,12 @@ pub fn stock_facts(stock: &dyn Stock) -> Report {
         }
     }
     screen_facts(stock, &mut r);
+    for f in units::stock_facts(stock) {
+        match f {
+            Ok(line) => r.pass(line),
+            Err(e) => r.fail(e.to_string()),
+        }
+    }
     r
 }
 
