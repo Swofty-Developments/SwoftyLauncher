@@ -58,6 +58,9 @@ const std::wstring &state_root();
 bool enabled(const char *feature, const char *what);
 std::string load_stage();
 bool same_build();
+// The builds whose struct layouts were checked against the signatures' functions (re/tools/sigverify.py): the Steam KB build and
+// the EA App link of the same version. Code that finds every address by signature gates on this instead of same_build().
+bool verified_build();
 
 uintptr_t find(const Sig &s, const char *tag, const char *channel = "assets");
 bool readable(const void *p, size_t n);

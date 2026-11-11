@@ -75,7 +75,9 @@ struct Blob {
 
 constexpr const char *GAME_MIXIN = "swofty_core.dll (lap recorder game lap result)";
 constexpr const char *LAP_TARGET = "Sess_LapTimes_ReportNewLapTime";
-constexpr uintptr_t RVA_TLAP_KEY = 0x61026a8;
+const runtime::Sig SIG_TLAP_KEY{"game.telemetry_lap_registry_key_1461026a8", "48 8D 05 ?? ?? ?? ?? 48 89 84 24 98 00 00 00 48 8D 94 24 98 00 00 00 48 89 D9",
+                       0x61026a8, runtime::Sig::riprel, 0, 3, 7};
+std::atomic<uintptr_t> tlap_key{0};
 constexpr uintptr_t HANDLER_BLOB = 0x278, HANDLER_BLOB_SIZE = 0x280, HANDLER_REGISTRY = 0x20, REGISTRY_MAP = 0x30,
                     HANDLER_TIMING = 0x30, TIMING_SESSION = 0x88;
 
@@ -513,7 +515,7 @@ lr::ExtrasFrom read_extras(lr::GameLap &g)
     roots.manager = uintptr_t(runtime::direct_start_context().game_manager);
     roots.handler_map = registry_map.load();
     roots.handler_base = session_base.load();
-    roots.key = swofty::api->module_base() + RVA_TLAP_KEY;
+    roots.key = tlap_key.load();
     auto rdr = read_memory;
     return lr::read_extras(rdr, g, roots);
 }
@@ -654,9 +656,14 @@ std::vector<CoreMixins> lap_rec_mixins()
     game_offered = true;
     if (!lr::gate_of(read_file(swofty_root() + L"tt.json", size_t(1) << 20)).on)
         return out;
-    if (!same_build()) {
-        swofty::log("[laps] game lap result off: this is not the build the lap offsets are from; laps use "
+    if (!verified_build()) {
+        swofty::log("[laps] game lap result off: this is not a build the lap offsets are checked on; laps use "
                     "the clock");
+        return out;
+    }
+    tlap_key = runtime::find(SIG_TLAP_KEY, "telemetry lap key", "laps");
+    if (!tlap_key.load()) {
+        swofty::log("[laps] game lap result off: the telemetry lap key did not resolve on this build; laps use the clock");
         return out;
     }
     if (!env_off("SWOFTY_LAP_GAME_RESULT", "game lap result")) {

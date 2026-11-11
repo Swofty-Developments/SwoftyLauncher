@@ -76,46 +76,24 @@ const runtime::Sig S_DOWNLOAD{"Game_GhostLapHandler_StartRemoteStorageDownload",
 const runtime::Sig S_RACENET{"Game_GhostLaps_PostToRacenet", "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 06 00 00 C5 F8 29 B4 24 20 06 00 00 48 8B 41 08",
                              0x2f8d030};
 const runtime::Sig S_PB{"site_Game_GhostPb_Committed", "C6 46 66 01 80 3D ?? ?? ?? ?? 00 0F 84", 0x2fa3db8, runtime::Sig::addr, 0, 0};
+// The five F1os result handlers are instances of one template: their code is the same but for rip displacements, so no pattern of their
+// own is unique. Each is found from the nearest function before it that has a unique pattern (anchor = the distance to the handler, the same
+// in the Steam and EA links) and then checked against the template's entry bytes (on_result_entry).
 const runtime::Sig S_GET_TT{"Game_F1os_OnResult_GetTTLeaderboard",
-        "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 4C 8B A7 "
-        "A0 00 00 00 8B AF 9C 00 00 00 44 0F B6 B7 98 00 00 00 48 8B 5E 08 48 8B 03 BA A8 00 00 00 41 B8 10 "
-        "00 00 00 48 89 D9 FF 50 18 49 89 C7 48 85 C0 74 16 4C 89 64 24 20 4C 89 F9 48 89 DA 45 89 F0 41 89 "
-        "E9 E8 ?? ?? ?? ?? 4C 8B B6 A8 01 00 00 4C 89 BE A8 01 00 00 4D 85 F6 74 20 4C 8B BE A0 01 00 00 4D "
-        "85 FF 74 14 4C 89 F1 E8 ?? ?? ?? ?? 49 8B 07 4C 89 F9 4C 89 F2 FF 50 38 48 89 9E A0 01 00 00 48 8D "
-        "47 08 80 BF 88 00 00 00 00 48 8D 0D EB 0F C9 03 ",
-        0x3021580};
+        "56 48 83 EC 30 48 89 CE 80 BA 88 00 00 00 00 8B 05 ?? ?? ?? ?? 89 C1 74 03 8B 4A 08 84 C9 75 29 48 83 BA A0 00 00 00 00 74 1F 48 81 C2 90 00 00 00 48 8D 8E 50 01 00 00",
+        0x3021580, runtime::Sig::addr, 0, 0x5a90};
 const runtime::Sig S_GET_FRIENDS{"Game_F1os_OnResult_GetFriendsTTLeaderboard",
-        "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 4C 8B A7 "
-        "A0 00 00 00 8B AF 9C 00 00 00 44 0F B6 B7 98 00 00 00 48 8B 5E 08 48 8B 03 BA A8 00 00 00 41 B8 10 "
-        "00 00 00 48 89 D9 FF 50 18 49 89 C7 48 85 C0 74 16 4C 89 64 24 20 4C 89 F9 48 89 DA 45 89 F0 41 89 "
-        "E9 E8 ?? ?? ?? ?? 4C 8B B6 A8 01 00 00 4C 89 BE A8 01 00 00 4D 85 F6 74 20 4C 8B BE A0 01 00 00 4D "
-        "85 FF 74 14 4C 89 F1 E8 ?? ?? ?? ?? 49 8B 07 4C 89 F9 4C 89 F2 FF 50 38 48 89 9E A0 01 00 00 48 8D "
-        "47 08 80 BF 88 00 00 00 00 48 8D 0D 8B B2 C9 03 ",
-        0x30172e0};
+        "56 48 83 EC 30 48 89 CE 80 BA 88 00 00 00 00 8B 05 ?? ?? ?? ?? 89 C1 74 03 8B 4A 08 84 C9 75 29 48 83 BA A0 00 00 00 00 74 1F 48 81 C2 90 00 00 00 48 8D 8E A8 01 00 00",
+        0x30172e0, runtime::Sig::addr, 0, 0x5ab0};
 const runtime::Sig S_GET_BINARY{"Game_F1os_OnResult_GetBinaryDataForUser",
-        "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 4C 8B A7 "
-        "A0 00 00 00 8B AF 9C 00 00 00 44 0F B6 B7 98 00 00 00 48 8B 5E 08 48 8B 03 BA A8 00 00 00 41 B8 10 "
-        "00 00 00 48 89 D9 FF 50 18 49 89 C7 48 85 C0 74 16 4C 89 64 24 20 4C 89 F9 48 89 DA 45 89 F0 41 89 "
-        "E9 E8 ?? ?? ?? ?? 4C 8B B6 A8 01 00 00 4C 89 BE A8 01 00 00 4D 85 F6 74 20 4C 8B BE A0 01 00 00 4D "
-        "85 FF 74 14 4C 89 F1 E8 ?? ?? ?? ?? 49 8B 07 4C 89 F9 4C 89 F2 FF 50 38 48 89 9E A0 01 00 00 48 8D "
-        "47 08 80 BF 88 00 00 00 00 48 8D 0D EB 40 CB 03 ",
-        0x2ffe480};
+        "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 48 39 CA",
+        0x2ffe480, runtime::Sig::addr, 0, 0x5b90};
 const runtime::Sig S_ADD_ENTRY{"Game_F1os_OnResult_AddLeaderboardEntry",
-        "41 57 41 56 41 54 56 57 55 53 48 81 EC 00 01 00 00 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 4C 8B A7 A0 00 "
-        "00 00 8B AF 9C 00 00 00 44 0F B6 B7 98 00 00 00 48 8B 5E 08 48 8B 03 BA A8 00 00 00 41 B8 10 00 00 "
-        "00 48 89 D9 FF 50 18 49 89 C7 48 85 C0 74 16 4C 89 64 24 20 4C 89 F9 48 89 DA 45 89 F0 41 89 E9 E8 "
-        "?? ?? ?? ?? 4C 8B B6 A8 01 00 00 4C 89 BE A8 01 00 00 4D 85 F6 74 20 4C 8B BE A0 01 00 00 4D 85 FF "
-        "74 14 4C 89 F1 E8 ?? ?? ?? ?? 49 8B 07 4C 89 F9 4C 89 F2 FF 50 38 48 89 9E A0 01 00 00 48 8D 47 08 "
-        "80 BF 88 00 00 00 00 48 8D 0D 6D 46 CA 03 ",
-        0x300df00};
+        "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 48 8B 59 08",
+        0x300df00, runtime::Sig::addr, 0, 0x5ac0};
 const runtime::Sig S_UPDATE_BINARY{"Game_F1os_OnResult_UpdateLeaderboardEntryBinaryData",
-        "41 57 41 56 41 54 56 57 55 53 48 81 EC 00 01 00 00 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 4C 8B A7 A0 00 "
-        "00 00 8B AF 9C 00 00 00 44 0F B6 B7 98 00 00 00 48 8B 5E 08 48 8B 03 BA A8 00 00 00 41 B8 10 00 00 "
-        "00 48 89 D9 FF 50 18 49 89 C7 48 85 C0 74 16 4C 89 64 24 20 4C 89 F9 48 89 DA 45 89 F0 41 89 E9 E8 "
-        "?? ?? ?? ?? 4C 8B B6 A8 01 00 00 4C 89 BE A8 01 00 00 4D 85 F6 74 20 4C 8B BE A0 01 00 00 4D 85 FF "
-        "74 14 4C 89 F1 E8 ?? ?? ?? ?? 49 8B 07 4C 89 F9 4C 89 F2 FF 50 38 48 89 9E A0 01 00 00 48 8D 47 08 "
-        "80 BF 88 00 00 00 00 48 8D 0D 9D B8 CA 03 ",
-        0x3006cd0};
+        "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 4C 8B 61 08",
+        0x3006cd0, runtime::Sig::addr, 0, 0x6b70};
 
 const runtime::Sig S_SESSION_ENTER{"Game_GhostLapsStorageSystem_OnSessionEnter",
         "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6A B8 62 00 00 00", 0x2f95ee0};
@@ -157,12 +135,12 @@ const runtime::Sig S_GARAGE_TAB_BLOCK{"site_Game_GarageMonitorPanel_BuildTabs_le
 const runtime::Sig S_GARAGE_TAB_FLAGS{"site_Game_GarageMonitorPanel_BuildTabs_leaderboard_feature_141f720b5", "48 B9 00 00 00 00 20 00 00 00 48 23 08 0F 84 ?? ?? ?? ??", 0x1f720b5};
 const runtime::Sig S_GARAGE_TAB_GATE{"site_Game_GarageMonitorPanel_BuildTabs_gate_byte_141f7208e", "80 B9 80 00 00 00 00 0F 84 ?? ?? ?? ?? 83 FD 12 0F 85 ?? ?? ?? ??", 0x1f7208e};
 const runtime::Sig S_REPLAY_TICK{"Ne_ReplaySystem_ResetSlot24_1445d57e0", "56 48 83 EC 20 80 B9 89 00 00 00 00 0F 84 90 00 00 00 48 89 CE 80 3D", 0x45d57e0};
-const runtime::Sig S_REPLAY_TICK17{"Ne_ReplaySystem_ResetSlot17_1445d5b90", "56 48 83 EC 20 80 B9 89 00 00 00 00 74 5F 48 89 CE 80 3D 1C 5F A7 01 01 75 6C", 0x45d5b90};
+const runtime::Sig S_REPLAY_TICK17{"Ne_ReplaySystem_ResetSlot17_1445d5b90", "56 48 83 EC 20 80 B9 89 00 00 00 00 74 5F 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6C B8 24 00 00 00 48 8D 0D ?? ?? ?? ?? 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 81 FA D3 AF 3F 84 74 38 85 D2 74 47 83 C0 0E 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 83 F8 24 75 C5 EB 19 48 83 C4 20 5E C3 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 8E B0 00 00 00 FF 15 ?? ?? ?? ?? 48 89 F1 E8 ?? ?? ?? ?? 48 8B 8E B0 00 00 00 48 83 C4 20 5E 48 FF 25 ?? ?? ?? ?? CC CC 41 57", 0x45d5b90};
 const runtime::Sig S_REPLAY_UPDATE{"Game_ReplaySystem_UpdateFromModule_1445d6040",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 78 29 AC 24 C0 00 00 00 C5 78 29 A4 24 B0 00 00 00 C5 78 29", 0x45d6040};
 const runtime::Sig S_REPLAY_FRAME{"Game_ReplayBuffer_BeginFrameWrite_1445c4b20", "41 56 56 57 53 48 83 EC 68 C5 F8 29 74 24 50 C5 F9 6F F1 48 89 CE 80 79 51 00 74 30", 0x45c4b20};
 const runtime::Sig S_REPLAY_SAVE{"Game_ReplayManager_SaveFullReplay_142c46880", "41 56 56 57 53 48 81 EC 38 02 00 00 80 B9 E1 06 00 00 00 74 46 48 89 CE 48 83 B9 50 01 00 00 00", 0x2c46880};
-const runtime::Sig S_REPLAY_JOB{"Game_Replay_SaveFullReplay_job_142c46a00", "41 57 41 56 41 55 41 54 56 57 55 53 B8 08 14 00 00 E8 BA 2D 04 02 48 29", 0x2c46a00};
+const runtime::Sig S_REPLAY_JOB{"Game_Replay_SaveFullReplay_job_142c46a00", "41 57 41 56 41 55 41 54 56 57 55 53 B8 08 14 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 79 29 8C 24 F0 13 00 00", 0x2c46a00};
 const runtime::Sig S_REPLAY_JOB_COMPONENT{"site_Game_Replay_SaveFullReplay_session_component_142c46c02",
         "48 8B 46 28 48 8B 80 88 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 80 60 02 00 00 48 89 84 24 98 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 4C 24 68 48 8B 84 24 98 00 00 00 4C 8B B0 08 0F 00 00 49 8D 4E 18",
         0x2c46c02, runtime::Sig::addr, 0, 64};
@@ -207,9 +185,50 @@ const runtime::Sig S_GARAGE_BUILD{"Game_GarageMonitorPanel_BuildTabs_141f71fa0",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 CE 80 B9 49 09 00 00 00", 0x1f71fa0};
 const runtime::Sig S_GARAGE_FRIENDS_TAB{"site_Game_GarageMonitorPanel_BuildTabs_friends_tab_141f725e9",
         "48 8B 8E 80 02 00 00 48 8B 01 BA E0 11 00 00 41 B8 10 00 00 00 FF 50 18 48 89 C7 48 85 C0 74 1E 4C 8B 86 80 02 00 00 48 8B 56 28 C7 44 24 20 01 00 00 00", 0x1f725e9};
-const runtime::Sig S_GARAGE_PRIV_SUB{"Game_GarageMonitorPanel_OnTtLeaderboardPrivilege_thunk_141f79690", "E9 9B 42 6A 0A", 0x1f79690};
+const runtime::Sig S_GARAGE_PRIV_SUB{"Game_GarageMonitorPanel_OnTtLeaderboardPrivilege_thunk_141f79690",
+        "48 8D 05 ?? ?? ?? ?? 48 89 44 24 30 48 89 74 24 38 48 8D 15 ?? ?? ?? ?? 4C 8D 44 24 30 E8 ?? ?? ?? ?? 48 8B 0D", 0x1f79690, runtime::Sig::riprel, 0, 3, 7};
 const runtime::Sig S_PRIV_GATE{"site_Game_UIUIPrivilegeCheckControl_HandleSignal_Result",
         "41 80 BE AB 00 00 00 00 0F 84 8C 00 00 00 45 84 FF 0F 84 8D 00 00 00", 0x3822cdf, runtime::Sig::addr, 0, 8};
+// Addresses the replay code calls or compares. Each is found once at setup (resolve_game) by a pattern that matches once on the Steam and on
+// the EA build; a function whose entry is a jump thunk is found from a call to it, a vtable or global from an instruction that names it.
+const runtime::Sig S_QPC_OFFSET{"g_Timer_QpcOffset_1461089f8", "48 03 05 ?? ?? ?? ?? C4 E1 F3 2A C0 C5 FB 59 C7 C5 FB 5E C6 C4 C1 79 2E C0", 0x61089f8, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_FRIENDS_RESUME{"site_Game_GarageMonitorPanel_BuildTabs_after_friends_tab_141f726ea", "48 8B 8E 60 09 00 00 E8 ?? ?? ?? ?? 80 B8 DB 00 00 00 00", 0x1f726ea};
+const runtime::Sig S_REPLAY_SYSTEM_VT{"vt_GameReplaySystem_1457cf220", "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 91 70 01 00 00 48 85 D2 74 29 48 8D 9E 70 01 00 00", 0x57cf220,
+                                      runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_STRING_VT{"vt_Game_FixedString64_145613548",
+                               "48 8D 05 ?? ?? ?? ?? 48 89 44 24 48 48 8D 8C 24 F8 00 00 00 48 C7 84 24 E8 00 00 00 40 00 00 00 48 89 8C 24 F0 00 00 00 48 B9 73 74 61 74 73 5F 64 61",
+                               0x5613548, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_MODE_VT{"vt_Game_SessionGameMode_145648300", "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 1D ?? ?? ?? ?? 48 89 99 50 11 00 00", 0x5648300, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig S_QUEUE_BUSY{"Game_JobQueue_Busy_14391dda0", "56 57 48 83 EC 28 48 89 CE 48 8B 49 18 FF 15", 0x391dda0};
+const runtime::Sig S_REPLAY_SET_STATE{"Ne_ReplaySystem_SetState_1445c74b0", "56 57 53 48 83 EC 20 44 89 C3 89 D6 48 89 CF 48 8B 89 B0 00 00 00", 0x45c74b0};
+const runtime::Sig S_REPLAY_SEEK{"Ne_ReplaySystem_Seek_1445cafc0", "56 57 48 83 EC 38 89 D7 48 89 CE 48 8B 89 B0 00 00 00", 0x45cafc0};
+const runtime::Sig S_REPLAY_CLEAR{"Ne_ReplaySystem_Clear_thunk_1445d4c60", "E8 ?? ?? ?? ?? 48 8B 8E B0 00 00 00 FF 15 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 78 08", 0x45d4c60,
+                                  runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig S_REPLAY_RESET{"Ne_ReplaySystem_Reset_1445d5c40", "41 57 41 56 41 54 56 57 55 53 48 83 EC 40 44 89 C3 89 D7", 0x45d5c40};
+const runtime::Sig S_VIEW_ENTER_FN{"Game_SessionStateViewFastestLap_enter_142d9cee0", "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 48 89 CE 66 C7 81 78 0F 00 00 00 00", 0x2d9cee0};
+const runtime::Sig S_VIEW_RESUME{"site_Game_SessionStateViewFastestLap_enter_resume_142d9d230", "48 8B BE 88 0C 00 00 80 3D ?? ?? ?? ?? 01 75 65", 0x2d9d230};
+
+struct GameAddresses {
+    uintptr_t qpc_offset = 0, friends_resume = 0, replay_system_vt = 0, string_vt = 0, mode_vt = 0, queue_busy = 0, replay_set_state = 0, replay_seek = 0, replay_clear = 0,
+              replay_reset = 0, view_enter_fn = 0, view_resume = 0;
+    bool view_ready() const { return queue_busy && replay_set_state && mode_vt && view_enter_fn && view_resume; }
+} game;
+
+int queue_busy(uint64_t queue)
+{
+    return game.queue_busy ? reinterpret_cast<int (*)(uint64_t)>(game.queue_busy)(queue) : -1;
+}
+
+void replay_set_state(uint64_t sys, uint32_t state, uint32_t flag)
+{
+    if (game.replay_set_state)
+        reinterpret_cast<void (*)(uint64_t, uint32_t, uint32_t)>(game.replay_set_state)(sys, state, flag);
+}
+
+bool is_replay_system(uint64_t sys)
+{
+    return game.replay_system_vt && sys && runtime::readable(reinterpret_cast<void *>(sys), 8) && *reinterpret_cast<const uint64_t *>(sys) == game.replay_system_vt;
+}
 constexpr uintptr_t TS_FLAG_GLOBAL_A = 0, TS_FLAG_GLOBAL_B = 17;
 constexpr int64_t TS_FORCED_WINDOW_MS = 10 * 60 * 1000;
 
@@ -993,7 +1012,7 @@ void trip_mid(safetyhook::Context &c)
     if (++logged <= 6) {
         LARGE_INTEGER q;
         QueryPerformanceCounter(&q);
-        uint64_t base = swofty::api->module_base(), offs = peek64(base + 0x1461089f8 - 0x140000000);
+        uint64_t offs = game.qpc_offset ? peek64(game.qpc_offset) : 0;
         double freq = double(peek64(c.rsi + 0xb98) ? peek64(c.rsi + 0xb98) : 1), start = double(peek64(c.rsi + 0xb88));
         swofty::log("[boards] session timer flag check: elapsed %.2f s since the timer was armed (start 0x%llx, scale %llu), limit %u s, re-armed %d time(s) so far; the flag is being set to TRIPPED",
                     (double(int64_t(q.QuadPart + int64_t(offs)) - int64_t(start))) / freq, (unsigned long long)peek64(c.rsi + 0xb88), (unsigned long long)peek64(c.rsi + 0xb98),
@@ -1090,7 +1109,7 @@ void garage_friends_tab_mid(safetyhook::Context &c)
     static std::atomic<int> logged{0};
     if (tb::garage_append_tab(1, bridge_on, content_ours()))
         return;
-    c.rip = swofty::api->module_base() + 0x1f726ea;
+    c.rip = game.friends_resume;
     if (++logged <= 4)
         swofty::log("[boards] garage monitor tab build: the friends leaderboard tab is not built for our content (only the SWOFTY leaderboard tab)");
 }
@@ -1102,7 +1121,6 @@ void garage_friends_tab_mid(safetyhook::Context &c)
 // buffer) exactly as the results screen does; the save call copies the path into the replay system and queues the save job on the game's
 // replay thread. A watcher thread then only polls the file system.
 uintptr_t replay_build_path_fn = 0, replay_save_fn = 0;
-constexpr uint64_t GAME_REPLAY_SYSTEM_VTABLE_RVA = 0x1457cf220 - 0x140000000;
 constexpr int64_t REPLAY_SAVE_DELAY_MS = 1500;
 std::atomic<uint64_t> replay_system_seen{0};
 
@@ -1247,7 +1265,11 @@ uint64_t replay_make_save_slot(uint64_t mgr, uint64_t owner)
         return 0;
     }
     memset(mem, 0, 0x300);
-    uint64_t string_vtable = swofty::api->module_base() + 0x5613548;
+    uint64_t string_vtable = game.string_vt;
+    if (!string_vtable) {
+        swofty::log("[replay] no save-slot component: the game string vtable did not resolve on this build");
+        return 0;
+    }
     static GameString name, type;
     name = {string_vtable, 0x40, name.buf, {}};
     type = {string_vtable, 0x40, type.buf, {}};
@@ -1731,7 +1753,7 @@ void replay_save_entry_mid(safetyhook::Context &c)
     replay_system_seen = c.rcx;
     if (runtime::readable(reinterpret_cast<void *>(c.rcx + 0x40), 8)) {
         uint64_t sys = peek64(c.rcx + 0x40);
-        if (runtime::readable(reinterpret_cast<void *>(sys), 8) && peek64(sys) == swofty::api->module_base() + GAME_REPLAY_SYSTEM_VTABLE_RVA && replay_manager_ok(c.rcx, sys)) {
+        if (is_replay_system(sys) && replay_manager_ok(c.rcx, sys)) {
             replay_manager_ptr = c.rcx;
             replay_system_ptr = sys;
         }
@@ -1804,7 +1826,8 @@ constexpr uint32_t ROOT_TIME_TRIAL = 0xca472e10, NODE_SESSION_ENTER = 0x46fa8767
                    LINK_CAMERAS_DONE = 0x0059737c, LINK_FINISHED = 0x38d5604f, LINK_ONE = 0x0002b5d6;
 constexpr size_t N_HASH = 0xb0, N_STATUS = 0xb8, N_CHILDREN = 0xc0, N_RECORDS = 0xf0, N_RECORD = 0xa0, N_RECORD_TARGET = 0x98, N_LINKS = 0xaf0, N_LINK_COUNT = 0xb30,
                  N_PARENT = 0xc10;
-constexpr uintptr_t VT_VIEW_FASTEST = 0x57e37a0, VIEW_ENTER_RESUME = 0x2d9d230;
+// The fastest lap viewer state is known by its enter function, slot 8 of its vtable and of no other.
+constexpr size_t VT_SLOT_ENTER = 0x40;
 constexpr size_t VIEW_SYSTEM = 0xd60, VIEW_START = 0xf60, VIEW_END = 0xf64, VIEW_ABORTED = 0xed4;
 enum Stage { off, armed, loading, loaded, routing, viewing, leaving, broken };
 std::atomic<int> stage{off};
@@ -1920,11 +1943,15 @@ void dump(uint8_t *root)
 // The path of states from the session's root down to the fastest lap viewer, or empty.
 std::vector<uint8_t *> find_route(uint8_t *root)
 {
-    uintptr_t want = swofty::api->module_base() + VT_VIEW_FASTEST;
+    uintptr_t want = game.view_enter_fn;
+    auto is_viewer = [&](uint8_t *n) {
+        uint64_t vt = peek64(reinterpret_cast<uint64_t>(n));
+        return want && vt && runtime::readable(reinterpret_cast<void *>(vt + VT_SLOT_ENTER), 8) && peek64(vt + VT_SLOT_ENTER) == want;
+    };
     std::vector<std::pair<uint8_t *, int>> queue{{root, -1}};
     for (size_t i = 0; i < queue.size() && i < 256; i++) {
         uint8_t *n = queue[i].first;
-        if (peek64(reinterpret_cast<uint64_t>(n)) == want) {
+        if (is_viewer(n)) {
             std::vector<uint8_t *> out;
             for (int k = int(i); k >= 0; k = queue[size_t(k)].second)
                 out.insert(out.begin(), queue[size_t(k)].first);
@@ -2049,13 +2076,12 @@ void on_link(uint8_t *node, uint32_t *link)
         else if (!recording_at)
             recording_at = now;
         if (recording && now - recording_at >= 3000 && mgr && runtime::readable(reinterpret_cast<void *>(mgr), 0x700)) {
-            uintptr_t base = swofty::api->module_base();
-            auto busy = [&] { return reinterpret_cast<int (*)(uint64_t)>(base + 0x391dda0)(peek64(mgr + 0x150)); };
+            auto busy = [&] { return queue_busy(peek64(mgr + 0x150)); };
             std::wstring w(path.begin(), path.end());
             load_started = true;
             swofty::log("[replay] viewer: load on manager 0x%llx from the flow thread: recording flag %u, [+0x428] 0x%llx, job queue busy %d", (unsigned long long)mgr, unsigned(peek32(mgr + 0x6e1) & 0xff),
                         (unsigned long long)peek64(mgr + 0x428), busy());
-            reinterpret_cast<void (*)(uint64_t, uint32_t, uint32_t)>(base + 0x45c74b0)(sys, 1, 1);
+            replay_set_state(sys, 1, 1);
             replay_play_forcing = true;
             in_session_load = true;
             *reinterpret_cast<int64_t *>(mgr + 0x428) = -1;
@@ -2135,7 +2161,7 @@ void on_link(uint8_t *node, uint32_t *link)
         uint64_t holder = peek64(reinterpret_cast<uint64_t>(node) + 0xca0), session = holder && runtime::readable(reinterpret_cast<void *>(holder), 0x90) ? peek64(holder + 0x88) : 0;
         uint64_t mode = session && runtime::readable(reinterpret_cast<void *>(session), 0x268) ? peek64(session + 0x260) : 0;
         uint64_t vt = mode && runtime::readable(reinterpret_cast<void *>(mode), 8) ? peek64(mode) : 0;
-        bool known = vt == swofty::api->module_base() + 0x5648300;
+        bool known = game.mode_vt && vt == game.mode_vt;
         uint64_t gm = known && runtime::readable(reinterpret_cast<void *>(mode + 0xf40), 8) ? peek64(mode + 0xf40) : 0;
         uint32_t before = gm && runtime::readable(reinterpret_cast<void *>(gm + 0x1fc), 4) ? peek32(gm + 0x1fc) : 0xffffffff;
         if (known)
@@ -2170,7 +2196,7 @@ void enter_mid(safetyhook::Context &c)
     swofty::log("[replay] viewer: enter of state %p: host flag [+0xe2e] %u, system 0x%llx byte [+0x88] %u; window %.3f..%.3f of %.3f s", state,
                 runtime::readable(reinterpret_cast<void *>(host + 0xe2e), 1) ? unsigned(peek32(host + 0xe2e) & 0xff) : 999u, (unsigned long long)sys,
                 runtime::readable(reinterpret_cast<void *>(sys + 0x88), 1) ? unsigned(peek32(sys + 0x88) & 0xff) : 999u, double(start), double(end), double(length));
-    c.rip = swofty::api->module_base() + VIEW_ENTER_RESUME;
+    c.rip = game.view_resume;
     restore();
     stage = viewing;
 }
@@ -2182,7 +2208,6 @@ void tick(uint64_t sys)
     static const bool on = [] { const char *e = getenv("SWOFTY_TT_REPLAY_TICKLOAD"); return e && *e == '1'; }();
     if (!on || stage.load() != loading)
         return;
-    uintptr_t base = swofty::api->module_base();
     uint64_t mgr = replay_manager_ptr.load();
     std::string how;
     if (!mgr)
@@ -2191,7 +2216,7 @@ void tick(uint64_t sys)
         stage = broken;
         return;
     }
-    auto busy = [&] { return reinterpret_cast<int (*)(uint64_t)>(base + 0x391dda0)(peek64(mgr + 0x150)); };
+    auto busy = [&] { return queue_busy(peek64(mgr + 0x150)); };
     static std::atomic<int64_t> recording_since{0};
     if (!load_started.load()) {
         if (peek32(sys + 0x20) != 0) {
@@ -2208,7 +2233,7 @@ void tick(uint64_t sys)
         std::wstring w(path.begin(), path.end());
         swofty::log("[replay] viewer: load on manager 0x%llx: recording flag %u, system state %u, [+0x428] 0x%llx, job queue busy %d", (unsigned long long)mgr, unsigned(peek32(mgr + 0x6e1) & 0xff),
                     unsigned(peek32(sys + 0x20)), (unsigned long long)peek64(mgr + 0x428), busy());
-        reinterpret_cast<void (*)(uint64_t, uint32_t, uint32_t)>(base + 0x45c74b0)(sys, 1, 1);
+        replay_set_state(sys, 1, 1);
         bool ok = false;
         replay_play_forcing = true;
         in_session_load = true;
@@ -2277,7 +2302,7 @@ void vm_session_setup_hook(uint8_t *vm)
 void replay_view_arm(const std::string &path)
 {
     view::path = path;
-    if (!runtime::same_build() || !h_load_start || !view::h_enter || !runtime::flow_link_listen(view::on_link)) {
+    if (!game.view_ready() || !h_load_start || !view::h_enter || !runtime::flow_link_listen(view::on_link)) {
         swofty::log("[replay] Theatre pick: the viewer route is not available; %s plays once the session is on track", path.c_str());
         replay_play_path = path;
         return;
@@ -2296,11 +2321,10 @@ void replay_tick(uint64_t sys, const char *slot)
     static std::atomic<int> guard_logs{0};
     int which = !strcmp(slot, "vslot24") ? 0 : !strcmp(slot, "vslot17") ? 1 : !strcmp(slot, "updateFromModule") ? 2 : 3;
     uint64_t n = ++entries[which];
-    uintptr_t base = swofty::api->module_base();
     uint64_t known = replay_system_ptr.load();
     if (!sys)
         sys = known;
-    bool vt_ok = sys && runtime::readable(reinterpret_cast<void *>(sys), 8) && peek64(sys) == base + GAME_REPLAY_SYSTEM_VTABLE_RVA;
+    bool vt_ok = is_replay_system(sys);
     if (vt_ok) {
         ours_entries[which]++;
         replay_system_ptr = sys;
@@ -2346,11 +2370,9 @@ void replay_tick(uint64_t sys, const char *slot)
                 swofty::log("[replay] play test: load start guards: job queue [+0x150] 0x%llx, [[+0x38]+400] 0x%llx (must be 0), [+0x428] 0x%llx (must be -1), [[[+0x468]+0x778]+0xa0] %u, attributes 0x%lx",
                             (unsigned long long)peek64(mgr + 0x150), (unsigned long long)active, (unsigned long long)peek64(mgr + 0x428),
                             q778 && runtime::readable(reinterpret_cast<void *>(q778 + 0xa0), 1) ? unsigned(peek32(q778 + 0xa0) & 0xff) : 999u, (unsigned long)GetFileAttributesW(w.c_str()));
-                uintptr_t gbase = swofty::api->module_base();
-                auto busy = [&] { return runtime::same_build() ? reinterpret_cast<int (*)(uint64_t)>(gbase + 0x391dda0)(peek64(mgr + 0x150)) : -1; };
+                auto busy = [&] { return queue_busy(peek64(mgr + 0x150)); };
                 swofty::log("[replay] play test: job queue busy %d while recording; recording is stopped (state 1) before the load", busy());
-                if (runtime::same_build())
-                    reinterpret_cast<void (*)(uint64_t, uint32_t, uint32_t)>(gbase + 0x45c74b0)(sys, 1, 1);
+                replay_set_state(sys, 1, 1);
                 bool ok = false;
                 replay_play_forcing = true;
                 *reinterpret_cast<int64_t *>(mgr + 0x428) = -1;
@@ -2372,10 +2394,9 @@ void replay_tick(uint64_t sys, const char *slot)
             at = now + 8000;
         } else if (stage.load() == 1 && now >= at.load() && stage.exchange(2) == 1) {
             auto [module, duration] = state_line("after the load");
-            uintptr_t base = swofty::api->module_base();
-            if (runtime::same_build() && module) {
-                reinterpret_cast<void (*)(uint64_t, uint32_t)>(base + 0x45cafc0)(sys, 0);
-                reinterpret_cast<void (*)(uint64_t, uint32_t, uint32_t)>(base + 0x45c74b0)(sys, 2, 1);
+            if (game.replay_seek && game.replay_set_state && module) {
+                reinterpret_cast<void (*)(uint64_t, uint32_t)>(game.replay_seek)(sys, 0);
+                replay_set_state(sys, 2, 1);
                 float zero = 0;
                 memcpy(reinterpret_cast<void *>(sys + 0x7c), &zero, 4);
                 *reinterpret_cast<uint8_t *>(sys + 0x7a) = 1;
@@ -2485,10 +2506,9 @@ void replay_restart(uint64_t sys)
     int why = replay_restart_wanted.exchange(0);
     if (!why)
         return;
-    uintptr_t base = swofty::api->module_base();
     uint64_t mgr = replay_manager_ptr.load();
-    bool ok = runtime::same_build() && replay_capture_on && bridge_on && content_ours() && view::stage.load() == view::off && !in_session_load.load() && !replay_pending_ms.load() &&
-              !replay_saving.load() && sys && runtime::readable(reinterpret_cast<void *>(sys), 0xc0) && peek64(sys) == base + GAME_REPLAY_SYSTEM_VTABLE_RVA && (peek32(sys + 0x88) >> 8 & 0xff) != 0 &&
+    bool ok = game.replay_clear && game.replay_reset && replay_capture_on && bridge_on && content_ours() && view::stage.load() == view::off && !in_session_load.load() && !replay_pending_ms.load() &&
+              !replay_saving.load() && sys && runtime::readable(reinterpret_cast<void *>(sys), 0xc0) && is_replay_system(sys) && (peek32(sys + 0x88) >> 8 & 0xff) != 0 &&
               peek32(sys + 0x20) == 0 && peek32(sys + 0x78) == 0 && mgr && replay_manager_ok(mgr, sys) && (peek32(mgr + 0x6e0) >> 8 & 0xff) == 1 && int32_t(peek32(mgr + 0x428)) == -1;
     uint64_t queue = ok ? peek64(mgr + 0x150) : 0;
     ok = ok && queue && runtime::readable(reinterpret_cast<void *>(queue + 0x48), 8) && peek64(queue + 0x48) == 0;
@@ -2498,8 +2518,8 @@ void replay_restart(uint64_t sys)
     }
     auto *cs = reinterpret_cast<CRITICAL_SECTION *>(peek64(sys + 0xb0));
     EnterCriticalSection(cs);
-    reinterpret_cast<void (*)(uint64_t)>(base + 0x45d4c60)(sys);
-    reinterpret_cast<void (*)(uint64_t, uint32_t, uint8_t)>(base + 0x45d5c40)(sys, 0, 1);
+    reinterpret_cast<void (*)(uint64_t)>(game.replay_clear)(sys);
+    reinterpret_cast<void (*)(uint64_t, uint32_t, uint8_t)>(game.replay_reset)(sys, 0, 1);
     *reinterpret_cast<uint8_t *>(sys + 0x88) = 1;
     LeaveCriticalSection(cs);
     swofty::log("[replay] restart (%s): the recording starts again from here", why == 1 ? "before the line" : "at the line");
@@ -2516,7 +2536,9 @@ void replay_update_mid(safetyhook::Context &c)
 // readable() guarded 8-byte reads; no calls. Runs once per buffer object.
 uint64_t replay_find_system(uint64_t buffer, std::string &how)
 {
-    uintptr_t want = swofty::api->module_base() + GAME_REPLAY_SYSTEM_VTABLE_RVA;
+    uintptr_t want = game.replay_system_vt;
+    if (!want)
+        return 0;
     auto user = [](uint64_t p) { return p > 0x10000 && p < 0x7fffffffffffull && (p & 7) == 0; };
     for (uint64_t o = 0; o < 0x200; o += 8) {
         uint64_t p = peek64(buffer + o);
@@ -2867,15 +2889,58 @@ void install_gates()
         swofty::log("[boards] gate: off, no online-state hook armed");
 }
 
+// The template's first bytes: what a result handler found from its neighbour (S_GET_TT ...) must start with.
+uintptr_t on_result_entry(const runtime::Sig &sig)
+{
+    static const uint8_t entry[] = {0x41, 0x57, 0x41, 0x56};
+    static const uint8_t body[] = {0x48, 0x89, 0xD7, 0x48, 0x89, 0xCE, 0xE8};
+    uintptr_t at = runtime::find(sig, "boards", "boards");
+    if (!at)
+        return 0;
+    auto *b = reinterpret_cast<const uint8_t *>(at);
+    bool ok = runtime::readable(b, 0x20) && !memcmp(b, entry, sizeof entry);
+    if (ok) {
+        ok = false;
+        for (size_t i = 12; i + sizeof body <= 0x1c && !ok; i++)
+            ok = b[i - 7] == 0x48 && b[i - 6] == 0x81 && b[i - 5] == 0xEC && !memcmp(b + i, body, sizeof body);
+    }
+    if (!ok)
+        swofty::log("[boards] %s: the code at base+0x%llx is not a result handler; not used", sig.what, (unsigned long long)(at - swofty::api->module_base()));
+    return ok ? at : 0;
+}
+
+void resolve_game()
+{
+    game.qpc_offset = runtime::find(S_QPC_OFFSET, "boards", "boards");
+    game.friends_resume = runtime::find(S_FRIENDS_RESUME, "boards", "boards");
+    game.replay_system_vt = runtime::find(S_REPLAY_SYSTEM_VT, "boards", "boards");
+    game.string_vt = runtime::find(S_STRING_VT, "boards", "boards");
+    game.mode_vt = runtime::find(S_MODE_VT, "boards", "boards");
+    game.queue_busy = runtime::find(S_QUEUE_BUSY, "boards", "boards");
+    game.replay_set_state = runtime::find(S_REPLAY_SET_STATE, "boards", "boards");
+    game.replay_seek = runtime::find(S_REPLAY_SEEK, "boards", "boards");
+    game.replay_clear = runtime::find(S_REPLAY_CLEAR, "boards", "boards");
+    game.replay_reset = runtime::find(S_REPLAY_RESET, "boards", "boards");
+    game.view_enter_fn = runtime::find(S_VIEW_ENTER_FN, "boards", "boards");
+    game.view_resume = runtime::find(S_VIEW_RESUME, "boards", "boards");
+    if (!game.replay_system_vt)
+        swofty::log("[replay] off: the replay system vtable did not resolve on this build");
+    if (!game.view_ready())
+        swofty::log("[replay] Theatre viewer route off: one of its addresses did not resolve on this build");
+    if (!game.replay_clear || !game.replay_reset)
+        swofty::log("[replay] recording restart off: its functions did not resolve on this build");
+}
+
 void setup()
 {
     auto gate = swofty::json::parse(runtime::read_file(runtime::swofty_root() + L"tt.json", size_t(1) << 20));
     bridge_on = gate.is_object() && gate["tt_bridge"].as_bool(false);
     boards_on = gate.is_object() && gate["tt_boards"].as_bool(false);
-    if (!runtime::same_build()) {
-        swofty::log("[boards] off: the hook points are this build's byte signatures; this exe is a different build");
+    if (!runtime::verified_build()) {
+        swofty::log("[boards] off: the hook points and struct offsets are checked on the Steam and EA builds; this exe is a different build");
         return;
     }
+    resolve_game();
     char gv[16] = {};
     DWORD gn = GetEnvironmentVariableA("SWOFTY_TT_GUARDS", gv, sizeof gv);
     guards_on = (gate.is_object() && gate["tt_guards"].as_bool(false)) || (gn && gn < sizeof gv && !strcmp(gv, "1"));
@@ -2903,11 +2968,11 @@ void setup()
     table = tb::Table(unix_seconds() * 100);
     make_dirs();
 
-    found.on_result[int(tb::Method::get_tt)] = runtime::find(S_GET_TT, "boards", "boards");
-    found.on_result[int(tb::Method::get_friends_tt)] = runtime::find(S_GET_FRIENDS, "boards", "boards");
-    found.on_result[int(tb::Method::get_binary)] = runtime::find(S_GET_BINARY, "boards", "boards");
-    found.on_result[int(tb::Method::add_entry)] = runtime::find(S_ADD_ENTRY, "boards", "boards");
-    found.on_result[int(tb::Method::update_binary)] = runtime::find(S_UPDATE_BINARY, "boards", "boards");
+    found.on_result[int(tb::Method::get_tt)] = on_result_entry(S_GET_TT);
+    found.on_result[int(tb::Method::get_friends_tt)] = on_result_entry(S_GET_FRIENDS);
+    found.on_result[int(tb::Method::get_binary)] = on_result_entry(S_GET_BINARY);
+    found.on_result[int(tb::Method::add_entry)] = on_result_entry(S_ADD_ENTRY);
+    found.on_result[int(tb::Method::update_binary)] = on_result_entry(S_UPDATE_BINARY);
     std::string missing;
     for (auto m : {tb::Method::get_tt, tb::Method::get_friends_tt, tb::Method::get_binary, tb::Method::add_entry, tb::Method::update_binary})
         if (!found.on_result[int(m)])
@@ -2995,12 +3060,12 @@ void setup()
                     if (hook_mid(*hook, at, fn, label))
                         swofty::log("[boards] %s read as allowed for our content at base+0x%llx: the garage monitor builds its leaderboard tabs", label, (unsigned long long)(at - swofty::api->module_base()));
         if (bridge_on)
-            if (uintptr_t at = runtime::find(S_GARAGE_FRIENDS_TAB, "boards", "boards"))
+            if (uintptr_t at = game.friends_resume ? runtime::find(S_GARAGE_FRIENDS_TAB, "boards", "boards") : 0)
                 if (hook_mid(h_tab_friends, at, garage_friends_tab_mid, "garage friends tab"))
                     swofty::log("[boards] garage friends tab skipped for our content at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
         if (bridge_on && replay_capture_on) {
             uintptr_t path_fn = runtime::find(S_REPLAY_PATH, "boards", "boards"), save_fn = runtime::find(S_REPLAY_SAVE, "boards", "boards"), tick = runtime::find(S_REPLAY_TICK, "boards", "boards");
-            if (path_fn && save_fn && tick && hook_mid(h_replay_tick, tick, replay_tick_mid, "replay system tick")) {
+            if (path_fn && save_fn && tick && game.replay_system_vt && hook_mid(h_replay_tick, tick, replay_tick_mid, "replay system tick")) {
                 replay_build_path_fn = path_fn;
                 replay_save_fn = save_fn;
                 hook_mid(h_replay_save, save_fn, replay_save_entry_mid, "replay save observer");
@@ -3037,14 +3102,19 @@ void setup()
                     if (uintptr_t a = runtime::find(S_VM_SESSION_SETUP, "boards", "boards"))
                         if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&vm_session_setup_hook)))
                             h_vm_session_setup = std::move(*h);
-                    if (uintptr_t a = runtime::find(S_VIEW_ENTER, "boards", "boards"))
+                    if (uintptr_t a = game.view_resume ? runtime::find(S_VIEW_ENTER, "boards", "boards") : 0)
                         hook_mid(view::h_enter, a, view::enter_mid, "fastest lap viewer enter");
                     if (uintptr_t a = runtime::find(S_REPLAY_LOAD_READY, "boards", "boards"))
                         hook_mid(h_load_ready, a, replay_load_ready_mid, "load start readiness");
-                    if (uintptr_t a = runtime::find(S_SAVE_SLOT_DEFAULT, "boards", "boards"))
+                    // These two functions' bodies are in the protector's section (.data1 on Steam, .xcode on EA). Code there is only
+                    // patched on the Steam build.
+                    bool relocated_ok = runtime::same_build();
+                    if (!relocated_ok)
+                        swofty::log("[replay] default slot and refresh hooks off: their functions are in the protector's section on this build");
+                    if (uintptr_t a = relocated_ok ? runtime::find(S_SAVE_SLOT_DEFAULT, "boards", "boards") : 0)
                         if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&slot_default_hook)))
                             h_slot_default = std::move(*h);
-                    if (uintptr_t a = runtime::find(S_SAVE_SLOT_REFRESH, "boards", "boards"))
+                    if (uintptr_t a = relocated_ok ? runtime::find(S_SAVE_SLOT_REFRESH, "boards", "boards") : 0)
                         if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&slot_refresh_hook)))
                             h_slot_refresh = std::move(*h);
                     swofty::log("[replay] SWOFTY_TT_REPLAY_FORCE=slot: save-slot constructor %s, snapshot hook %s, default slot hook %s, refresh hook %s", save_slot_ctor ? "found" : "NOT found",

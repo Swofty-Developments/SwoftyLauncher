@@ -1214,7 +1214,7 @@ uintptr_t direct_start_set_mode()
     static std::atomic<uintptr_t> found{0};
     static std::atomic<bool> tried{false};
     if (!tried.exchange(true)) {
-        found = runtime::same_build() ? runtime::find(SIG_SET_MODE, "SetCurrentGameMode", "direct") : 0;
+        found = runtime::verified_build() ? runtime::find(SIG_SET_MODE, "SetCurrentGameMode", "direct") : 0;
         swofty::log("[direct] SetCurrentGameMode for a session without a direct start: %s", found.load() ? "resolved" : "not resolved");
     }
     return found.load();
@@ -1227,7 +1227,7 @@ DirectStartContext direct_start_context()
     static std::atomic<uintptr_t> manager{0};
     static std::atomic<bool> tried{false};
     if (!manager.load() && !tried.exchange(true)) {
-        manager = runtime::same_build() ? runtime::find(SIG_GAME_MANAGER, "game manager", "direct") : 0;
+        manager = runtime::verified_build() ? runtime::find(SIG_GAME_MANAGER, "game manager", "direct") : 0;
         swofty::log("[direct] game manager for a session without a direct start: %s", manager.load() ? "resolved" : "not resolved");
     }
     DirectStartContext c;
@@ -1276,7 +1276,7 @@ bool flow_link_listen(FlowLinkListener listener)
     link_listener = listener;
     if (h_link)
         return true;
-    uintptr_t at = runtime::same_build() ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;
+    uintptr_t at = runtime::verified_build() ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;
     if (!at)
         return false;
     auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), link_mid);
