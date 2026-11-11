@@ -3130,11 +3130,11 @@ pub struct VehicleTyreComponent {
     pub compound_class: *mut c_void,
     _pad_0x9bc8: [u8; 0x8],
     pub slots: [TyreSlot; 5],
-    pub slot_count: u8,
-    _pad_0x9c49: [u8; 0x7],
+    pub slot_count: u64,
     pub built_for: *mut c_void,
-    pub built: u8,
-    _pad_0x9c59: [u8; 0x3f],
+    pub built: *mut c_void,
+    _pad_0x9c60: [u8; 0x30],
+    pub set_begin: *mut u8,
     pub set_end: *mut u8,
 }
 const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, compound_class) == 0x9bc0);
@@ -3142,6 +3142,7 @@ const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, slots) == 0x9b
 const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, slot_count) == 0x9c48);
 const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, built_for) == 0x9c50);
 const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, built) == 0x9c58);
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, set_begin) == 0x9c90);
 const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, set_end) == 0x9c98);
 
 #[repr(C)]

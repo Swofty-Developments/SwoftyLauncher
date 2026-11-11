@@ -408,11 +408,11 @@ struct VehicleTyreComponent {
     void *compound_class; // L2 experimental
     uint8_t _pad_0x9bc8[0x8];
     TyreSlot slots[5]; // L2 experimental
-    uint8_t slot_count; // L2 experimental
-    uint8_t _pad_0x9c49[0x7];
+    uint64_t slot_count; // L2 experimental
     void *built_for; // L2 experimental
-    uint8_t built; // L2 experimental
-    uint8_t _pad_0x9c59[0x3f];
+    void *built; // L2 experimental
+    uint8_t _pad_0x9c60[0x30];
+    uint8_t *set_begin; // L2 experimental
     uint8_t *set_end; // L2 experimental
 };
 static_assert(offsetof(VehicleTyreComponent, compound_class) == 0x9bc0);
@@ -420,6 +420,7 @@ static_assert(offsetof(VehicleTyreComponent, slots) == 0x9bd0);
 static_assert(offsetof(VehicleTyreComponent, slot_count) == 0x9c48);
 static_assert(offsetof(VehicleTyreComponent, built_for) == 0x9c50);
 static_assert(offsetof(VehicleTyreComponent, built) == 0x9c58);
+static_assert(offsetof(VehicleTyreComponent, set_begin) == 0x9c90);
 static_assert(offsetof(VehicleTyreComponent, set_end) == 0x9c98);
 
 struct VisualCompound {
