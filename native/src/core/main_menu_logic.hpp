@@ -399,6 +399,19 @@ inline Recovery recovery_for(Expect e, const std::string &flow_now, bool home_sc
     return home_screen_open ? Recovery::none : Recovery::open_home;
 }
 
+// Whether the F1 World entry point (g_Game_F1WorldEntryPoint) may be cleared when a Back leaves for the main menu. The
+// global is only written through the address the running build's binding set resolved: an unresolved binding (a
+// build whose scan found no match) skips the write, as does an address that is not writable memory. 1.9.0 wrote the
+// Steam offset on every build and faulted on the EA build, where that offset is a read-only .sbss page.
+enum class EntryPointWrite { write, unresolved, unwritable };
+
+inline EntryPointWrite entry_point_write(uintptr_t resolved, bool writable)
+{
+    if (!resolved)
+        return EntryPointWrite::unresolved;
+    return writable ? EntryPointWrite::write : EntryPointWrite::unwritable;
+}
+
 inline bool migrate_failed(const std::string &text)
 {
     return text.find("failed to migrate") != std::string::npos || text.find("No screen called") != std::string::npos;

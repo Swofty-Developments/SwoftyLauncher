@@ -407,11 +407,50 @@ uint64_t raise_delay_ms()
 
 bool fire_in_group(const char *group, const char *route, const char *why);
 
+// Clears g_Game_F1WorldEntryPoint (how F1 World was entered) so the hub is not reopened after a Back. The address comes from
+// the running build's binding set, never from a fixed offset: a build whose set does not resolve it keeps the game's
+// own value and says so once.
+std::atomic<uintptr_t> entry_point_addr{0};
+std::atomic<bool> entry_point_told{false};
+
+bool writable(const void *p, size_t n)
+{
+    MEMORY_BASIC_INFORMATION m{};
+    if (!p || !VirtualQuery(p, &m, sizeof m) || m.State != MEM_COMMIT || (m.Protect & (PAGE_NOACCESS | PAGE_GUARD)))
+        return false;
+    if (!(m.Protect & (PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY)))
+        return false;
+    return uintptr_t(p) + n <= uintptr_t(m.BaseAddress) + m.RegionSize;
+}
+
+void clear_entry_point(const char *why)
+{
+    uintptr_t at = entry_point_addr.load();
+    if (!at && !entry_point_told.load()) {
+        at = swofty::api->resolve("g_Game_F1WorldEntryPoint");
+        entry_point_addr = at;
+    }
+    auto entry = reinterpret_cast<uint32_t *>(at);
+    switch (logic::entry_point_write(at, at && writable(entry, 4))) {
+    case logic::EntryPointWrite::write:
+        *entry = 0;
+        return;
+    case logic::EntryPointWrite::unresolved:
+        if (!entry_point_told.exchange(true))
+            swofty::log("[main-menu] back: g_Game_F1WorldEntryPoint is not resolved on this build (%s); the F1 World entry point keeps the game's value (%s)",
+                        runtime::build_distribution().c_str(), why);
+        return;
+    case logic::EntryPointWrite::unwritable:
+        if (!entry_point_told.exchange(true))
+            swofty::log("[main-menu] back: g_Game_F1WorldEntryPoint at base+0x%llx is not writable memory; the F1 World entry point keeps the game's value (%s)",
+                        (unsigned long long)(at - swofty::api->module_base()), why);
+        return;
+    }
+}
+
 void leave_picker_to_home(const char *why)
 {
-    auto entry = reinterpret_cast<uint32_t *>(swofty::api->module_base() + 0x6066c74);
-    if (runtime::readable(entry, 4))
-        *entry = 0;
+    clear_entry_point(why);
     {
         std::lock_guard<std::mutex> g(swap_lock);
         swap_screens.clear();
@@ -602,9 +641,7 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
             swofty::log("[main-menu] nav: route '%s' fired in group 0x%08x (%s)", text, gid,
                         gid == logic::djb2("fe_showroom") ? "fe_showroom" : gid == logic::djb2("grand_prix_continue") ? "grand_prix_continue" : "f1_world_activity_container");
         if (const char *to = logic::back_replacement(back_mode(), gid, text)) {
-            auto entry = reinterpret_cast<uint32_t *>(swofty::api->module_base() + 0x6066c74);
-            if (runtime::readable(entry, 4))
-                *entry = 0;
+            clear_entry_point("Back");
             {
                 std::lock_guard<std::mutex> g(swap_lock);
                 swap_screens.clear();
@@ -1148,9 +1185,7 @@ void tick()
                 swap_reported = false;
             }
             swap_at = GetTickCount64();
-            auto entry = reinterpret_cast<uint32_t *>(swofty::api->module_base() + 0x6066c74);
-            if (runtime::readable(entry, 4))
-                *entry = 0;
+            clear_entry_point("hub Back");
             swofty::log("[main-menu] back: firing route 'back' in group fe_f1_world (0x%08x), the route the hub's own Back button fires (this build session15 reached the main menu with it)",
                         logic::djb2("fe_f1_world"));
             h_fire.call<void>(router, scratch, &route, 0);
