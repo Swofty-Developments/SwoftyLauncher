@@ -165,10 +165,12 @@ const runtime::Sig S_VM_SESSION_SETUP{"Game_SessionVm_Setup_1414bb420",
 const runtime::Sig S_REPLAY_TITLE{"site_Game_Replay_SaveFullReplay_title_142c47a31", "E8 ?? ?? ?? ?? 48 85 C0 48 8D 8C 24 C8 02 00 00", 0x2c47a31, runtime::Sig::addr, 0, 5};
 const runtime::Sig S_REPLAY_META{"Game_Replay_FillMetadata_142bfd950",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 4C 89 4C 24 28 4C 89 C3 49 89 D7 48 89 CE", 0x2bfd950};
-const runtime::Sig S_SAVE_SLOT_DEFAULT{"Game_SaveSlotManager_MakeDefaultSlot_14d6e4c20", "41 57 41 56 41 54 56 57 53 48 81 EC E8 00 00 00 48 89 CE 48 8D 44 24 68 48 C7 44 24 58 80 00 00 00",
-        0xd6e4c20, runtime::Sig::addr, 0, 0, 0, ".data1"};
-const runtime::Sig S_SAVE_SLOT_REFRESH{"Game_SaveSlotManager_Refresh_14d6ef2a0", "41 57 41 56 56 57 55 53 48 83 EC 48 48 89 CE 48 8B B9 50 02 00 00 48 8D 4F 18 48 8B 47 18 FF 50 28",
-        0xd6ef2a0, runtime::Sig::addr, 0, 0, 0, ".data1"};
+// The default-slot and owner-refresh functions have their bodies in the protector's section; every caller on both builds reaches each
+// through one jump thunk in ordinary code (0x1429ce1c0, 0x1429d1130), found here from a call to it. The hooks sit on the thunks.
+const runtime::Sig S_SAVE_SLOT_DEFAULT{"Game_SaveSlotManager_MakeDefaultSlot_thunk_1429ce1c0", "E8 ?? ?? ?? ?? 31 F6 E9 ?? ?? ?? ?? 48 C7 86 C8 02 00 00 00 00 00 00", 0x29ce1c0,
+                                       runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig S_SAVE_SLOT_REFRESH{"Game_SaveSlotManager_Refresh_thunk_1429d1130",
+                                       "48 89 F1 E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 80 00 00 00", 0x29d1130, runtime::Sig::rel32, 3, 4, 5};
 const runtime::Sig S_REPLAY_LOAD_SESSION{"site_Game_Replay_LoadFullReplay_session_142c4b3dd", "41 BD 01 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 49 89 C4 48 8B 88 08 0F 00 00", 0x2c4b3dd,
         runtime::Sig::addr, 0, 6};
 const runtime::Sig S_REPLAY_LOAD_SLOT{"site_Game_Replay_LoadFullReplay_save_slot_142c4b3fc", "48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 0F 84 ?? ?? ?? ?? 48 85 FF 74 1E 4C 8B 17", 0x2c4b3fc,
@@ -3106,15 +3108,19 @@ void setup()
                         hook_mid(view::h_enter, a, view::enter_mid, "fastest lap viewer enter");
                     if (uintptr_t a = runtime::find(S_REPLAY_LOAD_READY, "boards", "boards"))
                         hook_mid(h_load_ready, a, replay_load_ready_mid, "load start readiness");
-                    // These two functions' bodies are in the protector's section (.data1 on Steam, .xcode on EA). Code there is only
-                    // patched on the Steam build.
-                    bool relocated_ok = runtime::same_build();
-                    if (!relocated_ok)
-                        swofty::log("[replay] default slot and refresh hooks off: their functions are in the protector's section on this build");
-                    if (uintptr_t a = relocated_ok ? runtime::find(S_SAVE_SLOT_DEFAULT, "boards", "boards") : 0)
+                    // Both hooks go on the function's jump thunk in ordinary code, never into the protector's section.
+                    auto thunk = [](const runtime::Sig &sig) -> uintptr_t {
+                        uintptr_t a = runtime::find(sig, "boards", "boards");
+                        if (a && *reinterpret_cast<const uint8_t *>(a) != 0xE9) {
+                            swofty::log("[replay] %s: base+0x%llx is not a jump thunk; not hooked", sig.what, (unsigned long long)(a - swofty::api->module_base()));
+                            return 0;
+                        }
+                        return a;
+                    };
+                    if (uintptr_t a = thunk(S_SAVE_SLOT_DEFAULT))
                         if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&slot_default_hook)))
                             h_slot_default = std::move(*h);
-                    if (uintptr_t a = relocated_ok ? runtime::find(S_SAVE_SLOT_REFRESH, "boards", "boards") : 0)
+                    if (uintptr_t a = thunk(S_SAVE_SLOT_REFRESH))
                         if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&slot_refresh_hook)))
                             h_slot_refresh = std::move(*h);
                     swofty::log("[replay] SWOFTY_TT_REPLAY_FORCE=slot: save-slot constructor %s, snapshot hook %s, default slot hook %s, refresh hook %s", save_slot_ctor ? "found" : "NOT found",

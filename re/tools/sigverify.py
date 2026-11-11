@@ -7,7 +7,8 @@
   sigverify.py --json out.json              also write the per-signature results
   sigverify.py --mk RVA [--kind riprel|rel32] [--back N] [--max N]
                                             print a pattern at the KB RVA that matches once on BOTH images
-  sigverify.py --refs RVA                   KB code sites whose rip-relative operand or rel32 reaches RVA
+  sigverify.py --refs RVA [--on port] [--section NAME]
+                                            code sites whose rip-relative operand or rel32 reaches RVA (the image's own section name)
   sigverify.py --dis ref|port RVA [LEN]     disassemble
   sigverify.py --twin RVA                   the port's address of the KB function at RVA, by a both-unique pattern
   sigverify.py --disp RVA LEN HEX[,HEX]     per image: instructions in [RVA, RVA+LEN) of the KB function and of
@@ -254,6 +255,7 @@ def main():
     ap.add_argument('--max', type=lambda v: int(v, 0), default=96)
     ap.add_argument('--section', default='.xtls')
     ap.add_argument('--refs')
+    ap.add_argument('--on', default='ref', choices=('ref', 'port'))
     ap.add_argument('--dis', nargs='+')
     ap.add_argument('--twin')
     ap.add_argument('--disp', nargs=3)
@@ -266,8 +268,9 @@ def main():
         return 0
     if a.refs:
         t = int(a.refs, 16)
-        for site in riprel_refs(ref, a.section, t):
-            f = ref.func_base_of(site)
+        img = port if a.on == 'port' else ref
+        for site in riprel_refs(img, a.section, t):
+            f = img.func_base_of(site)
             print(f'{site:#x} (disp at; function {f:#x})' if f else f'{site:#x}')
         return 0
     if a.mk:
