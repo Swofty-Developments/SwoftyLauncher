@@ -117,12 +117,13 @@ pub struct StatIdCeiling {
 }
 
 const STAT_ID_CEILINGS: &[(&str, &str, StatIdCeiling)] = &[
-    // The core's vehicle and team id pools end at 1023, and its registry never allocates above them.
+    // Vehicle and team ids are 14 bits in the game's packed keys (0x3fff = none), like driver ids; the core's
+    // registry pools end at the same 16382 (VEHICLE_STAT_MAX / TEAM_STAT_MAX in apply/content/lower.hpp).
     (
         "entrants.vehicles",
         "vehicle",
         StatIdCeiling {
-            max: 1023,
+            max: 16382,
             from: None,
         },
     ),
@@ -130,7 +131,7 @@ const STAT_ID_CEILINGS: &[(&str, &str, StatIdCeiling)] = &[
         "entrants.teams",
         "team",
         StatIdCeiling {
-            max: 1023,
+            max: 16382,
             from: None,
         },
     ),

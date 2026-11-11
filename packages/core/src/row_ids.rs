@@ -1939,19 +1939,19 @@ mod tests {
     }
 
     #[test]
-    fn vehicle_and_team_rows_never_take_an_id_past_1023() {
+    fn vehicle_and_team_rows_never_take_an_id_past_16382() {
         let data = data_dir("vehicle-ceiling");
-        put(&reports::path(&data, reports::IDS), &pinned_vehicles(1022));
+        put(&reports::path(&data, reports::IDS), &pinned_vehicles(16381));
         let (store, _) = Store::load(&data, None, "p", None);
         let built = build(VEHICLES, 0, &[("b", &["v1"])], store);
-        assert_eq!(built.ids["v1"], 1023);
+        assert_eq!(built.ids["v1"], 16382);
         assert!(built.left_out.is_empty());
         let seasons: Vec<String> = (0..20).map(|i| format!("s{i}")).collect();
         let refs: Vec<&str> = seasons.iter().map(String::as_str).collect();
         for table in [VEHICLES, TEAMS] {
-            let built = build(table, 1020, &[("b", &refs)], Store::default());
+            let built = build(table, 16379, &[("b", &refs)], Store::default());
             assert!(
-                built.ids.values().all(|id| (1021..=1023).contains(id)),
+                built.ids.values().all(|id| (16380..=16382).contains(id)),
                 "{:?}",
                 built.ids
             );
@@ -1964,7 +1964,7 @@ mod tests {
     #[test]
     fn a_vehicle_row_that_finds_no_id_is_left_out_without_failing_the_build() {
         let data = data_dir("vehicle-left-out");
-        put(&reports::path(&data, reports::IDS), &pinned_vehicles(1023));
+        put(&reports::path(&data, reports::IDS), &pinned_vehicles(16382));
         let (store, _) = Store::load(&data, None, "p", None);
         let built = build(VEHICLES, 0, &[("a", &["v1", "v2"]), ("b", &["w1"])], store);
         assert!(built.ids.is_empty());

@@ -182,7 +182,10 @@ inline constexpr int64_t VEHICLE_PACKAGE_MAX = 254;
 // The game keeps a vehicle id in the high word of its (id << 16) | kind keys and in 14 bits where it packs one
 // (0x3fff means none), as it does a driver id, so vehicle ids run to 16382 like driver ids.
 inline constexpr int64_t VEHICLE_STAT_MAX = 16382;
-inline constexpr int64_t TEAM_STAT_MAX = 1023;
+// A team id is packed the same way: the entrant record keeps it in the high word of +0x58 with 0x3fff for no
+// team, and team keys are ((id & 0x3fff) << 16) | id >> 14 (EntrantRecord, FacilityTeamData, TeamRenownData in re/db).
+// 1023 was the old pool end, which a 76-season profile (about 890 added teams) runs past.
+inline constexpr int64_t TEAM_STAT_MAX = 16382;
 
 inline std::string text(const Value &v)
 {
