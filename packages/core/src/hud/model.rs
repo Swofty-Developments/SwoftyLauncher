@@ -363,7 +363,9 @@ fn check_element(e: &Element, ids: &mut std::collections::BTreeSet<String>) -> R
     if !ids.insert(e.id.clone()) {
         return Err(err(format!("element id {} is used twice", e.id)));
     }
-    let kind = e.kind.ok_or_else(|| err(format!("element {} has no kind", e.id)))?;
+    let kind = e
+        .kind
+        .ok_or_else(|| err(format!("element {} has no kind", e.id)))?;
     let need = |what: &str, ok: bool| -> Result<()> {
         if ok {
             Ok(())
@@ -376,11 +378,17 @@ fn check_element(e: &Element, ids: &mut std::collections::BTreeSet<String>) -> R
         Kind::Text => need("value or literal", e.value.is_some() || e.literal.is_some())?,
         Kind::Group => {}
         Kind::Levels => {
-            need("sprite, count and show", e.sprite.is_some() && e.count.is_some() && e.show.is_some())?;
+            need(
+                "sprite, count and show",
+                e.sprite.is_some() && e.count.is_some() && e.show.is_some(),
+            )?;
             need("axis y", e.axis.as_deref().is_none_or(|a| a == "y"))?;
         }
         Kind::Slats => need("sprites and show", !e.sprites.is_empty() && e.show.is_some())?,
-        Kind::Gauge => need("sprite, path and value", e.sprite.is_some() && e.path.is_some() && e.value.is_some())?,
+        Kind::Gauge => need(
+            "sprite, path and value",
+            e.sprite.is_some() && e.path.is_some() && e.value.is_some(),
+        )?,
         Kind::Sweep => need(
             "mask_sprite, fill_sprite, pivot, arc and value",
             e.mask_sprite.is_some()
@@ -434,16 +442,29 @@ mod tests {
     fn refuses_broken_records() {
         let mut v = halo_like();
         v["elements"][1]["value"] = serde_json::json!({ "game": "a", "view_model": "view_model_data.b" });
-        assert!(HudElement::parse(&v).unwrap_err().to_string().contains("exactly one"));
+        assert!(
+            HudElement::parse(&v)
+                .unwrap_err()
+                .to_string()
+                .contains("exactly one")
+        );
         let mut v = halo_like();
         v["elements"][0]["id"] = "speed".into();
         assert!(HudElement::parse(&v).unwrap_err().to_string().contains("twice"));
         let mut v = halo_like();
-        v["elements"].as_array_mut().unwrap().push(serde_json::json!({ "id": "g", "kind": "gauge" }));
+        v["elements"]
+            .as_array_mut()
+            .unwrap()
+            .push(serde_json::json!({ "id": "g", "kind": "gauge" }));
         assert!(HudElement::parse(&v).unwrap_err().to_string().contains("needs"));
         let mut v = halo_like();
         v["decisions"] = serde_json::json!([{ "id": "d", "type": "svcd", "game": "ers_mode", "equals": 1, "yes": ["nope"] }]);
-        assert!(HudElement::parse(&v).unwrap_err().to_string().contains("no element"));
+        assert!(
+            HudElement::parse(&v)
+                .unwrap_err()
+                .to_string()
+                .contains("no element")
+        );
     }
 
     #[test]

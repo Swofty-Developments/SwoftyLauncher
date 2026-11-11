@@ -1075,7 +1075,10 @@ pub fn wire_command(target: &mut Node, command_name: &str, base: &str, pin: &str
     if hits.next().is_some() {
         return Err(err(format!("{owner} has two {command_name} commands")));
     }
-    c.o_mut()?.at_mut("signals")?.a_mut()?.push(sig(base, pin, command_name));
+    c.o_mut()?
+        .at_mut("signals")?
+        .a_mut()?
+        .push(sig(base, pin, command_name));
     Ok(())
 }
 
@@ -1155,13 +1158,13 @@ fn locate(x: &Node, trail: &str, want: &str, at: &mut Vec<usize>, hits: &mut Vec
         if path == want {
             hits.push(at.clone());
         }
-        if want == path || want.starts_with(&format!("{path}.")) {
-            if let Ok(kids) = x.slot(CHILDREN) {
-                for (i, c) in kids.iter().enumerate() {
-                    at.extend([CHILDREN, i]);
-                    locate(c, &path, want, at, hits);
-                    at.truncate(at.len() - 2);
-                }
+        if (want == path || want.starts_with(&format!("{path}.")))
+            && let Ok(kids) = x.slot(CHILDREN)
+        {
+            for (i, c) in kids.iter().enumerate() {
+                at.extend([CHILDREN, i]);
+                locate(c, &path, want, at, hits);
+                at.truncate(at.len() - 2);
             }
         }
         return;
@@ -1196,7 +1199,7 @@ pub fn find_path(root: &Node, path: &str) -> Result<Vec<usize>> {
     Ok(at.clone())
 }
 
-fn step<'a>(x: &'a mut Node, i: usize, kids: bool) -> Result<&'a mut Node> {
+fn step(x: &mut Node, i: usize, kids: bool) -> Result<&mut Node> {
     let miss = || err("the UI tree has changed since the node was found");
     if kids {
         return x.slot_mut(CHILDREN)?.get_mut(i).ok_or_else(miss);
@@ -1231,7 +1234,10 @@ pub fn node_at<'a>(root: &'a Node, at: &[usize]) -> Result<&'a Node> {
     let miss = || err("the UI tree has changed since the node was found");
     while i < at.len() {
         if n.is_node() {
-            n = n.slot(CHILDREN)?.get(*at.get(i + 1).ok_or_else(miss)?).ok_or_else(miss)?;
+            n = n
+                .slot(CHILDREN)?
+                .get(*at.get(i + 1).ok_or_else(miss)?)
+                .ok_or_else(miss)?;
             i += 2;
         } else {
             n = match n {

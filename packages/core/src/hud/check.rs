@@ -81,7 +81,12 @@ fn check_parent(root: &swofty_formats::pkg::Node, parent: &str, r: &mut Report) 
     let Ok(n) = node::node_at(root, &at) else {
         return r.fail(format!("{parent}: gone"));
     };
-    let id = n.props().ok().and_then(|p| p.get("id")).and_then(|v| v.as_val()).and_then(|v| v.as_u32());
+    let id = n
+        .props()
+        .ok()
+        .and_then(|p| p.get("id"))
+        .and_then(|v| v.as_val())
+        .and_then(|v| v.as_u32());
     if id != Some(djb2(parent)) {
         return r.fail(format!("{parent}: the node's id is not the hash of its path"));
     }
@@ -119,7 +124,7 @@ pub fn stock_facts(stock: &dyn Stock) -> Report {
     let bar = r.run("dial_om_bar_complete.idf", read(dials::BAR));
     if let Some(m) = &mods
         && let Ok(p) = Pkg::parse(m)
-        && let Ok(root) = idf::scenes(&p).and_then(|s| Ok(s[0].clone()))
+        && let Ok(root) = idf::scenes(&p).map(|s| s[0].clone())
     {
         let scene = root.as_obj().and_then(|o| o.get("scene"));
         for n in ["mod_1_icon_fill_mask", "mod_1_icon_fill_mask_anim"] {
@@ -134,7 +139,11 @@ pub fn stock_facts(stock: &dyn Stock) -> Report {
     {
         let has = idf::scenes(&p)
             .ok()
-            .and_then(|s| s[0].as_obj()?.get("scene").map(|s| idf::find(s, "ers_battery_fill_mask").is_some()))
+            .and_then(|s| {
+                s[0].as_obj()?
+                    .get("scene")
+                    .map(|s| idf::find(s, "ers_battery_fill_mask").is_some())
+            })
             .unwrap_or(false);
         if has {
             r.pass("dial_om_bar_complete.idf has ers_battery_fill_mask");
@@ -168,29 +177,61 @@ pub fn stock_facts(stock: &dyn Stock) -> Report {
         if let (Some(m), Some(b)) = (&mods, &bar) {
             let built = Builder::new(f, &scene, m, b, text_from.as_deref());
             if let Some(mut b) = r.run(&format!("{}: scene", short(f.scene)), built) {
-                r.pass(format!("{}: the quad {} has the mesh, extents and pivot the composer expects", short(f.scene), f.quad));
+                r.pass(format!(
+                    "{}: the quad {} has the mesh, extents and pivot the composer expects",
+                    short(f.scene),
+                    f.quad
+                ));
                 let parts: Vec<String> = dials::STOCK_KIDS.iter().map(|s| (*s).to_owned()).collect();
-                if r.run(&format!("{}: stock parts", short(f.scene)), b.stock_parts_present(&parts)).is_some() {
-                    r.pass(format!("{}: the stock parts {} are under {}", short(f.scene), parts.join(", "), dials::CUSTOMISATION));
+                if r.run(
+                    &format!("{}: stock parts", short(f.scene)),
+                    b.stock_parts_present(&parts),
+                )
+                .is_some()
+                {
+                    r.pass(format!(
+                        "{}: the stock parts {} are under {}",
+                        short(f.scene),
+                        parts.join(", "),
+                        dials::CUSTOMISATION
+                    ));
                 }
                 match b.bottom() {
-                    Ok(y) if (y - f.bottom_y).abs() < 1e-3 => r.pass(format!("{}: br_customisation sits at y {y}", short(f.scene))),
-                    Ok(y) => r.fail(format!("{}: br_customisation is at y {y}, not {}", short(f.scene), f.bottom_y)),
+                    Ok(y) if (y - f.bottom_y).abs() < 1e-3 => {
+                        r.pass(format!("{}: br_customisation sits at y {y}", short(f.scene)))
+                    }
+                    Ok(y) => r.fail(format!(
+                        "{}: br_customisation is at y {y}, not {}",
+                        short(f.scene),
+                        f.bottom_y
+                    )),
                     Err(e) => r.fail(format!("{}: {e}", short(f.scene))),
                 }
             }
         }
-        if let Some(strtab) = stock.read(dials::STOCK_ERP, f.strtab).ok().and_then(|v| first(v, "strtab").ok()) {
+        if let Some(strtab) = stock
+            .read(dials::STOCK_ERP, f.strtab)
+            .ok()
+            .and_then(|v| first(v, "strtab").ok())
+        {
             match swofty_formats::animclip::read_strings(&strtab) {
-                Ok(s) if s.iter().any(|n| n.starts_with("zh_")) => {
-                    r.pass(format!("{}: the anim string table already carries zh_ names (a built game folder)", short(f.scene)))
-                }
-                Ok(s) => r.pass(format!("{}: the anim string table has {} stock names", short(f.scene), s.len())),
+                Ok(s) if s.iter().any(|n| n.starts_with("zh_")) => r.pass(format!(
+                    "{}: the anim string table already carries zh_ names (a built game folder)",
+                    short(f.scene)
+                )),
+                Ok(s) => r.pass(format!(
+                    "{}: the anim string table has {} stock names",
+                    short(f.scene),
+                    s.len()
+                )),
                 Err(e) => r.fail(format!("{}: {e}", short(f.strtab))),
             }
         }
         if dial == Dial::F125
-            && let Some(u) = stock.read(dials::STOCK_ERP, f.uipre).ok().and_then(|v| first(v, "uipre").ok())
+            && let Some(u) = stock
+                .read(dials::STOCK_ERP, f.uipre)
+                .ok()
+                .and_then(|v| first(v, "uipre").ok())
         {
             match editor::uipre(&u, f.scene, &[dials::STOCK_KIDS[0].to_owned()], &[]) {
                 Ok(_) => r.pass("dial_complete.uipre: the stock setters to copy are there"),
@@ -235,7 +276,10 @@ pub fn stock_facts(stock: &dyn Stock) -> Report {
                 None => {}
             }
         }
-        r.pass(format!("{} game values match the stock template's tags", checked.len()));
+        r.pass(format!(
+            "{} game values match the stock template's tags",
+            checked.len()
+        ));
         for d in [Dial::F125, Dial::F2] {
             let parent = dials::facts(d).race_parent;
             let mut paths = Vec::new();
@@ -258,7 +302,9 @@ pub fn stock_facts(stock: &dyn Stock) -> Report {
             if drs == 1 {
                 r.pass(format!("{parent}: one stock MVCD on drs_pit_state"));
             } else {
-                r.fail(format!("{parent}: {drs} stock MVCDs on drs_pit_state, one expected"));
+                r.fail(format!(
+                    "{parent}: {drs} stock MVCDs on drs_pit_state, one expected"
+                ));
             }
         }
     }
@@ -316,5 +362,7 @@ pub fn stock_kept(stock: &Pkg, built: &Pkg, ours: &BTreeSet<String>) -> crate::R
     }
     let slots = regex::Regex::new(r"slot: (Some\(\([0-9, ]+\)\)|None)").expect("a valid pattern");
     let plain = |n: &swofty_formats::pkg::Node| slots.replace_all(&format!("{n:?}"), "").into_owned();
-    Ok(x.iter().zip(&y).all(|((p, a), (q, b))| p == q && plain(a) == plain(b)))
+    Ok(x.iter()
+        .zip(&y)
+        .all(|((p, a), (q, b))| p == q && plain(a) == plain(b)))
 }

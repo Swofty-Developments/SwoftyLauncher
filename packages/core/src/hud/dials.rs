@@ -143,7 +143,13 @@ pub const GAME_VALUES: &[GameValue] = &[
     v("is_xm_active", "is_xm_active", *b"bool", Use::Property, true),
     v("has_ers", "has_ers", *b"bool", Use::Property, true),
     v("ers_mode", "ers_mode", *b"ui32", Use::DecisionOnly, true),
-    v("drs_pit_state", "drs_pit_state", *b"stri", Use::DecisionOnly, true),
+    v(
+        "drs_pit_state",
+        "drs_pit_state",
+        *b"stri",
+        Use::DecisionOnly,
+        true,
+    ),
 ];
 
 pub const SESSION_VALUES: &[GameValue] = &[
@@ -171,7 +177,13 @@ pub const SESSION_VALUES: &[GameValue] = &[
 ];
 
 pub const SESSION_CAR_VALUES: &[GameValue] = &[
-    v("position", "#session.cars.car{vid}.position", *b"ui32", Use::Property, true),
+    v(
+        "position",
+        "#session.cars.car{vid}.position",
+        *b"ui32",
+        Use::Property,
+        true,
+    ),
     v(
         "driver.second_name",
         "#session.cars.car{vid}.driver.second_name",
@@ -220,7 +232,10 @@ mod tests {
     #[test]
     fn the_value_table_has_typed_names() {
         assert_eq!(game_value("revs").unwrap().tag, *b"fp32");
-        assert_eq!(session_value("#session.current_car.position").unwrap().tag, *b"ui32");
+        assert_eq!(
+            session_value("#session.current_car.position").unwrap().tag,
+            *b"ui32"
+        );
         assert_eq!(session_car_value("driver.second_name").unwrap().tag, *b"stri");
         assert!(game_value("nope").is_none());
         assert_eq!(game_value("ers_mode").unwrap().usage, Use::DecisionOnly);

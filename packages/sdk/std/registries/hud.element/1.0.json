@@ -132,7 +132,7 @@
         "align": { "enum": ["left", "centre", "right"] },
         "box": { "type": "number", "exclusiveMinimum": 0 },
         "case": { "enum": ["upper", "none"] },
-        "wrap": { "enum": ["none", "clampwidth", "word"] },
+        "wrap": { "enum": ["none", "clampwidth"] },
         "cap_height": { "type": "number", "exclusiveMinimum": 0 },
         "value": { "$ref": "#/$defs/bind" },
         "literal": { "type": "string" },

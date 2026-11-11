@@ -14,7 +14,6 @@ fn err(msg: impl std::fmt::Display) -> Error {
     Error::Other(format!("hud: {msg}"))
 }
 
-
 /// One decoded sprite.
 #[derive(Debug, Clone)]
 pub struct Art {
@@ -28,7 +27,9 @@ pub fn decode_png(data: &[u8]) -> Result<Art> {
     dec.set_transformations(png::Transformations::EXPAND | png::Transformations::STRIP_16);
     let mut reader = dec.read_info().map_err(|e| err(format!("png: {e}")))?;
     let mut buf = vec![0; reader.output_buffer_size().ok_or_else(|| err("png: too large"))?];
-    let info = reader.next_frame(&mut buf).map_err(|e| err(format!("png: {e}")))?;
+    let info = reader
+        .next_frame(&mut buf)
+        .map_err(|e| err(format!("png: {e}")))?;
     buf.truncate(info.buffer_size());
     let rgba = match info.color_type {
         png::ColorType::Rgba => buf,
@@ -64,7 +65,11 @@ impl Art {
     }
 
     pub fn check(&self, name: &str) -> Result<()> {
-        if self.width == 0 || self.height == 0 || self.width % 4 != 0 || self.height % 4 != 0 {
+        if self.width == 0
+            || self.height == 0
+            || !self.width.is_multiple_of(4)
+            || !self.height.is_multiple_of(4)
+        {
             return Err(err(format!(
                 "sprite {name}: {}x{} is not a multiple of 4 on both sides",
                 self.width, self.height
@@ -88,10 +93,12 @@ pub fn material(stock: &[u8], tex: &str) -> Result<Vec<u8>> {
     let mut m = material::Material::parse(stock).map_err(|e| err(format!("fill material: {e}")))?;
     for name in ["me_colour", "me_finalColourTint"] {
         if m.param(name).is_some() {
-            m.set_floats(name, &[1.0; 4]).map_err(|e| err(format!("{name}: {e}")))?;
+            m.set_floats(name, &[1.0; 4])
+                .map_err(|e| err(format!("{name}: {e}")))?;
         }
     }
-    m.link_texture("me_diffuseTex", tex).map_err(|e| err(format!("fill material: {e}")))?;
+    m.link_texture("me_diffuseTex", tex)
+        .map_err(|e| err(format!("fill material: {e}")))?;
     Ok(m.to_bytes())
 }
 
@@ -131,7 +138,11 @@ pub fn sprite_resources(n: &Names, art: &Art, fill_material: &[u8]) -> Result<Ve
     Ok(vec![
         (tex.surface_name, "GfxSurfaceRes", tex.surface_fragments),
         (tex.view_name, "GfxSRVResource", vec![tex.view_fragment]),
-        (n.material.clone(), "GfxMaterialRes", vec![material(fill_material, &n.tex)?]),
+        (
+            n.material.clone(),
+            "GfxMaterialRes",
+            vec![material(fill_material, &n.tex)?],
+        ),
     ])
 }
 
@@ -158,7 +169,10 @@ mod tests {
         assert_eq!(tex.pixels.len(), 8 * 4);
         assert!(Art::solid(6, 4, [0; 4]).check("x").is_err());
         assert_eq!(n.tex, "eaid://ui_package/art/osd/textures/hud/t_base.tif");
-        assert_eq!(n.tex.trim_end_matches(".tif"), "eaid://ui_package/art/osd/textures/hud/t_base");
+        assert_eq!(
+            n.tex.trim_end_matches(".tif"),
+            "eaid://ui_package/art/osd/textures/hud/t_base"
+        );
     }
 
     #[test]
@@ -179,7 +193,10 @@ mod tests {
             let mut enc = png::Encoder::new(&mut out, 4, 4);
             enc.set_color(png::ColorType::Rgb);
             enc.set_depth(png::BitDepth::Eight);
-            enc.write_header().unwrap().write_image_data(&[200u8; 48]).unwrap();
+            enc.write_header()
+                .unwrap()
+                .write_image_data(&[200u8; 48])
+                .unwrap();
         }
         let art = decode_png(&out).unwrap();
         assert_eq!((art.width, art.height, art.rgba.len()), (4, 4, 64));

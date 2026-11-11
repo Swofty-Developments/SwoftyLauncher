@@ -328,7 +328,8 @@ pub fn position(e: &Node) -> Option<[f64; 3]> {
 pub fn set_box(root: &mut Node, tl: [f64; 3], br: [f64; 3]) -> Result<()> {
     for (name, p) in [("tl_customisation", tl), ("br_customisation", br)] {
         let e = find_mut(root, name).ok_or_else(|| err(format!("the scene has no {name}")))?;
-        e.o_mut()?.set("position", Node::Val(vec3([p[0], p[1], p[2], 0.0])));
+        e.o_mut()?
+            .set("position", Node::Val(vec3([p[0], p[1], p[2], 0.0])));
     }
     Ok(())
 }
@@ -338,11 +339,7 @@ pub fn id_map(root: &Node) -> std::collections::BTreeMap<String, u32> {
     elements(root)
         .into_iter()
         .filter_map(|(p, e)| {
-            let id = e
-                .as_obj()?
-                .get("elementId")?
-                .as_val()
-                .and_then(Val::as_u32)?;
+            let id = e.as_obj()?.get("elementId")?.as_val().and_then(Val::as_u32)?;
             Some((p, id))
         })
         .collect()
@@ -362,7 +359,13 @@ pub fn set_anim(e: &mut Node, template: &Node, asset: &str) -> Result<()> {
     let mut entry = detached(first);
     entry.o_mut()?.set("asset", Node::Val(Val::str(asset)));
     let tag = list.tag;
-    e.o_mut()?.set("anims", Node::Arr(Arr { items: vec![entry], tag }));
+    e.o_mut()?.set(
+        "anims",
+        Node::Arr(Arr {
+            items: vec![entry],
+            tag,
+        }),
+    );
     Ok(())
 }
 

@@ -62,7 +62,11 @@ pub fn attach_control(template: &mut Node, parent: &str, plan: &Plan, show_stock
     let at = node::find_path(template, parent)?;
     let target = node::node_at_mut(template, &at)?;
     let name = plan.ctl_name();
-    if target.slot(node::CHILDREN)?.iter().any(|c| c.is_node() && c.name() == name) {
+    if target
+        .slot(node::CHILDREN)?
+        .iter()
+        .any(|c| c.is_node() && c.name() == name)
+    {
         return Err(err(format!("{parent} already has a {name}")));
     }
     let mut grp = control(plan, show_stock);

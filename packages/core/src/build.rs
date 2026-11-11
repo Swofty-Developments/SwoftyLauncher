@@ -1122,6 +1122,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     let mut outputs = BTreeMap::new();
     let replaced = replaced_operations(&std16, loader_dir().as_deref());
     let mut left_to_core = false;
+    let mut hud_inputs: Vec<crate::hud::Input> = Vec::new();
     for id in &resolved.order {
         let m = &addons[id];
         let mut out = OutputBuilder::default();
@@ -1271,6 +1272,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             }
             hasher.update(&data);
         }
+        for f in &m.operations.hud {
+            out.reads(id, &Source::addon(f.clone()));
+            let path = dir.join(f);
+            hasher.update(&std::fs::read(&path).map_err(io_err(&path))?);
+            hud_inputs.extend(crate::hud::inputs_of(id, &dir, f)?);
+        }
         let pending = m.operations.ui.len();
         if pending > 0 {
             built.warnings.push(format!(
@@ -1286,6 +1293,35 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             }
         }
         outputs.insert(id.clone(), out.finish());
+    }
+    if let Some(first) = hud_inputs.first() {
+        for input in &hud_inputs {
+            for sprite in input.record.sprites.values() {
+                let path = input.dir.join(&sprite.png);
+                hasher.update(&std::fs::read(&path).map_err(io_err(&path))?);
+            }
+        }
+        let stock = crate::hud::GameStock::with_baseline(&game.dir, &store.root)
+            .unwrap_or_else(|_| crate::hud::GameStock::new(&game.dir));
+        let composed = crate::hud::compose(&stock, &hud_inputs)
+            .map_err(|e| Error::Other(format!("the HUD elements do not compose: {e}")))?;
+        let owner = first.addon.clone();
+        composed.write(&store.addon_cache_dir(&owner).join("hud"))?;
+        for a in &composed.archives {
+            hasher.update(&a.bytes);
+        }
+        built
+            .lines
+            .extend(composed.lines.iter().map(|l| format!("hud: {l}")));
+        for op in composed.ops("hud") {
+            planner.push(Op {
+                op: AssetOp::Erp(op),
+                origin: Origin {
+                    addon: owner.clone(),
+                    item: None,
+                },
+            });
+        }
     }
     // The core applies registry records at boot only when it loads at the early stage, on the runtime and the
     // file database route alike.

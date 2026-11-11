@@ -101,8 +101,7 @@ pub fn resolve(b: &Bind, usage: Usage, what: &str) -> Result<Resolved> {
         return from_value(v, format!("game.{g}"), v.db.to_owned());
     }
     if let Some(s) = &b.session {
-        let v = dials::session_value(s)
-            .ok_or_else(|| err(format!("{what}: no session value {s}")))?;
+        let v = dials::session_value(s).ok_or_else(|| err(format!("{what}: no session value {s}")))?;
         return from_value(v, format!("session.{}", v.name), v.db.to_owned());
     }
     let (field, slot) = (b.session_car.as_deref().unwrap_or_default(), b.slot.unwrap_or(0));
@@ -154,7 +153,13 @@ impl StockTags {
         }
     }
 
-    pub fn spectator(root: &Node, scope: &str, race: &StockTags, race_scope: &str, race_root: &Node) -> Result<Self> {
+    pub fn spectator(
+        root: &Node,
+        scope: &str,
+        race: &StockTags,
+        race_scope: &str,
+        race_root: &Node,
+    ) -> Result<Self> {
         let near = subtree_tags(root, scope).unwrap_or_default();
         let mut fallback = race.all.clone();
         if let Ok(own) = subtree_tags(race_root, race_scope) {
@@ -169,7 +174,10 @@ impl StockTags {
 
     pub fn get(&self, db: &str) -> Option<&BTreeSet<Tag>> {
         let key = normalise(db);
-        self.near.get(&key).or_else(|| self.all.get(&key)).or_else(|| self.fallback.get(&key))
+        self.near
+            .get(&key)
+            .or_else(|| self.all.get(&key))
+            .or_else(|| self.fallback.get(&key))
     }
 }
 
@@ -199,7 +207,10 @@ pub fn check_types(stock: &StockTags, kids: &[Node], table: &[(String, Tag)]) ->
         if b.db.starts_with("#view_model_data.") {
             continue;
         }
-        let known = table.iter().find(|(d, _)| normalise(d) == normalise(&b.db)).map(|(_, t)| *t);
+        let known = table
+            .iter()
+            .find(|(d, _)| normalise(d) == normalise(&b.db))
+            .map(|(_, t)| *t);
         let want: BTreeSet<Tag> = match (stock.get(&b.db), known) {
             (Some(s), Some(t)) if !s.contains(&t) => {
                 bad.push(format!(
@@ -286,16 +297,14 @@ fn event_names(n: &Node) -> Vec<String> {
 
 /// The decision node `d` of a plan: its events, from the stock MVCD (every state of it, the ones
 /// the record doesn't list hiding everything) or the SVCD's yes and no.
-fn decision_node(
-    d: &Decision,
-    plan: &Plan,
-    stock_root: &Node,
-    parent: &str,
-    base: &str,
-) -> Result<Node> {
-    let v = dials::game_value(&d.game).ok_or_else(|| err(format!("decision {}: no game value {}", d.id, d.game)))?;
+fn decision_node(d: &Decision, plan: &Plan, stock_root: &Node, parent: &str, base: &str) -> Result<Node> {
+    let v = dials::game_value(&d.game)
+        .ok_or_else(|| err(format!("decision {}: no game value {}", d.id, d.game)))?;
     if v.usage != Use::DecisionOnly {
-        return Err(err(format!("decision {}: {} is bound as a property, not decided on", d.id, d.game)));
+        return Err(err(format!(
+            "decision {}: {} is bound as a property, not decided on",
+            d.id, d.game
+        )));
     }
     let target = |id: &str| plan.switched_node(id);
     let signals = |show: &BTreeSet<&String>, all: &[&String], ev: &str| -> Result<Vec<Node>> {
@@ -333,7 +342,13 @@ fn decision_node(
                 return Err(err(format!("decision {}: {} has no state {s}", d.id, v.db)));
             }
         }
-        let all: Vec<&String> = d.states.values().flatten().collect::<BTreeSet<_>>().into_iter().collect();
+        let all: Vec<&String> = d
+            .states
+            .values()
+            .flatten()
+            .collect::<BTreeSet<_>>()
+            .into_iter()
+            .collect();
         let mut events = Vec::new();
         for ev in &have {
             let show: BTreeSet<&String> = d.states.get(ev).map(|s| s.iter().collect()).unwrap_or_default();
@@ -353,7 +368,10 @@ fn decision_node(
     }
     let stock = subtree_tags(stock_root, parent)?;
     if stock.get(v.db).is_some_and(|t| !t.contains(&tag)) {
-        return Err(err(format!("decision {}: the stock dial binds {} with another tag", d.id, v.db)));
+        return Err(err(format!(
+            "decision {}: the stock dial binds {} with another tag",
+            d.id, v.db
+        )));
     }
     let all: Vec<&String> = d.yes.iter().chain(&d.no).collect();
     let yes: BTreeSet<&String> = d.yes.iter().collect();
@@ -362,7 +380,13 @@ fn decision_node(
         node::event("yes", signals(&yes, &all, "yes")?),
         node::event("no", signals(&no, &all, "no")?),
     ];
-    Ok(node::svcd_node(&name, tag, &d.equals.unwrap_or(0).to_string(), v.db, events))
+    Ok(node::svcd_node(
+        &name,
+        tag,
+        &d.equals.unwrap_or(0).to_string(),
+        v.db,
+        events,
+    ))
 }
 
 /// The `<prefix>_ctl` group of one record's plan: the root's switch, the bound nodes and the
@@ -415,7 +439,10 @@ pub fn group(plan: &Plan, stock_root: &Node, parent: &str) -> Result<Node> {
     }
     let names: BTreeSet<&str> = kids.iter().map(|k| k.name()).collect();
     if names.len() != kids.len() {
-        return Err(err(format!("{}: a template node name is used twice", plan.ctl_name())));
+        return Err(err(format!(
+            "{}: a template node name is used twice",
+            plan.ctl_name()
+        )));
     }
     let mut grp = node::group_node(&plan.ctl_name(), vec![], &[], kids);
     if !decision_names.is_empty() {
@@ -440,10 +467,16 @@ pub fn attach(
     }
     let id = target.props()?.at("id")?.v()?.as_u32();
     if id != Some(swofty_formats::hash::djb2(parent)) {
-        return Err(err(format!("{parent}: the node's id is not the hash of its path")));
+        return Err(err(format!(
+            "{parent}: the node's id is not the hash of its path"
+        )));
     }
     let ctl = plan.ctl_name();
-    if target.slot(node::CHILDREN)?.iter().any(|c| c.is_node() && c.name() == ctl) {
+    if target
+        .slot(node::CHILDREN)?
+        .iter()
+        .any(|c| c.is_node() && c.name() == ctl)
+    {
         return Err(err(format!("{parent} already has a {ctl}")));
     }
     let mut grp = group(plan, stock_root, parent)?;
@@ -469,12 +502,20 @@ mod tests {
     fn leaves_take_their_tag_from_their_use() {
         let b = Bind::leaf("view_model_data.hud_x_boost");
         let r = resolve(&b, Usage::Visible, "t").unwrap();
-        assert_eq!((r.db.as_str(), r.tag, r.leaf), ("#view_model_data.hud_x_boost", *b"bool", true));
+        assert_eq!(
+            (r.db.as_str(), r.tag, r.leaf),
+            ("#view_model_data.hud_x_boost", *b"bool", true)
+        );
         assert_eq!(resolve(&b, Usage::Text, "t").unwrap().tag, *b"stri");
         assert_eq!(resolve(&b, Usage::Fraction, "t").unwrap().tag, *b"fp32");
         let mut t = b.clone();
         t.ty = Some(Ty::Text);
-        assert!(resolve(&t, Usage::Fraction, "t").unwrap_err().to_string().contains("declared"));
+        assert!(
+            resolve(&t, Usage::Fraction, "t")
+                .unwrap_err()
+                .to_string()
+                .contains("declared")
+        );
         let mut i = b.clone();
         i.ty = Some(Ty::I32);
         assert_eq!(resolve(&i, Usage::Text, "t").unwrap().tag, *b"ui32");
@@ -500,27 +541,50 @@ mod tests {
             slot: Some(5),
             ..Bind::default()
         };
-        assert_eq!(resolve(&car, Usage::Text, "t").unwrap().db, "#session.cars.car5.position");
+        assert_eq!(
+            resolve(&car, Usage::Text, "t").unwrap().db,
+            "#session.cars.car5.position"
+        );
         assert!(resolve(&Bind::game("nope"), Usage::Visible, "t").is_err());
     }
 
     #[test]
     fn car_paths_normalise_to_the_current_car() {
-        assert_eq!(normalise("#session.cars.car7.position"), "#session.current_car.position");
+        assert_eq!(
+            normalise("#session.cars.car7.position"),
+            "#session.current_car.position"
+        );
         assert_eq!(normalise("revs"), "revs");
     }
 
     #[test]
     fn a_wrongly_tagged_binding_fails_the_type_check() {
         let stock = StockTags {
-            all: BTreeMap::from([("#session.current_car.position".to_owned(), BTreeSet::from([*b"ui32"]))]),
+            all: BTreeMap::from([(
+                "#session.current_car.position".to_owned(),
+                BTreeSet::from([*b"ui32"]),
+            )]),
             near: BTreeMap::new(),
             fallback: BTreeMap::new(),
         };
         let table = vec![("#session.current_car.position".to_owned(), *b"ui32")];
-        let ok = node::label_node("a", "e", *b"ui32", Some("#session.current_car.position"), "", None);
+        let ok = node::label_node(
+            "a",
+            "e",
+            *b"ui32",
+            Some("#session.current_car.position"),
+            "",
+            None,
+        );
         assert_eq!(check_types(&stock, &[ok], &table).unwrap(), 1);
-        let bad = node::label_node("a", "e", *b"stri", Some("#session.current_car.position"), "", None);
+        let bad = node::label_node(
+            "a",
+            "e",
+            *b"stri",
+            Some("#session.current_car.position"),
+            "",
+            None,
+        );
         let e = check_types(&stock, &[bad], &table).unwrap_err().to_string();
         assert!(e.contains("stri, the value is ui32"), "{e}");
         let unknown = node::label_node("a", "e", *b"stri", Some("#session.other"), "", None);

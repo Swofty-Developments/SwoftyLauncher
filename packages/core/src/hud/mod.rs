@@ -75,7 +75,10 @@ impl GameStock {
         let exe = crate::baseline::sha256_file(&game.join(crate::GAME_EXE))?;
         let mut best: Option<crate::baseline::Baseline> = None;
         let dir = data.join("baseline");
-        let entries = std::fs::read_dir(&dir).map_err(|e| Error::Io { path: dir.clone(), source: e })?;
+        let entries = std::fs::read_dir(&dir).map_err(|e| Error::Io {
+            path: dir.clone(),
+            source: e,
+        })?;
         for e in entries.flatten() {
             let Ok(text) = std::fs::read_to_string(e.path().join("baseline.json")) else {
                 continue;
@@ -88,7 +91,9 @@ impl GameStock {
             }
         }
         let base = best.ok_or_else(|| err("the launcher has no record of the game's original files"))?;
-        let objects = crate::baseline::Objects { root: dir.join("objects") };
+        let objects = crate::baseline::Objects {
+            root: dir.join("objects"),
+        };
         let originals = base
             .files
             .iter()
@@ -106,7 +111,11 @@ impl GameStock {
         if let Some(f) = self.files.borrow().get(erp) {
             return Ok(f.clone());
         }
-        let path = self.originals.get(erp).cloned().unwrap_or_else(|| self.game.join(erp));
+        let path = self
+            .originals
+            .get(erp)
+            .cloned()
+            .unwrap_or_else(|| self.game.join(erp));
         let f = Rc::new(ErpFile::open(&path)?);
         self.files.borrow_mut().insert(erp.to_owned(), f.clone());
         Ok(f)
@@ -143,7 +152,11 @@ impl Stock for GameStock {
             .find(|r| r.name == name)
             .or_else(|| f.erp.resources.iter().find(same))
             .cloned()
-            .ok_or_else(|| err(format!("no stock {kind} with {fragments} fragment(s) to copy a layout from")))
+            .ok_or_else(|| {
+                err(format!(
+                    "no stock {kind} with {fragments} fragment(s) to copy a layout from"
+                ))
+            })
     }
 
     fn header(&self) -> Result<([u8; swofty_formats::erp::HEADER_LEN], u32)> {
@@ -191,7 +204,10 @@ impl Output {
     }
 
     pub fn write(&self, dir: &Path) -> Result<()> {
-        std::fs::create_dir_all(dir).map_err(|e| Error::Io { path: dir.to_path_buf(), source: e })?;
+        std::fs::create_dir_all(dir).map_err(|e| Error::Io {
+            path: dir.to_path_buf(),
+            source: e,
+        })?;
         for a in &self.archives {
             let p = dir.join(&a.file);
             std::fs::write(&p, &a.bytes).map_err(|e| Error::Io { path: p, source: e })?;
@@ -228,7 +244,8 @@ pub fn prefix_for(addon: &str, key: &str, explicit: Option<&str>) -> Result<Stri
     let ok = !p.is_empty()
         && p.len() <= 24
         && p.starts_with(|c: char| c.is_ascii_lowercase())
-        && p.bytes().all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_');
+        && p.bytes()
+            .all(|b| b.is_ascii_lowercase() || b.is_ascii_digit() || b == b'_');
     if ok {
         Ok(p)
     } else {
@@ -270,7 +287,10 @@ fn load_sprites(
     let mut resources = Vec::new();
     for (name, s) in &input.record.sprites {
         let path = input.dir.join(&s.png);
-        let data = std::fs::read(&path).map_err(|e| Error::Io { path: path.clone(), source: e })?;
+        let data = std::fs::read(&path).map_err(|e| Error::Io {
+            path: path.clone(),
+            source: e,
+        })?;
         let mut art = textures::decode_png(&data).map_err(|e| err(format!("{}: {e}", s.png)))?;
         art.check(name)?;
         if let Some(t) = &s.tint {
@@ -290,7 +310,11 @@ fn load_sprites(
         emit(&names);
         let pv = if tinted.contains(name) {
             let pv_names = textures::names(&key, &format!("{name}_pv"));
-            resources.extend(textures::sprite_resources(&pv_names, &art.tinted(team), fill_material)?);
+            resources.extend(textures::sprite_resources(
+                &pv_names,
+                &art.tinted(team),
+                fill_material,
+            )?);
             resources.push(textures::binding_resource(&pv_names, "central_bg_fill", false));
             Some(pv_names)
         } else {
@@ -327,7 +351,9 @@ fn stock_parts(rec: &HudElement) -> Vec<String> {
 }
 
 fn first(v: Vec<Vec<u8>>, what: &str) -> Result<Vec<u8>> {
-    v.into_iter().next().ok_or_else(|| err(format!("{what} has no data")))
+    v.into_iter()
+        .next()
+        .ok_or_else(|| err(format!("{what} has no data")))
 }
 
 /// Composes `inputs` against the stock files into the overlay archives.
@@ -383,11 +409,24 @@ pub fn compose(stock: &dyn Stock, inputs: &[Input]) -> Result<Output> {
     for (i, input) in inputs.iter().enumerate() {
         let mut tinted = std::collections::BTreeSet::new();
         tinted_sprites(&input.record.elements, &mut tinted);
-        let team = match input.record.editor.as_ref().and_then(|e| e.team_colour.as_deref()) {
+        let team = match input
+            .record
+            .editor
+            .as_ref()
+            .and_then(|e| e.team_colour.as_deref())
+        {
             Some(c) => textures::hex_colour(c)?,
             None => [0x27, 0xf4, 0xd2],
         };
-        let l = load_sprites(input, &pfx_of[i], &fill, true, used.contains(&Dial::F2), &tinted, team)?;
+        let l = load_sprites(
+            input,
+            &pfx_of[i],
+            &fill,
+            true,
+            used.contains(&Dial::F2),
+            &tinted,
+            team,
+        )?;
         for r in &l.resources {
             resources.insert(r.0.clone(), r.clone());
         }
@@ -483,7 +522,12 @@ pub fn compose(stock: &dyn Stock, inputs: &[Input]) -> Result<Output> {
                     None => scene::scene_box(&plan),
                 };
                 footprint = Some(footprint.map_or(sb, |f| scene::union_box(f, sb)));
-                if rec.editor.as_ref().and_then(|e| e.hide_stock_in_editor).unwrap_or(true) {
+                if rec
+                    .editor
+                    .as_ref()
+                    .and_then(|e| e.hide_stock_in_editor)
+                    .unwrap_or(true)
+                {
                     for p in stock_parts(rec) {
                         if !preview_hides.contains(&p) {
                             preview_hides.push(p);
@@ -520,7 +564,11 @@ pub fn compose(stock: &dyn Stock, inputs: &[Input]) -> Result<Output> {
                 }
             }
         }
-        scene_resources.push((facts.scene.to_owned(), "UILayout", vec![std::mem::take(&mut new_scene)]));
+        scene_resources.push((
+            facts.scene.to_owned(),
+            "UILayout",
+            vec![std::mem::take(&mut new_scene)],
+        ));
         for (e, plan) in &plans {
             template::attach(
                 &mut template.root,
@@ -551,7 +599,11 @@ pub fn compose(stock: &dyn Stock, inputs: &[Input]) -> Result<Output> {
                 pfx_of[e.input],
                 facts.dial.key(),
                 facts.scene.rsplit('/').next().unwrap_or(facts.scene),
-                plan.vis.len() + plan.texts.len() + plan.fractions.len() + plan.colours.len() + plan.shows.len(),
+                plan.vis.len()
+                    + plan.texts.len()
+                    + plan.fractions.len()
+                    + plan.colours.len()
+                    + plan.shows.len(),
                 plan.clips.len()
             ));
         }
@@ -585,13 +637,19 @@ pub fn compose(stock: &dyn Stock, inputs: &[Input]) -> Result<Output> {
     out.archives.push(Built {
         file: "hud_template.erp".into(),
         erps: dials::TEMPLATE_ERPS.iter().map(|s| (*s).to_owned()).collect(),
-        bytes: archive(stock, vec![(dials::TEMPLATE.to_owned(), "UIDF", vec![template.to_bytes()?])])?,
+        bytes: archive(
+            stock,
+            vec![(dials::TEMPLATE.to_owned(), "UIDF", vec![template.to_bytes()?])],
+        )?,
     });
     if spectator_used {
         out.archives.push(Built {
             file: "hud_spectator.erp".into(),
             erps: dials::SPECTATOR_ERPS.iter().map(|s| (*s).to_owned()).collect(),
-            bytes: archive(stock, vec![(dials::SPECTATOR.to_owned(), "UIDF", vec![spectator.to_bytes()?])])?,
+            bytes: archive(
+                stock,
+                vec![(dials::SPECTATOR.to_owned(), "UIDF", vec![spectator.to_bytes()?])],
+            )?,
         });
     }
     Ok(out)
@@ -620,7 +678,10 @@ pub fn archive(stock: &dyn Stock, resources: Vec<Res>) -> Result<Vec<u8>> {
 /// Reads the records of an addon's hud file into inputs.
 pub fn inputs_of(addon: &str, dir: &Path, file: &str) -> Result<Vec<Input>> {
     let path = dir.join(file);
-    let text = std::fs::read_to_string(&path).map_err(|e| Error::Io { path: path.clone(), source: e })?;
+    let text = std::fs::read_to_string(&path).map_err(|e| Error::Io {
+        path: path.clone(),
+        source: e,
+    })?;
     let doc = swofty_addon::ops::HudFile::parse(&text)?;
     let mut out = Vec::new();
     for (id, value) in doc.elements {
@@ -666,7 +727,13 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("swofty-hud-{tag}-{}", std::process::id()));
         std::fs::remove_dir_all(&dir).ok();
         std::fs::create_dir_all(dir.join("art")).unwrap();
-        for (n, w, h) in [("base", 64, 28), ("lit", 16, 8), ("fill", 16, 8), ("mask", 32, 32), ("solid", 8, 8)] {
+        for (n, w, h) in [
+            ("base", 64, 28),
+            ("lit", 16, 8),
+            ("fill", 16, 8),
+            ("mask", 32, 32),
+            ("solid", 8, 8),
+        ] {
             png(&dir.join(format!("art/{n}.png")), w, h, [255, 255, 255, 255]);
         }
         dir
@@ -703,8 +770,14 @@ mod tests {
 
     #[test]
     fn prefixes_come_from_the_addon_and_the_key() {
-        assert_eq!(prefix_for("nyannoying.halo", "halo", None).unwrap(), "nyannoying_halo");
-        assert_eq!(prefix_for("swofty.gauges", "dial_a", None).unwrap(), "swofty_gauges_dial_a");
+        assert_eq!(
+            prefix_for("nyannoying.halo", "halo", None).unwrap(),
+            "nyannoying_halo"
+        );
+        assert_eq!(
+            prefix_for("swofty.gauges", "dial_a", None).unwrap(),
+            "swofty_gauges_dial_a"
+        );
         assert_eq!(prefix_for("a.b", "c", Some("mine")).unwrap(), "mine");
         assert!(prefix_for("a.b", "c", Some("Mine")).is_err());
         assert!(prefix_for("swofty.a-very-long-addon-name", "and_a_long_key", None).is_err());
@@ -728,7 +801,12 @@ mod tests {
         let Some(stock) = game() else { return };
         let dir = addon_dir("all");
         let rec = HudElement::parse(&record()).unwrap();
-        let input = Input { addon: "test.hud".into(), key: "hud".into(), dir: dir.clone(), record: rec };
+        let input = Input {
+            addon: "test.hud".into(),
+            key: "hud".into(),
+            dir: dir.clone(),
+            record: rec,
+        };
         let out = compose(&stock, &[input]).unwrap();
         for l in &out.lines {
             eprintln!("{l}");
@@ -741,27 +819,64 @@ mod tests {
             let res = scene.find(f.scene).unwrap();
             let p = Pkg::parse(&res.fragments[0].data().unwrap()).unwrap();
             assert!(crate::ui::idf::id_problems(&p).unwrap().is_empty(), "{}", f.scene);
-            let root = crate::ui::idf::scenes(&p).unwrap()[0].as_obj().unwrap().get("scene").unwrap();
-            assert!(crate::ui::idf::find(root, "test_hud_speed").is_some() || dial == Dial::F125, "{}", f.scene);
+            let root = crate::ui::idf::scenes(&p).unwrap()[0]
+                .as_obj()
+                .unwrap()
+                .get("scene")
+                .unwrap();
+            assert!(
+                crate::ui::idf::find(root, "test_hud_speed").is_some() || dial == Dial::F125,
+                "{}",
+                f.scene
+            );
         }
         let f126 = dials::facts(Dial::F126);
-        let anim = scene.find(&format!("{}/zh_test_hud_batt_win_win?context=animation", f126.scene));
-        assert!(anim.is_ok() || scene.resources.iter().any(|r| r.name.contains("context=animation")));
-        assert!(scene.resources.iter().any(|r| r.name.ends_with("test_hud_base.tif.image")));
+        let anim = scene.find(&format!(
+            "{}/zh_test_hud_batt_win_win?context=animation",
+            f126.scene
+        ));
+        assert!(
+            anim.is_ok()
+                || scene
+                    .resources
+                    .iter()
+                    .any(|r| r.name.contains("context=animation"))
+        );
+        assert!(
+            scene
+                .resources
+                .iter()
+                .any(|r| r.name.ends_with("test_hud_base.tif.image"))
+        );
         let tmpl = Erp::parse(&out.archives[1].bytes).unwrap();
         let t = Pkg::parse(&tmpl.find(dials::TEMPLATE).unwrap().fragments[0].data().unwrap()).unwrap();
-        let at = crate::ui::node::find_path(&t.root, &format!("{}.test_hud_ctl", dials::F126.race_parent)).unwrap();
+        let at = crate::ui::node::find_path(&t.root, &format!("{}.test_hud_ctl", dials::F126.race_parent))
+            .unwrap();
         assert!(!at.is_empty());
-        let ours: std::collections::BTreeSet<String> = ["test_hud_ctl", "test_hud_pv_ctl"].map(String::from).into();
+        let ours: std::collections::BTreeSet<String> =
+            ["test_hud_ctl", "test_hud_pv_ctl"].map(String::from).into();
         let stock_t = Pkg::parse(&stock.read(dials::STOCK_ERP, dials::TEMPLATE).unwrap()[0]).unwrap();
-        assert!(check::stock_kept(&stock_t, &t, &ours).unwrap(), "a stock template node changed");
+        assert!(
+            check::stock_kept(&stock_t, &t, &ours).unwrap(),
+            "a stock template node changed"
+        );
         let spec = Erp::parse(&out.archives[2].bytes).unwrap();
         let s = Pkg::parse(&spec.find(dials::SPECTATOR).unwrap().fragments[0].data().unwrap()).unwrap();
         let stock_s = Pkg::parse(&stock.read(dials::STOCK_ERP, dials::SPECTATOR).unwrap()[0]).unwrap();
-        assert!(check::stock_kept(&stock_s, &s, &ours).unwrap(), "a stock spectator node changed");
-        for (d, ctl) in [(Dial::F126, "test_hud_ctl"), (Dial::F125, "test_hud_pv_ctl"), (Dial::F2, "test_hud_ctl")] {
+        assert!(
+            check::stock_kept(&stock_s, &s, &ours).unwrap(),
+            "a stock spectator node changed"
+        );
+        for (d, ctl) in [
+            (Dial::F126, "test_hud_ctl"),
+            (Dial::F125, "test_hud_pv_ctl"),
+            (Dial::F2, "test_hud_ctl"),
+        ] {
             let parent = dials::facts(d).spectator_parent;
-            assert!(crate::ui::node::find_path(&s.root, &format!("{parent}.{ctl}")).is_ok(), "{parent}");
+            assert!(
+                crate::ui::node::find_path(&s.root, &format!("{parent}.{ctl}")).is_ok(),
+                "{parent}"
+            );
         }
         std::fs::remove_dir_all(dir).ok();
     }
@@ -780,7 +895,9 @@ mod tests {
         let tmpl = Erp::parse(&out.archives[1].bytes).unwrap();
         let t = Pkg::parse(&tmpl.find(dials::TEMPLATE).unwrap().fragments[0].data().unwrap()).unwrap();
         for p in ["one_hud", "two_hud"] {
-            assert!(crate::ui::node::find_path(&t.root, &format!("{}.{p}_ctl", dials::F126.race_parent)).is_ok());
+            assert!(
+                crate::ui::node::find_path(&t.root, &format!("{}.{p}_ctl", dials::F126.race_parent)).is_ok()
+            );
         }
         let clash = compose(&stock, &[mk("one.hud"), mk("one.hud")]);
         assert!(clash.unwrap_err().to_string().contains("both get the prefix"));

@@ -1410,7 +1410,13 @@ mod tests {
         let json = serde_json::to_string(&m.operations).unwrap();
         assert!(json.contains(r#""hud":["registry/hud.json"]"#), "{json}");
         assert!(AddonManifest::parse(&with(r#"["../hud.json"]"#)).is_err());
-        assert!(AddonManifest::parse(&with(r#"[]"#)).unwrap().operations.hud.is_empty());
+        assert!(
+            AddonManifest::parse(&with(r#"[]"#))
+                .unwrap()
+                .operations
+                .hud
+                .is_empty()
+        );
     }
 
     #[test]

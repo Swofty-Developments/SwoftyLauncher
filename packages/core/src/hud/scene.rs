@@ -9,8 +9,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
 use md5::{Digest, Md5};
-use swofty_formats::animclip::Channel;
 use sha1::Sha1;
+use swofty_formats::animclip::Channel;
 use swofty_formats::pkg::{Node, Pkg, Val, Value};
 
 use super::dials::{self, DialFacts};
@@ -152,11 +152,11 @@ pub struct Builder {
 }
 
 fn scene_root(p: &Pkg) -> Result<&Node> {
-    Ok(idf::scenes(p)?
+    idf::scenes(p)?
         .first()
         .ok_or_else(|| err("the file has no scene"))?
         .o()?
-        .at("scene")?)
+        .at("scene")
 }
 
 fn scene_root_mut(p: &mut Pkg) -> Result<&mut Node> {
@@ -219,7 +219,13 @@ impl Builder {
         let window = template_of(mods, "mod_1_icon_fill_mask")?;
         let mask = template_of(bar, "ers_battery_fill_mask")?;
         let mesh_name = format!("{}/{}?context=render", facts.scene, facts.quad);
-        let g = quad.o()?.at("geoms")?.a()?.first().ok_or_else(|| err("the quad has no geoms"))?.o()?;
+        let g = quad
+            .o()?
+            .at("geoms")?
+            .a()?
+            .first()
+            .ok_or_else(|| err("the quad has no geoms"))?
+            .o()?;
         if g.str_at("resourceid")? != mesh_name {
             return Err(err(format!("{}: the quad's mesh is not {mesh_name}", facts.quad)));
         }
@@ -230,7 +236,10 @@ impl Builder {
         };
         let want = u64::from_be_bytes(digest[..8].try_into().expect("8 bytes"));
         if asset != want {
-            return Err(err(format!("{}: the quad's asset is not the hash of its mesh", facts.quad)));
+            return Err(err(format!(
+                "{}: the quad's asset is not the hash of its mesh",
+                facts.quad
+            )));
         }
         let lo = vec3_param(&quad, "minExtents").ok_or_else(|| err("the quad has no minExtents"))?;
         let hi = vec3_param(&quad, "maxExtents").ok_or_else(|| err("the quad has no maxExtents"))?;
@@ -240,13 +249,19 @@ impl Builder {
             && piv[0].abs() < 1e-4
             && piv[2].abs() < 1e-4;
         if !centred {
-            return Err(err(format!("{}: the quad's mesh is not centred on its pivot", facts.quad)));
+            return Err(err(format!(
+                "{}: the quad's mesh is not centred on its pivot",
+                facts.quad
+            )));
         }
         let mesh = (hi[0] - lo[0], hi[2] - lo[2]);
         if let Some((w, h)) = facts.quad_size
             && ((mesh.0 - w).abs() > 1e-4 || (mesh.1 - h).abs() > 1e-4)
         {
-            return Err(err(format!("{}: the quad is {mesh:?}, not {w} x {h}", facts.quad)));
+            return Err(err(format!(
+                "{}: the quad is {mesh:?}, not {w} x {h}",
+                facts.quad
+            )));
         }
         let stock_ids = idf::id_map(root);
         let stock_names = idf::elements(root)
@@ -273,16 +288,28 @@ impl Builder {
     pub fn bottom(&self) -> Result<f64> {
         let root = scene_root(&self.pkg)?;
         let br = idf::expect(root, "br_customisation")?;
-        idf::position(br).map(|p| p[1]).ok_or_else(|| err("br_customisation has no position"))
+        idf::position(br)
+            .map(|p| p[1])
+            .ok_or_else(|| err("br_customisation has no position"))
     }
 
     pub fn existing(&self, name: &str) -> bool {
         self.stock_names.contains(name) || self.names.contains(name)
     }
 
-    fn base(&mut self, tmpl: &Node, name: &str, pos: [f64; 3], rot: [f64; 4], scale: [f64; 3]) -> Result<Node> {
+    fn base(
+        &mut self,
+        tmpl: &Node,
+        name: &str,
+        pos: [f64; 3],
+        rot: [f64; 4],
+        scale: [f64; 3],
+    ) -> Result<Node> {
         if self.existing(name) {
-            return Err(err(format!("the scene {} already has an element {name}", self.facts.scene)));
+            return Err(err(format!(
+                "the scene {} already has an element {name}",
+                self.facts.scene
+            )));
         }
         self.names.insert(name.to_owned());
         let mut o = idf::detached(tmpl);
@@ -294,12 +321,23 @@ impl Builder {
         Ok(o)
     }
 
-    fn null(&mut self, name: &str, pos: [f64; 3], rot_deg: Option<f64>, anim: bool, hidden: bool) -> Result<Node> {
+    fn null(
+        &mut self,
+        name: &str,
+        pos: [f64; 3],
+        rot_deg: Option<f64>,
+        anim: bool,
+        hidden: bool,
+    ) -> Result<Node> {
         let rot = rot_deg.map_or(geom::QUAT_IDENTITY, geom::quat_z);
         let tmpl = self.t.null.clone();
         let mut o = self.base(&tmpl, name, pos, rot, [1.0; 3])?;
         if anim {
-            idf::set_anim(&mut o, &tmpl, &format!("{}/{name}?context=animation", self.facts.scene))?;
+            idf::set_anim(
+                &mut o,
+                &tmpl,
+                &format!("{}/{name}?context=animation", self.facts.scene),
+            )?;
         }
         if hidden {
             idf::set_param_like(&mut o, "isHidden", Val::bool(true))?;
@@ -344,7 +382,11 @@ impl Builder {
         idf::set_param_like(&mut o, "height", idf::fp32(h))?;
         idf::set_param_like(&mut o, "minExtents", idf::vec3([-w / 2.0, -h / 2.0, 5e-05, 0.0]))?;
         idf::set_param_like(&mut o, "maxExtents", idf::vec3([w / 2.0, h / 2.0, 5e-05, 0.0]))?;
-        idf::set_param_like(&mut o, "eMaskTexture.maskHalfVec", idf::vec3([w / 2.0, h / 2.0, 0.0, 0.0]))?;
+        idf::set_param_like(
+            &mut o,
+            "eMaskTexture.maskHalfVec",
+            idf::vec3([w / 2.0, h / 2.0, 0.0, 0.0]),
+        )?;
         idf::set_param_like(&mut o, "eMaskTexture.maskTextureResource", Val::str(tex))?;
         Ok(o)
     }
@@ -363,9 +405,17 @@ impl Builder {
         }
         idf::set_param_like(&mut o, "boxWidth", idf::fp32(box_w))?;
         idf::set_param_like(&mut o, "halign", Val::str(el.align.as_deref().unwrap_or("left")))?;
-        idf::set_param_like(&mut o, "style", Val::str(el.style.as_deref().unwrap_or("OSD_24_bold")))?;
+        idf::set_param_like(
+            &mut o,
+            "style",
+            Val::str(el.style.as_deref().unwrap_or("OSD_24_bold")),
+        )?;
         idf::set_param_like(&mut o, "wrapping", Val::str(el.wrap.as_deref().unwrap_or("none")))?;
-        idf::set_param_like(&mut o, "textcase", Val::str(el.text_case.as_deref().unwrap_or("upper")))?;
+        idf::set_param_like(
+            &mut o,
+            "textcase",
+            Val::str(el.text_case.as_deref().unwrap_or("upper")),
+        )?;
         idf::set_param_like(&mut o, "eLayer.layer", idf::si32(40))?;
         Ok(o)
     }
@@ -398,25 +448,26 @@ impl Builder {
             .collect();
         for p in parts {
             if !have.contains(p) {
-                return Err(err(format!("the dial has no stock part {p} under {}", dials::CUSTOMISATION)));
+                return Err(err(format!(
+                    "the dial has no stock part {p} under {}",
+                    dials::CUSTOMISATION
+                )));
             }
         }
         Ok(())
     }
 
     /// Adds one record's root under the customisation element and returns its plan.
-    pub fn add_record(
-        &mut self,
-        rec: &HudElement,
-        pfx: &str,
-        sprites: &Sprites,
-        mode: Mode,
-    ) -> Result<Plan> {
+    pub fn add_record(&mut self, rec: &HudElement, pfx: &str, sprites: &Sprites, mode: Mode) -> Result<Plan> {
         let bottom = self.bottom()?;
         let footprint = box_of(rec, sprites)?;
         let root_y = bottom + K * footprint[3];
         let preview = matches!(mode, Mode::Preview(_));
-        let root_name = if preview { format!("{pfx}_pv") } else { pfx.to_owned() };
+        let root_name = if preview {
+            format!("{pfx}_pv")
+        } else {
+            pfx.to_owned()
+        };
         let live_hidden = !preview && rec.dial != super::model::Dial::F126;
         let mut plan = Plan {
             pfx: pfx.to_owned(),
@@ -457,7 +508,9 @@ impl Builder {
     }
 
     fn lit(cx: &Cx, b: &Bind) -> Result<bool> {
-        let Mode::Preview(state) = &cx.mode else { return Ok(true) };
+        let Mode::Preview(state) = &cx.mode else {
+            return Ok(true);
+        };
         let key = preview_key(b);
         Ok(state.get(&key).is_some_and(truthy) != b.negate)
     }
@@ -475,8 +528,16 @@ impl Builder {
             .sprites
             .get(sprite)
             .ok_or_else(|| err(format!("{name}: no sprite {sprite}")))?;
-        let n = if tinted { s.tinted.as_ref().unwrap_or(&s.names) } else { &s.names };
-        let emb = if self.facts.quad == "central_bg_edge" { &n.emb_edge } else { &n.emb };
+        let n = if tinted {
+            s.tinted.as_ref().unwrap_or(&s.names)
+        } else {
+            &s.names
+        };
+        let emb = if self.facts.quad == "central_bg_edge" {
+            &n.emb_edge
+        } else {
+            &n.emb
+        };
         let [x0, y0, x1, y1] = s.bounds;
         let c = geom::scene_point((x0 + x1) / 2.0, (y0 + y1) / 2.0);
         self.quad(
@@ -490,11 +551,16 @@ impl Builder {
     }
 
     fn element(&mut self, cx: &mut Cx, e: &Element) -> Result<Option<Node>> {
-        let kind = e.kind.ok_or_else(|| err(format!("element {} has no kind", e.id)))?;
+        let kind = e
+            .kind
+            .ok_or_else(|| err(format!("element {} has no kind", e.id)))?;
         let name = format!("{}{}", cx.names, e.id);
         let switched = cx.switched.contains(&e.id);
         if switched && e.visible.is_some() {
-            return Err(err(format!("element {} is shown by a decision and has its own visible", e.id)));
+            return Err(err(format!(
+                "element {} is shown by a decision and has its own visible",
+                e.id
+            )));
         }
         if let Mode::Preview(_) = cx.mode {
             if switched {
@@ -517,7 +583,10 @@ impl Builder {
                 let off = geom::scene_point(at[0], at[1]);
                 if at != [0.0, 0.0] {
                     let p = idf::position(&q).unwrap_or([0.0; 3]);
-                    q.o_mut()?.set("position", Node::Val(idf::vec3([p[0] + off[0], p[1] + off[1], p[2], 0.0])));
+                    q.o_mut()?.set(
+                        "position",
+                        Node::Val(idf::vec3([p[0] + off[0], p[1] + off[1], p[2], 0.0])),
+                    );
                 }
                 if let Some(deg) = e.rot.filter(|d| *d != 0.0) {
                     let p = idf::position(&q).unwrap_or([0.0; 3]);
@@ -529,7 +598,13 @@ impl Builder {
                 q
             }
             Kind::Group => {
-                let mut g = self.null(&name, [0.0; 3], None, false, e.hidden.unwrap_or(false) && !preview)?;
+                let mut g = self.null(
+                    &name,
+                    [0.0; 3],
+                    None,
+                    false,
+                    e.hidden.unwrap_or(false) && !preview,
+                )?;
                 for c in &e.children {
                     if let Some(n) = self.element(cx, c)? {
                         idf::children_mut(&mut g)?.push(n);
@@ -540,7 +615,10 @@ impl Builder {
             Kind::Text => return self.text_element(cx, e, &name),
             Kind::Levels => {
                 let sprite = e.sprite.clone().unwrap_or_default();
-                let s = cx.sprites.get(&sprite).ok_or_else(|| err(format!("{name}: no sprite {sprite}")))?;
+                let s = cx
+                    .sprites
+                    .get(&sprite)
+                    .ok_or_else(|| err(format!("{name}: no sprite {sprite}")))?;
                 let [x0, y0, x1, y1] = s.bounds;
                 let count = e.count.unwrap_or(1);
                 let (from, to) = (e.from.unwrap_or(y1), e.to.unwrap_or(y0));
@@ -551,7 +629,11 @@ impl Builder {
                     if preview && !Self::lit(cx, &Bind::leaf(&leaf))? {
                         continue;
                     }
-                    let top = if i == count { y0 } else { from + (to - from) * i as f64 / count as f64 };
+                    let top = if i == count {
+                        y0
+                    } else {
+                        from + (to - from) * i as f64 / count as f64
+                    };
                     let wc = {
                         let c = geom::scene_point((x0 + x1) / 2.0, (top + y1) / 2.0);
                         [c[0], c[1], -0.12]
@@ -604,7 +686,14 @@ impl Builder {
         self.finish_leaf(cx, e, &name, node, switched)
     }
 
-    fn finish_leaf(&mut self, cx: &mut Cx, e: &Element, name: &str, node: Node, switched: bool) -> Result<Option<Node>> {
+    fn finish_leaf(
+        &mut self,
+        cx: &mut Cx,
+        e: &Element,
+        name: &str,
+        node: Node,
+        switched: bool,
+    ) -> Result<Option<Node>> {
         let outer = idf::elem_name(&node).to_owned();
         if cx.plan.preview {
             return Ok(Some(node));
@@ -650,10 +739,16 @@ impl Builder {
             err(format!(
                 "text {}: no style {style}; known: {}",
                 e.id,
-                geom::STYLES.iter().map(|(n, _)| *n).collect::<Vec<_>>().join(", ")
+                geom::STYLES
+                    .iter()
+                    .map(|(n, _)| *n)
+                    .collect::<Vec<_>>()
+                    .join(", ")
             ))
         })?;
-        let cap = e.cap_height.ok_or_else(|| err(format!("text {} needs cap_height", e.id)))?;
+        let cap = e
+            .cap_height
+            .ok_or_else(|| err(format!("text {} needs cap_height", e.id)))?;
         let place = geom::text_place(cap, sh, e.width.unwrap_or(40.0));
         let at = e.at.unwrap_or([0.0, 0.0]);
         let p = geom::scene_point(at[0], at[1]);
@@ -671,7 +766,9 @@ impl Builder {
             None
         };
         if plan.preview {
-            let Some(text) = preview_value else { return Ok(None) };
+            let Some(text) = preview_value else {
+                return Ok(None);
+            };
             plan.pv_texts.push((name.to_owned(), text));
             return Ok(Some(holder));
         }
@@ -702,14 +799,25 @@ impl Builder {
     fn gauge(&mut self, cx: &mut Cx, e: &Element, name: &str) -> Result<Node> {
         let preview = cx.plan.preview;
         let sprite = e.sprite.clone().unwrap_or_default();
-        let s = cx.sprites.get(&sprite).ok_or_else(|| err(format!("{name}: no sprite {sprite}")))?;
+        let s = cx
+            .sprites
+            .get(&sprite)
+            .ok_or_else(|| err(format!("{name}: no sprite {sprite}")))?;
         let [fx0, fy0, fx1, fy1] = s.bounds;
         let [ww, wh] = e.window.unwrap_or([fx1 - fx0 + 2.0, fy1 - fy0 + 1.0]);
-        let path = e.path.ok_or_else(|| err(format!("gauge {} needs a path", e.id)))?;
+        let path = e
+            .path
+            .ok_or_else(|| err(format!("gauge {} needs a path", e.id)))?;
         let keys: Vec<[f64; 3]> = path.iter().map(|p| geom::scene_point(p[0], p[1])).collect();
-        let bind = e.value.clone().ok_or_else(|| err(format!("gauge {} needs a value", e.id)))?;
+        let bind = e
+            .value
+            .clone()
+            .ok_or_else(|| err(format!("gauge {} needs a value", e.id)))?;
         let value = match &cx.mode {
-            Mode::Preview(state) => state.get(&preview_key(&bind)).and_then(serde_json::Value::as_f64).unwrap_or(0.0),
+            Mode::Preview(state) => state
+                .get(&preview_key(&bind))
+                .and_then(serde_json::Value::as_f64)
+                .unwrap_or(0.0),
             Mode::Live => 0.0,
         };
         let bp = if preview {
@@ -726,7 +834,14 @@ impl Builder {
         let mut win_anim = self.null(&wn, bp, None, !preview, false)?;
         let win = self.window(&format!("{name}_win"), [0.0, 0.0, -0.12], K * ww, K * wh)?;
         let mut ctr = self.null(&cn, [-bp[0], -bp[1], 0.12], None, !preview, false)?;
-        let q = self.sprite_quad(cx, &format!("{name}_fill"), &sprite, e.layer.unwrap_or(23), [0.0; 3], false)?;
+        let q = self.sprite_quad(
+            cx,
+            &format!("{name}_fill"),
+            &sprite,
+            e.layer.unwrap_or(23),
+            [0.0; 3],
+            false,
+        )?;
         idf::children_mut(&mut ctr)?.push(q);
         let mut win = win;
         idf::children_mut(&mut win)?.push(ctr);
@@ -735,7 +850,10 @@ impl Builder {
             let r = template::resolve(&bind, Usage::Fraction, name)?;
             cx.plan.known.push((r.db.clone(), r.tag));
             let times = vec![0.0, geom::ANIM_T as f32];
-            let win_keys: Vec<[f32; 3]> = keys.iter().map(|k| [k[0] as f32, k[1] as f32, k[2] as f32]).collect();
+            let win_keys: Vec<[f32; 3]> = keys
+                .iter()
+                .map(|k| [k[0] as f32, k[1] as f32, k[2] as f32])
+                .collect();
             let ctr_keys: Vec<[f32; 3]> = keys.iter().map(|k| [-k[0] as f32, -k[1] as f32, 0.12]).collect();
             for (node, ks) in [(wn.clone(), win_keys), (cn.clone(), ctr_keys)] {
                 cx.plan.clips.push(ClipSpec {
@@ -760,28 +878,58 @@ impl Builder {
         let preview = cx.plan.preview;
         let mask_sprite = e.mask_sprite.clone().unwrap_or_default();
         let fill_sprite = e.fill_sprite.clone().unwrap_or_default();
-        let ms = cx.sprites.get(&mask_sprite).ok_or_else(|| err(format!("{name}: no sprite {mask_sprite}")))?;
+        let ms = cx
+            .sprites
+            .get(&mask_sprite)
+            .ok_or_else(|| err(format!("{name}: no sprite {mask_sprite}")))?;
         let [x0, y0, x1, y1] = ms.bounds;
         let tex = ms.names.tex.clone();
         let pivot = e.pivot.unwrap_or([0.0, 0.0]);
         let sw = geom::sweep(pivot, e.start.unwrap_or(0.0), &e.arc, ms.bounds);
         let mc = geom::scene_point((x0 + x1) / 2.0, (y0 + y1) / 2.0);
         let cs = geom::scene_point(pivot[0], pivot[1]);
-        let bind = e.value.clone().ok_or_else(|| err(format!("sweep {} needs a value", e.id)))?;
+        let bind = e
+            .value
+            .clone()
+            .ok_or_else(|| err(format!("sweep {} needs a value", e.id)))?;
         let mut mask = self.mask(&format!("{name}_mask"), mc, K * (x1 - x0), K * (y1 - y0), &tex)?;
         let rel = [cs[0] - mc[0], cs[1] - mc[1], 0.0];
-        let anim_name = if preview { format!("zs_{name}_rot") } else { format!("zh_{name}_rot") };
+        let anim_name = if preview {
+            format!("zs_{name}_rot")
+        } else {
+            format!("zh_{name}_rot")
+        };
         let rot = if let Mode::Preview(state) = &cx.mode {
-            let f = state.get(&preview_key(&bind)).and_then(serde_json::Value::as_f64).unwrap_or(0.0);
+            let f = state
+                .get(&preview_key(&bind))
+                .and_then(serde_json::Value::as_f64)
+                .unwrap_or(0.0);
             Some(angle_at(&sw.keys, f).to_degrees())
         } else {
             None
         };
         let mut anim = self.null(&anim_name, rel, rot, !preview, false)?;
-        let mut frame = self.null(&format!("{name}_frame"), [0.0; 3], Some(sw.frame_deg), false, false)?;
-        let fe = cx.sprites.get(&fill_sprite).ok_or_else(|| err(format!("{name}: no sprite {fill_sprite}")))?;
-        let n = if preview && e.tint.is_some() { fe.tinted.as_ref().unwrap_or(&fe.names) } else { &fe.names };
-        let emb = if self.facts.quad == "central_bg_edge" { n.emb_edge.clone() } else { n.emb.clone() };
+        let mut frame = self.null(
+            &format!("{name}_frame"),
+            [0.0; 3],
+            Some(sw.frame_deg),
+            false,
+            false,
+        )?;
+        let fe = cx
+            .sprites
+            .get(&fill_sprite)
+            .ok_or_else(|| err(format!("{name}: no sprite {fill_sprite}")))?;
+        let n = if preview && e.tint.is_some() {
+            fe.tinted.as_ref().unwrap_or(&fe.names)
+        } else {
+            &fe.names
+        };
+        let emb = if self.facts.quad == "central_bg_edge" {
+            n.emb_edge.clone()
+        } else {
+            n.emb.clone()
+        };
         let quad = self.quad(
             &format!("{name}_fill"),
             &emb,
@@ -805,7 +953,10 @@ impl Builder {
             cx.plan.clips.push(ClipSpec {
                 node: anim_name.clone(),
                 channels: vec![
-                    clip_channel(Channel::position(vec![0.0], vec![[rel[0] as f32, rel[1] as f32, rel[2] as f32]])),
+                    clip_channel(Channel::position(
+                        vec![0.0],
+                        vec![[rel[0] as f32, rel[1] as f32, rel[2] as f32]],
+                    )),
                     clip_channel(Channel::rotation(times, quats)),
                     clip_channel(Channel::scale(vec![0.0], vec![[1.0; 3]])),
                 ],
@@ -842,12 +993,20 @@ impl Builder {
             .map(|(k, _)| k)
             .collect();
         if let Some(k) = moved.first() {
-            return Err(err(format!("{}: the stock element {k} changed its id ({} in all)", self.facts.scene, moved.len())));
+            return Err(err(format!(
+                "{}: the stock element {k} changed its id ({} in all)",
+                self.facts.scene,
+                moved.len()
+            )));
         }
         let all = idf::elements(root);
         let mut seen = BTreeSet::new();
         for (_, e) in &all {
-            let id = e.as_obj().and_then(|o| o.get("elementId")).and_then(Node::as_val).and_then(Val::as_u32);
+            let id = e
+                .as_obj()
+                .and_then(|o| o.get("elementId"))
+                .and_then(Node::as_val)
+                .and_then(Val::as_u32);
             if let Some(id) = id
                 && !seen.insert(id)
             {
@@ -858,8 +1017,15 @@ impl Builder {
         for (_, e) in &all {
             *counts.entry(idf::elem_name(e)).or_default() += 1;
         }
-        if let Some(d) = self.names.iter().find(|n| counts.get(n.as_str()).copied().unwrap_or(0) > 1) {
-            return Err(err(format!("{}: the element name {d} is used twice", self.facts.scene)));
+        if let Some(d) = self
+            .names
+            .iter()
+            .find(|n| counts.get(n.as_str()).copied().unwrap_or(0) > 1)
+        {
+            return Err(err(format!(
+                "{}: the element name {d} is used twice",
+                self.facts.scene
+            )));
         }
         Ok(self.pkg.to_bytes()?)
     }
@@ -914,7 +1080,11 @@ pub fn angle_at(keys: &[(f64, f64)], f: f64) -> f64 {
     for w in keys.windows(2) {
         if f <= w[1].0 {
             let span = w[1].0 - w[0].0;
-            return if span == 0.0 { w[1].1 } else { w[0].1 + (w[1].1 - w[0].1) * (f - w[0].0) / span };
+            return if span == 0.0 {
+                w[1].1
+            } else {
+                w[0].1 + (w[1].1 - w[0].1) * (f - w[0].0) / span
+            };
         }
     }
     keys.last().map_or(0.0, |k| k.1)
@@ -931,7 +1101,9 @@ pub fn box_of(rec: &HudElement, sprites: &Sprites) -> Result<[f64; 4]> {
     }
     let mut it = sprites.values().map(|s| s.bounds);
     let first = it.next().ok_or_else(|| err("the record has no sprites"))?;
-    Ok(it.fold(first, |a, b| [a[0].min(b[0]), a[1].min(b[1]), a[2].max(b[2]), a[3].max(b[3])]))
+    Ok(it.fold(first, |a, b| {
+        [a[0].min(b[0]), a[1].min(b[1]), a[2].max(b[2]), a[3].max(b[3])]
+    }))
 }
 
 /// A record's footprint as the selection box's corners: `[x0, y_top, x1, y_bottom]` in scene units.

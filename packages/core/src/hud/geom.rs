@@ -38,6 +38,7 @@ pub fn quat_z(theta: f64) -> [f64; 4] {
 }
 
 pub const QUAT_IDENTITY: [f64; 4] = [-0.0, -0.0, 0.0, -1.0];
+#[allow(clippy::approx_constant)]
 pub const QUAT_QUAD: [f64; 4] = [-0.707107, -0.0, 0.0, -0.707107];
 
 pub struct TextPlace {
@@ -105,7 +106,7 @@ mod tests {
             assert!(quat_z(t)[3] <= 0.0, "{t}");
         }
         let q = quat_z(90.0);
-        assert!((q[2].abs() - 0.707107).abs() < 1e-5);
+        assert!((q[2].abs() - std::f64::consts::FRAC_1_SQRT_2).abs() < 1e-5);
     }
 
     #[test]
@@ -118,9 +119,17 @@ mod tests {
 
     #[test]
     fn sweep_sign_follows_the_arc() {
-        let s = sweep([0.0, 0.0], 225.0, &[[0.0, 0.0], [1.0, -270.0]], [-10.0, -10.0, 10.0, 10.0]);
+        let s = sweep(
+            [0.0, 0.0],
+            225.0,
+            &[[0.0, 0.0], [1.0, -270.0]],
+            [-10.0, -10.0, 10.0, 10.0],
+        );
         assert_eq!(s.sigma, -1.0);
         assert!(s.reach > 0.018 * 10.0);
-        assert_eq!(leaf_name("view_model_data.hud_x_dp{nn}", 7), "view_model_data.hud_x_dp07");
+        assert_eq!(
+            leaf_name("view_model_data.hud_x_dp{nn}", 7),
+            "view_model_data.hud_x_dp07"
+        );
     }
 }
