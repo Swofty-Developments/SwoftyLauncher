@@ -27238,7 +27238,7 @@
    "target": "0x14470d760",
    "kind": "func_start",
    "names": [
-    "Car_TyreDamage_Update"
+    "Car_State_Read_Snapshot"
    ],
    "verified": [
     {
@@ -38530,7 +38530,7 @@
    "target": "0x1446e4330",
    "kind": "func_start",
    "names": [
-    "Car_Suspension_PublishWheelState"
+    "Car_Ers_IntegrateAndPublishWheels"
    ],
    "verified": [
     {
@@ -162677,6 +162677,34 @@
    ],
    "used_by": [
     "native/src/core/live_state.cpp"
+   ]
+  },
+  {
+   "id": "car.systems_container",
+   "section": ".xtls",
+   "pattern": "C5 F8 11 B7 E9 02 00 00 C5 F8 29 B7 E0 02 00 00 48 8D 05",
+   "match": "0x144628763",
+   "anchor": "0x13",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x10",
+    "len": 7
+   },
+   "target": "0x145c040c8",
+   "kind": "data",
+   "names": [
+    "vt_Car_SystemsContainer"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-11",
+     "by": "car-re",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/live/live_rows.hpp"
    ]
   }
  ]
