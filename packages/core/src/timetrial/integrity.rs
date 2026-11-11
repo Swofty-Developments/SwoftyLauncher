@@ -499,6 +499,7 @@ mod tests {
         assert!(e.contains("pinned key"));
     }
 
+    #[cfg(unix)]
     #[test]
     fn older_versions_are_pruned_to_two() {
         let key = pair();
