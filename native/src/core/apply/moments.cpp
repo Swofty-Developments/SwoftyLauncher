@@ -7,6 +7,7 @@
 #include "database.hpp"
 #include "facts.hpp"
 #include "files_api.hpp"
+#include "gp_track_logic.hpp"
 #include "scheduler.hpp"
 
 #include <swofty/game.hpp>
@@ -288,6 +289,7 @@ bool vtable_is(uintptr_t obj, const char *id)
 }
 
 struct Weekend {
+    uintptr_t at = 0;
     uint32_t session = 0;
     bool sprint = false;
     int track = -1;
@@ -318,6 +320,7 @@ bool weekend(uintptr_t holder, Weekend &out)
         !rd(season + offsetof(g::Season, current_weekend), wi) || we < wb || (we - wb) / 8 > MAX_ROUNDS ||
         wi >= (we - wb) / 8 || !rd(wb + wi * 8, wk) || !vtable_is(wk, "vt_Career_Weekend"))
         return false;
+    out.at = wk;
     uint8_t track = 0xff;
     if (rd(wk + offsetof(g::Weekend, track_stat_id), track) && track != 0xff)
         out.track = track;
@@ -340,26 +343,51 @@ std::mutex tracks_mu;
 std::map<int, std::string> track_labels;
 bool tracks_read = false;
 
+void read_track_rows()
+{
+    if (tracks_read)
+        return;
+    const SwoftyDb *db = runtime::db_table();
+    SwoftyDbCursor cur{};
+    if (!db || !db->available || !db->available() || db->open("tracks", &cur) != SWOFTY_ASSET_OK) {
+        once("the tracks table is not readable yet; the track is left empty");
+        return;
+    }
+    tracks_read = true;
+    do {
+        SwoftyDbValue v{};
+        const char *label = db->row_name(&cur);
+        if (label && db->cell(&cur, "statId", &v) == SWOFTY_ASSET_OK)
+            track_labels[int(v.i)] = label;
+    } while (db->step(&cur) == SWOFTY_ASSET_OK);
+}
+
 std::string track_label(int stat_id)
 {
     std::lock_guard g(tracks_mu);
-    if (!tracks_read) {
-        const SwoftyDb *db = runtime::db_table();
-        SwoftyDbCursor cur{};
-        if (!db || !db->available || !db->available() || db->open("tracks", &cur) != SWOFTY_ASSET_OK) {
-            once("the tracks table is not readable yet; the track is left empty");
-            return {};
-        }
-        tracks_read = true;
-        do {
-            SwoftyDbValue v{};
-            const char *label = db->row_name(&cur);
-            if (label && db->cell(&cur, "statId", &v) == SWOFTY_ASSET_OK)
-                track_labels[int(v.i)] = label;
-        } while (db->step(&cur) == SWOFTY_ASSET_OK);
-    }
+    read_track_rows();
     auto it = track_labels.find(stat_id);
     return it == track_labels.end() ? std::string() : it->second;
+}
+
+std::string grand_prix_track_fallback()
+{
+    uintptr_t ctx = current_context();
+    if (!ctx || mode_of(ctx, "the session load") != "grand_prix")
+        return {};
+    Weekend w;
+    if (!weekend(holder_of(ctx), w) || !w.at)
+        return {};
+    std::map<int, std::string> rows;
+    {
+        std::lock_guard g(tracks_mu);
+        read_track_rows();
+        rows = track_labels;
+    }
+    gp_track::Fallback f = gp_track::fallback(w.track, rows);
+    if (f.replace)
+        *reinterpret_cast<uint8_t *>(w.at + offsetof(g::Weekend, track_stat_id)) = uint8_t(f.stat_id);
+    return f.line;
 }
 
 std::string track_id(int stat_id)
@@ -600,6 +628,14 @@ std::pair<std::string, std::string> session_mode_track()
     attach();
     SessionFacts f = game::at_session_load();
     return {f.mode, f.track};
+}
+
+void grand_prix_track_check()
+{
+    attach();
+    std::string line = game::grand_prix_track_fallback();
+    if (!line.empty())
+        swofty::log("[gp] %s", line.c_str());
 }
 
 void session_end(const char *source)
