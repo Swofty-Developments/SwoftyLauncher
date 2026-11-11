@@ -103,6 +103,12 @@ int main()
     expect(!tb::track_watch_on(false, false, false, true, true), "a live Time Trial with nothing on does not run it");
     expect(!tb::track_watch_due(false, 10000, 0) && !tb::track_watch_due(true, 10400, 10000) && tb::track_watch_due(true, 10500, 10000) && tb::track_watch_due(true, 500, 0),
            "the watch reads the track twice a second only while on");
+    expect(!tb::diag_tick_on(true, false, false) && !tb::diag_tick_on(true, true, false), "the diagnostics tick is off outside a live Time Trial, whatever is on");
+    expect(tb::diag_tick_on(true, false, true) && tb::diag_tick_on(false, true, true), "a live Time Trial runs the diagnostics tick for the bridge or the diagnostics");
+    expect(!tb::diag_tick_on(false, false, true), "a live Time Trial with nothing on does not run it");
+    expect(!tb::diag_tick_due(false, 10000, 0) && !tb::diag_tick_due(true, 10499, 10000) && tb::diag_tick_due(true, 10500, 10000) && tb::diag_tick_due(true, 500, 0),
+           "the diagnostics tick runs at most twice a second, and only while on");
+    expect(!tb::diag_tick_due(tb::diag_tick_on(true, true, false), 99999, 0), "the diagnostics switch alone never makes the tick due outside a Time Trial");
     expect(tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0), "a panel with seven tabs is driven once");
     expect(!tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0x1000, 7), "the same panel is not driven twice");
     expect(!tb::garage_should_drive(false, true, 0x1000, 0x2000, 0x2038, 0) && !tb::garage_should_drive(true, false, 0x1000, 0x2000, 0x2038, 0),
