@@ -307,6 +307,7 @@ void live_tick(double now);
 bool live_memory_verified();
 bool live_collision_needs_udp();
 bool live_events_from_memory();
+bool live_bus_armed();
 uint32_t live_fill_feed(SwoftyTelemetryFeed &f);
 bool live_verify();
 const SwoftyTelemetryFeed &live_memory_view();

@@ -21,7 +21,8 @@ struct Sites {
               key_session_component = 0, key_tyres = 0, key_marshal = 0, key_red_flag = 0, key_game_mode = 0,
               key_team_tables = 0;
     uintptr_t controllers = 0, vt_controllers = 0, vt_human = 0;
-    uintptr_t sector_block = 0, track_world = 0;
+    uintptr_t sector_block = 0, sector_count = 0, track_world = 0;
+    uintptr_t bus_slot = 0, bus_subscribe = 0, bus_collision_row = 0, bus_status_row = 0;
     uintptr_t image_lo = 0, image_hi = 0;
 };
 
@@ -42,6 +43,10 @@ enum Group : unsigned {
     G_MODE,
     G_BADGES,
     G_TRACK,
+    G_PIT_LANE,
+    G_TRACK_NAME,
+    G_SPECTATE_GAP,
+    G_BUS_EVENTS,
     G_COUNT
 };
 
@@ -59,9 +64,10 @@ struct Gates {
 
 inline const char *group_name(Group g)
 {
-    static const char *const names[G_COUNT] = {"car systems", "ers",   "world",   "aero",  "progress", "classification",
-                                               "timing",      "pit",   "penalties", "tyres", "flags",    "controllers",
-                                               "spectator",   "mode",  "badges",  "track"};
+    static const char *const names[G_COUNT] = {"car systems", "ers",      "world",     "aero",         "progress",
+                                               "classification", "timing", "pit",       "penalties",    "tyres",
+                                               "flags",       "controllers", "spectator", "mode",       "badges",
+                                               "track",       "pit lane", "track name", "spectator gap", "bus events"};
     return names[g];
 }
 

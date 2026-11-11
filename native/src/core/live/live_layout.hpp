@@ -84,7 +84,10 @@ constexpr uintptr_t leader_ms = 0x58, leader_valid = 0x68, ahead_ms = 0x70, ahea
 }
 
 namespace pit {
-constexpr uintptr_t records = 0x68, state = 0x4;
+constexpr uintptr_t records = 0x68, state = 0x4, stops = 0x14;
+constexpr uintptr_t lane_object = 0x48, lane_flags = 0x938, in_lane = 0x103;
+constexpr size_t lane_flag_stride = 0x10;
+constexpr unsigned max_slots = 0x1b;
 }
 
 namespace penalty_log {
@@ -149,5 +152,109 @@ constexpr uintptr_t world_to_a = 0xd0, a_to_b = 0xe8, b_to_name = 0xa0;
 constexpr uintptr_t sector_end = 0x0, sector_length = 0x58, sector_count = 0x5c;
 constexpr size_t sector_block = 0x60;
 }
+
+}
+
+// The generated game headers declare a struct field only once its KB row has an independent agree. LIVE_HAS(T, f) is
+// true when the header on this build declares T::f, and LIVE_TIE(T, f, off) fails the build when it declares it at a
+// different offset than the constant the reader uses. A field the headers do not declare yet ties nothing and keeps its
+// group off (live_rows.hpp).
+#define LIVE_HAS(T, f)                                                                                                 \
+    ([]<class X>() consteval { return requires { offsetof(X, f); }; }.template operator()<swofty::game::T>())
+#define LIVE_TIE(T, f, off)                                                                                            \
+    static_assert(                                                                                                     \
+        []<class X>() consteval {                                                                                      \
+            if constexpr (requires { offsetof(X, f); })                                                                \
+                return offsetof(X, f) == (off);                                                                        \
+            else                                                                                                       \
+                return true;                                                                                           \
+        }.template operator()<swofty::game::T>(),                                                                      \
+        #T "." #f " is not where the live layout reads it")
+
+namespace swofty_core::live::layout {
+
+LIVE_TIE(CarLiveInputs, throttle, car::throttle);
+LIVE_TIE(CarLiveInputs, clutch, car::clutch);
+LIVE_TIE(CarLiveInputs, brake, car::brake);
+LIVE_TIE(CarLiveInputs, input_flags, car::input_flags);
+LIVE_TIE(CarChassisLive, g_lat, chassis::g_lat);
+LIVE_TIE(CarChassisLive, g_long, chassis::g_long);
+LIVE_TIE(CarChassisLive, body, chassis::body);
+LIVE_TIE(CarBodyActor, state, chassis::body_state);
+LIVE_TIE(CarBodyState, position, chassis::state_position);
+LIVE_TIE(CarBodyState, velocity, chassis::state_velocity);
+LIVE_TIE(CarSteeringLive, steering_angle, steering::angle);
+LIVE_TIE(CarGearBox, gear_index, gearbox::gear_index);
+LIVE_TIE(CarErs, max_deploy_power, ers::max_deploy);
+LIVE_TIE(CarErs, energy_store_capacity, ers::capacity);
+LIVE_TIE(CarErs, harvest_lap_mguk, ers::harvest_lap);
+LIVE_TIE(CarErs, deploy_lap, ers::deploy_lap);
+LIVE_TIE(CarErs, energy, ers::energy);
+LIVE_TIE(CarErs, lap_harvest_limit, ers::lap_limit);
+LIVE_TIE(CarErs, harvest_power_mguk, ers::harvest_k);
+LIVE_TIE(CarErs, harvest_power_mguh, ers::harvest_h);
+LIVE_TIE(CarErs, deploy_power, ers::deploy);
+LIVE_TIE(CarErs, ers_mode, ers::mode);
+LIVE_TIE(CarF1Aero, drs_flags, aero::drs_request);
+LIVE_TIE(NeRobinHoodMapU64, slots, registry::slots);
+LIVE_TIE(NeRobinHoodMapU64, meta, registry::info);
+LIVE_TIE(GameManagerLive, systems_map, registry::from_manager);
+LIVE_TIE(GameManagerLive, progress_system, progress::from_manager);
+LIVE_TIE(GameVehicleProgressSystem, entries_begin, progress::vec_begin);
+LIVE_TIE(GameVehicleProgressSystem, entries_end, progress::vec_end);
+LIVE_TIE(VehicleProgressEntry, lap_a, progress::lap_a);
+LIVE_TIE(VehicleProgressEntry, lap_b, progress::lap_b);
+LIVE_TIE(VehicleProgressEntry, progress_lap_a, progress::plap_a);
+LIVE_TIE(VehicleProgressEntry, progress_lap_b, progress::plap_b);
+LIVE_TIE(VehicleProgressEntry, progress_lap_delta, progress::plap_delta);
+LIVE_TIE(VehicleProgressEntry, total_a, progress::total_a);
+LIVE_TIE(VehicleProgressEntry, total_b, progress::total_b);
+LIVE_TIE(SessionSystem, entries_begin, results::vec_begin);
+LIVE_TIE(SessionSystem, entries_end, results::vec_end);
+LIVE_TIE(SessionVehicleEntry, vehicle_id, results::vehicle);
+LIVE_TIE(SessionVehicleEntry, status, results::status);
+LIVE_TIE(SessionVehicleEntry, time_penalty_a, results::penalty_a);
+LIVE_TIE(SessionVehicleEntry, time_penalty_b, results::penalty_b);
+LIVE_TIE(SessionVehicleEntry, position_a, results::pos_a);
+LIVE_TIE(SessionVehicleEntry, position_b, results::pos_b);
+LIVE_TIE(RelativeGapHelper, entries_begin, timing::vec_begin);
+LIVE_TIE(RelativeGapEntry, leader_gap_ms, timing::leader_ms);
+LIVE_TIE(RelativeGapEntry, leader_gap_valid, timing::leader_valid);
+LIVE_TIE(RelativeGapEntry, interval_ms, timing::ahead_ms);
+LIVE_TIE(RelativeGapEntry, interval_valid, timing::ahead_valid);
+LIVE_TIE(RelativeGapEntry, vehicle_id, timing::vehicle);
+LIVE_TIE(PitLaneSystem, car_slots, pit::records);
+LIVE_TIE(PitLaneCarState, state, pit::state);
+LIVE_TIE(PitLaneCarState, pit_stops, pit::stops);
+LIVE_TIE(PenaltyLog, records_begin, penalty_log::vec_begin);
+LIVE_TIE(PenaltyRecord, vehicle_id, penalty_log::vehicle);
+LIVE_TIE(PenaltyRecord, penalty_type, penalty_log::kind);
+LIVE_TIE(PenaltyRecord, infringement, penalty_log::infringement);
+LIVE_TIE(VehicleHelperSystem, drive_through, misconduct::drive_through);
+LIVE_TIE(VehicleHelperSystem, stop_go, misconduct::stop_go);
+LIVE_TIE(DriveThroughObject, records_begin, misconduct::vec_begin);
+LIVE_TIE(StopGoObject, records_begin, misconduct::vec_begin);
+LIVE_TIE(SafetyCarLogicSystem, deployment, safety_car::state);
+LIVE_TIE(MarshalZoneMonitor, zones_begin, marshal::vec_begin);
+LIVE_TIE(MarshalZoneSlot, zone, marshal::zone);
+LIVE_TIE(MarshalZone, definition, marshal::zone_def);
+LIVE_TIE(MarshalZone, flag, marshal::zone_flag);
+LIVE_TIE(MarshalZoneDef, start_fraction, marshal::def_start);
+LIVE_TIE(RedFlagSystem, state, red_flag::state);
+LIVE_TIE(ControllerSystem, sets, controllers::sets);
+LIVE_TIE(ControllerSystem, vehicle_manager, controllers::count_vec);
+LIVE_TIE(ControllerSystem, sets_built, controllers::built);
+LIVE_TIE(ControllerSet, human_controller, controllers::set_human);
+LIVE_TIE(ControllerSet, vehicle, controllers::set_vehicle);
+LIVE_TIE(VehicleTyreComponent, compound_class, tyres::version);
+LIVE_TIE(VehicleTyreComponent, slots, tyres::list);
+LIVE_TIE(VehicleTyreComponent, slot_count, tyres::count);
+LIVE_TIE(VehicleTyreComponent, built_for, tyres::built_for);
+LIVE_TIE(VehicleTyreComponent, built, tyres::built);
+LIVE_TIE(VehicleTyreComponent, set_begin, tyres::set_begin);
+LIVE_TIE(VehicleTyreComponent, set_end, tyres::set_end);
+LIVE_TIE(SpectatorDirector, ui_active, spectate::ui);
+LIVE_TIE(SpectatorDirector, active, spectate::active);
+LIVE_TIE(SpectatorDirector, current_driver, spectate::vehicle);
 
 }

@@ -1,31 +1,92 @@
 #pragma once
+#include "live_layout.hpp"
 #include "live_mem.hpp"
 
 namespace swofty_core::live {
 
+// A group reads on its own when every site it needs resolves (bindgen exports a site only after its KB row has an
+// independent agree), every struct field it reads is declared by the generated game headers (the same gate), and its
+// reads are all backed by KB rows. `mapped` is false for a group that still reads a chain the KB has no row for; that
+// group stays off until SWOFTY_LIVE_FORCE=1 or until the row lands and the entry is flipped.
 struct Row {
     Group group;
-    bool ready;
+    bool fields;
+    bool mapped;
     const char *needs;
 };
 
+inline constexpr bool F_CAR_SYSTEMS = LIVE_HAS(CarLiveInputs, throttle) && LIVE_HAS(CarLiveInputs, clutch) &&
+                                      LIVE_HAS(CarLiveInputs, brake) && LIVE_HAS(CarLiveInputs, input_flags) &&
+                                      LIVE_HAS(CarChassisLive, g_lat) && LIVE_HAS(CarChassisLive, g_long) &&
+                                      LIVE_HAS(CarChassisLive, body) && LIVE_HAS(CarBodyActor, state) &&
+                                      LIVE_HAS(CarBodyState, velocity) && LIVE_HAS(CarSteeringLive, steering_angle) &&
+                                      LIVE_HAS(CarGearBox, gear_index) && LIVE_HAS(CarEngine, rotation_rate) &&
+                                      LIVE_HAS(CarEngine, limiter_rotation_rate);
+inline constexpr bool F_ERS = LIVE_HAS(CarErs, max_deploy_power) && LIVE_HAS(CarErs, energy_store_capacity) &&
+                              LIVE_HAS(CarErs, harvest_lap_mguk) && LIVE_HAS(CarErs, deploy_lap) &&
+                              LIVE_HAS(CarErs, energy) && LIVE_HAS(CarErs, lap_harvest_limit) &&
+                              LIVE_HAS(CarErs, harvest_power_mguk) && LIVE_HAS(CarErs, harvest_power_mguh) &&
+                              LIVE_HAS(CarErs, deploy_power) && LIVE_HAS(CarErs, ers_mode);
+inline constexpr bool F_WORLD = LIVE_HAS(CarBodyState, position);
+inline constexpr bool F_AERO = LIVE_HAS(CarF1Aero, drs_flags);
+inline constexpr bool F_PROGRESS = LIVE_HAS(GameManagerLive, progress_system) &&
+                                   LIVE_HAS(GameVehicleProgressSystem, entries_begin) &&
+                                   LIVE_HAS(GameVehicleProgressSystem, entries_end) && LIVE_HAS(VehicleProgressEntry, lap_a) &&
+                                   LIVE_HAS(VehicleProgressEntry, lap_b) && LIVE_HAS(VehicleProgressEntry, progress_lap_a) &&
+                                   LIVE_HAS(VehicleProgressEntry, progress_lap_b) &&
+                                   LIVE_HAS(VehicleProgressEntry, progress_lap_delta) &&
+                                   LIVE_HAS(VehicleProgressEntry, total_a) && LIVE_HAS(VehicleProgressEntry, total_b);
+inline constexpr bool F_REGISTRY = LIVE_HAS(GameManagerLive, systems_map) && LIVE_HAS(NeRobinHoodMapU64, slots) &&
+                                   LIVE_HAS(NeRobinHoodMapU64, meta);
+inline constexpr bool F_CLASS = LIVE_HAS(SessionSystem, entries_begin) && LIVE_HAS(SessionSystem, entries_end) &&
+                                LIVE_HAS(SessionVehicleEntry, status) && LIVE_HAS(SessionVehicleEntry, time_penalty_a) &&
+                                LIVE_HAS(SessionVehicleEntry, time_penalty_b) && LIVE_HAS(SessionVehicleEntry, position_a) &&
+                                LIVE_HAS(SessionVehicleEntry, position_b);
+inline constexpr bool F_TIMING = LIVE_HAS(RelativeGapHelper, entries_begin) && LIVE_HAS(RelativeGapEntry, leader_gap_ms) &&
+                                 LIVE_HAS(RelativeGapEntry, leader_gap_valid) && LIVE_HAS(RelativeGapEntry, interval_ms) &&
+                                 LIVE_HAS(RelativeGapEntry, interval_valid) && LIVE_HAS(RelativeGapEntry, vehicle_id) &&
+                                 LIVE_HAS(SafetyCarLogicSystem, deployment);
+inline constexpr bool F_PIT = LIVE_HAS(PitLaneSystem, car_slots) && LIVE_HAS(PitLaneCarState, state);
+inline constexpr bool F_PIT_LANE = LIVE_HAS(PitLaneCarState, pit_stops);
+inline constexpr bool F_PENALTIES = LIVE_HAS(PenaltyLog, records_begin) && LIVE_HAS(PenaltyRecord, vehicle_id) &&
+                                    LIVE_HAS(PenaltyRecord, penalty_type) && LIVE_HAS(PenaltyRecord, infringement) &&
+                                    LIVE_HAS(VehicleHelperSystem, drive_through) && LIVE_HAS(VehicleHelperSystem, stop_go) &&
+                                    LIVE_HAS(DriveThroughObject, records_begin) && LIVE_HAS(StopGoObject, records_begin);
+inline constexpr bool F_TYRES = LIVE_HAS(VehicleTyreComponent, compound_class) && LIVE_HAS(VehicleTyreComponent, slots) &&
+                                LIVE_HAS(VehicleTyreComponent, slot_count) && LIVE_HAS(VehicleTyreComponent, built_for) &&
+                                LIVE_HAS(VehicleTyreComponent, built) && LIVE_HAS(VehicleTyreComponent, set_begin) &&
+                                LIVE_HAS(VehicleTyreComponent, set_end);
+inline constexpr bool F_FLAGS = LIVE_HAS(MarshalZoneMonitor, zones_begin) && LIVE_HAS(MarshalZoneSlot, zone) &&
+                                LIVE_HAS(MarshalZone, definition) && LIVE_HAS(MarshalZone, flag) &&
+                                LIVE_HAS(MarshalZoneDef, start_fraction) && LIVE_HAS(RedFlagSystem, state);
+inline constexpr bool F_CONTROL = LIVE_HAS(ControllerSystem, sets) && LIVE_HAS(ControllerSystem, vehicle_manager) &&
+                                  LIVE_HAS(ControllerSystem, sets_built) && LIVE_HAS(ControllerSet, human_controller) &&
+                                  LIVE_HAS(ControllerSet, vehicle);
+inline constexpr bool F_SPECTATE = LIVE_HAS(SpectatorDirector, ui_active) && LIVE_HAS(SpectatorDirector, active) &&
+                                   LIVE_HAS(SpectatorDirector, current_driver);
+
 inline constexpr Row ROWS[G_COUNT] = {
-    {G_CAR_SYSTEMS, false, "CarLive.throttle, CarLive.brake, CarLive.input_flags, CarChassis.g_lat, CarSteering.angle"},
-    {G_ERS, false, "CarErs live fields"},
-    {G_WORLD, false, "CarBodyState.position"},
-    {G_AERO, false, "CarF1Aero.drs_request"},
-    {G_PROGRESS, false, "VehicleProgressSystem entries"},
-    {G_CLASS, false, "ResultsSystem entries"},
-    {G_TIMING, false, "TimingSystem entries"},
-    {G_PIT, false, "PitStateSystem records"},
-    {G_PENALTIES, false, "PenaltyLog records, MisconductManager"},
-    {G_TYRES, false, "TyreSystem per-vehicle block"},
-    {G_FLAGS, false, "MarshalZoneMonitor, RedFlagSystem, sector table"},
-    {G_CONTROL, false, "ControllerSystem sets"},
-    {G_SPECTATE, false, "SpectatorDirector.ui_active"},
-    {G_MODE, false, "GameModeContext label"},
-    {G_BADGES, false, "EntrantRecord team word, team tables"},
-    {G_TRACK, false, "g_Game_TrackLength, track world name chain"},
+    {G_CAR_SYSTEMS, F_CAR_SYSTEMS, true,
+     "CarLiveInputs, CarChassisLive, CarBodyActor/State, CarSteeringLive, CarEngine and CarGearBox fields"},
+    {G_ERS, F_ERS, true, "CarErs live fields"},
+    {G_WORLD, F_WORLD, true, "CarBodyState.position"},
+    {G_AERO, F_AERO, false, "CarF1Aero.drs_flags is an L1 row"},
+    {G_PROGRESS, F_PROGRESS && F_REGISTRY, true, "GameVehicleProgressSystem and VehicleProgressEntry fields"},
+    {G_CLASS, F_CLASS && F_REGISTRY, true, "SessionSystem and SessionVehicleEntry fields"},
+    {G_TIMING, F_TIMING && F_REGISTRY, true, "RelativeGapHelper, RelativeGapEntry, SafetyCarLogicSystem fields"},
+    {G_PIT, F_PIT && F_REGISTRY, true, "PitLaneSystem, PitLaneCarSlot, PitLaneCarState.state"},
+    {G_PENALTIES, F_PENALTIES && F_REGISTRY, true, "PenaltyLog, VehicleHelperSystem and the misconduct objects"},
+    {G_TYRES, F_TYRES && F_REGISTRY, false, "TyreSystem per-vehicle vector and the visual record have no KB row"},
+    {G_FLAGS, F_FLAGS && F_REGISTRY, true, "MarshalZoneMonitor, RedFlagSystem, the sector globals"},
+    {G_CONTROL, F_CONTROL, true, "ControllerSystem and ControllerSet fields"},
+    {G_SPECTATE, F_SPECTATE && F_REGISTRY, true, "SpectatorDirector fields"},
+    {G_MODE, F_REGISTRY, false, "GameModeContext label chain has no KB row"},
+    {G_BADGES, F_REGISTRY, false, "EntrantsSystem team table chain has no KB row"},
+    {G_TRACK, true, true, "g_Game_TrackLength, g_Sess_TyreRulesSessionType"},
+    {G_PIT_LANE, F_PIT_LANE, false, "PitLaneSystem+0x48 lane object, +0x938 flag block and +0x103 have no KB row"},
+    {G_TRACK_NAME, true, false, "the track world name chain has no KB row"},
+    {G_SPECTATE_GAP, true, false, "SpectatorDirector+0xe4 gap mode has no KB row"},
+    {G_BUS_EVENTS, true, true, "Ne_Subscribe_BusMessage and the two Live_Subscribe_* rows that carry the message layouts"},
 };
 
 }

@@ -24,9 +24,11 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 // feed's frame counter and session clock advance in a running game. The
 // car, participant and session fields fill from the game's memory (live_state.cpp) for every group the
 // live state has verified, and from the game's own UDP packets, decoded in the sendto hook (udp_ids.cpp,
-// udp_telemetry_logic.hpp), for the rest. A value the memory read has wins over the UDP value. Retirement
-// and overtake events derive from the classification when the memory source is on; collision events and the
-// UDP fallback are queued in the sendto hook and fired on the flow thread by the frame tick.
+// udp_telemetry_logic.hpp), for the rest. A value the memory read has wins over the UDP value. Overtake
+// events derive from the classification when the memory source is on; collision and retirement events come from
+// the game's own bus messages (r_car_to_car_col, vehicle_status_changed) once the core has subscribed to them
+// (live_bus.hpp), and the UDP versions are dropped from then on. Events from the UDP fallback are queued in the
+// sendto hook and fired on the flow thread by the frame tick.
 
 namespace {
 
@@ -309,13 +311,15 @@ void telemetry_udp(const uint8_t *buf, size_t len)
         runtime::live_fill_feed(master);
         feed_end(&master);
         publish();
-        if (runtime::live_events_from_memory())
-            events.erase(std::remove_if(events.begin(), events.end(),
-                                        [](const udp_tel::Event &e) {
-                                            return !std::strcmp(e.name, SWOFTY_EVENT_TELEMETRY_OVERTAKE) ||
-                                                   !std::strcmp(e.name, SWOFTY_EVENT_TELEMETRY_RETIREMENT);
-                                        }),
-                         events.end());
+        bool from_memory = runtime::live_events_from_memory(), from_bus = runtime::live_bus_armed();
+        events.erase(std::remove_if(events.begin(), events.end(),
+                                    [&](const udp_tel::Event &e) {
+                                        return (from_memory && !std::strcmp(e.name, SWOFTY_EVENT_TELEMETRY_OVERTAKE)) ||
+                                               ((from_memory || from_bus) &&
+                                                !std::strcmp(e.name, SWOFTY_EVENT_TELEMETRY_RETIREMENT)) ||
+                                               (from_bus && !std::strcmp(e.name, SWOFTY_EVENT_TELEMETRY_COLLISION));
+                                    }),
+                     events.end());
         if (pending.size() < 256)
             pending.insert(pending.end(), events.begin(), events.end());
     }
