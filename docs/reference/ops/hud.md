@@ -70,7 +70,16 @@ A Halo-like dial: a base, a speed text, a boost lamp, a level bar, a battery gau
 
 ## Units and placement
 
-One HUD unit is one pixel of a 640x360 frame, the origin is the dial centre and `v` points down. A record written in Project Halo's tower unit (1/3 px at 1080p) says `"units": "tower"`; the composer reads every `at`, `bounds`, `box`, `pitch`, `gap`, `size` and `cap_height` in that unit (0.03 scene units) and the default `hud` stays 0.018. A sprite's `bounds` is where it sits in that frame, so a sprite's art lines up with the others without an `at`. The record's root sits where the bottom of its box lands on the stock bottom customisation point; the box is `box`, else the bounds of the sprite named `base`, else the bounds of every sprite. Every element hangs off `boundless_customisation`, so the HUD editor's move and resize apply to it.
+One HUD unit is one pixel of a 640x360 frame, the origin is the dial centre and `v` points down. A record written in Project Halo's tower unit (1/3 px at 1080p) says `"units": "tower"`; the composer reads every `at`, `bounds`, `box`, `pitch`, `gap`, `size` and `cap_height` in that unit (0.03 scene units) and the default `hud` stays 0.018. A sprite's `bounds` is where it sits in that frame, so a sprite's art lines up with the others without an `at`. The record's root sits where the bottom of its box lands on the stock bottom customisation point; the box is `box`, else the bounds of the sprite named `base`, else the bounds of every sprite. That point differs by a few hundred-thousandths between the dials, so a record that must land on one exact spot in every dial sets `root_y`, in its own units, `v` down from the dial centre; a variant's `root_y` overrides it for that dial. The selection box follows the root either way.
+
+```jsonc
+"root_y": 16,                                         // the root 16 units below the centre; at is relative to it
+"variants": {
+  "f2": { "dial": "f2", "root_y": 16.5 }
+}
+```
+
+Every element hangs off `boundless_customisation`, so the HUD editor's move and resize apply to it.
 
 ## Element kinds
 
@@ -175,14 +184,16 @@ An element a decision lists is shown by the decision and has no `visible` of its
   { "kind": "sprite", "id": "ers_hotlap", "sprite": "ers_hotlap" }
 ],
 "decisions": [
-  { "id": "drs", "type": "mvcd", "game": "drs_pit_state",
-    "states": { "drs_live": ["drs_open"], "invalid": ["drs_off"] } },       // other states hide every listed element
+  { "id": "drs", "type": "mvcd", "game": "drs_pit_state", "initial": "invalid",   // drs_off is on screen until the value first fires
+    "states": { "drs_live": ["drs_open"], "invalid": ["drs_off"] } },             // other states hide every listed element
   { "id": "mode", "type": "svcd", "game": "ers_mode", "equals": 2, "ty": "ui32",
-    "yes": ["ers_hotlap"], "no": [] }
+    "yes": ["ers_hotlap"], "no": [], "initial": "no" }                            // yes or no on an svcd
 ]
 ```
 
 The composer writes an `MVCD` or `SVCD` node under the record's template group and registers and queries it from the dial's own `show` command, unregistering it from `hide`, as the stock DRS widget does. An `mvcd` takes an event for every state of the stock `MVCD` on the same value under the same dial; a state the record doesn't list hides everything.
+
+Each listed element gets a `visible` node the decision's events switch. Its default is what the element shows before the first event: hidden, or shown when the element is in the decision's `initial` state. The dial's `show` queries the decision, so the targets re-sync to the current state every time the dial comes on screen, but a query fires nothing while the value has no state yet (the first frames of a session), and that is the window `initial` covers. The stock dials keep their grey DRS pill on screen the same way: the stock `MVCD` only switches the activated holders, the pill itself is visible by default.
 
 ## Stock parts, variants and the editor
 
@@ -194,6 +205,35 @@ The composer writes an `MVCD` or `SVCD` node under the record's template group a
   "f2":    { "dial": "f2", "remove": ["batt"] }
 }
 ```
+
+A variant's `add` entries go last at the top level unless one names its place: `before` or `after` an element of the base, or `replace` for one it stands in for. An id the variant removes or replaces is free inside that variant, so a swapped part keeps its id and its spot in the draw order. A variant also carries `decisions` of its own, built for its dial only and after the record's; they may show the variant's own `add` elements, and each dial still needs exactly one stock `MVCD` on the value (`drs_pit_state` has one in the f1_25 and f2 dials). Here the 2025 dial swaps the energy group under the bars and adds a two-state pill the 2026 dial has no value for:
+
+```jsonc
+"elements": [
+  { "kind": "sprite", "id": "base", "sprite": "base", "layer": 20 },
+  { "kind": "group", "id": "energy", "children": [ /* 2026 energy readouts */ ] },
+  { "kind": "slats", "id": "brake", "sprites": ["slat", "slat", "slat"], "show": "view_model_data.hud_x_br{nn}" },
+  { "kind": "sweep", "id": "rpm", /* ... */ }
+],
+"variants": {
+  "f1_25": {
+    "dial": "f1_25",
+    "add": [
+      { "kind": "group", "id": "energy", "replace": "energy", "children": [ /* 2025 energy readouts */ ] },  // same id, same place: the slats and the sweep stay above it
+      { "kind": "group", "id": "pill", "after": "energy", "children": [
+          { "kind": "sprite", "id": "pill_idle", "sprite": "pill_grey" },
+          { "kind": "sprite", "id": "pill_live", "sprite": "pill_green" } ] }
+    ],
+    "decisions": [
+      { "id": "drs", "type": "mvcd", "game": "drs_pit_state", "initial": "invalid",
+        "states": { "invalid": ["pill_idle"], "drs_live": ["pill_live"] } }
+    ],
+    "root_y": 16
+  }
+}
+```
+
+The check refuses a placement that names no element of the base left in the variant, two placements on one entry, a placement on a base element, a variant decision that shows an element the variant has not got, and a variant decision with a record decision's id.
 
 The HUD editor shows `dial_complete.idf` with no template running: the scene's own state plus its `.uipre` setters. So each record also gets a static copy of the elements that `editor.preview` shows (`"editor": { "rows": 5 }` caps a top-level repeat at five copies there, keyed by the substituted leaf names `view_model_data.hud_tt_r00_on` … `r04_on`) (keys: `game.<name>`, `session.<path>`, `session_car.<field>.<slot>` or the leaf), its sprites pre-tinted with `team_colour`, `.uipre` setters that hide the stock parts and fill the copy's texts, and a `<prefix>_pv_ctl` group that hides the copy in game. The spectator HUD's dial of each class runs the same template groups unless the record sets `"spectator": false`.
 

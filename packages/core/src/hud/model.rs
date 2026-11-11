@@ -260,6 +260,55 @@ pub struct Element {
     pub start: Option<f64>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub arc: Vec<[f64; 2]>,
+    /// Variant `add` entries only: the existing element this one goes in front of.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub before: Option<String>,
+    /// Variant `add` entries only: the existing element this one goes behind.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub after: Option<String>,
+    /// Variant `add` entries only: the existing element this one takes the place of.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub replace: Option<String>,
+}
+
+/// Where a variant's `add` entry goes: in front of, behind or in place of an existing element.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum Place {
+    Before,
+    After,
+    Replace,
+}
+
+impl Place {
+    pub fn key(self) -> &'static str {
+        match self {
+            Place::Before => "before",
+            Place::After => "after",
+            Place::Replace => "replace",
+        }
+    }
+}
+
+impl Element {
+    /// The one placement an `add` entry names, or none (it goes last at the top level).
+    pub fn placement(&self) -> Result<Option<(Place, &str)>> {
+        let set: Vec<(Place, &str)> = [
+            (Place::Before, &self.before),
+            (Place::After, &self.after),
+            (Place::Replace, &self.replace),
+        ]
+        .into_iter()
+        .filter_map(|(p, v)| v.as_deref().map(|id| (p, id)))
+        .collect();
+        match set[..] {
+            [] => Ok(None),
+            [one] => Ok(Some(one)),
+            _ => Err(err(format!(
+                "element {}: before, after and replace are one placement, not two",
+                self.id
+            ))),
+        }
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -279,6 +328,66 @@ pub struct Decision {
     pub yes: Vec<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub no: Vec<String>,
+    /// The state (or `yes` / `no`) whose elements start shown, before the value first fires.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub initial: Option<String>,
+}
+
+impl Decision {
+    /// Every element the decision shows or hides.
+    pub fn targets(&self) -> impl Iterator<Item = &String> {
+        self.yes
+            .iter()
+            .chain(&self.no)
+            .chain(self.states.values().flatten())
+    }
+
+    /// The elements of the `initial` state: shown from the first frame, until the value fires.
+    pub fn initial_targets(&self) -> impl Iterator<Item = &String> {
+        let list: Option<&Vec<String>> = match (self.initial.as_deref(), self.kind.as_str()) {
+            (Some("yes"), "svcd") => Some(&self.yes),
+            (Some("no"), "svcd") => Some(&self.no),
+            (Some(s), "mvcd") => self.states.get(s),
+            _ => None,
+        };
+        list.into_iter().flatten()
+    }
+
+    fn check(&self, known: &std::collections::BTreeSet<&str>) -> Result<()> {
+        let ok = matches!(self.kind.as_str(), "svcd" | "mvcd");
+        if !ok {
+            return Err(err(format!("decision {}: type is svcd or mvcd", self.id)));
+        }
+        for id in self.targets() {
+            if !known.contains(id.as_str()) {
+                return Err(err(format!(
+                    "decision {} shows {id}, which is no element",
+                    self.id
+                )));
+            }
+        }
+        if self.kind == "svcd" && self.equals.is_none() {
+            return Err(err(format!("decision {}: an svcd needs equals", self.id)));
+        }
+        if let Some(i) = &self.initial {
+            let ok = match self.kind.as_str() {
+                "svcd" => i == "yes" || i == "no",
+                _ => self.states.contains_key(i),
+            };
+            if !ok {
+                return Err(err(format!(
+                    "decision {}: initial names one of its states ({})",
+                    self.id,
+                    if self.kind == "svcd" {
+                        "yes or no".to_owned()
+                    } else {
+                        self.states.keys().cloned().collect::<Vec<_>>().join(", ")
+                    }
+                )));
+            }
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -403,6 +512,12 @@ pub struct Variant {
     pub remove: Vec<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub add: Vec<Element>,
+    /// Decisions built for this variant's dial only; they may show the variant's own `add` elements.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub decisions: Vec<Decision>,
+    /// This variant's root y (record units, `v` down from the dial centre), over the record's.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub root_y: Option<f64>,
 }
 
 /// One `hud.element` record.
@@ -436,6 +551,10 @@ pub struct HudElement {
     pub stock_parts: Vec<String>,
     #[serde(default, rename = "box", skip_serializing_if = "Option::is_none")]
     pub rect: Option<[f64; 4]>,
+    /// Where the root lands, in record units `v` down from the dial centre. Absent: the bottom of
+    /// the box on the stock bottom customisation point.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub root_y: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub prefix: Option<String>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
@@ -505,6 +624,7 @@ impl HudElement {
         let f = self.units.k() / super::geom::K;
         self.units = Units::Hud;
         self.rect = self.rect.map(|r| r.map(|v| v * f));
+        self.root_y = self.root_y.map(|y| y * f);
         if let Some(ed) = &mut self.editor {
             ed.rect = ed.rect.map(|r| r.map(|v| v * f));
         }
@@ -517,6 +637,7 @@ impl HudElement {
             scale_element(e, f);
         }
         for v in self.variants.values_mut() {
+            v.root_y = v.root_y.map(|y| y * f);
             for e in &mut v.add {
                 scale_element(e, f);
             }
@@ -584,32 +705,22 @@ impl HudElement {
         only_text(&self.elements)
     }
 
+    /// Checks the record, then each variant as the record it patches into: an id the variant
+    /// removes or replaces is free inside that variant, its placements name elements that are
+    /// there, and its decisions show elements that are there.
     pub fn check(&self) -> Result<()> {
         self.check_scene_target()?;
-        let mut ids = std::collections::BTreeSet::new();
+        check_tree(&self.elements, &self.decisions)?;
         for e in &self.elements {
-            check_element(e, &mut ids)?;
+            no_placement(e)?;
         }
-        for v in self.variants.values() {
-            for e in &v.add {
-                check_element(e, &mut ids)?;
+        for name in self.variants.keys() {
+            let what = |e: Error| err(format!("variant {name}: {e}"));
+            for c in self.variants[name].add.iter().flat_map(|e| &e.children) {
+                no_placement(c).map_err(what)?;
             }
-        }
-        let known: std::collections::BTreeSet<&str> = ids.iter().map(String::as_str).collect();
-        for d in &self.decisions {
-            let ok = matches!(d.kind.as_str(), "svcd" | "mvcd");
-            if !ok {
-                return Err(err(format!("decision {}: type is svcd or mvcd", d.id)));
-            }
-            let shown = d.yes.iter().chain(&d.no).chain(d.states.values().flatten());
-            for id in shown {
-                if !known.contains(id.as_str()) {
-                    return Err(err(format!("decision {} shows {id}, which is no element", d.id)));
-                }
-            }
-            if d.kind == "svcd" && d.equals.is_none() {
-                return Err(err(format!("decision {}: an svcd needs equals", d.id)));
-            }
+            let patched = self.with_variant(name).map_err(what)?;
+            check_tree(&patched.elements, &patched.decisions).map_err(what)?;
         }
         Ok(())
     }
@@ -621,6 +732,8 @@ impl HudElement {
         })
     }
 
+    /// The record patched for one variant: its dial, the removed elements gone (from the
+    /// decisions too), the added ones in place, its decisions after the record's and its root y.
     pub fn with_variant(&self, name: &str) -> Result<Self> {
         let v = self
             .variants
@@ -630,15 +743,87 @@ impl HudElement {
         out.dial = v.dial;
         out.variants.clear();
         remove_ids(&mut out.elements, &v.remove);
-        out.elements.extend(v.add.iter().cloned());
+        for e in &v.add {
+            let mut add = e.clone();
+            add.before = None;
+            add.after = None;
+            add.replace = None;
+            match e.placement()? {
+                None => out.elements.push(add),
+                Some((place, id)) => {
+                    if !place_element(&mut out.elements, place, id, &add) {
+                        return Err(err(format!(
+                            "element {}: {} names {id}, which is no element here",
+                            e.id,
+                            place.key()
+                        )));
+                    }
+                }
+            }
+        }
+        let mut present = std::collections::BTreeSet::new();
+        collect_ids(&out.elements, &mut present);
+        let gone = |id: &String| present.contains(id);
         out.decisions.iter_mut().for_each(|d| {
-            let gone = |id: &String| !v.remove.iter().any(|r| r == id);
             d.yes.retain(gone);
             d.no.retain(gone);
             d.states.values_mut().for_each(|s| s.retain(gone));
         });
+        out.decisions.extend(v.decisions.iter().cloned());
+        if v.root_y.is_some() {
+            out.root_y = v.root_y;
+        }
         Ok(out)
     }
+}
+
+/// Puts `add` next to (or in place of) the element `id`, wherever it sits in the tree.
+fn place_element(list: &mut Vec<Element>, place: Place, id: &str, add: &Element) -> bool {
+    if let Some(i) = list.iter().position(|e| e.id == id) {
+        match place {
+            Place::Before => list.insert(i, add.clone()),
+            Place::After => list.insert(i + 1, add.clone()),
+            Place::Replace => list[i] = add.clone(),
+        }
+        return true;
+    }
+    list.iter_mut()
+        .any(|e| place_element(&mut e.children, place, id, add))
+}
+
+/// Checks one element tree and the decisions over it: ids once, kinds complete, every decision
+/// target an element of the tree.
+fn check_tree(elements: &[Element], decisions: &[Decision]) -> Result<()> {
+    let mut ids = std::collections::BTreeSet::new();
+    for e in elements {
+        check_element(e, &mut ids)?;
+    }
+    let known: std::collections::BTreeSet<&str> = ids.iter().map(String::as_str).collect();
+    let mut seen = std::collections::BTreeSet::new();
+    for d in decisions {
+        if !seen.insert(d.id.as_str()) {
+            return Err(err(format!("decision id {} is used twice", d.id)));
+        }
+        d.check(&known)?;
+    }
+    Ok(())
+}
+
+fn collect_ids(list: &[Element], out: &mut std::collections::BTreeSet<String>) {
+    for e in list {
+        out.insert(e.id.clone());
+        collect_ids(&e.children, out);
+    }
+}
+
+fn no_placement(e: &Element) -> Result<()> {
+    if e.before.is_some() || e.after.is_some() || e.replace.is_some() {
+        return Err(err(format!(
+            "element {}: before, after and replace place a variant's add entries only",
+            e.id
+        )));
+    }
+    e.children.iter().try_for_each(no_placement)
 }
 
 fn scale_element(e: &mut Element, f: f64) {
@@ -1081,5 +1266,169 @@ mod tests {
         assert_eq!(f2.dial, Dial::F2);
         assert_eq!(f2.elements.len(), 1);
         assert!(r.with_variant("nope").is_err());
+    }
+
+    /// A base with a draw order (back plate, two bars, a lamp) and a pill group only one dial has.
+    fn layered() -> serde_json::Value {
+        serde_json::json!({
+            "dial": "f1_26",
+            "sprites": {
+                "base": { "png": "art/base.png", "bounds": [-100, -48, 110, 38] },
+                "bar": { "png": "art/bar.png", "bounds": [-40, 0, 40, 8] },
+                "lamp": { "png": "art/lamp.png", "bounds": [-8, -8, 8, 8] }
+            },
+            "elements": [
+                { "kind": "sprite", "id": "base", "sprite": "base", "layer": 20 },
+                { "kind": "group", "id": "energy", "children": [
+                    { "kind": "sprite", "id": "bar_a", "sprite": "bar" },
+                    { "kind": "sprite", "id": "bar_b", "sprite": "bar", "at": [0, 10] } ] },
+                { "kind": "sprite", "id": "lamp", "sprite": "lamp", "visible": { "view_model": "view_model_data.hud_x_lamp" } }
+            ],
+            "decisions": [
+                { "id": "mode", "type": "svcd", "game": "ers_mode", "equals": 2, "ty": "ui32", "yes": ["lamp"], "no": [] }
+            ],
+            "variants": {
+                "f1_25": {
+                    "dial": "f1_25",
+                    "remove": ["bar_b"],
+                    "add": [
+                        { "kind": "sprite", "id": "bar_a", "sprite": "bar", "at": [0, 4], "replace": "bar_a" },
+                        { "kind": "sprite", "id": "plate", "sprite": "bar", "before": "base" },
+                        { "kind": "group", "id": "pill", "after": "energy", "children": [
+                            { "kind": "sprite", "id": "pill_idle", "sprite": "lamp" },
+                            { "kind": "sprite", "id": "pill_live", "sprite": "lamp" } ] },
+                        { "kind": "sprite", "id": "tail", "sprite": "lamp" }
+                    ],
+                    "decisions": [
+                        { "id": "drs", "type": "mvcd", "game": "drs_pit_state", "initial": "invalid",
+                          "states": { "invalid": ["pill_idle"], "drs_live": ["pill_live"] } }
+                    ],
+                    "root_y": 16
+                }
+            }
+        })
+    }
+
+    fn top_ids(r: &HudElement) -> Vec<&str> {
+        ids(&r.elements)
+    }
+
+    #[test]
+    fn a_variant_places_its_adds_and_a_removed_or_replaced_id_is_free_in_it() {
+        let r = HudElement::parse(&layered()).unwrap();
+        assert_eq!(top_ids(&r), ["base", "energy", "lamp"]);
+        let v = r.with_variant("f1_25").unwrap();
+        assert_eq!(top_ids(&v), ["plate", "base", "energy", "pill", "lamp", "tail"]);
+        let energy = &v.elements[2];
+        assert_eq!(ids(&energy.children), ["bar_a"]);
+        assert_eq!(energy.children[0].at, Some([0.0, 4.0]));
+        assert!(
+            v.elements
+                .iter()
+                .all(|e| e.replace.is_none() && e.before.is_none() && e.after.is_none())
+        );
+        assert_eq!(ids(&v.elements[3].children), ["pill_idle", "pill_live"]);
+        let mut bad = layered();
+        bad["variants"]["f1_25"]["add"][0]["replace"] = serde_json::Value::Null;
+        let e = HudElement::parse(&bad).unwrap_err().to_string();
+        assert!(
+            e.contains("variant f1_25") && e.contains("bar_a is used twice"),
+            "{e}"
+        );
+        let mut bad = layered();
+        bad["variants"]["f1_25"]["add"][1]["before"] = "bar_b".into();
+        let e = HudElement::parse(&bad).unwrap_err().to_string();
+        assert!(
+            e.contains("variant f1_25") && e.contains("before names bar_b"),
+            "{e}"
+        );
+        let mut bad = layered();
+        bad["variants"]["f1_25"]["add"][1]["after"] = "base".into();
+        let e = HudElement::parse(&bad).unwrap_err().to_string();
+        assert!(e.contains("one placement, not two"), "{e}");
+        let mut bad = layered();
+        bad["elements"][2]["after"] = "base".into();
+        let e = HudElement::parse(&bad).unwrap_err().to_string();
+        assert!(e.contains("place a variant's add entries only"), "{e}");
+    }
+
+    #[test]
+    fn a_variant_carries_its_own_decisions_and_root_y() {
+        let r = HudElement::parse(&layered()).unwrap();
+        assert_eq!(r.decisions.len(), 1);
+        assert_eq!(r.root_y, None);
+        let v = r.with_variant("f1_25").unwrap();
+        assert_eq!(
+            v.decisions.iter().map(|d| d.id.as_str()).collect::<Vec<_>>(),
+            ["mode", "drs"]
+        );
+        assert_eq!(v.root_y, Some(16.0));
+        assert_eq!(
+            v.decisions[1].initial_targets().collect::<Vec<_>>(),
+            [&"pill_idle".to_owned()]
+        );
+        let mut bad = layered();
+        bad["variants"]["f1_25"]["decisions"][0]["states"]["drs_live"] = serde_json::json!(["bar_b"]);
+        let e = HudElement::parse(&bad).unwrap_err().to_string();
+        assert!(
+            e.contains("variant f1_25") && e.contains("bar_b, which is no element"),
+            "{e}"
+        );
+        let mut bad = layered();
+        bad["decisions"][0]["yes"] = serde_json::json!(["pill_idle"]);
+        let e = HudElement::parse(&bad).unwrap_err().to_string();
+        assert!(
+            e.contains("decision mode shows pill_idle, which is no element"),
+            "{e}"
+        );
+        let mut bad = layered();
+        bad["variants"]["f1_25"]["decisions"][0]["id"] = "mode".into();
+        let e = HudElement::parse(&bad).unwrap_err().to_string();
+        assert!(
+            e.contains("variant f1_25") && e.contains("decision id mode is used twice"),
+            "{e}"
+        );
+        let mut same = layered();
+        same["variants"]["f1_25"]["add"][3] =
+            serde_json::json!({ "kind": "sprite", "id": "lamp", "sprite": "bar", "replace": "lamp" });
+        let v = HudElement::parse(&same).unwrap().with_variant("f1_25").unwrap();
+        assert_eq!(
+            v.decisions[0].yes,
+            ["lamp"],
+            "a same-id replacement stays a target"
+        );
+        same["variants"]["f1_25"]["add"][3]["id"] = "lamp2".into();
+        let v = HudElement::parse(&same).unwrap().with_variant("f1_25").unwrap();
+        assert!(v.decisions[0].yes.is_empty(), "a replaced id leaves the decision");
+        let mut tower = layered();
+        tower["units"] = "tower".into();
+        tower["root_y"] = 6.into();
+        let t = HudElement::parse(&tower).unwrap();
+        let f = 0.03 / 0.018;
+        assert!((t.root_y.unwrap() - 6.0 * f).abs() < 1e-9);
+        assert!((t.with_variant("f1_25").unwrap().root_y.unwrap() - 16.0 * f).abs() < 1e-9);
+    }
+
+    #[test]
+    fn initial_names_a_state_of_its_decision() {
+        let r = HudElement::parse(&layered()).unwrap();
+        assert_eq!(r.decisions[0].initial_targets().count(), 0);
+        let mut v = layered();
+        v["decisions"][0]["initial"] = "yes".into();
+        let r = HudElement::parse(&v).unwrap();
+        assert_eq!(
+            r.decisions[0].initial_targets().collect::<Vec<_>>(),
+            [&"lamp".to_owned()]
+        );
+        v["decisions"][0]["initial"] = "maybe".into();
+        let e = HudElement::parse(&v).unwrap_err().to_string();
+        assert!(e.contains("initial names one of its states (yes or no)"), "{e}");
+        let mut v = layered();
+        v["variants"]["f1_25"]["decisions"][0]["initial"] = "pit_live".into();
+        let e = HudElement::parse(&v).unwrap_err().to_string();
+        assert!(
+            e.contains("initial names one of its states (drs_live, invalid)"),
+            "{e}"
+        );
     }
 }

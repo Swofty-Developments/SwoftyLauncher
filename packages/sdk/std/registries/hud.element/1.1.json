@@ -151,6 +151,10 @@
       "description": "The customisation footprint in HUD units, [x0, y0, x1, y1]. Absent: the bounds of the sprite named base, or of every sprite.",
       "$ref": "#/$defs/rect"
     },
+    "root_y": {
+      "description": "Where the record's root lands, in the record's units, v down from the dial centre (a root at 16 sits 16 units below the centre; the elements' at are relative to it). Absent: the bottom of box lands on the stock bottom customisation point of each dial.",
+      "type": "number"
+    },
     "prefix": {
       "description": "The start of every element and template node name the record adds. Absent: the addon id and the record key, lowercase, with _ between words.",
       "type": "string",
@@ -335,7 +339,19 @@
         "fill_sprite": { "type": "string" },
         "pivot": { "$ref": "#/$defs/point" },
         "start": { "type": "number" },
-        "arc": { "type": "array", "items": { "$ref": "#/$defs/point" }, "minItems": 2 }
+        "arc": { "type": "array", "items": { "$ref": "#/$defs/point" }, "minItems": 2 },
+        "before": {
+          "description": "A variant's add entries only: the id of an element of the base this one is drawn in front of (it goes just before it in the same list). Absent, with no after or replace: the entry goes last at the top level.",
+          "type": "string"
+        },
+        "after": {
+          "description": "A variant's add entries only: the id of an element of the base this one goes just behind, in the same list.",
+          "type": "string"
+        },
+        "replace": {
+          "description": "A variant's add entries only: the id of an element of the base this one takes the place of. The replaced id is free inside the variant, so the entry may reuse it.",
+          "type": "string"
+        }
       },
       "required": ["id", "kind"],
       "additionalProperties": false
@@ -354,7 +370,12 @@
           "additionalProperties": { "type": "array", "items": { "type": "string" } }
         },
         "yes": { "type": "array", "items": { "type": "string" } },
-        "no": { "type": "array", "items": { "type": "string" } }
+        "no": { "type": "array", "items": { "type": "string" } },
+        "initial": {
+          "description": "The state (an mvcd) or yes / no (an svcd) whose elements start shown: their template nodes default to visible, so they are on screen until the value first fires. Absent: every listed element starts hidden.",
+          "type": "string",
+          "minLength": 1
+        }
       },
       "required": ["id", "type", "game"],
       "additionalProperties": false
@@ -384,7 +405,20 @@
         "dial": { "enum": ["f1_26", "f1_25", "f2"] },
         "switch": { "$ref": "#/$defs/bind" },
         "remove": { "type": "array", "items": { "type": "string" } },
-        "add": { "type": "array", "items": { "$ref": "#/$defs/element" } }
+        "add": {
+          "description": "Elements this dial adds; an entry with before, after or replace keeps its place in the draw order, the others go last at the top level.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/element" }
+        },
+        "decisions": {
+          "description": "Decisions built for this variant's dial only, after the record's; they may show the variant's own add elements.",
+          "type": "array",
+          "items": { "$ref": "#/$defs/decision" }
+        },
+        "root_y": {
+          "description": "This variant's root y, over the record's.",
+          "type": "number"
+        }
       },
       "required": ["dial"],
       "additionalProperties": false
