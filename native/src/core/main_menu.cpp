@@ -57,8 +57,9 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 // layout; only single (one spawner, tile order) exists so far, and rows is logged as not built.
 // SWOFTY_MAIN_MENU_ENTRY=chain opens the pickers the old way (home_to_activity, then the command 900 ms after
 // the container is up); SWOFTY_MAIN_MENU_BACK=stock|home|twostep picks the game's Back, its home route or the two-step
-// hub Back instead of the launcher's routes; SWOFTY_MAIN_MENU_GPSAVES=0 opens the new Grand Prix picker instead of the
-// game's Grand Prix saves screen (which lists saved seasons, offers New Grand Prix and selects the save slot);
+// hub Back instead of the launcher's routes; SWOFTY_MAIN_MENU_GPSAVES=1 opens the game's Grand Prix saves screen (which
+// lists saved seasons, offers New Grand Prix and selects the save slot) instead of the new Grand Prix picker: raised from
+// the home screen, the screen's slot list crashes the game (Game_CareerContinue_ListSlots) for many players, so it is off;
 // SWOFTY_MAIN_MENU_RETURN=0 leaves the session-end hand-over on the bare container; SWOFTY_MAIN_MENU_RECOVER=0 turns
 // the recovery of a screen that did not open off; SWOFTY_MAIN_MENU_STATEFIX=0 leaves #ui_menu_data.frontend_transition_state
 // alone when leaving the container; SWOFTY_MAIN_MENU_MIGRATELOG=0 leaves the Migrate command unhooked.
@@ -832,7 +833,7 @@ Action *card_action(HomeItem *item, Action *out)
     if (entry_by_route()) {
         if (gp)
             gp_saves_probe();
-        logic::Mode m = gp ? logic::grand_prix_mode(!off("SWOFTY_MAIN_MENU_GPSAVES")) : logic::Mode::time_trial;
+        logic::Mode m = gp ? logic::grand_prix_mode(!std::strcmp(env("SWOFTY_MAIN_MENU_GPSAVES"), "1")) : logic::Mode::time_trial;
         nav.mode = int(m);
         nav.return_armed = false;
         route = logic::press_route(m);
@@ -1076,7 +1077,7 @@ void start_chain(bool time_trial)
     chain.step = Step::wait_container;
     if (!time_trial)
         gp_saves_probe();
-    logic::Mode m = time_trial ? logic::Mode::time_trial : logic::grand_prix_mode(!off("SWOFTY_MAIN_MENU_GPSAVES"));
+    logic::Mode m = time_trial ? logic::Mode::time_trial : logic::grand_prix_mode(!std::strcmp(env("SWOFTY_MAIN_MENU_GPSAVES"), "1"));
     nav.mode = int(m);
     chain.command = logic::return_command(m);
     chain.started = GetTickCount64();
