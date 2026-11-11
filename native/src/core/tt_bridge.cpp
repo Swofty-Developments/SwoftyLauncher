@@ -2032,6 +2032,18 @@ void on_link(uint8_t *node, uint32_t *link)
         // The viewer's own leave link ends the session (through the post-session group's last state to Exit) instead of going back to the results.
         *link = LINK_LEAVE;
         swofty::log("[replay] viewer exit: state %08x leaves the session by link %08x", hash, *link);
+        // The session state only unloads once the game mode says where to go next. A Time Trial says so once, at session enter, and the
+        // replay load's change of the current mode clears it again; the mode's own setter (vtable +0x1f0) says "front end" once more.
+        uint64_t holder = peek64(reinterpret_cast<uint64_t>(node) + 0xca0), session = holder && runtime::readable(reinterpret_cast<void *>(holder), 0x90) ? peek64(holder + 0x88) : 0;
+        uint64_t mode = session && runtime::readable(reinterpret_cast<void *>(session), 0x268) ? peek64(session + 0x260) : 0;
+        uint64_t vt = mode && runtime::readable(reinterpret_cast<void *>(mode), 8) ? peek64(mode) : 0;
+        bool known = vt == swofty::api->module_base() + 0x5648300;
+        uint64_t gm = known && runtime::readable(reinterpret_cast<void *>(mode + 0xf40), 8) ? peek64(mode + 0xf40) : 0;
+        uint32_t before = gm && runtime::readable(reinterpret_cast<void *>(gm + 0x1fc), 4) ? peek32(gm + 0x1fc) : 0xffffffff;
+        if (known)
+            reinterpret_cast<void (*)(uint64_t)>(peek64(vt + 0x1f0))(mode);
+        swofty::log("[replay] viewer exit: game mode 0x%llx (vtable base+0x%llx, %s): where-to-next %u > %u", (unsigned long long)mode, (unsigned long long)(vt ? vt - swofty::api->module_base() : 0),
+                    known ? "Time Trial" : "not the Time Trial mode, left alone", before, gm ? peek32(gm + 0x1fc) : 0xffffffffu);
         trace_until = now + 60000;
         stage = off;
         route.clear();
