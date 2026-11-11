@@ -400,18 +400,22 @@ std::vector<gp_track::Source> track_sources()
             table.rows = track_labels;
         }
     }
+    // A dormant stock row that an older track or a track record fills is a live track: only stock rows count as dormant.
+    std::set<int> filled;
     if (b.ready)
         for (const tracks::BaseTrack &t : b.tracks)
             if (t.stat_id >= 0 && t.stat_id < 0xff) {
                 base.rows[t.stat_id] = t.code;
-                if (tracks::is_dormant(t.code)) {
+                if (t.kind != tracks::Kind::stock)
+                    filled.insert(t.stat_id);
+                else if (tracks::is_dormant(t.code)) {
                     base.dormant.insert(t.stat_id);
                     table.dormant.insert(t.stat_id);
                 }
             }
     for (const char *d : tracks::DORMANT)
         for (auto &[id, label] : table.rows)
-            if (label == d)
+            if (label == d && !filled.count(id))
                 table.dormant.insert(id);
     if (b.ready)
         for (const std::string &d : b.dormant)
