@@ -300,7 +300,10 @@ bool load_request(const std::wstring &play, Request &out, std::string &why)
     out.team = req.team;
     out.meta = req;
     out.read_unix = int64_t(time(nullptr));
-    std::string bytes = runtime::read_file(runtime::wide(out.path), size_t(64) << 20);
+    // A bare file name is a file next to play.json; the launcher cannot know the game's view of an absolute path.
+    bool bare = out.path.find_first_of(":/\\") == std::string::npos;
+    std::wstring file = bare ? ghost_dir() + runtime::wide(out.path) : runtime::wide(out.path);
+    std::string bytes = runtime::read_file(file, size_t(64) << 20);
     if (bytes.empty()) {
         why = "the lap file is missing or empty";
         return false;
