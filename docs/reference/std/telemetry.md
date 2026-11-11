@@ -345,11 +345,11 @@ The game's UDP output still has to be on for the 2024 and 2025 names, temperatur
 
 ## Memory source
 
-A group reads from memory only when every site it needs resolves on the running build and its knowledge-base rows are verified; on any other build, such as the EA build until its bindings exist, it stays off and UDP fills the fields as before. A site resolves only when the generated bindings export it, which they do for a row that is L2 or better with an independent `agree`, and a struct field counts as verified when the generated game headers declare it. `swofty/loader.log` says which:
+A group reads from memory only when every site it needs resolves on the running build, its knowledge-base rows are verified and its layout is proven for that build. Both the Steam build and the EA App build qualify for the groups in [When a group reads](./live#when-a-group-reads); on any other build every group stays off and UDP fills the fields as before. A site resolves only when the generated bindings export it, which they do for a row that is L2 or better with an independent `agree`, and a struct field counts as verified when the generated game headers declare it. `swofty/loader.log` says which:
 
 ```text
-[live] on
-[live] classification off: k_Live_SessionSystemKey does not resolve (no agree row exports it yet)
+[live] on (EA build): groups car systems, ers, progress, classification, timing, pit, penalties, flags, controllers, spectator, track, bus events
+[live] classification off on the EA build: k_Live_SessionSystemKey does not resolve in this build's bindings
 [live] tyres off: TyreSystem per-vehicle vector and the visual record have no KB row (SWOFTY_LIVE_FORCE=1 reads it unverified)
 ```
 

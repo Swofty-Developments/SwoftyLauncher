@@ -78,12 +78,15 @@ if (c && !live::has(*c, SWOFTY_LIVE_HAVE_SPEED))
     ; // the speed read failed for this car this frame: draw nothing
 ```
 
-A call answers empty while no session is live, on a core without the live state, on a build whose layouts the core was not made for, and for a group that is not verified for the running build. The core logs each group it leaves off once:
+A call answers empty while no session is live, on a core without the live state, on a build whose layouts the core has no proof for, and for a group that is not verified for the running build. The core logs the groups it turned on and each group it leaves off once:
 
 ```text
-[live] on
-[live] tyres off: needs a verified KB row (SWOFTY_LIVE_FORCE=1 reads it unverified)
-[live] badges off: a site that does not resolve
+[live] on (EA build): groups car systems, ers, progress, classification, timing, pit, penalties, flags, controllers, spectator, track, bus events
+[live] tyres off: TyreSystem per-vehicle vector and the visual record have no KB row (SWOFTY_LIVE_FORCE=1 reads it unverified)
+[live] badges off: EntrantsSystem team table chain has no KB row (SWOFTY_LIVE_FORCE=1 reads it unverified)
+[live] timing off on the EA build: k_Live_RelativeGapHelperKey does not resolve in this build's bindings
+[live] pit lane off on the EA build: its layout is not proven there (SWOFTY_LIVE_FORCE=1 reads it anyway)
+[live] off: build 1234567890 has no proven live layouts (Steam 1789118616, EA 1789128892)
 ```
 
 ## car
@@ -252,7 +255,18 @@ assert(swofty::live::order().ahead(0)->vehicle == 1);
 
 The core reads each group (car systems, ERS, progress, classification, timing, pit, pit lane, penalties, tyres, flags, controllers, spectator, game mode, track and the game's message bus) only when every site it needs resolves on the running build and its KB rows are verified. The two tests are the same one: the generated bindings export a site only for a row that is L2 or better with an independent `agree`, and the generated game headers declare a struct field under the same rule, so a group turns on by itself when its rows land and the headers are regenerated. The offsets the reader uses are tied to the generated structs with `static_assert`s, so a header that declares a field somewhere else fails the build.
 
-On a build whose sites do not resolve, such as the EA build until its bindings exist, the group stays off and the calls answer empty. A group with any site that does not resolve stays off even with `SWOFTY_LIVE_FORCE=1`, which reads the groups whose sites resolve without waiting for verification; use it on a test machine to produce the evidence that verifies them, together with `SWOFTY_TELEMETRY_VERIFY=1` (see [Telemetry](./telemetry#memory-source)).
+A group also needs its layout proven for the running build. The Steam build is the one the knowledge base describes. The EA App build (PE timestamp 1789128892) runs the groups in the table below, because each struct field they read was compared against the Steam code that reads it, and every site they need resolves in the EA bindings set. A build in neither column, such as a future patch, runs no group at all.
+
+| group | Steam | EA App |
+|---|---|---|
+| car systems, ERS, world position | yes | yes |
+| progress | yes | yes, with the game manager's progress system at `+0x2a0` instead of `+0x2d0` |
+| classification, timing, pit, penalties, flags, controllers, spectator, track | yes | yes |
+| bus events (collision, retirement) | yes | yes |
+| DRS bit | with `SWOFTY_LIVE_FORCE=1` | with `SWOFTY_LIVE_FORCE=1`, layout proven |
+| tyres, game mode, team badges, track name, spectator gap, pit lane | with `SWOFTY_LIVE_FORCE=1` | with `SWOFTY_LIVE_FORCE=1`; the game manager moved its fields above `+0x240` by `-0x30` on EA, so the mode and badge chains need their own proof there |
+
+A group that is yes still waits for its rows, as above. A group with any site that does not resolve stays off even with `SWOFTY_LIVE_FORCE=1`, which reads the groups whose sites resolve without waiting for verification, and on EA also without waiting for the layout proof; use it on a test machine to produce the evidence that verifies them, together with `SWOFTY_TELEMETRY_VERIFY=1` (see [Telemetry](./telemetry#memory-source)).
 
 The player car comes from the controller system (the car whose active controller is the human one); `CarLive.is_ai` selects the physics rate and reads 1 for every car in a grid snapshot, so it is not used to find the player. With the controllers group off the player is unknown (`player` is -1) until it is.
 
