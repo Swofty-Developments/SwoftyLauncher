@@ -1217,6 +1217,12 @@ inline const char *account_state_name(unsigned v)
     return v < sizeof names / sizeof *names ? names[v] : "unknown";
 }
 
+// The account-state error handler raises a popup route only for 8 (ea_account_login_error) and 9 (the Platform Client
+// Overlay popup); with the bridge on those two, and 2 (server not accessible, the offline copies' state), are not shown.
+// 10 (a hostile session, seen on the EA app copy) runs the stock handler: it sets #ui_menu_data.online_services.error_code,
+// which is how the online-services screen (Time Trial's "checking privileges") learns the check failed and leaves.
+inline bool account_error_quiet(bool bridge_on, unsigned state) { return bridge_on && (state == 2 || state == 8 || state == 9); }
+
 }
 
 }

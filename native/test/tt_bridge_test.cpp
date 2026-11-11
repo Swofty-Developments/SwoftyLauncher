@@ -569,6 +569,14 @@ int main()
         s.presence_ok = tb::gate::presence_ok(1, 7);
         expect(tb::gate::first_failure(s) == tb::gate::Why::presence && !tb::gate::presence_ok(3, 0), "presence needs both flag bits and a user");
         expect(std::string(tb::gate::account_state_name(9)) == "eEAAccountSteamOverlayDisabled" && std::string(tb::gate::account_state_name(99)) == "unknown", "account state names");
+        expect(tb::gate::account_error_quiet(true, 8) && tb::gate::account_error_quiet(true, 9) && tb::gate::account_error_quiet(true, 2),
+               "with the bridge on the login error and overlay popups, and server not accessible, are not shown");
+        expect(!tb::gate::account_error_quiet(true, 10),
+               "a hostile session runs the game's handler, which sets the online-services error code the privilege check waits for");
+        expect(!tb::gate::account_error_quiet(true, 4) && !tb::gate::account_error_quiet(true, 5) && !tb::gate::account_error_quiet(true, 7) && !tb::gate::account_error_quiet(true, 3) &&
+                   !tb::gate::account_error_quiet(true, 6) && !tb::gate::account_error_quiet(true, 0) && !tb::gate::account_error_quiet(true, 1) && !tb::gate::account_error_quiet(true, 99),
+               "the states Steam copies hit and every other state are left to the game");
+        expect(!tb::gate::account_error_quiet(false, 8) && !tb::gate::account_error_quiet(false, 9), "with the bridge off nothing is quiet");
     }
 
     // log cap and kill switch

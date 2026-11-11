@@ -753,11 +753,11 @@ void account_error_mid(safetyhook::Context &c)
     unsigned state = *reinterpret_cast<uint8_t *>(c.rcx + 0x1b8);
     if (state == 0 || state == 1 || state == 7)
         return;
-    bool quiet = bridge_on && (state == 2 || state == 8 || state == 9 || state == 10);
+    bool quiet = tb::gate::account_error_quiet(bridge_on, state);
     if (diag_on && ++diag_error_logged <= 16)
         swofty::log("[boards] diag: account-state error handler: state %u %s%s%s; backtrace %s", state, tb::gate::account_state_name(state),
-                    state == 9 ? " (the Platform Client Overlay popup)" : "", quiet ? "; no popup: the offline launcher's content does not need the account service" : "",
-                    backtrace_text(1, 6).c_str());
+                    state == 9 ? " (the Platform Client Overlay popup)" : "",
+                    quiet ? "; no popup: the offline launcher's content does not need the account service" : "; the game's handler runs", backtrace_text(1, 6).c_str());
     else if (quiet && ++quiet_logged <= 4)
         swofty::log("[boards] account-state error handler: state %u %s: its popup is not shown for this content (the leaderboard and ghosts use the bridge)", state,
                     tb::gate::account_state_name(state));
