@@ -124,8 +124,8 @@ pub struct Config {
     /// Upload completed Time Trial laps to the Swofty leaderboards while signed in; on unless turned off.
     #[serde(default = "on", skip_serializing_if = "is_on")]
     pub time_trial_boards: bool,
-    /// Show the Swofty boards and rival ghosts inside Time Trial for addon seasons; off unless turned on.
-    #[serde(default, skip_serializing_if = "std::ops::Not::not")]
+    /// Show the Swofty boards and rival ghosts inside Time Trial; on unless turned off.
+    #[serde(default = "on", skip_serializing_if = "is_on")]
     pub time_trial_ingame: bool,
 }
 
@@ -1003,15 +1003,20 @@ mod tests {
     }
 
     #[test]
-    fn time_trial_ingame_is_off_unless_turned_on() {
-        assert!(!Config::default().time_trial_ingame);
-        let on = Config {
-            time_trial_ingame: true,
+    fn time_trial_ingame_is_on_unless_turned_off() {
+        assert!(Config::default().time_trial_ingame);
+        assert!(
+            !serde_json::to_string(&Config::default())
+                .unwrap()
+                .contains("time_trial_ingame")
+        );
+        let off = Config {
+            time_trial_ingame: false,
             ..Config::default()
         };
-        let json = serde_json::to_string(&on).unwrap();
-        assert!(json.contains(r#""time_trial_ingame":true"#));
-        assert!(serde_json::from_str::<Config>(&json).unwrap().time_trial_ingame);
+        let json = serde_json::to_string(&off).unwrap();
+        assert!(json.contains(r#""time_trial_ingame":false"#));
+        assert!(!serde_json::from_str::<Config>(&json).unwrap().time_trial_ingame);
     }
 
     #[test]
