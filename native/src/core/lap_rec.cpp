@@ -22,15 +22,25 @@
 #include <swofty/systems/laps.hpp>
 
 #include <atomic>
+#include <chrono>
 #include <cmath>
+#include <condition_variable>
 #include <cstring>
+#include <deque>
 #include <map>
 #include <mutex>
+#include <thread>
 
 // The lap recorder: in a Time Trial, while swofty\tt.json carries "tt_boards": true, the flow tick samples the
 // player's car and the line crossings of ers_newlap.cpp (session.lap) cut it into laps; each completed lap is written
 // to swofty\laps\<UTC stamp>-<n>.swlap (lap_file_logic.hpp). The state machine is lap_rec_logic.hpp. Crossings are
-// queued and handled on the next flow tick, so file writing and the game reads stay on the flow thread.
+// queued and handled on the next flow tick, so the game reads stay on the flow thread. The flow tick runs several
+// times a frame; the car is read only when the recorder is due a sample (60 Hz), under a Trust so the heap checks are
+// paid once per HEAP_TRUST_MS, and the inbox is drained only when a crossing, a game result or a blob is waiting.
+// The board (content, track) and the player's team label are read once per session, during the out-lap, never at
+// the line. At the line the flow thread builds the file header from state it already has and hands the samples to
+// one writer thread, which builds the file, runs laps.sealing and writes it; the completions (the bridge's
+// lap_finished, laps.recorded) come back through an Outbox and fire from the flow tick in lap order.
 // lap_result() decides the lap time: the game's own lap record when the hook below delivered one, else the clock.
 // With the game hooks armed a completed lap waits up to two seconds for the game's lap result and, on a valid lap, for
 // the ghost blob the game commits on a personal best (lap_game_logic.hpp, Sealer); with them off the lap is written at
@@ -96,16 +106,48 @@ struct LapResult {
 std::mutex lock;
 std::atomic<bool> active{false};
 std::atomic<int> player_car{-1};
+std::atomic<bool> inbox{false};
+std::atomic<bool> finished_waiting{false};
 lr::Recorder recorder;
 std::vector<Pending> queued;
 lr::Gate gate;
 bool is_time_trial = false;
 bool planned = false;
 lr::Plan plan;
+std::vector<uint8_t> sample_buf;
 Board board;
+Board session_board;
+bool have_session_board = false;
+std::string session_team;
+bool have_session_team = false;
+double next_board_try_s = 0;
+bool last_has_wetness = false;
+float last_wetness = 0;
 std::string started_utc;
 lr::Sealer sealer;
+lr::Outbox outbox;
 std::map<uint32_t, LapContext> contexts;
+
+struct Job {
+    lf::Header header;
+    lf::Layout layout;
+    std::vector<uint8_t> samples;
+    uint32_t count = 0;
+    std::vector<uint8_t> ghost;
+    std::wstring path;
+    std::string name, narrow_path;
+    Board board;
+    uint32_t index = 0;
+    int64_t time_ms = 0;
+    int valid = -1;
+    const char *source = "clock";
+};
+
+std::mutex work_lock;
+std::condition_variable work_cv;
+std::deque<Job> jobs;
+size_t in_flight = 0;
+bool worker_up = false;
 struct AssistReading {
     runtime::lap_assists::Raw raw;
     int device = -1, performance = -1;
@@ -252,8 +294,10 @@ void fill(uint8_t *sample, const live_car::LiveCar &c, const live_car::LiveDynam
     }
 }
 
-Board snapshot(const live_car::LiveCar &c)
+// The session's content and track: a walk of the game's mode objects, read once per session.
+Board session_snapshot()
 {
+    mem::Trust trust(runtime::HEAP_TRUST_MS);
     Board b;
     auto facts = swofty_core::hooks::core().current();
     b.content = facts && !facts->content.empty() ? facts->content : "game/f1_2025";
@@ -264,7 +308,40 @@ Board snapshot(const live_car::LiveCar &c)
     b.track_name = t.name;
     b.track_addon = t.addon;
     b.track_kind = t.kind;
-    b.weather = lr::weather_of(c.has_wetness, c.wetness);
+    return b;
+}
+
+// Reads the board and the team label once; a session whose track is not known yet is asked again later.
+void resolve_session(double now)
+{
+    if (have_session_board && have_session_team)
+        return;
+    if (now < next_board_try_s)
+        return;
+    next_board_try_s = now + 1.0;
+    if (!have_session_board) {
+        Board b = session_snapshot();
+        std::lock_guard<std::mutex> g(lock);
+        session_board = std::move(b);
+        have_session_board = !session_board.track.empty();
+    }
+    if (!have_session_team) {
+        mem::Trust trust(runtime::HEAP_TRUST_MS);
+        std::string team = runtime::direct_start::tt::player_team();
+        std::lock_guard<std::mutex> g(lock);
+        session_team = std::move(team);
+        have_session_team = !session_team.empty();
+    }
+}
+
+Board board_now(bool force)
+{
+    if (force) {
+        next_board_try_s = 0;
+        resolve_session(now_seconds());
+    }
+    Board b = session_board;
+    b.weather = lr::weather_of(last_has_wetness, last_wetness);
     return b;
 }
 
@@ -288,6 +365,110 @@ int32_t add_section(void *user, const char *tag, const void *bytes, uint32_t len
 lr::ExtrasFrom read_extras(lr::GameLap &g);
 void log_extras(unsigned lap, const char *when, const lr::GameLap &g, const lr::ExtrasFrom &from);
 
+void write_job(Job &j)
+{
+    LARGE_INTEGER t0, t1, f;
+    QueryPerformanceCounter(&t0);
+    std::vector<uint8_t> body = lf::build(j.header, j.layout, j.samples.data(), j.count, j.ghost, {});
+    body.resize(body.size() - 8);
+
+    Seal seal;
+    swofty::laps::events::Sealing ev{};
+    ev.path_str = j.narrow_path.c_str();
+    ev.time_ms = int32_t(j.time_ms);
+    ev.body = body.data();
+    ev.body_len = uint32_t(body.size());
+    ev.add_section_fn = add_section;
+    ev.user = &seal;
+    swofty_core::hooks::events::laps_sealing(ev);
+
+    for (auto &s : seal.sections)
+        lf::append_section(body, s.tag, s.bytes.data(), s.bytes.size());
+    lf::append_section(body, "END\0", nullptr, 0);
+
+    lr::Finished done;
+    done.index = j.index;
+    done.path = j.narrow_path;
+    done.time_ms = j.time_ms;
+    done.valid = j.valid;
+    done.ok = runtime::write_file(j.path, std::string(body.begin(), body.end()));
+    if (!done.ok)
+        swofty::log("[laps] writing %s failed", j.name.c_str());
+    else {
+        QueryPerformanceCounter(&t1);
+        QueryPerformanceFrequency(&f);
+        const Board &b = j.board;
+        swofty::log("[laps] wrote %s lap %lld ms (%s), %u samples, ghost %zu bytes, board %s|%s|%s%s", j.name.c_str(),
+                    (long long)j.time_ms, j.source, j.count, j.ghost.size(), b.content.c_str(),
+                    b.track.empty() ? "unknown" : b.track.c_str(), b.weather.empty() ? "unknown" : b.weather.c_str(),
+                    b.track_kind.empty() ? "" : (", custom track (" + b.track_kind + " from " + b.track_addon + ")").c_str());
+        swofty::log("[laps] lap %u: %zu bytes, built and written in %.1f ms on the writer thread", j.index, body.size(),
+                    1000.0 * double(t1.QuadPart - t0.QuadPart) / double(f.QuadPart));
+    }
+    std::lock_guard<std::mutex> g(lock);
+    outbox.complete(std::move(done));
+    finished_waiting = true;
+}
+
+void worker_main()
+{
+    for (;;) {
+        Job j;
+        {
+            std::unique_lock<std::mutex> g(work_lock);
+            work_cv.wait(g, [] { return !jobs.empty(); });
+            j = std::move(jobs.front());
+            jobs.pop_front();
+        }
+        write_job(j);
+        {
+            std::lock_guard<std::mutex> g(work_lock);
+            in_flight--;
+        }
+        work_cv.notify_all();
+    }
+}
+
+void post(Job j)
+{
+    std::lock_guard<std::mutex> g(work_lock);
+    jobs.push_back(std::move(j));
+    in_flight++;
+    if (!worker_up) {
+        worker_up = true;
+        std::thread(worker_main).detach();
+    }
+    work_cv.notify_all();
+}
+
+bool wait_idle(uint32_t ms)
+{
+    std::unique_lock<std::mutex> g(work_lock);
+    return work_cv.wait_for(g, std::chrono::milliseconds(ms), [] { return in_flight == 0; });
+}
+
+// The completions the writer thread posted, in lap order, fired on the flow thread.
+void deliver()
+{
+    if (!finished_waiting.load(std::memory_order_relaxed))
+        return;
+    std::vector<lr::Finished> ready;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        ready = outbox.ready();
+        finished_waiting = outbox.completed() > 0;
+    }
+    for (auto &d : ready) {
+        if (!d.ok)
+            continue;
+        written++;
+        runtime::tt_bridge_lap_finished(d.time_ms, d.valid);
+        swofty_core::hooks::events::laps_recorded(d.path.c_str(), int32_t(d.time_ms), d.valid);
+    }
+}
+
+// On the flow thread: the header from state already in hand and the one late game read, then the samples go to
+// the writer thread.
 void finish(lr::Sealed &sealed, const LapContext &ctx)
 {
     LARGE_INTEGER t0, t1, f;
@@ -350,7 +531,7 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
         h.driver = facts->player->driver;
     }
     if (h.team.empty()) {
-        h.team = runtime::direct_start::tt::player_team();
+        h.team = session_team;
         if (!h.team.empty())
             swofty::log("[laps] lap %u: car team label %s from the player's entrant selection", lap.index, h.team.c_str());
     }
@@ -388,48 +569,33 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
         }
     }
 
-    std::vector<uint8_t> body = lf::build(h, plan.layout, lap.samples.data(), lap.count, sealed.ghost, {});
-    body.resize(body.size() - 8);
-
     SYSTEMTIME st;
     utc_now(&st);
     std::wstring dir = runtime::swofty_root() + L"laps\\";
     CreateDirectoryW(dir.c_str(), nullptr);
-    std::string name =
-        lr::file_name(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, lap.index);
-    std::wstring path = dir + runtime::wide(name);
-    std::string narrow_path = runtime::narrow(path);
-
-    Seal seal;
-    swofty::laps::events::Sealing ev{};
-    ev.path_str = narrow_path.c_str();
-    ev.time_ms = int32_t(r.time_ms);
-    ev.body = body.data();
-    ev.body_len = uint32_t(body.size());
-    ev.add_section_fn = add_section;
-    ev.user = &seal;
-    swofty_core::hooks::events::laps_sealing(ev);
-
-    for (auto &s : seal.sections)
-        lf::append_section(body, s.tag, s.bytes.data(), s.bytes.size());
-    lf::append_section(body, "END\0", nullptr, 0);
-
-    if (!runtime::write_file(path, std::string(body.begin(), body.end()))) {
-        swofty::log("[laps] writing %s failed", name.c_str());
-        return;
+    Job j;
+    j.name = lr::file_name(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, lap.index);
+    j.path = dir + runtime::wide(j.name);
+    j.narrow_path = runtime::narrow(j.path);
+    j.header = std::move(h);
+    j.layout = plan.layout;
+    j.samples = std::move(lap.samples);
+    j.count = lap.count;
+    j.ghost = std::move(sealed.ghost);
+    j.board = b;
+    j.index = lap.index;
+    j.time_ms = r.time_ms;
+    j.valid = r.valid ? (*r.valid ? 1 : 0) : -1;
+    j.source = r.source;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        outbox.expect(lap.index);
     }
+    post(std::move(j));
     QueryPerformanceCounter(&t1);
     QueryPerformanceFrequency(&f);
-    written++;
-    swofty::log("[laps] wrote %s lap %lld ms (%s), %u samples, ghost %zu bytes, board %s|%s|%s%s", name.c_str(),
-                (long long)r.time_ms, r.source, lap.count, sealed.ghost.size(), b.content.c_str(),
-                b.track.empty() ? "unknown" : b.track.c_str(), b.weather.empty() ? "unknown" : b.weather.c_str(),
-                b.track_kind.empty() ? "" : (", custom track (" + b.track_kind + " from " + b.track_addon + ")").c_str());
-    swofty::log("[laps] lap %u: %zu bytes, built and written in %.1f ms", lap.index, body.size(),
+    swofty::log("[laps] lap %u: header built and handed to the writer thread in %.1f ms", lap.index,
                 1000.0 * double(t1.QuadPart - t0.QuadPart) / double(f.QuadPart));
-    runtime::tt_bridge_lap_finished(r.time_ms, r.valid ? (*r.valid ? 1 : 0) : -1);
-    swofty_core::hooks::events::laps_recorded(narrow_path.c_str(), int32_t(r.time_ms),
-                                              r.valid ? (*r.valid ? 1 : 0) : -1);
 }
 
 bool read_setup_now(runtime::lap_setup::Setup &out)
@@ -467,7 +633,7 @@ void release(std::vector<lr::Sealed> ready)
     }
 }
 
-void drain(const live_car::LiveCar &c)
+void drain()
 {
     std::vector<Pending> work;
     std::vector<lr::GameLap> games;
@@ -477,6 +643,7 @@ void drain(const live_car::LiveCar &c)
         work.swap(queued);
         games.swap(game_in);
         ghosts.swap(ghost_in);
+        inbox = false;
     }
     for (auto &g : games) {
         double at = g.at_s;
@@ -490,11 +657,11 @@ void drain(const live_car::LiveCar &c)
             contexts[o.lap.index] = {board, started_utc, session_clock(), lap_setup_of(o.lap.index)};
             double ended = o.lap.ended_s + o.lap.shift_s + paused_total.load();
             sealer.lap(std::move(o.lap), ended);
-            board = snapshot(c);
+            board = board_now(false);
             started_utc = utc_now();
         } else if (o.kind == lr::Outcome::started) {
             have_setup_start = read_setup_now(setup_start);
-            board = snapshot(c);
+            board = board_now(!have_session_board);
             started_utc = utc_now();
             swofty::log("[laps] timing started, board %s|%s|%s%s", board.content.c_str(),
                         board.track.empty() ? "unknown" : board.track.c_str(),
@@ -506,14 +673,6 @@ void drain(const live_car::LiveCar &c)
         }
     }
     release(sealer.poll(now_seconds()));
-}
-
-void handle(lr::Outcome o)
-{
-    if (o.kind == lr::Outcome::none)
-        return;
-    std::lock_guard<std::mutex> g(lock);
-    queued.push_back({std::move(o)});
 }
 
 lr::ExtrasFrom read_extras(lr::GameLap &g)
@@ -572,8 +731,10 @@ uint64_t report_lap(void *lap_times, void *msg)
                     g.why.c_str(), g.lap_s, g.sector_s[0], g.sector_s[1], g.sector_s[2]);
     }
     std::lock_guard<std::mutex> lk(lock);
-    if (active.load())
+    if (active.load()) {
         game_in.push_back(std::move(g));
+        inbox = true;
+    }
     return r;
 }
 
@@ -612,8 +773,10 @@ void lap_rec_ghost(uintptr_t handler)
     std::memcpy(b.bytes.data(), reinterpret_cast<const void *>(blob), size_t(size));
     swofty::log("[laps] ghost blob from the game: %llu bytes", (unsigned long long)size);
     std::lock_guard<std::mutex> lk(lock);
-    if (active.load())
+    if (active.load()) {
         ghost_in.push_back(std::move(b));
+        inbox = true;
+    }
 }
 
 void lap_rec_assists(const uint8_t *summary, size_t size, int device, int performance)
@@ -630,12 +793,23 @@ bool lap_rec_current_board(std::string &content, std::string &track, std::string
 {
     if (swofty_core::apply::moments::session_mode_track().first != "time_trial")
         return false;
+    mem::Trust trust(runtime::HEAP_TRUST_MS);
     live_car::LiveCar c;
     live_car::read(c);
-    Board b = snapshot(c);
+    Board b;
+    bool cached = false;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        if (active.load() && have_session_board) {
+            b = session_board;
+            cached = true;
+        }
+    }
+    if (!cached)
+        b = session_snapshot();
     content = b.content;
     track = b.track;
-    weather = b.weather;
+    weather = lr::weather_of(c.has_wetness, c.wetness);
     return true;
 }
 
@@ -651,8 +825,10 @@ void lap_rec_native_trace(const uint8_t *data, size_t size)
     swofty::log("[laps] native trace from the game: %zu bytes, %zu records", size, t.records.size());
     Blob b{std::vector<uint8_t>(data, data + size), now_seconds()};
     std::lock_guard<std::mutex> lk(lock);
-    if (active.load())
+    if (active.load()) {
         ghost_in.push_back(std::move(b));
+        inbox = true;
+    }
 }
 
 std::vector<CoreMixins> lap_rec_mixins()
@@ -709,6 +885,12 @@ void lap_rec_session_enter()
     sealer = lr::Sealer(lr::Sealer::Config{5.0, 5.0});
     contexts.clear();
     planned = false;
+    inbox = false;
+    have_session_board = have_session_team = false;
+    session_board = Board{};
+    session_team.clear();
+    next_board_try_s = 0;
+    last_has_wetness = false;
     gate = lr::gate_of(read_file(swofty_root() + L"tt.json", size_t(1) << 20));
     is_time_trial = swofty_core::apply::moments::session_mode_track().first == "time_trial";
     if (!gate.on || !is_time_trial || !enabled("lap_rec", nullptr)) {
@@ -731,10 +913,14 @@ void lap_rec_session_end()
 {
     if (!active.load())
         return;
-    live_car::LiveCar c;
-    live_car::read(c);
-    drain(c);
-    release(sealer.flush());
+    {
+        mem::Trust trust(runtime::HEAP_TRUST_MS);
+        drain();
+        release(sealer.flush());
+    }
+    if (!wait_idle(3000))
+        swofty::log("[laps] the writer thread is still writing a lap; its completion fires on a later tick");
+    deliver();
     active = false;
     lr::Outcome o;
     {
@@ -761,34 +947,25 @@ void lap_rec_newlap(int car)
         return;
     int player = player_car.load();
     lr::Outcome o = recorder.newlap(now - paused_total.load(), player >= 0 && car == player);
-    if (o.kind != lr::Outcome::none)
+    if (o.kind != lr::Outcome::none) {
         queued.push_back({std::move(o)});
+        inbox = true;
+    }
 }
 
 void lap_rec_tick()
 {
     toast::tick();
+    deliver();
     if (!active.load(std::memory_order_relaxed))
         return;
     static const uint32_t probe = perf::probe("core", "lap recorder tick");
     perf::Scope scope(probe);
-    live_car::LiveCar c;
-    live_car::LiveDynamics d;
-    if (!live_car::read_dynamics(d) || !live_car::read(c))
-        return;
-    lr::Outcome out;
-    {
-        std::lock_guard<std::mutex> g(lock);
-        player_car = d.ai ? -1 : d.player;
-        if (!planned) {
-            plan = lr::plan_of(avail_of(c, d));
-            planned = true;
-            swofty::log("[laps] fields resolved: %zu of %d; missing: %s", plan.layout.columns.size(), int(lr::Col::count),
-                        plan.missing.empty() ? "none" : plan.missing.c_str());
-        }
-    }
     static double paused_since = -1;
     static uint32_t paused_mask = 0, stalls_logged = 0;
+    static double next_read_s = 0;
+    static double last_pos[3];
+    static bool have_last;
     double now = now_seconds();
     uint32_t view_flags = view::current().flags;
     uint32_t reasons = view::pause_reasons();
@@ -808,8 +985,33 @@ void lap_rec_tick()
         paused_total.store(paused_total.load() + now - paused_since);
         paused_since = -1;
     }
+    double now_lap = now - paused_total.load();
+    bool due, work;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        due = recorder.state() == lr::State::timing ? recorder.sample_due(now_lap) : now >= next_read_s;
+        work = inbox.load(std::memory_order_relaxed) || sealer.waiting() > 0;
+    }
+    mem::Trust trust(runtime::HEAP_TRUST_MS);
+    if (!due) {
+        if (work)
+            drain();
+        return;
+    }
+    next_read_s = now + recorder.config().sample_period_s;
+    if (!have_session_board || !have_session_team)
+        resolve_session(now);
+    live_car::LiveCar c;
+    live_car::LiveDynamics d;
+    if (!live_car::read_dynamics(d) || !live_car::read(c)) {
+        if (work)
+            drain();
+        return;
+    }
+    last_has_wetness = c.has_wetness;
+    last_wetness = c.wetness;
     lr::Frame f;
-    f.now_s = now - paused_total.load();
+    f.now_s = now_lap;
     f.player = !d.ai && d.has_pos;
     f.interrupted = (view_flags & (view::REPLAY | view::CUTSCENE | view::SPECTATING)) != 0;
     if (d.has_pos)
@@ -817,19 +1019,25 @@ void lap_rec_tick()
             f.pos[i] = d.pos[i];
     f.speed_ms = d.has_vel ? std::sqrt(d.vel[0] * d.vel[0] + d.vel[1] * d.vel[1] + d.vel[2] * d.vel[2])
                            : c.speed_kmh / 3.6;
-    static double last_pos[3];
-    static bool have_last;
-    std::vector<uint8_t> sample(plan.layout.stride);
+    lr::Outcome out;
     {
         std::lock_guard<std::mutex> g(lock);
+        player_car = d.ai ? -1 : d.player;
+        if (!planned) {
+            plan = lr::plan_of(avail_of(c, d));
+            planned = true;
+            sample_buf.assign(plan.layout.stride, 0);
+            swofty::log("[laps] fields resolved: %zu of %d; missing: %s", plan.layout.columns.size(), int(lr::Col::count),
+                        plan.missing.empty() ? "none" : plan.missing.c_str());
+        }
         double dist = recorder.path_m();
         if (have_last && recorder.state() == lr::State::timing)
             dist += std::sqrt(std::pow(f.pos[0] - last_pos[0], 2) + std::pow(f.pos[1] - last_pos[1], 2) +
                               std::pow(f.pos[2] - last_pos[2], 2));
-        fill(sample.data(), c, d, recorder.elapsed(f.now_s), dist);
+        fill(sample_buf.data(), c, d, recorder.elapsed(f.now_s), dist);
         if (recorder.state() == lr::State::timing)
             runtime::tt_bridge_lap_progress(dist, recorder.elapsed(f.now_s));
-        out = recorder.step(f, sample.data(), sample.size());
+        out = recorder.step(f, sample_buf.data(), sample_buf.size());
         if (recorder.stalls() < stalls_logged)
             stalls_logged = 0;
         if (recorder.stalls() > stalls_logged) {
@@ -838,12 +1046,17 @@ void lap_rec_tick()
                         recorder.shift_s(), recorder.stalls());
             stalls_logged = recorder.stalls();
         }
+        if (out.kind != lr::Outcome::none) {
+            queued.push_back({std::move(out)});
+            inbox = true;
+            work = true;
+        }
     }
     for (int i = 0; i < 3; i++)
         last_pos[i] = f.pos[i];
     have_last = true;
-    handle(std::move(out));
-    drain(c);
+    if (work)
+        drain();
 }
 
 }
