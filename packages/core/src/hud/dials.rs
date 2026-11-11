@@ -132,6 +132,17 @@ const fn v(name: &'static str, db: &'static str, tag: Tag, usage: Use, in_stock:
     }
 }
 
+/// The resources the composer writes whole: another addon's edit of one of them reaches the game only
+/// through the composer's base.
+pub fn written() -> Vec<&'static str> {
+    let mut out = vec![TEMPLATE, SPECTATOR];
+    for d in Dial::ALL {
+        let f = facts(d);
+        out.extend([f.scene, f.strtab, f.uipre]);
+    }
+    out
+}
+
 /// The game's own values an element may bind, by the name records use. A property's tag must be
 /// the tag of the value it binds: the game takes it on trust, and a `stri` bound to the ui32
 /// `#session.current_car.position` crashed the game while creating the HUD.

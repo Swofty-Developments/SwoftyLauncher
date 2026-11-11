@@ -1211,6 +1211,28 @@ impl<'a> ErpBuild<'a> {
         Ok(Some(Pkg::parse(&frag.data()?)?))
     }
 
+    /// Every fragment of `resource` in the archive `erp` as the build stands, or `None` while the archive is
+    /// not loaded.
+    pub fn fragments(&self, erp: &str, resource: &str) -> Result<Option<Vec<Vec<u8>>>> {
+        let Some(e) = self.erps.get(erp) else {
+            return Ok(None);
+        };
+        let i = e.find(erp, resource)?;
+        let loaded;
+        let res = match &e.slots[i] {
+            Slot::Owned(r) => r,
+            Slot::Stock(j) => {
+                loaded = e.file.load(&e.file.erp.resources[*j])?;
+                &loaded
+            }
+        };
+        let mut out = Vec::with_capacity(res.fragments.len());
+        for f in &res.fragments {
+            out.push(f.data()?);
+        }
+        Ok(Some(out))
+    }
+
     pub fn resources(&self) -> impl Iterator<Item = (&str, &Resource, &Erp, &str)> {
         self.erps.iter().flat_map(move |(rel, a)| {
             a.slots.iter().filter_map(move |s| match s {

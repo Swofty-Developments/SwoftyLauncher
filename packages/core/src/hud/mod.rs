@@ -13,6 +13,7 @@ pub mod check;
 pub mod dials;
 pub mod editor;
 pub mod geom;
+pub mod integrate;
 pub mod model;
 pub mod scene;
 pub mod template;
@@ -107,6 +108,14 @@ impl GameStock {
         })
     }
 
+    /// The file the composer reads `rel` from: the launcher's original when it keeps one, else the game folder's.
+    pub fn original(&self, rel: &str) -> PathBuf {
+        self.originals
+            .get(rel)
+            .cloned()
+            .unwrap_or_else(|| self.game.join(rel))
+    }
+
     fn file(&self, erp: &str) -> Result<Rc<ErpFile>> {
         if let Some(f) = self.files.borrow().get(erp) {
             return Ok(f.clone());
@@ -164,6 +173,34 @@ impl Stock for GameStock {
         Ok((f.erp.header, f.erp.version))
     }
 }
+
+/// The stock archives with the changes other addons make to the resources the composer writes whole.
+/// The composer starts from these, so its overlay carries those changes instead of overwriting them.
+pub struct Layered<'a> {
+    pub inner: &'a dyn Stock,
+    pub build: &'a crate::erpbuild::ErpBuild<'a>,
+}
+
+impl Stock for Layered<'_> {
+    fn read(&self, erp: &str, resource: &str) -> Result<Vec<Vec<u8>>> {
+        match self.build.fragments(erp, resource)? {
+            Some(f) => Ok(f),
+            None => self.inner.read(erp, resource),
+        }
+    }
+
+    fn layout(&self, name: &str, kind: &str, fragments: usize) -> Result<Resource> {
+        self.inner.layout(name, kind, fragments)
+    }
+
+    fn header(&self) -> Result<([u8; swofty_formats::erp::HEADER_LEN], u32)> {
+        self.inner.header()
+    }
+}
+
+/// An edit another part of the launcher makes to the HUD template, applied to the template before the
+/// composer adds its nodes (the ADDONS MFD page).
+pub type TemplateBase<'a> = &'a dyn Fn(&[u8]) -> Result<Vec<u8>>;
 
 /// One record to compose.
 #[derive(Debug, Clone)]
@@ -358,6 +395,12 @@ fn first(v: Vec<Vec<u8>>, what: &str) -> Result<Vec<u8>> {
 
 /// Composes `inputs` against the stock files into the overlay archives.
 pub fn compose(stock: &dyn Stock, inputs: &[Input]) -> Result<Output> {
+    compose_with(stock, inputs, None)
+}
+
+/// [`compose`] with `base` applied to the template the composer starts from. The composer is the last
+/// step: its nodes go on top of `base`'s edit and of whatever `stock` reads.
+pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBase>) -> Result<Output> {
     let mut out = Output::default();
     if inputs.is_empty() {
         return Ok(out);
@@ -435,7 +478,10 @@ pub fn compose(stock: &dyn Stock, inputs: &[Input]) -> Result<Output> {
 
     let template_bytes = read(dials::TEMPLATE)?;
     let spectator_bytes = read(dials::SPECTATOR)?;
-    let mut template = Pkg::parse(&template_bytes)?;
+    let mut template = match base {
+        Some(edit) => Pkg::parse(&edit(&template_bytes)?)?,
+        None => Pkg::parse(&template_bytes)?,
+    };
     let mut spectator = Pkg::parse(&spectator_bytes)?;
     let race_stock = Pkg::parse(&template_bytes)?;
     let spec_stock = Pkg::parse(&spectator_bytes)?;
