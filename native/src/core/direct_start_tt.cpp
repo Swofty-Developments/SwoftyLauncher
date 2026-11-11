@@ -47,8 +47,26 @@ using runtime::direct_start::Setup;
 constexpr const char *MODE = "time_trial";
 constexpr const char *TRACK_NODE = "game_mode_data.current_game_mode.track_info.current_track.track_file_name";
 constexpr const char *WEATHER_NODE = "settings.current_settings.tt_weather.value";
-constexpr uintptr_t RVA_SET_SETUP_MODE = 0x79f300, RVA_CURRENT_TRACK = 0x7ddbf0, RVA_PLAYER_ENTRANTS = 0x604eac0,
-                    RVA_PLAYER_GUARD = 0x604ec50;
+// The game addresses the Time Trial setup uses, each found by a pattern that matches once on the Steam and on the EA build
+// (re/tools/sigverify.py). The two functions' entries are jump thunks, so they are found from a call to them.
+const runtime::Sig SIG_SET_SETUP_MODE{"game.entity_set_setup_mode_thunk_14079f300",
+                                      "E8 ?? ?? ?? ?? 48 8D 84 24 20 03 00 00 48 C7 84 24 10 03 00 00 80 00 00 00", 0x79f300,
+                                      runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig SIG_CURRENT_TRACK{"game.entity_current_track_thunk_1407ddbf0",
+                                     "E8 ?? ?? ?? ?? 44 0F B6 40 01 44 89 86 F0 11 00 00", 0x7ddbf0, runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig SIG_PLAYER_ENTRANTS{"game.player_entrants_14604eac0", "48 8D 1D ?? ?? ?? ?? 48 8D 54 24 28 48 89 D9 45 31 C9",
+                                       0x604eac0, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_PLAYER_GUARD{"game.player_entrants_guard_14604ec50",
+                                    "8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 4C 8B 04 25 58 00 00 00 49 8B 0C C8 8B 89 04 00 00 00 48 "
+                                    "3B 54 24 58",
+                                    0x604ec50, runtime::Sig::riprel, 0, 2, 6};
+const runtime::Sig SIG_TT_COMPONENT_VT{"game.vt_time_trial_component_1457b13d0",
+                                       "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 05 ?? ?? ?? ?? 48 89 41 18 4C 8B B1 78 03 00 00",
+                                       0x57b13d0, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_GAME_ROOT{"game.root_14601db08",
+                                 "48 8B 05 ?? ?? ?? ?? 48 8B 40 60 48 8B 88 D0 09 00 00 FF 15 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 "
+                                 "8B 40 60",
+                                 0x601db08, runtime::Sig::riprel, 0, 3, 7};
 constexpr uintptr_t MODES_BEGIN = 0x58, MODES_END = 0x60, MODES_ENTRY_MODE = 0x38, MODE_ENTITY = 0x260, MODE_NAME = 0x278;
 constexpr uintptr_t ENTITY_MODE = 0xf08, ENTITY_TRACKS = 0xf58, ENTITY_TEAMS = 0xf80, ENTITY_SETUP_MODE = 0x2b0,
                     ENTITY_ENTRANT_SETUP = 0xe10, ENTITY_LIST = 0xe18;
@@ -56,7 +74,7 @@ constexpr uintptr_t GSM_HOLDER = 0xd8, GSM_ESMS = 0x10, GSM_ESM_COUNT = 0x70, ES
                     LIST_NAME = 0x28, LIST_BEGIN = 0x10, LIST_END = 0x18, RECORD = 0x88, RECORD_TEAM = 0x58,
                     TRACK_NAME = 0x78, PLAYER_STRIDE = 0xc0, PLAYER_TEAM = 0x68, PLAYER_TEAM_SET = 0x6c,
                     RECORD_VEHICLE = 0x5c;
-constexpr uintptr_t RVA_TT_COMPONENT_VT = 0x57b13d0, MODE_COMPONENTS = 0x238, TT_HOT_LOAD = 0x298, HOT_VEHICLE = 0x2be,
+constexpr uintptr_t MODE_COMPONENTS = 0x238, TT_HOT_LOAD = 0x298, HOT_VEHICLE = 0x2be,
                     HOT_VEHICLE_SET = 0x2c2, HOT_TEAM = 0x2c4, HOT_TEAM_SET = 0x2c8;
 constexpr size_t ESM_SLOTS = 32, GSM_SLOTS = 32, GSM_ESM_SLOTS = (GSM_ESM_COUNT - GSM_ESMS) / 8;
 
@@ -68,9 +86,37 @@ template <class T> T at(const void *p, uintptr_t off)
     return *reinterpret_cast<const T *>(static_cast<const uint8_t *>(p) + off);
 }
 
-template <class T> T *rva(uintptr_t r)
+struct Game {
+    uintptr_t set_setup_mode = 0, current_track = 0, player_entrants = 0, player_guard = 0, tt_component_vt = 0, root = 0;
+    bool ok = false;
+};
+
+const Game &game()
 {
-    return reinterpret_cast<T *>(swofty::api->module_base() + r);
+    static const Game g = [] {
+        Game r;
+        if (!runtime::verified_build()) {
+            swofty::log("[direct] Time Trial setup off: its struct offsets are checked on the Steam and EA builds and this "
+                        "F1_25.exe is another build");
+            return r;
+        }
+        r.set_setup_mode = runtime::find(SIG_SET_SETUP_MODE, "Time Trial setup", "direct");
+        r.current_track = runtime::find(SIG_CURRENT_TRACK, "Time Trial setup", "direct");
+        r.player_entrants = runtime::find(SIG_PLAYER_ENTRANTS, "Time Trial setup", "direct");
+        r.player_guard = runtime::find(SIG_PLAYER_GUARD, "Time Trial setup", "direct");
+        r.tt_component_vt = runtime::find(SIG_TT_COMPONENT_VT, "Time Trial setup", "direct");
+        r.root = runtime::find(SIG_GAME_ROOT, "Time Trial setup", "direct");
+        r.ok = r.set_setup_mode && r.current_track && r.player_entrants && r.player_guard && r.tt_component_vt && r.root;
+        if (!r.ok)
+            swofty::log("[direct] Time Trial setup off: one of its addresses did not resolve on this build");
+        return r;
+    }();
+    return g;
+}
+
+template <class T> T *ptr(uintptr_t a)
+{
+    return reinterpret_cast<T *>(a);
 }
 
 const char *c_name(const void *p)
@@ -92,7 +138,7 @@ struct State {
     tt::Step step = tt::Step::mode;
     uint64_t started = 0, mode_set = 0;
     uint8_t *mode = nullptr, *entity = nullptr, *list = nullptr;
-    bool placed = false;
+    bool placed = false, replay = false;
 } st;
 
 // The game modes context's modes (vector at +0x58..+0x60, each entry's mode at +0x38, its label at mode+0x278 and its
@@ -143,7 +189,7 @@ bool force_track(uint8_t *rec, uint8_t *stale)
     stale_track = stale;
     if (h_track)
         return true;
-    auto h = safetyhook::InlineHook::create(rva<void>(RVA_CURRENT_TRACK), reinterpret_cast<void *>(track_detour));
+    auto h = safetyhook::InlineHook::create(ptr<void>(game().current_track), reinterpret_cast<void *>(track_detour));
     if (!h) {
         swofty::log("[direct] Time Trial: the track getter hook failed: %s", runtime::hook_error(h.error()).c_str());
         forced_track = nullptr;
@@ -285,7 +331,9 @@ uint8_t *tt_component(uint8_t *mode)
 {
     if (!mode || !runtime::readable(mode, MODE_COMPONENTS + 0x10))
         return nullptr;
-    auto *vt = rva<void>(RVA_TT_COMPONENT_VT);
+    if (!game().ok)
+        return nullptr;
+    auto *vt = ptr<void>(game().tt_component_vt);
     for (auto **p = at<uint8_t **>(mode, MODE_COMPONENTS), **end = at<uint8_t **>(mode, MODE_COMPONENTS + 8);
          p && p < end && runtime::readable(p, 8); ++p)
         if (*p && runtime::readable(*p, TT_HOT_LOAD + 8) && at<void *>(*p, 0) == vt)
@@ -339,9 +387,9 @@ Setup set_team(uint8_t *e, uint8_t *list, const std::string &want, std::string &
     hot[HOT_VEHICLE_SET] = 1;
     *reinterpret_cast<uint32_t *>(hot + HOT_TEAM) = team;
     hot[HOT_TEAM_SET] = 1;
-    int guard = *rva<int>(RVA_PLAYER_GUARD), p = player_index();
+    int guard = *ptr<int>(game().player_guard), p = player_index();
     if (guard != 0 && guard != -1) {
-        auto *sel = rva<uint8_t>(RVA_PLAYER_ENTRANTS) + size_t(p) * PLAYER_STRIDE;
+        auto *sel = ptr<uint8_t>(game().player_entrants) + size_t(p) * PLAYER_STRIDE;
         *reinterpret_cast<uint32_t *>(sel + PLAYER_TEAM) = team;
         sel[PLAYER_TEAM_SET] = 1;
     }
@@ -395,7 +443,7 @@ Setup place(uint8_t *e, const json::Value &request, std::string &why)
                   tt::joined(lists) + ")";
             return Setup::failed;
         }
-        rva<void(void *, void *, int)>(RVA_SET_SETUP_MODE)(e, gsm, 0);
+        ptr<void(void *, void *, int)>(game().set_setup_mode)(e, gsm, 0);
         if (at<uint8_t *>(e, ENTITY_SETUP_MODE) != gsm)
             swofty::log("[direct] Time Trial: the setup mode setter left %p, not %p, at E+0x2b0",
                         at<uint8_t *>(e, ENTITY_SETUP_MODE), gsm);
@@ -416,7 +464,7 @@ Setup place(uint8_t *e, const json::Value &request, std::string &why)
         }
         const char *file = c_name(at<const char *>(rec, TRACK_NAME));
         bool written = ui_vm_set_path(TRACK_NODE, 0, file);
-        uint8_t *now = rva<CurrentTrack_t>(RVA_CURRENT_TRACK)(e);
+        uint8_t *now = ptr<CurrentTrack_t>(game().current_track)(e);
         const char *reads = now && runtime::readable(now, TRACK_NAME + 8) ? c_name(at<const char *>(now, TRACK_NAME)) : nullptr;
         swofty::log("[direct] Time Trial: track %s (%p): the VM node %s, the getter reads %s", file, rec,
                     written ? "written" : "NOT written", reads ? reads : "nothing");
@@ -464,8 +512,8 @@ Setup setup(const json::Value &request, std::string &why)
 {
     if (st.step == Step::done)
         return Setup::done;
-    if (!runtime::same_build()) {
-        why = "the Time Trial setup's addresses are the KB build's and this F1_25.exe is another build";
+    if (!game().ok) {
+        why = "the Time Trial setup's addresses did not resolve on this F1_25.exe";
         return Setup::failed;
     }
     if (!st.started)
@@ -511,7 +559,8 @@ Setup setup(const json::Value &request, std::string &why)
     Setup s = apply(st.entity, request, why);
     if (s == Setup::done) {
         st.step = Step::done;
-        despawn_main_scene("at the setup");
+        if (!st.replay)
+            despawn_main_scene("at the setup");
         swofty::log("[direct] Time Trial: set up %llu ms after the mode was made current",
                     (unsigned long long)(GetTickCount64() - st.mode_set));
     }
@@ -529,13 +578,15 @@ std::atomic<bool> tt_armed{false}, garage_seen{false};
 // front end's loading screen (FrontEnd, bit 1), neither of which a direct start runs: the garage stays black behind
 // the fade's backdrop. Once the garage screen is up the core releases those reasons on the fade owner
 // [[g_Game_Root]+0xa0] (mask +0x7b8, state +0x7bc, curve +0x7c4) and fades in when none is left.
-constexpr uintptr_t RVA_GAME_ROOT = 0x601db08, ROOT_FADE = 0xa0, FADE_MASK = 0x7b8, FADE_STATE = 0x7bc, FADE_CURVE = 0x7c4,
+constexpr uintptr_t ROOT_FADE = 0xa0, FADE_MASK = 0x7b8, FADE_STATE = 0x7bc, FADE_CURVE = 0x7c4,
                     FADE_HELD = 0x7cc;
 constexpr uint32_t FADE_REASONS = (1u << 1) | (1u << 2) | (1u << 3) | (1u << 14), FADE_IN = 3, FADE_CURVE_DEFAULT = 0xd47eb226;
 
 void release_fade()
 {
-    auto *root = *rva<uint8_t *>(RVA_GAME_ROOT);
+    if (!game().ok)
+        return;
+    auto *root = *ptr<uint8_t *>(game().root);
     auto *owner = root && runtime::readable(root, ROOT_FADE + 8) ? at<uint8_t *>(root, ROOT_FADE) : nullptr;
     if (!owner || !runtime::readable(owner + FADE_MASK, 0x18)) {
         swofty::log("[direct] Time Trial: no fade owner to fade the garage in");
@@ -585,5 +636,109 @@ Setup registered(std::string &why)
 }
 
 const bool registered_at_load = (runtime::direct_start_register_time_trial(registered), true);
+
+}
+
+namespace runtime::direct_start::tt {
+
+void reset_for_replay()
+{
+    st = State{};
+    st.replay = true;
+}
+
+std::string current_track()
+{
+    if (!game().ok)
+        return {};
+    DirectStartContext ctx = runtime::direct_start_context();
+    if (!ctx.game_modes)
+        return {};
+    std::vector<std::string> names;
+    uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
+    uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    if (!e || !runtime::readable(e, ENTITY_TEAMS + 8))
+        return {};
+    uint8_t *now = ptr<CurrentTrack_t>(game().current_track)(e);
+    const char *name = now && runtime::readable(now, TRACK_NAME + 8) ? c_name(at<const char *>(now, TRACK_NAME)) : nullptr;
+    return name ? name : "";
+}
+
+int track_stat()
+{
+    if (!game().ok)
+        return -1;
+    DirectStartContext ctx = runtime::direct_start_context();
+    if (!ctx.game_modes)
+        return -1;
+    std::vector<std::string> names;
+    uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
+    uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    if (!e || !runtime::readable(e, ENTITY_TEAMS + 8))
+        return -1;
+    uint8_t *now = ptr<CurrentTrack_t>(game().current_track)(e);
+    if (!now || !runtime::readable(now, TRACK_NAME + 8)) {
+        std::string picked = runtime::track_select_time_trial();
+        names.clear();
+        now = picked.empty() ? nullptr : track_record(e, picked, names);
+    }
+    return now && runtime::readable(now, 2) ? int(now[1]) : -1;
+}
+
+std::string session_track()
+{
+    std::string code = current_track();
+    return code.empty() ? runtime::track_select_time_trial() : code;
+}
+
+void mode_objects(void *&mode_out, void *&entity_out)
+{
+    mode_out = entity_out = nullptr;
+    if (!game().ok)
+        return;
+    DirectStartContext ctx = runtime::direct_start_context();
+    if (!ctx.game_modes)
+        return;
+    std::vector<std::string> names;
+    uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
+    mode_out = mode;
+    entity_out = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+}
+
+std::string player_list()
+{
+    if (!game().ok)
+        return {};
+    DirectStartContext ctx = runtime::direct_start_context();
+    if (!ctx.game_modes)
+        return {};
+    std::vector<std::string> names;
+    uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
+    uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    if (!e || !runtime::readable(e, ENTITY_TEAMS + 8))
+        return {};
+    auto *list = at<uint8_t *>(e, ENTITY_LIST);
+    const char *name = list ? holder_name(list, LIST_NAME) : nullptr;
+    return name ? name : "";
+}
+
+std::string player_team()
+{
+    if (!game().ok)
+        return {};
+    DirectStartContext ctx = runtime::direct_start_context();
+    if (!ctx.game_modes)
+        return {};
+    std::vector<std::string> names;
+    uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
+    uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    int guard = *ptr<int>(game().player_guard);
+    if (!e || !runtime::readable(e, ENTITY_TEAMS + 8) || guard == 0 || guard == -1)
+        return {};
+    auto *sel = ptr<uint8_t>(game().player_entrants) + size_t(player_index()) * PLAYER_STRIDE;
+    if (!runtime::readable(sel, PLAYER_TEAM_SET + 1) || !sel[PLAYER_TEAM_SET])
+        return {};
+    return team_name(e, at<uint32_t>(sel, PLAYER_TEAM));
+}
 
 }

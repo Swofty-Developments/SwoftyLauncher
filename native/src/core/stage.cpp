@@ -19,7 +19,7 @@ const Feature FEATURES[] = {{"group", true},    {"erp", true},        {"db", tru
                             {"lang", true},     {"file", false},      {"events", true},
                             {"storage", true},  {"overlay", false},   {"telemetry", false},
                             {"shaders", false}, {"career", true},     {"popup", true},
-                            {"postfx", false},  {"registry_rows", true}};
+                            {"postfx", false},  {"registry_rows", true}, {"lap_rec", true}};
 
 std::once_flag config_once;
 json::Value config_doc;
@@ -204,6 +204,14 @@ bool same_build()
     auto b = reinterpret_cast<const uint8_t *>(swofty::api->module_base());
     auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(b + reinterpret_cast<const IMAGE_DOS_HEADER *>(b)->e_lfanew);
     return nt->FileHeader.TimeDateStamp == 1789118616u && nt->OptionalHeader.SizeOfImage > 0x6000000;
+}
+
+bool verified_build()
+{
+    auto b = reinterpret_cast<const uint8_t *>(swofty::api->module_base());
+    auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(b + reinterpret_cast<const IMAGE_DOS_HEADER *>(b)->e_lfanew);
+    uint32_t stamp = nt->FileHeader.TimeDateStamp, size = nt->OptionalHeader.SizeOfImage;
+    return (stamp == 1789118616u && size > 0x6000000) || (stamp == 1789128892u && size == 0x155dc000);
 }
 
 uintptr_t find(const Sig &s, const char *tag, const char *channel)

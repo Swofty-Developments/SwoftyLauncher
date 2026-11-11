@@ -1,11 +1,11 @@
 use std::ops::Range;
 use std::sync::Arc;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::input::Input;
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::dbedit::{Catalog, Node, NodeId, NodeKind};
@@ -83,7 +83,7 @@ impl Shell {
         let summary = node_summary(&catalog, node, &n, kids);
         let add = Button::new("db-add-key")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::Plus)
             .label(tr("Add key…"))
             .disabled(self.db_locked())
@@ -117,7 +117,7 @@ impl Shell {
                     .child(self.db_crumbs(node, p, cx))
                     .children(self.db.raw_filter.as_ref().map(|d| {
                         div().w(px(240.)).flex_shrink_0().child(
-                            Input::new(&d.input).small().cleanable(true).prefix(
+                            Input::new(&d.input).tap_sm().cleanable(true).prefix(
                                 Icon::new(IconName::ListFilter)
                                     .size(px(14.))
                                     .text_color(p.text_placeholder),

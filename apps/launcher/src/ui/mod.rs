@@ -19,6 +19,7 @@ mod pill;
 mod progress;
 mod row;
 mod section;
+mod segmented;
 pub mod tokens;
 
 pub(crate) use atoms::*;
@@ -33,3 +34,4 @@ pub(crate) use pill::Pill;
 pub(crate) use progress::ProgressBar;
 pub(crate) use row::{Toggle, row, row_head, selectable_row};
 pub(crate) use section::{Field, SectionHead};
+pub(crate) use segmented::Segmented;

@@ -2,7 +2,7 @@ use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::scroll::ScrollableElement;
 use gpui_kit::component::tooltip::Tooltip;
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::catalog::{self, Trouble};
@@ -10,7 +10,7 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::*;
 use crate::pages::GUTTER;
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::Palette;
 
@@ -182,7 +182,7 @@ impl Shell {
                 .child(
                     Button::new("browser-retry")
                         .outline()
-                        .small()
+                        .tap_sm()
                         .icon(IconName::RefreshCw)
                         .label(tr("Retry"))
                         .loading(self.browser.fetching)
@@ -256,7 +256,7 @@ impl Shell {
                     .child(
                         Button::new("browser-activity-close")
                             .ghost()
-                            .xsmall()
+                            .tap_xs()
                             .icon(IconName::X)
                             .on_click(cx.listener(|this, _, _, cx| {
                                 this.browser.activity_open = false;

@@ -30,6 +30,7 @@
 #include <swofty/systems/power.hpp>
 #include <swofty/systems/sessions.hpp>
 #include <swofty/systems/sounds.hpp>
+#include <swofty/systems/laps.hpp>
 #include <swofty/systems/spectator.hpp>
 #include <swofty/systems/teams.hpp>
 #include <swofty/systems/tyres.hpp>

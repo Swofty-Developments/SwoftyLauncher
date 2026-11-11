@@ -192,7 +192,7 @@ impl News {
             return tr("Checking for news…").into();
         }
         if self.live {
-            return tr("From f1.swofty.net").into();
+            return String::new();
         }
         let shown = if self.saved {
             tr("showing the news saved last time")

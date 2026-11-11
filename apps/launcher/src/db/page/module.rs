@@ -1,11 +1,11 @@
 use std::ops::Range;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::input::Input;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::dbedit::{Module, Scope};
@@ -143,7 +143,7 @@ impl Shell {
             )
             .children(self.db.filter.as_ref().map(|f| {
                 div().w(px(280.)).child(
-                    Input::new(&f.input).small().cleanable(true).prefix(
+                    Input::new(&f.input).tap_sm().cleanable(true).prefix(
                         Icon::new(IconName::ListFilter)
                             .size(px(14.))
                             .text_color(p.text_placeholder),
@@ -179,7 +179,7 @@ impl Shell {
             .child(
                 Button::new("db-scope")
                     .outline()
-                    .small()
+                    .tap_sm()
                     .min_w(px(200.))
                     .label(shown)
                     .dropdown_caret(true)

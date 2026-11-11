@@ -3,7 +3,7 @@ use std::sync::Arc;
 
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
-use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_core::catalog::publishers::{self};
@@ -15,7 +15,7 @@ use super::tiles::landing_rows;
 use super::*;
 use crate::library::Type;
 use crate::pages::{GUTTER, tile};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::Palette;
 use crate::ui::facet::FILTERS_W;
@@ -234,7 +234,7 @@ impl Shell {
                 },
                 Button::new("browser-empty-retry")
                     .outline()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::RefreshCw)
                     .label(tr("Retry"))
                     .disabled(self.browser.fetching)
@@ -248,7 +248,7 @@ impl Shell {
                 ),
                 Button::new("browser-empty-clear")
                     .outline()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::X)
                     .label(tr("Clear search and filters"))
                     .on_click(cx.listener(|this, _, _, cx| this.clear_filters(cx))),
@@ -305,7 +305,7 @@ impl Shell {
                 h_flex().pt(px(8.)).gap(px(8.)).child(
                     Button::new("browser-shelf-empty-all")
                         .outline()
-                        .small()
+                        .tap_sm()
                         .icon(IconName::LayoutGrid)
                         .label(tr("All addons"))
                         .on_click(cx.listener(|this, _, _, cx| this.shelve(None, cx))),

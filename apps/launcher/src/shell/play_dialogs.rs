@@ -1,9 +1,9 @@
 use crate::game::{self};
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use crate::theme::palette;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::ButtonVariant;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::*;
 use swofty_core::process::stop_game_in;
 
@@ -53,7 +53,7 @@ impl Shell {
                 .on_ok(move |_, window, cx| {
                     if let Err(e) = swofty_core::offline::record_accept(&store.root) {
                         crate::app_log::action("accept offline play").failed(&e);
-                        window.push_notification(Notification::error(e.to_string()), cx);
+                        window.notify(Notification::error(e.to_string()), cx);
                         return false;
                     }
                     window.close_dialog(cx);
@@ -80,11 +80,12 @@ impl Shell {
             this.update_in(cx, |s, window, cx| {
                 s.restoring = false;
                 match result {
-                    Ok(text) => window
-                        .push_notification(Notification::success(text).title(tr("Game folder restored")), cx),
+                    Ok(text) => {
+                        window.notify(Notification::success(text).title(tr("Game folder restored")), cx)
+                    }
                     Err(e) => {
                         crate::app_log::action("restore the game folder").failed(&e);
-                        window.push_notification(Notification::error(e).title(tr("Restore failed")), cx)
+                        window.notify(Notification::error(e).title(tr("Restore failed")), cx)
                     }
                 }
                 cx.notify();
@@ -120,7 +121,7 @@ impl Shell {
                         }
                         Err(e) => {
                             crate::app_log::action("cancel the build").failed(&e);
-                            window.push_notification(Notification::error(e.to_string()), cx)
+                            window.notify(Notification::error(e.to_string()), cx)
                         }
                     }
                     true
@@ -144,7 +145,7 @@ impl Shell {
                     swofty_core::session::request_stop(&data);
                     if let Err(e) = stop_game_in(&dir) {
                         crate::app_log::action("stop f1 25").failed(&e);
-                        window.push_notification(Notification::error(e.to_string()), cx);
+                        window.notify(Notification::error(e.to_string()), cx);
                     }
                     true
                 })

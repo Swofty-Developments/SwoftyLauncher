@@ -5,15 +5,13 @@ use std::time::{Duration, Instant};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::{
-    Context, FontWeight, InteractiveElement, IntoElement, ParentElement, StatefulInteractiveElement, Styled,
-    Window, div,
+    Animation, AnimationExt, AnyElement, Context, FontWeight, InteractiveElement, IntoElement, ParentElement,
+    StatefulInteractiveElement, Styled, Window, div, relative,
 };
 
-use crate::scale::px;
 use crate::shell::{Page, Shell};
 use crate::theme::Palette;
-use crate::ui::ProgressBar;
-use swofty_i18n::trf;
+use swofty_i18n::{tr, trf};
 
 pub(crate) const LINGER: Duration = Duration::from_secs(4);
 pub(crate) const SLIDE: Duration = Duration::from_millis(260);
@@ -40,11 +38,19 @@ pub(crate) struct Dock {
     idle_since: Option<Instant>,
     had_work: bool,
     dismissed: usize,
+    base: Option<usize>,
 }
 
 impl Dock {
     pub(crate) fn failure_shown(&self, failed: usize) -> bool {
         failed > self.dismissed
+    }
+
+    pub(crate) fn batch(&mut self, finished: usize, pending: usize) -> (usize, usize) {
+        if pending > 0 && self.base.is_none() {
+            self.base = Some(finished);
+        }
+        batch_position(self.base.unwrap_or(finished), finished, pending)
     }
 
     pub(crate) fn dismiss(&mut self, failed: usize) {
@@ -89,6 +95,7 @@ impl Dock {
         let eased = 1. - (1. - progress).powi(3);
         let out = if self.shown { 1. - eased } else { eased };
         if !self.shown && progress >= 1. {
+            self.base = None;
             return None;
         }
         let wake = self
@@ -103,128 +110,182 @@ impl Dock {
     }
 }
 
+pub(crate) fn batch_position(base: usize, finished: usize, pending: usize) -> (usize, usize) {
+    let done = finished.saturating_sub(base);
+    let total = done + pending;
+    ((done + 1).min(total.max(1)), total.max(1))
+}
+
+pub(crate) fn download_title(position: usize, total: usize, pending: bool) -> String {
+    match pending {
+        true => trf!(
+            "Downloading {position}/{total}",
+            position = position,
+            total = total
+        ),
+        false => tr("Download complete").to_owned(),
+    }
+}
+
+pub(crate) fn bar_fraction(fraction: Option<f32>) -> Option<f32> {
+    fraction.map(|f| f.clamp(0., 1.))
+}
+
 #[derive(Clone, Debug)]
 pub(crate) struct Line {
     pub(crate) name: String,
-    pub(crate) status: String,
     pub(crate) fraction: Option<f32>,
-    pub(crate) more: usize,
     pub(crate) failed: bool,
 }
 
-const WIDTH: f32 = 300.;
-const RISE: f32 = 24.;
+const WIDTH: f32 = 340.;
+pub(crate) const NOTCH_HEIGHT: f32 = 46.;
 
 impl Shell {
-    pub(crate) fn download_dock(
+    pub(crate) fn download_notch(
         &mut self,
         p: Palette,
+        layout_width: f32,
+        has_sub: bool,
         window: &mut Window,
         cx: &mut Context<Self>,
-    ) -> Option<impl IntoElement> {
+    ) -> Option<AnyElement> {
+        self.notch_beside = false;
         let now = Instant::now();
         let input = self.dock_input();
-        let frame = self.dock.frame(now, input)?;
-        if frame.animating {
+        let fake = cfg!(debug_assertions) && std::env::var_os("SWOFTY_FAKE_DOWNLOAD").is_some();
+        let frame = self.dock.frame(now, input);
+        if frame.as_ref().is_some_and(|f| f.animating) {
             window.request_animation_frame();
         }
-        match frame.wake {
-            Some(wake) if !self.dock_wake => {
-                self.dock_wake = true;
-                cx.spawn(async move |this, cx| {
-                    cx.background_executor()
-                        .timer(wake + Duration::from_millis(20))
-                        .await;
-                    this.update(cx, |this, cx| {
-                        this.dock_wake = false;
-                        cx.notify();
-                    })
-                    .ok();
+        if let Some(wake) = frame.as_ref().and_then(|f| f.wake)
+            && !self.dock_wake
+        {
+            self.dock_wake = true;
+            cx.spawn(async move |this, cx| {
+                cx.background_executor()
+                    .timer(wake + Duration::from_millis(20))
+                    .await;
+                this.update(cx, |this, cx| {
+                    this.dock_wake = false;
+                    cx.notify();
                 })
-                .detach();
-            }
-            _ => {}
+                .ok();
+            })
+            .detach();
         }
-        let line = self.dock_line()?;
-        let base = 84. + if self.progress.is_some() { 80. } else { 0. };
-        let tint = if line.failed { p.warning } else { p.accent };
-        let icon = if line.failed {
-            IconName::CircleAlert
-        } else if line.fraction == Some(1.) && input.pending == 0 {
-            IconName::Check
+        let (title, name, fraction) = if fake {
+            let unknown = std::env::var("SWOFTY_FAKE_DOWNLOAD").is_ok_and(|v| v == "unknown");
+            (
+                download_title(2, 3, true),
+                "Project Halo".to_owned(),
+                (!unknown).then_some(0.45),
+            )
+        } else if let Some(frame) = frame.as_ref().filter(|f| f.out < 0.95) {
+            let _ = frame;
+            let line = self.dock_line()?;
+            if line.failed {
+                self.dock.dismiss(input.failed);
+                return None;
+            }
+            let finished = self.finished_downloads();
+            let (position, total) = self.dock.batch(finished, input.pending);
+            (
+                download_title(position, total, input.pending > 0),
+                line.name,
+                if input.pending > 0 {
+                    bar_fraction(line.fraction)
+                } else {
+                    Some(1.)
+                },
+            )
+        } else if let Some((done, text)) = self.progress.clone() {
+            (download_title(1, 1, true), text, bar_fraction(Some(done)))
         } else {
-            IconName::Download
+            return None;
         };
-        let failed = input.failed;
-        Some(
-            h_flex()
-                .id("download-dock")
+        let beside = has_sub && layout_width >= 1150.;
+        self.notch_beside = beside;
+        let top = if has_sub && !beside {
+            crate::shell::BAR_HEIGHT + crate::shell::SUB_HEIGHT
+        } else {
+            crate::shell::BAR_HEIGHT
+        };
+        let row = h_flex()
+            .id("download-notch")
+            .relative()
+            .w(crate::scale::fixed(WIDTH))
+            .h(crate::scale::fixed(NOTCH_HEIGHT))
+            .px(crate::scale::fixed(16.))
+            .gap(crate::scale::fixed(10.))
+            .items_center()
+            .overflow_hidden()
+            .rounded_b(crate::scale::fixed(16.))
+            .bg(p.chrome)
+            .cursor_pointer()
+            .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Downloads, cx)))
+            .child(
+                Icon::new(IconName::Download)
+                    .size(crate::scale::fixed(18.))
+                    .text_color(p.accent),
+            )
+            .child(
+                v_flex()
+                    .flex_1()
+                    .min_w_0()
+                    .child(
+                        div()
+                            .text_size(crate::scale::fixed(13.))
+                            .font_weight(FontWeight::SEMIBOLD)
+                            .child(title),
+                    )
+                    .child(
+                        div()
+                            .truncate()
+                            .text_size(crate::scale::fixed(12.))
+                            .text_color(p.text_muted)
+                            .child(name),
+                    ),
+            )
+            .child(match fraction {
+                Some(f) => div()
+                    .absolute()
+                    .left_0()
+                    .bottom_0()
+                    .h(crate::scale::fixed(3.))
+                    .w(relative(f))
+                    .bg(p.accent)
+                    .into_any_element(),
+                None => div()
+                    .absolute()
+                    .left_0()
+                    .bottom_0()
+                    .h(crate::scale::fixed(3.))
+                    .w_full()
+                    .child(div().h_full().w(relative(0.3)).bg(p.accent).with_animation(
+                        "download-indeterminate",
+                        Animation::new(Duration::from_millis(1400)).repeat(),
+                        |el, t| el.ml(relative(t * 0.7)),
+                    ))
+                    .into_any_element(),
+            });
+        let placed = if beside {
+            div()
                 .absolute()
-                .right(px(16.))
-                .bottom(px(base - frame.out * RISE))
-                .opacity(1. - frame.out)
-                .w(px(WIDTH))
-                .p(px(12.))
-                .gap(px(10.))
-                .items_center()
-                .rounded(px(8.))
-                .border_1()
-                .border_color(if line.failed { p.warning } else { p.border })
-                .bg(p.elevated)
-                .cursor_pointer()
-                .hover(|d| d.bg(p.surface))
-                .on_click(cx.listener(|this, _, _, cx| this.open_page(Page::Downloads, cx)))
-                .child(Icon::new(icon).size(px(16.)).text_color(tint))
-                .child(
-                    v_flex()
-                        .flex_1()
-                        .min_w_0()
-                        .gap(px(4.))
-                        .child(
-                            h_flex()
-                                .gap(px(6.))
-                                .child(
-                                    div()
-                                        .flex_1()
-                                        .min_w_0()
-                                        .truncate()
-                                        .text_size(px(13.))
-                                        .font_weight(FontWeight::SEMIBOLD)
-                                        .child(line.name),
-                                )
-                                .children((line.more > 0).then(|| {
-                                    div()
-                                        .flex_shrink_0()
-                                        .text_size(px(12.))
-                                        .text_color(p.text_muted)
-                                        .child(trf!("+{count} more", count = line.more))
-                                })),
-                        )
-                        .child(
-                            div()
-                                .truncate()
-                                .text_size(px(12.))
-                                .text_color(if line.failed { p.warning } else { p.text_muted })
-                                .child(line.status),
-                        )
-                        .children(line.fraction.filter(|_| !line.failed).map(ProgressBar::new)),
-                )
-                .children(line.failed.then(|| {
-                    div()
-                        .id("download-dock-dismiss")
-                        .flex_shrink_0()
-                        .p(px(4.))
-                        .rounded(px(4.))
-                        .cursor_pointer()
-                        .hover(|d| d.bg(p.border_variant))
-                        .on_click(cx.listener(move |this, _, _, cx| {
-                            cx.stop_propagation();
-                            this.dock.dismiss(failed);
-                            cx.notify();
-                        }))
-                        .child(Icon::new(IconName::X).size(px(14.)).text_color(p.text_muted))
-                })),
-        )
+                .top(crate::scale::fixed(top))
+                .right(crate::scale::fixed(24.))
+                .child(row)
+        } else {
+            div()
+                .absolute()
+                .top(crate::scale::fixed(top))
+                .left_0()
+                .right_0()
+                .flex()
+                .justify_center()
+                .child(row)
+        };
+        Some(placed.into_any_element())
     }
 }
 
@@ -372,5 +433,30 @@ mod tests {
             ..Input::default()
         };
         assert_eq!(dock.frame(t + SLIDE * 8, away), None);
+    }
+
+    #[test]
+    fn the_batch_counts_from_its_start() {
+        assert_eq!(batch_position(0, 0, 3), (1, 3));
+        assert_eq!(batch_position(0, 1, 2), (2, 3));
+        assert_eq!(batch_position(5, 6, 1), (2, 2));
+        assert_eq!(batch_position(0, 3, 0), (3, 3));
+        assert_eq!(batch_position(4, 4, 0), (1, 1));
+    }
+
+    #[test]
+    fn a_dock_remembers_where_its_batch_began() {
+        let mut dock = Dock::default();
+        assert_eq!(dock.batch(7, 2), (1, 2));
+        assert_eq!(dock.batch(8, 1), (2, 2));
+    }
+
+    #[test]
+    fn the_title_and_fraction() {
+        assert_eq!(download_title(1, 3, true), "Downloading 1/3");
+        assert_eq!(download_title(3, 3, false), "Download complete");
+        assert_eq!(bar_fraction(Some(1.4)), Some(1.));
+        assert_eq!(bar_fraction(Some(-0.2)), Some(0.));
+        assert_eq!(bar_fraction(None), None);
     }
 }

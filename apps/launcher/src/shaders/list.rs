@@ -1,9 +1,9 @@
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::shaders::{ConfigEntry, ConfigRef};
@@ -81,7 +81,7 @@ impl ShadersView {
         let shaders = cx.entity().downgrade();
         let import = Button::new("shaders-import")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::FileUp)
             .label(tr("Import"))
             .dropdown_caret(true)
@@ -123,7 +123,7 @@ impl ShadersView {
                     .border_color(p.border_variant)
                     .child(
                         Button::new("shaders-new")
-                            .small()
+                            .tap_sm()
                             .icon(IconName::Plus)
                             .label(tr("New config"))
                             .disabled(self.busy)
@@ -215,7 +215,7 @@ impl ShadersView {
             Some(n) => div()
                 .flex_1()
                 .min_w_0()
-                .child(Input::new(&n.input).small())
+                .child(Input::new(&n.input).tap_sm())
                 .into_any_element(),
             None => v_flex()
                 .flex_1()
@@ -245,7 +245,7 @@ impl ShadersView {
         let shaders = cx.entity().downgrade();
         Button::new(SharedString::from(format!("shaders-more-{r}")))
             .ghost()
-            .small()
+            .tap_sm()
             .icon(IconName::Ellipsis)
             .dropdown_menu_with_anchor(Anchor::TopRight, move |mut menu, _, _| {
                 let act = |f: fn(&mut ShadersView, ConfigRef, &mut Window, &mut Context<ShadersView>)| {

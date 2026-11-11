@@ -2,14 +2,14 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::rc::Rc;
 
-use crate::scale::px;
+use crate::notices::{Notification, Notify};
+use crate::scale::{Hit, px};
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::{Input, InputEvent, InputState, NumberInput};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::select::{Select, SelectDelegate, SelectEvent, SelectState};
 use gpui_kit::component::slider::{Slider, SliderEvent, SliderState};
 use gpui_kit::component::switch::Switch;
-use gpui_kit::component::{Disableable, Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use serde_json::{Map, Value};
@@ -302,7 +302,7 @@ impl Shell {
         for f in form.fields.iter().filter(|f| only.is_none_or(|o| o == f.id())) {
             let Some(v) = self.field_value(&key, f, cx) else {
                 let name = f.label().unwrap_or(f.id()).to_owned();
-                window.push_notification(
+                window.notify(
                     Notification::error(trf!("{name} is not a number", name = name)),
                     cx,
                 );
@@ -418,7 +418,7 @@ impl Shell {
                     d.child(
                         Button::new(SharedString::from(format!("reset-{key}")))
                             .ghost()
-                            .small()
+                            .tap_sm()
                             .label(tr("Reset"))
                             .on_click(cx.listener(move |this, _, _, cx| this.reset_form(&reset_key, cx))),
                     )
@@ -426,7 +426,7 @@ impl Shell {
                 .child(
                     Button::new(SharedString::from(format!("apply-{key}")))
                         .primary()
-                        .small()
+                        .tap_sm()
                         .label(f.apply.clone().unwrap_or_else(|| tr("Apply").into()))
                         .loading(busy)
                         .disabled(busy || f.disabled || count == 0 || !valid)
@@ -467,7 +467,7 @@ impl Shell {
         let control: AnyElement = match field {
             Field::Number(nf) => match slot.and_then(|s| s.inputs.get(&id)) {
                 Some(state) => NumberInput::new(state)
-                    .small()
+                    .tap_sm()
                     .disabled(disabled)
                     .when_some(nf.unit.clone(), |n, u| {
                         n.suffix(div().text_size(px(12.)).text_color(p.text_placeholder).child(u))
@@ -476,7 +476,7 @@ impl Shell {
                 None => div().into_any_element(),
             },
             Field::Text(_) => match slot.and_then(|s| s.inputs.get(&id)) {
-                Some(state) => Input::new(state).small().disabled(disabled).into_any_element(),
+                Some(state) => Input::new(state).tap_sm().disabled(disabled).into_any_element(),
                 None => div().into_any_element(),
             },
             Field::Slider(nf) => match slot.and_then(|s| s.sliders.get(&id)) {
@@ -520,7 +520,7 @@ impl Shell {
                     select.shown.replace(committed);
                     Select::new(&select.state)
                         .id(control_id)
-                        .small()
+                        .tap_sm()
                         .w_full()
                         .menu_max_h(px(SELECT_MENU_H))
                         .search_placeholder(tr("Search"))
@@ -592,7 +592,7 @@ impl Shell {
                     .child(
                         Switch::new(control_id)
                             .checked(on)
-                            .small()
+                            .tap_sm()
                             .disabled(disabled)
                             .on_change(cx.listener(move |this, on: &bool, window, cx| {
                                 this.pick(&key, &id, Value::Bool(*on), live.clone(), window, cx)

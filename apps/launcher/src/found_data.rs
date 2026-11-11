@@ -4,12 +4,12 @@
 use std::path::PathBuf;
 use std::time::SystemTime;
 
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::spinner::Spinner;
-use gpui_kit::component::{Icon, Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::builtin::CORE_ID;
@@ -112,7 +112,7 @@ impl Shell {
                 crate::app_log::note(&format!("find addons: {} candidate(s)", found.len()));
                 if found.is_empty() {
                     if announce {
-                        window.push_notification(Notification::info(tr("Nothing found")), cx);
+                        window.notify(Notification::info(tr("Nothing found")), cx);
                     }
                     return;
                 }
@@ -136,7 +136,7 @@ impl Shell {
             return;
         };
         if let Some(why) = self.move_refusal() {
-            window.push_notification(Notification::error(why), cx);
+            window.notify(Notification::error(why), cx);
             return;
         }
         if let Some(prompt) = self.found_data.as_mut() {

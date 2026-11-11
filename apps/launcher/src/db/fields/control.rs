@@ -1,11 +1,11 @@
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::color_picker::ColorPicker;
 use gpui_kit::component::input::{Input, NumberInput};
 use gpui_kit::component::select::Select;
 use gpui_kit::component::switch::Switch;
-use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::dbedit::Kind;
@@ -42,7 +42,7 @@ impl Shell {
         match f.kind {
             Kind::Int | Kind::Float => match slots.inputs.get(&f.id) {
                 Some(s) => NumberInput::new(&s.input)
-                    .small()
+                    .tap_sm()
                     .disabled(locked)
                     .when_some(unit, |n, u| n.suffix(u))
                     .into_any_element(),
@@ -51,7 +51,7 @@ impl Shell {
             Kind::List | Kind::Vector => self.db_list_control(f, locked, p),
             Kind::Text | Kind::Time => match slots.inputs.get(&f.id) {
                 Some(s) => Input::new(&s.input)
-                    .small()
+                    .tap_sm()
                     .disabled(locked)
                     .when_some(unit, |n, u| n.suffix(u))
                     .into_any_element(),
@@ -76,7 +76,7 @@ impl Shell {
                 let input = slots
                     .inputs
                     .get(&format!("{}/i{i}", f.id))
-                    .map(|s| Input::new(&s.input).xsmall().disabled(locked).into_any_element())
+                    .map(|s| Input::new(&s.input).tap_xs().disabled(locked).into_any_element())
                     .unwrap_or_else(|| plain(v, p));
                 div().w(px(if wide { 120. } else { 58. })).child(input)
             }))
@@ -99,7 +99,7 @@ impl Shell {
             .child(
                 Switch::new(SharedString::from(format!("switch-{}", f.id)))
                     .checked(on)
-                    .small()
+                    .tap_sm()
                     .disabled(locked)
                     .on_change(cx.listener(move |this, on: &bool, _, cx| {
                         this.db_set(key, &bool_text(tag, &stock, *on), cx);
@@ -127,7 +127,7 @@ impl Shell {
                     .unwrap_or_else(|| f.value.clone());
                 Select::new(&s.state)
                     .id(SharedString::from(format!("select-{}", f.id)))
-                    .small()
+                    .tap_sm()
                     .w_full()
                     .menu_max_h(px(320.))
                     .search_placeholder(tr("Search"))
@@ -144,11 +144,11 @@ impl Shell {
         let picker = slots
             .colors
             .get(&f.id)
-            .map(|s| ColorPicker::new(&s.state).small());
+            .map(|s| ColorPicker::new(&s.state).tap_sm());
         let raw = slots
             .inputs
             .get(&f.id)
-            .map(|s| Input::new(&s.input).small().disabled(locked));
+            .map(|s| Input::new(&s.input).tap_sm().disabled(locked));
         h_flex()
             .gap(px(8.))
             .children(picker.filter(|_| !locked))
@@ -177,7 +177,7 @@ impl Shell {
         let small = |id: &str, icon: IconName| {
             Button::new(SharedString::from(format!("{}-{id}-{i}", f.id)))
                 .ghost()
-                .xsmall()
+                .tap_xs()
                 .icon(icon)
                 .disabled(locked)
         };
@@ -251,7 +251,7 @@ impl Shell {
         let add = self.db.slots.selects.get(&format!("{}/add", f.id)).map(|s| {
             Select::new(&s.state)
                 .id(SharedString::from(format!("add-{}", f.id)))
-                .small()
+                .tap_sm()
                 .w_full()
                 .menu_max_h(px(320.))
                 .search_placeholder(tr("Search"))

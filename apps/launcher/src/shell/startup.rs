@@ -1,8 +1,7 @@
 use crate::game::{self};
 use crate::library::Library;
+use crate::notices::{Notification, Notify};
 use crate::play_checks;
-use gpui_kit::component::WindowExt;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
@@ -71,6 +70,8 @@ impl Shell {
         let ui_mode = config.ui_mode;
         let developer_mode = config.developer;
         let clear_old_session_logs = config.clear_old_session_logs;
+        let time_trial_boards = config.time_trial_boards;
+        let time_trial_ingame = config.time_trial_ingame;
         let update_check = config.updates.check;
         Self::guard_close(window, cx);
         Self::recover_in_background(&store, clear_old_session_logs, cx);
@@ -88,10 +89,21 @@ impl Shell {
         let catalog = Self::watch_catalog(cx);
         let mp = Self::start_account(&store, cx);
         Self::watch_multiplayer(window, cx);
+        let root = store.root.clone();
         let mut shell = Self {
             library,
             store,
             page: Page::News,
+            nav: None,
+            popover: None,
+            popup_timer: false,
+            notch_beside: false,
+            avatar: crate::avatar::load(&root),
+            avatar_link: None,
+            root_focus: cx.focus_handle(),
+            profiles_open: true,
+            layout_width: 1440.,
+            online: crate::online::Online::new(&root),
             open_addon: None,
             install: None,
             copies: Vec::new(),
@@ -103,6 +115,7 @@ impl Shell {
             session: None,
             mp,
             mp_busy: false,
+            ban: None,
             mp_toasts: Vec::new(),
             mp_page: crate::multiplayer::Multiplayer::new(window, cx),
             crash: None,
@@ -141,6 +154,8 @@ impl Shell {
             onboarding: None,
             developer_mode,
             clear_old_session_logs,
+            time_trial_boards,
+            time_trial_ingame,
             reload_generation: 0,
             slow_logged: false,
             update_check,
@@ -156,6 +171,8 @@ impl Shell {
             highlight: None,
             addons: crate::addons::AddonsPage::new(window, cx),
             saves: crate::career_saves::SavesPage::default(),
+            tt: crate::time_trial::TtPage::default(),
+            support: crate::support::SupportPage::default(),
             db: crate::db::Db::new(cx),
             news,
             news_scroll: Default::default(),
@@ -175,7 +192,32 @@ impl Shell {
             Ok("saves") => shell.open_page(Page::Careers, cx),
             Ok("shaders") => shell.open_page(Page::Shaders, cx),
             Ok("addons") => shell.open_page(Page::Addons, cx),
+            Ok("online") => shell.open_page(Page::Online, cx),
+            Ok("browser") => shell.open_page(Page::Browser, cx),
+            Ok("settings") => shell.open_page(Page::Settings, cx),
+            Ok("support") => shell.open_page(Page::Support, cx),
+            Ok("moderation") => shell.open_page(Page::Moderation, cx),
             _ => {}
+        }
+        if cfg!(debug_assertions) && std::env::var_os("SWOFTY_FAKE_NOTICES").is_some() {
+            cx.update_global(|n: &mut crate::notices::Notices, _| {
+                let now = std::time::Instant::now();
+                n.add(
+                    Notification::success(swofty_i18n::tr("Updated Project Halo 0.1.2"))
+                        .title(swofty_i18n::tr("Updated 1 of 1 addon"))
+                        .action(swofty_i18n::tr("Turn on"), |_, _| {}),
+                    now,
+                );
+                n.add(
+                    Notification::warning(swofty_i18n::tr("Turning it off warns about your saves.")),
+                    now,
+                );
+                n.add(
+                    Notification::error(swofty_i18n::tr("Couldn't reach the addon registry."))
+                        .title(swofty_i18n::tr("Download failed")),
+                    now,
+                );
+            });
         }
         shell.fetch_news(cx);
         shell.sync_catalog_updates();
@@ -304,13 +346,30 @@ impl Shell {
             cx.spawn(async move |this, cx| {
                 let refreshed = cx
                     .background_executor()
-                    .spawn(async move { swofty_core::mpauth::refresh(&dir, &current) })
+                    .spawn(async move { swofty_core::mpauth::refresh_checked(&dir, &current) })
                     .await;
                 this.update(cx, |s, cx| {
-                    s.mp = refreshed;
-                    cx.notify();
+                    let allowed = s.mp.as_ref().is_some_and(|m| m.allowed);
+                    s.mp_apply_check(refreshed, allowed, cx);
+                    s.sync_avatar(cx);
                 })
                 .ok();
+                let data = this
+                    .update(cx, |s, _| {
+                        (s.store.clone(), s.install.as_ref().map(|i| i.dir.clone()))
+                    })
+                    .ok();
+                if let Some((store, game)) = data {
+                    cx.background_executor()
+                        .spawn(async move {
+                            swofty_core::timetrial::upload::flush(
+                                &store.root,
+                                game.as_deref(),
+                                &store.config(),
+                            );
+                        })
+                        .await;
+                }
             })
             .detach();
         }
@@ -328,10 +387,10 @@ impl Shell {
                 let was_allowed = session.allowed;
                 let refreshed = cx
                     .background_executor()
-                    .spawn(async move { swofty_core::mpauth::refresh(&dir, &session) })
+                    .spawn(async move { swofty_core::mpauth::refresh_checked(&dir, &session) })
                     .await;
                 if this
-                    .update(cx, |s, cx| s.mp_apply_refresh(refreshed, was_allowed, cx))
+                    .update(cx, |s, cx| s.mp_apply_check(refreshed, was_allowed, cx))
                     .is_err()
                 {
                     break;
@@ -355,7 +414,7 @@ impl Shell {
                          with the launcher's buttons instead, or open Swofty Launcher normally to drag and drop."),
                     )
                     .title(tr("Running as administrator"));
-                    cx.update(|window, cx| window.push_notification(note, cx)).ok();
+                    cx.update(|window, cx| window.notify(note, cx)).ok();
                 }
             })
             .detach();

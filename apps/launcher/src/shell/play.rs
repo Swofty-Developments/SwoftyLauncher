@@ -1,7 +1,6 @@
 use crate::game::{self, Launch, Owner};
+use crate::notices::{Notification, Notify};
 use crate::play_checks;
-use gpui_kit::component::WindowExt;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::*;
 use std::path::PathBuf;
 use swofty_core::install::Source;
@@ -81,7 +80,7 @@ impl Shell {
             return false;
         }
         if self.addons.checking {
-            window.push_notification(
+            window.notify(
                 Notification::info(tr("Play when the conflict check finishes.")),
                 cx,
             );
@@ -162,7 +161,7 @@ impl Shell {
         self.seen.blocked = game::blocked_at(&self.store.root).unwrap_or(0.0);
         self.dismissed = self.session.as_ref().map(|s| s.dir.clone());
         for note in &checked.notes {
-            window.push_notification(note_notification(note), cx);
+            window.notify(note_notification(note), cx);
         }
         match checked.verdict {
             play_checks::Verdict::Go => {}
@@ -178,7 +177,7 @@ impl Shell {
             }
         }
         if let Some(d) = swofty_core::known_problems::outdated_exe(install.version().as_deref()) {
-            window.push_notification(Notification::warning(d.text()).title(d.title).autohide(false), cx);
+            window.notify(Notification::warning(d.text()).title(d.title).autohide(false), cx);
         }
         if let Some(short) = crate::settings::low_space_warning(checked.room) {
             let text = trf!(
@@ -186,7 +185,7 @@ impl Shell {
                 short = short
             );
             crate::app_log::note(&format!("play: {text}"));
-            window.push_notification(
+            window.notify(
                 Notification::warning(text)
                     .title(tr("Low on disk space"))
                     .autohide(false),
@@ -215,7 +214,7 @@ impl Shell {
             }
             Err(e) => {
                 self.seen.launch_failed = game::now_secs();
-                window.push_notification(
+                window.notify(
                     Notification::error(e)
                         .title(tr("Could not launch F1 25"))
                         .autohide(false),
@@ -256,7 +255,7 @@ impl Shell {
         swofty_core::copies::set_active(&mut config, &dir);
         if let Err(e) = self.store.save_config(&config) {
             crate::app_log::action("save settings").failed(&e);
-            window.push_notification(Notification::error(e.to_string()), cx);
+            window.notify(Notification::error(e.to_string()), cx);
             return;
         }
         if let Some(copy) = self.copies.iter().find(|c| c.dir == dir) {

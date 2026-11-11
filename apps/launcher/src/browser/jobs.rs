@@ -1,13 +1,12 @@
 use std::collections::BTreeSet;
 use std::time::{Duration, Instant};
 
-use gpui_kit::component::WindowExt;
-use gpui_kit::component::notification::Notification;
+use crate::notices::Notification;
 use gpui_kit::*;
 use swofty_core::catalog::{self, Addon};
 use swofty_core::manifest::AddonManifest;
 use swofty_core::update::current_version;
-use swofty_i18n::trf;
+use swofty_i18n::{tr, trf};
 
 use super::*;
 use crate::format;
@@ -55,32 +54,6 @@ pub(super) fn retry_action(addon: Option<&Addon>, requested: &catalog::Version) 
 }
 
 impl Shell {
-    /// Adds an installed addon to this profile, off, from the Addon Browser.
-    pub(crate) fn add_one_to_profile(&mut self, id: &str, window: &mut Window, cx: &mut Context<Self>) {
-        let profile = self.library.profile.name.clone();
-        match self.store.update_profile(&profile, |p| p.add_addon(id)) {
-            Ok(()) => {
-                let name = self
-                    .library
-                    .addons
-                    .iter()
-                    .find(|m| m.manifest.id == id)
-                    .map_or(id, |m| m.manifest.name.as_str());
-                window.push_notification(
-                    Notification::success(trf!("Added {name} to {profile}", name = name, profile = profile)),
-                    cx,
-                );
-            }
-            Err(e) => {
-                crate::app_log::action("add addon to profile")
-                    .addon(id)
-                    .failed(&e);
-                window.push_notification(Notification::error(e.to_string()), cx);
-            }
-        }
-        self.reload(cx);
-    }
-
     pub(crate) fn install_from_catalog(&mut self, id: &str, cx: &mut Context<Self>) {
         self.enqueue_catalog(id, cx);
     }
@@ -298,10 +271,20 @@ impl Shell {
             if let Some(b) = self.browser.batch.as_mut() {
                 b.updated.push(format!("{} {}", m.name, m.version));
             }
-        } else if !also.is_empty() {
-            self.browser.toasts.push(
-                Notification::success(trf!("Also installed {names}", names = also.join(", "))).title(title),
-            );
+        } else {
+            let (shell, id) = (cx.entity().downgrade(), m.id.clone());
+            let body = match also.is_empty() {
+                true => title.clone(),
+                false => trf!("Also installed {names}", names = also.join(", ")),
+            };
+            let note = Notification::success(body).action(tr("Turn on"), move |window, cx| {
+                shell
+                    .update(cx, |s, cx| s.set_addon_enabled(&id, true, window, cx))
+                    .ok();
+            });
+            self.browser
+                .toasts
+                .push(if also.is_empty() { note } else { note.title(title) });
         }
     }
 

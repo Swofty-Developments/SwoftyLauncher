@@ -1,10 +1,10 @@
 use std::ops::Range;
 use std::sync::Arc;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::dbedit::{Edit, NodeKind, Origin, RowCopy};
@@ -127,7 +127,7 @@ impl Shell {
         let actions = h_flex().gap(px(8.)).child(
             Button::new("db-revert-all")
                 .outline()
-                .small()
+                .tap_sm()
                 .icon(IconName::Undo2)
                 .label(tr("Revert all changes"))
                 .disabled(n == 0 || self.db_locked())
@@ -316,7 +316,7 @@ impl Shell {
             .child(
                 Button::new(SharedString::from(format!("db-change-revert-{key:x}")))
                     .ghost()
-                    .xsmall()
+                    .tap_xs()
                     .icon(IconName::Undo2)
                     .tooltip(tr("Revert"))
                     .disabled(self.db_locked())
@@ -419,7 +419,7 @@ impl Shell {
             .child(
                 Button::new(SharedString::from(format!("db-change-unrow-{}", r.select())))
                     .ghost()
-                    .xsmall()
+                    .tap_xs()
                     .icon(IconName::Undo2)
                     .tooltip(tr("Remove own row"))
                     .disabled(self.db_locked())

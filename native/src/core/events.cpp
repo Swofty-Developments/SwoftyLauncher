@@ -1,4 +1,7 @@
+#include <atomic>
+#include <map>
 #include "runtime.hpp"
+#include "main_menu.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -76,18 +79,54 @@ void flow_mid(safetyhook::Context &)
     static const uint32_t probe = perf::probe("core", "flow tick (events, career poll)");
     perf::flow_tick();
     perf::Scope p(probe);
-    runtime::career_tick();
-    runtime::live_tick(now_seconds());
-    runtime::telemetry_tick();
-    runtime::popup_tick();
-    runtime::mfd_tick();
-    runtime::netplay_tick();
-    runtime::career_content_tick();
-    runtime::entitlements_tick();
-    runtime::hub_tick();
-    runtime::tyre_models_tick();
-    runtime::testagent_tick();
-    runtime::direct_start_tick();
+    // A step that holds the flow thread for over 100 ms is named in the log (first hits, then every 50th).
+    auto step = [](const char *name, void (*fn)()) {
+        double t0 = now_seconds();
+        fn();
+        double ms = (now_seconds() - t0) * 1000.0;
+        static std::mutex lock;
+        static std::map<std::string, double> total;
+        static double since = now_seconds();
+        {
+            std::lock_guard<std::mutex> g(lock);
+            total[name] += ms;
+            double span = now_seconds() - since;
+            if (span >= 60.0) {
+                std::string line;
+                for (auto &kv : total)
+                    if (kv.second / span >= 1.0) {
+                        char b[96];
+                        snprintf(b, sizeof b, "%s%s %.1f", line.empty() ? "" : ", ", kv.first.c_str(), kv.second / span);
+                        line += b;
+                    }
+                if (!line.empty())
+                    swofty::log("[perf] flow tick steps over 1 ms/s in the last %.0f s (ms per second): %s", span, line.c_str());
+                total.clear();
+                since = now_seconds();
+            }
+        }
+        static std::atomic<uint64_t> slow{0};
+        if (ms > 100.0) {
+            uint64_t n = ++slow;
+            if (n <= 10 || n % 50 == 0)
+                swofty::log("[perf] flow tick step %s took %.0f ms (slow step %llu)", name, ms, static_cast<unsigned long long>(n));
+        }
+    };
+    step("career_tick", [] { runtime::career_tick(); });
+    step("live_tick", [] { runtime::live_tick(now_seconds()); });
+    step("telemetry_tick", [] { runtime::telemetry_tick(); });
+    step("lap_rec_tick", [] { runtime::lap_rec_tick(); });
+    step("tt_bridge_tick", [] { runtime::tt_bridge_tick(); });
+    step("popup_tick", [] { runtime::popup_tick(); });
+    step("main_menu::tick", [] { runtime::main_menu::tick(); });
+    step("mfd_tick", [] { runtime::mfd_tick(); });
+    step("netplay_tick", [] { runtime::netplay_tick(); });
+    step("career_content_tick", [] { runtime::career_content_tick(); });
+    step("entitlements_tick", [] { runtime::entitlements_tick(); });
+    step("hub_tick", [] { runtime::hub_tick(); });
+    step("tyre_models_tick", [] { runtime::tyre_models_tick(); });
+    step("testagent_tick", [] { runtime::testagent_tick(); });
+    step("direct_start_tick", [] { runtime::direct_start_tick(); });
     if (!perf::frame_claim())
         return;
     double dt = disp.tick(now_seconds());
@@ -105,6 +144,7 @@ void session_enter_mid(safetyhook::Context &)
     swofty::mem::invalidate();
     swofty_core::apply::moments::session_load("Game_GameModule_OnSessionEnter");
     runtime::telemetry_session_enter();
+    runtime::lap_rec_session_enter();
     runtime::hud_rebuilt();
     bool restart;
     {
@@ -318,6 +358,8 @@ void session_emit(const session_life::Emit &e)
 {
     if (e.end || e.unload)
         tyre_models_drop();
+    if (e.end)
+        lap_rec_session_end();
     if (e.end) {
         swofty::log("[events] session.end (%s)", e.reason == session_life::END_RESTART  ? "restart"
                                                  : e.reason == session_life::END_UNLOAD ? "ended as the unload began"

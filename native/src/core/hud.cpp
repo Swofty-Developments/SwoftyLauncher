@@ -3,6 +3,7 @@
 #include "hud_drawlist.hpp"
 #include "hud_font_atlas.hpp"
 #include "hud_image.hpp"
+#include "main_menu.hpp"
 #include "hud_input.hpp"
 #include "text_entry.hpp"
 #include "hud_guard.hpp"
@@ -1560,6 +1561,7 @@ hud::Frame &build_frame(const std::vector<hud::Paintsub> &subs, UINT width, UINT
         hud::build(subs, frame, float(width), float(height), overlay_off());
         draw_cursor(frame);
         runtime::room_cover::paint(frame, now);
+        runtime::main_menu::paint(frame, now);
     }
     flush_stats(now);
     if (frame.dropped && !dropped_told) {
@@ -1620,7 +1622,14 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
         subs = reg.subs();
     }
     bool cover = runtime::room_cover::active();
-    if (subs.empty() && !cap.on && !cover) {
+    bool menu = runtime::main_menu::drawing();
+    if (menu) {
+        static bool told = false;
+        if (!std::exchange(told, true))
+            swofty::log("[main-menu] the present hook passed its first frame with the main menu panel due (%zu paint callback(s))",
+                        subs.size());
+    }
+    if (subs.empty() && !cap.on && !cover && !menu) {
         drop_pending();
         return;
     }
@@ -1677,7 +1686,7 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
         }
         fg_active.store(true);
         bool addons = !subs.empty() && !killed("paint");
-        if (addons || cover) {
+        if (addons || cover || menu) {
             hud::Frame &frame = build_frame(addons ? subs : std::vector<hud::Paintsub>(), desc.BufferDesc.Width,
                                             desc.BufferDesc.Height, now);
             keep_pending(sc, frame, desc, color_space, now);
@@ -1728,7 +1737,7 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
                     desc.BufferDesc.Height, int(desc.BufferDesc.Format), desc.BufferCount, c.by.c_str());
     }
     bool addons = !subs.empty() && !killed("paint");
-    if (addons || cover)
+    if (addons || cover || menu)
         paint_frame(sc, c.queue, addons ? subs : std::vector<hud::Paintsub>(), desc, now, color_space);
     if (cap.on && !killed("capture"))
         capture_step(sc, c.queue, desc, now);
@@ -2183,16 +2192,19 @@ void setup()
     capture_setup();
     bool on = gate_on();
     bool cover = runtime::room_cover::setup();
+    bool menu = runtime::main_menu::wants_overlay();
+    if (menu)
+        swofty::log("[main-menu] the present hook arms for the main menu panel and video card");
     if (cover)
         swofty::log("[cover] a direct start is requested; the present hook arms for its cover screen");
-    if (!on && !cap.on && !cover) {
+    if (!on && !cap.on && !cover && !menu) {
         swofty::log("[overlay] the overlay feature is experimental and off; the HUD present hook is not armed");
         return;
     }
     if (!on && cap.on)
         swofty::log("[overlay] the overlay is off; the present hook arms for SWOFTY_FRAME_CAPTURE only");
     implemented = on;
-    if (on || cover) {
+    if (on || cover || menu) {
         renderer.font_tried = true;
         if (!hud::img::grey(hud::font::ATLAS_PNG, hud::font::ATLAS_PNG_SIZE, renderer.font_px))
             swofty::log("[overlay] decoding the built-in font atlas failed; text draws nothing");
@@ -2253,6 +2265,60 @@ int frame_capture_poll(std::string *why)
     if (cap.request_state < 0 && why)
         *why = cap.request_why;
     return cap.request_state;
+}
+
+}
+
+namespace runtime {
+
+int overlay_image(const std::string &id, const std::string &path, uint32_t *width, uint32_t *height)
+{
+    static std::mutex failed_lock;
+    static std::vector<std::string> failed;
+    std::string key = id + "|" + path;
+    {
+        std::lock_guard<std::mutex> g(reg_lock);
+        int slot = reg.find_image(id);
+        const hud::Image *im = slot >= 0 ? reg.image(slot) : nullptr;
+        if (im && im->generation > 0 && im->source == key) {
+            if (width)
+                *width = im->width;
+            if (height)
+                *height = im->height;
+            return slot;
+        }
+    }
+    {
+        std::lock_guard<std::mutex> f(failed_lock);
+        if (std::find(failed.begin(), failed.end(), key) != failed.end())
+            return -1;
+    }
+    std::string why;
+    hud::img::Pixels px;
+    std::wstring wpath = path.rfind("swofty:", 0) == 0 ? runtime::under_swofty(path.substr(7)) : runtime::wide(path);
+    std::string data = runtime::read_file(wpath, size_t(8) << 20);
+    if (data.empty() || !hud::img::decode(data, px, why)) {
+        swofty::log("[overlay] main menu image %s: %s", path.c_str(), data.empty() ? "unreadable" : why.c_str());
+        std::lock_guard<std::mutex> f(failed_lock);
+        failed.push_back(key);
+        return -1;
+    }
+    uint32_t w = px.width, h = px.height;
+    int slot;
+    {
+        std::lock_guard<std::mutex> g(reg_lock);
+        slot = reg.set_image(id, w, h, std::move(px.rgba));
+        if (slot >= 0)
+            reg.set_source(slot, key);
+    }
+    if (slot + 1 >= int(TEX_MAX))
+        return -1;
+    swofty::log("[overlay] main menu image %s (%ux%u) loaded (slot %d)", path.c_str(), w, h, slot);
+    if (width)
+        *width = w;
+    if (height)
+        *height = h;
+    return slot;
 }
 
 }

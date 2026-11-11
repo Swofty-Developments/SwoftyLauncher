@@ -3,14 +3,14 @@ use gpui_kit::component::{Icon, h_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
-use crate::scale::px;
+use crate::scale::{ctl, px};
 use crate::theme::Palette;
 
 pub(crate) const FILTERS_W: f32 = 226.;
 
 pub(crate) fn checkbox(on: bool, p: Palette) -> Div {
     div()
-        .size(px(14.))
+        .size(ctl(14.))
         .flex_shrink_0()
         .rounded(px(3.))
         .border_1()
@@ -21,7 +21,7 @@ pub(crate) fn checkbox(on: bool, p: Palette) -> Div {
             if on {
                 d.bg(p.accent)
                     .border_color(p.accent)
-                    .child(Icon::new(IconName::Check).size(px(11.)).text_color(p.on_accent))
+                    .child(Icon::new(IconName::Check).size(ctl(11.)).text_color(p.on_accent))
             } else {
                 d.border_color(p.border)
             }
@@ -51,7 +51,7 @@ pub(crate) fn facet_row_with(
     let dim = empty && !on;
     h_flex()
         .id(id)
-        .h(px(26.))
+        .h(ctl(26.))
         .px(px(6.))
         .gap(px(8.))
         .rounded(px(5.))

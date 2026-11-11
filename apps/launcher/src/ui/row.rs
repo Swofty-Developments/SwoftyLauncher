@@ -3,7 +3,7 @@ use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::theme::Palette;
 
 /// One row of a list card: a top divider unless it is `first`, tinted while `open`.
@@ -82,11 +82,15 @@ impl RenderOnce for Toggle {
         let hold = SharedString::from(format!("{}-hold", self.id));
         let switch = Switch::new(self.id)
             .checked(self.on)
-            .small()
+            .tap_sm()
             .disabled(self.disabled)
             .when_some(self.on_change, |s, f| s.on_change(f));
         div()
             .id(hold)
+            .min_h(crate::scale::ctl(26.))
+            .flex()
+            .items_center()
+            .px(crate::scale::ctl(4.))
             .on_click(|_, _, cx| cx.stop_propagation())
             .child(switch)
     }

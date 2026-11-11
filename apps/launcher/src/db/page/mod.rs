@@ -3,10 +3,10 @@ mod nav;
 mod rows;
 mod search;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::{tr, trf};
@@ -167,7 +167,7 @@ impl Shell {
         let turn_on = bound.clone().filter(|_| !on && !broken).map(|id| {
             Button::new("db-turn-on")
                 .ghost()
-                .xsmall()
+                .tap_xs()
                 .icon(IconName::Power)
                 .label(tr("Turn on"))
                 .when(self.vanilla(), |b| b.tooltip(tr("Vanilla stays stock")))
@@ -179,7 +179,7 @@ impl Shell {
         let details = bound.as_ref().filter(|_| !broken).map(|_| {
             Button::new("db-details")
                 .ghost()
-                .xsmall()
+                .tap_xs()
                 .icon(IconName::SquarePen)
                 .label(tr("Details…"))
                 .on_click(cx.listener(|this, _, window, cx| this.db_details(window, cx)))
@@ -187,7 +187,7 @@ impl Shell {
         let fresh = bound.as_ref().map(|_| {
             Button::new("db-new-draft")
                 .ghost()
-                .xsmall()
+                .tap_xs()
                 .icon(IconName::Plus)
                 .label(tr("New addon"))
                 .tooltip(tr("Start a new addon from the game's stock values"))
@@ -196,7 +196,7 @@ impl Shell {
         let discard = (unsaved > 0 && !broken).then(|| {
             Button::new("db-discard")
                 .ghost()
-                .xsmall()
+                .tap_xs()
                 .icon(IconName::Undo2)
                 .label(tr("Discard changes"))
                 .on_click(cx.listener(|this, _, window, cx| this.db_discard(window, cx)))
@@ -266,7 +266,7 @@ impl Shell {
         .child(
             Button::new("db-career-link")
                 .ghost()
-                .small()
+                .tap_sm()
                 .label(career_label)
                 .when(matches!(self.db_link_state(&career), LinkState::Missing), |b| {
                     b.icon(IconName::ExternalLink)
@@ -354,7 +354,7 @@ impl Shell {
             .child(
                 Button::new("db-addon-retry")
                     .outline()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::RefreshCw)
                     .label(tr("Try again"))
                     .on_click(cx.listener(|this, _, _, cx| this.db_retry(cx))),
@@ -390,14 +390,14 @@ impl Shell {
                 .child(
                     Button::new("db-take-newer")
                         .outline()
-                        .small()
+                        .tap_sm()
                         .label(tr("Load the newer draft"))
                         .on_click(cx.listener(|this, _, _, cx| this.db_take_newer(cx))),
                 )
                 .child(
                     Button::new("db-keep-mine")
                         .ghost()
-                        .small()
+                        .tap_sm()
                         .label(tr("Keep this window's changes"))
                         .on_click(cx.listener(|this, _, _, cx| this.db_keep_mine(cx))),
                 )

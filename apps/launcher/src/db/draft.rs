@@ -1,7 +1,7 @@
 use std::sync::Arc;
 use std::time::Duration;
 
-use gpui_kit::component::notification::Notification;
+use crate::notices::Notification;
 use gpui_kit::*;
 use swofty_core::dbedit::draft::{Opened, Written};
 use swofty_core::dbedit::package::{self, PackageInfo};

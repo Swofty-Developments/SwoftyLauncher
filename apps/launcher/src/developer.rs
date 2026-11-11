@@ -5,10 +5,10 @@
 use std::path::PathBuf;
 use std::process::Command;
 
-use crate::scale::px;
+use crate::notices::{Notification, Notify};
+use crate::scale::{Hit, px};
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::notification::Notification;
-use gpui_kit::component::{Disableable, Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
@@ -41,7 +41,7 @@ impl Shell {
         config.developer = on;
         if let Err(e) = self.store.save_config(&config) {
             crate::app_log::action("save settings").failed(&e);
-            window.push_notification(Notification::error(e.to_string()), cx);
+            window.notify(Notification::error(e.to_string()), cx);
         }
         self.developer_mode = config.developer;
         cx.notify();
@@ -73,7 +73,7 @@ impl Shell {
             return;
         };
         let Some(cli) = crate::game::cli_path(&self.store) else {
-            window.push_notification(Notification::error(tr("The swofty command isn't installed")), cx);
+            window.notify(Notification::error(tr("The swofty command isn't installed")), cx);
             return;
         };
         self.developer.running = Some(verb);
@@ -126,7 +126,7 @@ impl Shell {
         let mut buttons = h_flex().gap(px(8.)).child(
             Button::new("dev-link")
                 .outline()
-                .small()
+                .tap_sm()
                 .label(if has_folder {
                     tr("Link another folder…")
                 } else {
@@ -139,7 +139,7 @@ impl Shell {
             buttons = buttons.child(
                 Button::new(SharedString::from(format!("dev-{verb}")))
                     .outline()
-                    .small()
+                    .tap_sm()
                     .label(if running == Some(*verb) {
                         format!("{title}…")
                     } else {
@@ -152,7 +152,7 @@ impl Shell {
         buttons = buttons.child(
             Button::new("dev-run")
                 .primary()
-                .small()
+                .tap_sm()
                 .label("Run")
                 .disabled(!has_folder || running.is_some())
                 .on_click(cx.listener(|this, _, window, cx| this.play(window, cx))),

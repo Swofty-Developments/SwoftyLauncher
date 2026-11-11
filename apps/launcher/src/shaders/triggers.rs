@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 use std::time::Duration;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::slider::{Slider, SliderEvent, SliderState};
-use gpui_kit::component::{Sizable, h_flex, v_flex};
+use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::*;
 use swofty_core::shaders::ConfigRef;
 use swofty_i18n::{tr, trf};
@@ -336,7 +336,7 @@ impl ShadersView {
                 let sig = u.sig;
                 let picker = Button::new(SharedString::from(format!("trig-{id}")))
                     .outline()
-                    .small()
+                    .tap_sm()
                     .label(current)
                     .dropdown_caret(true)
                     .dropdown_menu_with_anchor(Anchor::BottomLeft, move |mut menu, _, _| {
@@ -418,7 +418,7 @@ impl ShadersView {
             SignalKind::Event => {
                 let fire = Button::new(SharedString::from(format!("trig-{id}")))
                     .outline()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::Zap)
                     .label(tr("Fire"))
                     .on_click(cx.listener(move |this, _, _, cx| this.trigger_fire(id, cx)));

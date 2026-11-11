@@ -2,14 +2,14 @@ use super::ITEMS_SHOWN;
 use super::row::stock_removals_text;
 use crate::format::{ago_since, title_case};
 use crate::library::AddonItem;
+use crate::notices::{Notification, Notify};
 use crate::pages::{chevron, label};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
-use gpui_kit::component::notification::Notification;
-use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::conflicts::{self, Pair};
@@ -153,17 +153,14 @@ impl Shell {
                             0 => tr("No conflicts between addons").to_owned(),
                             n => trn(n, "Found {count} conflict", "Found {count} conflicts"),
                         };
-                        window.push_notification(Notification::success(text), cx);
+                        window.notify(Notification::success(text), cx);
                         if report.profile == s.library.profile.name {
                             s.addons.report = Some(report);
                         }
                     }
                     Err(e) => {
                         crate::app_log::action("check conflicts").failed(&e);
-                        window.push_notification(
-                            Notification::error(e).title(tr("Could not check conflicts")),
-                            cx,
-                        )
+                        window.notify(Notification::error(e).title(tr("Could not check conflicts")), cx)
                     }
                 }
                 cx.notify();
@@ -177,7 +174,7 @@ impl Shell {
     pub(super) fn check_button(&self, id: &'static str, small: bool, cx: &mut Context<Self>) -> Button {
         Button::new(id)
             .outline()
-            .when(small, |b| b.xsmall())
+            .when(small, |b| b.tap_xs())
             .icon(IconName::RefreshCw)
             .label(if self.addons.checking {
                 tr("Checking…")

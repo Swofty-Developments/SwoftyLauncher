@@ -3,8 +3,8 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::SystemTime;
 
+use crate::notices::Notification;
 use gpui_kit::component::input::InputState;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::*;
 use swofty_core::dbedit::draft::DraftFile;
 use swofty_core::dbedit::package::PackageInfo;

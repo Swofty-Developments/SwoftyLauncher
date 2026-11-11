@@ -1,7 +1,7 @@
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::dbedit::{LinkSpec, Module};
@@ -151,7 +151,7 @@ impl Shell {
         let link = link.clone();
         Button::new(SharedString::from(format!("db-link-{i}")))
             .outline()
-            .small()
+            .tap_sm()
             .label(label)
             .tooltip(link.text.clone())
             .map(|b| match state {

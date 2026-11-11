@@ -712,35 +712,33 @@ impl Store {
     /// A new addon goes into the profile it was installed from, off, rather than
     /// every profile; the others add it from their own Addons page. A failure
     /// only leaves it out of the profile, so it doesn't fail the install.
+    /// Every installed addon is in every profile, off until a profile turns it on, so an
+    /// install lists it in all of them at the end of their order. `target` only names a
+    /// profile that must still exist for a queued install to count.
     fn add_to_install_profile(&self, id: &str, target: Option<&str>) {
-        let name = target.map(str::to_owned).unwrap_or_else(|| self.active_profile());
-        if name == profile::VANILLA {
-            return;
-        }
-        if target.is_some() {
-            // Check and write under the same lock as profile deletion, so a
-            // queued install cannot recreate a profile that was just deleted.
-            let _write = profile_write();
-            match self.profile_names() {
-                Ok(names) if !names.contains(&name) => {
-                    warn(format!("couldn't add {id}: profile {name} no longer exists"));
-                    return;
-                }
-                Err(e) => {
-                    warn(format!("couldn't check profile {name} for {id}: {e}"));
-                    return;
-                }
-                _ => {}
+        let names = match self.profile_names() {
+            Ok(names) => names,
+            Err(e) => {
+                warn(format!("couldn't list the profiles for {id}: {e}"));
+                return;
             }
-            let result = self.profile(&name).and_then(|mut profile| {
-                profile.add_addon(id)?;
-                self.save_profile(&profile)
-            });
-            if let Err(e) = result {
+        };
+        if let Some(target) = target
+            && target != profile::VANILLA
+            && !names.iter().any(|n| n == target)
+        {
+            warn(format!(
+                "profile {target} no longer exists; {id} is listed in the others"
+            ));
+        }
+        for name in names.iter().filter(|n| n.as_str() != profile::VANILLA) {
+            if let Err(e) = self.update_profile_if(name, |p| {
+                let had = p.has(id);
+                p.add_addon(id)?;
+                Ok(if had { Vec::new() } else { vec![id.to_owned()] })
+            }) {
                 warn(format!("couldn't add {id} to the {name} profile: {e}"));
             }
-        } else if let Err(e) = self.update_profile(&name, |p| p.add_addon(id)) {
-            warn(format!("couldn't add {id} to the {name} profile: {e}"));
         }
     }
 
@@ -908,6 +906,13 @@ impl Store {
         p.name = name.into();
         p.normalise();
         self.adopt_builtins(&mut p);
+        if from.is_none() {
+            for m in self.addons()?.into_values().filter(|m| {
+                !m.is_builtin() && !self.is_builtin(&m.id) && m.id != crate::managed::ID && m.id != CORE_ID
+            }) {
+                p.add_addon(&m.id)?;
+            }
+        }
         self.save_profile(&p)?;
         crate::addon_storage::profile_created(&self.root, name, from)?;
         Ok(p)
@@ -1972,6 +1977,86 @@ mod tests {
         assert!(store.profile(profile::VANILLA).unwrap().is_vanilla());
         assert!(!store.profiles_dir().join("vanilla.json").exists());
         std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn an_install_lists_the_addon_off_in_every_profile_and_a_removal_clears_it_everywhere() {
+        let root = tmp("everywhere");
+        let store = Store::new(root.join("data"));
+        store.save_profile(&Profile::new("default")).unwrap();
+        store.save_profile(&Profile::new("grid")).unwrap();
+        let src = root.join("one");
+        write_addon(&src, "t.one");
+        store.install_addon(&src).unwrap();
+        for name in ["default", "grid"] {
+            assert_eq!(
+                listed(&store, name).last(),
+                Some(&("t.one".to_owned(), false)),
+                "{name}"
+            );
+        }
+        store
+            .update_profile("default", |p| p.set_enabled("t.one", true))
+            .unwrap();
+        assert_eq!(
+            listed(&store, "default").last(),
+            Some(&("t.one".to_owned(), true))
+        );
+        assert_eq!(listed(&store, "grid").last(), Some(&("t.one".to_owned(), false)));
+        let two = root.join("two");
+        write_addon(&two, "t.two");
+        store.install_addon(&two).unwrap();
+        store
+            .update_profile("grid", |p| {
+                p.set_enabled("t.two", true)?;
+                p.set_enabled("t.one", true)
+            })
+            .unwrap();
+        let ids =
+            |name: &str| -> Vec<String> { listed(&store, name).into_iter().map(|(id, _)| id).collect() };
+        assert_eq!(ids("default"), ["t.one", "t.two"]);
+        assert_eq!(ids("grid"), ["t.one", "t.two"]);
+        store.remove_addon("t.one").unwrap();
+        assert_eq!(ids("default"), ["t.two"]);
+        assert_eq!(ids("grid"), ["t.two"]);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_new_profile_lists_every_installed_addon_off() {
+        let root = tmp("new-profile-all");
+        let store = Store::new(root.join("data"));
+        store.save_profile(&Profile::new("default")).unwrap();
+        let src = root.join("one");
+        write_addon(&src, "t.one");
+        store.install_addon(&src).unwrap();
+        store.create_profile("fresh", None).unwrap();
+        assert_eq!(listed(&store, "fresh").last(), Some(&("t.one".to_owned(), false)));
+        let enabled: Vec<String> = store
+            .profile("fresh")
+            .unwrap()
+            .enabled()
+            .map(str::to_owned)
+            .collect();
+        assert_eq!(enabled, ["swofty.core"]);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_profile_that_lacked_an_addon_loads_unchanged_and_the_on_set_is_what_it_was() {
+        let mut p = Profile::new("old");
+        p.set_enabled("t.a", true).unwrap();
+        p.set_enabled("t.b", false).unwrap();
+        let json = serde_json::to_string(&p).unwrap();
+        let back: Profile = serde_json::from_str(&json).unwrap();
+        assert!(!back.has("t.c"));
+        assert_eq!(back.enabled().collect::<Vec<_>>(), ["swofty.core", "t.a"]);
+        let mut grown = back.clone();
+        grown.add_addon("t.c").unwrap();
+        assert_eq!(
+            grown.enabled().collect::<Vec<_>>(),
+            back.enabled().collect::<Vec<_>>()
+        );
     }
 
     #[test]

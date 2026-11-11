@@ -9,11 +9,11 @@ mod triggers;
 use std::path::PathBuf;
 use std::sync::Arc;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::shaders::{self, ConfigEntry, ConfigRef};
@@ -325,7 +325,7 @@ impl ShadersView {
         let current = self.key.clone();
         let keys = Button::new("shaders-key")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::Power)
             .label(trf!("In-game key: {current}", current = current))
             .dropdown_caret(true)
@@ -342,7 +342,7 @@ impl ShadersView {
             });
         let browse = Button::new("shaders-browse")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::PackageSearch)
             .label(tr("Browse shaders"))
             .on_click(cx.listener(|_, _, _, cx| cx.emit(Event::Browse)));
@@ -425,7 +425,7 @@ impl ShadersView {
                     d.child(
                         Button::new("shaders-forced-addon")
                             .outline()
-                            .small()
+                            .tap_sm()
                             .label(tr("View addon"))
                             .on_click(cx.listener(move |_, _, _, cx| cx.emit(Event::OpenAddon(id.clone())))),
                     )

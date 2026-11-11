@@ -1,11 +1,11 @@
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::{Shell, SliderSlot};
 use crate::theme::Palette;
 use crate::ui::label;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::slider::{Slider, SliderEvent, SliderState};
-use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::manifest::{AddonManifest, AddonOption, Binds, OptionType};
@@ -143,7 +143,7 @@ impl Shell {
         let (man, id) = (man.clone(), o.id.clone());
         Button::new(SharedString::from(format!("setting-{key}")))
             .outline()
-            .small()
+            .tap_sm()
             .min_w(px(168.))
             .label(o.text(value))
             .dropdown_caret(true)

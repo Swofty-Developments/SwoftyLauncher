@@ -2,7 +2,7 @@ use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::input::Input;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::manifest::Category;
@@ -10,7 +10,7 @@ use swofty_i18n::tr;
 
 use super::*;
 use crate::pages::{TRACK, label};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::{Palette, SCROLLBAR_GAP, ScrollArea};
 use crate::ui::facet::{FILTERS_W, facet_row};
@@ -231,7 +231,7 @@ impl Shell {
         let shell = cx.entity().downgrade();
         Button::new("browser-sort")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::ArrowUpDown)
             .label(sort.label())
             .dropdown_caret(true)

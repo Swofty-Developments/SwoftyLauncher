@@ -43,3 +43,4 @@ templates/hud-dial/native/build/
 templates/mod/native/build/
 re/db/*.tmp
 !packages/sdk/std/fixtures/*.bin
+/target

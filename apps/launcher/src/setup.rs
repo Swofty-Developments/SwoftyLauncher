@@ -4,11 +4,11 @@
 
 use std::time::Duration;
 
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::dialog::DialogFooter;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::{Disableable, Icon, Sizable, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
@@ -717,7 +717,7 @@ impl Shell {
                 .on_ok(move |_, window, cx| {
                     if let Err(e) = setup::record_notice(&store.root) {
                         crate::app_log::action("first play setup: notice").failed(&e);
-                        window.push_notification(Notification::error(e.to_string()), cx);
+                        window.notify(Notification::error(e.to_string()), cx);
                         return false;
                     }
                     window.close_dialog(cx);

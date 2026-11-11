@@ -4,7 +4,7 @@ use std::rc::Rc;
 use std::sync::Arc;
 use std::time::Duration;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::base::input::{TextDecoration, TextDecorationCollection};
 use gpui_kit::component::button::Button;
@@ -12,7 +12,7 @@ use gpui_kit::component::input::{
     CodeActionProvider, CompletionProvider, Editor, EditorState, FoldRange, HighlightStyleResolver,
     HoverProvider, InputEdit, InputEvent, InputHighlighter, Position, Rope, RopeExt,
 };
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use lsp_types::{
@@ -623,7 +623,7 @@ impl ShadersView {
                 d.child(
                     Button::new("shaders-copy-edit")
                         .outline()
-                        .small()
+                        .tap_sm()
                         .icon(IconName::Copy)
                         .label(tr("Copy to personal to edit"))
                         .on_click(cx.listener(move |this, _, window, cx| {
@@ -784,7 +784,7 @@ impl ShadersView {
                     d.child(
                         Button::new(SharedString::from(format!("problem-fix-{i}")))
                             .outline()
-                            .small()
+                            .tap_sm()
                             .label(fix.title.clone())
                             .on_click(cx.listener(move |this, _, window, cx| {
                                 cx.stop_propagation();

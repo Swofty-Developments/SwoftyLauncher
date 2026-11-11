@@ -4,8 +4,8 @@ use std::path::Path;
 use std::sync::Arc;
 use std::time::{Instant, SystemTime};
 
+use crate::notices::Notification;
 use gpui_kit::component::input::{InputEvent, InputState};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::*;
 use swofty_core::catalog::publishers::{self, Creator, Profile};
 use swofty_core::catalog::stars::Stars;

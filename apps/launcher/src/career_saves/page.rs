@@ -1,7 +1,7 @@
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::{Disableable, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::profile::VANILLA;
@@ -10,7 +10,7 @@ use swofty_i18n::{tr, trf};
 use super::labels::{close_game_first, empty_save, steam_save_missing_text};
 use super::state::SavesView;
 use crate::pages::GUTTER;
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::{Palette, ScrollArea};
 use crate::ui::{Callout, EmptyState};
@@ -90,7 +90,7 @@ impl Shell {
         let name = view.profile.clone();
         let blocked = self.saves.game_running;
         let import = Button::new("saves-empty-import")
-            .small()
+            .tap_sm()
             .icon(IconName::Download)
             .label(tr("Import from Steam"))
             .disabled(blocked)
@@ -114,7 +114,7 @@ impl Shell {
         let actions = h_flex().gap(px(8.)).flex_wrap().when(turn_on, |row| {
             row.child(
                 Button::new("saves-warning-launcher-saves")
-                    .small()
+                    .tap_sm()
                     .label(tr("Use launcher saves"))
                     .on_click(cx.listener(|this, _, window, cx| {
                         this.set_launcher_saves(true, window, cx);
@@ -147,7 +147,7 @@ impl Shell {
             .when(on, |row| {
                 row.child(
                     Button::new("saves-missing-steam")
-                        .small()
+                        .tap_sm()
                         .label(tr("Play with your Steam saves"))
                         .on_click(cx.listener(|this, _, window, cx| {
                             this.set_launcher_saves(false, window, cx);
@@ -157,7 +157,7 @@ impl Shell {
             })
             .child(
                 Button::new("saves-missing-retry")
-                    .small()
+                    .tap_sm()
                     .icon(IconName::Download)
                     .label(tr("Import from Steam"))
                     .disabled(blocked)
@@ -166,7 +166,7 @@ impl Shell {
             )
             .child(
                 Button::new("saves-missing-pick")
-                    .small()
+                    .tap_sm()
                     .outline()
                     .icon(IconName::Folder)
                     .label(tr("Choose the folder…"))
@@ -208,7 +208,7 @@ impl Shell {
         let shell = cx.entity().downgrade();
         let copy = Button::new("saves-copy")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::Copy)
             .label(tr("Copy careers to…"))
             .dropdown_caret(true)
@@ -231,7 +231,7 @@ impl Shell {
         let import_name = name.clone();
         let import = Button::new("saves-import")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::Download)
             .label(tr("Import from Steam"))
             .disabled(why_import.is_some())
@@ -243,7 +243,7 @@ impl Shell {
             }));
         let export = Button::new("saves-export")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::Upload)
             .label(tr("Export to Steam"))
             .disabled(why_export.is_some())

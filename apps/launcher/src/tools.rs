@@ -8,11 +8,11 @@ use std::sync::{Arc, LazyLock};
 use std::time::Duration;
 use swofty_i18n::{tr, trf};
 
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::notification::Notification;
-use gpui_kit::component::{Disableable, Icon, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use serde::Deserialize;
@@ -211,13 +211,13 @@ impl Shell {
                             command.current_dir(dir);
                         }
                         match command.spawn() {
-                            Ok(_) => window.push_notification(
+                            Ok(_) => window.notify(
                                 Notification::info(trf!("{name} opens in your browser", name = name)),
                                 cx,
                             ),
                             Err(e) => {
                                 crate::app_log::action("start a tool").file(&path).failed(&e);
-                                window.push_notification(
+                                window.notify(
                                     match Block::of(&path, &e) {
                                         Some(b) => Notification::error(b.text()).autohide(false),
                                         None => Notification::error(e.to_string()),
