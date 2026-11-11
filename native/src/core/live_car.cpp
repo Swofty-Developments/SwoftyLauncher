@@ -1,5 +1,6 @@
 #include "live_car.hpp"
 
+#include "lap_rec_logic.hpp"
 #include "postfx_logic.hpp"
 #include "runtime.hpp"
 
@@ -17,8 +18,12 @@ namespace mem = swofty::mem;
 constexpr size_t CAR_IS_AI = 0x124, CAR_ENGINE = 0x530, CAR_GEARBOX = 0x538, CAR_CHASSIS = 0x558, CAR_STEERING = 0x560,
                  CAR_SUSPENSION = 0x580, CAR_THROTTLE = 0x188, CAR_BRAKE = 0x190, CAR_FLAGS = 0x224;
 constexpr size_t GEARBOX_INDEX = 0x680, ENGINE_RATE = 0x2538, ENGINE_LIMIT = 0x2528;
+// The body axes (right, up, forward) are the three rows at chassis +0x190, +0x1a0, +0x1b0: the game's own trace records
+// its Orientation channel from them (0x1437b3560) and its Speed channel from the forward row (0x1437c48c0).
 constexpr size_t CHASSIS_G_LATERAL = 0x320, CHASSIS_G_LONG = 0x324, CHASSIS_BODY = 0x340, BODY_STATE = 0x18,
                  BODY_VELOCITY = 0x220;
+constexpr size_t BODY_POSITION = 0x1c0, BODY_ANGULAR = 0x210, CHASSIS_BASIS = 0x190, BASIS_STRIDE = 0x10;
+constexpr size_t CAR_AERO = 0x570, AERO_DRS = 0x19a8, WHEEL_SPIN = 0x188, WHEEL_SLIP_ANGLE = 0x3b0, WHEEL_SLIP_RATIO = 0x3b4;
 constexpr size_t WHEEL_WETNESS = 0x280;
 constexpr size_t STEER_ANGLE = 0xe8, STEER_LOCK = 0x28, SUSPENSION_WHEELS = 0x70, WHEEL_SURFACE = 0x200,
                  SURFACE_ID = 0x78;
@@ -162,6 +167,11 @@ void read_surface(uintptr_t car, LiveCar &out)
     }
 }
 
+bool vec3(uintptr_t at, float (&out)[3])
+{
+    return mem::read(at, out) && real(out[0]) && real(out[1]) && real(out[2]);
+}
+
 }
 
 void read_wetness(LiveCar &out)
@@ -245,6 +255,74 @@ bool read(LiveCar &out)
     }
 
     read_surface(car, out);
+    return true;
+}
+
+uintptr_t player_car()
+{
+    if (!resolved)
+        resolve();
+    if (!table || !count)
+        return 0;
+    uintptr_t car = 0;
+    bool ai = false;
+    return find_player(car, ai) >= 0 && !ai ? car : 0;
+}
+
+bool read_dynamics(LiveDynamics &out)
+{
+    out = LiveDynamics{};
+    if (!resolved)
+        resolve();
+    if (!table || !count)
+        return false;
+    uintptr_t car = 0;
+    bool ai = false;
+    int player = find_player(car, ai);
+    if (player < 0)
+        return false;
+    out.player = player;
+    out.ai = ai;
+
+    if (uintptr_t chassis = ptr(car, CAR_CHASSIS)) {
+        if (uintptr_t body = ptr(ptr(chassis, CHASSIS_BODY), BODY_STATE)) {
+            out.has_pos = vec3(body + BODY_POSITION, out.pos);
+            out.has_vel = vec3(body + BODY_VELOCITY, out.vel);
+            out.has_angvel = vec3(body + BODY_ANGULAR, out.angvel);
+        }
+        float axes[3][3];
+        bool read = true;
+        for (int c = 0; c < 3 && read; c++)
+            read = vec3(chassis + CHASSIS_BASIS + BASIS_STRIDE * size_t(c), axes[c]);
+        if (read && runtime::lap_rec::unit_axes(axes)) {
+            runtime::lap_rec::quaternion_of(axes, out.quat);
+            out.has_orient = true;
+        }
+    }
+
+    if (uintptr_t susp = ptr(car, CAR_SUSPENSION)) {
+        bool spin = true, slip = true;
+        for (int i = 0; i < 4; i++) {
+            uintptr_t wheel = ptr(susp, SUSPENSION_WHEELS + 8 * size_t(i));
+            if (!wheel) {
+                spin = slip = false;
+                break;
+            }
+            spin = spin && mem::read(wheel + WHEEL_SPIN, out.spin[i]) && real(out.spin[i]);
+            slip = slip && mem::read(wheel + WHEEL_SLIP_ANGLE, out.slip_angle[i]) && real(out.slip_angle[i]) &&
+                   mem::read(wheel + WHEEL_SLIP_RATIO, out.slip_ratio[i]) && real(out.slip_ratio[i]);
+        }
+        out.has_spin = spin;
+        out.has_slip = slip;
+    }
+
+    if (uintptr_t aero = ptr(car, CAR_AERO)) {
+        float drs;
+        if (mem::read(aero + AERO_DRS, drs) && real(drs)) {
+            out.drs = drs < 0 ? 0 : drs > 1 ? 1 : drs;
+            out.has_drs = true;
+        }
+    }
     return true;
 }
 

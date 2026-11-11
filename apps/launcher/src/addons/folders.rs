@@ -1,11 +1,11 @@
 use super::drag::{Dragged, Dragging};
-use crate::scale::px;
+use crate::notices::{Notification, Notify};
+use crate::scale::{Hit, px};
 use crate::shell::{Prompt, Shell};
 use crate::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::notification::Notification;
-use gpui_kit::component::{Icon, Sizable, WindowExt, h_flex};
+use gpui_kit::component::{Icon, h_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::folders::{Entry, Key};
@@ -19,7 +19,7 @@ impl Shell {
             Ok(()) => self.library.folders = f,
             Err(e) => {
                 crate::app_log::action("save folders").failed(&e);
-                window.push_notification(Notification::error(e.to_string()), cx)
+                window.notify(Notification::error(e.to_string()), cx)
             }
         }
         cx.notify();
@@ -78,7 +78,7 @@ impl Shell {
         f.remove(id);
         if let Err(e) = self.store.save_folders(&f) {
             crate::app_log::action("save folders").failed(&e);
-            window.push_notification(Notification::error(e.to_string()), cx);
+            window.notify(Notification::error(e.to_string()), cx);
             return;
         }
         self.reload(cx);
@@ -204,7 +204,7 @@ impl Shell {
             .child(
                 Button::new(SharedString::from(format!("folder-rename-{tag}")))
                     .ghost()
-                    .xsmall()
+                    .tap_xs()
                     .icon(IconName::Pencil)
                     .tooltip(tr("Rename folder"))
                     .on_click(cx.listener(move |this, _, window, cx| {
@@ -215,7 +215,7 @@ impl Shell {
             .child(
                 Button::new(SharedString::from(format!("folder-remove-{tag}")))
                     .ghost()
-                    .xsmall()
+                    .tap_xs()
                     .icon(IconName::Trash)
                     .tooltip(tr("Remove folder. Its addons go back to their own folders."))
                     .on_click(cx.listener(move |this, _, window, cx| {

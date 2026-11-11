@@ -1,10 +1,11 @@
+use crate::notices::Notify;
 use std::cell::Cell;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::component::button::Button;
 use gpui_kit::component::input::{Input, InputState};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
-use gpui_kit::component::{Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{WindowExt, h_flex, v_flex};
 use gpui_kit::*;
 use swofty_core::dbedit::NodeId;
 use swofty_i18n::{tr, trf};
@@ -44,7 +45,7 @@ impl Shell {
                 let tag = tag.clone();
                 Button::new("db-add-type")
                     .outline()
-                    .small()
+                    .tap_sm()
                     .min_w(px(120.))
                     .label(type_name(current))
                     .dropdown_caret(true)
@@ -68,13 +69,13 @@ impl Shell {
                         .child(div().text_size(px(13.)).text_color(p.text_muted).child(
                             tr("Adds a key the stock database doesn't have. The game only reads keys it knows, so this is for paths you've confirmed."),
                         ))
-                        .child(Field::new(tr("PATH"), Input::new(&path).small()))
+                        .child(Field::new(tr("PATH"), Input::new(&path).tap_sm()))
                         .child(
                             h_flex()
                                 .gap(px(12.))
                                 .items_start()
                                 .child(Field::new(tr("TYPE"), picker))
-                                .child(div().flex_1().child(Field::new(tr("VALUE"), Input::new(&value).small()))),
+                                .child(div().flex_1().child(Field::new(tr("VALUE"), Input::new(&value).tap_sm()))),
                         ),
                 )
                 .ok_text(tr("Add key"))
@@ -87,16 +88,16 @@ impl Shell {
                         .unwrap_or_else(|_| Err("The launcher is closing".into()));
                     match result {
                         Ok(()) => {
-                            window.push_notification(
-                                gpui_kit::component::notification::Notification::success(trf!("Added {p}", p = p)),
+                            window.notify(
+                                crate::notices::Notification::success(trf!("Added {p}", p = p)),
                                 cx,
                             );
                             true
                         }
                         Err(e) => {
                             crate::app_log::action("db editor: add a key").failed(&e);
-                            window.push_notification(
-                                gpui_kit::component::notification::Notification::error(e).title(tr("Could not add the key")),
+                            window.notify(
+                                crate::notices::Notification::error(e).title(tr("Could not add the key")),
                                 cx,
                             );
                             false

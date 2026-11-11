@@ -1,8 +1,7 @@
 use crate::crash_modal::{self, CrashView};
 use crate::game::{self, Copies, Install, Owner, Probe};
 use crate::game_edited::Edited;
-use gpui_kit::component::WindowExt;
-use gpui_kit::component::notification::Notification;
+use crate::notices::{Notification, Notify};
 use gpui_kit::*;
 use std::time::{Duration, Instant};
 use swofty_core::quarantine;
@@ -66,7 +65,7 @@ impl Shell {
         self.apply_install(probe.install.take(), probe.merged, cx);
         if self.cancelling && probe.busy.is_none() && self.build.is_some() {
             self.cancelling = false;
-            window.push_notification(
+            window.notify(
                 Notification::info(tr(
                     "The game files are back as they were. Press Play to build again.",
                 ))
@@ -101,7 +100,7 @@ impl Shell {
                     count = n.lines.len() - text.len()
                 ));
             }
-            window.push_notification(Notification::info(text.join("\n")).title(recovery::HEADLINE), cx);
+            window.notify(Notification::info(text.join("\n")).title(recovery::HEADLINE), cx);
         }
         if let Some(r) = probe
             .mods_blocked

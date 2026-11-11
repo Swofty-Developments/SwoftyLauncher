@@ -79,7 +79,7 @@ fn says_why_the_latest_news_is_missing() {
     news.trouble = Some(Trouble::Offline);
     assert_eq!(news.subtitle(), "Offline · showing the news saved last time");
     news.live = true;
-    assert_eq!(news.subtitle(), "From f1.swofty.net");
+    assert_eq!(news.subtitle(), "");
 }
 
 #[test]

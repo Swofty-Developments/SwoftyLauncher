@@ -1553,7 +1553,8 @@ mod tests {
             )
             .unwrap();
             let other = store.profile("other").unwrap();
-            assert!(!other.has("t.root") && !other.has("t.dep"));
+            assert!(other.has("t.root") && other.has("t.dep"));
+            assert!(other.enabled().all(|id| id != "t.root" && id != "t.dep"));
             if deleted {
                 assert!(!store.profile_names().unwrap().iter().any(|name| name == "source"));
             } else {

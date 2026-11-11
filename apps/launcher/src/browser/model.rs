@@ -179,7 +179,6 @@ pub(super) enum Offer {
     Install,
     Installed(semver::Version),
     /// Installed, but not one of this profile's addons.
-    Elsewhere,
     Update(semver::Version, semver::Version),
     TooOld,
     Queued,

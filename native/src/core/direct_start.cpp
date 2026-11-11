@@ -502,14 +502,21 @@ void log_chain()
     swofty::log("[direct] flow chain: %s", chain.c_str());
 }
 
+std::atomic<runtime::FlowLinkListener> link_listener{nullptr};
+
 void link_mid(safetyhook::Context &c)
 {
-    if (!armed.load())
+    auto listener = link_listener.load();
+    if (!listener && !armed.load())
         return;
     auto *state = reinterpret_cast<uint8_t *>(c.rdi);
     if (!state || !runtime::readable(state, STATE_PARENT + 8))
         return;
     auto *slot = reinterpret_cast<uint32_t *>(c.rsp + LINK_SLOT);
+    if (listener)
+        listener(state, slot);
+    if (!armed.load())
+        return;
     uint32_t hash = *reinterpret_cast<uint32_t *>(state + STATE_HASH);
     bool child = *reinterpret_cast<void **>(state + STATE_CHILD) != nullptr;
     std::lock_guard<std::mutex> g(lock);
@@ -1202,12 +1209,37 @@ void log_stack(const char *what)
 
 uintptr_t direct_start_set_mode()
 {
-    return game.set_mode;
+    if (game.set_mode)
+        return game.set_mode;
+    static std::atomic<uintptr_t> found{0};
+    static std::atomic<bool> tried{false};
+    if (!tried.exchange(true)) {
+        found = runtime::verified_build() ? runtime::find(SIG_SET_MODE, "SetCurrentGameMode", "direct") : 0;
+        swofty::log("[direct] SetCurrentGameMode for a session without a direct start: %s", found.load() ? "resolved" : "not resolved");
+    }
+    return found.load();
 }
 
 DirectStartContext direct_start_context()
 {
-    return context;
+    if (game.manager)
+        return context;
+    static std::atomic<uintptr_t> manager{0};
+    static std::atomic<bool> tried{false};
+    if (!manager.load() && !tried.exchange(true)) {
+        manager = runtime::verified_build() ? runtime::find(SIG_GAME_MANAGER, "game manager", "direct") : 0;
+        swofty::log("[direct] game manager for a session without a direct start: %s", manager.load() ? "resolved" : "not resolved");
+    }
+    DirectStartContext c;
+    if (!manager.load() || !runtime::readable(reinterpret_cast<void *>(manager.load()), 8))
+        return c;
+    void *mgr = *reinterpret_cast<void **>(manager.load());
+    void *modes = modes_seen.load();
+    if (!modes && mgr && runtime::readable(mgr, MANAGER_MODES + 8))
+        modes = *reinterpret_cast<void **>(static_cast<uint8_t *>(mgr) + MANAGER_MODES);
+    c.game_manager = mgr;
+    c.game_modes = modes;
+    return c;
 }
 
 void direct_start_register_room(DirectStartSetup setup)
@@ -1237,6 +1269,23 @@ int direct_start_cover_signal()
         return 1;
     uint64_t at = session_at.load();
     return at && GetTickCount64() - at >= SESSION_SCREEN_WAIT_MS ? 1 : 0;
+}
+
+bool flow_link_listen(FlowLinkListener listener)
+{
+    link_listener = listener;
+    if (h_link)
+        return true;
+    uintptr_t at = runtime::verified_build() ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;
+    if (!at)
+        return false;
+    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), link_mid);
+    if (!h) {
+        swofty::log("[direct] the hook on the flow link site failed: %s", runtime::hook_error(h.error()).c_str());
+        return false;
+    }
+    h_link = std::move(*h);
+    return true;
 }
 
 void *direct_start_flow_root()

@@ -4,12 +4,12 @@ use std::io::{Read, Seek, SeekFrom};
 use std::path::{Path, PathBuf};
 use std::time::Duration;
 
-use crate::scale::px;
+use crate::notices::{Notification, Notify};
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::scroll::Scrollbar;
-use gpui_kit::component::{ActiveTheme, Disableable, Icon, Sizable, TitleBar, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{ActiveTheme, Disableable, Icon, TitleBar, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::session::{LOADER_LOG, SessionRecord};
@@ -339,7 +339,7 @@ impl Console {
             .join("\n");
         let count = lines.len();
         cx.write_to_clipboard(ClipboardItem::new_string(text));
-        window.push_notification(
+        window.notify(
             Notification::success(format!("Copied {}", trn(count, "{count} line", "{count} lines"))),
             cx,
         );
@@ -392,7 +392,7 @@ impl Console {
             .child(
                 Button::new("copy-all")
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::Copy)
                     .label(tr("Copy all"))
                     .disabled(empty)
@@ -401,7 +401,7 @@ impl Console {
             .child(
                 Button::new("clear")
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::Eraser)
                     .label(tr("Clear view"))
                     .disabled(empty)
@@ -413,7 +413,7 @@ impl Console {
             .child(
                 Button::new("open-file")
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::FolderOpen)
                     .label(tr("Open file"))
                     .tooltip(tr("Show the log in the file manager"))

@@ -1,10 +1,10 @@
 use std::collections::{BTreeMap, HashSet};
 
+use crate::notices::{Notification, Notify};
 use gpui_kit::assets::IconName;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::tooltip::Tooltip;
-use gpui_kit::component::{Icon, Sizable, WindowExt, v_flex};
+use gpui_kit::component::{Icon, Sizable, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::catalog::{self, Addon, Update};
@@ -64,7 +64,7 @@ pub(super) fn held_failure(error: &str) -> bool {
 impl Shell {
     /// The addon updates the play bar offers: every outdated registry addon that's on in the active
     /// profile, except the ones that failed at this version.
-    pub(super) fn addon_updates(&self) -> Vec<&Update> {
+    pub(crate) fn addon_updates(&self) -> Vec<&Update> {
         let on: HashSet<&str> = if self.vanilla() {
             HashSet::new()
         } else {
@@ -92,7 +92,7 @@ impl Shell {
             self.play_state(),
             PlayState::Running | PlayState::Elsewhere(_) | PlayState::Launching | PlayState::Preparing
         ) {
-            window.push_notification(Notification::error(tr("Close F1 25 before updating addons.")), cx);
+            window.notify(Notification::error(tr("Close F1 25 before updating addons.")), cx);
             return;
         }
         let building = self.build.clone();
@@ -102,7 +102,7 @@ impl Shell {
             .cloned()
             .partition(|u| building.as_ref().is_some_and(|b| b.holds(&u.id)));
         if !held.is_empty() {
-            window.push_notification(Notification::warning(crate::update::BUILDING), cx);
+            window.notify(Notification::warning(crate::update::BUILDING), cx);
         }
         if updates.is_empty() || self.updating_addons() {
             return;

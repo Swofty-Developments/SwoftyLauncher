@@ -1,8 +1,9 @@
+use crate::scale::Hit;
 use std::collections::BTreeSet;
 
 use gpui_kit::assets::IconName;
+use gpui_kit::component::Disableable;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Disableable, Sizable};
 use gpui_kit::*;
 use swofty_core::catalog::Addon;
 use swofty_core::catalog::requires::{self, Have, Plan};
@@ -30,13 +31,7 @@ impl Shell {
         if self.browser.failed.contains_key(&a.id) {
             return Offer::Failed;
         }
-        let elsewhere = self
-            .library
-            .addons
-            .iter()
-            .any(|m| m.manifest.id == a.id && !m.in_profile);
         match (a.offered(&current_version()), self.installed_version(&a.id)) {
-            (_, Some(_)) if elsewhere => Offer::Elsewhere,
             (Some(v), Some(m)) if v.version > m => Offer::Update(m, v.version.clone()),
             (_, Some(m)) => Offer::Installed(m),
             (Some(_), None) if self.needs_of(a).1.is_some() => Offer::Blocked,
@@ -110,7 +105,7 @@ impl Shell {
 
     pub(crate) fn offer_button(&self, a: &Addon, id: String, cx: &mut Context<Self>) -> Button {
         let target = a.id.clone();
-        let button = Button::new(SharedString::from(id)).small();
+        let button = Button::new(SharedString::from(id)).tap_sm();
         let button = match self.offer(a) {
             Offer::Install => button.primary().icon(IconName::Download).label(tr("Install")),
             Offer::Update(from, to) => {
@@ -140,17 +135,6 @@ impl Shell {
                     .icon(IconName::Check)
                     .label(trf!("Installed v{version}", version = v))
                     .disabled(true);
-            }
-            Offer::Elsewhere => {
-                let label = trf!("Add to {profile}", profile = self.library.profile.name);
-                return button
-                    .primary()
-                    .icon(IconName::Plus)
-                    .label(label)
-                    .on_click(cx.listener(move |this, _, window, cx| {
-                        cx.stop_propagation();
-                        this.add_one_to_profile(&target, window, cx);
-                    }));
             }
             Offer::TooOld => {
                 return button

@@ -1,3 +1,4 @@
+#include "direct_start_tt.hpp"
 #include "runtime.hpp"
 #include "replay_grid_logic.hpp"
 
@@ -1309,6 +1310,29 @@ std::vector<era::Box> era_boxes()
 {
     std::lock_guard<std::mutex> g(lock);
     return logic::ordered(boxes);
+}
+
+void era_press(const char *entrant_list)
+{
+    void *mode = nullptr, *entity = nullptr;
+    uintptr_t slot = swofty::api ? swofty::api->resolve("g_Game_Manager") : 0, mgr = 0, ctx = 0;
+    if (slot && mem::read(slot, mgr) && mgr)
+        mem::read(mgr + offsetof(swofty::game::GameManager, mode_context), ctx);
+    entity = reinterpret_cast<void *>(ctx);
+    void *host = time_trial(entity) ? entity : nullptr;
+    // The picker's own list of boxes only exists once the picker has been opened, so the name is taken as given: the narrowing finds
+    // the list by name in the mode's setups and does nothing when it is not there.
+    bool ours = entrant_list && *entrant_list;
+    {
+        std::lock_guard<std::mutex> g(held_lock);
+        put_back();
+    }
+    if (host && ours)
+        ::narrow(host, entrant_list);
+    last_press = entrant_list ? entrant_list : "";
+    last_pick = ours ? last_press : "";
+    swofty::log("[era] box %s counts as pressed (a replay names it): %s", last_press.empty() ? "none" : last_press.c_str(),
+                !ours ? "no box named" : host ? "the Time Trial mode is narrowed to it" : "the current mode is not Time Trial; nothing narrowed");
 }
 
 void era_session_load()

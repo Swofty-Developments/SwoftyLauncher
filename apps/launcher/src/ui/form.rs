@@ -3,7 +3,7 @@
 
 use std::rc::Rc;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
@@ -296,7 +296,7 @@ pub fn select(id: impl Into<ElementId>, choices: Vec<Choice>) -> impl IntoElemen
         .unwrap_or_default();
     Button::new(id)
         .outline()
-        .small()
+        .tap_sm()
         .label(current)
         .dropdown_caret(true)
         .dropdown_menu_with_anchor(Anchor::TopRight, move |mut menu, _, _| {
@@ -324,7 +324,7 @@ pub fn segmented(id: &'static str, choices: Vec<Choice>, p: Palette) -> Div {
         .children(choices.into_iter().enumerate().map(|(i, choice)| {
             let pick = choice.pick;
             let button = Button::new(SharedString::from(format!("{id}-{i}")))
-                .small()
+                .tap_sm()
                 .label(choice.label)
                 .on_click(move |_, window, cx| pick(window, cx));
             if choice.selected {

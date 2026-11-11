@@ -1,5 +1,5 @@
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Sizable, h_flex};
+use gpui_kit::component::h_flex;
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::vault::{Notice, Vault};
@@ -7,7 +7,7 @@ use swofty_i18n::tr;
 
 use super::banner_data::Kind;
 use crate::pages::GUTTER;
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::Palette;
 use crate::ui::Callout;
@@ -25,7 +25,7 @@ impl Shell {
             .when(kind != Kind::Hint, |row| {
                 row.child(
                     Button::new("saves-banner-restore")
-                        .small()
+                        .tap_sm()
                         .label(tr("Restore"))
                         .on_click(cx.listener(move |this, _, window, cx| {
                             this.restore_version(&restore.0, &restore.1, window, cx);
@@ -35,7 +35,7 @@ impl Shell {
             .child(
                 Button::new("saves-banner-review")
                     .outline()
-                    .small()
+                    .tap_sm()
                     .label(match on_page {
                         true => tr("Review the restore"),
                         false => tr("Open Career saves"),
@@ -47,7 +47,7 @@ impl Shell {
             .child(
                 Button::new("saves-banner-dismiss")
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .label(tr("Dismiss"))
                     .on_click(cx.listener(move |this, _, _, cx| {
                         let root = this.store.root.clone();

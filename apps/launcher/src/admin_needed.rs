@@ -1,9 +1,9 @@
 use std::path::Path;
 use std::time::Duration;
 
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::component::WindowExt;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::install::Source;
@@ -64,7 +64,7 @@ impl Shell {
 const ELEVATED_SETTLE: Duration = Duration::from_secs(6);
 
 fn not_restarted(text: String, window: &mut Window, cx: &mut App) {
-    window.push_notification(
+    window.notify(
         Notification::warning(text)
             .title(tr("Not restarted as administrator"))
             .autohide(false),

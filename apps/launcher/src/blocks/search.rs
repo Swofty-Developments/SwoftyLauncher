@@ -1,9 +1,9 @@
 use std::time::Duration;
 
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
+use gpui_kit::component::Icon;
 use gpui_kit::component::input::{Input, InputEvent, InputState};
-use gpui_kit::component::{Icon, Sizable};
 use gpui_kit::*;
 use swofty_core::view::Search;
 use swofty_i18n::tr;
@@ -98,7 +98,7 @@ impl Shell {
             div()
                 .w(px(280.))
                 .child(
-                    Input::new(&slot.state).small().cleanable(true).prefix(
+                    Input::new(&slot.state).tap_sm().cleanable(true).prefix(
                         Icon::new(IconName::Search)
                             .size(px(14.))
                             .text_color(p.text_placeholder),

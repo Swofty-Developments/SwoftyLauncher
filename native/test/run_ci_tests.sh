@@ -90,7 +90,21 @@ t "Core site names exported (host-only)" native/test/run_core_sites_exported_tes
 t "Garage crew guard unit test" native/test/run_garage_crew_test.sh
 t "Garage crew guard sites export test" native/test/run_garage_crew_sites_test.sh
 t "Leaderboard guard unit test" native/test/run_leaderboard_guard_test.sh
+t "Lap file format unit test" native/test/run_lap_file_test.sh
+t "Time Trial boards bridge unit test" native/test/run_tt_bridge_test.sh
+t "Lap recorder state machine, field plan and session gate unit test" native/test/run_lap_rec_test.sh
+t "Ghost trace codec and lap converter unit test" native/test/run_ghost_trace_test.sh
+t "Ghost arming state machine unit test" native/test/run_ghost_arm_test.sh
+t "Lap setup capture unit test" native/test/run_lap_setup_test.sh
+t "Lap toast message and state machine unit test" native/test/run_toast_test.sh
+t "Player name sanitising unit test" native/test/run_player_name_test.sh
+t "UI registry walk unit test" native/test/run_ui_registry_walk_test.sh
+t "Presence id and ghost id stream unit test" native/test/run_presence_id_test.sh
+t "Memory scan helpers unit test" native/test/run_mem_scan_test.sh
+t "Lap assists capture unit test" native/test/run_lap_assists_test.sh
+t "Ghost request file unit test" native/test/run_ghost_request_test.sh
 t "Front-end tile list guard unit test" native/test/run_fe_tile_guard_test.sh
+t "Main menu logic unit test" native/test/run_main_menu_test.sh
 t "Session enter guard unit test" native/test/run_session_enter_test.sh
 t "AI line set guard unit test" native/test/run_ai_line_set_test.sh
 t "Audio job queue fix unit test" native/test/run_audio_queue_test.sh

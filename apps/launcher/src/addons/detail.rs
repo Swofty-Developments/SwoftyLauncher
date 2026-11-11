@@ -3,13 +3,13 @@ use super::needs::{Need, NeedKind};
 use super::row::{experimental_labels, fallback_icon};
 use crate::library::{AddonItem, Changes, Source, Type};
 use crate::pages::{addon_icon, chevron, fact, label, logo, tag};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::{Palette, ScrollArea};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::tooltip::Tooltip;
-use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::folders::{self};
@@ -59,7 +59,7 @@ impl Shell {
         let close = (!inline).then(|| {
             Button::new("detail-close")
                 .ghost()
-                .small()
+                .tap_sm()
                 .icon(IconName::X)
                 .tooltip(tr("Close"))
                 .on_click(cx.listener(|this, _, _, cx| {
@@ -193,7 +193,7 @@ impl Shell {
                     d.child(
                         Button::new("detail-up")
                             .ghost()
-                            .xsmall()
+                            .tap_xs()
                             .icon(IconName::ArrowUp)
                             .tooltip(tr("Move up"))
                             .disabled(!can_up)
@@ -204,7 +204,7 @@ impl Shell {
                     .child(
                         Button::new("detail-down")
                             .ghost()
-                            .xsmall()
+                            .tap_xs()
                             .icon(IconName::ArrowDown)
                             .tooltip(tr("Move down"))
                             .disabled(!can_down)
@@ -317,7 +317,7 @@ impl Shell {
             actions.push(
                 Button::new("detail-edit-db")
                     .outline()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::Database)
                     .label(tr("Edit in DB Editor"))
                     .on_click(cx.listener(move |this, _, _, cx| this.db_edit_addon(&id, cx)))
@@ -326,26 +326,11 @@ impl Shell {
         }
         let mut remove: Vec<AnyElement> = Vec::new();
         if m.source != Source::Builtin && !m.locked {
-            let profile = &self.library.profile;
-            if !profile.is_vanilla() && m.in_profile {
-                let (id, name) = (man.id.clone(), man.name.clone());
-                remove.push(
-                    Button::new("detail-take-out")
-                        .ghost()
-                        .small()
-                        .icon(IconName::Minus)
-                        .label(trf!("Remove from {name}", name = profile.name))
-                        .on_click(cx.listener(move |this, _, window, cx| {
-                            this.remove_from_profile(&id, &name, window, cx)
-                        }))
-                        .into_any_element(),
-                );
-            }
             let (id, name) = (man.id.clone(), man.name.clone());
             remove.push(
                 Button::new("detail-remove")
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::Trash)
                     .label(tr("Uninstall"))
                     .text_color(p.error)

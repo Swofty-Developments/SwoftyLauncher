@@ -8,8 +8,6 @@ pub const TV_SCALE: f32 = 1.3;
 const BASE_REM: f32 = 16.;
 const BASE_FONT: f32 = 14.;
 
-/// The sidebar's width in layout units (what `px(SIDEBAR_WIDTH)` scales).
-pub const SIDEBAR_WIDTH: f32 = 220.;
 const MIN_CONTENT: f32 = 320.;
 
 static SCALE: AtomicU32 = AtomicU32::new(1.0_f32.to_bits());
@@ -30,14 +28,44 @@ fn scaled(value: f32, scale: f32) -> f32 {
     value * scale
 }
 
+pub const TV_CONTROL: f32 = 1.5;
+
+pub fn is_tv() -> bool {
+    current() > 1.
+}
+
+pub fn control() -> f32 {
+    if is_tv() { TV_CONTROL } else { 1. }
+}
+
+pub fn fixed(value: f32) -> Pixels {
+    gpui_kit::px(value)
+}
+
+pub fn ctl(value: f32) -> Pixels {
+    gpui_kit::px(scaled(value, current()) * control())
+}
+
+pub trait Hit: gpui_kit::component::Sizable + Sized {
+    fn tap_xs(self) -> Self {
+        if is_tv() { self.large() } else { self.xsmall() }
+    }
+
+    fn tap_sm(self) -> Self {
+        if is_tv() { self.large() } else { self.small() }
+    }
+}
+
+impl<T: gpui_kit::component::Sizable> Hit for T {}
+
 pub fn px(value: f32) -> Pixels {
     gpui_kit::px(scaled(value, current()))
 }
 
 /// The width a page has for its content, in layout units: the window's width in
-/// pixels, divided back down by the scale, less the sidebar and the page gutters.
+/// pixels, divided back down by the scale, less the page gutters.
 pub fn content_width(viewport_px: f32, scale: f32) -> f32 {
-    (viewport_px / scale - SIDEBAR_WIDTH - 2. * crate::ui::tokens::space::GUTTER).max(MIN_CONTENT)
+    (viewport_px / scale - 2. * crate::ui::tokens::space::GUTTER).max(MIN_CONTENT)
 }
 
 pub fn apply(mode: UiMode, window: &mut Window, cx: &mut App) {
@@ -95,11 +123,20 @@ mod tests {
 
     #[test]
     fn content_width_is_in_layout_units_in_both_modes() {
-        assert_eq!(content_width(1440., 1.), 1440. - 220. - 56.);
+        assert_eq!(content_width(1440., 1.), 1440. - 56.);
         let tv = content_width(1440., TV_SCALE);
-        assert!((tv - (1440. / TV_SCALE - 220. - 56.)).abs() < 0.01);
+        assert!((tv - (1440. / TV_SCALE - 56.)).abs() < 0.01);
         assert!(tv < content_width(1440., 1.));
         assert_eq!(content_width(400., TV_SCALE), 320.);
+    }
+
+    #[test]
+    fn controls_grow_only_in_tv() {
+        assert_eq!(control(), 1.);
+        SCALE.store(TV_SCALE.to_bits(), Ordering::Relaxed);
+        assert_eq!(control(), TV_CONTROL);
+        assert!(f32::from(ctl(26.)) >= 44.);
+        SCALE.store(1.0_f32.to_bits(), Ordering::Relaxed);
     }
 
     #[test]

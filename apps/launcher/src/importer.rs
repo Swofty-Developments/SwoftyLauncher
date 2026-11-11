@@ -4,11 +4,11 @@
 use std::time::{Duration, Instant};
 use swofty_i18n::{tr, trf};
 
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::notification::Notification;
-use gpui_kit::component::{Disableable, WindowExt, v_flex};
+use gpui_kit::component::{Disableable, v_flex};
 use gpui_kit::*;
 use swofty_core::managed;
 use swofty_core::profile::VANILLA;
@@ -104,7 +104,7 @@ impl Shell {
                 .outline()
                 .icon(IconName::Layers)
                 .label(tr("Profiles"))
-                .on_click(cx.listener(|this, _, _, cx| this.go(Page::Profiles, cx))),
+                .on_click(cx.listener(|this, _, _, cx| this.go(Page::Addons, cx))),
         };
         let action = v_flex().items_center().gap(px(12.)).child(button).child(
             div().text_size(px(12.)).text_color(p.text_placeholder).child(tr(
@@ -156,7 +156,7 @@ impl Shell {
                         if s.importer_section().is_none() && !s.vanilla() {
                             s.set_addon_enabled(managed::ID, true, window, cx);
                         }
-                        window.push_notification(
+                        window.notify(
                             Notification::success(trf!(
                                 "Installed {name} {version}",
                                 name = managed::NAME,
@@ -169,7 +169,7 @@ impl Shell {
                         crate::app_log::action("install addon")
                             .addon(managed::ID)
                             .failed(&e);
-                        window.push_notification(
+                        window.notify(
                             Notification::error(e)
                                 .title(trf!("Could not install {name}", name = managed::NAME)),
                             cx,

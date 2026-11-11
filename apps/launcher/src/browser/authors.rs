@@ -20,7 +20,7 @@ use swofty_i18n::{tr, trf, trn};
 use super::*;
 use crate::format;
 use crate::pages::{GUTTER, label, tag};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::{Page, Shell};
 use crate::theme::Palette;
 
@@ -87,7 +87,7 @@ fn author_links(links: &[publishers::Link]) -> Vec<AnyElement> {
             };
             Button::new(SharedString::from(format!("browser-author-link-{i}")))
                 .outline()
-                .small()
+                .tap_sm()
                 .icon(IconName::ExternalLink)
                 .label(text)
                 .tooltip(url.clone())
@@ -547,7 +547,7 @@ impl Shell {
                     b.ghost()
                 }
             })
-            .small()
+            .tap_sm()
             .icon(IconName::Users)
             .label(tr("Creators"))
             .on_click(cx.listener(|this, _, _, cx| this.browse_creators(cx)))
@@ -821,7 +821,7 @@ impl Shell {
         let sort = self.browser.author_sort;
         Button::new("browser-author-sort")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::ArrowUpDown)
             .label(sort.label())
             .dropdown_caret(true)
@@ -1207,7 +1207,7 @@ impl Shell {
         match self.offer(a) {
             Offer::Install => Button::new(key)
                 .primary()
-                .xsmall()
+                .tap_xs()
                 .icon(IconName::Download)
                 .label(tr("Install"))
                 .on_click(cx.listener(move |this, _, _, cx| {
@@ -1217,7 +1217,7 @@ impl Shell {
                 .into_any_element(),
             Offer::Failed => Button::new(key)
                 .danger()
-                .xsmall()
+                .tap_xs()
                 .icon(IconName::RotateCw)
                 .label(tr("Retry"))
                 .on_click(cx.listener(move |this, _, _, cx| {
@@ -1227,7 +1227,7 @@ impl Shell {
                 .into_any_element(),
             Offer::Queued => Button::new(key)
                 .outline()
-                .xsmall()
+                .tap_xs()
                 .label(tr("Queued"))
                 .on_click(cx.listener(|this, _, _, cx| {
                     cx.stop_propagation();
@@ -1236,20 +1236,10 @@ impl Shell {
                 .into_any_element(),
             Offer::Working(progress) => Button::new(key)
                 .primary()
-                .xsmall()
+                .tap_xs()
                 .loading(true)
                 .label(progress.short())
                 .disabled(true)
-                .into_any_element(),
-            Offer::Elsewhere => Button::new(key)
-                .primary()
-                .xsmall()
-                .icon(IconName::Plus)
-                .label(tr("Add"))
-                .on_click(cx.listener(move |this, _, window, cx| {
-                    cx.stop_propagation();
-                    this.add_one_to_profile(&target, window, cx);
-                }))
                 .into_any_element(),
             Offer::Installed(_) | Offer::Update(..) => {
                 tag(tr("Installed"), p).text_color(p.success).into_any_element()

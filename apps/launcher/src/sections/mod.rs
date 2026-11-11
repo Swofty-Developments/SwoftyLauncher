@@ -2,10 +2,9 @@ use std::collections::HashSet;
 use std::path::Path;
 use std::sync::{Arc, Mutex};
 
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::assets::IconName;
-use gpui_kit::component::WindowExt;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::*;
 use swofty_core::baseline::Identity;
 use swofty_core::install::Game;
@@ -385,7 +384,7 @@ impl Shell {
             Ok(Effect::None) => cx.notify(),
             Ok(Effect::Reload) => self.reload(cx),
             Ok(Effect::Notice(text)) => {
-                window.push_notification(Notification::info(text), cx);
+                window.notify(Notification::info(text), cx);
                 self.reload(cx);
             }
             Ok(Effect::SetAddonEnabled(on)) => self.set_addon_enabled(addon, on, window, cx),
@@ -395,14 +394,14 @@ impl Shell {
             }
             Ok(Effect::ShowAddon(shown)) => {
                 if let Some(text) = shown.notice() {
-                    window.push_notification(Notification::info(text.to_owned()), cx);
+                    window.notify(Notification::info(text.to_owned()), cx);
                 }
                 self.reload(cx);
                 self.show_addon(shown.id(), cx);
             }
             Err(e) => {
                 crate::app_log::action("addon action").addon(addon).failed(&e);
-                window.push_notification(Notification::error(e), cx);
+                window.notify(Notification::error(e), cx);
                 cx.notify();
             }
         }

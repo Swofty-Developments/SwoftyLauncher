@@ -1,8 +1,8 @@
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::Button;
 use gpui_kit::component::input::{Input, InputState};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::{WindowExt, h_flex};
 use gpui_kit::*;
 use std::path::PathBuf;
@@ -130,14 +130,14 @@ impl Shell {
                                     s.reload(cx)
                                 })
                                 .ok();
-                            window.push_notification(Notification::success(message), cx);
+                            window.notify(Notification::success(message), cx);
                             true
                         }
                         Err(e) => {
                             crate::app_log::action(title)
                                 .file(std::path::Path::new(&value))
                                 .failed(&e);
-                            window.push_notification(Notification::error(e), cx);
+                            window.notify(Notification::error(e), cx);
                             false
                         }
                     }

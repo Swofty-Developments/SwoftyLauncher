@@ -7,10 +7,10 @@ use std::sync::atomic::{AtomicBool, Ordering};
 use std::sync::{Arc, Mutex};
 use std::time::Duration;
 
-use crate::scale::px;
+use crate::notices::{Notification, Notify};
+use crate::scale::{Hit, px};
 use gpui_kit::component::button::Button;
-use gpui_kit::component::notification::Notification;
-use gpui_kit::component::{Sizable, WindowExt, h_flex, v_flex};
+use gpui_kit::component::{WindowExt, h_flex, v_flex};
 use gpui_kit::*;
 use swofty_core::busy::Busy;
 use swofty_core::data_move::{self, Location, Moved, Ops, Plan};
@@ -84,7 +84,7 @@ impl Shell {
 
     pub(crate) fn open_data_move(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if let Some(why) = self.move_refusal() {
-            window.push_notification(Notification::error(why), cx);
+            window.notify(Notification::error(why), cx);
             return;
         }
         #[cfg(debug_assertions)]
@@ -193,7 +193,7 @@ impl Shell {
 
     fn start_data_move(&mut self, plan: Plan, window: &mut Window, cx: &mut Context<Self>) {
         if let Some(why) = self.move_refusal() {
-            window.push_notification(Notification::error(why), cx);
+            window.notify(Notification::error(why), cx);
             return;
         }
         let feed: Feed = Arc::default();
@@ -306,7 +306,7 @@ impl Shell {
                 .action(
                     Button::new("data-move-cancel")
                         .outline()
-                        .small()
+                        .tap_sm()
                         .label(tr("Cancel"))
                         .on_click(cx.listener(|this, _, _, cx| this.cancel_data_move(cx))),
                 ),
@@ -342,11 +342,11 @@ impl Shell {
                 } else {
                     Notification::success(text)
                 };
-                window.push_notification(note, cx);
+                window.notify(note, cx);
             }
             Err(e) => {
                 crate::app_log::note(&format!("data move: not finished: {e}"));
-                window.push_notification(
+                window.notify(
                     Notification::error(trf!(
                         "Your addons and saves were not moved. They are where they were. {error}",
                         error = e

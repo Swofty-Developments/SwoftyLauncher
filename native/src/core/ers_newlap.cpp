@@ -59,8 +59,10 @@ void lookup_entry(SwoftyContext *c)
     }
     uint8_t car = uint8_t(c->rdx & 0xff);
     auto step = runtime::ers::step(c->r9, vehicle, known ? int(id) : -1, car);
-    if (step == runtime::ers::Step::lap)
+    if (step == runtime::ers::Step::lap) {
+        runtime::lap_rec_newlap(car);
         runtime::events_fire(SWOFTY_EVENT_LAP, car, 0, nullptr);
+    }
     if (step != runtime::ers::Step::skip)
         return;
     c->rip = next_vehicle;

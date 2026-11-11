@@ -13,7 +13,6 @@ use crate::format::{ago, duration};
 use crate::game::{self, Owner};
 
 pub(crate) const HEIGHT: f32 = 72.;
-use crate::pages::avatar;
 use crate::shell::{Page, PlayState, Shell};
 use crate::theme::Palette;
 use swofty_core::install::Source;
@@ -520,75 +519,6 @@ impl Shell {
         log.is_file().then_some(log)
     }
 
-    pub(crate) fn profile_picker(&self, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
-        let shell = cx.entity().downgrade();
-        let active = self.library.profile.name.clone();
-        let summary = self.library.active().map(|a| a.summary()).unwrap_or_default();
-        let profiles: Vec<(String, String)> = self
-            .library
-            .profiles
-            .iter()
-            .map(|p| (p.name.clone(), p.summary()))
-            .collect();
-        Button::new("profile-picker")
-            .outline()
-            .h(px(40.))
-            .min_w(px(180.))
-            .child(
-                h_flex().gap(px(8.)).child(avatar(&active, 24., p)).child(
-                    v_flex()
-                        .items_start()
-                        .child(
-                            div()
-                                .text_size(px(13.))
-                                .font_weight(FontWeight::MEDIUM)
-                                .child(active.clone()),
-                        )
-                        .child(div().text_size(px(11.)).text_color(p.text_muted).child(summary)),
-                ),
-            )
-            .dropdown_caret(true)
-            .disabled(matches!(
-                self.play_state(),
-                PlayState::Running
-                    | PlayState::Preparing
-                    | PlayState::Launching
-                    | PlayState::Restoring
-                    | PlayState::Building
-            ))
-            .dropdown_menu_with_anchor(Anchor::BottomRight, move |mut menu, _, _| {
-                menu = menu.min_w(px(300.)).label(tr("Profile"));
-                for (name, summary) in &profiles {
-                    let (shell, target) = (shell.clone(), name.clone());
-                    let (label, summary) = (name.clone(), summary.clone());
-                    menu = menu.item(
-                        PopupMenuItem::element(move |_, _| {
-                            h_flex()
-                                .w_full()
-                                .gap(px(24.))
-                                .justify_between()
-                                .child(label.clone())
-                                .child(div().text_color(p.text_muted).child(summary.clone()))
-                        })
-                        .checked(*name == active)
-                        .on_click(move |_, window, cx| {
-                            shell
-                                .update(cx, |s, cx| s.switch_profile(&target, window, cx))
-                                .ok();
-                        }),
-                    );
-                }
-                let shell = shell.clone();
-                menu.separator().item(
-                    PopupMenuItem::new(tr("Manage profiles…"))
-                        .icon(IconName::Settings)
-                        .on_click(move |_, _, cx| {
-                            shell.update(cx, |s, cx| s.go(Page::Profiles, cx)).ok();
-                        }),
-                )
-            })
-    }
-
     fn play_caret(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let shell = cx.entity().downgrade();
         let vr = self.launch_mode().is_vr();
@@ -875,6 +805,34 @@ impl Shell {
         )
     }
 
+    fn footer_links(&self, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
+        let tip = crate::send_logs::label();
+        h_flex()
+            .flex_shrink_0()
+            .items_center()
+            .gap(px(18.))
+            .child(
+                h_flex()
+                    .id("send-logs")
+                    .gap(px(6.))
+                    .items_center()
+                    .cursor_pointer()
+                    .text_size(px(12.))
+                    .text_color(p.text_muted)
+                    .hover(move |s| s.text_color(p.text))
+                    .tooltip(move |window, cx| Tooltip::new(tip).build(window, cx))
+                    .child(Icon::new(crate::send_logs::icon()).size(px(13.)))
+                    .child(crate::send_logs::short_label())
+                    .on_click(cx.listener(|this, _, window, cx| this.send_logs(window, cx))),
+            )
+            .child(
+                div()
+                    .text_size(px(12.))
+                    .text_color(p.text_placeholder)
+                    .child(concat!("v", env!("CARGO_PKG_VERSION"))),
+            )
+    }
+
     pub(crate) fn play_bar(&self, p: Palette, wide: bool, cx: &mut Context<Self>) -> impl IntoElement {
         let state = self.play_state();
         // With a room open on the Multiplayer page and the game ready, the room's button replaces Play.
@@ -900,6 +858,7 @@ impl Shell {
                     .child(self.game_info(p, wide, cx))
                     .child(self.status(&state, p, cx))
                     .children(room)
+                    .child(self.footer_links(p, cx))
                     .when(!lobby_only, |d| d.child(self.big_button(&state, p, cx))),
             )
     }

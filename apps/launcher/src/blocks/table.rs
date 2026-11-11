@@ -1,7 +1,7 @@
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
+use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::view::{Align, Cell, Field, Search, Table, TableRow};
@@ -585,7 +585,7 @@ impl Shell {
                     .child(
                         Button::new(SharedString::from(format!("{table_key}/close")))
                             .ghost()
-                            .small()
+                            .tap_sm()
                             .icon(IconName::X)
                             .tooltip(tr("Close"))
                             .on_click(cx.listener(move |this, _, _, cx| {

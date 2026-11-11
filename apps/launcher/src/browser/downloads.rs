@@ -28,6 +28,15 @@ impl Shell {
         }
     }
 
+    pub(crate) fn finished_downloads(&self) -> usize {
+        self.browser
+            .queue
+            .jobs()
+            .iter()
+            .filter(|job| !matches!(job.state, State::Queued | State::Active))
+            .count()
+    }
+
     pub(crate) fn dock_line(&self) -> Option<crate::download_dock::Line> {
         let jobs = self.browser.queue.jobs();
         let pending = self.browser.queue.pending();
@@ -39,13 +48,7 @@ impl Shell {
             let working = self.browser.working.get(&job.id);
             return Some(crate::download_dock::Line {
                 name: job.request.0.name.clone(),
-                status: match (&job.state, working) {
-                    (State::Active, Some(w)) => w.progress().short(),
-                    (State::Active, None) => tr("Starting…").to_owned(),
-                    _ => tr("Queued").to_owned(),
-                },
                 fraction: working.map(|w| w.progress().fraction()),
-                more: pending - 1,
                 failed: false,
             });
         }
@@ -57,20 +60,16 @@ impl Shell {
             let job = jobs.iter().rev().find(|job| job.state == State::Completed)?;
             return Some(crate::download_dock::Line {
                 name: job.request.0.name.clone(),
-                status: tr("Installed").to_owned(),
                 fraction: Some(1.),
-                more: 0,
                 failed: false,
             });
         };
-        let State::Failed(error) = &job.state else {
+        let State::Failed(_) = &job.state else {
             return None;
         };
         Some(crate::download_dock::Line {
             name: job.request.0.name.clone(),
-            status: trf!("Failed: {error}", error = error),
             fraction: None,
-            more: 0,
             failed: true,
         })
     }

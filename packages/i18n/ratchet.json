@@ -1,5 +1,4 @@
 {
-  "addons/problems.rs": 1,
   "admin_needed.rs": 4,
   "app_log.rs": 8,
   "browser/authors.rs": 1,
@@ -18,7 +17,6 @@
   "setup.rs": 7,
   "shaders/preview/worker.rs": 2,
   "shell/mod.rs": 6,
-  "shell/title_bar.rs": 2,
   "tasks.rs": 1,
   "update.rs": 11
 }

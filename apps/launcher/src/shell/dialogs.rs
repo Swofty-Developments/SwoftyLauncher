@@ -1,10 +1,10 @@
+use crate::notices::Notification;
 use crate::play_checks;
 use crate::scale::px;
 use crate::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
 use gpui_kit::component::dialog::{AlertDialog, DialogFooter};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::{Icon, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;

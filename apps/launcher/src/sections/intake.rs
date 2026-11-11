@@ -3,10 +3,10 @@ use std::path::PathBuf;
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, SystemTime};
 
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::{Icon, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -209,13 +209,13 @@ impl Shell {
             }
             this.update_in(cx, |s, window, cx| {
                 if !done.is_empty() {
-                    window.push_notification(Notification::success(done.join("\n")), cx);
+                    window.notify(Notification::success(done.join("\n")), cx);
                 }
                 if !failed.is_empty() {
-                    window.push_notification(Notification::error(failed.join("\n")), cx);
+                    window.notify(Notification::error(failed.join("\n")), cx);
                 }
                 if !left_out.is_empty() {
-                    window.push_notification(
+                    window.notify(
                         Notification::warning(left_out.join("\n"))
                             .title(tr("Track can't be used"))
                             .autohide(false),
@@ -388,38 +388,6 @@ impl Shell {
                             )),
                     ),
             )
-    }
-
-    pub(crate) fn progress_card(&self, p: Palette) -> Option<impl IntoElement> {
-        let (done, text) = self.progress.clone()?;
-        Some(
-            v_flex()
-                .absolute()
-                .right(px(16.))
-                .bottom(px(84.))
-                .w(px(320.))
-                .p(px(12.))
-                .gap(px(8.))
-                .rounded(px(6.))
-                .border_1()
-                .border_color(p.border)
-                .bg(p.elevated)
-                .child(div().text_size(px(13.)).truncate().child(text))
-                .child(
-                    div()
-                        .h(px(4.))
-                        .w_full()
-                        .rounded_full()
-                        .bg(p.border_variant)
-                        .child(
-                            div()
-                                .h_full()
-                                .w(relative(done.clamp(0., 1.)))
-                                .rounded_full()
-                                .bg(p.accent),
-                        ),
-                ),
-        )
     }
 }
 

@@ -1,5 +1,5 @@
+use crate::notices::{Notification, Notify};
 use gpui_kit::component::WindowExt;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::*;
 use swofty_core::launcher_saves;
 use swofty_core::profile::VANILLA;
@@ -97,7 +97,7 @@ impl Shell {
                 Notification::warning(trf!("The save was not copied: {error}", error = e))
             }
         };
-        window.push_notification(note, cx);
+        window.notify(note, cx);
         self.refresh_saves_in_background(cx);
         cx.notify();
     }
@@ -144,7 +144,7 @@ impl Shell {
                 Notification::warning(trf!("The save was not exported: {error}", error = e))
             }
         };
-        window.push_notification(note, cx);
+        window.notify(note, cx);
         self.refresh_saves_in_background(cx);
         cx.notify();
     }
@@ -190,7 +190,7 @@ impl Shell {
                 Notification::warning(trf!("The save was not restored: {error}", error = e))
             }
         };
-        window.push_notification(note, cx);
+        window.notify(note, cx);
         self.refresh_saves_in_background(cx);
         cx.notify();
     }
@@ -243,7 +243,7 @@ impl Shell {
         crate::game::import_now(&self.store);
         self.refresh_saves_in_background(cx);
         let found = !self.saves.view.as_ref().is_some_and(|v| v.steam_missing);
-        window.push_notification(
+        window.notify(
             match found {
                 true => Notification::success(tr("Imported your Steam save.")),
                 false => Notification::warning(tr(
@@ -275,7 +275,7 @@ impl Shell {
                         folder.display(),
                         swofty_core::STEAM_APP_ID
                     ));
-                    window.push_notification(
+                    window.notify(
                         Notification::warning(tr(
                             "That isn't a Steam save folder. Pick the one named remote under userdata.",
                         )),

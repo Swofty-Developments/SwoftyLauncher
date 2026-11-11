@@ -28,6 +28,14 @@ pub fn label() -> &'static str {
     if send_logs::available() { LABEL } else { SAVE_LABEL }
 }
 
+pub fn short_label() -> &'static str {
+    if send_logs::available() {
+        tr("Send logs")
+    } else {
+        tr("Save logs")
+    }
+}
+
 pub fn icon() -> IconName {
     if send_logs::available() {
         IconName::Send
@@ -456,26 +464,5 @@ impl Shell {
                     false
                 })
         });
-    }
-
-    pub(crate) fn send_logs_button(&self, p: Palette, cx: &mut Context<Self>) -> impl IntoElement {
-        h_flex()
-            .id("send-logs")
-            .min_h(px(36.))
-            .px(px(10.))
-            .py(px(6.))
-            .gap(px(9.))
-            .rounded(px(8.))
-            .border_1()
-            .border_color(p.border_variant)
-            .bg(p.surface)
-            .text_size(px(13.))
-            .font_weight(FontWeight::MEDIUM)
-            .cursor_pointer()
-            .text_color(p.text_muted)
-            .hover(move |s| s.bg(p.hover).border_color(p.border).text_color(p.text))
-            .on_click(cx.listener(|this, _, window, cx| this.send_logs(window, cx)))
-            .child(Icon::new(icon()).size(px(15.)).flex_shrink_0())
-            .child(div().flex_1().min_w_0().child(label()))
     }
 }

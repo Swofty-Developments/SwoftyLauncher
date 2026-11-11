@@ -3,10 +3,10 @@
 
 use std::time::SystemTime;
 
+use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::ButtonVariant;
-use gpui_kit::component::notification::Notification;
 use gpui_kit::*;
 use swofty_core::data_usage::{self, KEEP_FOR, KEEP_SESSIONS};
 use swofty_i18n::{tr, trf};
@@ -74,7 +74,7 @@ impl Shell {
         config.language = (code != swofty_i18n::ENGLISH).then(|| code.to_owned());
         if let Err(e) = self.store.save_config(&config) {
             crate::app_log::action("save settings").failed(&e);
-            window.push_notification(Notification::error(e.to_string()), cx);
+            window.notify(Notification::error(e.to_string()), cx);
         }
         swofty_i18n::set_language(Some(code));
         window.refresh();
@@ -126,7 +126,7 @@ impl Shell {
 
     pub(crate) fn confirm_clear_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if !self.processes.is_empty() {
-            window.push_notification(
+            window.notify(
                 Notification::error(tr("Close F1 25 first: it may still be writing its session log")),
                 cx,
             );
@@ -159,7 +159,7 @@ impl Shell {
 
     pub(crate) fn settings_clear_cache(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if !self.processes.is_empty() {
-            window.push_notification(Notification::error(tr("Close F1 25 first")), cx);
+            window.notify(Notification::error(tr("Close F1 25 first")), cx);
             return;
         }
         let Some(game) = self.install.as_ref().map(|i| i.dir.clone()) else {
@@ -177,7 +177,7 @@ impl Shell {
                     "settings: cleared the game drive copy ({})",
                     size(freed)
                 ));
-                window.push_notification(
+                window.notify(
                     Notification::success(trf!(
                         "Cleared the game drive copy and freed {size}",
                         size = size(freed)
@@ -194,7 +194,7 @@ impl Shell {
 
     fn settings_clear_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         if !self.processes.is_empty() {
-            window.push_notification(
+            window.notify(
                 Notification::error(tr("Close F1 25 first: it may still be writing its session log")),
                 cx,
             );
@@ -216,7 +216,7 @@ impl Shell {
                     done.sessions,
                     size(done.bytes)
                 ));
-                window.push_notification(
+                window.notify(
                     Notification::success(trf!(
                         "Cleared {count} old session logs and freed {size}",
                         count = done.sessions,

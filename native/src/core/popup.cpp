@@ -609,9 +609,9 @@ int popup_show(const std::string &title, const std::string &body, const std::str
     return enqueue(title, body, by);
 }
 
-int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by)
+int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by, const std::string &icon)
 {
-    return toast_enqueue(text, detail, seconds, "", by);
+    return toast_enqueue(text, detail, seconds, icon, by);
 }
 
 void hud_rebuilt()

@@ -5,14 +5,15 @@ use std::time::{Duration, Instant};
 
 use anyhow::{Context, Result, bail};
 use swofty_core::baseline::DepotHashes;
-use swofty_core::build::GVDB;
+use swofty_core::build::{ADDONS_DIR, GVDB};
 use swofty_core::busy::{self, Busy, Step};
-use swofty_core::install::{EA_APP_EXPERIMENTAL, Game, Installer, Source};
+use swofty_core::install::{EA_APP_EXPERIMENTAL, Game, Installer, LOADER_DIR, Source};
 use swofty_core::managed;
 use swofty_core::recovery::{Blocked, Scope, SessionLock};
 use swofty_core::settings::SETTINGS_FILE;
 use swofty_core::stock::{self, Depots};
 use swofty_core::store::Store;
+use swofty_core::timetrial::integrity::{self, Module};
 use swofty_core::{GAME_EXE, steam};
 use swofty_formats::erp::Erp;
 use swofty_formats::gvdb::Gvdb;
@@ -44,7 +45,7 @@ fn game_dir(store: &Store, explicit: Option<PathBuf>) -> Result<PathBuf> {
 
 pub fn build(store: &Store, profile: &str, game: Option<PathBuf>, side_data: bool) -> Result<ExitCode> {
     let g = self::game(store, game)?;
-    let built = build_profile(store, profile, &g)?;
+    let built = build_profile(store, profile, &g, None)?;
     report(profile, &built);
     if side_data {
         println!(
@@ -58,7 +59,12 @@ pub fn build(store: &Store, profile: &str, game: Option<PathBuf>, side_data: boo
     Ok(ExitCode::SUCCESS)
 }
 
-fn build_profile(store: &Store, profile: &str, g: &Game) -> Result<swofty_core::build::Built> {
+fn build_profile(
+    store: &Store,
+    profile: &str,
+    g: &Game,
+    integrity: Option<&Module>,
+) -> Result<swofty_core::build::Built> {
     let addons = store.addons()?;
     let mut p = store.profile(profile)?;
     let mut built = swofty_core::build::build(store, profile, g)?;
@@ -72,6 +78,18 @@ fn build_profile(store: &Store, profile: &str, g: &Game) -> Result<swofty_core::
         Some(s) => s,
         None => store.session_settings(profile)?,
     };
+    let mut session = session;
+    if let Some(m) = integrity
+        && !built.plan.loader.is_empty()
+    {
+        integrity::place(m, &mut built.plan.loader, &mut session.plugins);
+        built.lines.push(format!(
+            "integrity: {} {} under {LOADER_DIR}/{ADDONS_DIR}/{}",
+            integrity::DLL,
+            m.version,
+            integrity::PLUGIN_ID
+        ));
+    }
     std::fs::write(&settings, serde_json::to_vec_pretty(&session)?)
         .with_context(|| format!("writing {}", settings.display()))?;
     if !built.plan.loader.is_empty() {
@@ -385,7 +403,8 @@ fn install_checked(
         progress,
         ..Installer::new(&store.root, g)
     };
-    let built = build_profile(store, profile, g)?;
+    let integrity = session.then(|| crate::laps::integrity(store, out)).flatten();
+    let built = build_profile(store, profile, g, integrity.as_ref())?;
     report(profile, &built);
     let found = match inst.apply(&built.plan) {
         Err(swofty_core::Error::Leftovers(found)) => found,
@@ -397,7 +416,7 @@ fn install_checked(
     let cleared = inst.clear(&found)?;
     crate::recover::announce(store, g, &cleared, out);
     crate::recover::record_cleared(store, &cleared);
-    let built = build_profile(store, profile, g)?;
+    let built = build_profile(store, profile, g, integrity.as_ref())?;
     report(profile, &built);
     match inst.apply(&built.plan) {
         Err(swofty_core::Error::Leftovers(found)) => Err(crate::recover::blocked(store, g, &found)),
@@ -785,7 +804,7 @@ mod tests {
             locked: false,
             default_on: true,
         }]);
-        build_profile(&store, "default", &game).unwrap();
+        build_profile(&store, "default", &game, None).unwrap();
         let p = store.profile("default").unwrap();
         assert_eq!(p.state["t.writer"], serde_json::json!({"built": true}));
         std::fs::remove_dir_all(&root).ok();
@@ -944,7 +963,7 @@ mod tests {
             return;
         }
         let h = Harness::new("unknown");
-        let built = build_profile(&h.store, "default", &h.game).unwrap();
+        let built = build_profile(&h.store, "default", &h.game, None).unwrap();
         assert!(built.plan.added.contains_key(MIP));
         // A copy that turns up after the build is only found when the files
         // are placed, as with track mip files, which always go in as

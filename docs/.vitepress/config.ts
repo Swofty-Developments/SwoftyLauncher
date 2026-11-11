@@ -466,6 +466,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               { text: "Tyres", link: "/std/systems/tyres", icon: "file" },
               { text: "Power units, ERS and DRS", link: "/std/systems/power-units", icon: "file" },
               { text: "Sessions and weekends", link: "/std/systems/sessions", icon: "file" },
+              { text: "Laps", link: "/std/systems/laps", icon: "file" },
               { text: "Weather", link: "/std/systems/weather", icon: "file" },
               { text: "AI", link: "/std/systems/ai", icon: "file" },
               { text: "Career", link: "/std/systems/career", icon: "file" },

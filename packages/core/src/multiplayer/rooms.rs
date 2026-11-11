@@ -448,20 +448,17 @@ impl Api {
         body: Option<String>,
         timeout: Duration,
     ) -> Result<T, ApiError> {
-        if let Some(rest) = self.server.strip_prefix("http://") {
-            let authority = rest.split('/').next().unwrap_or("");
-            if !super::ws::loopback(host_of(authority)) {
-                return Err(ApiError {
-                    status: 0,
-                    reason: "insecure".into(),
-                    message: format!(
-                        "refusing to send the session token to {} over plain http; use https",
-                        self.server
-                    ),
-                    lobby: None,
-                    retry_after: None,
-                });
-            }
+        if !crate::http::bearer_allowed(&self.server) {
+            return Err(ApiError {
+                status: 0,
+                reason: "insecure".into(),
+                message: format!(
+                    "refusing to send the session token to {} over plain http; use https",
+                    self.server
+                ),
+                lobby: None,
+                retry_after: None,
+            });
         }
         let url = format!("{}{path}", self.server);
         let auth = format!("Bearer {}", self.token);
@@ -508,15 +505,6 @@ impl Api {
             retry_after: None,
         })
     }
-}
-
-/// The host of `host[:port]` or `[v6]:port`, without brackets.
-fn host_of(authority: &str) -> &str {
-    let authority = authority.rsplit('@').next().unwrap_or(authority);
-    if let Some(v6) = authority.strip_prefix('[') {
-        return v6.split(']').next().unwrap_or("");
-    }
-    authority.split(':').next().unwrap_or("")
 }
 
 #[derive(Deserialize)]
@@ -672,8 +660,6 @@ mod tests {
             let e = Api::with_server(server, "t").rooms().unwrap_err();
             assert_eq!(e.reason, "network", "{server}");
         }
-        assert_eq!(host_of("[::1]:8471"), "::1");
-        assert_eq!(host_of("user@127.0.0.1:80"), "127.0.0.1");
     }
 
     #[test]

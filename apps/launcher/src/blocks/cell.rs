@@ -1,8 +1,8 @@
-use crate::scale::px;
+use crate::notices::{Notification, Notify};
+use crate::scale::{Hit, px};
 use gpui_kit::component::input::{Input, InputEvent, InputState};
-use gpui_kit::component::notification::Notification;
 use gpui_kit::component::switch::Switch;
-use gpui_kit::component::{Disableable, Sizable, WindowExt, h_flex};
+use gpui_kit::component::{Disableable, h_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use serde_json::{Map, Value};
@@ -60,7 +60,7 @@ impl Shell {
                         cx.notify();
                     }
                 }))
-                .child(Input::new(&input).xsmall())
+                .child(Input::new(&input).tap_xs())
                 .into_any_element();
         }
         // A switch cell keeps its pending state as "true" or "false", not as its text.
@@ -142,7 +142,7 @@ impl Shell {
             );
             let switch = Switch::new(SharedString::from(format!("cell-{key}")))
                 .checked(on)
-                .small()
+                .tap_sm()
                 .disabled(busy || tf.disabled)
                 .on_change(cx.listener(move |this, on: &bool, window, cx| {
                     this.blocks.pending_cells.insert(control.clone(), on.to_string());
@@ -336,7 +336,7 @@ impl Shell {
             Field::Number(nf) => match number_text(&text) {
                 Some(v) => nf.json(nf.clamp(v)),
                 None => {
-                    window.push_notification(
+                    window.notify(
                         Notification::error(trf!("{text} is not a number", text = text)),
                         cx,
                     );

@@ -1,6 +1,6 @@
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
-use gpui_kit::component::{Sizable, h_flex, v_flex};
+use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::catalog::Addon;
@@ -10,7 +10,7 @@ use swofty_i18n::{tr, trf, trn};
 use super::{day, since};
 use crate::format;
 use crate::pages::{label, stat};
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::Palette;
 use crate::ui::{Callout, ProgressBar};
@@ -51,7 +51,7 @@ impl Shell {
             .map(|url| {
                 Button::new("browser-homepage")
                     .ghost()
-                    .small()
+                    .tap_sm()
                     .icon(IconName::ExternalLink)
                     .label(tr("Homepage"))
                     .on_click(move |_, _, cx| cx.open_url(&url))
@@ -59,7 +59,7 @@ impl Shell {
         let source_code = a.source_url().map(str::to_owned).map(|url| {
             Button::new("browser-source-code")
                 .ghost()
-                .small()
+                .tap_sm()
                 .icon(IconName::ExternalLink)
                 .label(tr("Source code"))
                 .on_click(move |_, _, cx| cx.open_url(&url))
@@ -149,7 +149,7 @@ impl Shell {
         };
         let retry = Button::new("browser-detail-retry")
             .outline()
-            .small()
+            .tap_sm()
             .icon(IconName::RotateCw)
             .label(tr("Retry"))
             .on_click(cx.listener(move |this, _, _, cx| this.install_from_catalog(&target, cx)));

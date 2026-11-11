@@ -1,5 +1,4 @@
-use gpui_kit::component::WindowExt;
-use gpui_kit::component::notification::Notification;
+use crate::notices::{Notification, Notify};
 use gpui_kit::*;
 
 use super::Shell;
@@ -27,7 +26,7 @@ impl Shell {
         config.console = self.console.is_some();
         if let Err(e) = self.store.save_config(&config) {
             crate::app_log::action("save settings").failed(&e);
-            window.push_notification(Notification::error(e.to_string()), cx);
+            window.notify(Notification::error(e.to_string()), cx);
         }
         cx.notify();
     }
