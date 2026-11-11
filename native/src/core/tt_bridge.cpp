@@ -1165,7 +1165,9 @@ void describe_component(const char *what, uint64_t x);
 uint64_t replay_make_save_slot(uint64_t mgr, uint64_t owner);
 std::atomic<int64_t> replay_saved_mark_ms{0}, replay_saved_job_ms{0};
 std::atomic<uint32_t> replay_saved_lap_ms{0};
-void replay_write_setup(const std::wstring &frr);
+void replay_write_setup(const std::wstring &frr, bool beside_game_file = true);
+std::mutex replay_dir_lock;
+std::wstring replay_dir_seen;
 uint64_t replay_own_owner[8], replay_own_comp[8];
 std::atomic<int> replay_own_count{0};
 bool replay_slot_is_ours(uint64_t comp)
@@ -1343,7 +1345,7 @@ std::wstring replay_setup_path(const std::wstring &frr)
     return runtime::swofty_root() + L"tt\\replays\\" + (cut == std::wstring::npos ? frr : frr.substr(cut + 1)) + L".json";
 }
 
-void replay_write_setup(const std::wstring &frr)
+void replay_write_setup(const std::wstring &frr, bool beside_game_file)
 {
     std::string box = runtime::direct_start::tt::player_list(), track = runtime::direct_start::tt::session_track(), team = runtime::direct_start::tt::player_team();
     auto quote = [](const std::string &v) {
@@ -1359,7 +1361,7 @@ void replay_write_setup(const std::wstring &frr)
         tail = REPLAY_SAVE_DELAY_MS;
     std::string json = "{\"mode\":\"time_trial\",\"box\":" + quote(box) + ",\"track\":" + quote(track) + ",\"team\":" + quote(team) + ",\"lap_ms\":" + std::to_string(replay_saved_lap_ms.load()) +
                        ",\"tail_ms\":" + std::to_string(tail) + "}";
-    bool ok = runtime::write_file(replay_setup_path(frr), json);
+    bool ok = runtime::write_file(beside_game_file ? replay_setup_path(frr) : frr + L".json", json);
     swofty::log("[replay] setup for %s: %s %s", narrow(frr.c_str()).c_str(), json.c_str(), ok ? "written" : "NOT written");
 }
 
@@ -1604,13 +1606,73 @@ void replay_watch(std::wstring path, uint32_t lap_ms, uint64_t stamp)
             CloseHandle(f);
         }
         int magic = tb::replay_magic_offset(head, got);
-        bool copied = CopyFileW(path.c_str(), dest.c_str(), FALSE) != 0;
-        replay_write_setup(path);
+        // The file leaves the game's replay folder: Theatre lists only the laps the player adds from the boards. The setup is written
+        // last, so the pair is complete once the .json is there.
+        bool copied = MoveFileExW(path.c_str(), dest.c_str(), MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) != 0;
+        if (!copied && CopyFileW(path.c_str(), dest.c_str(), FALSE)) {
+            copied = true;
+            DeleteFileW(path.c_str());
+        }
+        {
+            size_t cut = path.find_last_of(L"\\/");
+            std::lock_guard<std::mutex> g(replay_dir_lock);
+            if (cut != std::wstring::npos)
+                replay_dir_seen = path.substr(0, cut + 1);
+        }
+        if (copied)
+            replay_write_setup(dest.substr(0, dest.size() - 7), false);
         swofty::log("[replay] capture: game save %s settled at %llu bytes; header %s; magic 0xe32fcaa8 %s; copy to tt/replays/%s %s", narrow(path.c_str()).c_str(), (unsigned long long)size,
                     hex_dump(head, got).c_str(), magic >= 0 ? ("found at +" + std::to_string(magic)).c_str() : "NOT found", name.c_str(), copied ? "done" : "FAILED");
         return;
     }
     swofty::log("[replay] capture: the game's save %s did not appear within 180 s", narrow(path.c_str()).c_str());
+}
+
+// The game's replay folder: where the last save went, or Documents\My Games\F1 25\replays.
+std::wstring replay_game_dir()
+{
+    {
+        std::lock_guard<std::mutex> g(replay_dir_lock);
+        if (!replay_dir_seen.empty())
+            return replay_dir_seen;
+    }
+    using GetFolder = HRESULT(WINAPI *)(HWND, int, HANDLE, DWORD, LPWSTR);
+    HMODULE shell = LoadLibraryW(L"shell32.dll");
+    auto get = shell ? reinterpret_cast<GetFolder>(GetProcAddress(shell, "SHGetFolderPathW")) : nullptr;
+    wchar_t docs[MAX_PATH] = {};
+    if (!get || get(nullptr, 5, nullptr, 0, docs) != 0 || !*docs)
+        return {};
+    std::wstring dir = std::wstring(docs) + L"\\My Games\\F1 25\\replays\\";
+    CreateDirectoryW(dir.c_str(), nullptr);
+    return dir;
+}
+
+// The launcher's "Add to game" leaves <name>.frr and <name>.frr.json in tt\replays\inbox. The replay goes into the game's replay folder,
+// where Theatre lists it, and its setup beside our own under tt\replays, where a Theatre pick reads it.
+void replay_inbox()
+{
+    std::wstring root = runtime::swofty_root(), inbox = root + L"tt\\replays\\inbox\\";
+    for (;;) {
+        WIN32_FIND_DATAW d{};
+        HANDLE h = FindFirstFileW((inbox + L"*.frr.json").c_str(), &d);
+        if (h != INVALID_HANDLE_VALUE) {
+            std::vector<std::wstring> found;
+            do
+                found.push_back(d.cFileName);
+            while (FindNextFileW(h, &d));
+            FindClose(h);
+            std::wstring game = found.empty() ? std::wstring() : replay_game_dir();
+            for (auto &json : found) {
+                std::wstring frr = json.substr(0, json.size() - 5);
+                if (game.empty() || frr.find_first_of(L"\\/:") != std::wstring::npos || GetFileAttributesW((inbox + frr).c_str()) == INVALID_FILE_ATTRIBUTES)
+                    continue;
+                bool a = MoveFileExW((inbox + frr).c_str(), (game + frr).c_str(), MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) != 0;
+                bool b = a && MoveFileExW((inbox + json).c_str(), (root + L"tt\\replays\\" + json).c_str(), MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) != 0;
+                swofty::log("[replay] inbox: %s %s into %s; its setup %s", narrow(frr.c_str()).c_str(), a ? "moved" : "NOT moved", narrow(game.c_str()).c_str(), b ? "placed" : "NOT placed");
+            }
+        }
+        Sleep(3000);
+    }
 }
 
 std::atomic<uint64_t> replay_system_ptr{0}, replay_manager_ptr{0};
@@ -2754,7 +2816,7 @@ void setup()
     {
         char rv[8] = {};
         DWORD rn = GetEnvironmentVariableA("SWOFTY_TT_REPLAY_CAPTURE", rv, sizeof rv);
-        replay_capture_on = rn && rn < sizeof rv && (!strcmp(rv, "1") || !strcmp(rv, "any"));
+        replay_capture_on = !(rn && rn < sizeof rv && !strcmp(rv, "0"));
         replay_capture_any = rn && rn < sizeof rv && !strcmp(rv, "any");
         char av[8] = {};
         DWORD an = GetEnvironmentVariableA("SWOFTY_TT_REPLAY_AFTER", av, sizeof av);
@@ -2765,7 +2827,7 @@ void setup()
             replay_play_path = pv;
         char fv[8] = {};
         DWORD fn = GetEnvironmentVariableA("SWOFTY_TT_REPLAY_FORCE", fv, sizeof fv);
-        replay_force = fn && fn < sizeof fv ? (!strcmp(fv, "self") ? 1 : !strcmp(fv, "slot") ? 2 : 0) : 0;
+        replay_force = fn && fn < sizeof fv ? (!strcmp(fv, "self") ? 1 : !strcmp(fv, "slot") ? 2 : 0) : 2;
     }
     track_watch = bridge_on || guards_on || diag_on;
     table = tb::Table(unix_seconds() * 100);
@@ -2935,6 +2997,7 @@ void setup()
                     hook_mid(h_replay_update, up, replay_update_mid, "replay system updateFromModule");
                 if (uintptr_t fr = runtime::find(S_REPLAY_FRAME, "boards", "boards"))
                     hook_mid(h_replay_frame, fr, replay_frame_mid, "replay buffer beginFrameWrite");
+                std::thread(replay_inbox).detach();
                 swofty::log("[replay] capture armed (SWOFTY_TT_REPLAY_CAPTURE=1): tick at base+0x%llx, save at base+0x%llx, path builder at base+0x%llx", (unsigned long long)(tick - swofty::api->module_base()),
                             (unsigned long long)(save_fn - swofty::api->module_base()), (unsigned long long)(path_fn - swofty::api->module_base()));
             } else
