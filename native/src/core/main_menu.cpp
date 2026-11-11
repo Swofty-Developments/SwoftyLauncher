@@ -56,7 +56,8 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 // layout; only single (one spawner, tile order) exists so far, and rows is logged as not built.
 // SWOFTY_MAIN_MENU_ENTRY=chain opens the pickers the old way (home_to_activity, then the command 900 ms after
 // the container is up); SWOFTY_MAIN_MENU_BACK=stock|home|twostep picks the game's Back, its home route or the two-step
-// hub Back instead of the launcher's routes; SWOFTY_MAIN_MENU_GPSAVES=0 always opens the new Grand Prix picker;
+// hub Back instead of the launcher's routes; SWOFTY_MAIN_MENU_GPSAVES=0 opens the new Grand Prix picker instead of the
+// game's Grand Prix saves screen (which lists saved seasons, offers New Grand Prix and selects the save slot);
 // SWOFTY_MAIN_MENU_RETURN=0 leaves the session-end hand-over on the bare container; SWOFTY_MAIN_MENU_RECOVER=0 turns
 // the recovery of a screen that did not open off; SWOFTY_MAIN_MENU_STATEFIX=0 leaves #ui_menu_data.frontend_transition_state
 // alone when leaving the container; SWOFTY_MAIN_MENU_MIGRATELOG=0 leaves the Migrate command unhooked.
@@ -778,7 +779,7 @@ void card_populate(HomeItem *item, void *node, uint32_t a7)
     style_item(item);
 }
 
-bool gp_saves_exist();
+void gp_saves_probe();
 
 Action *card_action(HomeItem *item, Action *out)
 {
@@ -792,7 +793,9 @@ Action *card_action(HomeItem *item, Action *out)
     bool gp = !std::strcmp(id_of(item), logic::ID_GRAND_PRIX);
     const char *route = route_name();
     if (entry_by_route()) {
-        logic::Mode m = gp ? logic::grand_prix_mode(gp_saves_exist(), !off("SWOFTY_MAIN_MENU_GPSAVES")) : logic::Mode::time_trial;
+        if (gp)
+            gp_saves_probe();
+        logic::Mode m = gp ? logic::grand_prix_mode(!off("SWOFTY_MAIN_MENU_GPSAVES")) : logic::Mode::time_trial;
         nav.mode = int(m);
         nav.return_armed = false;
         route = logic::press_route(m);
@@ -971,44 +974,58 @@ const runtime::Sig S_GAME_MANAGER{"game.manager",
                                   "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05", 0x604c2c8,
                                   runtime::Sig::riprel, 26, 29, 7};
 
-// The stock Grand Prix entry shows its saved seasons when GrandPrixContinueViewModel's mode lookup
-// (Game_GrandPrixContinueVm_FindModeEntity 0x141bccc00) finds a championship mode whose season registry
+// The stock Grand Prix entry (grand_prix_continue) shows its saved seasons when GrandPrixContinueViewModel's mode
+// lookup (Game_GrandPrixContinueVm_FindModeEntity 0x141bccc00) finds a championship mode whose season registry
 // (entity +0x1030, virtual +0x78) answers 1: F2_2026/F2_2025/F2_2024_Championship_Season, F1_Championship_Season,
-// F1_2026_Championship_Season, in that order. The same lookup (0x1407d0de0 on the game modes, the manager's +0xc0)
-// is asked here.
-bool gp_saves_exist()
+// F1_2026_Championship_Season, in that order. The card does not decide on this lookup any more: in the field it found
+// no entity for any name, F1_Championship_Season included, so the card never opened the saves screen (1.9.0 to 1.9.3).
+// It is asked once per session and logged (the modes pointer and every answer) so the field says which step fails.
+void gp_saves_probe()
 {
+    static std::atomic<bool> asked{false};
+    if (asked.exchange(true))
+        return;
     static const uintptr_t names[] = {0x5734370, 0x573438c, 0x57343a8, 0x570a6b2, 0x570a6c9};
     uintptr_t find = runtime::find(S_MODE_BY_NAME, "home", "core"), manager = runtime::find(S_GAME_MANAGER, "home", "core");
     if (!find || !manager) {
-        swofty::log("[main-menu] chain: the Grand Prix saves check did not resolve (mode lookup %p, game manager %p); using the new Grand Prix entry",
+        swofty::log("[main-menu] probe: the Grand Prix season lookup did not resolve (mode lookup %p, game manager %p)",
                     reinterpret_cast<void *>(find), reinterpret_cast<void *>(manager));
-        return false;
+        return;
     }
     void *mgr = *reinterpret_cast<void **>(manager);
     if (!mgr || !runtime::readable(static_cast<uint8_t *>(mgr) + 0xc0, 8)) {
-        swofty::log("[main-menu] chain: the game manager is not readable; using the new Grand Prix entry");
-        return false;
+        swofty::log("[main-menu] probe: the game manager %p is not readable", mgr);
+        return;
     }
     void *modes = *reinterpret_cast<void **>(static_cast<uint8_t *>(mgr) + 0xc0);
     uintptr_t base = swofty::api->module_base();
+    swofty::log("[main-menu] probe: game manager %p, game modes %p, mode lookup base+0x%llx", mgr, modes,
+                (unsigned long long)(find - base));
+    if (!modes || !runtime::readable(modes, 8))
+        return;
     for (uintptr_t rva : names) {
         const char *name = reinterpret_cast<const char *>(base + rva);
-        if (!runtime::readable(name, 8))
+        if (!runtime::readable(name, 8) || std::strlen(name) > 40 || std::strncmp(name, "F", 1)) {
+            swofty::log("[main-menu] probe: mode name at base+0x%llx is not a name", (unsigned long long)rva);
             continue;
+        }
         auto entity = reinterpret_cast<uint8_t *>(reinterpret_cast<void *(*)(void *, const char *)>(find)(modes, name));
-        if (!entity || !runtime::readable(entity + 0x1030, 8))
+        if (!entity) {
+            swofty::log("[main-menu] probe: Grand Prix mode %s: no entity", name);
             continue;
+        }
+        if (!runtime::readable(entity + 0x1030, 8)) {
+            swofty::log("[main-menu] probe: Grand Prix mode %s: entity %p has no readable season registry", name, entity);
+            continue;
+        }
         void **vt = *reinterpret_cast<void ***>(entity + 0x1030);
-        if (!vt || !runtime::readable(vt + 0xf, 8))
+        if (!vt || !runtime::readable(vt + 0xf, 8)) {
+            swofty::log("[main-menu] probe: Grand Prix mode %s: entity %p, registry vtable %p unreadable", name, entity, vt);
             continue;
+        }
         int answer = reinterpret_cast<int (*)(void *)>(vt[0x78 / 8])(entity + 0x1030);
-        swofty::log("[main-menu] chain: Grand Prix mode %s season registry answers %d", name, answer);
-        if (answer == 1)
-            return true;
+        swofty::log("[main-menu] probe: Grand Prix mode %s: entity %p, season registry answers %d", name, entity, answer);
     }
-    swofty::log("[main-menu] chain: no saved Grand Prix season found; using the new Grand Prix entry");
-    return false;
 }
 
 void start_chain(bool time_trial)
@@ -1020,12 +1037,9 @@ void start_chain(bool time_trial)
     std::lock_guard<std::mutex> g(chain_lock);
     chain = {};
     chain.step = Step::wait_container;
-    bool resume = false;
-    if (!time_trial) {
-        swofty::log("[main-menu] chain: checking for a saved Grand Prix season");
-        resume = gp_saves_exist();
-    }
-    logic::Mode m = time_trial ? logic::Mode::time_trial : logic::grand_prix_mode(resume, true);
+    if (!time_trial)
+        gp_saves_probe();
+    logic::Mode m = time_trial ? logic::Mode::time_trial : logic::grand_prix_mode(!off("SWOFTY_MAIN_MENU_GPSAVES"));
     nav.mode = int(m);
     chain.command = logic::return_command(m);
     chain.started = GetTickCount64();

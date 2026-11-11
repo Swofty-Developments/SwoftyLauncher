@@ -128,9 +128,11 @@ int main()
                std::string(mm::press_route(mm::Mode::grand_prix_saves)) == "swofty_grand_prix_saves" &&
                std::string(mm::press_route(mm::Mode::none)).empty(),
            "each card has its own launcher route");
-    expect(mm::grand_prix_mode(true, true) == mm::Mode::grand_prix_saves && mm::grand_prix_mode(false, true) == mm::Mode::grand_prix_new &&
-               mm::grand_prix_mode(true, false) == mm::Mode::grand_prix_new,
-           "Grand Prix goes to the saves list only when a season exists and the check is on");
+    expect(mm::grand_prix_mode(true) == mm::Mode::grand_prix_saves, "the Grand Prix card opens the game's saves screen, saved season or not");
+    expect(mm::grand_prix_mode(false) == mm::Mode::grand_prix_new, "SWOFTY_MAIN_MENU_GPSAVES=0 opens the new Grand Prix picker directly");
+    expect(std::string(mm::press_route(mm::grand_prix_mode(true))) == "swofty_grand_prix_saves" &&
+               std::string(mm::return_command(mm::grand_prix_mode(true))) == "grand_prix_resume",
+           "the saves screen route and its session-end hand-over command belong to the default Grand Prix mode");
     expect(std::string(mm::return_command(mm::Mode::time_trial)) == "time_trial" &&
                std::string(mm::return_command(mm::Mode::grand_prix_saves)) == "grand_prix_resume" &&
                std::string(mm::return_command(mm::Mode::grand_prix_new)) == "grand_prix_new",

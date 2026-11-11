@@ -342,7 +342,10 @@ inline const char *press_route(Mode m)
     }
 }
 
-inline Mode grand_prix_mode(bool saves, bool saves_check_on) { return saves && saves_check_on ? Mode::grand_prix_saves : Mode::grand_prix_new; }
+// The Grand Prix card opens the game's own saves screen (grand_prix_continue), which lists the saved seasons and the
+// New Grand Prix cards and selects the save slot a new season saves into; SWOFTY_MAIN_MENU_GPSAVES=0 raises
+// grand_prix_new on the bare activity container instead, which skips the slot screen.
+inline Mode grand_prix_mode(bool saves_screen_on) { return saves_screen_on ? Mode::grand_prix_saves : Mode::grand_prix_new; }
 
 inline const char *return_command(Mode m)
 {
