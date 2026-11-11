@@ -589,6 +589,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
                       { text: "Events & frame", link: "/reference/std/events", icon: "file" },
                       { text: "Overlay", link: "/reference/std/overlay", icon: "file" },
                       { text: "Telemetry", link: "/reference/std/telemetry", icon: "file" },
+                      { text: "Live state", link: "/reference/std/live", icon: "file" },
                       { text: "Database", link: "/reference/std/db", icon: "file" },
                       { text: "Storage", link: "/reference/std/storage", icon: "file" },
                       { text: "Career", link: "/reference/std/career", icon: "file" },
