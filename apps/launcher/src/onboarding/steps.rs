@@ -81,6 +81,7 @@ fn choice(id: SharedString, selected: bool, p: Palette) -> Stateful<Div> {
 fn english_name(code: &str) -> Option<&'static str> {
     match code {
         "en" => Some(tr("English")),
+        "es" => Some(tr("Spanish")),
         "ru" => Some(tr("Russian")),
         "zh-CN" => Some(tr("Chinese (Simplified)")),
         _ => None,
