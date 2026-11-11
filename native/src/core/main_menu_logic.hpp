@@ -26,6 +26,9 @@ constexpr const char *STOCK_ROUTE_F1_WORLD = "f1_world";
 constexpr const char *TEMPLATE_DEFAULT = "fe_tile_button_default";
 constexpr const char *TEMPLATE_DIVIDER = "swofty_home_divider";
 
+constexpr const char *SPLIT_SCREEN_TITLE = "SPLIT SCREEN";
+constexpr const char *SPLIT_SCREEN_DESCRIPTION = "Race a friend on one screen";
+
 constexpr const char *TT_TITLE = "Not signed in";
 constexpr const char *TT_BODY = "Sign in with Discord in Swofty Launcher to save your laps to the Time Trial boards. "
                                 "Laps from this session will not be saved. Press OK to continue to Time Trial.";
@@ -35,6 +38,7 @@ constexpr const char *TEMPLATE_TOP_RIGHT = "swofty_home_top_right";
 constexpr const char *TEMPLATE_TOP_THIRD = "swofty_home_top_third";
 constexpr const char *TEMPLATE_MODES_LEFT = "swofty_home_modes_left";
 constexpr const char *TEMPLATE_MODES_RIGHT = "swofty_home_modes_right";
+constexpr const char *TEMPLATE_MODES_THIRD = "swofty_home_modes_third";
 constexpr const char *TEMPLATE_WIDE_A = "swofty_home_wide_a";
 constexpr const char *TEMPLATE_WIDE_B = "swofty_home_wide_b";
 constexpr const char *TEMPLATE_WIDE_C = "swofty_home_wide_c";
@@ -42,7 +46,7 @@ constexpr const char *TEMPLATE_WIDE_C = "swofty_home_wide_c";
 inline const char *template_for(const std::string &id, bool rows = true)
 {
     if (!rows)
-        return id == ID_THEATRE || id == ID_SHOWROOM ? TEMPLATE_DEFAULT : "";
+        return id == ID_THEATRE || id == ID_SHOWROOM || id == ID_LOCAL ? TEMPLATE_DEFAULT : "";
     if (id == ID_DIVIDER)
         return TEMPLATE_DIVIDER;
     if (id == ID_STORY)
@@ -55,6 +59,8 @@ inline const char *template_for(const std::string &id, bool rows = true)
         return TEMPLATE_MODES_LEFT;
     if (id == ID_TIME_TRIAL)
         return TEMPLATE_MODES_RIGHT;
+    if (id == ID_LOCAL)
+        return TEMPLATE_MODES_THIRD;
     if (id == ID_THEATRE)
         return TEMPLATE_WIDE_A;
     if (id == ID_SHOWROOM)
@@ -186,7 +192,7 @@ struct Plan {
 
 inline bool removed(const std::string &id)
 {
-    return id == ID_F1_WORLD || id == ID_LOCAL || id == ID_LEAGUE || id == ID_HUB || id == ID_MOVIE || id == "divider";
+    return id == ID_F1_WORLD || id == ID_LEAGUE || id == ID_HUB || id == ID_MOVIE || id == "divider";
 }
 
 inline Plan layout(const std::vector<std::string> &stock, bool showroom_available)
@@ -207,7 +213,7 @@ inline Plan layout(const std::vector<std::string> &stock, bool showroom_availabl
     if (has(ID_CHALLENGE))
         top(ID_CHALLENGE);
     for (auto &s : stock) {
-        if (s == ID_CAREER || s == ID_STORY || s == ID_CHALLENGE || s == ID_THEATRE || s == ID_SETTINGS)
+        if (s == ID_CAREER || s == ID_STORY || s == ID_CHALLENGE || s == ID_LOCAL || s == ID_THEATRE || s == ID_SETTINGS)
             continue;
         if (removed(s))
             plan.dropped.push_back(s);
@@ -218,6 +224,8 @@ inline Plan layout(const std::vector<std::string> &stock, bool showroom_availabl
         plan.cards.push_back({ID_GRAND_PRIX, 1, 0, false});
         plan.cards.push_back({ID_TIME_TRIAL, 1, 1, false});
     }
+    if (has(ID_LOCAL))
+        plan.cards.push_back({ID_LOCAL, 1, 2, false});
     int row = 2;
     if (has(ID_THEATRE))
         plan.cards.push_back({ID_THEATRE, row++, 0, true});
