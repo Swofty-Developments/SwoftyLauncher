@@ -208,9 +208,9 @@ swofty::events::subscribe(tel::event::overtake, [](const SwoftyEvent *e, void *)
 |---|---|---|---|
 | `SWOFTY_EVENT_TELEMETRY_OVERTAKE` | `telemetry.overtake` | the overtaking car | the overtaken car |
 | `SWOFTY_EVENT_TELEMETRY_COLLISION` | `telemetry.collision` | first car | second car |
-| `SWOFTY_EVENT_TELEMETRY_RETIREMENT` | `telemetry.retirement` | the car | the retirement reason from the packet (0 when the format has none) |
+| `SWOFTY_EVENT_TELEMETRY_RETIREMENT` | `telemetry.retirement` | the car | the retirement reason the game reports (0 when only the classification saw it) |
 
-`telemetry.retirement` and `telemetry.overtake` derive from the classification when the memory source is on (see [Memory source](#memory-source)). `telemetry.collision` still needs the game's UDP telemetry output on, because the collision message is only observed where the game builds its UDP packet. The events need the `events` feature.
+`telemetry.overtake` derives from the classification when the memory source is on (see [Memory source](#memory-source)). `telemetry.collision` and `telemetry.retirement` come from the game's own message bus: the core subscribes to `r_car_to_car_col` and `vehicle_status_changed`, the messages the game's UDP builder listens to, and builds the same events from them. A collision pair is dropped while the second car had a collision event in the last four seconds, as in the UDP packets, and a retirement fires for the status changes the game's `RTMT` packet fires for, with the game's reason byte as `b`. Until the subscription is armed (it needs the bus to be running, and the rows in [Memory source](#memory-source) to be verified), the UDP versions fill in; once it is armed they are dropped. The events need the `events` feature.
 
 `SwoftySessionState.flag` takes the `SWOFTY_FLAG_*` values and `SwoftyCarState.flags` the `SWOFTY_CAR_FLAG_*` bits listed above; both come from the game's UDP packets, so they stay zero while its UDP telemetry output is off. See [Availability](#availability).
 
@@ -326,31 +326,36 @@ car telemetry           speed, rpm, gear, pedals, clutch, steer,   Car Telemetry
                         DRS, world position and velocity
 car status              ERS store, tyre compound ids               Car Status (7)
 lap data                position, lap, lap distance, sector,       Lap Data (2)
-                        gaps, pit lane flag, result status,
+                        gaps, pit status, pit stops, result status,
                         penalties, warnings, unserved penalties
 session                 type, track length, safety car, red flag,  Session (1)
                         flag, participant count, player index
-events                  retirement, overtake                       Event (3)
+events                  retirement, collision (bus), overtake     Event (3)
 ```
 
-What memory does not give stays with UDP, and in the 2026 format it stays zero: `tyre_temp`, `brake_temp`, `tyre_wear`, `fuel`, `fuel_laps`, `tyre_age_laps`, the lap and sector times, `driver_status`, `grid_position`, `pit_status` (the `IN_PIT_LANE` flag comes from memory), the weather and temperatures, `total_laps`, `session_time_left`, `pit_speed_limit`, and the participant names. Collision events and everything above in 2024 and 2025 formats come from the packets.
+What memory does not give stays with UDP, and in the 2026 format it stays zero: `tyre_temp`, `brake_temp`, `tyre_wear`, `fuel`, `fuel_laps`, `tyre_age_laps`, the lap and sector times, `driver_status`, `grid_position`, the weather and temperatures, `total_laps`, `session_time_left`, `pit_speed_limit`, and the participant names. Everything above in 2024 and 2025 formats comes from the packets.
 
 The participant index of the car and participant reads is the game's vehicle id for memory-filled values. The two agree when the game creates its cars in participant order, which the [cross-check](#memory-source) tests.
 
 When the memory source is on, `session.udp_format` reads 2026 even before a packet has arrived, `session.packets_seen` carries a bit for every group memory filled (bit n for the packet id n it replaces), `reserved[0]` is the watched vehicle id (`0xffffffff` for none) and `reserved[1]` the subject generation, as in `SwoftyLiveSession`. Readers that treated both as zero keep working.
 
-The game's UDP output still has to be on for `telemetry.collision`, for the 2024 and 2025 names, temperatures and wear, and for any group that is not verified on your build. The core hooks `sendto` while any group or event still depends on it, and the hook costs a table lookup per packet.
+`pit_status` follows the game's own mapping: 0 on track, 2 while the car's pit state is 4, otherwise 1 once the car has a pit-lane flag set, and `pit_stops` is the low byte of the car's stop counter. `IN_PIT_LANE` is set for status 1 and 2.
+
+The game's UDP output still has to be on for the 2024 and 2025 names, temperatures and wear, and for any group that is not verified on your build. The core hooks `sendto` while any group still depends on it, and the hook costs a table lookup per packet. Once every telemetry group is verified and the bus events are on, `telemetry_wants_udp` is false and the hook is not installed.
 
 ## Memory source
 
-A group reads from memory only when its sites resolve on the running build and its knowledge-base rows are verified; on any other build, such as the EA build until its bindings exist, it stays off and UDP fills the fields as before. `swofty/loader.log` says which:
+A group reads from memory only when every site it needs resolves on the running build and its knowledge-base rows are verified; on any other build, such as the EA build until its bindings exist, it stays off and UDP fills the fields as before. A site resolves only when the generated bindings export it, which they do for a row that is L2 or better with an independent `agree`, and a struct field counts as verified when the generated game headers declare it. `swofty/loader.log` says which:
 
 ```text
 [live] on
-[live] tyres off: needs a verified KB row (SWOFTY_LIVE_FORCE=1 reads it unverified)
+[live] classification off: k_Live_SessionSystemKey does not resolve (no agree row exports it yet)
+[live] tyres off: TyreSystem per-vehicle vector and the visual record have no KB row (SWOFTY_LIVE_FORCE=1 reads it unverified)
 ```
 
-`SWOFTY_LIVE_FORCE=1` opens every group whose sites resolve. Together with `SWOFTY_TELEMETRY_VERIFY=1` it runs the cross-check: each UDP packet is decoded into a scratch feed and compared with the memory values of the same frame, and every disagreement is logged:
+A few groups still read a chain the knowledge base has no row for (tyres, game mode, team badges, the track name, the spectator gap mode, the pit-lane flag block, and the DRS bit, which is an L1 row). Those stay off until the row exists, so UDP keeps filling `pit_status`, the tyre ids and the other fields they cover.
+
+`SWOFTY_LIVE_FORCE=1` opens every group whose sites resolve, verified or not; a group with a site that does not resolve stays off. Together with `SWOFTY_TELEMETRY_VERIFY=1` it runs the cross-check: each UDP packet is decoded into a scratch feed and compared with the memory values of the same frame, and every disagreement is logged:
 
 ```text
 [telemetry] cross-check: car 3 speed memory 71.204 udp 70.833 (packet 4812, 1 mismatched fields so far)

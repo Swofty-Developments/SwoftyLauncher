@@ -1,1 +1,22 @@
-# One line per "site_*" name that native/src/core resolves by name (swofty::api->resolve) while the generated headers do not export it: the guard that needs it logs "off ... does not resolve". Format: name, tab, reason.
+# One line per "site_*" name, or live-state table name, that native/src/core resolves by name (swofty::api->resolve) while the generated headers do not export it: the guard that needs it logs "off ... does not resolve". Format: name, tab, reason.
+Live_Subscribe_CarToCarCollision	awaiting agree verify (std lib: osd); the KB row is L1 and needs raising to L2 first
+Live_Subscribe_VehicleStatusChanged	awaiting agree verify (std lib: osd); the KB row is L1 and needs raising to L2 first
+Ne_Subscribe_BusMessage	awaiting agree verify (std lib: osd)
+g_Live_ControllerSystem	awaiting agree verify (std lib: osd)
+g_Live_SectorCount	awaiting agree verify (std lib: osd)
+g_Live_SectorEnds	awaiting agree verify (std lib: osd)
+k_Live_EntrantsSystemKey	awaiting agree verify (std lib: osd)
+k_Live_GameModeSystemKey	awaiting agree verify (std lib: osd)
+k_Live_MarshalZoneMonitorKey	awaiting agree verify (std lib: osd)
+k_Live_PenaltyLogKey	awaiting agree verify (std lib: osd)
+k_Live_PitLaneSystemKey	awaiting agree verify (std lib: osd)
+k_Live_RedFlagSystemKey	awaiting agree verify (std lib: osd)
+k_Live_RelativeGapHelperKey	awaiting agree verify (std lib: osd)
+k_Live_SafetyCarLogicSystemKey	awaiting agree verify (std lib: osd)
+k_Live_SessionSystemKey	awaiting agree verify (std lib: osd)
+k_Live_SpectatorDirectorKey	awaiting agree verify (std lib: osd)
+k_Live_TyreSystemKey	awaiting agree verify (std lib: osd)
+k_Live_VehicleHelperSystemKey	awaiting agree verify (std lib: osd)
+vt_Car_SystemsContainer	awaiting agree verify (std lib: osd)
+vt_Sess_ControllerSystem	awaiting agree verify (std lib: osd)
+vt_Sess_HumanController	awaiting agree verify (std lib: osd)

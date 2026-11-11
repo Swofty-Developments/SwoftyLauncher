@@ -1,3 +1,5 @@
+#include "../src/core/live/live_bus.hpp"
+#include "../src/core/live/live_rows.hpp"
 #include "../src/core/live/live_state.hpp"
 #include "../src/core/live/live_snapshot.hpp"
 #include "../src/core/live/live_telemetry_fill.hpp"
@@ -10,6 +12,7 @@
 #include <map>
 
 using namespace swofty_core::live;
+namespace bus = swofty_core::live::bus;
 namespace L = swofty_core::live::layout;
 namespace udp = runtime::udp_tel;
 
@@ -216,10 +219,14 @@ struct World {
 
         pit_sys = a.alloc(0x200);
         reg_add(s.key_pit, pit_sys);
+        uintptr_t lane = a.alloc(L::pit::lane_flags + 16 * 27 + 16);
+        a.put<uintptr_t>(pit_sys + L::pit::lane_object, lane);
         for (int i = 0; i < 3; i++) {
-            pit_rec[i] = a.alloc(16);
+            pit_rec[i] = a.alloc(0x40);
             a.put<uintptr_t>(pit_sys + L::pit::records + 16 * i, pit_rec[i]);
             a.put<uint32_t>(pit_rec[i] + L::pit::state, 0);
+            uintptr_t flags = a.alloc(0x200);
+            a.put<uintptr_t>(lane + L::pit::lane_flags + L::pit::lane_flag_stride * i, flags);
         }
 
         sc = a.alloc(0x200);
@@ -235,6 +242,8 @@ struct World {
         a.put<float>(s.sector_block + 8, 5000.f);
         a.put<float>(s.sector_block + L::track::sector_length, 5000.f);
         a.put<uint32_t>(s.sector_block + L::track::sector_count, 3);
+        s.track_length = s.sector_block + L::track::sector_length;
+        s.sector_count = s.sector_block + L::track::sector_count;
 
         marshal = a.alloc(0x200);
         reg_add(s.key_marshal, marshal);
@@ -640,6 +649,223 @@ static void test_badge()
     CHECK(!live.read_team_badge(1, out, sizeof out));
 }
 
+static void test_pit_lane()
+{
+    World w;
+    Live live(w.mem(), w.s, Gates::all());
+    live.update(0.0);
+    live.update(1.0);
+    auto lane_flag = [&](int i) {
+        uintptr_t lane = w.a.get<uintptr_t>(w.pit_sys + L::pit::lane_object);
+        return w.a.get<uintptr_t>(lane + L::pit::lane_flags + L::pit::lane_flag_stride * i) + L::pit::in_lane;
+    };
+    CHECK(live.cars[0].have & SWOFTY_LIVE_HAVE_PIT_LANE);
+    CHECK(live.cars[0].pit_status == 0 && live.cars[0].pit_stops == 0);
+    w.a.put<uint8_t>(lane_flag(0), 1);
+    w.a.put<uint32_t>(w.pit_rec[0] + L::pit::state, 3);
+    w.a.put<uint32_t>(w.pit_rec[0] + L::pit::stops, 0x1202);
+    w.a.put<uint8_t>(lane_flag(1), 1);
+    w.a.put<uint32_t>(w.pit_rec[1] + L::pit::state, 4);
+    live.update(2.0);
+    CHECK(live.cars[0].pit_status == 1 && live.cars[0].pit_stops == 2);
+    CHECK(live.cars[1].pit_status == 2);
+    CHECK(live.cars[2].pit_status == 0);
+    w.a.put<uint8_t>(lane_flag(0), 0);
+    live.update(3.0);
+    CHECK(live.cars[0].pit_status == 0 && live.cars[0].pit_stops == 2);
+
+    SwoftyTelemetryFeed f;
+    swofty::tel::feed_init(&f);
+    w.a.put<uint8_t>(lane_flag(1), 1);
+    live.update(4.0);
+    uint32_t groups = fill_feed(f, live.ses, live.cars, live.present);
+    CHECK(groups & PKT_LAP_DATA);
+    CHECK(f.cars[1].pit_status == 2 && f.cars[0].pit_stops == 2);
+    CHECK(f.cars[1].flags & SWOFTY_CAR_FLAG_IN_PIT_LANE);
+    CHECK(!(f.cars[0].flags & SWOFTY_CAR_FLAG_IN_PIT_LANE));
+
+    Gates no_lane = Gates::all();
+    no_lane.on[G_PIT_LANE] = false;
+    Live plain(w.mem(), w.s, no_lane);
+    plain.update(0.0);
+    plain.update(1.0);
+    CHECK(!(plain.cars[1].have & SWOFTY_LIVE_HAVE_PIT_LANE) && plain.cars[1].pit_state == 4);
+}
+
+static void test_sector_sites()
+{
+    World w;
+    Live live(w.mem(), w.s, Gates::all());
+    live.update(0.0);
+    live.update(1.0);
+    CHECK(live.ses.sector_count == 3);
+
+    World apart;
+    apart.s.sector_count += 0x10;
+    Live a(apart.mem(), apart.s, Gates::all());
+    a.update(0.0);
+    a.update(1.0);
+    CHECK(a.ses.sector_count == 0);
+}
+
+static void test_bus_logic()
+{
+    uint8_t m[0x20] = {};
+    auto collide = [&](uint8_t a, uint8_t b) {
+        m[bus::msg::collision_a] = a;
+        m[bus::msg::collision_b] = b;
+    };
+    bus::Collisions c;
+    Event e{};
+    collide(3, 5);
+    CHECK(c.take(m, 1000.0, e) && e.kind == Event::collision && e.a == 3 && e.b == 5);
+    collide(7, 5);
+    CHECK(!c.take(m, 4900.0, e));
+    collide(5, 7);
+    CHECK(c.take(m, 4900.0, e) && e.a == 5 && e.b == 7);
+    collide(3, 8);
+    CHECK(c.take(m, 5100.0, e));
+    collide(7, 3);
+    CHECK(!c.take(m, 5200.0, e));
+    collide(7, 3);
+    CHECK(c.take(m, 9200.0, e));
+    collide(24, 1);
+    CHECK(!c.take(m, 20000.0, e));
+    collide(1, 24);
+    CHECK(!c.take(m, 20000.0, e));
+
+    uint8_t st[0x20] = {};
+    st[bus::msg::status_vehicle] = 6;
+    st[bus::msg::status_reason] = 3;
+    st[bus::msg::status_code] = 5;
+    CHECK(bus::retirement_from(st, e) && e.kind == Event::retirement && e.a == 6 && e.b == 3);
+    st[bus::msg::status_code] = 7;
+    CHECK(bus::retirement_from(st, e));
+    st[bus::msg::status_code] = 4;
+    CHECK(!bus::retirement_from(st, e));
+    st[bus::msg::status_code] = 2;
+    CHECK(!bus::retirement_from(st, e));
+    st[bus::msg::status_code] = 5;
+    st[bus::msg::status_vehicle] = 30;
+    CHECK(!bus::retirement_from(st, e));
+
+    bus::Queue q;
+    collide(1, 2);
+    q.push_collision(m, 100.0);
+    q.push_collision(m, 200.0);
+    st[bus::msg::status_vehicle] = 2;
+    q.push_retirement(st);
+    auto got = q.drain();
+    CHECK(got.size() == 2 && got[0].kind == Event::collision && got[1].kind == Event::retirement && got[1].b == 3);
+    CHECK(q.drain().empty());
+}
+
+namespace fake_bus {
+Arena *arena;
+uintptr_t slot, holder, bus, allocator, vtable;
+int subscribed;
+std::vector<std::pair<std::string, uintptr_t>> subs;
+uintptr_t next_delegate;
+
+uintptr_t alloc(uintptr_t a, uintptr_t fn, uintptr_t ctx)
+{
+    if (a != allocator)
+        return 0;
+    uintptr_t d = arena->alloc(0x10);
+    arena->put<uintptr_t>(d, fn);
+    arena->put<uintptr_t>(d + 8, ctx);
+    return d;
+}
+
+void subscribe(uintptr_t b, const char *name, uintptr_t delegate)
+{
+    CHECK(b == bus);
+    subs.emplace_back(name, delegate);
+}
+}
+
+static void test_bus_subscribe()
+{
+    Arena a;
+    fake_bus::arena = &a;
+    fake_bus::slot = a.alloc(8);
+    fake_bus::holder = a.alloc(0x20);
+    fake_bus::bus = a.alloc(0x100);
+    fake_bus::allocator = a.alloc(0x20);
+    fake_bus::subs.clear();
+    a.put<uintptr_t>(fake_bus::slot, fake_bus::holder);
+    a.put<uintptr_t>(fake_bus::holder + bus::bus_from_holder, fake_bus::bus);
+    a.put<uintptr_t>(fake_bus::bus + bus::bus_allocator, fake_bus::allocator);
+
+    bus::Ops o;
+    o.mem = Mem{arena_read, &a};
+    o.bus_slot = fake_bus::slot;
+    o.alloc = fake_bus::alloc;
+    o.subscribe = fake_bus::subscribe;
+    o.collision_fn = 0xc0de;
+    o.status_fn = 0x57a7;
+    o.ctx = 0;
+
+    bus::Subscriber s;
+    CHECK(!s.arm(o) && fake_bus::subs.empty());
+    a.put<uint8_t>(fake_bus::bus + bus::bus_active, 1);
+    CHECK(s.arm(o) && s.armed() && fake_bus::subs.size() == 2);
+    CHECK(fake_bus::subs[0].first == "r_car_to_car_col" && fake_bus::subs[1].first == "vehicle_status_changed");
+    CHECK(a.get<uintptr_t>(fake_bus::subs[0].second) == 0xc0de && a.get<uintptr_t>(fake_bus::subs[1].second) == 0x57a7);
+    CHECK(s.arm(o) && fake_bus::subs.size() == 2);
+
+    uintptr_t fresh = a.alloc(0x100);
+    a.put<uintptr_t>(fake_bus::holder + bus::bus_from_holder, fresh);
+    a.put<uint8_t>(fresh + bus::bus_active, 1);
+    a.put<uintptr_t>(fresh + bus::bus_allocator, fake_bus::allocator);
+    fake_bus::bus = fresh;
+    CHECK(s.arm(o) && fake_bus::subs.size() == 4 && s.bus() == fresh);
+
+    bus::Subscriber none;
+    bus::Ops bare = o;
+    bare.alloc = nullptr;
+    CHECK(!none.arm(bare));
+}
+
+static void test_bus_events_in_live()
+{
+    World w;
+    Live live(w.mem(), w.s, Gates::all());
+    live.set_retirements_from_bus(true);
+    live.update(0.0);
+    live.take_events();
+    w.a.put<uint32_t>(w.results_entries[2] + L::results::status, 4);
+    live.update(0.4);
+    CHECK(live.take_events().empty());
+
+    live.add_event({Event::retirement, 2, 5});
+    live.add_event({Event::collision, 0, 1});
+    auto ev = live.take_events();
+    CHECK(ev.size() == 2 && ev[0].kind == Event::retirement && ev[0].b == 5 && ev[1].kind == Event::collision);
+
+    World w2;
+    Live edge(w2.mem(), w2.s, Gates::all());
+    edge.update(0.0);
+    w2.a.put<uint32_t>(w2.results_entries[2] + L::results::status, 4);
+    edge.update(0.4);
+    ev = edge.take_events();
+    CHECK(ev.size() == 1 && ev[0].kind == Event::retirement && ev[0].b == 0);
+}
+
+static void test_readiness_rows()
+{
+    for (unsigned g = 0; g < G_COUNT; g++) {
+        CHECK(ROWS[g].group == Group(g));
+        CHECK(ROWS[g].needs && ROWS[g].needs[0]);
+        CHECK(std::strlen(group_name(Group(g))) > 0);
+    }
+    CHECK(ROWS[G_TRACK].fields && ROWS[G_TRACK].mapped);
+    CHECK(!ROWS[G_TYRES].mapped && !ROWS[G_MODE].mapped && !ROWS[G_BADGES].mapped && !ROWS[G_PIT_LANE].mapped);
+    CHECK(!ROWS[G_TRACK_NAME].mapped && !ROWS[G_SPECTATE_GAP].mapped && !ROWS[G_AERO].mapped);
+    CHECK(L::pit::lane_object == 0x48 && L::pit::lane_flags == 0x938 && L::pit::in_lane == 0x103);
+    CHECK(L::pit::stops == 0x14 && L::pit::lane_flag_stride == 0x10);
+}
+
 int main()
 {
     test_order_gaps_cars();
@@ -652,6 +878,12 @@ int main()
     test_snapshot();
     test_telemetry_fill();
     test_badge();
+    test_pit_lane();
+    test_sector_sites();
+    test_bus_logic();
+    test_bus_subscribe();
+    test_bus_events_in_live();
+    test_readiness_rows();
     if (failures) {
         std::printf("%d failures\n", failures);
         return 1;
