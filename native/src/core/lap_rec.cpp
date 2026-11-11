@@ -106,6 +106,7 @@ struct LapResult {
 std::mutex lock;
 std::atomic<bool> active{false};
 std::atomic<int> player_car{-1};
+bool sampler_warned = false;
 std::atomic<bool> inbox{false};
 std::atomic<bool> finished_waiting{false};
 lr::Recorder recorder;
@@ -600,6 +601,8 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
 
 bool read_setup_now(runtime::lap_setup::Setup &out)
 {
+    if (!live_car::kb_fields())
+        return false;
     mem::Trust trust(runtime::HEAP_TRUST_MS);
     uintptr_t car = live_car::player_car();
     return car && runtime::lap_setup::read(read_memory, car, out);
@@ -903,6 +906,7 @@ void lap_rec_session_enter()
     tt_bridge_session_enter();
     discarded = written = 0;
     player_car = -1;
+    sampler_warned = false;
     active = true;
     swofty::log("[laps] recording this Time Trial session%s; lap source %s, ghost blob %s",
                 gate.nonce.empty() ? "" : " (session nonce set)", game_armed ? "the game's lap record" : "the clock",
@@ -1004,6 +1008,12 @@ void lap_rec_tick()
     live_car::LiveCar c;
     live_car::LiveDynamics d;
     if (!live_car::read_dynamics(d) || !live_car::read(c)) {
+        if (!live_car::available() && !sampler_warned) {
+            sampler_warned = true;
+            swofty::log("[laps] NO LAP IS RECORDED IN THIS SESSION: the live car sampler is off on this build (see the "
+                        "[shaders] live car line above), so the recorder never learns which car is the player's and "
+                        "drops every lap");
+        }
         if (work)
             drain();
         return;

@@ -1,3 +1,4 @@
+#include "live_car_logic.hpp"
 #include "postfx_logic.hpp"
 
 #include <cstdio>
@@ -36,6 +37,16 @@ int main()
     for (int s : {S_CAR_IMPACT, S_CAR_DAMAGE, S_CAR_IN_PIT_LANE, S_CAR_OFF_TRACK, S_SESSION_FLAG, S_SESSION_SAFETY_CAR,
                   S_SESSION_WEATHER, S_SESSION_FLASHBACK, S_SESSION_CHEQUERED})
         CHECK(!SIGNALS[s].in_game);
+
+    {
+        live_car::Fields none = live_car::fields_of(false, false), ea = live_car::fields_of(false, true),
+                         steam = live_car::fields_of(true, true);
+        CHECK(!none.table && !none.wetness && !none.surface && !none.orient && !none.angvel && !none.wheels && !none.drs);
+        CHECK(ea.table && ea.drs);
+        CHECK(!ea.wetness && !ea.surface && !ea.orient && !ea.angvel && !ea.wheels);
+        CHECK(steam.table && steam.wetness && steam.surface && steam.orient && steam.angvel && steam.wheels && steam.drs);
+        CHECK(!live_car::fields_of(true, false).table);
+    }
 
     if (failures)
         return 1;
