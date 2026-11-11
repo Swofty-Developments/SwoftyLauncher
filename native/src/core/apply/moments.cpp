@@ -347,11 +347,18 @@ bool tracks_read = false;
 std::string tracks_read_at;
 
 // The tracks table is read once per game run, at the first of the window stage, a box press or a session load that
-// finds it readable; the rows do not change between those in one run, so later readers use the cached rows.
+// finds it readable; the rows do not change between those in one run, so later readers use the cached rows. The
+// read goes through the database reader only once an addon has initialised it: a run without one keeps the reader
+// (and its signature resolve) off, and the Grand Prix track repair decides from the track base and the shipping table.
 void read_track_rows(const char *when)
 {
     if (tracks_read)
         return;
+    if (!runtime::db_initialised()) {
+        once(std::string("the tracks table is not readable at ") + when +
+             " (no addon has opened the game database, so its reader is not initialised); the track is left empty");
+        return;
+    }
     const SwoftyDb *db = runtime::db_table();
     SwoftyDbCursor cur{};
     int r = !db || !db->available || !db->available() ? SWOFTY_ASSET_UNAVAILABLE : db->open("tracks", &cur);
