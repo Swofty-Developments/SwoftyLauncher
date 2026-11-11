@@ -81,7 +81,10 @@ impl Fixture {
         for rel in rels {
             let to = dir.join(&rel);
             std::fs::create_dir_all(to.parent().unwrap()).unwrap();
+            #[cfg(unix)]
             std::os::unix::fs::symlink(originals.original(&rel), &to).unwrap();
+            #[cfg(not(unix))]
+            std::fs::copy(originals.original(&rel), &to).unwrap();
         }
         let loader = root.join("loader");
         write(&loader.join(swofty_core::install::PROXY), "proxy");

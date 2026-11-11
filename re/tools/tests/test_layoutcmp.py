@@ -2,7 +2,10 @@ import io, os, sys, unittest
 from contextlib import redirect_stdout
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-import capstone  # noqa: E402
+try:
+    import capstone  # noqa: E402,F401
+except ImportError:
+    raise unittest.SkipTest('capstone is not installed')
 import layoutcmp  # noqa: E402
 
 
