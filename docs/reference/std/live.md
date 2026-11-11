@@ -161,12 +161,12 @@ typedef struct SwoftyLiveSession {
     uint32_t generation;           // bumps when the player's car or the car set changes
     uint32_t subject_generation;   // bumps on every spectator switch: reset smoothing on it
     float track_length_m;
-    uint8_t safety_car;            // 0 none, 1 safety car, 2 virtual, 3 formation, 0xff unknown
+    uint8_t safety_car;            // 0 none, 1 safety car, 2 virtual, 0xff unknown (3 is reserved; the game never sets it)
     uint8_t red_flag;              // 0 none, 1 deployed, 2 suspended
     uint8_t yellow_sectors;        // bit i: sector i + 1 has a yellow zone
     uint8_t chequered;
     uint8_t game_mode;             // SWOFTY_LIVE_MODE_GRAND_PRIX or _TIME_TRIAL
-    uint8_t spectator_gap_mode;
+    uint8_t spectator_gap_mode;    // the game's raw value: 1 in session types 15-17, 3 otherwise
     char track_name[48];           // the game's internal track name
     float sector_end_m[8];
     uint32_t sector_count;

@@ -143,22 +143,7 @@ pub struct DepartmentData {
 }
 
 #[repr(C)]
-pub struct EntrantsSystem {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct FEHomeViewModel {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct GameMode {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct GameModeSystem {
     _opaque: [u8; 0],
 }
 
@@ -183,41 +168,6 @@ pub struct NeStr {
 }
 
 #[repr(C)]
-pub struct PhysicalCompound {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct PitLaneTrack {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct PitLaneVehicle {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct PitLaneVehicleSlot {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct RacingOwner {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct RacingTrack {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct RacingVehicles {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct RedFlagSystem {
     _opaque: [u8; 0],
 }
@@ -233,42 +183,7 @@ pub struct SafetyCarLogicSystem {
 }
 
 #[repr(C)]
-pub struct SessionEntrantView {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct SpectatorDirectorGap {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct TeamSetRef {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct TeamSlot {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct TeamSlots {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct TodCurveBinding {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct TyreSlot {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct TyreSystem {
     _opaque: [u8; 0],
 }
 
@@ -309,11 +224,6 @@ pub struct VehiclePackageRow {
 
 #[repr(C)]
 pub struct VehicleTyreComponent {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct VisualCompound {
     _opaque: [u8; 0],
 }
 
@@ -1813,6 +1723,20 @@ const _: () = assert!(core::mem::offset_of!(EntrantsManager, session_begin) == 0
 const _: () = assert!(core::mem::offset_of!(EntrantsManager, session_end) == 0x2e8);
 
 #[repr(C)]
+pub struct TeamSetRef {
+    _pad_0x0: [u8; 0x8],
+    pub slots: *mut TeamSlots,
+}
+const _: () = assert!(core::mem::offset_of!(TeamSetRef, slots) == 0x8);
+
+#[repr(C)]
+pub struct EntrantsSystem {
+    _pad_0x0: [u8; 0x2c0],
+    pub team_sets: [TeamSetRef; 3],
+}
+const _: () = assert!(core::mem::offset_of!(EntrantsSystem, team_sets) == 0x2c0);
+
+#[repr(C)]
 pub struct F1SeasonStandings {
     pub vtable: *mut *mut c_void,
     _pad_0x8: [u8; 0x18],
@@ -1947,11 +1871,30 @@ pub struct GameMessageBusHolder {
 const _: () = assert!(core::mem::offset_of!(GameMessageBusHolder, bus) == 0x8);
 
 #[repr(C)]
+pub struct GameMode {
+    _pad_0x0: [u8; 0x260],
+    pub entrants_manager: *mut EntrantsManager,
+    _pad_0x268: [u8; 0x10],
+    pub name: *mut c_char,
+    _pad_0x280: [u8; 0x20],
+}
+const _: () = assert!(core::mem::offset_of!(GameMode, entrants_manager) == 0x260);
+const _: () = assert!(core::mem::offset_of!(GameMode, name) == 0x278);
+const _: () = assert!(core::mem::size_of::<GameMode>() == 0x2a0);
+
+#[repr(C)]
 pub struct GameModeContext {
     _pad_0x0: [u8; 0x88],
     pub championship_holder: *mut ChampionshipHolder,
 }
 const _: () = assert!(core::mem::offset_of!(GameModeContext, championship_holder) == 0x88);
+
+#[repr(C)]
+pub struct GameModeSystem {
+    _pad_0x0: [u8; 0x88],
+    pub mode: *mut GameMode,
+}
+const _: () = assert!(core::mem::offset_of!(GameModeSystem, mode) == 0x88);
 
 #[repr(C)]
 pub struct GameSetupMode {
@@ -2274,6 +2217,12 @@ const _: () = assert!(core::mem::offset_of!(PenaltyRecord, penalty_type) == 0x9)
 const _: () = assert!(core::mem::offset_of!(PenaltyRecord, infringement) == 0xa);
 
 #[repr(C)]
+pub struct PhysicalCompound {
+    pub stat_id: u8,
+}
+const _: () = assert!(core::mem::offset_of!(PhysicalCompound, stat_id) == 0x0);
+
+#[repr(C)]
 pub struct PitLaneCarSlot {
     pub state: *mut PitLaneCarState,
 }
@@ -2291,10 +2240,54 @@ const _: () = assert!(core::mem::offset_of!(PitLaneCarState, pit_stops) == 0x14)
 
 #[repr(C)]
 pub struct PitLaneSystem {
-    _pad_0x0: [u8; 0x68],
+    _pad_0x0: [u8; 0x48],
+    pub lane: *mut PitLaneTrack,
+    _pad_0x50: [u8; 0x18],
     pub car_slots: [PitLaneCarSlot; 27],
 }
+const _: () = assert!(core::mem::offset_of!(PitLaneSystem, lane) == 0x48);
 const _: () = assert!(core::mem::offset_of!(PitLaneSystem, car_slots) == 0x68);
+
+#[repr(C)]
+pub struct PitLaneVehicleSlot {
+    pub lane: *mut PitLaneVehicle,
+}
+const _: () = assert!(core::mem::offset_of!(PitLaneVehicleSlot, lane) == 0x0);
+
+#[repr(C)]
+pub struct PitLaneTrack {
+    _pad_0x0: [u8; 0x938],
+    pub vehicle_slots: [PitLaneVehicleSlot; 27],
+}
+const _: () = assert!(core::mem::offset_of!(PitLaneTrack, vehicle_slots) == 0x938);
+
+#[repr(C)]
+pub struct PitLaneVehicle {
+    _pad_0x0: [u8; 0x103],
+    pub in_lane: u8,
+}
+const _: () = assert!(core::mem::offset_of!(PitLaneVehicle, in_lane) == 0x103);
+
+#[repr(C)]
+pub struct RacingOwner {
+    _pad_0x0: [u8; 0xe8],
+    pub track: *mut RacingTrack,
+}
+const _: () = assert!(core::mem::offset_of!(RacingOwner, track) == 0xe8);
+
+#[repr(C)]
+pub struct RacingTrack {
+    _pad_0x0: [u8; 0xa0],
+    pub name: *mut c_char,
+}
+const _: () = assert!(core::mem::offset_of!(RacingTrack, name) == 0xa0);
+
+#[repr(C)]
+pub struct RacingVehicles {
+    _pad_0x0: [u8; 0xd0],
+    pub owner: *mut RacingOwner,
+}
+const _: () = assert!(core::mem::offset_of!(RacingVehicles, owner) == 0xd0);
 
 #[repr(C)]
 pub struct RelativeGapEntry {
@@ -2506,6 +2499,16 @@ const _: () = assert!(core::mem::offset_of!(Session, participants_capacity) == 0
 const _: () = assert!(core::mem::size_of::<Session>() == 0xa0);
 
 #[repr(C)]
+pub struct SessionEntrantView {
+    _pad_0x0: [u8; 0x58],
+    pub team_stat_id: u32,
+    _pad_0x5c: [u8; 0x26],
+    pub vehicle_id: u8,
+}
+const _: () = assert!(core::mem::offset_of!(SessionEntrantView, team_stat_id) == 0x58);
+const _: () = assert!(core::mem::offset_of!(SessionEntrantView, vehicle_id) == 0x82);
+
+#[repr(C)]
 pub struct SessionSystem {
     _pad_0x0: [u8; 0x148],
     pub entries_begin: *mut *mut SessionVehicleEntry,
@@ -2561,6 +2564,13 @@ const _: () = assert!(core::mem::offset_of!(SpectatorDirector, current_driver) =
 const _: () = assert!(core::mem::offset_of!(SpectatorDirector, current_camera) == 0xd8);
 const _: () = assert!(core::mem::offset_of!(SpectatorDirector, requested_driver) == 0xdc);
 const _: () = assert!(core::mem::offset_of!(SpectatorDirector, requested_camera) == 0xe0);
+
+#[repr(C)]
+pub struct SpectatorDirectorGap {
+    _pad_0x0: [u8; 0xe4],
+    pub gap_mode: u32,
+}
+const _: () = assert!(core::mem::offset_of!(SpectatorDirectorGap, gap_mode) == 0xe4);
 
 #[repr(C)]
 pub struct SponsorEntry {
@@ -2718,7 +2728,9 @@ pub struct TeamRecord {
     pub team_wear_secondary_colour: i32,
     pub team_wear_tertiary_colour: i32,
     pub ui_team_colour: i32,
-    _pad_0x580: [u8; 0x1e8],
+    _pad_0x580: [u8; 0xd],
+    pub show_custom_badge_in_ui: bool,
+    _pad_0x58e: [u8; 0x1da],
 }
 const _: () = assert!(core::mem::offset_of!(TeamRecord, display_name) == 0xb0);
 const _: () = assert!(core::mem::offset_of!(TeamRecord, display_name_code) == 0x148);
@@ -2734,6 +2746,7 @@ const _: () = assert!(core::mem::offset_of!(TeamRecord, team_wear_primary_colour
 const _: () = assert!(core::mem::offset_of!(TeamRecord, team_wear_secondary_colour) == 0x574);
 const _: () = assert!(core::mem::offset_of!(TeamRecord, team_wear_tertiary_colour) == 0x578);
 const _: () = assert!(core::mem::offset_of!(TeamRecord, ui_team_colour) == 0x57c);
+const _: () = assert!(core::mem::offset_of!(TeamRecord, show_custom_badge_in_ui) == 0x58d);
 const _: () = assert!(core::mem::size_of::<TeamRecord>() == 0x768);
 
 #[repr(C)]
@@ -2748,6 +2761,22 @@ const _: () = assert!(core::mem::offset_of!(TeamRenownData, team) == 0x0);
 const _: () = assert!(core::mem::offset_of!(TeamRenownData, points) == 0x4);
 const _: () = assert!(core::mem::offset_of!(TeamRenownData, config) == 0x18);
 const _: () = assert!(core::mem::size_of::<TeamRenownData>() == 0x140);
+
+#[repr(C)]
+pub struct TeamSlot {
+    _pad_0x0: [u8; 0x8],
+    pub record: *mut TeamRecord,
+}
+const _: () = assert!(core::mem::offset_of!(TeamSlot, record) == 0x8);
+
+#[repr(C)]
+pub struct TeamSlots {
+    _pad_0x0: [u8; 0x8],
+    pub begin: *mut TeamSlot,
+    pub end: *mut TeamSlot,
+}
+const _: () = assert!(core::mem::offset_of!(TeamSlots, begin) == 0x8);
+const _: () = assert!(core::mem::offset_of!(TeamSlots, end) == 0x10);
 
 #[repr(C)]
 pub struct Tile {
@@ -2934,6 +2963,26 @@ const _: () = assert!(core::mem::offset_of!(TrackDataTrack, qualifying_short) ==
 const _: () = assert!(core::mem::offset_of!(TrackDataTrack, qualifying_full) == 0x1c0);
 
 #[repr(C)]
+pub struct TyreSlot {
+    pub option: u32,
+    _pad_0x4: [u8; 0x4],
+    pub physical: *mut PhysicalCompound,
+    pub visual: *mut VisualCompound,
+}
+const _: () = assert!(core::mem::offset_of!(TyreSlot, option) == 0x0);
+const _: () = assert!(core::mem::offset_of!(TyreSlot, physical) == 0x8);
+const _: () = assert!(core::mem::offset_of!(TyreSlot, visual) == 0x10);
+
+#[repr(C)]
+pub struct TyreSystem {
+    _pad_0x0: [u8; 0x110],
+    pub vehicles_begin: *mut *mut VehicleTyreComponent,
+    pub vehicles_end: *mut *mut VehicleTyreComponent,
+}
+const _: () = assert!(core::mem::offset_of!(TyreSystem, vehicles_begin) == 0x110);
+const _: () = assert!(core::mem::offset_of!(TyreSystem, vehicles_end) == 0x118);
+
+#[repr(C)]
 pub struct UpgradeInstance {
     _pad_0x0: [u8; 0x10],
     pub name: *mut c_char,
@@ -3075,6 +3124,15 @@ const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, progress_lap_b
 const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, progress_lap_delta) == 0x58);
 const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, total_a) == 0x98);
 const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, total_b) == 0xa0);
+
+#[repr(C)]
+pub struct VisualCompound {
+    pub stat_id: u8,
+    _pad_0x1: [u8; 0x4f],
+    pub audio_compound: i32,
+}
+const _: () = assert!(core::mem::offset_of!(VisualCompound, stat_id) == 0x0);
+const _: () = assert!(core::mem::offset_of!(VisualCompound, audio_compound) == 0x50);
 
 #[repr(C)]
 pub struct WeatherAndTimeOfDayComponent {
@@ -14862,6 +14920,11 @@ pub mod bindings {
     };
     pub const g_Live_ControllerSystem: Binding = Binding {
         id: "g_Live_ControllerSystem",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Live_RacingVehicles: Binding = Binding {
+        id: "g_Live_RacingVehicles",
         kind: "data",
         status: Status::Experimental,
     };
