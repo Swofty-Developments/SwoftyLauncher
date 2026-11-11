@@ -47,6 +47,68 @@ pub fn uipre(stock: &[u8], scene: &str, hide: &[String], texts: &[(String, Strin
     Ok(p.to_bytes()?)
 }
 
+/// One instance of another scene inside the editor's scene, with the elements inside it the editor
+/// hides and shows and the labels it fills; `loc` labels take a game string id.
+#[derive(Debug, Clone, Default)]
+pub struct Instanced {
+    pub host: String,
+    pub hide: Vec<String>,
+    pub show: Vec<String>,
+    pub texts: Vec<(String, String)>,
+    pub loc: Vec<(String, String)>,
+}
+
+/// [`uipre`] for a scene whose preview copy lives inside an instance of another scene (the standings
+/// board's bottom cap): `hide` names the scene's own elements, each [`Instanced`] the elements inside
+/// one instance, listed nested under the instance's id as the stock table lists its rows.
+pub fn uipre_in(stock: &[u8], scene: &str, hide: &[String], instances: &[Instanced]) -> Result<Vec<u8>> {
+    let mut p = Uipre::parse(stock)?;
+    if p.target_id() != Some(idf::scene_id(scene)) {
+        return Err(err(format!("the .uipre is not the preview data of {scene}")));
+    }
+    let have: BTreeSet<u32> = p.element_ids().into_iter().collect();
+    let mut added = BTreeSet::new();
+    for name in hide.iter().chain(instances.iter().map(|i| &i.host)) {
+        let id = uipre::element_id(name);
+        if have.contains(&id) || !added.insert(id) {
+            return Err(err(format!("the preview element id of {name} is already used")));
+        }
+    }
+    for name in hide {
+        p.set_visible(name, false)?;
+    }
+    for i in instances {
+        let mut inner = BTreeSet::new();
+        let names = i
+            .hide
+            .iter()
+            .chain(&i.show)
+            .chain(i.texts.iter().map(|(e, _)| e))
+            .chain(i.loc.iter().map(|(e, _)| e));
+        for name in names {
+            if !inner.insert(uipre::element_id(name)) {
+                return Err(err(format!(
+                    "the preview element id of {name} is used twice in {}",
+                    i.host
+                )));
+            }
+        }
+        for name in &i.hide {
+            p.set_visible_at(&[&i.host, name], false)?;
+        }
+        for name in &i.show {
+            p.set_visible_at(&[&i.host, name], true)?;
+        }
+        for (el, text) in &i.texts {
+            p.set_text_at(&[&i.host, el], text)?;
+        }
+        for (el, id) in &i.loc {
+            p.set_loc_at(&[&i.host, el], id)?;
+        }
+    }
+    Ok(p.to_bytes()?)
+}
+
 /// The group under a dial that hides the preview copy of a record in game. Stock parts it should
 /// show again (the `.uipre` may apply in game too) get a static visible node each.
 pub fn control(plan: &Plan, show_stock: &[String]) -> Node {

@@ -296,52 +296,94 @@ pub struct Editor {
     pub rect: Option<[f64; 4]>,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+/// Elements of one stock scene hidden from one template node: statically, or while `while` is true.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct StockNodes {
     pub template: String,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scene: Option<String>,
     pub hide: Vec<String>,
     #[serde(default, rename = "while", skip_serializing_if = "Option::is_none")]
-    pub while_on: Option<Bind>,
+    pub while_: Option<Bind>,
 }
 
-#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+/// One fill quad refilled from a sprite through its mesh slot.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct RestyleScale {
-    pub elements: Vec<String>,
+pub struct Fill {
+    pub sprite: String,
+    pub slot: String,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Scale {
+    pub element: String,
     pub by: f64,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub about: Option<String>,
+    pub pivot_y: Option<f64>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
-pub struct RestyleText {
+pub struct TextStyle {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub style: Option<String>,
+    #[serde(default, rename = "box", skip_serializing_if = "Option::is_none")]
+    pub width: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub cap_height: Option<f64>,
+    pub at: Option<[f64; 2]>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub colour: Option<String>,
+    pub align: Option<String>,
+    #[serde(default, rename = "case", skip_serializing_if = "Option::is_none")]
+    pub text_case: Option<String>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Param {
+    pub element: String,
+    pub name: String,
+    pub value: serde_json::Value,
+}
+
+/// Edits of one stock scene in place: no element added, moved or renamed.
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Restyle {
     pub scene: String,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub fill: BTreeMap<String, String>,
+    pub fill: BTreeMap<String, Fill>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub twins: Vec<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub template_parents: Vec<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub hide: Vec<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
-    pub scale: Option<RestyleScale>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub scale: Vec<Scale>,
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
-    pub text: BTreeMap<String, RestyleText>,
+    pub text: BTreeMap<String, TextStyle>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub params: Vec<Param>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stock_erp: Option<String>,
+}
+
+/// A record's `restyle`: a list of scenes, or a preset the core spells out (`banner`, with the fill sprite).
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum RestyleField {
+    Preset(RestylePreset),
+    List(Vec<Restyle>),
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RestylePreset {
+    pub preset: String,
+    pub sprite: String,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -382,8 +424,8 @@ pub struct HudElement {
     pub also: BTreeMap<String, Also>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub stock_nodes: Vec<StockNodes>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub restyle: Vec<Restyle>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub restyle: Option<RestyleField>,
     #[serde(default, skip_serializing_if = "is_default_units")]
     pub units: Units,
     #[serde(default = "yes", skip_serializing_if = "is_true")]

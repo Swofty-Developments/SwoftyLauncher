@@ -54,6 +54,7 @@
         "type": "object",
         "properties": {
           "template": { "type": "string", "pattern": "^[A-Za-z0-9_]+(\\.[A-Za-z0-9_]+)*$" },
+          "scene": { "description": "The stock scene the elements belong to, when the template node itself names none.", "type": "string", "pattern": "^eaid://.+\\.idf$" },
           "hide": { "type": "array", "items": { "type": "string", "minLength": 1 } },
           "while": { "$ref": "#/$defs/bind" }
         },
@@ -62,42 +63,75 @@
       }
     },
     "restyle": {
-      "description": "Scene-level edits that add, move or rename no element: per stock scene, fills refilled from a sprite, elements hidden, elements scaled about their top edge and texts restyled.",
-      "type": "array",
-      "items": {
-        "type": "object",
-        "properties": {
-          "scene": { "type": "string", "pattern": "^eaid://.+\\.idf$" },
-          "fill": { "type": "object", "additionalProperties": { "type": "string" } },
-          "twins": { "type": "array", "items": { "type": "string" } },
-          "template_parents": { "type": "array", "items": { "type": "string" } },
-          "hide": { "type": "array", "items": { "type": "string" } },
-          "scale": {
+      "description": "Scene-level edits that add, move or rename no element: per stock scene, fill quads refilled from a sprite through their mesh slot, elements hidden (isHidden plus a static hide node under every template parent), elements scaled about a pivot, texts restyled and element params set. Or a preset: { preset: banner, sprite } is Project Halo's Race Control banner restyle with the fills from that sprite.",
+      "oneOf": [
+        {
+          "type": "array",
+          "items": {
             "type": "object",
             "properties": {
-              "elements": { "type": "array", "items": { "type": "string" } },
-              "by": { "type": "number", "exclusiveMinimum": 0 },
-              "about": { "enum": ["top"] }
-            },
-            "required": ["elements", "by"],
-            "additionalProperties": false
-          },
-          "text": {
-            "type": "object",
-            "additionalProperties": {
-              "type": "object",
-              "properties": {
-                "style": { "type": "string" },
-                "cap_height": { "type": "number", "exclusiveMinimum": 0 },
-                "colour": { "type": "string", "pattern": "^#[0-9A-Fa-f]{6}([0-9A-Fa-f]{2})?$" }
+              "scene": { "type": "string", "pattern": "^eaid://.+\\.idf$" },
+              "fill": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": { "sprite": { "type": "string" }, "slot": { "type": "string" } },
+                  "required": ["sprite", "slot"],
+                  "additionalProperties": false
+                }
               },
-              "additionalProperties": false
-            }
+              "twins": { "type": "array", "items": { "type": "string" } },
+              "template_parents": { "type": "array", "items": { "type": "string" } },
+              "hide": { "type": "array", "items": { "type": "string" } },
+              "scale": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": {
+                    "element": { "type": "string" },
+                    "by": { "type": "number", "exclusiveMinimum": 0 },
+                    "pivot_y": { "type": "number" }
+                  },
+                  "required": ["element", "by"],
+                  "additionalProperties": false
+                }
+              },
+              "text": {
+                "type": "object",
+                "additionalProperties": {
+                  "type": "object",
+                  "properties": {
+                    "style": { "type": "string" },
+                    "box": { "type": "number", "exclusiveMinimum": 0 },
+                    "at": { "type": "array", "items": { "type": "number" }, "minItems": 2, "maxItems": 2 },
+                    "align": { "type": "string" },
+                    "case": { "type": "string" }
+                  },
+                  "additionalProperties": false
+                }
+              },
+              "params": {
+                "type": "array",
+                "items": {
+                  "type": "object",
+                  "properties": { "element": { "type": "string" }, "name": { "type": "string" }, "value": {} },
+                  "required": ["element", "name", "value"],
+                  "additionalProperties": false
+                }
+              },
+              "stock_erp": { "type": "string" }
+            },
+            "required": ["scene"],
+            "additionalProperties": false
           }
         },
-        "required": ["scene"],
-        "additionalProperties": false
-      }
+        {
+          "type": "object",
+          "properties": { "preset": { "enum": ["banner"] }, "sprite": { "type": "string" } },
+          "required": ["preset", "sprite"],
+          "additionalProperties": false
+        }
+      ]
     },
     "spectator": {
       "description": "False leaves the spectator HUD's dial of this class without the elements.",

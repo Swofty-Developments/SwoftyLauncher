@@ -185,6 +185,17 @@ pub fn names(prefix: &str, sprite: &str) -> Names {
     }
 }
 
+/// The names of a sprite drawn by another scene's quad mesh: the same texture and material, its
+/// `.emb` under `components/hud/<mesh>/`. A sprite a dial and the standings cap both draw keeps one
+/// binding per mesh slot this way.
+pub fn mesh_names(prefix: &str, sprite: &str, mesh: &str) -> Names {
+    let key = format!("{prefix}{sprite}");
+    Names {
+        emb: format!("eaid://ui_package/art/osd/components/hud/{mesh}/{key}.emb?context=default"),
+        ..names(prefix, sprite)
+    }
+}
+
 /// The names of a sprite that draws the stock texture `tex`: its own material and bindings, the
 /// game's texture.
 pub fn stock_names(prefix: &str, sprite: &str, tex: &str) -> Names {

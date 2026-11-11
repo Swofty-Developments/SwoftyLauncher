@@ -370,21 +370,45 @@ impl Builder {
     /// Adds one record's elements under the scene's root element, in HUD units from the scene's origin,
     /// and returns its plan.
     pub fn add_scene_record(&mut self, rec: &HudElement, pfx: &str, sprites: &Sprites) -> Result<Plan> {
+        self.add_scene_record_in(rec, pfx, sprites, Mode::Live)
+    }
+
+    /// [`Self::add_scene_record`] in a mode: in preview mode the root is `<pfx>_pv`, shown, and
+    /// holds `editor.rows` copies of a repeated group and only the elements the preview state lights.
+    pub fn add_scene_record_in(
+        &mut self,
+        rec: &HudElement,
+        pfx: &str,
+        sprites: &Sprites,
+        mode: Mode,
+    ) -> Result<Plan> {
+        let preview = matches!(mode, Mode::Preview(_));
+        let root_name = if preview {
+            format!("{pfx}_pv")
+        } else {
+            pfx.to_owned()
+        };
         let mut plan = Plan {
             pfx: pfx.to_owned(),
-            root: pfx.to_owned(),
+            root: root_name.clone(),
+            preview,
             ..Plan::default()
         };
-        let mut root = self.null(pfx, [0.0; 3], None, false, false)?;
+        let mut root = self.null(&root_name, [0.0; 3], None, false, false)?;
+        let rows = if preview {
+            rec.editor.as_ref().and_then(|e| e.rows)
+        } else {
+            None
+        };
         let mut cx = Cx {
-            names: format!("{pfx}_"),
+            names: format!("{root_name}_"),
             sprites,
-            mode: Mode::Live,
+            mode,
             switched: BTreeSet::new(),
             plan: &mut plan,
         };
         let mut kids = Vec::new();
-        for e in &model::expand(&rec.elements, None)? {
+        for e in &model::expand(&rec.elements, rows)? {
             if let Some(n) = self.element(&mut cx, e)? {
                 kids.push(n);
             }

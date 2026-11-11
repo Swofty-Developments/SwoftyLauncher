@@ -28,6 +28,8 @@ use crate::{Error, Result};
 pub const KEY_TEXT: u32 = 4_045_306_521;
 /// The setter key of an element's visibility (a `bool` value).
 pub const KEY_VISIBLE: u32 = 839_438_211;
+/// The setter key of a label's localised text: a `stri` value holding the game string id.
+pub const KEY_LOC: u32 = 3_919_839_003;
 
 /// The `Id` an element is listed under: djb2 of its name (the scene element's `name`, not the
 /// dotted path).
@@ -160,6 +162,94 @@ impl Uipre {
         self.set(element_id(name), KEY_TEXT, Val::str(text))
     }
 
+    /// Sets setter `key` of the element at `path`, where every name after the first is an element
+    /// inside the instance before it: `["tt_host", "tt_root"]` lists `tt_root` in the `Elements` of
+    /// `tt_host`, the way the stock standings table lists the elements of its rows. Elements and
+    /// instances missing from the file are added.
+    pub fn set_at(&mut self, path: &[&str], key: u32, value: Val) -> Result<()> {
+        if path.is_empty() {
+            return Err(bad("an element path is at least one name"));
+        }
+        let setter = Node::Obj(Obj::new(vec![
+            (Val::str("Key"), Node::Val(Val::u32(key))),
+            (Val::str("Value"), Node::Val(value)),
+        ]));
+        let mut els = self.elements_mut();
+        for (i, name) in path.iter().enumerate() {
+            let id = element_id(name);
+            let last = i + 1 == path.len();
+            let pos = match els.iter().position(|e| id_of(e) == Some(id)) {
+                Some(p) => p,
+                None => {
+                    els.push(Node::Obj(Obj::new(vec![
+                        (Val::str("Id"), Node::Val(Val::u32(id))),
+                        (Val::str("Setters"), Node::Arr(Arr::new(vec![]))),
+                    ])));
+                    els.len() - 1
+                }
+            };
+            let el = els[pos]
+                .as_obj_mut()
+                .ok_or_else(|| bad("an element is not an object"))?;
+            if last {
+                if el.get("Setters").is_none() {
+                    el.set("Setters", Node::Arr(Arr::new(vec![])));
+                }
+                let arr = el
+                    .get_mut("Setters")
+                    .and_then(Node::as_arr_mut)
+                    .ok_or_else(|| bad("an element has no Setters"))?;
+                match arr.items.iter_mut().find(|s| {
+                    s.as_obj()
+                        .and_then(|o| o.get("Key"))
+                        .and_then(Node::as_val)
+                        .and_then(Val::as_u32)
+                        == Some(key)
+                }) {
+                    Some(slot) => *slot = setter,
+                    None => arr.items.push(setter),
+                }
+                return Ok(());
+            }
+            if el.get("Elements").is_none() {
+                el.set("Elements", Node::Arr(Arr::new(vec![])));
+            }
+            els = &mut el
+                .get_mut("Elements")
+                .and_then(Node::as_arr_mut)
+                .ok_or_else(|| bad("an instance's Elements is not a list"))?
+                .items;
+        }
+        Ok(())
+    }
+
+    /// Shows or hides the element at `path` (see [`Self::set_at`]).
+    pub fn set_visible_at(&mut self, path: &[&str], visible: bool) -> Result<()> {
+        self.set_at(path, KEY_VISIBLE, Val::bool(visible))
+    }
+
+    /// Fills the label at `path` with `text`.
+    pub fn set_text_at(&mut self, path: &[&str], text: &str) -> Result<()> {
+        self.set_at(path, KEY_TEXT, Val::str(text))
+    }
+
+    /// Makes the label at `path` show the game string `id`.
+    pub fn set_loc_at(&mut self, path: &[&str], id: &str) -> Result<()> {
+        self.set_at(path, KEY_LOC, Val::str(id))
+    }
+
+    /// The `Id`s listed inside instance `name`, in file order; empty when it is not listed or holds
+    /// no `Elements`.
+    pub fn element_ids_in(&self, name: &str) -> Vec<u32> {
+        let id = element_id(name);
+        self.elements()
+            .iter()
+            .find(|e| id_of(e) == Some(id))
+            .and_then(|e| e.as_obj()?.get("Elements")?.as_arr())
+            .map(|a| a.items.iter().filter_map(id_of).collect())
+            .unwrap_or_default()
+    }
+
     /// Removes element `id` and all its setters; true when it was listed.
     pub fn remove(&mut self, id: u32) -> bool {
         let els = self.elements_mut();
@@ -211,6 +301,27 @@ mod tests {
         assert_eq!(s[1].0, KEY_VISIBLE);
         assert!(back.clone().remove(id));
         assert!(!back.clone().remove(1));
+    }
+
+    #[test]
+    fn nested_setters_sit_inside_their_instance() {
+        let mut p = Uipre::parse(&empty()).unwrap();
+        p.set_visible_at(&["host", "root"], false).unwrap();
+        p.set_text_at(&["host", "pos"], "10").unwrap();
+        p.set_loc_at(&["host", "lap"], "lng_lap").unwrap();
+        p.set_visible("mask", false).unwrap();
+        assert_eq!(p.element_ids(), [element_id("host"), element_id("mask")]);
+        assert_eq!(
+            p.element_ids_in("host"),
+            [element_id("root"), element_id("pos"), element_id("lap")]
+        );
+        assert!(p.setters(element_id("host")).is_empty());
+        assert!(p.element_ids_in("mask").is_empty());
+        p.set_text_at(&["host", "pos"], "11").unwrap();
+        assert_eq!(p.element_ids_in("host").len(), 3);
+        let back = Uipre::parse(&p.to_bytes().unwrap()).unwrap();
+        assert_eq!(back.element_ids_in("host").len(), 3);
+        assert!(p.set_at(&[], KEY_TEXT, Val::str("x")).is_err());
     }
 
     #[test]
