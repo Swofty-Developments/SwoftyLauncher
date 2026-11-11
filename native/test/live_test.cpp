@@ -395,7 +395,19 @@ static void test_player_watched()
 
     w.a.put<uintptr_t>(w.ctrl_sets[1] + L::controllers::set_human, 0);
     live.update(0.5);
-    CHECK(live.ses.player == 0);
+    CHECK(live.ses.player == 1);
+
+    World all_ai;
+    for (int i = 0; i < 4; i++)
+        all_ai.a.put<uint32_t>(all_ai.cars[i] + L::car::is_ai, 1);
+    Live by_controller(all_ai.mem(), all_ai.s, Gates::all());
+    by_controller.update(0.0);
+    CHECK(by_controller.ses.player == 1 && !(by_controller.cars[1].flags & SWOFTY_LIVE_CAR_AI_DRIVING));
+    Gates no_control = Gates::all();
+    no_control.on[G_CONTROL] = false;
+    Live blind(all_ai.mem(), all_ai.s, no_control);
+    blind.update(0.0);
+    CHECK(blind.ses.player == -1);
 }
 
 static void test_events()

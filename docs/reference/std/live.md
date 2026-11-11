@@ -254,6 +254,8 @@ The core reads each group (car systems, ERS, progress, classification, timing, p
 
 On a build whose sites do not resolve, such as the EA build until its bindings exist, the group stays off and the calls answer empty. A group with any site that does not resolve stays off even with `SWOFTY_LIVE_FORCE=1`, which reads the groups whose sites resolve without waiting for verification; use it on a test machine to produce the evidence that verifies them, together with `SWOFTY_TELEMETRY_VERIFY=1` (see [Telemetry](./telemetry#memory-source)).
 
+The player car comes from the controller system (the car whose active controller is the human one); `CarLive.is_ai` selects the physics rate and reads 1 for every car in a grid snapshot, so it is not used to find the player. With the controllers group off the player is unknown (`player` is -1) until it is.
+
 The groups whose chains the knowledge base has no row for yet read only under `SWOFTY_LIVE_FORCE=1`: tyres, game mode, team badges, the track name, the spectator gap mode, the pit-lane flag block behind `pit_status` and `pit_stops`, and the DRS bit.
 
 The core also subscribes to the game's `r_car_to_car_col` and `vehicle_status_changed` bus messages (the bus group) to fire `telemetry.collision` and `telemetry.retirement` without UDP; see [Telemetry](./telemetry#events).
