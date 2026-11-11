@@ -1,0 +1,661 @@
+#include "../src/core/live/live_state.hpp"
+#include "../src/core/live/live_snapshot.hpp"
+#include "../src/core/live/live_telemetry_fill.hpp"
+#include "../src/core/live/live_turns.hpp"
+#include "../src/core/telemetry_feed.hpp"
+#include "../src/core/udp_telemetry_logic.hpp"
+
+#include <cstdio>
+#include <cstring>
+#include <map>
+
+using namespace swofty_core::live;
+namespace L = swofty_core::live::layout;
+namespace udp = runtime::udp_tel;
+
+static int failures;
+#define CHECK(c)                                                                                                       \
+    do {                                                                                                               \
+        if (!(c)) {                                                                                                    \
+            std::printf("FAIL %s:%d %s\n", __FILE__, __LINE__, #c);                                                    \
+            failures++;                                                                                                \
+        }                                                                                                              \
+    } while (0)
+
+constexpr uintptr_t BASE = 0x1000000;
+constexpr uintptr_t VT = 0x1500, VT_CAR = 0x1510, VT_CTRL = 0x1520, VT_HUMAN = 0x1530;
+constexpr uintptr_t KEY_BASE = 0x1800;
+
+struct Arena {
+    std::vector<uint8_t> mem = std::vector<uint8_t>(1 << 20, 0);
+    size_t top = 0x100;
+    uintptr_t alloc(size_t n)
+    {
+        n = (n + 15) & ~size_t(15);
+        uintptr_t a = BASE + top;
+        top += n;
+        return a;
+    }
+    template <class T> void put(uintptr_t a, T v) { std::memcpy(&mem[a - BASE], &v, sizeof v); }
+    template <class T> T get(uintptr_t a) { T v; std::memcpy(&v, &mem[a - BASE], sizeof v); return v; }
+    bool read(uintptr_t a, void *dst, size_t n)
+    {
+        if (a < BASE || a + n > BASE + mem.size())
+            return false;
+        std::memcpy(dst, &mem[a - BASE], n);
+        return true;
+    }
+};
+
+static bool arena_read(void *ctx, uintptr_t a, void *dst, size_t n)
+{
+    return static_cast<Arena *>(ctx)->read(a, dst, n);
+}
+
+static uint32_t bits(float f)
+{
+    uint32_t u;
+    std::memcpy(&u, &f, 4);
+    return u;
+}
+
+struct World {
+    Arena a;
+    Sites s;
+    uintptr_t cars[4] = {}, results = 0, results_entries[3] = {}, progress_entries[3] = {}, timing = 0, pit_sys = 0,
+              pit_rec[4] = {}, sc = 0, red = 0, marshal = 0, mode_ctx = 0, spect = 0, ctrl_sets[4] = {}, ctrl_sys = 0,
+              engines[4] = {}, bodies[4] = {}, states[4] = {}, chassis[4] = {}, steer[4] = {}, gearbox[4] = {}, ers[4] = {},
+              tyre_sys = 0, penalty = 0, s1 = 0, mode_obj = 0, human[4] = {};
+    int n_cars = 4;
+
+    World()
+    {
+        s.image_lo = 0x1000;
+        s.image_hi = 0x2000;
+        uintptr_t table = a.alloc(8 * 4), count = a.alloc(8), mgr_g = a.alloc(8), mgr = a.alloc(0x400);
+        s.vehicle_table = table;
+        s.vehicle_count = count;
+        s.game_manager = mgr_g;
+        s.vt_car_systems = VT_CAR;
+        a.put<uintptr_t>(mgr_g, mgr);
+        a.put<uint8_t>(count, 4);
+        s.track_length = a.alloc(8);
+        a.put<float>(s.track_length, 5000.f);
+        s.session_type = a.alloc(8);
+        a.put<uint32_t>(s.session_type, 15);
+
+        uintptr_t reg = a.alloc(0x40);
+        a.put<uintptr_t>(mgr + L::registry::from_manager, reg);
+        const int N = 14;
+        uintptr_t slots = a.alloc(16 * N), info = a.alloc(N);
+        a.put<uintptr_t>(reg + L::registry::slots, slots);
+        a.put<uintptr_t>(reg + L::registry::info, info);
+        int next = 0;
+        auto reg_add = [&](uintptr_t key, uintptr_t value) {
+            a.put<uintptr_t>(slots + 16 * next, key);
+            a.put<uintptr_t>(slots + 16 * next + 8, value);
+            a.put<uint8_t>(info + next, 1);
+            next++;
+        };
+        auto key = [&](int i) { return KEY_BASE + 16 * i; };
+        s.key_results = key(0);
+        s.key_spectator = key(1);
+        s.key_timing = key(2);
+        s.key_pit = key(3);
+        s.key_safety_car = key(4);
+        s.key_penalty_log = key(5);
+        s.key_session_component = key(6);
+        s.key_tyres = key(7);
+        s.key_marshal = key(8);
+        s.key_red_flag = key(9);
+        s.key_game_mode = key(10);
+        s.key_team_tables = key(11);
+
+        for (int i = 0; i < 4; i++) {
+            uintptr_t c = cars[i] = a.alloc(0x700);
+            a.put<uintptr_t>(table + 8 * i, c);
+            a.put<uintptr_t>(c + L::car::lock, c + L::car::lock_cs);
+            a.put<uintptr_t>(c + L::car::systems_vt, VT_CAR);
+            a.put<uint8_t>(c + L::car::vehicle_id, uint8_t(i));
+            a.put<uint32_t>(c + L::car::is_ai, i == 0 ? 0 : 1);
+            a.put<float>(c + L::car::throttle, 0.8f);
+            a.put<float>(c + L::car::brake, 0.0f);
+            a.put<float>(c + L::car::clutch, 0.0f);
+            auto sys = [&](uintptr_t off, size_t size) {
+                uintptr_t o = a.alloc(size);
+                a.put<uintptr_t>(o, VT);
+                a.put<uintptr_t>(o + 8, c);
+                a.put<uintptr_t>(c + off, o);
+                return o;
+            };
+            engines[i] = sys(L::car::engine, 0x2600);
+            gearbox[i] = sys(L::car::gearbox, 0x800);
+            chassis[i] = sys(L::car::chassis, 0x400);
+            steer[i] = sys(L::car::steering, 0x200);
+            if (i < 3)
+                ers[i] = sys(L::car::ers, 0x1b00);
+            a.put<float>(engines[i] + L::engine::rate, 1000.f);
+            a.put<float>(engines[i] + L::engine::limiter, 1500.f);
+            a.put<uint32_t>(gearbox[i] + L::gearbox::gear_index, 4);
+            bodies[i] = a.alloc(0x40);
+            states[i] = a.alloc(0x400);
+            a.put<uintptr_t>(chassis[i] + L::chassis::body, bodies[i]);
+            a.put<uintptr_t>(bodies[i] + L::chassis::body_state, states[i]);
+            float vel[3] = {30.f, 0.f, 40.f}, pos[3] = {10.f, 2.f, 30.f};
+            std::memcpy(&a.mem[states[i] + L::chassis::state_velocity - BASE], vel, sizeof vel);
+            std::memcpy(&a.mem[states[i] + L::chassis::state_position - BASE], pos, sizeof pos);
+            a.put<float>(chassis[i] + L::chassis::g_lat, 2.5f);
+            a.put<float>(chassis[i] + L::chassis::g_long, -1.0f);
+            const uint32_t K = 0x5a5a5a5a;
+            a.put<uint32_t>(steer[i] + L::steering::angle, bits(0.2f) ^ K);
+            a.put<uint32_t>(steer[i] + L::steering::angle + 8, K);
+            a.put<uint32_t>(steer[i] + L::steering::lock, bits(0.5f) ^ K);
+            a.put<uint32_t>(steer[i] + L::steering::lock + 8, K);
+            if (i < 3) {
+                a.put<float>(ers[i] + L::ers::energy, 2.0e6f + 1.0e5f * i);
+                a.put<float>(ers[i] + L::ers::capacity, 4.0e6f);
+                a.put<float>(ers[i] + L::ers::max_deploy, 350e3f);
+                a.put<int32_t>(ers[i] + L::ers::mode, 2);
+                a.put<float>(ers[i] + L::ers::harvest_k, 1.0e5f);
+                a.put<float>(ers[i] + L::ers::deploy, 2.0e5f);
+                a.put<float>(ers[i] + L::ers::lap_limit, 8.0e6f);
+            }
+        }
+        a.put<uint32_t>(gearbox[2] + L::gearbox::gear_index, 0);
+        a.put<float>(cars[2] + L::car::throttle, 0.1f);
+        a.put<float>(cars[2] + L::car::brake, 0.9f);
+        a.put<uint8_t>(cars[2] + L::car::input_flags, 0x08);
+
+        uintptr_t ps = a.alloc(0x100);
+        a.put<uintptr_t>(mgr + L::progress::from_manager, ps);
+        uintptr_t pvec = a.alloc(8 * 3);
+        a.put<uintptr_t>(ps + L::progress::vec_begin, pvec);
+        a.put<uintptr_t>(ps + L::progress::vec_end, pvec + 24);
+        const float totals[3] = {3000.f, 5200.f, 2900.f};
+        const int laps[3] = {0, 1, 0}, plaps[3] = {0, 1, 0};
+        for (int i = 0; i < 3; i++) {
+            uintptr_t e = progress_entries[i] = a.alloc(0xb0);
+            a.put<uintptr_t>(pvec + 8 * i, e);
+            a.put<uint16_t>(e + L::progress::lap_a, uint16_t(laps[i] ^ 0x1234));
+            a.put<uint16_t>(e + L::progress::lap_b, 0x1234);
+            a.put<uint16_t>(e + L::progress::plap_a, uint16_t(plaps[i] ^ 0x4321));
+            a.put<uint16_t>(e + L::progress::plap_b, 0x4321);
+            a.put<uint32_t>(e + L::progress::total_a, bits(totals[i]) ^ 0xdeadbeef);
+            a.put<uint32_t>(e + L::progress::total_b, 0xdeadbeef);
+        }
+
+        results = a.alloc(0x200);
+        reg_add(s.key_results, results);
+        uintptr_t rvec = a.alloc(8 * 3);
+        a.put<uintptr_t>(results + L::results::vec_begin, rvec);
+        a.put<uintptr_t>(results + L::results::vec_end, rvec + 24);
+        const int pos[3] = {2, 1, 3};
+        for (int i = 0; i < 3; i++) {
+            uintptr_t e = results_entries[i] = a.alloc(0x60);
+            a.put<uintptr_t>(rvec + 8 * i, e);
+            set_position(i, pos[i]);
+            a.put<uint8_t>(e + L::results::vehicle, uint8_t(i));
+            a.put<uint32_t>(e + L::results::status, 2);
+        }
+        a.put<uint64_t>(results_entries[2] + L::results::penalty_a, 0);
+
+        timing = a.alloc(0x400);
+        reg_add(s.key_timing, timing);
+        uintptr_t tv = a.alloc(L::timing::stride * 3);
+        a.put<uintptr_t>(timing + L::timing::vec_begin, tv);
+        a.put<uintptr_t>(timing + L::timing::vec_begin + 8, tv + L::timing::stride * 3);
+        const int64_t leader[3] = {1200, 0, 5600}, ahead[3] = {1200, 0, 4400};
+        for (int i = 0; i < 3; i++) {
+            uintptr_t e = tv + L::timing::stride * i;
+            a.put<int64_t>(e + L::timing::leader_ms, leader[i]);
+            a.put<uint8_t>(e + L::timing::leader_valid, i == 1 ? 0 : 1);
+            a.put<int64_t>(e + L::timing::ahead_ms, ahead[i]);
+            a.put<uint8_t>(e + L::timing::ahead_valid, i == 1 ? 0 : 1);
+            a.put<uint8_t>(e + L::timing::vehicle, uint8_t(i));
+        }
+
+        pit_sys = a.alloc(0x200);
+        reg_add(s.key_pit, pit_sys);
+        for (int i = 0; i < 3; i++) {
+            pit_rec[i] = a.alloc(16);
+            a.put<uintptr_t>(pit_sys + L::pit::records + 16 * i, pit_rec[i]);
+            a.put<uint32_t>(pit_rec[i] + L::pit::state, 0);
+        }
+
+        sc = a.alloc(0x200);
+        reg_add(s.key_safety_car, sc);
+        a.put<uint8_t>(sc + L::safety_car::state, 1);
+        red = a.alloc(0x100);
+        reg_add(s.key_red_flag, red);
+        a.put<uint8_t>(red + L::red_flag::state, 0);
+
+        s.sector_block = a.alloc(L::track::sector_block);
+        a.put<float>(s.sector_block + 0, 1500.f);
+        a.put<float>(s.sector_block + 4, 3200.f);
+        a.put<float>(s.sector_block + 8, 5000.f);
+        a.put<float>(s.sector_block + L::track::sector_length, 5000.f);
+        a.put<uint32_t>(s.sector_block + L::track::sector_count, 3);
+
+        marshal = a.alloc(0x200);
+        reg_add(s.key_marshal, marshal);
+        uintptr_t zv = a.alloc(L::marshal::stride * 2);
+        a.put<uintptr_t>(marshal + L::marshal::vec_begin, zv);
+        a.put<uintptr_t>(marshal + L::marshal::vec_begin + 8, zv + L::marshal::stride * 2);
+        for (int i = 0; i < 2; i++) {
+            uintptr_t z = a.alloc(0x40), def = a.alloc(0x40);
+            a.put<uintptr_t>(zv + L::marshal::stride * i + L::marshal::zone, z);
+            a.put<uintptr_t>(z + L::marshal::zone_def, def);
+            a.put<int32_t>(z + L::marshal::zone_flag, i == 1 ? 3 : 0);
+            a.put<float>(def + L::marshal::def_start, 0.5f);
+        }
+
+        mode_ctx = a.alloc(0x200);
+        reg_add(s.key_game_mode, mode_ctx);
+        mode_obj = a.alloc(0x400);
+        a.put<uintptr_t>(mode_ctx + L::mode::from_context, mode_obj);
+        uintptr_t label = a.alloc(32);
+        std::memcpy(&a.mem[label - BASE], "grand_prix_23", 14);
+        a.put<uintptr_t>(mode_obj + L::mode::label, label);
+
+        spect = a.alloc(0x100);
+        reg_add(s.key_spectator, spect);
+
+        s.controllers = a.alloc(8);
+        ctrl_sys = a.alloc(0x400);
+        a.put<uintptr_t>(s.controllers, ctrl_sys);
+        a.put<uintptr_t>(ctrl_sys, VT_CTRL);
+        s.vt_controllers = VT_CTRL;
+        s.vt_human = VT_HUMAN;
+        a.put<uint8_t>(ctrl_sys + L::controllers::built, 1);
+        uintptr_t cv = a.alloc(0x40);
+        a.put<uintptr_t>(ctrl_sys + L::controllers::count_vec, cv);
+        a.put<uint32_t>(cv + L::controllers::count_lo, 0);
+        a.put<uint32_t>(cv + L::controllers::count_hi, 4 * 8);
+        uintptr_t sets = a.alloc(8 * 4);
+        a.put<uintptr_t>(ctrl_sys + L::controllers::sets, sets);
+        for (int i = 0; i < 4; i++) {
+            ctrl_sets[i] = a.alloc(0x40);
+            a.put<uintptr_t>(sets + 8 * i, ctrl_sets[i]);
+            a.put<uint8_t>(ctrl_sets[i] + L::controllers::set_vehicle, uint8_t(i));
+            if (i == 1) {
+                human[i] = a.alloc(0x20);
+                a.put<uintptr_t>(human[i], VT_HUMAN);
+                a.put<uintptr_t>(ctrl_sets[i] + L::controllers::set_human, human[i]);
+            }
+        }
+    }
+
+    void set_position(int i, int pos)
+    {
+        a.put<uint32_t>(results_entries[i] + L::results::pos_a, uint32_t(pos - 1) ^ 0x77);
+        a.put<uint32_t>(results_entries[i] + L::results::pos_b, 0x77);
+    }
+
+    Mem mem() { return Mem{arena_read, &a}; }
+};
+
+static void test_order_gaps_cars()
+{
+    World w;
+    Live live(w.mem(), w.s, Gates::all());
+    live.update(0.0);
+    const SwoftyLiveSession &s = live.ses;
+    CHECK(live.active());
+    CHECK(s.cars == 4 && s.racers == 3);
+    CHECK((s.have & SWOFTY_LIVE_SHAVE_ORDER) && s.classified == 3);
+    CHECK(s.order[0] == 1 && s.order[1] == 0 && s.order[2] == 2);
+    CHECK(s.on_track == 3 && s.road_order[0] == 1 && s.road_order[1] == 0 && s.road_order[2] == 2);
+    CHECK(s.player == 1 && s.watched == -1 && s.subject == 1);
+    CHECK(s.type == 15 && s.track_length_m == 5000.f);
+    CHECK(s.game_mode == SWOFTY_LIVE_MODE_GRAND_PRIX);
+    CHECK(s.sector_count == 3 && s.yellow_sectors == (1u << 1));
+    CHECK(s.safety_car == 1 && s.red_flag == 0 && !s.chequered);
+
+    const SwoftyLiveCar &c0 = live.cars[0], &c1 = live.cars[1], &c2 = live.cars[2], &c3 = live.cars[3];
+    CHECK(c0.position == 2 && c1.position == 1 && c2.position == 3 && c3.position == 0);
+    CHECK(!(c3.have & SWOFTY_LIVE_HAVE_CLASS) && !(c3.flags & SWOFTY_LIVE_CAR_RACER) && c3.ers_class == 0);
+    CHECK(c0.flags & SWOFTY_LIVE_CAR_RACER);
+    CHECK(c1.flags & SWOFTY_LIVE_CAR_PLAYER);
+    CHECK(c0.gap_leader_ms == 1200 && (c0.have & SWOFTY_LIVE_HAVE_GAP_LEADER));
+    CHECK(c1.gap_leader_ms == SWOFTY_LIVE_NO_GAP && !(c1.have & SWOFTY_LIVE_HAVE_GAP_LEADER));
+    CHECK(c2.gap_ahead_ms == 4400 && c2.gap_leader_ms == 5600);
+    CHECK(c0.lap == 0 && c0.lap_m == 3000.f && c1.lap == 1 && c1.lap_m == 200.f && c1.total_m == 5200.f);
+    CHECK(c0.sector == 2 && c1.sector == 1);
+    CHECK(std::fabs(c0.speed - 50.f) < 1e-3f && (c0.have & SWOFTY_LIVE_HAVE_SPEED));
+    CHECK(c0.gear == 3 && std::fabs(c0.rpm - 1000.f * 9.5492966f) < 1.f && std::fabs(c0.rpm_limit - 1500.f * 9.5492966f) < 1.f);
+    CHECK(std::fabs(c0.steer + 0.4f) < 1e-4f);
+    CHECK(c0.g_lat == 2.5f && c0.g_long == -1.0f);
+    CHECK(c0.throttle == 0.8f && c0.brake == 0.0f);
+    CHECK(c2.gear == -1 && std::fabs(c2.throttle - 0.9f) < 1e-6f && std::fabs(c2.brake - 0.1f) < 1e-6f);
+    CHECK(c0.ers_store == 2.0e6f && c0.ers_capacity == 4.0e6f && c0.ers_mode == 2 && c0.ers_max_deploy == 350e3f);
+    CHECK(c3.ers_store == 0 && !(c3.have & SWOFTY_LIVE_HAVE_ERS_STORE));
+    CHECK(c0.world_pos[0] == 10.f && c0.world_vel[2] == 40.f);
+    CHECK(c0.pit_state == 0 && (c0.have & SWOFTY_LIVE_HAVE_PIT));
+}
+
+static void test_inert_and_gates()
+{
+    World w;
+    Sites none;
+    Live off(w.mem(), none, Gates::all());
+    off.update(0.0);
+    CHECK(!off.active() && off.ses.have == 0 && !off.present[0]);
+
+    Sites no_results = w.s;
+    no_results.key_results = 0;
+    Live part(w.mem(), no_results, Gates::all());
+    part.update(0.0);
+    CHECK(part.active() && !(part.ses.have & SWOFTY_LIVE_SHAVE_ORDER) && part.cars[0].position == 0 &&
+          !(part.cars[0].have & SWOFTY_LIVE_HAVE_CLASS));
+    CHECK(part.cars[0].have & SWOFTY_LIVE_HAVE_SPEED);
+
+    Gates none_on;
+    Live gated(w.mem(), w.s, none_on);
+    gated.update(0.0);
+    CHECK(gated.active() && gated.cars[0].have == SWOFTY_LIVE_HAVE_IDENT && !(gated.ses.have & SWOFTY_LIVE_SHAVE_ORDER));
+
+    w.a.put<uint32_t>(w.cars[1] + L::car::vehicle_id, 7);
+    Live bad(w.mem(), w.s, Gates::all());
+    bad.update(0.0);
+    CHECK(!bad.present[1] && bad.present[0]);
+
+    World torn;
+    torn.set_position(0, 1);
+    Live dup(torn.mem(), torn.s, Gates::all());
+    dup.update(0.0);
+    CHECK(!(dup.ses.have & SWOFTY_LIVE_SHAVE_ORDER) && dup.cars[0].position == 0);
+}
+
+static void test_player_watched()
+{
+    World w;
+    Live live(w.mem(), w.s, Gates::all());
+    live.update(0.0);
+    uint32_t gen = live.ses.generation, sub = live.ses.subject_generation;
+    CHECK(live.ses.player == 1);
+    w.a.put<uint8_t>(w.spect + L::spectate::ui, 1);
+    w.a.put<uint8_t>(w.spect + L::spectate::active, 1);
+    w.a.put<uint8_t>(w.spect + L::spectate::vehicle, 2);
+    live.update(0.05);
+    CHECK(live.ses.watched == 2 && live.ses.subject == 2 && live.ses.player == 1);
+    CHECK(live.ses.generation == gen && live.ses.subject_generation == sub + 1);
+    CHECK(live.cars[2].flags & SWOFTY_LIVE_CAR_WATCHED);
+    w.a.put<uint8_t>(w.spect + L::spectate::ui, 0);
+    live.update(0.1);
+    CHECK(live.ses.watched == -1 && live.ses.subject == 1);
+
+    w.a.put<uintptr_t>(w.ctrl_sets[1] + L::controllers::set_human, 0);
+    live.update(0.5);
+    CHECK(live.ses.player == 0);
+}
+
+static void test_events()
+{
+    World w;
+    Live live(w.mem(), w.s, Gates::all());
+    live.update(0.0);
+    CHECK(live.take_events().empty());
+    w.set_position(0, 1);
+    w.set_position(1, 2);
+    live.update(0.2);
+    auto ev = live.take_events();
+    CHECK(ev.size() == 1 && ev[0].kind == Event::overtake && ev[0].a == 0 && ev[0].b == 1);
+
+    w.a.put<uint32_t>(w.results_entries[2] + L::results::status, 4);
+    live.update(0.4);
+    ev = live.take_events();
+    CHECK(ev.size() == 1 && ev[0].kind == Event::retirement && ev[0].a == 2 && ev[0].b == 0);
+    live.update(0.6);
+    CHECK(live.take_events().empty());
+
+    World pits;
+    Live pit(pits.mem(), pits.s, Gates::all());
+    pit.update(0.0);
+    pits.a.put<uint32_t>(pits.pit_rec[1] + L::pit::state, 5);
+    pits.set_position(0, 1);
+    pits.set_position(1, 2);
+    pit.update(0.2);
+    CHECK(pit.take_events().empty());
+
+    World quali;
+    quali.a.put<uint32_t>(quali.s.session_type, 6);
+    Live q(quali.mem(), quali.s, Gates::all());
+    q.update(0.0);
+    quali.set_position(0, 1);
+    quali.set_position(1, 2);
+    q.update(0.2);
+    CHECK(q.take_events().empty());
+}
+
+static void test_derive_pure()
+{
+    Observed prev[MAX_CARS], now[MAX_CARS];
+    for (int i = 0; i < 3; i++) {
+        prev[i] = now[i] = {true, uint8_t(i + 1), 2, 0, 0.f};
+    }
+    std::swap(now[1].position, now[2].position);
+    std::vector<Event> out;
+    derive_events(prev, now, 16, 0, out);
+    CHECK(out.size() == 1 && out[0].kind == Event::overtake && out[0].a == 2 && out[0].b == 1);
+    out.clear();
+    derive_events(prev, now, 16, 3, out);
+    CHECK(out.empty());
+    now[2].penalty = 5.f;
+    derive_events(prev, now, 16, 0, out);
+    CHECK(out.empty());
+    prev[0].status = 2;
+    now[0].status = 7;
+    derive_events(prev, now, 16, 0, out);
+    CHECK(out.size() == 1 && out[0].kind == Event::retirement && out[0].a == 0);
+}
+
+static void test_turns()
+{
+    int i = turns::official_for("Silverstone_Grand_Prix", 5890.f);
+    CHECK(i >= 0 && turns::kTracks[i].track == 7);
+    CHECK(turns::official_for("silverstone_reverse", 5890.f) == -1);
+    CHECK(turns::official_for("Silverstone", 9000.f) == -1);
+    CHECK(turns::official_for("abu_dhabi", 5281.f) >= 0);
+    CHECK(turns::official_for("", 3337.f) >= 0 && turns::kTracks[turns::official_for("", 3337.f)].track == 5);
+    CHECK(turns::official_for("", 5793.f) == -1);
+    CHECK(turns::official_for("unknown_modded", 12345.f) == -1);
+
+    turns::Table t;
+    t.reset("silverstone", 5891.f);
+    CHECK(t.count() == 18 && t.track == 7);
+    const turns::Corner &c0 = turns::kCorners7[0];
+    SwoftyLiveTurn out;
+    float apex = c0.frac * 5891.f;
+    CHECK(t.at(apex - 100.f, out) && out.number == c0.number && out.right == (c0.left ? 0 : 1));
+    CHECK(std::fabs(out.distance_ahead_m - 100.f) < 0.01f && out.source == SWOFTY_LIVE_TURN_OFFICIAL);
+    CHECK(t.at(apex + 10.f, out) && out.number == c0.number && out.distance_ahead_m < 0);
+    CHECK(!t.at(apex + 400.f, out) || out.number != c0.number);
+    CHECK(!t.at(-5.f + 5891.f + 0.f, out) || out.number > 0);
+    turns::Table none;
+    none.reset("nowhere", 1234.f);
+    CHECK(none.count() == 0 && !none.at(100.f, out));
+    SwoftyLiveTurn all[32];
+    for (int k = 0; k < t.count(); k++)
+        t.fill(k, all[k], 0.f);
+    CHECK(all[17].number == turns::kCorners7[17].number);
+    char label[8];
+    std::snprintf(label, sizeof label, "%s", all[0].label);
+    CHECK(std::strlen(label) >= 1);
+}
+
+static void test_helpers()
+{
+    float ends[3] = {1500.f, 3200.f, 5000.f};
+    CHECK(sector_of(ends, 3, 0.f) == 1 && sector_of(ends, 3, 1500.f) == 1 && sector_of(ends, 3, 1500.1f) == 2 &&
+          sector_of(ends, 3, 5000.f) == 3 && sector_of(ends, 3, 5001.f) == 0 && sector_of(ends, 0, 1.f) == 0);
+    CHECK(checked_tyre_letter(16, 3) == 'S' && checked_tyre_letter(17, 4) == 'M' && checked_tyre_letter(18, 5) == 'H' &&
+          checked_tyre_letter(7, 7) == 'I' && checked_tyre_letter(8, 8) == 'W');
+    CHECK(checked_tyre_letter(16, 4) == 0 && checked_tyre_letter(99, 3) == 0);
+}
+
+static void test_snapshot()
+{
+    Snapshot s, out;
+    snap_begin(&s);
+    s.frame = 7;
+    s.valid = true;
+    snap_end(&s);
+    CHECK(snap_read(&s, &out) && out.frame == 7 && out.valid);
+    snap_begin(&s);
+    CHECK(!snap_read(&s, &out, 4));
+    snap_end(&s);
+}
+
+using Bytes = std::vector<uint8_t>;
+
+static void put32(Bytes &b, size_t at, uint32_t v)
+{
+    for (int i = 0; i < 4; i++)
+        b[at + i] = v >> (8 * i) & 255;
+}
+
+static void putf(Bytes &b, size_t at, float f)
+{
+    uint32_t v;
+    std::memcpy(&v, &f, 4);
+    put32(b, at, v);
+}
+
+static Bytes udp_packet(int id, size_t size)
+{
+    Bytes b(size, 0);
+    b[0] = 2025 & 255;
+    b[1] = 2025 >> 8;
+    b[2] = 25;
+    b[6] = uint8_t(id);
+    b[28] = 255;
+    return b;
+}
+
+static void test_telemetry_fill()
+{
+    World w;
+    Live live(w.mem(), w.s, Gates::all());
+    live.update(0.0);
+    SwoftyTelemetryFeed mem;
+    swofty::tel::feed_init(&mem);
+    uint32_t groups = fill_feed(mem, live.ses, live.cars, live.present);
+    CHECK((groups & PKT_LAP_DATA) && (groups & PKT_CAR_TELEMETRY) && (groups & PKT_CAR_STATUS) && (groups & PKT_SESSION));
+    const SwoftyCarState &c0 = mem.cars[0], &c1 = mem.cars[1], &c2 = mem.cars[2];
+    CHECK(c0.position == 2 && c1.position == 1 && c0.lap == 1 && c1.lap == 2);
+    CHECK(c0.sector == 1 && c1.sector == 0);
+    CHECK(c0.gap_leader_ms == 1200 && c1.gap_leader_ms == 0 && c2.gap_front_ms == 4400);
+    CHECK(c0.flags & SWOFTY_CAR_FLAG_LAP_DATA && c0.flags & SWOFTY_CAR_FLAG_STATUS && !(c0.flags & SWOFTY_CAR_FLAG_RETIRED));
+    CHECK(std::fabs(c0.speed - 50.f) < 1e-3f && c0.gear == 3 && c2.gear == -1);
+    CHECK(c0.ers_store == 2.0e6f);
+    CHECK(mem.session.session_type == 15 && mem.session.track_length == 5000 && mem.session.safety_car_status == 1);
+    CHECK(mem.session.player_index == 1 && mem.session.participant_count == 3);
+    CHECK(mem.session.udp_format == 2026 && (mem.session.packets_seen & PKT_LAP_DATA));
+    CHECK(mem.session.reserved[0] == uint32_t(-1));
+    CHECK(mem.session.flag == SWOFTY_FLAG_YELLOW);
+    CHECK(mem.cars[3].flags == 0 && mem.cars[4].flags == 0);
+
+    Bytes lap = udp_packet(2, 1285);
+    const size_t first = 29, stride = 57, at = 32;
+    const int pos[3] = {2, 1, 3}, lapn[3] = {1, 2, 1};
+    const float dist[3] = {3000.f, 200.f, 2900.f};
+    for (int i = 0; i < 3; i++) {
+        size_t e = first + i * stride;
+        putf(lap, e + 20, dist[i]);
+        lap[e + at] = uint8_t(pos[i]);
+        lap[e + at + 1] = uint8_t(lapn[i]);
+        lap[e + at + 13] = 2;
+    }
+    SwoftyTelemetryFeed udp_feed;
+    swofty::tel::feed_init(&udp_feed);
+    auto *sp = udp::decode(lap.data(), lap.size(), udp_feed, nullptr);
+    CHECK(sp && sp->id == 2);
+    std::vector<std::string> bad;
+    cross_check(mem, udp_feed, 1u << 2, bad);
+    CHECK(bad.empty());
+    lap[first + at] = 3;
+    swofty::tel::feed_init(&udp_feed);
+    udp::decode(lap.data(), lap.size(), udp_feed, nullptr);
+    cross_check(mem, udp_feed, 1u << 2, bad);
+    CHECK(bad.size() == 1 && bad[0].find("position") != std::string::npos);
+
+    Bytes tel = udp_packet(6, 1352);
+    for (int i = 0; i < 3; i++) {
+        size_t e = 29 + i * 60;
+        tel[e] = 180;
+        tel[e + 1] = 0;
+        tel[e + 15] = uint8_t(i == 2 ? int8_t(-1) : int8_t(3));
+        unsigned rpm = unsigned(1000.f * 9.5492966f);
+        tel[e + 16] = rpm & 255;
+        tel[e + 17] = rpm >> 8;
+    }
+    swofty::tel::feed_init(&udp_feed);
+    udp::decode(tel.data(), tel.size(), udp_feed, nullptr);
+    bad.clear();
+    cross_check(mem, udp_feed, 1u << 6, bad);
+    CHECK(bad.empty());
+    tel[29 + 15] = 5;
+    swofty::tel::feed_init(&udp_feed);
+    udp::decode(tel.data(), tel.size(), udp_feed, nullptr);
+    cross_check(mem, udp_feed, 1u << 6, bad);
+    CHECK(bad.size() == 1 && bad[0].find("gear") != std::string::npos);
+
+    SwoftyTelemetryFeed merged;
+    swofty::tel::feed_init(&merged);
+    udp::decode(lap.data(), lap.size(), merged, nullptr);
+    fill_feed(merged, live.ses, live.cars, live.present);
+    CHECK(merged.cars[0].position == 2);
+}
+
+static void test_badge()
+{
+    World w;
+    Live live(w.mem(), w.s, Gates::all());
+    live.update(0.0);
+    Arena &a = w.a;
+    uintptr_t mode = a.get<uintptr_t>(w.mode_ctx + L::badge::mode), game = a.alloc(0x400), ents = a.alloc(L::badge::entrant_stride * 2),
+              tt = a.alloc(0x400), table = a.alloc(0x40), vec = a.alloc(32), rec = a.alloc(0x600), key = a.alloc(32);
+    a.put<uintptr_t>(mode + L::badge::game, game);
+    a.put<uintptr_t>(game + L::badge::entrants, ents);
+    a.put<uintptr_t>(game + L::badge::entrants + 8, ents + L::badge::entrant_stride * 2);
+    a.put<uint8_t>(ents + L::badge::entrant_vid, 9);
+    a.put<uint8_t>(ents + L::badge::entrant_stride + L::badge::entrant_vid, 1);
+    a.put<uint32_t>(ents + L::badge::entrant_stride + L::badge::entrant_team, (3u << 16) | 0);
+    uintptr_t reg = a.get<uintptr_t>(a.get<uintptr_t>(w.s.game_manager) + L::registry::from_manager);
+    uintptr_t slots = a.get<uintptr_t>(reg + L::registry::slots), info = a.get<uintptr_t>(reg + L::registry::info);
+    a.put<uintptr_t>(slots + 16 * 12, w.s.key_team_tables);
+    a.put<uintptr_t>(slots + 16 * 12 + 8, tt);
+    a.put<uint8_t>(info + 12, 1);
+    a.put<uintptr_t>(tt + L::badge::tables, table);
+    a.put<uintptr_t>(table + L::badge::table_vec, vec);
+    a.put<uintptr_t>(table + L::badge::table_vec + 8, vec + 16 * 4);
+    a.put<uintptr_t>(vec + 3 * 16 + 8, rec);
+    a.put<uintptr_t>(rec + L::badge::record_key, key);
+    std::memcpy(&a.mem[key - BASE], "ferrari_2026", 13);
+    char out[40];
+    live.update(2.0);
+    CHECK(live.read_team_badge(1, out, sizeof out) && !std::strcmp(out, "ferrari_2026"));
+    CHECK(!live.read_team_badge(2, out, sizeof out));
+    a.put<uint8_t>(rec + L::badge::record_render, 1);
+    CHECK(!live.read_team_badge(1, out, sizeof out));
+}
+
+int main()
+{
+    test_order_gaps_cars();
+    test_inert_and_gates();
+    test_player_watched();
+    test_events();
+    test_derive_pure();
+    test_turns();
+    test_helpers();
+    test_snapshot();
+    test_telemetry_fill();
+    test_badge();
+    if (failures) {
+        std::printf("%d failures\n", failures);
+        return 1;
+    }
+    std::printf("live ok\n");
+    return 0;
+}

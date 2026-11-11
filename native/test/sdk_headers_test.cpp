@@ -9,7 +9,15 @@
 #include <string>
 #include <type_traits>
 
+#include <swofty/ease.hpp>
 #include <swofty/events.hpp>
+#include <swofty/fake_hud.hpp>
+#include <swofty/hud_format.hpp>
+#include <swofty/hud_frame.hpp>
+#include <swofty/hud_leaves.hpp>
+#include <swofty/log_csv.hpp>
+#include <swofty/settings_struct.hpp>
+#include <swofty/timing.hpp>
 #include <swofty/hooks.hpp>
 #include <swofty/registry.hpp>
 #include <swofty/services.hpp>
@@ -711,8 +719,30 @@ static void session_operations()
     swofty::detail::set_session_ops_table(nullptr);
 }
 
+static void hud_runtime_headers()
+{
+    swofty::hud::Leaves leaves{"view_model_data.hud_probe_"};
+    auto flag = leaves.boolean("on");
+    auto rows = leaves.rows<swofty::hud::BoolLeaf>("r", 2, 2, [](swofty::hud::Leaves &l, int) { return l.boolean("a"); });
+    leaves.set(flag, true);
+    leaves.set(rows[1], true);
+    swofty::hud::Leaves::Atomic group(leaves);
+    CHECK(leaves.flush() == 0);
+    swofty::timing::Tower tower;
+    swofty::timing::Session session;
+    swofty::timing::Config config;
+    tower.update(session, {}, -1, 0.0, config);
+    CHECK(!tower.on() && tower.rows() == 0);
+    swofty::diag::Csv csv("probe", {{"a", swofty::diag::Csv::i32}}, 5);
+    CHECK(!csv.available() && !csv.row());
+    swofty::hud::Frame frame;
+    CHECK(!frame.begin({}, 0.01));
+    CHECK(swofty::ease::level(1.f, 4) == 4 && swofty::hud::format::speed(10.f).kph == 36);
+}
+
 int main()
 {
+    hud_runtime_headers();
     unavailable_without_core();
     session_operations();
     content_ownership();
