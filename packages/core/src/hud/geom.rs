@@ -4,6 +4,8 @@
 //! is in OSD units (1 unit = screen width / 19.2), `y` up. Measured in game, not derived.
 
 pub const K: f64 = 0.018;
+/// Project Halo's tower unit: 1/3 px at 1080p.
+pub const KT: f64 = 0.03;
 /// The game font's cap height over its em, measured on OSD_24_bold and 17_bold.
 pub const CAP_EM: f64 = 0.672;
 /// The cap centre's height above the eText origin, in em; the origin is the baseline.

@@ -40,9 +40,27 @@ pub enum StockMode {
     Park,
 }
 
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Default, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum Units {
+    #[default]
+    Hud,
+    Tower,
+}
+
+impl Units {
+    pub fn k(self) -> f64 {
+        match self {
+            Units::Hud => super::geom::K,
+            Units::Tower => super::geom::KT,
+        }
+    }
+}
+
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
 pub struct Sprite {
+    #[serde(default, skip_serializing_if = "String::is_empty")]
     pub png: String,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub bounds: Option<[f64; 4]>,
@@ -50,6 +68,10 @@ pub struct Sprite {
     pub ppu: Option<f64>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tint: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub texture: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub fit: Option<[f64; 2]>,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -58,6 +80,7 @@ pub enum Ty {
     Bool,
     Text,
     I32,
+    Si32,
     F32,
 }
 
@@ -76,6 +99,10 @@ pub struct Bind {
     pub session_car: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub slot: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub slot_var: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub screen: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ty: Option<Ty>,
     #[serde(default, rename = "not", skip_serializing_if = "std::ops::Not::not")]
@@ -105,17 +132,19 @@ impl Bind {
             self.game.is_some(),
             self.session.is_some(),
             self.session_car.is_some(),
+            self.screen.is_some(),
         ]
         .iter()
         .filter(|b| **b)
         .count();
         if n != 1 {
             return Err(err(
-                "a binding names exactly one of view_model, game, session and session_car",
+                "a binding names exactly one of view_model, game, session, session_car and screen",
             ));
         }
-        if self.session_car.is_some() != self.slot.is_some() {
-            return Err(err("session_car and slot go together"));
+        let slots = self.slot.is_some() as u8 + self.slot_var.is_some() as u8;
+        if self.session_car.is_some() != (slots == 1) {
+            return Err(err("session_car and one of slot and slot_var go together"));
         }
         Ok(())
     }
@@ -138,6 +167,20 @@ pub enum Kind {
     Slats,
     Gauge,
     Sweep,
+    Stack,
+    Centre,
+    Unit,
+}
+
+#[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Repeat {
+    pub count: u32,
+    pub var: String,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub pitch: Option<[f64; 2]>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub from: Option<u32>,
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -175,8 +218,22 @@ pub struct Element {
     pub value: Option<Bind>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub literal: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub literal_id: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub children: Vec<Element>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub repeat: Option<Repeat>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub dir: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub gap: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub unit: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub size: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub texture: Option<Bind>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub count: Option<u32>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -230,11 +287,68 @@ pub struct Editor {
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub preview: BTreeMap<String, serde_json::Value>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub rows: Option<u32>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub team_colour: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub hide_stock_in_editor: Option<bool>,
     #[serde(default, rename = "box", skip_serializing_if = "Option::is_none")]
     pub rect: Option<[f64; 4]>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct StockNodes {
+    pub template: String,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub hide: Vec<String>,
+    #[serde(default, rename = "while", skip_serializing_if = "Option::is_none")]
+    pub while_on: Option<Bind>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RestyleScale {
+    pub elements: Vec<String>,
+    pub by: f64,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub about: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct RestyleText {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub style: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub cap_height: Option<f64>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub colour: Option<String>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Restyle {
+    pub scene: String,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub fill: BTreeMap<String, String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub twins: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub template_parents: Vec<String>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub hide: Vec<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub scale: Option<RestyleScale>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub text: BTreeMap<String, RestyleText>,
+}
+
+#[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
+#[serde(deny_unknown_fields)]
+pub struct Also {
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub show: Option<Bind>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -260,6 +374,18 @@ pub struct HudElement {
     pub scene: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub parent_ui: Option<String>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub screen: Option<serde_json::Value>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub show: Option<Bind>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub also: BTreeMap<String, Also>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub stock_nodes: Vec<StockNodes>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub restyle: Vec<Restyle>,
+    #[serde(default, skip_serializing_if = "is_default_units")]
+    pub units: Units,
     #[serde(default = "yes", skip_serializing_if = "is_true")]
     pub spectator: bool,
     #[serde(default, skip_serializing_if = "Option::is_none")]
@@ -296,17 +422,31 @@ fn is_true(b: &bool) -> bool {
     *b
 }
 
+fn is_default_units(u: &Units) -> bool {
+    *u == Units::Hud
+}
+
 impl HudElement {
     pub fn parse(value: &serde_json::Value) -> Result<Self> {
         let mut v = value.clone();
         if let Some(o) = v.as_object_mut() {
             o.remove("$comment");
-            match (o.contains_key("dial"), o.contains_key("scene")) {
-                (true, true) => return Err(err("record: a record has a dial or a scene target, not both")),
-                (false, false) => {
-                    return Err(err("record: missing field `dial` (or `scene` and `parent_ui`)"));
+            let targets = ["dial", "scene", "screen"]
+                .iter()
+                .filter(|k| o.contains_key(**k))
+                .count();
+            match targets {
+                0 => {
+                    return Err(err(
+                        "record: missing field `dial` (or `scene` and `parent_ui`, or `screen`)",
+                    ));
                 }
-                _ => {}
+                1 => {}
+                _ => {
+                    return Err(err(
+                        "record: a record has a dial, a scene target or a screen, not two",
+                    ));
+                }
             }
         }
         let rec: Self = serde_json::from_value(v).map_err(|e| err(format!("record: {e}")))?;
@@ -474,6 +614,8 @@ fn check_element(e: &Element, ids: &mut std::collections::BTreeSet<String>) -> R
                 && e.arc.len() >= 2
                 && e.value.is_some(),
         )?,
+        Kind::Stack | Kind::Centre => {}
+        Kind::Unit => need("unit and size", e.unit.is_some() && e.size.is_some())?,
     }
     for b in [&e.visible, &e.tint, &e.value].into_iter().flatten() {
         b.check()?;
