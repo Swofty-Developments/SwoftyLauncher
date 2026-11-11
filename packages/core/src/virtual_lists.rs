@@ -86,6 +86,18 @@ fn copy_row(db: &mut Gvdb, names: &Names, from: &str, to: &str) -> usize {
     n
 }
 
+/// The first available_entrant_lists field of the content set labelled `set`.
+fn content_set_lists(db: &Gvdb, set: &str) -> Option<String> {
+    let n = text(db, &instance_count_path("content_sets", "content_set"))?
+        .trim()
+        .parse::<usize>()
+        .ok()?;
+    (0..n)
+        .map(|i| format!("content_sets.content_set_{i}"))
+        .find(|row| text(db, &format!("{row}._metadata_")).as_deref() == Some(set))
+        .map(|row| format!("{row}.available_entrant_lists_0.entrant_lists"))
+}
+
 fn host_setup_mode(db: &Gvdb) -> Option<String> {
     let table = "entrants.entrant_setup_modes";
     let n = text(db, &instance_count_path(table, "entrant_setup_mode"))?
@@ -176,6 +188,15 @@ pub fn settle(db: &mut Gvdb, stock: &HashSet<u64>) -> Vec<String> {
             None => lines.push(format!(
                 "virtual lists: no stat id up to 255 is free for the host {HOST}; virtual boxes stay hidden"
             )),
+        }
+    }
+    for set in ["2025", "2026"] {
+        if let Some(path) = content_set_lists(db, set) {
+            let mut v = text(db, &path).map(|t| items(&t)).unwrap_or_default();
+            if !v.iter().any(|l| l == HOST) {
+                v.push(HOST.into());
+                set_text(db, &path, 13, &v.join(","));
+            }
         }
     }
     if let Some(esm) = host_setup_mode(db) {

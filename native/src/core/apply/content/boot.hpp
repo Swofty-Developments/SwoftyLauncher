@@ -293,7 +293,89 @@ struct Expansion {
     std::map<std::string, std::vector<std::pair<std::string, std::string>>> texts;
     std::set<std::string> owners;
     std::map<std::string, std::map<std::string, int>> left_out;
+    std::vector<std::string> virtual_lists;
 };
+
+// The runtime twin of the build's virtual-list step (packages/core/src/virtual_lists.rs) for content.package lists
+// with "virtual_list": true. After every record is lowered: adds the host list swofty_virtual_list (a copy of the
+// first virtual list, offered under swofty_f1) when no row has that label, then moves each virtual list's rows to
+// entrant_list_10000 and up, puts the table's last row in its place and lowers the count. Only rows this engine
+// wrote move; a list whose row or the table's last row is the game's own stays and is logged.
+inline void settle_virtual_lists(Expansion &x, const StatIds &stat)
+{
+    if (x.virtual_lists.empty())
+        return;
+    auto &e = x.engine;
+    auto &lines = x.lines["content.package"];
+    const std::string row = std::string(LISTS) + "_";
+    const std::string count_path = "entrants.entrant_lists._entrant_list_instancecount_";
+    auto count = [&]() -> int64_t {
+        auto t = e.text(count_path);
+        return t ? std::strtoll(t->c_str(), nullptr, 10) : -1;
+    };
+    auto label_at = [&](int64_t i) { return e.text(row + std::to_string(i) + "._metadata_"); };
+    int64_t n = count();
+    if (n < 0)
+        return;
+    bool host = false;
+    for (int64_t i = 0; i < n && !host; i++)
+        host = label_at(i) == std::string(VIRTUAL_HOST_LIST);
+    if (!host) {
+        e.attribute("swofty.core", "content.package", VIRTUAL_HOST_LIST);
+        Value set = Value::object({{"_metadata_", VIRTUAL_HOST_LIST}});
+        if (auto id = stat_of(stat, "content.package", std::string("swofty.core/") + VIRTUAL_HOST_LIST, -1))
+            set["stat_id"] = std::to_string(*id);
+        std::size_t mark = e.mark();
+        std::string why = e.apply(add_row("entrants.entrant_lists",
+                                          std::string(LISTS) + "[_metadata_=" + x.virtual_lists.front() + "]", set));
+        for (const char *field : {"entrant_lists", "selectable_entrant_lists"})
+            if (why.empty())
+                why = e.apply(append_op(std::string(SETUP_ROW) + "[_metadata_=swofty_f1]", field, VIRTUAL_HOST_LIST));
+        for (const char *cs : {"2025", "2026"}) {
+            std::string sel = std::string("content_sets.content_set[_metadata_=") + cs + "].available_entrant_lists_0";
+            if (why.empty() && e.resolve(sel))
+                why = e.apply(append_op(sel, "entrant_lists", VIRTUAL_HOST_LIST));
+        }
+        if (!why.empty()) {
+            e.rollback(mark);
+            lines.push_back(std::string("virtual lists: the host ") + VIRTUAL_HOST_LIST + " could not be added (" + why +
+                            "); virtual boxes stay hidden");
+        } else {
+            e.commit();
+            lines.push_back(std::string("virtual lists: host ") + VIRTUAL_HOST_LIST + " added");
+        }
+    }
+    int64_t next = 10000;
+    while (label_at(next))
+        next++;
+    std::size_t moved = 0;
+    for (auto &label : x.virtual_lists) {
+        n = count();
+        int64_t i = -1;
+        for (int64_t k = 0; k < n && i < 0; k++)
+            if (label_at(k) == label)
+                i = k;
+        if (i < 0) {
+            lines.push_back("virtual list " + label + ": no counted row has this label; nothing moved");
+            continue;
+        }
+        std::string from = row + std::to_string(i), last = row + std::to_string(n - 1), to = row + std::to_string(next);
+        if (!e.wrote_fresh(from + "._metadata_") || (i != n - 1 && !e.wrote_fresh(last + "._metadata_"))) {
+            lines.push_back("virtual list " + label + ": its row or the table's last row is the game's own; nothing moved");
+            continue;
+        }
+        std::size_t keys = e.move_row(from, to);
+        if (i != n - 1)
+            e.move_row(last, from);
+        auto tag = e.get(gvdb::fnv64(count_path));
+        e.put_text(count_path, tag ? tag->tag : 0, std::to_string(n - 1));
+        next++;
+        moved++;
+        lines.push_back("virtual list " + label + ": " + std::to_string(keys) + " key(s) moved from " + from + " to " + to);
+    }
+    lines.push_back("virtual lists: " + std::to_string(moved) + " moved above the count (" + std::to_string(count()) +
+                    " lists left for the game)");
+}
 
 inline TeamRefs refs_of(registry::Store &st, const Lookup &lookup)
 {
@@ -571,6 +653,7 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
                 continue;
             }
             x.engine.commit();
+            x.virtual_lists.insert(x.virtual_lists.end(), plan.virtual_lists.begin(), plan.virtual_lists.end());
             x.records[reg]++;
             x.applied[reg].push_back(id);
             x.owners.insert(owner);
@@ -589,6 +672,7 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
         }
     }
     lower_seat_entrants(st, x, lookup, read, skip);
+    settle_virtual_lists(x, stat);
     for (auto &l : x.engine.lines)
         x.lines["content.package"].push_back(l);
     for (auto &w : x.engine.writes())

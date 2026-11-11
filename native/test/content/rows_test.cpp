@@ -9,6 +9,7 @@
 
 #include <cstdio>
 #include <fstream>
+#include <set>
 #include <sstream>
 
 using namespace swofty_core;
@@ -2026,6 +2027,64 @@ static void stock_only_tests(const std::string &regs)
     check(fresh == 5, "a stock stat_id call allocates nothing from the pool: the next free id is still the first above the table");
 }
 
+static void virtual_list_tests(const std::string &regs)
+{
+    registry::reset_store();
+    auto &st = registry::store();
+    st.set_order({"mod.vl"});
+    st.set_validator(&registry::schema_validator());
+    const SwoftyRegistry *t = registry::table();
+    for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
+        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.2.json" : "/1.0.json"));
+        t->declare(name, SwoftyText{schema.data(), schema.size()});
+    }
+    auto package = [](const char *list, bool virt) {
+        return std::string(R"({ "title": "lng_x", "entrant_list": ")") + list + R"(", "season": 1960, "stat_id": "auto", )" +
+               (virt ? R"("virtual_list": true, )" : "") + R"("teams": [ { "key": "mercedes", "vehicle": null,
+                 "drivers": [ { "driver": "game/lewis_hamilton", "number": 44, "look": null } ] } ],
+                 "database": { "entrant_list": ")" + list + R"(", "scenario_stat_id": null, "content_sets": ["2025"],
+                 "looks": { "mercedes/lewis_hamilton": "x" } } })";
+    };
+    std::string json = std::string("{ \"content.package\": { \"real\": ") + package("vl_real", false) +
+                       ", \"v1\": " + package("vl_1960", true) + ", \"v2\": " + package("vl_1961", true) + " } }";
+    check(registry::load_data_file("mod.vl", "registry/content.json", json) == SWOFTY_ASSET_OK, "the virtual list packages register");
+    st.end_register();
+    Db db;
+    stock_package_rows(db);
+    apply::ids::Store ids;
+    auto text = [&](const std::string &path) -> std::optional<std::string> {
+        auto r = db.base()(content::gvdb::fnv64(path));
+        return r ? std::optional<std::string>(r->text) : std::nullopt;
+    };
+    std::map<std::string, content::PoolScan> scans;
+    for (auto &scan : content::scan_all_pools(text)) {
+        ids.define_pool(scan.registry, {{{scan.lo, scan.hi}}});
+        scans[scan.registry] = scan;
+    }
+    content::settle_ids(ids, st, scans, "test");
+    content::StatIds stat = [&](const std::string &reg, const std::string &id, int64_t pin) -> int64_t {
+        return pin >= 0 ? ids.pin(reg, id, pin, "test").id : ids.allocate(reg, id, "test").id;
+    };
+    content::Expansion x(db.base());
+    content::expand(st, x, stat);
+    auto &e = x.engine;
+    const std::string lists = "entrants.entrant_lists.entrant_list_";
+    auto label = [&](int i) { return e.text(lists + std::to_string(i) + "._metadata_").value_or(""); };
+    std::string all;
+    for (auto &l : x.lines["content.package"])
+        all += l + "\n";
+    check(e.text("entrants.entrant_lists._entrant_list_instancecount_").value_or("") == "3",
+          "two virtual lists leave the stock list, the real one and the host counted\n" + all);
+    std::set<std::string> counted = {label(0), label(1), label(2)};
+    check(counted == std::set<std::string>{"f1_2025", "vl_real", "swofty_virtual_list"}, "the counted rows are f1_2025, vl_real and the host");
+    check(label(10000) == "vl_1960" && label(10001) == "vl_1961", "the virtual lists sit at entrant_list_10000 and 10001");
+    check(e.text(lists + "10000.entrant_0.entrant_reference").has_value(), "a virtual list keeps its entrant rows");
+    check(!e.text(lists + "10000.stat_id").has_value() || e.text(lists + "10000.stat_id") != e.text(lists + "1.stat_id"),
+          "a virtual list does not share the real list's stat id");
+    check(all.find("virtual lists: host swofty_virtual_list added") != std::string::npos, "the host is added and logged");
+    check(all.find("virtual lists: 2 moved above the count") != std::string::npos, "the move is logged");
+}
+
 int main(int argc, char **argv)
 {
     box_time_trial_tests();
@@ -2053,6 +2112,8 @@ int main(int argc, char **argv)
         career_registry_tests(argv[1]);
     if (argc > 1)
         id_clash_tests(argv[1]);
+    if (argc > 1)
+        virtual_list_tests(argv[1]);
     std::printf("%s\n", failures ? "FAILED" : "all passed");
     return failures ? 1 : 0;
 }
