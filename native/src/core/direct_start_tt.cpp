@@ -620,6 +620,23 @@ std::string session_track()
     return code.empty() ? runtime::track_select_time_trial() : code;
 }
 
+std::string player_list()
+{
+    if (!runtime::same_build())
+        return {};
+    DirectStartContext ctx = runtime::direct_start_context();
+    if (!ctx.game_modes)
+        return {};
+    std::vector<std::string> names;
+    uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
+    uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    if (!e || !runtime::readable(e, ENTITY_TEAMS + 8))
+        return {};
+    auto *list = at<uint8_t *>(e, ENTITY_LIST);
+    const char *name = list ? holder_name(list, LIST_NAME) : nullptr;
+    return name ? name : "";
+}
+
 std::string player_team()
 {
     if (!runtime::same_build())

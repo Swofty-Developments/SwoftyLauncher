@@ -1288,7 +1288,7 @@ std::wstring replay_setup_path(const std::wstring &frr)
 
 void replay_write_setup(const std::wstring &frr)
 {
-    std::string box = current_content(), track = runtime::direct_start::tt::session_track(), team = runtime::direct_start::tt::player_team();
+    std::string box = runtime::direct_start::tt::player_list(), track = runtime::direct_start::tt::session_track(), team = runtime::direct_start::tt::player_team();
     auto quote = [](const std::string &v) {
         std::string out = "\"";
         for (char ch : v)
@@ -1307,6 +1307,11 @@ void replay_write_setup(const std::wstring &frr)
 }
 
 safetyhook::InlineHook h_load_start;
+// The play request: a replay file, played in the live session once the recorder has run for replay_play_delay_ms in a row. Set by the
+// SWOFTY_TT_REPLAY_PLAY test switch (30 s) or by a Theatre pick of one of our Time Trial replays (6 s).
+std::string replay_play_path;
+std::atomic<int64_t> replay_play_at{0}, replay_play_delay_ms{30000};
+std::atomic<int> replay_play_stage{0};
 safetyhook::MidHook h_load_ready;
 std::atomic<bool> replay_play_forcing{false};
 // The load start asks one of two global objects whether a load may start now (virtual +0x10). It answers no on track. The probe logs the
@@ -1361,10 +1366,18 @@ void replay_load_tick()
     std::wstring path = replay_load_path;
     replay_load_mgr = 0;
     g.unlock();
-    swofty::log("[replay] Time Trial setup for the load %s after %lld ms%s%s; track now '%s', team '%s'; starting the game's load", s == runtime::direct_start::Setup::done ? "done" : s == runtime::direct_start::Setup::failed ? "FAILED" : "timed out",
+    swofty::log("[replay] Time Trial setup for the Theatre pick %s after %lld ms%s%s; track now '%s', team '%s'", s == runtime::direct_start::Setup::done ? "done" : s == runtime::direct_start::Setup::failed ? "FAILED" : "timed out",
                 (long long)waited, why.empty() ? "" : ": ", why.c_str(), runtime::direct_start::tt::current_track().c_str(), runtime::direct_start::tt::player_team().c_str());
-    bool ok = h_load_start.call<bool>(mgr, path.c_str());
-    swofty::log("[replay] the game's load start returned %d", ok ? 1 : 0);
+    if (s != runtime::direct_start::Setup::done) {
+        swofty::log("[replay] Theatre pick: nothing is loaded (the game's own load cannot play a Time Trial file)");
+        return;
+    }
+    // The game's load is left out: Theatre goes on to start its plain Time Trial session, and the file is loaded and played there.
+    replay_play_path = narrow(path.c_str());
+    replay_play_delay_ms = 6000;
+    replay_play_at = 0;
+    replay_play_stage = 0;
+    swofty::log("[replay] Theatre pick: %s plays once the session is on track", replay_play_path.c_str());
 }
 
 void describe_component(const char *what, uint64_t x)
@@ -1591,7 +1604,6 @@ void replay_save_entry_mid(safetyhook::Context &c)
 }
 
 int64_t replay_after_ms = 0;
-std::string replay_play_path;
 std::atomic<int64_t> replay_session_best_ms{0};
 bool replay_capture_any = false;
 
@@ -1637,8 +1649,8 @@ void replay_tick(uint64_t sys, const char *slot)
     // the live session through the game's own load, and 8 s later the replay system is put into full replay playback of the whole buffer
     // (mode 0, state 2, clip over the module's duration), the way the fastest lap view's update does it. Every step is logged.
     if (vt_ok && !replay_play_path.empty() && bridge_on && content_ours() && h_load_start) {
-        static std::atomic<int64_t> at{0};
-        static std::atomic<int> stage{0};
+        std::atomic<int64_t> &at = replay_play_at;
+        std::atomic<int> &stage = replay_play_stage;
         int64_t now = now_ms();
         auto state_line = [&](const char *when) {
             uint64_t list = peek64(sys + 0x98), module = list && runtime::readable(reinterpret_cast<void *>(list), 8) ? peek64(list) : 0;
@@ -1653,7 +1665,7 @@ void replay_tick(uint64_t sys, const char *slot)
         if (stage.load() == 0 && peek32(sys + 0x20) != 0)
             at = 0;
         else if (!at.load())
-            at = now + 30000;
+            at = now + replay_play_delay_ms.load();
         else if (stage.load() == 0 && now >= at.load() && stage.exchange(1) == 0) {
             std::string how;
             uint64_t mgr = replay_manager_ptr.load();

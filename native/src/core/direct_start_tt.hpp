@@ -18,6 +18,9 @@ std::string current_track();
 
 std::string session_track();
 
+// The entrant list the Time Trial mode has selected (the request's "box").
+std::string player_list();
+
 std::string player_team();
 
 }
