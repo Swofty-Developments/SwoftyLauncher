@@ -23,10 +23,29 @@ impl Shell {
                 let e = e.clone();
                 return self.failed_view(&e, cx);
             }
-            Load::Ready(o) if o.seasons.is_empty() && o.global.is_empty() && o.custom.is_empty() => {
-                return self.nothing_yet();
-            }
-            Load::Ready(_) => {}
+            Load::Ready(o) => match landing_empty(o, &self.online.category) {
+                Some(LandingEmpty::NothingYet) => {
+                    self.online.items = Vec::new();
+                    return self.nothing_yet();
+                }
+                Some(LandingEmpty::Filtered) => {
+                    self.online.items = Vec::new();
+                    return v_flex()
+                        .flex_1()
+                        .min_h_0()
+                        .px(px(28.))
+                        .gap(px(10.))
+                        .child(h_flex().h(px(34.)).items_center().child(self.tt_category_bar(
+                            self.online.category,
+                            false,
+                            p,
+                            cx,
+                        )))
+                        .child(self.no_laps_filtered(cx))
+                        .into_any_element();
+                }
+                None => {}
+            },
         }
         let Load::Ready(o) = &self.online.overview else {
             return div().into_any_element();

@@ -83,6 +83,32 @@ pub struct Overview {
     pub me: Option<RankEntry>,
 }
 
+impl Overview {
+    pub fn is_empty(&self) -> bool {
+        self.seasons.is_empty() && self.global.is_empty() && self.custom.is_empty()
+    }
+}
+
+/// Why the landing page has nothing to list.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LandingEmpty {
+    /// Nobody has uploaded a lap at all.
+    NothingYet,
+    /// Laps exist, but none match the chosen assists or input; the filter bar stays so it can be changed.
+    Filtered,
+}
+
+pub fn landing_empty(overview: &Overview, cat: &Category) -> Option<LandingEmpty> {
+    if !overview.is_empty() {
+        return None;
+    }
+    Some(if cat.is_default() {
+        LandingEmpty::NothingYet
+    } else {
+        LandingEmpty::Filtered
+    })
+}
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct SeasonPage {
     pub season: SeasonCard,
@@ -1098,6 +1124,34 @@ mod tests {
         assert_eq!(Category::load(&dir), c);
         std::fs::remove_dir_all(&dir).ok();
         assert!(!c.is_default() && Category::default().is_default());
+    }
+
+    #[test]
+    fn an_empty_overview_under_a_saved_filter_keeps_the_filter_bar() {
+        let none = Overview {
+            seasons: Vec::new(),
+            global: Vec::new(),
+            custom: Vec::new(),
+            me: None,
+        };
+        let no_assists = Category {
+            assists: AssistFilter::None,
+            device: DeviceFilter::All,
+        };
+        let dir = std::env::temp_dir().join(format!("swofty-tt-empty-{}", std::process::id()));
+        no_assists.save(&dir);
+        let restarted = Category::load(&dir);
+        std::fs::remove_dir_all(&dir).ok();
+        assert_eq!(landing_empty(&none, &restarted), Some(LandingEmpty::Filtered));
+        assert_eq!(
+            landing_empty(&none, &Category::default()),
+            Some(LandingEmpty::NothingYet)
+        );
+        let some = Overview {
+            custom: vec![card("Hockenheim", None, 0, 0, "dry")],
+            ..none
+        };
+        assert_eq!(landing_empty(&some, &no_assists), None);
     }
 
     #[test]
