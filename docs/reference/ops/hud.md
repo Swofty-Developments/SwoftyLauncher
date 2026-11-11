@@ -70,7 +70,7 @@ A Halo-like dial: a base, a speed text, a boost lamp, a level bar, a battery gau
 
 ## Units and placement
 
-One HUD unit is one pixel of a 640x360 frame, the origin is the dial centre and `v` points down. A sprite's `bounds` is where it sits in that frame, so a sprite's art lines up with the others without an `at`. The record's root sits where the bottom of its box lands on the stock bottom customisation point; the box is `box`, else the bounds of the sprite named `base`, else the bounds of every sprite. Every element hangs off `boundless_customisation`, so the HUD editor's move and resize apply to it.
+One HUD unit is one pixel of a 640x360 frame, the origin is the dial centre and `v` points down. A record written in Project Halo's tower unit (1/3 px at 1080p) says `"units": "tower"`; the composer reads every `at`, `bounds`, `box`, `pitch`, `gap`, `size` and `cap_height` in that unit (0.03 scene units) and the default `hud` stays 0.018. A sprite's `bounds` is where it sits in that frame, so a sprite's art lines up with the others without an `at`. The record's root sits where the bottom of its box lands on the stock bottom customisation point; the box is `box`, else the bounds of the sprite named `base`, else the bounds of every sprite. Every element hangs off `boundless_customisation`, so the HUD editor's move and resize apply to it.
 
 ## Element kinds
 
@@ -87,11 +87,59 @@ One HUD unit is one pixel of a 640x360 frame, the origin is the dial centre and 
   "value": { "game": "ers_stored" } }              // a window slides over the fill as the value rises
 { "kind": "sweep",  "id": "g", "mask_sprite": "m", "fill_sprite": "solid", "pivot": [0, 0],
   "start": 225, "arc": [[0, 0], [1, -270]], "value": { "game": "revs" } }
+{ "kind": "stack",  "id": "h", "dir": "down|up|right|left", "gap": 0, "at": [x, y], "children": [ ] }   // the game's eStacker
+{ "kind": "centre", "id": "i", "at": [x, y], "children": [ ] }                                           // the game's eCentre (centreX)
+{ "kind": "group",  "id": "r", "repeat": { "count": 22, "var": "N", "pitch": [0, 21.635], "from": 0 }, "children": [ ] }
 ```
 
-Text origins are the alignment anchor and the baseline; the composer places each text on a rotated, scaled null with the game's measured cap height of 0.672 em, so `cap_height` is the height of a capital in HUD units. Known styles are `17_bold`, `24_bold`, `OSD_17_bold` and `OSD_24_bold`.
+Text origins are the alignment anchor and the baseline; the composer places each text on a rotated, scaled null with the game's measured cap height of 0.672 em, so `cap_height` is the height of a capital in HUD units. Known styles are `17_bold`, `24_bold`, `34_regular`, `OSD_17_bold`, `OSD_17_regular`, `OSD_19_regular`, `OSD_24_bold`, `OSD_24_regular`, `OSD_26_bold`, `OSD_30_bold` and `OSD_34_bold`; `case` is `upper`, `mixed` or `none`. A text with `"literal_id": "lng_lap"` shows the game's own string of that id: its label node writes `localise` true and the id as the text.
 
 `{nn}` in a `show` pattern is the two-digit index, from 01. A `levels` window `i` shows the lower part of the sprite up to `from + (to - from) * i / count`. `arc` is `[fraction, degrees]` keys of the sweep turning about `pivot`, relative to the frame turned to `start` degrees.
+
+## Rows
+
+A `group` with `repeat` is written once and composed `count` times. Copy `i` is the element `<prefix>_<id>NN` at `at + pitch * (i - from)`; every element under it is `<prefix>_<id>NN_<child>`, and every string in the copy's subtree reads the index: `{NN}` is two digits with a leading zero, `{N}` is plain, where `N` is `var`. A `session_car` binding takes `slot_var` in place of `slot`, and the copy's index is the car. Repeats nest two deep and a record makes at most 1024 copies.
+
+```jsonc
+{ "kind": "stack", "id": "stack", "dir": "down", "gap": 0,
+  "children": [
+    { "kind": "group", "id": "top", "visible": { "view_model": "view_model_data.hud_tt_hdr" },
+      "children": [
+        { "kind": "sprite", "id": "hdr_bg", "sprite": "hdr", "layer": 20 },
+        { "kind": "centre", "id": "lapc", "at": [20.0, 8.0],
+          "children": [
+            { "kind": "text", "id": "lap_word", "style": "OSD_19_regular", "align": "right", "box": 20, "cap_height": 5.9, "literal_id": "lng_lap" },
+            { "kind": "text", "id": "lap", "style": "OSD_24_bold", "align": "left", "box": 20, "cap_height": 7.5, "at": [1.5, 0],
+              "value": { "view_model": "view_model_data.hud_tt_lap" } } ] },
+        { "kind": "group", "id": "chq", "at": [0, 5.73], "visible": { "view_model": "view_model_data.hud_tt_chq" },
+          "children": [ { "kind": "sprite", "id": "chq_bg", "sprite": "chq", "layer": 20 } ] } ] },
+    { "kind": "group", "id": "rows", "at": [0, 5.73],
+      "children": [
+        { "kind": "group", "id": "r", "repeat": { "count": 22, "var": "N", "pitch": [0, 21.635] },
+          "visible": { "view_model": "view_model_data.hud_tt_r{NN}_on" },
+          "children": [
+            { "kind": "sprite", "id": "s", "sprite": "strip", "layer": 20 },
+            { "kind": "sprite", "id": "me", "sprite": "me", "layer": 22, "visible": { "view_model": "view_model_data.hud_tt_r{NN}_me" } },
+            { "kind": "group", "id": "pa", "visible": { "view_model": "view_model_data.hud_tt_r{NN}_up", "not": true, "default": true },
+              "children": [
+                { "kind": "group", "id": "pb", "visible": { "view_model": "view_model_data.hud_tt_r{NN}_dn", "not": true, "default": true },
+                  "children": [
+                    { "kind": "text", "id": "pos", "style": "OSD_19_regular", "align": "centre", "box": 9, "cap_height": 5.9, "at": [5.3, 14.6],
+                      "value": { "view_model": "view_model_data.hud_tt_r{NN}_pos" } } ] } ] },
+            { "kind": "group", "id": "cn", "at": [14.2, 14.6],
+              "children": [
+                { "kind": "group", "id": "v", "repeat": { "count": 24, "var": "V" },
+                  "visible": { "view_model": "view_model_data.hud_tt_r{NN}_c{VV}" },
+                  "children": [
+                    { "kind": "text", "id": "code", "style": "OSD_24_bold", "align": "left", "box": 24.5, "cap_height": 7.5, "wrap": "clampwidth",
+                      "value": { "session_car": "driver.name_code", "slot_var": "V" } },
+                    { "kind": "sprite", "id": "bar", "sprite": "bar", "layer": 30,
+                      "tint": { "session_car": "nub_colour", "slot_var": "V", "default": "#00000000" } } ] } ] } ] } ] } ] }
+```
+
+That record composes `r00` … `r21`, each with `r00_s`, `r00_me`, `r00_pa`, `r00_pb`, `r00_pos`, `r00_cn` and the 24 per-car groups `r00_v00` … `r00_v23` holding `r00_v00_code` and `r00_v00_bar`; the template gets `v_r00`, `v_r00_me`, `v_r00_pa`, `t_r00_pos`, `v_r00_v17`, `t_r00_v17_code` (bound to `#session.cars.car17.driver.name_code`) and `c_r00_v17_bar`. The dial and the scene target take the same group.
+
+`stack` is a clone of the game's `full_stacker` (the stacked standings table) with `stackerType` from `dir` and `gap` in HUD units; `centre` is a clone of the lap counter's `centre_lap_value`. A stacker lays its children out by their drawn bounds: a child whose `visible` is off takes no room and the children after it move up, which is the tower's squeeze under a flag card; a child with `hidden` is refused, so a part that stays hidden goes inside a child. Pre-set each centred text's `at` for a typical string; an eCentre may leave children where they are.
 
 ## Bindings
 
@@ -147,7 +195,7 @@ The composer writes an `MVCD` or `SVCD` node under the record's template group a
 }
 ```
 
-The HUD editor shows `dial_complete.idf` with no template running: the scene's own state plus its `.uipre` setters. So each record also gets a static copy of the elements that `editor.preview` shows (keys: `game.<name>`, `session.<path>`, `session_car.<field>.<slot>` or the leaf), its sprites pre-tinted with `team_colour`, `.uipre` setters that hide the stock parts and fill the copy's texts, and a `<prefix>_pv_ctl` group that hides the copy in game. The spectator HUD's dial of each class runs the same template groups unless the record sets `"spectator": false`.
+The HUD editor shows `dial_complete.idf` with no template running: the scene's own state plus its `.uipre` setters. So each record also gets a static copy of the elements that `editor.preview` shows (`"editor": { "rows": 5 }` caps a top-level repeat at five copies there, keyed by the substituted leaf names `view_model_data.hud_tt_r00_on` … `r04_on`) (keys: `game.<name>`, `session.<path>`, `session_car.<field>.<slot>` or the leaf), its sprites pre-tinted with `team_colour`, `.uipre` setters that hide the stock parts and fill the copy's texts, and a `<prefix>_pv_ctl` group that hides the copy in game. The spectator HUD's dial of each class runs the same template groups unless the record sets `"spectator": false`.
 
 ## A scene target
 
