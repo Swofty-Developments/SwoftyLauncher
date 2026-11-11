@@ -373,6 +373,19 @@ inline BoardTrack request_track(const swofty_core::apply::tracks::Base &base, co
     return board_track(base, session_code);
 }
 
+// The session's track comes from the game's current-track getter, which costs hundreds of milliseconds per call from the front
+// end. The watch runs only while a Time Trial session is live: the bridge, the guards or the diagnostics need the track, and the
+// session entered as a Time Trial and has not ended. In the front end the last track read is kept.
+inline bool track_watch_on(bool bridge_on, bool guards_on, bool diag_on, bool session_live, bool time_trial)
+{
+    return (bridge_on || guards_on || diag_on) && session_live && time_trial;
+}
+
+inline bool track_watch_due(bool on, int64_t now_ms, int64_t checked_ms, int64_t period_ms = 500)
+{
+    return on && now_ms - checked_ms >= period_ms;
+}
+
 // One rule for "this board is ours": an addon's descriptor or a custom track. The request redirect and the guards use it.
 // The garage monitor's `tt_privilege_check_done` command carries one byte, the privilege result. A denied result (0) becomes
 // granted (1) for our content with the bridge on; a granted result, an unreadable value (0xff) and any other value stay.
