@@ -31,7 +31,7 @@ impl Shell {
             .on_click(cx.listener(|this, _, _, cx| {
                 this.tt_load_catalog(cx);
                 this.tt_reload(cx);
-                this.tt_load_pending(cx);
+                this.tt_load_runs(cx);
             }));
         if self.mp.is_none() {
             let header = self.header(
@@ -50,9 +50,9 @@ impl Shell {
                 .into_any_element();
         }
         let admin = self.tt_admin();
-        let pending_view = admin && self.tt.view == View::Pending;
+        let pending_view = admin && self.tt.view == View::Runs;
         let body = match pending_view {
-            true => self.tt_pending(p, window, cx),
+            true => self.tt_runs(p, window, cx),
             false => {
                 let tracks = self.tt_tracks(p, cx);
                 let board = self.tt_board(p, window, cx);

@@ -196,6 +196,7 @@ impl Shell {
             Ok("browser") => shell.open_page(Page::Browser, cx),
             Ok("settings") => shell.open_page(Page::Settings, cx),
             Ok("support") => shell.open_page(Page::Support, cx),
+            Ok("moderation") => shell.open_page(Page::Moderation, cx),
             _ => {}
         }
         if cfg!(debug_assertions) && std::env::var_os("SWOFTY_FAKE_NOTICES").is_some() {

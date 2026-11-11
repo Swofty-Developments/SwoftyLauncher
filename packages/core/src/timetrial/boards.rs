@@ -1,7 +1,7 @@
 //! The Time Trial boards the launcher shows: a track's board and the laps waiting for an admin.
 
 use serde::Deserialize;
-use serde_json::json;
+use serde_json::{Value, json};
 
 use super::api::{Api, ApiError};
 
@@ -50,6 +50,129 @@ pub struct PendingLap {
     pub date: String,
     #[serde(default)]
     pub reasons: Vec<String>,
+}
+
+/// One verification check of a lap, as moderators see it.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct Check {
+    pub name: String,
+    #[serde(default = "yes")]
+    pub ok: bool,
+    #[serde(default)]
+    pub value: Option<Value>,
+    #[serde(default)]
+    pub limit: Option<Value>,
+}
+
+fn yes() -> bool {
+    true
+}
+
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct RunAddon {
+    pub id: String,
+    #[serde(default)]
+    pub version: Option<String>,
+    #[serde(default)]
+    pub source: Option<String>,
+}
+
+/// A lap as the moderation page lists it: any status, with what only moderators see.
+#[derive(Debug, Clone, PartialEq, Deserialize)]
+pub struct Run {
+    pub lap_id: String,
+    pub driver: Driver,
+    #[serde(default)]
+    pub banned: bool,
+    #[serde(default)]
+    pub content: String,
+    #[serde(default)]
+    pub season: Option<String>,
+    #[serde(default)]
+    pub track: String,
+    #[serde(default)]
+    pub track_name: Option<String>,
+    pub time_ms: u64,
+    #[serde(default)]
+    pub status: String,
+    #[serde(default)]
+    pub date: String,
+    #[serde(default)]
+    pub reasons: Vec<String>,
+    #[serde(default)]
+    pub note: Option<String>,
+    #[serde(default)]
+    pub checks: Vec<Check>,
+    #[serde(default)]
+    pub addons: Vec<RunAddon>,
+    #[serde(default)]
+    pub game_build: Option<String>,
+    #[serde(default)]
+    pub launcher: Option<String>,
+    #[serde(default)]
+    pub core: Option<String>,
+}
+
+impl Run {
+    pub fn pending(&self) -> bool {
+        self.status == "pending"
+    }
+
+    pub fn season_name(&self) -> &str {
+        self.season
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .unwrap_or(&self.content)
+    }
+
+    pub fn track_title(&self) -> &str {
+        self.track_name
+            .as_deref()
+            .filter(|s| !s.is_empty())
+            .unwrap_or(&self.track)
+    }
+
+    /// Whether every word of `query` is in the driver, season, track, status or lap id.
+    pub fn matches(&self, query: &str) -> bool {
+        let hay = format!(
+            "{} {} {} {} {} {} {}",
+            self.driver.name,
+            self.season_name(),
+            self.content,
+            self.track_title(),
+            self.track,
+            self.status,
+            self.lap_id
+        )
+        .to_lowercase();
+        query.to_lowercase().split_whitespace().all(|w| hay.contains(w))
+    }
+}
+
+/// A season and track that has laps, for the moderation filters.
+#[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
+pub struct RunBoard {
+    pub content: String,
+    #[serde(default)]
+    pub season: Option<String>,
+    pub track: String,
+    #[serde(default)]
+    pub track_name: Option<String>,
+    #[serde(default)]
+    pub laps: u64,
+}
+
+/// How a check's value or limit reads in a table.
+pub fn check_number(v: &Option<Value>) -> String {
+    match v {
+        None | Some(Value::Null) => "-".to_owned(),
+        Some(Value::Number(n)) => match n.as_f64() {
+            Some(f) if f.fract() != 0. => format!("{f:.3}"),
+            _ => n.to_string(),
+        },
+        Some(Value::String(t)) => t.clone(),
+        Some(other) => other.to_string(),
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
@@ -121,6 +244,9 @@ pub fn by_driver<'a>(rows: &'a [Row], query: &str) -> Vec<&'a Row> {
         .collect()
 }
 
+/// How many pages of a hundred runs the moderation page loads.
+const RUN_PAGES: usize = 5;
+
 fn segment(text: &str) -> String {
     text.bytes()
         .map(|b| match b {
@@ -172,6 +298,41 @@ impl Api {
             }
         }
         Ok(all)
+    }
+
+    /// The newest laps of any status for the moderation page, narrowed to these seasons and tracks
+    /// when either list is not empty.
+    pub fn runs(&self, contents: &[String], tracks: &[String]) -> Result<Vec<Run>, ApiError> {
+        let list = |name: &str, values: &[String]| match values.is_empty() {
+            true => String::new(),
+            false => format!(
+                "&{name}={}",
+                values.iter().map(|v| segment(v)).collect::<Vec<_>>().join(",")
+            ),
+        };
+        let filter = format!("{}{}", list("content", contents), list("track", tracks));
+        let mut all = Vec::new();
+        let mut offset = 0u64;
+        for _ in 0..RUN_PAGES {
+            let page: Rows<Run> = self.get_json(&format!(
+                "/v1/tt/admin/laps?status=all&view=runs&limit=100&offset={offset}{filter}"
+            ))?;
+            let next = match &page {
+                Rows::Wrapped { next_offset, .. } => *next_offset,
+                Rows::List(_) => None,
+            };
+            all.extend(page.into_vec());
+            match next {
+                Some(n) if n > offset => offset = n,
+                _ => break,
+            }
+        }
+        Ok(all)
+    }
+
+    /// Every season and track that has laps.
+    pub fn run_boards(&self) -> Result<Vec<RunBoard>, ApiError> {
+        Ok(self.get_json::<Rows<RunBoard>>("/v1/tt/admin/boards")?.into_vec())
     }
 
     pub fn accept_lap(&self, id: &str) -> Result<(), ApiError> {
@@ -253,5 +414,24 @@ mod tests {
         assert_eq!(rows[0].driver.name, "Driver");
         assert_eq!(rows[0].date, "2026-11-10T23:41:25Z");
         assert_eq!(rows[0].time_ms, 71105);
+    }
+
+    #[test]
+    fn a_run_reads_the_moderator_fields_and_matches_a_search() {
+        let reply = r#"{"total":1,"limit":100,"offset":0,"next_offset":null,"laps":[{"lap_id":"ab12","driver":{"id":"1","name":"Driver One","avatar":null},"banned":false,"content":"a.b/sw_2019","season":"SWOFTY 2019","track":"monaco","track_name":"Circuit de Monaco","weather":"dry","time_ms":71105,"reasons":[],"failed_checks":[],"status":"accepted","date":"2026-11-10T23:41:25Z","replay_url":"x","message":null,"valid":true,"note":null,"checks":[{"name":"physics.top_speed","ok":true,"value":91.25,"limit":120},{"name":"structure.board","ok":false}],"addons":[{"id":"a.b","version":"1.0.3","source":"registry"}],"game_build":"d873","launcher":"1.8.37","core":"0.2.13"}]}"#;
+        let runs = serde_json::from_str::<Rows<Run>>(reply).unwrap().into_vec();
+        let run = &runs[0];
+        assert_eq!(
+            (run.season_name(), run.track_title()),
+            ("SWOFTY 2019", "Circuit de Monaco")
+        );
+        assert_eq!(run.checks.len(), 2);
+        assert!(run.checks[0].ok && !run.checks[1].ok);
+        assert_eq!(check_number(&run.checks[0].value), "91.250");
+        assert_eq!(check_number(&run.checks[0].limit), "120");
+        assert_eq!(check_number(&run.checks[1].value), "-");
+        assert_eq!(run.addons[0].source.as_deref(), Some("registry"));
+        assert!(run.matches("monaco one") && run.matches("2019 ACCEPTED") && run.matches(""));
+        assert!(!run.matches("monaco two"));
     }
 }

@@ -1,7 +1,7 @@
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
 use swofty_core::timetrial::api::Api;
-use swofty_core::timetrial::boards::{Group, PendingLap, Row};
+use swofty_core::timetrial::boards::{Group, Row, Run, RunBoard};
 
 use crate::shell::Shell;
 
@@ -23,7 +23,7 @@ pub(crate) struct Pick {
 #[derive(Clone, Copy, PartialEq, Eq)]
 pub(crate) enum View {
     Boards,
-    Pending,
+    Runs,
 }
 
 #[derive(Clone, Copy, PartialEq, Eq)]
@@ -35,7 +35,15 @@ pub(crate) enum Verdict {
 
 pub(crate) struct TtPage {
     pub view: View,
-    pub pending: Load<Vec<PendingLap>>,
+    pub runs: Load<Vec<Run>>,
+    pub run_boards: Vec<RunBoard>,
+    pub run_seasons: Vec<String>,
+    pub run_tracks: Vec<String>,
+    pub run_status: &'static str,
+    pub run_query: String,
+    pub run_search: Option<Entity<InputState>>,
+    run_sub: Option<Subscription>,
+    run_generation: u64,
     pub open_lap: Option<String>,
     pub banning: bool,
     pub acting: bool,
@@ -53,8 +61,16 @@ pub(crate) struct TtPage {
 impl Default for TtPage {
     fn default() -> Self {
         Self {
-            view: View::Boards,
-            pending: Load::Idle,
+            view: View::Runs,
+            runs: Load::Idle,
+            run_boards: Vec::new(),
+            run_seasons: Vec::new(),
+            run_tracks: Vec::new(),
+            run_status: "all",
+            run_query: String::new(),
+            run_search: None,
+            run_sub: None,
+            run_generation: 0,
             open_lap: None,
             banning: false,
             acting: false,
@@ -72,6 +88,24 @@ impl Default for TtPage {
 }
 
 impl TtPage {
+    /// The loaded runs that pass the status choice and the search text, newest first as loaded.
+    pub(super) fn shown_runs(&self) -> Vec<&Run> {
+        let Load::Ready(runs) = &self.runs else {
+            return Vec::new();
+        };
+        runs.iter()
+            .filter(|r| self.run_status == "all" || r.status == self.run_status)
+            .filter(|r| r.matches(&self.run_query))
+            .collect()
+    }
+
+    pub(super) fn waiting(&self) -> usize {
+        match &self.runs {
+            Load::Ready(runs) => runs.iter().filter(|r| r.pending()).count(),
+            _ => 0,
+        }
+    }
+
     pub(super) fn visible(&self) -> Vec<&Row> {
         let Load::Ready(rows) = &self.rows else {
             return Vec::new();
@@ -91,7 +125,7 @@ impl Shell {
 
     pub(crate) fn tt_open(&mut self, cx: &mut Context<Self>) {
         if self.tt_admin() {
-            self.tt_load_pending(cx);
+            self.tt_load_runs(cx);
         } else {
             self.tt.view = View::Boards;
         }
@@ -120,20 +154,37 @@ impl Shell {
         .detach();
     }
 
-    pub(super) fn tt_load_pending(&mut self, cx: &mut Context<Self>) {
+    pub(super) fn tt_load_runs(&mut self, cx: &mut Context<Self>) {
         let Some(api) = self.tt_api().filter(|_| self.tt_admin()) else {
             return;
         };
+        self.tt.run_generation += 1;
+        let generation = self.tt.run_generation;
+        let (seasons, tracks) = (self.tt.run_seasons.clone(), self.tt.run_tracks.clone());
+        if !matches!(self.tt.runs, Load::Ready(_)) {
+            self.tt.runs = Load::Loading;
+        }
         cx.spawn(async move |this, cx| {
-            let got = cx
+            let (runs, boards) = cx
                 .background_executor()
-                .spawn(async move { api.pending_laps() })
+                .spawn(async move { (api.runs(&seasons, &tracks), api.run_boards()) })
                 .await;
             this.update(cx, |s, cx| {
-                s.tt.pending = match got {
-                    Ok(laps) => Load::Ready(laps),
+                if s.tt.run_generation != generation {
+                    return;
+                }
+                s.tt.runs = match runs {
+                    Ok(laps) => {
+                        if s.tt.open_lap.is_none() {
+                            s.tt.open_lap = laps.first().map(|r| r.lap_id.clone());
+                        }
+                        Load::Ready(laps)
+                    }
                     Err(e) => Load::Failed(e.message),
                 };
+                if let Ok(boards) = boards {
+                    s.tt.run_boards = boards;
+                }
                 cx.notify();
             })
             .ok();
@@ -141,11 +192,46 @@ impl Shell {
         .detach();
     }
 
-    pub(super) fn tt_select_lap(&mut self, lap: &str, cx: &mut Context<Self>) {
-        self.tt.open_lap = match self.tt.open_lap.as_deref() == Some(lap) {
-            true => None,
-            false => Some(lap.to_owned()),
+    /// Turn one season or track filter on or off and load the runs again.
+    pub(super) fn tt_toggle_filter(&mut self, season: bool, value: &str, cx: &mut Context<Self>) {
+        let list = if season {
+            &mut self.tt.run_seasons
+        } else {
+            &mut self.tt.run_tracks
         };
+        match list.iter().position(|v| v == value) {
+            Some(i) => {
+                list.remove(i);
+            }
+            None => list.push(value.to_owned()),
+        }
+        self.tt_load_runs(cx);
+        cx.notify();
+    }
+
+    pub(super) fn tt_run_search(
+        &mut self,
+        window: &mut Window,
+        cx: &mut Context<Self>,
+    ) -> Entity<InputState> {
+        if let Some(state) = &self.tt.run_search {
+            return state.clone();
+        }
+        let state = cx.new(|cx| {
+            InputState::new(window, cx).placeholder(swofty_i18n::tr("Search driver, season, track or lap id"))
+        });
+        self.tt.run_sub = Some(cx.subscribe(&state, |this, state, ev: &InputEvent, cx| {
+            if matches!(ev, InputEvent::Change) {
+                this.tt.run_query = state.read(cx).value().to_string();
+                cx.notify();
+            }
+        }));
+        self.tt.run_search = Some(state.clone());
+        state
+    }
+
+    pub(super) fn tt_select_lap(&mut self, lap: &str, cx: &mut Context<Self>) {
+        self.tt.open_lap = Some(lap.to_owned());
         self.tt.banning = false;
         self.tt.notice = None;
         cx.notify();
@@ -179,9 +265,8 @@ impl Shell {
                 s.tt.acting = false;
                 match done {
                     Ok(()) => {
-                        s.tt.open_lap = None;
                         s.tt.banning = false;
-                        s.tt_load_pending(cx);
+                        s.tt_load_runs(cx);
                         s.tt_reload(cx);
                     }
                     Err(e) => s.tt.notice = Some(e.message),

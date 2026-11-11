@@ -4,7 +4,7 @@ use gpui_kit::component::input::Input;
 use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::timetrial::boards::{PendingLap, format_time};
+use swofty_core::timetrial::boards::{Run, check_number, format_time};
 use swofty_i18n::tr;
 
 use super::state::{Load, Verdict, View};
@@ -20,12 +20,36 @@ pub(super) fn flag(p: Palette) -> Div {
         .child(Icon::new(IconName::CircleX).size(px(16.)).text_color(p.error))
 }
 
+const RUNS_WIDTH: f32 = 400.;
+
+fn status_dot(status: &str, p: Palette) -> Div {
+    div()
+        .flex_shrink_0()
+        .size(px(9.))
+        .rounded_full()
+        .bg(match status {
+            "accepted" => rgb(0x4cc38a).into(),
+            "pending" => rgb(0xffc933).into(),
+            _ => p.error,
+        })
+}
+
+fn status_name(status: &str) -> &'static str {
+    match status {
+        "accepted" => tr("Accepted"),
+        "pending" => tr("Pending"),
+        _ => tr("Rejected"),
+    }
+}
+
+/// The server's ISO time as a short day and minute.
+fn when(date: &str) -> String {
+    date.get(..16).unwrap_or(date).replace('T', " ")
+}
+
 impl Shell {
     pub(super) fn tt_tabs(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let waiting = match &self.tt.pending {
-            Load::Ready(l) => l.len(),
-            _ => 0,
-        };
+        let waiting = self.tt.waiting();
         let tab = |id: &'static str, label: String, view: View| {
             let on = self.tt.view == view;
             Button::new(id)
@@ -48,92 +72,332 @@ impl Shell {
             .child(tab("tt-tab-boards", tr("Boards").to_owned(), View::Boards))
             .child(tab(
                 "tt-tab-pending",
-                format!("{} ({waiting})", tr("Pending review")),
-                View::Pending,
+                match waiting {
+                    0 => tr("Runs").to_owned(),
+                    n => format!("{} ({n} {})", tr("Runs"), tr("pending")),
+                },
+                View::Runs,
             ))
             .into_any_element()
     }
 
-    pub(super) fn tt_pending(
+    pub(super) fn tt_runs(&mut self, p: Palette, window: &mut Window, cx: &mut Context<Self>) -> AnyElement {
+        let search = self.tt_run_search(window, cx);
+        let chip = |id: String, label: String, on: bool| {
+            Button::new(SharedString::from(id))
+                .xsmall()
+                .when_else(on, |b| b.primary(), |b| b.outline())
+                .label(label)
+        };
+        let status = self.tt.run_status;
+        let statuses = h_flex().gap(px(6.)).flex_wrap().children(
+            [
+                ("all", tr("All")),
+                ("pending", tr("Pending")),
+                ("accepted", tr("Accepted")),
+                ("rejected", tr("Rejected")),
+            ]
+            .into_iter()
+            .map(|(key, label)| {
+                chip(format!("tt-run-status-{key}"), label.to_owned(), status == key).on_click(cx.listener(
+                    move |this, _, _, cx| {
+                        this.tt.run_status = key;
+                        cx.notify();
+                    },
+                ))
+            }),
+        );
+        let mut seasons: Vec<(String, String)> = Vec::new();
+        let mut tracks: Vec<(String, String)> = Vec::new();
+        for b in &self.tt.run_boards {
+            if !seasons.iter().any(|(c, _)| c == &b.content) {
+                let name = b
+                    .season
+                    .clone()
+                    .filter(|s| !s.is_empty())
+                    .unwrap_or_else(|| b.content.clone());
+                seasons.push((b.content.clone(), name));
+            }
+            let in_season = self.tt.run_seasons.is_empty() || self.tt.run_seasons.contains(&b.content);
+            if in_season && !tracks.iter().any(|(t, _)| t == &b.track) {
+                let name = b
+                    .track_name
+                    .clone()
+                    .filter(|s| !s.is_empty())
+                    .unwrap_or_else(|| b.track.clone());
+                tracks.push((b.track.clone(), name));
+            }
+        }
+        let group =
+            |title: &'static str, season: bool, items: Vec<(String, String)>, cx: &mut Context<Self>| {
+                let picked = if season {
+                    &self.tt.run_seasons
+                } else {
+                    &self.tt.run_tracks
+                };
+                let chips: Vec<_> = items
+                    .into_iter()
+                    .map(|(key, label)| {
+                        let on = picked.contains(&key);
+                        chip(format!("tt-run-{title}-{key}"), label, on).on_click(
+                            cx.listener(move |this, _, _, cx| this.tt_toggle_filter(season, &key, cx)),
+                        )
+                    })
+                    .collect();
+                (!chips.is_empty()).then(|| {
+                    v_flex()
+                        .gap(px(4.))
+                        .child(div().text_size(px(11.)).text_color(p.text_muted).child(tr(title)))
+                        .child(h_flex().gap(px(6.)).flex_wrap().children(chips))
+                })
+            };
+        let season_chips = group("Seasons", true, seasons, cx);
+        let track_chips = group("Tracks", false, tracks, cx);
+        let list: AnyElement = match &self.tt.runs {
+            Load::Failed(e) => div()
+                .text_size(px(13.))
+                .text_color(p.error)
+                .child(e.clone())
+                .into_any_element(),
+            Load::Idle | Load::Loading => div()
+                .text_size(px(13.))
+                .text_color(p.text_muted)
+                .child(tr("Loading runs…"))
+                .into_any_element(),
+            Load::Ready(_) => {
+                let shown = self.tt.shown_runs();
+                if shown.is_empty() {
+                    div()
+                        .text_size(px(13.))
+                        .text_color(p.text_muted)
+                        .child(tr("No runs match"))
+                        .into_any_element()
+                } else {
+                    let rows: Vec<AnyElement> = shown
+                        .iter()
+                        .map(|run| {
+                            let id = run.lap_id.clone();
+                            selectable_row(
+                                SharedString::from(format!("tt-run-{id}")),
+                                self.tt.open_lap.as_deref() == Some(&id),
+                                p,
+                            )
+                            .cursor_pointer()
+                            .child(status_dot(&run.status, p))
+                            .child(
+                                v_flex()
+                                    .flex_1()
+                                    .min_w_0()
+                                    .child(
+                                        div()
+                                            .truncate()
+                                            .text_size(px(14.))
+                                            .text_color(p.text)
+                                            .child(run.driver.name.clone()),
+                                    )
+                                    .child(
+                                        div()
+                                            .truncate()
+                                            .text_size(px(12.))
+                                            .text_color(p.text_muted)
+                                            .child(format!("{} · {}", run.season_name(), run.track_title())),
+                                    ),
+                            )
+                            .child(
+                                v_flex()
+                                    .flex_shrink_0()
+                                    .items_end()
+                                    .child(div().text_size(px(14.)).child(format_time(run.time_ms)))
+                                    .child(
+                                        div()
+                                            .text_size(px(11.))
+                                            .text_color(p.text_muted)
+                                            .child(when(&run.date)),
+                                    ),
+                            )
+                            .on_click(cx.listener(move |this, _, _, cx| this.tt_select_lap(&id, cx)))
+                            .into_any_element()
+                        })
+                        .collect();
+                    div()
+                        .flex_1()
+                        .min_h_0()
+                        .scroll_y("tt-runs")
+                        .child(v_flex().gap(px(2.)).pr(px(6.)).children(rows))
+                        .into_any_element()
+                }
+            }
+        };
+        let left = v_flex()
+            .w(px(RUNS_WIDTH))
+            .flex_shrink_0()
+            .h_full()
+            .min_h_0()
+            .gap(px(10.))
+            .child(Input::new(&search).small())
+            .child(statuses)
+            .children(season_chips)
+            .children(track_chips)
+            .child(list);
+        let open = self.tt.open_lap.as_ref().and_then(|id| match &self.tt.runs {
+            Load::Ready(runs) => runs.iter().find(|r| &r.lap_id == id).cloned(),
+            _ => None,
+        });
+        let right: AnyElement = match open {
+            Some(run) => self.tt_run_detail(&run, p, window, cx),
+            None => EmptyState::new(IconName::ShieldCheck, tr("Pick a run to review it")).into_any_element(),
+        };
+        h_flex()
+            .flex_1()
+            .min_h_0()
+            .gap(px(20.))
+            .px(px(GUTTER))
+            .pb(px(16.))
+            .child(left)
+            .child(div().flex_1().min_w_0().h_full().min_h_0().child(right))
+            .into_any_element()
+    }
+
+    fn tt_run_detail(
         &mut self,
+        run: &Run,
         p: Palette,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> AnyElement {
-        let laps: Vec<PendingLap> = match &self.tt.pending {
-            Load::Ready(l) => l.clone(),
-            Load::Failed(e) => {
-                return div()
-                    .px(px(GUTTER))
-                    .text_size(px(13.))
-                    .text_color(p.error)
-                    .child(e.clone())
-                    .into_any_element();
-            }
-            _ => {
-                return div()
-                    .px(px(GUTTER))
-                    .text_size(px(13.))
-                    .text_color(p.text_muted)
-                    .child(tr("Loading pending laps…"))
-                    .into_any_element();
-            }
+        let actions = self.tt_actions(&run.lap_id, &run.reasons, p, window, cx);
+        let title = |text: &'static str| {
+            div()
+                .pt(px(8.))
+                .text_size(px(15.))
+                .font_weight(FontWeight::SEMIBOLD)
+                .child(text)
         };
-        if laps.is_empty() {
-            return EmptyState::new(IconName::ShieldCheck, tr("No laps are waiting for review"))
-                .into_any_element();
-        }
-        let mut rows = Vec::new();
-        for (i, lap) in laps.iter().enumerate() {
-            let id = lap.lap_id.clone();
-            let head = selectable_row(
-                SharedString::from(format!("tt-pend-{id}")),
-                self.tt.open_lap.as_deref() == Some(&id),
-                p,
-            )
-            .cursor_pointer()
-            .child(flag(p))
-            .child(
+        let cell =
+            |text: String, width: f32| div().w(px(width)).flex_shrink_0().text_size(px(12.)).child(text);
+        let head = |names: [(&'static str, f32); 3], first: &'static str| {
+            h_flex()
+                .gap(px(8.))
+                .pb(px(4.))
+                .text_color(p.text_muted)
+                .child(div().flex_1().min_w_0().text_size(px(12.)).child(tr(first)))
+                .children(names.into_iter().map(|(n, w)| cell(tr(n).to_owned(), w)))
+        };
+        let checks = run.checks.iter().map(|c| {
+            h_flex()
+                .gap(px(8.))
+                .py(px(3.))
+                .border_t_1()
+                .border_color(p.border_variant)
+                .child(
+                    div()
+                        .flex_1()
+                        .min_w_0()
+                        .truncate()
+                        .text_size(px(12.))
+                        .child(c.name.replace('.', " · ").replace('_', " ")),
+                )
+                .child(
+                    div()
+                        .w(px(60.))
+                        .flex_shrink_0()
+                        .text_size(px(12.))
+                        .text_color(if c.ok { rgb(0x4cc38a).into() } else { p.error })
+                        .child(if c.ok { tr("Pass") } else { tr("Fail") }),
+                )
+                .child(cell(check_number(&c.value), 90.))
+                .child(cell(check_number(&c.limit), 90.).text_color(p.text_muted))
+        });
+        let addons = run.addons.iter().map(|a| {
+            h_flex()
+                .gap(px(8.))
+                .py(px(3.))
+                .border_t_1()
+                .border_color(p.border_variant)
+                .child(
+                    div()
+                        .flex_1()
+                        .min_w_0()
+                        .truncate()
+                        .text_size(px(12.))
+                        .child(a.id.clone()),
+                )
+                .child(cell(a.version.clone().unwrap_or_default(), 90.))
+                .child(
+                    cell(a.source.clone().unwrap_or_else(|| tr("local").to_owned()), 90.)
+                        .text_color(p.text_muted),
+                )
+        });
+        let line = |label: &'static str, value: &Option<String>| {
+            value.as_ref().filter(|v| !v.is_empty()).map(|v| {
                 div()
-                    .flex_1()
-                    .min_w_0()
-                    .text_size(px(14.))
-                    .text_color(p.text)
-                    .child(lap.driver.name.clone()),
-            )
-            .child(
-                div()
-                    .w(px(220.))
-                    .flex_shrink_0()
                     .text_size(px(12.))
                     .text_color(p.text_muted)
-                    .child(match lap.track_name.is_empty() {
-                        true => lap.track.clone(),
-                        false => lap.track_name.clone(),
-                    }),
-            )
-            .child(
-                div()
-                    .flex_shrink_0()
-                    .text_size(px(14.))
-                    .child(format_time(lap.time_ms)),
-            )
-            .on_click({
-                let id = id.clone();
-                cx.listener(move |this, _, _, cx| this.tt_select_lap(&id, cx))
-            });
-            let open = self.tt.open_lap.as_deref() == Some(&id);
-            let panel = open.then(|| self.tt_actions(&id, &lap.reasons, p, window, cx));
-            let _ = i;
-            rows.push(v_flex().child(head).children(panel).into_any_element());
-        }
+                    .child(format!("{} {v}", tr(label)))
+            })
+        };
+        let failed = run.checks.iter().filter(|c| !c.ok).count();
         div()
-            .flex_1()
-            .min_h_0()
-            .scroll_y("tt-pending")
-            .px(px(GUTTER))
-            .pb(px(16.))
-            .child(v_flex().gap(px(2.)).children(rows))
+            .size_full()
+            .scroll_y("tt-run-detail")
+            .child(
+                v_flex()
+                    .gap(px(8.))
+                    .pr(px(6.))
+                    .child(
+                        h_flex()
+                            .gap(px(12.))
+                            .items_end()
+                            .child(
+                                div()
+                                    .text_size(px(22.))
+                                    .font_weight(FontWeight::BOLD)
+                                    .child(run.driver.name.clone()),
+                            )
+                            .child(div().text_size(px(22.)).child(format_time(run.time_ms)))
+                            .child(status_dot(&run.status, p))
+                            .child(
+                                div()
+                                    .pb(px(3.))
+                                    .text_size(px(13.))
+                                    .child(status_name(&run.status)),
+                            )
+                            .when(run.banned, |d| {
+                                d.child(
+                                    div()
+                                        .pb(px(3.))
+                                        .text_size(px(13.))
+                                        .text_color(p.error)
+                                        .child(tr("Banned")),
+                                )
+                            }),
+                    )
+                    .child(div().text_size(px(13.)).text_color(p.text_muted).child(format!(
+                        "{} · {} · {} · {}",
+                        run.season_name(),
+                        run.track_title(),
+                        when(&run.date),
+                        run.lap_id
+                    )))
+                    .children(line("Note:", &run.note))
+                    .child(actions)
+                    .child(title(tr("Verification")))
+                    .child(div().text_size(px(12.)).text_color(p.text_muted).child(format!(
+                        "{} {} · {} {}",
+                        run.checks.len() - failed,
+                        tr("passed"),
+                        failed,
+                        tr("failed")
+                    )))
+                    .child(head([("Result", 60.), ("Value", 90.), ("Limit", 90.)], "Check"))
+                    .children(checks)
+                    .child(title(tr("Addon set")))
+                    .child(head([("", 0.), ("Version", 90.), ("Source", 90.)], "Addon"))
+                    .children(addons)
+                    .children(line("Game build", &run.game_build))
+                    .children(line("Launcher", &run.launcher))
+                    .children(line("Core", &run.core)),
+            )
             .into_any_element()
     }
 
