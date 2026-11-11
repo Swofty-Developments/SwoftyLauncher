@@ -1,7 +1,4 @@
 # One line per "site_*" name, or live-state table name, that native/src/core resolves by name (swofty::api->resolve) while the generated headers do not export it: the guard that needs it logs "off ... does not resolve". Format: name, tab, reason.
-Live_Subscribe_CarToCarCollision	awaiting agree verify (std lib: osd); the KB row is L2 (osd-l1) and has no agree row yet
-Live_Subscribe_VehicleStatusChanged	awaiting agree verify (std lib: osd); the KB row is L2 (osd-l1) and has no agree row yet
-Ne_Subscribe_BusMessage	awaiting agree verify (std lib: osd)
-vt_Car_SystemsContainer	awaiting agree verify (std lib: osd)
-vt_Sess_ControllerSystem	awaiting agree verify (std lib: osd)
-vt_Sess_HumanController	awaiting agree verify (std lib: osd)
+Live_Subscribe_CarToCarCollision	agreed (osd-vd) but no signature can back it: the two thunks differ from each other only in rip-relative displacements, so no unique 96-byte pattern exists; subscribe through Ne_Subscribe_BusMessage with a bus-allocated {fn,state} delegate instead
+Live_Subscribe_VehicleStatusChanged	agreed (osd-vd) but no signature can back it: the two thunks differ from each other only in rip-relative displacements, so no unique 96-byte pattern exists; subscribe through Ne_Subscribe_BusMessage with a bus-allocated {fn,state} delegate instead
+vt_Car_SystemsContainer	agreed (osd-vd) but has no signature yet; candidate in the car inbox, owner car-re registers it (sig car.systems_container)

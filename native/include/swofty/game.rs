@@ -3422,6 +3422,8 @@ pub type Ne_SaveSystem2Win_Start_t = unsafe extern "C" fn(device: *mut c_void) -
 pub type Ne_SaveSystem_InitDevice_t = unsafe extern "C" fn(save_system: *mut c_void) -> c_int;
 pub type Ne_Set_FixedString_t = unsafe extern "C" fn(dst: *mut c_void, src: *const c_char);
 pub type Ne_StringTable_Lookup_t = unsafe extern "C" fn(table: *mut c_void, hash: u64) -> *const c_char;
+pub type Ne_Subscribe_BusMessage_t =
+    unsafe extern "C" fn(bus: *mut c_void, message_name: *const c_char, delegate: *const c_void);
 pub type Ne_TempPool_Alloc_t = unsafe extern "C" fn(pool: *mut c_void, size: u64, align: u64) -> *mut c_void;
 pub type Sess_Apply_ContentAvailability_t =
     unsafe extern "C" fn(self_: *mut c_void, availability: *mut c_void);
@@ -11890,6 +11892,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ne_Subscribe_BusMessage: Binding = Binding {
+        id: "Ne_Subscribe_BusMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ne_Sync_WaitObject: Binding = Binding {
         id: "Ne_Sync_WaitObject",
         kind: "func",
@@ -16645,6 +16652,11 @@ pub mod bindings {
         kind: "vtable",
         status: Status::Experimental,
     };
+    pub const vt_Sess_ControllerSystem: Binding = Binding {
+        id: "vt_Sess_ControllerSystem",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
     pub const vt_Sess_CutsceneLocation: Binding = Binding {
         id: "vt_Sess_CutsceneLocation",
         kind: "vtable",
@@ -16722,6 +16734,11 @@ pub mod bindings {
     };
     pub const vt_Sess_GetEventToken: Binding = Binding {
         id: "vt_Sess_GetEventToken",
+        kind: "vtable",
+        status: Status::Experimental,
+    };
+    pub const vt_Sess_HumanController: Binding = Binding {
+        id: "vt_Sess_HumanController",
         kind: "vtable",
         status: Status::Experimental,
     };

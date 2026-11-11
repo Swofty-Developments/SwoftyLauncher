@@ -709,6 +709,7 @@ inline constexpr site<"site_Sess_WheelMapInsertCall"> site_Sess_WheelMapInsertCa
 inline constexpr vtable<"vt_Sess_AiController", 4> vt_Sess_AiController{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_CareerHubLocation", 11> vt_Sess_CareerHubLocation{}; // L2 experimental, SessionStateCareerHubLocation
 inline constexpr vtable<"vt_Sess_ContractNegotiations", 11> vt_Sess_ContractNegotiations{}; // L2 experimental, StateContractNegotiations
+inline constexpr vtable<"vt_Sess_ControllerSystem", 54> vt_Sess_ControllerSystem{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_CutsceneLocation", 11> vt_Sess_CutsceneLocation{}; // L2 experimental, SessionStateCutsceneLocation
 inline constexpr vtable<"vt_Sess_CutsceneLocationLoad", 11> vt_Sess_CutsceneLocationLoad{}; // L2 experimental, SessionStateCutsceneLocationLoad
 inline constexpr vtable<"vt_Sess_CutsceneLocationUnload", 11> vt_Sess_CutsceneLocationUnload{}; // L2 experimental, SessionStateCutsceneLocationUnload
@@ -725,6 +726,7 @@ inline constexpr vtable<"vt_Sess_F1CGUpdate", 11> vt_Sess_F1CGUpdate{}; // L2 ex
 inline constexpr vtable<"vt_Sess_Frontend", 11> vt_Sess_Frontend{}; // L2 experimental, StateFrontend
 inline constexpr vtable<"vt_Sess_FrontendWorld", 11> vt_Sess_FrontendWorld{}; // L2 experimental, StateFrontendWorld
 inline constexpr vtable<"vt_Sess_GetEventToken", 11> vt_Sess_GetEventToken{}; // L2 experimental, StateGetEventToken
+inline constexpr vtable<"vt_Sess_HumanController", 4> vt_Sess_HumanController{}; // L2 experimental
 inline constexpr vtable<"vt_Sess_InGamePlaying", 11> vt_Sess_InGamePlaying{}; // L2 experimental, SessionStateInGamePlaying
 inline constexpr vtable<"vt_Sess_Intro", 11> vt_Sess_Intro{}; // L2 experimental, StateIntro
 inline constexpr vtable<"vt_Sess_Launch", 11> vt_Sess_Launch{}; // L2 experimental, StateLaunch
