@@ -380,7 +380,7 @@ impl Builder {
             names: format!("{pfx}_"),
             sprites,
             mode: Mode::Live,
-            switched: BTreeSet::new(),
+            switched: BTreeMap::new(),
             plan: &mut plan,
         };
         let mut kids = Vec::new();
@@ -596,9 +596,11 @@ impl Builder {
 
     /// Adds one record's root under the customisation element and returns its plan.
     pub fn add_record(&mut self, rec: &HudElement, pfx: &str, sprites: &Sprites, mode: Mode) -> Result<Plan> {
-        let bottom = self.bottom()?;
         let footprint = box_of(rec, sprites)?;
-        let root_y = bottom + K * footprint[3];
+        let root_y = match rec.root_y {
+            Some(y) => -K * y,
+            None => self.bottom()? + K * footprint[3],
+        };
         let preview = matches!(mode, Mode::Preview(_));
         let root_name = if preview {
             format!("{pfx}_pv")
@@ -619,12 +621,7 @@ impl Builder {
             names: format!("{root_name}_"),
             sprites,
             mode,
-            switched: rec
-                .decisions
-                .iter()
-                .flat_map(|d| d.yes.iter().chain(&d.no).chain(d.states.values().flatten()))
-                .cloned()
-                .collect(),
+            switched: switched_by(&rec.decisions),
             plan: &mut plan,
         };
         cx.plan.decisions = rec.decisions.clone();
@@ -697,7 +694,7 @@ impl Builder {
             .kind
             .ok_or_else(|| err(format!("element {} has no kind", e.id)))?;
         let name = format!("{}{}", cx.names, e.id);
-        let switched = cx.switched.contains(&e.id);
+        let switched = cx.switched.contains_key(&e.id);
         if switched && e.visible.is_some() {
             return Err(err(format!(
                 "element {} is shown by a decision and has its own visible",
@@ -705,7 +702,7 @@ impl Builder {
             )));
         }
         if let Mode::Preview(_) = cx.mode {
-            if switched {
+            if switched && cx.switched.get(&e.id) != Some(&true) {
                 return Ok(None);
             }
             if let Some(b) = &e.visible
@@ -853,7 +850,7 @@ impl Builder {
             cx.plan.shows.push(ShowItem {
                 name: vn.clone(),
                 element: outer.clone(),
-                default: false,
+                default: cx.switched.get(&e.id) == Some(&true),
             });
             cx.plan.switched.insert(e.id.clone(), vn);
         } else if let Some(b) = &e.visible {
@@ -1193,8 +1190,23 @@ pub(crate) struct Cx<'a, 'p> {
     pub names: String,
     pub sprites: &'a Sprites,
     pub mode: Mode<'a>,
-    pub switched: BTreeSet<String>,
+    /// The elements the decisions show, and whether each starts shown (its decision's `initial`).
+    pub switched: BTreeMap<String, bool>,
     pub plan: &'p mut Plan,
+}
+
+/// The elements `decisions` switch, each with whether it starts shown.
+pub fn switched_by(decisions: &[Decision]) -> BTreeMap<String, bool> {
+    let mut out: BTreeMap<String, bool> = BTreeMap::new();
+    for d in decisions {
+        for id in d.targets() {
+            out.entry(id.clone()).or_insert(false);
+        }
+        for id in d.initial_targets() {
+            out.insert(id.clone(), true);
+        }
+    }
+    out
 }
 
 pub fn preview_key(b: &Bind) -> String {
@@ -1272,4 +1284,30 @@ pub fn scene_box(plan: &Plan) -> [f64; 4] {
 
 pub fn union_box(a: [f64; 4], b: [f64; 4]) -> [f64; 4] {
     [a[0].min(b[0]), a[1].max(b[1]), a[2].max(b[2]), a[3].min(b[3])]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn switched_elements_start_shown_by_their_decisions_initial_state() {
+        let v = serde_json::json!([
+            { "id": "drs", "type": "mvcd", "game": "drs_pit_state", "initial": "invalid",
+              "states": { "invalid": ["idle"], "drs_live": ["live", "shared"] } },
+            { "id": "mode", "type": "svcd", "game": "ers_mode", "equals": 2, "yes": ["hot"], "no": ["shared"] }
+        ]);
+        let decisions: Vec<Decision> = serde_json::from_value(v).unwrap();
+        let s = switched_by(&decisions);
+        assert_eq!(
+            s.iter().map(|(k, v)| (k.as_str(), *v)).collect::<Vec<_>>(),
+            [("hot", false), ("idle", true), ("live", false), ("shared", false)]
+        );
+        let mut d = decisions;
+        d[1].initial = Some("no".into());
+        assert!(switched_by(&d)["shared"]);
+        d[1].initial = Some("yes".into());
+        assert!(!switched_by(&d)["shared"]);
+        assert!(switched_by(&d)["hot"]);
+    }
 }
