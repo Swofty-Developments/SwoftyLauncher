@@ -1878,7 +1878,10 @@ mod tests {
             ("game_setup.seasons", "season"),
         ] {
             assert_eq!(stat_id_ceiling(t, r).map(|c| c.max), Some(31), "{t}");
-            assert!(stat_id_ceiling_reason(t, r).is_some_and(|w| w.contains("32-bit mask")), "{t}");
+            assert!(
+                stat_id_ceiling_reason(t, r).is_some_and(|w| w.contains("32-bit mask")),
+                "{t}"
+            );
         }
         assert_eq!(stat_id_ceiling_reason("entrants.vehicles", "vehicle"), None);
     }
