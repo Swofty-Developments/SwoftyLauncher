@@ -79,7 +79,9 @@ One HUD unit is one pixel of a 640x360 frame, the origin is the dial centre and 
 { "kind": "text",   "id": "b", "style": "OSD_24_bold", "align": "left|centre|right", "box": 40,
   "cap_height": 9.5, "at": [x, y], "rot": 0, "case": "upper|none", "wrap": "none|clampwidth",
   "value": { "game": "speed_str" } }              // or "literal": "BOOST"
-{ "kind": "group",  "id": "c", "hidden": false, "children": [ ] }
+{ "kind": "group",  "id": "c", "hidden": false, "children": [ ] }   // hidden: true = isHidden plus a static visible=false node
+{ "kind": "text",   "id": "pb", "style": "OSD_24_regular", "box": 80, "cap_height": 9.8, "colour": "#58d654ff",
+  "value": { "view_model": "view_model_data.hud_x_gap" } }         // colour: one fixed colourOverride (text or sprite)
 { "kind": "levels", "id": "d", "sprite": "lit", "count": 16, "from": 38, "to": -48,
   "show": "view_model_data.hud_x_dp{nn}" }        // one windowed copy per level, lit by one leaf each
 { "kind": "slats",  "id": "e", "sprites": ["s1", "s2"], "show": "view_model_data.hud_x_th{nn}" }
@@ -150,9 +152,22 @@ A binding names exactly one source:
 { "game": "revs" }                                   // a value of the dial's own view model
 { "session": "current_car.position" }                // a #session path
 { "session_car": "position", "slot": 5 }             // #session.cars.car5.position
+{ "path": "#session.number_of_laps", "ty": "si32" }  // any other path of the game's view model, with its tag
 ```
 
-`"not": true` negates a bool and `"default"` is the value while the binding is absent. A leaf's type comes from where it is bound: a bool for `visible`, text for a text, a float for a gauge or sweep (`"ty": "i32"` binds a number as text). The game values and their tags:
+`"not": true` negates a bool and `"default"` is the value while the binding is absent. A leaf's type comes from where it is bound: a bool for `visible`, text for a text, a float for a gauge or sweep. `"ty": "i32"` binds an int leaf as text: the core writes int leaves through the game's signed-int setter, so the node is tagged `si32` (`ui32` is the tag of the game's own unsigned values only, and is refused on a leaf).
+
+`path` reads any value the game's view model already has, where `view_model` is for the addon's own leaves. A `visible` reads it as a bool, a `tint` as a colour, a unit's `texture` as text; a text needs `ty` (`text`, `si32` or `ui32`), the tag the game gives the value. When a stock node binds the same path the build checks the tag against it; otherwise `ty` is trusted, and a wrong tag crashes the game, so read it from a stock node that binds the path (`swofty ui` on the template) before declaring it:
+
+```jsonc
+{ "kind": "text", "id": "laps", "style": "OSD_24_regular", "box": 30, "cap_height": 9.8,
+  "value": { "path": "#session.number_of_laps", "ty": "si32" } }
+{ "kind": "group", "id": "pill", "visible": { "path": "#view_model_data.hud.content.lap_times.pill_0.active" },
+  "children": [ { "kind": "text", "id": "pill_gap", "style": "OSD_24_regular", "box": 60, "cap_height": 9.8,
+                  "value": { "path": "#view_model_data.hud.content.lap_times.pill_0.gap_text", "ty": "text" } } ] }
+```
+
+The game values and their tags:
 
 | `game` | tag | use |
 |---|---|---|
@@ -183,6 +198,17 @@ An element a decision lists is shown by the decision and has no `visible` of its
 ```
 
 The composer writes an `MVCD` or `SVCD` node under the record's template group and registers and queries it from the dial's own `show` command, unregistering it from `hide`, as the stock DRS widget does. An `mvcd` takes an event for every state of the stock `MVCD` on the same value under the same dial; a state the record doesn't list hides everything.
+
+A decision may also run `on` a path or leaf instead of a dial value, listing its own states (a bool has `0` and `1`, as the stock pills' `active` decisions do). That is how a screen record switches on the game's own values; a dial record keeps to `game`:
+
+```jsonc
+"decisions": [
+  { "id": "tt", "type": "mvcd", "on": { "path": "#view_model_data.hud.content.lap_times.pill_0.active" },
+    "states": { "1": ["trial"], "0": [] } },
+  { "id": "p1", "type": "svcd", "on": { "path": "#session.current_car.position" }, "ty": "ui32", "equals": 1,
+    "yes": ["leader"], "no": [] }
+]
+```
 
 ## Stock parts, variants and the editor
 

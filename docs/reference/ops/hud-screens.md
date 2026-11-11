@@ -27,8 +27,8 @@ DLL), the stock board is the game's own.
       "screen": "standings",                                           // the HUD standings board
       "show": { "view_model": "view_model_data.hud_tt_show" },         // host visible <- show; masks <- NOT show
       "also": {                                                        // the same elements on more screens
-        "replay":    { "show": { "view_model": "view_model_data.hud_tt_on" } },
-        "spectator": { "show": { "view_model": "view_model_data.hud_tt_on" } }
+        "replay":    { "show": { "view_model": "view_model_data.hud_tt_on" }, "hide": ["trial"] },   // hide: element ids kept off this screen
+        "spectator": { "show": { "view_model": "view_model_data.hud_tt_on" }, "hide": ["trial"] }
       },
       "sprites": {
         "strip": { "png": "art/strip.png", "bounds": [0, 0, 300, 21.6] },  // HUD units from the tower's top-left
@@ -49,9 +49,12 @@ DLL), the stock board is the game's own.
       ],
       "stock_nodes": [
         { "template": "hud_lap_counter.osd_visibility_option",
-          "hide": ["car_category_logo", "edge_base", "edge_border", "lap_bg", "lockup", "session_icon",
-                   "centre_lap_value", "separator_bg", "separator_bg_top", "centre_formation"],
-          "while": { "view_model": "view_model_data.hud_tt_show" } }
+          "scene": "eaid://ui_package/art/osd/components/lap_counter/lap_counter.idf",
+          "hide": ["car_category_logo", "session_icon", "centre_lap_value", "separator_bg", "separator_bg_top", "centre_formation"],
+          "wrap": ["edge_base", "edge_border", "lap_bg", "lockup"],    // parts a stock node targets: a new null around each, hidden instead
+          "while": { "view_model": "view_model_data.hud_tt_show" } },
+        { "template": "hud_left_notification_dynamic.osd_visibility_option.left_notification.left_message",
+          "hide": ["boundless"], "while": { "view_model": "view_model_data.hud_tt_show" } }   // the flag box
       ],
       "restyle": { "preset": "banner", "sprite": "bn_m" }
     }
@@ -66,9 +69,10 @@ do in a dial, and so do `unit` elements, `texture` bindings and stock-texture sp
 ([HUD textures and units](/reference/ops/hud-textures)): a `{ "screen": "series_logo" }` texture reads
 the standings' lap counter leaf on the HUD, `#replay_flow.replays_and_highlights.logo_texture` on the
 replay screen and the spectator view model's `logo_texture` there. A text that reads
-`#session.time_remaining_str` gets the stock session timer's formatter cloned into the control group.
-A screen record takes no `decisions`, `variants`, `stock` or `stock_parts`; a record with `decisions`
-is refused with that message.
+`#session.time_remaining_str` gets the stock session timer's formatter cloned into the control group
+(see [the session clock](#the-session-clock)). A screen record takes no `variants`, `stock` or
+`stock_parts`; its `decisions` run `on` the game's own paths (see
+[decisions on a screen](#decisions-on-a-screen)).
 
 What one record composes:
 
@@ -91,14 +95,24 @@ hud_track_position.osd_visibility_option.track_position
     mask_0        mask              visible <- NOT show, default true   (the stock board)
     host_n        <prefix>_host     visible <- show, default false
       v_cap       pill_rotation_anim   visible = false  (the cap's own graphics)
+      v_pv        <prefix>_pv          visible = false  (the editor copy)
       root_n      <prefix>            visible = true   (replay: <- show_drivers_list; spectator: <- show_left_side)
+      h_trial     <prefix>_trial       visible = false  (also.<screen>.hide, this screen only)
       v_r00       <prefix>_r00         visible <- hud_tt_r00_on
       t_pos00     <prefix>_pos00       text    <- hud_tt_r00_pos (stri)
+      c_pb00      <prefix>_pb00        colourOverride = #58d654ff   (a text's colour)
+      v_notes     <prefix>_notes       visible = false  (an element with hidden: true)
       ...
     extra_hide    <prefix>_host > Scene Root   (replay only) visible <- NOT is_video_sting_enabled
+    clock_fmt     UITF  #session.time_remaining -> time_remaining_str (or clock.output); formatTime <- trigger
+    mv_clock      MVCD on clock.start: state 1 -> clock_fmt.formatTime
+    d_tt          MVCD on a decision's path (standings only)
   bottom_cap
     <prefix>_sn1  v_<prefix>  visible = false   (the stock cap instance never shows the elements)
 ```
+
+`isHidden` on a scene element does not hide it in game, so every static hide here is a template node:
+`hidden: true` on an element, `also.<screen>.hide`, the cap's graphics and the editor copy.
 
 Masks on the other screens are layout chains into the stock instances: replay `driver_table > Scene
 Root` and `session_timer > Scene Root`; spectator `spectator_mode_2 > driver_position_table >
@@ -165,6 +179,60 @@ exactly once, is already `isHidden`, or that a stock node under that template pa
 hides: a second `visible` binding on one element fights the game's own. With the leaf absent the
 default `true` keeps the game's part visible, so the stock HUD is whole without the DLL.
 
+A part another stock node already targets (the lap counter's `edge_base`, `edge_border`, `lap_bg`
+and `lockup` each have a stock group over them, so a `visible` of ours on them does not hold) goes in
+`wrap` instead:
+
+```jsonc
+{ "template": "hud_lap_counter.osd_visibility_option",
+  "scene": "eaid://ui_package/art/osd/components/lap_counter/lap_counter.idf",   // wrap rewrites the scene, so name it
+  "hide": ["car_category_logo", "session_icon", "centre_lap_value", "separator_bg", "separator_bg_top", "centre_formation"],
+  "wrap": ["edge_base", "edge_border", "lap_bg", "lockup"],
+  "while": { "view_model": "view_model_data.hud_tt_show" } }
+```
+
+The composer writes the scene again with a new null `<prefix>_w_<element>` in each wrapped
+element's place in its parent's children, the element inside it: every stock name stays, the
+drawing order stays, the lookup grows by the wrappers, and the stock nodes still find their parts
+by name. The group then hides the wrappers (`v_w_<element>`, `visible <- NOT while` like the rest).
+One record wraps a scene; a second record wrapping the same scene is refused. The flag box
+(`boundless` in `race_condition_flag_message.idf`, under
+`hud_left_notification_dynamic.osd_visibility_option.left_notification.left_message`) needs no wrap.
+
+## The session clock
+
+A text whose `value` is `{ "session": "time_remaining_str" }` makes the control group clone the
+stock session timer's formatter (`hud_session_timer_dynamic.session_timer.time_remaining_formatter`,
+a UITF reading `#session.time_remaining`) as `clock_fmt`, and the group's `trigger` command signals
+its `formatTime`, as the stock timer's `visible` event does. The record's `clock` gives the clone a
+leaf of its own to write and a second start:
+
+```jsonc
+"clock": {
+  "output": "view_model_data.hud_tt_clock",            // database_output <- this leaf; the texts read it (stri)
+  "start": { "view_model": "view_model_data.hud_tt_timed" }   // an MVCD mv_clock: state 1 -> clock_fmt.formatTime
+}
+```
+
+Without `output` the clone writes the stock `time_remaining_str` under the group's own view-model
+scope, as the dial records do.
+
+## Decisions on a screen
+
+A screen record's `decisions` run `on` a path or leaf (never a dial `game` value): an `mvcd` lists
+its states (`0` and `1` for a bool, as the stock pills' `active` decisions do), an `svcd` its `ty`
+and `equals`. The elements a decision lists get a `v_<id>` switch node (hidden until the decision
+shows them), and the decision node is registered and queried from the group's `trigger`, so it
+runs on screens whose parent wires `trigger` (the standings' `enable`); on the replay and spectator
+screens the listed elements stay hidden, and `also.<screen>.hide` says so in the record.
+
+```jsonc
+"decisions": [
+  { "id": "tt", "type": "mvcd", "on": { "path": "#view_model_data.hud.content.lap_times.pill_0.active" },
+    "states": { "1": ["trial"], "0": [] } }
+]
+```
+
 ## `restyle`: the Race Control banner
 
 The preset is Project Halo's banner: the twelve toast scenes under `art/osd/{components,units}/message_system`
@@ -226,6 +294,8 @@ at scale 1; the twelve toast scenes' fill slots, offset layers, decorations and 
 
 ## The HUD editor
 
+The example addon `templates/hud-tower` is a 30-row tower with every field on this page.
+
 The HUD customisation menu draws the standings table with no template running, so the record's live
 root never shows there. The composer builds a second copy of the elements, `<prefix>_pv`, from
 `editor.preview` (keyed by the substituted leaf names, as for a dial) with a top-level `repeat` cut to
@@ -251,7 +321,7 @@ never draws outside the editor. `unit` elements and `tint` bindings are left out
 
 ## Not yet
 
-Decisions on a screen target (the Time Trial board's switches on the game's own pill values),
-`stock_nodes` on the replay template and the Race Control label's own colour clip (Halo rewrites its
-`DiffuseColour` keys to white; the restyle leaves the clip as it is, so that label keeps the stock
-navy on the navy fill) are not in the composer; each is refused or left stock with a line that says so.
+`stock_nodes` on the replay template, decisions on the replay and spectator screens (their parents
+register none) and the Race Control label's own colour clip (Halo rewrites its `DiffuseColour` keys
+to white; the restyle leaves the clip as it is, so that label keeps the stock navy on the navy fill)
+are not in the composer; each is refused or left stock with a line that says so.

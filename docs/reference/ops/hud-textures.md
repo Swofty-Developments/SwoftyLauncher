@@ -108,9 +108,10 @@ A sprite with `texture` in place of `png` draws one of the game's own textures. 
 | `{ "session_car": "driver.name_code", "slot_var": "V" }` | `#session.cars.car<V>.driver.name_code` | `stri` | no stock node binds it; the table is trusted |
 | `{ "session_car": "nub_colour", "slot_var": "V" }` | `#session.cars.car<V>.nub_colour` | `rgba` | the stock `#session.current_car.nub_colour` binding |
 | `{ "session": "number_of_laps" }` | `#session.number_of_laps` | `si32` | the stock lap counter's binding |
-| `{ "session": "time_remaining_str" }` | `time_remaining_str` | `stri` | the stock session timer; its formatter (`hud_session_timer_dynamic.time_remaining_formatter`) is cloned into the record's group as `clock_fmt` |
+| `{ "session": "time_remaining_str" }` | `time_remaining_str` | `stri` | the stock session timer; its formatter (`hud_session_timer_dynamic.time_remaining_formatter`) is cloned into the record's group as `clock_fmt`, re-formatted from the group's `trigger` and, with the record's `clock`, written to the record's own leaf and re-formatted by a `start` bool ([HUD screens](/reference/ops/hud-screens#the-session-clock)) |
+| `{ "path": "#session.number_of_laps", "ty": "si32" }` | the path as written | the declared `ty` | the stock node that binds the path, when one does; otherwise trusted |
 
-`si32` is for the game's own values the stock template binds; a `view_model` leaf declared `si32` fails the build, since the std lib publishes bools and texts only.
+`si32` is the tag of the game's signed ints and of an addon's own int leaves (`"ty": "i32"` on a `view_model` leaf; the core writes them through the game's signed-int setter). `ui32` is the game's unsigned values only, and is refused on a leaf.
 
 ## What `swofty hud check` asserts
 
