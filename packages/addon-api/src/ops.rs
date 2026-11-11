@@ -214,6 +214,25 @@ pub fn stat_id_ceiling(table: &str, row: &str) -> Option<StatIdCeiling> {
         .map(|(_, _, c)| *c)
 }
 
+/// Why `table`'s ceiling is where it is, for tables whose limit an addon author can't work around by
+/// picking another id: appended to the "no free stat_id" error so the message says what to change.
+pub fn stat_id_ceiling_reason(table: &str, row: &str) -> Option<&'static str> {
+    match (table, row) {
+        ("game_setup.game_setup_modes", "game_setup_mode")
+        | ("entrants.entrant_setup_modes", "entrant_setup_mode") => Some(concat!(
+            "the game keeps setup modes in a 32-bit mask (bit = stat_id) and stops at boot with ",
+            "'invalid bitset position' above 31, so no install holds more than 32; share a mode ",
+            "instead of adding one per box or season (list-append the entrant list to swofty_f1 ",
+            "or to one mode the addons share)"
+        )),
+        ("game_setup.seasons", "season") => Some(concat!(
+            "the game keeps seasons in a 32-bit mask (bit = statId) and stops at boot with ",
+            "'invalid bitset position' above 31; reuse a stock season row instead of adding one"
+        )),
+        _ => None,
+    }
+}
+
 /// Whether a fresh row of `table`'s rows named `row` may not take `id`: driver ids 254 and 255, and any with a low byte of 0xff.
 pub fn stat_id_unusable(table: &str, row: &str, id: i64) -> bool {
     table == "entrants.drivers" && row == "driver" && (id == 254 || id & 0xff == 0xff)
@@ -1668,9 +1687,10 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
                 })
                 .ok_or_else(|| {
                     Error::Resolve(format!(
-                        "{what}: {path} has no free {} up to {}, the highest the game reads",
+                        "{what}: {path} has no free {} up to {}, the highest the game reads{}",
                         stat_id_field(&path, row),
-                        c.max
+                        c.max,
+                        stat_id_ceiling_reason(&path, row).map_or(String::new(), |r| format!(" ({r})"))
                     ))
                 }),
             _ => Ok((top, None)),
@@ -1748,8 +1768,9 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
                 let free = |id: i64| unfit(id).is_none() && !later(id);
                 let Some((id, held_by)) = k.reclaim(&path, row, key, &free) else {
                     return Err(Error::Resolve(format!(
-                        "{what}: {path} has no free {field} up to {}, the highest the game reads",
-                        ceiling.map_or(i64::MAX, |c| c.max)
+                        "{what}: {path} has no free {field} up to {}, the highest the game reads{}",
+                        ceiling.map_or(i64::MAX, |c| c.max),
+                        stat_id_ceiling_reason(&path, row).map_or(String::new(), |r| format!(" ({r})"))
                     )));
                 };
                 let max = ceiling.map_or(String::new(), |c| format!(" up to {}", c.max));
@@ -1848,6 +1869,19 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
 mod tests {
     use super::*;
     use crate::asset::{FileKind, OpFile};
+
+    #[test]
+    fn mask_tables_say_why_their_ceiling_is_31() {
+        for (t, r) in [
+            ("game_setup.game_setup_modes", "game_setup_mode"),
+            ("entrants.entrant_setup_modes", "entrant_setup_mode"),
+            ("game_setup.seasons", "season"),
+        ] {
+            assert_eq!(stat_id_ceiling(t, r).map(|c| c.max), Some(31), "{t}");
+            assert!(stat_id_ceiling_reason(t, r).is_some_and(|w| w.contains("32-bit mask")), "{t}");
+        }
+        assert_eq!(stat_id_ceiling_reason("entrants.vehicles", "vehicle"), None);
+    }
 
     fn db() -> Gvdb {
         let mut records = vec![Record::new("entrants.teams._team_instancecount_", 0, "2")];
