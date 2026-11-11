@@ -183,6 +183,8 @@ const runtime::Sig S_FLYING_LAP{"Game_Request_PlayerFlyingLap_141d59e90",
 // A session view model's first-update setup (0x1414bb420): it reads the game mode's current session without a null check.
 const runtime::Sig S_VM_SESSION_SETUP{"Game_SessionVm_Setup_1414bb420",
         "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 C6 41 14 FF 48 83 B9 B0 00 00 00 00 0F 84", 0x14bb420};
+// The save job, right after it asked for the player's display name (rax): the name becomes the file's title, the Theatre card's first line.
+const runtime::Sig S_REPLAY_TITLE{"site_Game_Replay_SaveFullReplay_title_142c47a31", "E8 ?? ?? ?? ?? 48 85 C0 48 8D 8C 24 C8 02 00 00", 0x2c47a31, runtime::Sig::addr, 0, 5};
 const runtime::Sig S_REPLAY_META{"Game_Replay_FillMetadata_142bfd950",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 4C 89 4C 24 28 4C 89 C3 49 89 D7 48 89 CE", 0x2bfd950};
 const runtime::Sig S_SAVE_SLOT_DEFAULT{"Game_SaveSlotManager_MakeDefaultSlot_14d6e4c20", "41 57 41 56 41 54 56 57 53 48 81 EC E8 00 00 00 48 89 CE 48 8D 44 24 68 48 C7 44 24 58 80 00 00 00",
@@ -1178,7 +1180,21 @@ uint64_t slot_snapshot_hook(uint64_t comp, uint64_t slot, uint64_t flag);
 constexpr size_t SLOT_INFO_TRACK = 0xb4, SLOT_INFO_SESSION = 0xb8, META_SESSION = 0x10, META_RACE_LENGTH = 0x1c, META_WEATHER = 0x1f;
 constexpr uint32_t SESSION_TYPE_TIME_TRIAL = 18;
 safetyhook::InlineHook h_replay_meta;
-std::atomic<bool> replay_meta_ours{false};
+std::atomic<bool> replay_meta_ours{false}, replay_title_ours{false};
+safetyhook::MidHook h_replay_title;
+extern std::atomic<uint32_t> replay_saved_lap_ms;
+
+// A Time Trial replay is titled with its lap time; the card shows the track and "Time Trial" beside it.
+void replay_title_mid(safetyhook::Context &c)
+{
+    if (!replay_title_ours.exchange(false))
+        return;
+    static char title[32];
+    uint32_t ms = replay_saved_lap_ms.load();
+    snprintf(title, sizeof title, "%u:%02u.%03u", ms / 60000, ms / 1000 % 60, ms % 1000);
+    c.rax = reinterpret_cast<uint64_t>(title);
+    swofty::log("[replay] title: %s", title);
+}
 
 // The save job fills the replay's metadata from the session; a Time Trial session leaves the session type at 0, and the card then shows no
 // session line. For a save through our own component the type says Time Trial.
@@ -1469,6 +1485,7 @@ void replay_job_wrapper_mid(safetyhook::Context &c)
             c.r14 = comp;
             c.rcx &= ~0xffull;
             replay_meta_ours = true;
+            replay_title_ours = true;
             swofty::log("[replay] SWOFTY_TT_REPLAY_FORCE=slot: our own save-slot component 0x%llx goes to the header writer", (unsigned long long)comp);
         }
     }
@@ -2867,6 +2884,8 @@ void setup()
                         if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&replay_meta_hook)))
                             h_replay_meta = std::move(*h);
                     swofty::log("[replay] metadata hook %s", h_replay_meta ? "armed" : "NOT armed");
+                    if (uintptr_t a = runtime::find(S_REPLAY_TITLE, "boards", "boards"))
+                        hook_mid(h_replay_title, a, replay_title_mid, "replay title");
                     view::flying_lap_fn = runtime::find(S_FLYING_LAP, "boards", "boards");
                     if (uintptr_t a = runtime::find(S_REPLAY_INFO_LOAD, "boards", "boards"))
                         if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&info_load_hook)))
