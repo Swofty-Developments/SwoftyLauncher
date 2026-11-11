@@ -360,6 +360,10 @@ void direct_start_register_time_trial(DirectStartSetup setup);
 void direct_start_register_time_trial_screen(void (*screen)(const char *name));
 // The flow graph's root state (StateApp) once the flow has updated it, or null.
 void *direct_start_flow_root();
+// A listener on the flow machine's link site: it is called for every state whose update just returned, with the link the state returned
+// (0 = stay), and may replace it. One listener; the hook is installed on the first call. False when the site did not resolve.
+using FlowLinkListener = void (*)(uint8_t *state, uint32_t *link);
+bool flow_link_listen(FlowLinkListener listener);
 // Despawns the front end's main scene (the menu backdrop) once; a direct start never runs StateFrontend's exit.
 void direct_start_despawn_frontend_scene(const char *when);
 std::string direct_start_request_text();

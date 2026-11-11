@@ -502,14 +502,21 @@ void log_chain()
     swofty::log("[direct] flow chain: %s", chain.c_str());
 }
 
+std::atomic<runtime::FlowLinkListener> link_listener{nullptr};
+
 void link_mid(safetyhook::Context &c)
 {
-    if (!armed.load())
+    auto listener = link_listener.load();
+    if (!listener && !armed.load())
         return;
     auto *state = reinterpret_cast<uint8_t *>(c.rdi);
     if (!state || !runtime::readable(state, STATE_PARENT + 8))
         return;
     auto *slot = reinterpret_cast<uint32_t *>(c.rsp + LINK_SLOT);
+    if (listener)
+        listener(state, slot);
+    if (!armed.load())
+        return;
     uint32_t hash = *reinterpret_cast<uint32_t *>(state + STATE_HASH);
     bool child = *reinterpret_cast<void **>(state + STATE_CHILD) != nullptr;
     std::lock_guard<std::mutex> g(lock);
@@ -1262,6 +1269,23 @@ int direct_start_cover_signal()
         return 1;
     uint64_t at = session_at.load();
     return at && GetTickCount64() - at >= SESSION_SCREEN_WAIT_MS ? 1 : 0;
+}
+
+bool flow_link_listen(FlowLinkListener listener)
+{
+    link_listener = listener;
+    if (h_link)
+        return true;
+    uintptr_t at = runtime::same_build() ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;
+    if (!at)
+        return false;
+    auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), link_mid);
+    if (!h) {
+        swofty::log("[direct] the hook on the flow link site failed: %s", runtime::hook_error(h.error()).c_str());
+        return false;
+    }
+    h_link = std::move(*h);
+    return true;
 }
 
 void *direct_start_flow_root()

@@ -171,6 +171,12 @@ const runtime::Sig S_SAVE_SLOT_CTOR{"Game_SaveSlotManager_Construct_1429cd140",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 4C 89 4C 24 78 4C 89 84 24 80 00 00 00 48 89 94 24 88 00 00 00 48 89 CE", 0x29cd140};
 const runtime::Sig S_SAVE_SLOT_SNAPSHOT{"Game_SaveSlotManager_SnapshotSlot_1429ce380",
         "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 12 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 B4 24 10 12 00 00 F0 FF 05", 0x29ce380};
+// The fastest lap viewer's enter (0x142d9cee0), at its first check: rax = session host, rsi = the state.
+const runtime::Sig S_VIEW_ENTER{"site_Game_SessionStateViewFastestLap_enter_142d9cf10",
+        "48 8B 80 60 02 00 00 80 B8 2E 0E 00 00 00 74 10 48 8B 8E 60 0D 00 00 80 B9 88 00 00 00 00 74 19", 0x2d9cf10, runtime::Sig::addr, 0, 7};
+// A session view model's first-update setup (0x1414bb420): it reads the game mode's current session without a null check.
+const runtime::Sig S_VM_SESSION_SETUP{"Game_SessionVm_Setup_1414bb420",
+        "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 C6 41 14 FF 48 83 B9 B0 00 00 00 00 0F 84", 0x14bb420};
 const runtime::Sig S_REPLAY_META{"Game_Replay_FillMetadata_142bfd950",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 4C 89 4C 24 28 4C 89 C3 49 89 D7 48 89 CE", 0x2bfd950};
 const runtime::Sig S_SAVE_SLOT_DEFAULT{"Game_SaveSlotManager_MakeDefaultSlot_14d6e4c20", "41 57 41 56 41 54 56 57 53 48 81 EC E8 00 00 00 48 89 CE 48 8D 44 24 68 48 C7 44 24 58 80 00 00 00",
@@ -1341,6 +1347,7 @@ safetyhook::InlineHook h_load_start;
 std::string replay_play_path;
 std::atomic<int64_t> replay_play_at{0}, replay_play_delay_ms{30000};
 std::atomic<int> replay_play_stage{0};
+void replay_view_arm(const std::string &path);
 safetyhook::MidHook h_load_ready;
 std::atomic<bool> replay_play_forcing{false};
 // The load start asks one of two global objects whether a load may start now (virtual +0x10). It answers no on track. The probe logs the
@@ -1402,11 +1409,15 @@ void replay_load_tick()
         return;
     }
     // The game's load is left out: Theatre goes on to start its plain Time Trial session, and the file is loaded and played there.
-    replay_play_path = narrow(path.c_str());
+    // Theatre only goes on to the session once the game's own load has run; what that load put into the replay system is dropped when the
+    // session starts, so the file is loaded again there.
+    bool ok = h_load_start.call<bool>(mgr, path.c_str());
+    swofty::log("[replay] Theatre pick: the game's own load start returned %d", ok ? 1 : 0);
+    replay_play_path.clear();
     replay_play_delay_ms = 6000;
     replay_play_at = 0;
     replay_play_stage = 0;
-    swofty::log("[replay] Theatre pick: %s plays once the session is on track", replay_play_path.c_str());
+    replay_view_arm(narrow(path.c_str()));
 }
 
 void describe_component(const char *what, uint64_t x)
@@ -1657,6 +1668,383 @@ void replay_lap_finished(int64_t lap_ms, int valid)
 
 // `sys` is the candidate replay system. The per-frame ReplayBuffer::beginFrameWrite hook has no replay system in a register (rcx is the
 // buffer), so it passes 0 and the last GameReplaySystem a hook verified is used; the vtable word is checked again on every use.
+// A Time Trial replay picked in Theatre is shown in the game's own replay viewer (re notes: replay-viewer-H). Theatre starts a plain Time
+// Trial session; its first state, SessionEnter, is held while the file is loaded into the replay system behind the load screen, and its
+// link is then pointed at the fastest lap viewer state, so the intro and the garage never run. The viewer's enter gets the lap's window,
+// and its "return" link is sent to the session's Exit state, which ends in the main menu. Any step that fails falls back to playing the
+// file once the car is on track.
+namespace view {
+constexpr uint32_t ROOT_TIME_TRIAL = 0xca472e10, NODE_SESSION_ENTER = 0x46fa8767, NODE_POST_RACE = 0xc56923a6, LINK_RETURN = 0x19306425,
+                   LINK_REPLAY_FASTEST = 0x46af106b, LINK_LEAVE = 0xd63988d1, NODE_INTRO_VIDEO = 0xc8a977c8, NODE_INTRO_CAMERAS = 0xd04db8ad,
+                   NODE_GARAGE = 0x4852eb9a, NODE_IN_GAME = 0xba16bc16, NODE_POST_CUTSCENE = 0xc5155560, LINK_NEXT = 0x7c9b1ec4,
+                   LINK_CAMERAS_DONE = 0x0059737c, LINK_FINISHED = 0x38d5604f, LINK_ONE = 0x0002b5d6;
+constexpr size_t N_HASH = 0xb0, N_STATUS = 0xb8, N_CHILDREN = 0xc0, N_RECORDS = 0xf0, N_RECORD = 0xa0, N_RECORD_TARGET = 0x98, N_LINKS = 0xaf0, N_LINK_COUNT = 0xb30,
+                 N_PARENT = 0xc10;
+constexpr uintptr_t VT_VIEW_FASTEST = 0x57e37a0, VIEW_ENTER_RESUME = 0x2d9d230;
+constexpr size_t VIEW_SYSTEM = 0xd60, VIEW_START = 0xf60, VIEW_END = 0xf64, VIEW_ABORTED = 0xed4;
+enum Stage { off, armed, loading, loaded, routing, viewing, leaving, broken };
+std::atomic<int> stage{off};
+std::atomic<int64_t> since{0}, load_at{0};
+std::atomic<bool> load_started{false};
+std::atomic<float> duration{0};
+std::string path;
+uint32_t held_link = 0;
+int64_t garage_at = 0;
+uint8_t *dumped_root = nullptr;
+std::vector<uint8_t *> route;
+struct Patch {
+    uint32_t *at;
+    uint32_t old;
+};
+std::vector<Patch> patches;
+safetyhook::MidHook h_enter;
+int forced_logs = 0;
+
+uint32_t u32(const uint8_t *p, size_t off)
+{
+    return *reinterpret_cast<const uint32_t *>(p + off);
+}
+
+bool node_ok(const uint8_t *n)
+{
+    return n && runtime::readable(n, N_PARENT + 8);
+}
+
+std::vector<uint8_t *> children(uint8_t *n)
+{
+    std::vector<uint8_t *> out;
+    auto *cv = *reinterpret_cast<uint8_t **>(n + N_CHILDREN);
+    if (!cv || !runtime::readable(cv, 0x18))
+        return out;
+    for (auto **p = *reinterpret_cast<uint8_t ***>(cv + 8), **e = *reinterpret_cast<uint8_t ***>(cv + 0x10); p && p < e && out.size() < 64; ++p)
+        if (runtime::readable(p, 8) && node_ok(*p))
+            out.push_back(*p);
+    return out;
+}
+
+uint32_t link_count(const uint8_t *n)
+{
+    return std::min<uint32_t>(u32(n, N_LINK_COUNT), 16);
+}
+
+uint32_t *record_target(uint8_t *n, uint32_t i)
+{
+    return reinterpret_cast<uint32_t *>(n + N_RECORDS + size_t(i) * N_RECORD + N_RECORD_TARGET);
+}
+
+// The link of n that leads to the sibling `target`: an existing record, or record `prefer` (else the first) rewritten to it.
+uint32_t link_to(uint8_t *n, uint32_t target, uint32_t prefer)
+{
+    uint32_t count = link_count(n);
+    auto *ids = reinterpret_cast<uint32_t *>(n + N_LINKS);
+    for (uint32_t i = 0; i < count; i++)
+        if (*record_target(n, i) == target)
+            return ids[i];
+    if (!count)
+        return 0;
+    uint32_t pick = 0;
+    for (uint32_t i = 0; i < count; i++)
+        if (ids[i] == prefer)
+            pick = i;
+    uint32_t *at = record_target(n, pick);
+    patches.push_back({at, *at});
+    swofty::log("[replay] viewer: state %08x link %08x target %08x rewritten to %08x", u32(n, N_HASH), ids[pick], *at, target);
+    *at = target;
+    return ids[pick];
+}
+
+void restore()
+{
+    for (auto it = patches.rbegin(); it != patches.rend(); ++it)
+        if (runtime::readable(it->at, 4))
+            *it->at = it->old;
+    patches.clear();
+}
+
+void dump(uint8_t *root)
+{
+    uintptr_t base = swofty::api->module_base();
+    std::vector<std::pair<uint8_t *, int>> queue{{root, 0}};
+    for (size_t i = 0; i < queue.size() && i < 256; i++) {
+        auto [n, depth] = queue[i];
+        std::string links, kids;
+        auto *ids = reinterpret_cast<uint32_t *>(n + N_LINKS);
+        for (uint32_t k = 0; k < link_count(n); k++) {
+            char b[24];
+            snprintf(b, sizeof b, " %08x>%08x", ids[k], *record_target(n, k));
+            links += b;
+        }
+        for (uint8_t *c : children(n)) {
+            char b[12];
+            snprintf(b, sizeof b, " %08x", u32(c, N_HASH));
+            kids += b;
+            if (depth < 8)
+                queue.push_back({c, depth + 1});
+        }
+        auto *parent = *reinterpret_cast<uint8_t **>(n + N_PARENT);
+        swofty::log("[replay] tt node %08x parent %08x depth %d vt base+0x%llx status %u links%s children%s", u32(n, N_HASH), node_ok(parent) ? u32(parent, N_HASH) : 0, depth,
+                    (unsigned long long)(peek64(reinterpret_cast<uint64_t>(n)) - base), unsigned(u32(n, N_STATUS) & 0xff), links.empty() ? " none" : links.c_str(), kids.empty() ? " none" : kids.c_str());
+    }
+}
+
+// The path of states from the session's root down to the fastest lap viewer, or empty.
+std::vector<uint8_t *> find_route(uint8_t *root)
+{
+    uintptr_t want = swofty::api->module_base() + VT_VIEW_FASTEST;
+    std::vector<std::pair<uint8_t *, int>> queue{{root, -1}};
+    for (size_t i = 0; i < queue.size() && i < 256; i++) {
+        uint8_t *n = queue[i].first;
+        if (peek64(reinterpret_cast<uint64_t>(n)) == want) {
+            std::vector<uint8_t *> out;
+            for (int k = int(i); k >= 0; k = queue[size_t(k)].second)
+                out.insert(out.begin(), queue[size_t(k)].first);
+            return out;
+        }
+        for (uint8_t *c : children(n))
+            queue.push_back({c, int(i)});
+    }
+    return {};
+}
+
+void fail(const char *why)
+{
+    int was = stage.exchange(off);
+    restore();
+    route.clear();
+    bool loaded_file = load_started.load();
+    swofty::log("[replay] viewer: %s (stage %d); the file plays once the car is on track instead", why, was);
+    replay_play_path = path;
+    replay_play_stage = loaded_file ? 1 : 0;
+    replay_play_at = loaded_file ? now_ms() + 3000 : 0;
+}
+
+void on_link(uint8_t *node, uint32_t *link)
+{
+    int st = stage.load();
+    if (st == off)
+        return;
+    uint8_t *root = node;
+    for (int k = 0; k < 16; k++) {
+        auto *parent = *reinterpret_cast<uint8_t **>(root + N_PARENT);
+        if (!node_ok(parent))
+            break;
+        root = parent;
+    }
+    int64_t now = now_ms();
+    if (u32(root, N_HASH) != ROOT_TIME_TRIAL) {
+        if (st == armed && now - since.load() > 180000) {
+            stage = off;
+            swofty::log("[replay] viewer: no Time Trial session started within three minutes; disarmed");
+        }
+        return;
+    }
+    if (root != dumped_root) {
+        dumped_root = root;
+        dump(root);
+    }
+    uint32_t hash = u32(node, N_HASH);
+    if (st == broken) {
+        fail("the load failed");
+        return;
+    }
+    // A replay only reads back into a session whose cars are on track, so the session is hurried through its intro and garage to the
+    // driving state, the file is loaded there, and the session is then ended into its results, which lead to the viewer.
+    if (st == armed) {
+        if (hash == NODE_INTRO_VIDEO)
+            *link = LINK_NEXT;
+        else if (hash == NODE_INTRO_CAMERAS)
+            *link = LINK_CAMERAS_DONE;
+        else if (hash == NODE_GARAGE) {
+            if (!garage_at)
+                garage_at = now;
+            if (now - garage_at > 500)
+                *link = LINK_NEXT;
+        } else if (hash == NODE_IN_GAME) {
+            garage_at = 0;
+            load_started = false;
+            since = now;
+            stage = loading;
+            swofty::log("[replay] viewer: the session is in its driving state; %s loads once the recorder runs", path.c_str());
+        }
+        return;
+    }
+    if (st == loading) {
+        if (hash == NODE_IN_GAME && load_started.load() && now - load_at.load() > 30000)
+            fail("the load did not finish within 30 s");
+        return;
+    }
+    if (st == loaded) {
+        if (hash != NODE_IN_GAME)
+            return;
+        route = find_route(root);
+        if (route.size() < 2) {
+            fail("the Time Trial session has no fastest lap viewer state");
+            return;
+        }
+        *link = LINK_FINISHED;
+        forced_logs = 0;
+        since = now;
+        stage = routing;
+        swofty::log("[replay] viewer: the driving state leaves by link %08x (finished)", *link);
+        return;
+    }
+    if (st == routing) {
+        if (now - since.load() > 20000) {
+            fail("the viewer state was not entered within 20 s");
+            return;
+        }
+        // The post-session group runs on its own from here down to the results state, whose "replay fastest lap" link leads to the viewer.
+        if (hash == NODE_POST_CUTSCENE)
+            *link = LINK_ONE;
+        if (hash == NODE_POST_RACE) {
+            if (forced_logs++ < 4)
+                swofty::log("[replay] viewer: the results state returns link %08x; replay_fastest is sent instead", *link);
+            *link = LINK_REPLAY_FASTEST;
+        }
+        return;
+    }
+    uint8_t *viewer = route.empty() ? nullptr : route.back();
+    if (st == viewing) {
+        if (node != viewer || *link != LINK_RETURN)
+            return;
+        stage = leaving;
+        st = leaving;
+        swofty::log("[replay] viewer: the viewer returned; leaving the session");
+    }
+    if (st == leaving && node == viewer) {
+        // The viewer's own leave link ends the session (through the post-session group's last state to Exit) instead of going back to the results.
+        *link = LINK_LEAVE;
+        swofty::log("[replay] viewer exit: state %08x leaves the session by link %08x", hash, *link);
+        stage = off;
+        route.clear();
+    }
+}
+
+void enter_mid(safetyhook::Context &c)
+{
+    if (stage.load() != routing)
+        return;
+    auto *state = reinterpret_cast<uint8_t *>(c.rsi);
+    uint64_t host = c.rax, sys = peek64(c.rsi + VIEW_SYSTEM);
+    float length = duration.load(), start = 0, end = length;
+    ::json::Value setup;
+    std::wstring wide(path.begin(), path.end());
+    static const bool whole = [] { const char *e = getenv("SWOFTY_TT_REPLAY_WHOLE"); return e && *e == '1'; }();
+    if (!whole && ::json::parse(runtime::read_file(replay_setup_path(wide), size_t(1) << 16), setup) && setup["lap_ms"].n > 0 && length > 0.5f) {
+        float lap_end = length - float(setup["tail_ms"].n) / 1000.0f, lap = float(setup["lap_ms"].n) / 1000.0f;
+        end = std::min(length, lap_end + 2.0f);
+        start = std::max(0.0f, lap_end - lap - 2.0f);
+    }
+    // The viewer's update widens the window by five seconds either side.
+    float from = start + 5.0f, to = end - 5.0f;
+    memcpy(state + VIEW_START, &from, 4);
+    memcpy(state + VIEW_END, &to, 4);
+    swofty::log("[replay] viewer: enter of state %p: host flag [+0xe2e] %u, system 0x%llx byte [+0x88] %u; window %.3f..%.3f of %.3f s", state,
+                runtime::readable(reinterpret_cast<void *>(host + 0xe2e), 1) ? unsigned(peek32(host + 0xe2e) & 0xff) : 999u, (unsigned long long)sys,
+                runtime::readable(reinterpret_cast<void *>(sys + 0x88), 1) ? unsigned(peek32(sys + 0x88) & 0xff) : 999u, double(start), double(end), double(length));
+    c.rip = swofty::api->module_base() + VIEW_ENTER_RESUME;
+    restore();
+    stage = viewing;
+}
+
+// On the replay system's tick: the load the held SessionEnter waits for.
+void tick(uint64_t sys)
+{
+    if (stage.load() != loading)
+        return;
+    uintptr_t base = swofty::api->module_base();
+    uint64_t mgr = replay_manager_ptr.load();
+    std::string how;
+    if (!mgr)
+        mgr = replay_find_manager(sys, how);
+    if (!mgr || !runtime::readable(reinterpret_cast<void *>(mgr), 0x700)) {
+        stage = broken;
+        return;
+    }
+    auto busy = [&] { return reinterpret_cast<int (*)(uint64_t)>(base + 0x391dda0)(peek64(mgr + 0x150)); };
+    static std::atomic<int64_t> recording_since{0};
+    if (!load_started.load()) {
+        if (peek32(sys + 0x20) != 0) {
+            recording_since = 0;
+            return;
+        }
+        if (!recording_since.load())
+            recording_since = now_ms();
+        if (now_ms() - recording_since.load() < 3000)
+            return;
+        recording_since = 0;
+    }
+    if (!load_started.exchange(true)) {
+        std::wstring w(path.begin(), path.end());
+        swofty::log("[replay] viewer: load on manager 0x%llx: recording flag %u, system state %u, [+0x428] 0x%llx, job queue busy %d", (unsigned long long)mgr, unsigned(peek32(mgr + 0x6e1) & 0xff),
+                    unsigned(peek32(sys + 0x20)), (unsigned long long)peek64(mgr + 0x428), busy());
+        reinterpret_cast<void (*)(uint64_t, uint32_t, uint32_t)>(base + 0x45c74b0)(sys, 1, 1);
+        bool ok = false;
+        replay_play_forcing = true;
+        // The load start refuses while the manager still names the replay Theatre loaded ([+0x428] is not -1).
+        *reinterpret_cast<int64_t *>(mgr + 0x428) = -1;
+        for (int k = 0; k < 4 && !ok; k++) {
+            Sleep(50);
+            ok = h_load_start.call<bool>(mgr, w.c_str());
+        }
+        replay_play_forcing = false;
+        swofty::log("[replay] viewer: the game's load start returned %d", ok ? 1 : 0);
+        if (!ok) {
+            load_started = false;
+            stage = broken;
+            return;
+        }
+        load_at = now_ms();
+        return;
+    }
+    uint64_t list = peek64(sys + 0x98), module = list && runtime::readable(reinterpret_cast<void *>(list), 8) ? peek64(list) : 0;
+    float length = 0;
+    if (module && runtime::readable(reinterpret_cast<void *>(module), 0x110))
+        memcpy(&length, reinterpret_cast<void *>(module + 0xe8), 4);
+    if (now_ms() - load_at.load() < 6000 || busy() != 0 || length < 0.5f)
+        return;
+    duration = length;
+    int want = loading;
+    if (stage.compare_exchange_strong(want, loaded))
+        swofty::log("[replay] viewer: loaded after %lld ms, %.3f s of replay", (long long)(now_ms() - load_at.load()), double(length));
+}
+
+}
+
+// While a replay loads into a session that is still entering, the game mode has no current session for a moment, and this view model's
+// setup would read through the null. The setup is left for a later frame (its caller retries until it has run).
+safetyhook::InlineHook h_vm_session_setup;
+
+void vm_session_setup_hook(uint8_t *vm)
+{
+    if (view::stage.load() != view::off && runtime::readable(vm, 0xb8)) {
+        uint64_t a = peek64(reinterpret_cast<uint64_t>(vm) + 0xb0), b = a && runtime::readable(reinterpret_cast<void *>(a), 0x38) ? peek64(a + 0x30) : 0;
+        if (b && runtime::readable(reinterpret_cast<void *>(b), 0x90) && !peek64(b + 0x88)) {
+            static std::atomic<int> n{0};
+            if (++n <= 4)
+                swofty::log("[replay] viewer: a session view model's setup waits; the game mode has no current session yet");
+            return;
+        }
+    }
+    h_vm_session_setup.call<void>(vm);
+}
+
+void replay_view_arm(const std::string &path)
+{
+    view::path = path;
+    if (!runtime::same_build() || !h_load_start || !view::h_enter || !runtime::flow_link_listen(view::on_link)) {
+        swofty::log("[replay] Theatre pick: the viewer route is not available; %s plays once the session is on track", path.c_str());
+        replay_play_path = path;
+        return;
+    }
+    view::restore();
+    view::route.clear();
+    view::load_started = false;
+    view::since = now_ms();
+    view::stage = view::armed;
+    swofty::log("[replay] Theatre pick: %s opens in the replay viewer", path.c_str());
+}
+
 void replay_tick(uint64_t sys, const char *slot)
 {
     static std::atomic<uint64_t> entries[4]{}, ours_entries[4]{};
@@ -1678,6 +2066,8 @@ void replay_tick(uint64_t sys, const char *slot)
     // SWOFTY_TT_REPLAY_PLAY=<replay file path as the game sees it> is a test switch: 40 s into our content's session the file is loaded into
     // the live session through the game's own load, and 8 s later the replay system is put into full replay playback of the whole buffer
     // (mode 0, state 2, clip over the module's duration), the way the fastest lap view's update does it. Every step is logged.
+    if (vt_ok && bridge_on && h_load_start)
+        view::tick(sys);
     if (vt_ok && !replay_play_path.empty() && bridge_on && content_ours() && h_load_start) {
         std::atomic<int64_t> &at = replay_play_at;
         std::atomic<int> &stage = replay_play_stage;
@@ -1718,6 +2108,7 @@ void replay_tick(uint64_t sys, const char *slot)
                     reinterpret_cast<void (*)(uint64_t, uint32_t, uint32_t)>(gbase + 0x45c74b0)(sys, 1, 1);
                 bool ok = false;
                 replay_play_forcing = true;
+                *reinterpret_cast<int64_t *>(mgr + 0x428) = -1;
                 for (int k = 0; k < 4 && !ok; k++) {
                     Sleep(50);
                     int b = busy();
@@ -2358,6 +2749,11 @@ void setup()
                         if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&replay_meta_hook)))
                             h_replay_meta = std::move(*h);
                     swofty::log("[replay] metadata hook %s", h_replay_meta ? "armed" : "NOT armed");
+                    if (uintptr_t a = runtime::find(S_VM_SESSION_SETUP, "boards", "boards"))
+                        if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&vm_session_setup_hook)))
+                            h_vm_session_setup = std::move(*h);
+                    if (uintptr_t a = runtime::find(S_VIEW_ENTER, "boards", "boards"))
+                        hook_mid(view::h_enter, a, view::enter_mid, "fastest lap viewer enter");
                     if (uintptr_t a = runtime::find(S_REPLAY_LOAD_READY, "boards", "boards"))
                         hook_mid(h_load_ready, a, replay_load_ready_mid, "load start readiness");
                     if (uintptr_t a = runtime::find(S_SAVE_SLOT_DEFAULT, "boards", "boards"))
