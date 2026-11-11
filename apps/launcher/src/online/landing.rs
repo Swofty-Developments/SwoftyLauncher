@@ -200,7 +200,9 @@ impl Shell {
                 .p(px(18.))
                 .text_size(px(13.))
                 .text_color(p.text_muted)
-                .child(tr("No drivers yet."))
+                .child(tr(
+                    "No ranking yet. A track counts once three drivers have set a lap on it.",
+                ))
                 .into_any_element()
         } else {
             let handle = self.online.handles.entry(scope.to_owned()).or_default().clone();
