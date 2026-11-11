@@ -22,6 +22,7 @@ pub const CAREER_WIZARD_HEADER: &str = include_str!("../include/swofty/career_wi
 pub const ERA_HEADER: &str = include_str!("../include/swofty/era.hpp");
 pub const HUD_HEADER: &str = include_str!("../include/swofty/hud.hpp");
 pub const POSTFX_HEADER: &str = include_str!("../include/swofty/postfx.hpp");
+pub const LIVE_HEADER: &str = include_str!("../include/swofty/live.hpp");
 
 pub const CAREER_START_PICK: u32 = 0;
 pub const CAREER_START_NEW: u32 = 1;
@@ -958,6 +959,10 @@ mod tests {
         assert_eq!(
             include_str!("../../../templates/addon/native/include/swofty/telemetry.hpp"),
             TELEMETRY_HEADER
+        );
+        assert_eq!(
+            include_str!("../../../templates/addon/native/include/swofty/live.hpp"),
+            LIVE_HEADER
         );
         assert_eq!(
             include_str!("../../../templates/addon/native/include/swofty/db.hpp"),
