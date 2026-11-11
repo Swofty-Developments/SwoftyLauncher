@@ -424,14 +424,14 @@ fn a_scene_target_record_is_checked_when_it_is_read() {
         edit(&mut rec);
         hud::model::HudElement::parse(&rec).unwrap_err().to_string()
     };
-    assert!(parse(&|r| r["dial"] = "f2".into()).contains("not both"));
+    assert!(parse(&|r| r["dial"] = "f2".into()).contains("not two"));
     assert!(
         parse(&|r| {
             r.as_object_mut().unwrap().remove("parent_ui");
         })
         .contains("go together")
     );
-    assert!(parse(&|r| r["elements"][0]["kind"] = "sprite".into()).contains("text and group"));
+    assert!(parse(&|r| r["elements"][0]["kind"] = "sprite".into()).contains("text, group"));
     assert!(parse(&|r| r["sprites"] = serde_json::json!({ "a": { "png": "a.png" } })).contains("sprites"));
     assert!(parse(&|r| r["scene"] = "dial_om_xm.idf".into()).contains("eaid://"));
     let neither = hud::model::HudElement::parse(&serde_json::json!({ "elements": [] }))
