@@ -81,9 +81,8 @@ if (c && !live::has(*c, SWOFTY_LIVE_HAVE_SPEED))
 A call answers empty while no session is live, on a core without the live state, on a build whose layouts the core has no proof for, and for a group that is not verified for the running build. The core logs the groups it turned on and each group it leaves off once:
 
 ```text
-[live] on (EA build): groups car systems, ers, progress, classification, timing, pit, penalties, flags, controllers, spectator, track, bus events
-[live] tyres off: TyreSystem per-vehicle vector and the visual record have no KB row (SWOFTY_LIVE_FORCE=1 reads it unverified)
-[live] badges off: EntrantsSystem team table chain has no KB row (SWOFTY_LIVE_FORCE=1 reads it unverified)
+[live] on (EA build): groups car systems, ers, world, aero, progress, classification, pit, penalties, flags, controllers, spectator, mode, badges, track, track name, spectator gap, bus events
+[live] tyres off: VehicleTyreComponent, TyreSystem, TyreSlot, VisualCompound and PhysicalCompound fields (SWOFTY_LIVE_FORCE=1 reads it unverified)
 [live] timing off on the EA build: k_Live_RelativeGapHelperKey does not resolve in this build's bindings
 [live] pit lane off on the EA build: its layout is not proven there (SWOFTY_LIVE_FORCE=1 reads it anyway)
 [live] off: build 1234567890 has no proven live layouts (Steam 1789118616, EA 1789128892)
@@ -255,22 +254,22 @@ assert(swofty::live::order().ahead(0)->vehicle == 1);
 
 The core reads each group (car systems, ERS, progress, classification, timing, pit, pit lane, penalties, tyres, flags, controllers, spectator, game mode, track and the game's message bus) only when every site it needs resolves on the running build and its KB rows are verified. The two tests are the same one: the generated bindings export a site only for a row that is L2 or better with an independent `agree`, and the generated game headers declare a struct field under the same rule, so a group turns on by itself when its rows land and the headers are regenerated. The offsets the reader uses are tied to the generated structs with `static_assert`s, so a header that declares a field somewhere else fails the build.
 
-A group also needs its layout proven for the running build. The Steam build is the one the knowledge base describes. The EA App build (PE timestamp 1789128892) runs the groups in the table below, because each struct field they read was compared against the Steam code that reads it, and every site they need resolves in the EA bindings set. A build in neither column, such as a future patch, runs no group at all.
+A group also needs its layout proven for the running build. The Steam build is the one the knowledge base describes. The EA App build (PE timestamp 1789128892) runs every group, because each struct field the groups read was compared against the Steam code that reads it, and every site they need resolves in the EA bindings set. One displacement differs and the core applies it for you: the game manager's progress system is at `+0x2a0` on EA and at `+0x2d0` on Steam, so the progress group (and everything the core derives from lap distance) reads that field at the right place on each build. A build in neither column, such as a future patch, runs no group at all.
 
 | group | Steam | EA App |
 |---|---|---|
-| car systems, ERS, world position | yes | yes |
-| progress | yes | yes, with the game manager's progress system at `+0x2a0` instead of `+0x2d0` |
-| classification, timing, pit, penalties, flags, controllers, spectator, track | yes | yes |
+| car systems, ERS, world position, DRS bit | yes | yes |
+| progress | yes | yes, with the progress system at `+0x2a0` |
+| classification, timing, pit, pit lane, penalties, flags, controllers | yes | yes |
+| spectator, spectator gap, track, track name | yes | yes |
+| tyres, game mode, team badges | yes | yes |
 | bus events (collision, retirement) | yes | yes |
-| DRS bit | with `SWOFTY_LIVE_FORCE=1` | with `SWOFTY_LIVE_FORCE=1`, layout proven |
-| tyres, game mode, team badges, track name, spectator gap, pit lane | with `SWOFTY_LIVE_FORCE=1` | with `SWOFTY_LIVE_FORCE=1`; the game manager moved its fields above `+0x240` by `-0x30` on EA, so the mode and badge chains need their own proof there |
 
-A group that is yes still waits for its rows, as above. A group with any site that does not resolve stays off even with `SWOFTY_LIVE_FORCE=1`, which reads the groups whose sites resolve without waiting for verification, and on EA also without waiting for the layout proof; use it on a test machine to produce the evidence that verifies them, together with `SWOFTY_TELEMETRY_VERIFY=1` (see [Telemetry](./telemetry#memory-source)).
+A group that is yes still waits for its rows, as above, and the EA proof is static: it compares code, so run an EA race with `SWOFTY_TELEMETRY_VERIFY=1` once to compare the values with the game's UDP output. A group with any site that does not resolve stays off even with `SWOFTY_LIVE_FORCE=1`, which reads the groups whose sites resolve without waiting for verification, and on EA also without waiting for the layout proof; use it on a test machine to produce the evidence that verifies them, together with `SWOFTY_TELEMETRY_VERIFY=1` (see [Telemetry](./telemetry#memory-source)).
 
 The player car comes from the controller system (the car whose active controller is the human one); `CarLive.is_ai` selects the physics rate and reads 1 for every car in a grid snapshot, so it is not used to find the player. With the controllers group off the player is unknown (`player` is -1) until it is.
 
-The groups whose chains the knowledge base has no row for yet read only under `SWOFTY_LIVE_FORCE=1`: tyres, game mode, team badges, the track name, the spectator gap mode, the pit-lane flag block behind `pit_status` and `pit_stops`, and the DRS bit.
+A group whose chain the knowledge base has no verified row for reads only under `SWOFTY_LIVE_FORCE=1`.
 
 The core also subscribes to the game's `r_car_to_car_col` and `vehicle_status_changed` bus messages (the bus group) to fire `telemetry.collision` and `telemetry.retirement` without UDP; see [Telemetry](./telemetry#events).
 
