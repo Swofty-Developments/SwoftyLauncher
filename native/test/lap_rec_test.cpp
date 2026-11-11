@@ -662,8 +662,80 @@ static void stalls()
     }
 }
 
+// The flow tick reads the car only when the recorder would keep a sample: on the out-lap every call is due (the
+// caller rate-limits those itself), while timing a call is due once per sample period, whatever the tick rate.
+static void sample_gate()
+{
+    Drive d;
+    expect(d.rec.sample_due(0.0), "an idle recorder is always due");
+    d.rec.begin_session();
+    d.run(2);
+    expect(d.rec.sample_due(d.t), "the out-lap is always due");
+    d.rec.newlap(d.t, true);
+    expect(d.rec.sample_due(d.t), "the first sample of a lap is due at once");
+    d.tick();
+    expect(!d.rec.sample_due(d.t - 1.0 / 60 + 0.004), "4 ms after a sample the next one is not due");
+    expect(!d.rec.sample_due(d.t - 0.001), "1 ms before the period ends it is still not due");
+    expect(d.rec.sample_due(d.t), "a period after the last sample it is due");
+    size_t before = d.rec.samples();
+    int reads = 0;
+    double period = d.rec.config().sample_period_s;
+    for (int i = 0; i < 420 * 10; i++) {
+        double now = d.t + i / 420.0;
+        if (!d.rec.sample_due(now))
+            continue;
+        reads++;
+        lr::Frame f;
+        f.now_s = now;
+        f.pos[0] = d.x + d.speed * (i / 420.0);
+        f.speed_ms = d.speed;
+        uint8_t smp[4] = {1, 2, 3, 4};
+        d.rec.step(f, smp, 4);
+    }
+    size_t kept = d.rec.samples() - before;
+    expect(reads == int(kept), "every read the gate lets through is kept as a sample");
+    expect(kept >= 599 && kept <= 601, "ten seconds of a 420 Hz tick through the gate are 600 samples");
+    expect(reads < 700, "the gate reads at the sample rate, not the tick rate");
+    lr::Config slow;
+    slow.sample_period_s = 0;
+    Drive e(slow);
+    e.rec.begin_session();
+    e.rec.newlap(0, true);
+    e.tick();
+    expect(e.rec.sample_due(e.t - 0.01), "with no sample period every call is due");
+    (void)period;
+}
+
+// Laps go to the writer thread in order and their completions fire in that order, whichever finishes first.
+static void outbox()
+{
+    lr::Outbox box;
+    expect(box.ready().empty() && box.in_flight() == 0, "an empty outbox has nothing ready");
+    box.expect(1);
+    box.expect(2);
+    box.expect(3);
+    expect(box.in_flight() == 3 && box.completed() == 0, "three laps are in flight");
+    box.complete({2, "b", 2000, 1, true});
+    expect(box.ready().empty() && box.completed() == 1, "lap 2 waits for lap 1");
+    box.complete({1, "a", 1000, 0, true});
+    auto r = box.ready();
+    expect(r.size() == 2 && r[0].index == 1 && r[1].index == 2 && r[0].path == "a" && r[1].time_ms == 2000 && r[1].valid == 1,
+           "once lap 1 is done both fire, lap 1 first");
+    expect(box.in_flight() == 1 && box.completed() == 0, "lap 3 is still in flight");
+    box.complete({3, "c", 3000, -1, false});
+    r = box.ready();
+    expect(r.size() == 1 && r[0].index == 3 && !r[0].ok, "a failed write still releases its place in the order");
+    expect(box.ready().empty() && box.in_flight() == 0, "the outbox is empty again");
+    box.expect(4);
+    box.complete({4, "d", 4000, 1, true});
+    box.clear();
+    expect(box.ready().empty() && box.in_flight() == 0 && box.completed() == 0, "a session end clears it");
+}
+
 int main()
 {
+    sample_gate();
+    outbox();
     stalls();
     handler_free_extras();
     interruptions();

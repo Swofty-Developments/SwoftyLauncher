@@ -138,6 +138,7 @@ public:
     explicit Recorder(Config c = {}) : cfg_(c) {}
 
     State state() const { return state_; }
+    const Config &config() const { return cfg_; }
     size_t samples() const { return count_; }
     double path_m() const { return path_; }
     double started_s() const { return started_; }
@@ -163,6 +164,14 @@ public:
     double elapsed(double now_s) const { return now_s - shift_ - started_; }
     double shift_s() const { return shift_; }
     uint32_t stalls() const { return stalls_; }
+
+    // A step at now_s would keep its sample: the caller reads the car only then, not on every game tick.
+    bool sample_due(double now_s) const
+    {
+        if (state_ != State::timing || cfg_.sample_period_s <= 0 || count_ == 0)
+            return true;
+        return now_s - shift_ >= next_sample_s_;
+    }
 
     // The car moved without driving there, or stopped dead in a tick: the lap in progress is thrown away and the
     // next line crossing starts a fresh one. A gap in which the car did not move at all while it was driving is a
@@ -397,6 +406,54 @@ inline Plan plan_of(const Avail &a)
     }
     return p;
 }
+
+// A lap handed to the writer thread and what came back. The flow thread expects laps in the order it hands them
+// over and delivers the completions (the bridge's lap_finished, the laps.recorded event) in that same order, so
+// a lap never reports before an earlier one, whichever finishes writing first.
+struct Finished {
+    uint32_t index = 0;
+    std::string path;
+    int64_t time_ms = 0;
+    int valid = -1;
+    bool ok = false;
+};
+
+class Outbox {
+public:
+    void expect(uint32_t index) { order_.push_back(index); }
+
+    void complete(Finished f) { done_.push_back(std::move(f)); }
+
+    // The completions whose every earlier lap has completed too, oldest first.
+    std::vector<Finished> ready()
+    {
+        std::vector<Finished> out;
+        while (!order_.empty()) {
+            size_t i = 0;
+            while (i < done_.size() && done_[i].index != order_.front())
+                i++;
+            if (i == done_.size())
+                break;
+            out.push_back(std::move(done_[i]));
+            done_.erase(done_.begin() + ptrdiff_t(i));
+            order_.erase(order_.begin());
+        }
+        return out;
+    }
+
+    size_t in_flight() const { return order_.size(); }
+    size_t completed() const { return done_.size(); }
+
+    void clear()
+    {
+        order_.clear();
+        done_.clear();
+    }
+
+private:
+    std::vector<uint32_t> order_;
+    std::vector<Finished> done_;
+};
 
 struct Gate {
     bool on = false;

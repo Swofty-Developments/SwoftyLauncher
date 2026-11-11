@@ -1,6 +1,7 @@
 #include "runtime.hpp"
 
 #include <safetyhook.hpp>
+#include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
 #include <atomic>
@@ -121,15 +122,15 @@ template <class T> T *ptr(uintptr_t a)
 
 const char *c_name(const void *p)
 {
-    return p && runtime::readable(p, 1) ? static_cast<const char *>(p) : nullptr;
+    return p && swofty::mem::readable(p, 1) ? static_cast<const char *>(p) : nullptr;
 }
 
 const char *holder_name(const uint8_t *obj, uintptr_t holder_off)
 {
-    if (!obj || !runtime::readable(obj + holder_off, 8))
+    if (!obj || !swofty::mem::readable(obj + holder_off, 8))
         return nullptr;
     auto *holder = at<const uint8_t *>(obj, holder_off);
-    return holder && runtime::readable(holder, 0x18) ? c_name(at<const char *>(holder, 0x10)) : nullptr;
+    return holder && swofty::mem::readable(holder, 0x18) ? c_name(at<const char *>(holder, 0x10)) : nullptr;
 }
 
 void despawn_main_scene(const char *when);
@@ -146,14 +147,14 @@ struct State {
 uint8_t *mode_named(void *modes, const char *want, std::vector<std::string> &names)
 {
     auto *ctx = static_cast<uint8_t *>(modes);
-    if (!runtime::readable(ctx, MODES_END + 8))
+    if (!swofty::mem::readable(ctx, MODES_END + 8))
         return nullptr;
     uint8_t *found = nullptr;
     for (auto **p = at<uint8_t **>(ctx, MODES_BEGIN), **end = at<uint8_t **>(ctx, MODES_END); p && p < end; ++p) {
-        if (!runtime::readable(p, 8) || !*p || !runtime::readable(*p, MODES_ENTRY_MODE + 8))
+        if (!swofty::mem::readable(p, 8) || !*p || !swofty::mem::readable(*p, MODES_ENTRY_MODE + 8))
             continue;
         auto *mode = at<uint8_t *>(*p, MODES_ENTRY_MODE);
-        if (!mode || !runtime::readable(mode, MODE_NAME + 8))
+        if (!mode || !swofty::mem::readable(mode, MODE_NAME + 8))
             continue;
         const char *name = c_name(at<const char *>(mode, MODE_NAME));
         if (!name)
@@ -202,14 +203,14 @@ bool force_track(uint8_t *rec, uint8_t *stale)
 uint8_t *track_record(uint8_t *e, const std::string &want, std::vector<std::string> &names)
 {
     auto *tracks = at<uint8_t *>(e, ENTITY_TRACKS);
-    if (!tracks || !runtime::readable(tracks, 0x38))
+    if (!tracks || !swofty::mem::readable(tracks, 0x38))
         return nullptr;
     uint8_t *found = nullptr;
     for (auto *q = at<uint8_t *>(tracks, 0x28), *end = at<uint8_t *>(tracks, 0x30); q && q < end; q += 16) {
-        if (!runtime::readable(q, 16))
+        if (!swofty::mem::readable(q, 16))
             break;
         auto *rec = at<uint8_t *>(q, 8);
-        const char *name = rec && runtime::readable(rec, TRACK_NAME + 8) ? c_name(at<const char *>(rec, TRACK_NAME)) : nullptr;
+        const char *name = rec && swofty::mem::readable(rec, TRACK_NAME + 8) ? c_name(at<const char *>(rec, TRACK_NAME)) : nullptr;
         if (!name)
             continue;
         names.push_back(name);
@@ -224,10 +225,10 @@ std::vector<uint8_t *> setup_modes(uint8_t *e)
     std::vector<uint8_t *> out;
     auto **evt = at<void **>(e, 0);
     auto *vec = reinterpret_cast<uint8_t *(*)(void *)>(evt[0x1d0 / 8])(e);
-    if (!vec || !runtime::readable(vec, 0x18))
+    if (!vec || !swofty::mem::readable(vec, 0x18))
         return out;
     for (auto **p = at<uint8_t **>(vec, 8), **end = at<uint8_t **>(vec, 0x10); p && p != end && out.size() < GSM_SLOTS; ++p)
-        if (*p && runtime::readable(*p, GSM_HOLDER + 8))
+        if (*p && swofty::mem::readable(*p, GSM_HOLDER + 8))
             out.push_back(*p);
     return out;
 }
@@ -239,13 +240,13 @@ struct ListAt {
 ListAt find_list(uint8_t *gsm, const std::string &want, std::vector<std::string> &names)
 {
     ListAt hit;
-    if (!runtime::readable(gsm, GSM_ESM_COUNT + 8))
+    if (!swofty::mem::readable(gsm, GSM_ESM_COUNT + 8))
         return hit;
     int64_t n = at<int64_t>(gsm, GSM_ESM_COUNT);
     auto **esms = reinterpret_cast<uint8_t **>(gsm + GSM_ESMS);
     for (int64_t i = 0; i < n && i < int64_t(GSM_ESM_SLOTS); ++i) {
         uint8_t *esm = esms[i];
-        if (!esm || !runtime::readable(esm, ESM_LIST_COUNT + 8))
+        if (!esm || !swofty::mem::readable(esm, ESM_LIST_COUNT + 8))
             continue;
         int64_t lists = at<int64_t>(esm, ESM_LIST_COUNT);
         for (int64_t j = 0; j < lists && j < int64_t(ESM_SLOTS); ++j) {
@@ -266,19 +267,19 @@ std::string team_name(uint8_t *e, uint32_t ref)
     uint8_t kind = tt::ref_kind(ref);
     uint16_t index = tt::ref_index(ref);
     auto *teams = at<uint8_t *>(e, ENTITY_TEAMS);
-    if (kind >= 3 || !teams || !runtime::readable(teams, 0x60))
+    if (kind >= 3 || !teams || !swofty::mem::readable(teams, 0x60))
         return {};
     auto *sys = at<uint8_t *>(teams, 0x58);
-    if (!sys || !runtime::readable(sys + 0x2c8 + kind * 0x10, 8))
+    if (!sys || !swofty::mem::readable(sys + 0x2c8 + kind * 0x10, 8))
         return {};
     auto *table = at<uint8_t *>(sys, 0x2c8 + kind * 0x10);
-    if (!table || !runtime::readable(table, 0x18))
+    if (!table || !swofty::mem::readable(table, 0x18))
         return {};
     auto *begin = at<uint8_t *>(table, 8), *end = at<uint8_t *>(table, 0x10);
-    if (!begin || end < begin || size_t(end - begin) / 16 <= index || !runtime::readable(begin + index * 16, 16))
+    if (!begin || end < begin || size_t(end - begin) / 16 <= index || !swofty::mem::readable(begin + index * 16, 16))
         return {};
     auto *entry = at<uint8_t *>(begin + index * 16, 8);
-    const char *name = entry && runtime::readable(entry, 0x20) ? c_name(at<const char *>(entry, 0x18)) : nullptr;
+    const char *name = entry && swofty::mem::readable(entry, 0x20) ? c_name(at<const char *>(entry, 0x18)) : nullptr;
     return name ? std::string(name) : std::string();
 }
 
@@ -304,19 +305,19 @@ std::string team_label(uint16_t stat)
 int player_index()
 {
     uintptr_t slot = swofty::api->resolve("g_Game_Manager"), mgr = 0;
-    if (!slot || !runtime::readable(reinterpret_cast<void *>(slot), 8) || !(mgr = *reinterpret_cast<uintptr_t *>(slot)))
+    if (!slot || !swofty::mem::readable(reinterpret_cast<void *>(slot), 8) || !(mgr = *reinterpret_cast<uintptr_t *>(slot)))
         return 0;
     auto *m = reinterpret_cast<uint8_t *>(mgr);
-    auto *users = runtime::readable(m + 0x148, 8) ? at<uint8_t *>(m, 0x140) : nullptr;
-    if (!users || !runtime::readable(users, 0x1b0))
+    auto *users = swofty::mem::readable(m + 0x148, 8) ? at<uint8_t *>(m, 0x140) : nullptr;
+    if (!users || !swofty::mem::readable(users, 0x1b0))
         return 0;
     auto *user = at<uint8_t *>(users, 0x1a8);
     if (!user)
         user = at<uint8_t *>(users, 0x198);
-    if (!user || !runtime::readable(user, 0x28))
+    if (!user || !swofty::mem::readable(user, 0x28))
         return 0;
     auto *owner = at<uint8_t *>(user, 0x20);
-    if (!owner || !runtime::readable(owner, 0x1a8) || at<uint8_t *>(owner, 0x198) == user)
+    if (!owner || !swofty::mem::readable(owner, 0x1a8) || at<uint8_t *>(owner, 0x198) == user)
         return 0;
     return at<uint8_t *>(owner, 0x1a0) == user ? 1 : 0;
 }
@@ -329,14 +330,14 @@ int player_index()
 // team curves on a player with no vehicle (Ai_Build_TeamPerformanceCurves+0xa3).
 uint8_t *tt_component(uint8_t *mode)
 {
-    if (!mode || !runtime::readable(mode, MODE_COMPONENTS + 0x10))
+    if (!mode || !swofty::mem::readable(mode, MODE_COMPONENTS + 0x10))
         return nullptr;
     if (!game().ok)
         return nullptr;
     auto *vt = ptr<void>(game().tt_component_vt);
     for (auto **p = at<uint8_t **>(mode, MODE_COMPONENTS), **end = at<uint8_t **>(mode, MODE_COMPONENTS + 8);
-         p && p < end && runtime::readable(p, 8); ++p)
-        if (*p && runtime::readable(*p, TT_HOT_LOAD + 8) && at<void *>(*p, 0) == vt)
+         p && p < end && swofty::mem::readable(p, 8); ++p)
+        if (*p && swofty::mem::readable(*p, TT_HOT_LOAD + 8) && at<void *>(*p, 0) == vt)
             return *p;
     return nullptr;
 }
@@ -344,7 +345,7 @@ uint8_t *tt_component(uint8_t *mode)
 Setup set_team(uint8_t *e, uint8_t *list, const std::string &want, std::string &why)
 {
     auto *begin = at<uint8_t *>(list, LIST_BEGIN), *end = at<uint8_t *>(list, LIST_END);
-    if (!begin || end <= begin || size_t(end - begin) % RECORD || !runtime::readable(begin, size_t(end - begin))) {
+    if (!begin || end <= begin || size_t(end - begin) % RECORD || !swofty::mem::readable(begin, size_t(end - begin))) {
         why = "the selected entrant list holds no entrant records";
         return Setup::failed;
     }
@@ -379,7 +380,7 @@ Setup set_team(uint8_t *e, uint8_t *list, const std::string &want, std::string &
         return Setup::failed;
     }
     auto *hot = at<uint8_t *>(comp, TT_HOT_LOAD);
-    if (!hot || !runtime::readable(hot, HOT_TEAM_SET + 8)) {
+    if (!hot || !swofty::mem::readable(hot, HOT_TEAM_SET + 8)) {
         why = "the Time Trial component has no hot load holder";
         return Setup::failed;
     }
@@ -465,7 +466,7 @@ Setup place(uint8_t *e, const json::Value &request, std::string &why)
         const char *file = c_name(at<const char *>(rec, TRACK_NAME));
         bool written = ui_vm_set_path(TRACK_NODE, 0, file);
         uint8_t *now = ptr<CurrentTrack_t>(game().current_track)(e);
-        const char *reads = now && runtime::readable(now, TRACK_NAME + 8) ? c_name(at<const char *>(now, TRACK_NAME)) : nullptr;
+        const char *reads = now && swofty::mem::readable(now, TRACK_NAME + 8) ? c_name(at<const char *>(now, TRACK_NAME)) : nullptr;
         swofty::log("[direct] Time Trial: track %s (%p): the VM node %s, the getter reads %s", file, rec,
                     written ? "written" : "NOT written", reads ? reads : "nothing");
         if (now != rec && !force_track(rec, now)) {
@@ -529,8 +530,8 @@ Setup setup(const json::Value &request, std::string &why)
     if (st.step == Step::mode) {
         std::vector<std::string> names;
         uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
-        uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
-        if (!e || !runtime::readable(e, ENTITY_TEAMS + 8)) {
+        uint8_t *e = mode && swofty::mem::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+        if (!e || !swofty::mem::readable(e, ENTITY_TEAMS + 8)) {
             if (GetTickCount64() - st.started < MODE_WAIT_MS)
                 return Setup::pending;
             why = "the game has no game mode 'time_trial' (modes: " + tt::joined(names, 60) + ")";
@@ -547,7 +548,7 @@ Setup setup(const json::Value &request, std::string &why)
     }
     if (st.step == Step::settle) {
         uint8_t *tracks = at<uint8_t *>(st.entity, ENTITY_TRACKS);
-        bool ready = tracks && runtime::readable(tracks, 0x38) && at<uint8_t *>(tracks, 0x28) != at<uint8_t *>(tracks, 0x30);
+        bool ready = tracks && swofty::mem::readable(tracks, 0x38) && at<uint8_t *>(tracks, 0x28) != at<uint8_t *>(tracks, 0x30);
         if (!ready || GetTickCount64() - st.mode_set < SETTLE_MS) {
             if (GetTickCount64() - st.mode_set < MODE_WAIT_MS)
                 return Setup::pending;
@@ -587,8 +588,8 @@ void release_fade()
     if (!game().ok)
         return;
     auto *root = *ptr<uint8_t *>(game().root);
-    auto *owner = root && runtime::readable(root, ROOT_FADE + 8) ? at<uint8_t *>(root, ROOT_FADE) : nullptr;
-    if (!owner || !runtime::readable(owner + FADE_MASK, 0x18)) {
+    auto *owner = root && swofty::mem::readable(root, ROOT_FADE + 8) ? at<uint8_t *>(root, ROOT_FADE) : nullptr;
+    if (!owner || !swofty::mem::readable(owner + FADE_MASK, 0x18)) {
         swofty::log("[direct] Time Trial: no fade owner to fade the garage in");
         return;
     }
@@ -656,11 +657,11 @@ std::string current_track()
         return {};
     std::vector<std::string> names;
     uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
-    uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
-    if (!e || !runtime::readable(e, ENTITY_TEAMS + 8))
+    uint8_t *e = mode && swofty::mem::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    if (!e || !swofty::mem::readable(e, ENTITY_TEAMS + 8))
         return {};
     uint8_t *now = ptr<CurrentTrack_t>(game().current_track)(e);
-    const char *name = now && runtime::readable(now, TRACK_NAME + 8) ? c_name(at<const char *>(now, TRACK_NAME)) : nullptr;
+    const char *name = now && swofty::mem::readable(now, TRACK_NAME + 8) ? c_name(at<const char *>(now, TRACK_NAME)) : nullptr;
     return name ? name : "";
 }
 
@@ -673,16 +674,16 @@ int track_stat()
         return -1;
     std::vector<std::string> names;
     uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
-    uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
-    if (!e || !runtime::readable(e, ENTITY_TEAMS + 8))
+    uint8_t *e = mode && swofty::mem::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    if (!e || !swofty::mem::readable(e, ENTITY_TEAMS + 8))
         return -1;
     uint8_t *now = ptr<CurrentTrack_t>(game().current_track)(e);
-    if (!now || !runtime::readable(now, TRACK_NAME + 8)) {
+    if (!now || !swofty::mem::readable(now, TRACK_NAME + 8)) {
         std::string picked = runtime::track_select_time_trial();
         names.clear();
         now = picked.empty() ? nullptr : track_record(e, picked, names);
     }
-    return now && runtime::readable(now, 2) ? int(now[1]) : -1;
+    return now && swofty::mem::readable(now, 2) ? int(now[1]) : -1;
 }
 
 std::string session_track()
@@ -702,7 +703,7 @@ void mode_objects(void *&mode_out, void *&entity_out)
     std::vector<std::string> names;
     uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
     mode_out = mode;
-    entity_out = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    entity_out = mode && swofty::mem::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
 }
 
 std::string player_list()
@@ -714,8 +715,8 @@ std::string player_list()
         return {};
     std::vector<std::string> names;
     uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
-    uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
-    if (!e || !runtime::readable(e, ENTITY_TEAMS + 8))
+    uint8_t *e = mode && swofty::mem::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    if (!e || !swofty::mem::readable(e, ENTITY_TEAMS + 8))
         return {};
     auto *list = at<uint8_t *>(e, ENTITY_LIST);
     const char *name = list ? holder_name(list, LIST_NAME) : nullptr;
@@ -731,12 +732,12 @@ std::string player_team()
         return {};
     std::vector<std::string> names;
     uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
-    uint8_t *e = mode && runtime::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    uint8_t *e = mode && swofty::mem::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
     int guard = *ptr<int>(game().player_guard);
-    if (!e || !runtime::readable(e, ENTITY_TEAMS + 8) || guard == 0 || guard == -1)
+    if (!e || !swofty::mem::readable(e, ENTITY_TEAMS + 8) || guard == 0 || guard == -1)
         return {};
     auto *sel = ptr<uint8_t>(game().player_entrants) + size_t(player_index()) * PLAYER_STRIDE;
-    if (!runtime::readable(sel, PLAYER_TEAM_SET + 1) || !sel[PLAYER_TEAM_SET])
+    if (!swofty::mem::readable(sel, PLAYER_TEAM_SET + 1) || !sel[PLAYER_TEAM_SET])
         return {};
     return team_name(e, at<uint32_t>(sel, PLAYER_TEAM));
 }
