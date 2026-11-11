@@ -86,7 +86,19 @@ Sprites are PNGs whose sizes are multiples of 4, drawn at 3 pixels per HUD unit.
         "team_colour": "#27F4D2"
       },
       "variants": {
-        "f2": { "dial": "f2", "remove": ["ers"] }
+        "f2": { "dial": "f2", "remove": ["ers"] },
+        "f1_25": {
+          "dial": "f1_25",
+          "add": [
+            { "kind": "group", "id": "drs", "after": "base", "children": [
+                { "kind": "sprite", "id": "drs_idle", "sprite": "lamp", "at": [48, -26] },
+                { "kind": "sprite", "id": "drs_live", "sprite": "lamp", "at": [48, -26] } ] }
+          ],
+          "decisions": [
+            { "id": "drs", "type": "mvcd", "game": "drs_pit_state", "initial": "invalid",
+              "states": { "invalid": ["drs_idle"], "drs_live": ["drs_live"] } }
+          ]
+        }
       }
     }
   }
@@ -96,6 +108,7 @@ Sprites are PNGs whose sizes are multiples of 4, drawn at 3 pixels per HUD unit.
 - `"game": "speed_str"`, `"revs"` and `"ers_stored"` are values of the dial's own view model. The build checks each against the tags the stock template binds.
 - `"view_model": "view_model_data.hud_dial_gear"` is a leaf your plugin writes. A text binds a text leaf, `visible` binds a bool leaf. The build refuses a leaf bound with another type than the one it declares.
 - `"stock": "park"` moves the stock frame, fuel and pit parts off screen. The F2 variant removes the ERS bar, because an F2 car has no ERS.
+- The 2025 variant adds a DRS pill right behind the base in the draw order (`after`) and a decision of its own on `drs_pit_state`, a value the 2026 dial has no stock decision for. `initial` keeps the grey pill on screen until the value first fires. A variant may also `replace` an element of the base under the same id, and set `root_y` when its root must land on one exact spot.
 - `editor.preview` is what the HUD editor shows, since the editor runs no template.
 
 The full record format, element kinds, decisions and the rules the composer keeps are in [HUD elements](/reference/ops/hud).

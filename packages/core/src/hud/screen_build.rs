@@ -399,6 +399,10 @@ pub fn control_group(
         inner.push(node::hidden(&format!("h_{id}"), &[&format!("{pfx}_{id}")]));
     }
     inner.extend(template::bound_nodes(plan, tex.as_ref())?);
+    let inner_base = format!("{}.{pfx}_ctl.host_n", facts.parent_ui);
+    let triggers = super::motion::trigger_nodes(plan, &inner_base);
+    let trigger_names: Vec<String> = triggers.iter().map(|n| n.name().to_owned()).collect();
+    inner.extend(triggers);
     kids.push(node::group_node(
         "host_n",
         vec![("visible", node::bool_prop(false, Some(&sw.db), sw.negate))],
@@ -443,13 +447,21 @@ pub fn control_group(
         Ok(())
     }
     let mut grp = node::group_node(&format!("{pfx}_ctl"), vec![], &[], kids);
+    if !trigger_names.is_empty() {
+        node::decision_commands(&mut grp, &inner_base, &trigger_names)?;
+    }
     for c in grp.slot(node::CHILDREN)? {
         walk(c, &mut names)?;
     }
-    if !decision_names.is_empty() {
-        node::decision_commands(&mut grp, &base, &decision_names)?;
+    let mut untrigger_sigs = Vec::new();
+    for n in &decision_names {
+        let path = format!("{base}.{n}");
+        trigger_sigs.push(node::sig(&path, "register", "trigger"));
+        trigger_sigs.push(node::sig(&path, "query", "trigger"));
+        untrigger_sigs.push(node::sig(&path, "unregister", "untrigger"));
     }
-    template::add_trigger_signals(&mut grp, trigger_sigs)?;
+    template::add_command_signals(&mut grp, "trigger", trigger_sigs)?;
+    template::add_command_signals(&mut grp, "untrigger", untrigger_sigs)?;
     for d in &plan.decisions {
         if let Some(on) = &d.on {
             let r = template::resolve(
@@ -596,6 +608,11 @@ pub fn compose_screens(
     }
     out.scene
         .push((screens::CAP.to_owned(), "UILayout", vec![cap.finish(None)?]));
+    let planned: Vec<&Plan> = plans.iter().collect();
+    if planned.iter().any(|p| !p.clips.is_empty()) {
+        let clip_template = race_read(super::dials::CLIP_TEMPLATE)?;
+        super::clip_resources(stock, &CAP_FACTS, &clip_template, &planned, &mut out.scene)?;
+    }
 
     let mut by_screen: BTreeMap<String, (ScreenFacts, Vec<usize>)> = BTreeMap::new();
     for (ri, r) in recs.iter().enumerate() {

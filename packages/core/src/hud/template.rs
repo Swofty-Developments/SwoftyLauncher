@@ -534,23 +534,29 @@ pub fn clock_nodes(stock_root: &Node, plan: &Plan, base: &str) -> Result<(Vec<No
 
 /// Adds `sigs` to the group's `trigger` command, making the command when there is none yet.
 pub fn add_trigger_signals(grp: &mut Node, sigs: Vec<Node>) -> Result<()> {
+    add_command_signals(grp, "trigger", sigs)
+}
+
+/// Adds `sigs` to the group's command `name`, making the command when there is none yet, so one
+/// group keeps one `trigger` and one `untrigger` however many parts feed them.
+pub fn add_command_signals(grp: &mut Node, name: &str, sigs: Vec<Node>) -> Result<()> {
     if sigs.is_empty() {
         return Ok(());
     }
     let cmds = grp.slot_mut(node::COMMANDS)?;
     for c in cmds.iter_mut() {
-        let is_trigger = c
+        let same = c
             .as_obj()
             .and_then(|o| o.get("commandName"))
             .and_then(Node::as_val)
             .and_then(Val::as_str)
-            == Some("trigger");
-        if is_trigger {
+            == Some(name);
+        if same {
             c.o_mut()?.at_mut("signals")?.a_mut()?.extend(sigs);
             return Ok(());
         }
     }
-    cmds.push(node::command("trigger", sigs));
+    cmds.push(node::command(name, sigs));
     Ok(())
 }
 
@@ -616,6 +622,7 @@ pub fn bound_nodes(plan: &Plan, tex: Option<&TexFacts>) -> Result<Vec<Node>> {
     for f in &plan.fractions {
         kids.push(node::fraction_node(&f.name, &f.element, &f.db));
     }
+    kids.extend(super::motion::player_nodes(plan));
     for s in &plan.shows {
         kids.push(node::group_node(
             &s.name,
@@ -652,6 +659,10 @@ pub fn group(plan: &Plan, stock_root: &Node, parent: &str) -> Result<Node> {
     let mut decision_names = Vec::new();
     for d in &plan.decisions {
         let n = decision_node(d, plan, stock_root, parent, &base)?;
+        decision_names.push(n.name().to_owned());
+        kids.push(n);
+    }
+    for n in super::motion::trigger_nodes(plan, &base) {
         decision_names.push(n.name().to_owned());
         kids.push(n);
     }
