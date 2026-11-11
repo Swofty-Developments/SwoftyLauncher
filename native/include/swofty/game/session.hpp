@@ -81,6 +81,12 @@ static_assert(offsetof(GameWeatherSystem, forced_seed) == 0x1f14);
 static_assert(offsetof(GameWeatherSystem, weekend) == 0x1f18);
 static_assert(offsetof(GameWeatherSystem, dataset_dynamic) == 0x2f3a);
 
+struct RedFlagSystem {
+    uint8_t _pad_0x0[0x40];
+    uint8_t state; // L2 experimental
+};
+static_assert(offsetof(RedFlagSystem, state) == 0x40);
+
 struct SpectatorDirector {
     uint8_t _pad_0x0[0xd0];
     uint8_t ui_active; // L2 experimental

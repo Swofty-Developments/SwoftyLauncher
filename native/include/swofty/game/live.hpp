@@ -277,6 +277,12 @@ static_assert(offsetof(RelativeGapHelper, entries_begin) == 0x30);
 static_assert(offsetof(RelativeGapHelper, entries_end) == 0x38);
 static_assert(offsetof(RelativeGapHelper, pit_lane) == 0xd0);
 
+struct SafetyCarLogicSystem {
+    uint8_t _pad_0x0[0x108];
+    uint8_t deployment; // L2 experimental
+};
+static_assert(offsetof(SafetyCarLogicSystem, deployment) == 0x108);
+
 struct SessionEntrantView {
     uint8_t _pad_0x0[0x58];
     uint32_t team_stat_id; // L2 experimental
@@ -396,6 +402,25 @@ static_assert(offsetof(VehicleProgressEntry, progress_lap_b) == 0x50);
 static_assert(offsetof(VehicleProgressEntry, progress_lap_delta) == 0x58);
 static_assert(offsetof(VehicleProgressEntry, total_a) == 0x98);
 static_assert(offsetof(VehicleProgressEntry, total_b) == 0xa0);
+
+struct VehicleTyreComponent {
+    uint8_t _pad_0x0[0x9bc0];
+    void *compound_class; // L2 experimental
+    uint8_t _pad_0x9bc8[0x8];
+    TyreSlot slots[5]; // L2 experimental
+    uint8_t slot_count; // L2 experimental
+    uint8_t _pad_0x9c49[0x7];
+    void *built_for; // L2 experimental
+    uint8_t built; // L2 experimental
+    uint8_t _pad_0x9c59[0x3f];
+    uint8_t *set_end; // L2 experimental
+};
+static_assert(offsetof(VehicleTyreComponent, compound_class) == 0x9bc0);
+static_assert(offsetof(VehicleTyreComponent, slots) == 0x9bd0);
+static_assert(offsetof(VehicleTyreComponent, slot_count) == 0x9c48);
+static_assert(offsetof(VehicleTyreComponent, built_for) == 0x9c50);
+static_assert(offsetof(VehicleTyreComponent, built) == 0x9c58);
+static_assert(offsetof(VehicleTyreComponent, set_end) == 0x9c98);
 
 struct VisualCompound {
     uint8_t stat_id; // L2 experimental
