@@ -7,7 +7,51 @@ description: A deterministic timing tower model over plain structs, and the stan
 
 `swofty/timing.hpp` turns the classification order into tower rows and publishes them as the standard tower leaves. The model is pure: the same inputs give the same rows, with no game access, so it runs in host tests.
 
-> **Depends on live state.** `timing::Car` and `timing::Session` are the tower's own input structs. They are filled from `swofty::live` (the memory-backed live state) by an adapter that ships with that header; until it exists, fill them from your own reader or from literals in tests. The field names follow the live structs (`position`, `lap`, `gap_ahead_ms`, `gap_leader_ms`, `time_penalty_s`, `drive_through`, `stop_go`, `result_status` as `status`).
+The live state feeds the tower directly. `timing::update_from_live` reads the live session, the classification and each car, fills `timing::Car` and `timing::Session`, and updates the tower in one call:
+
+```cpp
+swofty::hud::Leaves L{"view_model_data.hud_tt_"};
+timing::TowerLeaves leaves{L};
+timing::Tower tower;
+
+void on_frame(double now)
+{
+    timing::Config cfg;
+    cfg.mode = timing::Config::Mode::compact;
+    cfg.rows = 5;
+    if (timing::update_from_live(tower, now, cfg))   // false, tower off, while the live state is unavailable
+        leaves.publish(tower);
+    L.flush();
+}
+
+// the pieces, for a custom order or a test
+timing::Session session;
+timing::from_live(*swofty::live::session(), session);
+timing::Car car;
+timing::from_live(*swofty::live::car(7), car, "ferrari");   // optional team key
+```
+
+What the adapter maps, by `have` bit. A bit that is clear leaves the field at its default:
+
+```cpp
+// Car
+index          = vehicle                         position = position, status = result_status   (HAVE_CLASS)
+lap            = lap (0 on lap 1)                (HAVE_PROGRESS)
+pit_state      = pit_state, in_pit = live::in_pit(c)                                            (HAVE_PIT)
+gap_ahead_ms / gap_leader_ms, with *_valid set only when live::gap_*_ms() has a value            (HAVE_GAP_*)
+tyre           = tyre_letter                                                                    (HAVE_TYRE)
+time_penalty_s, drive_through, stop_go                                                          (HAVE_PENALTIES)
+team_key       = live::team_badge(vehicle)       (update_from_live only)
+
+// Session
+type = type, time_trial = game_mode is Time Trial, yellow_sectors = yellow_sectors
+header: chequered, then red flag, then safety car, then VSC, then yellow sectors, else none
+yellow_sector_unknown = the yellow group is not verified for this build
+```
+
+Not read by live yet, so left empty: `code` (driver names), `Session::laps_total`, `best_lap_ms`, `last_lap_ms`, `best_sector_ms`, `purple_lap`, `purple_sector`, `green_sector`. A timed session therefore shows the gap as unavailable (`gap_na`) until live carries lap times. Fill those fields yourself after `from_live` if your addon has a source. The rows follow `live::order()`, so a session without `SWOFTY_LIVE_SHAVE_ORDER` gives a tower with no rows.
+
+The tower alone, over structs you fill yourself:
 
 ```cpp
 #include <swofty/timing.hpp>

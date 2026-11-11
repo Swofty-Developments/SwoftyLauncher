@@ -7,21 +7,23 @@
 #include <cstring>
 #include <optional>
 #include <span>
+#include <string>
 #include <string_view>
 
 #include <swofty/ease.hpp>
 #include <swofty/hud_format.hpp>
 #include <swofty/hud_leaves.hpp>
+#include <swofty/live.hpp>
 
 // The timing tower model: classification order in, tower rows out. Pure and deterministic over plain structs,
 // so it runs on the host in tests and needs no game access. Header only.
 //
-// DEPENDS ON LIVE STATE (stream L). Car and Session below are the tower's own POD input, not the core's live
-// structs: they are filled from swofty::live (SwoftyLiveCar / SwoftyLiveSession, native memory reads) by an
-// adapter that stream L's header will supply. Field names follow the proposed live structs (position, lap,
+// Car and Session below are the tower's own POD input, not the core's live structs: from_live() (end of this
+// header) fills them from swofty::live (SwoftyLiveCar / SwoftyLiveSession, native memory reads), and
+// update_from_live() does the whole read-and-update in one call. Field names follow the proposed live structs (position, lap,
 // gap_ahead_ms, gap_leader_ms, tyre, time_penalty_s, drive_through, stop_go, result_status -> status, pit_state
-// -> pit_state, safety_car/red_flag/yellow_sectors/chequered -> Session). Until that adapter exists, fill them
-// from your own reader (Project Halo reads them from game memory) or from swofty::fake in tests.
+// -> pit_state, safety_car/red_flag/yellow_sectors/chequered -> Session). Fill them by hand for your own reader, or
+// from swofty::fake in tests.
 //
 // What each field means is the contract of the live layer, not of this model: the model never reads memory, so
 // quirks of the readers (a stale tyre cache, a torn classification read, the yellow zones blinking) belong
@@ -474,5 +476,94 @@ private:
     std::array<hud::IntLeaf, max_cars> car_row_{};
     std::array<RowLeaves, max_rows> row_{};
 };
+
+// Live adapter. A field the live layer does not give (its have bit clear, or no source yet) is left empty:
+// names (code), lap total, lap and sector times, best laps and the purple and green flags stay at their
+// defaults; the tower shows the gap of those as unavailable.
+
+inline Session::Flag header_flag(const live::Session &s)
+{
+    if (s.chequered)
+        return Session::chequered;
+    if (live::has(s, SWOFTY_LIVE_SHAVE_RED_FLAG) && s.red_flag)
+        return Session::red;
+    switch (live::safety_car(s)) {
+    case live::SafetyCar::safety_car:
+        return Session::safety_car;
+    case live::SafetyCar::virtual_safety_car:
+        return Session::vsc;
+    default:
+        break;
+    }
+    if (live::has(s, SWOFTY_LIVE_SHAVE_YELLOW) && s.yellow_sectors)
+        return Session::yellow;
+    return Session::none;
+}
+
+inline void from_live(const live::Session &s, Session &out)
+{
+    out = Session{};
+    out.type = live::has(s, SWOFTY_LIVE_SHAVE_TYPE) ? s.type : 0;
+    out.header = header_flag(s);
+    out.yellow_sectors = live::has(s, SWOFTY_LIVE_SHAVE_YELLOW) ? s.yellow_sectors : 0;
+    out.yellow_sector_unknown = !live::has(s, SWOFTY_LIVE_SHAVE_YELLOW);
+    out.time_trial = live::game_mode(s) == live::GameMode::time_trial;
+}
+
+inline void from_live(const live::Car &c, Car &out, std::string_view team_key = {})
+{
+    out = Car{};
+    out.index = uint8_t(c.vehicle);
+    if (live::has(c, SWOFTY_LIVE_HAVE_CLASS)) {
+        out.position = uint8_t(c.position > 0 && c.position < 256 ? c.position : 0);
+        out.status = c.result_status;
+    }
+    if (live::has(c, SWOFTY_LIVE_HAVE_PROGRESS))
+        out.lap = c.lap;
+    if (live::has(c, SWOFTY_LIVE_HAVE_PIT)) {
+        out.pit_state = c.pit_state;
+        out.in_pit = live::in_pit(c);
+    }
+    if (auto g = live::gap_ahead_ms(c)) {
+        out.gap_ahead_ms = *g;
+        out.gap_ahead_valid = 1;
+    }
+    if (auto g = live::gap_leader_ms(c)) {
+        out.gap_leader_ms = *g;
+        out.gap_leader_valid = 1;
+    }
+    if (live::has(c, SWOFTY_LIVE_HAVE_TYRE))
+        out.tyre = c.tyre_letter;
+    if (live::has(c, SWOFTY_LIVE_HAVE_PENALTIES)) {
+        out.time_penalty_s = c.time_penalty_s;
+        out.drive_through = c.drive_through;
+        out.stop_go = c.stop_go;
+    }
+    std::snprintf(out.team_key, sizeof out.team_key, "%.*s", int(team_key.size()), team_key.data());
+}
+
+// Reads the live session and classification and updates the tower; false (and the tower cleared to off) while the
+// live state is unavailable. The subject is the watched car when spectating, else the player's.
+inline bool update_from_live(Tower &tower, double now, const Config &cfg)
+{
+    auto s = live::session();
+    if (!s) {
+        tower.update(Session{}, {}, -1, now, cfg);
+        return false;
+    }
+    Session session;
+    from_live(*s, session);
+    std::array<Car, live::max_cars> cars{};
+    size_t n = 0;
+    for (uint32_t id : live::order().ids) {
+        auto c = live::car(id);
+        if (!c)
+            continue;
+        auto badge = live::team_badge(id);
+        from_live(*c, cars[n++], badge ? std::string_view(*badge) : std::string_view());
+    }
+    tower.update(session, std::span<const Car>(cars.data(), n), s->subject, now, cfg);
+    return true;
+}
 
 }
