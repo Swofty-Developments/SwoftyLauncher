@@ -213,6 +213,14 @@ pub const SESSION_VALUES: &[GameValue] = &[
         Use::Property,
         true,
     ),
+    v(
+        "number_of_laps",
+        "#session.number_of_laps",
+        *b"si32",
+        Use::Property,
+        true,
+    ),
+    v(CLOCK_STR, CLOCK_STR, *b"stri", Use::Property, true),
 ];
 
 pub const SESSION_CAR_VALUES: &[GameValue] = &[
@@ -230,7 +238,27 @@ pub const SESSION_CAR_VALUES: &[GameValue] = &[
         Use::Property,
         false,
     ),
+    v(
+        "driver.name_code",
+        "#session.cars.car{vid}.driver.name_code",
+        *b"stri",
+        Use::Property,
+        false,
+    ),
+    v(
+        "nub_colour",
+        "#session.cars.car{vid}.nub_colour",
+        *b"rgba",
+        Use::Property,
+        true,
+    ),
 ];
+
+/// The session clock: a text bound to `time_remaining_str` reads the stock session timer's
+/// formatter, a UITF under this template that the composer clones into the record's group.
+pub const CLOCK_MODEL: &str = "hud_session_timer_dynamic";
+pub const CLOCK_FORMATTER: &str = "time_remaining_formatter";
+pub const CLOCK_STR: &str = "time_remaining_str";
 
 pub const TEAM_COLOUR: &str = "#session.current_car.nub_colour";
 
@@ -276,6 +304,10 @@ mod tests {
             *b"ui32"
         );
         assert_eq!(session_car_value("driver.second_name").unwrap().tag, *b"stri");
+        assert_eq!(session_car_value("driver.name_code").unwrap().tag, *b"stri");
+        assert_eq!(session_car_value("nub_colour").unwrap().tag, *b"rgba");
+        assert_eq!(session_value("number_of_laps").unwrap().tag, *b"si32");
+        assert_eq!(session_value(CLOCK_STR).unwrap().db, "time_remaining_str");
         assert!(game_value("nope").is_none());
         assert_eq!(game_value("ers_mode").unwrap().usage, Use::DecisionOnly);
     }

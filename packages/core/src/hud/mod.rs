@@ -18,6 +18,7 @@ pub mod model;
 pub mod scene;
 pub mod template;
 pub mod textures;
+pub mod units;
 
 use std::cell::RefCell;
 use std::collections::BTreeMap;
@@ -311,18 +312,66 @@ struct Loaded {
     resources: Vec<Res>,
 }
 
-fn load_sprites(
-    input: &Input,
-    pfx: &str,
-    fill_material: &[u8],
+fn bind_slots(resources: &mut Vec<Res>, n: &textures::Names, uses_fill: bool, uses_edge: bool) {
+    if uses_fill {
+        resources.push(textures::binding_resource(n, "central_bg_fill", false));
+    }
+    if uses_edge {
+        resources.push(textures::binding_resource(n, "central_bg_edge", true));
+    }
+}
+
+/// What every sprite of a build shares: the stock files, the fill material and the quad slots in use.
+struct SpriteEnv<'a> {
+    stock: &'a dyn Stock,
+    fill_material: &'a [u8],
     uses_fill: bool,
     uses_edge: bool,
+}
+
+fn load_sprites(
+    env: &SpriteEnv,
+    input: &Input,
+    pfx: &str,
     tinted: &std::collections::BTreeSet<String>,
     team: [u8; 3],
 ) -> Result<Loaded> {
+    let SpriteEnv {
+        stock,
+        fill_material,
+        uses_fill,
+        uses_edge,
+    } = *env;
     let mut sprites = Sprites::new();
     let mut resources = Vec::new();
     for (name, s) in &input.record.sprites {
+        if let Some(tex) = &s.texture {
+            let names = textures::stock_names(&format!("{pfx}_"), name, tex);
+            let tint = s.tint.as_deref().map(textures::hex_rgba).transpose()?;
+            resources.extend(textures::stock_sprite_resources(&names, fill_material, tint)?);
+            bind_slots(&mut resources, &names, uses_fill, uses_edge);
+            let bounds = match (s.bounds, s.fit) {
+                (Some(b), _) => b,
+                (None, Some(f)) => textures::fit(textures::texture_size(stock, dials::STOCK_ERP, tex)?, f),
+                (None, None) => {
+                    return Err(err(format!(
+                        "sprite {name}: a texture sprite needs fit or bounds"
+                    )));
+                }
+            };
+            sprites.insert(
+                name.clone(),
+                SpriteInfo {
+                    bounds,
+                    names,
+                    tinted: None,
+                },
+            );
+            continue;
+        }
+        if s.png.is_empty() {
+            return Err(err(format!("sprite {name}: needs png or texture")));
+        }
         let path = input.dir.join(&s.png);
         let data = std::fs::read(&path).map_err(|e| Error::Io {
             path: path.clone(),
@@ -336,15 +385,7 @@ fn load_sprites(
         let key = format!("{pfx}_");
         let names = textures::names(&key, name);
         resources.extend(textures::sprite_resources(&names, &art, fill_material)?);
-        let mut emit = |n: &textures::Names| {
-            if uses_fill {
-                resources.push(textures::binding_resource(n, "central_bg_fill", false));
-            }
-            if uses_edge {
-                resources.push(textures::binding_resource(n, "central_bg_edge", true));
-            }
-        };
-        emit(&names);
+        bind_slots(&mut resources, &names, uses_fill, uses_edge);
         let pv = if tinted.contains(name) {
             let pv_names = textures::names(&key, &format!("{name}_pv"));
             resources.extend(textures::sprite_resources(
@@ -466,15 +507,13 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
             Some(c) => textures::hex_colour(c)?,
             None => [0x27, 0xf4, 0xd2],
         };
-        let l = load_sprites(
-            input,
-            &pfx_of[i],
-            &fill,
-            true,
-            used.contains(&Dial::F2),
-            &tinted,
-            team,
-        )?;
+        let env = SpriteEnv {
+            stock,
+            fill_material: &fill,
+            uses_fill: true,
+            uses_edge: used.contains(&Dial::F2),
+        };
+        let l = load_sprites(&env, input, &pfx_of[i], &tinted, team)?;
         for r in &l.resources {
             resources.insert(r.0.clone(), r.clone());
         }
@@ -510,6 +549,9 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         let text_from = (dial != Dial::F126).then_some(om_xm.as_slice());
         let mut b = Builder::new(facts, &scene_bytes, &mods, &bar, text_from)?;
         b.with_donors(&stacked, &lap_counter)?;
+        if here.iter().any(|e| units::used(&e.rec.elements)) {
+            b.units = units::load(stock, dials::STOCK_ERP)?;
+        }
         let mut parked = false;
         let mut footprint: Option<[f64; 4]> = None;
         let mut plans: Vec<(&Expanded, Plan)> = Vec::new();
