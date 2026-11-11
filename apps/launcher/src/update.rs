@@ -178,6 +178,7 @@ impl Shell {
         if u.checking
             || matches!(u.phase, Phase::Installing | Phase::Restarting)
             || !(addon_due || launcher_due)
+            || self.data_move_locked()
         {
             return;
         }

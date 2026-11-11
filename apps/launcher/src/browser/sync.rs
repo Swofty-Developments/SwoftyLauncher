@@ -77,6 +77,9 @@ impl Shell {
             loop {
                 cx.background_executor().timer(TICK).await;
                 let ticked = this.update(cx, |s, cx| {
+                    if s.data_move_locked() {
+                        return;
+                    }
                     if s.browser.stale() {
                         s.fetch_catalog(cx);
                     } else {
