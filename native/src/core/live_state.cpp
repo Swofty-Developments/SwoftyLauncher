@@ -49,8 +49,6 @@ const Named SITE_NAMES[] = {
     {"g_Live_SectorCount", &lv::Sites::sector_count},
     {"g_Game_MessageBus", &lv::Sites::bus_slot},
     {"Ne_Subscribe_BusMessage", &lv::Sites::bus_subscribe},
-    {"Live_Subscribe_CarToCarCollision", &lv::Sites::bus_collision_row},
-    {"Live_Subscribe_VehicleStatusChanged", &lv::Sites::bus_status_row},
 };
 
 const char *TRACK_WORLD_PATTERN = "48 8B 05 ?? ?? ?? ?? 48 8B 80 D0 00 00 00 48 8B 80 E8 00 00 00";
@@ -94,8 +92,7 @@ const Needs NEEDS[] = {
     {lv::G_BADGES, {&lv::Sites::game_manager, &lv::Sites::key_game_mode, &lv::Sites::key_team_tables}},
     {lv::G_TRACK, {&lv::Sites::track_length, &lv::Sites::session_type}},
     {lv::G_TRACK_NAME, {&lv::Sites::track_world}},
-    {lv::G_BUS_EVENTS,
-     {&lv::Sites::bus_slot, &lv::Sites::bus_subscribe, &lv::Sites::bus_collision_row, &lv::Sites::bus_status_row}},
+    {lv::G_BUS_EVENTS, {&lv::Sites::bus_slot, &lv::Sites::bus_subscribe}},
 };
 
 constexpr lv::Group TELEMETRY_GROUPS[] = {lv::G_CAR_SYSTEMS, lv::G_ERS, lv::G_PROGRESS, lv::G_CLASS, lv::G_TIMING,

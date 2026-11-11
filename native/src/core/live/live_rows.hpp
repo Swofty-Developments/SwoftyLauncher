@@ -86,7 +86,7 @@ inline constexpr Row ROWS[G_COUNT] = {
     {G_PIT_LANE, F_PIT_LANE, false, "PitLaneSystem+0x48 lane object, +0x938 flag block and +0x103 have no KB row"},
     {G_TRACK_NAME, true, false, "the track world name chain has no KB row"},
     {G_SPECTATE_GAP, true, false, "SpectatorDirector+0xe4 gap mode has no KB row"},
-    {G_BUS_EVENTS, true, true, "Ne_Subscribe_BusMessage and the two Live_Subscribe_* rows that carry the message layouts"},
+    {G_BUS_EVENTS, true, true, "g_Game_MessageBus and Ne_Subscribe_BusMessage; the message layouts are the agreed Live_Subscribe_* rows (no signature, not resolved)"},
 };
 
 }

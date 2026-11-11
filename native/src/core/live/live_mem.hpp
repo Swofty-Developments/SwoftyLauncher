@@ -22,7 +22,7 @@ struct Sites {
               key_team_tables = 0;
     uintptr_t controllers = 0, vt_controllers = 0, vt_human = 0;
     uintptr_t sector_block = 0, sector_count = 0, track_world = 0;
-    uintptr_t bus_slot = 0, bus_subscribe = 0, bus_collision_row = 0, bus_status_row = 0;
+    uintptr_t bus_slot = 0, bus_subscribe = 0;
     uintptr_t image_lo = 0, image_hi = 0;
 };
 
