@@ -279,7 +279,12 @@ const SETTLE_TIMEOUT: Duration = Duration::from_secs(600);
 
 fn open_in_browser(url: &str) {
     let opener = if cfg!(windows) { "explorer" } else { "xdg-open" };
-    match Command::new(opener).arg(url).stdout(Stdio::null()).stderr(Stdio::null()).spawn() {
+    match Command::new(opener)
+        .arg(url)
+        .stdout(Stdio::null())
+        .stderr(Stdio::null())
+        .spawn()
+    {
         Ok(_) => say("info", &format!("opened {url} in the browser")),
         Err(e) => say("warning", &format!("could not open {url}: {e}")),
     }
