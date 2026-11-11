@@ -157,6 +157,28 @@ bad record key <key>
 
 A `remove-record` whose key is already absent is a no-op, and the build prints `<addon id>: <key>: already removed`.
 
+### virtual-list
+
+```jsonc
+{ "op": "virtual-list", "list": "f5_1959" }   // before the add-row that adds the entrant list f5_1959
+```
+
+Marks an entrant list your addon adds as virtual. The game loads every row of `entrants.entrant_lists` below the table's count as a list, keeps its stat id in a byte (255 at most) and lets an entrant setup mode hold 32 lists, so a big season pack runs out of both. A virtual list takes neither:
+
+- The `add-row` that adds it passes the 255 ceiling.
+- After every addon's database ops, the build moves its row, entrant rows included, to `entrant_list_10000` and up, puts the table's last added row in its place and lowers the count. The game never loads it.
+- The build takes its label out of every content set's and entrant setup mode's list fields.
+- A box that names it shows when `swofty_virtual_list` is offered under `swofty_f1`. When the box is pressed, the core reads the virtual row into `swofty_virtual_list` and selects that list; the next press puts the host's own entrants back.
+
+The build prints one line per list and a summary:
+
+```text
+virtual list f5_1959: 312 key(s) moved from entrants.entrant_lists.entrant_list_301 to entrants.entrant_lists.entrant_list_10000
+virtual lists: 76 moved above the count (230 lists left for the game), 2 list field(s) no longer name them
+```
+
+A stock list stays where it is, and nothing moves when the table's last row is a stock list.
+
 ### Removing stock records
 
 A `remove-record` of a key in the game's stock database is skipped. The build warns once per addon with the count:
