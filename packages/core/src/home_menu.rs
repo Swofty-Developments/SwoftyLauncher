@@ -26,7 +26,7 @@ pub struct Video {
     pub url: String,
     pub thumbnail_url: String,
     #[serde(default)]
-    pub published_at: String,
+    pub published_at: serde_json::Value,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize)]
@@ -417,6 +417,13 @@ mod tests {
             }
         });
         registry
+    }
+
+    #[test]
+    fn a_numeric_published_date_parses() {
+        let text = r#"{"id":"abc","title":"T","url":"https://www.youtube.com/watch?v=abc","thumbnail_url":"https://i.ytimg.com/vi/abc/hqdefault.jpg","published_at":1794210804}"#;
+        let video: Video = serde_json::from_str(text).unwrap();
+        assert_eq!(video.id, "abc");
     }
 
     #[test]
