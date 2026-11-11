@@ -62,6 +62,41 @@ fn move_row(db: &mut Gvdb, names: &Names, from: &str, to: &str) -> usize {
     moved
 }
 
+/// The list the core fills on a press of a virtual box (era_picker.cpp, VIRTUAL_HOST).
+pub const HOST: &str = "swofty_virtual_list";
+/// The entrant setup mode every addon box runs under.
+const HOST_MODE: &str = "swofty_f1";
+
+/// Copies every key of row `from` to row `to`, leaving `from` as it was.
+fn copy_row(db: &mut Gvdb, names: &Names, from: &str, to: &str) -> usize {
+    let keys = row_keys(db, names, &[from.to_owned()]).pop().unwrap_or_default();
+    let mut copies = Vec::new();
+    for rel in &keys {
+        let k = fnv1a64(format!("{from}.{rel}"));
+        if let Some(r) = db.records.iter().find(|r| r.key == k) {
+            copies.push(Record {
+                key: fnv1a64(format!("{to}.{rel}")),
+                tag: r.tag,
+                value: r.value.clone(),
+            });
+        }
+    }
+    let n = copies.len();
+    db.records.extend(copies);
+    n
+}
+
+fn host_setup_mode(db: &Gvdb) -> Option<String> {
+    let table = "entrants.entrant_setup_modes";
+    let n = text(db, &instance_count_path(table, "entrant_setup_mode"))?
+        .trim()
+        .parse::<usize>()
+        .ok()?;
+    (0..n)
+        .map(|i| format!("{table}.entrant_setup_mode_{i}"))
+        .find(|row| text(db, &format!("{row}._metadata_")).as_deref() == Some(HOST_MODE))
+}
+
 /// Settles the lists the `virtual-list` op marked; returns the build's report lines.
 pub fn settle(db: &mut Gvdb, stock: &HashSet<u64>) -> Vec<String> {
     let mut lines = Vec::new();
@@ -119,6 +154,39 @@ pub fn settle(db: &mut Gvdb, stock: &HashSet<u64>) -> Vec<String> {
     }
     if settled.is_empty() {
         return lines;
+    }
+    // The host the core swaps a pressed virtual list into: one ordinary list, offered under swofty_f1.
+    let label_at = |db: &Gvdb, i: usize| text(db, &format!("{TABLE}.{ROW}_{i}._metadata_"));
+    if !(0..count).any(|i| label_at(db, i).as_deref() == Some(HOST)) {
+        let used: HashSet<i64> = (0..count)
+            .filter_map(|i| text(db, &format!("{TABLE}.{ROW}_{i}.stat_id")))
+            .filter_map(|t| t.trim().parse().ok())
+            .collect();
+        match (0..=255).find(|id| !used.contains(id)) {
+            Some(id) => {
+                let host = format!("{TABLE}.{ROW}_{count}");
+                copy_row(db, &names, &format!("{TABLE}.{ROW}_{BASE}"), &host);
+                set_text(db, &format!("{host}._metadata_"), 4, HOST);
+                set_text(db, &format!("{host}.stat_id"), 0, &id.to_string());
+                count += 1;
+                lines.push(format!(
+                    "virtual lists: host {HOST} added as {host} (stat id {id})"
+                ));
+            }
+            None => lines.push(format!(
+                "virtual lists: no stat id up to 255 is free for the host {HOST}; virtual boxes stay hidden"
+            )),
+        }
+    }
+    if let Some(esm) = host_setup_mode(db) {
+        for field in ["entrant_lists", "selectable_entrant_lists"] {
+            let path = format!("{esm}.{field}");
+            let mut v = text(db, &path).map(|t| items(&t)).unwrap_or_default();
+            if !v.iter().any(|l| l == HOST) {
+                v.push(HOST.into());
+                set_text(db, &path, 13, &v.join(","));
+            }
+        }
     }
     set_text(db, &count_path, 0, &count.to_string());
     // The game resolves these fields' labels against the loaded lists; a virtual one is never loaded.
@@ -202,6 +270,11 @@ mod tests {
                 13,
                 "f1_2026,season_a,season_b",
             ),
+            rec(
+                "entrants.entrant_setup_modes.entrant_setup_mode_0._metadata_",
+                4,
+                "swofty_f1",
+            ),
             rec(VIRTUAL_LISTS, 4, "season_a"),
         ];
         list(&mut records, 0, "f1_2026", &["a1", "a2"]);
@@ -223,10 +296,10 @@ mod tests {
         assert!(
             lines
                 .iter()
-                .any(|l| l.contains("1 moved above the count (3 lists left")),
+                .any(|l| l.contains("1 moved above the count (4 lists left")),
             "{lines:?}"
         );
-        assert_eq!(get(&db, &instance_count_path(TABLE, ROW)).as_deref(), Some("3"));
+        assert_eq!(get(&db, &instance_count_path(TABLE, ROW)).as_deref(), Some("4"));
         let v = format!("{TABLE}.{ROW}_{BASE}");
         assert_eq!(get(&db, &format!("{v}._metadata_")).as_deref(), Some("season_a"));
         assert_eq!(
@@ -241,14 +314,26 @@ mod tests {
             get(&db, &format!("{TABLE}.{ROW}_2.entrant_0._metadata_")).as_deref(),
             Some("t1")
         );
-        assert_eq!(get(&db, &format!("{TABLE}.{ROW}_3._metadata_")), None);
+        assert_eq!(
+            get(&db, &format!("{TABLE}.{ROW}_3._metadata_")).as_deref(),
+            Some(HOST)
+        );
+        assert_eq!(
+            get(&db, &format!("{TABLE}.{ROW}_3.entrant_1._metadata_")).as_deref(),
+            Some("s2")
+        );
+        assert_eq!(
+            get(&db, &format!("{TABLE}.{ROW}_3.stat_id")).as_deref(),
+            Some("0")
+        );
+        assert_eq!(get(&db, &format!("{TABLE}.{ROW}_4._metadata_")), None);
         assert_eq!(
             get(
                 &db,
                 "entrants.entrant_setup_modes.entrant_setup_mode_0.entrant_lists"
             )
             .as_deref(),
-            Some("f1_2026,season_b")
+            Some("f1_2026,season_b,swofty_virtual_list")
         );
     }
 
