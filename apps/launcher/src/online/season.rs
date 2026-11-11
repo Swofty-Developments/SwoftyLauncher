@@ -92,6 +92,8 @@ impl Shell {
                     .text_color(p.text_muted)
                     .child(if filter.active() {
                         tr("No track matches these filters.")
+                    } else if !self.online.category.is_default() {
+                        tr("No laps with these filters. Change the assists or input on the Time Trial page.")
                     } else {
                         tr("No tracks have laps yet.")
                     })

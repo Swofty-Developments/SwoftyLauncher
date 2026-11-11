@@ -14878,6 +14878,11 @@ pub mod bindings {
         kind: "data",
         status: Status::Experimental,
     };
+    pub const g_Game_F1WorldEntryPoint: Binding = Binding {
+        id: "g_Game_F1WorldEntryPoint",
+        kind: "data",
+        status: Status::Experimental,
+    };
     pub const g_Game_FlowLinkStay: Binding = Binding {
         id: "g_Game_FlowLinkStay",
         kind: "data",

@@ -180,6 +180,12 @@ int main()
                !mm::return_due(false, false, mm::Mode::time_trial, true) && !mm::return_due(true, true, mm::Mode::time_trial, true) &&
                !mm::return_due(true, false, mm::Mode::time_trial, false),
            "the hand-over is armed when a session that a card started has ended");
+    expect(mm::entry_point_write(0x146066c74, true) == mm::EntryPointWrite::write,
+           "the F1 World entry point is cleared through the address the binding set resolved");
+    expect(mm::entry_point_write(0, true) == mm::EntryPointWrite::unresolved && mm::entry_point_write(0, false) == mm::EntryPointWrite::unresolved,
+           "a build whose set did not resolve g_Game_F1WorldEntryPoint never writes it (1.9.0 wrote the Steam offset on the EA build)");
+    expect(mm::entry_point_write(0x146066c74, false) == mm::EntryPointWrite::unwritable,
+           "a resolved address that is not writable memory is not written");
     printf("%s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;
 }

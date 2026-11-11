@@ -44,6 +44,23 @@ impl Shell {
                 body.push(self.setup_panel(setup, mine, p, cx));
             }
         }
+        if page.rows.is_empty() {
+            body.push(
+                div()
+                    .px(px(14.))
+                    .py(px(22.))
+                    .text_size(px(13.))
+                    .text_color(p.text_muted)
+                    .border_t_1()
+                    .border_color(p.border_variant)
+                    .child(if self.board_category().is_default() {
+                        tr("No laps on this board yet.")
+                    } else {
+                        tr("No laps with these filters. Change the assists or input above.")
+                    })
+                    .into_any_element(),
+            );
+        }
         self.online.items = items;
         let remaining = page.total.saturating_sub(page.rows.len() as u32);
         let more = (remaining > 0).then(|| {

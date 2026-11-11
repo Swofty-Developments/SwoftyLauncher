@@ -1089,6 +1089,7 @@ inline constexpr address<"Game_VotingManager_SetStatus"> Game_VotingManager_SetS
 inline constexpr address<"Game_WonDriverChampionship_Initialise"> Game_WonDriverChampionship_Initialise{}; // L2 experimental
 inline constexpr address<"Game_WonDriverChampionship_Initialise_2"> Game_WonDriverChampionship_Initialise_2{}; // L2 experimental
 inline constexpr address<"Game_WrinkleModifierMorphRig_Parse"> Game_WrinkleModifierMorphRig_Parse{}; // L2 experimental
+inline constexpr data<"g_Game_F1WorldEntryPoint", uint32_t> g_Game_F1WorldEntryPoint{}; // L2 experimental
 inline constexpr data<"g_Game_FlowLinkStay", uint32_t> g_Game_FlowLinkStay{}; // L2 experimental
 inline constexpr data<"g_Game_Manager", void *> g_Game_Manager{}; // L2 experimental
 inline constexpr data<"g_Game_MessageBus", void *> g_Game_MessageBus{}; // L2 experimental

@@ -138,6 +138,7 @@ public:
     explicit Recorder(Config c = {}) : cfg_(c) {}
 
     State state() const { return state_; }
+    const Config &config() const { return cfg_; }
     size_t samples() const { return count_; }
     double path_m() const { return path_; }
     double started_s() const { return started_; }
@@ -164,10 +165,22 @@ public:
     double shift_s() const { return shift_; }
     uint32_t stalls() const { return stalls_; }
 
+    // A step at now_s would keep its sample: the caller reads the car only then, not on every game tick.
+    bool sample_due(double now_s) const
+    {
+        if (state_ != State::timing || cfg_.sample_period_s <= 0 || count_ == 0)
+            return true;
+        return now_s - shift_ >= next_sample_s_;
+    }
+
     // The car moved without driving there, or stopped dead in a tick: the lap in progress is thrown away and the
     // next line crossing starts a fresh one. A gap in which the car did not move at all while it was driving is a
-    // stall of the game (focus lost, a hitch) and is taken out of the lap's clock instead. A replay, a cutscene or
-    // spectating discards the lap, and so does a car that stands still for max_still_s.
+    // stall of the game (focus lost, a hitch) and is taken out of the lap's clock instead. The sample passed with the
+    // stalled frame was built with the clock before the stall was known, so it is not kept: the car is where the last
+    // sample left it, and the next frame's sample follows it on the shifted clock. Before a lap's first movement no
+    // gap is a stall: at the line the game runs on while the previous lap is written, and its lap time keeps that
+    // time, so the clock must too. A replay, a cutscene or spectating discards the lap, and so does a car that
+    // stands still for max_still_s.
     Outcome step(const Frame &in, const uint8_t *sample, size_t stride)
     {
         Outcome none;
@@ -181,16 +194,19 @@ public:
             return discarding(Discard::interrupted);
         }
         Discard bad = Discard::none;
+        bool stalled = false;
         if (have_last_) {
             double dt = f.now_s - last_.now_s;
             double dx = f.pos[0] - last_.pos[0], dy = f.pos[1] - last_.pos[1], dz = f.pos[2] - last_.pos[2];
             double step = std::sqrt(dx * dx + dy * dy + dz * dz);
-            if (dt > cfg_.stall_gap_s && step < cfg_.stall_move_m && last_.speed_ms > cfg_.stall_min_speed_ms) {
+            bool moving_lap = state_ != State::timing || path_ >= cfg_.stall_move_m;
+            if (dt > cfg_.stall_gap_s && step < cfg_.stall_move_m && last_.speed_ms > cfg_.stall_min_speed_ms && moving_lap) {
                 double gap = dt - cfg_.sample_period_s;
                 shift_ += gap;
                 f.now_s -= gap;
                 dt = cfg_.sample_period_s;
                 stalls_++;
+                stalled = true;
             }
             double allowed = cfg_.teleport_floor_m + 1.5 * std::fmax(f.speed_ms, last_.speed_ms) * std::fmax(dt, 0.0);
             if (f.speed_ms < cfg_.still_speed_ms && dt > 0)
@@ -210,7 +226,7 @@ public:
         have_last_ = true;
         if (bad != Discard::none)
             return discarding(bad);
-        if (state_ != State::timing)
+        if (state_ != State::timing || stalled)
             return none;
         if (cfg_.sample_period_s > 0 && count_ > 0 && f.now_s < next_sample_s_)
             return none;
@@ -390,6 +406,54 @@ inline Plan plan_of(const Avail &a)
     }
     return p;
 }
+
+// A lap handed to the writer thread and what came back. The flow thread expects laps in the order it hands them
+// over and delivers the completions (the bridge's lap_finished, the laps.recorded event) in that same order, so
+// a lap never reports before an earlier one, whichever finishes writing first.
+struct Finished {
+    uint32_t index = 0;
+    std::string path;
+    int64_t time_ms = 0;
+    int valid = -1;
+    bool ok = false;
+};
+
+class Outbox {
+public:
+    void expect(uint32_t index) { order_.push_back(index); }
+
+    void complete(Finished f) { done_.push_back(std::move(f)); }
+
+    // The completions whose every earlier lap has completed too, oldest first.
+    std::vector<Finished> ready()
+    {
+        std::vector<Finished> out;
+        while (!order_.empty()) {
+            size_t i = 0;
+            while (i < done_.size() && done_[i].index != order_.front())
+                i++;
+            if (i == done_.size())
+                break;
+            out.push_back(std::move(done_[i]));
+            done_.erase(done_.begin() + ptrdiff_t(i));
+            order_.erase(order_.begin());
+        }
+        return out;
+    }
+
+    size_t in_flight() const { return order_.size(); }
+    size_t completed() const { return done_.size(); }
+
+    void clear()
+    {
+        order_.clear();
+        done_.clear();
+    }
+
+private:
+    std::vector<uint32_t> order_;
+    std::vector<Finished> done_;
+};
 
 struct Gate {
     bool on = false;

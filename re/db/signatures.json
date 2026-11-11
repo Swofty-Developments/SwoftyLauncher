@@ -162786,6 +162786,34 @@
    "used_by": []
   },
   {
+   "id": "game.f1_world_entry_point",
+   "section": ".xtls",
+   "pattern": "48 8B 86 90 02 00 00 80 B8 80 00 00 00 00 0F 84 ?? ?? ?? ?? C7 05 ?? ?? ?? ?? 00 00 00 00 80 3D ?? ?? ?? ?? 01 75 6D B8 5F 01 00 00",
+   "match": "0x141a79f28",
+   "anchor": "0x16",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x14",
+    "len": 10
+   },
+   "target": "0x146066c74",
+   "kind": "data",
+   "names": [
+    "g_Game_F1WorldEntryPoint"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "hotfix-191",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/main_menu.cpp"
+   ]
+  },
+  {
    "id": "career.game_value_get_bank_balance",
    "section": ".xtls",
    "pattern": "41 57 41 56 56 57 53 48 81 EC C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 8B 41 08 48 8B 80 88 00 00 00 C5 C8 57 F6 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B B8 60 02 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 89 CE 48 8B 07 48 89 F9 FF 50 28 4C 8D 35",

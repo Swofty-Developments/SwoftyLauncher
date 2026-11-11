@@ -724,14 +724,29 @@ void STDMETHODCALLTYPE srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D1
     srv_orig(dev, r, &c, h);
 }
 
+// The hook is made disabled and moved into its slot before it goes live, so a detour never runs while the
+// slot it calls the original through is still empty.
 bool install(safetyhook::InlineHook &h, void *target, void *detour, const char *what)
 {
-    auto made = safetyhook::InlineHook::create(target, detour);
+    if (!target || !detour) {
+        swofty::log("[d3d12] hooking %s skipped: no target", what);
+        return false;
+    }
+    auto made = safetyhook::InlineHook::create(target, detour, safetyhook::InlineHook::StartDisabled);
     if (!made) {
         swofty::log("[d3d12] hooking %s at %p failed", what, target);
         return false;
     }
+    if (!made->original<void *>()) {
+        swofty::log("[d3d12] hooking %s at %p failed: no trampoline", what, target);
+        return false;
+    }
     h = std::move(*made);
+    if (!h.enable()) {
+        swofty::log("[d3d12] hooking %s at %p failed: the hook did not enable", what, target);
+        h = {};
+        return false;
+    }
     return true;
 }
 

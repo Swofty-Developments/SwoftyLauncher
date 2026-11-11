@@ -478,10 +478,11 @@ inline bool replay_lap_is_best(int64_t lap_ms, int valid, int64_t session_best_m
     return lap_ms > 0 && valid != 0 && (session_best_ms <= 0 || lap_ms < session_best_ms);
 }
 
-// The save may be started only for our content with the bridge on, with a replay system whose vtable is the game's and a recording enabled.
-inline bool replay_capture_allowed(bool env_on, bool bridge_on, bool ours_content, bool vtable_ok, uint8_t recording_flag, uint64_t job_queue)
+// The save may be started only with the bridge on, with a replay system whose vtable is the game's and a recording enabled. The content is
+// not a condition: every lap the boards accept, stock or addon, gets its replay.
+inline bool replay_capture_allowed(bool env_on, bool bridge_on, bool vtable_ok, uint8_t recording_flag, uint64_t job_queue)
 {
-    return env_on && bridge_on && ours_content && vtable_ok && recording_flag == 1 && job_queue != 0;
+    return env_on && bridge_on && vtable_ok && recording_flag == 1 && job_queue != 0;
 }
 
 // The game finished writing when the size is non-zero and unchanged across `stable_needed` polls.

@@ -460,10 +460,13 @@ impl Shell {
     }
 
     fn online_reenter(&mut self, cx: &mut Context<Self>) {
-        if let Screen::Board(key) = self.online.trail.current().clone()
-            && self.online.board.as_ref().map(|b| &b.0) != Some(&key)
-        {
-            self.online_load_board(key, 0, cx);
+        match self.online.trail.current().clone() {
+            Screen::Board(key) if self.online.board.as_ref().map(|b| &b.0) != Some(&key) => {
+                self.online_load_board(key, 0, cx);
+            }
+            Screen::Season(id) => self.online_load_season(&id, cx),
+            Screen::Profile(id) => self.online_load_profile(&id, cx),
+            _ => {}
         }
         cx.notify();
     }

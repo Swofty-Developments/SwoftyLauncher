@@ -2333,12 +2333,12 @@ void replay_tick(uint64_t sys, const char *slot)
     if (n <= 5 || n % 20000 == 0)
         swofty::log("[replay] tick %s entry %llu (replay system 0x%llx, GameReplaySystem vtable %s, %llu such entries); pending mark %lld", slot, (unsigned long long)n, (unsigned long long)sys,
                     vt_ok ? "yes" : "no", (unsigned long long)ours_entries[which].load(), (long long)replay_pending_ms.load());
-    // SWOFTY_TT_REPLAY_PLAY=<replay file path as the game sees it> is a test switch: 40 s into our content's session the file is loaded into
+    // SWOFTY_TT_REPLAY_PLAY=<replay file path as the game sees it> is a test switch: 40 s into a session with the bridge on the file is loaded into
     // the live session through the game's own load, and 8 s later the replay system is put into full replay playback of the whole buffer
     // (mode 0, state 2, clip over the module's duration), the way the fastest lap view's update does it. Every step is logged.
     if (vt_ok && bridge_on && h_load_start)
         view::tick(sys);
-    if (vt_ok && !replay_play_path.empty() && bridge_on && content_ours() && h_load_start) {
+    if (vt_ok && !replay_play_path.empty() && bridge_on && h_load_start) {
         std::atomic<int64_t> &at = replay_play_at;
         std::atomic<int> &stage = replay_play_stage;
         int64_t now = now_ms();
@@ -2428,9 +2428,9 @@ void replay_tick(uint64_t sys, const char *slot)
             state_line("while playing");
         }
     }
-    // SWOFTY_TT_REPLAY_AFTER=<seconds> is a test switch: a save is marked that long after our content's session first ticks, and again
+    // SWOFTY_TT_REPLAY_AFTER=<seconds> is a test switch: a save is marked that long after a session with the bridge on first ticks, and again
     // after each further interval (three times at most), without waiting for a finished lap.
-    if (vt_ok && replay_after_ms > 0 && bridge_on && content_ours()) {
+    if (vt_ok && replay_after_ms > 0 && bridge_on) {
         static std::atomic<int64_t> next_at{0};
         static std::atomic<int> fired{0};
         int64_t now = now_ms(), due = next_at.load();
@@ -2461,10 +2461,10 @@ void replay_tick(uint64_t sys, const char *slot)
     uint8_t rec = mgr && runtime::readable(reinterpret_cast<void *>(mgr + 0x6e1), 1) ? *reinterpret_cast<uint8_t *>(mgr + 0x6e1) : 0xff;
     uint64_t queue = mgr ? peek64(mgr + 0x150) : 0;
     uint32_t queue_busy = queue ? peek32(queue + 0x48) : 0xffffffffu;
-    bool allowed = mgr != 0 && tb::replay_capture_allowed(replay_capture_on, bridge_on, content_ours(), vt_ok, rec == 0xff ? 0 : rec, queue);
+    bool allowed = mgr != 0 && tb::replay_capture_allowed(replay_capture_on, bridge_on, vt_ok, rec == 0xff ? 0 : rec, queue);
     if (++guard_logs <= 8)
-        swofty::log("[replay] capture guards at tick %s: switch %d, bridge %d, our content %d, GameReplaySystem %d, manager 0x%llx, recording flag [mgr+0x6e1] %u, job queue [mgr+0x150] 0x%llx (busy word [queue+0x48] %u) -> %s",
-                    slot, replay_capture_on ? 1 : 0, bridge_on ? 1 : 0, content_ours() ? 1 : 0, vt_ok ? 1 : 0, (unsigned long long)mgr, unsigned(rec), (unsigned long long)queue,
+        swofty::log("[replay] capture guards at tick %s: switch %d, bridge %d, content %s, GameReplaySystem %d, manager 0x%llx, recording flag [mgr+0x6e1] %u, job queue [mgr+0x150] 0x%llx (busy word [queue+0x48] %u) -> %s",
+                    slot, replay_capture_on ? 1 : 0, bridge_on ? 1 : 0, content_ours() ? "ours" : "stock", vt_ok ? 1 : 0, (unsigned long long)mgr, unsigned(rec), (unsigned long long)queue,
                     unsigned(queue_busy), allowed ? "allowed" : "refused");
     if (!allowed)
         return;
@@ -2508,7 +2508,7 @@ void replay_restart(uint64_t sys)
     if (!why)
         return;
     uint64_t mgr = replay_manager_ptr.load();
-    bool ok = game.replay_clear && game.replay_reset && replay_capture_on && bridge_on && content_ours() && view::stage.load() == view::off && !in_session_load.load() && !replay_pending_ms.load() &&
+    bool ok = game.replay_clear && game.replay_reset && replay_capture_on && bridge_on && view::stage.load() == view::off && !in_session_load.load() && !replay_pending_ms.load() &&
               !replay_saving.load() && sys && runtime::readable(reinterpret_cast<void *>(sys), 0xc0) && is_replay_system(sys) && (peek32(sys + 0x88) >> 8 & 0xff) != 0 &&
               peek32(sys + 0x20) == 0 && peek32(sys + 0x78) == 0 && mgr && replay_manager_ok(mgr, sys) && (peek32(mgr + 0x6e0) >> 8 & 0xff) == 1 && int32_t(peek32(mgr + 0x428)) == -1;
     uint64_t queue = ok ? peek64(mgr + 0x150) : 0;
