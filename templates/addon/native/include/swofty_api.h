@@ -500,16 +500,76 @@ typedef struct SwoftyPopup {
    formation_lap, pp_icon, red, safety_car, virtual_safety_car, virtual_safety_car_green, flag_rival_won);
    set writes one HUD data leaf under ui_menu_data.hud_* or view_model_data.hud*: type SWOFTY_HUD_TEXT with
    a const char *, SWOFTY_HUD_BOOL or SWOFTY_HUD_INT with a const int32_t *. Strings are UTF-8, copied and
-   capped at 200 bytes. */
+   capped at 200 bytes.
+   Version 2 (the registered leaf table; fields after set): leaves_register declares n leaves (path, type,
+   text_cap) and fills ids[i] with a handle; a path already registered with the same type returns its
+   handle, with another type is invalid, and a path outside the hud prefixes is invalid. leaves_set writes n
+   values by handle (const char * for text, const int32_t * for bool and int; no allocation, one lock):
+   the core keeps the last written value per leaf and applies only what differs. leaves_begin/leaves_end
+   (nestable, per thread) make every set in between one group, applied whole in a single tick. The core
+   applies at most cap_per_tick leaves a tick and defers the rest, never drops one. generation is bumped
+   when the game rebuilds its view model (session load, unload, a hud node recreated); the core then
+   re-sends every registered leaf itself. stats fills a SwoftyHudStats (set size first; the core fills the
+   fields it knows). The engine exposes no float or colour view-model setter, so there are no such types;
+   pack a colour into an int leaf. Registered leaves are type-checked against v1 set too (a write of
+   another type is invalid); the engine's own binding types cannot be read, so a template binding of
+   another type is still caught only by swofty dev check. */
+typedef struct SwoftyHudLeaf {
+    uint32_t size;
+    const char *path;
+    uint32_t type;
+    uint32_t text_cap;
+} SwoftyHudLeaf;
+typedef struct SwoftyHudStats {
+    uint32_t size;
+    uint32_t applied_last_tick;
+    uint32_t queued;
+    uint32_t dropped;
+    uint32_t registered;
+    uint32_t cap_per_tick;
+    uint32_t failed;
+    uint32_t generation;
+    uint32_t resyncs;
+    uint32_t v1_queued;
+} SwoftyHudStats;
 #define SWOFTY_API_HUD 1
-#define SWOFTY_HUD_VERSION 1
+#define SWOFTY_HUD_VERSION 2
 enum { SWOFTY_HUD_TEXT = 0, SWOFTY_HUD_BOOL = 1, SWOFTY_HUD_INT = 2 };
 typedef struct SwoftyHud {
     uint32_t version;
     int (*available)(void);
     int (*toast)(const char *text, const char *detail, float seconds, const char *icon);
     int (*set)(const char *path, uint32_t type, const void *value);
+    /* version 2 */
+    int (*leaves_register)(const SwoftyHudLeaf *leaves, uint32_t n, uint32_t *ids);
+    int (*leaves_set)(const uint32_t *ids, const void *const *values, uint32_t n);
+    int (*leaves_begin)(void);
+    int (*leaves_end)(void);
+    uint32_t (*generation)(void);
+    int (*stats)(SwoftyHudStats *out);
 } SwoftyHud;
+
+/* CSV recorder (swofty/log_csv.hpp). Not part of SwoftyApi: the table comes from the core's SwoftyCoreCsv
+   export, so an addon built against this header also loads on an older core. Fields are only ever appended.
+   Version 1: open declares a file swofty/addons/<addon id>/diag/<name>-<timestamp>.csv with n columns (names
+   and SWOFTY_CSV_* types) and fills handle. The row is built on the calling thread: row_i32, row_f32 and
+   row_text (pointer and byte length, truncated to 47 bytes) set one column of the row under construction,
+   row_commit copies it into a ring read by the core's writer thread, which formats and writes it; a full ring
+   drops the row and counts it (dropped). Booleans are i32 0/1. clock is a monotonic time in seconds. One
+   writer thread per handle. */
+#define SWOFTY_CSV_VERSION 1
+enum { SWOFTY_CSV_I32 = 0, SWOFTY_CSV_F32 = 1, SWOFTY_CSV_TEXT = 2, SWOFTY_CSV_BOOL = 3 };
+typedef struct SwoftyCsv {
+    uint32_t version;
+    int (*open)(const char *name, const char *const *columns, const uint32_t *types, uint32_t n, uint32_t *handle);
+    int (*row_i32)(uint32_t handle, uint32_t column, int32_t value);
+    int (*row_f32)(uint32_t handle, uint32_t column, float value);
+    int (*row_text)(uint32_t handle, uint32_t column, const char *text, uint32_t len);
+    int (*row_commit)(uint32_t handle);
+    uint64_t (*dropped)(uint32_t handle);
+    void (*close)(uint32_t handle);
+    double (*clock)(void);
+} SwoftyCsv;
 
 /* Team HQ hub tabs (swofty/hub.hpp). Present on cores that export SwoftyCoreHub; the table is read through
    GetProcAddress, so an addon built against this header also loads on an older core and sees it absent.
