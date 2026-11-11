@@ -68,6 +68,12 @@ impl Shell {
             .filter(|m| page.rows.iter().all(|r| r.lap_id != m.lap_id))
             .map(|m| self.board_row(&m, usize::MAX, leader, &best, sectors, true, p, cx));
         let history = self.history_strip(&page, p);
+        let watch = self.online_watch_notice().map(|(ok, text)| {
+            div()
+                .text_size(px(13.))
+                .text_color(if *ok { p.text_muted } else { p.error })
+                .child(text.clone())
+        });
         let head = h_flex()
             .h(px(32.))
             .px(px(14.))
@@ -97,6 +103,7 @@ impl Shell {
             .gap(px(16.))
             .child(header)
             .child(filters)
+            .children(watch)
             .child(panel(p).child(head).children(pinned).children(body))
             .children(more)
             .children(history)
@@ -323,7 +330,7 @@ impl Shell {
     pub(super) fn lap_buttons(&self, key: &str, lap_id: &str, cx: &mut Context<Self>) -> AnyElement {
         let url = lap_url(lap_id);
         let running = self.online_game_running();
-        let ready = running && self.online.replays.available();
+        let ready = running && self.install.is_some();
         let id = lap_id.to_owned();
         h_flex()
             .flex_shrink_0()
@@ -346,15 +353,12 @@ impl Shell {
                     .tooltip(if ready {
                         tr("Play this lap's replay in the running game")
                     } else if running {
-                        tr("In-game replays are not available yet")
+                        tr("The game folder is not known")
                     } else {
                         tr("Start the game to watch this lap")
                     })
                     .on_click(cx.listener(move |this, _, _, cx| {
-                        if let Err(e) = this.online.replays.watch(&id) {
-                            crate::app_log::action("watch a lap in game").failed(&e);
-                        }
-                        cx.notify();
+                        this.online_watch(id.clone(), cx);
                     })),
             )
             .into_any_element()

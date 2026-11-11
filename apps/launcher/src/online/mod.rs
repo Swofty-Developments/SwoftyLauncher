@@ -5,7 +5,6 @@ mod landing;
 mod mock;
 mod model;
 mod profile;
-mod replay;
 mod season;
 mod widgets;
 
@@ -15,7 +14,6 @@ use gpui_kit::component::input::InputState;
 use gpui_kit::*;
 use images::{Art, Images};
 use model::*;
-use replay::{NotYet, Replays};
 use std::collections::HashMap;
 use std::sync::Arc;
 
@@ -44,7 +42,7 @@ pub(crate) enum Target {
 
 pub(crate) struct Online {
     api: Arc<dyn BoardsApi>,
-    replays: Box<dyn Replays>,
+    watch_notice: Option<(bool, String)>,
     pretend_running: bool,
     trail: Trail,
     overview: Load<Overview>,
@@ -78,7 +76,7 @@ impl Online {
         };
         Self {
             api,
-            replays: Box::new(NotYet),
+            watch_notice: None,
             pretend_running,
             trail: Trail::new(),
             overview: Load::Idle,
@@ -491,6 +489,48 @@ impl Shell {
 
     pub(crate) fn board_category(&self) -> Category {
         self.online.board_category.unwrap_or(self.online.category)
+    }
+
+    /// Ask the running game to play lap `id` as the ghost in Time Trial.
+    pub(crate) fn online_watch(&mut self, id: String, cx: &mut Context<Self>) {
+        let (Some(api), Some(game)) = (
+            self.mp
+                .as_ref()
+                .map(|s| swofty_core::timetrial::api::Api::new(&s.token)),
+            self.install.as_ref().map(|i| i.dir.clone()),
+        ) else {
+            return;
+        };
+        self.online.watch_notice = Some((true, swofty_i18n::tr("Sending the lap to the game…").to_owned()));
+        cx.notify();
+        cx.spawn(async move |this, cx| {
+            let done = cx
+                .background_executor()
+                .spawn(async move { swofty_core::timetrial::watch::request(&api, &game, &id) })
+                .await;
+            this.update(cx, |s, cx| {
+                s.online.watch_notice = Some(match done {
+                    Ok(()) => (
+                        true,
+                        swofty_i18n::tr(
+                            "Sent. Start a Time Trial on this lap's track and it plays as the ghost.",
+                        )
+                        .to_owned(),
+                    ),
+                    Err(e) => {
+                        crate::app_log::action("watch a lap in game").failed(&e);
+                        (false, e)
+                    }
+                });
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+    }
+
+    pub(crate) fn online_watch_notice(&self) -> Option<&(bool, String)> {
+        self.online.watch_notice.as_ref()
     }
 
     pub(crate) fn online_game_running(&self) -> bool {

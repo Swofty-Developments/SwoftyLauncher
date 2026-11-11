@@ -195,6 +195,15 @@ impl Api {
         )
     }
 
+    /// A lap's `.swlap` file.
+    pub fn lap_file(&self, id: &str) -> Result<Vec<u8>, ApiError> {
+        self.get(
+            &format!("/v1/tt/laps/{id}/file"),
+            UPLOAD_TIMEOUT,
+            64 * 1024 * 1024,
+        )
+    }
+
     /// A JSON document of the boards server, read with the sign-in.
     pub fn get_json<T: serde::de::DeserializeOwned>(&self, path: &str) -> Result<T, ApiError> {
         let bytes = self.get(path, BOARD_TIMEOUT, 8 * 1024 * 1024)?;

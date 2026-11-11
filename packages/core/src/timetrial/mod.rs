@@ -13,6 +13,7 @@ pub mod queue;
 pub mod swlap;
 pub mod toast;
 pub mod upload;
+pub mod watch;
 
 use std::path::{Path, PathBuf};
 
