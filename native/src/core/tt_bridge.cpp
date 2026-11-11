@@ -180,6 +180,7 @@ const runtime::Sig S_REPLAY_LOAD_SESSION{"site_Game_Replay_LoadFullReplay_sessio
 const runtime::Sig S_REPLAY_LOAD_SLOT{"site_Game_Replay_LoadFullReplay_save_slot_142c4b3fc", "48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 0F 84 ?? ?? ?? ?? 48 85 FF 74 1E 4C 8B 17", 0x2c4b3fc,
         runtime::Sig::addr, 0, 12};
 const runtime::Sig S_REPLAY_LOAD_START{"Game_ReplayManager_StartLoadSavedReplay_142c45ec0", "56 57 53 48 81 EC 80 02 00 00 80 B9 E1 06 00 00 00 74 2B 48 89 D7 48 89 CE", 0x2c45ec0};
+const runtime::Sig S_REPLAY_LOAD_READY{"site_Game_ReplayManager_StartLoadSavedReplay_ready_142c45f47", "31 DB 84 C0 0F 84 6F 01 00 00 48 83 BE 28 04 00 00 FF", 0x2c45f47};
 const runtime::Sig S_REPLAY_JOB_SELECTED{"site_Game_Replay_SaveFullReplay_component_selected_142c46cf5", "4D 85 F6 0F 84 ?? ?? ?? ?? 4C 8B A2 C0 00 00 00 4C 8B AA D0 00 00 00", 0x2c46cf5};
 const runtime::Sig S_REPLAY_JOB_STORES{"site_Game_Replay_SaveFullReplay_backing_stores_142c46ebd", "49 83 BC 24 B8 02 00 00 00 0F 84 ?? ?? ?? ?? 49 83 BD B8 02 00 00 00 0F 84", 0x2c46ebd};
 const runtime::Sig S_REPLAY_JOB_ALLOC{"site_Game_Replay_SaveFullReplay_allocation_142c46f33", "48 85 C0 0F 84 ?? ?? ?? ?? 48 89 C5 48 8B 07 48 89 F9 FF 50 20", 0x2c46f33};
@@ -1299,6 +1300,21 @@ void replay_write_setup(const std::wstring &frr)
 }
 
 safetyhook::InlineHook h_load_start;
+safetyhook::MidHook h_load_ready;
+std::atomic<bool> replay_play_forcing{false};
+// The load start asks one of two global objects whether a load may start now (virtual +0x10). It answers no on track. The probe logs the
+// object, its function and the answer; during the play test a no is turned into a yes.
+void replay_load_ready_mid(safetyhook::Context &c)
+{
+    static std::atomic<int> n{0};
+    uint64_t fn = runtime::readable(reinterpret_cast<void *>(c.rcx), 8) && runtime::readable(reinterpret_cast<void *>(peek64(c.rcx) + 0x10), 8) ? peek64(peek64(c.rcx) + 0x10) : 0;
+    bool yes = (c.rax & 0xff) != 0, force = !yes && replay_play_forcing.load();
+    if (++n <= 12)
+        swofty::log("[replay] load start: readiness object base+0x%llx, function base+0x%llx, answer %d%s", (unsigned long long)(c.rcx - swofty::api->module_base()),
+                    (unsigned long long)(fn ? fn - swofty::api->module_base() : 0), yes ? 1 : 0, force ? " (turned into yes for the play test)" : "");
+    if (force)
+        c.rax |= 1;
+}
 std::mutex replay_load_lock;
 std::wstring replay_load_path;
 std::string replay_load_setup;
@@ -1567,6 +1583,7 @@ void replay_save_entry_mid(safetyhook::Context &c)
 }
 
 int64_t replay_after_ms = 0;
+std::string replay_play_path;
 std::atomic<int64_t> replay_session_best_ms{0};
 bool replay_capture_any = false;
 
@@ -1606,6 +1623,92 @@ void replay_tick(uint64_t sys, const char *slot)
     if (n <= 5 || n % 20000 == 0)
         swofty::log("[replay] tick %s entry %llu (replay system 0x%llx, GameReplaySystem vtable %s, %llu such entries); pending mark %lld", slot, (unsigned long long)n, (unsigned long long)sys,
                     vt_ok ? "yes" : "no", (unsigned long long)ours_entries[which].load(), (long long)replay_pending_ms.load());
+    // SWOFTY_TT_REPLAY_PLAY=<replay file path as the game sees it> is a test switch: 40 s into our content's session the file is loaded into
+    // the live session through the game's own load, and 8 s later the replay system is put into full replay playback of the whole buffer
+    // (mode 0, state 2, clip over the module's duration), the way the fastest lap view's update does it. Every step is logged.
+    if (vt_ok && !replay_play_path.empty() && bridge_on && content_ours() && h_load_start) {
+        static std::atomic<int64_t> at{0};
+        static std::atomic<int> stage{0};
+        int64_t now = now_ms();
+        auto state_line = [&](const char *when) {
+            uint64_t list = peek64(sys + 0x98), module = list && runtime::readable(reinterpret_cast<void *>(list), 8) ? peek64(list) : 0;
+            float duration = 0;
+            if (module && runtime::readable(reinterpret_cast<void *>(module), 0x110))
+                memcpy(&duration, reinterpret_cast<void *>(module + 0xe8), 4);
+            swofty::log("[replay] play test %s: system 0x%llx state [+0x20] %u, [+0x88] %u, flags +0x42..45 %02x %02x %02x %02x, first module 0x%llx duration [+0xe8] %.3f clip [+0xfd] %u", when, (unsigned long long)sys,
+                        unsigned(peek32(sys + 0x20)), unsigned(peek32(sys + 0x88)), unsigned(peek32(sys + 0x42) & 0xff), unsigned(peek32(sys + 0x43) & 0xff), unsigned(peek32(sys + 0x44) & 0xff),
+                        unsigned(peek32(sys + 0x45) & 0xff), (unsigned long long)module, double(duration), module ? unsigned(peek32(module + 0xfd) & 0xff) : 0u);
+            return std::pair<uint64_t, float>(module, duration);
+        };
+        if (stage.load() == 0 && peek32(sys + 0x20) != 0)
+            at = 0;
+        else if (!at.load())
+            at = now + 30000;
+        else if (stage.load() == 0 && now >= at.load() && stage.exchange(1) == 0) {
+            std::string how;
+            uint64_t mgr = replay_manager_ptr.load();
+            if (!mgr)
+                mgr = replay_find_manager(sys, how);
+            state_line("before the load");
+            bool flag = mgr && runtime::readable(reinterpret_cast<void *>(mgr), 0x700) && (peek32(mgr + 0x6e1) & 0xff);
+            swofty::log("[replay] play test: manager 0x%llx, recording flag %d, file %s", (unsigned long long)mgr, flag ? 1 : 0, replay_play_path.c_str());
+            if (flag) {
+                std::wstring w(replay_play_path.begin(), replay_play_path.end());
+                uint64_t q38 = peek64(mgr + 0x38), active = q38 && runtime::readable(reinterpret_cast<void *>(q38 + 400), 8) ? peek64(q38 + 400) : 0;
+                uint64_t q468 = peek64(mgr + 0x468), q778 = q468 && runtime::readable(reinterpret_cast<void *>(q468 + 0x778), 8) ? peek64(q468 + 0x778) : 0;
+                swofty::log("[replay] play test: load start guards: job queue [+0x150] 0x%llx, [[+0x38]+400] 0x%llx (must be 0), [+0x428] 0x%llx (must be -1), [[[+0x468]+0x778]+0xa0] %u, attributes 0x%lx",
+                            (unsigned long long)peek64(mgr + 0x150), (unsigned long long)active, (unsigned long long)peek64(mgr + 0x428),
+                            q778 && runtime::readable(reinterpret_cast<void *>(q778 + 0xa0), 1) ? unsigned(peek32(q778 + 0xa0) & 0xff) : 999u, (unsigned long)GetFileAttributesW(w.c_str()));
+                uintptr_t gbase = swofty::api->module_base();
+                auto busy = [&] { return runtime::same_build() ? reinterpret_cast<int (*)(uint64_t)>(gbase + 0x391dda0)(peek64(mgr + 0x150)) : -1; };
+                swofty::log("[replay] play test: job queue busy %d while recording; recording is stopped (state 1) before the load", busy());
+                if (runtime::same_build())
+                    reinterpret_cast<void (*)(uint64_t, uint32_t, uint32_t)>(gbase + 0x45c74b0)(sys, 1, 1);
+                bool ok = false;
+                replay_play_forcing = true;
+                for (int k = 0; k < 4 && !ok; k++) {
+                    Sleep(50);
+                    int b = busy();
+                    ok = h_load_start.call<bool>(mgr, w.c_str());
+                    if (true)
+                        swofty::log("[replay] play test: try %d: job queue busy %d, system state %u, the game's load start returned %d", k, b, unsigned(peek32(sys + 0x20)), ok ? 1 : 0);
+                }
+                replay_play_forcing = false;
+                if (!ok && active) {
+                    *reinterpret_cast<uint64_t *>(q38 + 400) = 0;
+                    ok = h_load_start.call<bool>(mgr, w.c_str());
+                    *reinterpret_cast<uint64_t *>(q38 + 400) = active;
+                    swofty::log("[replay] play test: with [[+0x38]+400] cleared for the call the load start returned %d", ok ? 1 : 0);
+                }
+            }
+            at = now + 8000;
+        } else if (stage.load() == 1 && now >= at.load() && stage.exchange(2) == 1) {
+            auto [module, duration] = state_line("after the load");
+            uintptr_t base = swofty::api->module_base();
+            if (runtime::same_build() && module) {
+                reinterpret_cast<void (*)(uint64_t, uint32_t)>(base + 0x45cafc0)(sys, 0);
+                reinterpret_cast<void (*)(uint64_t, uint32_t, uint32_t)>(base + 0x45c74b0)(sys, 2, 1);
+                float zero = 0;
+                memcpy(reinterpret_cast<void *>(sys + 0x7c), &zero, 4);
+                *reinterpret_cast<uint8_t *>(sys + 0x7a) = 1;
+                *reinterpret_cast<uint8_t *>(sys + 0x42) = 0;
+                *reinterpret_cast<uint8_t *>(sys + 0x43) = 1;
+                *reinterpret_cast<uint8_t *>(sys + 0x44) = 0;
+                *reinterpret_cast<uint8_t *>(sys + 0x45) = 0;
+                *reinterpret_cast<uint8_t *>(module + 0xfd) = 1;
+                memcpy(reinterpret_cast<void *>(module + 0x100), &zero, 4);
+                memcpy(&duration, reinterpret_cast<void *>(module + 0xe8), 4);
+                float end = duration > 0.5f ? duration : 100000.0f;
+                memcpy(reinterpret_cast<void *>(module + 0x104), &end, 4);
+                swofty::log("[replay] play test: mode 0 and state 2 set, clip 0..%.3f (module duration now %.3f)", double(end), double(duration));
+            }
+            at = now + 3000;
+        } else if (stage.load() >= 2 && stage.load() < 6 && now >= at.load()) {
+            stage++;
+            at = now + 5000;
+            state_line("while playing");
+        }
+    }
     // SWOFTY_TT_REPLAY_AFTER=<seconds> is a test switch: a save is marked that long after our content's session first ticks, and again
     // after each further interval (three times at most), without waiting for a finished lap.
     if (vt_ok && replay_after_ms > 0 && bridge_on && content_ours()) {
@@ -2057,6 +2160,10 @@ void setup()
         char av[8] = {};
         DWORD an = GetEnvironmentVariableA("SWOFTY_TT_REPLAY_AFTER", av, sizeof av);
         replay_after_ms = an && an < sizeof av ? int64_t(atoi(av)) * 1000 : 0;
+        char pv[512] = {};
+        DWORD pn = GetEnvironmentVariableA("SWOFTY_TT_REPLAY_PLAY", pv, sizeof pv);
+        if (pn && pn < sizeof pv)
+            replay_play_path = pv;
         char fv[8] = {};
         DWORD fn = GetEnvironmentVariableA("SWOFTY_TT_REPLAY_FORCE", fv, sizeof fv);
         replay_force = fn && fn < sizeof fv ? (!strcmp(fv, "self") ? 1 : !strcmp(fv, "slot") ? 2 : 0) : 0;
@@ -2186,6 +2293,8 @@ void setup()
                         if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&replay_load_start_hook)))
                             h_load_start = std::move(*h);
                     swofty::log("[replay] load start hook %s", h_load_start ? "armed" : "NOT armed");
+                    if (uintptr_t a = runtime::find(S_REPLAY_LOAD_READY, "boards", "boards"))
+                        hook_mid(h_load_ready, a, replay_load_ready_mid, "load start readiness");
                     if (uintptr_t a = runtime::find(S_SAVE_SLOT_DEFAULT, "boards", "boards"))
                         if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&slot_default_hook)))
                             h_slot_default = std::move(*h);
