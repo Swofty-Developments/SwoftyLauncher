@@ -386,3 +386,254 @@ pub fn merge(kind: Kind, base: &Pkg, ours: &Pkg, theirs: &Pkg) -> Result<Merged>
         stats: cx.stats,
     })
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::ui::node::{NodeExt, arr, boolv, group_node, node_paths_of, obj, s, set_prop, u32v};
+    use swofty_formats::pkg::Arr;
+
+    fn template(nodes: Vec<Node>) -> Pkg {
+        Pkg {
+            name: [0; 4],
+            root: obj(vec![("Templates", arr(nodes))]),
+            vca: Vec::new(),
+            layout: None,
+        }
+    }
+
+    fn leaf(name: &str) -> Node {
+        group_node(name, vec![("visible", boolv(true))], &[], vec![])
+    }
+
+    fn parent(kids: Vec<Node>) -> Node {
+        group_node("panel", vec![("visible", boolv(true))], &[], kids)
+    }
+
+    fn with_prop(mut n: Node, key: &str, value: u32) -> Node {
+        set_prop(&mut n, key, u32v(value)).unwrap();
+        n
+    }
+
+    fn names(p: &Pkg) -> Vec<String> {
+        let mut v = Vec::new();
+        node_paths_of(&p.root, "", &mut v);
+        v.into_iter().map(|(k, _)| k).collect()
+    }
+
+    fn merged(base: &Pkg, a: &Pkg, b: &Pkg) -> Merged {
+        let m = merge(Kind::Template, base, a, b).unwrap();
+        let back = Pkg::parse(&m.pkg.to_bytes().unwrap()).unwrap();
+        assert_eq!(
+            names(&back),
+            names(&m.pkg),
+            "the merged tree survives a round trip"
+        );
+        m
+    }
+
+    #[test]
+    fn nodes_both_addons_add_stay_and_each_changed_property_stays() {
+        let base = template(vec![parent(vec![leaf("a"), leaf("b")])]);
+        let ours = template(vec![parent(vec![
+            with_prop(leaf("a"), "x", 1),
+            leaf("b"),
+            leaf("ours_new"),
+        ])]);
+        let theirs = template(vec![parent(vec![
+            leaf("a"),
+            with_prop(leaf("b"), "y", 2),
+            leaf("theirs_new"),
+        ])]);
+        let m = merged(&base, &ours, &theirs);
+        assert!(m.conflicts.is_empty(), "{:?}", m.conflicts);
+        assert_eq!(
+            names(&m.pkg),
+            [
+                "panel",
+                "panel.a",
+                "panel.b",
+                "panel.ours_new",
+                "panel.theirs_new"
+            ]
+        );
+        let kids = m
+            .pkg
+            .root
+            .as_obj()
+            .unwrap()
+            .get("Templates")
+            .unwrap()
+            .as_arr()
+            .unwrap();
+        let panel = &kids.items[0];
+        let a = panel.child("a").unwrap().props().unwrap().get("x").is_some();
+        let b = panel.child("b").unwrap().props().unwrap().get("y").is_some();
+        assert!(a && b, "both addons' edits of stock nodes stay");
+        assert_eq!(m.stats.added, 1);
+    }
+
+    #[test]
+    fn a_property_changed_two_ways_is_a_conflict_the_later_addon_wins() {
+        let base = template(vec![parent(vec![with_prop(leaf("a"), "x", 0)])]);
+        let ours = template(vec![parent(vec![with_prop(leaf("a"), "x", 1)])]);
+        let theirs = template(vec![parent(vec![with_prop(leaf("a"), "x", 2), leaf("kept")])]);
+        let m = merged(&base, &ours, &theirs);
+        assert_eq!(m.conflicts.len(), 1);
+        assert_eq!(m.conflicts[0].path.show(), "panel.a [props/x]");
+        let panel = &m
+            .pkg
+            .root
+            .as_obj()
+            .unwrap()
+            .get("Templates")
+            .unwrap()
+            .as_arr()
+            .unwrap()
+            .items[0];
+        let x = panel.child("a").unwrap().props().unwrap().get("x").unwrap();
+        assert_eq!(x.as_val().unwrap().as_u32(), Some(2));
+        assert!(panel.child("kept").is_ok(), "the conflict is only that node");
+    }
+
+    #[test]
+    fn a_deletion_stands_unless_the_other_addon_edited_the_node() {
+        let base = template(vec![parent(vec![leaf("gone"), leaf("edited"), leaf("same")])]);
+        let ours = template(vec![parent(vec![leaf("edited"), leaf("same")])]);
+        let theirs = template(vec![parent(vec![
+            leaf("gone"),
+            with_prop(leaf("edited"), "x", 1),
+            leaf("same"),
+        ])]);
+        let m = merged(&base, &ours, &theirs);
+        assert!(m.conflicts.is_empty(), "{:?}", m.conflicts);
+        assert_eq!(names(&m.pkg), ["panel", "panel.edited", "panel.same"]);
+        let ours = template(vec![parent(vec![leaf("edited"), leaf("same")])]);
+        let theirs = template(vec![parent(vec![
+            leaf("gone"),
+            with_prop(leaf("edited"), "x", 1),
+            with_prop(leaf("same"), "z", 3),
+        ])]);
+        let base = template(vec![parent(vec![leaf("gone"), leaf("edited"), leaf("same")])]);
+        let m = merged(&base, &ours, &theirs);
+        assert!(m.conflicts.is_empty());
+        let ours = template(vec![parent(vec![leaf("same")])]);
+        let theirs = template(vec![parent(vec![
+            leaf("gone"),
+            with_prop(leaf("edited"), "x", 1),
+            leaf("same"),
+        ])]);
+        let m = merged(&base, &ours, &theirs);
+        assert_eq!(m.conflicts.len(), 1);
+        assert_eq!(m.conflicts[0].path.show(), "panel.edited");
+        assert!(
+            names(&m.pkg).contains(&"panel.edited".to_owned()),
+            "the later addon's edit wins there"
+        );
+    }
+
+    #[test]
+    fn an_unchanged_side_takes_the_other_side_whole() {
+        let base = template(vec![parent(vec![leaf("a")])]);
+        let theirs = template(vec![parent(vec![leaf("a"), leaf("b")])]);
+        let m = merged(&base, &base, &theirs);
+        assert!(same(&m.pkg.root, &theirs.root));
+        let m = merged(&base, &theirs, &base);
+        assert!(same(&m.pkg.root, &theirs.root));
+    }
+
+    fn scene(elements: &[&str], hidden: u32) -> Pkg {
+        let el = |name: &str| {
+            obj(vec![
+                ("name", s(name)),
+                ("elementId", u32v(swofty_formats::hash::djb2(name))),
+                ("hidden", u32v(hidden)),
+                ("children", Node::Arr(Arr::new(vec![]))),
+            ])
+        };
+        let mut root = el("root");
+        root.as_obj_mut()
+            .unwrap()
+            .set("children", arr(elements.iter().map(|n| el(n)).collect()));
+        let entry = obj(vec![
+            (
+                "name",
+                Node::Val(Val::raw(*b"u64 ", vec![1, 0, 0, 0, 0, 0, 0, 0])),
+            ),
+            ("scene", root),
+            ("nodeidlookup", arr(vec![])),
+        ]);
+        Pkg {
+            name: [0; 4],
+            root: obj(vec![("scenelist", arr(vec![entry]))]),
+            vca: Vec::new(),
+            layout: None,
+        }
+    }
+
+    #[test]
+    fn scenes_merge_by_element_name_and_the_lookup_follows() {
+        let base = scene(&["a"], 0);
+        let ours = scene(&["a", "ours_box"], 0);
+        let theirs = scene(&["a", "theirs_box"], 0);
+        let m = merge(Kind::Scene, &base, &ours, &theirs).unwrap();
+        assert!(m.conflicts.is_empty(), "{:?}", m.conflicts);
+        let entry = &m
+            .pkg
+            .root
+            .as_obj()
+            .unwrap()
+            .get("scenelist")
+            .unwrap()
+            .as_arr()
+            .unwrap()
+            .items[0];
+        let kids: Vec<&str> = crate::ui::idf::elements(entry.as_obj().unwrap().get("scene").unwrap())
+            .into_iter()
+            .map(|(p, _)| p)
+            .map(|p| Box::leak(p.into_boxed_str()) as &str)
+            .collect();
+        assert_eq!(kids, ["root", "a", "ours_box", "theirs_box"]);
+        let lookup: Vec<u32> = entry
+            .as_obj()
+            .unwrap()
+            .get("nodeidlookup")
+            .unwrap()
+            .as_arr()
+            .unwrap()
+            .items
+            .iter()
+            .filter_map(|v| v.as_val().and_then(Val::as_u32))
+            .collect();
+        let mut want: Vec<u32> = ["root", "a", "ours_box", "theirs_box"]
+            .iter()
+            .map(|n| swofty_formats::hash::djb2(n))
+            .collect();
+        want.sort_unstable();
+        assert_eq!(lookup, want);
+    }
+
+    #[test]
+    fn a_scene_element_both_addons_move_differently_is_a_conflict() {
+        let base = scene(&["a"], 0);
+        let m = merge(Kind::Scene, &base, &scene(&["a"], 1), &scene(&["a"], 2)).unwrap();
+        assert!(
+            m.conflicts.iter().any(|c| c.path.show().contains("root.a")),
+            "{:?}",
+            m.conflicts.iter().map(|c| c.path.show()).collect::<Vec<_>>()
+        );
+    }
+
+    #[test]
+    fn lookup_finds_a_conflict_path_again() {
+        let base = template(vec![parent(vec![with_prop(leaf("a"), "x", 0)])]);
+        let m = merged(
+            &base,
+            &template(vec![parent(vec![with_prop(leaf("a"), "x", 1)])]),
+            &template(vec![parent(vec![with_prop(leaf("a"), "x", 2)])]),
+        );
+        let keys = m.conflicts[0].path.keys();
+        let found = lookup(&base.root, &keys).unwrap();
+        assert_eq!(found.as_val().unwrap().as_u32(), Some(0));
+    }
+}
