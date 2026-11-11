@@ -108,6 +108,7 @@ pub enum Drift {
     OpenJournal(String),
     NewBuild { baseline: String, current: String },
     LeftInPlace(String),
+    Stranded(String),
     NoOriginal(String),
 }
 
@@ -125,6 +126,10 @@ impl std::fmt::Display for Drift {
             Drift::LeftInPlace(p) => write!(
                 f,
                 "{p} changed since it was written (game update?); left in place"
+            ),
+            Drift::Stranded(p) => write!(
+                f,
+                "{p} is not what the earlier session wrote in the old game folder nor its original; left in place"
             ),
             Drift::NoOriginal(p) => write!(
                 f,
@@ -405,7 +410,6 @@ impl<'a> Installer<'a> {
             if sessions_only && !j.session {
                 continue;
             }
-            self.check_stranded(&j, hashes)?;
             let (id, profile, session) = (j.id.clone(), j.profile.clone(), j.session);
             let changes = j.entries.len();
             let (drift, kept) = self.rollback(j, hashes)?;
@@ -421,44 +425,14 @@ impl<'a> Installer<'a> {
         Ok(out)
     }
 
-    /// A journal written for a game folder that is gone rolls back here only
-    /// when every file it finished holds what it wrote or the original, or
-    /// when none of them is here at all.
-    fn check_stranded(&self, j: &Journal, hashes: &mut Hashes) -> Result<()> {
-        let Some(was) = j.game.as_deref() else {
-            return Ok(());
-        };
-        if was.join(crate::GAME_EXE).is_file() || crate::copies::same_dir(was, &self.game.dir) {
-            return Ok(());
-        }
-        let (mut changed, mut here) = (0, 0);
-        for e in j.entries.iter().filter(|e| e.state == State::Done) {
-            if !matches!(e.op, Op::ReplaceFile | Op::CreateFile) {
-                continue;
-            }
-            let now = hashes.sha256_opt(&self.path(&e.path))?;
-            if now.is_some() && (now == e.after || e.op == Op::CreateFile) {
-                here += 1;
-            }
-            let fits = now == e.after
-                || match e.op {
-                    Op::ReplaceFile => now.is_some() && now == e.before,
-                    _ => now.is_none(),
-                };
-            if !fits {
-                changed += 1;
-            }
-        }
-        if changed == 0 || here == 0 {
-            return Ok(());
-        }
-        Err(Error::Other(format!(
-            "an earlier session's undo record is for F1 25 in {}, which is gone, and {changed} of its file(s) in {} \
-             don't match it, so nothing was rolled back. Move the F1 25 folder back to {} and try again",
-            was.display(),
-            self.game.dir.display(),
-            was.display()
-        )))
+    /// A journal written for a game folder that no longer has the game, as
+    /// after Steam moved the library or the game was reinstalled elsewhere.
+    /// Only the files here that still hold exactly what it wrote are its to
+    /// roll back; the rest stay and are reported.
+    fn stranded(&self, j: &Journal) -> bool {
+        j.game.as_deref().is_some_and(|was| {
+            !was.join(crate::GAME_EXE).is_file() && !crate::copies::same_dir(was, &self.game.dir)
+        })
     }
 
     fn rollback(&self, j: Journal, hashes: &mut Hashes) -> Result<(Vec<Drift>, Vec<String>)> {
@@ -479,7 +453,15 @@ impl<'a> Installer<'a> {
             crate::stdlib::careers::record_session(self.data, &j.profile, since_ms, &log).ok();
         }
         let mut report = Vec::new();
+        let stranded = self.stranded(&j);
         let same_build = j.build_id == self.game.identity.build_id;
+        let left = |path: &str| {
+            if stranded {
+                Drift::Stranded(path.to_owned())
+            } else {
+                Drift::LeftInPlace(path.to_owned())
+            }
+        };
         for e in j.entries.iter().rev() {
             match e.op {
                 Op::ReplaceFile => {
@@ -489,12 +471,12 @@ impl<'a> Installer<'a> {
                     if now.as_deref() == Some(before) {
                         continue;
                     }
-                    let ours = now == e.after || e.state == State::Pending;
+                    let ours = now == e.after || (!stranded && e.state == State::Pending);
                     if ours && same_build {
                         self.restore_original(before, &path)?;
                         hashes.wrote(&path, before);
                     } else {
-                        report.push(Drift::LeftInPlace(e.path.clone()));
+                        report.push(left(&e.path));
                     }
                 }
                 Op::CreateFile => {
@@ -502,13 +484,14 @@ impl<'a> Installer<'a> {
                     match hashes.sha256_opt(&path)? {
                         None => {}
                         Some(now)
-                            if e.state == State::Pending
-                                || Some(&now) == e.after.as_ref()
-                                || e.path == crate::shaders::LIVE_FILE =>
+                            if Some(&now) == e.after.as_ref()
+                                || (!stranded
+                                    && (e.state == State::Pending
+                                        || e.path == crate::shaders::LIVE_FILE)) =>
                         {
                             with_retry(&path, || crate::remove_placed(&path))?;
                         }
-                        Some(_) => report.push(Drift::LeftInPlace(e.path.clone())),
+                        Some(_) => report.push(left(&e.path)),
                     }
                 }
                 Op::CreateDir => {
@@ -1582,6 +1565,163 @@ mod tests {
             format!("WINE REGISTRY Version 2\n\n{OVERRIDE_HEADER}\n{OVERRIDE_VALUE}\n")
         );
         assert_eq!(remove_override(&fresh).unwrap(), "WINE REGISTRY Version 2\n");
+    }
+
+    struct Stranded {
+        root: PathBuf,
+        data: PathBuf,
+        game: Game,
+    }
+
+    impl Stranded {
+        /// A journal for `old/F1 25`, which is gone, whose files are now in
+        /// `moved/F1 25`: `a` and `c` hold what it wrote, `b` and `d` hold
+        /// something else, `e` was still pending, and `f` already holds its
+        /// original.
+        fn new(name: &str, build_id: &str) -> Self {
+            let root = std::env::temp_dir().join(format!("swofty-stranded-{name}-{}", std::process::id()));
+            std::fs::remove_dir_all(&root).ok();
+            let data = root.join("data");
+            let dir = root.join("moved/F1 25");
+            let objects = Objects {
+                root: data.join("baseline/objects"),
+            };
+            let mut shas = BTreeMap::new();
+            for (key, body) in [
+                ("orig-a", "orig-a"),
+                ("orig-b", "orig-b"),
+                ("orig-e", "orig-e"),
+                ("orig-f", "orig-f"),
+            ] {
+                let src = root.join("src").join(key);
+                std::fs::create_dir_all(src.parent().unwrap()).unwrap();
+                std::fs::write(&src, body).unwrap();
+                shas.insert(key, objects.put_file(&src).unwrap());
+            }
+            for key in ["mod-a", "mod-b", "mod-c", "mod-d", "mod-e"] {
+                shas.insert(key, sha256_bytes(key.as_bytes()));
+            }
+            for (rel, body) in [
+                (crate::GAME_EXE, "exe"),
+                ("a.erp", "mod-a"),
+                ("b.erp", "from-elsewhere"),
+                ("swofty/c.dll", "mod-c"),
+                ("swofty/d.dll", "another-d"),
+                ("e.erp", "partial-e"),
+                ("f.erp", "orig-f"),
+            ] {
+                let p = dir.join(rel);
+                std::fs::create_dir_all(p.parent().unwrap()).unwrap();
+                std::fs::write(p, body).unwrap();
+            }
+            let mut j = Journal::create(&data, "MODDED", "1", true).unwrap();
+            j.game = Some(root.join("old/F1 25"));
+            let sha = |k: &str| Some(shas[k].clone());
+            j.begin_all([
+                (Op::ReplaceFile, "a.erp".to_owned(), sha("orig-a"), sha("mod-a")),
+                (Op::ReplaceFile, "b.erp".to_owned(), sha("orig-b"), sha("mod-b")),
+                (Op::CreateFile, "swofty/c.dll".to_owned(), None, sha("mod-c")),
+                (Op::CreateFile, "swofty/d.dll".to_owned(), None, sha("mod-d")),
+                (Op::ReplaceFile, "e.erp".to_owned(), sha("orig-e"), sha("mod-e")),
+                (Op::ReplaceFile, "f.erp".to_owned(), sha("orig-f"), sha("mod-e")),
+            ])
+            .unwrap();
+            for i in [0, 1, 2, 3, 5] {
+                j.done(i).unwrap();
+            }
+            j.commit().unwrap();
+            let game = Game {
+                dir,
+                user_reg: None,
+                identity: Identity {
+                    build_id: build_id.into(),
+                    exe_sha256: String::new(),
+                },
+            };
+            Self { root, data, game }
+        }
+
+        fn read(&self, rel: &str) -> Option<String> {
+            std::fs::read_to_string(self.game.dir.join(rel)).ok()
+        }
+    }
+
+    impl Drop for Stranded {
+        fn drop(&mut self) {
+            std::fs::remove_dir_all(&self.root).ok();
+        }
+    }
+
+    #[test]
+    fn a_journal_for_a_folder_that_is_gone_rolls_back_only_what_is_provably_ours() {
+        let f = Stranded::new("moved", "1");
+        let rolled = Installer::new(&f.data, &f.game).roll_back(true).unwrap();
+        assert_eq!(rolled.len(), 1);
+        let mut drift = rolled[0].drift.clone();
+        drift.sort_by_key(|d| d.to_string());
+        assert_eq!(
+            drift,
+            [
+                Drift::Stranded("b.erp".into()),
+                Drift::Stranded("e.erp".into()),
+                Drift::Stranded("swofty/d.dll".into()),
+            ]
+        );
+        assert_eq!(f.read("a.erp").as_deref(), Some("orig-a"));
+        assert_eq!(f.read("b.erp").as_deref(), Some("from-elsewhere"));
+        assert_eq!(f.read("swofty/c.dll"), None);
+        assert_eq!(f.read("swofty/d.dll").as_deref(), Some("another-d"));
+        assert_eq!(f.read("e.erp").as_deref(), Some("partial-e"));
+        assert_eq!(f.read("f.erp").as_deref(), Some("orig-f"));
+        assert!(Journal::open(&f.data).unwrap().is_empty());
+        assert_eq!(
+            Drift::Stranded("b.erp".into()).to_string(),
+            "b.erp is not what the earlier session wrote in the old game folder nor its original; left in place"
+        );
+    }
+
+    #[test]
+    fn a_journal_for_a_folder_that_is_gone_leaves_a_newer_build_alone_and_closes() {
+        let f = Stranded::new("rebuilt", "2");
+        let rolled = Installer::new(&f.data, &f.game).roll_back(true).unwrap();
+        let mut drift = rolled[0].drift.clone();
+        drift.sort_by_key(|d| d.to_string());
+        assert_eq!(
+            drift,
+            [
+                Drift::Stranded("a.erp".into()),
+                Drift::Stranded("b.erp".into()),
+                Drift::Stranded("e.erp".into()),
+                Drift::Stranded("swofty/d.dll".into()),
+            ]
+        );
+        assert_eq!(f.read("a.erp").as_deref(), Some("mod-a"));
+        assert_eq!(
+            f.read("swofty/c.dll"),
+            None,
+            "an added file it wrote is removed on any build"
+        );
+        assert!(Journal::open(&f.data).unwrap().is_empty());
+    }
+
+    #[test]
+    fn a_journal_whose_folder_still_has_the_game_treats_pending_files_as_its_own() {
+        let f = Stranded::new("still-there", "1");
+        let old = f.root.join("old/F1 25");
+        std::fs::create_dir_all(&old).unwrap();
+        std::fs::write(old.join(crate::GAME_EXE), "exe").unwrap();
+        let rolled = Installer::new(&f.data, &f.game).roll_back(true).unwrap();
+        let mut drift = rolled[0].drift.clone();
+        drift.sort_by_key(|d| d.to_string());
+        assert_eq!(
+            drift,
+            [
+                Drift::LeftInPlace("b.erp".into()),
+                Drift::LeftInPlace("swofty/d.dll".into()),
+            ]
+        );
+        assert_eq!(f.read("e.erp").as_deref(), Some("orig-e"));
+        assert!(Journal::open(&f.data).unwrap().is_empty());
     }
 
     #[test]

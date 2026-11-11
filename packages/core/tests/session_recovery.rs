@@ -616,7 +616,7 @@ fn a_session_whose_game_folder_was_moved_is_rolled_back_where_its_files_are() {
 }
 
 #[test]
-fn a_moved_folder_whose_files_changed_keeps_the_undo_record() {
+fn a_moved_folder_whose_files_changed_rolls_back_only_what_is_ours() {
     let f = Fixture::new("moved-changed");
     let game = f.game();
     f.session(&game);
@@ -627,30 +627,34 @@ fn a_moved_folder_whose_files_changed_keeps_the_undo_record() {
     std::fs::remove_file(moved.dir.join(format!("{LAUNCHER}.bak"))).unwrap();
 
     let lock = SessionLock::try_acquire(&f.data).unwrap().unwrap();
-    let err = recovery::recover(&lock, &f.data, &moved, Scope::Sessions)
-        .unwrap_err()
-        .to_string();
+    let r = recovery::recover(&lock, &f.data, &moved, Scope::Sessions).unwrap();
+    assert_eq!(r.journals.len(), 1);
+    assert_eq!(
+        r.journals[0].drift,
+        [Drift::Stranded(GVDB.into())],
+        "{:?}",
+        r.lines()
+    );
+    assert!(Journal::open(&f.data).unwrap().is_empty());
+    assert_eq!(
+        std::fs::read_to_string(moved.dir.join(GVDB)).unwrap(),
+        "db-from-elsewhere"
+    );
+    assert_eq!(std::fs::read_to_string(moved.dir.join(UI)).unwrap(), "ui-v1");
+    assert!(!moved.dir.join("version.dll").exists());
     assert!(
-        err.contains(&format!(
-            "undo record is for F1 25 in {}, which is gone",
-            f.game.display()
-        )),
-        "{err}"
+        r.lines().iter().any(|l| l
+            == &format!("{GVDB} is not what the earlier session wrote in the old game folder nor its original; left in place")),
+        "{:?}",
+        r.lines()
     );
     assert!(
-        err.ends_with(&format!(
-            "Move the F1 25 folder back to {} and try again",
-            f.game.display()
-        )),
-        "{err}"
+        r.problems
+            .iter()
+            .any(|p| p.contains("doesn't hold the files it placed")),
+        "{:?}",
+        r.problems
     );
-    assert_eq!(Journal::open(&f.data).unwrap().len(), 1);
-    assert_eq!(std::fs::read_to_string(moved.dir.join(UI)).unwrap(), "ui-modded");
-
-    let offline = recovery::relocate_offline(&f.data, &moved.dir)
-        .unwrap_err()
-        .to_string();
-    assert!(offline.contains("doesn't hold the files it placed"), "{offline}");
     assert!(swofty_core::offline::journal_path(&f.data).exists());
     drop(lock);
     let restore = recovery::restore(&f.data, &moved).unwrap_err().to_string();
