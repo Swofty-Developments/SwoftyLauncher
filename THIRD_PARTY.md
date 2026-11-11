@@ -188,9 +188,27 @@ OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
 ## Project Halo
 
-`native/src/core/live/live_corners_data.hpp` is the official corner table of Project Halo by nyannoying, <https://github.com/nyannoying1337/f1-25-project-halo> (`native/src/halo_corners.hpp`), moved with the namespace changed. `native/src/core/live/live_turns.hpp` adapts the track-name matching and turn lookup of its `native/src/halo_track.cpp`, and the object layouts and read rules in `native/src/core/live/` follow the in-process readers of `game_state_f1_25.cpp`, `tower_reader.cpp` and `tower_state.hpp`.
+Parts of the std lib's HUD and live state are ported from, or follow, Project Halo by nyannoying, <https://github.com/nyannoying1337/f1-25-project-halo>, with its author's permission. Project Halo is under the Project Halo Attribution License 1.0, below.
 
 Uses work from Project Halo by nyannoying: <https://github.com/nyannoying1337/f1-25-project-halo>
+
+Runtime headers, `packages/sdk/include/swofty/`, mirrored in `templates/addon/native/include/swofty/`. They port the generic parts of Halo's HUD plugin: leaf publishing, easing and holds, gap and speed text, the frame loop's cadences and cost meter, the validation log and the timing tower model with its leaf contract.
+
+- `hud_leaves.hpp` from `native/src/leaves.hpp` and `tower_leaves.cpp`
+- `hud_format.hpp` and `timing.hpp` from `native/src/tower_model.cpp` and `hud_model.cpp`
+- `ease.hpp` from `native/src/hud_model.cpp` and `gmeter.cpp`
+- `hud_frame.hpp` from `native/src/halo_hud.cpp`
+- `log_csv.hpp` from the validation log of `native/src/diag_log.cpp`
+
+Formats, `packages/formats/src/`. `surface.rs`, `emb.rs`, `animclip.rs`, `uipre.rs` and the texture link part of `material.rs` follow the file layouts and build steps of Halo's `tools/native/resources.py`, `emb.py` and `halo_native.py`. The code is written for the launcher; the layouts, setter keys and clip packet fields are Halo's measurements of the game.
+
+HUD composer, `packages/core/src/hud/`. `scene.rs`, `template.rs`, `editor.rs`, `textures.rs` and `mod.rs` are ported in parts from `tools/native/halo_native.py`, `build_native.py` and `resources.py`: the element templates, the placement maths and text model, the clip keys, the binding and decision rules, the editor preview and the checks against the stock files. Their file headers carry the notice.
+
+Live state, `native/src/core/live/`. `live_corners_data.hpp` is the official corner table of Halo (`native/src/halo_corners.hpp`), moved with the namespace changed. `live_turns.hpp` adapts the track-name matching and turn lookup of `native/src/halo_track.cpp`. The object layouts and read rules in the other files follow the in-process readers of `game_state_f1_25.cpp`, `tower_reader.cpp` and `tower_state.hpp`.
+
+Documentation. These pages carry the credit line: `docs/reference/ops/hud.md`, `docs/reference/ui/art-resources.md`, `docs/reference/std/hud-leaves.md`, `hud-format.md`, `ease.md`, `hud-frame.md`, `timing.md`, `diag-csv.md`, `live.md`, `docs/make/hud-element.md` and `docs/make/halo-migration.md`.
+
+Formats and game facts, such as offsets, file layouts, setter keys and measured constants, are not covered by the licence.
 
 ```
 Project Halo Attribution License 1.0
@@ -247,11 +265,3 @@ license, not the MIT License or an OSI-approved standard license.
 Swofty UI uses the system's fonts and ships none. Its icon is a raster image and contains no font data.
 
 The site loads Open Sans, Poppins, Quicksand, Source Code Pro and Varela Round from Google Fonts. They use the SIL Open Font License 1.1.
-
-## Project Halo
-
-The generic HUD runtime helpers in `packages/sdk/include/swofty/` (`hud_leaves.hpp`, `hud_format.hpp`, `ease.hpp`, `hud_frame.hpp`, `timing.hpp`, `log_csv.hpp`) port the reusable parts of Project Halo's HUD code (leaf publishing, easing, gap text, the timing tower model and leaf contract, the validation log) with the permission of its author.
-
-The UI art writers in `packages/formats` (`surface.rs`, `emb.rs`, `animclip.rs`, `uipre.rs` and the texture link part of `material.rs`) follow the file layouts and build steps of Project Halo's build tools (`tools/native/resources.py`, `emb.py`, `halo_native.py`), <https://github.com/nyannoying1337/f1-25-project-halo>. The code is written for the launcher; the layouts, setter keys and the clip packet fields are Halo's measurements of the game.
-
-Uses work from Project Halo by nyannoying, <https://github.com/nyannoying1337/f1-25-project-halo>.
