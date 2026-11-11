@@ -97,6 +97,35 @@ inline bool streamline_in(const std::vector<std::string> &modules)
     return false;
 }
 
+// Overlays that patch the D3D12 entry points the core's device hooks patch. RivaTuner Statistics Server's
+// hook attaches when a window is created and hooks over whatever is in the prologue; a prologue the core
+// hooked first sends its trampoline to address 0, so the device hooks are not armed while it is in the process.
+inline constexpr std::string_view DEVICE_HOOK_RIVALS[] = {"RTSSHooks64.dll", "RTSSHooks.dll"};
+
+inline std::string_view device_hook_rival(std::string_view path)
+{
+    std::string_view name = base_name(path);
+    for (auto r : DEVICE_HOOK_RIVALS)
+        if (same_name(name, r))
+            return r;
+    return {};
+}
+
+inline std::string device_hook_rival_in(const std::vector<std::string> &modules)
+{
+    for (auto &m : modules)
+        if (std::string_view r = device_hook_rival(m); !r.empty())
+            return std::string(r);
+    return {};
+}
+
+// Whether the device hooks arm: a rival overlay in the process keeps them off unless SWOFTY_OVERLAY_FG /
+// "overlay_fg" forces them on (forced is -1 when unset).
+inline bool device_hooks_allowed(std::string_view rival, int forced)
+{
+    return rival.empty() || forced > 0;
+}
+
 inline bool xml_int(const std::string &text, const char *element, const char *attr, int &out)
 {
     size_t at = text.find(std::string("<") + element + " ");

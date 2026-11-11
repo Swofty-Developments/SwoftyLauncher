@@ -150,17 +150,26 @@ bool killed(const char *what)
 
 std::wstring hardware_settings_path();
 
-bool before_fg_wanted()
+int before_fg_forced()
 {
-    static const bool on = [] {
-        int forced = -1;
+    static const int forced = [] {
+        int f = -1;
         char v[8] = {};
         DWORD n = GetEnvironmentVariableA("SWOFTY_OVERLAY_FG", v, sizeof v);
         const json::Value &j = runtime::config()["overlay_fg"];
         if (n && n < sizeof v)
-            forced = v[0] != '0' && v[0] != '\0';
+            f = v[0] != '0' && v[0] != '\0';
         else if (j.type == json::Value::Bool)
-            forced = j.b;
+            f = j.b;
+        return f;
+    }();
+    return forced;
+}
+
+bool before_fg_wanted()
+{
+    static const bool on = [] {
+        int forced = before_fg_forced();
         std::wstring path = forced < 0 ? hardware_settings_path() : std::wstring();
         hud::guard::FgSetting game;
         if (!path.empty())
@@ -169,6 +178,22 @@ bool before_fg_wanted()
     }();
     return on;
 }
+
+// RivaTuner Statistics Server attaches to the process when the probe window is made, so this is asked after
+// arm_swapchain; its shared memory names it when it runs but has not attached yet.
+std::string device_hook_rival()
+{
+    for (auto name : hud::guard::DEVICE_HOOK_RIVALS)
+        if (GetModuleHandleA(std::string(name).c_str()))
+            return std::string(name);
+    if (HANDLE rtss = OpenFileMappingW(FILE_MAP_READ, FALSE, L"RTSSSharedMemoryV2")) {
+        CloseHandle(rtss);
+        return "RTSSHooks64.dll (RivaTuner Statistics Server is running)";
+    }
+    return {};
+}
+
+std::string device_hook_rival_seen;
 
 std::vector<std::pair<void *, bool>> told;
 std::vector<void *> unknown_told;
@@ -1658,19 +1683,22 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
         if (!hud::guard::draws_before_present(gate, device_hooked)) {
             fg_active.store(false);
             drop_pending();
+            std::string why = device_hook_rival_seen.empty()
+                                  ? "frame generation was off when the game started, or SWOFTY_OVERLAY_FG=0 / "
+                                    "\"overlay_fg\": false"
+                                  : device_hook_rival_seen + " hooks the same D3D12 entry points";
             if (fg_named) {
                 if (fresh)
                     swofty::log("[overlay] frame generation (%s) owns swapchain %p and the core's D3D12 device hooks "
-                                "did not arm (drawing before frame generation is off: frame generation was off when the game "
-                                "started, or SWOFTY_OVERLAY_FG=0 / \"overlay_fg\": false); the overlay does not draw on it",
-                                c.fg.c_str(), static_cast<void *>(sc));
+                                "did not arm (drawing before frame generation is off: %s); the overlay does not draw on it",
+                                c.fg.c_str(), static_cast<void *>(sc), why.c_str());
             } else if (!fg_watch.told || fresh) {
                 swofty::log("[overlay] swapchain %p was created through %s, frame generation is not off in the game's "
-                            "settings and drawing before frame generation is off (frame generation was off when the game "
-                            "started, or SWOFTY_OVERLAY_FG=0 / \"overlay_fg\": false); the overlay does not draw on it",
+                            "settings and drawing before frame generation is off (%s); the overlay does not draw on it",
                             static_cast<void *>(sc),
                             ffx ? "FidelityFX (amd_fidelityfx_dx12.dll)"
-                                : "Streamline's frame generation hook (sl.dlss_g.dll)");
+                                : "Streamline's frame generation hook (sl.dlss_g.dll)",
+                            why.c_str());
             }
             return;
         }
@@ -1763,26 +1791,46 @@ bool resolve_d3d12()
     return false;
 }
 
+void arm_before_fg();
+
 bool arm()
 {
     if (!resolve_d3d12())
         return false;
     d3d12hooks::on_present(draw_frame);
     d3d12hooks::on_presented(presented);
-    if (before_fg_wanted()) {
-        d3d12hooks::on_setname(on_setname);
-        d3d12hooks::on_barrier(on_barrier);
-        d3d12hooks::on_exec(on_exec);
-        d3d12hooks::ProbeScope probe;
-        device_hooked = d3d12hooks::arm_device();
-        if (!device_hooked)
-            swofty::log("[overlay] the core's D3D12 device hooks did not arm; the overlay cannot draw when frame "
-                        "generation owns the swapchain");
-        else
-            swofty::log("[overlay] drawing before frame generation is on (frame generation is on in the game's "
-                        "settings, or SWOFTY_OVERLAY_FG / \"overlay_fg\")");
+    d3d12hooks::ProbeScope probe;
+    bool swapchain = d3d12hooks::arm_swapchain();
+    if (before_fg_wanted())
+        arm_before_fg();
+    return swapchain;
+}
+
+void arm_before_fg()
+{
+    std::string rival = device_hook_rival();
+    if (!hud::guard::device_hooks_allowed(rival, before_fg_forced())) {
+        device_hook_rival_seen = rival;
+        swofty::log("[overlay] %s hooks the D3D12 entry points the core's device hooks use, so they are not armed: the "
+                    "overlay draws at Present as before 1.8.38 and does not draw while frame generation is on "
+                    "(SWOFTY_OVERLAY_FG=1 / \"overlay_fg\": true arms them anyway)",
+                    rival.c_str());
+        return;
     }
-    return d3d12hooks::arm_swapchain();
+    if (!rival.empty())
+        swofty::log("[overlay] %s is in the process; the core's device hooks arm anyway on SWOFTY_OVERLAY_FG / "
+                    "\"overlay_fg\"",
+                    rival.c_str());
+    d3d12hooks::on_setname(on_setname);
+    d3d12hooks::on_barrier(on_barrier);
+    d3d12hooks::on_exec(on_exec);
+    device_hooked = d3d12hooks::arm_device();
+    if (!device_hooked)
+        swofty::log("[overlay] the core's D3D12 device hooks did not arm; the overlay cannot draw when frame "
+                    "generation owns the swapchain");
+    else
+        swofty::log("[overlay] drawing before frame generation is on (frame generation is on in the game's "
+                    "settings, or SWOFTY_OVERLAY_FG / \"overlay_fg\")");
 }
 
 // ----- SwoftyOverlay table ----------------------------------------------------------------------
