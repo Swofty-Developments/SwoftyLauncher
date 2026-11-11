@@ -168,17 +168,7 @@ pub struct NeStr {
 }
 
 #[repr(C)]
-pub struct RedFlagSystem {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct RnDDepartmentConfig {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct SafetyCarLogicSystem {
     _opaque: [u8; 0],
 }
 
@@ -219,11 +209,6 @@ pub struct VehicleIdentity {
 
 #[repr(C)]
 pub struct VehiclePackageRow {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
-pub struct VehicleTyreComponent {
     _opaque: [u8; 0],
 }
 
@@ -2290,6 +2275,13 @@ pub struct RacingVehicles {
 const _: () = assert!(core::mem::offset_of!(RacingVehicles, owner) == 0xd0);
 
 #[repr(C)]
+pub struct RedFlagSystem {
+    _pad_0x0: [u8; 0x40],
+    pub state: u8,
+}
+const _: () = assert!(core::mem::offset_of!(RedFlagSystem, state) == 0x40);
+
+#[repr(C)]
 pub struct RelativeGapEntry {
     _pad_0x0: [u8; 0x58],
     pub leader_gap_ms: i64,
@@ -2354,6 +2346,13 @@ const _: () = assert!(core::mem::offset_of!(ResourcePointsComponent, wallet_enti
 const _: () = assert!(core::mem::offset_of!(ResourcePointsComponent, wallet_mode) == 0x4b0);
 const _: () = assert!(core::mem::offset_of!(ResourcePointsComponent, driver_wallets) == 0x4b8);
 const _: () = assert!(core::mem::offset_of!(ResourcePointsComponent, team_wallets) == 0x528);
+
+#[repr(C)]
+pub struct SafetyCarLogicSystem {
+    _pad_0x0: [u8; 0x108],
+    pub deployment: u8,
+}
+const _: () = assert!(core::mem::offset_of!(SafetyCarLogicSystem, deployment) == 0x108);
 
 #[repr(C)]
 pub struct SaveDataContainer {
@@ -3124,6 +3123,26 @@ const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, progress_lap_b
 const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, progress_lap_delta) == 0x58);
 const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, total_a) == 0x98);
 const _: () = assert!(core::mem::offset_of!(VehicleProgressEntry, total_b) == 0xa0);
+
+#[repr(C)]
+pub struct VehicleTyreComponent {
+    _pad_0x0: [u8; 0x9bc0],
+    pub compound_class: *mut c_void,
+    _pad_0x9bc8: [u8; 0x8],
+    pub slots: [TyreSlot; 5],
+    pub slot_count: u8,
+    _pad_0x9c49: [u8; 0x7],
+    pub built_for: *mut c_void,
+    pub built: u8,
+    _pad_0x9c59: [u8; 0x3f],
+    pub set_end: *mut u8,
+}
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, compound_class) == 0x9bc0);
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, slots) == 0x9bd0);
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, slot_count) == 0x9c48);
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, built_for) == 0x9c50);
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, built) == 0x9c58);
+const _: () = assert!(core::mem::offset_of!(VehicleTyreComponent, set_end) == 0x9c98);
 
 #[repr(C)]
 pub struct VisualCompound {
