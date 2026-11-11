@@ -617,6 +617,7 @@ fn check_element(e: &Element, ids: &mut std::collections::BTreeSet<String>) -> R
         Kind::Stack | Kind::Centre => {}
         Kind::Unit => need("unit and size", e.unit.is_some() && e.size.is_some())?,
     }
+    super::units::check_element(e)?;
     for b in [&e.visible, &e.tint, &e.value].into_iter().flatten() {
         b.check()?;
     }

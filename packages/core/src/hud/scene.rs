@@ -18,6 +18,7 @@ use super::geom::{self, K};
 use super::model::{Bind, Decision, Element, HudElement, Kind};
 use super::template::{self, Resolved, Usage};
 use super::textures::Names;
+use super::units;
 use crate::ui::idf;
 use crate::ui::node::{NodeExt, ObjExt};
 use crate::{Error, Result};
@@ -54,6 +55,7 @@ pub struct ColourItem {
     pub name: String,
     pub element: String,
     pub db: String,
+    pub default: Option<[u8; 4]>,
 }
 
 #[derive(Debug, Clone)]
@@ -99,6 +101,7 @@ pub struct Plan {
     pub preview: bool,
     pub vis: Vec<VisItem>,
     pub colours: Vec<ColourItem>,
+    pub textures: Vec<units::TexItem>,
     pub texts: Vec<TextItem>,
     pub fractions: Vec<FracItem>,
     pub shows: Vec<ShowItem>,
@@ -146,6 +149,8 @@ pub struct Builder {
     pub facts: &'static DialFacts,
     pub pkg: Pkg,
     t: Templates,
+    /// The stock units a `unit` element may instance (`units::load`); empty until loaded.
+    pub units: units::Units,
     pub names: BTreeSet<String>,
     stock_ids: BTreeMap<String, u32>,
     stock_names: BTreeSet<String>,
@@ -279,6 +284,7 @@ impl Builder {
                 mask,
                 mesh,
             },
+            units: units::Units::new(),
             names: BTreeSet::new(),
             stock_ids,
             stock_names,
@@ -318,6 +324,7 @@ impl Builder {
                 mesh: (1.0, 1.0),
             },
             pkg,
+            units: units::Units::new(),
             names: BTreeSet::new(),
             stock_ids,
             stock_names,
@@ -748,9 +755,13 @@ impl Builder {
             }
             Kind::Gauge => self.gauge(cx, e, &name)?,
             Kind::Sweep => self.sweep(cx, e, &name)?,
-            Kind::Stack | Kind::Centre | Kind::Unit => {
+            Kind::Stack | Kind::Centre => {
                 return Err(err(format!("element {}: {kind:?} is not composed yet", e.id)));
             }
+            Kind::Unit => match units::build(self, cx, e, &name)? {
+                Some(n) => n,
+                None => return Ok(None),
+            },
         };
         self.finish_leaf(cx, e, &name, node, switched)
     }
@@ -797,6 +808,7 @@ impl Builder {
                 name: format!("c_{}", e.id),
                 element: target,
                 db: r.db,
+                default: r.colour,
             });
         }
         Ok(Some(node))
