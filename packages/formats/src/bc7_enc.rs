@@ -5,6 +5,8 @@
 //! time, or eight lanes for sixteen values) and Rust never fuses multiply-adds, so the output
 //! is bit identical. `tests/bc7_golden.rs` checks it against bytes the C++ produced.
 
+#![allow(clippy::needless_range_loop)]
+
 use crate::{Error, Result};
 
 type Block = [[i64; 4]; 16];
@@ -697,7 +699,7 @@ fn pack5(mut m: Mode5) -> [u8; 16] {
 }
 
 fn check_size(rgba: &[u8], w: usize, h: usize) -> Result<()> {
-    if w == 0 || h == 0 || w % 4 != 0 || h % 4 != 0 {
+    if w == 0 || h == 0 || !w.is_multiple_of(4) || !h.is_multiple_of(4) {
         return Err(Error::Format(format!(
             "BC7 needs a size that is a multiple of 4, not {w}x{h}"
         )));
