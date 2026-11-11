@@ -212,7 +212,16 @@ pub fn begin(
         timetrial::clear_session_keys(&g.dir);
         return None;
     };
-    let nonce = upload::nonce(&store.root, config).map(|n| n.nonce);
+    let nonce = match upload::nonce(&store.root, config) {
+        Ok(n) => Some(n.nonce),
+        Err(e) => {
+            say(
+                "laps",
+                &format!("session nonce: {e}; the watcher asks again while the game runs"),
+            );
+            None
+        }
+    };
     if let Err(e) = timetrial::write_session_keys(&g.dir, nonce.as_deref(), config.time_trial_ingame) {
         say("laps", &format!("lap recording is off: {e}"));
         return None;
@@ -222,6 +231,7 @@ pub fn begin(
         &store.root,
         &g.dir,
         config,
+        nonce.is_none(),
         move || fingerprint(&s, &p, &identity),
         |line| say("laps", line),
     ))

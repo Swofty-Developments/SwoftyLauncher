@@ -7,7 +7,7 @@ description: The lap files the core records in Time Trial, and the two events ar
 
 While Time Trial boards are on, the core records every completed Time Trial lap to a file under `swofty/laps/`. An addon reads those files, adds a section to one before it is written, or reacts when one lands.
 
-The recorder runs when the launcher writes `"tt_boards": true` into `swofty/tt.json` and the session is a Time Trial. It samples the player's car once per rendered frame. A lap starts at a line crossing and ends at the next one. The lap out of the garage is not recorded. A lap is dropped when the car is reset or moved, when the session ends, or when it is too short or too long to be a lap.
+The recorder runs when the launcher writes `"tt_boards": true` into `swofty/tt.json` and the session is a Time Trial. It samples the player's car at 60 Hz. A lap starts at a line crossing and ends at the next one. The lap out of the garage is not recorded. A lap is dropped when the car is reset or moved, when the session ends, or when it is too short or too long to be a lap.
 
 On the build the core's lap offsets are from, the core also hooks the game's own lap record (`Sess_LapTimes_ReportNewLapTime`). A completed lap then waits up to two seconds after its line crossing for the game's lap result and, when the lap is valid, for the ghost blob the game commits on a personal best. The file is written when both have arrived or when the two seconds have passed. When the hook is not available the file is written at once and the lap's time comes from the clock. The ghost blob comes from the one hook on the game's personal best commit, a byte-scan hook of the in-game boards code that is armed whenever `tt_boards` is on, with or without `tt_bridge`. `SWOFTY_LAP_GAME_RESULT=0` turns the lap result off and `SWOFTY_LAP_GHOST=0` the ghost blob.
 
@@ -198,7 +198,7 @@ With the bridge on, the game's rival search (inside the ghost handler's update) 
 
 ## Events
 
-`laps.recorded` fires once the file is in place. `laps.sealing` fires just before, with the file as built so far.
+`laps.recorded` fires on the flow thread once the file is in place. `laps.sealing` fires just before, on the core's writer thread, with the file as built so far; a handler reads the body it is given and does not read game memory.
 
 ```cpp
 #include <swofty/systems/laps.hpp>
