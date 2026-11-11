@@ -654,7 +654,7 @@ private:
         size_t n = 0;
         uintptr_t ptr[MAX_ENTRIES];
         if (!s_.game_manager || !m_.get(s_.game_manager, mgr) || !mgr ||
-            !m_.get(mgr + L::progress::from_manager, sys) || !sys || !m_.read(sys + L::progress::vec_begin, v, sizeof v) ||
+            !m_.get(mgr + (s_.progress_from_manager ? s_.progress_from_manager : L::progress::from_manager), sys) || !sys || !m_.read(sys + L::progress::vec_begin, v, sizeof v) ||
             !vec_ok(v[0], v[1], 8, MAX_ENTRIES, n) || !n || !m_.read(v[0], ptr, n * 8))
             return;
         for (unsigned vid = 0; vid < MAX_CARS && vid < n; vid++) {

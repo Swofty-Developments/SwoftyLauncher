@@ -89,4 +89,101 @@ inline constexpr Row ROWS[G_COUNT] = {
     {G_BUS_EVENTS, true, true, "g_Game_MessageBus and Ne_Subscribe_BusMessage; the message layouts are the agreed Live_Subscribe_* rows (no signature, not resolved)"},
 };
 
+struct Needs {
+    Group group;
+    uintptr_t Sites::*sites[6];
+};
+
+inline constexpr Needs NEEDS[] = {
+    {G_CAR_SYSTEMS, {&Sites::vehicle_table, &Sites::vehicle_count}},
+    {G_ERS, {&Sites::vehicle_table, &Sites::vehicle_count}},
+    {G_WORLD, {&Sites::vehicle_table, &Sites::vehicle_count}},
+    {G_AERO, {&Sites::vehicle_table, &Sites::vehicle_count}},
+    {G_PROGRESS, {&Sites::game_manager, &Sites::track_length}},
+    {G_CLASS, {&Sites::game_manager, &Sites::key_results}},
+    {G_TIMING, {&Sites::game_manager, &Sites::key_timing, &Sites::key_safety_car}},
+    {G_PIT, {&Sites::game_manager, &Sites::key_pit}},
+    {G_PIT_LANE, {&Sites::game_manager, &Sites::key_pit}},
+    {G_PENALTIES, {&Sites::game_manager, &Sites::key_penalty_log, &Sites::key_session_component}},
+    {G_TYRES, {&Sites::game_manager, &Sites::key_tyres}},
+    {G_FLAGS,
+     {&Sites::game_manager, &Sites::key_marshal, &Sites::key_red_flag, &Sites::sector_block, &Sites::sector_count,
+      &Sites::track_length}},
+    {G_CONTROL, {&Sites::controllers, &Sites::vt_controllers, &Sites::vt_human}},
+    {G_SPECTATE, {&Sites::game_manager, &Sites::key_spectator}},
+    {G_SPECTATE_GAP, {&Sites::game_manager, &Sites::key_spectator}},
+    {G_MODE, {&Sites::game_manager, &Sites::key_game_mode}},
+    {G_BADGES, {&Sites::game_manager, &Sites::key_game_mode, &Sites::key_team_tables}},
+    {G_TRACK, {&Sites::track_length, &Sites::session_type}},
+    {G_TRACK_NAME, {&Sites::track_world}},
+    {G_BUS_EVENTS, {&Sites::bus_slot, &Sites::bus_subscribe}},
+};
+
+constexpr uint32_t bit(Group g)
+{
+    return 1u << g;
+}
+
+// A build other than the KB build reads a group only when the group is listed here for that build's PE timestamp: the
+// layouts the group reads were compared against the KB build's (re/tools/layoutcmp.py, research/ea-layouts.md) and the
+// sites it needs resolve in that build's bindings set. `progress_from_manager` is the one displacement that differs.
+struct BuildProof {
+    uint32_t pe_timestamp;
+    const char *name;
+    uint32_t groups;
+    uintptr_t progress_from_manager;
+};
+
+inline constexpr uint32_t ALL_GROUPS = (1u << G_COUNT) - 1;
+
+inline constexpr BuildProof KB_BUILD = {1789118616u, "Steam", ALL_GROUPS, layout::progress::from_manager};
+
+inline constexpr uint32_t EA_GROUPS = bit(G_CAR_SYSTEMS) | bit(G_ERS) | bit(G_WORLD) | bit(G_AERO) | bit(G_PROGRESS) |
+                                      bit(G_CLASS) | bit(G_TIMING) | bit(G_PIT) | bit(G_PENALTIES) | bit(G_FLAGS) |
+                                      bit(G_CONTROL) | bit(G_SPECTATE) | bit(G_TRACK) | bit(G_BUS_EVENTS);
+
+inline constexpr BuildProof EA_BUILD = {1789128892u, "EA", EA_GROUPS, 0x2a0};
+
+inline constexpr const BuildProof *PROVEN_BUILDS[] = {&KB_BUILD, &EA_BUILD};
+
+inline const BuildProof *proof_for(uint32_t pe_timestamp)
+{
+    for (const BuildProof *b : PROVEN_BUILDS)
+        if (b->pe_timestamp == pe_timestamp)
+            return b;
+    return nullptr;
+}
+
+enum class Why : uint8_t { on, site, row, build };
+
+struct Verdict {
+    Why why = Why::row;
+    uintptr_t Sites::*missing = nullptr;
+};
+
+struct Decision {
+    Gates gates;
+    Verdict verdict[G_COUNT];
+};
+
+// A group is on when every site it needs resolved in this build's set, its rows are all KB-backed (live_rows above),
+// and the build has the group's layout proven. `force` reads a group whose rows or build proof are missing.
+inline Decision decide(const Sites &s, const BuildProof &b, bool force, const Row *rows_table = ROWS)
+{
+    Decision d;
+    for (const Needs &n : NEEDS) {
+        const Row &row = rows_table[n.group];
+        Verdict &v = d.verdict[n.group];
+        for (auto slot : n.sites)
+            if (slot && !(s.*slot) && !v.missing)
+                v.missing = slot;
+        bool rows = row.fields && row.mapped, proven = (b.groups & bit(n.group)) != 0;
+        v.why = v.missing ? Why::site : !rows ? Why::row : !proven ? Why::build : Why::on;
+        d.gates.on[n.group] = !v.missing && ((rows && proven) || force);
+        if (d.gates.on[n.group])
+            v.why = Why::on;
+    }
+    return d;
+}
+
 }

@@ -13,6 +13,7 @@
 #include <atomic>
 #include <memory>
 #include <mutex>
+#include <string>
 
 namespace {
 
@@ -64,36 +65,6 @@ bool env_on(const char *name)
     char v[8] = {};
     return GetEnvironmentVariableA(name, v, sizeof v) && v[0] && v[0] != '0';
 }
-
-struct Needs {
-    lv::Group group;
-    uintptr_t lv::Sites::*sites[6];
-};
-
-const Needs NEEDS[] = {
-    {lv::G_CAR_SYSTEMS, {&lv::Sites::vehicle_table, &lv::Sites::vehicle_count}},
-    {lv::G_ERS, {&lv::Sites::vehicle_table, &lv::Sites::vehicle_count}},
-    {lv::G_WORLD, {&lv::Sites::vehicle_table, &lv::Sites::vehicle_count}},
-    {lv::G_AERO, {&lv::Sites::vehicle_table, &lv::Sites::vehicle_count}},
-    {lv::G_PROGRESS, {&lv::Sites::game_manager, &lv::Sites::track_length}},
-    {lv::G_CLASS, {&lv::Sites::game_manager, &lv::Sites::key_results}},
-    {lv::G_TIMING, {&lv::Sites::game_manager, &lv::Sites::key_timing, &lv::Sites::key_safety_car}},
-    {lv::G_PIT, {&lv::Sites::game_manager, &lv::Sites::key_pit}},
-    {lv::G_PIT_LANE, {&lv::Sites::game_manager, &lv::Sites::key_pit}},
-    {lv::G_PENALTIES, {&lv::Sites::game_manager, &lv::Sites::key_penalty_log, &lv::Sites::key_session_component}},
-    {lv::G_TYRES, {&lv::Sites::game_manager, &lv::Sites::key_tyres}},
-    {lv::G_FLAGS,
-     {&lv::Sites::game_manager, &lv::Sites::key_marshal, &lv::Sites::key_red_flag, &lv::Sites::sector_block,
-      &lv::Sites::sector_count, &lv::Sites::track_length}},
-    {lv::G_CONTROL, {&lv::Sites::controllers, &lv::Sites::vt_controllers, &lv::Sites::vt_human}},
-    {lv::G_SPECTATE, {&lv::Sites::game_manager, &lv::Sites::key_spectator}},
-    {lv::G_SPECTATE_GAP, {&lv::Sites::game_manager, &lv::Sites::key_spectator}},
-    {lv::G_MODE, {&lv::Sites::game_manager, &lv::Sites::key_game_mode}},
-    {lv::G_BADGES, {&lv::Sites::game_manager, &lv::Sites::key_game_mode, &lv::Sites::key_team_tables}},
-    {lv::G_TRACK, {&lv::Sites::track_length, &lv::Sites::session_type}},
-    {lv::G_TRACK_NAME, {&lv::Sites::track_world}},
-    {lv::G_BUS_EVENTS, {&lv::Sites::bus_slot, &lv::Sites::bus_subscribe}},
-};
 
 constexpr lv::Group TELEMETRY_GROUPS[] = {lv::G_CAR_SYSTEMS, lv::G_ERS, lv::G_PROGRESS, lv::G_CLASS, lv::G_TIMING,
                                           lv::G_PIT,        lv::G_PIT_LANE,  lv::G_PENALTIES, lv::G_TYRES, lv::G_FLAGS, lv::G_CONTROL,
@@ -212,24 +183,44 @@ const char *unresolved_name(uintptr_t lv::Sites::*slot)
     return "a scanned site";
 }
 
-void decide_gates()
+uint32_t module_stamp()
+{
+    auto *base = reinterpret_cast<const uint8_t *>(GetModuleHandleW(nullptr));
+    if (!base)
+        return 0;
+    auto *dos = reinterpret_cast<const IMAGE_DOS_HEADER *>(base);
+    return reinterpret_cast<const IMAGE_NT_HEADERS64 *>(base + dos->e_lfanew)->FileHeader.TimeDateStamp;
+}
+
+std::string group_list(const lv::Gates &g)
+{
+    std::string out;
+    for (unsigned i = 0; i < lv::G_COUNT; i++)
+        if (g.on[i])
+            out += (out.empty() ? "" : ", ") + std::string(lv::group_name(lv::Group(i)));
+    return out;
+}
+
+void decide_gates(const lv::BuildProof &build)
 {
     g_forced = env_on("SWOFTY_LIVE_FORCE");
     g_verify = env_on("SWOFTY_TELEMETRY_VERIFY");
-    for (const Needs &n : NEEDS) {
-        const lv::Row &row = lv::ROWS[n.group];
-        const char *missing = nullptr;
-        for (auto s : n.sites)
-            if (s && !(g_sites.*s) && !missing)
-                missing = unresolved_name(s);
-        bool verified = row.fields && row.mapped;
-        g_gates.on[n.group] = !missing && (verified || g_forced);
-        if (g_gates.on[n.group])
+    g_sites.progress_from_manager = build.progress_from_manager;
+    lv::Decision d = lv::decide(g_sites, build, g_forced);
+    g_gates = d.gates;
+    for (unsigned i = 0; i < lv::G_COUNT; i++) {
+        const lv::Verdict &v = d.verdict[i];
+        const lv::Group g = lv::Group(i);
+        if (v.why == lv::Why::on)
             continue;
-        if (missing)
-            swofty::log("[live] %s off: %s does not resolve (no agree row exports it yet)", lv::group_name(n.group), missing);
+        if (v.why == lv::Why::site)
+            swofty::log("[live] %s off on the %s build: %s does not resolve in this build's bindings", lv::group_name(g),
+                        build.name, unresolved_name(v.missing));
+        else if (v.why == lv::Why::build)
+            swofty::log("[live] %s off on the %s build: its layout is not proven there (SWOFTY_LIVE_FORCE=1 reads it anyway)",
+                        lv::group_name(g), build.name);
         else
-            swofty::log("[live] %s off: %s (SWOFTY_LIVE_FORCE=1 reads it unverified)", lv::group_name(n.group), row.needs);
+            swofty::log("[live] %s off: %s (SWOFTY_LIVE_FORCE=1 reads it unverified)", lv::group_name(g), lv::ROWS[g].needs);
     }
 }
 
@@ -387,24 +378,28 @@ void live_setup()
 {
     if (!enabled("telemetry", nullptr))
         return;
-    if (!same_build()) {
-        swofty::log("[live] off: this is not the build the layouts are from");
+    uint32_t stamp = module_stamp();
+    const lv::BuildProof *build = same_build() ? &lv::KB_BUILD : lv::proof_for(stamp);
+    if (!build) {
+        swofty::log("[live] off: build %u has no proven live layouts (Steam %u, EA %u)", stamp, lv::KB_BUILD.pe_timestamp,
+                    lv::EA_BUILD.pe_timestamp);
         return;
     }
     resolve_sites();
-    decide_gates();
+    decide_gates(*build);
     bool any = false;
     for (bool b : g_gates.on)
         any = any || b;
     if (!any) {
-        swofty::log("[live] off: no group is verified yet");
+        swofty::log("[live] off on the %s build: no group is verified and resolved", build->name);
         return;
     }
     lv::Mem mem;
     mem.fn = kernel_copy;
     g_live = std::make_unique<lv::Live>(mem, g_sites, g_gates);
     g_on = true;
-    swofty::log("[live] on%s%s", g_forced ? ", reading unverified groups (SWOFTY_LIVE_FORCE)" : "",
+    swofty::log("[live] on (%s build): groups %s%s%s", build->name, group_list(g_gates).c_str(),
+                g_forced ? ", reading unverified groups (SWOFTY_LIVE_FORCE)" : "",
                 g_verify ? ", cross-checking against UDP (SWOFTY_TELEMETRY_VERIFY)" : "");
 }
 

@@ -71,8 +71,9 @@ struct World {
               tyre_sys = 0, penalty = 0, s1 = 0, mode_obj = 0, human[4] = {};
     int n_cars = 4;
 
-    World()
+    explicit World(uintptr_t progress_at = L::progress::from_manager)
     {
+        s.progress_from_manager = progress_at;
         s.image_lo = 0x1000;
         s.image_hi = 0x2000;
         uintptr_t table = a.alloc(8 * 4), count = a.alloc(8), mgr_g = a.alloc(8), mgr = a.alloc(0x400);
@@ -170,7 +171,7 @@ struct World {
         a.put<uint8_t>(cars[2] + L::car::input_flags, 0x08);
 
         uintptr_t ps = a.alloc(0x100);
-        a.put<uintptr_t>(mgr + L::progress::from_manager, ps);
+        a.put<uintptr_t>(mgr + progress_at, ps);
         uintptr_t pvec = a.alloc(8 * 3);
         a.put<uintptr_t>(ps + L::progress::vec_begin, pvec);
         a.put<uintptr_t>(ps + L::progress::vec_end, pvec + 24);
@@ -864,6 +865,82 @@ static void test_bus_events_in_live()
     CHECK(ev.size() == 1 && ev[0].kind == Event::retirement && ev[0].b == 0);
 }
 
+static uint32_t on_mask(const Decision &d)
+{
+    uint32_t m = 0;
+    for (unsigned g = 0; g < G_COUNT; g++)
+        m |= d.gates.on[g] ? bit(Group(g)) : 0;
+    return m;
+}
+
+static Sites resolved_everywhere(Sites s)
+{
+    for (const Needs &n : NEEDS)
+        for (auto slot : n.sites)
+            if (slot && !(s.*slot))
+                s.*slot = 0x1000;
+    return s;
+}
+
+static void test_build_gate()
+{
+    Row backed[G_COUNT];
+    for (unsigned g = 0; g < G_COUNT; g++)
+        backed[g] = {Group(g), true, ROWS[g].mapped, ROWS[g].needs};
+    uint32_t mapped = 0;
+    for (unsigned g = 0; g < G_COUNT; g++)
+        mapped |= backed[g].mapped ? bit(Group(g)) : 0;
+    World kb;
+    kb.s = resolved_everywhere(kb.s);
+    Decision dk = decide(kb.s, KB_BUILD, false, backed);
+    CHECK(on_mask(dk) == mapped);
+    CHECK(dk.verdict[G_TYRES].why == Why::row && dk.verdict[G_PROGRESS].why == Why::on);
+    Decision undeclared = decide(kb.s, KB_BUILD, false);
+    for (unsigned g = 0; g < G_COUNT; g++)
+        CHECK(undeclared.gates.on[g] == (ROWS[g].fields && ROWS[g].mapped));
+
+    CHECK(proof_for(1789118616u) == &KB_BUILD && proof_for(1789128892u) == &EA_BUILD && !proof_for(1234u) && !proof_for(0));
+    CHECK(EA_BUILD.progress_from_manager == 0x2a0 && KB_BUILD.progress_from_manager == L::progress::from_manager);
+    const Group unproven[] = {G_TYRES, G_MODE, G_BADGES, G_PIT_LANE, G_TRACK_NAME, G_SPECTATE_GAP};
+    for (Group g : unproven)
+        CHECK(!(EA_BUILD.groups & bit(g)));
+
+    World ea(EA_BUILD.progress_from_manager);
+    Sites ea_sites = ea.s;
+    Decision de = decide(resolved_everywhere(ea.s), EA_BUILD, false, backed);
+    CHECK(on_mask(de) == (mapped & EA_BUILD.groups) && (on_mask(de) & bit(G_PROGRESS)) && (on_mask(de) & bit(G_BUS_EVENTS)));
+    CHECK(!(on_mask(de) & bit(G_AERO)) && de.verdict[G_AERO].why == Why::row);
+    CHECK(de.verdict[G_TYRES].why == Why::row && de.verdict[G_MODE].why == Why::row);
+
+    Live live(ea.mem(), ea_sites, Gates::all());
+    live.update(0.0);
+    CHECK(live.active() && (live.cars[0].have & SWOFTY_LIVE_HAVE_PROGRESS) && live.cars[0].lap_m == 3000.f);
+    CHECK(live.cars[1].lap == 1 && live.ses.order[0] == 1);
+    Sites misplaced_sites = ea_sites;
+    misplaced_sites.progress_from_manager = KB_BUILD.progress_from_manager;
+    Live misplaced(ea.mem(), misplaced_sites, Gates::all());
+    misplaced.update(0.0);
+    CHECK(!(misplaced.cars[0].have & SWOFTY_LIVE_HAVE_PROGRESS));
+
+    BuildProof fake = {42u, "Fake", bit(G_CLASS) | bit(G_TIMING), 0};
+    Decision df = decide(kb.s, fake, false, backed);
+    CHECK(on_mask(df) == (bit(G_CLASS) | bit(G_TIMING)));
+    CHECK(df.verdict[G_PROGRESS].why == Why::build && df.verdict[G_CLASS].why == Why::on);
+    Decision ff = decide(kb.s, fake, true, backed);
+    CHECK((on_mask(ff) & bit(G_PROGRESS)) && (on_mask(ff) & bit(G_TYRES)));
+    BuildProof nothing = {43u, "Nothing", 0, 0};
+    CHECK(on_mask(decide(kb.s, nothing, false, backed)) == 0);
+
+    Sites missing = resolved_everywhere(ea.s);
+    missing.key_timing = 0;
+    Decision dm = decide(missing, EA_BUILD, true, backed);
+    CHECK(!dm.gates[G_TIMING] && dm.verdict[G_TIMING].why == Why::site && dm.verdict[G_TIMING].missing == &Sites::key_timing);
+    CHECK(dm.gates[G_CLASS]);
+
+    Sites none;
+    CHECK(on_mask(decide(none, EA_BUILD, false, backed)) == 0);
+}
+
 static void test_readiness_rows()
 {
     for (unsigned g = 0; g < G_COUNT; g++) {
@@ -896,6 +973,7 @@ int main()
     test_bus_subscribe();
     test_bus_events_in_live();
     test_readiness_rows();
+    test_build_gate();
     if (failures) {
         std::printf("%d failures\n", failures);
         return 1;
