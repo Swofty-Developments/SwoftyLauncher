@@ -9,6 +9,8 @@
 #include "files_api.hpp"
 #include "gp_track_logic.hpp"
 #include "scheduler.hpp"
+#include "tracks/base.hpp"
+#include "tracks/seed.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -342,32 +344,85 @@ bool weekend(uintptr_t holder, Weekend &out)
 std::mutex tracks_mu;
 std::map<int, std::string> track_labels;
 bool tracks_read = false;
+std::string tracks_read_at;
 
-void read_track_rows()
+// The tracks table is read once per game run, at the first of the window stage, a box press or a session load that
+// finds it readable; the rows do not change between those in one run, so later readers use the cached rows.
+void read_track_rows(const char *when)
 {
     if (tracks_read)
         return;
     const SwoftyDb *db = runtime::db_table();
     SwoftyDbCursor cur{};
-    if (!db || !db->available || !db->available() || db->open("tracks", &cur) != SWOFTY_ASSET_OK) {
-        once("the tracks table is not readable yet; the track is left empty");
+    int r = !db || !db->available || !db->available() ? SWOFTY_ASSET_UNAVAILABLE : db->open("tracks", &cur);
+    if (r != SWOFTY_ASSET_OK) {
+        once(std::string("the tracks table is not readable at ") + when + " (" +
+             (r == SWOFTY_ASSET_LATE ? "its row count is 0" : r == SWOFTY_ASSET_INVALID ? "its keys are invalid" : "the database is not loaded") +
+             "); the track is left empty");
         return;
     }
     tracks_read = true;
+    tracks_read_at = when;
     do {
         SwoftyDbValue v{};
         const char *label = db->row_name(&cur);
         if (label && db->cell(&cur, "statId", &v) == SWOFTY_ASSET_OK)
             track_labels[int(v.i)] = label;
     } while (db->step(&cur) == SWOFTY_ASSET_OK);
+    swofty::log("[apply] tracks table: %zu row(s) with a statId read at %s", track_labels.size(), when);
 }
 
 std::string track_label(int stat_id)
 {
     std::lock_guard g(tracks_mu);
-    read_track_rows();
+    read_track_rows("the session load");
     auto it = track_labels.find(stat_id);
     return it == track_labels.end() ? std::string() : it->second;
+}
+
+std::vector<gp_track::Source> track_sources()
+{
+    std::vector<gp_track::Source> out;
+    const tracks::Base &b = tracks::base();
+    gp_track::Source table{"the tracks table", {}, {}}, base{"the track base", {}, {}};
+    {
+        std::lock_guard g(tracks_mu);
+        read_track_rows("the session load");
+        if (tracks_read) {
+            table.name += " (read at " + tracks_read_at + ")";
+            table.rows = track_labels;
+        }
+    }
+    if (b.ready)
+        for (const tracks::BaseTrack &t : b.tracks)
+            if (t.stat_id >= 0 && t.stat_id < 0xff) {
+                base.rows[t.stat_id] = t.code;
+                if (tracks::is_dormant(t.code)) {
+                    base.dormant.insert(t.stat_id);
+                    table.dormant.insert(t.stat_id);
+                }
+            }
+    for (const char *d : tracks::DORMANT)
+        for (auto &[id, label] : table.rows)
+            if (label == d)
+                table.dormant.insert(id);
+    if (b.ready)
+        for (const std::string &d : b.dormant)
+            if (const gp_track::StockRow *r = gp_track::stock_row_by_code(d.rfind("game/", 0) == 0 ? d.substr(5) : d))
+                if (!base.rows.count(r->stat_id)) {
+                    base.rows[r->stat_id] = r->code;
+                    base.dormant.insert(r->stat_id);
+                }
+    std::vector<std::pair<int, std::string>> records;
+    for (auto &id : reg::store().list("track", "")) {
+        reg::Record r = reg::store().get("track", id);
+        if (r.status == reg::Status::ok && r.value["stat_id"].is_int())
+            records.emplace_back(int(r.value["stat_id"].as_int()), id);
+    }
+    out.push_back(std::move(table));
+    out.push_back(std::move(base));
+    out.push_back(gp_track::stock_source(records));
+    return out;
 }
 
 std::string grand_prix_track_fallback()
@@ -378,16 +433,16 @@ std::string grand_prix_track_fallback()
     Weekend w;
     if (!weekend(holder_of(ctx), w) || !w.at)
         return {};
-    std::map<int, std::string> rows;
-    {
-        std::lock_guard g(tracks_mu);
-        read_track_rows();
-        rows = track_labels;
-    }
-    gp_track::Fallback f = gp_track::fallback(w.track, rows);
+    gp_track::Fallback f = gp_track::fallback(w.track, track_sources());
     if (f.replace)
         *reinterpret_cast<uint8_t *>(w.at + offsetof(g::Weekend, track_stat_id)) = uint8_t(f.stat_id);
     return f.line;
+}
+
+void prime_track_rows(const char *when)
+{
+    std::lock_guard g(tracks_mu);
+    read_track_rows(when);
 }
 
 std::string track_id(int stat_id)
@@ -607,6 +662,7 @@ void box_picked(const char *entrant_list)
 void box_picked(const char *entrant_list, const void *mode_context)
 {
     attach();
+    game::prime_track_rows("the box press");
     uintptr_t ctx = mode_context ? reinterpret_cast<uintptr_t>(mode_context) : game::current_context();
     scheduler().content_picked(entrant_list ? entrant_list : "", game::mode_of(ctx, "the box press"));
 }
@@ -649,6 +705,7 @@ void window()
 {
     attach();
     scheduler().install_read();
+    game::prime_track_rows("the window stage");
 }
 
 int write_reports(const char *when)
