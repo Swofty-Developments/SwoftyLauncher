@@ -1135,24 +1135,16 @@ private:
     int find_player(bool &ai)
     {
         ai = false;
-        int human = -1, humans = 0, held = -1;
-        for (int i = 0; i < n_cars_; i++) {
-            if (refs_[i].is_ai == 0) {
-                human = i;
-                humans++;
-            }
+        int held = -1;
+        for (int i = 0; i < n_cars_; i++)
             if (player_ptr_ && refs_[i].ptr == player_ptr_)
                 held = i;
-        }
-        int by_ai = humans == 1 ? human : held;
         int me = -1;
         if (g_[G_CONTROL] && ctrl_hits_ == 1 && (me = index_of(ctrl_vid_)) >= 0) {
         } else if (g_[G_CONTROL] && ctrl_hits_ >= 2)
             me = -1;
         else
-            me = by_ai;
-        if (me >= 0)
-            ai = refs_[me].is_ai != 0;
+            me = held;
         return me;
     }
 
