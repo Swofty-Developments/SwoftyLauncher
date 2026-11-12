@@ -469,7 +469,16 @@ static void v2_virtual()
     uintptr_t eng = reinterpret_cast<uintptr_t>(engine[1]);
     expect(Ops::drive_torque(eng, 100.0f, 1000.0f, 1371.8f) == 100.0f && Ops::ai_grip(1, 0, 2.0f) == 2.0f,
            "no layer: the handlers change nothing");
+    int limiter_reads = 0;
+    auto limiter = [&] {
+        ++limiter_reads;
+        return 1371.8f;
+    };
+    expect(Ops::drive_torque_with(eng, 100.0f, 1000.0f, limiter) == 100.0f && limiter_reads == 0,
+           "no layer: the engine site reads no limiter");
     Ops::op_layer("profile", SWOFTY_CAR_ALL, SWOFTY_CAR_ENGINE_POWER_SCALE, SWOFTY_CAR_OP_SCALE, 0.9725f, 0, nullptr);
+    expect(std::fabs(Ops::drive_torque_with(eng, 100.0f, 1000.0f, limiter) - 97.25f) < 1e-3f && limiter_reads == 1,
+           "with a power layer the engine site reads the limiter once");
     Ops::op_layer("profile", SWOFTY_CAR_ALL, SWOFTY_CAR_ENGINE_LIMITER_OFFSET_RPM, SWOFTY_CAR_OP_ADD, -300.0f, 0, nullptr);
     Ops::op_layer("profile", SWOFTY_CAR_ALL, SWOFTY_CAR_AI_GRIP_SCALE, SWOFTY_CAR_OP_SCALE, 0.87f, 0, nullptr);
     float t = Ops::drive_torque(eng, 100.0f, 1000.0f, 1371.8f);
