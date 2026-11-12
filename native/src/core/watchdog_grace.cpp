@@ -1,3 +1,4 @@
+#include "load_stall_logic.hpp"
 #include "runtime.hpp"
 #include "watchdog_grace_logic.hpp"
 
@@ -25,6 +26,9 @@
 // and the silence is under 180 s. A stall with no such flow, or one past 180 s, reaches the game's kill unchanged and
 // the reason is logged once. A kill with the shutdown flag set (dil, the object's +0x120) is never held. The flow
 // table is read under its lock for up to 50 ms, then from a lock-free mirror of the newest Entering and Updating times.
+//
+// A held kill also asks the load-stall watchdog for a report of every thread's stack (load_stall.cpp), which runs on
+// that watchdog's own thread.
 //
 // SWOFTY_BOOT_WATCHDOG_GRACE=0 turns it off.
 
@@ -113,6 +117,7 @@ void kill_path(SwoftyContext *c)
     }
     c->rip = kill_skip;
     held++;
+    runtime::load_stall_signal(runtime::load_stall::GameWatchdog, elapsed);
     uint32_t b = wg::bucket(elapsed);
     if (last_bucket.exchange(b) != b)
         swofty::log("[core] boot watchdog grace: the frame tick has been silent %u ms with flow \"%s\" in %s; the "
