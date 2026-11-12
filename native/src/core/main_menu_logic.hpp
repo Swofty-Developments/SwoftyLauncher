@@ -152,10 +152,31 @@ inline VideoCard plan_card(float k, float text_w)
     return c;
 }
 
+// The 16:9 band the front end is laid out in, centred in the frame: the full height of a 16:9 or wider frame and
+// the full width of a taller one (16:10 on a Steam Deck), with the game's backdrop above and below it.
+struct Band {
+    float left = 0, top = 0, width = 0, height = 0;
+};
+
+inline Band ui_band(float width, float height)
+{
+    Band b;
+    b.height = width * 9.0f / 16.0f < height ? width * 9.0f / 16.0f : height;
+    b.width = b.height * 16.0f / 9.0f;
+    b.left = (width - b.width) * 0.5f;
+    b.top = (height - b.height) * 0.5f;
+    return b;
+}
+
+// The panel's size unit: 1 at a band 1028 px tall.
+inline float panel_scale(float width, float height) { return ui_band(width, height).height / 1028.0f; }
+
 inline Point scene_to_px(double x, double y, float width, float height)
 {
-    float s = scene_scale(height);
-    return {width * 0.5f + float(SCENE_CENTRE_X_SHIFT) * height + s * float(x), float(SCENE_CENTRE_Y) * height - s * float(y)};
+    Band b = ui_band(width, height);
+    float s = scene_scale(b.height);
+    return {width * 0.5f + float(SCENE_CENTRE_X_SHIFT) * b.height + s * float(x),
+            b.top + float(SCENE_CENTRE_Y) * b.height - s * float(y)};
 }
 
 constexpr uint32_t djb2(const char *s)

@@ -109,6 +109,18 @@ int main()
         expect(std::abs(big.thumb_w / big.thumb_h - 16.0 / 9.0) < 1e-4, "the thumbnail is 16:9");
         auto br = mm::scene_to_px(mm::CARD_RIGHT_X, mm::CARD_BOTTOM_Y, 1908, 1028);
         expect(br.x > 1795 && br.x < 1805 && br.y > 950 && br.y < 962, "the card's right and bottom anchors land at (1800, 956) at 1908x1028");
+        auto deck = mm::scene_to_px(mm::CARD_RIGHT_X, mm::CARD_BOTTOM_Y, 1280, 800);
+        auto wide = mm::scene_to_px(mm::CARD_RIGHT_X, mm::CARD_BOTTOM_Y, 1280, 720);
+        expect(std::abs(deck.x - wide.x) < 0.01f && std::abs(deck.y - (wide.y + 40)) < 0.01f,
+               "at 16:10 the card keeps its 16:9 place, moved down by the 40 px band above it (1280x800)");
+        expect(deck.x < 1280 && deck.y < 760, "at 16:10 the card ends inside the frame and above the band's bottom edge");
+        expect(std::abs(mm::panel_scale(1280, 800) - mm::panel_scale(1280, 720)) < 1e-6f &&
+                   std::abs(mm::panel_scale(1908, 1028) - 1.0f) < 1e-6f,
+               "the panel's size follows the band, not the frame height");
+        auto ultra = mm::scene_to_px(mm::CARD_RIGHT_X, mm::CARD_BOTTOM_Y, 3440, 1440);
+        auto ultra_band = mm::ui_band(3440, 1440);
+        expect(ultra_band.top == 0 && ultra_band.left > 0 && ultra.x < ultra_band.left + ultra_band.width,
+               "on a 21:9 frame the band is the full height and the card stays inside it");
     }
     expect(mm::panel_due(true, true, true, false, true), "the panel is due on the open home screen once prepared");
     expect(!mm::panel_due(false, true, true, false, true) && !mm::panel_due(true, false, true, false, true) &&
