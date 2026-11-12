@@ -120,6 +120,8 @@ void session_flow(const char *known, int to);
 // The live session's session_life::Kind and a counter that moves on every change of it; both are atomic loads.
 int session_kind();
 uint64_t session_serial();
+// Arms or drops the Time Trial player name rename for the live session (player_name.cpp).
+void player_name_session();
 
 struct CoreMixins {
     const char *name;

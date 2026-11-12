@@ -174,6 +174,7 @@ void set_kind(int kind)
 void note_kind()
 {
     set_kind(runtime::session_life::kind_of(swofty_core::apply::moments::session_mode_track().first));
+    runtime::player_name_session();
 }
 
 void session_enter_mid(safetyhook::Context &)
