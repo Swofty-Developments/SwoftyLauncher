@@ -352,7 +352,10 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let url = lap_url(lap_id);
-        let add = self.add_to_game_button(&format!("add-{key}"), lap_id, game_replay, cx);
+        let add = game_replay.then(|| {
+            self.add_to_game_button(&format!("add-{key}"), lap_id, true, cx)
+                .tap_xs()
+        });
         h_flex()
             .flex_shrink_0()
             .gap(px(6.))
@@ -364,7 +367,7 @@ impl Shell {
                     .label(tr("Web"))
                     .on_click(move |_, _, cx| cx.open_url(&url)),
             )
-            .child(add.tap_xs())
+            .children(add)
             .into_any_element()
     }
 
