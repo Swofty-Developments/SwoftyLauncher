@@ -25,6 +25,13 @@ namespace blackbox {
 void note(const char *, const char *, const char *) {}
 }
 
+namespace swofty_core::hooks::guard {
+uint32_t read_fault_count()
+{
+    return 0;
+}
+}
+
 namespace runtime {
 const std::wstring &swofty_root()
 {
