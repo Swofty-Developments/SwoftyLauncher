@@ -77,6 +77,12 @@ impl SavesView {
         self.profile == VANILLA
     }
 
+    pub(super) fn shared_by_every_profile(&self) -> bool {
+        self.loc
+            .as_ref()
+            .is_some_and(|l| !launcher_saves::supported(l.layout))
+    }
+
     pub(super) fn layout(&self) -> vault::Layout {
         self.loc
             .as_ref()
