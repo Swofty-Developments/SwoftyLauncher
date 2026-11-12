@@ -355,10 +355,17 @@ struct Retry {
     }
 };
 
+// The game loads one entrant list object per entrants.entrant_lists row below this count, and the career
+// tile's router (FeTile_Route_CareerItem) and the save-slot predicates read a career's data group from
+// those loaded lists by its entrant list stat_id: an id at or past the count reads past them (1.9.15: a
+// content list with stat_id 240 of 105 loaded lists faulted the router at null+0xf08 on the tile press).
+constexpr const char *LIST_COUNT = "entrants.entrant_lists._entrant_list_instancecount_";
+
 struct Requirements {
     bool ok = false;
     int64_t mode = -1;
     int64_t group = -1;
+    int64_t lists = -1;
     bool f1 = false, f2 = false, icons = false;
     std::string why, warn;
 };
@@ -415,6 +422,8 @@ inline Requirements requirements(const Desc &d, const Db &db)
     r.mode = mode_stat_id(db, d.mode);
     if (!db.list_stat(d.data_group, r.group, db.user))
         r.group = -1;
+    if (!count_of(db, LIST_COUNT, r.lists))
+        r.lists = -1;
     r.f1 = official_list(db, "F1CAREER_" + d.suffix);
     r.f2 = official_list(db, "F2CAREER_" + d.suffix);
     r.icons = official_list(db, "ICONS_" + d.suffix);
@@ -426,6 +435,13 @@ inline Requirements requirements(const Desc &d, const Db &db)
     else if (r.group > 255)
         r.why = "entrant list " + d.data_group + " has stat_id " + std::to_string(r.group) +
                 "; the data group index is a byte, so it must be below 256";
+    else if (r.lists < 0)
+        r.why = std::string("entrants.entrant_lists has no row count (") + LIST_COUNT +
+                "), so the number of entrant lists the game loaded is unknown";
+    else if (r.group >= r.lists)
+        r.why = "entrant list " + d.data_group + " has stat_id " + std::to_string(r.group) + ", at or past the " +
+                std::to_string(r.lists) + " entrant lists the game loaded; the career tile's router reads the data " +
+                "group from those lists by that id, so it must be below " + std::to_string(r.lists);
     else if (!r.f1)
         r.why = "no content set lists the official entrant list F1CAREER_" + d.suffix +
                 " (the driver select formats F1CAREER_%s with the tile's suffix)";

@@ -109,6 +109,10 @@ static void stock_db()
     lists["f1_career_2026"] = 97;
     lists["f1_career_1990"] = 107;
     lists["f1_career_huge"] = 300;
+    lists["f1_career_porsche25"] = 240;
+    lists["f1_career_edge"] = 120;
+    lists["f1_career_last"] = 119;
+    ints[content::LIST_COUNT] = 120;
     ints["content_sets._content_set_instancecount_"] = 2;
     ints["content_sets.content_set_1._official_entrant_list_instancecount_"] = 4;
     texts["content_sets.content_set_1.official_entrant_list_0.name"] = "F1CAREER_26";
@@ -231,8 +235,8 @@ int main()
         stock_db();
         content::Db db{db_text, db_int, db_list, nullptr};
         content::Requirements r = content::requirements(desc1990(), db);
-        expect(r.ok && r.mode == 81 && r.group == 107 && r.f1 && r.f2 && r.icons && r.warn.empty(),
-               "requirements: the 1990 data resolves mode 81 and group 107 with all three official lists");
+        expect(r.ok && r.mode == 81 && r.group == 107 && r.lists == 120 && r.f1 && r.f2 && r.icons && r.warn.empty(),
+               "requirements: the 1990 data resolves mode 81 and group 107 of 120 lists with all three official lists");
         content::Desc d = desc1990();
         d.mode = "driver_career_1991";
         r = content::requirements(d, db);
@@ -244,6 +248,29 @@ int main()
         d.data_group = "f1_career_huge";
         r = content::requirements(d, db);
         expect(!r.ok && r.why.find("below 256") != std::string::npos, "requirements: a stat_id past a byte fails the requirements");
+        d.data_group = "f1_career_porsche25";
+        ints[content::LIST_COUNT] = 105;
+        r = content::requirements(d, db);
+        expect(!r.ok && r.lists == 105 &&
+                   r.why.find("stat_id 240, at or past the 105 entrant lists") != std::string::npos,
+               "requirements: stat_id 240 with 105 loaded entrant lists fails the requirements");
+        ints[content::LIST_COUNT] = 120;
+        d.data_group = "f1_career_edge";
+        r = content::requirements(d, db);
+        expect(!r.ok && r.why.find("must be below 120") != std::string::npos,
+               "requirements: a stat_id equal to the loaded list count fails the requirements");
+        d.data_group = "f1_career_last";
+        r = content::requirements(d, db);
+        expect(r.ok && r.group == 119 && r.lists == 120, "requirements: the last loaded list's stat_id passes");
+        ints.erase(content::LIST_COUNT);
+        r = content::requirements(desc1990(), db);
+        expect(!r.ok && r.lists == -1 && r.why.find("no row count") != std::string::npos,
+               "requirements: an unknown loaded list count fails the requirements");
+        ints[content::LIST_COUNT] = 0;
+        r = content::requirements(desc1990(), db);
+        expect(!r.ok && r.why.find("no row count") != std::string::npos,
+               "requirements: a loaded list count of 0 fails the requirements");
+        ints[content::LIST_COUNT] = 120;
         texts.erase("content_sets.content_set_1.official_entrant_list_1.name");
         r = content::requirements(desc1990(), db);
         expect(!r.ok && r.why.find("F1CAREER_90") != std::string::npos, "requirements: no F1CAREER_<suffix> list fails the requirements");

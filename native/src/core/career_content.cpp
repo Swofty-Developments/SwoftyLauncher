@@ -227,11 +227,12 @@ void resolve(Slot &s, bool now)
     s.resolved = true;
     if (!r.warn.empty())
         swofty::log("[career] content '%s': %s", s.desc.id.c_str(), r.warn.c_str());
-    swofty::log("[career] content '%s' ready%s: mode %s statId %lld, data group %s (entrant list stat_id %lld), suffix %s "
-                "(F1CAREER_%s%s%s)",
+    swofty::log("[career] content '%s' ready%s: mode %s statId %lld, data group %s (entrant list stat_id %lld of %lld "
+                "loaded lists), suffix %s (F1CAREER_%s%s%s)",
                 s.desc.id.c_str(), s.retry.tries ? (" after " + std::to_string(s.retry.tries + 1) + " checks").c_str() : "",
                 s.desc.mode.c_str(), (long long)r.mode, s.desc.data_group.c_str(), (long long)r.group,
-                s.desc.suffix.c_str(), s.desc.suffix.c_str(), r.f2 ? ", F2CAREER" : "", r.icons ? ", ICONS" : "");
+                (long long)r.lists, s.desc.suffix.c_str(), s.desc.suffix.c_str(), r.f2 ? ", F2CAREER" : "",
+                r.icons ? ", ICONS" : "");
 }
 
 void resolve_all(bool now)
