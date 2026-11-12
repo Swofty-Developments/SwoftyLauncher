@@ -12,11 +12,8 @@
 #include "main_menu.hpp"
 
 namespace runtime {
-void load_stall_screen(const char *name);
-}
-
-namespace runtime {
 std::string hook_error(const safetyhook::MidHook::Error &e);
+void load_stall_screen(const char *name);
 void netplay_screen(const char *name);
 void testagent_screen(const char *name);
 void direct_start_screen(const char *name);
