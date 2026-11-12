@@ -282,7 +282,7 @@ GateHook gates[5];
 std::atomic<uintptr_t> diag_storage{0};
 uintptr_t ts_global_a = 0, ts_global_b = 0;
 std::atomic<int64_t> ts_forced_ms{0}, enter_ms{0};
-std::string ts_seen, priv_seen, select_seen, ready_seen;
+std::string ts_seen, priv_seen, select_seen, select_walked, ready_seen;
 safetyhook::InlineHook h_write_ready, h_ready;
 safetyhook::MidHook h_garage;
 std::atomic<bool> lookup_logged{true};
@@ -2734,38 +2734,6 @@ void reader_fail_mid(safetyhook::Context &c)
                 (unsigned long long)c.rcx, (unsigned long long)c.rdx, (unsigned long long)c.r8, (unsigned long long)c.r9, backtrace_text(1, 6).c_str());
 }
 
-void select_board_mid(safetyhook::Context &c)
-{
-    uint64_t kp = peek64(c.rsp + 0x38);
-    std::string key = kp ? tb::read_c(game_mem(), kp) : std::string();
-    uint64_t reg = c.rbx, first = reg ? peek64(reg + 0x18) : 0, last = reg ? peek64(reg + 0x20) : 0;
-    size_t listed = first && last >= first ? size_t(std::min<uint64_t>((last - first) / 8, 100000)) : 0, same_descriptor = 0;
-    bool found = false;
-    std::string prefix = key.size() >= 5 ? key.substr(0, 5) : key, sample;
-    for (size_t i = 0; i < listed; i++) {
-        uint64_t board = peek64(first + 8 * i), np = board ? peek64(board + 0x68) : 0;
-        std::string name = np ? tb::read_c(game_mem(), np) : std::string();
-        if (!_stricmp(name.c_str(), key.c_str()))
-            found = true;
-        if (name.compare(0, prefix.size(), prefix) == 0) {
-            same_descriptor++;
-            if (sample.size() < 80 && name.size() > 5)
-                sample += (sample.empty() ? "" : " ") + name.substr(5);
-        }
-    }
-    char tag[96];
-    snprintf(tag, sizeof tag, "%s/%zu/%d", key.c_str(), listed, found);
-    {
-        std::lock_guard<std::mutex> lk(lock);
-        if (select_seen == tag)
-            return;
-        select_seen = tag;
-    }
-    swofty::log("[boards] %sleaderboard screen board lookup: key '%s', %zu board(s) listed (registry 0x%llx), %s; %zu with the prefix %s (tracks %s)",
-                diag_on ? "diag: " : "", key.c_str(), listed, (unsigned long long)reg, found ? "FOUND" : "NOT in the list: the screen opens empty",
-                same_descriptor, prefix.c_str(), sample.empty() ? "none" : sample.c_str());
-}
-
 std::string watch_seen;
 
 uint64_t cached64(uint64_t at)
@@ -2791,6 +2759,47 @@ bool cached_read(void *, uint64_t addr, void *out, size_t n)
 }
 
 tb::Mem cached_mem() { return {&cached_read, nullptr}; }
+
+void select_board_mid(safetyhook::Context &c)
+{
+    swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
+    uint64_t kp = cached64(c.rsp + 0x38);
+    std::string key = kp ? tb::read_c(cached_mem(), kp) : std::string();
+    uint64_t reg = c.rbx, first = reg ? cached64(reg + 0x18) : 0, last = reg ? cached64(reg + 0x20) : 0;
+    char walk[160];
+    snprintf(walk, sizeof walk, "%s/%llx/%llx/%llx", key.c_str(), (unsigned long long)reg, (unsigned long long)first, (unsigned long long)last);
+    {
+        std::lock_guard<std::mutex> lk(lock);
+        if (select_walked == walk)
+            return;
+        select_walked = walk;
+    }
+    size_t listed = first && last >= first ? size_t(std::min<uint64_t>((last - first) / 8, 100000)) : 0, same_descriptor = 0;
+    bool found = false;
+    std::string prefix = key.size() >= 5 ? key.substr(0, 5) : key, sample;
+    for (size_t i = 0; i < listed; i++) {
+        uint64_t board = cached64(first + 8 * i), np = board ? cached64(board + 0x68) : 0;
+        std::string name = np ? tb::read_c(cached_mem(), np) : std::string();
+        if (!_stricmp(name.c_str(), key.c_str()))
+            found = true;
+        if (name.compare(0, prefix.size(), prefix) == 0) {
+            same_descriptor++;
+            if (sample.size() < 80 && name.size() > 5)
+                sample += (sample.empty() ? "" : " ") + name.substr(5);
+        }
+    }
+    char tag[96];
+    snprintf(tag, sizeof tag, "%s/%zu/%d", key.c_str(), listed, found);
+    {
+        std::lock_guard<std::mutex> lk(lock);
+        if (select_seen == tag)
+            return;
+        select_seen = tag;
+    }
+    swofty::log("[boards] %sleaderboard screen board lookup: key '%s', %zu board(s) listed (registry 0x%llx), %s; %zu with the prefix %s (tracks %s)",
+                diag_on ? "diag: " : "", key.c_str(), listed, (unsigned long long)reg, found ? "FOUND" : "NOT in the list: the screen opens empty",
+                same_descriptor, prefix.c_str(), sample.empty() ? "none" : sample.c_str());
+}
 
 void describe_checks(uint64_t handler, const std::string &board)
 {
