@@ -245,6 +245,8 @@ void fake_log_site_b(void);
 void fake_log_site_c(void);
 void fake_log_thunk(const char *channel, const char *fmt, ...);
 const char fake_fmt_bad[] = "fake replay record %s";
+const char fake_fmt_deadlock[] =
+    "The signal timed out, this is unexpected and may indicate a deadlock, see trace above for Extra Info";
 int64_t fake_format_string(NeStr **out, const char *fmt, ...);
 
 void fake_log_body_impl(void) { gamelog_body_calls++; }
@@ -2509,6 +2511,28 @@ static void test_gamelog(int on)
     expect(gamelog_body_calls == 0, "gamelog: the overwritten logger never runs the game's own body");
 }
 
+static void test_deadlock_warn(void)
+{
+    wchar_t pattern[MAX_PATH];
+    GetModuleFileNameW(NULL, pattern, MAX_PATH);
+    wchar_t *slash = wcsrchr(pattern, L'\\');
+    if (slash)
+        wcscpy(slash + 1, L"swofty\\stall-*.txt");
+    fake_log_thunk(fake_chan_warn, fake_fmt_deadlock);
+    int found = 0;
+    for (int i = 0; i < 150 && !found; i++) {
+        Sleep(100);
+        WIN32_FIND_DATAW fd;
+        HANDLE h = FindFirstFileW(pattern, &fd);
+        if (h != INVALID_HANDLE_VALUE) {
+            found = i + 1;
+            FindClose(h);
+        }
+    }
+    Sleep(1500);
+    expect(found > 0, "stall: the game's deadlock WARN asks for a load-stall report without waiting for a threshold");
+}
+
 static void stage_early(void)
 {
     expect(fake_stage_site() == 7 && fake_stage_wrap() == 9 && fake_stage_plain() == 5 && probe[32] == 0,
@@ -3020,6 +3044,8 @@ int main(int argc, char **argv)
 
     if (argc > 1 && (!strcmp(argv[1], "trigger") || !strcmp(argv[1], "vm") || !strcmp(argv[1], "gamelog_off")))
         test_gamelog(strcmp(argv[1], "gamelog_off") != 0);
+    if (argc > 1 && !strcmp(argv[1], "trigger"))
+        test_deadlock_warn();
     printf("%s (%d failure(s))\n", fails ? "FAILED" : "ALL PASSED", fails);
     if (argc > 1 && !strcmp(argv[1], "crash")) {
         SetErrorMode(SEM_NOGPFAULTERRORBOX);

@@ -1,6 +1,7 @@
 // Host-native unit test for the core's load-stall watchdog trigger (native/src/core/load_stall_logic.hpp): when a
 // load that has stopped moving gets its reports, replayed from the flow and screen sequences of the 1.9.9 Suzuka
-// Time Trial stall (session 20261112-013117) and of working loads. Built and run by
+// Time Trial stall (session 20261112-013117), of the 1.9.x first-session hangs the game ends itself with its
+// deadlock WARN (cptovius, session 20261112-044919) and of working loads. Built and run by
 // native/test/run_load_stall_test.sh.
 
 #include "load_stall_logic.hpp"
@@ -28,6 +29,20 @@ static void menus(ls::Watch &w, uint64_t t)
     w.screen("solo_container", t + 2000);
     w.screen("track_select", t + 3000);
 }
+
+static uint64_t first_session(ls::Watch &w, uint64_t t)
+{
+    w.flow(0x10, ls::Entering, "StateLoadSession", t);
+    w.flow(0x10, ls::Updating, "StateLoadSession", t + 367);
+    w.flow(0x10, ls::Exiting, "StateLoadSession", t + 11999);
+    w.flow(0x10, ls::None, "StateLoadSession", t + 12470);
+    w.flow(0x20, ls::Entering, "StateSession", t + 12568);
+    return t + 12568;
+}
+
+static const char kWarn[] =
+    "[game] WARN (warn): The signal timed out, this is unexpected and may indicate a deadlock, see trace above for "
+    "Extra Info";
 
 static void stall_start(ls::Watch &w, uint64_t t)
 {
@@ -158,6 +173,124 @@ int main()
         size_t n = w.describe(small, sizeof small, 1000);
         CHECK(n < sizeof small && small[n] == 0 && std::strlen(small) == n);
     }
+    {
+        ls::Watch w;
+        menus(w, 1000);
+        uint64_t hang = first_session(w, 1'000'000);
+        CHECK(w.threshold() == 0);
+        CHECK(!w.poll(hang + 15302).report);
+        w.game(ls::GameDeadlock, hang + 15302, 0);
+        ls::Due d = w.poll(hang + 15302);
+        CHECK(d.report && d.index == 1 && d.trigger == ls::GameDeadlock && d.cause == ls::GameDeadlock);
+        CHECK(d.stalled_ms == 15302 && d.threshold_ms == 0 && d.signal_ms == 0 && d.moved);
+        char line[512];
+        size_t n = ls::headline(d, line, sizeof line);
+        CHECK(n == std::strlen(line));
+        CHECK(!std::strcmp(line, "the game logged \"The signal timed out, this is unexpected and may indicate a "
+                                 "deadlock\" 0.0 s ago; the last flow transition or screen open was 15.3 s ago"));
+        char text[2048];
+        w.describe(text, sizeof text, hang + 15302);
+        CHECK(std::strstr(text, "\"StateSession\" in Entering for 15.3 s"));
+        CHECK(std::strstr(text, "game hang signal: the game's deadlock warning, 0.0 s ago"));
+        CHECK(!w.poll(hang + 15303).report);
+        w.game(ls::GameWatchdog, hang + 30169, 30169);
+        CHECK(!w.poll(hang + 15302 + ls::kFollowUpMs - 1).report);
+        d = w.poll(hang + 15302 + ls::kFollowUpMs);
+        CHECK(d.report && d.index == 2 && d.trigger == ls::FollowUp && d.cause == ls::GameDeadlock);
+        CHECK(d.previous_ms == ls::kFollowUpMs && d.stalled_ms == 15302 + ls::kFollowUpMs);
+        ls::headline(d, line, sizeof line);
+        CHECK(!std::strcmp(line, "15.0 s after report 1 (asked for by the game's deadlock warning), nothing has moved; "
+                                 "the last flow transition or screen open was 30.3 s ago"));
+        CHECK(!w.poll(hang + ls::kSessionLoadMs * 10).report);
+        CHECK(w.reports() == 2);
+    }
+    {
+        ls::Watch w;
+        uint64_t hang = first_session(w, 1000);
+        w.game(ls::GameDeadlock, hang + 15300, 0);
+        CHECK(w.poll(hang + 15300 + 400).report);
+        w.flow(0x20, ls::Updating, "StateSession", hang + 39280);
+        CHECK(!w.poll(hang + 15300 + ls::kFollowUpMs * 3).report);
+        w.flow(0x30, ls::Entering, "StateSession", hang + 600000);
+        w.game(ls::GameDeadlock, hang + 600000 - 1, 0);
+        CHECK(!w.poll(hang + 600000 + 10).report);
+        w.game(ls::GameDeadlock, hang + 615300, 0);
+        ls::Due d = w.poll(hang + 615300);
+        CHECK(d.report && d.index == 1 && d.trigger == ls::GameDeadlock && w.reports() == 2);
+        CHECK(w.poll(hang + 615300 + ls::kFollowUpMs).report && w.reports() == 3);
+        w.flow(0x20, ls::Updating, "StateSession", hang + 700000);
+        w.game(ls::GameWatchdog, hang + 730000, 30000);
+        CHECK(w.poll(hang + 730000).report && w.reports() == ls::kMaxReports);
+        CHECK(!w.poll(hang + 730000 + ls::kFollowUpMs).report);
+        w.flow(0x20, ls::None, "StateSession", hang + 800000);
+        w.game(ls::GameDeadlock, hang + 815300, 0);
+        CHECK(!w.poll(hang + 815300).report);
+    }
+    {
+        ls::Watch w;
+        uint64_t hang = first_session(w, 5000);
+        w.game(ls::GameWatchdog, hang + 30169, 30169);
+        ls::Due d = w.poll(hang + 30500);
+        CHECK(d.report && d.index == 1 && d.trigger == ls::GameWatchdog && d.detail_ms == 30169 && d.signal_ms == 331);
+        char line[512];
+        ls::headline(d, line, sizeof line);
+        CHECK(!std::strcmp(line, "the game's watchdog found the frame tick silent for 30.2 s and the boot watchdog grace "
+                                 "is holding its kill; the last flow transition or screen open was 30.5 s ago"));
+        d = w.poll(hang + 30500 + ls::kFollowUpMs);
+        CHECK(d.report && d.index == 2 && d.trigger == ls::FollowUp && d.cause == ls::GameWatchdog);
+        ls::headline(d, line, sizeof line);
+        CHECK(std::strstr(line, "(asked for by the game's watchdog)"));
+    }
+    {
+        ls::Watch w;
+        stall_start(w, 0);
+        ls::Due d = w.poll(30 + ls::kLoadingMs);
+        CHECK(d.report && d.index == 1 && d.trigger == ls::Threshold);
+        char line[512];
+        ls::headline(d, line, sizeof line);
+        CHECK(!std::strcmp(line, "the load has not moved for 45.0 s (no flow transition or screen open; threshold 45 s)"));
+        w.game(ls::GameDeadlock, 30 + ls::kLoadingMs, 0);
+        CHECK(!w.poll(30 + ls::kLoadingMs + 1).report);
+        CHECK(w.poll(30 + ls::kLoadingMs + ls::kFollowUpMs).report && w.reports() == 2);
+    }
+    {
+        ls::Watch w;
+        stall_start(w, 0);
+        CHECK(w.poll(30 + ls::kLoadingMs).report);
+        w.game(ls::GameDeadlock, 30 + ls::kLoadingMs + 5000, 0);
+        ls::Due d = w.poll(30 + ls::kLoadingMs + 5000);
+        CHECK(d.report && d.index == 2 && d.trigger == ls::GameDeadlock);
+        CHECK(!w.poll(30 + 10 * ls::kLoadingMs).report && w.reports() == 2);
+    }
+    {
+        ls::Watch w;
+        w.game(ls::GameDeadlock, 8000, 0);
+        ls::Due d = w.poll(9000);
+        CHECK(d.report && d.index == 1 && !d.moved && d.signal_ms == 1000);
+        char line[512];
+        ls::headline(d, line, sizeof line);
+        CHECK(std::strstr(line, "1.0 s ago; no flow transition or screen open seen yet"));
+        char small[16];
+        size_t n = ls::headline(d, small, sizeof small);
+        CHECK(n == sizeof small - 1 && std::strlen(small) == n);
+        CHECK(ls::headline(d, nullptr, 0) == 0);
+    }
+    {
+        ls::Watch w;
+        stall_start(w, 0);
+        w.game(ls::Threshold, 100, 0);
+        w.game(ls::FollowUp, 100, 0);
+        w.game(7, 100, 0);
+        CHECK(!w.poll(200).report);
+    }
+    CHECK(ls::game_deadlock_line(kWarn));
+    CHECK(ls::game_deadlock_line("[game] TEST_WARN (warn): The signal timed out, this is unexpected and may indicate a "
+                                 "deadlock, see trace above for Extra Info"));
+    CHECK(!ls::game_deadlock_line("[game] WARN (warn): Extra Info queueName=\"<unknown/queue>\", AJCF=0x80000001, JCS=22"));
+    CHECK(!ls::game_deadlock_line("[stall]   -    0.001 s [ 1234] game      WARN (warn): The signal timed out, this is "
+                                  "unexpected and may indicate a deadlock"));
+    CHECK(!ls::game_deadlock_line("[game] WARN (warn): The signal timed out"));
+    CHECK(!ls::game_deadlock_line(nullptr));
     CHECK(ls::loading_screen("loading_transitions") && ls::loading_screen("loading") && !ls::loading_screen("hud"));
     CHECK(!ls::loading_screen(nullptr));
     CHECK(ls::session_load_flow("StateLoadSession") && ls::session_load_flow("StateUnloadSession"));

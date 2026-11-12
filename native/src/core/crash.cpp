@@ -34,6 +34,7 @@ std::string load_stage();
 void on_stage(void (*fn)(int));
 void hud_fatal();
 void netplay_exit();
+void load_stall_game_line(const char *line);
 }
 
 // Crash log and crash reports. The crash log writes each fatal-class exception, the top-level filter
@@ -312,9 +313,11 @@ void tap(const char *f, ...)
     va_start(ap, f);
     vsnprintf(b, sizeof b, f, ap);
     va_end(ap);
-    if (!strncmp(b, "[game] ", 7) && (strstr(b, " (warn): ") || strstr(b, " (error): ")))
-        warnings.put(GetTickCount64(), GetCurrentThreadId(), "game", b + 7);
-    else if (!strncmp(b, "[telemetry] session ", 20))
+    if (!strncmp(b, "[game] ", 7)) {
+        if (strstr(b, " (warn): ") || strstr(b, " (error): "))
+            warnings.put(GetTickCount64(), GetCurrentThreadId(), "game", b + 7);
+        runtime::load_stall_game_line(b);
+    } else if (!strncmp(b, "[telemetry] session ", 20))
         events.put(GetTickCount64(), GetCurrentThreadId(), "session", b + 20);
     loader_log("%s", b);
 }
@@ -2531,8 +2534,10 @@ bool create_stall(const std::wstring &dir, const char *stamp, wchar_t *path, HAN
 
 namespace runtime {
 
-bool stall_report(int index, int max, uint64_t stalled_ms, uint64_t threshold_ms, const char *state)
+bool stall_report(int index, int max, const char *why, const char *state)
 {
+    if (!why)
+        why = "";
     if (claimed || writing || InterlockedCompareExchange(&stall_busy, 1, 0))
         return false;
     if (!stall_threads)
@@ -2559,8 +2564,7 @@ bool stall_report(int index, int max, uint64_t stalled_ms, uint64_t threshold_ms
     local_stamp(now, sizeof now, false);
     local_stamp(stamp, sizeof stamp, true);
     t.put("== Load stall report %d of at most %d (%s)\n", index, max, now);
-    t.put("the load has not moved for %.1f s (no flow transition or screen open; threshold %.0f s)\n",
-          double(stalled_ms) / 1000, double(threshold_ms) / 1000);
+    t.put("%s\n", why);
     t.put("%s", state);
     t.put("game: F1_25.exe stamp %08x%s, %llu s since the core loaded%s%s\n", exe_stamp,
           kb_build ? " (the known build)" : ea_build ? " (EA diagnostics on)" : "",
@@ -2605,9 +2609,8 @@ bool stall_report(int index, int max, uint64_t stalled_ms, uint64_t threshold_ms
         if (index == 1)
             prune(dir, L"stall-*.txt", KEEP_STALLS);
     }
-    cl("[stall] load-stall report %d of at most %d: the load has not moved for %.1f s; %d thread(s) read in %llu ms; "
-       "written to %s",
-       index, max, double(stalled_ms) / 1000, n, (unsigned long long)took, where.c_str());
+    cl("[stall] load-stall report %d of at most %d: %s; %d thread(s) read in %llu ms; written to %s", index, max, why, n,
+       (unsigned long long)took, where.c_str());
     for (char *line = t.b; *line;) {
         char *nl = strchr(line, '\n');
         size_t len = nl ? size_t(nl - line) : strlen(line);

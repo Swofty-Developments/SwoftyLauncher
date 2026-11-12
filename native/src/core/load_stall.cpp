@@ -19,13 +19,19 @@
 // report: every thread's stack, unwound with the modules' exception data, to loader.log and to swofty\stall-<time>.txt
 // beside the crash reports (crash.cpp, runtime::stall_report). The watch's lock is never held while the report runs.
 //
+// The game's own hang signals wake the thread at once (load_stall_signal): the game log's deadlock WARN, seen by
+// crash.cpp's log tap on the thread that logs it, and the boot watchdog grace holding the game's kill, on the game's
+// watchdog thread. Those threads only store the time in an atomic and set an event; the report runs here.
+//
 // SWOFTY_LOAD_STALL=0 turns it off; SWOFTY_LOAD_STALL_MS sets the loading-screen threshold (tests). The test-only
 // SWOFTY_TEST_LOAD_STALL=<seconds> holds the first game thread that moves a flow to Exiting on a loading screen
-// outside a session load, which is where the 1.9.9 load stopped, for that long; SWOFTY_TEST_LOAD_STALL_REPORT=1 writes
-// one report at once, before setup returns (the Wine test).
+// outside a session load, which is where the 1.9.9 load stopped, for that long; with SWOFTY_TEST_LOAD_STALL_AT=<flow>
+// it holds the first thread that moves that flow to Entering instead (StateSession: where the 1.9.x first-session
+// loads hang until the game logs its deadlock WARN). SWOFTY_TEST_LOAD_STALL_REPORT=1 writes one report at once,
+// before setup returns (the Wine test).
 
 namespace runtime {
-bool stall_report(int index, int max, uint64_t stalled_ms, uint64_t threshold_ms, const char *state);
+bool stall_report(int index, int max, const char *why, const char *state);
 }
 
 namespace {
@@ -36,8 +42,12 @@ std::mutex lock;
 ls::Watch watch;
 std::atomic<bool> armed{false};
 uint64_t test_hold_ms = 0;
+char test_hold_at[ls::kName];
 std::atomic<bool> test_held{false};
 std::atomic<DWORD> test_thread{0};
+HANDLE wake;
+std::atomic<uint64_t> signal_at[ls::kTriggers];
+std::atomic<uint64_t> signal_ms[ls::kTriggers];
 
 uint64_t env_number(const char *name, uint64_t fallback)
 {
@@ -70,20 +80,26 @@ HANDLE test_report_done;
 DWORD WINAPI loop(void *)
 {
     static char state[8192];
+    static char why[512];
     if (test_report_done) {
         {
             std::lock_guard<std::mutex> g(lock);
-            size_t n = watch.describe(state, sizeof state, GetTickCount64());
-            std::snprintf(state + n, sizeof state - n, "test: SWOFTY_TEST_LOAD_STALL_REPORT asked for this report\n");
+            watch.describe(state, sizeof state, GetTickCount64());
         }
-        runtime::stall_report(1, 1, 0, 0, state);
+        runtime::stall_report(1, 1, "test: SWOFTY_TEST_LOAD_STALL_REPORT asked for this report", state);
         SetEvent(test_report_done);
     }
     for (;;) {
-        Sleep(1000);
+        if (wake)
+            WaitForSingleObject(wake, 1000);
+        else
+            Sleep(1000);
         ls::Due d;
         {
             std::lock_guard<std::mutex> g(lock);
+            for (uint32_t k = 0; k < ls::kTriggers; k++)
+                if (uint64_t at = signal_at[k].exchange(0))
+                    watch.game(k, at, signal_ms[k].load());
             uint64_t now = GetTickCount64();
             d = watch.poll(now);
             if (d.report) {
@@ -92,16 +108,33 @@ DWORD WINAPI loop(void *)
                     std::snprintf(state + n, sizeof state - n,
                                   "test: SWOFTY_TEST_LOAD_STALL is holding thread %lu in load_stall_test_hold\n",
                                   (unsigned long)t);
+                ls::headline(d, why, sizeof why);
             }
         }
         if (d.report)
-            runtime::stall_report(d.index, ls::kReportsPerStall, d.stalled_ms, d.threshold_ms, state);
+            runtime::stall_report(d.index, ls::kReportsPerStall, why, state);
     }
 }
 
 }
 
 namespace runtime {
+
+void load_stall_signal(uint32_t trigger, uint64_t detail_ms)
+{
+    if (trigger >= ls::kTriggers || !armed.load(std::memory_order_relaxed))
+        return;
+    signal_ms[trigger].store(detail_ms);
+    uint64_t none = 0;
+    if (signal_at[trigger].compare_exchange_strong(none, GetTickCount64()) && wake)
+        SetEvent(wake);
+}
+
+void load_stall_game_line(const char *line)
+{
+    if (ls::game_deadlock_line(line))
+        load_stall_signal(ls::GameDeadlock, 0);
+}
 
 void load_stall_flow(uint32_t hash, uint32_t to, const char *name)
 {
@@ -111,14 +144,16 @@ void load_stall_flow(uint32_t hash, uint32_t to, const char *name)
     {
         std::lock_guard<std::mutex> g(lock);
         watch.flow(hash, to, name, GetTickCount64());
-        hold = test_hold_ms && to == ls::Exiting && watch.in_loading_screen() && !watch.session_flow() &&
-               !test_held.exchange(true);
+        bool at = test_hold_at[0] ? to == ls::Entering && name && !std::strcmp(name, test_hold_at)
+                                  : to == ls::Exiting && watch.in_loading_screen() && !watch.session_flow();
+        hold = test_hold_ms && at && !test_held.exchange(true);
     }
     if (!hold)
         return;
     test_thread.store(GetCurrentThreadId());
-    swofty::log("[stall] test: SWOFTY_TEST_LOAD_STALL holds thread %lu in flow \"%s\" Exiting for %llu s",
-                (unsigned long)GetCurrentThreadId(), name, (unsigned long long)(test_hold_ms / 1000));
+    swofty::log("[stall] test: SWOFTY_TEST_LOAD_STALL holds thread %lu in flow \"%s\" %s for %llu s",
+                (unsigned long)GetCurrentThreadId(), name, ls::status_name(to),
+                (unsigned long long)(test_hold_ms / 1000));
     load_stall_test_hold(test_hold_ms);
     test_thread.store(0);
     swofty::log("[stall] test: thread %lu released", (unsigned long)GetCurrentThreadId());
@@ -147,6 +182,10 @@ void load_stall_setup()
         watch.loading_ms = std::max<uint64_t>(1000, env_number("SWOFTY_LOAD_STALL_MS", ls::kLoadingMs));
     }
     test_hold_ms = env_number("SWOFTY_TEST_LOAD_STALL", 0) * 1000;
+    DWORD at_n = GetEnvironmentVariableA("SWOFTY_TEST_LOAD_STALL_AT", test_hold_at, sizeof test_hold_at);
+    if (!at_n || at_n >= sizeof test_hold_at)
+        test_hold_at[0] = 0;
+    wake = CreateEventW(nullptr, FALSE, FALSE, nullptr);
     if (env_number("SWOFTY_TEST_LOAD_STALL_REPORT", 0))
         test_report_done = CreateEventW(nullptr, TRUE, FALSE, nullptr);
     HANDLE t = CreateThread(nullptr, 256 << 10, loop, nullptr, STACK_SIZE_PARAM_IS_A_RESERVATION | CREATE_SUSPENDED,
@@ -166,10 +205,12 @@ void load_stall_setup()
     if (test_report_done && WaitForSingleObject(test_report_done, 20000) != WAIT_OBJECT_0)
         swofty::log("[stall] test: the SWOFTY_TEST_LOAD_STALL_REPORT report did not finish in 20 s");
     swofty::log("[stall] load-stall watchdog armed: a report of every thread's stack when a load sits still %llu s on a "
-                "loading screen or %llu s in a session load or unload, again at %llux, at most %d per process%s",
+                "loading screen or %llu s in a session load or unload, again at %llux, and at once when the game logs "
+                "its deadlock warning or its watchdog kill is held, again %llu s later; at most %d per process%s%s%s",
                 (unsigned long long)(watch.loading_ms / 1000), (unsigned long long)(ls::kSessionLoadMs / 1000),
-                (unsigned long long)ls::kRepeatFactor, ls::kMaxReports,
-                test_hold_ms ? "; SWOFTY_TEST_LOAD_STALL is set" : "");
+                (unsigned long long)ls::kRepeatFactor, (unsigned long long)(ls::kFollowUpMs / 1000), ls::kMaxReports,
+                test_hold_ms ? "; SWOFTY_TEST_LOAD_STALL is set" : "", test_hold_ms && test_hold_at[0] ? " at " : "",
+                test_hold_ms && test_hold_at[0] ? test_hold_at : "");
 }
 
 }

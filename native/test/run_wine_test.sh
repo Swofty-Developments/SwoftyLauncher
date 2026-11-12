@@ -222,6 +222,21 @@ EOF
         fi
         rm -f "$OUT"/game/swofty/stall-*.txt
     fi
+    if [[ $mode == trigger ]]; then
+        once "stall: the game's deadlock WARN reaches the log" '\[game\] TEST_WARN \(warn\): The signal timed out, this is unexpected and may indicate a deadlock, see trace above for Extra Info[[:space:]]*$'
+        once "stall: the WARN asks for a report at once, on the watchdog's thread" '\[stall\] load-stall report 1 of at most 2: the game logged "The signal timed out, this is unexpected and may indicate a deadlock" [0-9]+\.[0-9] s ago; .*thread\(s\) read in [0-9]+ ms; written to swofty\\stall-[0-9]{8}-[0-9]{6}\.txt'
+        once "stall: the WARN report says the game's hang signal" '\[stall\] game hang signal: the game.s deadlock warning, [0-9]+\.[0-9] s ago'
+        once "stall: the WARN report runs on the load-stall watchdog's own thread" '\[stall\] thread [0-9]+.*\(the load-stall watchdog, not suspended\)'
+        once "stall: the WARN report ends" '\[stall\] end of load-stall report 1'
+        stall_files=$(ls "$OUT"/game/swofty/stall-*.txt 2>/dev/null | wc -l)
+        if [[ $stall_files == 1 ]] && grep -q '^the game logged "The signal timed out' "$OUT"/game/swofty/stall-*.txt; then
+            echo "ok  : stall: swofty\\stall-<time>.txt holds the WARN report"
+        else
+            echo "FAIL: stall: swofty\\stall-<time>.txt holds the WARN report ($stall_files file(s))"
+            status=1
+        fi
+        rm -f "$OUT"/game/swofty/stall-*.txt
+    fi
     if [[ $mode == udp ]]; then
         once "udp: the map is read and sendto is hooked" '\[udp\] stock ids on: 1 team id\(s\), 1 driver id\(s\), 1 sendto slot\(s\)'
         once "udp: the launcher's mapping lines are logged" '\[udp\] stock ids: team 507 -> 4 \(forceindia\); driver 197 -> 255 \(no stock driver\)'
