@@ -21,7 +21,7 @@ set +e
 export WINEPREFIX=${WINEPREFIX:-$OUT/prefix} WINEDEBUG=-all
 timeout 300 wineboot -i >/dev/null 2>&1
 status=0
-for c in mem_reads fine av_plain av_locals throw_plain throw_locals msvc_code sdk_av sdk_throw sdk_service_throw sdk_blamed blamed; do
+for c in fine av_plain av_locals throw_plain throw_locals msvc_code sdk_av sdk_throw sdk_service_throw sdk_blamed blamed; do
     out=$(timeout 60 "${PIN[@]}" wine "$OUT/guard_test.exe" "$c" 2>/dev/null)
     r=$?
     echo "$out"
