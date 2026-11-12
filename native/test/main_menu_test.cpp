@@ -207,6 +207,17 @@ int main()
                !mm::return_due(false, false, mm::Mode::time_trial, true) && !mm::return_due(true, true, mm::Mode::time_trial, true) &&
                !mm::return_due(true, false, mm::Mode::time_trial, false),
            "the hand-over is armed when a session that a card started has ended");
+    expect(mm::migrate_logged(true, "", "frontend") && mm::migrate_logged(false, "f1_world", "frontend"), "a failed or flow-changing migrate is logged");
+    expect(!mm::migrate_logged(false, "frontend", "frontend") && !mm::migrate_logged(false, "", "frontend"), "a migrate within the same flow is not logged");
+    expect(mm::region_writable(true, 0x04, 0x1000, 0x1000, 0x1ffc, 4), "read-write memory inside its region is writable");
+    expect(mm::region_writable(true, 0x08, 0x1000, 0x1000, 0x1000, 4) && mm::region_writable(true, 0x40, 0x1000, 0x1000, 0x1000, 4),
+           "write-copy and execute-read-write are writable");
+    expect(!mm::region_writable(true, 0x02, 0x1000, 0x1000, 0x1000, 4) && !mm::region_writable(true, 0x20, 0x1000, 0x1000, 0x1000, 4),
+           "read-only and execute-read are not writable");
+    expect(!mm::region_writable(false, 0x04, 0x1000, 0x1000, 0x1000, 4), "reserved memory is not writable");
+    expect(!mm::region_writable(true, 0x104, 0x1000, 0x1000, 0x1000, 4), "a guard page is not writable");
+    expect(!mm::region_writable(true, 0x04, 0x1000, 0x1000, 0x1ffe, 4), "bytes past the region are not writable");
+    expect(!mm::region_writable(true, 0x04, 0x1000, 0x1000, 0, 4), "null is not writable");
     expect(mm::entry_point_write(0x146066c74, true) == mm::EntryPointWrite::write,
            "the F1 World entry point is cleared through the address the binding set resolved");
     expect(mm::entry_point_write(0, true) == mm::EntryPointWrite::unresolved && mm::entry_point_write(0, false) == mm::EntryPointWrite::unresolved,

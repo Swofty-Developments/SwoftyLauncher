@@ -451,6 +451,22 @@ inline bool migrate_failed(const std::string &text)
     return text.find("failed to migrate") != std::string::npos || text.find("No screen called") != std::string::npos;
 }
 
+// A Migrate command is logged when it fails or moves the tracked flow, not on every migrate.
+inline bool migrate_logged(bool failed, const std::string &flow, const std::string &flow_before)
+{
+    return failed || (!flow.empty() && flow != flow_before);
+}
+
+// One VirtualQuery answer (state committed or not, protection, region base and size) says whether n bytes at p can be written.
+// The protection values are the Windows PAGE_* constants.
+inline bool region_writable(bool committed, uint32_t protect, uintptr_t base, uint64_t size, uintptr_t p, size_t n)
+{
+    constexpr uint32_t NOACCESS = 0x01, GUARD = 0x100, WRITABLE = 0x04 | 0x08 | 0x40 | 0x80;
+    if (!p || !committed || (protect & (NOACCESS | GUARD)) || !(protect & WRITABLE))
+        return false;
+    return p >= base && p + n <= base + size;
+}
+
 // A session that ended after a Time Trial or Grand Prix card press hands over to the f1_world flow's container; the
 // card's command is raised there once it is up.
 inline bool return_due(bool was_in_session, bool in_session, Mode last, bool feature_on)
