@@ -304,11 +304,11 @@ inline Loaded loaded_list(const void *entrants, int64_t id, const Access &a)
 }
 
 // Why a content whose database requirements hold is still refused for the loaded lists, or empty when its list is
-// loaded.
+// loaded or the lists can't be read on this build.
 inline std::string loaded_why(const Desc &d, int64_t group, const Loaded &l)
 {
     if (!l.known)
-        return "the game has not loaded its entrant lists (g_Game_Manager +0x290 +0x560 holds no list slots)";
+        return {};
     if (group < 0 || size_t(group) >= l.slots)
         return "entrant list " + d.data_group + " has stat_id " + std::to_string(group) + ", past the " +
                std::to_string(l.slots) + " entrant list slots the game loaded; the career tile's router reads the " +
