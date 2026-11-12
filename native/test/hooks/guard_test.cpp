@@ -172,6 +172,82 @@ static bool mem_reads()
     return good && null_refused && freed_refused && span_checked && guard_refused && guard_kept && flag_clear && faults >= 5;
 }
 
+static LONG CALLBACK pass_on(EXCEPTION_POINTERS *)
+{
+    return EXCEPTION_CONTINUE_SEARCH;
+}
+
+struct Stress {
+    char *edge;
+    unsigned rounds;
+    unsigned crossing, refused, good, read_back;
+};
+
+static void stress_body(Stress *a)
+{
+    namespace g = swofty::mem::guarded;
+    static const size_t sizes[] = {1, 2, 7, 8, 9, 15, 16, 17, 31, 32, 33, 63, 64, 65, 100, 128, 255, 256, 257, 1000, 4096};
+    static char out[8192];
+    for (unsigned r = 0; r < a->rounds; r++) {
+        for (size_t n : sizes) {
+            for (size_t back : {size_t(1), size_t(3), size_t(8), n / 2, n - 1}) {
+                if (!back || back >= n)
+                    continue;
+                uintptr_t from = uintptr_t(a->edge) - back;
+                a->crossing += 2;
+                a->refused += !g::copy(out, from, n);
+                a->refused += !g::readable(from, n);
+            }
+            uintptr_t inside = uintptr_t(a->edge) - n - 16;
+            a->good += g::copy(out, inside, n) && g::readable(inside, n);
+            a->read_back += !memcmp(out, reinterpret_cast<const void *>(inside), n);
+        }
+    }
+}
+
+static DWORD WINAPI stress_thread(void *p)
+{
+    stress_body(static_cast<Stress *>(p));
+    return 0;
+}
+
+static void *main_fiber;
+
+static void WINAPI stress_fiber(void *p)
+{
+    stress_body(static_cast<Stress *>(p));
+    SwitchToFiber(main_fiber);
+}
+
+static bool mem_stress()
+{
+    void *veh = AddVectoredExceptionHandler(1, pass_on);
+    auto *span = static_cast<char *>(VirtualAlloc(nullptr, 0x4000, MEM_RESERVE, PAGE_NOACCESS));
+    VirtualAlloc(span, 0x2000, MEM_COMMIT, PAGE_READWRITE);
+    memset(span, 0x5a, 0x2000);
+    char *edge = span + 0x2000;
+    Stress runs[9] = {};
+    HANDLE threads[8];
+    for (int i = 0; i < 8; i++) {
+        runs[i] = {edge, 60, 0, 0, 0, 0};
+        threads[i] = CreateThread(nullptr, 0, stress_thread, &runs[i], 0, nullptr);
+    }
+    WaitForMultipleObjects(8, threads, TRUE, INFINITE);
+    runs[8] = {edge, 20, 0, 0, 0, 0};
+    main_fiber = ConvertThreadToFiber(nullptr);
+    void *f = CreateFiber(64 * 1024, stress_fiber, &runs[8]);
+    SwitchToFiber(f);
+    DeleteFiber(f);
+    ConvertFiberToThread();
+    RemoveVectoredExceptionHandler(veh);
+    bool ok = !reading_now();
+    for (auto &r : runs) {
+        printf("      crossing %u refused %u good %u read back %u\n", r.crossing, r.refused, r.good, r.read_back);
+        ok = ok && r.crossing && r.refused == r.crossing && r.good == r.rounds * 21 && r.read_back == r.good;
+    }
+    return ok;
+}
+
 int main(int argc, char **argv)
 {
     const char *k = argc > 1 ? argv[1] : "";
@@ -179,6 +255,9 @@ int main(int argc, char **argv)
     if (!strcmp(k, "mem_reads")) {
         ok = mem_reads();
         say(ok, "mem_reads: guarded reads pass good memory, refuse null, freed, reserved and guard pages, and keep the guard armed");
+    } else if (!strcmp(k, "mem_stress")) {
+        ok = mem_stress();
+        say(ok, "mem_stress: reads that fault part way through a copy are refused on 8 threads and a fiber with a vectored handler installed");
     } else if (!strcmp(k, "fine")) {
         SwoftyHookCall c{sizeof c, 2, "t.point", nullptr, 0, nullptr};
         Seen s{0, 0, {}};

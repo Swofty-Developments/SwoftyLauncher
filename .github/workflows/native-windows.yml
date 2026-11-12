@@ -1,0 +1,34 @@
+name: Native Windows
+
+on:
+  pull_request:
+    paths:
+      - native/src/core/hooks/**
+      - native/test/hooks/**
+      - native/test/run_guard_test.sh
+      - packages/sdk/include/swofty/mem.hpp
+      - .github/workflows/native-windows.yml
+  push:
+    branches: [main, "perf/guarded-reads-*"]
+    paths:
+      - native/src/core/hooks/**
+      - native/test/hooks/**
+      - native/test/run_guard_test.sh
+      - packages/sdk/include/swofty/mem.hpp
+      - .github/workflows/native-windows.yml
+  workflow_dispatch:
+
+jobs:
+  guard:
+    name: Guard tests on Windows
+    runs-on: windows-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: mlugg/setup-zig@v2
+        with:
+          version: 0.16.0
+          use-cache: false
+      - name: Guard tests
+        shell: bash
+        run: bash native/test/run_guard_test.sh
