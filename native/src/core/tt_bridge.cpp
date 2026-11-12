@@ -249,7 +249,8 @@ bool bridge_on = false, boards_on = false, guards_on = false, request_guard = fa
 std::atomic<bool> pb_armed{false};
 std::string last_board, session_code;
 std::atomic<bool> session_custom{false}, track_watch{false}, track_session{false};
-std::atomic<int64_t> track_checked_ms{0}, diag_checked_ms{0};
+std::atomic<int64_t> diag_checked_ms{0};
+tb::TrackReads track_reads;
 std::atomic<bool> unknown_logged{false};
 std::atomic<int> pending_count{0};
 std::deque<std::unique_ptr<tb::Response>> responses;
@@ -3336,9 +3337,11 @@ void tt_bridge_track_watch(bool session_live)
     if (track_session.exchange(on) == on)
         return;
     if (on) {
-        track_checked_ms = now_ms();
-        std::string code = read_session_track();
-        swofty::log("[boards] track watch on: Time Trial session entered on track '%s'; the track is read twice a second until the session ends", code.c_str());
+        std::string code = track_reads.enter(now_ms(), read_session_track);
+        if (code.empty())
+            swofty::log("[boards] track watch on: Time Trial session entered with no track yet; it is read again twice a second, at most %d reads in all", tb::TRACK_READS);
+        else
+            swofty::log("[boards] track watch on: Time Trial session entered on track '%s'; it is not read again until the next session", code.c_str());
         return;
     }
     std::string code;
@@ -3358,9 +3361,12 @@ void tt_bridge_tick()
         diag_checked_ms = t;
         diag_tick();
     }
-    if (tb::track_watch_due(track_watch.load(std::memory_order_relaxed) && time_trial_live, t, track_checked_ms.load())) {
-        track_checked_ms = t;
-        read_session_track();
+    std::string code;
+    if (int n = track_reads.tick(track_watch.load(std::memory_order_relaxed) && time_trial_live, t, read_session_track, code)) {
+        if (!code.empty())
+            swofty::log("[boards] track watch: track '%s' read on attempt %d; it is not read again until the next session", code.c_str(), n);
+        else if (n >= tb::TRACK_READS)
+            swofty::log("[boards] track watch: still no track after %d reads; it is not read again until the next session", n);
     }
     if (!pending_count.load(std::memory_order_relaxed))
         return;
