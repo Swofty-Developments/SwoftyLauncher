@@ -541,6 +541,13 @@ inline uint64_t garage_feature_flags(uint64_t flags, bool bridge_on, bool ours_c
 // started once, a short delay later, from the replay system's own tick.
 constexpr uint32_t REPLAY_MAGIC = 0xe32fcaa8u;
 
+// Replays are captured only for Time Trial personal bests, so the replay system hooks act only in a live Time Trial session; a Grand
+// Prix, a career race or the front end keeps the game's replay system to itself.
+inline bool replay_session_on(bool session_live, bool time_trial)
+{
+    return session_live && time_trial;
+}
+
 inline bool replay_capture_due(int64_t pending_ms, int64_t now_ms, int64_t delay_ms)
 {
     return pending_ms > 0 && now_ms >= pending_ms + delay_ms;

@@ -201,6 +201,8 @@ int main()
     expect(tb::garage_gate_byte(0, false, true, 0x12) == 0 && tb::garage_gate_byte(0, true, false, 0x12) == 0 && tb::garage_gate_byte(0, true, true, 0x10) == 0 &&
                tb::garage_gate_byte(0, true, true, -1) == 0,
            "it is untouched with the bridge off, for stock content and in other session types");
+    expect(tb::replay_session_on(true, true) && !tb::replay_session_on(true, false) && !tb::replay_session_on(false, true) && !tb::replay_session_on(false, false),
+           "the replay system hooks act only in a live Time Trial session, never in a Grand Prix, a career race or the front end");
     expect(tb::replay_capture_due(1000, 2500, 1500) && !tb::replay_capture_due(1000, 2499, 1500) && !tb::replay_capture_due(0, 9999, 1500), "a capture is due after its delay and never without a pending mark");
     {
         uint8_t h[16] = {0, 0, 0, 0, 0xa8, 0xca, 0x2f, 0xe3};

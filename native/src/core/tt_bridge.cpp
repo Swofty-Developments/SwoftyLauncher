@@ -235,7 +235,7 @@ void replay_set_state(uint64_t sys, uint32_t state, uint32_t flag)
 
 bool is_replay_system(uint64_t sys)
 {
-    return game.replay_system_vt && sys && runtime::readable(reinterpret_cast<void *>(sys), 8) && *reinterpret_cast<const uint64_t *>(sys) == game.replay_system_vt;
+    return game.replay_system_vt && sys && swofty::mem::readable(sys, 8) && *reinterpret_cast<const uint64_t *>(sys) == game.replay_system_vt;
 }
 constexpr uintptr_t TS_FLAG_GLOBAL_A = 0, TS_FLAG_GLOBAL_B = 17;
 constexpr int64_t TS_FORCED_WINDOW_MS = 10 * 60 * 1000;
@@ -274,6 +274,8 @@ bool replay_capture_on = false;
 // Replay capture saves and uploads the game replay of a personal best. It needs Time Trial boards (uploads), not the in-game
 // leaderboards bridge; the bridge adds playing other drivers' replays in Theatre.
 bool capture_on() { return replay_capture_on && (bridge_on || boards_on); }
+// Set while a Time Trial session is live; the replay system hooks leave every other session to the game.
+std::atomic<bool> replay_tt_session{false};
 std::atomic<int64_t> replay_pending_ms{0};
 std::atomic<uint32_t> replay_pending_lap{0};
 safetyhook::InlineHook h_rui_start, h_rui_result;
@@ -2369,6 +2371,8 @@ void replay_view_arm(const std::string &path)
 
 void replay_tick(uint64_t sys, const char *slot)
 {
+    if (!replay_tt_session.load(std::memory_order_relaxed))
+        return;
     static std::atomic<uint64_t> entries[4]{}, ours_entries[4]{};
     static std::atomic<int> guard_logs{0};
     int which = !strcmp(slot, "vslot24") ? 0 : !strcmp(slot, "vslot17") ? 1 : !strcmp(slot, "updateFromModule") ? 2 : 3;
@@ -2617,6 +2621,8 @@ void replay_restart(uint64_t sys)
 
 void replay_update_mid(safetyhook::Context &c)
 {
+    if (!replay_tt_session.load(std::memory_order_relaxed))
+        return;
     replay_tick(c.rcx, "updateFromModule");
     if (replay_restart_wanted.load())
         replay_restart(c.rcx);
@@ -2653,6 +2659,8 @@ uint64_t replay_find_system(uint64_t buffer, std::string &how)
 
 void replay_frame_mid(safetyhook::Context &c)
 {
+    if (!replay_tt_session.load(std::memory_order_relaxed))
+        return;
     static std::atomic<uint64_t> searched{0};
     if (!replay_system_ptr.load() && searched.exchange(c.rcx) != c.rcx && c.rcx) {
         std::string how;
@@ -3199,7 +3207,7 @@ void arm_replay(bool playback)
         if (uintptr_t fr = runtime::find(S_REPLAY_FRAME, "boards", "boards"))
             hook_mid(h_replay_frame, fr, replay_frame_mid, "replay buffer beginFrameWrite");
         std::thread(replay_inbox).detach();
-        swofty::log("[replay] capture armed (SWOFTY_TT_REPLAY_CAPTURE=1): tick at base+0x%llx, save at base+0x%llx, path builder at base+0x%llx", (unsigned long long)(tick - swofty::api->module_base()),
+        swofty::log("[replay] capture armed (SWOFTY_TT_REPLAY_CAPTURE=1, Time Trial sessions only): tick at base+0x%llx, save at base+0x%llx, path builder at base+0x%llx", (unsigned long long)(tick - swofty::api->module_base()),
                     (unsigned long long)(save_fn - swofty::api->module_base()), (unsigned long long)(path_fn - swofty::api->module_base()));
     } else
         swofty::log("[replay] capture: off, a signature or the tick hook failed");
@@ -3527,6 +3535,9 @@ namespace runtime {
 void tt_bridge_track_watch(bool session_live)
 {
     bool time_trial = session_live && swofty_core::apply::moments::session_mode_track().first == "time_trial";
+    bool replay_on = tb::replay_session_on(session_live, time_trial);
+    if (replay_tt_session.exchange(replay_on) != replay_on && (h_replay_tick || h_replay_update || h_replay_frame))
+        swofty::log("[replay] system hooks %s", replay_on ? "on (a Time Trial session is live)" : "off (no Time Trial session: the game's replay system runs untouched)");
     bool on = tb::track_watch_on(bridge_on, guards_on, diag_on, session_live, time_trial);
     if (track_session.exchange(on) == on)
         return;
