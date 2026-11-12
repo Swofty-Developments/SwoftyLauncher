@@ -3224,6 +3224,15 @@ pub type Career_Add_TeamModifier_t = unsafe extern "C" fn(list: *mut c_void, key
 pub type Career_Adjust_RpDriverWallet_t =
     unsafe extern "C" fn(wallets: *mut c_void, driver_key: u32, delta: i32);
 pub type Career_Adjust_RpTeamWallet_t = unsafe extern "C" fn(wallets: *mut c_void, team_key: u32, delta: i32);
+pub type Career_Bank_CollectLedgerEntriesInRange_t = unsafe extern "C" fn(
+    bank: *mut c_void,
+    out_vec: *mut c_void,
+    team_key: u32,
+    time_from: u32,
+    time_to: u32,
+) -> *mut c_void;
+pub type Career_Bank_OnBankAccountValidTransactionMessage_t =
+    unsafe extern "C" fn(bank: *mut c_void, msg: *mut c_void) -> u64;
 pub type Career_Build_DriverContract_t = unsafe extern "C" fn(
     contracts: *mut c_void,
     contract: *mut c_void,
@@ -3240,6 +3249,8 @@ pub type Career_Build_LineupChanges_t = unsafe extern "C" fn(
 ) -> *mut c_void;
 pub type Career_Calc_UpgradeCost_t =
     unsafe extern "C" fn(list: *mut c_void, inst: *mut c_void, mods: *mut c_void, option: u32) -> i32;
+pub type Career_Calendar_AdvanceDays_t =
+    unsafe extern "C" fn(clock_owner: *mut c_void, days: u16, flag_mask: u8, skip: c_char);
 pub type Career_Cancel_UpgradeDevelopment_t =
     unsafe extern "C" fn(upgrades: *mut c_void, owner: u32, inst: *mut c_void, day: u32);
 pub type Career_Cancel_UpgradeResearch_t =
@@ -3273,12 +3284,14 @@ pub type Career_Eval_Curve_t = unsafe extern "C" fn(curve: *mut c_void, x: f32) 
 pub type Career_Get_CareerLengthDays_Thunk_t = unsafe extern "C" fn(time: *mut c_void) -> u32;
 pub type Career_Get_DriverOverallRating_t =
     unsafe extern "C" fn(self_: *mut c_void, data: *mut c_void, driver: *const u32, round: bool) -> f32;
+pub type Career_Get_RnDPurchaseBlockReason_t = unsafe extern "C" fn(self_: *mut c_void, a2: u32) -> u64;
 pub type Career_Get_RpWallet_t = unsafe extern "C" fn(wallets: *mut c_void, out: *mut u64, driver_key: u32);
 pub type Career_Get_TeamRenownData_t =
     unsafe extern "C" fn(rf: *mut c_void, out_weak: *mut c_void, team_key: u32) -> *mut c_void;
 pub type Career_Needs_DriverContract_t = unsafe extern "C" fn(contracts: *mut c_void) -> bool;
 pub type Career_Post_UpgradeFittedRatio_t =
     unsafe extern "C" fn(upgrades: *mut c_void, inst: *mut c_void, fitted: u8);
+pub type Career_Purchase_UpgradesForSimulatedTeams_t = unsafe extern "C" fn(self_: *mut i64);
 pub type Career_Rebuild_ChampionshipStandings_t =
     unsafe extern "C" fn(champ_list: *mut c_void, extra_points: *mut c_void, extra_e: *mut c_void);
 pub type Career_Rebuild_SeasonStandings_t = unsafe extern "C" fn(
@@ -3292,6 +3305,15 @@ pub type Career_Record_DriverMove_t =
     unsafe extern "C" fn(renewal: *mut c_void, driver: u32, old_team: u32, new_team: u32, reason: u8);
 pub type Career_Refresh_RnDDeptMode_t = unsafe extern "C" fn(holder: *mut usize, mode: u32);
 pub type Career_Refresh_UpgradeAvailability_t = unsafe extern "C" fn(upgrades: *mut c_void, day: u16);
+pub type Career_Register_RegistryEntry_t =
+    unsafe extern "C" fn(map: *mut c_void, key: *mut c_void, entry: *mut c_void) -> u64;
+pub type Career_ResourcePoints_OnAwardToKeyMessage_t =
+    unsafe extern "C" fn(rp: *mut c_void, msg: *mut c_void) -> u64;
+pub type Career_ResourcePoints_OnAwardToMemberMessage_t =
+    unsafe extern "C" fn(rp: *mut c_void, msg: *mut c_void) -> u64;
+pub type Career_ResourcePoints_OnGainRateStatChanged_t = unsafe extern "C" fn(rp: *mut c_void);
+pub type Career_ResourcePoints_OnTeamWalletDeltaMessage_t =
+    unsafe extern "C" fn(rp: *mut c_void, msg: *mut c_void) -> u64;
 pub type Career_Set_DriverContractState_t =
     unsafe extern "C" fn(contract: *mut c_void, day: u16, state: u8, value: u32);
 pub type Career_Set_EntrantData_Thunk_t = unsafe extern "C" fn(
@@ -3334,6 +3356,7 @@ pub type Career_Start_UpgradeResearch_t = unsafe extern "C" fn(
     store_duration: u8,
 );
 pub type Career_Teardown_Weekend_t = unsafe extern "C" fn(weekend: *mut c_void);
+pub type Career_Update_DepartmentMoraleStateVM_t = unsafe extern "C" fn(vm: *mut c_void);
 pub type Ent_Deserialise_EntrantVector_t =
     unsafe extern "C" fn(vector_object: *mut c_void, bag: *mut c_void) -> c_int;
 pub type FeHome_Add_CareerTile_t = unsafe extern "C" fn(list: *mut TileList, index: u8);
@@ -3408,6 +3431,9 @@ pub type Game_CreateSessionDlcSelectTab_FillTile_t = unsafe extern "C" fn(
 pub type Game_CreateSessionDlcSelectTab_HandleCommand_t =
     unsafe extern "C" fn(view_model: *mut c_void, command: *mut c_void) -> *mut c_char;
 pub type Game_DRS_OnSessionLoad_t = unsafe extern "C" fn(drs: *mut c_void);
+pub type Game_DriverContractsMyTeamComponent_OpenContractWindow_t =
+    unsafe extern "C" fn(comp: *mut c_void) -> u64;
+pub type Game_DriverContractsMyTeamComponent_ProgressDay_t = unsafe extern "C" fn(comp: *mut c_void);
 pub type Game_DriverContracts_AdvanceSecretMeeting_t =
     unsafe extern "C" fn(contracts: *mut c_void, driver: u32, notify: u8);
 pub type Game_DriverContracts_BuildOffers_t = unsafe extern "C" fn(contracts: *mut c_void, driver: u32);
@@ -4060,6 +4086,51 @@ pub mod bindings {
         id: "Career_Adjust_RpTeamWallet",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_Bank_ApplyTransactionToBalance: Binding = Binding {
+        id: "Career_Bank_ApplyTransactionToBalance",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_Bank_CollectLedgerEntriesInRange: Binding = Binding {
+        id: "Career_Bank_CollectLedgerEntriesInRange",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_Bank_OnBankAccountValidTransactionMessage: Binding = Binding {
+        id: "Career_Bank_OnBankAccountValidTransactionMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_Bank_ReadAccount: Binding = Binding {
+        id: "Career_Bank_ReadAccount",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_Bank_ReadFacilityBudget: Binding = Binding {
+        id: "Career_Bank_ReadFacilityBudget",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_Bank_ReadSaveData: Binding = Binding {
+        id: "Career_Bank_ReadSaveData",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_Bank_UnregisterMessageHandlers: Binding = Binding {
+        id: "Career_Bank_UnregisterMessageHandlers",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_Bank_WriteAccount: Binding = Binding {
+        id: "Career_Bank_WriteAccount",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_Bank_WriteSaveData: Binding = Binding {
+        id: "Career_Bank_WriteSaveData",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_Build_DriverContract: Binding = Binding {
         id: "Career_Build_DriverContract",
@@ -4070,11 +4141,21 @@ pub mod bindings {
         id: "Career_Build_LineupChanges",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_Calc_DriverAgeYears: Binding = Binding {
+        id: "Career_Calc_DriverAgeYears",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_Calc_UpgradeCost: Binding = Binding {
         id: "Career_Calc_UpgradeCost",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_Calendar_AdvanceDays: Binding = Binding {
+        id: "Career_Calendar_AdvanceDays",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_Calendar_IgnoreActivitiesInRange: Binding = Binding {
         id: "Career_Calendar_IgnoreActivitiesInRange",
@@ -4110,6 +4191,11 @@ pub mod bindings {
         id: "Career_Complete_PerkTreeNode",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_Compute_InstalledUpgradePerformance: Binding = Binding {
+        id: "Career_Compute_InstalledUpgradePerformance",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_Construct_RnDDeptCard: Binding = Binding {
         id: "Career_Construct_RnDDeptCard",
@@ -4160,6 +4246,21 @@ pub mod bindings {
         id: "Career_ContractUpdate_OnUpdate",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_Contract_PostCompensationTransactions: Binding = Binding {
+        id: "Career_Contract_PostCompensationTransactions",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_CostCap_LoadConfig: Binding = Binding {
+        id: "Career_CostCap_LoadConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_CostCap_ReadSaveData: Binding = Binding {
+        id: "Career_CostCap_ReadSaveData",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_Create_SeasonWeekend: Binding = Binding {
         id: "Career_Create_SeasonWeekend",
@@ -4170,6 +4271,16 @@ pub mod bindings {
         id: "Career_Decide_ContractNegotiation",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_DriverContractsMyTeam_AddPendingEntry: Binding = Binding {
+        id: "Career_DriverContractsMyTeam_AddPendingEntry",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_DriverContractsMyTeam_SubmitOffer: Binding = Binding {
+        id: "Career_DriverContractsMyTeam_SubmitOffer",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_DriverNumbers_CheckExisting: Binding = Binding {
         id: "Career_DriverNumbers_CheckExisting",
@@ -4180,16 +4291,31 @@ pub mod bindings {
         id: "Career_Eval_Curve",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_GameValue_GetBankBalance: Binding = Binding {
+        id: "Career_GameValue_GetBankBalance",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_Get_CareerLengthDays_Thunk: Binding = Binding {
         id: "Career_Get_CareerLengthDays_Thunk",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_Get_DriverContractRecordByKey: Binding = Binding {
+        id: "Career_Get_DriverContractRecordByKey",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_Get_DriverOverallRating: Binding = Binding {
         id: "Career_Get_DriverOverallRating",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_Get_RnDPurchaseBlockReason: Binding = Binding {
+        id: "Career_Get_RnDPurchaseBlockReason",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_Get_RpWallet: Binding = Binding {
         id: "Career_Get_RpWallet",
@@ -4200,6 +4326,11 @@ pub mod bindings {
         id: "Career_Get_TeamRenownData",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_Load_MyTeamRewardDefinitions: Binding = Binding {
+        id: "Career_Load_MyTeamRewardDefinitions",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_MyTeamCorporateSetupVM_OnAction: Binding = Binding {
         id: "Career_MyTeamCorporateSetupVM_OnAction",
@@ -4215,11 +4346,26 @@ pub mod bindings {
         id: "Career_MyTeamOwnerBackgroundVM_OnAction",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_MyTeamRenownReward_Describe: Binding = Binding {
+        id: "Career_MyTeamRenownReward_Describe",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_MyTeamResearchProjectStarted_Event: Binding = Binding {
+        id: "Career_MyTeamResearchProjectStarted_Event",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_MyTeamSetup_AdvanceFadeOut: Binding = Binding {
         id: "Career_MyTeamSetup_AdvanceFadeOut",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_MyTeamSetup_CommitTeamIdentity: Binding = Binding {
+        id: "Career_MyTeamSetup_CommitTeamIdentity",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_MyTeamVM_RequestThumbnails: Binding = Binding {
         id: "Career_MyTeamVM_RequestThumbnails",
@@ -4285,11 +4431,36 @@ pub mod bindings {
         id: "Career_OnlineNegotiations_ShouldShowFiredState",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_Pick_RandomUpgrade: Binding = Binding {
+        id: "Career_Pick_RandomUpgrade",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_Post_UpgradeFittedRatio: Binding = Binding {
         id: "Career_Post_UpgradeFittedRatio",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_Purchase_UpgradesForSimulatedTeams: Binding = Binding {
+        id: "Career_Purchase_UpgradesForSimulatedTeams",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_Read_CareerSetupDataConfig: Binding = Binding {
+        id: "Career_Read_CareerSetupDataConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_Read_FacilityPerkTreeConfig: Binding = Binding {
+        id: "Career_Read_FacilityPerkTreeConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_Read_ResourcePointsStartConfig: Binding = Binding {
+        id: "Career_Read_ResourcePointsStartConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_Rebuild_ChampionshipStandings: Binding = Binding {
         id: "Career_Rebuild_ChampionshipStandings",
@@ -4315,6 +4486,31 @@ pub mod bindings {
         id: "Career_Refresh_UpgradeAvailability",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_Register_RegistryEntry: Binding = Binding {
+        id: "Career_Register_RegistryEntry",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_ResourcePoints_OnAwardToKeyMessage: Binding = Binding {
+        id: "Career_ResourcePoints_OnAwardToKeyMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_ResourcePoints_OnAwardToMemberMessage: Binding = Binding {
+        id: "Career_ResourcePoints_OnAwardToMemberMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_ResourcePoints_OnGainRateStatChanged: Binding = Binding {
+        id: "Career_ResourcePoints_OnGainRateStatChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_ResourcePoints_OnTeamWalletDeltaMessage: Binding = Binding {
+        id: "Career_ResourcePoints_OnTeamWalletDeltaMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_ScheduleEntryDeptEvent_Start: Binding = Binding {
         id: "Career_ScheduleEntryDeptEvent_Start",
@@ -4495,11 +4691,26 @@ pub mod bindings {
         id: "Career_TeamHqRender_ResolveServices",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_TeamHqState_ReadResourcePoints: Binding = Binding {
+        id: "Career_TeamHqState_ReadResourcePoints",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_Teardown_Weekend: Binding = Binding {
         id: "Career_Teardown_Weekend",
         kind: "func",
         status: Status::Experimental,
+    pub const Career_Update_DepartmentMoraleStateVM: Binding = Binding {
+        id: "Career_Update_DepartmentMoraleStateVM",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_UpgradeDefinition_CreateFromConfig: Binding = Binding {
+        id: "Career_UpgradeDefinition_CreateFromConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Career_WizardTitleSliceVM_OnActivate: Binding = Binding {
         id: "Career_WizardTitleSliceVM_OnActivate",
@@ -5350,6 +5561,16 @@ pub mod bindings {
         id: "Game_DriverCareer_TeamMateSelectSpawn",
         kind: "func",
         status: Status::Experimental,
+    pub const Game_DriverContractsMyTeamComponent_OpenContractWindow: Binding = Binding {
+        id: "Game_DriverContractsMyTeamComponent_OpenContractWindow",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverContractsMyTeamComponent_ProgressDay: Binding = Binding {
+        id: "Game_DriverContractsMyTeamComponent_ProgressDay",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Game_DriverContracts_AdvanceSecretMeeting: Binding = Binding {
         id: "Game_DriverContracts_AdvanceSecretMeeting",
@@ -8700,6 +8921,11 @@ pub mod bindings {
         id: "Game_WonDriverChampionship_Initialise_2",
         kind: "func",
         status: Status::Experimental,
+    pub const Gdb_Load_SponsorGoalDefinitions: Binding = Binding {
+        id: "Gdb_Load_SponsorGoalDefinitions",
+        kind: "func",
+        status: Status::Experimental,
+    };
     };
     pub const Game_WrinkleModifierMorphRig_Parse: Binding = Binding {
         id: "Game_WrinkleModifierMorphRig_Parse",

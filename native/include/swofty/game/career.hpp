@@ -991,12 +991,26 @@ using Career_Adjust_RpDriverWallet_t = void(void *wallets, uint32_t driver_key, 
 inline constexpr fn<"Career_Adjust_RpDriverWallet", Career_Adjust_RpDriverWallet_t> Career_Adjust_RpDriverWallet{}; // L2 experimental
 using Career_Adjust_RpTeamWallet_t = void(void *wallets, uint32_t team_key, int32_t delta);
 inline constexpr fn<"Career_Adjust_RpTeamWallet", Career_Adjust_RpTeamWallet_t> Career_Adjust_RpTeamWallet{}; // L2 experimental
+inline constexpr address<"Career_Bank_ApplyTransactionToBalance"> Career_Bank_ApplyTransactionToBalance{}; // L2 experimental
+using Career_Bank_CollectLedgerEntriesInRange_t = void *(void *bank, void *out_vec, uint32_t team_key, uint32_t time_from, uint32_t time_to);
+inline constexpr fn<"Career_Bank_CollectLedgerEntriesInRange", Career_Bank_CollectLedgerEntriesInRange_t> Career_Bank_CollectLedgerEntriesInRange{}; // L2 experimental
+using Career_Bank_OnBankAccountValidTransactionMessage_t = uint64_t(void *bank, void *msg);
+inline constexpr fn<"Career_Bank_OnBankAccountValidTransactionMessage", Career_Bank_OnBankAccountValidTransactionMessage_t> Career_Bank_OnBankAccountValidTransactionMessage{}; // L2 experimental
+inline constexpr address<"Career_Bank_ReadAccount"> Career_Bank_ReadAccount{}; // L2 experimental
+inline constexpr address<"Career_Bank_ReadFacilityBudget"> Career_Bank_ReadFacilityBudget{}; // L2 experimental
+inline constexpr address<"Career_Bank_ReadSaveData"> Career_Bank_ReadSaveData{}; // L2 experimental
+inline constexpr address<"Career_Bank_UnregisterMessageHandlers"> Career_Bank_UnregisterMessageHandlers{}; // L2 experimental
+inline constexpr address<"Career_Bank_WriteAccount"> Career_Bank_WriteAccount{}; // L2 experimental
+inline constexpr address<"Career_Bank_WriteSaveData"> Career_Bank_WriteSaveData{}; // L2 experimental
 using Career_Build_DriverContract_t = void *(void *contracts, void *contract, uint32_t driver_key, uint32_t team_key, uint8_t type, int32_t target, int32_t seasons);
 inline constexpr fn<"Career_Build_DriverContract", Career_Build_DriverContract_t> Career_Build_DriverContract{}; // L2 experimental
 using Career_Build_LineupChanges_t = void *(void *out, const void *current_entrants, const void *baseline_entrants);
 inline constexpr fn<"Career_Build_LineupChanges", Career_Build_LineupChanges_t> Career_Build_LineupChanges{}; // L2 experimental
+inline constexpr address<"Career_Calc_DriverAgeYears"> Career_Calc_DriverAgeYears{}; // L2 experimental
 using Career_Calc_UpgradeCost_t = int32_t(void *list, void *inst, void *mods, uint32_t option);
 inline constexpr fn<"Career_Calc_UpgradeCost", Career_Calc_UpgradeCost_t> Career_Calc_UpgradeCost{}; // L2 experimental
+using Career_Calendar_AdvanceDays_t = void(void *clock_owner, uint16_t days, uint8_t flag_mask, char skip);
+inline constexpr fn<"Career_Calendar_AdvanceDays", Career_Calendar_AdvanceDays_t> Career_Calendar_AdvanceDays{}; // L2 experimental
 inline constexpr address<"Career_Calendar_IgnoreActivitiesInRange"> Career_Calendar_IgnoreActivitiesInRange{}; // L2 experimental
 inline constexpr address<"Career_Calendar_IgnoreActivityById"> Career_Calendar_IgnoreActivityById{}; // L2 experimental
 inline constexpr address<"Career_Calendar_MoveTrackData"> Career_Calendar_MoveTrackData{}; // L2 experimental
@@ -1007,6 +1021,7 @@ inline constexpr fn<"Career_Cancel_UpgradeResearch", Career_Cancel_UpgradeResear
 inline constexpr address<"Career_CareerOnlineDoc_ResetAfterSync"> Career_CareerOnlineDoc_ResetAfterSync{}; // L2 experimental
 using Career_Complete_PerkTreeNode_t = uint8_t(void *node);
 inline constexpr fn<"Career_Complete_PerkTreeNode", Career_Complete_PerkTreeNode_t> Career_Complete_PerkTreeNode{}; // L2 experimental
+inline constexpr address<"Career_Compute_InstalledUpgradePerformance"> Career_Compute_InstalledUpgradePerformance{}; // L2 experimental
 using Career_Construct_RnDDeptCard_t = void *(void *card, void *ctx, void *builder, void *allocator, const char *name, const char *icon, uint8_t dept);
 inline constexpr fn<"Career_Construct_RnDDeptCard", Career_Construct_RnDDeptCard_t> Career_Construct_RnDDeptCard{}; // L2 experimental
 inline constexpr address<"Career_ContractHubVM_OnActivate"> Career_ContractHubVM_OnActivate{}; // L2 experimental
@@ -1025,26 +1040,39 @@ using Career_ContractUpdate_OnExit_t = uint64_t(void *state);
 inline constexpr fn<"Career_ContractUpdate_OnExit", Career_ContractUpdate_OnExit_t> Career_ContractUpdate_OnExit{}; // L2 experimental
 using Career_ContractUpdate_OnUpdate_t = uint32_t *(void *state, uint32_t *link);
 inline constexpr fn<"Career_ContractUpdate_OnUpdate", Career_ContractUpdate_OnUpdate_t> Career_ContractUpdate_OnUpdate{}; // L2 experimental
+inline constexpr address<"Career_Contract_PostCompensationTransactions"> Career_Contract_PostCompensationTransactions{}; // L2 experimental
+inline constexpr address<"Career_CostCap_LoadConfig"> Career_CostCap_LoadConfig{}; // L2 experimental
+inline constexpr address<"Career_CostCap_ReadSaveData"> Career_CostCap_ReadSaveData{}; // L2 experimental
 using Career_Create_SeasonWeekend_t = void *(void *season, uint64_t index, uint8_t track, const char *name);
 inline constexpr fn<"Career_Create_SeasonWeekend", Career_Create_SeasonWeekend_t> Career_Create_SeasonWeekend{}; // L2 experimental
 using Career_Decide_ContractNegotiation_t = uint32_t *(void *state, uint32_t *link);
 inline constexpr fn<"Career_Decide_ContractNegotiation", Career_Decide_ContractNegotiation_t> Career_Decide_ContractNegotiation{}; // L2 experimental
+inline constexpr address<"Career_DriverContractsMyTeam_AddPendingEntry"> Career_DriverContractsMyTeam_AddPendingEntry{}; // L2 experimental
+inline constexpr address<"Career_DriverContractsMyTeam_SubmitOffer"> Career_DriverContractsMyTeam_SubmitOffer{}; // L2 experimental
 using Career_DriverNumbers_CheckExisting_t = void(void *car_numbers, uint32_t driver);
 inline constexpr fn<"Career_DriverNumbers_CheckExisting", Career_DriverNumbers_CheckExisting_t> Career_DriverNumbers_CheckExisting{}; // L2 experimental
 using Career_Eval_Curve_t = float(void *curve, float x);
 inline constexpr fn<"Career_Eval_Curve", Career_Eval_Curve_t> Career_Eval_Curve{}; // L2 experimental
+inline constexpr address<"Career_GameValue_GetBankBalance"> Career_GameValue_GetBankBalance{}; // L2 experimental
 using Career_Get_CareerLengthDays_Thunk_t = uint32_t(void *time);
 inline constexpr fn<"Career_Get_CareerLengthDays_Thunk", Career_Get_CareerLengthDays_Thunk_t> Career_Get_CareerLengthDays_Thunk{}; // L2 experimental
+inline constexpr address<"Career_Get_DriverContractRecordByKey"> Career_Get_DriverContractRecordByKey{}; // L2 experimental
 using Career_Get_DriverOverallRating_t = float(void *self, void *data, const uint32_t *driver, bool round);
 inline constexpr fn<"Career_Get_DriverOverallRating", Career_Get_DriverOverallRating_t> Career_Get_DriverOverallRating{}; // L2 experimental, game::championship::DriverStatisticsComponent
+using Career_Get_RnDPurchaseBlockReason_t = uint64_t(void *self, uint32_t a2);
+inline constexpr fn<"Career_Get_RnDPurchaseBlockReason", Career_Get_RnDPurchaseBlockReason_t> Career_Get_RnDPurchaseBlockReason{}; // L2 experimental
 using Career_Get_RpWallet_t = void(void *wallets, uint64_t *out, uint32_t driver_key);
 inline constexpr fn<"Career_Get_RpWallet", Career_Get_RpWallet_t> Career_Get_RpWallet{}; // L2 experimental
 using Career_Get_TeamRenownData_t = void *(void *rf, void *out_weak, uint32_t team_key);
 inline constexpr fn<"Career_Get_TeamRenownData", Career_Get_TeamRenownData_t> Career_Get_TeamRenownData{}; // L2 experimental
+inline constexpr address<"Career_Load_MyTeamRewardDefinitions"> Career_Load_MyTeamRewardDefinitions{}; // L2 experimental
 inline constexpr address<"Career_MyTeamCorporateSetupVM_OnAction"> Career_MyTeamCorporateSetupVM_OnAction{}; // L2 experimental
 inline constexpr address<"Career_MyTeamCorporateSetupVM_OnActivate"> Career_MyTeamCorporateSetupVM_OnActivate{}; // L2 experimental
 inline constexpr address<"Career_MyTeamOwnerBackgroundVM_OnAction"> Career_MyTeamOwnerBackgroundVM_OnAction{}; // L2 experimental
+inline constexpr address<"Career_MyTeamRenownReward_Describe"> Career_MyTeamRenownReward_Describe{}; // L2 experimental
+inline constexpr address<"Career_MyTeamResearchProjectStarted_Event"> Career_MyTeamResearchProjectStarted_Event{}; // L2 experimental
 inline constexpr address<"Career_MyTeamSetup_AdvanceFadeOut"> Career_MyTeamSetup_AdvanceFadeOut{}; // L2 experimental
+inline constexpr address<"Career_MyTeamSetup_CommitTeamIdentity"> Career_MyTeamSetup_CommitTeamIdentity{}; // L2 experimental
 inline constexpr address<"Career_MyTeamVM_RequestThumbnails"> Career_MyTeamVM_RequestThumbnails{}; // L2 experimental
 using Career_Needs_DriverContract_t = bool(void *contracts);
 inline constexpr fn<"Career_Needs_DriverContract", Career_Needs_DriverContract_t> Career_Needs_DriverContract{}; // L2 experimental
@@ -1059,8 +1087,14 @@ inline constexpr address<"Career_OnlineNegotiations_OnNegotiationsFinished"> Car
 inline constexpr address<"Career_OnlineNegotiations_ProcessContractRecv"> Career_OnlineNegotiations_ProcessContractRecv{}; // L2 experimental
 inline constexpr address<"Career_OnlineNegotiations_ProcessContractSent"> Career_OnlineNegotiations_ProcessContractSent{}; // L2 experimental
 inline constexpr address<"Career_OnlineNegotiations_ShouldShowFiredState"> Career_OnlineNegotiations_ShouldShowFiredState{}; // L2 experimental
+inline constexpr address<"Career_Pick_RandomUpgrade"> Career_Pick_RandomUpgrade{}; // L2 experimental
 using Career_Post_UpgradeFittedRatio_t = void(void *upgrades, void *inst, uint8_t fitted);
 inline constexpr fn<"Career_Post_UpgradeFittedRatio", Career_Post_UpgradeFittedRatio_t> Career_Post_UpgradeFittedRatio{}; // L2 experimental
+using Career_Purchase_UpgradesForSimulatedTeams_t = void(int64_t *self);
+inline constexpr fn<"Career_Purchase_UpgradesForSimulatedTeams", Career_Purchase_UpgradesForSimulatedTeams_t> Career_Purchase_UpgradesForSimulatedTeams{}; // L2 experimental
+inline constexpr address<"Career_Read_CareerSetupDataConfig"> Career_Read_CareerSetupDataConfig{}; // L2 experimental
+inline constexpr address<"Career_Read_FacilityPerkTreeConfig"> Career_Read_FacilityPerkTreeConfig{}; // L2 experimental
+inline constexpr address<"Career_Read_ResourcePointsStartConfig"> Career_Read_ResourcePointsStartConfig{}; // L2 experimental
 using Career_Rebuild_ChampionshipStandings_t = void(void *champ_list, void *extra_points, void *extra_e);
 inline constexpr fn<"Career_Rebuild_ChampionshipStandings", Career_Rebuild_ChampionshipStandings_t> Career_Rebuild_ChampionshipStandings{}; // L2 experimental
 using Career_Rebuild_SeasonStandings_t = void(void *season, void *order_a, void *order_b, void *extra_points, void *extra_e);
@@ -1071,6 +1105,16 @@ using Career_Refresh_RnDDeptMode_t = void(uintptr_t *holder, uint32_t mode);
 inline constexpr fn<"Career_Refresh_RnDDeptMode", Career_Refresh_RnDDeptMode_t> Career_Refresh_RnDDeptMode{}; // L2 experimental
 using Career_Refresh_UpgradeAvailability_t = void(void *upgrades, uint16_t day);
 inline constexpr fn<"Career_Refresh_UpgradeAvailability", Career_Refresh_UpgradeAvailability_t> Career_Refresh_UpgradeAvailability{}; // L2 experimental
+using Career_Register_RegistryEntry_t = uint64_t(void *map, void *key, void *entry);
+inline constexpr fn<"Career_Register_RegistryEntry", Career_Register_RegistryEntry_t> Career_Register_RegistryEntry{}; // L2 experimental
+using Career_ResourcePoints_OnAwardToKeyMessage_t = uint64_t(void *rp, void *msg);
+inline constexpr fn<"Career_ResourcePoints_OnAwardToKeyMessage", Career_ResourcePoints_OnAwardToKeyMessage_t> Career_ResourcePoints_OnAwardToKeyMessage{}; // L2 experimental
+using Career_ResourcePoints_OnAwardToMemberMessage_t = uint64_t(void *rp, void *msg);
+inline constexpr fn<"Career_ResourcePoints_OnAwardToMemberMessage", Career_ResourcePoints_OnAwardToMemberMessage_t> Career_ResourcePoints_OnAwardToMemberMessage{}; // L2 experimental
+using Career_ResourcePoints_OnGainRateStatChanged_t = void(void *rp);
+inline constexpr fn<"Career_ResourcePoints_OnGainRateStatChanged", Career_ResourcePoints_OnGainRateStatChanged_t> Career_ResourcePoints_OnGainRateStatChanged{}; // L2 experimental
+using Career_ResourcePoints_OnTeamWalletDeltaMessage_t = uint64_t(void *rp, void *msg);
+inline constexpr fn<"Career_ResourcePoints_OnTeamWalletDeltaMessage", Career_ResourcePoints_OnTeamWalletDeltaMessage_t> Career_ResourcePoints_OnTeamWalletDeltaMessage{}; // L2 experimental
 inline constexpr address<"Career_ScheduleEntryDeptEvent_Start"> Career_ScheduleEntryDeptEvent_Start{}; // L2 experimental
 inline constexpr address<"Career_ScheduleEntry_Finish"> Career_ScheduleEntry_Finish{}; // L2 experimental
 inline constexpr address<"Career_ScheduleEntry_TryStart"> Career_ScheduleEntry_TryStart{}; // L2 experimental
@@ -1114,8 +1158,12 @@ inline constexpr address<"Career_TeamHqMyTeamVM_SignalStartAdvancing"> Career_Te
 inline constexpr address<"Career_TeamHqMyTeamVM_StopAdvancing"> Career_TeamHqMyTeamVM_StopAdvancing{}; // L2 experimental
 inline constexpr address<"Career_TeamHqMyTeamVM_Update"> Career_TeamHqMyTeamVM_Update{}; // L2 experimental
 inline constexpr address<"Career_TeamHqRender_ResolveServices"> Career_TeamHqRender_ResolveServices{}; // L2 experimental
+inline constexpr address<"Career_TeamHqState_ReadResourcePoints"> Career_TeamHqState_ReadResourcePoints{}; // L2 experimental
 using Career_Teardown_Weekend_t = void(void *weekend);
 inline constexpr fn<"Career_Teardown_Weekend", Career_Teardown_Weekend_t> Career_Teardown_Weekend{}; // L2 experimental
+using Career_Update_DepartmentMoraleStateVM_t = void(void *vm);
+inline constexpr fn<"Career_Update_DepartmentMoraleStateVM", Career_Update_DepartmentMoraleStateVM_t> Career_Update_DepartmentMoraleStateVM{}; // L2 experimental
+inline constexpr address<"Career_UpgradeDefinition_CreateFromConfig"> Career_UpgradeDefinition_CreateFromConfig{}; // L2 experimental
 inline constexpr address<"Career_WizardTitleSliceVM_OnActivate"> Career_WizardTitleSliceVM_OnActivate{}; // L2 experimental
 inline constexpr address<"Career_WizardTitleSliceVM_OnDeactivate"> Career_WizardTitleSliceVM_OnDeactivate{}; // L2 experimental
 inline constexpr data<"g_Career_FlowLinkContinue", uint32_t> g_Career_FlowLinkContinue{}; // L2 experimental

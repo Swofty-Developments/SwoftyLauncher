@@ -367,6 +367,10 @@ inline constexpr address<"Game_DecalGeneration_SetDecalComponent"> Game_DecalGen
 inline constexpr address<"Game_DeptEventViewModel_Update"> Game_DeptEventViewModel_Update{}; // L2 experimental
 inline constexpr address<"Game_DriverCareer_SpawnDriverPair"> Game_DriverCareer_SpawnDriverPair{}; // L2 experimental
 inline constexpr address<"Game_DriverCareer_TeamMateSelectSpawn"> Game_DriverCareer_TeamMateSelectSpawn{}; // L2 experimental
+using Game_DriverContractsMyTeamComponent_OpenContractWindow_t = uint64_t(void *comp);
+inline constexpr fn<"Game_DriverContractsMyTeamComponent_OpenContractWindow", Game_DriverContractsMyTeamComponent_OpenContractWindow_t> Game_DriverContractsMyTeamComponent_OpenContractWindow{}; // L2 experimental
+using Game_DriverContractsMyTeamComponent_ProgressDay_t = void(void *comp);
+inline constexpr fn<"Game_DriverContractsMyTeamComponent_ProgressDay", Game_DriverContractsMyTeamComponent_ProgressDay_t> Game_DriverContractsMyTeamComponent_ProgressDay{}; // L2 experimental
 using Game_DriverContracts_AdvanceSecretMeeting_t = void(void *contracts, uint32_t driver, uint8_t notify);
 inline constexpr fn<"Game_DriverContracts_AdvanceSecretMeeting", Game_DriverContracts_AdvanceSecretMeeting_t> Game_DriverContracts_AdvanceSecretMeeting{}; // L2 experimental
 using Game_DriverContracts_BuildOffers_t = void(void *contracts, uint32_t driver);
