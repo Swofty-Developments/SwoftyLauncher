@@ -160,6 +160,15 @@ std::wstring ghost_dir()
     return d;
 }
 
+std::wstring diag_dir()
+{
+    std::wstring root = runtime::files_root();
+    CreateDirectoryW((root + L"tt").c_str(), nullptr);
+    std::wstring d = root + L"tt\\ghost\\";
+    CreateDirectoryW(d.c_str(), nullptr);
+    return d;
+}
+
 uintptr_t tlap_at(uintptr_t comp, int index)
 {
     uintptr_t begin = 0, end = 0, tl = 0;
@@ -277,7 +286,7 @@ void dump(const std::vector<uint8_t> &blob)
 {
     if (dumps >= MAX_DUMPS)
         return;
-    std::wstring path = ghost_dir() + runtime::wide("diag-" + std::to_string(now_ms()) + ".trace");
+    std::wstring path = diag_dir() + runtime::wide("diag-" + std::to_string(now_ms()) + ".trace");
     std::string bytes(reinterpret_cast<const char *>(blob.data()), blob.size());
     if (runtime::write_file(path, bytes)) {
         dumps++;
@@ -359,35 +368,53 @@ void publish(std::shared_ptr<const Request> r, uint64_t gen)
     pub_gen = gen;
 }
 
-void drop_stale_request(const std::wstring &play)
+bool drop_stale_request(const std::wstring &play, FILETIME &kept)
 {
     WIN32_FILE_ATTRIBUTE_DATA d{};
     FILETIME created, exited, kernel, user;
     if (!GetFileAttributesExW(play.c_str(), GetFileExInfoStandard, &d) ||
         !GetProcessTimes(GetCurrentProcess(), &created, &exited, &kernel, &user))
-        return;
-    if (CompareFileTime(&d.ftLastWriteTime, &created) < 0) {
-        DeleteFileW(play.c_str());
+        return false;
+    if (CompareFileTime(&d.ftLastWriteTime, &created) >= 0)
+        return false;
+    if (DeleteFileW(play.c_str())) {
         swofty::log("[ghost] stale play.json (older than this game process) deleted");
+        return false;
     }
+    kept = d.ftLastWriteTime;
+    swofty::log("[ghost] stale play.json (older than this game process) can't be deleted (error %lu); it is ignored until "
+                "the launcher writes a new one",
+                GetLastError());
+    return true;
 }
 
 void worker()
 {
     uint64_t gen = 0;
     std::wstring play = ghost_dir() + L"play.json", done = ghost_dir() + L"play.done.json";
-    drop_stale_request(play);
+    FILETIME held{};
+    bool holding = drop_stale_request(play, held);
     while (worker_run.load()) {
         Sleep(500);
         if (!runtime::session_life::time_trial_live(runtime::session_kind()))
             continue;
         WIN32_FILE_ATTRIBUTE_DATA d{};
-        if (!GetFileAttributesExW(play.c_str(), GetFileExInfoStandard, &d))
+        if (!GetFileAttributesExW(play.c_str(), GetFileExInfoStandard, &d)) {
+            holding = false;
+            continue;
+        }
+        if (holding && CompareFileTime(&d.ftLastWriteTime, &held) == 0)
             continue;
         auto r = std::make_shared<Request>();
         std::string why;
         bool ok = load_request(play, *r, why);
-        MoveFileExW(play.c_str(), done.c_str(), MOVEFILE_REPLACE_EXISTING);
+        holding = !MoveFileExW(play.c_str(), done.c_str(), MOVEFILE_REPLACE_EXISTING);
+        if (holding) {
+            held = d.ftLastWriteTime;
+            swofty::log("[ghost] play.json can't be renamed to play.done.json (error %lu); it is taken once and read again "
+                        "only when the launcher rewrites it",
+                        GetLastError());
+        }
         if (!ok) {
             publish(nullptr, 0);
             swofty::log("[ghost] request refused and consumed: %s", why.c_str());
