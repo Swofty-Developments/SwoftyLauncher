@@ -12,6 +12,7 @@
 #include "apply/moments.hpp"
 #include "direct_start_tt.hpp"
 #include "hooks/hooks.hpp"
+#include "perf.hpp"
 
 #include <atomic>
 #include "presence_id_logic.hpp"
@@ -2750,7 +2751,30 @@ void select_board_mid(safetyhook::Context &c)
 }
 
 std::string watch_seen;
-int32_t last_state = -1;
+
+uint64_t cached64(uint64_t at)
+{
+    uint64_t v = 0;
+    swofty::mem::read(uintptr_t(at), v);
+    return v;
+}
+
+uint32_t cached32(uint64_t at)
+{
+    uint32_t v = 0;
+    swofty::mem::read(uintptr_t(at), v);
+    return v;
+}
+
+bool cached_read(void *, uint64_t addr, void *out, size_t n)
+{
+    if (!swofty::mem::readable(uintptr_t(addr), n))
+        return false;
+    memcpy(out, reinterpret_cast<const void *>(addr), n);
+    return true;
+}
+
+tb::Mem cached_mem() { return {&cached_read, nullptr}; }
 
 void describe_checks(uint64_t handler, const std::string &board)
 {
@@ -2759,31 +2783,35 @@ void describe_checks(uint64_t handler, const std::string &board)
         return;
     uint64_t base = swofty::api->module_base();
     auto rva = [&](uint64_t a) { return a >= base && a < base + 0x20000000 ? a - base : 0; };
-    uint64_t obj = peek64(handler + 0x18), vt = obj ? peek64(obj) : 0;
+    uint64_t obj = cached64(handler + 0x18), vt = obj ? cached64(obj) : 0;
     std::string list;
-    uint64_t b = obj ? peek64(obj + 0x38) : 0, e = obj ? peek64(obj + 0x40) : 0;
+    uint64_t b = obj ? cached64(obj + 0x38) : 0, e = obj ? cached64(obj + 0x40) : 0;
     size_t n = b && e >= b ? std::min<uint64_t>((e - b) / 16, 32) : 0;
     for (size_t i = 0; i < n; i++) {
-        uint64_t v = peek64(b + 16 * i + 8), vvt = v ? peek64(v) : 0;
+        uint64_t v = cached64(b + 16 * i + 8), vvt = v ? cached64(v) : 0;
         char one[120];
         snprintf(one, sizeof one, "%s[object 0x%llx vtable base+0x%llx, +0x88 -> base+0x%llx]", i ? ", " : "", (unsigned long long)v, (unsigned long long)rva(vvt),
-                 (unsigned long long)rva(vvt ? peek64(vvt + 0x88) : 0));
+                 (unsigned long long)rva(vvt ? cached64(vvt + 0x88) : 0));
         list += one;
     }
     swofty::log("[boards] first-lap save checks of handler 0x%llx board %s: the system at handler+0x18 is object 0x%llx, vtable base+0x%llx, +0x130 check -> base+0x%llx; "
                 "%zu validator(s) at +0x38: %s",
-                (unsigned long long)handler, board.c_str(), (unsigned long long)obj, (unsigned long long)rva(vt), (unsigned long long)rva(vt ? peek64(vt + 0x130) : 0), n,
+                (unsigned long long)handler, board.c_str(), (unsigned long long)obj, (unsigned long long)rva(vt), (unsigned long long)rva(vt ? cached64(vt + 0x130) : 0), n,
                 list.empty() ? "none" : list.c_str());
 }
 
-void handler_watch(uint64_t handler, const std::string &board)
+// block is a copy of the handler's first tb::HANDLER_BLOCK bytes, taken by diag_tick after one readability check; only the save checks
+// behind handler+0x18 are read here, through swofty::mem under diag_tick's Trust.
+void handler_watch(uint64_t handler, const uint8_t *block, int finder_state, const std::string &board)
 {
     describe_checks(handler, board);
-    auto b = [&](uint64_t off) { return unsigned(peek32(handler + off) & 0xff); };
-    auto w = [&](uint64_t off) { return unsigned(peek32(handler + off)); };
-    uint64_t finder = peek64(handler + 0x508);
+    auto w = [&](uint64_t off) {
+        uint32_t v;
+        memcpy(&v, block + off, 4);
+        return unsigned(v);
+    };
+    auto b = [&](uint64_t off) { return unsigned(block[off]); };
     int32_t state = int32_t(w(0x1d8));
-    int finder_state = finder ? int(peek32(finder + 0xa0)) : -1;
     tb::BoardName bn = tb::parse_board(board);
     bool ours = bridge_on && bn.ok && tb::ours(bn.descriptor, content_ours());
     char force[8] = {};
@@ -2806,36 +2834,39 @@ void handler_watch(uint64_t handler, const std::string &board)
     need(!task_out, "a leaderboard task is out (+0x1d0/+0x1d4)");
     need(b(0x66) == 0, "+0x66 set (personal best save pending)");
     need(finder_state - 2 < 0 || finder_state - 2 > 7, "the rival finder is mid-search");
-    uint64_t sysobj = peek64(handler + 0x18), flag_mask = sysobj ? peek64(sysobj + 0xba8) : 0;
-    unsigned flag = sysobj ? unsigned(peek32(sysobj + 0xba0) & 0xff) : 0, limit = sysobj ? peek32(sysobj + 0xbd0) : 0;
+    uint64_t sysobj = 0;
+    memcpy(&sysobj, block + 0x18, 8);
+    uint64_t flag_mask = sysobj ? cached64(sysobj + 0xba8) : 0;
+    unsigned flag = sysobj ? unsigned(cached32(sysobj + 0xba0) & 0xff) : 0, limit = sysobj ? cached32(sysobj + 0xbd0) : 0;
     bool check1 = sysobj && ((flag_mask & 1) == flag);
-    uint64_t lst = sysobj ? peek64(sysobj + 0x38) : 0, v0 = lst ? peek64(lst + 8) : 0, p1 = v0 ? peek64(v0 + 8) : 0, p2 = p1 ? peek64(p1 + 0x1a8) : 0, p3 = p2 ? peek64(p2 + 0x30) : 0;
+    uint64_t lst = sysobj ? cached64(sysobj + 0x38) : 0, v0 = lst ? cached64(lst + 8) : 0, p1 = v0 ? cached64(v0 + 8) : 0, p2 = p1 ? cached64(p1 + 0x1a8) : 0,
+             p3 = p2 ? cached64(p2 + 0x30) : 0;
     float floor_s = 0;
     if (p3) {
-        uint32_t m = peek32(p3 + 0x2a0) ^ peek32(p3 + 0x2a8);
+        uint32_t m = cached32(p3 + 0x2a0) ^ cached32(p3 + 0x2a8);
         memcpy(&floor_s, &m, 4);
     }
     std::string active;
     if (sysobj && lst) {
-        uint64_t end = peek64(sysobj + 0x40);
+        uint64_t end = cached64(sysobj + 0x40);
         size_t count = end >= lst ? std::min<uint64_t>((end - lst) / 16, 6) : 0;
         static const uint32_t offs[6] = {0x88, 0x40, 0x38, 0x18, 0x28, 0};
         for (size_t i = 0; i < count; i++) {
-            uint64_t v = peek64(lst + 16 * i + 8);
+            uint64_t v = cached64(lst + 16 * i + 8);
             if (!v || !offs[i]) {
                 active += std::string(i ? " " : "") + "?";
                 continue;
             }
-            bool on = (peek64(v + offs[i] + 8) & 1) != (peek32(v + offs[i]) & 0xff);
+            bool on = (cached64(v + offs[i] + 8) & 1) != (cached32(v + offs[i]) & 0xff);
             active += std::string(i ? " " : "") + (on ? "1" : "0");
         }
     }
-    bool a_ok = sysobj && ((peek64(sysobj + 0x170) & 1) == (peek32(sysobj + 0x168) & 0xff));
+    bool a_ok = sysobj && ((cached64(sysobj + 0x170) & 1) == (cached32(sysobj + 0x168) & 0xff));
     char checks[400];
     snprintf(checks, sizeof checks,
              "check 1 (session timer flag) %s [limit %u s, flag 2 %s, system flag A %s, +0x198 object %s], validators reporting activity (0 1 2 3 4 5): %s, validator 0 minimum lap floor %.3f s%s",
-             check1 ? "ok" : "TRIPPED", limit, sysobj && ((peek64(sysobj + 0xbc8) & 1) == (peek32(sysobj + 0xbc0) & 0xff)) ? "ok" : "off", a_ok ? "ok" : "off",
-             sysobj && peek64(sysobj + 0x198) ? "present" : "absent", active.empty() ? "?" : active.c_str(), floor_s, p3 ? "" : " (not readable)");
+             check1 ? "ok" : "TRIPPED", limit, sysobj && ((cached64(sysobj + 0xbc8) & 1) == (cached32(sysobj + 0xbc0) & 0xff)) ? "ok" : "off", a_ok ? "ok" : "off",
+             sysobj && cached64(sysobj + 0x198) ? "present" : "absent", active.empty() ? "?" : active.c_str(), floor_s, p3 ? "" : " (not readable)");
     blockers += std::string(blockers.empty() ? "" : "; ") + checks;
     char t[640];
     snprintf(t, sizeof t,
@@ -2852,29 +2883,62 @@ void handler_watch(uint64_t handler, const std::string &board)
     }
 }
 
+std::mutex diag_busy;
+tb::HandlerWatch watch_last;
+uint64_t watch_name_ctx = 0;
+int64_t watch_enter_ms = 0;
+std::string watch_board;
+
+// One flow-tick thread at a time (diag_busy). Every read goes through swofty::mem under a Trust, so a thread pays the VirtualQuery of a
+// big heap region once per HEAP_TRUST_MS; outside SWOFTY_TT_DIAG=1 the full handler description runs only as tb::handler_watch_full says.
 void diag_tick()
 {
+    std::unique_lock<std::mutex> busy(diag_busy, std::try_to_lock);
+    if (!busy)
+        return;
     session_lookup_tick();
     uintptr_t sys = diag_storage.load();
     if (!sys)
         return;
-    uint64_t handler = peek64(sys + 0x278);
-    // Reading the handler, the board name and describing the handler are guarded reads; tt_bridge_tick runs this at most twice a
-    // second and only while a Time Trial session is live (tb::diag_tick_on, tb::diag_tick_due).
-    std::string name;
-    if (handler) {
-        uint64_t ctx = peek64(handler + 0x58);
-        uint64_t np = ctx ? peek64(ctx + 0x68) : 0;
-        name = np ? tb::read_c(game_mem(), np) : std::string();
-        if (runtime::readable(reinterpret_cast<void *>(handler), 0x520))
-            handler_watch(handler, name);
+    int64_t entered = enter_ms.load();
+    if (entered != watch_enter_ms) {
+        watch_enter_ms = entered;
+        watch_last = {};
+        watch_name_ctx = 0;
+        watch_board.clear();
+        diag_handler_seen = ~uintptr_t(0);
     }
-    if (handler == diag_handler_seen)
+    swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
+    uint64_t handler = cached64(sys + 0x278);
+    alignas(8) uint8_t block[tb::HANDLER_BLOCK];
+    bool have_block = handler && swofty::mem::readable(uintptr_t(handler), sizeof block);
+    if (have_block)
+        memcpy(block, reinterpret_cast<const void *>(handler), sizeof block);
+    uint64_t ctx = 0;
+    if (have_block)
+        memcpy(&ctx, block + 0x58, 8);
+    if (handler != diag_handler_seen || ctx != watch_name_ctx) {
+        watch_name_ctx = ctx;
+        uint64_t np = ctx ? cached64(ctx + 0x68) : 0;
+        watch_board = np ? tb::read_c(cached_mem(), np) : std::string();
+    }
+    if (handler != diag_handler_seen) {
+        diag_handler_seen = handler;
+        if (diag_on)
+            swofty::log("[boards] diag: ghost lap handler of storage system 0x%llx is now 0x%llx%s%s", (unsigned long long)sys, (unsigned long long)handler,
+                        watch_board.empty() ? "" : ", board ", watch_board.c_str());
+    }
+    if (!have_block)
         return;
-    diag_handler_seen = handler;
-    if (diag_on)
-        swofty::log("[boards] diag: ghost lap handler of storage system 0x%llx is now 0x%llx%s%s", (unsigned long long)sys, (unsigned long long)handler,
-                    name.empty() ? "" : ", board ", name.c_str());
+    uint64_t finder = 0;
+    memcpy(&finder, block + 0x508, 8);
+    int finder_state = finder ? int(cached32(finder + 0xa0)) : -1;
+    uint64_t key = tb::handler_key(block, sizeof block, finder_state);
+    int64_t t = now_ms();
+    if (!tb::handler_watch_full(diag_on, handler, key, t, watch_last))
+        return;
+    watch_last = {handler, key, t};
+    handler_watch(handler, block, finder_state, watch_board);
 }
 
 bool section_of(const char *want, const uint8_t **begin, size_t *size)
@@ -3403,8 +3467,10 @@ void tt_bridge_tick()
     replay_load_tick();
     int64_t t = now_ms();
     bool time_trial_live = track_session.load(std::memory_order_relaxed);
-    if (tb::diag_tick_due(tb::diag_tick_on(bridge_on, diag_on, time_trial_live), t, diag_checked_ms.load())) {
-        diag_checked_ms = t;
+    int64_t diag_was = diag_checked_ms.load();
+    if (tb::diag_tick_due(tb::diag_tick_on(bridge_on, diag_on, time_trial_live), t, diag_was) && diag_checked_ms.compare_exchange_strong(diag_was, t)) {
+        static const uint32_t probe = perf::probe("core", "tt_bridge handler watch");
+        perf::Scope timed(probe);
         diag_tick();
     }
     std::string code;
