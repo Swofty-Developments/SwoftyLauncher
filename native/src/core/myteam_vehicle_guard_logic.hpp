@@ -56,10 +56,12 @@ struct Skip {
     uint64_t index = 0;
     uint32_t stat_id = 0;
     std::string label;
+    bool left = false;
 };
 
 template <class Mem> bool skip_base(Mem &mem, uint64_t rsp, uint64_t row, Skip &out)
 {
+    out.left = false;
     int32_t index = 0;
     if (!mem.i32(row + ROW_INDEX, index) || !row_missing(index))
         return false;
@@ -73,6 +75,10 @@ template <class Mem> bool skip_base(Mem &mem, uint64_t rsp, uint64_t row, Skip &
     out.label.clear();
     if (!mem.u64(rsp + FRAME_LABEL, label) || !label || !mem.text(label, out.label) || out.label.empty())
         out.label = "(unreadable)";
+    if (!addon_for(out.label)) {
+        out.left = true;
+        return false;
+    }
     return true;
 }
 

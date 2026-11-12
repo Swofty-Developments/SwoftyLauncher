@@ -108,11 +108,24 @@ int main()
 
     Fake no_label = frame(0xffffffffu, 2, 0x4000);
     no_label.s.clear();
-    expect(mv::skip_base(no_label, RSP, ROW, skip) && skip.label == "(unreadable)", "an unreadable label still skips the base");
+    expect(!mv::skip_base(no_label, RSP, ROW, skip) && skip.left && skip.label == "(unreadable)", "an unreadable label is left to the game");
 
     Fake empty_label = frame(0xffffffffu, 2, 0x4000);
     empty_label.s[LABEL] = "";
-    expect(mv::skip_base(empty_label, RSP, ROW, skip) && skip.label == "(unreadable)", "an empty file_name still skips the base");
+    expect(!mv::skip_base(empty_label, RSP, ROW, skip) && skip.left && skip.label == "(unreadable)", "an empty file_name is left to the game");
+
+    Fake stock = frame(0xffffffffu, 0, 0x4000);
+    stock.s[LABEL] = "myteam_mercedes";
+    expect(!mv::skip_base(stock, RSP, ROW, skip) && skip.left && skip.label == "myteam_mercedes",
+           "cosj_06's stock vehicle 'myteam_mercedes' with a missing-looking row is left to the game");
+
+    Fake stock26 = frame(0xffffffffu, 1, 0x4000);
+    stock26.s[LABEL] = "myteam_honda_2026";
+    expect(!mv::skip_base(stock26, RSP, ROW, skip) && skip.left, "cosj_06's 'myteam_honda_2026' is left to the game");
+
+    Fake found_stock = frame(5, 0, 0x4000);
+    found_stock.s[LABEL] = "myteam_mercedes";
+    expect(!mv::skip_base(found_stock, RSP, ROW, skip) && !skip.left, "a found stock row is not reported as left");
 
     const mv::KnownAddon *mes = mv::addon_for("myteam_mes_porsche_2026");
     expect(mes && !std::strcmp(mes->name, "More Engine Suppliers") && !std::strcmp(mes->id, "mildtdesign.more-engine-suppliers"),
