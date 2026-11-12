@@ -294,6 +294,18 @@ pub(super) fn empty(text: &'static str, p: Palette) -> Div {
 }
 
 impl Shell {
+    pub(crate) fn is_card_dismissed(&self, id: &str) -> bool {
+        self.store.config().dismissed_cards.contains(id)
+    }
+
+    pub(crate) fn dismiss_card(&mut self, id: &str, cx: &mut Context<Self>) {
+        let mut config = self.store.config();
+        if config.dismissed_cards.insert(id.to_string()) {
+            self.store.save_config(&config).ok();
+            cx.notify();
+        }
+    }
+
     pub(crate) fn news_page(&mut self, p: Palette, short: bool, cx: &mut Context<Self>) -> AnyElement {
         if self.news.stale() {
             self.fetch_news(cx);
