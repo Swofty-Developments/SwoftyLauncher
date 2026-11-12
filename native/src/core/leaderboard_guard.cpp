@@ -45,8 +45,17 @@
 // site_Game_TimeTrial_SetReferenceLogDone or site_Game_GhostlapTrace_RivalLogDone, the paths the game takes with the
 // channel closed, so only the log line is skipped. A board that was found is logged as the game does.
 //
+// When the reference's track changed, Game_TimeTrial_SetReference reads the leaderboard descriptor of the current game
+// mode's selected entrant list ([[[presenter+0x20]+0x88]+0x260]+0xe18, its stat id at +0xe0, engaged at +0xf0) and
+// throws a bad optional access (a 0xc0000409 fast fail) when the list has none. A Time Trial entered from the home
+// screen after a Grand Prix found swofty_f1 with such a list selected (1.9.18, Jellow07). site_Game_TimeTrial_SetReferenceListBoard
+// is that check (rdx = the list, rsi = the presenter, ecx = the presenter's old track). For a list without a
+// leaderboard the guard puts the old track back at presenter+0x3c, so the next call sees the change and sets the
+// reference, and continues at site_Game_TimeTrial_SetReferenceNoList, the path the game takes when no list is selected.
+// A list with a leaderboard runs the game's code unchanged.
+//
 // SWOFTY_LEADERBOARD_GUARD=0 turns the board guard off, SWOFTY_LEADERBOARD_TAB_GUARD=0 the tab guard,
-// SWOFTY_TT_REFERENCE_LOG_GUARD=0 the reference log guard.
+// SWOFTY_TT_REFERENCE_LOG_GUARD=0 the reference log guard, SWOFTY_TT_REFERENCE_LIST_GUARD=0 the reference list guard.
 
 namespace {
 
@@ -55,11 +64,15 @@ namespace lg = runtime::leaderboard_guard;
 
 constexpr const char *TAB_MIXIN = "swofty_core.dll (time trial leaderboard tab guard)";
 constexpr const char *REFERENCE_MIXIN = "swofty_core.dll (time trial reference log guard)";
+constexpr const char *LIST_MIXIN = "swofty_core.dll (time trial reference list guard)";
 constexpr uintptr_t PRESENTER_BOARD = 0x20278;
+constexpr uintptr_t PRESENTER_CONTEXT = 0x20, PRESENTER_TRACK = 0x3c, CONTEXT_MODE = 0x88, MODE_ENTITY = 0x260,
+                    MODE_NAME = 0x278, ENTITY_SETUP_MODE = 0x2b0, SETUP_MODE_NAME = 0xd8, LIST_NAME = 0x28, HOLDER_TEXT = 0x10,
+                    LIST_BEGIN = 0x10, LIST_END = 0x18, ENTRANT_RECORD = 0x88;
 
-uintptr_t boards_done = 0, tab_done = 0, reference_done = 0, rival_done = 0;
+uintptr_t boards_done = 0, tab_done = 0, reference_done = 0, rival_done = 0, list_done = 0;
 bool offered = false, settled = false;
-std::atomic<int> skipped{0}, tab_skipped{0}, reference_skipped{0};
+std::atomic<int> skipped{0}, tab_skipped{0}, reference_skipped{0}, list_skipped{0};
 
 bool env_off(const char *name, const char *label)
 {
@@ -130,6 +143,56 @@ void rival_log_board(SwoftyContext *c)
     reference_log_skipped(c->rsi, "GHOSTLAP-TRACE 'Ghost requested'");
 }
 
+std::string text_at(uintptr_t text)
+{
+    std::string out;
+    if (text)
+        swofty::mem::c_string(text, out, 64);
+    return out;
+}
+
+std::string held_text(uintptr_t object, uintptr_t off)
+{
+    uintptr_t holder = 0, text = 0;
+    if (!object || !swofty::mem::read(object + off, holder) || !holder || !swofty::mem::read(holder + HOLDER_TEXT, text))
+        return {};
+    return text_at(text);
+}
+
+void reference_list_skipped(uintptr_t presenter, uintptr_t list)
+{
+    lg::Say say = lg::say(++list_skipped);
+    if (say == lg::Say::none)
+        return;
+    uintptr_t context = 0, mode = 0, entity = 0, setup_mode = 0, name = 0, begin = 0, end = 0;
+    std::string mode_name, setup_name;
+    if (swofty::mem::read(presenter + PRESENTER_CONTEXT, context) && context && swofty::mem::read(context + CONTEXT_MODE, mode) &&
+        mode) {
+        if (swofty::mem::read(mode + MODE_NAME, name))
+            mode_name = text_at(name);
+        if (swofty::mem::read(mode + MODE_ENTITY, entity) && entity && swofty::mem::read(entity + ENTITY_SETUP_MODE, setup_mode))
+            setup_name = held_text(setup_mode, SETUP_MODE_NAME);
+    }
+    int64_t cars = -1;
+    if (swofty::mem::read(list + LIST_BEGIN, begin) && swofty::mem::read(list + LIST_END, end) && end >= begin)
+        cars = int64_t((end - begin) / ENTRANT_RECORD);
+    swofty::log("[leaderboard] %s%s",
+                lg::reference_list_line(presenter, mode_name, setup_name, held_text(list, LIST_NAME), cars).c_str(),
+                say == lg::Say::last ? " (further skips are not logged)" : "");
+}
+
+void reference_list_board(SwoftyContext *c)
+{
+    uint8_t engaged = 1;
+    if (!swofty::mem::read(c->rdx + lg::LIST_BOARD_SET, engaged) || !lg::reference_list_unboarded(engaged))
+        return;
+    uint32_t old_track = uint32_t(c->rcx);
+    if (swofty::mem::readable(c->rsi + PRESENTER_TRACK, sizeof old_track))
+        *reinterpret_cast<uint32_t *>(c->rsi + PRESENTER_TRACK) = old_track;
+    c->rip = list_done;
+    reference_list_skipped(c->rsi, c->rdx);
+}
+
 }
 
 namespace runtime {
@@ -180,6 +243,18 @@ std::vector<CoreMixins> leaderboard_guard_mixins()
         else
             out.push_back({REFERENCE_MIXIN, std::move(sites)});
     }
+    if (!env_off("SWOFTY_TT_REFERENCE_LIST_GUARD", "time trial reference list guard")) {
+        list_done = swofty::api->resolve("site_Game_TimeTrial_SetReferenceNoList");
+        if (!list_done || !swofty::api->resolve("site_Game_TimeTrial_SetReferenceListBoard")) {
+            list_done = 0;
+            swofty::log("[leaderboard] time trial reference list guard off: needs site_Game_TimeTrial_SetReferenceListBoard "
+                        "and site_Game_TimeTrial_SetReferenceNoList, which this build does not resolve");
+        } else {
+            out.push_back({LIST_MIXIN,
+                           {{"site_Game_TimeTrial_SetReferenceListBoard", SWOFTY_MIXIN_SITE, 100, (void *)&reference_list_board,
+                             nullptr}}});
+        }
+    }
     return out;
 }
 
@@ -205,6 +280,12 @@ void leaderboard_guard_commit()
                                ? "armed: the game's GAME and GHOSTLAP-TRACE lines for a reference with no board are "
                                  "skipped instead of faulting"
                                : "armed on one of its two log lines (see the [core] lines)")
+                        : "did not install (see the [core] lines)");
+    if (list_done)
+        swofty::log("[leaderboard] time trial reference list guard %s",
+                    core_mixins_active(LIST_MIXIN)
+                        ? "armed: a Time Trial reference for a selected list without a leaderboard is left unset instead of "
+                          "throwing"
                         : "did not install (see the [core] lines)");
 }
 
