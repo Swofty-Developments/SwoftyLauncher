@@ -469,6 +469,28 @@ int main()
         expect(filled.custom && filled.key == "swofty.fill:china" && tb::route_of(tb::Method::get_tt, tb::parse_board("LBV0002D"), true, filled.custom) == tb::Route::mailbox,
                "the request for a dormant stock row a track fills is still ours");
 
+        // The loading screen of a Time Trial on a custom track with the game's own cars: the session's track is not read yet
+        // (session code empty, content game/...) while the ghost handler already downloads the player's ghost and must read the
+        // player's board entry. Every hook has to call that board ours, or the requests go to the mailbox while the handler's
+        // write precondition stays offline, the entry read never starts and the ghost download repeats every 2.5 s.
+        {
+            auto board = tb::parse_board("LBV0007D");
+            bool content = tb::ours_session("game/f1_2025", false);
+            auto track = tb::request_track(base, board, "");
+            expect(!content && track.custom, "on the loading screen the content is the game's and the board's track is custom");
+            expect(tb::board_ours(board, track.custom, content), "the handler's hooks call a custom track's board ours before the session's track is read");
+            for (tb::Method m : {tb::Method::get_tt, tb::Method::get_friends_tt, tb::Method::get_binary, tb::Method::add_entry, tb::Method::update_binary})
+                expect((tb::route_of(m, board, true, track.custom || content) == tb::Route::mailbox) == tb::board_ours(board, track.custom, content),
+                       "a board whose requests go to the mailbox is ours for the handler's hooks too");
+            auto stock = tb::parse_board("LBV0001D");
+            auto stock_track = tb::request_track(base, stock, "");
+            expect(!tb::board_ours(stock, stock_track.custom, content) && tb::route_of(tb::Method::get_binary, stock, true, stock_track.custom || content) == tb::Route::pass,
+                   "a stock track with the game's cars stays the game's for the requests and the handler");
+            expect(tb::board_ours(stock, stock_track.custom, tb::ours_session("swofty.x/f1_2022", false)) && tb::board_ours(tb::parse_board("LBV0601D"), false, false),
+                   "addon content or an addon descriptor makes a stock track's board ours");
+            expect(!tb::board_ours(tb::BoardName{}, true, true), "an unparsed board is never ours");
+        }
+
         struct Sim {
             tb::TrackReads reads;
             bool live = false;
