@@ -164203,6 +164203,114 @@
    "used_by": [
     "native/src/core/leaderboard_guard.cpp"
    ]
+  },
+  {
+   "id": "career.schedule_track_list_push",
+   "section": ".xtls",
+   "pattern": "44 38 6B 08 75 ED 4C 89 F1 48 89 DA E8 ?? ?? ?? ?? EB E0",
+   "match": "0x141272d2d",
+   "anchor": "0x6",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141272d33",
+   "kind": "mid",
+   "expect": "4C 89 F1 48 89",
+   "names": [
+    "site_Career_ScheduleComponent_TrackListPush"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "tracklist",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/track_list_guard.cpp"
+   ]
+  },
+  {
+   "id": "career.schedule_track_list_next_row",
+   "section": ".xtls",
+   "pattern": "48 83 C3 28 48 39 EB 0F 84 ?? ?? ?? ?? 44 38 6B 08 75 ED",
+   "match": "0x141272d20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141272d20",
+   "kind": "mid",
+   "expect": "48 83 C3 28 48",
+   "names": [
+    "site_Career_ScheduleComponent_TrackListNextRow"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "tracklist",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/track_list_guard.cpp"
+   ]
+  },
+  {
+   "id": "career.schedule_track_list_entry_done",
+   "section": ".xtls",
+   "pattern": "49 FF C7 0F B7 47 10 49 39 C7 4C 8B 6C 24 38 0F 83",
+   "match": "0x141272c60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141272c60",
+   "kind": "mid",
+   "expect": "49 FF C7 0F B7",
+   "names": [
+    "site_Career_ScheduleComponent_TrackListEntryDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "tracklist",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/track_list_guard.cpp"
+   ]
+  },
+  {
+   "id": "career.schedule_track_list_save",
+   "section": ".xtls",
+   "pattern": "66 89 77 12 4D 8B A6 B0 02 00 00 4D 39 A6 B8 02 00 00",
+   "match": "0x141272150",
+   "anchor": "0x4",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141272154",
+   "kind": "mid",
+   "expect": "4D 8B A6 B0 02",
+   "names": [
+    "site_Career_ScheduleComponent_TrackListSave"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "tracklist",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/track_list_guard.cpp"
+   ]
   }
  ]
 }
