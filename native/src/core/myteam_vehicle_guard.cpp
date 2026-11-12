@@ -67,6 +67,18 @@ struct Game {
     {
         return mem::c_string(static_cast<uintptr_t>(a), out, mv::LABEL_CHARS);
     }
+
+    mv::Row vehicle_row(const std::string &label)
+    {
+        const SwoftyDb *db = runtime::db_table();
+        if (!db)
+            return mv::Row::unknown;
+        SwoftyDbCursor c{};
+        int r = db->row("entrants.vehicles", label.c_str(), &c);
+        if (r == SWOFTY_ASSET_OK)
+            return mv::Row::present;
+        return r == SWOFTY_ASSET_INVALID ? mv::Row::missing : mv::Row::unknown;
+    }
 };
 
 void say(const mv::Skip &skip)
@@ -102,7 +114,8 @@ void say_left(const mv::Skip &skip)
     }
     if (first)
         swofty::log("[myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s', whose row index reads as missing; "
-                    "it is not a known addon's vehicle, so the game's own load runs for it",
+                    "it is not a known addon's vehicle or its entrants.vehicles row is in the game data, so the game's own "
+                    "load runs for it",
                     (unsigned long long)skip.index, skip.stat_id, skip.label.c_str());
 }
 

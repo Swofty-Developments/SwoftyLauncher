@@ -23,6 +23,13 @@ struct Fake {
     std::map<uint64_t, uint64_t> q;
     std::map<uint64_t, uint32_t> d;
     std::map<uint64_t, std::string> s;
+    std::map<std::string, mv::Row> rows;
+
+    mv::Row vehicle_row(const std::string &label)
+    {
+        auto it = rows.find(label);
+        return it == rows.end() ? mv::Row::missing : it->second;
+    }
 
     bool u64(uint64_t a, uint64_t &out)
     {
@@ -122,6 +129,17 @@ int main()
     Fake stock26 = frame(0xffffffffu, 1, 0x4000);
     stock26.s[LABEL] = "myteam_honda_2026";
     expect(!mv::skip_base(stock26, RSP, ROW, skip) && skip.left, "cosj_06's 'myteam_honda_2026' is left to the game");
+
+    Fake present_mes = frame(0xffffffffu, 8, 0x4000);
+    present_mes.s[LABEL] = "myteam_mes_custom_2";
+    present_mes.rows["myteam_mes_custom_2"] = mv::Row::present;
+    expect(!mv::skip_base(present_mes, RSP, ROW, skip) && skip.left,
+           "JamesF1's MES base whose entrants.vehicles row is in the game data is left to the game");
+
+    Fake unknown_mes = frame(0xffffffffu, 8, 0x4000);
+    unknown_mes.rows["myteam_mes_porsche_2026"] = mv::Row::unknown;
+    expect(!mv::skip_base(unknown_mes, RSP, ROW, skip) && skip.left,
+           "an MES base is left to the game while the database can't be read");
 
     Fake found_stock = frame(5, 0, 0x4000);
     found_stock.s[LABEL] = "myteam_mercedes";

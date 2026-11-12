@@ -51,6 +51,8 @@ inline const KnownAddon *addon_for(const std::string &label)
     return nullptr;
 }
 
+enum class Row { present, missing, unknown };
+
 struct Skip {
     uint64_t container = 0;
     uint64_t index = 0;
@@ -75,7 +77,7 @@ template <class Mem> bool skip_base(Mem &mem, uint64_t rsp, uint64_t row, Skip &
     out.label.clear();
     if (!mem.u64(rsp + FRAME_LABEL, label) || !label || !mem.text(label, out.label) || out.label.empty())
         out.label = "(unreadable)";
-    if (!addon_for(out.label)) {
+    if (!addon_for(out.label) || mem.vehicle_row(out.label) != Row::missing) {
         out.left = true;
         return false;
     }
