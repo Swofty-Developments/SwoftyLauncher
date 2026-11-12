@@ -1771,11 +1771,11 @@ void replay_save_entry_mid(safetyhook::Context &c)
 
 int64_t replay_after_ms = 0;
 std::atomic<int64_t> replay_session_best_ms{0};
-std::atomic<bool> replay_session_best_confirmed{false};
 bool replay_capture_any = false;
 
 std::atomic<double> replay_lap_path{0}, replay_lap_length{0};
-std::atomic<bool> replay_lap_restarted{false};
+// `asked`: the restart before the line was requested on this lap; `restarted`: it ran (set by replay_restart).
+std::atomic<bool> replay_lap_asked{false}, replay_lap_restarted{false};
 extern std::atomic<int> replay_restart_wanted;
 extern std::atomic<bool> replay_saving;
 
@@ -1786,34 +1786,36 @@ void replay_lap_progress(double path_m, double elapsed_s)
     replay_lap_path = path_m;
     double length = replay_lap_length.load();
     int64_t best = replay_session_best_ms.load();
-    if (!capture_on() || length <= 0 || best <= 0 || path_m < length - 250 || path_m > length || replay_lap_restarted.load())
+    if (!capture_on() || length <= 0 || best <= 0 || path_m < length - 250 || path_m > length || replay_lap_asked.load())
         return;
     if (int64_t(elapsed_s * 1000) + 2500 < best)
         return;
-    replay_lap_restarted = true;
+    replay_lap_asked = true;
     replay_restart_wanted = 1;
 }
 
-// Called from the lap recorder (flow thread) after a lap was written: a valid lap faster than the session's best marks a capture pending.
+// Called from the lap recorder (flow thread) after a lap was written: a lap the game reported valid and faster than the session's best
+// marks a capture pending.
 void replay_lap_finished(int64_t lap_ms, int valid)
 {
     if (!capture_on())
         return;
     int64_t best = replay_session_best_ms.load();
-    // SWOFTY_TT_REPLAY_CAPTURE=any is a test switch: every finished lap is saved, valid or not.
-    bool mark = tb::replay_lap_is_best(lap_ms, valid, best, replay_session_best_confirmed.load()) || (replay_capture_any && lap_ms > 0);
-    swofty::log("[replay] capture: lap %lld ms (valid %d), session best %lld ms: %s", (long long)lap_ms, valid, (long long)best, mark ? "marked for a replay save" : "not a new best, no save");
     double path = replay_lap_path.exchange(0);
-    if (path > 1000)
+    if (path > 1000 && valid == 1)
         replay_lap_length = path;
-    bool early = replay_lap_restarted.exchange(false);
-    if (!mark) {
-        if (!early)
-            replay_restart_wanted = 2;
+    replay_lap_asked = false;
+    // SWOFTY_TT_REPLAY_CAPTURE=any is a test switch: every finished lap is saved, valid or not.
+    tb::ReplayLapOutcome o = tb::replay_lap_outcome(lap_ms, valid, best, replay_capture_any, replay_lap_restarted.exchange(false));
+    swofty::log("[replay] capture: lap %lld ms (valid %d), session best %lld ms: %s", (long long)lap_ms, valid, (long long)best,
+                o.new_best ? "marked for a replay save" : o.mark ? "marked for a replay save (SWOFTY_TT_REPLAY_CAPTURE=any), the session best stays"
+                : valid != 1 ? "the game did not report it valid, no save" : "not a new best, no save");
+    if (o.restart)
+        replay_restart_wanted = 2;
+    if (!o.mark)
         return;
-    }
-    replay_session_best_ms = lap_ms;
-    replay_session_best_confirmed = valid == 1;
+    if (o.new_best)
+        replay_session_best_ms = lap_ms;
     replay_pending_lap = uint32_t(lap_ms);
     replay_pending_ms = now_ms();
     replay_saved_lap_ms = uint32_t(lap_ms);
@@ -2514,23 +2516,54 @@ void replay_restart(uint64_t sys)
     int why = replay_restart_wanted.exchange(0);
     if (!why)
         return;
-    uint64_t mgr = replay_manager_ptr.load();
-    bool ok = game.replay_clear && game.replay_reset && capture_on() && view::stage.load() == view::off && !in_session_load.load() && !replay_pending_ms.load() &&
-              !replay_saving.load() && sys && runtime::readable(reinterpret_cast<void *>(sys), 0xc0) && is_replay_system(sys) && (peek32(sys + 0x88) >> 8 & 0xff) != 0 &&
-              peek32(sys + 0x20) == 0 && peek32(sys + 0x78) == 0 && mgr && replay_manager_ok(mgr, sys) && (peek32(mgr + 0x6e0) >> 8 & 0xff) == 1 && int32_t(peek32(mgr + 0x428)) == -1;
-    uint64_t queue = ok ? peek64(mgr + 0x150) : 0;
-    ok = ok && queue && runtime::readable(reinterpret_cast<void *>(queue + 0x48), 8) && peek64(queue + 0x48) == 0;
-    if (!ok) {
-        swofty::log("[replay] restart (%s): not now, a guard does not hold", why == 1 ? "before the line" : "at the line");
+    const char *when = why == 1 ? "before the line" : "at the line";
+    tb::ReplayRestartView v;
+    v.functions = game.replay_clear && game.replay_reset;
+    v.capture = capture_on();
+    v.viewer_idle = view::stage.load() == view::off;
+    v.loading = in_session_load.load();
+    v.pending = replay_pending_ms.load() != 0;
+    v.saving = replay_saving.load();
+    v.sys = sys;
+    v.system_readable = sys && runtime::readable(reinterpret_cast<void *>(sys), 0xc0);
+    v.system_vtable = v.system_readable && is_replay_system(sys);
+    if (v.system_vtable) {
+        v.active89 = *reinterpret_cast<const uint8_t *>(sys + 0x89);
+        v.state20 = peek32(sys + 0x20);
+        v.external78 = *reinterpret_cast<const uint8_t *>(sys + 0x78);
+    }
+    v.mgr = replay_manager_ptr.load();
+    v.manager_ok = v.mgr && v.system_vtable && replay_manager_ok(v.mgr, sys) && runtime::readable(reinterpret_cast<void *>(v.mgr + 0x428), 8);
+    if (v.manager_ok) {
+        v.recording6e1 = *reinterpret_cast<const uint8_t *>(v.mgr + 0x6e1);
+        v.loaded428 = int64_t(peek64(v.mgr + 0x428));
+        v.queue = peek64(v.mgr + 0x150);
+        v.queue_readable = v.queue && runtime::readable(reinterpret_cast<void *>(v.queue + 0x48), 4);
+        if (v.queue_readable)
+            v.queue_busy48 = peek32(v.queue + 0x48);
+    }
+    std::string blocker = tb::replay_restart_blocker(v);
+    if (!blocker.empty()) {
+        swofty::log("[replay] restart (%s): not now, the guard %s does not hold (sys 0x%llx: [+0x89] %u, [+0x20] %u, [+0x78] %u; mgr 0x%llx: [+0x6e1] %u, [+0x428] %lld; "
+                    "queue 0x%llx: [+0x48] %u; viewer %s, loading %d, mark %d, saving %d)",
+                    when, blocker.c_str(), (unsigned long long)sys, unsigned(v.active89), unsigned(v.state20), unsigned(v.external78), (unsigned long long)v.mgr,
+                    unsigned(v.recording6e1), (long long)v.loaded428, (unsigned long long)v.queue, unsigned(v.queue_busy48), v.viewer_idle ? "idle" : "in use",
+                    v.loading ? 1 : 0, v.pending ? 1 : 0, v.saving ? 1 : 0);
         return;
     }
+    uint64_t list = peek64(sys + 0x98), module = list && runtime::readable(reinterpret_cast<void *>(list), 8) ? peek64(list) : 0;
+    float held = 0;
+    if (module && runtime::readable(reinterpret_cast<void *>(module + 0xd8), 4))
+        memcpy(&held, reinterpret_cast<const void *>(module + 0xd8), 4);
     auto *cs = reinterpret_cast<CRITICAL_SECTION *>(peek64(sys + 0xb0));
     EnterCriticalSection(cs);
     reinterpret_cast<void (*)(uint64_t)>(game.replay_clear)(sys);
     reinterpret_cast<void (*)(uint64_t, uint32_t, uint8_t)>(game.replay_reset)(sys, 0, 1);
     *reinterpret_cast<uint8_t *>(sys + 0x88) = 1;
     LeaveCriticalSection(cs);
-    swofty::log("[replay] restart (%s): the recording starts again from here", why == 1 ? "before the line" : "at the line");
+    if (why == 1)
+        replay_lap_restarted = true;
+    swofty::log("[replay] restart (%s): the recording starts again from here (%.1f s of recording dropped)", when, double(held));
 }
 
 void replay_update_mid(safetyhook::Context &c)
@@ -3442,8 +3475,12 @@ void tt_bridge_session_enter()
     std::lock_guard<std::mutex> g(lock);
     last_board.clear();
     replay_session_best_ms = 0;
-    replay_session_best_confirmed = false;
     replay_pending_ms = 0;
+    replay_restart_wanted = 0;
+    replay_lap_asked = false;
+    replay_lap_restarted = false;
+    replay_lap_path = 0;
+    replay_lap_length = 0;
 }
 
 bool tt_bridge_ours_session()

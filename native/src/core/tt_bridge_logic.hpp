@@ -538,20 +538,84 @@ inline bool replay_precheck_blocks(bool main_found, uint64_t full_buffer, uint64
     return main_found && (full_buffer == 0 || key_buffer == 0);
 }
 
-// A lap marks a replay save when it is valid (or validity is unknown, -1) and faster than the session's best so far (0 = none yet). A best
-// the game confirmed valid is never taken by a lap of unknown validity, and a lap the game confirms beats a best that was not confirmed:
-// a restart mid-lap writes a short clock-timed lap that would otherwise hold the best for the whole session.
-inline bool replay_lap_is_best(int64_t lap_ms, int valid, int64_t session_best_ms, bool best_confirmed)
+// A lap is a new session best only when the game itself reported it valid (1) and it is faster than the session's best so far (0 = none
+// yet). A lap of unknown validity (-1, timed by our own clock when the game gave no lap result) is no best: the clock can run over a lap
+// restart or a teleport and time a "lap" of a few seconds.
+inline bool replay_lap_is_best(int64_t lap_ms, int valid, int64_t session_best_ms)
 {
-    if (lap_ms <= 0 || valid == 0)
-        return false;
-    if (session_best_ms <= 0)
-        return true;
-    if (valid == 1 && !best_confirmed)
-        return true;
-    if (valid != 1 && best_confirmed)
-        return false;
-    return lap_ms < session_best_ms;
+    return lap_ms > 0 && valid == 1 && (session_best_ms <= 0 || lap_ms < session_best_ms);
+}
+
+// What a finished lap does to the recording: `mark` saves the replay, `new_best` makes the lap the session's best, and `restart` restarts
+// the recording at the line. Only a new best lowers the session best; the test switch `capture_any` saves every lap without touching it.
+// A lap that is no best (slower, invalid or of unknown validity) cannot be part of a saved best, so the recording restarts at its line,
+// unless it already restarted before the line on that lap.
+struct ReplayLapOutcome {
+    bool mark = false, new_best = false, restart = false;
+};
+
+inline ReplayLapOutcome replay_lap_outcome(int64_t lap_ms, int valid, int64_t session_best_ms, bool capture_any, bool restarted_early)
+{
+    ReplayLapOutcome o;
+    o.new_best = replay_lap_is_best(lap_ms, valid, session_best_ms);
+    o.mark = o.new_best || (capture_any && lap_ms > 0);
+    o.restart = !o.mark && !restarted_early;
+    return o;
+}
+
+// The values the recording restart reads, each at the width the game itself reads it: [sys+0x78] is the byte Ne_Replay_SetState checks
+// before it changes state (the reset body writes the u16 at +0x79 = 1, so a dword read at +0x78 is not 0 after any reset);
+// [queue+0x48] is the dword SaveFullReplay reads as "busy"; [mgr+0x428] is the qword the load start compares with -1.
+struct ReplayRestartView {
+    bool functions = false, capture = false, viewer_idle = false, loading = false, pending = false, saving = false, system_readable = false,
+         system_vtable = false, manager_ok = false, queue_readable = false;
+    uint8_t active89 = 0, external78 = 0, recording6e1 = 0;
+    uint32_t state20 = 0, queue_busy48 = 0;
+    int64_t loaded428 = 0;
+    uint64_t sys = 0, mgr = 0, queue = 0;
+};
+
+// The first guard of the restart that does not hold, as "<name> <value>"; empty when all hold.
+inline std::string replay_restart_blocker(const ReplayRestartView &v)
+{
+    char b[112];
+    auto say = [&](const char *name, unsigned long long value) {
+        snprintf(b, sizeof b, "%s 0x%llx", name, value);
+        return std::string(b);
+    };
+    if (!v.functions)
+        return "the reset functions did not resolve";
+    if (!v.capture)
+        return "replay capture off";
+    if (!v.viewer_idle)
+        return "the replay viewer is in use";
+    if (v.loading)
+        return "a replay is being loaded into the session";
+    if (v.pending)
+        return "a replay save is marked";
+    if (v.saving)
+        return "our replay save is still being copied";
+    if (!v.sys || !v.system_readable)
+        return say("replay system", v.sys);
+    if (!v.system_vtable)
+        return say("replay system without the GameReplaySystem vtable", v.sys);
+    if (v.active89 == 0)
+        return say("[sys+0x89] (recording active)", v.active89);
+    if (v.state20 != 0)
+        return say("[sys+0x20] (state, 0 = Record)", v.state20);
+    if (v.external78 != 0)
+        return say("[sys+0x78] (external control)", v.external78);
+    if (!v.mgr || !v.manager_ok)
+        return say("replay manager", v.mgr);
+    if (v.recording6e1 != 1)
+        return say("[mgr+0x6e1] (recording flag)", v.recording6e1);
+    if (v.loaded428 != -1)
+        return say("[mgr+0x428] (loaded replay, -1 = none)", static_cast<unsigned long long>(v.loaded428));
+    if (!v.queue || !v.queue_readable)
+        return say("job queue [mgr+0x150]", v.queue);
+    if (v.queue_busy48 != 0)
+        return say("[queue+0x48] (job queue busy)", v.queue_busy48);
+    return {};
 }
 
 // The save may be started only with the bridge on, with a replay system whose vtable is the game's and a recording enabled. The content is

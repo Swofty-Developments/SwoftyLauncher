@@ -215,15 +215,15 @@ impl Queue {
             .collect()
     }
 
-    /// The laps the server took, as `(uploaded at, lap time in ms, lap id)`.
-    pub fn uploaded(&self) -> Vec<(u64, u64, String)> {
+    /// The laps the server took, as `(uploaded at, lap time in ms, the server's answer)`.
+    pub fn uploaded(&self) -> Vec<(u64, u64, Uploaded)> {
         let Ok(read) = std::fs::read_dir(self.dir(Folder::Sent)) else {
             return Vec::new();
         };
         read.filter_map(|e| e.ok().map(|e| e.path()))
             .filter(|p| p.extension().is_some_and(|x| x == "json"))
             .filter_map(|p| read_json::<Done>(&p))
-            .filter_map(|d| Some((d.at, d.time_ms, d.answer?.id)))
+            .filter_map(|d| Some((d.at, d.time_ms, d.answer?)))
             .collect()
     }
 

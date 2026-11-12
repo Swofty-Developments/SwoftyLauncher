@@ -151,12 +151,55 @@ int main()
            "the save starts only behind the switch, the bridge, a genuine replay system, a recording and a job queue, on stock content as on ours");
     expect(tb::replay_file_settled(100, 100, 3, 3) && !tb::replay_file_settled(100, 99, 3, 3) && !tb::replay_file_settled(0, 0, 9, 3) && !tb::replay_file_settled(100, 100, 2, 3),
            "a replay file is settled only when its size stopped changing");
-    expect(tb::replay_lap_is_best(88505, 1, 0, false) && tb::replay_lap_is_best(88505, -1, 90000, false) && !tb::replay_lap_is_best(88505, 0, 0, false) &&
-               !tb::replay_lap_is_best(90000, 1, 88505, true) && !tb::replay_lap_is_best(88505, 1, 88505, true) && !tb::replay_lap_is_best(0, 1, 0, false),
+    expect(tb::replay_lap_is_best(88505, 1, 0) && tb::replay_lap_is_best(88505, 1, 90000) && !tb::replay_lap_is_best(88505, 0, 0) && !tb::replay_lap_is_best(90000, 1, 88505) &&
+               !tb::replay_lap_is_best(88505, 1, 88505) && !tb::replay_lap_is_best(0, 1, 0),
            "a lap marks a replay save only when valid and a new session best");
-    expect(tb::replay_lap_is_best(87166, 1, 38644, false) && !tb::replay_lap_is_best(38644, -1, 87166, true) && tb::replay_lap_is_best(87006, 1, 87166, true) &&
-               tb::replay_lap_is_best(86000, -1, 87000, false),
-           "a short lap of unknown validity (a restart mid-lap) never holds the best against the laps the game confirms valid");
+    expect(!tb::replay_lap_is_best(35875, -1, 87599) && !tb::replay_lap_is_best(35875, -1, 0), "a lap of unknown validity (timed by our clock) is never a best");
+    {
+        int64_t best = 0;
+        auto lap = [&](int64_t ms, int valid, bool early = false) {
+            tb::ReplayLapOutcome o = tb::replay_lap_outcome(ms, valid, best, false, early);
+            if (o.new_best)
+                best = ms;
+            return o;
+        };
+        tb::ReplayLapOutcome a = lap(87599, 1), b = lap(35875, -1), c = lap(60392, -1);
+        expect(a.mark && a.new_best && !a.restart && best == 87599, "the session's first valid lap saves its replay and the recording is kept");
+        expect(!b.mark && !b.new_best && b.restart && !c.mark && c.restart && best == 87599, "a lap timed by our clock saves nothing and restarts the recording at its line");
+        tb::ReplayLapOutcome d = lap(87400, 1), e = lap(86000, 0);
+        expect(d.mark && d.new_best && best == 87400, "the clock lap does not lower the session best, so the next faster valid lap still saves its replay");
+        expect(!e.mark && !e.new_best && e.restart && best == 87400, "an invalid lap faster than the best saves nothing and leaves the best alone");
+        expect(!lap(88000, 1, true).restart && lap(88000, 1).restart, "a slower lap restarts at the line unless it already restarted before it");
+        tb::ReplayLapOutcome any = tb::replay_lap_outcome(35875, -1, 87400, true, false);
+        expect(any.mark && !any.new_best && !any.restart, "the capture-any test switch saves an unknown lap without making it the best");
+        best = 0;
+        tb::ReplayLapOutcome first = lap(38644, -1), then = lap(87166, 1);
+        expect(!first.mark && first.restart && then.mark && then.new_best && best == 87166,
+               "a clock lap first in the session (a restart mid-lap) saves nothing and the session's first valid lap still saves its replay");
+    }
+    {
+        tb::ReplayRestartView v;
+        v.functions = v.capture = v.viewer_idle = v.system_readable = v.system_vtable = v.manager_ok = v.queue_readable = true;
+        v.sys = 0x317a560, v.mgr = 0x500d94370, v.queue = 0x31e2700;
+        v.active89 = 1, v.state20 = 0, v.recording6e1 = 1, v.loaded428 = -1, v.queue_busy48 = 0;
+        uint8_t after_reset[4] = {0, 1, 0, 0};
+        uint32_t dword = 0;
+        std::memcpy(&dword, after_reset, 4);
+        v.external78 = after_reset[0];
+        expect(dword != 0 && tb::replay_restart_blocker(v).empty(),
+               "after a reset ([+0x79] = 1) the restart reads [+0x78] as the byte SetState checks, so it is allowed where a dword read never was");
+        auto blocked = [&](auto change, const char *name) {
+            tb::ReplayRestartView w = v;
+            change(w);
+            return tb::replay_restart_blocker(w).find(name) != std::string::npos;
+        };
+        expect(blocked([](auto &w) { w.external78 = 1; }, "[sys+0x78] (external control) 0x1") && blocked([](auto &w) { w.state20 = 2; }, "[sys+0x20] (state, 0 = Record) 0x2") &&
+                   blocked([](auto &w) { w.active89 = 0; }, "[sys+0x89]") && blocked([](auto &w) { w.recording6e1 = 0; }, "[mgr+0x6e1]") &&
+                   blocked([](auto &w) { w.loaded428 = 3; }, "[mgr+0x428] (loaded replay, -1 = none) 0x3") && blocked([](auto &w) { w.queue_busy48 = 1; }, "[queue+0x48]") &&
+                   blocked([](auto &w) { w.saving = true; }, "still being copied") && blocked([](auto &w) { w.pending = true; }, "save is marked") &&
+                   blocked([](auto &w) { w.system_vtable = false; }, "GameReplaySystem vtable 0x317a560") && blocked([](auto &w) { w.manager_ok = false; }, "replay manager 0x500d94370"),
+               "a restart that may not run names the guard that failed and its value");
+    }
     {
         tb::ReplayManagerView m;
         m.vtable20 = 0x142000000ull, m.system40 = 0x317a560, m.lock118 = 0x32e0000, m.queue150 = 0x32e4000, m.flag6e1 = 1;
