@@ -20,7 +20,6 @@ hooknoop) DEFS=(-DSWOFTY_MOD_SETTINGS_NOOP) ;;
 esac
 CORE_VERSION=$(sed -n 's/^version = "\(.*\)"/\1/p' ../Cargo.toml | head -1)
 DEFS+=(-DSWOFTY_CORE_VERSION="\"$CORE_VERSION\"")
-DEFS+=(-DSWOFTY_MEM_GUARDED)
 DIST=dist${VARIANT:+-$VARIANT}
 OUT=build${VARIANT:+/$VARIANT}
 

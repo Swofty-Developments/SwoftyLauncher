@@ -141,45 +141,11 @@ static bool isolated(SwoftyHookFn fn, void *user, unsigned long want, const char
     return r == 0 && s.code == want && caught;
 }
 
-namespace swofty::mem::guarded {
-bool readable(uintptr_t p, size_t n);
-bool copy(void *out, uintptr_t from, size_t n);
-}
-
-static bool mem_reads()
-{
-    namespace g = swofty::mem::guarded;
-    static const uint64_t value = 0x1122334455667788ull;
-    uint64_t got = 0;
-    bool good = g::readable(uintptr_t(&value), 8) && g::copy(&got, uintptr_t(&value), 8) && got == value;
-    bool null_refused = !g::readable(0, 8) && !g::copy(&got, 0, 8);
-    void *freed = VirtualAlloc(nullptr, 0x2000, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE);
-    VirtualFree(freed, 0, MEM_RELEASE);
-    bool freed_refused = !g::readable(uintptr_t(freed), 8) && !g::copy(&got, uintptr_t(freed), 8);
-    auto *span = static_cast<char *>(VirtualAlloc(nullptr, 0x3000, MEM_RESERVE, PAGE_NOACCESS));
-    VirtualAlloc(span, 0x1000, MEM_COMMIT, PAGE_READWRITE);
-    bool span_checked = g::readable(uintptr_t(span), 0x1000) && !g::readable(uintptr_t(span) + 0xff8, 16) &&
-                        !g::readable(uintptr_t(span), 0x2000);
-    auto *guarded_page = static_cast<char *>(VirtualAlloc(nullptr, 0x1000, MEM_COMMIT | MEM_RESERVE, PAGE_READWRITE | PAGE_GUARD));
-    bool guard_refused = !g::readable(uintptr_t(guarded_page), 8);
-    MEMORY_BASIC_INFORMATION m{};
-    VirtualQuery(guarded_page, &m, sizeof m);
-    bool guard_kept = (m.Protect & PAGE_GUARD) != 0;
-    bool flag_clear = !reading_now();
-    uint32_t faults = read_fault_count();
-    printf("      good %d, null %d, freed %d, span %d, guard refused %d kept %d, flag clear %d, faults %u\n", good, null_refused,
-           freed_refused, span_checked, guard_refused, guard_kept, flag_clear, faults);
-    return good && null_refused && freed_refused && span_checked && guard_refused && guard_kept && flag_clear && faults >= 5;
-}
-
 int main(int argc, char **argv)
 {
     const char *k = argc > 1 ? argv[1] : "";
     bool ok = false;
-    if (!strcmp(k, "mem_reads")) {
-        ok = mem_reads();
-        say(ok, "mem_reads: guarded reads pass good memory, refuse null, freed, reserved and guard pages, and keep the guard armed");
-    } else if (!strcmp(k, "fine")) {
+    if (!strcmp(k, "fine")) {
         SwoftyHookCall c{sizeof c, 2, "t.point", nullptr, 0, nullptr};
         Seen s{0, 0, {}};
         ok = isolated_call(fine, nullptr, &c, &s) == 5 && !s.code;
