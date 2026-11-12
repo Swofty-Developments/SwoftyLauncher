@@ -104,4 +104,20 @@ struct Driver {
     }
 };
 
+// The flow link hook has work while the start drives the flow (profile, setup, leave) and, for a session target, until the
+// session's screen is up or the cover's wait ran out. After that, and after a failed start, it returns at once.
+inline bool link_needed(Phase phase, bool session_target, bool session_screen, uint64_t session_at, uint64_t now, uint64_t screen_wait_ms,
+                        bool diag)
+{
+    if (diag)
+        return true;
+    if (phase == Phase::off || phase == Phase::failed)
+        return false;
+    if (phase != Phase::left)
+        return true;
+    if (!session_target || session_screen)
+        return false;
+    return !session_at || now < session_at || now - session_at < screen_wait_ms;
+}
+
 }

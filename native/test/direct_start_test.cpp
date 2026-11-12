@@ -77,6 +77,18 @@ int main()
     expect(r.on_update(ds::STATE_ONLINE_FRONTEND, ds::LINK_STAY, false) == ds::LINK_STAY,
            "a room target lets home take the lobby link itself");
 
+    expect(ds::link_needed(ds::Phase::profile, true, false, 0, 0, 60000, false) && ds::link_needed(ds::Phase::setup, false, false, 0, 0, 60000, false) &&
+               ds::link_needed(ds::Phase::leave, false, false, 0, 0, 60000, false),
+           "the link hook works while the start drives the flow");
+    expect(!ds::link_needed(ds::Phase::failed, true, false, 0, 0, 60000, false) && !ds::link_needed(ds::Phase::off, true, false, 0, 0, 60000, false),
+           "a failed or unarmed start needs no link work");
+    expect(!ds::link_needed(ds::Phase::left, false, false, 0, 0, 60000, false), "a room or screen target is done once it left the front end");
+    expect(ds::link_needed(ds::Phase::left, true, false, 0, 5000, 60000, false), "a session target waits for its session to start");
+    expect(ds::link_needed(ds::Phase::left, true, false, 1000, 1000 + 59999, 60000, false), "and for its screen within the cover's wait");
+    expect(!ds::link_needed(ds::Phase::left, true, true, 1000, 2000, 60000, false), "a session target is done once its screen is up");
+    expect(!ds::link_needed(ds::Phase::left, true, false, 1000, 1000 + 60000, 60000, false), "or once the cover's wait ran out");
+    expect(ds::link_needed(ds::Phase::left, false, true, 1000, 1000000, 60000, true), "the direct start diag keeps the link hook working");
+
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;
 }

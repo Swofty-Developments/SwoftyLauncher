@@ -1,6 +1,7 @@
 #include "runtime.hpp"
 
 #include <safetyhook.hpp>
+#include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
 #include <atomic>
@@ -503,19 +504,26 @@ void log_chain()
 }
 
 std::atomic<runtime::FlowLinkListener> link_listener{nullptr};
+// Set when the start arms, cleared once ds::link_needed says the start has nothing left to do at the flow link.
+std::atomic<bool> link_live{false};
 
+// The listener (a Theatre pick's viewer) is handed the node unread: it checks its own stage before it reads anything.
 void link_mid(safetyhook::Context &c)
 {
-    auto listener = link_listener.load();
-    if (!listener && !armed.load())
+    auto listener = link_listener.load(std::memory_order_relaxed);
+    bool live = link_live.load(std::memory_order_relaxed);
+    if (!listener && !live)
         return;
     auto *state = reinterpret_cast<uint8_t *>(c.rdi);
-    if (!state || !runtime::readable(state, STATE_PARENT + 8))
+    if (!state)
         return;
     auto *slot = reinterpret_cast<uint32_t *>(c.rsp + LINK_SLOT);
     if (listener)
         listener(state, slot);
-    if (!armed.load())
+    if (!live)
+        return;
+    swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
+    if (!runtime::readable(state, STATE_PARENT + 8))
         return;
     uint32_t hash = *reinterpret_cast<uint32_t *>(state + STATE_HASH);
     bool child = *reinterpret_cast<void **>(state + STATE_CHILD) != nullptr;
@@ -581,6 +589,11 @@ void link_mid(safetyhook::Context &c)
         }
     }
     note_phase();
+    if (!ds::link_needed(driver.phase, driver.target.name == "session", session_screen.load(), session_at.load(), GetTickCount64(),
+                         SESSION_SCREEN_WAIT_MS, diag_on) &&
+        link_live.exchange(false))
+        swofty::log("[direct] %s start: the flow link has nothing left to do (%s); it returns at once from now on", driver.target.name.c_str(),
+                    ds::phase_name(driver.phase));
 }
 
 void *registry_call(uint8_t *entity, size_t slot, const void *a2, int a3)
@@ -1196,6 +1209,7 @@ void direct_start_setup()
     }
     runtime::title::want(true);
     armed = true;
+    link_live = true;
 }
 
 void log_stack(const char *what)
