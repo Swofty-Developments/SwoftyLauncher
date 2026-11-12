@@ -357,6 +357,13 @@ template <class FgOff> inline Gate gate_for_swapchain(std::string_view fg, bool 
     return gate_for(named, through, named || !through || fg_setting_off());
 }
 
+// A swapchain whose queue was learned after the device hooks armed on demand for it: the game named its back
+// buffers before they armed, so drawing before frame generation has none to draw into, and it is drawn on at Present.
+template <class FgOff> inline Gate gate_for_swapchain(std::string_view fg, bool streamline, bool armed_late, FgOff fg_setting_off)
+{
+    return armed_late ? Gate::Direct : gate_for_swapchain(fg, streamline, fg_setting_off);
+}
+
 inline bool draws_before_present(Gate gate, bool device_hooks)
 {
     return gate != Gate::Direct && device_hooks;

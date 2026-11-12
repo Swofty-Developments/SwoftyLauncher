@@ -17,6 +17,8 @@ struct Swapchain {
     ID3D12CommandQueue *queue = nullptr;
     std::string how, by, fg;
     bool streamline = false;
+    // Its queue was learned from ExecuteCommandLists after the device hooks armed on demand for it.
+    bool armed_late = false;
     UINT color_space = 0;
     bool color_space_set = false;
 };

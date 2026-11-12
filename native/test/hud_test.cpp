@@ -856,6 +856,11 @@ static void test_guard()
         CHECK(!frame(2368, false) && !frame(2368, false) && asks == 1, "a failed arming refuses the swapchain and asks once");
     }
 
+    CHECK(gate_for_swapchain("libxess_fg.dll (calls Present)", false, false, [] { return true; }) == Gate::FrameGenNamed &&
+              gate_for_swapchain("nvngx_dlssg.dll (calls Present)", false, true, [] { return false; }) == Gate::Direct &&
+              gate_for_swapchain("", true, true, [] { return false; }) == Gate::Direct &&
+              gate_for_swapchain("", true, false, [] { return false; }) == Gate::FrameGenStreamline,
+          "a swapchain learned after the device hooks armed on demand is drawn on at Present; others keep their gate");
     CHECK(std::string(fg_setting(hw).word()) == "off" && std::string(fg_setting("<frame_gen mode=\"2\" />").word()) == "on" &&
               std::string(fg_setting("").word()) == "unknown",
           "the start log words the game's frame generation setting");

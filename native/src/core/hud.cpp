@@ -1712,7 +1712,7 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
     const bool ffx = hud::guard::ffx_loader(c.fg);
     const bool fg_named = !c.fg.empty() && !ffx;
     const hud::guard::Gate gate =
-        hud::guard::gate_for_swapchain(c.fg, c.streamline, [&] { return frame_gen_off(now); });
+        hud::guard::gate_for_swapchain(c.fg, c.streamline, c.armed_late, [&] { return frame_gen_off(now); });
     const UINT color_space = c.color_space_set ? c.color_space : hud::guard::COLOR_SPACE_UNSET;
     if (!hud::guard::draws_at_present(gate)) {
         if (!hud::guard::draws_before_present(gate, device_hooked)) {
@@ -1794,9 +1794,9 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
         hook_window(desc.OutputWindow);
     if (fresh) {
         drawn_by = c.by;
-        swofty::log("[overlay] drawing on swapchain %p with the %s queue %p it was created with (%ux%u, format %d, %u "
+        swofty::log("[overlay] drawing on swapchain %p with the direct queue %p from %s (%ux%u, format %d, %u "
                     "buffer(s), created by %s)",
-                    static_cast<void *>(sc), "direct", static_cast<void *>(c.queue), desc.BufferDesc.Width,
+                    static_cast<void *>(sc), static_cast<void *>(c.queue), c.how.c_str(), desc.BufferDesc.Width,
                     desc.BufferDesc.Height, int(desc.BufferDesc.Format), desc.BufferCount, c.by.c_str());
     }
     bool addons = !subs.empty() && !killed("paint");

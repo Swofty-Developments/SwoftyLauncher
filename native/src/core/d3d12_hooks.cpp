@@ -296,6 +296,7 @@ bool learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg, Swapchain 
     out.by = by;
     out.fg = hud::guard::learned_fg(qd.Type == D3D12_COMMAND_LIST_TYPE_DIRECT, pfg);
     out.streamline = hud::guard::streamline_caller(by);
+    out.armed_late = exec.queue && unread_arm_asked;
     {
         std::lock_guard<std::mutex> g(lock);
         auto pend = std::find_if(pending_color_space.begin(), pending_color_space.end(),
@@ -314,10 +315,13 @@ bool learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg, Swapchain 
     if (exec.queue)
         swofty::log("[d3d12] swapchain %p was made before the creation hooks; its present queue %p is the direct queue "
                     "that executed command lists on thread %lu %llu ms before Present on thread %lu; presented from "
-                    "%s%s",
+                    "%s%s%s",
                     static_cast<void *>(sc), static_cast<void *>(q), static_cast<unsigned long>(exec.tid),
                     static_cast<unsigned long long>(GetTickCount64() - exec.tick), static_cast<unsigned long>(tid),
-                    by.c_str(), out.streamline ? "; through Streamline" : "");
+                    by.c_str(), out.streamline ? "; through Streamline" : "",
+                    out.armed_late ? "; the device hooks armed for it after the game named its back buffers, so the "
+                                     "overlay draws on it at Present"
+                                   : "");
     else
         swofty::log("[d3d12] swapchain %p was made before the creation hooks; its queue %p (type %d) is read from the "
                     "swapchain; presented from %s%s",
