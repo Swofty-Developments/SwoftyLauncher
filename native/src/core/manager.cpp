@@ -114,6 +114,8 @@ void leaderboard_guard_commit();
 std::vector<CoreMixins> thrustmaster_lcd_mixins();
 void thrustmaster_lcd_commit();
 std::vector<CoreMixins> estimate_laptime_mixins();
+std::vector<CoreMixins> gp_continue_mixins();
+void gp_continue_commit();
 void estimate_laptime_commit();
 std::vector<CoreMixins> garage_setup_mixins();
 void garage_setup_commit();
@@ -1810,7 +1812,7 @@ size_t offer_core_sets()
                        runtime::save_splice_mixins, runtime::ers_newlap_mixins, runtime::ers_mode_mixins, runtime::car_levers_mixins,
                        runtime::garage_crew_mixins, runtime::pit_slots_mixins, runtime::pit_box_mixins, runtime::garage_slots_mixins, runtime::chassis_registry_mixins, runtime::standings_guard_mixins, runtime::ai_corner_guard_mixins, runtime::replay_grid_guard_mixins, runtime::fe_tile_guard_mixins, runtime::tyre_slots_mixins, runtime::tyre_models_mixins, runtime::track_acclim_mixins,
                        runtime::audio_queue_mixins, runtime::heap_sizes_mixins, runtime::team_slots_mixins, runtime::track_select_mixins, runtime::netplay_icons_mixins, runtime::netplay_keys_mixins, runtime::netplay_privilege_mixins,
-                       runtime::leaderboard_guard_mixins, runtime::lap_rec_mixins, runtime::thrustmaster_lcd_mixins, runtime::estimate_laptime_mixins, runtime::watchdog_grace_mixins, runtime::garage_setup_mixins, runtime::theatre_list_mixins, runtime::session_enter_mixins, runtime::ai_line_set_mixins})
+                       runtime::leaderboard_guard_mixins, runtime::lap_rec_mixins, runtime::thrustmaster_lcd_mixins, runtime::estimate_laptime_mixins, runtime::gp_continue_mixins, runtime::watchdog_grace_mixins, runtime::garage_setup_mixins, runtime::theatre_list_mixins, runtime::session_enter_mixins, runtime::ai_line_set_mixins})
         add_core_sets(sets());
     return addons.size() - before;
 }
@@ -1854,6 +1856,7 @@ void settle_core_sets()
     runtime::leaderboard_guard_commit();
     runtime::thrustmaster_lcd_commit();
     runtime::estimate_laptime_commit();
+    runtime::gp_continue_commit();
     runtime::garage_setup_commit();
     runtime::theatre_list_commit();
     runtime::session_enter_commit();
