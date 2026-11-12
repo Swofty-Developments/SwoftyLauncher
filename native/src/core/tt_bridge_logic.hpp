@@ -602,6 +602,21 @@ inline ReplayLapOutcome replay_lap_outcome(int64_t lap_ms, int valid, int64_t se
     return o;
 }
 
+// Why the replay recording restarts: before the line of a lap already slower than the best; at the line after a finished lap that is no
+// best; or at the line where timing starts after an out-lap or a dropped lap (the car was moved or reset, stood still, or the lap was too
+// short), where the recording holds no part of a lap.
+enum ReplayRestart : int { restart_none, restart_before_line, restart_after_lap, restart_timing_starts };
+
+inline const char *replay_restart_when(int why)
+{
+    switch (why) {
+    case restart_before_line: return "before the line";
+    case restart_after_lap: return "at the line";
+    case restart_timing_starts: return "at the line, timing starts";
+    }
+    return "";
+}
+
 // The values the recording restart reads, each at the width the game itself reads it: [sys+0x78] is the byte Ne_Replay_SetState checks
 // before it changes state (the reset body writes the u16 at +0x79 = 1, so a dword read at +0x78 is not 0 after any reset);
 // [queue+0x48] is the dword SaveFullReplay reads as "busy"; [mgr+0x428] is the qword the load start compares with -1.

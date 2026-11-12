@@ -1801,7 +1801,7 @@ void replay_lap_progress(double path_m, double elapsed_s)
     if (int64_t(elapsed_s * 1000) + 2500 < best)
         return;
     replay_lap_asked = true;
-    replay_restart_wanted = 1;
+    replay_restart_wanted = tb::restart_before_line;
 }
 
 // Called from the lap recorder (flow thread) after a lap was written: a lap the game reported valid and faster than the session's best
@@ -1821,7 +1821,7 @@ void replay_lap_finished(int64_t lap_ms, int valid)
                 o.new_best ? "marked for a replay save" : o.mark ? "marked for a replay save (SWOFTY_TT_REPLAY_CAPTURE=any), the session best stays"
                 : valid != 1 ? "the game did not report it valid, no save" : "not a new best, no save");
     if (o.restart)
-        replay_restart_wanted = 2;
+        replay_restart_wanted = tb::restart_after_lap;
     if (!o.mark)
         return;
     if (o.new_best)
@@ -1830,6 +1830,17 @@ void replay_lap_finished(int64_t lap_ms, int valid)
     replay_pending_ms = now_ms();
     replay_saved_lap_ms = uint32_t(lap_ms);
     replay_saved_mark_ms = replay_pending_ms.load();
+}
+
+// Called from the line crossing hook when timing starts after an out-lap or a dropped lap: what the recording holds is no part of a lap,
+// so it starts again at this line and the first lap's replay no longer holds the out-lap.
+void replay_lap_started()
+{
+    replay_lap_asked = false;
+    replay_lap_restarted = false;
+    replay_lap_path = 0;
+    if (capture_on())
+        replay_restart_wanted = tb::restart_timing_starts;
 }
 
 // `sys` is the candidate replay system. The per-frame ReplayBuffer::beginFrameWrite hook has no replay system in a register (rcx is the
@@ -2526,7 +2537,7 @@ void replay_restart(uint64_t sys)
     int why = replay_restart_wanted.exchange(0);
     if (!why)
         return;
-    const char *when = why == 1 ? "before the line" : "at the line";
+    const char *when = tb::replay_restart_when(why);
     if (!replay_restart_on) {
         static bool told = false;
         if (!told)
@@ -2578,7 +2589,7 @@ void replay_restart(uint64_t sys)
     reinterpret_cast<void (*)(uint64_t, uint32_t, uint8_t)>(game.replay_reset)(sys, 0, 1);
     *reinterpret_cast<uint8_t *>(sys + 0x88) = 1;
     LeaveCriticalSection(cs);
-    if (why == 1)
+    if (why == tb::restart_before_line)
         replay_lap_restarted = true;
     swofty::log("[replay] restart (%s): the recording starts again from here (%.1f s of recording dropped)", when, double(held));
 }
@@ -3537,6 +3548,7 @@ void tt_bridge_tick()
 bool tt_bridge_pb_armed() { return pb_armed.load(); }
 void tt_bridge_lap_finished(int64_t lap_ms, int valid) { replay_lap_finished(lap_ms, valid); }
 void tt_bridge_lap_progress(double path_m, double elapsed_s) { replay_lap_progress(path_m, elapsed_s); }
+void tt_bridge_lap_started() { replay_lap_started(); }
 
 tt_bridge::BoardTrack tt_bridge_board_track(const std::string &code, int stat_hint)
 {

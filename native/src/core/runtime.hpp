@@ -335,6 +335,7 @@ bool tt_bridge_pb_armed();
 bool tt_bridge_ours_session();
 void tt_bridge_lap_finished(int64_t lap_ms, int valid);
 void tt_bridge_lap_progress(double path_m, double elapsed_s);
+void tt_bridge_lap_started();
 std::string tt_bridge_last_board();
 void tt_bridge_session_enter();
 void tt_bridge_track_watch(bool session_live);
