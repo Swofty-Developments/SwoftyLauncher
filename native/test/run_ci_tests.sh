@@ -106,6 +106,7 @@ t "Memory scan helpers unit test" native/test/run_mem_scan_test.sh
 t "Lap assists capture unit test" native/test/run_lap_assists_test.sh
 t "Ghost request file unit test" native/test/run_ghost_request_test.sh
 t "Front-end tile list guard unit test" native/test/run_fe_tile_guard_test.sh
+t "Stock game message log unit test" native/test/run_game_message_log_test.sh
 t "Main menu logic unit test" native/test/run_main_menu_test.sh
 t "Grand Prix remembered-track fallback unit test" native/test/run_gp_track_test.sh
 t "Session enter guard unit test" native/test/run_session_enter_test.sh
