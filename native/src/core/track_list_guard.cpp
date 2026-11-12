@@ -35,9 +35,10 @@
 //
 // A save the game already blew up holds far more entries than the season has events. The bound is the season's event
 // list length the component keeps at +0x2c8 (written by vt_Game_TrackListComponent slot 16 from the default track
-// list), or 64 when that is not set; the schedule component's own slot 16 (0x141266160) does not call that fill, so
-// 64 is the usual bound. Past the bound, each run of one id (one original entry, multiplied) reads as one
-// entry and entries past the bound are dropped, so the calendar comes back to the season's length.
+// list), or 64 when that is not set. A loaded Progressive career's five schedule components all hold 24 there at the
+// custom_track_list load (2026-11-13 in game), so the season's length is the bound in game. Past the bound, each run of
+// one id (one original entry, multiplied) reads as one entry and entries past the bound are dropped, so the calendar
+// comes back to the season's length.
 // site_Career_ScheduleComponent_TrackListEntryDone (after each stored entry) logs the load once its last entry is
 // done, and site_Career_ScheduleComponent_TrackListSave logs the count a save writes when it changed for that component.
 //
