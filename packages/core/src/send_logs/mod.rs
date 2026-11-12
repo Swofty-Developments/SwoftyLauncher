@@ -393,6 +393,12 @@ impl Bundle {
             if trace.is_file() {
                 c.file_capped("game/net-trace.log".into(), &trace, None, NET_TRACE_CAP);
             }
+            for stall in newest_stalls(&game.join(LOADER_DIR), STALLS_SENT) {
+                c.file(format!("game/{}", file_name(&stall)), &stall, None);
+            }
+        }
+        for stall in newest_stalls(&crate::crash_report::fallback_dir(&store.root), STALLS_SENT) {
+            c.file(format!("state/{}", file_name(&stall)), &stall, None);
         }
         if let Some(room) = &report.room {
             let mut room = room.clone();
@@ -938,6 +944,22 @@ fn session_label(file: &Path) -> String {
 fn file_name(path: &Path) -> String {
     path.file_name()
         .map_or_else(String::new, |n| n.to_string_lossy().into_owned())
+}
+
+const STALLS_SENT: usize = 2;
+
+/// The newest load-stall reports (`stall-<time>.txt`, a sortable local stamp) the core left in `dir`, newest first.
+fn newest_stalls(dir: &Path, n: usize) -> Vec<PathBuf> {
+    let mut found: Vec<PathBuf> = std::fs::read_dir(dir)
+        .into_iter()
+        .flatten()
+        .flatten()
+        .map(|e| e.path())
+        .filter(|p| crate::crash_report::is_stall_name(&file_name(p)) && p.is_file())
+        .collect();
+    found.sort_by_key(|p| std::cmp::Reverse(file_name(p)));
+    found.truncate(n);
+    found
 }
 
 /// A crash report the core wrote (`crash-<time>.txt`) or its minidump

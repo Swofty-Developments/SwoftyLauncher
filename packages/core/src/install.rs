@@ -671,7 +671,7 @@ impl<'a> Installer<'a> {
     }
 
     /// Move what the session left in the loader folder (its logs, diagnostic
-    /// dumps and crash reports with their minidumps) to `logs`, and remove the
+    /// dumps, load-stall reports and crash reports with their minidumps) to `logs`, and remove the
     /// folders it leaves empty, once no journal is open. Returns how many files
     /// moved.
     pub fn tidy(&self, logs: &Path) -> Result<usize> {
@@ -692,7 +692,8 @@ impl<'a> Installer<'a> {
             let path = e.path();
             let name = e.file_name();
             let name = name.to_string_lossy();
-            let crash = name.starts_with("crash-") && (name.ends_with(".txt") || name.ends_with(".dmp"));
+            let crash =
+                crate::crash_report::is_crash_name(&name) || crate::crash_report::is_stall_name(&name);
             let output = crash
                 || path
                     .extension()

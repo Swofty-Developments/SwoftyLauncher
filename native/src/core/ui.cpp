@@ -12,6 +12,10 @@
 #include "main_menu.hpp"
 
 namespace runtime {
+void load_stall_screen(const char *name);
+}
+
+namespace runtime {
 std::string hook_error(const safetyhook::MidHook::Error &e);
 void netplay_screen(const char *name);
 void testagent_screen(const char *name);
@@ -533,9 +537,12 @@ uint64_t open_hook(void *scene, void *screen, void *a3, void *a4)
 {
     static const uint32_t probe = perf::probe("core", "ui screen open");
     perf::Scope p(probe);
-    if (perf::live() && readable(screen, 0x70) &&
-        readable(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68), 10))
-        perf::mark("screen", chars(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68)));
+    if (readable(screen, 0x70) && readable(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68), 10)) {
+        const char *opened = chars(*reinterpret_cast<void **>(static_cast<uint8_t *>(screen) + 0x68));
+        runtime::load_stall_screen(opened);
+        if (perf::live())
+            perf::mark("screen", opened);
+    }
     LARGE_INTEGER t0, t1, t2;
     QueryPerformanceCounter(&t0);
     AcquireSRWLockExclusive(&lock);
