@@ -16296,6 +16296,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_GrandPrixContinueVm_F1wCarCheck: Binding = Binding {
+        id: "site_Game_GrandPrixContinueVm_F1wCarCheck",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_GrandPrixContinueVm_F1wWarningCheck: Binding = Binding {
+        id: "site_Game_GrandPrixContinueVm_F1wWarningCheck",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_PitLane_BoxPoseFalse: Binding = Binding {
         id: "site_Game_PitLane_BoxPoseFalse",
         kind: "site",

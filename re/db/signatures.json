@@ -163960,6 +163960,60 @@
    "used_by": [
     "native/src/core/leaderboard_guard.cpp"
    ]
+  },
+  {
+   "id": "game.grand_prix_continue_vm_f1w_car_check",
+   "section": ".xtls",
+   "pattern": "0F 84 ?? ?? ?? ?? 49 39 88 80 05 00 00",
+   "match": "0x141bceaec",
+   "anchor": "0x6",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141bceaf2",
+   "kind": "mid",
+   "expect": "49 39 88 80 05 00 00",
+   "names": [
+    "site_Game_GrandPrixContinueVm_F1wCarCheck"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "gpf1w",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/gp_continue_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.grand_prix_continue_vm_f1w_warning_check",
+   "section": ".xtls",
+   "pattern": "74 13 49 8B 0E 48 39 88 80 05 00 00",
+   "match": "0x141bcee65",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141bcee6a",
+   "kind": "mid",
+   "expect": "48 39 88 80 05 00 00",
+   "names": [
+    "site_Game_GrandPrixContinueVm_F1wWarningCheck"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "gpf1w",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/gp_continue_guard.cpp"
+   ]
   }
  ]
 }
