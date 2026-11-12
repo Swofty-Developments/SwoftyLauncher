@@ -182,7 +182,14 @@ pub fn problem(state: &SessionState) -> Option<Problem> {
     };
     match &state.phase {
         Phase::Ended(_) => None,
-        Phase::Failed(_) => sentence("The room stopped unexpectedly.", false),
+        Phase::Failed(why) if why.trim().is_empty() => sentence("The room stopped unexpectedly.", false),
+        Phase::Failed(why) => {
+            let mut text = why.trim().trim_end_matches('.').to_owned();
+            if let Some(first) = text.get_mut(..1) {
+                first.make_ascii_uppercase();
+            }
+            sentence(&format!("{text}."), false)
+        }
         Phase::WaitingForGame(_) if !state.mismatches.is_empty() => {
             let names: Vec<&str> = state.mismatches.iter().filter_map(|m| m.name()).collect();
             let text = match names.as_slice() {
@@ -369,5 +376,24 @@ mod tests {
             problem(&state(Phase::Ended("you left the room".into()), None)),
             None
         );
+    }
+
+    #[test]
+    fn a_failed_room_says_what_the_session_recorded() {
+        let text = |why: &str| {
+            problem(&state(Phase::Failed(why.into()), None))
+                .expect("a problem")
+                .text
+        };
+        assert_eq!(
+            text("your sign-in expired; sign in again (HTTP 401)"),
+            "Your sign-in expired; sign in again (HTTP 401)."
+        );
+        assert_eq!(
+            text("'F1 7KQ2MX' is not an invite code (like F1-7KQ2MX)"),
+            "'F1 7KQ2MX' is not an invite code (like F1-7KQ2MX)."
+        );
+        assert_eq!(text("that room is full."), "That room is full.");
+        assert_eq!(text(""), "The room stopped unexpectedly.");
     }
 }

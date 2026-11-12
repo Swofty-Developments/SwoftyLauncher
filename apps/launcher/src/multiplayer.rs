@@ -1962,11 +1962,10 @@ mod tests {
         let problem = refused.problem.expect("a problem");
         assert_eq!(problem.text, "F1 25 didn't start.");
         assert!(problem.retry);
-        let dead = room_status(&session(Phase::Failed("boom".into()), false));
-        assert!(
-            !dead.problem.expect("a problem").retry,
-            "a failed room only leaves"
-        );
+        let dead = room_status(&session(Phase::Failed("that room is full".into()), false));
+        let dead = dead.problem.expect("a problem");
+        assert_eq!(dead.text, "That room is full.", "a failed room says why");
+        assert!(!dead.retry, "a failed room only leaves");
         let over = room_status(&session(
             Phase::Ended("the host left, so the room closed".into()),
             false,
