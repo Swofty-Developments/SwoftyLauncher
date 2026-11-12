@@ -62,6 +62,8 @@ Record every change of an install in the journal, in one write, before applying 
 
 Restore replaced files from backups. Remove files and empty folders created by the launcher. Remove the Wine override added for the session.
 
+A `swofty/` folder that holds no files, only empty folders, does not count as left over: a restore that leaves one in place still reports the game folder as restored, and `swofty verify` passes. A file left under `swofty/` is reported by its path, as `swofty/<path> is not part of the game`.
+
 If a file has unexpected contents, leave it alone and report it. Never restore files from an old game build over a newer one.
 
 Before a rollback undoes a journal, the files in each `swofty/addons/<id>/` folder the journal placed files in, other than files `placed.json` or the journal records, move to `$DATA/addon-storage/<id>/`. The next install with that addon moves them back, except at a path it places and where the game folder already holds a file. A restore moves those files out of every addon folder before it removes `swofty/`.

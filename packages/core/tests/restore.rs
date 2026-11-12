@@ -463,6 +463,83 @@ fn a_game_update_in_between_never_restores_old_originals() {
 }
 
 #[test]
+fn an_empty_loader_folder_is_not_drift() {
+    let f = Fixture::new("empty-loader");
+    let game = f.game("1");
+    let inst = Installer::new(&f.data, &game);
+    inst.apply(&f.plan("a")).unwrap();
+    inst.apply(&Plan::vanilla()).unwrap();
+    assert!(!f.game.join("swofty").exists());
+
+    std::fs::create_dir_all(f.game.join("swofty")).unwrap();
+    assert_eq!(inst.verify().unwrap(), []);
+}
+
+#[test]
+fn a_loader_folder_of_empty_folders_is_not_drift() {
+    let f = Fixture::new("empty-loader-dirs");
+    let game = f.game("1");
+    let inst = Installer::new(&f.data, &game);
+    inst.apply(&f.plan("a")).unwrap();
+    inst.apply(&Plan::vanilla()).unwrap();
+
+    for dir in [
+        "swofty/addons/core",
+        "swofty/addons/t.empty",
+        "swofty/tt/replays/inbox",
+    ] {
+        std::fs::create_dir_all(f.game.join(dir)).unwrap();
+    }
+    assert_eq!(inst.verify().unwrap(), []);
+}
+
+#[test]
+fn a_loader_folder_holding_a_file_is_drift_named_by_the_file() {
+    let f = Fixture::new("loader-with-file");
+    let game = f.game("1");
+    let inst = Installer::new(&f.data, &game);
+    inst.apply(&f.plan("a")).unwrap();
+    inst.apply(&Plan::vanilla()).unwrap();
+
+    std::fs::create_dir_all(f.game.join("swofty/addons/t.empty")).unwrap();
+    write(&f.game.join("swofty/tt/inbox/1.json"), "{}");
+    assert_eq!(
+        inst.verify().unwrap(),
+        [Drift::Addition("swofty/tt/inbox/1.json".into())]
+    );
+    assert_eq!(
+        Drift::Addition("swofty/tt/inbox/1.json".into()).to_string(),
+        "swofty/tt/inbox/1.json is not part of the game"
+    );
+
+    assert_eq!(inst.restore().unwrap(), []);
+    assert!(!f.game.join("swofty").exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn a_restore_that_leaves_an_empty_loader_folder_in_place_reports_nothing_left() {
+    use std::os::unix::fs::PermissionsExt;
+    let f = Fixture::new("loader-left-in-place");
+    let original = f.snapshot();
+    let game = f.game("1");
+    let inst = Installer::new(&f.data, &game);
+    inst.apply(&f.plan("a")).unwrap();
+    inst.apply(&Plan::vanilla()).unwrap();
+
+    let loader = f.game.join("swofty");
+    std::fs::create_dir_all(loader.join("addons")).unwrap();
+    std::fs::set_permissions(&loader, std::fs::Permissions::from_mode(0o555)).unwrap();
+    let restored = inst.restore();
+    std::fs::set_permissions(&loader, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+    assert_eq!(restored.unwrap(), []);
+    let mut left = f.snapshot();
+    left.retain(|k, _| !k.starts_with("swofty/"));
+    assert_eq!(left, original);
+}
+
+#[test]
 fn drift_from_outside_is_reported_and_restored() {
     let f = Fixture::new("drift");
     let original = f.snapshot();

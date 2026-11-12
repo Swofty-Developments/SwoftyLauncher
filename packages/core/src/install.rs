@@ -1301,10 +1301,14 @@ impl<'a> Installer<'a> {
                 Some(_) => {}
             }
         }
-        for rel in [PROXY, LOADER_DIR] {
-            if self.path(rel).exists() && !baseline.files.contains_key(rel) {
-                out.push(Drift::Addition(rel.into()));
-            }
+        if self.path(PROXY).exists() && !baseline.files.contains_key(PROXY) {
+            out.push(Drift::Addition(PROXY.into()));
+        }
+        if self.path(LOADER_DIR).exists()
+            && !baseline.files.contains_key(LOADER_DIR)
+            && let Some(rel) = self.added_file(&baseline, LOADER_DIR)
+        {
+            out.push(Drift::Addition(rel));
         }
         for f in Placed::load(self.data)?.files.values() {
             if f.replaced
@@ -1336,6 +1340,24 @@ impl<'a> Installer<'a> {
             });
         }
         Ok(out)
+    }
+
+    /// The first file under the folder `rel` that the baseline has no original for, or `rel` itself
+    /// when it is not a folder that can be listed. A folder that holds only empty folders has none.
+    fn added_file(&self, baseline: &Baseline, rel: &str) -> Option<String> {
+        let Ok(rd) = std::fs::read_dir(self.path(rel)) else {
+            return Some(rel.to_owned());
+        };
+        let mut entries: Vec<std::fs::DirEntry> = rd.flatten().collect();
+        entries.sort_by_key(std::fs::DirEntry::file_name);
+        entries.into_iter().find_map(|e| {
+            let child = format!("{rel}/{}", e.file_name().to_string_lossy());
+            if e.file_type().is_ok_and(|t| t.is_dir()) {
+                self.added_file(baseline, &child)
+            } else {
+                (!baseline.files.contains_key(&child)).then_some(child)
+            }
+        })
     }
 }
 
