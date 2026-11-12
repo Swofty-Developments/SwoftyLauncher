@@ -270,6 +270,13 @@ static void continue_tests()
     base.tracks.push_back(sepang);
     expect(era::track_missing(base, "game/bahrain24").empty(), "the same row filled by its track record loads");
     base.tracks.pop_back();
+    trk::Base none;
+    none.ready = true;
+    expect(era::track_missing(none, "game/melbourne").empty() && era::track_missing(none, "game/silverstone").empty(),
+           "a stock track loads when the base holds no tracks (no track addon on)");
+    expect(!era::track_missing(none, "game/bahrain24").empty(), "a dormant row still stops with no track addon on");
+    expect(!era::track_missing(none, "mod.hockenheim/hockenheim").empty(), "an addon track whose addon is off still stops");
+    expect(era::track_missing(base, "game/melbourne").empty(), "a stock track missing from a built base loads");
     era::ContinuePick fine;
     fine.index = 0;
     stop = era::continue_stop(gone, fine, false);

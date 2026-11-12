@@ -756,6 +756,9 @@ inline std::string track_missing(const swofty_core::apply::tracks::Base &base, c
     std::string code = track_code_of(track);
     if (base.by_code(code))
         return {};
+    // A stock track is in every build, also when the base holds no tracks because no track addon is on.
+    if (track.starts_with("game/") && swofty_core::apply::tracks::stock_venue(code))
+        return {};
     std::string why = "the saved weekend's track " + track + " is not a track of this build";
     if (swofty_core::apply::tracks::is_dormant(code))
         why += " (" + code + " is a dormant row with no track archive; the addon that fills it is off)";
