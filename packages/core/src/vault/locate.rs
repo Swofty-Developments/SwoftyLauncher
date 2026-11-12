@@ -7,7 +7,9 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+use crate::copies::GameCopy;
 use crate::install::{Game, Source};
+use crate::session::Config;
 use crate::{Result, io_err};
 
 pub const STEAM_PREFIX: &str = "savegame@profile#";
@@ -207,24 +209,33 @@ impl Location {
     }
 
     /// The save a profile boots: its own launcher save with Use launcher saves on, else the active
-    /// copy's game save (Steam or EA app, also for Vanilla).
+    /// copy's game save (Steam or EA app, also for Vanilla). An EA app copy has no launcher saves yet,
+    /// so every profile boots its one save.
     pub fn of_profile(data: &Path, profile: &str) -> Option<Self> {
-        let launcher = profile != crate::profile::VANILLA
-            && crate::store::Store::new(data.to_path_buf())
-                .profile(profile)
-                .map_or(true, |p| p.launcher_saves);
-        Self::choose(data, profile, launcher, || Self::active(data))
+        let store = crate::store::Store::new(data.to_path_buf());
+        let launcher =
+            profile != crate::profile::VANILLA && store.profile(profile).map_or(true, |p| p.launcher_saves);
+        let config = store.config();
+        let copies = crate::copies::discover(&config);
+        let copy = crate::copies::active(&copies, &config);
+        Self::choose(data, profile, launcher, copy.map(|c| c.source), || {
+            Self::of_copy(&config, copy).0
+        })
     }
 
     fn choose(
         data: &Path,
         profile: &str,
         launcher: bool,
+        copy: Option<Source>,
         active: impl FnOnce() -> Option<Self>,
     ) -> Option<Self> {
-        match launcher {
-            true => Some(Self::launcher(data, profile)),
-            false => active(),
+        match (launcher, copy) {
+            (true, Some(Source::EaApp)) if crate::launcher_saves::supported(Layout::Ea) => {
+                Some(Self::launcher_ea(data, profile))
+            }
+            (true, Some(Source::EaApp)) | (false, _) => active(),
+            (true, _) => Some(Self::launcher(data, profile)),
         }
     }
 
@@ -242,7 +253,11 @@ impl Location {
     pub fn active_search(data: &Path) -> (Option<Self>, Vec<String>) {
         let config = crate::store::Store::new(data.to_path_buf()).config();
         let copies = crate::copies::discover(&config);
-        let Some(copy) = crate::copies::active(&copies, &config) else {
+        Self::of_copy(&config, crate::copies::active(&copies, &config))
+    }
+
+    fn of_copy(config: &Config, copy: Option<&GameCopy>) -> (Option<Self>, Vec<String>) {
+        let Some(copy) = copy else {
             return Self::steam_search(None);
         };
         let loc = match copy.source {
@@ -395,15 +410,31 @@ mod tests {
         std::fs::create_dir_all(pfx.join("drive_c/users/Public")).unwrap();
         let ea = Location::ea_in_prefix(&pfx).unwrap();
 
-        let on = Location::choose(&d, "Race", true, || Some(steam.clone())).unwrap();
+        let steam_copy = Some(Source::Steam);
+        let ea_copy = Some(Source::EaApp);
+        let on = Location::choose(&d, "Race", true, steam_copy, || Some(steam.clone())).unwrap();
         assert_eq!(on.source, "launcher-Race");
-        let on_ea = Location::choose(&d, "Race", true, || Some(ea.clone())).unwrap();
-        assert_eq!(on_ea.source, "launcher-Race");
-        let off = Location::choose(&d, "Race", false, || Some(steam.clone())).unwrap();
+        let on_unknown = Location::choose(&d, "Race", true, None, || Some(steam.clone())).unwrap();
+        assert_eq!(on_unknown.source, "launcher-Race");
+        let off = Location::choose(&d, "Race", false, steam_copy, || Some(steam.clone())).unwrap();
         assert_eq!(off.source, "steam-843502855");
-        let off_ea = Location::choose(&d, "Race", false, || Some(ea.clone())).unwrap();
+        let off_ea = Location::choose(&d, "Race", false, ea_copy, || Some(ea.clone())).unwrap();
         assert_eq!(off_ea.source, "ea-steamuser");
         assert_eq!(off_ea.layout, Layout::Ea);
-        assert!(Location::choose(&d, "Race", false, || None).is_none());
+        assert!(Location::choose(&d, "Race", false, steam_copy, || None).is_none());
+    }
+
+    #[test]
+    fn every_profile_boots_the_one_save_of_an_ea_copy() {
+        let d = tmp("choose-shared");
+        let pfx = tmp("choose-shared-ea");
+        std::fs::create_dir_all(pfx.join("drive_c/users/steamuser/AppData/Local/F1 25/savegame/ea/profile"))
+            .unwrap();
+        let ea = Location::ea_in_prefix(&pfx).unwrap();
+        for launcher in [true, false] {
+            let at = Location::choose(&d, "hi", launcher, Some(Source::EaApp), || Some(ea.clone())).unwrap();
+            assert_eq!(at, ea, "launcher saves {launcher}");
+        }
+        assert!(Location::choose(&d, "hi", true, Some(Source::EaApp), || None).is_none());
     }
 }
