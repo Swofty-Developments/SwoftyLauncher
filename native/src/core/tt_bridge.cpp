@@ -1786,7 +1786,14 @@ void replay_watch_file(std::wstring path, uint32_t lap_ms, uint64_t stamp)
         }
         int magic = tb::replay_magic_offset(head, got);
         // The file leaves the game's replay folder: Theatre lists only the laps the player adds from the boards. The setup is written
-        // last, so the pair is complete once the .json is there.
+        // last, so the pair is complete once the .json is there. The game saves the replay read-only; a move to another volume (a
+        // data folder on another drive or filesystem) is a copy that then can't delete the source, and the copy keeps the flag, so
+        // the source and a copy left by an earlier attempt lose it first.
+        for (const std::wstring *p : {&path, &dest}) {
+            DWORD a = GetFileAttributesW(p->c_str());
+            if (a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_READONLY))
+                SetFileAttributesW(p->c_str(), a & ~DWORD(FILE_ATTRIBUTE_READONLY));
+        }
         bool copied = MoveFileExW(path.c_str(), dest.c_str(), MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) != 0;
         if (!copied && CopyFileW(path.c_str(), dest.c_str(), FALSE)) {
             copied = true;
