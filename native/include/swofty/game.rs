@@ -3680,6 +3680,8 @@ pub type Sess_Tyres_ClosestAvailableCompound_t = unsafe extern "C" fn(
     wear_scale: f32,
 ) -> u32;
 pub type Sess_WeatherComponent_SetSystemRandomSeed_t = unsafe extern "C" fn(component: *mut c_void);
+pub type Sess_WeekendOptions_Refresh_t = unsafe extern "C" fn(comp: *mut c_void, force: bool, post: bool);
+pub type Sess_WeekendSetup_LayoutWeekends_t = unsafe extern "C" fn(comp: *mut c_void);
 pub type Sess_Weekend_Start_t =
     unsafe extern "C" fn(weekend: *mut c_void, entrants: *const c_void, begin: bool);
 pub type Sess_WinnerSequence_Update_t =
@@ -14768,6 +14770,16 @@ pub mod bindings {
     };
     pub const Sess_WeekendManager_PrepareTrackLoad: Binding = Binding {
         id: "Sess_WeekendManager_PrepareTrackLoad",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_WeekendOptions_Refresh: Binding = Binding {
+        id: "Sess_WeekendOptions_Refresh",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_WeekendSetup_LayoutWeekends: Binding = Binding {
+        id: "Sess_WeekendSetup_LayoutWeekends",
         kind: "func",
         status: Status::Experimental,
     };

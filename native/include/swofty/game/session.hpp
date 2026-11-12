@@ -674,6 +674,10 @@ inline constexpr address<"Sess_Weather_CheckTrackWorldComponents"> Sess_Weather_
 inline constexpr address<"Sess_Weather_GetQualiSegmentStartOffset"> Sess_Weather_GetQualiSegmentStartOffset{}; // L2 experimental
 inline constexpr address<"Sess_Weather_PickRandomType"> Sess_Weather_PickRandomType{}; // L2 experimental
 inline constexpr address<"Sess_WeekendManager_PrepareTrackLoad"> Sess_WeekendManager_PrepareTrackLoad{}; // L2 experimental
+using Sess_WeekendOptions_Refresh_t = void(void *comp, bool force, bool post);
+inline constexpr fn<"Sess_WeekendOptions_Refresh", Sess_WeekendOptions_Refresh_t> Sess_WeekendOptions_Refresh{}; // L2 experimental
+using Sess_WeekendSetup_LayoutWeekends_t = void(void *comp);
+inline constexpr fn<"Sess_WeekendSetup_LayoutWeekends", Sess_WeekendSetup_LayoutWeekends_t> Sess_WeekendSetup_LayoutWeekends{}; // L2 experimental
 inline constexpr address<"Sess_Weekend_RebuildUniqueEntrantList"> Sess_Weekend_RebuildUniqueEntrantList{}; // L2 experimental
 using Sess_Weekend_Start_t = void(void *weekend, const void *entrants, bool begin);
 inline constexpr fn<"Sess_Weekend_Start", Sess_Weekend_Start_t> Sess_Weekend_Start{}; // L2 experimental, game::championship::Weekend::start(const

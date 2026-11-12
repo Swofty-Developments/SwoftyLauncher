@@ -870,6 +870,12 @@
   "Sess_WeatherComponent_SetSystemRandomSeed": {
    "match": "0xbdcd50"
   },
+  "Sess_WeekendOptions_Refresh": {
+   "match": "0xbe5e20"
+  },
+  "Sess_WeekendSetup_LayoutWeekends": {
+   "match": "0xbecd70"
+  },
   "Sess_Weekend_Start": {
    "match": "0xaeedd0"
   },
