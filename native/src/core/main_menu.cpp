@@ -356,6 +356,7 @@ struct Chain {
     Step step = Step::idle;
     const char *command = "";
     uint64_t started = 0, container_at = 0;
+    bool handover = false;
 } chain;
 std::mutex chain_lock;
 
@@ -579,6 +580,10 @@ void apply_pending(void *vm, const char *where)
         std::lock_guard<std::mutex> g(chain_lock);
         if (chain.step != Step::wait_container || !*chain.command)
             return;
+        if (chain.handover) {
+            swofty::log("[main-menu] nav: the hand-over's '%s' waits until the activity container is active (its own first command) (%s)", chain.command, where);
+            return;
+        }
         command = chain.command;
         chain.step = Step::done;
     }
@@ -641,8 +646,9 @@ NeStr **migrate_detour(void *cmd, NeStr **out, void *node)
                 chain.step = Step::wait_container;
                 chain.command = logic::return_command(logic::Mode(nav.mode.load()));
                 chain.started = chain.container_at = GetTickCount64();
+                chain.handover = true;
                 container_vm = nullptr;
-                swofty::log("[main-menu] nav: session-end hand-over migrates to the activity container; '%s' is raised on it when its tabs exist", chain.command);
+                swofty::log("[main-menu] nav: session-end hand-over migrates to the activity container; '%s' is raised on it once it is active", chain.command);
             }
             pending = chain.step == Step::wait_container;
         }
@@ -1349,7 +1355,7 @@ void tick()
         now - chain.container_at > 300 && now - container_vm_at.load() > raise_delay_ms()) {
         const char *command = chain.command;
         chain.step = Step::done;
-        raise_command(container_vm.load(), command, "fallback: after its view model was seen");
+        raise_command(container_vm.load(), command, chain.handover ? "the hand-over: the container is active, its own first command came" : "fallback: after its view model was seen");
         chain.step = Step::done;
     }
 }
@@ -1385,8 +1391,9 @@ void screen(const char *name)
                 chain.step = Step::wait_container;
                 chain.command = logic::return_command(m);
                 chain.started = chain.container_at = now;
+                chain.handover = true;
                 container_vm = nullptr;
-                swofty::log("[main-menu] nav: session-end hand-over landed on the activity container (the F1 World hub was skipped); raising '%s' on it once its view model is up", chain.command);
+                swofty::log("[main-menu] nav: session-end hand-over landed on the activity container (the F1 World hub was skipped); raising '%s' on it once it is active", chain.command);
             }
         }
     }
