@@ -10,7 +10,7 @@ use std::path::{Path, PathBuf};
 
 use serde_json::Value;
 
-use super::api::{Api, ApiError};
+use super::api::{Api, ApiError, Uploaded};
 use super::queue::{self, Queue, Waiting};
 use super::watch::valid_id;
 
@@ -137,12 +137,24 @@ fn header(setup: &Value) -> Option<String> {
     (text.len() <= SETUP_MAX && text.bytes().all(|b| (0x20..0x7f).contains(&b))).then_some(text)
 }
 
-fn lap_of(uploaded: &[(u64, u64, String)], pair: &Pair) -> Option<String> {
+fn lap_of<'a>(uploaded: &'a [(u64, u64, Uploaded)], pair: &Pair) -> Option<&'a Uploaded> {
     uploaded
         .iter()
         .filter(|(at, ms, _)| *ms == pair.lap_ms && at + EARLY_SECS >= pair.secs)
         .max_by_key(|(at, _, _)| *at)
-        .map(|(_, _, id)| id.clone())
+        .map(|(_, _, answer)| answer)
+}
+
+/// Why the replay of a lap must not go up. The server keeps one game replay per driver and board, that of
+/// the newest lap given one, and removes the older laps' replays; a replay of a lap that is not the
+/// driver's best there would take the place of the best lap's replay.
+fn not_for_upload(answer: &Uploaded) -> Option<&'static str> {
+    match (answer.status.as_str(), answer.best) {
+        ("rejected", _) => Some("the server rejected the lap"),
+        ("pending", _) => None,
+        (_, Some(false)) => Some("the lap is not your best on its board"),
+        _ => None,
+    }
 }
 
 /// Upload the ready pairs whose lap the server took, newest first. A pair goes once it is uploaded,
@@ -188,7 +200,7 @@ pub fn send(
             report.dropped += 1;
             continue;
         }
-        let Some(id) = lap_of(&uploaded, pair) else {
+        let Some(answer) = lap_of(&uploaded, pair) else {
             if now.saturating_sub(pair.secs) > KEEP_SECS {
                 pair.remove();
                 report.dropped += 1;
@@ -198,6 +210,16 @@ pub fn send(
             }
             continue;
         };
+        let id = answer.id.clone();
+        if let Some(why) = not_for_upload(answer) {
+            say(&format!(
+                "game replay {} of lap {id} not uploaded: {why}; removed",
+                pair.name
+            ));
+            pair.remove();
+            report.dropped += 1;
+            continue;
+        }
         if !taken.insert(id.clone()) {
             pair.remove();
             report.dropped += 1;
@@ -339,12 +361,17 @@ mod tests {
 
         /// Record a lap of `ms` as uploaded at `now` with the server's id `id`.
         fn lap(&self, name: &str, ms: u64, id: &str, now: u64) {
+            self.lap_as(name, ms, answer(id, "ranked", Some(true)), now);
+        }
+
+        /// Record a lap of `ms` as uploaded at `now` with the server's `answer`.
+        fn lap_as(&self, name: &str, ms: u64, answer: Uploaded, now: u64) {
             let laps = self.0.join("laps");
             std::fs::create_dir_all(&laps).unwrap();
-            std::fs::write(laps.join(name), sample(ms, true)).unwrap();
+            std::fs::write(laps.join(name), sample(ms, answer.status != "rejected")).unwrap();
             let q = self.queue();
             q.collect(&laps, None).unwrap();
-            let r = q.drain(&Named(id.to_owned()), &Value::Null, Limits::at(now), &mut |_| {});
+            let r = q.drain(&Answer(answer), &Value::Null, Limits::at(now), &mut |_| {});
             assert_eq!(r.uploaded, 1);
         }
 
@@ -368,20 +395,24 @@ mod tests {
         json!({"mode": "tt", "box": "f1_2025", "track": "monaco", "team": "mclaren", "lap_ms": ms, "tail_ms": 1500})
     }
 
-    struct Named(String);
+    fn answer(id: &str, status: &str, best: Option<bool>) -> Uploaded {
+        Uploaded {
+            id: id.to_owned(),
+            status: status.to_owned(),
+            rank: best.map(|_| 1),
+            best,
+            total: None,
+            previous_best_ms: None,
+            reasons: vec![],
+            url: None,
+        }
+    }
 
-    impl Boards for Named {
+    struct Answer(Uploaded);
+
+    impl Boards for Answer {
         fn upload(&self, _: &[u8], _: &Meta) -> Result<Uploaded, ApiError> {
-            Ok(Uploaded {
-                id: self.0.clone(),
-                status: "ranked".into(),
-                rank: Some(1),
-                best: Some(true),
-                total: None,
-                previous_best_ms: None,
-                reasons: vec![],
-                url: None,
-            })
+            Ok(self.0.clone())
         }
     }
 
@@ -556,6 +587,64 @@ mod tests {
         assert_eq!((r.uploaded, r.dropped), (1, 1));
         assert_eq!(api.seen.borrow()[0].2, b"new");
         assert!(!old.exists());
+    }
+
+    #[test]
+    fn a_rejected_lap_or_one_that_is_no_best_never_takes_the_best_laps_replay() {
+        let root = Root::new("notbest");
+        root.lap_as(
+            "a.swlap",
+            87599,
+            answer("00000000000000aa", "accepted", Some(true)),
+            1000,
+        );
+        root.pair(1001, 87599, b"BEST");
+        let api = Fake::new(vec![Ok(())]);
+        let (r, _) = pass(&root, &api, 1005);
+        assert_eq!((r.uploaded, r.waiting, r.dropped), (1, 0, 0));
+        assert_eq!(api.seen.borrow()[0].0, "00000000000000aa");
+
+        root.lap_as(
+            "b.swlap",
+            35875,
+            answer("00000000000000bb", "rejected", Some(false)),
+            1180,
+        );
+        let bogus = root.pair(1179, 35875, b"CLOCK LAP");
+        root.lap_as(
+            "c.swlap",
+            88000,
+            answer("00000000000000cc", "accepted", Some(false)),
+            1300,
+        );
+        let slower = root.pair(1299, 88000, b"SLOWER");
+        let api = Fake::default();
+        let (r, lines) = pass(&root, &api, 1310);
+        assert_eq!((r.uploaded, r.waiting, r.dropped), (0, 0, 2));
+        assert!(api.seen.borrow().is_empty());
+        assert!(!bogus.exists() && !slower.exists());
+        assert!(
+            lines
+                .iter()
+                .any(|l| l.contains("00000000000000bb") && l.contains("rejected"))
+        );
+        assert!(
+            lines
+                .iter()
+                .any(|l| l.contains("00000000000000cc") && l.contains("not your best"))
+        );
+
+        root.lap_as(
+            "d.swlap",
+            87100,
+            answer("00000000000000dd", "pending", Some(false)),
+            1400,
+        );
+        root.pair(1399, 87100, b"HELD");
+        let api = Fake::new(vec![Ok(())]);
+        let (r, _) = pass(&root, &api, 1410);
+        assert_eq!(r.uploaded, 1);
+        assert_eq!(api.seen.borrow()[0].0, "00000000000000dd");
     }
 
     #[test]
