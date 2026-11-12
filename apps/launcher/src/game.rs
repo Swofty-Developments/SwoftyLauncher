@@ -2,7 +2,7 @@ use std::ffi::OsString;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
+use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
@@ -22,6 +22,7 @@ use swofty_core::stock;
 use swofty_core::store::Store;
 use swofty_core::vault;
 use swofty_core::{GAME_EXE, steam, steam_client};
+use swofty_i18n::{tr, trf};
 
 const KB: &str = include_str!("../../../re/db/functions.tsv");
 
@@ -403,6 +404,7 @@ pub const DIRECT_START_FILE: &str = "swofty/direct_start.json";
 
 pub struct Launch {
     child: Child,
+    status: Option<ExitStatus>,
     direct_start: Option<PathBuf>,
     pub since: Instant,
     pub at: f64,
@@ -466,6 +468,7 @@ impl Launch {
             .map_err(|e| not_started(store, &log, &cli, &e))?;
         Ok(Self {
             child,
+            status: None,
             direct_start,
             since: Instant::now(),
             at,
@@ -476,12 +479,16 @@ impl Launch {
     }
 
     pub fn finished(&mut self) -> Option<bool> {
-        self.child.try_wait().ok().flatten().map(|s| s.success())
+        let status = self.child.try_wait().ok().flatten()?;
+        self.status = Some(status);
+        Some(status.success())
     }
 
     pub fn failure(&self) -> String {
-        failure_line(&std::fs::read_to_string(&self.log).unwrap_or_default())
-            .unwrap_or_else(|| "the launch exited before the game started".into())
+        launch_failure(
+            &std::fs::read_to_string(&self.log).unwrap_or_default(),
+            self.status,
+        )
     }
 }
 
@@ -533,16 +540,45 @@ fn not_started(store: &Store, log: &Path, cli: &Path, e: &std::io::Error) -> Str
     block.map_or_else(|| e.to_string(), |b| b.text())
 }
 
+/// Why the CLI exited before the game started, from its log, or else its exit
+/// status.
+fn launch_failure(log: &str, status: Option<ExitStatus>) -> String {
+    failure_line(log).unwrap_or_else(|| match status {
+        Some(status) => trf!(
+            "the swofty command exited ({status}) before the game started, without saying why",
+            status = status
+        ),
+        None => tr("the launch exited before the game started").to_owned(),
+    })
+}
+
 /// The wrapper's last error, from its `swofty: ` line, or else the last line it
 /// wrote. An error over several lines gives its first, which says what failed.
+/// A command line the CLI refused gives clap's `error: ` line.
 fn failure_line(log: &str) -> Option<String> {
     let lines: Vec<&str> = log.lines().filter(|l| !l.trim().is_empty()).collect();
+    if let Some(error) = usage_error(&lines) {
+        return Some(trf!(
+            "the swofty command refused its command line: {error}",
+            error = error
+        ));
+    }
     lines
         .iter()
         .rev()
         .find_map(|l| l.strip_prefix("swofty: "))
         .or_else(|| lines.last().copied())
         .map(|l| l.trim_end_matches(':').to_owned())
+}
+
+/// clap's report of arguments it could not parse: an `error: ` line, then
+/// the usage.
+fn usage_error<'a>(lines: &[&'a str]) -> Option<&'a str> {
+    let at = lines.iter().position(|l| l.starts_with("error: "))?;
+    lines[at..]
+        .iter()
+        .any(|l| l.starts_with("Usage: "))
+        .then(|| lines[at].trim_start_matches("error: ").trim())
 }
 
 /// A failure as the play bar leads with it: a wrapper's error with its
@@ -629,7 +665,8 @@ mod tests {
     use swofty_core::store::Store;
 
     use super::{
-        IMPORT_RETRY_SECS, RetryGate, cause_first, failure_line, not_started, run_args, should_retry_import,
+        IMPORT_RETRY_SECS, RetryGate, cause_first, failure_line, launch_failure, not_started, run_args,
+        should_retry_import,
     };
     use swofty_core::session::LaunchMode;
 
@@ -774,6 +811,44 @@ mod tests {
                 "--game=/g"
             ]
         );
+    }
+
+    #[test]
+    fn a_command_line_the_cli_refused_shows_claps_error() {
+        let log = "error: unexpected argument '-s' found\n\nUsage: swofty.exe [OPTIONS] <COMMAND>\n\nFor more information, try '--help'.\n";
+        assert_eq!(
+            failure_line(log).as_deref(),
+            Some("the swofty command refused its command line: unexpected argument '-s' found")
+        );
+        let tipped = "swofty: t.x: its command build has the name of a built-in command or another addon's; run it as swofty t.x:build\n\
+                      error: unexpected argument '--frobnicate' found\n\n  tip: to pass '--frobnicate' as a value, use '-- --frobnicate'\n\n\
+                      Usage: swofty run --apply\n\nFor more information, try '--help'.\n";
+        assert_eq!(
+            failure_line(tipped).as_deref(),
+            Some("the swofty command refused its command line: unexpected argument '--frobnicate' found")
+        );
+        assert_eq!(
+            failure_line("[wrapper] error: x\nswofty: the wrapper exited\n").as_deref(),
+            Some("the wrapper exited")
+        );
+    }
+
+    #[test]
+    fn a_launch_that_exits_without_a_word_says_how_it_exited() {
+        assert_eq!(
+            launch_failure("", None),
+            "the launch exited before the game started"
+        );
+        #[cfg(unix)]
+        {
+            use std::os::unix::process::ExitStatusExt;
+            let status = std::process::ExitStatus::from_raw(2 << 8);
+            assert_eq!(
+                launch_failure("\n", Some(status)),
+                format!("the swofty command exited ({status}) before the game started, without saying why")
+            );
+        }
+        assert_eq!(launch_failure("swofty: no room\n", None), "no room");
     }
 
     #[test]
