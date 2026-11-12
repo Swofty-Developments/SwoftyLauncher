@@ -110,6 +110,7 @@ t "Front-end tile list guard unit test" native/test/run_fe_tile_guard_test.sh
 t "Stock game message log unit test" native/test/run_game_message_log_test.sh
 t "Main menu logic unit test" native/test/run_main_menu_test.sh
 t "Grand Prix remembered-track fallback unit test" native/test/run_gp_track_test.sh
+t "Grand Prix weekend track guard unit test" native/test/run_gp_weekend_track_test.sh
 t "Session enter guard unit test" native/test/run_session_enter_test.sh
 t "AI line set guard unit test" native/test/run_ai_line_set_test.sh
 t "Audio job queue fix unit test" native/test/run_audio_queue_test.sh
