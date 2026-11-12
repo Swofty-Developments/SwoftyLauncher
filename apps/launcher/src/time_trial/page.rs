@@ -10,7 +10,7 @@ use swofty_i18n::{tr, trf};
 use super::moderation::flag;
 use super::state::{Load, Pick, View};
 use crate::pages::GUTTER;
-use crate::scale::px;
+use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::{Palette, ScrollArea};
 use crate::ui::{EmptyState, selectable_row};
@@ -298,7 +298,13 @@ impl Shell {
                     .text_size(px(12.))
                     .text_color(p.text_muted)
                     .child(row.date.chars().take(10).collect::<String>()),
-            );
+            )
+            .child(h_flex().w(px(120.)).flex_shrink_0().justify_end().children(
+                row.game_replay.is_some().then(|| {
+                    self.add_to_game_button(&format!("tt-add-{}", row.lap_id), &row.lap_id, true, cx)
+                        .tap_xs()
+                }),
+            ));
         let panel = open.then(|| {
             self.tt_actions(
                 &row.lap_id,
