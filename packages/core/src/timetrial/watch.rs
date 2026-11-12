@@ -1,7 +1,7 @@
 //! Ask the running game to play a lap from the boards as the ghost in Time Trial.
 //!
 //! The lap file goes next to `play.json` in `<game>/swofty/tt/ghost/`, and `play.json` names it. The core
-//! picks the request up within half a second and arms it in a Time Trial session on the lap's track.
+//! picks the request up within half a second of a Time Trial session going live and arms it on the lap's track.
 
 use std::path::{Path, PathBuf};
 
