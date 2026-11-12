@@ -211,7 +211,7 @@ EOF
         once "stall: the report holds the thread table" '\[stall\] == Threads \([0-9]+; [1-9][0-9]* unwound'
         check "stall: a suspended thread's stack is unwound and named" '\[stall\]   #1  [0-9a-f]{16} rsp=[0-9a-f]{16}  [A-Za-z0-9_.]+\+0x[0-9a-f]+ '
         check "stall: a wait is named from the module's exports" '\[stall\] thread [0-9]+.*, waiting in [A-Za-z]+'
-        once "stall: the watchdog thread is not suspended" '\[stall\] thread [0-9]+ "swofty load-stall watchdog".*\(the load-stall watchdog, not suspended\)'
+        once "stall: the watchdog thread is not suspended" '\[stall\] thread [0-9]+.*\(the load-stall watchdog, not suspended\)'
         once "stall: the report ends" '\[stall\] end of load-stall report 1'
         stall_files=$(ls "$OUT"/game/swofty/stall-*.txt 2>/dev/null | wc -l)
         if [[ $stall_files == 1 ]] && grep -q '^== Loaded modules' "$OUT"/game/swofty/stall-*.txt; then

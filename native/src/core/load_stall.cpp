@@ -149,7 +149,8 @@ void load_stall_setup()
     test_hold_ms = env_number("SWOFTY_TEST_LOAD_STALL", 0) * 1000;
     if (env_number("SWOFTY_TEST_LOAD_STALL_REPORT", 0))
         test_report_done = CreateEventW(nullptr, TRUE, FALSE, nullptr);
-    HANDLE t = CreateThread(nullptr, 256 << 10, loop, nullptr, STACK_SIZE_PARAM_IS_A_RESERVATION, nullptr);
+    HANDLE t = CreateThread(nullptr, 256 << 10, loop, nullptr, STACK_SIZE_PARAM_IS_A_RESERVATION | CREATE_SUSPENDED,
+                            nullptr);
     if (!t) {
         swofty::log("[stall] load-stall watchdog not started: CreateThread failed (error %lu)", GetLastError());
         return;
@@ -159,6 +160,7 @@ void load_stall_setup()
     if (auto describe = reinterpret_cast<Describe>(
             reinterpret_cast<void *>(GetProcAddress(kb ? kb : GetModuleHandleW(L"kernel32.dll"), "SetThreadDescription"))))
         describe(t, L"swofty load-stall watchdog");
+    ResumeThread(t);
     CloseHandle(t);
     armed.store(true);
     if (test_report_done && WaitForSingleObject(test_report_done, 20000) != WAIT_OBJECT_0)
