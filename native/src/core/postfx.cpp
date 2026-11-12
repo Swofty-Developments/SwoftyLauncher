@@ -423,6 +423,7 @@ Frame frame;
 std::vector<Retired> retired;
 std::atomic<bool> fg_on{true};
 ULONGLONG started, last_check, live_at, frame_at;
+std::atomic<ULONGLONG> present_at;
 float frametime;
 unsigned frame_count, ran_total;
 
@@ -2818,11 +2819,17 @@ void on_rule_event(const SwoftyEvent *ev, void *user)
     pending_events[s].fetch_add(1);
 }
 
+void on_flow_frame(double, void *);
+
 void subscribe_rule_events()
 {
     const SwoftyEvents *ev = runtime::events_table();
     if (!ev || !ev->subscribe)
         return;
+    uint32_t frame_token = 0;
+    if (!ev->on_frame || ev->on_frame(on_flow_frame, nullptr, &frame_token) != SWOFTY_ASSET_OK)
+        swofty::log("[postfx] the game's flow tick is not read: while no Present reaches the core, the passes run on "
+                    "the first frames only");
     struct Feed {
         const char *event;
         int signal;
@@ -2978,6 +2985,8 @@ void final_land()
     }
 }
 
+void close_frame(ULONGLONG now);
+
 // Present closes the frame: its trace line and counts, the toggle keys, and the live settings.
 void on_present(IDXGISwapChain3 *, const d3d12hooks::Swapchain *known, void *)
 {
@@ -2988,6 +2997,33 @@ void on_present(IDXGISwapChain3 *, const d3d12hooks::Swapchain *known, void *)
         return;
     fg_on = !known || !known->queue || !known->fg.empty() || (known->streamline && frame_gen_on());
     ULONGLONG now = GetTickCount64();
+    present_at.store(now, std::memory_order_relaxed);
+    close_frame(now);
+}
+
+// The game's flow tick closes the frame instead while no Present reaches the core's hooks, so the passes' frame
+// clock, the toggle keys and the live settings keep running.
+void on_flow_frame(double, void *)
+{
+    if (!device_armed.load(std::memory_order_relaxed))
+        return;
+    ULONGLONG now = GetTickCount64(), presented = present_at.load(std::memory_order_relaxed);
+    if (!postfx::flow_closes_frame(now, presented, started))
+        return;
+    std::lock_guard<std::recursive_mutex> g(lock);
+    presented = present_at.load(std::memory_order_relaxed);
+    if (broken || !postfx::flow_closes_frame(now, presented, started))
+        return;
+    static bool told;
+    if (!std::exchange(told, true))
+        swofty::log("[postfx] no Present has reached the core's swapchain hooks for %llu ms; the game's flow tick "
+                    "closes each frame instead (the passes' frame clock, toggle keys and live settings)",
+                    static_cast<unsigned long long>(now - std::max(presented, started)));
+    close_frame(now);
+}
+
+void close_frame(ULONGLONG now)
+{
     frametime = frame_at ? float(double(now - frame_at) / 1000.0) : 0.0f;
     frame_at = now;
     frame_count++;

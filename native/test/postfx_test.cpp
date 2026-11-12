@@ -130,6 +130,25 @@ int main()
     CHECK(placed_lately(100, 100) && placed_lately(101, 100) && !placed_lately(102, 100) && !placed_lately(103, 100));
     CHECK(placed_lately(0, 0u - 1) && !placed_lately(1, 0u - 1));
 
+    CHECK(!flow_closes_frame(500000, 0, 0));
+    CHECK(!flow_closes_frame(10999, 0, 10000) && flow_closes_frame(11000, 0, 10000));
+    CHECK(!flow_closes_frame(20500, 20000, 10000) && flow_closes_frame(21000, 20000, 10000));
+    CHECK(!flow_closes_frame(9000, 0, 10000) && !flow_closes_frame(5000, 20000, 10000));
+    {
+        unsigned frames = 0, at = 0;
+        bool first = true;
+        for (uint64_t now = 10000; now < 14000; now += 16) {
+            if (first) {
+                frames++;
+                first = false;
+            } else if (flow_closes_frame(now, 10000, 10000))
+                frames++;
+            if (frames == 1)
+                at = 0;
+        }
+        CHECK(frames > 100 && !placed_lately(frames, at));
+    }
+
     SideMarks<List, Res, int, 2, 2> cramped;
     CHECK(cramped.find(&many[0], true) && cramped.find(&many[1], true));
     CHECK(!cramped.find(&many[2], false) && !cramped.full());

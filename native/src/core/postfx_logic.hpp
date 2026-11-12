@@ -178,6 +178,18 @@ inline uint32_t groups(uint32_t size, uint32_t threads)
     return threads ? (size + threads - 1) / threads : 0;
 }
 
+inline constexpr uint64_t FLOW_CLOSE_AFTER_MS = 1000;
+
+// Whether the game's flow tick closes the frame: the passes are made (started) and no Present has reached the
+// core's swapchain hooks for a second since they were, or since the last one.
+inline bool flow_closes_frame(uint64_t now, uint64_t present_at, uint64_t started)
+{
+    if (!started)
+        return false;
+    uint64_t last = present_at > started ? present_at : started;
+    return now >= last && now - last >= FLOW_CLOSE_AFTER_MS;
+}
+
 // A frame count far enough back that the passes count as not run lately.
 inline constexpr unsigned LONG_AGO = 0u - 8;
 
