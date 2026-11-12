@@ -243,8 +243,8 @@ int main()
                "loaded: stat_id 240 with 105 loaded slots is refused (the 1.9.15 tile press crash)");
         put(f.source, content::GROUPS_END, f.groups.data());
         l = content::loaded_list(f.source.data(), 3, a);
-        expect(!l.known && content::loaded_why(d, 3, l).find("has not loaded") != std::string::npos,
-               "loaded: no slots yet is not known");
+        expect(!l.known && content::loaded_why(d, 3, l).empty(),
+               "loaded: lists that can't be read (the EA copy) don't refuse the content");
         expect(!content::loaded_list(nullptr, 3, a).known, "loaded: no entrants system is not known");
     }
     {

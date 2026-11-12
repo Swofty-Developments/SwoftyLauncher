@@ -241,8 +241,10 @@ void resolve(Slot &s, bool now, bool building = false)
     s.resolved = true;
     if (!r.warn.empty())
         swofty::log("[career] content '%s': %s", s.desc.id.c_str(), r.warn.c_str());
-    std::string slots_seen = gm ? " of " + std::to_string(l.slots) + " loaded list slots"
-                                : "; loaded list slots not checked: g_Game_Manager does not resolve";
+    std::string slots_seen = !gm      ? "; loaded list slots not checked: g_Game_Manager does not resolve"
+                             : l.known ? " of " + std::to_string(l.slots) + " loaded list slots"
+                                       : "; loaded list slots not checked: g_Game_Manager +0x290 +0x560 holds no list "
+                                         "slots on this build";
     swofty::log("[career] content '%s' ready%s: mode %s statId %lld, data group %s (entrant list stat_id %lld%s), suffix "
                 "%s (F1CAREER_%s%s%s)",
                 s.desc.id.c_str(), s.retry.tries ? (" after " + std::to_string(s.retry.tries + 1) + " checks").c_str() : "",
