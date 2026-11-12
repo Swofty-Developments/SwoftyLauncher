@@ -107,6 +107,7 @@ Local overflow;
 thread_local Local *mine;
 thread_local Open open_[DEPTH];
 thread_local int depth_;
+thread_local bool background_;
 
 LARGE_INTEGER qpc0, qpf;
 uint64_t tsc0;
@@ -207,8 +208,8 @@ void slow_call(uint32_t id, uint64_t own)
     SlowCall s{seconds_now(), ms, id, GetCurrentThreadId(), during()};
     uint32_t n = slow_logged[id - 1].fetch_add(1, rlx);
     if (n < 5 || n % 100 == 0)
-        swofty::log("[perf] slow call: %s %s took %.1f ms on thread %lu during \"%s\"%s", names[id - 1].owner.c_str(),
-                    names[id - 1].what.c_str(), ms, s.thread, s.during.c_str(),
+        swofty::log("[perf] slow call: %s %s took %.1f ms on %sthread %lu during \"%s\"%s", names[id - 1].owner.c_str(),
+                    names[id - 1].what.c_str(), ms, background_ ? "background " : "", s.thread, s.during.c_str(),
                     n == 4 ? " (further ones are logged every 100th)" : "");
     std::lock_guard<std::mutex> g(rings_lock);
     slow_calls.push_back(std::move(s));
@@ -243,7 +244,7 @@ void account(uint32_t id, uint64_t own, uint64_t self, bool top)
         else
             add(l->frame_ticks[k][i], own);
         if (top) {
-            if (!names[i].api && !l->game.load(rlx))
+            if (!names[i].api && !background_ && !l->game.load(rlx))
                 l->game.store(true, rlx);
             add(l->top, own);
             if (l->top_frame_of[k].load(rlx) != e)
@@ -815,6 +816,11 @@ bool frame_claim()
 void frame_release()
 {
     claiming.store(false, std::memory_order_release);
+}
+
+void background()
+{
+    background_ = true;
 }
 
 void mark(const char *kind, const std::string &what)
