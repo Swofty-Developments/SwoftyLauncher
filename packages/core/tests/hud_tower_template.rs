@@ -20,7 +20,7 @@ fn template_dir() -> PathBuf {
 }
 
 fn record() -> (String, model::HudElement) {
-    let text = std::fs::read_to_string(template_dir().join("registry/tower.json")).unwrap();
+    let text = std::fs::read_to_string(template_dir().join("registry/tower@1.1.json")).unwrap();
     let v: serde_json::Value = serde_json::from_str(&text).unwrap();
     let recs = v["hud.element"].as_object().unwrap();
     let (key, body) = recs.iter().next().unwrap();
@@ -75,7 +75,7 @@ fn the_template_record_parses_and_expands_within_the_caps() {
     assert_eq!(clock.output.as_deref(), Some("view_model_data.mytower_clock"));
     let manifest: serde_json::Value =
         serde_json::from_str(&std::fs::read_to_string(template_dir().join("swofty.json")).unwrap()).unwrap();
-    assert_eq!(manifest["operations"]["hud"][0], "registry/tower.json");
+    assert_eq!(manifest["operations"]["hud"][0], "registry/tower@1.1.json");
     for s in rec.sprites.values() {
         if !s.png.is_empty() {
             assert!(template_dir().join(&s.png).is_file(), "{}", s.png);

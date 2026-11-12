@@ -10,6 +10,6 @@
   "compat": { "game": "f1_25", "game_builds": [">=25251167"] },
   "requires": [{ "id": "swofty.core", "version": ">=0.1.0" }],
   "operations": {
-    "hud": ["registry/tower.json"]
+    "hud": ["registry/tower@1.1.json"]
   }
 }
