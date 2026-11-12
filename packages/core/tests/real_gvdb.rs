@@ -301,3 +301,17 @@ fn a_calendar_count_past_its_rows_comes_down_against_the_real_database() {
     );
     assert_eq!(db.get_text(count).as_deref(), Some("16"));
 }
+
+#[test]
+fn the_real_track_lists_hold_35_stock_tracks() {
+    let Some(dir) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {
+        eprintln!("F1_25_DIR is not set; skipping");
+        return;
+    };
+    let Ok(data) = std::fs::read(dir.join("game_package/gamedatabases/gamedatabases.2025.bin")) else {
+        eprintln!("no gamedatabases.2025.bin under F1_25_DIR; skipping");
+        return;
+    };
+    let listed = swofty_core::tracks::ListedTracks::of(&Gvdb::parse(&data).unwrap());
+    assert_eq!(listed.stock(), 35);
+}
