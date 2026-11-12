@@ -171,6 +171,20 @@ fn not_for_upload(answer: &Uploaded) -> Option<&'static str> {
     }
 }
 
+/// The server's answer behind an upload that lost its connection. The proxy in front of the server resets
+/// the connection when the server refuses a replay before reading it, so the refusal never arrives while
+/// the body is still being sent. The same request without a body gets the same refusal; a server that
+/// would take the replay turns the empty body down as no replay file, and the lost connection stands.
+fn answer_behind(api: &dyn Replays, id: &str, setup: &str, lost: ApiError) -> ApiError {
+    if lost.status != 0 {
+        return lost;
+    }
+    match api.put_game_replay(id, setup, &[]) {
+        Err(answer) if matches!(answer.status, 403 | 404 | 409 | 429) => answer,
+        _ => lost,
+    }
+}
+
 /// Upload the ready pairs whose lap the server took, newest first. A pair goes once it is uploaded,
 /// refused for good, too big, or two days old with no lap; one the server could not take for now stays
 /// with a backoff and ends the pass.
@@ -252,9 +266,13 @@ pub fn send(
             report.waiting += 1;
             continue;
         }
+        let setup = setup.as_deref().unwrap_or_default();
         let sent = std::fs::read(&pair.replay)
             .map_err(|e| ApiError::network(format!("{}: {e}", pair.replay.display())))
-            .and_then(|bytes| api.put_game_replay(&id, setup.as_deref().unwrap_or_default(), &bytes));
+            .and_then(|bytes| {
+                api.put_game_replay(&id, setup, &bytes)
+                    .map_err(|e| answer_behind(api, &id, setup, e))
+            });
         match sent {
             Ok(()) => {
                 say(&format!("uploaded the game replay of lap {id} ({size} bytes)"));
@@ -540,10 +558,14 @@ mod tests {
         root.lap("b.swlap", 92000, "00000000000000bb", 1000);
         let old = root.pair(1001, 91000, b"A");
         let new = root.pair(1002, 92000, b"B");
-        let api = Fake::new(vec![Err(ApiError::network("down"))]);
+        let api = Fake::new(vec![
+            Err(ApiError::network("down")),
+            Err(ApiError::network("down")),
+        ]);
         let (r, lines) = pass(&root, &api, 1010);
         assert_eq!((r.uploaded, r.waiting, r.dropped), (0, 2, 0));
         assert_eq!(api.seen.borrow()[0].0, "00000000000000bb");
+        assert!(api.seen.borrow()[1].2.is_empty());
         assert!(lines[0].contains("will retry"));
         let state: BTreeMap<String, Waiting> = queue::read_json(&root.queue().replays_state()).unwrap();
         assert_eq!(
@@ -588,6 +610,58 @@ mod tests {
         assert_eq!((r.uploaded, r.waiting, r.dropped), (1, 0, 1));
         assert!(lines[0].contains("not uploaded"));
         assert!(!old.exists() && !new.exists() && !new.with_extension("json").exists());
+    }
+
+    fn not_a_replay() -> ApiError {
+        ApiError::from_body(400, r#"{"error": "the body is not a game replay file"}"#)
+    }
+
+    #[test]
+    fn a_refusal_lost_with_the_connection_is_asked_for_again_without_the_body() {
+        let root = Root::new("lost");
+        root.lap("a.swlap", 91000, "00000000000000aa", 1000);
+        root.lap("b.swlap", 92000, "00000000000000bb", 1000);
+        let old = root.pair(1001, 91000, b"A");
+        let new = root.pair(1002, 92000, b"B");
+        let refusal = ApiError::from_body(409, r#"{"error": "this lap is not your best on this board"}"#);
+        let api = Fake::new(vec![Err(ApiError::network("aborted")), Err(refusal), Ok(())]);
+        let (r, lines) = pass(&root, &api, 1010);
+        assert_eq!((r.uploaded, r.waiting, r.dropped), (1, 0, 1));
+        let seen = api.seen.borrow();
+        assert_eq!(
+            seen.iter().map(|s| (s.0.as_str(), s.2.len())).collect::<Vec<_>>(),
+            [
+                ("00000000000000bb", 1),
+                ("00000000000000bb", 0),
+                ("00000000000000aa", 1)
+            ]
+        );
+        assert!(lines[0].contains("not uploaded") && lines[0].contains("not your best"));
+        assert!(!old.exists() && !new.exists());
+    }
+
+    #[test]
+    fn a_lost_rate_limit_is_waited_out_and_a_real_network_failure_stands() {
+        let root = Root::new("lost429");
+        root.lap("a.swlap", 91000, "00000000000000aa", 1000);
+        let replay = root.pair(1001, 91000, b"A");
+        let mut busy = ApiError::from_body(429, "");
+        busy.retry_after = Some(45);
+        let api = Fake::new(vec![Err(ApiError::network("aborted")), Err(busy)]);
+        let (r, _) = pass(&root, &api, 1010);
+        assert_eq!(r.waiting, 1);
+        let state: BTreeMap<String, Waiting> = queue::read_json(&root.queue().replays_state()).unwrap();
+        assert_eq!(state["pb_1001_91000"].next_try, 1055);
+
+        let api = Fake::new(vec![Err(ApiError::network("aborted")), Err(not_a_replay())]);
+        let (r, lines) = pass(&root, &api, 1060);
+        assert_eq!(r.waiting, 1);
+        assert!(lines[0].contains("will retry: aborted"));
+        assert!(replay.exists());
+
+        let api = Fake::new(vec![Err(ApiError::from_body(503, ""))]);
+        pass(&root, &api, 5000);
+        assert_eq!(api.seen.borrow().len(), 1);
     }
 
     #[test]
