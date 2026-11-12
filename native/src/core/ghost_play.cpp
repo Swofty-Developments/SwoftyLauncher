@@ -47,7 +47,8 @@ std::string hook_error(const safetyhook::InlineHook::Error &e);
 // Gate: "tt_ghost": true in swofty\tt.json, and never with SWOFTY_TT_GHOST=0. The request is swofty\tt\ghost\play.json
 // {"lap": "<.swlap or .trace path>", "label": "<driver name>"}. SWOFTY_TT_DIAG=1 adds read-only logging of the trace
 // reader, the six laps and the trace of every completed lap (dumped to swofty\tt\ghost\diag-<n>.trace); it changes no
-// behaviour. SWOFTY_TT_GHOST_SLOT picks another telemetry lap than 4.
+// behaviour. SWOFTY_TT_GHOST_SLOT picks another telemetry lap than 4. The tick hook and the play.json poller do nothing
+// unless a Time Trial session is live (runtime::session_kind()).
 
 namespace runtime {
 void player_name_probe_tick();
@@ -378,6 +379,8 @@ void worker()
     drop_stale_request(play);
     while (worker_run.load()) {
         Sleep(500);
+        if (!runtime::session_life::time_trial_live(runtime::session_kind()))
+            continue;
         WIN32_FILE_ATTRIBUTE_DATA d{};
         if (!GetFileAttributesExW(play.c_str(), GetFileExInfoStandard, &d))
             continue;
@@ -555,7 +558,7 @@ void tick_mid(safetyhook::Context &c)
 {
     static thread_local bool busy = false;
     uintptr_t comp = c.rcx;
-    if (!comp || busy)
+    if (!comp || busy || !runtime::session_life::time_trial_live(runtime::session_kind()))
         return;
     busy = true;
     mem::Trust trust(runtime::HEAP_TRUST_MS);
