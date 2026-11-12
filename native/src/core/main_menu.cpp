@@ -2,6 +2,7 @@
 
 #include "main_menu.hpp"
 #include "main_menu_logic.hpp"
+#include "apply/moments.hpp"
 #include <safetyhook.hpp>
 #include "virtual_pad.hpp"
 #include "json.hpp"
@@ -52,7 +53,8 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 // it for swofty_back_home (the container's home route behind the standard wipe) or swofty_home (the hub's back_1). Every Migrate the game runs is logged with its flow and entry
 // (nav:), the last accepted flow is kept, and a screen that does not open in time is recovered. A session that
 // started from a card hands over (frontend_transition.ui, swofty_enter_return) to the bare activity container, where
-// the card's command is raised.
+// the card's command is raised; session_enter swaps the card's mode for the mode of the session that loaded, as the
+// container's tabs can start a Time Trial after a Grand Prix card press (or the other way round).
 //
 // SWOFTY_MAIN_MENU=0 turns the whole feature off. SWOFTY_MAIN_MENU_NAV=single|rows picks the navigation
 // layout; only single (one spawner, tile order) exists so far, and rows is logged as not built.
@@ -1358,6 +1360,25 @@ void tick()
         raise_command(container_vm.load(), command, chain.handover ? "the hand-over: the container is active, its own first command came" : "fallback: after its view model was seen");
         chain.step = Step::done;
     }
+}
+
+void session_enter()
+{
+    logic::Mode pressed = logic::Mode(nav.mode.load());
+    if (pressed == logic::Mode::none)
+        return;
+    std::string mode = swofty_core::apply::moments::session_mode_track().first;
+    logic::Mode driven = logic::driven_mode(pressed, mode);
+    if (driven == pressed)
+        return;
+    nav.mode = int(driven);
+    const char *card = pressed == logic::Mode::time_trial ? "Time Trial" : "Grand Prix";
+    if (driven == logic::Mode::none)
+        swofty::log("[main-menu] nav: the session that loaded (game mode %s) is not the %s the card opened, nor the other card's mode; the session-end hand-over raises no command",
+                    mode.c_str(), card);
+    else
+        swofty::log("[main-menu] nav: the session that loaded is a %s (game mode %s), not the %s the card opened; the session-end hand-over raises '%s'",
+                    driven == logic::Mode::time_trial ? "Time Trial" : "Grand Prix", mode.c_str(), card, logic::return_command(driven));
 }
 
 void screen(const char *name)

@@ -138,6 +138,22 @@ int main()
     expect(std::string(mm::return_command(mm::Mode::time_trial)) == "time_trial" &&
                std::string(mm::return_command(mm::Mode::grand_prix)) == "solo_gp" && std::string(mm::return_command(mm::Mode::none)).empty(),
            "the session-end hand-over raises the command of the card that started the session");
+    expect(mm::driven_mode(mm::Mode::grand_prix, "time_trial") == mm::Mode::time_trial &&
+               std::string(mm::return_command(mm::driven_mode(mm::Mode::grand_prix, "time_trial"))) == "time_trial",
+           "a Grand Prix card press that ends in a Time Trial (the container's Time Trial tab) hands over to the Time Trial picker");
+    expect(mm::driven_mode(mm::Mode::time_trial, "grand_prix") == mm::Mode::grand_prix &&
+               std::string(mm::return_command(mm::driven_mode(mm::Mode::time_trial, "grand_prix"))) == "solo_gp",
+           "a Time Trial card press that ends in a Grand Prix hands over to the Grand Prix");
+    expect(mm::driven_mode(mm::Mode::grand_prix, "grand_prix") == mm::Mode::grand_prix &&
+               mm::driven_mode(mm::Mode::time_trial, "time_trial") == mm::Mode::time_trial,
+           "a session of the pressed card's own mode keeps the card");
+    expect(mm::driven_mode(mm::Mode::grand_prix, "") == mm::Mode::grand_prix && mm::driven_mode(mm::Mode::grand_prix, "unknown") == mm::Mode::grand_prix &&
+               mm::driven_mode(mm::Mode::time_trial, "unknown") == mm::Mode::time_trial,
+           "an unread or unknown game mode keeps the card that was pressed");
+    expect(mm::driven_mode(mm::Mode::grand_prix, "split_screen") == mm::Mode::none && mm::driven_mode(mm::Mode::time_trial, "f1_world") == mm::Mode::none,
+           "a session of another mode from the container's tabs raises no card command");
+    expect(mm::driven_mode(mm::Mode::none, "time_trial") == mm::Mode::none && mm::driven_mode(mm::Mode::none, "grand_prix") == mm::Mode::none,
+           "a session no card started never arms a hand-over");
     {
         auto route = mm::Back::route;
         expect(std::string(mm::back_replacement(route, mm::djb2("f1_world_activity_container"), "f1_world")) == "swofty_back_home" &&

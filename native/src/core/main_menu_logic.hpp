@@ -368,6 +368,20 @@ inline const char *return_command(Mode m)
     }
 }
 
+// The card mode a session counts for, from the game mode of the session that loaded (apply::facts::mode_of names). The
+// container a card opens keeps its own tabs, so a Grand Prix card press can end in a Time Trial (or the other way round):
+// the session's mode then wins. Any other known mode has no card command; an unread or unknown mode keeps the press.
+inline Mode driven_mode(Mode pressed, const std::string &session_mode)
+{
+    if (pressed == Mode::none || session_mode.empty() || session_mode == "unknown")
+        return pressed;
+    if (session_mode == "time_trial")
+        return Mode::time_trial;
+    if (session_mode == "grand_prix")
+        return Mode::grand_prix;
+    return Mode::none;
+}
+
 enum class Back { stock, route, home, twostep };
 
 inline Back back_variant_of(const std::string &v, bool data_in_build)
