@@ -414,6 +414,12 @@ In the game's lists the core records the passes and then puts back the pipeline 
 
 The game records frames ahead, so a minute's runs and presents are counted in slightly different frames. Frames without passes are mostly loading screens and menus without a 3D picture. With Frame Generation on in the game's settings, the passes' result also goes into the game's HUD-less copy, which Frame Generation reads. Frame Generation still uses the game's own motion vectors, so a pass that moves pixels can smear in the generated frames.
 
+XeSS frame generation (`libxess_fg.dll`) presents the game's frames and its own generated ones through `Present1`, on its own thread. Its swapchain is made even with frame generation off. On it, and while no `Present` reaches the core's hooks, a frame is one frame the game draws: it starts where the game submits the list that draws into its next back buffer. `swofty_frame` and `swofty_frametime` count those frames. The minute's line counts them too:
+
+```text
+[postfx] xess fg: 2391 real frame(s), 2391 pass run(s), 0 skipped in the last 60 s (2391 in the game's list, 0 between its lists, 0 with the GPU behind); 4782 Present(s) from frame generation
+```
+
 A key from `postfx_toggle` logs and shows a toast:
 
 ```text
