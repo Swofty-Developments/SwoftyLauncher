@@ -1,7 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::fmt;
-use swofty_core::timetrial::boards::content_listed;
+use swofty_core::timetrial::boards::{content_listed, track_addon};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OnlineError {
@@ -67,6 +67,26 @@ pub struct TrackCard {
     pub drivers: u32,
     pub laps: u32,
     pub custom: bool,
+    /// The addon the track comes from; none for a stock track, whatever box the board is in.
+    pub addon: Option<String>,
+}
+
+impl TrackCard {
+    /// A board's track known by its key and name alone, as a link to its board.
+    pub fn bare(key: BoardKey, name: String) -> Self {
+        Self {
+            addon: track_addon(&key.track, None).map(str::to_owned),
+            key,
+            name,
+            flag: None,
+            layout: None,
+            record: None,
+            podium: Vec::new(),
+            drivers: 0,
+            laps: 0,
+            custom: false,
+        }
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Hash)]
@@ -912,6 +932,7 @@ mod tests {
             drivers,
             laps,
             custom: false,
+            addon: None,
         }
     }
 

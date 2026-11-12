@@ -21,23 +21,20 @@ impl Shell {
             Some(Load::Ready(page)) => page.clone(),
         };
         let mut items: Vec<Target> = Vec::new();
+        let cards: Vec<TrackCard> = page
+            .bests
+            .iter()
+            .map(|b| TrackCard::bare(b.key.clone(), b.track.clone()))
+            .collect();
+        let bylines = self.online_bylines(&cards.iter().collect::<Vec<_>>());
         let bests: Vec<AnyElement> = page
             .bests
             .iter()
-            .flat_map(|b| {
-                let card = TrackCard {
-                    key: b.key.clone(),
-                    name: b.track.clone(),
-                    flag: None,
-                    layout: None,
-                    record: None,
-                    podium: Vec::new(),
-                    drivers: 0,
-                    laps: 0,
-                    custom: false,
-                };
+            .zip(cards)
+            .zip(bylines)
+            .flat_map(|((b, card), byline)| {
                 let idx = self.target_item(&mut items, Target::Board(Box::new(card), b.track.clone()));
-                let mut out = vec![self.best_row(b, idx, p, cx)];
+                let mut out = vec![self.best_row(b, byline, idx, p, cx)];
                 if SHOW_SETUPS
                     && self.online.setup_open.as_deref() == Some(b.lap_id.as_str())
                     && let Some(setup) = &b.setup
@@ -188,19 +185,16 @@ impl Shell {
             .into_any_element()
     }
 
-    fn best_row(&self, b: &BestLap, idx: usize, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+    fn best_row(
+        &self,
+        b: &BestLap,
+        byline: Option<String>,
+        idx: usize,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
         let target = Target::Board(
-            Box::new(TrackCard {
-                key: b.key.clone(),
-                name: b.track.clone(),
-                flag: None,
-                layout: None,
-                record: None,
-                podium: Vec::new(),
-                drivers: 0,
-                laps: 0,
-                custom: false,
-            }),
+            Box::new(TrackCard::bare(b.key.clone(), b.track.clone())),
             b.track.clone(),
         );
         h_flex()
@@ -234,9 +228,13 @@ impl Shell {
                     )
                     .child(
                         div()
+                            .truncate()
                             .text_size(px(12.))
                             .text_color(p.text_muted)
-                            .child(b.season.clone()),
+                            .child(match byline {
+                                Some(by) => format!("{} \u{b7} {by}", b.season),
+                                None => b.season.clone(),
+                            }),
                     ),
             )
             .child(div().font_weight(FontWeight::BOLD).child(lap_time(b.time_ms)))

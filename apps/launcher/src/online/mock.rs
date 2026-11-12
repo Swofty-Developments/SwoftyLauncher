@@ -155,7 +155,26 @@ fn track_card(season: usize, track: usize) -> TrackCard {
         drivers: 9 + (seed(season, track) % 6) as u32,
         laps: 40 + (seed(track, season) % 90) as u32,
         custom: false,
+        addon: None,
     }
+}
+
+const CUSTOM: [(&str, &str, &str); 4] = [
+    ("dromodf.fuji-speedway:suzuka24", "Fuji Speedway", "jp"),
+    ("mod.suzuka24:suzuka24", "Fuji Speedway", "jp"),
+    ("twilight.bahrain-reverse:sakhir_reverse", "Bahrain Reverse", "bh"),
+    ("mod.hockenheim:hockenheim", "Hockenheimring", "de"),
+];
+
+fn custom_card(i: usize) -> TrackCard {
+    let (track, name, flag) = CUSTOM[i];
+    let mut card = track_card(YEARS.len() - 1, i % TRACKS.len());
+    card.key.track = track.to_owned();
+    card.name = name.to_owned();
+    card.flag = Some(flag.to_owned());
+    card.custom = true;
+    card.addon = swofty_core::timetrial::boards::track_addon(track, None).map(str::to_owned);
+    card
 }
 
 fn ranking(season: usize) -> Vec<RankEntry> {
@@ -366,14 +385,10 @@ impl BoardsApi for MockBoards {
                 me: None,
             });
         }
-        let mut custom = track_card(6, 2);
-        custom.name = "Hockenheimring".into();
-        custom.custom = true;
-        custom.flag = Some("de".into());
         Ok(Overview {
             seasons: (0..YEARS.len()).rev().map(season_card).collect(),
             global: global().into_iter().take(10).collect(),
-            custom: vec![custom],
+            custom: (0..CUSTOM.len()).map(custom_card).collect(),
             me: None,
         })
     }
@@ -391,7 +406,12 @@ impl BoardsApi for MockBoards {
     fn board(&self, k: &BoardKey, cat: &Category, _offset: u32) -> Result<BoardPage, OnlineError> {
         gate(self.mode)?;
         let s = find(&k.content);
-        let t = TRACKS.iter().position(|x| x.0 == k.track).unwrap_or(0);
+        let custom = CUSTOM.iter().position(|c| c.0 == k.track);
+        let t = TRACKS
+            .iter()
+            .position(|x| x.0 == k.track)
+            .or(custom.map(|i| i % TRACKS.len()))
+            .unwrap_or(0);
         let rows: Vec<Row> = order(s, t)
             .into_iter()
             .enumerate()
@@ -424,7 +444,7 @@ impl BoardsApi for MockBoards {
             })
             .collect();
         Ok(BoardPage {
-            track: track_card(s, t),
+            track: custom.map_or_else(|| track_card(s, t), custom_card),
             season: label(YEARS[s]),
             total: rows.len() as u32,
             mine: rows.get(6).cloned(),
@@ -489,5 +509,13 @@ mod tests {
         assert_eq!(s.tracks.len(), 8);
         let b = api.board(&s.tracks[0].key, &Category::default(), 0).unwrap();
         assert!(b.rows.windows(2).all(|w| w[0].time_ms <= w[1].time_ms));
+        assert!(
+            o.custom
+                .iter()
+                .all(|t| t.key.content == o.seasons[0].id && t.addon.is_some())
+        );
+        let fuji = api.board(&o.custom[0].key, &Category::default(), 0).unwrap();
+        assert_eq!(fuji.track, o.custom[0]);
+        assert_eq!(fuji.track.addon.as_deref(), Some("dromodf.fuji-speedway"));
     }
 }

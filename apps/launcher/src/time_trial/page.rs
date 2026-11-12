@@ -4,7 +4,7 @@ use gpui_kit::component::input::Input;
 use gpui_kit::component::{Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::timetrial::boards::{Row, format_time};
+use swofty_core::timetrial::boards::{Group, Row, format_time};
 use swofty_i18n::{tr, trf};
 
 use super::moderation::flag;
@@ -108,6 +108,7 @@ impl Shell {
             Load::Ready(g) => g,
         };
         let selected = self.tt.pick.clone();
+        let mut bylines = self.tt_bylines(groups).into_iter();
         let mut list = v_flex().gap(px(2.)).p(px(6.));
         for (gi, group) in groups.iter().enumerate() {
             let heading = match group.name.is_empty() {
@@ -132,7 +133,13 @@ impl Shell {
                     title: track.title(),
                 };
                 let active = selected.as_ref() == Some(&pick);
-                let weather = (track.weather != "dry").then(|| track.weather.clone());
+                let detail: Vec<String> = bylines
+                    .next()
+                    .flatten()
+                    .into_iter()
+                    .chain((track.weather != "dry").then(|| track.weather.clone()))
+                    .chain([laps(track.laps)])
+                    .collect();
                 list = list.child(
                     selectable_row(SharedString::from(format!("tt-track-{gi}-{ti}")), active, p)
                         .cursor_pointer()
@@ -142,12 +149,13 @@ impl Shell {
                                 .flex_1()
                                 .min_w_0()
                                 .child(div().text_size(px(13.)).text_color(p.text).child(track.title()))
-                                .child(div().text_size(px(11.)).text_color(p.text_muted).child(
-                                    match &weather {
-                                        Some(w) => format!("{w} · {}", laps(track.laps)),
-                                        None => laps(track.laps),
-                                    },
-                                )),
+                                .child(
+                                    div()
+                                        .truncate()
+                                        .text_size(px(11.))
+                                        .text_color(p.text_muted)
+                                        .child(detail.join(" · ")),
+                                ),
                         )
                         .on_click(cx.listener(move |this, _, _, cx| this.tt_pick(pick.clone(), cx))),
                 );
@@ -169,6 +177,7 @@ impl Shell {
                 .into_any_element();
         };
         let search = self.tt_search(window, cx);
+        let byline = self.tt_pick_byline(&pick);
         let rows: Vec<Row> = self.tt.visible().into_iter().cloned().collect();
         let rows_len = rows.len();
         let total = match &self.tt.rows {
@@ -205,12 +214,25 @@ impl Shell {
                     .gap(px(12.))
                     .items_center()
                     .child(
-                        div()
+                        h_flex()
                             .flex_1()
                             .min_w_0()
-                            .text_size(px(16.))
-                            .font_weight(FontWeight::SEMIBOLD)
-                            .child(pick.title.clone()),
+                            .gap(px(8.))
+                            .items_baseline()
+                            .child(
+                                div()
+                                    .flex_shrink_0()
+                                    .text_size(px(16.))
+                                    .font_weight(FontWeight::SEMIBOLD)
+                                    .child(pick.title.clone()),
+                            )
+                            .children(byline.map(|b| {
+                                div()
+                                    .truncate()
+                                    .text_size(px(13.))
+                                    .text_color(p.text_muted)
+                                    .child(b)
+                            })),
                     )
                     .child(div().text_size(px(12.)).text_color(p.text_muted).child(trf!(
                         "{shown} of {total} drivers",
@@ -320,6 +342,30 @@ impl Shell {
             .child(line)
             .children(panel)
             .into_any_element()
+    }
+
+    /// The byline of every catalog track, in the catalog's order.
+    fn tt_bylines(&self, groups: &[Group]) -> Vec<Option<String>> {
+        let titles: Vec<(String, Option<&str>)> = groups
+            .iter()
+            .flat_map(|g| &g.tracks)
+            .map(|t| (t.title(), t.addon()))
+            .collect();
+        let tracks: Vec<(&str, Option<&str>)> = titles.iter().map(|(n, a)| (n.as_str(), *a)).collect();
+        self.track_bylines(&tracks)
+    }
+
+    fn tt_pick_byline(&self, pick: &Pick) -> Option<String> {
+        let Load::Ready(groups) = &self.tt.catalog else {
+            return None;
+        };
+        let at = groups
+            .iter()
+            .flat_map(|g| g.tracks.iter().map(move |t| (g, t)))
+            .position(|(g, t)| {
+                g.content == pick.content && t.track == pick.track && t.weather == pick.weather
+            })?;
+        self.tt_bylines(groups).into_iter().nth(at).flatten()
     }
 }
 

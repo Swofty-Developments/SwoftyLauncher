@@ -34,26 +34,23 @@ impl Shell {
             .into_iter()
             .cloned()
             .collect();
-        let rows: Vec<AnyElement> = shown
-            .iter()
-            .map(|t| {
-                let idx = self.target_item(&mut items, Target::Board(Box::new(t.clone()), t.name.clone()));
-                let mine = self.online.my_times.get(&t.key).copied();
-                self.thin_track_row(t, idx, mine, p, cx)
-            })
-            .collect();
         let custom: Vec<TrackCard> = match &self.online.overview {
             Load::Ready(o) => o.custom.iter().filter(|t| t.key.content == id).cloned().collect(),
             _ => Vec::new(),
         };
         let custom_shown: Vec<TrackCard> = filter.apply(&custom, &mine_keys).into_iter().cloned().collect();
+        let mut bylines = self
+            .online_bylines(&shown.iter().chain(&custom_shown).collect::<Vec<_>>())
+            .into_iter();
+        let mut track_row = |this: &mut Self, t: &TrackCard, items: &mut Vec<Target>| {
+            let idx = this.target_item(items, Target::Board(Box::new(t.clone()), t.name.clone()));
+            let mine = this.online.my_times.get(&t.key).copied();
+            this.thin_track_row(t, bylines.next().flatten(), idx, mine, p, cx)
+        };
+        let rows: Vec<AnyElement> = shown.iter().map(|t| track_row(self, t, &mut items)).collect();
         let custom_rows: Vec<AnyElement> = custom_shown
             .iter()
-            .map(|t| {
-                let idx = self.target_item(&mut items, Target::Board(Box::new(t.clone()), t.name.clone()));
-                let mine = self.online.my_times.get(&t.key).copied();
-                self.thin_track_row(t, idx, mine, p, cx)
-            })
+            .map(|t| track_row(self, t, &mut items))
             .collect();
         let ranking = self.rank_column(id, tr("SEASON RANKING"), &mut items, p, cx);
         self.online.items = items;
@@ -76,6 +73,19 @@ impl Shell {
                 None,
             )
         };
+        let nothing = empty.then(|| {
+            div()
+                .py(px(30.))
+                .text_size(px(13.))
+                .text_color(p.text_muted)
+                .child(if filter.active() {
+                    tr("No track matches these filters.")
+                } else if !self.online.category.is_default() {
+                    tr("No laps with these filters. Change the assists or input on the Time Trial page.")
+                } else {
+                    tr("No tracks have laps yet.")
+                })
+        });
         let main = v_flex()
             .flex_1()
             .min_w_0()
@@ -85,22 +95,8 @@ impl Shell {
             .gap(px(14.))
             .child(header)
             .child(bar)
-            .child(if empty {
-                div()
-                    .py(px(30.))
-                    .text_size(px(13.))
-                    .text_color(p.text_muted)
-                    .child(if filter.active() {
-                        tr("No track matches these filters.")
-                    } else if !self.online.category.is_default() {
-                        tr("No laps with these filters. Change the assists or input on the Time Trial page.")
-                    } else {
-                        tr("No tracks have laps yet.")
-                    })
-                    .into_any_element()
-            } else {
-                panel(p).children(rows).into_any_element()
-            })
+            .children(nothing)
+            .when(!rows.is_empty(), |d| d.child(panel(p).children(rows)))
             .when(!custom_rows.is_empty(), |d| {
                 d.child(section_title(tr("CUSTOM TRACKS"), p))
                     .child(panel(p).children(custom_rows))

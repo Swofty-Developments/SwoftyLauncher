@@ -188,23 +188,21 @@ impl Shell {
                     let (id, name) = (first.id.clone(), first.name.clone());
                     s.online.overview = Load::from(overview.clone());
                     s.online_go(Target::Season(id.clone(), name), cx);
-                    if start == "board" {
-                        let card = TrackCard {
-                            key: BoardKey {
+                    let board = match start.as_str() {
+                        "board" => Some(TrackCard::bare(
+                            BoardKey {
                                 content: id,
                                 track: "bahrain".into(),
                                 weather: "dry".into(),
                             },
-                            name: "Bahrain".into(),
-                            flag: None,
-                            layout: None,
-                            record: None,
-                            podium: Vec::new(),
-                            drivers: 0,
-                            laps: 0,
-                            custom: false,
-                        };
-                        s.online_go(Target::Board(Box::new(card), "Bahrain".into()), cx);
+                            "Bahrain".into(),
+                        )),
+                        "custom" => o.custom.first().cloned(),
+                        _ => None,
+                    };
+                    if let Some(card) = board {
+                        let name = card.name.clone();
+                        s.online_go(Target::Board(Box::new(card), name), cx);
                     }
                     return;
                 }
