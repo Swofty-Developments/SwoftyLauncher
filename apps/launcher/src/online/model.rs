@@ -1,6 +1,7 @@
 use serde::{Deserialize, Serialize};
 use std::collections::HashSet;
 use std::fmt;
+use swofty_core::timetrial::boards::content_listed;
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct OnlineError {
@@ -81,6 +82,32 @@ pub struct Overview {
     pub global: Vec<RankEntry>,
     pub custom: Vec<TrackCard>,
     pub me: Option<RankEntry>,
+}
+
+impl Overview {
+    pub fn is_empty(&self) -> bool {
+        self.seasons.is_empty() && self.global.is_empty() && self.custom.is_empty()
+    }
+}
+
+/// Why the landing page has nothing to list.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum LandingEmpty {
+    /// Nobody has uploaded a lap at all.
+    NothingYet,
+    /// Laps exist, but none match the chosen assists or input; the filter bar stays so it can be changed.
+    Filtered,
+}
+
+pub fn landing_empty(overview: &Overview, cat: &Category) -> Option<LandingEmpty> {
+    if !overview.is_empty() {
+        return None;
+    }
+    Some(if cat.is_default() {
+        LandingEmpty::NothingYet
+    } else {
+        LandingEmpty::Filtered
+    })
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -744,10 +771,12 @@ pub struct Recents {
 
 impl Recents {
     pub fn load(data: &std::path::Path) -> Self {
-        std::fs::read(Self::path(data))
+        let mut recents: Self = std::fs::read(Self::path(data))
             .ok()
             .and_then(|b| serde_json::from_slice(&b).ok())
-            .unwrap_or_default()
+            .unwrap_or_default();
+        recents.seasons.retain(|s| content_listed(&s.id));
+        recents
     }
 
     fn path(data: &std::path::Path) -> std::path::PathBuf {
@@ -765,6 +794,9 @@ impl Recents {
     }
 
     pub fn visit(&mut self, id: &str, name: &str) {
+        if !content_listed(id) {
+            return;
+        }
         self.seasons.retain(|s| s.id != id);
         self.seasons.insert(
             0,
@@ -955,24 +987,48 @@ mod tests {
 
     #[test]
     fn recent_seasons_keep_the_newest_first_without_repeats_and_survive_a_restart() {
+        let season = |i: usize| format!("swofty.swofty-seasons-{}/sw_{0}", 2000 + i);
         let mut r = Recents::default();
-        r.visit("a", "A");
-        r.visit("b", "B");
-        r.visit("a", "A");
+        r.visit("game/f1_2025", "A");
+        r.visit(&season(1), "B");
+        r.visit("game/f1_2025", "A");
         assert_eq!(
             r.list().iter().map(|s| s.id.as_str()).collect::<Vec<_>>(),
-            ["a", "b"]
+            ["game/f1_2025", season(1).as_str()]
         );
         for i in 0..20 {
-            r.visit(&format!("s{i}"), "S");
+            r.visit(&season(i), "S");
         }
         assert_eq!(r.list().len(), RECENT_CAP);
-        assert_eq!(r.list()[0].id, "s19");
+        assert_eq!(r.list()[0].id, season(19));
         let dir = std::env::temp_dir().join(format!("swofty-tt-recent-{}", std::process::id()));
         r.save(&dir);
         assert_eq!(Recents::load(&dir), r);
         std::fs::remove_dir_all(&dir).ok();
         assert_eq!(Recents::load(&dir), Recents::default());
+    }
+
+    #[test]
+    fn recent_seasons_leave_out_unlisted_content() {
+        let mut r = Recents::default();
+        r.visit("swofty.classic-seasons-2020/f1_2020", "F1 2020 GP/TT Addon");
+        assert!(r.list().is_empty());
+        let dir = std::env::temp_dir().join(format!("swofty-tt-recent-old-{}", std::process::id()));
+        std::fs::create_dir_all(dir.join("state")).unwrap();
+        std::fs::write(
+            dir.join("state").join("tt-recent.json"),
+            r#"{"seasons":[{"id":"bydanix.f1-2012-season/ex_f1_2012","name":"F1 2012"},{"id":"game/f1_2025","name":"F1 25"}]}"#,
+        )
+        .unwrap();
+        assert_eq!(
+            Recents::load(&dir)
+                .list()
+                .iter()
+                .map(|s| s.id.as_str())
+                .collect::<Vec<_>>(),
+            ["game/f1_2025"]
+        );
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     fn setup_of(front: f32, compound: &str) -> Setup {
@@ -1098,6 +1154,34 @@ mod tests {
         assert_eq!(Category::load(&dir), c);
         std::fs::remove_dir_all(&dir).ok();
         assert!(!c.is_default() && Category::default().is_default());
+    }
+
+    #[test]
+    fn an_empty_overview_under_a_saved_filter_keeps_the_filter_bar() {
+        let none = Overview {
+            seasons: Vec::new(),
+            global: Vec::new(),
+            custom: Vec::new(),
+            me: None,
+        };
+        let no_assists = Category {
+            assists: AssistFilter::None,
+            device: DeviceFilter::All,
+        };
+        let dir = std::env::temp_dir().join(format!("swofty-tt-empty-{}", std::process::id()));
+        no_assists.save(&dir);
+        let restarted = Category::load(&dir);
+        std::fs::remove_dir_all(&dir).ok();
+        assert_eq!(landing_empty(&none, &restarted), Some(LandingEmpty::Filtered));
+        assert_eq!(
+            landing_empty(&none, &Category::default()),
+            Some(LandingEmpty::NothingYet)
+        );
+        let some = Overview {
+            custom: vec![card("Hockenheim", None, 0, 0, "dry")],
+            ..none
+        };
+        assert_eq!(landing_empty(&some, &no_assists), None);
     }
 
     #[test]

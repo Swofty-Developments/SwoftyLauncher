@@ -212,7 +212,16 @@ pub fn begin(
         timetrial::clear_session_keys(&g.dir);
         return None;
     };
-    let nonce = upload::nonce(&store.root, config).map(|n| n.nonce);
+    let nonce = match upload::nonce(&store.root, config) {
+        Ok(n) => Some(n.nonce),
+        Err(e) => {
+            say(
+                "laps",
+                &format!("session nonce: {e}; the watcher asks again while the game runs"),
+            );
+            None
+        }
+    };
     if let Err(e) = timetrial::write_session_keys(&g.dir, nonce.as_deref(), config.time_trial_ingame) {
         say("laps", &format!("lap recording is off: {e}"));
         return None;
@@ -222,6 +231,7 @@ pub fn begin(
         &store.root,
         &g.dir,
         config,
+        nonce.is_none(),
         move || fingerprint(&s, &p, &identity),
         |line| say("laps", line),
     ))
@@ -231,7 +241,17 @@ pub fn begin(
 /// Any trouble is one log line and the session goes on without it.
 pub fn integrity(store: &Store, out: &dyn Fn(&str)) -> Option<Module> {
     let token = token(&store.root, &store.config())?;
-    match integrity::ensure(&store.root, &Api::new(&token)) {
+    let found = match integrity::local() {
+        Some(local) => {
+            out(&format!(
+                "integrity module: {} is set; the local build is placed unsigned and the server's module is not used",
+                integrity::LOCAL_ENV
+            ));
+            local
+        }
+        None => integrity::ensure(&store.root, &Api::new(&token)),
+    };
+    match found {
         Ok(m) => Some(m),
         Err(why) => {
             out(&format!("integrity module: not loaded for this session: {why}"));

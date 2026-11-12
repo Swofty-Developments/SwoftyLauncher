@@ -73,6 +73,12 @@ inline bool streamline_caller(std::string_view path)
     return same_name(name, "sl.interposer.dll") || same_name(name, "sl.common.dll") || streamline_hook(name);
 }
 
+// sl::Result::eOk is 0; Streamline's other codes are all failures.
+inline bool streamline_result_ok(int result)
+{
+    return result == 0;
+}
+
 // What a queue learned from a swapchain's own GetDevice makes of the swapchain: only a direct queue is drawn on.
 inline std::string learned_fg(bool direct_queue, std::string_view present_fg)
 {
@@ -95,6 +101,98 @@ inline bool streamline_in(const std::vector<std::string> &modules)
         if (streamline_hook(m))
             return true;
     return false;
+}
+
+// Overlays that patch the D3D12 entry points the core's device hooks patch. RivaTuner Statistics Server's
+// hook attaches when a window is created and hooks over whatever is in the prologue; a prologue the core
+// hooked first sends its trampoline to address 0, so the device hooks are not armed while it is in the process.
+inline constexpr std::string_view DEVICE_HOOK_RIVALS[] = {"RTSSHooks64.dll", "RTSSHooks.dll"};
+
+inline std::string_view device_hook_rival(std::string_view path)
+{
+    std::string_view name = base_name(path);
+    for (auto r : DEVICE_HOOK_RIVALS)
+        if (same_name(name, r))
+            return r;
+    return {};
+}
+
+inline std::string device_hook_rival_in(const std::vector<std::string> &modules)
+{
+    for (auto &m : modules)
+        if (std::string_view r = device_hook_rival(m); !r.empty())
+            return std::string(r);
+    return {};
+}
+
+// Whether the device hooks arm: a rival overlay in the process keeps them off unless SWOFTY_OVERLAY_FG /
+// "overlay_fg" forces them on (forced is -1 when unset).
+inline bool device_hooks_allowed(std::string_view rival, int forced)
+{
+    return rival.empty() || forced > 0;
+}
+
+// What asks for the present hook at setup. An overlay addon that is on, a frame capture and a direct start's
+// cover screen need it; the main menu panel and video card only decorate the home screen.
+struct ArmReasons {
+    bool overlay = false, capture = false, cover = false, menu = false;
+    bool any() const { return overlay || capture || cover || menu; }
+    bool menu_only() const { return menu && !overlay && !capture && !cover; }
+};
+
+// Whether the present hook stays off for a rival overlay. RivaTuner's hook attaches to the probe window
+// arm_swapchain opens and patches Present over the core's hook, so the swapchain hooks are not armed when the
+// main menu panel and video card are the only reason to arm them: they draw nothing and the home tiles still
+// work. With an overlay addon, a capture or a cover the hook arms as before, rival or not.
+inline bool present_hook_yields(const ArmReasons &reasons, std::string_view rival)
+{
+    return reasons.menu_only() && !rival.empty();
+}
+
+// Present layers that make the game's swapchain on a path the core's creation hooks miss, and the swapchain
+// does not name its queue at Present either. Its present queue is then learned from ExecuteCommandLists,
+// which takes the device hooks.
+inline constexpr std::string_view PRESENT_LAYERS[] = {"NvPresent64.dll"};
+
+inline std::string present_layer_in(const std::vector<std::string> &modules)
+{
+    for (auto &m : modules)
+        for (auto l : PRESENT_LAYERS)
+            if (same_name(base_name(m), l))
+                return std::string(l);
+    return {};
+}
+
+inline bool device_hooks_wanted_for(const std::vector<std::string> &modules)
+{
+    return !present_layer_in(modules).empty();
+}
+
+constexpr int LIST_TYPE_DIRECT = 0;
+
+// A command queue seen in ExecuteCommandLists: its type from one GetDesc, and the thread and tick of its
+// last call while it is direct.
+struct ExecSeen {
+    void *queue;
+    int type;
+    uint32_t tid;
+    uint64_t tick;
+};
+
+// The present queue of a swapchain the creation hooks missed: the direct queue that last executed command
+// lists on the presenting thread, else the direct queue that executed most recently; nullptr when none has.
+inline const ExecSeen *present_queue_from_execs(const std::vector<ExecSeen> &seen, uint32_t tid)
+{
+    const ExecSeen *same = nullptr, *newest = nullptr;
+    for (auto &e : seen) {
+        if (e.type != LIST_TYPE_DIRECT)
+            continue;
+        if (e.tid == tid && (!same || e.tick > same->tick))
+            same = &e;
+        if (!newest || e.tick > newest->tick)
+            newest = &e;
+    }
+    return same ? same : newest;
 }
 
 inline bool xml_int(const std::string &text, const char *element, const char *attr, int &out)

@@ -17,7 +17,7 @@ description: Settings holds the launcher's own options in five categories, shows
 
 ## General
 
-**Language** is a drop-down listing each language by its own name: English, Русский or 简体中文. It changes straight away. The sidebar, the **Play** bar, **Profiles**, **Settings** and the crash screen are translated so far, and everything else stays in English, including the causes the crash screen names. Addons and F1 25 keep their own language.
+**Language** is a drop-down listing each language by its own name: English, Español, Русский or 简体中文. It changes straight away. The sidebar, the **Play** bar, **Profiles**, **Settings** and the crash screen are translated so far, and everything else stays in English, including the causes the crash screen names. Addons and F1 25 keep their own language.
 
 **Start Steam automatically** (or the EA app) starts your game's store when you press **Play**, as the same item in the **Play** menu does.
 
@@ -59,7 +59,7 @@ Every game session leaves its logs in `sessions` in the data folder, and nothing
 3. A full-window screen shows the progress and the file being copied. **Cancel** stops the copy and removes it; your addons and saves stay where they were. Nothing else in the launcher works while it runs, and the window doesn't close.
 4. When the copy checks out, the launcher restarts, switches to the new folder, deletes the old copy and shows a message. The old location keeps working: Swofty finds your addons and saves at the same path as before.
 
-On the same drive the folder is renamed and nothing is copied. A copy is checked by size, and by content for the small files.
+On the same drive the folder is renamed and nothing is copied. A copy is checked by size, and by content for the small files. The launcher's own logs under `state` and `logs` grow while it copies; for those the copy has to match the start of the original, and the restart copies the rest.
 
 The launcher refuses to start the move while F1 25 is open, a build is running or downloads are queued. It refuses a whole drive, a folder inside or around the launcher's own folder, inside or around the F1 25 folder, inside the folder they are in now, one that isn't empty, one it can't write to, and one on a drive without room for the data plus a margin. When `SWOFTY_DATA_DIR` sets the folder, it refuses and says so: change the variable instead.
 

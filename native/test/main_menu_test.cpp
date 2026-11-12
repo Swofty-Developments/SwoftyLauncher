@@ -36,14 +36,18 @@ int main()
     auto p = mm::layout(retail(), true);
     expect(at(p, 0, 0) == "story" && at(p, 0, 1) == "career", "Braking Point and Career lead the first row");
     expect(at(p, 1, 0) == mm::ID_GRAND_PRIX && at(p, 1, 1) == mm::ID_TIME_TRIAL, "Grand Prix and Time Trial share row 2");
-    expect(at(p, 2, 0) == "theatre" && p.cards[4].wide, "Theatre is a full-width row under them");
+    expect(at(p, 1, 2) == "local_multiplayer", "the Split Screen card (the stock Local Multiplayer item) ends row 2");
+    expect(at(p, 2, 0) == "theatre" && p.cards[5].wide, "Theatre is a full-width row under them");
     expect(at(p, 3, 0) == mm::ID_SHOWROOM, "Showroom follows Theatre");
     expect(at(p, 4, 0) == mm::ID_DIVIDER, "a divider sits between the cards and Addon Settings");
     expect(at(p, 5, 0) == "mod_menu" && p.cards.back().id == "mod_menu", "Addon Settings is last");
     for (auto &c : p.cards)
-        expect(c.id != "f1_world" && c.id != "local_multiplayer" && c.id != "pro_leagues" && c.id != "player_hub",
-               "removed entry gone: " + c.id);
-    expect(p.dropped.size() == 5, "the four removed entries and the divider are reported dropped");
+        expect(c.id != "f1_world" && c.id != "pro_leagues" && c.id != "player_hub", "removed entry gone: " + c.id);
+    expect(!mm::removed("local_multiplayer") && mm::removed("f1_world") && mm::removed("pro_leagues") && mm::removed("player_hub"),
+           "Local Multiplayer is kept (it is the only way to Split Screen); F1 World, League Racing and Player Hub go");
+    expect(p.dropped.size() == 4, "the three removed entries and the divider are reported dropped");
+    auto bare = mm::layout({"career", "f1_world", "theatre", "mod_menu"}, true);
+    expect(at(bare, 1, 2) == "", "no Split Screen card when the game builds no Local Multiplayer tile");
 
     auto q = mm::layout({"career", "home_navigate_to_challenge_event", "theatre", "mod_menu", "f1_world"}, false);
     expect(at(q, 0, 1) == "home_navigate_to_challenge_event", "the challenge tile joins the first row");
@@ -63,12 +67,16 @@ int main()
     expect(mm::watch_line("RB") == "Press RB to watch", "watch line");
     expect(std::string(mm::template_for("story")) == mm::TEMPLATE_TOP_LEFT && std::string(mm::template_for("career")) == mm::TEMPLATE_TOP_RIGHT &&
                std::string(mm::template_for("swofty_grand_prix")) == mm::TEMPLATE_MODES_LEFT && std::string(mm::template_for("swofty_time_trial")) == mm::TEMPLATE_MODES_RIGHT &&
+               std::string(mm::template_for("local_multiplayer")) == mm::TEMPLATE_MODES_THIRD &&
                std::string(mm::template_for("theatre")) == mm::TEMPLATE_WIDE_A && std::string(mm::template_for("swofty_showroom")) == mm::TEMPLATE_WIDE_B &&
                std::string(mm::template_for("mod_menu")) == mm::TEMPLATE_WIDE_C && std::string(mm::template_for("f1_world")).empty(),
            "every card has its row template and unknown ids have none");
     expect(std::string(mm::template_for("theatre", false)) == mm::TEMPLATE_DEFAULT && std::string(mm::template_for("swofty_showroom", false)) == mm::TEMPLATE_DEFAULT &&
+               std::string(mm::template_for("local_multiplayer", false)) == mm::TEMPLATE_DEFAULT &&
                std::string(mm::template_for("career", false)).empty() && std::string(mm::template_for("swofty_divider")) == mm::TEMPLATE_DIVIDER,
-           "without rows Theatre and Showroom take the default large tile; with rows the divider has its slot");
+           "without rows Theatre, Showroom and Split Screen take the default large tile; with rows the divider has its slot");
+    expect(std::string(mm::SPLIT_SCREEN_TITLE) == "SPLIT SCREEN" && !std::string(mm::SPLIT_SCREEN_DESCRIPTION).empty(),
+           "the Local Multiplayer item is titled Split Screen");
     expect(mm::with_separators(1234) == "1,234" && mm::with_separators(999) == "999" && mm::with_separators(1000000) == "1,000,000" &&
                mm::with_separators(12) == "12" && mm::with_separators(100000) == "100,000",
            "thousands separators");
@@ -124,25 +132,19 @@ int main()
     expect(mm::open_request_json("https://youtu.be/a") == R"({"url":"https://youtu.be/a"})", "open request json");
     expect(mm::open_request_json("a\"b") == R"({"url":"a\"b"})", "open request json escapes quotes");
     expect(std::string(mm::press_route(mm::Mode::time_trial)) == "swofty_time_trial" &&
-               std::string(mm::press_route(mm::Mode::grand_prix_new)) == "swofty_grand_prix" &&
-               std::string(mm::press_route(mm::Mode::grand_prix_saves)) == "swofty_grand_prix_saves" &&
+               std::string(mm::press_route(mm::Mode::grand_prix)) == "home_to_activity" &&
                std::string(mm::press_route(mm::Mode::none)).empty(),
-           "each card has its own launcher route");
-    expect(mm::grand_prix_mode(true, true) == mm::Mode::grand_prix_saves && mm::grand_prix_mode(false, true) == mm::Mode::grand_prix_new &&
-               mm::grand_prix_mode(true, false) == mm::Mode::grand_prix_new,
-           "Grand Prix goes to the saves list only when a season exists and the check is on");
+           "the Time Trial card has its launcher route; the Grand Prix card fires the game's home_to_activity");
     expect(std::string(mm::return_command(mm::Mode::time_trial)) == "time_trial" &&
-               std::string(mm::return_command(mm::Mode::grand_prix_saves)) == "grand_prix_resume" &&
-               std::string(mm::return_command(mm::Mode::grand_prix_new)) == "grand_prix_new",
+               std::string(mm::return_command(mm::Mode::grand_prix)) == "solo_gp" && std::string(mm::return_command(mm::Mode::none)).empty(),
            "the session-end hand-over raises the command of the card that started the session");
     {
         auto route = mm::Back::route;
         expect(std::string(mm::back_replacement(route, mm::djb2("f1_world_activity_container"), "f1_world")) == "swofty_back_home" &&
                    std::string(mm::back_replacement(route, mm::djb2("f1_world_activity_container"), "home")) == "swofty_back_home",
                "the container's Back (to the hub or home) becomes the launcher's route home");
-        expect(std::string(mm::back_replacement(route, mm::djb2("fe_showroom"), "back_1")) == "swofty_home" &&
-                   std::string(mm::back_replacement(route, mm::djb2("grand_prix_continue"), "back_1")) == "swofty_home",
-               "the Showroom's and the saves list's Back become the launcher's route home");
+        expect(std::string(mm::back_replacement(route, mm::djb2("fe_showroom"), "back_1")) == "swofty_home",
+               "the Showroom's Back becomes the launcher's route home");
         expect(mm::back_replacement(route, mm::djb2("fe_f1_world"), "back_1") == nullptr &&
                    mm::back_replacement(route, mm::djb2("f1_world_activity_container"), "tt_track_select") == nullptr &&
                    mm::back_replacement(route, mm::djb2("fe_showroom"), "showroom_f1") == nullptr,
@@ -153,6 +155,15 @@ int main()
         expect(mm::back_replacement(mm::Back::stock, mm::djb2("f1_world_activity_container"), "f1_world") == nullptr &&
                    mm::back_replacement(mm::Back::twostep, mm::djb2("f1_world_activity_container"), "f1_world") == nullptr,
                "the stock and two-step variants leave the route alone");
+        expect(mm::back_replacement(route, mm::djb2("grand_prix_continue"), "back") == nullptr &&
+                   mm::back_replacement(route, mm::djb2("grand_prix_continue"), "back_1") == nullptr,
+               "the saves list's Back stays the game's (a front-end route home from it left a black screen)");
+        expect(mm::saves_back_leaves_home(route, mm::djb2("grand_prix_continue"), "back", mm::Mode::grand_prix) &&
+                   !mm::saves_back_leaves_home(route, mm::djb2("grand_prix_continue"), "back", mm::Mode::none) &&
+                   !mm::saves_back_leaves_home(route, mm::djb2("grand_prix_continue"), "back", mm::Mode::time_trial) &&
+                   !mm::saves_back_leaves_home(mm::Back::stock, mm::djb2("grand_prix_continue"), "back", mm::Mode::grand_prix) &&
+                   !mm::saves_back_leaves_home(route, mm::djb2("grand_prix_continue"), "accept", mm::Mode::grand_prix),
+               "after a Grand Prix card press the saves list's Back leads home through the container");
         expect(mm::back_variant_of("", true) == mm::Back::route && mm::back_variant_of("", false) == mm::Back::stock &&
                    mm::back_variant_of("home", false) == mm::Back::home && mm::back_variant_of("twostep", true) == mm::Back::twostep &&
                    mm::back_variant_of("stock", true) == mm::Back::stock,
@@ -180,6 +191,12 @@ int main()
                !mm::return_due(false, false, mm::Mode::time_trial, true) && !mm::return_due(true, true, mm::Mode::time_trial, true) &&
                !mm::return_due(true, false, mm::Mode::time_trial, false),
            "the hand-over is armed when a session that a card started has ended");
+    expect(mm::entry_point_write(0x146066c74, true) == mm::EntryPointWrite::write,
+           "the F1 World entry point is cleared through the address the binding set resolved");
+    expect(mm::entry_point_write(0, true) == mm::EntryPointWrite::unresolved && mm::entry_point_write(0, false) == mm::EntryPointWrite::unresolved,
+           "a build whose set did not resolve g_Game_F1WorldEntryPoint never writes it (1.9.0 wrote the Steam offset on the EA build)");
+    expect(mm::entry_point_write(0x146066c74, false) == mm::EntryPointWrite::unwritable,
+           "a resolved address that is not writable memory is not written");
     printf("%s\n", fails ? "FAILED" : "all passed");
     return fails ? 1 : 0;
 }

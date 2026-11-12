@@ -162,26 +162,119 @@ HRESULT STDMETHODCALLTYPE create_comp_hook(IDXGIFactory2 *f, IUnknown *dev, cons
     return hr;
 }
 
+using SlGetNativeInterface = int(__cdecl *)(void *proxy, void **native);
+
+std::mutex execs_lock;
+std::vector<hud::guard::ExecSeen> execs_seen;
+std::atomic<bool> execs_wanted;
+
+void count_exec(ID3D12CommandQueue *q)
+{
+    DWORD tid = GetCurrentThreadId();
+    ULONGLONG now = GetTickCount64();
+    auto same = [&](const hud::guard::ExecSeen &e) { return e.queue == q; };
+    {
+        std::lock_guard<std::mutex> g(execs_lock);
+        auto it = std::find_if(execs_seen.begin(), execs_seen.end(), same);
+        if (it != execs_seen.end()) {
+            if (it->type == hud::guard::LIST_TYPE_DIRECT) {
+                it->tid = tid;
+                it->tick = now;
+            }
+            return;
+        }
+        if (execs_seen.size() >= 8)
+            return;
+    }
+    int type = int(q->GetDesc().Type);
+    std::lock_guard<std::mutex> g(execs_lock);
+    if (execs_seen.size() < 8 && std::none_of(execs_seen.begin(), execs_seen.end(), same))
+        execs_seen.push_back({q, type, tid, now});
+}
+
+bool recent_direct_queue(DWORD tid, hud::guard::ExecSeen &out)
+{
+    std::lock_guard<std::mutex> g(execs_lock);
+    const hud::guard::ExecSeen *e = hud::guard::present_queue_from_execs(execs_seen, tid);
+    if (e)
+        out = *e;
+    return e != nullptr;
+}
+
 bool learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg, Swapchain &out)
 {
-    static void *refused;
-    if (sc == refused)
+    static std::vector<void *> refused, waiting;
+    if (std::find(refused.begin(), refused.end(), sc) != refused.end())
         return false;
+    DWORD tid = GetCurrentThreadId();
     ID3D12CommandQueue *q = nullptr;
-    if (FAILED(sc->GetDevice(IID_PPV_ARGS(&q))) || !q) {
-        refused = sc;
-        swofty::log("[d3d12] swapchain %p was made before the creation hooks and does not name a D3D12 command queue; "
-                    "ignored",
-                    static_cast<void *>(sc));
-        return false;
+    HRESULT hr = sc->GetDevice(IID_PPV_ARGS(&q));
+    const char *via = "IDXGISwapChain::GetDevice at Present";
+    std::string native_note;
+    if (FAILED(hr) || !q) {
+        q = nullptr;
+        HMODULE sl = GetModuleHandleW(L"sl.interposer.dll");
+        auto get_native = sl ? reinterpret_cast<SlGetNativeInterface>(GetProcAddress(sl, "slGetNativeInterface"))
+                             : nullptr;
+        if (!sl)
+            native_note = "sl.interposer.dll is not loaded";
+        else if (!get_native)
+            native_note = "sl.interposer.dll has no slGetNativeInterface";
+        else {
+            void *native = nullptr;
+            int sr = get_native(sc, &native);
+            if (!hud::guard::streamline_result_ok(sr) || !native) {
+                char buf[64];
+                snprintf(buf, sizeof buf, "slGetNativeInterface returned %d", sr);
+                native_note = buf;
+            } else {
+                HRESULT nhr = static_cast<IDXGISwapChain *>(native)->GetDevice(IID_PPV_ARGS(&q));
+                if (FAILED(nhr) || !q) {
+                    q = nullptr;
+                    char buf[96];
+                    snprintf(buf, sizeof buf, "native swapchain %p GetDevice failed: 0x%08lx", native,
+                             static_cast<unsigned long>(nhr));
+                    native_note = buf;
+                } else
+                    via = "slGetNativeInterface + IDXGISwapChain::GetDevice at Present";
+            }
+        }
     }
-    D3D12_COMMAND_QUEUE_DESC qd = q->GetDesc();
-    q->Release();
+    D3D12_COMMAND_QUEUE_DESC qd{};
+    hud::guard::ExecSeen exec{};
+    if (q) {
+        qd = q->GetDesc();
+        q->Release();
+    } else {
+        bool told = std::find(waiting.begin(), waiting.end(), sc) != waiting.end();
+        if (!told && waiting.size() < 16)
+            waiting.push_back(sc);
+        if (!h_exec) {
+            refused.push_back(sc);
+            swofty::log("[d3d12] swapchain %p was made before the creation hooks and its present queue cannot be read; "
+                        "ignored (GetDevice: 0x%08lx; %s)",
+                        static_cast<void *>(sc), static_cast<unsigned long>(hr), native_note.c_str());
+            return false;
+        }
+        execs_wanted.store(true, std::memory_order_relaxed);
+        if (!recent_direct_queue(tid, exec)) {
+            if (!told)
+                swofty::log("[d3d12] swapchain %p was made before the creation hooks and its present queue cannot be "
+                            "read (GetDevice: 0x%08lx; %s); no direct command queue has executed command lists yet, "
+                            "so the overlay waits",
+                            static_cast<void *>(sc), static_cast<unsigned long>(hr), native_note.c_str());
+            return false;
+        }
+        q = static_cast<ID3D12CommandQueue *>(exec.queue);
+        qd.Type = D3D12_COMMAND_LIST_TYPE_DIRECT;
+        via = exec.tid == tid ? "ID3D12CommandQueue::ExecuteCommandLists on the presenting thread"
+                              : "ID3D12CommandQueue::ExecuteCommandLists, most recent direct queue";
+    }
     std::string by = module_of(caller);
     out = Swapchain();
     out.sc = sc;
     out.queue = q;
-    out.how = "IDXGISwapChain::GetDevice at Present";
+    out.how = via;
     out.by = by;
     out.fg = hud::guard::learned_fg(qd.Type == D3D12_COMMAND_LIST_TYPE_DIRECT, pfg);
     out.streamline = hud::guard::streamline_caller(by);
@@ -200,10 +293,18 @@ bool learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg, Swapchain 
         else
             chains.push_back(out);
     }
-    swofty::log("[d3d12] swapchain %p was made before the creation hooks; its queue %p (type %d) is read from the "
-                "swapchain; presented from %s%s",
-                static_cast<void *>(sc), static_cast<void *>(q), int(qd.Type), by.c_str(),
-                out.streamline ? "; through Streamline" : "");
+    if (exec.queue)
+        swofty::log("[d3d12] swapchain %p was made before the creation hooks; its present queue %p is the direct queue "
+                    "that executed command lists on thread %lu %llu ms before Present on thread %lu; presented from "
+                    "%s%s",
+                    static_cast<void *>(sc), static_cast<void *>(q), static_cast<unsigned long>(exec.tid),
+                    static_cast<unsigned long long>(GetTickCount64() - exec.tick), static_cast<unsigned long>(tid),
+                    by.c_str(), out.streamline ? "; through Streamline" : "");
+    else
+        swofty::log("[d3d12] swapchain %p was made before the creation hooks; its queue %p (type %d) is read from the "
+                    "swapchain; presented from %s%s",
+                    static_cast<void *>(sc), static_cast<void *>(q), int(qd.Type), by.c_str(),
+                    out.streamline ? "; through Streamline" : "");
     return true;
 }
 
@@ -339,6 +440,8 @@ HRESULT STDMETHODCALLTYPE color_space_hook(IDXGISwapChain3 *sc, DXGI_COLOR_SPACE
 
 void STDMETHODCALLTYPE exec_hook(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
 {
+    if (execs_wanted.load(std::memory_order_relaxed))
+        count_exec(q);
     ExecPlan plan;
     for (int i = 0, k = execs.n.load(); i < k; i++)
         execs.fns[i](q, n, lists, plan);
@@ -724,14 +827,29 @@ void STDMETHODCALLTYPE srv_hook(ID3D12Device *dev, ID3D12Resource *r, const D3D1
     srv_orig(dev, r, &c, h);
 }
 
+// The hook is made disabled and moved into its slot before it goes live, so a detour never runs while the
+// slot it calls the original through is still empty.
 bool install(safetyhook::InlineHook &h, void *target, void *detour, const char *what)
 {
-    auto made = safetyhook::InlineHook::create(target, detour);
+    if (!target || !detour) {
+        swofty::log("[d3d12] hooking %s skipped: no target", what);
+        return false;
+    }
+    auto made = safetyhook::InlineHook::create(target, detour, safetyhook::InlineHook::StartDisabled);
     if (!made) {
         swofty::log("[d3d12] hooking %s at %p failed", what, target);
         return false;
     }
+    if (!made->original<void *>()) {
+        swofty::log("[d3d12] hooking %s at %p failed: no trampoline", what, target);
+        return false;
+    }
     h = std::move(*made);
+    if (!h.enable()) {
+        swofty::log("[d3d12] hooking %s at %p failed: the hook did not enable", what, target);
+        h = {};
+        return false;
+    }
     return true;
 }
 

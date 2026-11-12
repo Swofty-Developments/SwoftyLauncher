@@ -14,11 +14,20 @@ use super::bridge::Pump;
 use super::game_replay;
 use super::queue::{Event, Folder, Limits, Queue, Report, unix_now};
 use super::toast;
-use super::{laps_dir, token};
+use super::{laps_dir, token, write_session_keys};
 use crate::session::Config;
 
 const WATCH_EVERY: Duration = Duration::from_secs(5);
 const FINAL_SWEEP: Duration = Duration::from_secs(6);
+/// How long a new lap waits for the replay the core saves of a personal best, so the two upload together.
+const REPLAY_WAIT: Duration = Duration::from_secs(10);
+const HOLD_POLL: Duration = Duration::from_millis(300);
+const NONCE_RETRIES: [Duration; 3] = [
+    Duration::from_secs(2),
+    Duration::from_secs(5),
+    Duration::from_secs(8),
+];
+const NONCE_LATER: Duration = Duration::from_secs(60);
 
 /// The run log line for an event, tagged `laps` by the caller.
 pub fn line(event: &Event) -> String {
@@ -57,10 +66,58 @@ fn toast(game: &Path, queue: &Queue, event: &Event, say: &dyn Fn(&str)) {
     }
 }
 
-/// Ask for a nonce for the game session about to start. A failure is not fatal: laps are uploaded
-/// without one.
-pub fn nonce(data: &Path, config: &Config) -> Option<Nonce> {
-    Api::new(&token(data, config)?).sessions().ok()
+/// Ask for a nonce for the game session about to start. A failure is not fatal here: the watcher keeps
+/// asking while the game runs, and the core picks the nonce up for the laps written after it arrives.
+pub fn nonce(data: &Path, config: &Config) -> Result<Nonce, String> {
+    let token = token(data, config).ok_or_else(|| "nobody is signed in".to_owned())?;
+    Api::new(&token).sessions().map_err(|e| e.to_string())
+}
+
+/// How long the watcher waits before asking for the nonce again: three quick tries over about 15 s,
+/// then once a minute while the game runs.
+pub fn nonce_retry_pause(attempt: usize) -> Duration {
+    NONCE_RETRIES.get(attempt).copied().unwrap_or(NONCE_LATER)
+}
+
+/// Keeps asking for the session nonce until the server issues one or the game ends, and puts it in the
+/// session file for the core. Without it every lap of the session is refused by the server.
+fn nonce_until_issued(
+    data: &Path,
+    game: &Path,
+    config: &Config,
+    stop: &dyn Fn() -> bool,
+    say: &dyn Fn(&str),
+) {
+    for attempt in 0.. {
+        let until = Instant::now() + nonce_retry_pause(attempt);
+        while Instant::now() < until {
+            if stop() {
+                return;
+            }
+            std::thread::sleep(Duration::from_millis(200));
+        }
+        if stop() || token(data, config).is_none() {
+            return;
+        }
+        match nonce(data, config) {
+            Ok(n) => {
+                match write_session_keys(game, Some(&n.nonce), config.time_trial_ingame) {
+                    Ok(()) => say(&format!(
+                        "session nonce issued on retry {}: the laps written from here carry it",
+                        attempt + 1
+                    )),
+                    Err(e) => say(&format!(
+                        "session nonce issued but the session file is not writable: {e}"
+                    )),
+                }
+                return;
+            }
+            Err(e) => say(&format!(
+                "session nonce: {e}; laps without one are refused by the server, asking again in {} s",
+                nonce_retry_pause(attempt + 1).as_secs()
+            )),
+        }
+    }
 }
 
 /// One pass: collect the game's laps into the outbox, then upload what is due. With no token the laps
@@ -116,6 +173,10 @@ pub fn flush(data: &Path, game: Option<&Path>, config: &Config) -> Report {
 
 /// Upload the game replays the core saved in `game` whose laps the server has, if someone is signed in.
 pub fn replays(data: &Path, game: &Path, config: &Config, stop: &dyn Fn() -> bool, say: &dyn Fn(&str)) {
+    static BUSY: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    let Ok(_busy) = BUSY.try_lock() else {
+        return;
+    };
     if !game_replay::any(game) {
         return;
     }
@@ -141,11 +202,13 @@ pub struct Watcher {
 impl Watcher {
     /// With In-game leaderboards on and a sign-in, the bridge's mailbox pump runs beside it.
     /// With Time Trial boards off or nobody signed in, the laps are still collected into the outbox and
-    /// nothing leaves the machine.
+    /// nothing leaves the machine. With `retry_nonce` the session nonce the start could not get is asked
+    /// for again on a thread of its own.
     pub fn start(
         data: &Path,
         game: &Path,
         config: &Config,
+        retry_nonce: bool,
         fingerprint: impl Fn() -> Option<Value> + Send + Sync + 'static,
         say: impl Fn(&str) + Send + Sync + 'static,
     ) -> Self {
@@ -174,9 +237,17 @@ impl Watcher {
             .spawn(move || {
                 let mut cached: Option<Option<Value>> = None;
                 while !stop.load(Ordering::Relaxed) {
-                    if has_laps(&game) || has_outbox(&data) {
+                    let laps = has_laps(&game);
+                    if laps && waiting_for_replay(&game) {
+                        std::thread::sleep(HOLD_POLL);
+                        continue;
+                    }
+                    if laps || has_outbox(&data) {
                         let print = cached.get_or_insert_with(|| fingerprint()).clone();
                         pass(&data, &game, &config, print.as_ref(), None, &*say);
+                        if laps {
+                            replays(&data, &game, &config, &|| stop.load(Ordering::Relaxed), &*say);
+                        }
                     }
                     let until = Instant::now() + WATCH_EVERY;
                     while Instant::now() < until && !stop.load(Ordering::Relaxed) {
@@ -185,6 +256,18 @@ impl Watcher {
                 }
             })
             .ok();
+        if retry_nonce {
+            let (stop, data, game, config) =
+                (w.stop.clone(), w.data.clone(), w.game.clone(), w.config.clone());
+            let say = w.say.clone();
+            std::thread::Builder::new()
+                .name("tt-nonce".into())
+                .spawn(move || {
+                    let stopped = || stop.load(Ordering::Relaxed);
+                    nonce_until_issued(&data, &game, &config, &stopped, &*say);
+                })
+                .ok();
+        }
         let (stop, data, game, config) = (w.stop.clone(), w.data.clone(), w.game.clone(), w.config.clone());
         let say = w.say.clone();
         std::thread::Builder::new()
@@ -222,6 +305,32 @@ impl Watcher {
             &*self.say,
         );
     }
+}
+
+/// Whether a lap is held back for its replay: the newest lap is younger than [`REPLAY_WAIT`] and no
+/// replay saved since it was written is ready yet.
+fn hold_for_replay(lap_age: Duration, replay_ready: bool) -> bool {
+    !replay_ready && lap_age < REPLAY_WAIT
+}
+
+fn waiting_for_replay(game: &Path) -> bool {
+    let Some(written) = std::fs::read_dir(laps_dir(game)).ok().and_then(|d| {
+        d.filter_map(Result::ok)
+            .filter(|e| e.path().extension().is_some_and(|x| x == "swlap"))
+            .filter_map(|e| e.metadata().ok()?.modified().ok())
+            .max()
+    }) else {
+        return false;
+    };
+    let age = written.elapsed().unwrap_or_default();
+    let since = written
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_secs())
+        .saturating_sub(2);
+    let ready = game_replay::ready(game, unix_now())
+        .iter()
+        .any(|p| p.secs >= since);
+    hold_for_replay(age, ready)
 }
 
 fn has_laps(game: &Path) -> bool {
@@ -265,8 +374,24 @@ fn pass(
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn a_new_lap_waits_for_its_replay_but_never_long() {
+        assert!(super::hold_for_replay(Duration::from_secs(2), false));
+        assert!(!super::hold_for_replay(Duration::from_secs(2), true));
+        assert!(!super::hold_for_replay(super::REPLAY_WAIT, false));
+    }
+
     use super::*;
     use crate::timetrial::api::Uploaded;
+
+    #[test]
+    fn the_nonce_is_asked_for_three_times_quickly_and_then_once_a_minute() {
+        let quick: Duration = (0..3).map(nonce_retry_pause).sum();
+        assert_eq!(quick, Duration::from_secs(15));
+        assert_eq!(nonce_retry_pause(3), Duration::from_secs(60));
+        assert_eq!(nonce_retry_pause(40), Duration::from_secs(60));
+    }
 
     #[test]
     fn the_run_log_line_names_the_time_rank_and_status() {

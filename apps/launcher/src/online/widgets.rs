@@ -503,6 +503,21 @@ impl Shell {
             .into_any_element()
     }
 
+    pub(super) fn no_laps_filtered(&self, cx: &mut Context<Self>) -> AnyElement {
+        EmptyState::new(IconName::Funnel, tr("No laps with these filters"))
+            .body(tr(
+                "Nobody has uploaded a lap with the assists and input you picked. Change them above or show every lap.",
+            ))
+            .action(
+                Button::new("online-show-all")
+                    .outline()
+                    .tap_sm()
+                    .label(tr("Show all laps"))
+                    .on_click(cx.listener(|this, _, _, cx| this.online_set_category(Category::default(), cx))),
+            )
+            .into_any_element()
+    }
+
     pub(super) fn target_item(&mut self, items: &mut Vec<Target>, t: Target) -> usize {
         items.push(t);
         items.len() - 1

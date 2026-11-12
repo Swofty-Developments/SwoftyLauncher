@@ -17,6 +17,12 @@ struct LiveCar {
 
 bool read(LiveCar &out);
 
+// True once the vehicle table resolves on this build: the sampler can find the player's car at all.
+bool available();
+
+// True on the KB build only: every KB offset the sampler and its callers know is this build's.
+bool kb_fields();
+
 uintptr_t player_car();
 
 struct LiveDynamics {

@@ -116,13 +116,30 @@ pub struct StatIdCeiling {
     pub from: Option<i64>,
 }
 
+/// The record that lists the virtual entrant lists (comma-separated labels) for the build's settle step.
+pub const VIRTUAL_LISTS: &str = "swofty.virtual_entrant_lists";
+const VIRTUAL_LISTS_TAG: u8 = 4;
+
+fn virtual_lists(db: &Db) -> Vec<String> {
+    db.text(fnv1a64(VIRTUAL_LISTS))
+        .map(|t| {
+            t.split(',')
+                .map(str::trim)
+                .filter(|l| !l.is_empty())
+                .map(String::from)
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 const STAT_ID_CEILINGS: &[(&str, &str, StatIdCeiling)] = &[
-    // The core's vehicle and team id pools end at 1023, and its registry never allocates above them.
+    // Vehicle and team ids are 14 bits in the game's packed keys (0x3fff = none), like driver ids; the core's
+    // registry pools end at the same 16382 (VEHICLE_STAT_MAX / TEAM_STAT_MAX in apply/content/lower.hpp).
     (
         "entrants.vehicles",
         "vehicle",
         StatIdCeiling {
-            max: 1023,
+            max: 16382,
             from: None,
         },
     ),
@@ -130,7 +147,7 @@ const STAT_ID_CEILINGS: &[(&str, &str, StatIdCeiling)] = &[
         "entrants.teams",
         "team",
         StatIdCeiling {
-            max: 1023,
+            max: 16382,
             from: None,
         },
     ),
@@ -228,6 +245,25 @@ pub fn stat_id_ceiling(table: &str, row: &str) -> Option<StatIdCeiling> {
         .map(|(_, _, c)| *c)
 }
 
+/// Why `table`'s ceiling is where it is, for tables whose limit an addon author can't work around by
+/// picking another id: appended to the "no free stat_id" error so the message says what to change.
+pub fn stat_id_ceiling_reason(table: &str, row: &str) -> Option<&'static str> {
+    match (table, row) {
+        ("game_setup.game_setup_modes", "game_setup_mode")
+        | ("entrants.entrant_setup_modes", "entrant_setup_mode") => Some(concat!(
+            "the game keeps setup modes in a 32-bit mask (bit = stat_id) and stops at boot with ",
+            "'invalid bitset position' above 31, so no install holds more than 32; share a mode ",
+            "instead of adding one per box or season (list-append the entrant list to swofty_f1 ",
+            "or to one mode the addons share)"
+        )),
+        ("game_setup.seasons", "season") => Some(concat!(
+            "the game keeps seasons in a 32-bit mask (bit = statId) and stops at boot with ",
+            "'invalid bitset position' above 31; reuse a stock season row instead of adding one"
+        )),
+        _ => None,
+    }
+}
+
 /// Whether a fresh row of `table`'s rows named `row` may not take `id`: driver ids 254 and 255, and any with a low byte of 0xff.
 pub fn stat_id_unusable(table: &str, row: &str, id: i64) -> bool {
     table == "entrants.drivers" && row == "driver" && (id == 254 || id & 0xff == 0xff)
@@ -293,6 +329,13 @@ pub enum DbOp {
         key: String,
         #[serde(default, skip_serializing_if = "std::ops::Not::not")]
         allow_stock_removal: bool,
+    },
+    /// Marks the entrant list labelled `list` as virtual: the build moves its row above the table's count, so the
+    /// game loads no list object for it and it takes no stat id and no entrant setup mode slot. The core reads it
+    /// into `swofty_virtual_list` when a box naming it is pressed. Put it before the `add-row` that adds the list:
+    /// that row then passes the 255 ceiling of `entrants.entrant_lists`.
+    VirtualList {
+        list: String,
     },
 }
 
@@ -1352,6 +1395,23 @@ fn apply(db: &mut Db, op: &DbOp, names: &dyn FieldNames, cx: &mut Cx) -> Result<
             }
             Ok(Some(k))
         }
+        DbOp::VirtualList { list } => {
+            let key = fnv1a64(VIRTUAL_LISTS);
+            let mut labels = virtual_lists(db);
+            if !labels.iter().any(|l| l == list) {
+                labels.push(list.clone());
+            }
+            let value = labels.join(",").into_bytes();
+            match db.get_mut(key) {
+                Some(r) => r.value = value,
+                None => db.push(Record {
+                    key,
+                    tag: VIRTUAL_LISTS_TAG,
+                    value,
+                }),
+            }
+            Ok(Some(key))
+        }
         DbOp::RemoveRecord {
             key,
             allow_stock_removal,
@@ -1649,7 +1709,11 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
             indexed && top_level
         }
     };
-    let ceiling = stat_id_ceiling(&path, row).filter(|_| top_level);
+    let virtual_row = path == "entrants.entrant_lists"
+        && set
+            .get("_metadata_")
+            .is_some_and(|l| virtual_lists(db).contains(l));
+    let ceiling = stat_id_ceiling(&path, row).filter(|_| top_level && !virtual_row);
     let field = stat_id_field(&path, row);
     let kept = names.row_ids().filter(|_| top_level);
     let label = rows
@@ -1682,9 +1746,10 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
                 })
                 .ok_or_else(|| {
                     Error::Resolve(format!(
-                        "{what}: {path} has no free {} up to {}, the highest the game reads",
+                        "{what}: {path} has no free {} up to {}, the highest the game reads{}",
                         stat_id_field(&path, row),
-                        c.max
+                        c.max,
+                        stat_id_ceiling_reason(&path, row).map_or(String::new(), |r| format!(" ({r})"))
                     ))
                 }),
             _ => Ok((top, None)),
@@ -1762,8 +1827,9 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
                 let free = |id: i64| unfit(id).is_none() && !later(id);
                 let Some((id, held_by)) = k.reclaim(&path, row, key, &free) else {
                     return Err(Error::Resolve(format!(
-                        "{what}: {path} has no free {field} up to {}, the highest the game reads",
-                        ceiling.map_or(i64::MAX, |c| c.max)
+                        "{what}: {path} has no free {field} up to {}, the highest the game reads{}",
+                        ceiling.map_or(i64::MAX, |c| c.max),
+                        stat_id_ceiling_reason(&path, row).map_or(String::new(), |r| format!(" ({r})"))
                     )));
                 };
                 let max = ceiling.map_or(String::new(), |c| format!(" up to {}", c.max));
@@ -1862,6 +1928,22 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
 mod tests {
     use super::*;
     use crate::asset::{FileKind, OpFile};
+
+    #[test]
+    fn mask_tables_say_why_their_ceiling_is_31() {
+        for (t, r) in [
+            ("game_setup.game_setup_modes", "game_setup_mode"),
+            ("entrants.entrant_setup_modes", "entrant_setup_mode"),
+            ("game_setup.seasons", "season"),
+        ] {
+            assert_eq!(stat_id_ceiling(t, r).map(|c| c.max), Some(31), "{t}");
+            assert!(
+                stat_id_ceiling_reason(t, r).is_some_and(|w| w.contains("32-bit mask")),
+                "{t}"
+            );
+        }
+        assert_eq!(stat_id_ceiling_reason("entrants.vehicles", "vehicle"), None);
+    }
 
     fn db() -> Gvdb {
         let mut records = vec![Record::new("entrants.teams._team_instancecount_", 0, "2")];
@@ -2971,6 +3053,39 @@ mod tests {
             "{:?}",
             report.lines
         );
+    }
+
+    #[test]
+    fn a_virtual_entrant_list_passes_the_byte_ceiling_its_row_never_reaches() {
+        const LISTS: &str = "entrants.entrant_lists";
+        let mut db = table(LISTS, "entrant_list", &[0, 255]);
+        let stock: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
+        let full = apply_db_ops_report(
+            &mut db.clone(),
+            &add_rows(LISTS, "entrant_list", &[("season_1960", None)]),
+            &stock,
+            &mut DbReport::default(),
+        )
+        .unwrap_err();
+        assert!(
+            full.to_string().contains("has no free stat_id up to 255"),
+            "{full}"
+        );
+        let mut ops = add_rows(LISTS, "entrant_list", &[("season_1960", None)]);
+        ops.ops.insert(
+            0,
+            DbOp::VirtualList {
+                list: "season_1960".into(),
+            },
+        );
+        apply_db_ops_report(&mut db, &ops, &stock, &mut DbReport::default()).unwrap();
+        assert_eq!(db.get_text(VIRTUAL_LISTS).as_deref(), Some("season_1960"));
+        assert_eq!(
+            db.get_text("entrants.entrant_lists.entrant_list_2._metadata_")
+                .as_deref(),
+            Some("season_1960")
+        );
+        assert_eq!(ids(&db, LISTS, "entrant_list"), [0, 255, 256]);
     }
 
     #[test]

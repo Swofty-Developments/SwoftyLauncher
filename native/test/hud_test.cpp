@@ -738,6 +738,8 @@ static void test_guard()
     CHECK(learned_fg(true, "").empty() && learned_fg(false, "") == "a non-direct present queue" &&
               learned_fg(true, "nvngx_dlssg.dll") == "nvngx_dlssg.dll (calls Present)",
           "a queue read from a swapchain is drawn on only when it is direct and no frame generation module presents");
+    CHECK(streamline_result_ok(0) && !streamline_result_ok(1) && !streamline_result_ok(-1),
+          "only sl::Result::eOk (0) lets the native swapchain be used");
     std::string hw = "<x>\n\t<antialiasing taa=\"true\" dlss=\"false\" />\n\t<frame_gen mode=\"0\" />\n\t"
                      "<multi_frame_gen value=\"0\" />\n</x>";
     FgSetting fs = fg_setting(hw);
@@ -766,6 +768,23 @@ static void test_guard()
     CHECK(!removal_after_draw(5000, 0), "a removal with no overlay draw is not attributed");
     CHECK(removal_after_draw(15000, 10000), "a removal 5 s after a draw is attributed");
     CHECK(removal_after_draw(20000, 10000) && !removal_after_draw(20001, 10000), "the window is 10 s");
+    CHECK(device_hooks_wanted_for({"C:\\Windows\\System32\\NvPresent64.dll", "F1_25.exe"}) &&
+              present_layer_in({"swofty_core.dll", "NVPRESENT64.DLL"}) == "NvPresent64.dll",
+          "the NVIDIA app's present layer in the process wants the device hooks");
+    CHECK(!device_hooks_wanted_for({"sl.interposer.dll", "sl.common.dll", "RTSSHooks64.dll", "F1_25.exe"}) &&
+              !device_hooks_wanted_for({}),
+          "Streamline, RivaTuner and the game alone do not");
+    int direct = 0, compute = 1, copy = 2;
+    void *a = &direct, *b = &compute, *c = &copy, *d = &a;
+    std::vector<ExecSeen> execs;
+    CHECK(!present_queue_from_execs(execs, 7), "no queue has executed yet");
+    execs = {{a, direct, 7, 100}, {b, direct, 9, 200}};
+    CHECK(present_queue_from_execs(execs, 7)->queue == a, "the direct queue on the presenting thread beats a newer one on another thread");
+    CHECK(present_queue_from_execs(execs, 5)->queue == b, "with no queue on the presenting thread the most recent direct queue wins");
+    execs = {{a, direct, 7, 100}, {c, direct, 7, 300}, {b, compute, 7, 400}, {d, copy, 7, 500}};
+    CHECK(present_queue_from_execs(execs, 7)->queue == c, "the newest direct queue on the thread wins over an older one");
+    execs = {{b, compute, 7, 400}, {d, copy, 7, 500}};
+    CHECK(!present_queue_from_execs(execs, 7), "compute and copy queues are never the present queue");
 }
 
 // Models d3d12hooks::exec_original: the hook sits on the native queue's ExecuteCommandLists (vtable
@@ -942,6 +961,40 @@ static void test_png(const char *out)
         fwrite(rgb.data(), 1, rgb.size(), f);
         fclose(f);
     }
+}
+
+static void test_device_hook_rival()
+{
+    using namespace hud::guard;
+    CHECK(device_hook_rival("RTSSHooks64.dll") == "RTSSHooks64.dll" &&
+              device_hook_rival("C:\\Program Files (x86)\\RivaTuner Statistics Server\\rtsshooks64.DLL") == "RTSSHooks64.dll" &&
+              device_hook_rival("RTSSHooks.dll") == "RTSSHooks.dll",
+          "rivatuner's hook module is a device hook rival by name, path and case");
+    CHECK(device_hook_rival("sl.interposer.dll").empty() && device_hook_rival("sl.dlss_g.dll").empty() &&
+              device_hook_rival("medal-hook64-v2.dll").empty() && device_hook_rival("F1_25.exe").empty() &&
+              device_hook_rival("").empty(),
+          "streamline, other overlays and the game are not rivals");
+    CHECK(device_hook_rival_in({"F1_25.exe", "sl.interposer.dll", "RTSSHooks64.dll", "dxgi.dll"}) == "RTSSHooks64.dll" &&
+              device_hook_rival_in({"F1_25.exe", "sl.interposer.dll", "dxgi.dll"}).empty() && device_hook_rival_in({}).empty(),
+          "a module list names its rival or none");
+    CHECK(device_hooks_allowed("", -1) && device_hooks_allowed("", 1) && !device_hooks_allowed("RTSSHooks64.dll", -1) &&
+              !device_hooks_allowed("RTSSHooks64.dll", 0) && device_hooks_allowed("RTSSHooks64.dll", 1),
+          "a rival keeps the device hooks off unless SWOFTY_OVERLAY_FG / overlay_fg forces them");
+    const ArmReasons none{}, menu{false, false, false, true}, overlay{true, false, false, false},
+        overlay_menu{true, false, false, true}, capture_menu{false, true, false, true}, cover_menu{false, false, true, true};
+    CHECK(!none.any() && menu.any() && overlay.any() && cover_menu.any(), "any reason asks for the present hook");
+    CHECK(menu.menu_only() && !none.menu_only() && !overlay.menu_only() && !overlay_menu.menu_only() &&
+              !capture_menu.menu_only() && !cover_menu.menu_only(),
+          "the main menu alone is menu-only; an overlay addon, a capture or a cover is not");
+    CHECK(!present_hook_yields(menu, "") && !present_hook_yields(overlay, "") && !present_hook_yields(overlay_menu, ""),
+          "without a rival the present hook arms for every reason");
+    CHECK(present_hook_yields(menu, "RTSSHooks64.dll") &&
+              present_hook_yields(menu, "RTSSHooks64.dll (RivaTuner Statistics Server is running)"),
+          "the main menu alone yields the present hook to rivatuner, by module or by its shared memory");
+    CHECK(!present_hook_yields(overlay, "RTSSHooks64.dll") && !present_hook_yields(overlay_menu, "RTSSHooks64.dll") &&
+              !present_hook_yields(capture_menu, "RTSSHooks64.dll") && !present_hook_yields(cover_menu, "RTSSHooks64.dll"),
+          "an overlay addon, a capture or a cover still arms the present hook with rivatuner in the process");
+    CHECK(!present_hook_yields(none, "RTSSHooks64.dll"), "nothing to arm yields nothing");
 }
 
 static void test_fg_gate()
@@ -1156,6 +1209,7 @@ int main(int argc, char **argv)
     test_image_decode();
     test_guard();
     test_original_dispatch();
+    test_device_hook_rival();
     test_fg_gate();
     test_fg_barriers();
     test_exec_plan();

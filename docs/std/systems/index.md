@@ -120,7 +120,7 @@ The pools are small and differ per table:
 
 - entrant lists: 0 to 255;
 - drivers: 0 to 254, with 58 free. Entrant records pack the driver id in 14 bits, so the real ceiling may be higher, and it needs reverse engineering;
-- teams: up to 514;
+- teams: up to 16382;
 - vehicles: up to 16,382 (14 bits, like drivers). Classic Seasons 0.6.4's vehicle ids already run to 599;
 - vehicle packages: 0 to 255;
 - heads: from 265;

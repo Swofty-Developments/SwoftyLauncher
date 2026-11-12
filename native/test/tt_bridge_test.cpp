@@ -96,6 +96,19 @@ int main()
         uint8_t other[16] = {0x5e, 0x2c, 0x17, 0x57, 0xff, 0xff, 0xff, 0xff};
         expect(tb::garage_node_offset(other, sizeof other) == -1, "another node id does not match");
     }
+    expect(!tb::track_watch_on(true, false, false, false, false) && !tb::track_watch_on(true, true, true, false, false), "the track watch is off outside a session, whatever is on");
+    expect(!tb::track_watch_on(true, true, true, true, false), "a live session that is not a Time Trial does not run the track watch");
+    expect(tb::track_watch_on(true, false, false, true, true) && tb::track_watch_on(false, true, false, true, true) && tb::track_watch_on(false, false, true, true, true),
+           "a live Time Trial runs the track watch for the bridge, the guards or the diagnostics");
+    expect(!tb::track_watch_on(false, false, false, true, true), "a live Time Trial with nothing on does not run it");
+    expect(!tb::track_watch_due(false, 10000, 0) && !tb::track_watch_due(true, 10400, 10000) && tb::track_watch_due(true, 10500, 10000) && tb::track_watch_due(true, 500, 0),
+           "the watch reads the track twice a second only while on");
+    expect(!tb::diag_tick_on(true, false, false) && !tb::diag_tick_on(true, true, false), "the diagnostics tick is off outside a live Time Trial, whatever is on");
+    expect(tb::diag_tick_on(true, false, true) && tb::diag_tick_on(false, true, true), "a live Time Trial runs the diagnostics tick for the bridge or the diagnostics");
+    expect(!tb::diag_tick_on(false, false, true), "a live Time Trial with nothing on does not run it");
+    expect(!tb::diag_tick_due(false, 10000, 0) && !tb::diag_tick_due(true, 10499, 10000) && tb::diag_tick_due(true, 10500, 10000) && tb::diag_tick_due(true, 500, 0),
+           "the diagnostics tick runs at most twice a second, and only while on");
+    expect(!tb::diag_tick_due(tb::diag_tick_on(true, true, false), 99999, 0), "the diagnostics switch alone never makes the tick due outside a Time Trial");
     expect(tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0), "a panel with seven tabs is driven once");
     expect(!tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0x1000, 7), "the same panel is not driven twice");
     expect(!tb::garage_should_drive(false, true, 0x1000, 0x2000, 0x2038, 0) && !tb::garage_should_drive(true, false, 0x1000, 0x2000, 0x2038, 0),
@@ -132,15 +145,18 @@ int main()
         expect(tb::replay_magic_offset(z, 16) == -1 && tb::replay_magic_offset(z, 0) == -1, "a file without the magic is rejected");
     }
     expect(tb::replay_capture_name(1700000000, 87893) == "pb_1700000000_87893.replay", "the capture file name carries the time and the lap time");
-    expect(tb::replay_capture_allowed(true, true, true, true, 1, 0x10) && !tb::replay_capture_allowed(false, true, true, true, 1, 0x10) && !tb::replay_capture_allowed(true, false, true, true, 1, 0x10) &&
-               !tb::replay_capture_allowed(true, true, false, true, 1, 0x10) && !tb::replay_capture_allowed(true, true, true, false, 1, 0x10) &&
-               !tb::replay_capture_allowed(true, true, true, true, 0, 0x10) && !tb::replay_capture_allowed(true, true, true, true, 150, 0x10) && !tb::replay_capture_allowed(true, true, true, true, 1, 0),
-           "the save starts only behind the switch, the bridge, our content, a genuine replay system, a recording and a job queue");
+    expect(tb::replay_capture_allowed(true, true, true, 1, 0x10) && !tb::replay_capture_allowed(false, true, true, 1, 0x10) && !tb::replay_capture_allowed(true, false, true, 1, 0x10) &&
+               !tb::replay_capture_allowed(true, true, false, 1, 0x10) && !tb::replay_capture_allowed(true, true, true, 0, 0x10) && !tb::replay_capture_allowed(true, true, true, 150, 0x10) &&
+               !tb::replay_capture_allowed(true, true, true, 1, 0),
+           "the save starts only behind the switch, the bridge, a genuine replay system, a recording and a job queue, on stock content as on ours");
     expect(tb::replay_file_settled(100, 100, 3, 3) && !tb::replay_file_settled(100, 99, 3, 3) && !tb::replay_file_settled(0, 0, 9, 3) && !tb::replay_file_settled(100, 100, 2, 3),
            "a replay file is settled only when its size stopped changing");
-    expect(tb::replay_lap_is_best(88505, 1, 0) && tb::replay_lap_is_best(88505, -1, 90000) && !tb::replay_lap_is_best(88505, 0, 0) && !tb::replay_lap_is_best(90000, 1, 88505) &&
-               !tb::replay_lap_is_best(88505, 1, 88505) && !tb::replay_lap_is_best(0, 1, 0),
+    expect(tb::replay_lap_is_best(88505, 1, 0, false) && tb::replay_lap_is_best(88505, -1, 90000, false) && !tb::replay_lap_is_best(88505, 0, 0, false) &&
+               !tb::replay_lap_is_best(90000, 1, 88505, true) && !tb::replay_lap_is_best(88505, 1, 88505, true) && !tb::replay_lap_is_best(0, 1, 0, false),
            "a lap marks a replay save only when valid and a new session best");
+    expect(tb::replay_lap_is_best(87166, 1, 38644, false) && !tb::replay_lap_is_best(38644, -1, 87166, true) && tb::replay_lap_is_best(87006, 1, 87166, true) &&
+               tb::replay_lap_is_best(86000, -1, 87000, false),
+           "a short lap of unknown validity (a restart mid-lap) never holds the best against the laps the game confirms valid");
     {
         tb::ReplayManagerView m;
         m.vtable20 = 0x142000000ull, m.system40 = 0x317a560, m.lock118 = 0x32e0000, m.queue150 = 0x32e4000, m.flag6e1 = 1;
@@ -556,6 +572,14 @@ int main()
         s.presence_ok = tb::gate::presence_ok(1, 7);
         expect(tb::gate::first_failure(s) == tb::gate::Why::presence && !tb::gate::presence_ok(3, 0), "presence needs both flag bits and a user");
         expect(std::string(tb::gate::account_state_name(9)) == "eEAAccountSteamOverlayDisabled" && std::string(tb::gate::account_state_name(99)) == "unknown", "account state names");
+        expect(tb::gate::account_error_quiet(true, 8) && tb::gate::account_error_quiet(true, 9) && tb::gate::account_error_quiet(true, 2),
+               "with the bridge on the login error and overlay popups, and server not accessible, are not shown");
+        expect(!tb::gate::account_error_quiet(true, 10),
+               "a hostile session runs the game's handler, which sets the online-services error code the privilege check waits for");
+        expect(!tb::gate::account_error_quiet(true, 4) && !tb::gate::account_error_quiet(true, 5) && !tb::gate::account_error_quiet(true, 7) && !tb::gate::account_error_quiet(true, 3) &&
+                   !tb::gate::account_error_quiet(true, 6) && !tb::gate::account_error_quiet(true, 0) && !tb::gate::account_error_quiet(true, 1) && !tb::gate::account_error_quiet(true, 99),
+               "the states Steam copies hit and every other state are left to the game");
+        expect(!tb::gate::account_error_quiet(false, 8) && !tb::gate::account_error_quiet(false, 9), "with the bridge off nothing is quiet");
     }
 
     // log cap and kill switch

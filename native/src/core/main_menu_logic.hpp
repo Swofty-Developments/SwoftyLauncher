@@ -26,6 +26,9 @@ constexpr const char *STOCK_ROUTE_F1_WORLD = "f1_world";
 constexpr const char *TEMPLATE_DEFAULT = "fe_tile_button_default";
 constexpr const char *TEMPLATE_DIVIDER = "swofty_home_divider";
 
+constexpr const char *SPLIT_SCREEN_TITLE = "SPLIT SCREEN";
+constexpr const char *SPLIT_SCREEN_DESCRIPTION = "Race a friend on one screen";
+
 constexpr const char *TT_TITLE = "Not signed in";
 constexpr const char *TT_BODY = "Sign in with Discord in Swofty Launcher to save your laps to the Time Trial boards. "
                                 "Laps from this session will not be saved. Press OK to continue to Time Trial.";
@@ -35,6 +38,7 @@ constexpr const char *TEMPLATE_TOP_RIGHT = "swofty_home_top_right";
 constexpr const char *TEMPLATE_TOP_THIRD = "swofty_home_top_third";
 constexpr const char *TEMPLATE_MODES_LEFT = "swofty_home_modes_left";
 constexpr const char *TEMPLATE_MODES_RIGHT = "swofty_home_modes_right";
+constexpr const char *TEMPLATE_MODES_THIRD = "swofty_home_modes_third";
 constexpr const char *TEMPLATE_WIDE_A = "swofty_home_wide_a";
 constexpr const char *TEMPLATE_WIDE_B = "swofty_home_wide_b";
 constexpr const char *TEMPLATE_WIDE_C = "swofty_home_wide_c";
@@ -42,7 +46,7 @@ constexpr const char *TEMPLATE_WIDE_C = "swofty_home_wide_c";
 inline const char *template_for(const std::string &id, bool rows = true)
 {
     if (!rows)
-        return id == ID_THEATRE || id == ID_SHOWROOM ? TEMPLATE_DEFAULT : "";
+        return id == ID_THEATRE || id == ID_SHOWROOM || id == ID_LOCAL ? TEMPLATE_DEFAULT : "";
     if (id == ID_DIVIDER)
         return TEMPLATE_DIVIDER;
     if (id == ID_STORY)
@@ -55,6 +59,8 @@ inline const char *template_for(const std::string &id, bool rows = true)
         return TEMPLATE_MODES_LEFT;
     if (id == ID_TIME_TRIAL)
         return TEMPLATE_MODES_RIGHT;
+    if (id == ID_LOCAL)
+        return TEMPLATE_MODES_THIRD;
     if (id == ID_THEATRE)
         return TEMPLATE_WIDE_A;
     if (id == ID_SHOWROOM)
@@ -71,6 +77,8 @@ constexpr const char *BACK_HOME_FROM_CONTAINER = "swofty_back_home";
 constexpr const char *TIME_TRIAL_ROUTE = "swofty_time_trial";
 constexpr const char *GRAND_PRIX_ROUTE = "swofty_grand_prix";
 constexpr const char *GRAND_PRIX_SAVES_ROUTE = "swofty_grand_prix_saves";
+constexpr const char *STOCK_ACTIVITY_ROUTE = "home_to_activity";
+constexpr const char *GRAND_PRIX_COMMAND = "solo_gp";
 constexpr const char *FRONTEND_FLOW = "frontend_flow";
 constexpr const char *F1_WORLD_FLOW = "f1_world_flow";
 
@@ -186,7 +194,7 @@ struct Plan {
 
 inline bool removed(const std::string &id)
 {
-    return id == ID_F1_WORLD || id == ID_LOCAL || id == ID_LEAGUE || id == ID_HUB || id == ID_MOVIE || id == "divider";
+    return id == ID_F1_WORLD || id == ID_LEAGUE || id == ID_HUB || id == ID_MOVIE || id == "divider";
 }
 
 inline Plan layout(const std::vector<std::string> &stock, bool showroom_available)
@@ -207,7 +215,7 @@ inline Plan layout(const std::vector<std::string> &stock, bool showroom_availabl
     if (has(ID_CHALLENGE))
         top(ID_CHALLENGE);
     for (auto &s : stock) {
-        if (s == ID_CAREER || s == ID_STORY || s == ID_CHALLENGE || s == ID_THEATRE || s == ID_SETTINGS)
+        if (s == ID_CAREER || s == ID_STORY || s == ID_CHALLENGE || s == ID_LOCAL || s == ID_THEATRE || s == ID_SETTINGS)
             continue;
         if (removed(s))
             plan.dropped.push_back(s);
@@ -218,6 +226,8 @@ inline Plan layout(const std::vector<std::string> &stock, bool showroom_availabl
         plan.cards.push_back({ID_GRAND_PRIX, 1, 0, false});
         plan.cards.push_back({ID_TIME_TRIAL, 1, 1, false});
     }
+    if (has(ID_LOCAL))
+        plan.cards.push_back({ID_LOCAL, 1, 2, false});
     int row = 2;
     if (has(ID_THEATRE))
         plan.cards.push_back({ID_THEATRE, row++, 0, true});
@@ -326,33 +336,33 @@ inline bool hides_panel(const std::string &route)
     return route.rfind("swofty_", 0) != 0 || route == TIME_TRIAL_ROUTE || route == GRAND_PRIX_ROUTE || route == GRAND_PRIX_SAVES_ROUTE;
 }
 
-enum class Mode { none, time_trial, grand_prix_new, grand_prix_saves };
+enum class Mode { none, time_trial, grand_prix };
 
 inline const char *press_route(Mode m)
 {
     switch (m) {
     case Mode::time_trial:
         return TIME_TRIAL_ROUTE;
-    case Mode::grand_prix_new:
-        return GRAND_PRIX_ROUTE;
-    case Mode::grand_prix_saves:
-        return GRAND_PRIX_SAVES_ROUTE;
+    case Mode::grand_prix:
+        return STOCK_ACTIVITY_ROUTE;
     default:
         return "";
     }
 }
 
-inline Mode grand_prix_mode(bool saves, bool saves_check_on) { return saves && saves_check_on ? Mode::grand_prix_saves : Mode::grand_prix_new; }
+// The Grand Prix card opens the activity container through the game's own home_to_activity (an entry with no command)
+// and raises solo_gp on it, the command the container's own Grand Prix card raises. The game answers with
+// grand_prix_resume, whose route migrates to the front-end flow's enter_gp_resume and opens grand_prix_continue: the
+// saved seasons, Continue and New Grand Prix, as F1 World > Play > Grand Prix shows them; with no saved season the game
+// opens the new Grand Prix picker itself.
 
 inline const char *return_command(Mode m)
 {
     switch (m) {
     case Mode::time_trial:
         return "time_trial";
-    case Mode::grand_prix_new:
-        return "grand_prix_new";
-    case Mode::grand_prix_saves:
-        return "grand_prix_resume";
+    case Mode::grand_prix:
+        return GRAND_PRIX_COMMAND;
     default:
         return "";
     }
@@ -372,16 +382,26 @@ inline Back back_variant_of(const std::string &v, bool data_in_build)
 }
 
 // The route the launcher fires in place of the game's own Back route (nullptr: the game's stays). The container's
-// Back fires f1_world (to the hub) or home; the Showroom's and the Grand Prix saves list's fire back_1.
+// Back fires f1_world (to the hub) or home; the Showroom's fires back_1.
 inline const char *back_replacement(Back variant, uint32_t group, const std::string &route)
 {
     if (variant == Back::route || variant == Back::home) {
         if (group == djb2("f1_world_activity_container") && (route == "f1_world" || route == "home"))
             return variant == Back::home ? "home" : BACK_HOME_FROM_CONTAINER;
     }
-    if (variant == Back::route && route == "back_1" && (group == djb2("fe_showroom") || group == djb2("grand_prix_continue")))
+    if (variant == Back::route && route == "back_1" && group == djb2("fe_showroom"))
         return HOME_BACK_ROUTE;
     return nullptr;
+}
+
+// The saves list's Back (route back in grand_prix_continue) stays the game's: it migrates to the activity container,
+// and swapping it for a front-end route home left a black screen. After a Grand Prix card press the core then leaves
+// the container for the main menu once its tabs exist, so one Back from the saves list returns home.
+constexpr uint64_t SAVES_BACK_DELAY_MS = 400, SAVES_BACK_TIMEOUT_MS = 6000;
+
+inline bool saves_back_leaves_home(Back variant, uint32_t group, const std::string &route, Mode mode)
+{
+    return variant == Back::route && mode == Mode::grand_prix && group == djb2("grand_prix_continue") && route == "back";
 }
 
 enum class Expect { none, container, saves, home };
@@ -397,6 +417,19 @@ inline Recovery recovery_for(Expect e, const std::string &flow_now, bool home_sc
     if (flow_now == F1_WORLD_FLOW)
         return Recovery::back_home_route;
     return home_screen_open ? Recovery::none : Recovery::open_home;
+}
+
+// Whether the F1 World entry point (g_Game_F1WorldEntryPoint) may be cleared when a Back leaves for the main menu. The
+// global is only written through the address the running build's binding set resolved: an unresolved binding (a
+// build whose scan found no match) skips the write, as does an address that is not writable memory. 1.9.0 wrote the
+// Steam offset on every build and faulted on the EA build, where that offset is a read-only .sbss page.
+enum class EntryPointWrite { write, unresolved, unwritable };
+
+inline EntryPointWrite entry_point_write(uintptr_t resolved, bool writable)
+{
+    if (!resolved)
+        return EntryPointWrite::unresolved;
+    return writable ? EntryPointWrite::write : EntryPointWrite::unwritable;
 }
 
 inline bool migrate_failed(const std::string &text)

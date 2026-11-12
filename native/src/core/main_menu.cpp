@@ -31,23 +31,25 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 // F1 The Movie, F1 World, the challenge tile, a divider, Local Multiplayer, League Racing, Player Hub, Theatre.
 // site_FeHome_AfterCareerCall (swofty_core.cpp) runs right after the Career tile and calls add_tiles, which adds
 // Grand Prix and Time Trial as two copies of the F1 World item (their own id, title and description over the
-// stock populate), the challenge tile when the game builds it and Theatre; swofty_core then adds Addon
-// Settings last. arm_patch overwrites the first instruction of the F1 World block (lea r15d,[r12+1]) with a jmp to
-// the block's final jmp, so F1 World, the divider, Local Multiplayer, League Racing, Player Hub and the stock
-// Theatre are never added. The block is matched byte for byte first and the adders are the call targets read
-// from it; when anything does not match nothing is patched, no tile is added and the stock menu stays.
+// stock populate), Split Screen as the stock Local Multiplayer item with its own title (its route opens the
+// game's Local Multiplayer list, the lone Splitscreen tile), the challenge tile when the game builds it and
+// Theatre; swofty_core then adds Addon Settings last. arm_patch overwrites the first instruction of the F1 World
+// block (lea r15d,[r12+1]) with a jmp to the block's final jmp, so F1 World, the divider, League Racing, Player Hub
+// and the stock Theatre are never added. The block is matched byte for byte first and the adders are the call
+// targets read from it; when anything does not match nothing is patched, no tile is added and the stock menu stays.
 //
 // The status strip, the sign-in state and the latest video card are painted by the overlay frame
 // (paint) from swofty/home_menu.json while the home screen is open. Images (the Discord avatar and the video
 // thumbnail) are decoded by the overlay's image loader and drawn as overlay images.
 //
-// Navigation (notes: main-menu NAV.md). Time Trial, Grand Prix and the Grand Prix saves list are launcher routes in the
-// fe_home group (swofty_time_trial, swofty_grand_prix, swofty_grand_prix_saves; ui/home_nav.flag says the build has them): the first two are
-// the game's own home_to_activity with a launcher f1_world_flow entry that opens the activity container with the
-// picker's command already raised (swofty_enter_time_trial, swofty_enter_grand_prix), the third a copy of the theatre
-// route to the saves list in the front-end flow. The Back of the container (f1_world / home), of the Showroom and of
-// the saves list is swapped where the game fires it for swofty_back_home (the container's home route behind the
-// standard wipe) or swofty_home (the hub's back_1). Every Migrate the game runs is logged with its flow and entry
+// Navigation (notes: main-menu NAV.md). The Time Trial card fires swofty_time_trial, a launcher route in the fe_home
+// group (ui/home_nav.flag says the build has it): the game's own home_to_activity with a launcher f1_world_flow entry
+// that opens the activity container with the picker's command (swofty_enter_time_trial). The Grand Prix card fires the
+// game's own home_to_activity and raises solo_gp on the container once its tabs exist, the command the container's own
+// Grand Prix card raises: the game then raises grand_prix_resume and opens grand_prix_continue (the saved seasons and
+// New Grand Prix) through the front-end flow's enter_gp_resume, as F1 World > Play > Grand Prix does. The Back of the
+// container (f1_world / home), of the Showroom (back_1) and of that saves list (back) is swapped where the game fires
+// it for swofty_back_home (the container's home route behind the standard wipe) or swofty_home (the hub's back_1). Every Migrate the game runs is logged with its flow and entry
 // (nav:), the last accepted flow is kept, and a screen that does not open in time is recovered. A session that
 // started from a card hands over (frontend_transition.ui, swofty_enter_return) to the bare activity container, where
 // the card's command is raised.
@@ -56,7 +58,9 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 // layout; only single (one spawner, tile order) exists so far, and rows is logged as not built.
 // SWOFTY_MAIN_MENU_ENTRY=chain opens the pickers the old way (home_to_activity, then the command 900 ms after
 // the container is up); SWOFTY_MAIN_MENU_BACK=stock|home|twostep picks the game's Back, its home route or the two-step
-// hub Back instead of the launcher's routes; SWOFTY_MAIN_MENU_GPSAVES=0 always opens the new Grand Prix picker;
+// hub Back instead of the launcher's routes. 1.9.4 opened grand_prix_continue straight from the home screen
+// (swofty_grand_prix_saves, a copy of the theatre route), where its slot list crashed the game in
+// Game_CareerContinue_ListSlots for many players; neither that route nor swofty_grand_prix is fired any more;
 // SWOFTY_MAIN_MENU_RETURN=0 leaves the session-end hand-over on the bare container; SWOFTY_MAIN_MENU_RECOVER=0 turns
 // the recovery of a screen that did not open off; SWOFTY_MAIN_MENU_STATEFIX=0 leaves #ui_menu_data.frontend_transition_state
 // alone when leaving the container; SWOFTY_MAIN_MENU_MIGRATELOG=0 leaves the Migrate command unhooked.
@@ -68,7 +72,7 @@ namespace {
 using namespace swofty::game;
 namespace logic = ::runtime::main_menu;
 
-constexpr size_t OFF_F1WORLD = 11, OFF_CHALLENGE = 32, OFF_DIVIDER = 47, OFF_THEATRE = 98, OFF_END_JMP = 103;
+constexpr size_t OFF_F1WORLD = 11, OFF_CHALLENGE = 32, OFF_DIVIDER = 47, OFF_LOCAL_MP = 59, OFF_THEATRE = 98, OFF_END_JMP = 103;
 constexpr size_t NESTR_CHARS = 9;
 
 const runtime::Sig S_BLOCK{"FeHome_F1WorldBlock",
@@ -84,7 +88,7 @@ using GetAction_t = Action *(*)(HomeItem *, Action *);
 
 struct Block {
     uint8_t *at = nullptr;
-    Add_t f1world = nullptr, challenge = nullptr, divider = nullptr, theatre = nullptr;
+    Add_t f1world = nullptr, challenge = nullptr, divider = nullptr, local_mp = nullptr, theatre = nullptr;
 } block;
 
 std::atomic<bool> resolved{false}, patched{false}, home_open{false};
@@ -115,7 +119,7 @@ std::shared_ptr<const Prepared> prepared;
 uint64_t prepared_at = 0;
 std::string prepared_key;
 std::atomic<int> strip_wanted{-1}, strip_set{-1};
-void *theatre_populate = nullptr, *theatre_action = nullptr;
+void *theatre_populate = nullptr, *theatre_action = nullptr, *local_mp_populate = nullptr;
 std::mutex state_lock;
 logic::State state;
 uint64_t state_read_at = 0;
@@ -156,10 +160,11 @@ bool resolve()
         block.f1world = target(at, OFF_F1WORLD);
         block.challenge = target(at, OFF_CHALLENGE);
         block.divider = target(at, OFF_DIVIDER);
+        block.local_mp = target(at, OFF_LOCAL_MP);
         block.theatre = target(at, OFF_THEATRE);
-        swofty::log("[main-menu] home tile block at %p; adders F1 World %p, challenge %p, Theatre %p", at,
+        swofty::log("[main-menu] home tile block at %p; adders F1 World %p, challenge %p, Local Multiplayer %p, Theatre %p", at,
                     reinterpret_cast<void *>(block.f1world), reinterpret_cast<void *>(block.challenge),
-                    reinterpret_cast<void *>(block.theatre));
+                    reinterpret_cast<void *>(block.local_mp), reinterpret_cast<void *>(block.theatre));
         resolved = true;
     });
     return resolved.load();
@@ -245,7 +250,7 @@ void wrap_item(HomeItem *item)
     if (!*logic::template_for(id, rows_on()))
         return;
     if (!std::strcmp(id, logic::ID_GRAND_PRIX) || !std::strcmp(id, logic::ID_TIME_TRIAL) ||
-        !std::strcmp(id, logic::ID_SHOWROOM) || !std::strcmp(id, logic::ID_SETTINGS))
+        !std::strcmp(id, logic::ID_LOCAL) || !std::strcmp(id, logic::ID_SHOWROOM) || !std::strcmp(id, logic::ID_SETTINGS))
         return;
     auto vt = reinterpret_cast<void **>(item->vtable);
     {
@@ -311,11 +316,47 @@ void add_showroom(TileList *list, uint8_t index)
     Ne_Make_StrFromCStr(&item->id, logic::ID_SHOWROOM, 0, 0);
 }
 
+void split_screen_populate(HomeItem *item, void *node, uint32_t a7)
+{
+    reinterpret_cast<Populate_t>(local_mp_populate)(item, node, a7);
+    auto vm_node = static_cast<uint8_t *>(item->button_node.node);
+    if (!vm_node)
+        return;
+    void *reg = *g_Vm_Registry, *parent = vm_node + 8;
+    uint8_t no = 0;
+    set_string(reg, parent, "title", logic::SPLIT_SCREEN_TITLE);
+    Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
+    set_string(reg, parent, "description", logic::SPLIT_SCREEN_DESCRIPTION);
+    Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
+    style_item(item);
+}
+
+// The stock Local Multiplayer item, titled Split Screen: its id and its action (the local_multiplayer route, which
+// opens the game's Local Multiplayer list, the lone Splitscreen tile) stay the game's.
+void add_split_screen(TileList *list, uint8_t index)
+{
+    block.local_mp(list, index);
+    HomeItem *item = last_item(list);
+    if (!item) {
+        swofty::log("[main-menu] split screen: the Local Multiplayer adder left no item");
+        return;
+    }
+    auto vt = reinterpret_cast<void **>(item->vtable);
+    if (!local_mp_populate)
+        local_mp_populate = vt[4];
+    if (vt[4] != local_mp_populate) {
+        swofty::log("[main-menu] split screen: the Local Multiplayer item's vtable changed; left as a Local Multiplayer tile");
+        return;
+    }
+    swofty::subclass(item, {{4, reinterpret_cast<void *>(split_screen_populate)}});
+}
+
 enum class Step { idle, wait_container, done };
 struct Chain {
     Step step = Step::idle;
     const char *command = "";
     uint64_t started = 0, container_at = 0;
+    bool handover = false;
 } chain;
 std::mutex chain_lock;
 
@@ -407,11 +448,50 @@ uint64_t raise_delay_ms()
 
 bool fire_in_group(const char *group, const char *route, const char *why);
 
+// Clears g_Game_F1WorldEntryPoint (how F1 World was entered) so the hub is not reopened after a Back. The address comes from
+// the running build's binding set, never from a fixed offset: a build whose set does not resolve it keeps the game's
+// own value and says so once.
+std::atomic<uintptr_t> entry_point_addr{0};
+std::atomic<bool> entry_point_told{false};
+
+bool writable(const void *p, size_t n)
+{
+    MEMORY_BASIC_INFORMATION m{};
+    if (!p || !VirtualQuery(p, &m, sizeof m) || m.State != MEM_COMMIT || (m.Protect & (PAGE_NOACCESS | PAGE_GUARD)))
+        return false;
+    if (!(m.Protect & (PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY)))
+        return false;
+    return uintptr_t(p) + n <= uintptr_t(m.BaseAddress) + m.RegionSize;
+}
+
+void clear_entry_point(const char *why)
+{
+    uintptr_t at = entry_point_addr.load();
+    if (!at && !entry_point_told.load()) {
+        at = swofty::api->resolve("g_Game_F1WorldEntryPoint");
+        entry_point_addr = at;
+    }
+    auto entry = reinterpret_cast<uint32_t *>(at);
+    switch (logic::entry_point_write(at, at && writable(entry, 4))) {
+    case logic::EntryPointWrite::write:
+        *entry = 0;
+        return;
+    case logic::EntryPointWrite::unresolved:
+        if (!entry_point_told.exchange(true))
+            swofty::log("[main-menu] back: g_Game_F1WorldEntryPoint is not resolved on this build (%s); the F1 World entry point keeps the game's value (%s)",
+                        runtime::build_distribution().c_str(), why);
+        return;
+    case logic::EntryPointWrite::unwritable:
+        if (!entry_point_told.exchange(true))
+            swofty::log("[main-menu] back: g_Game_F1WorldEntryPoint at base+0x%llx is not writable memory; the F1 World entry point keeps the game's value (%s)",
+                        (unsigned long long)(at - swofty::api->module_base()), why);
+        return;
+    }
+}
+
 void leave_picker_to_home(const char *why)
 {
-    auto entry = reinterpret_cast<uint32_t *>(swofty::api->module_base() + 0x6066c74);
-    if (runtime::readable(entry, 4))
-        *entry = 0;
+    clear_entry_point(why);
     {
         std::lock_guard<std::mutex> g(swap_lock);
         swap_screens.clear();
@@ -429,7 +509,7 @@ uint64_t container_detour(void *container, NeStr **message, void *third)
 {
     if (patched.load() && message && *message && back_mode() == logic::Back::route && !off("SWOFTY_MAIN_MENU_PICKERBACK")) {
         logic::Mode m = logic::Mode(nav.mode.load());
-        if ((m == logic::Mode::time_trial || m == logic::Mode::grand_prix_new) && ne_text(*message) == "entrant_goto_select" &&
+        if (m == logic::Mode::time_trial && ne_text(*message) == "entrant_goto_select" &&
             nav.expect.load() == int(logic::Expect::none)) {
             swofty::log("[main-menu] nav: picker Back intercepted (container command entrant_goto_select, which would select the default tab; the %s picker's Back leaves for the main menu at once)",
                         logic::return_command(m));
@@ -446,6 +526,14 @@ uint64_t container_detour(void *container, NeStr **message, void *third)
     if (nav.expect.load() != int(logic::Expect::none) || chain.step == Step::wait_container || nav.mode.load() != int(logic::Mode::none))
         swofty::log("[main-menu] nav: container command '%s'", message && *message ? ne_text(*message).c_str() : "");
     return h_container.call<uint64_t>(container, message, third);
+}
+
+std::atomic<uint64_t> saves_back_at{0}, saves_tabs_at{0};
+
+void saves_back_tabs()
+{
+    if (saves_back_at.load() && !saves_tabs_at.load())
+        saves_tabs_at = GetTickCount64();
 }
 
 std::atomic<bool> cover_on{false};
@@ -492,6 +580,10 @@ void apply_pending(void *vm, const char *where)
         std::lock_guard<std::mutex> g(chain_lock);
         if (chain.step != Step::wait_container || !*chain.command)
             return;
+        if (chain.handover) {
+            swofty::log("[main-menu] nav: the hand-over's '%s' waits until the activity container is active (its own first command) (%s)", chain.command, where);
+            return;
+        }
         command = chain.command;
         chain.step = Step::done;
     }
@@ -511,6 +603,7 @@ void addtabs_detour(void *vm)
 {
     h_addtabs.call<void>(vm);
     swofty::log("[main-menu] nav: activity container tabs built (AddTabs returned) at frame %llu", (unsigned long long)frame_no.load());
+    saves_back_tabs();
     apply_pending(vm, "the moment its tabs exist");
 }
 
@@ -519,6 +612,7 @@ uint64_t gohome_detour(void *vm, uint8_t state)
     uint64_t r = h_gohome.call<uint64_t>(vm, state);
     if (state == 5) {
         swofty::log("[main-menu] nav: activity container tabs built at frame %llu", (unsigned long long)frame_no.load());
+        saves_back_tabs();
         apply_pending(vm, "the moment its tabs exist");
     }
     return r;
@@ -552,8 +646,9 @@ NeStr **migrate_detour(void *cmd, NeStr **out, void *node)
                 chain.step = Step::wait_container;
                 chain.command = logic::return_command(logic::Mode(nav.mode.load()));
                 chain.started = chain.container_at = GetTickCount64();
+                chain.handover = true;
                 container_vm = nullptr;
-                swofty::log("[main-menu] nav: session-end hand-over migrates to the activity container; '%s' is raised on it when its tabs exist", chain.command);
+                swofty::log("[main-menu] nav: session-end hand-over migrates to the activity container; '%s' is raised on it once it is active", chain.command);
             }
             pending = chain.step == Step::wait_container;
         }
@@ -601,10 +696,13 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
         if (gid == logic::djb2("f1_world_activity_container") || gid == logic::djb2("fe_showroom") || gid == logic::djb2("grand_prix_continue"))
             swofty::log("[main-menu] nav: route '%s' fired in group 0x%08x (%s)", text, gid,
                         gid == logic::djb2("fe_showroom") ? "fe_showroom" : gid == logic::djb2("grand_prix_continue") ? "grand_prix_continue" : "f1_world_activity_container");
+        if (logic::saves_back_leaves_home(back_mode(), gid, text, logic::Mode(nav.mode.load()))) {
+            saves_tabs_at = 0;
+            saves_back_at = GetTickCount64();
+            swofty::log("[main-menu] back: the saves list's Back (route back) migrates to the activity container as the game's own; the core leaves the container for the main menu once its tabs exist");
+        }
         if (const char *to = logic::back_replacement(back_mode(), gid, text)) {
-            auto entry = reinterpret_cast<uint32_t *>(swofty::api->module_base() + 0x6066c74);
-            if (runtime::readable(entry, 4))
-                *entry = 0;
+            clear_entry_point("Back");
             {
                 std::lock_guard<std::mutex> g(swap_lock);
                 swap_screens.clear();
@@ -741,7 +839,7 @@ void card_populate(HomeItem *item, void *node, uint32_t a7)
     style_item(item);
 }
 
-bool gp_saves_exist();
+void gp_saves_probe();
 
 Action *card_action(HomeItem *item, Action *out)
 {
@@ -755,11 +853,13 @@ Action *card_action(HomeItem *item, Action *out)
     bool gp = !std::strcmp(id_of(item), logic::ID_GRAND_PRIX);
     const char *route = route_name();
     if (entry_by_route()) {
-        logic::Mode m = gp ? logic::grand_prix_mode(gp_saves_exist(), !off("SWOFTY_MAIN_MENU_GPSAVES")) : logic::Mode::time_trial;
+        if (gp)
+            gp_saves_probe();
+        logic::Mode m = gp ? logic::Mode::grand_prix : logic::Mode::time_trial;
         nav.mode = int(m);
         nav.return_armed = false;
         route = logic::press_route(m);
-        if (m != logic::Mode::grand_prix_saves) {
+        {
             std::lock_guard<std::mutex> g(chain_lock);
             chain = {};
             chain.step = Step::wait_container;
@@ -767,9 +867,10 @@ Action *card_action(HomeItem *item, Action *out)
             chain.started = chain.container_at = GetTickCount64();
             container_vm = nullptr;
         }
-        expect_screen(m == logic::Mode::grand_prix_saves ? logic::Expect::saves : logic::Expect::container, route);
-        swofty::log("[main-menu] chain: %s card pressed; route %s opens %s", gp ? "Grand Prix" : "Time Trial", route,
-                    m == logic::Mode::time_trial ? "the activity container with the Time Trial picker's command" : m == logic::Mode::grand_prix_saves ? "the Grand Prix saves list" : "the activity container with the new Grand Prix picker's command");
+        expect_screen(logic::Expect::container, route);
+        swofty::log("[main-menu] chain: %s card pressed; route %s opens the activity container, then '%s' is raised on it (%s)", gp ? "Grand Prix" : "Time Trial", route,
+                    logic::return_command(m),
+                    m == logic::Mode::time_trial ? "the Time Trial picker" : "the container's own Grand Prix command: the saved seasons and New Grand Prix");
     } else {
         via = 1;
         swofty::log("[main-menu] %s card pressed: route %s (the old chain)", id_of(item), route);
@@ -934,44 +1035,58 @@ const runtime::Sig S_GAME_MANAGER{"game.manager",
                                   "48 8B B8 98 01 00 00 48 85 FF 0F 84 ?? ?? ?? ?? 48 8D 4C 24 70 E8 ?? ?? ?? ?? 48 8B 05", 0x604c2c8,
                                   runtime::Sig::riprel, 26, 29, 7};
 
-// The stock Grand Prix entry shows its saved seasons when GrandPrixContinueViewModel's mode lookup
-// (Game_GrandPrixContinueVm_FindModeEntity 0x141bccc00) finds a championship mode whose season registry
+// The stock Grand Prix entry (grand_prix_continue) shows its saved seasons when GrandPrixContinueViewModel's mode
+// lookup (Game_GrandPrixContinueVm_FindModeEntity 0x141bccc00) finds a championship mode whose season registry
 // (entity +0x1030, virtual +0x78) answers 1: F2_2026/F2_2025/F2_2024_Championship_Season, F1_Championship_Season,
-// F1_2026_Championship_Season, in that order. The same lookup (0x1407d0de0 on the game modes, the manager's +0xc0)
-// is asked here.
-bool gp_saves_exist()
+// F1_2026_Championship_Season, in that order. The card does not decide on this lookup any more: in the field it found
+// no entity for any name, F1_Championship_Season included, so the card never opened the saves screen (1.9.0 to 1.9.3).
+// It is asked once per session and logged (the modes pointer and every answer) so the field says which step fails.
+void gp_saves_probe()
 {
+    static std::atomic<bool> asked{false};
+    if (asked.exchange(true))
+        return;
     static const uintptr_t names[] = {0x5734370, 0x573438c, 0x57343a8, 0x570a6b2, 0x570a6c9};
     uintptr_t find = runtime::find(S_MODE_BY_NAME, "home", "core"), manager = runtime::find(S_GAME_MANAGER, "home", "core");
     if (!find || !manager) {
-        swofty::log("[main-menu] chain: the Grand Prix saves check did not resolve (mode lookup %p, game manager %p); using the new Grand Prix entry",
+        swofty::log("[main-menu] probe: the Grand Prix season lookup did not resolve (mode lookup %p, game manager %p)",
                     reinterpret_cast<void *>(find), reinterpret_cast<void *>(manager));
-        return false;
+        return;
     }
     void *mgr = *reinterpret_cast<void **>(manager);
     if (!mgr || !runtime::readable(static_cast<uint8_t *>(mgr) + 0xc0, 8)) {
-        swofty::log("[main-menu] chain: the game manager is not readable; using the new Grand Prix entry");
-        return false;
+        swofty::log("[main-menu] probe: the game manager %p is not readable", mgr);
+        return;
     }
     void *modes = *reinterpret_cast<void **>(static_cast<uint8_t *>(mgr) + 0xc0);
     uintptr_t base = swofty::api->module_base();
+    swofty::log("[main-menu] probe: game manager %p, game modes %p, mode lookup base+0x%llx", mgr, modes,
+                (unsigned long long)(find - base));
+    if (!modes || !runtime::readable(modes, 8))
+        return;
     for (uintptr_t rva : names) {
         const char *name = reinterpret_cast<const char *>(base + rva);
-        if (!runtime::readable(name, 8))
+        if (!runtime::readable(name, 8) || std::strlen(name) > 40 || std::strncmp(name, "F", 1)) {
+            swofty::log("[main-menu] probe: mode name at base+0x%llx is not a name", (unsigned long long)rva);
             continue;
+        }
         auto entity = reinterpret_cast<uint8_t *>(reinterpret_cast<void *(*)(void *, const char *)>(find)(modes, name));
-        if (!entity || !runtime::readable(entity + 0x1030, 8))
+        if (!entity) {
+            swofty::log("[main-menu] probe: Grand Prix mode %s: no entity", name);
             continue;
+        }
+        if (!runtime::readable(entity + 0x1030, 8)) {
+            swofty::log("[main-menu] probe: Grand Prix mode %s: entity %p has no readable season registry", name, entity);
+            continue;
+        }
         void **vt = *reinterpret_cast<void ***>(entity + 0x1030);
-        if (!vt || !runtime::readable(vt + 0xf, 8))
+        if (!vt || !runtime::readable(vt + 0xf, 8)) {
+            swofty::log("[main-menu] probe: Grand Prix mode %s: entity %p, registry vtable %p unreadable", name, entity, vt);
             continue;
+        }
         int answer = reinterpret_cast<int (*)(void *)>(vt[0x78 / 8])(entity + 0x1030);
-        swofty::log("[main-menu] chain: Grand Prix mode %s season registry answers %d", name, answer);
-        if (answer == 1)
-            return true;
+        swofty::log("[main-menu] probe: Grand Prix mode %s: entity %p, season registry answers %d", name, entity, answer);
     }
-    swofty::log("[main-menu] chain: no saved Grand Prix season found; using the new Grand Prix entry");
-    return false;
 }
 
 void start_chain(bool time_trial)
@@ -983,12 +1098,9 @@ void start_chain(bool time_trial)
     std::lock_guard<std::mutex> g(chain_lock);
     chain = {};
     chain.step = Step::wait_container;
-    bool resume = false;
-    if (!time_trial) {
-        swofty::log("[main-menu] chain: checking for a saved Grand Prix season");
-        resume = gp_saves_exist();
-    }
-    logic::Mode m = time_trial ? logic::Mode::time_trial : logic::grand_prix_mode(resume, true);
+    if (!time_trial)
+        gp_saves_probe();
+    logic::Mode m = time_trial ? logic::Mode::time_trial : logic::Mode::grand_prix;
     nav.mode = int(m);
     chain.command = logic::return_command(m);
     chain.started = GetTickCount64();
@@ -1039,7 +1151,7 @@ bool arm_patch()
     hook_migrate();
     hook_gohome();
     hook_addtabs();
-    swofty::log("[main-menu] stock F1 World, divider, Local Multiplayer, League Racing, Player Hub and Theatre tiles skipped");
+    swofty::log("[main-menu] stock F1 World, divider, League Racing, Player Hub and Theatre tiles skipped");
     return true;
 }
 
@@ -1051,6 +1163,7 @@ uint8_t add_tiles(void *list_, uint8_t career_index, const uint8_t *flags)
     uint8_t index = career_index;
     add_card(list, ++index, logic::ID_GRAND_PRIX);
     add_card(list, ++index, logic::ID_TIME_TRIAL);
+    add_split_screen(list, ++index);
     if (flags && (flags[8] & 1))
         block.challenge(list, ++index);
     block.theatre(list, ++index);
@@ -1063,7 +1176,7 @@ uint8_t add_tiles(void *list_, uint8_t career_index, const uint8_t *flags)
         swofty::log("[main-menu] divider tile added before Addon Settings (index %u)", unsigned(index));
     }
     style_list(list);
-    swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial%s, Theatre%s (last index %u)",
+    swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial, Split Screen%s, Theatre%s (last index %u)",
                 flags && (flags[8] & 1) ? ", challenge" : "", showroom ? ", Showroom" : "", unsigned(index));
     return index;
 }
@@ -1115,10 +1228,29 @@ void watch_cover()
     }
 }
 
+void watch_saves_back(uint64_t now)
+{
+    uint64_t back_at = saves_back_at.load(), tabs_at = saves_tabs_at.load();
+    if (!back_at)
+        return;
+    if (tabs_at && now - tabs_at >= logic::SAVES_BACK_DELAY_MS) {
+        saves_back_at = 0;
+        saves_tabs_at = 0;
+        swofty::log("[main-menu] back: the activity container is up %llu ms after the saves list's Back; leaving it for the main menu",
+                    (unsigned long long)(now - back_at));
+        leave_picker_to_home("saves list Back");
+    } else if (!tabs_at && now - back_at > logic::SAVES_BACK_TIMEOUT_MS) {
+        saves_back_at = 0;
+        swofty::log("[main-menu] back: no activity container came up within %llu ms of the saves list's Back; the player continues by hand",
+                    (unsigned long long)logic::SAVES_BACK_TIMEOUT_MS);
+    }
+}
+
 void watch_nav()
 {
     watch_cover();
     uint64_t now = GetTickCount64();
+    watch_saves_back(now);
     bool in_session = runtime::in_session_now();
     int e = nav.expect.load();
     if (e != int(logic::Expect::none) && now - nav.expect_at.load() > 4000 && !in_session) {
@@ -1148,9 +1280,7 @@ void tick()
                 swap_reported = false;
             }
             swap_at = GetTickCount64();
-            auto entry = reinterpret_cast<uint32_t *>(swofty::api->module_base() + 0x6066c74);
-            if (runtime::readable(entry, 4))
-                *entry = 0;
+            clear_entry_point("hub Back");
             swofty::log("[main-menu] back: firing route 'back' in group fe_f1_world (0x%08x), the route the hub's own Back button fires (this build session15 reached the main menu with it)",
                         logic::djb2("fe_f1_world"));
             h_fire.call<void>(router, scratch, &route, 0);
@@ -1225,7 +1355,7 @@ void tick()
         now - chain.container_at > 300 && now - container_vm_at.load() > raise_delay_ms()) {
         const char *command = chain.command;
         chain.step = Step::done;
-        raise_command(container_vm.load(), command, "fallback: after its view model was seen");
+        raise_command(container_vm.load(), command, chain.handover ? "the hand-over: the container is active, its own first command came" : "fallback: after its view model was seen");
         chain.step = Step::done;
     }
 }
@@ -1261,8 +1391,9 @@ void screen(const char *name)
                 chain.step = Step::wait_container;
                 chain.command = logic::return_command(m);
                 chain.started = chain.container_at = now;
+                chain.handover = true;
                 container_vm = nullptr;
-                swofty::log("[main-menu] nav: session-end hand-over landed on the activity container (the F1 World hub was skipped); raising '%s' on it once its view model is up", chain.command);
+                swofty::log("[main-menu] nav: session-end hand-over landed on the activity container (the F1 World hub was skipped); raising '%s' on it once it is active", chain.command);
             }
         }
     }
@@ -1284,6 +1415,8 @@ void screen(const char *name)
         }
         if (home) {
             set_flow(logic::FRONTEND_FLOW);
+            saves_back_at = 0;
+            saves_tabs_at = 0;
             nav.return_armed = false;
             nav.mode = int(logic::Mode::none);
             if (e != logic::Expect::none && e != logic::Expect::home)
