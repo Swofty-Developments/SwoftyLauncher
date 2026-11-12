@@ -988,6 +988,30 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : leaderboard off: process ended with $code" || { echo "FAIL: leaderboard off: process exited 0"; status=1; }
     fi
 done
+for guard in on off; do
+    echo "==== myteam_vehicle ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_MYTEAM_VEHICLE_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" myteam_vehicle >"$OUT/myteam_vehicle.out" 2>&1 || code=$?
+    grep -E '\[myteam\]|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    grep -E 'myteam vehicle|FAIL' "$OUT/myteam_vehicle.out" || true
+    if [[ $guard == on ]]; then
+        once "myteam_vehicle on: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(my team vehicle base guard\)': 1 mixin"
+        once "myteam_vehicle on: the guard is armed" '\[myteam\] vehicle base guard armed'
+        once "myteam_vehicle on: the missing vehicle is logged once, naming the base and the row" "\[myteam\] save: My Team vehicle base 1 \(stat id 0\) uses vehicle 'myteam_mes_porsche_2026' from More Engine Suppliers \(mildtdesign\.more-engine-suppliers\), which is not in the game data"
+        grep -q 'FAIL' "$OUT/myteam_vehicle.out" && { echo "FAIL: myteam_vehicle on: a check failed"; status=1; } || echo "ok  : myteam_vehicle on: the fake game's checks pass"
+        grep -q 'myteam vehicle on: the load returned, 2 bases stored' "$OUT/myteam_vehicle.out" && echo "ok  : myteam_vehicle on: the load returned with the two bases that have a row" ||
+            { echo "FAIL: myteam_vehicle on: the load did not return"; status=1; }
+        count "myteam_vehicle on: no unhandled fault" 0 '\[crash\] unhandled '
+        [[ $code == 0 ]] && echo "ok  : myteam_vehicle on: process exited 0" || { echo "FAIL: myteam_vehicle on: process ended with $code"; status=1; }
+    else
+        once "myteam_vehicle off: the guard is off" '\[myteam\] vehicle base guard off \(SWOFTY_MYTEAM_VEHICLE_GUARD=0\)'
+        check "myteam_vehicle off: the load faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Sess_Load_VehicleAiConfig\+0x'
+        grep -q 'myteam vehicle off: the load returned' "$OUT/myteam_vehicle.out" && { echo "FAIL: myteam_vehicle off: the load returned"; status=1; } ||
+            echo "ok  : myteam_vehicle off: the load does not return"
+        [[ $code != 0 ]] && echo "ok  : myteam_vehicle off: process ended with $code" || { echo "FAIL: myteam_vehicle off: process exited 0"; status=1; }
+    fi
+done
 echo "==== ntpage"
 cp "$OUT/t_ntpage.dll" "$SW/mods/core/ntpage_hook.dll"
 rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp

@@ -587,6 +587,154 @@ static void test_leaderboard_guard(void)
     expect(r == 0, "leaderboard: an empty board list, the guard returns 0 through the game's cleanup");
 }
 
+// Game_Load_MyTeamVehicleBases's loop over the saved My Team vehicle bases (0x142507ad0..0x1425098ef), with the byte
+// runs core's My Team vehicle base guard resolves copied byte for byte from the Steam build: the row lookup's return
+// into the AI config call (0x1425082f5..0x142508305) and the step after a base is stored (0x1425098cd..0x1425098ef).
+// The save reads are replaced: the list is {u16 count +0x10, struct mtv_base *bases +0x18}. The frame keeps the
+// game's slots: [rsp+0x30] the list, [rsp+0x38] the base index, [rsp+0x44] the saved stat_id, [rsp+0xb8] the
+// file_name. Like the game, rdi and r12 are reused before the AI config call and restored before the store.
+// fake_mtv_find stands in for Gdb_Find_RowByLabel, fake_mtv_ai for Sess_Load_VehicleAiConfig and fake_mtv_store for
+// Sess_VehicleTable_EmplaceAt. It returns the number of bases stored.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_mtv_load\n"
+    ".def fake_mtv_load; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_mtv_load\n"
+    "fake_mtv_load:\n"
+    "push %rbx\n.seh_pushreg %rbx\n"
+    "push %rbp\n.seh_pushreg %rbp\n"
+    "push %rdi\n.seh_pushreg %rdi\n"
+    "push %rsi\n.seh_pushreg %rsi\n"
+    "push %r12\n.seh_pushreg %r12\n"
+    "push %r13\n.seh_pushreg %r13\n"
+    "push %r14\n.seh_pushreg %r14\n"
+    "push %r15\n.seh_pushreg %r15\n"
+    "sub $0xc8,%rsp\n.seh_stackalloc 0xc8\n"
+    ".seh_endprologue\n"
+    "mov %rcx,%rdi\n"
+    "mov %rdi,0x30(%rsp)\n"
+    "xor %r12d,%r12d\n"
+    "cmpw $0,0x10(%rdi)\n"
+    "je 9f\n"
+    "1:\n"
+    "mov %r12,0x38(%rsp)\n"
+    "mov 0x18(%rdi),%rax\n"
+    "mov %r12,%rcx\n"
+    "shl $4,%rcx\n"
+    "add %rcx,%rax\n"
+    "movzwl (%rax),%ebp\n"
+    "mov %ebp,0x44(%rsp)\n"
+    "mov 8(%rax),%rcx\n"
+    "mov %rcx,0xb8(%rsp)\n"
+    "xor %ebp,%ebp\n"
+    "xor %edi,%edi\n"
+    "mov 0xb8(%rsp),%r8\n"
+    "lea fake_mtv_row(%rip),%r12\n"
+    "mov %r12,%rdx\n"
+    "xor %ecx,%ecx\n"
+    "call fake_mtv_find\n"
+    ".byte 0x48,0x8D,0x8C,0x24,0x50,0x1A,0x00,0x00,0x4C,0x89,0xE2\n"
+    "call fake_mtv_ai\n"
+    "mov 0x30(%rsp),%rdi\n"
+    "mov 0x38(%rsp),%r12\n"
+    "mov %r12,%rcx\n"
+    ".byte 0x48,0x8D,0x94,0x24,0x50,0x0D,0x00,0x00\n"
+    "call fake_mtv_store\n"
+    ".byte 0x49,0xFF,0xC4,0x0F,0xB7,0x47,0x10,0x49,0x39,0xC4,0x0F,0x82\n"
+    ".long 1b - (. + 4)\n"
+    ".byte 0xE9\n"
+    ".long 9f - (. + 4)\n"
+    "9:\n"
+    "mov fake_mtv_stored(%rip),%eax\n"
+    "add $0xc8,%rsp\n"
+    "pop %r15\n"
+    "pop %r14\n"
+    "pop %r13\n"
+    "pop %r12\n"
+    "pop %rsi\n"
+    "pop %rdi\n"
+    "pop %rbp\n"
+    "pop %rbx\n"
+    "ret\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_mtv_load -export:fake_mtv_ai\"\n"
+    ".text\n");
+uint32_t fake_mtv_load(void *list);
+
+struct mtv_base {
+    uint16_t stat_id;
+    uint8_t pad[6];
+    const char *file_name;
+};
+
+uint8_t fake_mtv_row[0x210];
+uint32_t fake_mtv_stored;
+static const char *const mtv_rows[] = {"myteam_ferrari", "myteam_mercedes", "myteam_honda", "myteam_renault"};
+static struct mtv_base mtv_bases[] = {{0x4001, {0}, "myteam_ferrari"},
+                                      {0x4000, {0}, "myteam_mes_porsche_2026"},
+                                      {0x4002, {0}, "myteam_mercedes"},
+                                      {0x4005, {0}, "myteam_mes_porsche_2026"}};
+static uint8_t mtv_list[0x20], mtv_record[0x48];
+static uint64_t mtv_miss = 0x08000f000800000eull, mtv_hit;
+static uint16_t mtv_stored_ids[8];
+static int mtv_ai_calls;
+
+__attribute__((used, noinline)) void fake_mtv_find(void *cursor, uint8_t *row, const char *label)
+{
+    (void)cursor;
+    memset(row, 0, sizeof fake_mtv_row);
+    for (int i = 0; i < (int)(sizeof mtv_rows / sizeof *mtv_rows); i++)
+        if (!strcmp(label, mtv_rows[i])) {
+            snprintf((char *)row, 0x100, "entrants.vehicles.vehicle_%d", i);
+            memcpy(row + 0x100, "vehicle", 8);
+            *(int32_t *)(row + 0x200) = i;
+            row[0x204] = 1;
+            return;
+        }
+    memcpy(row, "Invalid", 8);
+    memcpy(row + 0x100, "Invalid", 8);
+    *(int32_t *)(row + 0x200) = -1;
+}
+
+__attribute__((used, noinline)) void fake_mtv_ai(void *out, uint8_t *row)
+{
+    (void)out;
+    const volatile uint64_t *slot = *(int32_t *)(row + 0x200) < 0 ? &mtv_miss : &mtv_hit;
+    uint64_t rec = *slot;
+    if (rec && *(const volatile uint64_t *)(rec + 0x40) != 1)
+        mtv_ai_calls++;
+}
+
+__attribute__((used, noinline)) void fake_mtv_store(uint64_t index, void *record)
+{
+    (void)record;
+    if (fake_mtv_stored < sizeof mtv_stored_ids / sizeof *mtv_stored_ids)
+        mtv_stored_ids[fake_mtv_stored] = mtv_bases[index].stat_id & 0x3fff;
+    fake_mtv_stored++;
+}
+
+static void test_myteam_vehicle_guard(int on)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    mtv_hit = (uint64_t)(uintptr_t)mtv_record;
+    *(uint64_t *)(mtv_record + 0x40) = 2;
+    *(uint16_t *)(mtv_list + 0x10) = (uint16_t)(sizeof mtv_bases / sizeof *mtv_bases);
+    *(struct mtv_base **)(mtv_list + 0x18) = mtv_bases;
+    fake_mtv_stored = 0;
+    mtv_ai_calls = 0;
+    printf("      myteam vehicle %s: loading 4 saved bases, 2 of them on vehicle myteam_mes_porsche_2026, which has no row\n",
+           on ? "on" : "off");
+    fflush(stdout);
+    uint32_t n = fake_mtv_load(mtv_list);
+    printf("      myteam vehicle %s: the load returned, %u bases stored (stat ids %u, %u), %d AI configs built\n", on ? "on" : "off",
+           n, mtv_stored_ids[0], mtv_stored_ids[1], mtv_ai_calls);
+    fflush(stdout);
+    expect(n == 2 && mtv_stored_ids[0] == 1 && mtv_stored_ids[1] == 2,
+           "myteam vehicle: the bases on myteam_ferrari and myteam_mercedes are stored, the two on the missing row are skipped");
+    expect(mtv_ai_calls == 2, "myteam vehicle: only the bases with a row build an AI config");
+}
+
 static void crash_leaderboard_guard(void)
 {
     static uint8_t screen[0x900];
@@ -3088,6 +3236,10 @@ int main(int argc, char **argv)
     if (argc > 1 && !strcmp(argv[1], "pit_slots")) {
         const char *off = getenv("SWOFTY_PIT_SLOT_GUARD");
         test_pit_slots(!(off && *off));
+    }
+    if (argc > 1 && !strcmp(argv[1], "myteam_vehicle")) {
+        const char *off = getenv("SWOFTY_MYTEAM_VEHICLE_GUARD");
+        test_myteam_vehicle_guard(!(off && *off));
     }
     if (argc > 1 && !strcmp(argv[1], "leaderboard"))
         crash_leaderboard_guard();
