@@ -38,7 +38,8 @@
 // frame; the car is read only when the recorder is due a sample (60 Hz), under a Trust so the heap checks are
 // paid once per HEAP_TRUST_MS, and the inbox is drained only when a crossing, a game result or a blob is waiting.
 // The board (content, track) and the player's team label are read once per session, during the out-lap, never at
-// the line. At the line the flow thread builds the file header from state it already has and hands the samples to
+// the line. The board's dry/wet is the car read's track wetness; where that read is off (the EA build), it is the D/W of
+// the board key the game built for the session at the ghost storage's onSessionEnter (tt_bridge.cpp S_BOARD_KEY). At the line the flow thread builds the file header from state it already has and hands the samples to
 // one writer thread, which builds the file, runs laps.sealing (under a Trust, its time kept off the game threads in
 // perf) and writes it; the completions (the bridge's
 // lap_finished, laps.recorded) come back through an Outbox and fire from the flow tick in lap order.
@@ -125,6 +126,8 @@ bool have_session_team = false;
 double next_board_try_s = 0;
 bool last_has_wetness = false;
 float last_wetness = 0;
+bool weather_logged = false;
+lr::WeatherFrom weather_from = lr::WeatherFrom::none;
 std::string started_utc;
 lr::Sealer sealer;
 lr::Outbox outbox;
@@ -343,7 +346,19 @@ Board board_now(bool force)
         resolve_session(now_seconds());
     }
     Board b = session_board;
-    b.weather = lr::weather_of(last_has_wetness, last_wetness);
+    std::string key = last_has_wetness ? std::string() : runtime::tt_bridge_session_board();
+    lr::Weather w = lr::weather_pick(last_has_wetness, last_wetness, runtime::tt_bridge::parse_board(key).weather);
+    b.weather = w.word;
+    if (!weather_logged || w.from != weather_from) {
+        weather_logged = true;
+        weather_from = w.from;
+        if (w.from == lr::WeatherFrom::wetness)
+            swofty::log("[laps] weather %s from %s (%.2f)", w.word.c_str(), lr::weather_from_name(w.from), last_wetness);
+        else if (w.from == lr::WeatherFrom::board)
+            swofty::log("[laps] weather %s from %s %s (the track wetness is not read on this build)", w.word.c_str(), lr::weather_from_name(w.from), key.c_str());
+        else
+            swofty::log("[laps] weather unknown: no track wetness on this build and no session board key from the game; the laps carry no dry or wet");
+    }
     return b;
 }
 
@@ -815,7 +830,8 @@ bool lap_rec_current_board(std::string &content, std::string &track, std::string
         b = session_snapshot();
     content = b.content;
     track = b.track;
-    weather = lr::weather_of(c.has_wetness, c.wetness);
+    std::string key = c.has_wetness ? std::string() : runtime::tt_bridge_session_board();
+    weather = lr::weather_pick(c.has_wetness, c.wetness, runtime::tt_bridge::parse_board(key).weather).word;
     return true;
 }
 
@@ -897,6 +913,7 @@ void lap_rec_session_enter()
     session_team.clear();
     next_board_try_s = 0;
     last_has_wetness = false;
+    weather_logged = false;
     gate = lr::gate_of(read_file(swofty_root() + L"tt.json", size_t(1) << 20));
     is_time_trial = swofty_core::apply::moments::session_mode_track().first == "time_trial";
     if (!gate.on || !is_time_trial || !enabled("lap_rec", nullptr)) {
