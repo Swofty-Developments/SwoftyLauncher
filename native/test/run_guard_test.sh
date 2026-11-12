@@ -34,7 +34,7 @@ if [[ $NATIVE == 0 ]]; then
     timeout 300 wineboot -i >/dev/null 2>&1
 fi
 status=0
-for c in mem_reads mem_stress fine av_plain av_locals throw_plain throw_locals msvc_code sdk_av sdk_throw sdk_service_throw sdk_blamed blamed; do
+for c in mem_reads mem_stack_guard mem_stress fine av_plain av_locals throw_plain throw_locals msvc_code sdk_av sdk_throw sdk_service_throw sdk_blamed blamed; do
     out=$(timeout 120 "${PIN[@]}" "${RUN[@]}" "$OUT/guard_test.exe" "$c" 2>/dev/null)
     r=$?
     echo "$out"

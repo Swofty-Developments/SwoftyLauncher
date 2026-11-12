@@ -8,6 +8,7 @@
 // that faults; blamed_call letting the fault reach an outer frame.
 #include <windows.h>
 
+#include <atomic>
 #include <cstdio>
 #include <cstring>
 #include <functional>
@@ -248,6 +249,60 @@ static bool mem_stress()
     return ok;
 }
 
+static std::atomic<uintptr_t> grower_limit{0};
+static std::atomic<bool> grower_done{false};
+static std::atomic<unsigned> grower_caught{0};
+
+static int fault_here()
+{
+    volatile int *p = nullptr;
+    return *p;
+}
+
+static __attribute__((noinline)) void grow(unsigned depth)
+{
+    volatile char pad[3000];
+    pad[0] = char(depth);
+    pad[sizeof pad - 1] = char(depth);
+    grower_limit.store(uintptr_t(reinterpret_cast<NT_TIB *>(NtCurrentTeb())->StackLimit), std::memory_order_relaxed);
+    if (depth) {
+        grow(depth - 1);
+        return;
+    }
+    __try {
+        fault_here();
+    } __except (EXCEPTION_EXECUTE_HANDLER) {
+        grower_caught.fetch_add(1, std::memory_order_relaxed);
+    }
+}
+
+static DWORD WINAPI grower(void *)
+{
+    for (unsigned i = 0; i < 4000; i++)
+        grow(8 + (i * 7) % 200);
+    grower_done.store(true);
+    return 0;
+}
+
+static bool mem_stack_guard()
+{
+    namespace g = swofty::mem::guarded;
+    HANDLE t = CreateThread(nullptr, 0, grower, nullptr, 0, nullptr);
+    unsigned probes = 0, readable = 0;
+    while (!grower_done.load()) {
+        uintptr_t limit = grower_limit.load(std::memory_order_relaxed);
+        if (!limit)
+            continue;
+        for (uintptr_t page = limit - 0x3000; page <= limit; page += 0x1000) {
+            readable += g::readable(page, 1);
+            probes++;
+        }
+    }
+    WaitForSingleObject(t, INFINITE);
+    printf("      probes %u, readable %u, grower caught %u of 4000\n", probes, readable, grower_caught.load());
+    return grower_caught.load() == 4000 && probes > 0;
+}
+
 int main(int argc, char **argv)
 {
     const char *k = argc > 1 ? argv[1] : "";
@@ -255,6 +310,9 @@ int main(int argc, char **argv)
     if (!strcmp(k, "mem_reads")) {
         ok = mem_reads();
         say(ok, "mem_reads: guarded reads pass good memory, refuse null, freed, reserved and guard pages, and keep the guard armed");
+    } else if (!strcmp(k, "mem_stack_guard")) {
+        ok = mem_stack_guard();
+        say(ok, "mem_stack_guard: probing another thread's stack guard pages leaves its stack growth and exception unwinding intact");
     } else if (!strcmp(k, "mem_stress")) {
         ok = mem_stress();
         say(ok, "mem_stress: reads that fault part way through a copy are refused on 8 threads and a fiber with a vectored handler installed");
