@@ -35,7 +35,9 @@
 // player's car and the line crossings of ers_newlap.cpp (session.lap) cut it into laps; each completed lap is written
 // to swofty\laps\<UTC stamp>-<n>.swlap, or to laps\ in the launcher's data folder (runtime::files_root) when the game
 // folder refuses it, as an EA app copy under Program Files does (lap_file_logic.hpp). The game folder comes first:
-// the integrity seal finds the session's tt.json next to the lap's path. The state machine is lap_rec_logic.hpp. Crossings are
+// integrity modules built before the server's de98156 find the session's tt.json three folders up from the lap's
+// path, so only a lap in the game folder carries the session nonce from them; later modules read it from the game
+// exe's folder wherever the lap is. The state machine is lap_rec_logic.hpp. Crossings are
 // queued and handled on the next flow tick, so the game reads stay on the flow thread. The flow tick runs once a
 // frame; the car is read only when the recorder is due a sample (60 Hz), under a Trust so the heap checks are
 // paid once per HEAP_TRUST_MS, and the inbox is drained only when a crossing, a game result or a blob is waiting.
