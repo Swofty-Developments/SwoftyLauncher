@@ -7,11 +7,13 @@
 #include <swofty/mixin.hpp>
 
 #include <algorithm>
+#include <array>
 #include <atomic>
 #include <cstddef>
 #include <cstdio>
 #include <cstring>
 #include <iterator>
+#include <map>
 #include <mutex>
 #include <string>
 #include <vector>
@@ -294,8 +296,122 @@ void put_back_narrowed(Narrowed &n)
     ref<int64_t>(n.setup, LIST_COUNT) = n.count;
 }
 
+// Virtual entrant lists. The game loads the rows of entrants.entrant_lists up to the table's count as list objects,
+// and a list's stat id is a byte (255) while an entrant setup mode holds 32 lists. A box can instead name a list
+// whose rows lie above the count: the game never loads it, so it takes no id and no slot. On a press the core reads
+// those rows with the game's own Sess_Parse_EntrantList (0x142453c40: int *ordinal, row key, list, driver
+// registry; the row key is a GdbTableCursor {container char[256] at +0, row char[256] at +0x100, count at +0x200}
+// that it joins as container.row; it pushes 0x88 EntrantRecords into list+8 = {allocator, begin, end, capacity}) and
+// swaps the result into the host list VIRTUAL_HOST, which is in swofty_f1's entrant lists like any box list. The
+// next press, or a press of a stock box, swaps the host's own entrants back. Parsed vectors stay cached per row
+// path for the session's life: the game may still hold records of a list it copied, so nothing is freed.
+constexpr const char *VIRTUAL_HOST = "swofty_virtual_list";
+constexpr const char *PARSE_LIST_FN = "Sess_Parse_EntrantList";
+constexpr const char *PARSE_LIST_MIXIN = "swofty_core.dll (virtual entrant lists)";
+constexpr size_t LIST_VECTOR = 0x08, LIST_VECTOR_SIZE = 0x20;
+constexpr size_t KEY_ROW = 0x100, KEY_COUNT = 0x200, KEY_SIZE = 0x210;
+using ParseList_t = void(int *ordinal, const void *row_key, void *list, void *driver_registry);
+ParseList_t *parse_list_orig;
+std::atomic<void *> boot_registry;
+std::atomic<bool> parse_list_bound;
+std::map<std::string, std::array<uint8_t, LIST_VECTOR_SIZE>> parsed_lists;
+struct Filled {
+    void *host = nullptr;
+    std::array<uint8_t, LIST_VECTOR_SIZE> own{};
+    std::string row;
+} filled;
+uint32_t logged_virtual;
+
+void parse_list_entry(int *ordinal, const void *row_key, void *list, void *registry)
+{
+    if (registry)
+        boot_registry = registry;
+    parse_list_orig(ordinal, row_key, list, registry);
+}
+
+// The row of entrants.entrant_lists labelled `label` that the game did not load: the build's virtual-list step puts
+// those rows at VIRTUAL_BASE and up (packages/core/src/virtual_lists.rs, BASE).
+constexpr int64_t VIRTUAL_BASE = 10000;
+std::string virtual_row(const char *label)
+{
+    const SwoftyDb *db = runtime::db_table();
+    if (!label || !db || !db->available || !db->available())
+        return {};
+    for (int64_t i = VIRTUAL_BASE; i < VIRTUAL_BASE + 4096; ++i) {
+        std::string row = "entrants.entrant_lists.entrant_list_" + std::to_string(i);
+        const char *name = nullptr;
+        if (db->string_at((row + "._metadata_").c_str(), &name) != SWOFTY_ASSET_OK || !name)
+            break;
+        if (!strncmp(name, label, 128))
+            return row;
+    }
+    return {};
+}
+
+void unfill_virtual()
+{
+    if (!filled.host)
+        return;
+    memcpy(static_cast<uint8_t *>(filled.host) + LIST_VECTOR, filled.own.data(), LIST_VECTOR_SIZE);
+    filled = {};
+}
+
+// Parses `row` (once) and swaps its entrants into `host`; false leaves the host as it was.
+bool fill_virtual(void *host, const std::string &row)
+{
+    if (!host || !parse_list_orig)
+        return false;
+    auto it = parsed_lists.find(row);
+    if (it == parsed_lists.end()) {
+        uintptr_t slot = swofty::api->resolve("g_Ne_DefaultAllocator"), heap = 0;
+        if (!slot || !mem::read(slot, heap) || !heap)
+            return false;
+        alignas(16) uint8_t list[0x40] = {};
+        alignas(16) uint8_t no_registry[0x20] = {}; // read as an empty {_, begin +8, end +0x10} vector
+        memcpy(list + LIST_VECTOR, &heap, sizeof heap);
+        // row is "entrants.entrant_lists.entrant_list_<n>": container and row name of the key the parser joins
+        alignas(16) uint8_t key[KEY_SIZE] = {};
+        size_t dot = row.rfind('.');
+        if (dot == std::string::npos || dot >= KEY_ROW || row.size() - dot - 1 >= KEY_ROW)
+            return false;
+        memcpy(key, row.data(), dot);
+        memcpy(key + KEY_ROW, row.data() + dot + 1, row.size() - dot - 1);
+        int32_t uncounted = -1;
+        memcpy(key + KEY_COUNT, &uncounted, sizeof uncounted);
+        key[KEY_COUNT + 4] = 1;
+        int ordinal = 1;
+        void *registry = boot_registry.load();
+        parse_list_orig(&ordinal, key, list, registry ? registry : no_registry);
+        uintptr_t begin = 0, end = 0;
+        memcpy(&begin, list + LIST_VECTOR + 8, 8);
+        memcpy(&end, list + LIST_VECTOR + 16, 8);
+        if (!begin || end <= begin)
+            return false;
+        std::array<uint8_t, LIST_VECTOR_SIZE> v{};
+        memcpy(v.data(), list + LIST_VECTOR, LIST_VECTOR_SIZE);
+        it = parsed_lists.emplace(row, v).first;
+    }
+    unfill_virtual();
+    filled.host = host;
+    filled.row = row;
+    memcpy(filled.own.data(), static_cast<uint8_t *>(host) + LIST_VECTOR, LIST_VECTOR_SIZE);
+    memcpy(static_cast<uint8_t *>(host) + LIST_VECTOR, it->second.data(), LIST_VECTOR_SIZE);
+    return true;
+}
+
+// The list a press of `label` selects in the game: VIRTUAL_HOST for a virtual list, else the label itself.
+std::string pressed_list(const char *label)
+{
+    if (!label)
+        return {};
+    if (!parse_list_bound || virtual_row(label).empty())
+        return label;
+    return VIRTUAL_HOST;
+}
+
 void restore_lists()
 {
+    unfill_virtual();
     for (size_t i = narrowed_count; i-- > 0;)
         put_back_narrowed(narrowed[i]);
     narrowed_count = 0;
@@ -329,6 +445,8 @@ logic::GridLimit continue_grid;
 void narrow(void *mode, const char *list)
 {
     restore_lists();
+    std::string row = parse_list_bound ? virtual_row(list) : std::string();
+    const char *want = row.empty() ? list : VIRTUAL_HOST;
     for_each_host_setup(mode, [&](uint8_t *setup) {
         int64_t count = at<int64_t>(setup, LIST_COUNT);
         if (count <= 1 || count > int64_t(LIST_SLOTS) || narrowed_count == std::size(narrowed))
@@ -337,11 +455,19 @@ void narrow(void *mode, const char *list)
         void *hit = nullptr;
         for (int64_t i = 0; i < count && !hit; ++i) {
             const char *name = name_of(lists[i], LIST_NAME);
-            if (name && !strcmp(name, list))
+            if (name && !strcmp(name, want))
                 hit = lists[i];
         }
         if (!hit)
             return;
+        if (!row.empty() && filled.host != hit) {
+            bool ok = fill_virtual(hit, row);
+            if (logged_virtual++ < LOG_FIRST)
+                swofty::log("[era] %s pressed: virtual list %s %s %s", list, row.c_str(),
+                            ok ? "read into" : "could not be read into", VIRTUAL_HOST);
+            if (!ok)
+                return;
+        }
         Narrowed &n = narrowed[narrowed_count++];
         n.setup = setup;
         n.count = count;
@@ -897,7 +1023,7 @@ void site_entry(SwoftyContext *c)
             break;
         if (!logic::shown(box, tt))
             continue;
-        if (!mode || !available(mode, logic::HOST, box.entrant_list.c_str())) {
+        if (!mode || !available(mode, logic::HOST, pressed_list(box.entrant_list.c_str()).c_str())) {
             if (skip_once(box.entrant_list))
                 swofty::log("[era] box %s from %s skipped: this screen's mode does not offer the entrant list under %s "
                             "(it must exist and be in %s's entrant lists)",
@@ -905,7 +1031,7 @@ void site_entry(SwoftyContext *c)
             continue;
         }
         const std::string &list = logic::list_for(box, tt);
-        if (tt && list != box.entrant_list && !available(mode, logic::HOST, list.c_str())) {
+        if (tt && list != box.entrant_list && !available(mode, logic::HOST, pressed_list(list.c_str()).c_str())) {
             if (skip_once("time_trial " + box.entrant_list))
                 swofty::log("[era] box %s from %s skipped in Time Trial: its Time Trial entrant list %s is not offered "
                             "under %s (it must exist and be in %s's entrant lists)",
@@ -998,7 +1124,8 @@ void select_entry(void *container, const char *entrant_list)
     swofty_core::apply::moments::box_picked(entrant_list, mode);
     if (auto *modes = setup_owner(mode))
         ref<void *>(modes, SELECTED_LIST) = nullptr;
-    select_orig(container, entrant_list);
+    std::string selected = ours ? pressed_list(entrant_list) : std::string(entrant_list ? entrant_list : "");
+    select_orig(container, entrant_list ? selected.c_str() : entrant_list);
 }
 
 uintptr_t need(const char *id, std::string &missing)
@@ -1499,6 +1626,15 @@ std::vector<CoreMixins> tt_guard_mixins()
         out.push_back({SETUP_LIST_MIXIN,
                        {{SETUP_LIST_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&setup_list_entry, (void **)&setup_list_orig}}});
     }
+    if (!swofty::api->resolve(PARSE_LIST_FN) || !swofty::api->resolve("g_Ne_DefaultAllocator")) {
+        swofty::log("[era] virtual entrant lists off: needs %s and g_Ne_DefaultAllocator, which this build does not "
+                    "resolve",
+                    PARSE_LIST_FN);
+    } else {
+        parse_list_bound = true;
+        out.push_back({PARSE_LIST_MIXIN,
+                       {{PARSE_LIST_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&parse_list_entry, (void **)&parse_list_orig}}});
+    }
     return out;
 }
 
@@ -1553,6 +1689,11 @@ void tt_guard_commit()
                     core_mixins_active(SETUP_LIST_MIXIN)
                         ? "armed: a game mode with more than 9 setup modes no longer crashes an era tile press"
                         : "did not install (see the [core] lines)");
+    if (parse_list_bound)
+        swofty::log("[era] virtual entrant lists %s", core_mixins_active(PARSE_LIST_MIXIN)
+                                                          ? "armed: a box whose list lies above the table's count "
+                                                            "is read into swofty_virtual_list when it is pressed"
+                                                          : "did not install (see the [core] lines)");
 }
 
 void era_session_trace(const char *state, int to)

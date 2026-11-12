@@ -241,6 +241,8 @@ inline constexpr address<"Sess_Classification_CompareEntries"> Sess_Classificati
 inline constexpr address<"Sess_Collect_CareerSetupEntrantLists"> Sess_Collect_CareerSetupEntrantLists{}; // L2 experimental
 inline constexpr address<"Sess_Collect_EntrantsForSetupMode"> Sess_Collect_EntrantsForSetupMode{}; // L2 experimental
 inline constexpr address<"Sess_Collect_FilteredEntrants"> Sess_Collect_FilteredEntrants{}; // L2 experimental
+using Sess_Collect_GameModeSetupModes_t = void *(void *out, void *allocator);
+inline constexpr fn<"Sess_Collect_GameModeSetupModes", Sess_Collect_GameModeSetupModes_t> Sess_Collect_GameModeSetupModes{}; // L2 experimental
 inline constexpr address<"Sess_Complete_Update"> Sess_Complete_Update{}; // L2 experimental
 inline constexpr address<"Sess_ContentAvailability_Rebuild"> Sess_ContentAvailability_Rebuild{}; // L2 experimental
 inline constexpr address<"Sess_ContentList_AddUniqueByte"> Sess_ContentList_AddUniqueByte{}; // L2 experimental
@@ -401,6 +403,8 @@ inline constexpr address<"Sess_OsqTeleportToStart"> Sess_OsqTeleportToStart{}; /
 inline constexpr address<"Sess_OvertakeLog_SendAllRecords"> Sess_OvertakeLog_SendAllRecords{}; // L2 experimental
 inline constexpr address<"Sess_PQRuleset_FinaliseResults"> Sess_PQRuleset_FinaliseResults{}; // L2 experimental
 inline constexpr address<"Sess_Parse_CarStateTransform"> Sess_Parse_CarStateTransform{}; // L2 experimental
+using Sess_Parse_EntrantList_t = void(int *ordinal, const GdbTableCursor *row, void *list, void *driver_registry);
+inline constexpr fn<"Sess_Parse_EntrantList", Sess_Parse_EntrantList_t> Sess_Parse_EntrantList{}; // L2 experimental
 inline constexpr address<"Sess_Parse_EntrantTemplateRef"> Sess_Parse_EntrantTemplateRef{}; // L2 experimental
 inline constexpr address<"Sess_Parse_PlayerDescription"> Sess_Parse_PlayerDescription{}; // L2 experimental
 inline constexpr address<"Sess_Parse_PlayerDriverRef"> Sess_Parse_PlayerDriverRef{}; // L2 experimental
