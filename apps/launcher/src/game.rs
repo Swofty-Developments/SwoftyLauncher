@@ -915,4 +915,18 @@ mod tests {
         );
         assert_eq!(cause_first(&failure), outdated);
     }
+
+    #[test]
+    fn a_row_an_earlier_addon_removed_leads_with_that_addon() {
+        let what = "Korea edits that row, but SERPS Ineos Mercedes Concept - Arabic Modder renamed it earlier in the \
+                    load. Turn SERPS Ineos Mercedes Concept - Arabic Modder off, or move it after Korea";
+        let doing = "applying pajko.korea: track_data.game_setup.TrackDataSet[_metadata_=f2_2026]: no row matches, \
+                     even after every addon's changes";
+        let log = format!(
+            "[info] building profile myteamporsche\n\
+             swofty: the wrapper exited (exit code: 1) before the game started: {doing}: {what}\n"
+        );
+        let failure = failure_line(&log).unwrap();
+        assert_eq!(cause_first(&failure), format!("{what} ({doing})"));
+    }
 }
