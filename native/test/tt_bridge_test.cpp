@@ -213,6 +213,10 @@ int main()
         expect(d.mark && d.new_best && best == 87400, "the clock lap does not lower the session best, so the next faster valid lap still saves its replay");
         expect(!e.mark && !e.new_best && e.restart && best == 87400, "an invalid lap faster than the best saves nothing and leaves the best alone");
         expect(!lap(88000, 1, true).restart && lap(88000, 1).restart, "a slower lap restarts at the line unless it already restarted before it");
+        expect(std::string(tb::replay_restart_when(tb::restart_before_line)) == "before the line" &&
+                   std::string(tb::replay_restart_when(tb::restart_after_lap)) == "at the line" &&
+                   std::string(tb::replay_restart_when(tb::restart_timing_starts)) == "at the line, timing starts" && !*tb::replay_restart_when(tb::restart_none),
+               "each recording restart names when it ran");
         tb::ReplayLapOutcome any = tb::replay_lap_outcome(35875, -1, 87400, true, false);
         expect(any.mark && !any.new_best && !any.restart, "the capture-any test switch saves an unknown lap without making it the best");
         best = 0;

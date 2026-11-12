@@ -954,6 +954,9 @@ void lap_rec_newlap(int car)
         return;
     int player = player_car.load();
     lr::Outcome o = recorder.newlap(now - paused_total.load(), player >= 0 && car == player);
+    // Timing starts after an out-lap, or the lap that just ended was dropped: the replay recording starts again at this line.
+    if (o.kind == lr::Outcome::started || o.kind == lr::Outcome::discarded)
+        runtime::tt_bridge_lap_started();
     if (o.kind != lr::Outcome::none) {
         queued.push_back({std::move(o)});
         inbox = true;
