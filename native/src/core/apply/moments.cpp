@@ -744,6 +744,11 @@ std::pair<std::string, std::string> session_mode_track()
     return {f.mode, f.track};
 }
 
+std::string current_mode(const char *where)
+{
+    return game::mode_of(game::current_context(), where);
+}
+
 void grand_prix_track_check()
 {
     attach();
