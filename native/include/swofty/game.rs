@@ -16306,6 +16306,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_MyTeamVehicleBases_AiConfigLoad: Binding = Binding {
+        id: "site_Game_MyTeamVehicleBases_AiConfigLoad",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_MyTeamVehicleBases_NextBase: Binding = Binding {
+        id: "site_Game_MyTeamVehicleBases_NextBase",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_PitLane_BoxPoseFalse: Binding = Binding {
         id: "site_Game_PitLane_BoxPoseFalse",
         kind: "site",
