@@ -785,6 +785,102 @@ static void test_guard()
     CHECK(present_queue_from_execs(execs, 7)->queue == c, "the newest direct queue on the thread wins over an older one");
     execs = {{b, compute, 7, 400}, {d, copy, 7, 500}};
     CHECK(!present_queue_from_execs(execs, 7), "compute and copy queues are never the present queue");
+
+    std::vector<std::string> dlssg = {"F1_25.exe", "sl.interposer.dll", "VERSION.dll", "swofty_core.dll",
+                                      "sl.common.dll", "sl.dlss.dll", "nvngx_dlss.dll", "NVNGX_DLSSG.DLL",
+                                      "sl.dlss_g.dll", "sl.pcl.dll", "sl.reflex.dll", "dxgi.dll"};
+    OnDemandArm on = on_demand_arm(dlssg, "dxgi.dll", -1);
+    CHECK(on.arms() && on.source == "nvngx_dlssg.dll, sl.dlss_g.dll, sl.interposer.dll" && on.refused.empty(),
+          "DLSS Frame Generation through Streamline arms the device hooks for a swapchain dxgi.dll presents");
+    CHECK(on_demand_arm(dlssg, "C:\\Windows\\System32\\nvngx_dlssg.dll", -1).arms() &&
+              on_demand_arm(dlssg, "sl.common.dll", -1).arms() && on_demand_arm(dlssg, "", -1).arms(),
+          "so does one DLSS Frame Generation, Streamline or an unknown module presents");
+    CHECK(on_demand_arm({"F1_25.exe", "NvPresent64.dll", "sl.interposer.dll"}, "NvPresent64.dll", -1).source ==
+              "NvPresent64.dll, sl.interposer.dll",
+          "the NVIDIA app's present layer is named first");
+    CHECK(on_demand_arm({"F1_25.exe", "sl.interposer.dll"}, "sl.interposer.dll", -1).source == "sl.interposer.dll",
+          "Streamline alone names its interposer");
+    CHECK(on_demand_arm(dlssg, "dxgi.dll", 1).arms(), "SWOFTY_OVERLAY_FG=1 leaves the on-demand arming on");
+    on = on_demand_arm(dlssg, "dxgi.dll", 0);
+    CHECK(!on.arms() && on.refused == "SWOFTY_OVERLAY_FG=0 / \"overlay_fg\": false",
+          "SWOFTY_OVERLAY_FG=0 / \"overlay_fg\": false keeps the device hooks off");
+    std::vector<std::string> amd = {"F1_25.exe", "sl.interposer.dll", "amd_fidelityfx_dx12.dll",
+                                    "amd_fidelityfx_framegeneration_dx12.dll", "libxess_fg.dll", "dxgi.dll"};
+    on = on_demand_arm(amd, "amd_fidelityfx_dx12.dll", -1);
+    CHECK(!on.arms() && on.refused == "amd_fidelityfx_dx12.dll presents it (AMD's or Intel's frame generation)",
+          "FidelityFX calling Present keeps the device hooks off");
+    CHECK(!on_demand_arm(amd, "C:\\Games\\ffx_frameinterpolation_x64.dll", -1).arms() &&
+              !on_demand_arm(amd, "libxess_fg.dll", -1).arms() &&
+              !on_demand_arm(amd, "dlssg_to_fsr3_amd_is_better.dll", -1).arms(),
+          "so do FSR 3 frame interpolation, XeSS frame generation and the DLSS-G to FSR 3 swap");
+    on = on_demand_arm({"F1_25.exe", "dxgi.dll", "medal-hook64-v2.dll"}, "medal-hook64-v2.dll", -1);
+    CHECK(!on.arms() && on.refused == "no NVIDIA frame generation, Streamline or present layer module is in the process",
+          "with no NVIDIA module in the process the device hooks stay off");
+
+    CHECK(unread_queue_step(false, false, false) == UnreadQueue::Arm, "the first unreadable queue asks to arm");
+    CHECK(unread_queue_step(false, true, false) == UnreadQueue::Refuse && unread_queue_step(false, true, true) == UnreadQueue::Refuse,
+          "a swapchain is refused once the arming was asked and ExecuteCommandLists is still not hooked");
+    CHECK(unread_queue_step(true, false, false) == UnreadQueue::Wait && unread_queue_step(true, false, true) == UnreadQueue::Learn,
+          "device hooks armed at start wait for, then learn, the queue without asking");
+    CHECK(unread_queue_step(true, true, false) == UnreadQueue::Wait && unread_queue_step(true, true, true) == UnreadQueue::Learn,
+          "device hooks armed on demand wait for, then learn, the queue");
+
+    {
+        bool exec_hooked = false, asked = false;
+        int asks = 0;
+        std::vector<ExecSeen> seen;
+        auto frame = [&](uint32_t tid, bool arms) -> const ExecSeen * {
+            UnreadQueue step = unread_queue_step(exec_hooked, asked, false);
+            if (step == UnreadQueue::Arm) {
+                asked = true;
+                asks++;
+                exec_hooked = arms;
+                step = unread_queue_step(exec_hooked, asked, false);
+            }
+            if (step == UnreadQueue::Refuse)
+                return nullptr;
+            const ExecSeen *q = present_queue_from_execs(seen, tid);
+            return unread_queue_step(true, asked, q != nullptr) == UnreadQueue::Learn ? q : nullptr;
+        };
+        CHECK(!frame(2368, true) && exec_hooked && asked, "frame 1 arms ExecuteCommandLists and draws nothing");
+        seen = {{b, compute, 2368, 1000}, {a, direct, 2368, 1010}, {c, direct, 4410, 1012}};
+        const ExecSeen *q = frame(2368, true);
+        CHECK(q && q->queue == a, "frame 2 learns the direct queue that executed on the presenting thread");
+        Gate g = gate_for_swapchain(learned_fg(true, ""), streamline_caller("dxgi.dll"), [] { return false; });
+        CHECK(draws_at_present(g), "a swapchain dxgi.dll presents draws at Present on that queue, with no back buffer "
+                                   "names the late device hooks missed");
+        CHECK(frame(2368, true) == q && asks == 1, "later frames keep the queue without asking again");
+        exec_hooked = asked = false;
+        asks = 0;
+        seen.clear();
+        CHECK(!frame(2368, false) && !frame(2368, false) && asks == 1, "a failed arming refuses the swapchain and asks once");
+    }
+
+    {
+        int presenting = 0, dispatched = 0;
+        auto present = [&](auto &&inner) {
+            if (!dispatches_present(presenting))
+                return;
+            presenting++;
+            dispatched++;
+            inner();
+            presenting--;
+        };
+        auto present1 = [&] { present([] {}); };
+        present([&] { present1(); });
+        CHECK(dispatched == 1 && presenting == 0, "a Present that calls Present1 inside it dispatches the frame once");
+        present1();
+        present1();
+        CHECK(dispatched == 3, "each Present1 a frame generation swapchain makes on its own is dispatched");
+    }
+    CHECK(gate_for_swapchain("libxess_fg.dll (calls Present)", false, false, [] { return true; }) == Gate::FrameGenNamed &&
+              gate_for_swapchain("nvngx_dlssg.dll (calls Present)", false, true, [] { return false; }) == Gate::Direct &&
+              gate_for_swapchain("", true, true, [] { return false; }) == Gate::Direct &&
+              gate_for_swapchain("", true, false, [] { return false; }) == Gate::FrameGenStreamline,
+          "a swapchain learned after the device hooks armed on demand is drawn on at Present; others keep their gate");
+    CHECK(std::string(fg_setting(hw).word()) == "off" && std::string(fg_setting("<frame_gen mode=\"2\" />").word()) == "on" &&
+              std::string(fg_setting("").word()) == "unknown",
+          "the start log words the game's frame generation setting");
 }
 
 // Models d3d12hooks::exec_original: the hook sits on the native queue's ExecuteCommandLists (vtable

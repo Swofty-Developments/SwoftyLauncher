@@ -17,6 +17,8 @@ struct Swapchain {
     ID3D12CommandQueue *queue = nullptr;
     std::string how, by, fg;
     bool streamline = false;
+    // Its queue was learned from ExecuteCommandLists after the device hooks armed on demand for it.
+    bool armed_late = false;
     UINT color_space = 0;
     bool color_space_set = false;
 };
@@ -33,6 +35,9 @@ using ResetFn = void (*)(ID3D12GraphicsCommandList *list);
 using RenderTargetsFn = void (*)(ID3D12GraphicsCommandList *list, UINT n, const D3D12_CPU_DESCRIPTOR_HANDLE *rtvs,
                                  BOOL single_range);
 using RtvFn = void (*)(ID3D12Resource *res, D3D12_CPU_DESCRIPTOR_HANDLE at);
+// Asked once, the first time a swapchain whose present queue cannot be read reaches Present while
+// ExecuteCommandLists is not hooked; true when it armed the device hooks, so the queue is learned from them.
+using UnreadQueueFn = bool (*)(IDXGISwapChain3 *sc, void *caller);
 
 void on_present(PresentFn fn);
 void on_presented(PresentedFn fn);
@@ -43,6 +48,10 @@ void on_setname(SetNameFn fn);
 void on_reset(ResetFn fn);
 void on_render_targets(RenderTargetsFn fn);
 void on_create_rtv(RtvFn fn);
+void on_unread_queue(UnreadQueueFn fn);
+
+// Whether a swapchain whose present queue cannot be read waits for a direct queue to execute command lists.
+bool learning(void *sc);
 
 bool arm_swapchain();
 bool arm_device();
