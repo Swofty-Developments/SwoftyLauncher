@@ -831,7 +831,7 @@ uint64_t fake_tl_save(void *component);
 uint8_t fake_tl_bag[0x20];
 
 enum { TL_ENTRY = 0x28, TL_SEASONS = 10, TL_IDS = 24, TL_CAP = 6000 };
-static uint8_t tl_rows[TL_SEASONS * TL_IDS][TL_ENTRY];
+static uint8_t tl_rows[TL_SEASONS * TL_IDS + 1][TL_ENTRY];
 static uint8_t tl_component[0x300], tl_career[0x1000], tl_events[0x140], tl_list[0x18], tl_array[0x20];
 static uint8_t tl_calendar[TL_CAP * TL_ENTRY];
 static uint8_t tl_ids[65536];
@@ -856,6 +856,7 @@ static void tl_setup(void)
             row[8] = (uint8_t)id;
             row[0x10] = (uint8_t)s;
         }
+    tl_rows[TL_SEASONS * TL_IDS][8] = 40;
     *(uint8_t **)(tl_component + 0x278) = tl_career;
     *(uint8_t **)(tl_career + 0xf58) = tl_events;
     *(uint8_t **)(tl_events + 0x138) = tl_list;
@@ -864,6 +865,7 @@ static void tl_setup(void)
     *(uint8_t **)(tl_component + 0x2b0) = tl_calendar;
     *(uint8_t **)(tl_component + 0x2b8) = tl_calendar;
     *(uint64_t *)(tl_component + 0x2c0) = TL_CAP;
+    *(uint32_t *)(tl_component + 0x2c8) = 5;
 }
 
 static size_t tl_load(size_t stored)
@@ -907,15 +909,28 @@ static void test_track_list_guard(int on)
                "track list off: 10 seasons sharing ids multiply the calendar 10x per save and load (50, 500, 5000)");
         return;
     }
-    expect(sizes[0] == 50 && sizes[1] == 50 && sizes[2] == 50 && sizes[3] == 50 && sizes[4] == 50,
-           "track list on: 10 seasons sharing ids keep the calendar at 50 events over 5 save and load cycles");
-    expect(tl_rows_once(sizes[4]), "track list on: each event row is in the calendar once");
+    expect(sizes[0] == 5 && sizes[1] == 5 && sizes[2] == 5 && sizes[3] == 5 && sizes[4] == 5,
+           "track list on: 10 seasons sharing ids keep the calendar at its 5 events over 5 save and load cycles");
+    expect(tl_rows_once(sizes[4]) && tl_calendar[0x10] == 0, "track list on: each entry loads one event, the first season's row");
+    static const uint8_t twice[4] = {0, 40, 40, 7};
+    memcpy(tl_ids, twice, sizeof twice);
+    *(uint32_t *)(tl_component + 0x2c8) = 4;
+    size_t doubled = tl_load(4);
+    printf("      track list on: a calendar with a track twice (one event row) loaded %zu calendar events\n", doubled);
+    expect(doubled == 4 && tl_calendar[1 * TL_ENTRY + 8] == 40 && tl_calendar[2 * TL_ENTRY + 8] == 40,
+           "track list on: a track twice in one season with one event row loads both races");
+    expect(tl_save() == 4 && tl_load(4) == 4, "track list on: the double header saves and loads with both races");
+    *(uint32_t *)(tl_component + 0x2c8) = 5;
     for (size_t i = 0; i < 65535; i++)
-        tl_ids[i] = calendar[i % 5];
+        tl_ids[i] = calendar[i * 5 / 65535];
     size_t healed = tl_load(65535);
     printf("      track list on: a 65535-entry custom_track_list loaded %zu calendar events\n", healed);
-    expect(healed == 50 && tl_rows_once(healed) && !tl_full, "track list on: a blown-up save (65,535 entries) loads back to 50 events");
-    expect(tl_save() == 50 && tl_load(50) == 50, "track list on: the healed calendar saves and loads unchanged");
+    expect(healed == 5 && tl_rows_once(healed) && !tl_full, "track list on: a blown-up save (65,535 entries) loads back to the season's 5 events");
+    for (int i = 0; i < 5; i++)
+        if (tl_calendar[i * TL_ENTRY + 8] != calendar[i])
+            healed = 0;
+    expect(healed == 5, "track list on: the healed calendar keeps the season's order");
+    expect(tl_save() == 5 && tl_load(5) == 5, "track list on: the healed calendar saves and loads unchanged");
 }
 
 static void crash_leaderboard_guard(void)
