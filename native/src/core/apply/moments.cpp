@@ -630,7 +630,7 @@ void boot_without_database(room::Report report)
         swofty::log("[registry] register: %s %zu database record(s) refused (late): %s", addon.c_str(), n,
                     report.reason.c_str());
     }
-    report.registry_asked = scheduler().planned_keys();
+    report.registry_planned = report.registry_asked = scheduler().planned_keys();
     save_ids();
     write_room(report);
     if (runtime::load_stage() != "early")
