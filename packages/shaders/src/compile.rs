@@ -230,7 +230,14 @@ pub fn compile_pass(
         }
     }
     let out = cache.join(format!("{key}.tmp{}", unique()));
-    let run = Command::new(dxc)
+    let mut cmd = Command::new(dxc);
+    #[cfg(windows)]
+    {
+        use std::os::windows::process::CommandExt;
+        const CREATE_NO_WINDOW: u32 = 0x0800_0000;
+        cmd.creation_flags(CREATE_NO_WINDOW);
+    }
+    let run = cmd
         .args(target_args(target))
         .args(entry.args())
         .arg("-I")
