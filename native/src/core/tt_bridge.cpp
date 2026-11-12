@@ -250,7 +250,6 @@ bool bridge_on = false, boards_on = false, guards_on = false, request_guard = fa
 std::atomic<bool> pb_armed{false};
 std::string last_board, session_code;
 std::atomic<bool> session_custom{false}, track_watch{false}, track_session{false};
-std::atomic<int64_t> diag_checked_ms{0};
 tb::TrackReads track_reads;
 std::atomic<bool> unknown_logged{false};
 std::atomic<int> pending_count{0};
@@ -286,7 +285,7 @@ std::atomic<int64_t> ts_forced_ms{0}, enter_ms{0};
 std::string ts_seen, priv_seen, select_seen, ready_seen;
 safetyhook::InlineHook h_write_ready, h_ready;
 safetyhook::MidHook h_garage;
-bool lookup_logged = true;
+std::atomic<bool> lookup_logged{true};
 std::atomic<int> finder_logged{0};
 uintptr_t diag_handler_seen = ~uintptr_t(0);
 std::atomic<int> diag_gate_logged{0}, diag_push_logged{0}, diag_error_logged{0}, diag_bypass_logged{0};
@@ -2817,39 +2816,9 @@ void describe_checks(uint64_t handler, const std::string &board)
                 list.empty() ? "none" : list.c_str());
 }
 
-// block is a copy of the handler's first tb::HANDLER_BLOCK bytes, taken by diag_tick after one readability check; only the save checks
-// behind handler+0x18 are read here, through swofty::mem under diag_tick's Trust.
-void handler_watch(uint64_t handler, const uint8_t *block, int finder_state, const std::string &board)
+// The save checks behind handler+0x18 (block+0x18 is that system's pointer): a walk of about 35 guarded reads.
+std::string save_checks(const uint8_t *block)
 {
-    describe_checks(handler, board);
-    auto w = [&](uint64_t off) {
-        uint32_t v;
-        memcpy(&v, block + off, 4);
-        return unsigned(v);
-    };
-    auto b = [&](uint64_t off) { return unsigned(block[off]); };
-    int32_t state = int32_t(w(0x1d8));
-    bool ours = bridge_on && board_ours(board);
-    char force[8] = {};
-    bool forced = ours && state == 4 && GetEnvironmentVariableA("SWOFTY_TT_FORCE_EMPTY", force, sizeof force) && force[0] == '1';
-    if (forced) {
-        *reinterpret_cast<uint32_t *>(handler + 0x1d8) = 1;
-        state = 1;
-    }
-    std::string blockers;
-    auto need = [&](bool ok, const char *what) {
-        if (!ok)
-            blockers += std::string(blockers.empty() ? "" : ", ") + what;
-    };
-    bool task_out = w(0x1d0) != 0 || w(0x1d4) != 0;
-    need(b(0x65) != 0, "no new personal best flagged (+0x65)");
-    need(b(0x63) != 0, "+0x63 clear");
-    need(state == 1, "entry state is not 1");
-    need(w(0x94) == 0 && w(0x98) == 0, "+0x94/+0x98 busy");
-    need(w(0x130) == 0 && w(0x134) == 0, "+0x130/+0x134 busy");
-    need(!task_out, "a leaderboard task is out (+0x1d0/+0x1d4)");
-    need(b(0x66) == 0, "+0x66 set (personal best save pending)");
-    need(finder_state - 2 < 0 || finder_state - 2 > 7, "the rival finder is mid-search");
     uint64_t sysobj = 0;
     memcpy(&sysobj, block + 0x18, 8);
     uint64_t flag_mask = sysobj ? cached64(sysobj + 0xba8) : 0;
@@ -2883,7 +2852,53 @@ void handler_watch(uint64_t handler, const uint8_t *block, int finder_state, con
              "check 1 (session timer flag) %s [limit %u s, flag 2 %s, system flag A %s, +0x198 object %s], validators reporting activity (0 1 2 3 4 5): %s, validator 0 minimum lap floor %.3f s%s",
              check1 ? "ok" : "TRIPPED", limit, sysobj && ((cached64(sysobj + 0xbc8) & 1) == (cached32(sysobj + 0xbc0) & 0xff)) ? "ok" : "off", a_ok ? "ok" : "off",
              sysobj && cached64(sysobj + 0x198) ? "present" : "absent", active.empty() ? "?" : active.c_str(), floor_s, p3 ? "" : " (not readable)");
-    blockers += std::string(blockers.empty() ? "" : "; ") + checks;
+    return checks;
+}
+
+tb::SaveChecks checks_last;
+std::string checks_text;
+
+// block is a copy of the handler's first tb::HANDLER_BLOCK bytes, taken by diag_tick after one readability check. The save checks
+// behind handler+0x18 are walked only as tb::save_checks_due says; between walks the line keeps the last walk's text.
+void handler_watch(uint64_t handler, const uint8_t *block, int finder_state, const std::string &board, int64_t now)
+{
+    if (tb::save_checks_due(diag_on, handler, now, checks_last)) {
+        checks_last = {handler, now};
+        describe_checks(handler, board);
+        checks_text = save_checks(block);
+    }
+    auto w = [&](uint64_t off) {
+        uint32_t v;
+        memcpy(&v, block + off, 4);
+        return unsigned(v);
+    };
+    auto b = [&](uint64_t off) { return unsigned(block[off]); };
+    int32_t state = int32_t(w(0x1d8));
+    bool ours = bridge_on && board_ours(board);
+    static const bool force_empty = [] {
+        char force[8] = {};
+        return GetEnvironmentVariableA("SWOFTY_TT_FORCE_EMPTY", force, sizeof force) && force[0] == '1';
+    }();
+    bool forced = ours && state == 4 && force_empty;
+    if (forced) {
+        *reinterpret_cast<uint32_t *>(handler + 0x1d8) = 1;
+        state = 1;
+    }
+    std::string blockers;
+    auto need = [&](bool ok, const char *what) {
+        if (!ok)
+            blockers += std::string(blockers.empty() ? "" : ", ") + what;
+    };
+    bool task_out = w(0x1d0) != 0 || w(0x1d4) != 0;
+    need(b(0x65) != 0, "no new personal best flagged (+0x65)");
+    need(b(0x63) != 0, "+0x63 clear");
+    need(state == 1, "entry state is not 1");
+    need(w(0x94) == 0 && w(0x98) == 0, "+0x94/+0x98 busy");
+    need(w(0x130) == 0 && w(0x134) == 0, "+0x130/+0x134 busy");
+    need(!task_out, "a leaderboard task is out (+0x1d0/+0x1d4)");
+    need(b(0x66) == 0, "+0x66 set (personal best save pending)");
+    need(finder_state - 2 < 0 || finder_state - 2 > 7, "the rival finder is mid-search");
+    blockers += std::string(blockers.empty() ? "" : "; ") + checks_text;
     char t[640];
     snprintf(t, sizeof t,
              "entry state %d (0 reading, 1 entry known, 2 entry unusable, 4 no entry)%s, task out %d, download %u, flags 60..66 %u %u %u %u %u %u %u, memory pb valid +0x288 %u, "
@@ -2899,19 +2914,16 @@ void handler_watch(uint64_t handler, const uint8_t *block, int finder_state, con
     }
 }
 
-std::mutex diag_busy;
 tb::HandlerWatch watch_last;
 uint64_t watch_name_ctx = 0;
 int64_t watch_enter_ms = 0;
 std::string watch_board;
 
-// One flow-tick thread at a time (diag_busy). Every read goes through swofty::mem under a Trust, so a thread pays the VirtualQuery of a
-// big heap region once per HEAP_TRUST_MS; outside SWOFTY_TT_DIAG=1 the full handler description runs only as tb::handler_watch_full says.
+// Runs only on the handler watch thread (watch_main), never on a game thread. Every read goes through swofty::mem under a Trust, so
+// that one thread pays the VirtualQuery of a big heap region once per HEAP_TRUST_MS; outside SWOFTY_TT_DIAG=1 the handler is described
+// only as tb::handler_watch_full says, and its save checks are walked only as tb::save_checks_due says.
 void diag_tick()
 {
-    std::unique_lock<std::mutex> busy(diag_busy, std::try_to_lock);
-    if (!busy)
-        return;
     session_lookup_tick();
     uintptr_t sys = diag_storage.load();
     if (!sys)
@@ -2920,6 +2932,7 @@ void diag_tick()
     if (entered != watch_enter_ms) {
         watch_enter_ms = entered;
         watch_last = {};
+        checks_last = {};
         watch_name_ctx = 0;
         watch_board.clear();
         diag_handler_seen = ~uintptr_t(0);
@@ -2954,7 +2967,20 @@ void diag_tick()
     if (!tb::handler_watch_full(diag_on, handler, key, t, watch_last))
         return;
     watch_last = {handler, key, t};
-    handler_watch(handler, block, finder_state, watch_board);
+    handler_watch(handler, block, finder_state, watch_board, t);
+}
+
+void watch_main()
+{
+    perf::background();
+    static const uint32_t probe = perf::probe("core", "tt_bridge handler watch");
+    for (;;) {
+        Sleep(tb::WATCH_PERIOD_MS);
+        if (!tb::diag_tick_on(bridge_on, diag_on, track_session.load(std::memory_order_relaxed)))
+            continue;
+        perf::Scope timed(probe);
+        diag_tick();
+    }
 }
 
 bool section_of(const char *want, const uint8_t **begin, size_t *size)
@@ -3330,8 +3356,11 @@ void setup()
     }
     if (bridge_on || diag_on)
         if (uintptr_t at = runtime::find(S_SESSION_ENTER, "boards", "boards"))
-            if (hook_mid(h_session_enter, at, session_enter_mid, "storage system session enter"))
-                swofty::log("[boards] storage system onSessionEnter hooked at base+0x%llx (handler watch)", (unsigned long long)(at - swofty::api->module_base()));
+            if (hook_mid(h_session_enter, at, session_enter_mid, "storage system session enter")) {
+                std::thread(watch_main).detach();
+                swofty::log("[boards] storage system onSessionEnter hooked at base+0x%llx (handler watch, on its own thread every %u ms while a Time Trial session is live)",
+                            (unsigned long long)(at - swofty::api->module_base()), tb::WATCH_PERIOD_MS);
+            }
 
     char xv[8] = {};
     DWORD xn = GetEnvironmentVariableA("SWOFTY_TT_BOARD_XML", xv, sizeof xv);
@@ -3483,12 +3512,6 @@ void tt_bridge_tick()
     replay_load_tick();
     int64_t t = now_ms();
     bool time_trial_live = track_session.load(std::memory_order_relaxed);
-    int64_t diag_was = diag_checked_ms.load();
-    if (tb::diag_tick_due(tb::diag_tick_on(bridge_on, diag_on, time_trial_live), t, diag_was) && diag_checked_ms.compare_exchange_strong(diag_was, t)) {
-        static const uint32_t probe = perf::probe("core", "tt_bridge handler watch");
-        perf::Scope timed(probe);
-        diag_tick();
-    }
     std::string code;
     if (int n = track_reads.tick(track_watch.load(std::memory_order_relaxed) && time_trial_live, t, read_session_track, code)) {
         if (!code.empty())

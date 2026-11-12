@@ -426,17 +426,15 @@ struct TrackReads {
 };
 
 // The diagnostics tick reads the ghost lap handler out of the storage system and describes it. A fresh guarded read (a VirtualQuery)
-// inside the game's heap costs milliseconds on some PCs, and the storage system's onSessionEnter runs for every session kind. The tick
-// therefore runs only while the track watch says a Time Trial session is live, for the bridge or the diagnostics, and at most twice a
-// second: the flow tick runs a few hundred times a second across its threads.
+// inside the game's heap costs milliseconds on some PCs (about 10 ms per tick on Windows), and the storage system's onSessionEnter runs
+// for every session kind. The tick therefore runs on the handler watch's own thread, never on a game thread, every WATCH_PERIOD_MS and
+// only while the track watch says a Time Trial session is live, for the bridge or the diagnostics. One thread also keeps one warm
+// VirtualQuery cache: a game flow thread came back to the tick only every few seconds, after its cached answers had expired.
+constexpr uint32_t WATCH_PERIOD_MS = 500;
+
 inline bool diag_tick_on(bool bridge_on, bool diag_on, bool time_trial_live)
 {
     return (bridge_on || diag_on) && time_trial_live;
-}
-
-inline bool diag_tick_due(bool on, int64_t now_ms, int64_t checked_ms, int64_t period_ms = 500)
-{
-    return track_watch_due(on, now_ms, checked_ms, period_ms);
 }
 
 // The handler watch describes the ghost lap handler: its own block (HANDLER_BLOCK bytes, one readability check, copied once) and the
@@ -476,6 +474,22 @@ inline bool handler_watch_full(bool diag_on, uint64_t handler, uint64_t key, int
     if (!handler)
         return false;
     return diag_on || handler != seen.handler || key != seen.key || now_ms - seen.full_ms >= refresh_ms;
+}
+
+// The save checks behind handler+0x18 (the pointer walk) are read again only with SWOFTY_TT_DIAG=1, for a new handler, or once
+// SAVE_CHECKS_MS has passed since the last walk. Otherwise the watch line keeps the last walk's text and needs only the block copy.
+constexpr int64_t SAVE_CHECKS_MS = 5000;
+
+struct SaveChecks {
+    uint64_t handler = 0;
+    int64_t read_ms = 0;
+};
+
+inline bool save_checks_due(bool diag_on, uint64_t handler, int64_t now_ms, const SaveChecks &seen, int64_t period_ms = SAVE_CHECKS_MS)
+{
+    if (!handler)
+        return false;
+    return diag_on || handler != seen.handler || now_ms - seen.read_ms >= period_ms;
 }
 
 // One rule for "this board is ours": an addon's descriptor or a custom track. The request redirect and the guards use it.

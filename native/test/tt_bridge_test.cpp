@@ -106,9 +106,6 @@ int main()
     expect(!tb::diag_tick_on(true, false, false) && !tb::diag_tick_on(true, true, false), "the diagnostics tick is off outside a live Time Trial, whatever is on");
     expect(tb::diag_tick_on(true, false, true) && tb::diag_tick_on(false, true, true), "a live Time Trial runs the diagnostics tick for the bridge or the diagnostics");
     expect(!tb::diag_tick_on(false, false, true), "a live Time Trial with nothing on does not run it");
-    expect(!tb::diag_tick_due(false, 10000, 0) && !tb::diag_tick_due(true, 10499, 10000) && tb::diag_tick_due(true, 10500, 10000) && tb::diag_tick_due(true, 500, 0),
-           "the diagnostics tick runs at most twice a second, and only while on");
-    expect(!tb::diag_tick_due(tb::diag_tick_on(true, true, false), 99999, 0), "the diagnostics switch alone never makes the tick due outside a Time Trial");
     {
         uint8_t block[tb::HANDLER_BLOCK] = {};
         block[0x1d8] = 4;
@@ -151,6 +148,30 @@ int main()
                 w = {0x3474bd830, key, t};
             }
         expect(full == 6, "a steady handler is described in full 6 times a minute instead of 120");
+
+        tb::SaveChecks walked;
+        expect(!tb::save_checks_due(false, 0, 1000, walked) && !tb::save_checks_due(true, 0, 1000, walked), "no handler, no save-check walk");
+        expect(tb::save_checks_due(false, 0x3474bd830, 1000, walked), "a new handler's save checks are walked at once");
+        walked = {0x3474bd830, 1000};
+        expect(!tb::save_checks_due(false, 0x3474bd830, 1000 + tb::SAVE_CHECKS_MS - 1, walked) && tb::save_checks_due(false, 0x3474bd830, 1000 + tb::SAVE_CHECKS_MS, walked),
+               "the same handler's save checks are walked again only after SAVE_CHECKS_MS");
+        expect(tb::save_checks_due(false, 0x3474bd000, 1500, walked), "a handler change walks the save checks at once");
+        expect(tb::save_checks_due(true, 0x3474bd830, 1500, walked), "diagnostics mode walks the save checks on every description");
+        int walks = 0, lines = 0;
+        tb::HandlerWatch line;
+        tb::SaveChecks walk;
+        for (int64_t t = 0; t < 10000; t += tb::WATCH_PERIOD_MS) {
+            uint64_t changing = key + uint64_t(t / tb::WATCH_PERIOD_MS);
+            if (!tb::handler_watch_full(false, 0x3474bd830, changing, t, line))
+                continue;
+            line = {0x3474bd830, changing, t};
+            lines++;
+            if (tb::save_checks_due(false, 0x3474bd830, t, walk)) {
+                walks++;
+                walk = {0x3474bd830, t};
+            }
+        }
+        expect(lines == 20 && walks == 2, "a handler whose fields change on every tick gets a watch line each tick but a save-check walk only every 5 s");
     }
     expect(tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0), "a panel with seven tabs is driven once");
     expect(!tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0x1000, 7), "the same panel is not driven twice");
