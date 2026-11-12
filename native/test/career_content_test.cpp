@@ -109,10 +109,6 @@ static void stock_db()
     lists["f1_career_2026"] = 97;
     lists["f1_career_1990"] = 107;
     lists["f1_career_huge"] = 300;
-    lists["f1_career_porsche25"] = 240;
-    lists["f1_career_edge"] = 120;
-    lists["f1_career_last"] = 119;
-    ints[content::LIST_COUNT] = 120;
     ints["content_sets._content_set_instancecount_"] = 2;
     ints["content_sets.content_set_1._official_entrant_list_instancecount_"] = 4;
     texts["content_sets.content_set_1.official_entrant_list_0.name"] = "F1CAREER_26";
@@ -215,6 +211,43 @@ int main()
         expect(!content::data_group(nullptr, a).name, "walk: a null career has no data group");
     }
     {
+        Fake f;
+        std::vector<std::string> names(149, "f1_other");
+        names[138] = "f1_career_sw_progressive";
+        build(f, names, 0);
+        content::Access a{fake_setup, fake_index, fake_readable, &f};
+        content::Desc d = desc1990();
+        d.data_group = "f1_career_sw_progressive";
+        content::Loaded l = content::loaded_list(f.source.data(), 138, a);
+        expect(l.known && l.slots == 149 && l.list && content::loaded_why(d, 138, l).empty(),
+               "loaded: stat_id 138 of 149 slots passes, whatever the table's row count");
+        l = content::loaded_list(f.source.data(), 148, a);
+        expect(l.list && content::loaded_why(d, 148, l).empty(), "loaded: the last slot passes");
+        l = content::loaded_list(f.source.data(), 149, a);
+        expect(l.known && !l.list && content::loaded_why(d, 149, l).find("past the 149 entrant list slots") !=
+                                         std::string::npos,
+               "loaded: an id equal to the slot count is refused");
+        l = content::loaded_list(f.source.data(), -1, a);
+        expect(l.known && !l.list && !content::loaded_why(d, -1, l).empty(), "loaded: a negative id is refused");
+        put(f.groups, 50 * content::GROUP_STRIDE + content::GROUP_AT, (void *)nullptr);
+        l = content::loaded_list(f.source.data(), 50, a);
+        expect(l.known && !l.list &&
+                   content::loaded_why(d, 50, l).find("loaded no list at that id") != std::string::npos,
+               "loaded: an id whose slot holds no list is refused");
+        build(f, std::vector<std::string>(105, "f1_other"), 0);
+        d.data_group = "f1_career_porsche25";
+        l = content::loaded_list(f.source.data(), 240, a);
+        expect(l.known && l.slots == 105 && !l.list &&
+                   content::loaded_why(d, 240, l).find("stat_id 240, past the 105 entrant list slots") !=
+                       std::string::npos,
+               "loaded: stat_id 240 with 105 loaded slots is refused (the 1.9.15 tile press crash)");
+        put(f.source, content::GROUPS_END, f.groups.data());
+        l = content::loaded_list(f.source.data(), 3, a);
+        expect(!l.known && content::loaded_why(d, 3, l).find("has not loaded") != std::string::npos,
+               "loaded: no slots yet is not known");
+        expect(!content::loaded_list(nullptr, 3, a).known, "loaded: no entrants system is not known");
+    }
+    {
         std::vector<uint8_t> e(3 * content::ENTRY_SIZE, 0);
         put<uint32_t>(e, 0 * content::ENTRY_SIZE + content::ENTRY_ID, 0x00000011);
         put<uint32_t>(e, 1 * content::ENTRY_SIZE + content::ENTRY_ID, 0x00010022);
@@ -235,8 +268,8 @@ int main()
         stock_db();
         content::Db db{db_text, db_int, db_list, nullptr};
         content::Requirements r = content::requirements(desc1990(), db);
-        expect(r.ok && r.mode == 81 && r.group == 107 && r.lists == 120 && r.f1 && r.f2 && r.icons && r.warn.empty(),
-               "requirements: the 1990 data resolves mode 81 and group 107 of 120 lists with all three official lists");
+        expect(r.ok && r.mode == 81 && r.group == 107 && r.f1 && r.f2 && r.icons && r.warn.empty(),
+               "requirements: the 1990 data resolves mode 81 and group 107 with all three official lists");
         content::Desc d = desc1990();
         d.mode = "driver_career_1991";
         r = content::requirements(d, db);
@@ -248,29 +281,6 @@ int main()
         d.data_group = "f1_career_huge";
         r = content::requirements(d, db);
         expect(!r.ok && r.why.find("below 256") != std::string::npos, "requirements: a stat_id past a byte fails the requirements");
-        d.data_group = "f1_career_porsche25";
-        ints[content::LIST_COUNT] = 105;
-        r = content::requirements(d, db);
-        expect(!r.ok && r.lists == 105 &&
-                   r.why.find("stat_id 240, at or past the 105 entrant lists") != std::string::npos,
-               "requirements: stat_id 240 with 105 loaded entrant lists fails the requirements");
-        ints[content::LIST_COUNT] = 120;
-        d.data_group = "f1_career_edge";
-        r = content::requirements(d, db);
-        expect(!r.ok && r.why.find("must be below 120") != std::string::npos,
-               "requirements: a stat_id equal to the loaded list count fails the requirements");
-        d.data_group = "f1_career_last";
-        r = content::requirements(d, db);
-        expect(r.ok && r.group == 119 && r.lists == 120, "requirements: the last loaded list's stat_id passes");
-        ints.erase(content::LIST_COUNT);
-        r = content::requirements(desc1990(), db);
-        expect(!r.ok && r.lists == -1 && r.why.find("no row count") != std::string::npos,
-               "requirements: an unknown loaded list count fails the requirements");
-        ints[content::LIST_COUNT] = 0;
-        r = content::requirements(desc1990(), db);
-        expect(!r.ok && r.why.find("no row count") != std::string::npos,
-               "requirements: a loaded list count of 0 fails the requirements");
-        ints[content::LIST_COUNT] = 120;
         texts.erase("content_sets.content_set_1.official_entrant_list_1.name");
         r = content::requirements(desc1990(), db);
         expect(!r.ok && r.why.find("F1CAREER_90") != std::string::npos, "requirements: no F1CAREER_<suffix> list fails the requirements");
