@@ -24,11 +24,11 @@
 // watchdog thread. Those threads only store the time in an atomic and set an event; the report runs here.
 //
 // SWOFTY_LOAD_STALL=0 turns it off; SWOFTY_LOAD_STALL_MS sets the loading-screen threshold (tests). The test-only
-// SWOFTY_TEST_LOAD_STALL=<seconds> holds the first game thread that moves a flow to Exiting on a loading screen
-// outside a session load, which is where the 1.9.9 load stopped, for that long; with SWOFTY_TEST_LOAD_STALL_AT=<flow>
-// it holds the first thread that moves that flow to Entering instead (StateSession: where the 1.9.x first-session
-// loads hang until the game logs its deadlock WARN). SWOFTY_TEST_LOAD_STALL_REPORT=1 writes one report at once,
-// before setup returns (the Wine test).
+// SWOFTY_TEST_LOAD_STALL=<seconds> holds the first game thread that moves a flow to Exiting on a loading screen other
+// than the boot's splash_transition outside a session load, which is where the 1.9.9 load stopped, for that long;
+// with SWOFTY_TEST_LOAD_STALL_AT=<flow> it holds the first thread that moves that flow to Entering instead
+// (StateSession: where the 1.9.x first-session loads hang until the game logs its deadlock WARN).
+// SWOFTY_TEST_LOAD_STALL_REPORT=1 writes one report at once, before setup returns (the Wine test).
 
 namespace runtime {
 bool stall_report(int index, int max, const char *why, const char *state);
@@ -145,7 +145,8 @@ void load_stall_flow(uint32_t hash, uint32_t to, const char *name)
         std::lock_guard<std::mutex> g(lock);
         watch.flow(hash, to, name, GetTickCount64());
         bool at = test_hold_at[0] ? to == ls::Entering && name && !std::strcmp(name, test_hold_at)
-                                  : to == ls::Exiting && watch.in_loading_screen() && !watch.session_flow();
+                                  : to == ls::Exiting && watch.in_loading_screen() && !watch.in_boot_loading_screen() &&
+                                        !watch.session_flow();
         hold = test_hold_ms && at && !test_held.exchange(true);
     }
     if (!hold)

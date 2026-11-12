@@ -9,13 +9,16 @@
 // (career.cpp's flow site) and every UI screen the game opens (ui.cpp), and poll says when a load has sat still
 // long enough for a report of every thread's stack.
 //
-// A load is in progress while the newest screen is a loading screen (its name holds "loading": loading_transitions,
-// loading) or while StateLoadSession or StateUnloadSession is out of None. Progress is any flow transition or screen
-// open; the stall is the time since the last one while a load is in progress. The threshold is kLoadingMs while only
-// a loading screen holds the load (the hand-off from "State launch exited" to StateLoadSession took at most 1.3 s in
-// 24 real loads) and kSessionLoadMs while a session load or unload flow is out of None (real StateLoadSession to
-// StateSession took 8.9 s at the median and up to 169 s across 468 loads). A stall gets its first report at the
-// threshold and a second at kRepeatFactor times it; progress starts a new stall; a process gets at most kMaxReports.
+// A load is in progress while the newest screen is a loading screen or while StateLoadSession or StateUnloadSession is
+// out of None. A loading screen's name holds "loading" (loading_transitions, loading) or it is the boot's
+// splash_transition (boot_loading_screen), which the game shows after Press any button while it loads the profile and
+// the main menu: 12.9 s at the median and 25.9 s at p90 in 382 real boots, and a 1.9.15 boot an addon held on it for
+// 140 s got no report while only "loading" counted. Progress is any flow transition or screen open; the stall is the
+// time since the last one while a load is in progress. The threshold is kLoadingMs while only a loading screen holds
+// the load (the hand-off from "State launch exited" to StateLoadSession took at most 1.3 s in 24 real loads) and
+// kSessionLoadMs while a session load or unload flow is out of None (real StateLoadSession to StateSession took 8.9 s
+// at the median and up to 169 s across 468 loads). A stall gets its first report at the threshold and a second at
+// kRepeatFactor times it; progress starts a new stall; a process gets at most kMaxReports.
 //
 // The game's own hang signals report at once, load or not (game). GameDeadlock is the game's WARN "The signal timed
 // out, this is unexpected and may indicate a deadlock" (game_deadlock_line): in 20 real hangs it came 15.1 to 15.4 s
@@ -46,9 +49,14 @@ inline const char *status_name(uint32_t s)
     return s < 4 ? names[s] : "?";
 }
 
+inline bool boot_loading_screen(const char *name)
+{
+    return name && !std::strcmp(name, "splash_transition");
+}
+
 inline bool loading_screen(const char *name)
 {
-    return name && std::strstr(name, "loading");
+    return name && (std::strstr(name, "loading") || boot_loading_screen(name));
 }
 
 inline bool session_load_flow(const char *name)
@@ -174,6 +182,11 @@ public:
     bool in_loading_screen() const
     {
         return loading_screen(screen_);
+    }
+
+    bool in_boot_loading_screen() const
+    {
+        return boot_loading_screen(screen_);
     }
 
     uint64_t threshold() const
