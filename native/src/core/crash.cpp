@@ -15,6 +15,7 @@
 #include "dred.hpp"
 #include "dred_logic.hpp"
 #include "fast_fail_logic.hpp"
+#include "hooks/guard.hpp"
 #include "hw_settings_logic.hpp"
 #include "json.hpp"
 #include "perf.hpp"
@@ -756,6 +757,8 @@ volatile DWORD stall_tid;
 
 LONG CALLBACK veh(EXCEPTION_POINTERS *e)
 {
+    if (swofty_core::hooks::guard::reading_now())
+        return EXCEPTION_CONTINUE_SEARCH;
     DWORD code = e->ExceptionRecord->ExceptionCode;
     if (stall_tid && stall_tid == GetCurrentThreadId())
         return EXCEPTION_CONTINUE_SEARCH;
@@ -1962,6 +1965,8 @@ bool writer_fault(EXCEPTION_POINTERS *e, bool breakpoint)
 
 LONG CALLBACK last_chance(EXCEPTION_POINTERS *e)
 {
+    if (swofty_core::hooks::guard::reading_now())
+        return EXCEPTION_CONTINUE_SEARCH;
     return writer_fault(e, true) ? EXCEPTION_CONTINUE_EXECUTION : EXCEPTION_CONTINUE_SEARCH;
 }
 
