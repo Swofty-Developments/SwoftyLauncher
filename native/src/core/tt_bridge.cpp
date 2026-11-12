@@ -1770,6 +1770,7 @@ void replay_save_entry_mid(safetyhook::Context &c)
 
 int64_t replay_after_ms = 0;
 std::atomic<int64_t> replay_session_best_ms{0};
+std::atomic<bool> replay_session_best_confirmed{false};
 bool replay_capture_any = false;
 
 std::atomic<double> replay_lap_path{0}, replay_lap_length{0};
@@ -1799,7 +1800,7 @@ void replay_lap_finished(int64_t lap_ms, int valid)
         return;
     int64_t best = replay_session_best_ms.load();
     // SWOFTY_TT_REPLAY_CAPTURE=any is a test switch: every finished lap is saved, valid or not.
-    bool mark = tb::replay_lap_is_best(lap_ms, valid, best) || (replay_capture_any && lap_ms > 0);
+    bool mark = tb::replay_lap_is_best(lap_ms, valid, best, replay_session_best_confirmed.load()) || (replay_capture_any && lap_ms > 0);
     swofty::log("[replay] capture: lap %lld ms (valid %d), session best %lld ms: %s", (long long)lap_ms, valid, (long long)best, mark ? "marked for a replay save" : "not a new best, no save");
     double path = replay_lap_path.exchange(0);
     if (path > 1000)
@@ -1811,6 +1812,7 @@ void replay_lap_finished(int64_t lap_ms, int valid)
         return;
     }
     replay_session_best_ms = lap_ms;
+    replay_session_best_confirmed = valid == 1;
     replay_pending_lap = uint32_t(lap_ms);
     replay_pending_ms = now_ms();
     replay_saved_lap_ms = uint32_t(lap_ms);
@@ -3434,6 +3436,7 @@ void tt_bridge_session_enter()
     std::lock_guard<std::mutex> g(lock);
     last_board.clear();
     replay_session_best_ms = 0;
+    replay_session_best_confirmed = false;
     replay_pending_ms = 0;
 }
 
