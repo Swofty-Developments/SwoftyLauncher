@@ -125,7 +125,8 @@ fn add_host(db: &mut Gvdb, names: &Names, from: &str, host: &str, count: &mut us
         .filter_map(|i| text(db, &format!("{TABLE}.{ROW}_{i}.stat_id")))
         .filter_map(|t| t.trim().parse().ok())
         .collect();
-    match (0..=255).find(|id| !used.contains(id)) {
+    // 0 is what the game's label lookup returns for a missing list (Sess_Get_EntrantListStatId_Thunk), so a host never takes it.
+    match (1..=255).find(|id| !used.contains(id)) {
         Some(id) => {
             let row = format!("{TABLE}.{ROW}_{count}");
             copy_row(db, names, from, &row);
@@ -405,7 +406,7 @@ mod tests {
         );
         assert_eq!(
             get(&db, &format!("{TABLE}.{ROW}_3.stat_id")).as_deref(),
-            Some("0")
+            Some("1")
         );
         assert_eq!(get(&db, &format!("{TABLE}.{ROW}_4._metadata_")), None);
         assert_eq!(
