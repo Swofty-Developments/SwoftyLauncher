@@ -22,7 +22,7 @@ use swofty_core::stock;
 use swofty_core::store::Store;
 use swofty_core::vault;
 use swofty_core::{GAME_EXE, steam, steam_client};
-use swofty_i18n::{tr, trf};
+use swofty_i18n::{fill, tr, trf, trn};
 
 const KB: &str = include_str!("../../../re/db/functions.tsv");
 
@@ -317,20 +317,25 @@ pub fn restore(store: &Store, dir: PathBuf) -> Result<String, String> {
     let done = recovery::restore(&store.root, &g).map_err(|e| e.to_string())?;
     if !done.left.is_empty() {
         let left: Vec<String> = done.left.iter().map(ToString::to_string).collect();
-        return Err(format!("Not everything could be restored: {}", left.join("; ")));
-    }
-    let mut text = "The game folder matches the original game files.".to_owned();
-    if !done.set_aside.is_empty() {
-        text.push_str(&format!(
-            " {} moved to {}.",
-            match done.set_aside.len() {
-                1 => "1 file was".to_owned(),
-                n => format!("{n} files were"),
-            },
-            recovery::set_aside_dir(&store.root).display()
+        return Err(trf!(
+            "Not everything could be restored: {left}",
+            left = left.join("; ")
         ));
     }
-    Ok(text)
+    Ok(match done.set_aside.len() {
+        0 => tr("The game folder matches the original game files.").to_owned(),
+        n => fill(
+            &trn(
+                n,
+                "The game folder matches the original game files. {count} file was moved to {folder}.",
+                "The game folder matches the original game files. {count} files were moved to {folder}.",
+            ),
+            &[(
+                "folder",
+                recovery::set_aside_dir(&store.root).display().to_string(),
+            )],
+        ),
+    })
 }
 
 fn merge_requests(store: &Store, idle: bool, seen: Option<SystemTime>) -> (Option<SystemTime>, bool) {
@@ -640,12 +645,13 @@ pub fn crash_summary(session: &SessionRecord, game: Option<&Path>) -> Result<Str
         return Ok(fast_fail.join("\n"));
     }
     Ok(match scan.last_fatal {
-        Some((c, addr)) => format!(
-            "exit code {code}, last {} at {}",
-            fatal_name(c).unwrap_or("exception"),
-            scan.describe(addr, &symbols)
+        Some((c, addr)) => trf!(
+            "exit code {code}, last {exception} at {place}",
+            code = code,
+            exception = fatal_name(c).unwrap_or("exception"),
+            place = scan.describe(addr, &symbols)
         ),
-        None => format!("exit code {code}"),
+        None => trf!("exit code {code}", code = code),
     })
 }
 

@@ -20,7 +20,7 @@ use crate::play_bar::link;
 use crate::sections::{Reporter, Shared};
 use crate::shell::{PlayState, Shell};
 use crate::theme::Palette;
-use swofty_i18n::tr;
+use swofty_i18n::{tr, trf};
 
 const TICK: Duration = Duration::from_secs(5);
 const RESTART_DELAY: Duration = Duration::from_millis(1500);
@@ -109,12 +109,12 @@ impl Updates {
             .and_then(Release::version)
             .unwrap_or_else(update::current_version);
         let c = self.addon.waiting(&target, self.addon_installed.as_ref())?;
-        Some(format!(
-            "{} {} needs Swofty Launcher {} and installs once that launcher is out. You have {}.",
-            managed::NAME,
-            c.version,
-            c.needs.as_ref()?,
-            update::current_version()
+        Some(trf!(
+            "{addon} {version} needs Swofty Launcher {needs} and installs once that launcher is out. You have {current}.",
+            addon = managed::NAME,
+            version = c.version,
+            needs = c.needs.as_ref()?,
+            current = update::current_version()
         ))
     }
 
@@ -140,10 +140,11 @@ fn log_change(part: Part, before: &Option<String>, after: &Option<String>) {
 }
 
 fn blocked_text(version: &Version, reason: &str) -> String {
-    format!(
-        "Swofty Launcher {version} is available. {}. You have {}.",
-        sentence(reason),
-        update::current_version()
+    trf!(
+        "Swofty Launcher {version} is available. {reason}. You have {current}.",
+        version = version,
+        reason = sentence(reason),
+        current = update::current_version()
     )
 }
 
@@ -365,7 +366,7 @@ impl Shell {
             return None;
         }
         u.phase = match &error {
-            Some(e) => Phase::Failed(format!("Update failed: {e}")),
+            Some(e) => Phase::Failed(trf!("Update failed: {e}", e = e)),
             None => Phase::Idle,
         };
         if ran.addon().is_some() {
@@ -413,8 +414,9 @@ impl Shell {
         let mut command = match exe {
             Ok(exe) => std::process::Command::new(exe),
             Err(e) => {
-                self.updates.phase = Phase::Failed(format!(
-                    "Updated, but could not restart: {e}. Close and reopen the launcher."
+                self.updates.phase = Phase::Failed(trf!(
+                    "Updated, but could not restart: {e}. Close and reopen the launcher.",
+                    e = e
                 ));
                 cx.notify();
                 return;
@@ -429,8 +431,11 @@ impl Shell {
             Ok(_) => cx.quit(),
             Err(e) => {
                 self.updates.phase = Phase::Failed(match Block::of(Path::new(command.get_program()), &e) {
-                    Some(b) => format!("Updated, but could not restart: {}", b.text()),
-                    None => format!("Updated, but could not restart: {e}. Close and reopen the launcher."),
+                    Some(b) => trf!("Updated, but could not restart: {e}", e = b.text()),
+                    None => trf!(
+                        "Updated, but could not restart: {e}. Close and reopen the launcher.",
+                        e = e
+                    ),
                 });
                 cx.notify();
             }
@@ -467,9 +472,9 @@ impl Shell {
                 let notes = plan.steps().first().map(|(_, r)| r.notes_url());
                 Some(
                     row.child(dot(p.accent))
-                        .child(text(format!(
-                            "Update required: {}. The launcher restarts afterwards.",
-                            changes.join(" and ")
+                        .child(text(trf!(
+                            "Update required: {changes}. The launcher restarts afterwards.",
+                            changes = changes.join(" and ")
                         )))
                         .when_some(notes, |d, notes| {
                             d.child(
@@ -481,15 +486,18 @@ impl Shell {
                 )
             }
             Gate::Installing => Some(row.child(dot(p.warning)).child(text(match u.restarts {
-                true => format!(
-                    "Updating {}. Keep the launcher open; it restarts when it's done.",
-                    updater::describe(&u.plan().versions())
+                true => trf!(
+                    "Updating {versions}. Keep the launcher open; it restarts when it's done.",
+                    versions = updater::describe(&u.plan().versions())
                 ),
-                false => format!("Updating {}.", updater::describe(&u.plan().versions())),
+                false => trf!(
+                    "Updating {versions}.",
+                    versions = updater::describe(&u.plan().versions())
+                ),
             }))),
-            Gate::Restarting => Some(row.child(dot(p.success)).child(text(format!(
-                "Updated {}. Restarting the launcher…",
-                updater::describe(&u.restarting)
+            Gate::Restarting => Some(row.child(dot(p.success)).child(text(trf!(
+                "Updated {versions}. Restarting the launcher…",
+                versions = updater::describe(&u.restarting)
             )))),
             Gate::Retry | Gate::Play => {
                 let Phase::Failed(error) = &u.phase else {
@@ -546,8 +554,8 @@ impl Shell {
             Gate::Installing => (
                 IconName::LoaderCircle,
                 match progress {
-                    Some(done) => format!("Updating {}", crate::format::percent(done)),
-                    None => "Updating…".into(),
+                    Some(done) => trf!("Updating {percent}", percent = crate::format::percent(done)),
+                    None => tr("Updating…").into(),
                 },
                 detail,
                 p.elevated,

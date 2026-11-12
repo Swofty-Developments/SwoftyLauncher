@@ -19,7 +19,7 @@ use crate::reveal;
 use crate::shell::Shell;
 use crate::theme::{Palette, palette};
 use crate::ui::Callout;
-use swofty_i18n::tr;
+use swofty_i18n::{tr, trf, trn};
 
 pub const LABEL: &str = "Send Logs to Developers";
 pub const SAVE_LABEL: &str = "Save Logs";
@@ -203,12 +203,12 @@ impl SendLogs {
         self.phase = match (sent, zip) {
             (Some(Ok(parts)), zip) => Phase::Sent { parts, zip: zip.ok() },
             (Some(Err(e)), zip) => Phase::Failed {
-                text: format!("Not sent. {e}"),
+                text: trf!("Not sent. {e}", e = e),
                 zip: zip.ok(),
             },
             (None, Ok(zip)) => Phase::Saved(zip),
             (None, Err(e)) => Phase::Failed {
-                text: format!("Not saved. {e}"),
+                text: trf!("Not saved. {e}", e = e),
                 zip: None,
             },
         };
@@ -249,8 +249,12 @@ impl SendLogs {
                     .text_color(p.success)
                     .child(Icon::new(IconName::CircleCheck).size(px(15.)))
                     .child(text(match parts {
-                        1 => "Sent — thanks!".into(),
-                        n => format!("Sent in {n} parts — thanks!"),
+                        1 => tr("Sent — thanks!").into(),
+                        n => trn(
+                            *n,
+                            "Sent in {count} part — thanks!",
+                            "Sent in {count} parts — thanks!",
+                        ),
                     })),
                 zip.as_ref(),
                 true,
@@ -324,7 +328,7 @@ fn manual(zip: &Path, also: bool, p: Palette) -> Div {
         .child(div().text_color(p.text_muted).child(if also {
             tr("You can also send your logs manually for debugging.")
         } else {
-            "You can send your logs manually for debugging."
+            tr("You can send your logs manually for debugging.")
         }))
         .child(
             div()
@@ -332,7 +336,10 @@ fn manual(zip: &Path, also: bool, p: Palette) -> Div {
                 .cursor_pointer()
                 .text_color(p.accent_hover)
                 .hover(|s| s.underline())
-                .child(format!("Click here to open them in {}.", reveal::FILE_MANAGER))
+                .child(trf!(
+                    "Click here to open them in {manager}.",
+                    manager = reveal::FILE_MANAGER
+                ))
                 .on_click(move |_, _, cx| reveal::show(&zip, cx)),
         )
 }

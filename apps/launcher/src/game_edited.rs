@@ -15,7 +15,7 @@ use crate::discord::{BLURPLE, INVITE, LOGO};
 use crate::pages::{game_art, label};
 use crate::shell::{Page, Shell};
 use crate::theme::{Palette, palette};
-use swofty_i18n::tr;
+use swofty_i18n::{tr, trf};
 
 const TITLE: &str = "Your game files have been edited";
 const MISSING_TITLE: &str = "Some game files are missing";
@@ -272,7 +272,7 @@ fn files_box(edited: &Edited, p: Palette) -> impl IntoElement {
                         div()
                             .pl(px(21.))
                             .text_color(p.text_muted)
-                            .child(format!("and {} more", files.len() - shown)),
+                            .child(trf!("and {count} more", count = files.len() - shown)),
                     )
                 }),
         )
