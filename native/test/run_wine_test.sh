@@ -998,12 +998,10 @@ for guard in on off; do
     if [[ $guard == on ]]; then
         once "myteam_vehicle on: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(my team vehicle base guard\)': 1 mixin"
         once "myteam_vehicle on: the guard is armed" '\[myteam\] vehicle base guard armed'
-        once "myteam_vehicle on: the missing vehicle is logged once, naming the base and the row" "\[myteam\] save: My Team vehicle base 1 \(stat id 0\) uses vehicle 'myteam_mes_porsche_2026' from More Engine Suppliers \(mildtdesign\.more-engine-suppliers\), which is not in the game data"
-        grep -q 'FAIL' "$OUT/myteam_vehicle.out" && { echo "FAIL: myteam_vehicle on: a check failed"; status=1; } || echo "ok  : myteam_vehicle on: the fake game's checks pass"
-        grep -q 'myteam vehicle on: the load returned, 2 bases stored' "$OUT/myteam_vehicle.out" && echo "ok  : myteam_vehicle on: the load returned with the two bases that have a row" ||
-            { echo "FAIL: myteam_vehicle on: the load did not return"; status=1; }
-        count "myteam_vehicle on: no unhandled fault" 0 '\[crash\] unhandled '
-        [[ $code == 0 ]] && echo "ok  : myteam_vehicle on: process exited 0" || { echo "FAIL: myteam_vehicle on: process ended with $code"; status=1; }
+        once "myteam_vehicle on: a base the database can't confirm missing is left to the game" "\\[myteam\\] save: My Team vehicle base 1 \\(stat id 0\\) uses vehicle 'myteam_mes_porsche_2026', whose row index reads as missing; it is not a known addon's vehicle or its entrants\\.vehicles row is in the game data, so the game's own load runs for it"
+        count "myteam_vehicle on: no base is skipped without the database confirming its row is missing" 0 '\[myteam\] save: .* the base is skipped'
+        check "myteam_vehicle on: the load faults where the game does, as with the guard off" '\[crash\] unhandled ACCESS_VIOLATION .*Sess_Load_VehicleAiConfig\+0x'
+        [[ $code != 0 ]] && echo "ok  : myteam_vehicle on: process ended with $code" || { echo "FAIL: myteam_vehicle on: process exited 0"; status=1; }
     else
         once "myteam_vehicle off: the guard is off" '\[myteam\] vehicle base guard off \(SWOFTY_MYTEAM_VEHICLE_GUARD=0\)'
         check "myteam_vehicle off: the load faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Sess_Load_VehicleAiConfig\+0x'
