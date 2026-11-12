@@ -7,7 +7,7 @@ A starting point for a timing tower for Swofty Launcher for F1 25: one `hud.elem
 | Path | What it is |
 |---|---|
 | `swofty.json` | The manifest: `operations.hud` |
-| `registry/tower.json` | The record: the header, the flag cards, 30 rows of 30 per-car slots, a Time Trial line, the editor preview, the lap counter and flag box hides |
+| `registry/tower@1.1.json` | The record: the header, the flag cards, 30 rows of 30 per-car slots, a Time Trial line, the editor preview, the lap counter and flag box hides |
 | `art/*.png` | Six flat sprites, written by `tools/make_art.py` |
 
 ## What the record shows
@@ -26,7 +26,7 @@ The leaves are `view_model_data.mytower_*`. Write them from native code through 
 
 ```sh
 python3 tools/make_art.py
-swofty hud compose . registry/tower.json out/
+swofty hud compose . registry/tower@1.1.json out/
 swofty addons install .
 swofty addons enable example.hud-tower
 ```
