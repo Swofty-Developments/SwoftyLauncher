@@ -87,7 +87,8 @@ int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
 // lists out, addon lists first, until they fit beside the game's 4 entries in the 26-slot table, and its unload
 // puts them back; era_session_load (StateLoadSession, any mode) puts back what it held
 // and, in Time Trial, logs the setup's resolved list and keeps a list past 23 cars out of the session;
-// era_session_unloaded (StateUnloadSession Exiting) and every press put it back. The session vehicle guard is a
+// era_session_unloaded (StateUnloadSession Exiting) and every press put it back. The load's leaderboard cut is made on
+// the swapped array, so each of them puts the cut back before the swap (logic::end_hold). The session vehicle guard is a
 // separate set wrapping Sess_Setup_VehicleComponents, offered whether or not a box is registered.
 //
 // Setup mode guard: Sess_Apply_ContentAvailability rebuilds the game setup modes (it frees the old objects), so a
@@ -132,9 +133,9 @@ using logic::ENTRANT_SETUP_MAX_ENTRANTS;
 constexpr size_t SETUP_MODE_NAME = 0xd8;
 constexpr size_t ENTRANT_SETUPS = 0x10;
 constexpr size_t ENTRANT_SETUP_COUNT = 0x70;
-constexpr size_t LISTS = 0x130;
-constexpr size_t LIST_COUNT = 0x230;
-constexpr size_t LIST_SLOTS = 32;
+constexpr size_t LISTS = logic::ESM_LISTS;
+constexpr size_t LIST_COUNT = logic::ESM_LIST_COUNT;
+constexpr size_t LIST_SLOTS = logic::ESM_LIST_SLOTS;
 constexpr size_t LIST_NAME = 0x28;
 constexpr int64_t ENTRANT_SETUP_SLOTS = 12;
 
@@ -162,14 +163,7 @@ struct Built {
     std::vector<std::string> lists;
 };
 
-struct Narrowed {
-    uint8_t *setup;
-    int64_t count, kept;
-    void *lists[LIST_SLOTS];
-    void *kept_lists[LIST_SLOTS];
-    bool time_trial;
-    logic::GridLimit grid;
-};
+using Narrowed = logic::ListCut;
 
 std::mutex lock;
 std::vector<logic::Box> boxes;
@@ -287,13 +281,22 @@ void put_back_drs()
         log_drs(std::string(logic::HOST) + "'s DRS group put back on " + std::to_string(n) + " mode(s)");
 }
 
-void put_back_narrowed(Narrowed &n)
+logic::ListCars list_cars(const void *list);
+
+void put_back_failed(const Narrowed &n)
 {
-    n.grid.restore();
-    if (at<int64_t>(n.setup, LIST_COUNT) != n.kept || memcmp(n.setup + LISTS, n.kept_lists, size_t(n.kept) * sizeof(void *)))
+    static uint32_t logged;
+    if (logged++ >= LOG_FIRST)
         return;
-    memcpy(n.setup + LISTS, n.lists, size_t(n.count) * sizeof(void *));
-    ref<int64_t>(n.setup, LIST_COUNT) = n.count;
+    std::vector<std::string> names;
+    for (void *list : logic::left_out(n)) {
+        std::string name = list_cars(list).name;
+        names.push_back(name.empty() ? "?" : name);
+    }
+    int64_t now = -1;
+    if (n.setup)
+        mem::read(reinterpret_cast<uintptr_t>(n.setup) + LIST_COUNT, now);
+    swofty::log("[era] %s", logic::put_back_failed_line(names, now, n.kept, n.time_trial).c_str());
 }
 
 // Virtual entrant lists. The game loads the rows of entrants.entrant_lists up to the table's count as list objects,
@@ -412,24 +415,7 @@ std::string pressed_list(const char *label)
 void restore_lists()
 {
     unfill_virtual();
-    for (size_t i = narrowed_count; i-- > 0;)
-        put_back_narrowed(narrowed[i]);
-    narrowed_count = 0;
-}
-
-size_t restore_time_trial_lists()
-{
-    size_t put = 0, keep = 0;
-    for (size_t i = narrowed_count; i-- > 0;)
-        if (narrowed[i].time_trial) {
-            put_back_narrowed(narrowed[i]);
-            put++;
-        }
-    for (size_t i = 0; i < narrowed_count; ++i)
-        if (!narrowed[i].time_trial)
-            narrowed[keep++] = narrowed[i];
-    narrowed_count = keep;
-    return put;
+    logic::put_back_cuts(narrowed, narrowed_count, false, put_back_failed);
 }
 
 void restore()
@@ -437,8 +423,6 @@ void restore()
     restore_lists();
     put_back_drs();
 }
-
-logic::ListCars list_cars(const void *list);
 
 logic::GridLimit continue_grid;
 
@@ -546,30 +530,16 @@ std::vector<logic::ListCars> lists_of(const uint8_t *entrant_setup, std::vector<
     return out;
 }
 
-struct Held {
-    uint8_t *esm;
-    int32_t limit_was;
-    size_t slot;
-    void *first;
-    void *fit;
-};
 std::mutex held_lock;
-Held held;
+logic::TtHold held;
 bool holding;
 
-void put_back()
+// Ends the Time Trial hold, putting the Time Trial cuts back before the swap (logic::end_hold); `cuts` puts them back
+// even without a swap held.
+logic::CutsPutBack put_back(bool cuts = false)
 {
     continue_grid.restore();
-    if (!holding)
-        return;
-    holding = false;
-    if (held.limit_was && at<int32_t>(held.esm, ENTRANT_SETUP_MAX_ENTRANTS) == logic::time_trial_limit(held.limit_was))
-        ref<int32_t>(held.esm, ENTRANT_SETUP_MAX_ENTRANTS) = held.limit_was;
-    if (held.first && held.slot < LIST_SLOTS && at<void *>(held.esm, LISTS) == held.fit &&
-        at<void *>(held.esm, LISTS + held.slot * 8) == held.first) {
-        ref<void *>(held.esm, LISTS + held.slot * 8) = at<void *>(held.esm, LISTS);
-        ref<void *>(held.esm, LISTS) = held.first;
-    }
+    return logic::end_hold(narrowed, narrowed_count, held, holding, cuts, put_back_failed);
 }
 
 constexpr const char *VEHICLE_MIXIN = "swofty_core.dll (session vehicle guard)";
@@ -880,38 +850,9 @@ void time_trial_budget(void *mode, uintptr_t setup)
     auto budget = logic::time_trial_budget(lists);
     size_t unrecorded = 0;
     for (size_t d : budget.dropped)
-        for (const auto &slot : found[d].slots) {
-            bool known = false;
-            for (size_t i = 0; i < narrowed_count; ++i)
-                known = known || (narrowed[i].time_trial && narrowed[i].setup == slot.setup &&
-                                  narrowed[i].kept == at<int64_t>(slot.setup, LIST_COUNT));
-            if (!logic::cut_recordable(narrowed_count, std::size(narrowed), known)) {
+        for (const auto &slot : found[d].slots)
+            if (!logic::cut_list(narrowed, narrowed_count, std::size(narrowed), slot.setup, found[d].list))
                 unrecorded++;
-                continue;
-            }
-            if (!known) {
-                Narrowed &n = narrowed[narrowed_count++];
-                n.setup = slot.setup;
-                n.count = at<int64_t>(slot.setup, LIST_COUNT);
-                memcpy(n.lists, slot.setup + LISTS, size_t(n.count) * sizeof(void *));
-                n.time_trial = true;
-                n.grid = {};
-                n.kept = n.count;
-                memcpy(n.kept_lists, n.lists, sizeof(n.lists));
-            }
-            auto **arr = reinterpret_cast<void **>(slot.setup + LISTS);
-            int64_t count = at<int64_t>(slot.setup, LIST_COUNT), w = 0;
-            for (int64_t i = 0; i < count; ++i)
-                if (arr[i] != found[d].list)
-                    arr[w++] = arr[i];
-            ref<int64_t>(slot.setup, LIST_COUNT) = w;
-            for (size_t i = narrowed_count; i-- > 0;)
-                if (narrowed[i].time_trial && narrowed[i].setup == slot.setup) {
-                    narrowed[i].kept = w;
-                    memcpy(narrowed[i].kept_lists, arr, size_t(w) * sizeof(void *));
-                    break;
-                }
-        }
     if (unrecorded)
         swofty::log("[era] Time Trial cut skipped in %zu entrant setup mode(s): the core's restore stack of %zu is full, "
                     "so those lists stay offered",
@@ -1511,17 +1452,13 @@ void era_session_load()
     }
     int64_t i = logic::time_trial_loaded(selected, first, lists, prefer);
     auto *esm = reinterpret_cast<uint8_t *>(entrant_setup);
-    held = {esm, 0, 0, nullptr, nullptr};
+    held = {};
+    held.esm = esm;
     if (i >= 0) {
         void *fit = ptrs[size_t(i)];
         ref<void *>(reinterpret_cast<void *>(setup), SELECTED_LIST) = fit;
-        if (logic::oversized(first.cars) && i > 0) {
-            held.first = ptrs[0];
-            held.fit = fit;
-            held.slot = size_t(i);
-            ref<void *>(esm, LISTS + size_t(i) * 8) = ptrs[0];
-            ref<void *>(esm, LISTS) = fit;
-        }
+        if (logic::oversized(first.cars) && i > 0)
+            logic::swap_into_first(held, esm, size_t(i));
     }
     int32_t limit = 0;
     if (mem::read(entrant_setup + ENTRANT_SETUP_MAX_ENTRANTS, limit) && logic::time_trial_limit(limit) != limit) {
@@ -1711,11 +1648,11 @@ void era_session_unloaded(const char *state, int to)
         return;
     tt_budget = -1;
     std::lock_guard<std::mutex> g(held_lock);
-    put_back();
-    if (size_t n = restore_time_trial_lists(); n && logged++ < LOG_FIRST)
+    logic::CutsPutBack r = put_back(true);
+    if ((r.put || r.failed) && logged++ < LOG_FIRST)
         swofty::log("[era] StateUnloadSession Exiting: the lists the Time Trial guards left out are back in %zu entrant "
-                    "setup mode(s)",
-                    n);
+                    "setup mode(s)%s",
+                    r.put, r.failed ? ("; " + std::to_string(r.failed) + " could not be put back").c_str() : "");
 }
 
 std::vector<CoreMixins> era_mixins()

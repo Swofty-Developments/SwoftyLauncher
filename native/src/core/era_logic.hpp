@@ -467,6 +467,181 @@ inline std::string time_trial_swap(const std::string &list, int64_t cars, const 
     return why;
 }
 
+// The core's restore stack of entrant setup mode list arrays (the lists at +0x130, their count at +0x230). An addon
+// box press narrows swofty_f1's modes to one list, a stock box press on a Time Trial picker keeps the lists past 23 cars
+// out, and a Time Trial load leaves whole lists of its leaderboard out (time_trial set on the last two). Each entry
+// holds the array before (lists, count) and after (kept_lists, kept); it is put back only while the mode still holds
+// what the core left, so a list array changed since is not overwritten.
+constexpr size_t ESM_LISTS = 0x130;
+constexpr size_t ESM_LIST_COUNT = 0x230;
+constexpr size_t ESM_LIST_SLOTS = 32;
+
+inline void **esm_lists(uint8_t *esm)
+{
+    return reinterpret_cast<void **>(esm + ESM_LISTS);
+}
+
+inline int64_t &esm_list_count(uint8_t *esm)
+{
+    return *reinterpret_cast<int64_t *>(esm + ESM_LIST_COUNT);
+}
+
+struct ListCut {
+    uint8_t *setup = nullptr;
+    int64_t count = 0, kept = 0;
+    void *lists[ESM_LIST_SLOTS] = {};
+    void *kept_lists[ESM_LIST_SLOTS] = {};
+    bool time_trial = false;
+    GridLimit grid;
+};
+
+inline bool put_back_cut(ListCut &n)
+{
+    n.grid.restore();
+    if (!n.setup || n.kept < 0 || n.count < 0 || size_t(n.kept) > ESM_LIST_SLOTS || size_t(n.count) > ESM_LIST_SLOTS ||
+        esm_list_count(n.setup) != n.kept || memcmp(esm_lists(n.setup), n.kept_lists, size_t(n.kept) * sizeof(void *)))
+        return false;
+    memcpy(esm_lists(n.setup), n.lists, size_t(n.count) * sizeof(void *));
+    esm_list_count(n.setup) = n.count;
+    return true;
+}
+
+// The lists an entry left out of its mode, in the mode's order before the cut.
+inline std::vector<void *> left_out(const ListCut &n)
+{
+    std::vector<void *> out;
+    int64_t kept = std::clamp<int64_t>(n.kept, 0, int64_t(ESM_LIST_SLOTS));
+    for (int64_t i = 0; i < n.count && size_t(i) < ESM_LIST_SLOTS; ++i)
+        if (std::find(n.kept_lists, n.kept_lists + kept, n.lists[i]) == n.kept_lists + kept)
+            out.push_back(n.lists[i]);
+    return out;
+}
+
+struct CutsPutBack {
+    size_t put = 0, failed = 0;
+};
+
+// Puts entries back from the top of the stack (only the Time Trial ones when time_trial_only) and drops them. An entry
+// whose mode no longer holds what it left is handed to failed and is not counted as put back.
+template <class Failed> CutsPutBack put_back_cuts(ListCut *stack, size_t &used, bool time_trial_only, Failed failed)
+{
+    CutsPutBack r;
+    for (size_t i = used; i-- > 0;) {
+        if (time_trial_only && !stack[i].time_trial)
+            continue;
+        if (put_back_cut(stack[i])) {
+            r.put++;
+        } else {
+            r.failed++;
+            failed(stack[i]);
+        }
+    }
+    size_t keep = 0;
+    if (time_trial_only)
+        for (size_t i = 0; i < used; ++i)
+            if (!stack[i].time_trial)
+                stack[keep++] = stack[i];
+    used = keep;
+    return r;
+}
+
+// A Time Trial load's leaderboard cut of `list` out of `esm`. The first cut of a mode pushes an entry when the stack has
+// room; a later one extends the Time Trial entry that already holds the mode. False when the stack is full: the list stays.
+inline bool cut_list(ListCut *stack, size_t &used, size_t capacity, uint8_t *esm, void *list)
+{
+    int64_t count = esm_list_count(esm);
+    if (count < 0 || size_t(count) > ESM_LIST_SLOTS)
+        return false;
+    bool known = false;
+    for (size_t i = 0; i < used; ++i)
+        known = known || (stack[i].time_trial && stack[i].setup == esm && stack[i].kept == count);
+    if (!cut_recordable(used, capacity, known))
+        return false;
+    void **arr = esm_lists(esm);
+    if (!known) {
+        ListCut &n = stack[used++];
+        n = {};
+        n.setup = esm;
+        n.count = count;
+        memcpy(n.lists, arr, size_t(count) * sizeof(void *));
+        n.time_trial = true;
+        n.kept = count;
+        memcpy(n.kept_lists, n.lists, sizeof(n.lists));
+    }
+    int64_t w = 0;
+    for (int64_t i = 0; i < count; ++i)
+        if (arr[i] != list)
+            arr[w++] = arr[i];
+    esm_list_count(esm) = w;
+    for (size_t i = used; i-- > 0;)
+        if (stack[i].time_trial && stack[i].setup == esm) {
+            stack[i].kept = w;
+            memcpy(stack[i].kept_lists, arr, size_t(w) * sizeof(void *));
+            break;
+        }
+    return true;
+}
+
+// The 24-car guard's hold on a Time Trial session's entrant setup mode: the list of at most 23 cars it moved into slot 0
+// (fit, from `slot`, where the first list went) and the max_entrants it lowered (limit_was, 0 when untouched).
+struct TtHold {
+    uint8_t *esm = nullptr;
+    int32_t limit_was = 0;
+    size_t slot = 0;
+    void *first = nullptr;
+    void *fit = nullptr;
+};
+
+inline void swap_into_first(TtHold &h, uint8_t *esm, size_t slot)
+{
+    void **arr = esm_lists(esm);
+    h.esm = esm;
+    h.slot = slot;
+    h.first = arr[0];
+    h.fit = arr[slot];
+    arr[slot] = h.first;
+    arr[0] = h.fit;
+}
+
+inline void put_back_hold(const TtHold &h)
+{
+    if (!h.esm)
+        return;
+    auto &limit = *reinterpret_cast<int32_t *>(h.esm + ENTRANT_SETUP_MAX_ENTRANTS);
+    if (h.limit_was && limit == time_trial_limit(h.limit_was))
+        limit = h.limit_was;
+    void **arr = esm_lists(h.esm);
+    if (h.first && h.slot < ESM_LIST_SLOTS && arr[0] == h.fit && arr[h.slot] == h.first) {
+        arr[h.slot] = arr[0];
+        arr[0] = h.first;
+    }
+}
+
+// Ends the hold. The leaderboard cut of the same load was made on the swapped array and is recorded against it, so the
+// Time Trial entries are put back first: undoing the swap first changes the array, and the cut lists would stay out.
+// With `cuts` (the session unload) they are put back whether or not a swap is held; otherwise only while one is.
+template <class Failed> CutsPutBack end_hold(ListCut *stack, size_t &used, TtHold &held, bool &holding, bool cuts, Failed failed)
+{
+    CutsPutBack r;
+    if (cuts || (holding && held.first))
+        r = put_back_cuts(stack, used, true, failed);
+    if (holding) {
+        holding = false;
+        put_back_hold(held);
+    }
+    return r;
+}
+
+inline std::string put_back_failed_line(const std::vector<std::string> &names, int64_t now, int64_t kept, bool time_trial)
+{
+    std::string list;
+    for (const auto &name : names)
+        list += (list.empty() ? "" : ", ") + name;
+    return std::string("the lists the ") + (time_trial ? "Time Trial guard" : "box narrowing") +
+           " left out of an entrant setup mode could not be put back: its lists changed since (" + std::to_string(now) +
+           " now, " + std::to_string(kept) + " left), so " + (list.empty() ? "none" : list) + " stay out of it";
+}
+
 constexpr size_t VEHICLE_SLOT = 8;
 
 inline size_t session_vehicles(uintptr_t begin, uintptr_t end)
