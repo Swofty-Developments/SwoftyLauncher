@@ -171,6 +171,7 @@ void session_enter_mid(safetyhook::Context &)
     swofty_core::apply::moments::session_load("Game_GameModule_OnSessionEnter");
     runtime::telemetry_session_enter();
     runtime::lap_rec_session_enter();
+    runtime::main_menu::session_enter();
     runtime::hud_rebuilt();
     bool restart;
     {
