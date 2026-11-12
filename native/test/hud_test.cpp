@@ -856,6 +856,23 @@ static void test_guard()
         CHECK(!frame(2368, false) && !frame(2368, false) && asks == 1, "a failed arming refuses the swapchain and asks once");
     }
 
+    {
+        int presenting = 0, dispatched = 0;
+        auto present = [&](auto &&inner) {
+            if (!dispatches_present(presenting))
+                return;
+            presenting++;
+            dispatched++;
+            inner();
+            presenting--;
+        };
+        auto present1 = [&] { present([] {}); };
+        present([&] { present1(); });
+        CHECK(dispatched == 1 && presenting == 0, "a Present that calls Present1 inside it dispatches the frame once");
+        present1();
+        present1();
+        CHECK(dispatched == 3, "each Present1 a frame generation swapchain makes on its own is dispatched");
+    }
     CHECK(gate_for_swapchain("libxess_fg.dll (calls Present)", false, false, [] { return true; }) == Gate::FrameGenNamed &&
               gate_for_swapchain("nvngx_dlssg.dll (calls Present)", false, true, [] { return false; }) == Gate::Direct &&
               gate_for_swapchain("", true, true, [] { return false; }) == Gate::Direct &&

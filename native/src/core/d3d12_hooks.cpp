@@ -56,11 +56,11 @@ std::mutex lock;
 std::vector<Swapchain> chains;
 std::vector<std::pair<void *, UINT>> pending_color_space;
 
-safetyhook::InlineHook h_present, h_resize, h_resize1, h_color_space, h_create, h_create_hwnd, h_create_core,
+safetyhook::InlineHook h_present, h_present1, h_resize, h_resize1, h_color_space, h_create, h_create_hwnd, h_create_core,
     h_create_comp, h_exec, h_barrier, h_setname;
 HMODULE impl_create, impl_hwnd, impl_core, impl_comp;
 constexpr size_t RESOURCE_GETDESC_SLOT = 10, SRV_SLOT = 19, SETNAME_SLOT = 6, EXEC_SLOT = 10, BARRIER_SLOT = 26, RTV_SLOT = 20, OM_SLOT = 46;
-thread_local int creating;
+thread_local int creating, presenting;
 std::atomic<bool> in_present;
 
 std::string self_module()
@@ -345,6 +345,7 @@ std::string fg_caller(void *caller)
 struct PresentSeen {
     void *sc, *caller;
     DWORD tid;
+    const char *how;
 };
 
 std::mutex present_lock;
@@ -352,7 +353,7 @@ std::vector<PresentSeen> present_seen;
 ULONGLONG present_since;
 unsigned present_count;
 
-void count_present(IDXGISwapChain3 *sc, void *caller)
+void count_present(IDXGISwapChain3 *sc, void *caller, const char *how)
 {
     DWORD tid = GetCurrentThreadId();
     ULONGLONG now = GetTickCount64();
@@ -362,11 +363,11 @@ void count_present(IDXGISwapChain3 *sc, void *caller)
         present_since = now;
     bool fresh = present_seen.size() < 32 &&
                  std::none_of(present_seen.begin(), present_seen.end(), [&](const PresentSeen &p) {
-                     return p.sc == sc && p.caller == caller && p.tid == tid;
+                     return p.sc == sc && p.caller == caller && p.tid == tid && p.how == how;
                  });
     if (fresh) {
-        present_seen.push_back({sc, caller, tid});
-        swofty::log("[d3d12] Present on swapchain %p from %s (%p) on thread %lu", static_cast<void *>(sc),
+        present_seen.push_back({sc, caller, tid, how});
+        swofty::log("[d3d12] %s on swapchain %p from %s (%p) on thread %lu", how, static_cast<void *>(sc),
                     module_of(caller).c_str(), caller, tid);
     }
     if (now - present_since >= 60000) {
@@ -378,12 +379,17 @@ void count_present(IDXGISwapChain3 *sc, void *caller)
     }
 }
 
-HRESULT STDMETHODCALLTYPE present_hook(IDXGISwapChain3 *sc, UINT sync, UINT flags)
+// Present and Present1 both close a frame. One that runs inside the other on the same thread, as DXVK's Present
+// calls its Present1, is the same frame and is dispatched once, by the outer call.
+template <class Original>
+HRESULT dispatch_present(IDXGISwapChain3 *sc, UINT flags, void *caller, const char *how, Original original)
 {
+    if (!hud::guard::dispatches_present(presenting))
+        return original();
+    presenting++;
     if (!(flags & DXGI_PRESENT_TEST))
-        count_present(sc, __builtin_return_address(0));
+        count_present(sc, caller, how);
     if (!(flags & DXGI_PRESENT_TEST) && presents.n.load() && !in_present.exchange(true)) {
-        void *caller = __builtin_return_address(0);
         std::string pfg = fg_caller(caller);
         Swapchain c;
         bool known = false;
@@ -403,10 +409,24 @@ HRESULT STDMETHODCALLTYPE present_hook(IDXGISwapChain3 *sc, UINT sync, UINT flag
             presents.fns[i](sc, known ? &c : nullptr, caller);
         in_present.store(false);
     }
-    HRESULT hr = h_present.call<HRESULT>(sc, sync, flags);
+    HRESULT hr = original();
     for (int i = 0, n = presenteds.n.load(); i < n; i++)
         presenteds.fns[i](sc, hr);
+    presenting--;
     return hr;
+}
+
+HRESULT STDMETHODCALLTYPE present_hook(IDXGISwapChain3 *sc, UINT sync, UINT flags)
+{
+    return dispatch_present(sc, flags, __builtin_return_address(0), "Present",
+                            [&] { return h_present.call<HRESULT>(sc, sync, flags); });
+}
+
+HRESULT STDMETHODCALLTYPE present1_hook(IDXGISwapChain3 *sc, UINT sync, UINT flags,
+                                        const DXGI_PRESENT_PARAMETERS *params)
+{
+    return dispatch_present(sc, flags, __builtin_return_address(0), "Present1",
+                            [&] { return h_present1.call<HRESULT>(sc, sync, flags, params); });
 }
 
 HRESULT STDMETHODCALLTYPE resize_hook(IDXGISwapChain3 *sc, UINT count, UINT w, UINT h, DXGI_FORMAT fmt, UINT flags)
@@ -1168,14 +1188,16 @@ bool arm_swapchain()
              install(h_present, sc_vt[8], reinterpret_cast<void *>(&present_hook), "IDXGISwapChain::Present");
         if (!ok)
             break;
+        bool present1 = sc_vt[22] != sc_vt[8] && install(h_present1, sc_vt[22], reinterpret_cast<void *>(&present1_hook),
+                                                         "IDXGISwapChain1::Present1");
         install(h_resize, sc_vt[13], reinterpret_cast<void *>(&resize_hook), "IDXGISwapChain::ResizeBuffers");
         install(h_resize1, sc_vt[39], reinterpret_cast<void *>(&resize1_hook), "IDXGISwapChain3::ResizeBuffers1");
         install(h_color_space, sc_vt[38], reinterpret_cast<void *>(&color_space_hook),
                 "IDXGISwapChain3::SetColorSpace1");
-        swofty::log("[d3d12] swapchain hooks armed in %s: Present (vt+0x40), ResizeBuffers (vt+0x68), "
+        swofty::log("[d3d12] swapchain hooks armed in %s: Present (vt+0x40), %sResizeBuffers (vt+0x68), "
                     "SetColorSpace1 (vt+0x130), ResizeBuffers1 (vt+0x138); only swapchains created after this point "
                     "are known",
-                    module_of(sc_vt[8]).c_str());
+                    module_of(sc_vt[8]).c_str(), present1 ? "Present1 (vt+0xb0), " : "");
     } while (false);
     release(swap);
     release(swap1);
