@@ -203,11 +203,14 @@ int main()
                    !mm::saves_back_leaves_home(route, mm::djb2("grand_prix_continue"), "accept", mm::Mode::grand_prix),
                "after a Grand Prix card press the saves list's Back leads home through the container");
         uint32_t entry = mm::djb2("customisation_f1_life_entry");
-        expect(std::string(mm::customisation_back(route, true, entry, "back_1")) == "swofty_back_home" &&
+        expect(std::string(mm::customisation_back(route, true, entry, "back")) == "swofty_back_home" &&
+                   std::string(mm::customisation_back(route, true, entry, "back_1")) == "swofty_back_home" &&
                    std::string(mm::customisation_back(route, true, entry, "back_2")) == "swofty_back_home" &&
                    std::string(mm::customisation_back(mm::Back::home, true, entry, "back_1")) == "swofty_back_home",
-               "after a Customisation card press the Customisation screen's Back (to the hub or the news) becomes the launcher's route home");
-        expect(mm::customisation_back(route, false, entry, "back_1") == nullptr,
+               "after a Customisation card press the Customisation screen's Back (back from the main menu, to the hub or "
+               "the news) becomes the launcher's route home");
+        expect(mm::customisation_back(route, false, entry, "back_1") == nullptr &&
+                   mm::customisation_back(route, false, entry, "back") == nullptr,
                "a Customisation screen the card did not open keeps the game's Back");
         expect(mm::customisation_back(route, true, entry, "to_customisation_car_category_select") == nullptr &&
                    mm::customisation_back(route, true, mm::djb2("customisation_driver_suit"), "back_1") == nullptr &&

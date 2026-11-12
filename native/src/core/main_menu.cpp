@@ -55,8 +55,9 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 // it for swofty_back_home (the container's home route behind the standard wipe) or swofty_home (the hub's back_1).
 // The Customisation card fires swofty_customisation (ui/home_customisation.flag says the build has it), a copy of
 // fe_home's own customisation route: close the home screen and its slices, then Migrate customisation_flow
-// enter_f1_life_customisation. After that press, the Customisation screen's Back (back_1 to the F1 World hub, or
-// back_2) is swapped for swofty_back_home in its group, customisation_f1_life_entry; a Customisation screen reached
+// enter_f1_life_customisation. After that press, the Customisation screen's Back (back, which leads nowhere when the
+// screen was opened from the main menu, back_1 to the F1 World hub, or back_2) is swapped for swofty_back_home in its
+// group, customisation_f1_life_entry; a Customisation screen reached
 // any other way keeps the game's Back. Every Migrate the game runs is logged with its flow and entry
 // (nav:), the last accepted flow is kept, and a screen that does not open in time is recovered. A session that
 // started from a card hands over (frontend_transition.ui, swofty_enter_return) to the bare activity container, where

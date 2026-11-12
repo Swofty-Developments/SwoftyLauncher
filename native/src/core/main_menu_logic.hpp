@@ -438,12 +438,13 @@ inline const char *back_replacement(Back variant, uint32_t group, const std::str
     return nullptr;
 }
 
-// The Customisation screen's Back (back_1 to the F1 World hub, back_2 to the news) after a Customisation card press:
-// the launcher's swofty_back_home in that screen's group, the container's home route.
+// The Customisation screen's Back after a Customisation card press: back (what the screen fires when it was opened
+// from the main menu; it leads nowhere there), back_1 (to the F1 World hub) or back_2 (to the news) becomes the
+// launcher's swofty_back_home in that screen's group, the container's home route.
 inline const char *customisation_back(Back variant, bool from_card, uint32_t group, const std::string &route)
 {
     if ((variant == Back::route || variant == Back::home) && from_card && group == djb2(CUSTOMISATION_GROUP) &&
-        (route == "back_1" || route == "back_2"))
+        (route == "back" || route == "back_1" || route == "back_2"))
         return BACK_HOME_FROM_CONTAINER;
     return nullptr;
 }
