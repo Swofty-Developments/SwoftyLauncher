@@ -309,8 +309,6 @@ struct Fatal {
     module: Option<String>,
     /// The modules on the crashing thread's stack, nearest first, lower case.
     stack: Vec<String>,
-    /// Modules whose return addresses the crash report found on the stack.
-    returns: Vec<String>,
     /// The loader's record of the exception: registers, code and stack.
     record: Vec<String>,
     /// The crashing thread's stack frames as written, nearest first.
@@ -325,10 +323,6 @@ impl Fatal {
             .iter()
             .chain(self.stack.iter().take(NEAR_FRAMES))
             .map(String::as_str)
-    }
-
-    fn all(&self) -> impl Iterator<Item = &str> {
-        self.near().chain(self.returns.iter().map(String::as_str))
     }
 }
 
@@ -413,11 +407,6 @@ fn fatal(e: &Evidence) -> Fatal {
                 if line.trim_start().starts_with('#') {
                     frames.push(line.to_owned());
                 }
-            } else if section.starts_with("Return addresses")
-                && let Some(m) = line.split_whitespace().nth(2).and_then(module_at)
-                && !f.returns.contains(&m)
-            {
-                f.returns.push(m);
             }
         }
         if f.stack.is_empty() {
@@ -2163,7 +2152,7 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
         });
     }
     let started = crate::launch::LoaderSeen::scan(&e.loader).window;
-    if !mods.is_empty() && (!started || f.all().any(graphics)) {
+    if !mods.is_empty() && (!started || f.near().any(graphics)) {
         let when = if started {
             "in its graphics code"
         } else {
@@ -2458,6 +2447,107 @@ mod tests {
             diagnose(&ev(&log, &["F1_25.exe", "dxgi.dll", "ReShade.ini"])),
             None
         );
+    }
+
+    const REPLAY_LOADER: &str = "\
+2026-11-12 17:57:27.502 [ 5736] stage: window (USER32!RegisterClassExW from 00000001439f00a0 (.xtls)), addons were loaded at the early stage
+2026-11-12 18:23:14.352 [12208] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 12208, 1558 s after load, at F1_25.exe+0x1fbd2c .xtls fn base+0x1fbd00+0x2c
+2026-11-12 18:23:14.352 [12208] [crash]   reading 0xffffffffffffffff
+2026-11-12 18:23:14.352 [12208] [crash]   rax=40000003c3bc3180 rbx=0000000000000000 rcx=00000003c3bc31e8 rdx=00000000693af410
+2026-11-12 18:23:14.353 [12208] [crash]   stack:
+2026-11-12 18:23:14.353 [12208] [crash]   #0  F1_25.exe+0x1fbd2c .xtls fn base+0x1fbd00+0x2c
+2026-11-12 18:23:14.353 [12208] [crash]   #1  F1_25.exe+0x3b8250 .xtls Game_Garage_ClearOverlayAllModels+0xd0
+2026-11-12 18:23:14.353 [12208] [crash]   #2  F1_25.exe+0x3b80ac .xtls Car_PitStop_ApplyTyreAndWingVisuals+0x8ec
+2026-11-12 18:23:14.353 [12208] [crash]   #3  F1_25.exe+0x3b7579 .xtls Car_Tyres_ApplyStateToCarPair+0x69
+2026-11-12 18:23:14.353 [12208] [crash]   #4  F1_25.exe+0x7e3c9b4 .data1 fn base+0x7e3c870+0x144
+2026-11-12 18:23:14.353 [12208] [crash]   #5  F1_25.exe+0x45ceeee .xtls Ne_ReplayRecordable_ReadFrom+0x151e
+2026-11-12 18:23:14.353 [12208] [crash]   #6  F1_25.exe+0x45d3aee .xtls Game_ReplayStream_InterpolateBackwards+0x4ae
+2026-11-12 18:23:14.353 [12208] [crash]   #7  F1_25.exe+0x45d71e4 .xtls Game_ReplaySystem_TargetTime+0x504
+2026-11-12 18:23:14.353 [12208] [crash]   #8  F1_25.exe+0x45d6c56 .xtls Game_ReplaySystem_UpdateFromModule+0xc16
+2026-11-12 18:23:14.353 [12208] [crash]   #9  F1_25.exe+0x2a37f0 .xtls fn base+0x2a37e0+0x10
+2026-11-12 18:23:14.353 [12208] [crash]   #10 F1_25.exe+0x3ac0c33 .xtls Ne_JobQueue_TryAcquireJob+0x483
+2026-11-12 18:23:14.353 [12208] [crash]   #11 F1_25.exe+0x3ac4fb3 .xtls fn base+0x3ac4a50+0x563
+2026-11-12 18:23:14.353 [12208] [crash]   #12 F1_25.exe+0x391e16a .xtls fn base+0x391def0+0x27a
+2026-11-12 18:23:14.353 [12208] [crash]   #13 KERNEL32.DLL+0x17374
+2026-11-12 18:23:14.353 [12208] [crash]   #14 ntdll.dll+0x4cc91
+2026-11-12 18:23:14.353 [12208] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x1fbd2c .xtls fn base+0x1fbd00+0x2c reached the top-level filter; passing it to the game's filter
+";
+
+    const REPLAY_REPORT: &str = "\
+Swofty crash report
+
+reason       unhandled ACCESS_VIOLATION (0xc0000005) reading 0xffffffffffffffff at F1_25.exe+0x1fbd2c .xtls fn base+0x1fbd00+0x2c
+runtime      Windows
+
+== Exception
+  ACCESS_VIOLATION (0xc0000005), flags 0x0, at F1_25.exe+0x1fbd2c .xtls fn base+0x1fbd00+0x2c
+
+== Stack (unwound with the modules' exception data)
+  #0  00000001401fbd2c rsp=00000000693af350  F1_25.exe+0x1fbd2c .xtls fn base+0x1fbd00+0x2c
+  #1  00000001403b8250 rsp=00000000693af3e0  F1_25.exe+0x3b8250 .xtls Game_Garage_ClearOverlayAllModels+0xd0
+  #2  00000001403b80ac rsp=00000000693af460  F1_25.exe+0x3b80ac .xtls Car_PitStop_ApplyTyreAndWingVisuals+0x8ec
+  #3  00000001403b7579 rsp=00000000693af5f0  F1_25.exe+0x3b7579 .xtls Car_Tyres_ApplyStateToCarPair+0x69
+  #4  0000000147e3c9b4 rsp=00000000693af640  F1_25.exe+0x7e3c9b4 .data1 fn base+0x7e3c870+0x144
+  #5  00000001445ceeee rsp=00000000693af700  F1_25.exe+0x45ceeee .xtls Ne_ReplayRecordable_ReadFrom+0x151e
+  #6  00000001445d3aee rsp=00000000693af870  F1_25.exe+0x45d3aee .xtls Game_ReplayStream_InterpolateBackwards+0x4ae
+  #7  00000001445d71e4 rsp=00000000693af950  F1_25.exe+0x45d71e4 .xtls Game_ReplaySystem_TargetTime+0x504
+  #8  00000001445d6c56 rsp=00000000693afa80  F1_25.exe+0x45d6c56 .xtls Game_ReplaySystem_UpdateFromModule+0xc16
+
+== Return addresses found on the stack (rsp to +0x8000)
+  rsp+0x88    00000001403b8250  F1_25.exe+0x3b8250 .xtls Game_Garage_ClearOverlayAllModels+0xd0
+  rsp+0x3a8   00000001445ceeee  F1_25.exe+0x45ceeee .xtls Ne_ReplayRecordable_ReadFrom+0x151e
+  rsp+0x3b8   00007ff8d501b6ae  KERNELBASE.dll+0x1b6ae .text fn +0x1b620+0x8e
+  rsp+0x518   00000001445d3aee  F1_25.exe+0x45d3aee .xtls Game_ReplayStream_InterpolateBackwards+0x4ae
+  rsp+0x528   00007ff87ef46586  d3d12.dll+0x6586 .text fn +0x64f0+0x96
+  rsp+0x5f8   00000001445d71e4  F1_25.exe+0x45d71e4 .xtls Game_ReplaySystem_TargetTime+0x504
+";
+
+    #[test]
+    fn a_graphics_module_only_in_the_stack_scan_does_not_blame_graphics_mods() {
+        let mut e = ev(REPLAY_LOADER, &["F1_25.exe", "DINPUT8.dll"]);
+        e.report = Some(REPLAY_REPORT.to_owned());
+        assert!(diagnose(&e).is_none_or(|d| d.id != "graphics_mods"));
+        let mut through_d3d12 = ev(
+            &REPLAY_LOADER.replace(
+                "#3  F1_25.exe+0x3b7579 .xtls Car_Tyres_ApplyStateToCarPair+0x69",
+                "#3  d3d12.dll+0x6586",
+            ),
+            &["F1_25.exe", "DINPUT8.dll"],
+        );
+        through_d3d12.report = Some(REPLAY_REPORT.to_owned());
+        let d = diagnose(&through_d3d12).expect("d3d12.dll is among the near frames");
+        assert_eq!(d.id, "graphics_mods");
+        assert_eq!(d.title, "an ASI loader in your game folder crashed F1 25");
+    }
+
+    #[test]
+    fn a_stale_driver_return_does_not_blame_optiscaler_for_a_core_crash() {
+        let loader = "\
+2026-11-12 10:26:30.000 [11396] stage: window (USER32!RegisterClassExW from 00000001439f00a0 (.xtls)), addons were loaded at the early stage
+2026-11-12 10:27:57.733 [11396] [crash] unhandled exception (0xc0000028) at ntdll.dll+0x1d3df reached the top-level filter; passing it to the game's filter
+";
+        let report = "\
+== Exception
+  exception (0xc0000028), flags 0x81, at ntdll.dll+0x1d3df .text fn +0x1d390+0x4f
+
+== Stack (unwound with the modules' exception data)
+  #0  00007ffa1a2ed3df rsp=0000000067ffd1f0  ntdll.dll+0x1d3df .text fn +0x1d390+0x4f
+  #1  00007ffa1a2edaee rsp=0000000067ffd790  ntdll.dll+0x1daee .text fn +0x1da30+0xbe
+  #2  00007ffa17731da2 rsp=0000000067ffdec0  ucrtbase.dll+0xb1da2 .text fn +0xb1c80+0x122
+  #3  00007ffa1a43ab3f rsp=0000000067ffdf30  ntdll.dll+0x16ab3f .text fn +0x16ab30+0xf
+  #4  00007ffa1a396985 rsp=0000000067ffdf60  ntdll.dll+0xc6985 .text fn +0xc6390+0x5f5
+  #5  00007ffa1a43a47e rsp=0000000067ffe6c0  ntdll.dll+0x16a47e .text fn +0x16a450+0x2e
+  #6  00007ff92fecfda9 rsp=0000000067ffee78  swofty_core.dll+0x64fda9 .text
+  #7  3f80000000000007 rsp=0000000067ffee80  0x3f80000000000007 (no module)
+
+== Return addresses found on the stack (rsp to +0x8000)
+  rsp+0x8     00007ff9fed046d3  nvwgf2umx.dll+0x4846d3 .text fn +0x483ce0+0x9f3
+  rsp+0x30    00007ffa1a2ed3df  ntdll.dll+0x1d3df .text fn +0x1d390+0x4f
+  rsp+0x908   00007ff9a057f54b  D3D12Core.dll+0x3f54b .text fn +0x3f1f0+0x35b
+";
+        let mut e = ev(loader, &["F1_25.exe", "OptiScaler.ini", "nvngx.dll"]);
+        e.report = Some(report.to_owned());
+        assert!(diagnose(&e).is_none_or(|d| d.id != "graphics_mods"));
     }
 
     #[test]
