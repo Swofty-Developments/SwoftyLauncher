@@ -356,16 +356,16 @@ void unfill_virtual()
     filled = {};
 }
 
-// Parses `row` (once) and swaps its entrants into `host`; false leaves the host as it was.
-bool fill_virtual(void *host, const std::string &row)
+// The entrant vector of `row`, parsed once with the game's own parser; null when it can't be read.
+const std::array<uint8_t, LIST_VECTOR_SIZE> *parsed_vector(const std::string &row)
 {
-    if (!host || !parse_list_orig)
-        return false;
+    if (!parse_list_orig)
+        return nullptr;
     auto it = parsed_lists.find(row);
     if (it == parsed_lists.end()) {
         uintptr_t slot = swofty::api->resolve("g_Ne_DefaultAllocator"), heap = 0;
         if (!slot || !mem::read(slot, heap) || !heap)
-            return false;
+            return nullptr;
         alignas(16) uint8_t list[0x40] = {};
         alignas(16) uint8_t no_registry[0x20] = {}; // read as an empty {_, begin +8, end +0x10} vector
         memcpy(list + LIST_VECTOR, &heap, sizeof heap);
@@ -373,7 +373,7 @@ bool fill_virtual(void *host, const std::string &row)
         alignas(16) uint8_t key[KEY_SIZE] = {};
         size_t dot = row.rfind('.');
         if (dot == std::string::npos || dot >= KEY_ROW || row.size() - dot - 1 >= KEY_ROW)
-            return false;
+            return nullptr;
         memcpy(key, row.data(), dot);
         memcpy(key + KEY_ROW, row.data() + dot + 1, row.size() - dot - 1);
         int32_t uncounted = -1;
@@ -386,17 +386,97 @@ bool fill_virtual(void *host, const std::string &row)
         memcpy(&begin, list + LIST_VECTOR + 8, 8);
         memcpy(&end, list + LIST_VECTOR + 16, 8);
         if (!begin || end <= begin)
-            return false;
+            return nullptr;
         std::array<uint8_t, LIST_VECTOR_SIZE> v{};
         memcpy(v.data(), list + LIST_VECTOR, LIST_VECTOR_SIZE);
         it = parsed_lists.emplace(row, v).first;
     }
+    return &it->second;
+}
+
+// Parses `row` (once) and swaps its entrants into `host`; false leaves the host as it was.
+bool fill_virtual(void *host, const std::string &row)
+{
+    auto *v = host ? parsed_vector(row) : nullptr;
+    if (!v)
+        return false;
     unfill_virtual();
     filled.host = host;
     filled.row = row;
     memcpy(filled.own.data(), static_cast<uint8_t *>(host) + LIST_VECTOR, LIST_VECTOR_SIZE);
-    memcpy(static_cast<uint8_t *>(host) + LIST_VECTOR, it->second.data(), LIST_VECTOR_SIZE);
+    memcpy(static_cast<uint8_t *>(host) + LIST_VECTOR, v->data(), LIST_VECTOR_SIZE);
     return true;
+}
+
+// Virtual career lists. Every career whose list is virtual names the career host (its setup caches the host's
+// stat id at boot), and the build points their setups at it. A new career copies its list into the career once,
+// in Game_CareerSetup_ResetEntrants (0x140c34960: list id from setup vt+0x268, list from the entrants registry at
+// setup+0x290 -> +0x560, records copied into the career with Sess_Assign_EntrantVector); the save keeps that copy.
+// So the core fills the host with the career's own list (the pressed career content's data group, which is the
+// list's label) just before the copy, and before the new-career wizard reads the list by its data group label
+// (Game_CareerWizard_StartsInF1). The host's vector is replaced, not swapped back: nothing else reads it.
+constexpr const char *VIRTUAL_CAREER_HOST = "swofty_virtual_career";
+constexpr const char *RESET_FN = "Game_CareerSetup_ResetEntrants";
+constexpr const char *STARTS_FN = "Game_CareerWizard_StartsInF1";
+constexpr const char *CAREER_LIST_MIXIN = "swofty_core.dll (virtual career lists)";
+constexpr size_t SETUP_ENTRANTS = 0x290, REGISTRY_LISTS = 0x560;
+using CareerReset_t = void(void *setup);
+using StartsInF1_t = bool(void *entrants, void *wizard_data, const char *entrant_list);
+CareerReset_t *career_reset_orig;
+StartsInF1_t *starts_orig;
+std::atomic<bool> career_lists_bound;
+uint32_t logged_career;
+
+// The career host list object in an entrants registry (its +0x560 vector of 16-byte {_, list} entries).
+void *career_host_in(const void *entrants)
+{
+    uintptr_t b = 0, e = 0;
+    auto at_reg = reinterpret_cast<uintptr_t>(entrants);
+    if (!entrants || !mem::read(at_reg + REGISTRY_LISTS, b) || !mem::read(at_reg + REGISTRY_LISTS + 8, e) || !b ||
+        e < b || (e - b) / 0x10 > 1024)
+        return nullptr;
+    for (; b < e; b += 0x10) {
+        uintptr_t list = 0;
+        if (!mem::read(b + 8, list) || !list)
+            continue;
+        const char *name = name_of(reinterpret_cast<void *>(list), LIST_NAME);
+        if (name && !strcmp(name, VIRTUAL_CAREER_HOST))
+            return reinterpret_cast<void *>(list);
+    }
+    return nullptr;
+}
+
+bool fill_career(const void *entrants, const std::string &label, const char *why)
+{
+    std::string row = virtual_row(label.c_str());
+    if (row.empty())
+        return false;
+    void *host = career_host_in(entrants);
+    auto *v = host ? parsed_vector(row) : nullptr;
+    if (v)
+        memcpy(static_cast<uint8_t *>(host) + LIST_VECTOR, v->data(), LIST_VECTOR_SIZE);
+    if (logged_career++ < LOG_FIRST)
+        swofty::log("[era] %s: virtual career list %s %s %s", why, label.c_str(), v ? "read into" : "could not be read into",
+                    VIRTUAL_CAREER_HOST);
+    return v != nullptr;
+}
+
+void career_reset_entry(void *setup)
+{
+    char group[128] = {};
+    const SwoftyCareerContent *t = runtime::career_content_table();
+    uintptr_t entrants = 0;
+    if (setup && t && t->pressed && t->pressed(group, sizeof group) == SWOFTY_ASSET_OK && group[0] &&
+        mem::read(reinterpret_cast<uintptr_t>(setup) + SETUP_ENTRANTS, entrants))
+        fill_career(reinterpret_cast<void *>(entrants), group, "new career");
+    career_reset_orig(setup);
+}
+
+bool starts_entry(void *entrants, void *wizard_data, const char *entrant_list)
+{
+    if (entrant_list && fill_career(entrants, entrant_list, "career wizard"))
+        return starts_orig(entrants, wizard_data, VIRTUAL_CAREER_HOST);
+    return starts_orig(entrants, wizard_data, entrant_list);
 }
 
 // The list a press of `label` selects in the game: VIRTUAL_HOST for a virtual list, else the label itself.
@@ -1632,6 +1712,15 @@ std::vector<CoreMixins> tt_guard_mixins()
                     PARSE_LIST_FN);
     } else {
         parse_list_bound = true;
+        if (swofty::api->resolve(RESET_FN) && swofty::api->resolve(STARTS_FN)) {
+            career_lists_bound = true;
+            out.push_back({CAREER_LIST_MIXIN,
+                           {{RESET_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&career_reset_entry, (void **)&career_reset_orig},
+                            {STARTS_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&starts_entry, (void **)&starts_orig}}});
+        } else {
+            swofty::log("[era] virtual career lists off: needs %s and %s, which this build does not resolve", RESET_FN,
+                        STARTS_FN);
+        }
         out.push_back({PARSE_LIST_MIXIN,
                        {{PARSE_LIST_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&parse_list_entry, (void **)&parse_list_orig}}});
     }
@@ -1689,6 +1778,12 @@ void tt_guard_commit()
                     core_mixins_active(SETUP_LIST_MIXIN)
                         ? "armed: a game mode with more than 9 setup modes no longer crashes an era tile press"
                         : "did not install (see the [core] lines)");
+    if (parse_list_bound)
+        swofty::log("[era] virtual career lists %s",
+                    !career_lists_bound                     ? "off"
+                    : core_mixins_active(CAREER_LIST_MIXIN) ? "armed: a new career whose list is virtual gets it through "
+                                                              "swofty_virtual_career"
+                                                            : "did not install (see the [core] lines)");
     if (parse_list_bound)
         swofty::log("[era] virtual entrant lists %s", core_mixins_active(PARSE_LIST_MIXIN)
                                                           ? "armed: a box whose list lies above the table's count "
