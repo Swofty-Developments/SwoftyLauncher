@@ -320,6 +320,15 @@ public:
         return n;
     }
 
+    // The record that created the key at `path` as a new record, or empty when no record did.
+    std::string creator(const std::string &path) const
+    {
+        auto it = index_.find(gvdb::fnv64(path));
+        if (it == index_.end() || !out_[it->second].fresh)
+            return {};
+        return out_[it->second].record;
+    }
+
     // Whether this engine wrote the key at `path` as a new record (not over the game's own).
     bool wrote_fresh(const std::string &path) const
     {
