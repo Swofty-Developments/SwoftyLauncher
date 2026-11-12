@@ -3,6 +3,7 @@
 
 #include "lap_game_logic.hpp"
 #include "lap_rec_logic.hpp"
+#include "tt_bridge_logic.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -120,6 +121,19 @@ static void plans()
     expect(std::string(lr::weather_of(true, 0.0)) == "dry" && std::string(lr::weather_of(true, 0.8)) == "wet" &&
                std::string(lr::weather_of(false, 0.8)).empty(),
            "weather comes from the track wetness and stays unknown when unread");
+    {
+        namespace tb = runtime::tt_bridge;
+        auto from_key = [](bool known, double wetness, const char *key) { return lr::weather_pick(known, wetness, tb::parse_board(key).weather); };
+        lr::Weather steam = from_key(true, 0.0, "LBV0105W");
+        expect(steam.word == "dry" && steam.from == lr::WeatherFrom::wetness, "a readable track wetness wins over the board key");
+        expect(from_key(true, 0.8, "LBV0105D").word == "wet", "a wet track stays wet whatever the board key says");
+        lr::Weather wet = from_key(false, 0.0, "LBV0105W"), dry = from_key(false, 0.0, "LBV0016D");
+        expect(wet.word == "wet" && wet.from == lr::WeatherFrom::board && dry.word == "dry" && dry.from == lr::WeatherFrom::board,
+               "without the track wetness the board key's D or W gives dry or wet");
+        lr::Weather none = from_key(false, 0.0, ""), junk = from_key(false, 0.0, "LBV01X5W");
+        expect(none.word.empty() && none.from == lr::WeatherFrom::none && junk.word.empty() && junk.from == lr::WeatherFrom::none,
+               "no key or a key that is not a board name leaves the weather unknown, never dry by default");
+    }
     expect(lr::file_name(2026, 11, 10, 4, 10, 11, 3) == "20261110T041011Z-3.swlap", "file names are a UTC stamp and the lap number");
 }
 

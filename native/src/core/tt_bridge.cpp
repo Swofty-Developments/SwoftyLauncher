@@ -99,6 +99,11 @@ const runtime::Sig S_UPDATE_BINARY{"Game_F1os_OnResult_UpdateLeaderboardEntryBin
 
 const runtime::Sig S_SESSION_ENTER{"Game_GhostLapsStorageSystem_OnSessionEnter",
         "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6A B8 62 00 00 00", 0x2f95ee0};
+// In OnSessionEnter right after Ne_StrBuf_Printf("LBV%02u%02d%s") returns: the inline string at [rsp+0x28] holds the session's board
+// key, its char pointer at [rsp+0x38]; the D/W suffix is the game's settings.current_settings.tt_weather (wet -> W). Instruction-identical
+// on the Steam and EA images (sigverify --disp of the function, same rsp offsets).
+const runtime::Sig S_BOARD_KEY{"site_Game_GhostLapsStorageSystem_BoardKeyBuilt",
+        "49 8B 86 78 04 00 00 4C 8B 78 10 4D 85 FF 0F 84 ?? ?? ?? ?? 4D 8B 67 18 4D 3B 67 20", 0x2f961b1};
 const runtime::Sig S_ACCOUNT_ERROR{"Game_F1os_AccountStateError",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CE 48 8B 81 98 00 00 00 48 85 C0 74 16 "
         "48 8B 40 10 48 8B 40 38 48 85 C0 74 09 80 38 00 0F 85 69 05 00 00 0F B6 86 B8 01 00 00", 0x336da00};
@@ -272,6 +277,8 @@ bool capture_on() { return replay_capture_on && (bridge_on || boards_on); }
 std::atomic<int64_t> replay_pending_ms{0};
 std::atomic<uint32_t> replay_pending_lap{0};
 safetyhook::InlineHook h_rui_start, h_rui_result;
+safetyhook::MidHook h_board_key;
+std::string session_key;
 safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_replay_tick, h_replay_tick17, h_replay_update, h_replay_frame, h_replay_save, h_replay_job, h_job_component, h_job_wrapper, h_load_session, h_load_slot, h_job_selected, h_job_stores, h_job_alloc, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
@@ -810,6 +817,21 @@ void session_lookup_tick()
     }
     swofty::log("[boards] diag: board lookup of onSessionEnter: %s%s", handler ? "found, board " : "no board found, the ghost lap handler stays 0",
                 name.c_str());
+}
+
+void board_key_mid(safetyhook::Context &c)
+{
+    uint64_t np = peek64(c.rsp + 0x38);
+    std::string key = np ? tb::read_c(game_mem(), np) : std::string();
+    tb::BoardName b = tb::parse_board(key);
+    {
+        std::lock_guard<std::mutex> lk(lock);
+        session_key = b.ok ? key : std::string();
+    }
+    if (b.ok)
+        swofty::log("[boards] session board key %s built by the game at onSessionEnter (%s, from settings tt_weather)", key.c_str(), tb::weather_word(b.weather));
+    else
+        swofty::log("[boards] session board key at onSessionEnter is not a board name ('%s'); the lap recorder gets no dry/wet from it", key.c_str());
 }
 
 
@@ -3370,6 +3392,14 @@ void setup()
                 swofty::log("[boards] storage system onSessionEnter hooked at base+0x%llx (handler watch, on its own thread every %u ms while a Time Trial session is live)",
                             (unsigned long long)(at - swofty::api->module_base()), tb::WATCH_PERIOD_MS);
             }
+    if (bridge_on || diag_on || boards_on) {
+        if (uintptr_t at = runtime::find(S_BOARD_KEY, "boards", "boards")) {
+            if (hook_mid(h_board_key, at, board_key_mid, "session board key"))
+                swofty::log("[boards] session board key read armed at base+0x%llx (the game's dry/wet of the Time Trial, a fallback for the lap recorder)",
+                            (unsigned long long)(at - swofty::api->module_base()));
+        } else
+            swofty::log("[boards] session board key read: off, needs %s (byte signature matched nothing unique)", S_BOARD_KEY.what);
+    }
 
     char xv[8] = {};
     DWORD xn = GetEnvironmentVariableA("SWOFTY_TT_BOARD_XML", xv, sizeof xv);
@@ -3596,6 +3626,18 @@ std::string tt_bridge_last_board()
 {
     std::lock_guard<std::mutex> g(lock);
     return last_board;
+}
+
+std::string tt_bridge_session_board()
+{
+    std::lock_guard<std::mutex> g(lock);
+    return session_key;
+}
+
+void tt_bridge_session_exit()
+{
+    std::lock_guard<std::mutex> g(lock);
+    session_key.clear();
 }
 
 void tt_bridge_session_enter()

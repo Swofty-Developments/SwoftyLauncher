@@ -476,6 +476,28 @@ inline const char *weather_of(bool known, double wetness)
     return !known ? "" : wetness >= 0.2 ? "wet" : "dry";
 }
 
+enum class WeatherFrom { none, wetness, board };
+
+struct Weather {
+    std::string word;
+    WeatherFrom from = WeatherFrom::none;
+};
+
+// The track wetness when the car read has it; else the D/W suffix of the game's own board key for the session.
+inline Weather weather_pick(bool known, double wetness, char board_weather)
+{
+    if (known)
+        return {weather_of(true, wetness), WeatherFrom::wetness};
+    if (board_weather == 'W' || board_weather == 'D')
+        return {board_weather == 'W' ? "wet" : "dry", WeatherFrom::board};
+    return {};
+}
+
+inline const char *weather_from_name(WeatherFrom f)
+{
+    return f == WeatherFrom::wetness ? "the track wetness" : f == WeatherFrom::board ? "the game's session board key" : "nowhere";
+}
+
 inline std::string file_name(int year, int month, int day, int hour, int minute, int second, uint32_t n)
 {
     char b[64];

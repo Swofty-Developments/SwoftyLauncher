@@ -389,6 +389,7 @@ void session_emit(const session_life::Emit &e)
     if (e.end) {
         lap_rec_session_end();
         tt_bridge_track_watch(false);
+        tt_bridge_session_exit();
         swofty::log("[events] session.end (%s)", e.reason == session_life::END_RESTART  ? "restart"
                                                  : e.reason == session_life::END_UNLOAD ? "ended as the unload began"
                                                                                        : "StateSession exited");
