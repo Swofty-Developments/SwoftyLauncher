@@ -83,6 +83,17 @@ impl Shell {
         cx.notify();
     }
 
+    pub(crate) fn set_home_video(&mut self, on: bool, window: &mut Window, cx: &mut Context<Self>) {
+        let mut config = self.store.config();
+        config.home_video = on;
+        if let Err(e) = self.store.save_config(&config) {
+            crate::app_log::action("save settings").failed(&e);
+            window.notify(Notification::error(e.to_string()), cx);
+        }
+        self.home_video = config.home_video;
+        cx.notify();
+    }
+
     pub(crate) fn set_launch_mode(&mut self, mode: LaunchMode, window: &mut Window, cx: &mut Context<Self>) {
         let mut config = self.store.config();
         config.set_launch_mode(&self.library.profile.name, mode);

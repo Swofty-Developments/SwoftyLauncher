@@ -1727,7 +1727,8 @@ void paint(hud::Frame &f, uint64_t now)
     if (!std::exchange(told_drawn, true))
         swofty::log("[main-menu] panel: first draw on a %.0fx%.0f frame; video card %s, avatar %s", double(W), double(H),
                     p->video_slot >= 0 ? "yes" : "no", p->avatar_slot >= 0 ? "yes" : "no");
-    const float k = H / 1028.0f;
+    const float k = logic::panel_scale(W, H);
+    const float band_top = logic::ui_band(W, H).top;
     auto anchor = logic::scene_to_px(logic::CARD_RIGHT_X, logic::CARD_BOTTOM_Y, W, H);
     const float right = anchor.x;
     {
@@ -1742,7 +1743,7 @@ void paint(hud::Frame &f, uint64_t now)
         float block_h = name_style.px * 1.3f;
         float ph = avatar + 2 * pad;
         float pw = std::max(190 * k, pad + avatar + gap + 3 * k + 9 * k + nw + 20 * k);
-        float px = right - pw, py = 44 * k;
+        float px = right - pw, py = band_top + 44 * k;
         fade_panel(f, px - 110 * k, py, pw + 110 * k, ph, 0.45f, 0.04f, k);
         float ax = px + pad, ay = py + pad;
         if (p->avatar_slot >= 0) {
