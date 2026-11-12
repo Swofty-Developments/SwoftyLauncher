@@ -50,11 +50,6 @@
       "pattern": "^(box|addon|group:[a-z0-9_]+|stock:[a-z0-9_]+)$",
       "default": "box"
     },
-    "virtual_list": {
-      "type": "boolean",
-      "description": "true: the entrant list takes no stat id and no setup mode slot; the core moves its row above the table's count and reads it into swofty_virtual_list when the box is pressed",
-      "default": false
-    },
     "stat_id": {
       "$ref": "#/$defs/stat_id"
     },

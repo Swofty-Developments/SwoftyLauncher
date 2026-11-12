@@ -43,6 +43,7 @@ struct Package {                                   // a GP/TT season build: an e
     sessions::Rules rules;                         // the box's points, DRS, tyre classes and rules, applied at session load
     std::string setup_mode = "swofty_f1";          // shared by every box; your own only for a different shape at boot
     std::string leaderboard = "box";               // since 1.2: the list's Time Trial leaderboard (see Leaderboards)
+    bool virtual_list = false;                     // since 1.3: the list takes no stat id and no setup mode slot (see Virtual lists)
     StatId stat_id = StatId::automatic;            // the entrant list's id
 };
 
@@ -546,6 +547,19 @@ Boxes that share a descriptor share one Time Trial record per track and the cars
 - **Your own rows.** A package whose `database.entrant_list_set` sets `leaderboard` keeps that label and the core adds no row. Database operations that add a descriptor use `add-row` into the `leaderboards` table from `classic` with a `_metadata_`; the id stops at 255 like the other byte-sized tables ([Stat ids](/reference/ops/database#kept-ids)).
 - **Older cores.** A core before 1.7.20 ignores `leaderboard`, and the list keeps the leaderboard of the list it was copied from. Declare `content.package` 1.2 when the box depends on it.
 - **Saved times.** A box's personal bests are stored under its descriptor's board name. Whether the game keeps offline bests per descriptor is not yet confirmed in game.
+
+## Virtual lists
+
+The game loads every entrant list below the table's count, keeps its stat id in a byte (255 at most) and lets an entrant setup mode hold 32 lists. A big season pack runs out of both. `"virtual_list": true` (`content.package` 1.3, launcher 1.9.10) makes the package's list take neither:
+
+```json
+{ "content.package": { "f5_1959": { "entrant_list": "f5_1959", "season": 1959, "virtual_list": true } } }
+```
+
+- The core moves the list's row above the table's count after every record is lowered, and leaves the list out of its setup mode's lists. The game never loads it.
+- The box that opens the package shows when `swofty_virtual_list` is offered under `swofty_f1`. When the box is pressed, the core reads the list's row into `swofty_virtual_list` and selects that list. The next press puts the host's own entrants back.
+- The database op is [`virtual-list`](/reference/ops/database#virtual-list).
+- **Older cores.** A core before 1.9.10 ignores `virtual_list` and loads the list as usual. Declare `content.package` 1.3 when the box depends on it.
 
 ## Career seasons race in boxes
 
