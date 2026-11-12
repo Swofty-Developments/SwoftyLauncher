@@ -102,7 +102,7 @@ int main()
            "a live Time Trial runs the track watch for the bridge, the guards or the diagnostics");
     expect(!tb::track_watch_on(false, false, false, true, true), "a live Time Trial with nothing on does not run it");
     expect(!tb::track_watch_due(false, 10000, 0) && !tb::track_watch_due(true, 10400, 10000) && tb::track_watch_due(true, 10500, 10000) && tb::track_watch_due(true, 500, 0),
-           "the watch reads the track twice a second only while on");
+           "a watch retry is due half a second after the last read, and only while on");
     expect(!tb::diag_tick_on(true, false, false) && !tb::diag_tick_on(true, true, false), "the diagnostics tick is off outside a live Time Trial, whatever is on");
     expect(tb::diag_tick_on(true, false, true) && tb::diag_tick_on(false, true, true), "a live Time Trial runs the diagnostics tick for the bridge or the diagnostics");
     expect(!tb::diag_tick_on(false, false, true), "a live Time Trial with nothing on does not run it");
@@ -425,6 +425,89 @@ int main()
         auto filled = tb::request_track(base, tb::parse_board("LBV0002D"), "");
         expect(filled.custom && filled.key == "swofty.fill:china" && tb::route_of(tb::Method::get_tt, tb::parse_board("LBV0002D"), true, filled.custom) == tb::Route::mailbox,
                "the request for a dormant stock row a track fills is still ours");
+
+        struct Sim {
+            tb::TrackReads reads;
+            bool live = false;
+            int game_reads = 0, empty_left = 0;
+            std::string game_track, session_code;
+            std::string read()
+            {
+                game_reads++;
+                std::string code = empty_left > 0 ? (empty_left--, std::string()) : game_track;
+                session_code = code;
+                return code;
+            }
+            void watch(bool on, int64_t t)
+            {
+                if (live == on)
+                    return;
+                live = on;
+                if (on)
+                    reads.enter(t, [this] { return read(); });
+            }
+            void drive(int64_t from, int64_t to)
+            {
+                std::string code;
+                for (int64_t t = from; t < to; t += 3)
+                    reads.tick(live, t, [this] { return read(); }, code);
+            }
+        };
+        constexpr int64_t TEN_MIN = 600000;
+        {
+            Sim s;
+            s.game_track = "bahrain";
+            s.watch(true, 1000);
+            s.drive(1000, 1000 + TEN_MIN);
+            int old_rule = 0;
+            for (int64_t t = 1000, checked = 1000; t < 1000 + TEN_MIN; t += 3)
+                if (tb::track_watch_due(true, t, checked))
+                    old_rule++, checked = t;
+            std::printf("note: over ten simulated minutes the track was read %d time(s); the twice-a-second rule read it %d times\n", s.game_reads, old_rule);
+            expect(s.game_reads == 1 && old_rule > 1100, "a ten-minute Time Trial session reads the track once at the enter, not twice a second");
+            expect(tb::request_track(base, tb::BoardName{}, s.session_code).key == "bahrain", "the board takes the track read at the enter");
+            s.watch(false, 1000 + TEN_MIN);
+            s.game_track = "ring";
+            s.drive(1000 + TEN_MIN, 1000 + 2 * TEN_MIN);
+            expect(s.game_reads == 1 && s.session_code == "bahrain", "the front end does not read the track and keeps the last one");
+            s.watch(true, 1000 + 2 * TEN_MIN);
+            s.drive(1000 + 2 * TEN_MIN, 1000 + 3 * TEN_MIN);
+            expect(s.game_reads == 2 && tb::request_track(base, tb::BoardName{}, s.session_code).key == "swofty.tracks:ring",
+                   "another track from the pause menu enters a new session, which reads it once and moves the board to it");
+        }
+        {
+            Sim s;
+            s.game_track = "china";
+            s.empty_left = 3;
+            s.watch(true, 5000);
+            s.drive(5000, 5000 + TEN_MIN);
+            expect(s.game_reads == 4 && s.session_code == "china" && s.reads.known.load(), "a session entered before its track is known reads it again until it is, then stops");
+        }
+        {
+            Sim s;
+            s.empty_left = 1 << 30;
+            s.game_track = "never";
+            s.watch(true, 0);
+            s.drive(0, TEN_MIN);
+            expect(s.game_reads == tb::TRACK_READS && s.session_code.empty() && !s.reads.known.load(), "a track that never reads stops after TRACK_READS reads in the session");
+            s.watch(false, TEN_MIN);
+            s.empty_left = 0;
+            s.watch(true, TEN_MIN + 1);
+            expect(s.game_reads == tb::TRACK_READS + 1 && s.session_code == "never", "the next session reads again from the start");
+        }
+        {
+            tb::TrackReads r;
+            std::string code;
+            int n = 0;
+            r.enter(1000, [&] { return n++, std::string(); });
+            expect(!r.tick(true, 1499, [&] { return n++, std::string("x"); }, code) && n == 1, "a retry waits half a second after the last read");
+            expect(r.tick(true, 1500, [&] { return n++, std::string("x"); }, code) == 2 && code == "x" && n == 2, "the retry is the session's second read");
+            expect(!r.tick(true, 1500, [&] { return n++, std::string("y"); }, code) && !r.tick(true, 99999, [&] { return n++, std::string("y"); }, code) && n == 2,
+                   "a second tick at the same time does not read again, and a known track is never read again");
+            tb::TrackReads off;
+            off.enter(1000, [&] { return n++, std::string(); });
+            expect(!off.tick(false, 99999, [&] { return n++, std::string("y"); }, code) && n == 3, "nothing is read with the watch off");
+        }
 
         for (const char *eol : {"\n", "\r\n"}) {
             std::string x = sample_xml(eol, false);

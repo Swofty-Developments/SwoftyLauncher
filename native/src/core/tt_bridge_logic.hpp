@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <array>
+#include <atomic>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -373,9 +374,9 @@ inline BoardTrack request_track(const swofty_core::apply::tracks::Base &base, co
     return board_track(base, session_code);
 }
 
-// The session's track comes from the game's current-track getter, which costs hundreds of milliseconds per call from the front
-// end. The watch runs only while a Time Trial session is live: the bridge, the guards or the diagnostics need the track, and the
-// session entered as a Time Trial and has not ended. In the front end the last track read is kept.
+// The session's track comes from the game's current-track getter, which costs 100 ms or more per call. The watch runs only while a
+// Time Trial session is live: the bridge, the guards or the diagnostics need the track, and the session entered as a Time Trial and
+// has not ended. In the front end the last track read is kept.
 inline bool track_watch_on(bool bridge_on, bool guards_on, bool diag_on, bool session_live, bool time_trial)
 {
     return (bridge_on || guards_on || diag_on) && session_live && time_trial;
@@ -385,6 +386,44 @@ inline bool track_watch_due(bool on, int64_t now_ms, int64_t checked_ms, int64_t
 {
     return on && now_ms - checked_ms >= period_ms;
 }
+
+// A live session's track does not change: another track or car from the Time Trial pause menu loads the session again, and that
+// load enters a new session, which turns the watch off and on and reads the track again. The track is read at the session enter;
+// while a read gives no track it is read again twice a second, at most TRACK_READS times per session, then not until the next one.
+constexpr int TRACK_READS = 10;
+
+inline bool track_read_due(bool on, bool known, int reads, int64_t now_ms, int64_t checked_ms, int max_reads = TRACK_READS,
+                           int64_t period_ms = 500)
+{
+    return !known && reads < max_reads && track_watch_due(on, now_ms, checked_ms, period_ms);
+}
+
+struct TrackReads {
+    std::atomic<bool> known{false};
+    std::atomic<int> reads{0};
+    std::atomic<int64_t> checked_ms{0};
+
+    template <class Read> std::string enter(int64_t now_ms, Read &&read)
+    {
+        checked_ms = now_ms;
+        reads = 1;
+        std::string code = read();
+        known = !code.empty();
+        return code;
+    }
+
+    // The flow tick runs on several threads: one claims a due read and the others skip it. The read's number, or 0 without one.
+    template <class Read> int tick(bool on, int64_t now_ms, Read &&read, std::string &code)
+    {
+        int64_t was = checked_ms.load();
+        if (!track_read_due(on, known.load(), reads.load(), now_ms, was) || !checked_ms.compare_exchange_strong(was, now_ms))
+            return 0;
+        int n = ++reads;
+        code = read();
+        known = !code.empty();
+        return n;
+    }
+};
 
 // The diagnostics tick reads the ghost lap handler out of the storage system and describes it. Every read is guarded (a VirtualQuery
 // each), which costs milliseconds per call on some PCs, and the storage system's onSessionEnter runs for every session kind. The tick
