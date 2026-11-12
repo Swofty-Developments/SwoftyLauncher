@@ -17,6 +17,16 @@ pub fn valid_name(name: &str) -> bool {
             .all(|b| b.is_ascii_alphanumeric() || b == b'-' || b == b'_')
 }
 
+/// A command line reads a name that starts with `-` as a flag, so new profiles
+/// can't have one. Profiles named that way before keep working.
+pub fn reads_as_flag(name: &str) -> bool {
+    name.starts_with('-')
+}
+
+pub fn valid_new_name(name: &str) -> bool {
+    valid_name(name) && !reads_as_flag(name)
+}
+
 /// Fields a newer launcher wrote are kept in `unknown` and written back unchanged.
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 pub struct Profile {
@@ -426,5 +436,11 @@ mod tests {
         assert!(!valid_name(VANILLA));
         assert!(!valid_name("a b"));
         assert!(!valid_name("../x"));
+        assert!(valid_name("-swofty"));
+        assert!(!valid_new_name("-swofty"));
+        assert!(!valid_new_name("--profile"));
+        assert!(valid_new_name("grid-24_b"));
+        assert!(valid_new_name("_x"));
+        assert!(!valid_new_name(VANILLA));
     }
 }

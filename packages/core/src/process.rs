@@ -103,6 +103,14 @@ fn folder_key(p: &Path) -> String {
     }
 }
 
+/// `--<name>=<value>` as one argument, so a value that starts with `-`, such as
+/// a profile named `-swofty`, is not read as another flag.
+pub fn flag(name: &str, value: impl AsRef<std::ffi::OsStr>) -> std::ffi::OsString {
+    let mut arg = std::ffi::OsString::from(format!("--{name}="));
+    arg.push(value);
+    arg
+}
+
 pub fn game_running() -> bool {
     !game_processes().is_empty()
 }
@@ -647,6 +655,12 @@ pub fn stop_game_in(dir: &Path) -> std::io::Result<Vec<u32>> {
 #[cfg(test)]
 mod status_tests {
     use super::*;
+
+    #[test]
+    fn a_flag_keeps_a_value_that_starts_with_a_dash() {
+        assert_eq!(flag("profile", "-swofty"), "--profile=-swofty");
+        assert_eq!(flag("game", Path::new("/games/F1 25")), "--game=/games/F1 25");
+    }
 
     #[test]
     fn reports_the_live_session_of_a_running_game() {

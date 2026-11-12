@@ -32,7 +32,7 @@ pub const ACTIONS: &[(&str, &str)] = &[
 ];
 
 pub fn dev_args(verb: &str, folder: &std::path::Path) -> Vec<std::ffi::OsString> {
-    vec!["dev".into(), verb.into(), folder.into()]
+    vec!["dev".into(), verb.into(), "--".into(), folder.into()]
 }
 
 impl Shell {
@@ -200,7 +200,11 @@ mod tests {
     fn actions_run_the_cli_dev_commands() {
         assert_eq!(
             dev_args("check", std::path::Path::new("/work/mod.esp")),
-            ["dev", "check", "/work/mod.esp"]
+            ["dev", "check", "--", "/work/mod.esp"]
+        );
+        assert_eq!(
+            dev_args("link", std::path::Path::new("-mods/x")),
+            ["dev", "link", "--", "-mods/x"]
         );
         assert_eq!(
             ACTIONS.iter().map(|a| a.0).collect::<Vec<_>>(),
