@@ -20,6 +20,8 @@ pub const MOVE_ADDON: &str = "move_addon";
 pub const TASKS: &str = "tasks";
 // Listed from launcher 1.5.12 when the host knows the game.
 pub const PROFILE_HEADS: &str = "profile_heads";
+// Listed from launcher 1.9.28, after the other host calls.
+pub const SAVE_DIR: &str = "save_dir";
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct Request<C> {
@@ -88,6 +90,7 @@ pub enum HostCall {
     RegistryDir,
     GameStatus,
     SteamSaveDir,
+    SaveDir,
     ProfileTracks,
     ProfileHeads,
     Addons,
@@ -397,6 +400,7 @@ mod tests {
             ("registry_dir", HostCall::RegistryDir),
             ("game_status", HostCall::GameStatus),
             ("steam_save_dir", HostCall::SteamSaveDir),
+            (SAVE_DIR, HostCall::SaveDir),
             ("profile_tracks", HostCall::ProfileTracks),
             (PROFILE_HEADS, HostCall::ProfileHeads),
             ("addons", HostCall::Addons),

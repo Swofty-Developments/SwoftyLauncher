@@ -12,7 +12,7 @@ A launcher plugin reads requests from stdin and writes replies and host calls to
 Every call the launcher can send, in one session. `launcher` lines go to the plugin's stdin, `plugin` lines come from its stdout:
 
 ```text
-launcher  {"id":0,"method":"hello","params":{"api":1,"addon":"example.launcher-addon","data_dir":"/home/you/.local/share/swofty/addon-data/example.launcher-addon","cache_dir":"/home/you/.local/share/swofty/cache/addons/example.launcher-addon","profile":{"name":"default","vanilla":false,"enabled":true},"launcher":"1.5.19","host_calls":["addons","install_addon","set_addon_enabled","remove_addon","move_addon","tasks","profile_heads"]}}
+launcher  {"id":0,"method":"hello","params":{"api":1,"addon":"example.launcher-addon","data_dir":"/home/you/.local/share/swofty/addon-data/example.launcher-addon","cache_dir":"/home/you/.local/share/swofty/cache/addons/example.launcher-addon","profile":{"name":"default","vanilla":false,"enabled":true},"launcher":"1.9.28","host_calls":["addons","install_addon","set_addon_enabled","remove_addon","move_addon","tasks","profile_heads","save_dir"]}}
 plugin    {"id":0,"result":{"api":1}}
 launcher  {"id":1,"method":"view","params":{"section":"items"}}
 plugin    {"method":"progress","params":{"done":0.0,"text":"Loading"}}
@@ -72,8 +72,8 @@ Every session starts with `hello`. Reply `{"api":1}`: a plugin that answers with
   "data_dir": "…/addon-data/example.launcher-addon",
   "cache_dir": "…/cache/addons/example.launcher-addon",
   "profile": { "name": "default", "vanilla": false, "enabled": true },
-  "launcher": "1.5.19",
-  "host_calls": ["addons", "install_addon", "set_addon_enabled", "remove_addon", "move_addon", "tasks", "profile_heads"] }
+  "launcher": "1.9.28",
+  "host_calls": ["addons", "install_addon", "set_addon_enabled", "remove_addon", "move_addon", "tasks", "profile_heads", "save_dir"] }
 ```
 
 - `data_dir` is shared by every profile. Use `cache_dir` for anything your plugin caches; it also holds the plugin's `helper.log`.
@@ -83,6 +83,7 @@ Every session starts with `hello`. Reply `{"api":1}`: a plugin that answers with
   - A launcher that answers the [addon host calls](./host-calls#managing-addons) lists `"addons"`, `"install_addon"`, `"set_addon_enabled"`, `"remove_addon"`; from 1.3.0 `"move_addon"` follows them.
   - From 1.3.0 the list always has `"tasks"` ([Task lists](./task-lists)), with or without the addon calls.
   - From 1.5.12 `"profile_heads"` follows `"tasks"` when the launcher has found a game ([Profile heads](./host-calls#profile-heads)).
+  - From 1.9.28 the list always ends with `"save_dir"` ([Folders](./host-calls#folders)).
   - An older launcher that answers none of these leaves `host_calls` out.
 
 ### profile
