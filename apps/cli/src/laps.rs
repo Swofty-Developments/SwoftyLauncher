@@ -50,12 +50,11 @@ pub fn command(store: &Store, profile: &str, cmd: LapsCommand) -> Result<ExitCod
 }
 
 fn toast_test(store: &Store, record: bool) -> Result<()> {
-    let game = crate::build::game(store, None)?;
     let doc = timetrial::toast::sample(unix_now(), record);
-    timetrial::toast::write(&game.dir, &doc)?;
+    timetrial::toast::write(&store.root, &doc)?;
     println!(
         "wrote {}; it shows within a second in a running Time Trial session",
-        timetrial::toast::dir(&game.dir).display()
+        timetrial::toast::dir(&store.root).display()
     );
     Ok(())
 }

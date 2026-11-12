@@ -43,7 +43,7 @@ pub fn line(event: &Event) -> String {
 
 /// Tell the core a lap is the player's new best. Only while the game runs: the final sweep after it
 /// exits has nobody to show it to.
-fn toast(game: &Path, queue: &Queue, event: &Event, say: &dyn Fn(&str)) {
+fn toast(data: &Path, queue: &Queue, event: &Event, say: &dyn Fn(&str)) {
     let Event::Uploaded {
         board,
         time_ms,
@@ -57,7 +57,7 @@ fn toast(game: &Path, queue: &Queue, event: &Event, say: &dyn Fn(&str)) {
     let Some(doc) = toast::message(board, *time_ms, answer, previous, unix_now()) else {
         return;
     };
-    match toast::write(game, &doc) {
+    match toast::write(data, &doc) {
         Ok(()) => say(&format!(
             "toast: P{} on {}/{}",
             doc["position"], board.content, board.track
@@ -384,7 +384,7 @@ fn pass(
         &mut |e| {
             say(&line(&e));
             if deadline.is_none() {
-                toast(game, &queue, &e, say);
+                toast(data, &queue, &e, say);
             }
         },
     );
