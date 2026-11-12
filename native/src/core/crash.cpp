@@ -2276,14 +2276,28 @@ const char *export_near(const Mod *m, uintptr_t a, uint32_t &off)
     return name;
 }
 
+/* The export that starts the function holding ip (or, for a leaf with no function entry, one just before it). */
+const char *export_of(uint64_t ip, uint32_t &off)
+{
+    const Mod *m = mod_at(ip);
+    if (!m || m->base == exe_base)
+        return nullptr;
+    const char *name = export_near(m, ip, off);
+    if (!name)
+        return nullptr;
+    DWORD64 base = 0;
+    PRUNTIME_FUNCTION f = stall_lookup(ip, &base);
+    if (f)
+        f = primary(f, base);
+    uint32_t rva = uint32_t(ip - m->base);
+    return f ? (f->BeginAddress == rva - off ? name : nullptr) : (off < 0x100 ? name : nullptr);
+}
+
 void stall_frame(char *w, size_t cap, uint64_t ip)
 {
     where_into(w, cap, ip, true);
-    const Mod *m = mod_at(ip);
-    if (!m || m->base == exe_base)
-        return;
     uint32_t off = 0;
-    if (const char *name = export_near(m, ip, off)) {
+    if (const char *name = export_of(ip, off)) {
         size_t k = strlen(w);
         snprintf(w + k, cap - k, " [%s+0x%x]", name, off);
     }
@@ -2312,9 +2326,8 @@ const char *wait_kind(const Sampled &s, char *w, size_t cap)
                                         "WaitForMultipleObjects",
                                         "SleepConditionVariable"};
     for (int i = 0; i < s.frames && i < 4; i++) {
-        const Mod *m = mod_at(s.rip[i]);
         uint32_t off = 0;
-        const char *name = m && m->base != exe_base ? export_near(m, s.rip[i], off) : nullptr;
+        const char *name = export_of(s.rip[i], off);
         if (!name)
             continue;
         for (const char *p : waits)
