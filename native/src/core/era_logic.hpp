@@ -41,7 +41,9 @@ constexpr const char *HOST = "swofty_f1";
 constexpr const char *SELECTED_ADDON_TILE = "selected_addon_tile";
 constexpr const char *ADDON_TILES_VISIBLE = "addon_tiles_visible";
 constexpr const char *IMAGE_ARRAY = "#overrides.home_screen.tiles_solo_6x6";
-constexpr size_t MAX_BOXES = 64;
+// FeTile_Add_EraTile takes the tile index as a byte (the count of tiles added so far; the tiles themselves go into
+// a growing vector and VM list), so the addon row holds up to 255 boxes, index 0..254.
+constexpr size_t MAX_BOXES = 255;
 constexpr uint32_t ONLY_ANY = 0, ONLY_GRAND_PRIX = 1, ONLY_TIME_TRIAL = 2;
 constexpr size_t LIST_NAME_MAX = 63;
 constexpr size_t TEXT_MAX = 255;
@@ -115,7 +117,7 @@ inline std::string check(Box &box, const std::vector<Box> &have)
         if (h.entrant_list == box.entrant_list)
             return "a box for this entrant list is already registered by " + h.owner;
     if (have.size() >= MAX_BOXES)
-        return "the core holds at most 64 boxes";
+        return "the core holds at most 255 boxes";
     return {};
 }
 
