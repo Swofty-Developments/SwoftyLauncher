@@ -201,6 +201,8 @@ int main()
     expect(tb::garage_gate_byte(0, false, true, 0x12) == 0 && tb::garage_gate_byte(0, true, false, 0x12) == 0 && tb::garage_gate_byte(0, true, true, 0x10) == 0 &&
                tb::garage_gate_byte(0, true, true, -1) == 0,
            "it is untouched with the bridge off, for stock content and in other session types");
+    expect(tb::replay_session_on(true, true) && !tb::replay_session_on(true, false) && !tb::replay_session_on(false, true) && !tb::replay_session_on(false, false),
+           "the replay system hooks act only in a live Time Trial session, never in a Grand Prix, a career race or the front end");
     expect(tb::replay_capture_due(1000, 2500, 1500) && !tb::replay_capture_due(1000, 2499, 1500) && !tb::replay_capture_due(0, 9999, 1500), "a capture is due after its delay and never without a pending mark");
     {
         uint8_t h[16] = {0, 0, 0, 0, 0xa8, 0xca, 0x2f, 0xe3};
@@ -409,6 +411,48 @@ int main()
     mo2.put<uint64_t>(op + tb::OP_METHOD, 0x57000);
     mo2.cstr(0x57000, "UpdateSession");
     expect(tb::method_at_op(mo2.mem(), op, &name) == tb::Method::none && name == "UpdateSession", "another method is named and not redirected");
+
+    // method with a learned string form
+    {
+        tb::StrForm form;
+        std::string got;
+        expect(tb::method_with_form(mo2.mem(), op, form, nullptr) == tb::Method::none && !form.ok(), "a request that is no Time Trial method teaches no form");
+        expect(tb::method_with_form(mo2.mem(), op, form, &got) == tb::Method::none && got == "UpdateSession", "its name is still read when asked for");
+        expect(tb::method_with_form(mo.mem(), op, form, &got) == tb::Method::get_tt && got == "GetTTLeaderboard" && form.ok() && form.form == tb::Form::c_str &&
+                   form.word == 0,
+               "a Time Trial method teaches its string form");
+        expect(tb::unpack_form(tb::pack_form(form)).form == form.form && tb::unpack_form(tb::pack_form(form)).word == form.word && !tb::unpack_form(0).ok(),
+               "a form packs into one word and back; zero is no form");
+        got.clear();
+        expect(tb::method_with_form(mo2.mem(), op, form, &got) == tb::Method::none && got == "UpdateSession", "with the form known another method is one read");
+        Fake ne;
+        ne.put<uint64_t>(op + tb::OP_METHOD, 0x58000);
+        ne.ne(0x58000, "AddLeaderboardEntry");
+        tb::StrForm learned = form;
+        expect(tb::method_with_form(ne.mem(), op, learned, &got) == tb::Method::add_entry && got == "AddLeaderboardEntry",
+               "a name in another form gives no string in the known form and is probed in full");
+        Fake none;
+        tb::StrForm keep = form;
+        expect(tb::method_with_form(none.mem(), op, keep, nullptr) == tb::Method::none && keep.form == form.form, "an unreadable op passes and keeps the form");
+    }
+
+    // hooks that matter only in Time Trial
+    {
+        using K = swofty_core::apply::facts::ModeKind;
+        expect(!tb::tt_hooks_idle(K::time_trial, false) && !tb::tt_hooks_idle(K::unknown, false), "Time Trial and an unknown mode keep the hooks");
+        expect(tb::tt_hooks_idle(K::career, false) && tb::tt_hooks_idle(K::other, false), "a career or another mode idles them");
+        expect(!tb::tt_hooks_idle(K::career, true) && !tb::tt_hooks_idle(K::other, true), "the diagnostics keep them everywhere");
+        expect(tb::gate_reads_op(false, true, true, true, true), "a failing check of a request the bridge can answer reads the op");
+        expect(!tb::gate_reads_op(false, true, true, true, false), "checks that pass leave the op unread");
+        expect(!tb::gate_reads_op(false, false, true, true, true) && !tb::gate_reads_op(false, true, false, true, true) && !tb::gate_reads_op(false, true, true, false, true),
+               "the bridge off, no push hook or no OnResult leave the op unread");
+        expect(tb::gate_reads_op(true, false, false, false, false), "the diagnostics read every op");
+        expect(tb::garage_update_idle(0, 0, 0, 0, 1), "no panel: idle");
+        expect(tb::garage_update_idle(0x1000, 0x1000, 0, 0, 1), "a driven panel: idle");
+        expect(tb::garage_update_idle(0x1000, 0, 0x1000, 3, 3), "a panel seen with content not ours: idle while the generation holds");
+        expect(!tb::garage_update_idle(0x1000, 0, 0x1000, 3, 4), "the generation moved: the panel is looked at again");
+        expect(!tb::garage_update_idle(0x2000, 0, 0x1000, 3, 3) && !tb::garage_update_idle(0x2000, 0x1000, 0, 0, 1), "another panel is looked at");
+    }
 
     // XML
     for (const char *eol : {"\n", "\r\n"})

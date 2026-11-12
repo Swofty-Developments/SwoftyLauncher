@@ -10,6 +10,7 @@
 #include <map>
 #include <sstream>
 #include <string>
+#include <tuple>
 #include <vector>
 
 namespace ap = swofty_core::apply;
@@ -512,6 +513,20 @@ void test_facts()
     for (auto &[label, want] : modes)
         check(std::string(want) != "grand_prix" || std::string(label) == "grand_prix_23",
               std::string("only the Grand Prix row is grand_prix: ") + label);
+
+    using K = f::ModeKind;
+    const std::tuple<bool, bool, const char *, K> kinds[] = {
+        {true, true, "time_trial", K::time_trial}, {true, true, "my_team", K::career},       {true, true, "driver_career", K::career},
+        {true, true, "grand_prix", K::other},      {true, true, "split_screen", K::other},   {true, true, "story", K::other},
+        {true, true, "f1_world", K::other},        {true, true, "unknown", K::unknown},      {true, true, "", K::unknown},
+        {true, false, "time_trial", K::unknown},   {false, true, "time_trial", K::unknown},  {true, true, "something_new", K::unknown},
+    };
+    for (auto &[context, holder, mode, want] : kinds)
+        check(f::mode_kind(context, holder, mode) == want, std::string("mode kind of ") + mode + (context ? "" : " without a context") +
+                                                                (holder ? "" : " without a mode object") + " is " + f::mode_kind_name(want));
+    for (auto &[label, want] : modes)
+        check(f::mode_kind(true, true, f::mode_of(label)) != K::other || std::string(want) != "unknown",
+              std::string("an unlisted mode never counts as another mode: ") + label);
 
     auto is = [](uint32_t id, bool sprint, const char *type, const char *session) {
         f::Session s = f::session_of(id, sprint);

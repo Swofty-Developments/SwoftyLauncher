@@ -99,6 +99,11 @@ const runtime::Sig S_UPDATE_BINARY{"Game_F1os_OnResult_UpdateLeaderboardEntryBin
 
 const runtime::Sig S_SESSION_ENTER{"Game_GhostLapsStorageSystem_OnSessionEnter",
         "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6A B8 62 00 00 00", 0x2f95ee0};
+// In OnSessionEnter right after Ne_StrBuf_Printf("LBV%02u%02d%s") returns: the inline string at [rsp+0x28] holds the session's board
+// key, its char pointer at [rsp+0x38]; the D/W suffix is the game's settings.current_settings.tt_weather (wet -> W). Instruction-identical
+// on the Steam and EA images (sigverify --disp of the function, same rsp offsets).
+const runtime::Sig S_BOARD_KEY{"site_Game_GhostLapsStorageSystem_BoardKeyBuilt",
+        "49 8B 86 78 04 00 00 4C 8B 78 10 4D 85 FF 0F 84 ?? ?? ?? ?? 4D 8B 67 18 4D 3B 67 20", 0x2f961b1};
 const runtime::Sig S_ACCOUNT_ERROR{"Game_F1os_AccountStateError",
         "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CE 48 8B 81 98 00 00 00 48 85 C0 74 16 "
         "48 8B 40 10 48 8B 40 38 48 85 C0 74 09 80 38 00 0F 85 69 05 00 00 0F B6 86 B8 01 00 00", 0x336da00};
@@ -230,7 +235,7 @@ void replay_set_state(uint64_t sys, uint32_t state, uint32_t flag)
 
 bool is_replay_system(uint64_t sys)
 {
-    return game.replay_system_vt && sys && runtime::readable(reinterpret_cast<void *>(sys), 8) && *reinterpret_cast<const uint64_t *>(sys) == game.replay_system_vt;
+    return game.replay_system_vt && sys && swofty::mem::readable(sys, 8) && *reinterpret_cast<const uint64_t *>(sys) == game.replay_system_vt;
 }
 constexpr uintptr_t TS_FLAG_GLOBAL_A = 0, TS_FLAG_GLOBAL_B = 17;
 constexpr int64_t TS_FORCED_WINDOW_MS = 10 * 60 * 1000;
@@ -266,12 +271,24 @@ std::vector<std::string> seen_methods;
 
 bool diag_on = false;
 bool replay_capture_on = false;
+// Bumped when what content_ours() answers may change: the session's track was read, a session entered or ended.
+std::atomic<uint32_t> content_gen{1};
+std::atomic<uint32_t> method_form{0};
+
+bool outside_tt()
+{
+    return tb::tt_hooks_idle(swofty_core::apply::moments::mode_kind(), diag_on);
+}
 // Replay capture saves and uploads the game replay of a personal best. It needs Time Trial boards (uploads), not the in-game
 // leaderboards bridge; the bridge adds playing other drivers' replays in Theatre.
 bool capture_on() { return replay_capture_on && (bridge_on || boards_on); }
+// Set while a Time Trial session is live; the replay system hooks leave every other session to the game.
+std::atomic<bool> replay_tt_session{false};
 std::atomic<int64_t> replay_pending_ms{0};
 std::atomic<uint32_t> replay_pending_lap{0};
 safetyhook::InlineHook h_rui_start, h_rui_result;
+safetyhook::MidHook h_board_key;
+std::string session_key;
 safetyhook::MidHook h_garage_done, h_garage_cmd, h_garage_update, h_tab_block, h_tab_flags, h_tab_friends, h_tab_build, h_tab_gate, h_replay_tick, h_replay_tick17, h_replay_update, h_replay_frame, h_replay_save, h_replay_job, h_job_component, h_job_wrapper, h_load_session, h_load_slot, h_job_selected, h_job_stores, h_job_alloc, h_finder, h_ts_flag, h_priv, h_select, h_write_token, h_reader_fail, h_rearm, h_trip, h_save_pb, h_reset, h_entry_write, h_xml, h_push, h_upload, h_download, h_racenet, h_pb, h_session_enter, h_account_error;
 
 struct GateHook {
@@ -507,7 +524,19 @@ void push_mid(safetyhook::Context &c)
 {
     uint64_t op = c.rcx;
     std::string name;
-    tb::Method m = tb::method_at_op(game_mem(), op, &name);
+    static std::atomic<int> name_reads{0};
+    bool want_name = diag_on || (seen_methods.size() < 40 && name_reads.load(std::memory_order_relaxed) < 200);
+    tb::StrForm form = tb::unpack_form(method_form.load(std::memory_order_relaxed));
+    bool learned = form.ok();
+    tb::Method m = tb::method_with_form(game_mem(), op, form, want_name ? &name : nullptr);
+    if (!learned && form.ok()) {
+        method_form = tb::pack_form(form);
+        swofty::log("[boards] request redirect: method names read as %s; a request is told by one read from now on", tb::form_name(form));
+    }
+    if (want_name && !diag_on && m == tb::Method::none)
+        ++name_reads;
+    if (name.empty() && m != tb::Method::none)
+        name = tb::method_name(m);
     if (diag_on && ++diag_push_logged <= 60) {
         uint64_t sp = peek64(op + tb::OP_SERVICE);
         std::string service = sp ? tb::read_c(game_mem(), sp) : std::string();
@@ -712,6 +741,8 @@ void gate_mid(int idx, safetyhook::Context &c)
     tb::gate::State st = read_gate_state(c, g, &flags, &user, &session_flag, &token);
     tb::gate::Why why = tb::gate::first_failure(st);
     log_presence_user(user);
+    if (!tb::gate_reads_op(diag_on, bridge_on, push_hooked, found.on_result[int(m)] != 0, why != tb::gate::Why::none))
+        return;
     std::string name;
     tb::Method seen = tb::method_at_op(game_mem(), op, &name);
     tb::Args a;
@@ -812,6 +843,21 @@ void session_lookup_tick()
                 name.c_str());
 }
 
+void board_key_mid(safetyhook::Context &c)
+{
+    uint64_t np = peek64(c.rsp + 0x38);
+    std::string key = np ? tb::read_c(game_mem(), np) : std::string();
+    tb::BoardName b = tb::parse_board(key);
+    {
+        std::lock_guard<std::mutex> lk(lock);
+        session_key = b.ok ? key : std::string();
+    }
+    if (b.ok)
+        swofty::log("[boards] session board key %s built by the game at onSessionEnter (%s, from settings tt_weather)", key.c_str(), tb::weather_word(b.weather));
+    else
+        swofty::log("[boards] session board key at onSessionEnter is not a board name ('%s'); the lap recorder gets no dry/wet from it", key.c_str());
+}
+
 
 void finder_mid(safetyhook::Context &c)
 {
@@ -857,6 +903,8 @@ uint8_t flag_byte(uintptr_t global)
 
 void ts_flag_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     uint8_t al = uint8_t(c.rax), joining = flag_byte(ts_global_b), blocked = flag_byte(ts_global_a);
     bool ours = screen_ours(), force = ours && !al;
     if (force) {
@@ -882,6 +930,8 @@ void ts_flag_mid(safetyhook::Context &c)
 
 void priv_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     uint32_t type = uint32_t(c.rbp);
     if (bridge_on && type != 1 && type < 12 && content_ours()) {
         char sw[8] = {};
@@ -1000,6 +1050,8 @@ uint64_t handler_ready_hook(uint64_t handler)
 
 void garage_msg_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static std::atomic<int> logged{0};
     uint64_t msg = peek64(c.rdx);
     uint32_t id = msg ? peek32(msg) : 0;
@@ -1012,6 +1064,8 @@ std::atomic<int> rearm_count{0};
 
 void rearm_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     int n = ++rearm_count;
     if (n <= 6 || n % 200 == 0)
         swofty::log("[boards] session timer (system at handler+0x18): re-armed %d time(s) by a validator reporting activity; object 0x%llx, new limit follows at +0xbd0 = %u s", n,
@@ -1020,6 +1074,8 @@ void rearm_mid(safetyhook::Context &c)
 
 void trip_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static std::atomic<int> logged{0};
     if (++logged <= 6) {
         LARGE_INTEGER q;
@@ -1037,6 +1093,8 @@ void trip_mid(safetyhook::Context &c)
 // nothing in the game.
 void garage_done_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static std::atomic<int> logged{0};
     uint8_t value = runtime::readable(reinterpret_cast<void *>(c.rbx + 8), 1) ? *reinterpret_cast<uint8_t *>(c.rbx + 8) : 0xff;
     uint8_t result = tb::garage_result(value, bridge_on, content_ours());
@@ -1050,6 +1108,8 @@ void garage_done_mid(safetyhook::Context &c)
 
 void garage_cmd_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static std::atomic<int> logged{0};
     static std::mutex m;
     static std::set<uint32_t> seen;
@@ -1072,6 +1132,8 @@ void garage_cmd_mid(safetyhook::Context &c)
 // through readable() for the log. Nothing is written to the game and nothing is called.
 void garage_tab_gate_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static uint8_t buf[0x100] = {};
     static std::atomic<int> logged{0};
     int session = int(uint32_t(c.rbp));
@@ -1089,6 +1151,8 @@ void garage_tab_gate_mid(safetyhook::Context &c)
 
 void garage_tab_block_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static uint8_t zero[0x20] = {};
     static std::atomic<int> logged{0};
     if (!bridge_on || !content_ours())
@@ -1101,6 +1165,8 @@ void garage_tab_block_mid(safetyhook::Context &c)
 
 void garage_tab_flags_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static thread_local uint64_t copy = 0;
     static std::atomic<int> logged{0};
     if (!bridge_on || !content_ours() || !runtime::readable(reinterpret_cast<void *>(c.rax), 8))
@@ -1118,6 +1184,8 @@ void garage_tab_flags_mid(safetyhook::Context &c)
 // Nothing is read or written and nothing is called.
 void garage_friends_tab_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static std::atomic<int> logged{0};
     if (tb::garage_append_tab(1, bridge_on, content_ours()))
         return;
@@ -2347,6 +2415,8 @@ void replay_view_arm(const std::string &path)
 
 void replay_tick(uint64_t sys, const char *slot)
 {
+    if (!replay_tt_session.load(std::memory_order_relaxed))
+        return;
     static std::atomic<uint64_t> entries[4]{}, ours_entries[4]{};
     static std::atomic<int> guard_logs{0};
     int which = !strcmp(slot, "vslot24") ? 0 : !strcmp(slot, "vslot17") ? 1 : !strcmp(slot, "updateFromModule") ? 2 : 3;
@@ -2595,6 +2665,8 @@ void replay_restart(uint64_t sys)
 
 void replay_update_mid(safetyhook::Context &c)
 {
+    if (!replay_tt_session.load(std::memory_order_relaxed))
+        return;
     replay_tick(c.rcx, "updateFromModule");
     if (replay_restart_wanted.load())
         replay_restart(c.rcx);
@@ -2631,6 +2703,8 @@ uint64_t replay_find_system(uint64_t buffer, std::string &how)
 
 void replay_frame_mid(safetyhook::Context &c)
 {
+    if (!replay_tt_session.load(std::memory_order_relaxed))
+        return;
     static std::atomic<uint64_t> searched{0};
     if (!replay_system_ptr.load() && searched.exchange(c.rcx) != c.rcx && c.rcx) {
         std::string how;
@@ -2644,13 +2718,16 @@ void replay_frame_mid(safetyhook::Context &c)
     replay_tick(0, "beginFrameWrite");
 }
 
-std::atomic<uint64_t> garage_driven_panel{0}, garage_driven_count{0}, garage_built_ours{0};
+std::atomic<uint64_t> garage_driven_panel{0}, garage_driven_count{0}, garage_built_ours{0}, garage_idle_panel{0};
+std::atomic<uint32_t> garage_idle_gen{0};
 uintptr_t garage_build_fn = 0;
 
 // Read-only: logs every run of the tab builder (panel, session type, tab count before, whether our content was active) and remembers the
 // panel when it ran for our content, so the Update hook does not rebuild it again.
 void garage_build_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static std::atomic<int> logged{0};
     uint64_t panel = c.rcx, inner = peek64(panel + 0x268), mgr = inner ? peek64(inner + 0x1a8) : 0;
     uint32_t session = mgr ? peek32(mgr + 4) : 0xffffffffu;
@@ -2669,8 +2746,16 @@ uintptr_t garage_priv_sub = 0;
 void garage_update_mid(safetyhook::Context &c)
 {
     uint64_t panel = c.rcx;
-    if (!garage_priv_sub || !bridge_on || garage_driven_panel.load() == panel)
+    if (!garage_priv_sub || !bridge_on || outside_tt())
         return;
+    uint32_t gen = content_gen.load(std::memory_order_relaxed);
+    if (tb::garage_update_idle(panel, garage_driven_panel.load(), garage_idle_panel.load(), garage_idle_gen.load(), gen))
+        return;
+    if (!content_ours()) {
+        garage_idle_gen = gen;
+        garage_idle_panel = panel;
+        return;
+    }
     uint64_t tb_ = 0, te = 0;
     if (!runtime::readable(reinterpret_cast<void *>(panel + 0x408), 16))
         return;
@@ -2678,7 +2763,7 @@ void garage_update_mid(safetyhook::Context &c)
     if (garage_build_fn) {
         uint64_t inner = peek64(panel + 0x268), mgr = inner ? peek64(inner + 0x1a8) : 0;
         int session = mgr ? int(peek32(mgr + 4)) : -1;
-        if (tb::garage_should_rebuild(bridge_on, content_ours(), panel, garage_built_ours.load(), session, te > tb_ ? (te - tb_) / 8 : 0)) {
+        if (tb::garage_should_rebuild(bridge_on, true, panel, garage_built_ours.load(), session, te > tb_ ? (te - tb_) / 8 : 0)) {
             garage_built_ours = panel;
             reinterpret_cast<void (*)(uint64_t)>(garage_build_fn)(panel);
             tb_ = peek64(panel + 0x408), te = peek64(panel + 0x410);
@@ -2686,7 +2771,7 @@ void garage_update_mid(safetyhook::Context &c)
                         (unsigned long long)(te > tb_ ? (te - tb_) / 8 : 0));
         }
     }
-    if (!tb::garage_should_drive(bridge_on, content_ours(), panel, tb_, te, garage_driven_panel.load(), garage_driven_count.load()))
+    if (!tb::garage_should_drive(bridge_on, true, panel, tb_, te, garage_driven_panel.load(), garage_driven_count.load()))
         return;
     garage_driven_panel = panel;
     garage_driven_count = (te - tb_) / 8;
@@ -3177,7 +3262,7 @@ void arm_replay(bool playback)
         if (uintptr_t fr = runtime::find(S_REPLAY_FRAME, "boards", "boards"))
             hook_mid(h_replay_frame, fr, replay_frame_mid, "replay buffer beginFrameWrite");
         std::thread(replay_inbox).detach();
-        swofty::log("[replay] capture armed (SWOFTY_TT_REPLAY_CAPTURE=1): tick at base+0x%llx, save at base+0x%llx, path builder at base+0x%llx", (unsigned long long)(tick - swofty::api->module_base()),
+        swofty::log("[replay] capture armed (SWOFTY_TT_REPLAY_CAPTURE=1, Time Trial sessions only): tick at base+0x%llx, save at base+0x%llx, path builder at base+0x%llx", (unsigned long long)(tick - swofty::api->module_base()),
                     (unsigned long long)(save_fn - swofty::api->module_base()), (unsigned long long)(path_fn - swofty::api->module_base()));
     } else
         swofty::log("[replay] capture: off, a signature or the tick hook failed");
@@ -3193,6 +3278,7 @@ void setup()
         return;
     }
     resolve_game();
+    swofty_core::apply::moments::mode_watch();
     char gv[16] = {};
     DWORD gn = GetEnvironmentVariableA("SWOFTY_TT_GUARDS", gv, sizeof gv);
     guards_on = (gate.is_object() && gate["tt_guards"].as_bool(false)) || (gn && gn < sizeof gv && !strcmp(gv, "1"));
@@ -3370,6 +3456,14 @@ void setup()
                 swofty::log("[boards] storage system onSessionEnter hooked at base+0x%llx (handler watch, on its own thread every %u ms while a Time Trial session is live)",
                             (unsigned long long)(at - swofty::api->module_base()), tb::WATCH_PERIOD_MS);
             }
+    if (bridge_on || diag_on || boards_on) {
+        if (uintptr_t at = runtime::find(S_BOARD_KEY, "boards", "boards")) {
+            if (hook_mid(h_board_key, at, board_key_mid, "session board key"))
+                swofty::log("[boards] session board key read armed at base+0x%llx (the game's dry/wet of the Time Trial, a fallback for the lap recorder)",
+                            (unsigned long long)(at - swofty::api->module_base()));
+        } else
+            swofty::log("[boards] session board key read: off, needs %s (byte signature matched nothing unique)", S_BOARD_KEY.what);
+    }
 
     char xv[8] = {};
     DWORD xn = GetEnvironmentVariableA("SWOFTY_TT_BOARD_XML", xv, sizeof xv);
@@ -3485,6 +3579,7 @@ std::string read_session_track()
 {
     std::string code = runtime::lower(runtime::direct_start::tt::session_track());
     session_custom = tb::board_track(swofty_core::apply::tracks::base(), code).custom;
+    ++content_gen;
     std::lock_guard<std::mutex> g(lock);
     session_code = code;
     return code;
@@ -3496,7 +3591,11 @@ namespace runtime {
 
 void tt_bridge_track_watch(bool session_live)
 {
+    ++content_gen;
     bool time_trial = session_live && swofty_core::apply::moments::session_mode_track().first == "time_trial";
+    bool replay_on = tb::replay_session_on(session_live, time_trial);
+    if (replay_tt_session.exchange(replay_on) != replay_on && (h_replay_tick || h_replay_update || h_replay_frame))
+        swofty::log("[replay] system hooks %s", replay_on ? "on (a Time Trial session is live)" : "off (no Time Trial session: the game's replay system runs untouched)");
     bool on = tb::track_watch_on(bridge_on, guards_on, diag_on, session_live, time_trial);
     if (track_session.exchange(on) == on)
         return;
@@ -3598,8 +3697,33 @@ std::string tt_bridge_last_board()
     return last_board;
 }
 
+bool tt_bridge_session_track(std::string &code)
+{
+    if (!track_session.load(std::memory_order_relaxed) || !track_reads.known.load())
+        return false;
+    std::lock_guard<std::mutex> g(lock);
+    if (session_code.empty())
+        return false;
+    code = session_code;
+    return true;
+}
+
+std::string tt_bridge_session_board()
+{
+    std::lock_guard<std::mutex> g(lock);
+    return session_key;
+}
+
+void tt_bridge_session_exit()
+{
+    ++content_gen;
+    std::lock_guard<std::mutex> g(lock);
+    session_key.clear();
+}
+
 void tt_bridge_session_enter()
 {
+    ++content_gen;
     std::lock_guard<std::mutex> g(lock);
     last_board.clear();
     replay_session_best_ms = 0;

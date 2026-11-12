@@ -34,7 +34,19 @@
 // function's own epilogue, which skips the child call and the refresh that follows it. A child that exists runs the
 // game's code unchanged.
 //
-// SWOFTY_LEADERBOARD_GUARD=0 turns the board guard off, SWOFTY_LEADERBOARD_TAB_GUARD=0 the tab guard.
+// Entering Time Trial (setCurrentGameMode none -> time_trial) runs Game_TimeTrial_SetReference, which stores the board
+// for the reference's track and weather at presenter+0x20278 and then, when g_Ne_LogGate holds the GAME channel, logs
+// '[TIME TRIALS] New reference : ... leaderboard(%s).' with the board's name read from [board+0x40]. The board is 0 when
+// no board is listed for the track (offline play has no online board list), and the read faults (ACCESS_VIOLATION
+// reading 0x40 at F1_25.exe+0x147bc9b). Requesting a rival ghost from the board logs the same name on GHOSTLAP-TRACE in
+// Game_GhostlapTrace_OnRivalFromLeaderboardDownloadRequested. Stock builds keep both channels closed; swofty_gamelog
+// opens them for a GAME or GHOSTLAP-TRACE channel rule. site_Game_TimeTrial_SetReferenceLogBoard and
+// site_Game_GhostlapTrace_RivalLogBoard are those reads (rsi = the presenter). For a null board the guard continues at
+// site_Game_TimeTrial_SetReferenceLogDone or site_Game_GhostlapTrace_RivalLogDone, the paths the game takes with the
+// channel closed, so only the log line is skipped. A board that was found is logged as the game does.
+//
+// SWOFTY_LEADERBOARD_GUARD=0 turns the board guard off, SWOFTY_LEADERBOARD_TAB_GUARD=0 the tab guard,
+// SWOFTY_TT_REFERENCE_LOG_GUARD=0 the reference log guard.
 
 namespace {
 
@@ -42,10 +54,12 @@ constexpr const char *MIXIN = "swofty_core.dll (time trial leaderboard guard)";
 namespace lg = runtime::leaderboard_guard;
 
 constexpr const char *TAB_MIXIN = "swofty_core.dll (time trial leaderboard tab guard)";
+constexpr const char *REFERENCE_MIXIN = "swofty_core.dll (time trial reference log guard)";
+constexpr uintptr_t PRESENTER_BOARD = 0x20278;
 
-uintptr_t boards_done = 0, tab_done = 0;
+uintptr_t boards_done = 0, tab_done = 0, reference_done = 0, rival_done = 0;
 bool offered = false, settled = false;
-std::atomic<int> skipped{0}, tab_skipped{0};
+std::atomic<int> skipped{0}, tab_skipped{0}, reference_skipped{0};
 
 bool env_off(const char *name, const char *label)
 {
@@ -84,6 +98,38 @@ void tab_child_read(SwoftyContext *c)
                 (unsigned long long)(c->rsi - 0x660), say == lg::Say::last ? " (further skips are not logged)" : "");
 }
 
+bool presenter_board_missing(uintptr_t presenter)
+{
+    uint64_t board = 0;
+    return !swofty::mem::read(presenter + PRESENTER_BOARD, board) || lg::reference_board_missing(board);
+}
+
+void reference_log_skipped(uintptr_t presenter, const char *line)
+{
+    lg::Say say = lg::say(++reference_skipped);
+    if (say == lg::Say::none)
+        return;
+    swofty::log("[leaderboard] Time Trial presenter 0x%llx has no board for this reference (online services off or no "
+                "board listed); the game's %s log line skipped%s",
+                (unsigned long long)presenter, line, say == lg::Say::last ? " (further skips are not logged)" : "");
+}
+
+void reference_log_board(SwoftyContext *c)
+{
+    if (!presenter_board_missing(c->rsi))
+        return;
+    c->rip = reference_done;
+    reference_log_skipped(c->rsi, "GAME 'New reference'");
+}
+
+void rival_log_board(SwoftyContext *c)
+{
+    if (!presenter_board_missing(c->rsi))
+        return;
+    c->rip = rival_done;
+    reference_log_skipped(c->rsi, "GHOSTLAP-TRACE 'Ghost requested'");
+}
+
 }
 
 namespace runtime {
@@ -116,6 +162,24 @@ std::vector<CoreMixins> leaderboard_guard_mixins()
                            {{"site_Sess_TimeTrialLeaderboard_TabChild", SWOFTY_MIXIN_SITE, 100, (void *)&tab_child_read, nullptr}}});
         }
     }
+    if (!env_off("SWOFTY_TT_REFERENCE_LOG_GUARD", "time trial reference log guard")) {
+        reference_done = swofty::api->resolve("site_Game_TimeTrial_SetReferenceLogDone");
+        rival_done = swofty::api->resolve("site_Game_GhostlapTrace_RivalLogDone");
+        if (!reference_done || !swofty::api->resolve("site_Game_TimeTrial_SetReferenceLogBoard"))
+            reference_done = 0;
+        if (!rival_done || !swofty::api->resolve("site_Game_GhostlapTrace_RivalLogBoard"))
+            rival_done = 0;
+        std::vector<SwoftyMixin> sites;
+        if (reference_done)
+            sites.push_back({"site_Game_TimeTrial_SetReferenceLogBoard", SWOFTY_MIXIN_SITE, 100, (void *)&reference_log_board, nullptr});
+        if (rival_done)
+            sites.push_back({"site_Game_GhostlapTrace_RivalLogBoard", SWOFTY_MIXIN_SITE, 100, (void *)&rival_log_board, nullptr});
+        if (sites.empty())
+            swofty::log("[leaderboard] time trial reference log guard off: needs site_Game_TimeTrial_SetReferenceLogBoard "
+                        "and site_Game_TimeTrial_SetReferenceLogDone, which this build does not resolve");
+        else
+            out.push_back({REFERENCE_MIXIN, std::move(sites)});
+    }
     return out;
 }
 
@@ -133,6 +197,14 @@ void leaderboard_guard_commit()
         swofty::log("[leaderboard] time trial leaderboard tab guard %s",
                     core_mixins_active(TAB_MIXIN)
                         ? "armed: activating the leaderboard tab without a child list model returns instead of faulting"
+                        : "did not install (see the [core] lines)");
+    if (reference_done || rival_done)
+        swofty::log("[leaderboard] time trial reference log guard %s",
+                    core_mixins_active(REFERENCE_MIXIN)
+                        ? (rival_done && reference_done
+                               ? "armed: the game's GAME and GHOSTLAP-TRACE lines for a reference with no board are "
+                                 "skipped instead of faulting"
+                               : "armed on one of its two log lines (see the [core] lines)")
                         : "did not install (see the [core] lines)");
 }
 
