@@ -1,3 +1,4 @@
+use std::ffi::OsString;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
@@ -13,7 +14,7 @@ use swofty_core::ea_app;
 use swofty_core::install::{Game, Source};
 use swofty_core::launch;
 use swofty_core::multiplayer::bridge::armed_env;
-use swofty_core::process::{GameProcess, game_processes};
+use swofty_core::process::{GameProcess, flag, game_processes};
 use swofty_core::quarantine;
 use swofty_core::recovery::{self, Blocked, Notice, Scope, SessionLock};
 use swofty_core::session::{LaunchMode, SessionRecord};
@@ -431,19 +432,13 @@ impl Launch {
         let err = out.try_clone().map_err(|e| e.to_string())?;
         std::fs::remove_file(store.root.join(steam_client::STAGE_FILE)).ok();
         let mut c = Command::new(&cli);
-        c.arg("--data-dir")
-            .arg(&store.root)
-            .arg("--profile")
-            .arg(profile)
-            .arg("run")
-            .arg("--apply");
-        if mode.is_vr() {
-            c.arg("--vr");
-        }
-        if steam_saves_once {
-            c.arg("--steam-saves-once");
-        }
-        c.arg("--game").arg(&install.dir);
+        c.args(run_args(
+            &store.root,
+            profile,
+            &install.dir,
+            mode,
+            steam_saves_once,
+        ));
         if let Some(armed) = netplay {
             c.envs(armed_env(armed));
         }
@@ -496,6 +491,31 @@ impl Drop for Launch {
             std::fs::remove_file(file).ok();
         }
     }
+}
+
+/// The CLI's arguments for Play. Values go as `--flag=value`, so a profile named
+/// `-swofty` from before such names were refused is not read as a flag.
+pub(crate) fn run_args(
+    data: &Path,
+    profile: &str,
+    game: &Path,
+    mode: LaunchMode,
+    steam_saves_once: bool,
+) -> Vec<OsString> {
+    let mut args = vec![
+        flag("data-dir", data),
+        flag("profile", profile),
+        "run".into(),
+        "--apply".into(),
+    ];
+    if mode.is_vr() {
+        args.push("--vr".into());
+    }
+    if steam_saves_once {
+        args.push("--steam-saves-once".into());
+    }
+    args.push(flag("game", game));
+    args
 }
 
 /// A CLI that would not start: the error goes in the launch log. One Windows
@@ -608,7 +628,10 @@ mod tests {
     use swofty_core::launch;
     use swofty_core::store::Store;
 
-    use super::{IMPORT_RETRY_SECS, RetryGate, cause_first, failure_line, not_started, should_retry_import};
+    use super::{
+        IMPORT_RETRY_SECS, RetryGate, cause_first, failure_line, not_started, run_args, should_retry_import,
+    };
+    use swofty_core::session::LaunchMode;
 
     fn idle_steam() -> RetryGate {
         RetryGate {
@@ -717,6 +740,40 @@ mod tests {
         );
         assert_eq!(failure_line("[info] starting\nexit\n").as_deref(), Some("exit"));
         assert_eq!(failure_line("\n"), None);
+    }
+
+    #[test]
+    fn play_passes_a_profile_that_starts_with_a_dash_as_the_profiles_value() {
+        let args = run_args(
+            Path::new("/data"),
+            "-swofty",
+            Path::new("/games/F1 25"),
+            LaunchMode::Normal,
+            false,
+        );
+        assert_eq!(
+            args,
+            [
+                "--data-dir=/data",
+                "--profile=-swofty",
+                "run",
+                "--apply",
+                "--game=/games/F1 25"
+            ]
+        );
+        let vr = run_args(Path::new("/data"), "grid", Path::new("/g"), LaunchMode::Vr, true);
+        assert_eq!(
+            vr,
+            [
+                "--data-dir=/data",
+                "--profile=grid",
+                "run",
+                "--apply",
+                "--vr",
+                "--steam-saves-once",
+                "--game=/g"
+            ]
+        );
     }
 
     #[test]
