@@ -80,8 +80,10 @@ static Fake game(const std::vector<std::string> &stock, size_t custom_slots)
     f.q[STOCK_TABLE + mh::SLOTS_END] = STOCK_SLOTS + stock.size() * mh::SLOT_SIZE;
     for (size_t i = 0; i < stock.size(); i++) {
         f.q[STOCK_SLOTS + i * mh::SLOT_SIZE + mh::SLOT_VEHICLE] = stock[i].empty() ? 0 : car(static_cast<int>(i));
-        if (!stock[i].empty())
+        if (!stock[i].empty()) {
             f.s[car(static_cast<int>(i)) + mh::VEHICLE_FILE_NAME] = stock[i];
+            f.d[car(static_cast<int>(i))] = stock_handle(static_cast<uint16_t>(i));
+        }
     }
     f.q[CUSTOM_TABLE + mh::SLOTS_BEGIN] = CUSTOM_SLOTS;
     f.q[CUSTOM_TABLE + mh::SLOTS_END] = CUSTOM_SLOTS + custom_slots * mh::SLOT_SIZE;
@@ -173,6 +175,58 @@ int main()
     Fake torn = game(stock, 2);
     torn.q[STOCK_TABLE + mh::SLOTS_END] = STOCK_SLOTS + 8;
     expect(mh::stock(torn, ENTRANTS).myteam.empty(), "a slot vector whose size is not whole slots is not read");
+
+    Fake career = game(stock, 2);
+    entrants(career, {stock_handle(6), stock_handle(7), custom_handle(4), custom_handle(4), stock_handle(1), custom_handle(0)});
+    std::vector<uint32_t> lost = mh::missing(career, ENTRANTS, LIST, list_end(6));
+    expect(lost.size() == 2 && lost[0] == custom_handle(4) && lost[1] == custom_handle(0),
+           "cazslip18's career: the kind 1 cars its entrants hold that resolve to nothing are listed once each");
+
+    mh::Census cs = mh::census(career, LIST, list_end(6));
+    expect(cs.entrants == 6 && cs.on_my_team == 3 && cs.ids.size() == 2 && cs.ids[0] == 4 && cs.ids[1] == 0,
+           "the career census counts every entrant on a My Team car (sma's teammate included) and each car once");
+    expect(mh::census(career, 0, 0).entrants == 0, "an unreadable entrant range counts nothing");
+
+    Fake whole = game(stock, 5);
+    whole.q[CUSTOM_SLOTS + 4 * mh::SLOT_SIZE + mh::SLOT_VEHICLE] = car(4);
+    whole.q[CUSTOM_SLOTS + 0 * mh::SLOT_SIZE + mh::SLOT_VEHICLE] = car(5);
+    entrants(whole, {stock_handle(6), custom_handle(4), custom_handle(4), custom_handle(0)});
+    expect(mh::missing(whole, ENTRANTS, LIST, list_end(4)).empty(), "a career whose cars all resolve rebuilds nothing");
+
+    Fake stock_only = game(stock, 2);
+    entrants(stock_only, {stock_handle(0), stock_handle(1), 0x3fff0000u, stock_handle(99)});
+    expect(mh::missing(stock_only, ENTRANTS, LIST, list_end(4)).empty(),
+           "a Driver Career or Grand Prix grid (stock and empty handles only) rebuilds nothing");
+
+    Fake torn_list = game(stock, 2);
+    entrants(torn_list, {custom_handle(1)});
+    expect(mh::missing(torn_list, ENTRANTS, LIST, LIST + 0x40).empty() && mh::missing(torn_list, ENTRANTS, 0, 0).empty(),
+           "an entrant range that is empty or not whole records is not read");
+
+    Fake s26 = game(stock, 2);
+    entrants(s26, {stock_handle(6), custom_handle(1)});
+    expect(mh::plan(s26, ENTRANTS, LIST, list_end(2), src) && src.handle == stock_handle(10),
+           "the rebuilt car's base is the stock car it was copied from (myteam_mercedes_2026, stat id 10)");
+    uint8_t data[mh::VEHICLE_DATA_SIZE] = {};
+    mh::set_base(data, stock_handle(10));
+    const uint8_t *b = data + (mh::VEHICLE_BASE - mh::VEHICLE_DATA);
+    expect(b[0] == 0 && b[1] == 0 && b[2] == 10 && b[3] == 0, "the base handle lands at record +0xcf2 (data +0xce2)");
+
+    Fake based = game(stock, 3);
+    uint64_t mt = VEHICLES + 0x100000;
+    based.q[CUSTOM_SLOTS + 2 * mh::SLOT_SIZE + mh::SLOT_VEHICLE] = mt;
+    based.s[mt + mh::VEHICLE_FILE_NAME] = "myteam_mercedes_2026";
+    based.d[mt] = custom_handle(2);
+    based.d[mt + mh::VEHICLE_BASE] = mh::NO_VEHICLE;
+    entrants(based, {stock_handle(6), custom_handle(2), custom_handle(2)});
+    std::vector<uint64_t> cars = mh::held(based, ENTRANTS, LIST, list_end(3));
+    expect(cars.size() == 1 && cars[0] == mt, "the career's resolved My Team cars are listed once");
+    expect(mh::unbased(based, mt), "a My Team car rebuilt by 1.9.25 (base 0x3fff0000) has no base car");
+    expect(mh::base_for(based, ENTRANTS, mt) == stock_handle(10), "its base is the stock car of the same name");
+    based.d[mt + mh::VEHICLE_BASE] = stock_handle(10);
+    expect(!mh::unbased(based, mt), "a My Team car with a stock base is left alone");
+    based.s[mt + mh::VEHICLE_FILE_NAME] = "myteam_mes_porsche_2026";
+    expect(mh::base_for(based, ENTRANTS, mt) == mh::NO_VEHICLE, "an addon car gets no stock base by name");
 
     expect(mh::replaced(0) && mh::replaced(2) && mh::replaced(4), "ReplaceVehicle's replaced, added and unchanged results count");
     expect(!mh::replaced(1) && !mh::replaced(3) && !mh::replaced(5), "its no-table, failed-store and preloaded results do not");

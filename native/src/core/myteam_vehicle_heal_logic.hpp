@@ -15,6 +15,9 @@ constexpr uint64_t SLOT_SIZE = 0x10;
 constexpr uint64_t SLOT_VEHICLE = 0x8;
 constexpr uint64_t VEHICLE_DATA = 0x10;
 constexpr uint64_t VEHICLE_FILE_NAME = 0x70;
+constexpr uint64_t VEHICLE_BASE = 0xcf2;
+constexpr size_t VEHICLE_DATA_SIZE = 0xce6;
+constexpr uint32_t NO_VEHICLE = 0x3fff0000;
 constexpr size_t LABEL_CHARS = 0x100;
 constexpr uint64_t ENTRANT_SIZE = 0x88;
 constexpr uint64_t ENTRANT_VEHICLE = 0x5c;
@@ -24,7 +27,7 @@ constexpr uint8_t KIND_CUSTOM = 1;
 constexpr uint8_t KINDS = 3;
 constexpr uint16_t MAX_ID = 0x400;
 constexpr size_t MAX_SLOTS = 0x4000;
-constexpr size_t MAX_ENTRANTS = 64;
+constexpr size_t MAX_ENTRANTS = 128;
 constexpr size_t LOG_IDS = 32;
 
 inline bool switch_off(const char *value)
@@ -127,6 +130,7 @@ template <class Mem> bool season_2026(Mem &mem, uint64_t entrants, uint64_t firs
 
 struct Source {
     uint64_t vehicle = 0;
+    uint32_t handle = NO_VEHICLE;
     std::string label;
     bool y2026 = false;
 };
@@ -199,7 +203,110 @@ inline bool pick(const Stock &s, bool y2026, Source &out)
 
 template <class Mem> bool plan(Mem &mem, uint64_t entrants, uint64_t first, uint64_t end, Source &out)
 {
-    return pick(stock(mem, entrants), season_2026(mem, entrants, first, end), out);
+    if (!pick(stock(mem, entrants), season_2026(mem, entrants, first, end), out))
+        return false;
+    uint32_t h = NO_VEHICLE;
+    if (!mem.u32(out.vehicle, h) || kind(h) != KIND_STOCK || id(h) >= 0x3fff)
+        return false;
+    out.handle = h;
+    return true;
+}
+
+inline void set_base(uint8_t *data, uint32_t base)
+{
+    uint8_t *p = data + (VEHICLE_BASE - VEHICLE_DATA);
+    p[0] = uint8_t(base), p[1] = uint8_t(base >> 8), p[2] = uint8_t(base >> 16), p[3] = uint8_t(base >> 24);
+}
+
+template <class Mem> bool unbased(Mem &mem, uint64_t car)
+{
+    uint32_t base = 0;
+    return car && mem.u32(car + VEHICLE_BASE, base) && (kind(base) != KIND_STOCK || id(base) >= 0x3fff);
+}
+
+template <class Mem> uint32_t base_for(Mem &mem, uint64_t entrants, uint64_t car)
+{
+    std::string name;
+    if (!label(mem, car, name) || !stock_myteam(name))
+        return NO_VEHICLE;
+    for (const auto &e : stock(mem, entrants).myteam) {
+        uint32_t h = NO_VEHICLE;
+        if (e.second == name && mem.u32(e.first, h) && kind(h) == KIND_STOCK && id(h) < 0x3fff)
+            return h;
+    }
+    return NO_VEHICLE;
+}
+
+template <class Mem> std::vector<uint64_t> held(Mem &mem, uint64_t entrants, uint64_t first, uint64_t end)
+{
+    std::vector<uint64_t> out;
+    if (!first || end <= first || (end - first) % ENTRANT_SIZE)
+        return out;
+    size_t n = static_cast<size_t>((end - first) / ENTRANT_SIZE);
+    if (n > MAX_ENTRANTS)
+        n = MAX_ENTRANTS;
+    for (size_t i = 0; i < n; i++) {
+        uint32_t handle = 0;
+        if (!mem.u32(first + i * ENTRANT_SIZE + ENTRANT_VEHICLE, handle) || !healable(handle))
+            continue;
+        uint64_t v = vehicle(mem, entrants, handle);
+        bool seen = !v;
+        for (uint64_t x : out)
+            seen = seen || x == v;
+        if (!seen)
+            out.push_back(v);
+    }
+    return out;
+}
+
+template <class Mem> std::vector<uint32_t> missing(Mem &mem, uint64_t entrants, uint64_t first, uint64_t end)
+{
+    std::vector<uint32_t> out;
+    if (!first || end <= first || (end - first) % ENTRANT_SIZE)
+        return out;
+    size_t n = static_cast<size_t>((end - first) / ENTRANT_SIZE);
+    if (n > MAX_ENTRANTS)
+        n = MAX_ENTRANTS;
+    for (size_t i = 0; i < n; i++) {
+        uint32_t handle = 0;
+        if (!mem.u32(first + i * ENTRANT_SIZE + ENTRANT_VEHICLE, handle) || !healable(handle) || vehicle(mem, entrants, handle))
+            continue;
+        bool seen = false;
+        for (uint32_t h : out)
+            seen = seen || h == handle;
+        if (!seen)
+            out.push_back(handle);
+    }
+    return out;
+}
+
+struct Census {
+    size_t entrants = 0;
+    size_t on_my_team = 0;
+    std::vector<uint16_t> ids;
+};
+
+template <class Mem> Census census(Mem &mem, uint64_t first, uint64_t end)
+{
+    Census c;
+    if (!first || end <= first || (end - first) % ENTRANT_SIZE)
+        return c;
+    size_t n = static_cast<size_t>((end - first) / ENTRANT_SIZE);
+    if (n > MAX_ENTRANTS)
+        n = MAX_ENTRANTS;
+    c.entrants = n;
+    for (size_t i = 0; i < n; i++) {
+        uint32_t handle = 0;
+        if (!mem.u32(first + i * ENTRANT_SIZE + ENTRANT_VEHICLE, handle) || !healable(handle))
+            continue;
+        c.on_my_team++;
+        bool seen = false;
+        for (uint16_t x : c.ids)
+            seen = seen || x == id(handle);
+        if (!seen)
+            c.ids.push_back(id(handle));
+    }
+    return c;
 }
 
 inline bool replaced(int result)
