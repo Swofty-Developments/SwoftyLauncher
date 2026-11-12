@@ -40706,7 +40706,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/myteam_vehicle_heal.cpp"
+   ]
   },
   {
    "id": "entrants.entrants_system_add_vehicle",
@@ -164310,6 +164312,33 @@
    ],
    "used_by": [
     "native/src/core/track_list_guard.cpp"
+   ]
+  },
+  {
+   "id": "session.session_enter_vehicle_lookup",
+   "section": ".xtls",
+   "pattern": "48 89 D9 E8 ?? ?? ?? ?? 48 85 C0 74 E3 48 0F BE 88 EA 0C 00 00",
+   "match": "0x14098f70f",
+   "anchor": "0x8",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14098f717",
+   "kind": "mid",
+   "expect": "48 85 C0 74",
+   "names": [
+    "site_Sess_SessionEnter_VehicleLookup"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "myteam-heal",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/myteam_vehicle_heal.cpp"
    ]
   }
  ]
