@@ -11,8 +11,8 @@ use crate::conflicts::Changes;
 use crate::dbedit::deps::Copy;
 use crate::entrant_lists::StockLists;
 use crate::ops::{
-    DbOps, DbReport, ErpOp, FieldNames, MovedStatId, RowIds, apply_db_ops_lenient, explicit_stat_ids,
-    ids_exhausted, no_row, stat_id_ceiling,
+    DbOps, DbReport, ErpOp, FieldNames, MovedStatId, Rewrite, RowIds, apply_db_ops_lenient,
+    explicit_stat_ids, ids_exhausted, no_row, no_row_selectors, stat_id_ceiling,
 };
 use crate::owned::{self, Added};
 use crate::rowkeys::{Names, RowKeys};
@@ -268,6 +268,9 @@ pub struct Planner<'a> {
     kept_lists: BTreeMap<String, Vec<String>>,
     copies: Vec<Copy>,
     lenient: BTreeMap<String, String>,
+    names: BTreeMap<String, String>,
+    // The records each origin's database ops changed, by the origin's rank.
+    rewrites: Vec<(usize, Rewrite)>,
     core_rows: BTreeMap<String, BTreeSet<String>>,
     touched: BTreeMap<String, Touched>,
     overlays: Option<&'a OverlayNames<'a>>,
@@ -370,6 +373,8 @@ impl<'a> Planner<'a> {
             kept_lists: BTreeMap::new(),
             copies: Vec::new(),
             lenient: BTreeMap::new(),
+            names: BTreeMap::new(),
+            rewrites: Vec::new(),
             core_rows: BTreeMap::new(),
             touched: BTreeMap::new(),
             overlays: None,
@@ -398,6 +403,19 @@ impl<'a> Planner<'a> {
     pub fn lenient(mut self, addons: BTreeMap<String, String>) -> Self {
         self.lenient = addons;
         self
+    }
+
+    /// The addons' names (id → name), for the errors that name an addon.
+    pub fn names(mut self, names: BTreeMap<String, String>) -> Self {
+        self.names = names;
+        self
+    }
+
+    fn name<'s>(&'s self, id: &'s str) -> &'s str {
+        self.names
+            .get(id)
+            .or_else(|| self.lenient.get(id))
+            .map_or(id, String::as_str)
     }
 
     /// Skips `id`'s failing database ops from now on: an addon whose track a
@@ -831,7 +849,7 @@ impl<'a> Planner<'a> {
         }
         self.retry(db, &mut waiting, &shared, report, &mut added, &grew)?;
         for w in waiting {
-            self.settle(&w.origin, w.errors, true)?;
+            self.settle(&w.origin, w.errors, Some(db))?;
         }
         self.row_ids = row_ids;
         Ok(added)
@@ -882,7 +900,7 @@ impl<'a> Planner<'a> {
     ) -> Result<Option<Waiting>> {
         let at = failed.iter().position(|(_, e)| no_row(e)).unwrap_or(failed.len());
         let rest = failed.split_off(at);
-        self.settle(&origin, failed.into_iter().map(|(_, e)| e).collect(), false)?;
+        self.settle(&origin, failed.into_iter().map(|(_, e)| e).collect(), None)?;
         if rest.is_empty() {
             return Ok(None);
         }
@@ -905,7 +923,13 @@ impl<'a> Planner<'a> {
 
     // A lenient addon's failures are skipped with a warning; another's first fails the build.
     // An op on a row that only the core adds at the game's start cannot apply in the build: it is skipped with a warning.
-    fn settle(&mut self, origin: &Origin, errors: Vec<swofty_addon::Error>, last: bool) -> Result<()> {
+    // `last` is the database after every addon's ops, once nothing is left to wait for.
+    fn settle(
+        &mut self,
+        origin: &Origin,
+        errors: Vec<swofty_addon::Error>,
+        last: Option<&Gvdb>,
+    ) -> Result<()> {
         let mut errors = errors;
         let no_id = errors.iter().filter(|e| ids_exhausted(e)).count();
         if no_id > 0 || (!errors.is_empty() && self.id_left_out.contains_key(&origin.addon)) {
@@ -918,7 +942,7 @@ impl<'a> Planner<'a> {
             }));
             return Ok(());
         }
-        if last {
+        if last.is_some() {
             let (core, rest): (Vec<_>, Vec<_>) = errors
                 .into_iter()
                 .partition(|e| !self.core_row_adders(e).is_empty());
@@ -930,24 +954,106 @@ impl<'a> Planner<'a> {
             }
             errors = rest;
         }
-        let line = |e: &swofty_addon::Error| match last && no_row(e) {
-            true => format!("{e}, even after every addon's changes"),
-            false => e.to_string(),
-        };
+        let lines: Vec<String> = errors
+            .iter()
+            .map(|e| match last {
+                Some(db) if no_row(e) => format!(
+                    "{e}, even after every addon's changes{}",
+                    self.removed_note(origin, e, db)
+                ),
+                _ => e.to_string(),
+            })
+            .collect();
         match self.lenient.get(&origin.addon) {
             Some(name) => {
-                self.skipped.extend(
-                    errors
-                        .iter()
-                        .map(|e| format!("{name}: change skipped: {}", line(e))),
-                );
+                let name = name.clone();
+                self.skipped
+                    .extend(lines.iter().map(|l| format!("{name}: change skipped: {l}")));
                 Ok(())
             }
-            None => match errors.first() {
-                Some(e) => Err(Error::Other(format!("applying {origin}: {}", line(e)))),
+            None => match lines.first() {
+                Some(l) => Err(Error::Other(format!("applying {origin}: {l}"))),
                 None => Ok(()),
             },
         }
+    }
+
+    // What to do about `origin`'s op that matches no row when an addon before it removed or renamed that row; empty when none did.
+    fn removed_note(&self, origin: &Origin, e: &swofty_addon::Error, db: &Gvdb) -> String {
+        let by = self.removers(origin, e, db);
+        let Some((_, first)) = by.first() else {
+            return String::new();
+        };
+        let verb = match by.iter().all(|(_, v)| v == first) {
+            true => *first,
+            false => "removed or renamed",
+        };
+        let names: Vec<&str> = by.iter().map(|(id, _)| self.name(id)).collect();
+        let list = match names.split_last() {
+            Some((last, rest)) if !rest.is_empty() => format!("{} and {last}", rest.join(", ")),
+            _ => names.join(""),
+        };
+        let them = match names.len() {
+            1 => "it",
+            _ => "them",
+        };
+        let edits = self.name(&origin.addon);
+        format!(
+            ": {edits} edits that row, but {list} {verb} it earlier in the load. Turn {list} off, or move {them} after {edits}"
+        )
+    }
+
+    // The addons before `origin` in load order whose ops removed or renamed a row that `e`'s path selects, in load
+    // order, each with what it did: removed the row, renamed it, or gave its name to another row on the way to it.
+    fn removers(&self, origin: &Origin, e: &swofty_addon::Error, db: &Gvdb) -> Vec<(String, &'static str)> {
+        let Some(mine) = self.ranks.iter().position(|o| o == origin) else {
+            return Vec::new();
+        };
+        let earlier: Vec<&(usize, Rewrite)> = self
+            .rewrites
+            .iter()
+            .filter(|(rank, _)| *rank < mine && self.ranks[*rank].addon != origin.addon)
+            .collect();
+        let selectors = no_row_selectors(e);
+        let mut found: Vec<(usize, &'static str)> = Vec::new();
+        for (n, s) in selectors.iter().enumerate() {
+            let failing = n + 1 == selectors.len();
+            let count_key = s.count_key();
+            let counted = |r: &Rewrite| {
+                [&r.was, &r.now]
+                    .into_iter()
+                    .filter_map(|v| v.as_deref()?.trim().parse::<usize>().ok())
+                    .max()
+            };
+            let rows = earlier
+                .iter()
+                .filter(|(_, r)| Some(r.key) == count_key)
+                .filter_map(|(_, r)| counted(r))
+                .fold(4096, usize::max);
+            let rows: HashSet<u64> = (0..rows).map(|i| s.field_key(i)).collect();
+            let is = |v: &Option<String>| v.as_deref() == Some(s.want.as_str());
+            for (rank, r) in &earlier {
+                let did = match (rows.contains(&r.key), is(&r.was), is(&r.now)) {
+                    (true, true, false) if r.now.is_none() => Some("removed"),
+                    (true, true, false) => Some("renamed"),
+                    (true, false, true) if !failing => Some("renamed"),
+                    (false, ..) if failing && Some(r.key) == count_key && hid(r, s, db) => Some("removed"),
+                    _ => None,
+                };
+                if let Some(did) = did {
+                    found.push((*rank, did));
+                }
+            }
+        }
+        found.sort_by_key(|(rank, _)| *rank);
+        let mut out: Vec<(String, &'static str)> = Vec::new();
+        for (rank, did) in found {
+            let addon = &self.ranks[rank].addon;
+            if !out.iter().any(|(a, _)| a == addon) {
+                out.push((addon.clone(), did));
+            }
+        }
+        out
     }
 
     fn apply_ops(
@@ -959,6 +1065,7 @@ impl<'a> Planner<'a> {
         report: &mut DbReport,
         late: bool,
     ) -> (Vec<(usize, swofty_addon::Error)>, Vec<Added>) {
+        let rank = self.rank(origin);
         let before = owned::counts(db);
         let guarded = match late {
             true => self.later_records(db, origin),
@@ -976,6 +1083,7 @@ impl<'a> Planner<'a> {
                 .into_iter()
                 .map(|w| format!("{}: {w}", origin.addon)),
         );
+        self.rewrites.extend(ours.rewrites.into_iter().map(|r| (rank, r)));
         if ours.stock_removals > 0 {
             *self.stock_removals.entry(origin.addon.clone()).or_default() += ours.stock_removals;
         }
@@ -1155,6 +1263,18 @@ pub fn waiting_lines(waiting: &[Op], features: &Features) -> Vec<String> {
             false => format!("{origin}: {n} {kind} op(s) wait for {kind} support in swofty_core"),
         })
         .collect()
+}
+
+// Whether `r`, a write of `s`'s table's row count, lowered it past a row whose field `s` selects by still has its value.
+fn hid(r: &Rewrite, s: &crate::ops::Selector, db: &Gvdb) -> bool {
+    let count = |v: &Option<String>| v.as_deref().and_then(|v| v.trim().parse::<usize>().ok());
+    let (Some(was), now) = (count(&r.was), count(&r.now).unwrap_or(0)) else {
+        return false;
+    };
+    let hidden: HashSet<u64> = (now..was).map(|i| s.field_key(i)).collect();
+    db.records
+        .iter()
+        .any(|rec| hidden.contains(&rec.key) && rec.text() == s.want.as_str())
 }
 
 fn restore_later_records(db: &mut Gvdb, guarded: Vec<(usize, swofty_formats::gvdb::Record)>) {
@@ -1653,6 +1773,189 @@ mod tests {
             e.to_string(),
             "applying a: t.list[_metadata_=cs_f1_2016].missing: no such key"
         );
+    }
+
+    const SETS: &str = "track_data.game_setup";
+
+    fn track_sets() -> Gvdb {
+        use swofty_formats::gvdb::Record;
+        let mut records = vec![Record::new(
+            &format!("{SETS}._TrackDataSet_instancecount_"),
+            0,
+            "3",
+        )];
+        for (i, label) in ["f1_2026", "f2_2023", "f2_2026"].into_iter().enumerate() {
+            let set = format!("{SETS}.TrackDataSet_{i}");
+            records.push(Record::new(&format!("{set}._metadata_"), 4, label));
+            records.push(Record::new(&format!("{set}._TrackData_instancecount_"), 0, "1"));
+            records.push(Record::new(
+                &format!("{set}.TrackData_0._metadata_"),
+                4,
+                "bahrain",
+            ));
+            records.push(Record::new(&format!("{set}.TrackData_0.round"), 0, "1"));
+        }
+        Gvdb { records }
+    }
+
+    fn put(path: &str, value: &str) -> String {
+        let hex: String = value.bytes().map(|b| format!("{b:02x}")).collect();
+        format!(r#"{{"op":"db.put-record","key":"{SETS}.{path}","type":4,"value":"{hex}"}}"#)
+    }
+
+    fn set_round(select: &str) -> String {
+        format!(r#"{{"op":"db.set","select":"{SETS}.{select}","field":"round","value":"9"}}"#)
+    }
+
+    fn named(ids: &[(&str, &str)]) -> BTreeMap<String, String> {
+        ids.iter()
+            .map(|(id, name)| ((*id).to_owned(), (*name).to_owned()))
+            .collect()
+    }
+
+    const SWAP: &str = "mod.serps-ineos-mercedes-concept";
+    const KOREA: &str = "pajko.korea";
+
+    fn swap_and_korea() -> BTreeMap<String, String> {
+        named(&[(SWAP, "SERPS Ineos Mercedes Concept"), (KOREA, "Korea")])
+    }
+
+    #[test]
+    fn a_row_an_earlier_import_renamed_names_the_import() {
+        let features = Features::default();
+        let opt_in = BTreeSet::new();
+        let mut p = Planner::new(&features, &opt_in).names(swap_and_korea());
+        p.push(op("mod.other", &set_round("TrackDataSet_0.TrackData_0")));
+        p.push(op(SWAP, &put("TrackDataSet_2._metadata_", "f2_2025")));
+        p.push(op(
+            KOREA,
+            &set_round("TrackDataSet[_metadata_=f2_2026].TrackData[_metadata_=bahrain]"),
+        ));
+        let e = p.apply_db(&mut track_sets()).unwrap_err().to_string();
+        assert_eq!(
+            e,
+            "applying pajko.korea: track_data.game_setup.TrackDataSet[_metadata_=f2_2026]: no row matches, \
+             even after every addon's changes: Korea edits that row, but SERPS Ineos Mercedes Concept renamed it \
+             earlier in the load. Turn SERPS Ineos Mercedes Concept off, or move it after Korea"
+        );
+    }
+
+    #[test]
+    fn rows_an_earlier_import_cut_from_the_count_name_the_import() {
+        let features = Features::default();
+        let opt_in = BTreeSet::new();
+        let mut p = Planner::new(&features, &opt_in).names(swap_and_korea());
+        p.push(op(SWAP, &put("_TrackDataSet_instancecount_", "2")));
+        p.push(op(
+            KOREA,
+            &set_round("TrackDataSet[_metadata_=f2_2026].TrackData_0"),
+        ));
+        let e = p.apply_db(&mut track_sets()).unwrap_err().to_string();
+        assert!(
+            e.ends_with(
+                ": Korea edits that row, but SERPS Ineos Mercedes Concept removed it earlier in the load. \
+                 Turn SERPS Ineos Mercedes Concept off, or move it after Korea"
+            ),
+            "{e}"
+        );
+        assert!(
+            e.starts_with(
+                "applying pajko.korea: track_data.game_setup.TrackDataSet[_metadata_=f2_2026]: no row matches"
+            ),
+            "{e}"
+        );
+    }
+
+    #[test]
+    fn a_child_row_under_a_table_an_earlier_import_renamed_names_the_import() {
+        let features = Features::default();
+        let opt_in = BTreeSet::new();
+        let names = named(&[
+            (SWAP, "SERPS Ineos Mercedes Concept"),
+            ("mod.lgsgp", "Laguna Seca Grand Prix"),
+        ]);
+        let mut p = Planner::new(&features, &opt_in).names(names);
+        p.push(op(SWAP, &put("TrackDataSet_1._metadata_", "f2_2022")));
+        p.push(op(SWAP, &put("TrackDataSet_2._metadata_", "f2_2023")));
+        p.push(op(
+            "mod.lgsgp",
+            &put("TrackDataSet_1.TrackData_0._metadata_", "lgsgp"),
+        ));
+        p.push(op(
+            "mod.lgsgp",
+            &set_round("TrackDataSet[_metadata_=f2_2023].TrackData[_metadata_=lgsgp]"),
+        ));
+        let e = p.apply_db(&mut track_sets()).unwrap_err().to_string();
+        assert!(
+            e.ends_with(
+                ": Laguna Seca Grand Prix edits that row, but SERPS Ineos Mercedes Concept renamed it earlier in the \
+                 load. Turn SERPS Ineos Mercedes Concept off, or move it after Laguna Seca Grand Prix"
+            ),
+            "{e}"
+        );
+    }
+
+    #[test]
+    fn a_lenient_addons_skipped_change_names_the_import_too() {
+        let features = Features::default();
+        let opt_in = BTreeSet::new();
+        let lenient = named(&[("dbedit.mine", "My DB Edits")]);
+        let mut p = Planner::new(&features, &opt_in)
+            .lenient(lenient)
+            .names(named(&[(SWAP, "A"), ("mod.second", "B")]));
+        p.push(op(SWAP, &put("TrackDataSet_2._metadata_", "f2_2025")));
+        p.push(op("mod.second", &put("_TrackDataSet_instancecount_", "2")));
+        p.push(op(
+            "dbedit.mine",
+            &set_round("TrackDataSet[_metadata_=f2_2026].TrackData_0"),
+        ));
+        p.apply_db(&mut track_sets()).unwrap();
+        assert_eq!(
+            p.take_skipped(),
+            [
+                "My DB Edits: change skipped: track_data.game_setup.TrackDataSet[_metadata_=f2_2026]: no row matches, \
+                 even after every addon's changes: My DB Edits edits that row, but A renamed it earlier in the load. \
+                 Turn A off, or move it after My DB Edits"
+            ]
+        );
+    }
+
+    #[test]
+    fn a_row_nothing_removed_or_only_a_later_addon_renamed_keeps_the_plain_error() {
+        let features = Features::default();
+        let opt_in = BTreeSet::new();
+        let plain = "applying pajko.korea: track_data.game_setup.TrackDataSet[_metadata_=f2_2030]: no row matches, \
+                     even after every addon's changes";
+        let mut p = Planner::new(&features, &opt_in).names(swap_and_korea());
+        p.push(op(SWAP, &put("TrackDataSet_1._metadata_", "f2_2025")));
+        p.push(op(
+            KOREA,
+            &set_round("TrackDataSet[_metadata_=f2_2030].TrackData_0"),
+        ));
+        assert_eq!(p.apply_db(&mut track_sets()).unwrap_err().to_string(), plain);
+
+        let mut p = Planner::new(&features, &opt_in).names(swap_and_korea());
+        p.push(op(
+            KOREA,
+            &set_round("TrackDataSet[_metadata_=f2_2026].TrackData_0"),
+        ));
+        p.push(op(SWAP, &put("TrackDataSet_2._metadata_", "f2_2030")));
+        let mut db = track_sets();
+        p.apply_db(&mut db).unwrap();
+        assert_eq!(
+            db.get_text(&format!("{SETS}.TrackDataSet_2.TrackData_0.round"))
+                .as_deref(),
+            Some("9")
+        );
+
+        let mut p = Planner::new(&features, &opt_in).names(swap_and_korea());
+        p.push(op(KOREA, &put("TrackDataSet_2._metadata_", "f2_2030")));
+        p.push(op(
+            KOREA,
+            &set_round("TrackDataSet[_metadata_=f2_2026].TrackData_0"),
+        ));
+        let e = p.apply_db(&mut track_sets()).unwrap_err().to_string();
+        assert_eq!(e, plain.replace("f2_2030", "f2_2026"));
     }
 
     #[test]

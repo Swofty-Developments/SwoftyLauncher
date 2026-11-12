@@ -939,9 +939,15 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     if let Some(core) = addons.get(CORE_ID) {
         lenient.insert(CORE_ID.to_owned(), core.name.clone());
     }
+    let names = resolved
+        .order
+        .iter()
+        .map(|id| (id.clone(), addons[id].name.clone()))
+        .collect();
     let mut planner = Planner::new(&features, &config.runtime_assets)
         .build_only(&config.build_assets)
         .lenient(lenient)
+        .names(names)
         .overlays(&overlay_names)
         .mipmaps(&mipmap_names);
     if features != Features::default() {
