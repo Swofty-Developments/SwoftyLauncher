@@ -38,6 +38,7 @@ const CONTAINER: &str = "eaid://ui_package/screens/settings_container.ui";
 const ROUTES: &str = "eaid://ui_package/routes/routes_frontend_general.uir";
 const GAME_ROUTES: &str = "eaid://ui_package/routes/routes.uir";
 const F1_WORLD_ROUTES: &str = "eaid://ui_package/routes/routes_f1_world.uir";
+const CUSTOMISATION_ROUTES: &str = "eaid://ui_package/routes/routes_customisation_and_store.uir";
 const WIZARD_ROUTES: &str = "eaid://ui_package/routes/routes_career_wizard.uir";
 const SETUP_FLOW_ERP: &str = "flow_career_season_setup";
 const SETUP_BACK_ERP: &str = "flow_frontend";
@@ -433,6 +434,8 @@ pub fn build(
     let game_routes_out = std::cell::RefCell::new(Vec::new());
     let wizard_routes_out = std::cell::RefCell::new(Vec::new());
     let flows_out = std::cell::RefCell::new(Vec::new());
+    let customisation_out = std::cell::RefCell::new(Vec::new());
+    let customisation_error = std::cell::RefCell::new(None);
     let placed = std::cell::RefCell::new(patch::Placed::default());
     let mut persistent: Vec<(&str, Patch)> = vec![
         (
@@ -467,6 +470,22 @@ pub fn build(
         ),
     ];
     persistent.push((F1_WORLD_ROUTES, Box::new(patch::f1_world_routes)));
+    persistent.push((
+        CUSTOMISATION_ROUTES,
+        Box::new(|d| {
+            let built =
+                read_frag(&src_p, F1_WORLD_ROUTES, 0).and_then(|f| patch::customisation_routes(d, &f));
+            let b = match built {
+                Ok(b) => b,
+                Err(e) => {
+                    *customisation_error.borrow_mut() = Some(e.to_string());
+                    d.to_vec()
+                }
+            };
+            *customisation_out.borrow_mut() = b.clone();
+            Ok(b)
+        }),
+    ));
     if !setups.is_empty() {
         persistent.push((
             WIZARD_ROUTES,
@@ -660,6 +679,25 @@ pub fn build(
     let nav_path = out.join(&nav_flag);
     std::fs::write(&nav_path, b"1").map_err(io_err(&nav_path))?;
     build.screens.insert(nav_flag, nav_path);
+    match customisation_built(
+        &routes_out.borrow(),
+        &customisation_out.borrow(),
+        customisation_error.borrow_mut().take(),
+    ) {
+        Ok(()) => {
+            let rel = format!("{UI_DIR}/{}", home_rows::CUSTOMISATION_FLAG);
+            let path = out.join(&rel);
+            std::fs::write(&path, b"1").map_err(io_err(&path))?;
+            build.screens.insert(rel, path);
+            build.lines.push(
+                "ui: the main menu's Customisation card and its Back to the main menu are in this build"
+                    .to_owned(),
+            );
+        }
+        Err(why) => build
+            .warnings
+            .push(format!("ui: no Customisation card on the main menu: {why}")),
+    }
     if rows_built {
         let rel = format!("{UI_DIR}/{}", home_rows::FLAG);
         let path = out.join(&rel);
@@ -749,6 +787,31 @@ pub fn build(
 }
 
 type CareerRow = (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>);
+
+fn customisation_built(
+    home_routes: &[u8],
+    customisation_routes: &[u8],
+    error: Option<String>,
+) -> std::result::Result<(), String> {
+    if let Some(e) = error {
+        return Err(e);
+    }
+    if !patch::has_route(home_routes, "fe_home", patch::CUSTOMISATION_ROUTE) {
+        return Err(format!("fe_home has no {} route", patch::CUSTOMISATION_ROUTE));
+    }
+    if !patch::has_route(
+        customisation_routes,
+        patch::CUSTOMISATION_GROUP,
+        patch::BACK_HOME_FROM_CONTAINER,
+    ) {
+        return Err(format!(
+            "{} has no {} route",
+            patch::CUSTOMISATION_GROUP,
+            patch::BACK_HOME_FROM_CONTAINER
+        ));
+    }
+    Ok(())
+}
 
 fn main_menu_rows(
     src: &Path,
@@ -1281,6 +1344,9 @@ mod tests {
         let out = patch::f1_world_routes(&routes).unwrap();
         let home_routes = read_frag(&src, ROUTES, 0).unwrap();
         let home_out = patch::routes(&home_routes, Vec::new(), Vec::new()).unwrap();
+        let customisation = read_frag(&src, CUSTOMISATION_ROUTES, 0).unwrap();
+        let customisation_out = patch::customisation_routes(&customisation, &routes).unwrap();
+        customisation_built(&home_out, &customisation_out, None).unwrap();
         let flows = read_frag(&src, FLOWS, 0).unwrap();
         let flows_out = patch::f1_world_entries(&flows).unwrap();
         let dir = std::env::temp_dir().join(format!("swofty-f1routes-{}", std::process::id()));
@@ -1291,6 +1357,7 @@ mod tests {
             vec![
                 (F1_WORLD_ROUTES, 0, Box::new(move |_| Ok(out))),
                 (ROUTES, 0, Box::new(move |_| Ok(home_out))),
+                (CUSTOMISATION_ROUTES, 0, Box::new(move |_| Ok(customisation_out))),
                 (FLOWS, 0, Box::new(move |_| Ok(flows_out))),
             ],
             Vec::new(),
@@ -1304,6 +1371,16 @@ mod tests {
         let p = swofty_formats::pkg::Pkg::parse(&written).unwrap();
         let text = format!("{:?}", p.root);
         assert!(text.contains(patch::BACK_HOME_FROM_CONTAINER) && text.contains(patch::HOME_BACK_ROUTE));
+        assert!(patch::has_route(
+            &read_frag(&dst, ROUTES, 0).unwrap(),
+            "fe_home",
+            patch::CUSTOMISATION_ROUTE
+        ));
+        assert!(patch::has_route(
+            &read_frag(&dst, CUSTOMISATION_ROUTES, 0).unwrap(),
+            patch::CUSTOMISATION_GROUP,
+            patch::BACK_HOME_FROM_CONTAINER
+        ));
         let flows_written = read_frag(&dst, FLOWS, 0).unwrap();
         let text = format!(
             "{:?}",
@@ -1448,13 +1525,11 @@ mod tests {
         let objects = crate::baseline::Objects {
             root: data.join("baseline/objects"),
         };
-        move |rel: &str| {
-            objects.path(
-                &b.files
-                    .get(rel)
-                    .unwrap_or_else(|| panic!("no stock {rel}"))
-                    .sha256,
-            )
+        let game = std::env::var_os("SWOFTY_STOCK_GAME").map(PathBuf::from);
+        move |rel: &str| match (b.files.get(rel), &game) {
+            (Some(f), _) => objects.path(&f.sha256),
+            (None, Some(game)) => game.join(rel),
+            (None, None) => panic!("no stock {rel} (SWOFTY_STOCK_GAME reads the files the baseline lacks)"),
         }
     }
 
@@ -1482,6 +1557,22 @@ mod tests {
         let out = std::env::temp_dir().join(format!("swofty-career-setup-{}", std::process::id()));
         std::fs::remove_dir_all(&out).ok();
         let built = build(&settings, &input, &|_, _| None, &out, false).unwrap();
+        assert!(
+            built
+                .screens
+                .contains_key(&format!("{UI_DIR}/{}", home_rows::CUSTOMISATION_FLAG)),
+            "{:?}",
+            built.warnings
+        );
+        let persistent = ui_file("persistent.erp");
+        let report = check::archive_files(&[(
+            persistent.as_str(),
+            input(&persistent).as_path(),
+            out.join(&persistent).as_path(),
+        )])
+        .unwrap();
+        let hard: Vec<String> = report.hard.iter().map(ToString::to_string).collect();
+        assert!(hard.is_empty(), "{hard:?}");
         let home = format!("swofty_setup_{SETUP_ROUTE}");
         let rows = format!("swofty_addon_{SETUP_ROUTE}_0");
         assert!(
