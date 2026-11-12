@@ -1093,16 +1093,15 @@ impl Store {
     }
 
     pub fn config(&self) -> Config {
-        let mut config = match crate::load_json(&self.config_path()) {
-            Ok(crate::Loaded::Found(c)) => c,
-            _ => Config::default(),
-        };
+        let mut config: Config = load_settings(&self.config_path());
         config.migrate_games();
         config
     }
 
     pub fn save_config(&self, config: &Config) -> Result<()> {
-        crate::write_json(&self.config_path(), config)
+        let path = self.config_path();
+        set_aside_unreadable::<Config>(&path)?;
+        crate::write_json(&path, config)
     }
 
     pub fn folders_path(&self) -> PathBuf {
@@ -1110,14 +1109,13 @@ impl Store {
     }
 
     pub fn folders(&self) -> crate::folders::Folders {
-        match crate::load_json(&self.folders_path()) {
-            Ok(crate::Loaded::Found(f)) => f,
-            _ => Default::default(),
-        }
+        load_settings(&self.folders_path())
     }
 
     pub fn save_folders(&self, folders: &crate::folders::Folders) -> Result<()> {
-        crate::write_json(&self.folders_path(), folders)
+        let path = self.folders_path();
+        set_aside_unreadable::<crate::folders::Folders>(&path)?;
+        crate::write_json(&path, folders)
     }
 
     pub fn active_profile(&self) -> String {
@@ -1358,6 +1356,35 @@ fn warn_once(text: String) {
     if seen.insert(text.clone()) {
         eprintln!("swofty: warning: {text}");
     }
+}
+
+/// A settings file, or the defaults when there is none or this build can't read it. One that is
+/// JSON in a shape this build can't read (a hand edit with a wrong type, a value a newer launcher
+/// wrote) stays where it is, so fixing it or going back to that launcher brings it back, until a
+/// save moves it aside with [`set_aside_unreadable`].
+fn load_settings<T: serde::de::DeserializeOwned + Default>(path: &Path) -> T {
+    match crate::load_json(path) {
+        Ok(crate::Loaded::Found(v)) => v,
+        Ok(crate::Loaded::Missing | crate::Loaded::Damaged(_)) => T::default(),
+        Err(e) => {
+            warn_once(format!("{e}; using the defaults until it can be read"));
+            T::default()
+        }
+    }
+}
+
+/// Before a save replaces the settings file at `path`, move one this build can't read aside to
+/// `<name>.unreadable-<unix time>`, so the defaults [`load_settings`] fell back to don't overwrite
+/// the only copy of the player's settings.
+fn set_aside_unreadable<T: serde::de::DeserializeOwned>(path: &Path) -> Result<()> {
+    if let Err(e @ Error::Json { .. }) = crate::load_json::<T>(path) {
+        let to = crate::set_aside(path, crate::UNREADABLE_SUFFIX)?;
+        warn(format!(
+            "{e}; moved it to {} and saved new settings in its place",
+            to.display()
+        ));
+    }
+    Ok(())
 }
 
 fn check_new_name(name: &str) -> Result<()> {
@@ -1928,6 +1955,42 @@ mod tests {
         assert!(!root.join("mods").exists());
         assert!(root.join("addons/a.three").is_dir());
         assert_eq!(store.config().data_version, DATA_VERSION);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_save_keeps_a_config_or_folders_file_this_build_cant_read() {
+        let root = tmp("unreadable-config");
+        let store = Store::new(&root);
+        let config = r#"{"active_profile":"grid","launch":{"env":{"DXVK_ASYNC":1}}}"#;
+        let folders = r#"{"placed":{"t.a":1}}"#;
+        std::fs::write(store.config_path(), config).unwrap();
+        std::fs::write(store.folders_path(), folders).unwrap();
+        assert_eq!(store.config().active_profile, None);
+        assert_eq!(store.folders(), crate::folders::Folders::default());
+        assert_eq!(std::fs::read_to_string(store.config_path()).unwrap(), config);
+        assert_eq!(std::fs::read_to_string(store.folders_path()).unwrap(), folders);
+
+        let aside = |name: &str| -> Vec<PathBuf> {
+            let prefix = format!("{name}{}", crate::UNREADABLE_SUFFIX);
+            std::fs::read_dir(&root)
+                .unwrap()
+                .flatten()
+                .map(|e| e.path())
+                .filter(|p| p.file_name().unwrap().to_string_lossy().starts_with(&prefix))
+                .collect()
+        };
+        for round in ["other", "third"] {
+            store.set_active_profile(round).unwrap();
+            store.save_folders(&store.folders()).unwrap();
+            assert_eq!(store.config().active_profile.as_deref(), Some(round));
+            let kept = aside("config.json");
+            assert_eq!(kept.len(), 1, "{round}: {kept:?}");
+            assert_eq!(std::fs::read_to_string(&kept[0]).unwrap(), config, "{round}");
+            let kept = aside(crate::folders::FILE);
+            assert_eq!(kept.len(), 1, "{round}: {kept:?}");
+            assert_eq!(std::fs::read_to_string(&kept[0]).unwrap(), folders, "{round}");
+        }
         std::fs::remove_dir_all(&root).ok();
     }
 

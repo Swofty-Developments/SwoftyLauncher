@@ -335,7 +335,7 @@ pub(crate) fn load_json<T: serde::de::DeserializeOwned>(path: &std::path::Path) 
                 serde_json::error::Category::Syntax | serde_json::error::Category::Eof
             ) =>
         {
-            let moved = set_aside_damaged(path)?;
+            let moved = set_aside(path, DAMAGED_SUFFIX)?;
             eprintln!(
                 "swofty: warning: {} was damaged ({} bytes, {e}); moved it to {}",
                 path.display(),
@@ -353,7 +353,12 @@ pub(crate) fn load_json<T: serde::de::DeserializeOwned>(path: &std::path::Path) 
 
 pub(crate) const DAMAGED_SUFFIX: &str = ".corrupt-";
 
-fn set_aside_damaged(path: &std::path::Path) -> Result<std::path::PathBuf> {
+/// The suffix of a state file set aside because it was JSON in a shape this
+/// build cannot read, so a save could replace it.
+pub(crate) const UNREADABLE_SUFFIX: &str = ".unreadable-";
+
+/// Move `path` to `<name><suffix><unix time>`, never over another file.
+pub(crate) fn set_aside(path: &std::path::Path, suffix: &str) -> Result<std::path::PathBuf> {
     let secs = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map_or(0, |d| d.as_secs());
@@ -362,10 +367,10 @@ fn set_aside_damaged(path: &std::path::Path) -> Result<std::path::PathBuf> {
         .unwrap_or_default()
         .to_string_lossy()
         .into_owned();
-    let mut to = path.with_file_name(format!("{name}{DAMAGED_SUFFIX}{secs}"));
+    let mut to = path.with_file_name(format!("{name}{suffix}{secs}"));
     let mut n = 1;
     while to.exists() {
-        to = path.with_file_name(format!("{name}{DAMAGED_SUFFIX}{secs}-{n}"));
+        to = path.with_file_name(format!("{name}{suffix}{secs}-{n}"));
         n += 1;
     }
     with_retry(path, || std::fs::rename(path, &to))?;
