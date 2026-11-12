@@ -32,7 +32,11 @@
 // child is null when the screen opened for a track the view skipped above. site_Sess_TimeTrialLeaderboard_TabChild is
 // that read (rcx = the child). When it is null the guard continues at site_Sess_TimeTrialLeaderboard_TabDone, the
 // function's own epilogue, which skips the child call and the refresh that follows it. A child that exists runs the
-// game's code unchanged.
+// game's code unchanged. Sess_TimeTrialLeaderboard_ActivateTabBound, the same model's bound-only twin that the garage
+// monitor panel calls directly for each leaderboard tab (from Vm_Dispatch_BindingMessage), makes the same read with no
+// null check (F1_25.exe+0x2fcd166 reading 0, a Time Trial on an added track whose board is not listed).
+// site_Sess_TimeTrialLeaderboard_BoundTabChild is that read, and for a null child the guard continues at
+// site_Sess_TimeTrialLeaderboard_BoundTabDone, that function's own epilogue.
 //
 // Entering Time Trial (setCurrentGameMode none -> time_trial) runs Game_TimeTrial_SetReference, which stores the board
 // for the reference's track and weather at presenter+0x20278 and then, when g_Ne_LogGate holds the GAME channel, logs
@@ -70,7 +74,7 @@ constexpr uintptr_t PRESENTER_CONTEXT = 0x20, PRESENTER_TRACK = 0x3c, CONTEXT_MO
                     MODE_NAME = 0x278, ENTITY_SETUP_MODE = 0x2b0, SETUP_MODE_NAME = 0xd8, LIST_NAME = 0x28, HOLDER_TEXT = 0x10,
                     LIST_BEGIN = 0x10, LIST_END = 0x18, ENTRANT_RECORD = 0x88;
 
-uintptr_t boards_done = 0, tab_done = 0, reference_done = 0, rival_done = 0, list_done = 0;
+uintptr_t boards_done = 0, tab_done = 0, bound_tab_done = 0, reference_done = 0, rival_done = 0, list_done = 0;
 bool offered = false, settled = false;
 std::atomic<int> skipped{0}, tab_skipped{0}, reference_skipped{0}, list_skipped{0};
 
@@ -98,17 +102,27 @@ void board_read(SwoftyContext *c)
                 (unsigned long long)c->rdi, say == lg::Say::last ? " (further skips are not logged)" : "");
 }
 
-void tab_child_read(SwoftyContext *c)
+void tab_child_skipped(SwoftyContext *c, uintptr_t done, const char *how)
 {
-    if (!lg::tab_child_missing(c->rcx))
-        return;
-    c->rip = tab_done;
+    c->rip = done;
     lg::Say say = lg::say(++tab_skipped);
     if (say == lg::Say::none)
         return;
-    swofty::log("[leaderboard] Time Trial leaderboard model 0x%llx activated its tab with no child list model; tab "
+    swofty::log("[leaderboard] Time Trial leaderboard model 0x%llx activated its tab%s with no child list model; tab "
                 "activation skipped%s",
-                (unsigned long long)(c->rsi - 0x660), say == lg::Say::last ? " (further skips are not logged)" : "");
+                (unsigned long long)(c->rsi - 0x660), how, say == lg::Say::last ? " (further skips are not logged)" : "");
+}
+
+void tab_child_read(SwoftyContext *c)
+{
+    if (lg::tab_child_missing(c->rcx))
+        tab_child_skipped(c, tab_done, "");
+}
+
+void bound_tab_child_read(SwoftyContext *c)
+{
+    if (lg::tab_child_missing(c->rcx))
+        tab_child_skipped(c, bound_tab_done, " from the garage monitor");
 }
 
 bool presenter_board_missing(uintptr_t presenter)
@@ -216,14 +230,22 @@ std::vector<CoreMixins> leaderboard_guard_mixins()
     }
     if (!env_off("SWOFTY_LEADERBOARD_TAB_GUARD", "time trial leaderboard tab guard")) {
         tab_done = swofty::api->resolve("site_Sess_TimeTrialLeaderboard_TabDone");
-        if (!tab_done || !swofty::api->resolve("site_Sess_TimeTrialLeaderboard_TabChild")) {
+        bound_tab_done = swofty::api->resolve("site_Sess_TimeTrialLeaderboard_BoundTabDone");
+        if (!tab_done || !swofty::api->resolve("site_Sess_TimeTrialLeaderboard_TabChild"))
             tab_done = 0;
+        if (!bound_tab_done || !swofty::api->resolve("site_Sess_TimeTrialLeaderboard_BoundTabChild"))
+            bound_tab_done = 0;
+        std::vector<SwoftyMixin> sites;
+        if (tab_done)
+            sites.push_back({"site_Sess_TimeTrialLeaderboard_TabChild", SWOFTY_MIXIN_SITE, 100, (void *)&tab_child_read, nullptr});
+        if (bound_tab_done)
+            sites.push_back({"site_Sess_TimeTrialLeaderboard_BoundTabChild", SWOFTY_MIXIN_SITE, 100, (void *)&bound_tab_child_read,
+                             nullptr});
+        if (sites.empty())
             swofty::log("[leaderboard] time trial leaderboard tab guard off: needs site_Sess_TimeTrialLeaderboard_TabChild "
                         "and site_Sess_TimeTrialLeaderboard_TabDone, which this build does not resolve");
-        } else {
-            out.push_back({TAB_MIXIN,
-                           {{"site_Sess_TimeTrialLeaderboard_TabChild", SWOFTY_MIXIN_SITE, 100, (void *)&tab_child_read, nullptr}}});
-        }
+        else
+            out.push_back({TAB_MIXIN, std::move(sites)});
     }
     if (!env_off("SWOFTY_TT_REFERENCE_LOG_GUARD", "time trial reference log guard")) {
         reference_done = swofty::api->resolve("site_Game_TimeTrial_SetReferenceLogDone");
@@ -268,10 +290,12 @@ void leaderboard_guard_commit()
                     core_mixins_active(MIXIN)
                         ? "armed: View Leaderboards at a track without a board returns instead of faulting"
                         : "did not install (see the [core] lines)");
-    if (tab_done)
+    if (tab_done || bound_tab_done)
         swofty::log("[leaderboard] time trial leaderboard tab guard %s",
                     core_mixins_active(TAB_MIXIN)
-                        ? "armed: activating the leaderboard tab without a child list model returns instead of faulting"
+                        ? (tab_done && bound_tab_done
+                               ? "armed: activating the leaderboard tab without a child list model returns instead of faulting"
+                               : "armed on one of its two tab activations (see the [core] lines)")
                         : "did not install (see the [core] lines)");
     if (reference_done || rival_done)
         swofty::log("[leaderboard] time trial reference log guard %s",
