@@ -175,7 +175,17 @@ bool before_fg_wanted()
         hud::guard::FgSetting game;
         if (!path.empty())
             game = hud::guard::fg_setting(runtime::read_file(path, 1 << 20));
-        return hud::guard::before_fg_wanted(forced, game);
+        bool want = hud::guard::before_fg_wanted(forced, game);
+        if (forced >= 0)
+            swofty::log("[overlay] at start SWOFTY_OVERLAY_FG / \"overlay_fg\" is %d, so the game's frame generation "
+                        "setting is not read; drawing before frame generation is %s",
+                        forced, want ? "on" : "off");
+        else
+            swofty::log("[overlay] at start the game's hardware settings (%s) have frame generation %s (frame_gen mode "
+                        "%d, multi_frame_gen %d); drawing before frame generation is %s",
+                        path.empty() ? "path unknown" : runtime::narrow(path).c_str(), game.word(), game.mode,
+                        game.multi, want ? "on" : "off");
+        return want;
     }();
     return on;
 }
@@ -1680,9 +1690,15 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
     if (!known) {
         if (std::find(unknown_told.begin(), unknown_told.end(), sc) == unknown_told.end()) {
             unknown_told.push_back(sc);
-            swofty::log("[overlay] swapchain %p was created before the core hooked swapchain creation, so its "
-                        "present queue is unknown; the overlay does not draw on it",
-                        static_cast<void *>(sc));
+            if (d3d12hooks::learning(sc))
+                swofty::log("[overlay] swapchain %p was created outside the core's swapchain creation hooks and its "
+                            "present queue is not known yet; the overlay draws on it once ExecuteCommandLists names "
+                            "the queue",
+                            static_cast<void *>(sc));
+            else
+                swofty::log("[overlay] swapchain %p was created before the core hooked swapchain creation, so its "
+                            "present queue is unknown; the overlay does not draw on it",
+                            static_cast<void *>(sc));
         }
         return;
     }
@@ -1811,6 +1827,29 @@ bool resolve_d3d12()
 }
 
 void arm_before_fg(const char *why);
+bool before_fg_tried;
+
+bool arm_for_unread_queue(IDXGISwapChain3 *sc, void *caller)
+{
+    if (device_hooked || before_fg_tried)
+        return device_hooked;
+    std::string by = d3d12hooks::module_of(caller);
+    hud::guard::OnDemandArm on = hud::guard::on_demand_arm(loaded_modules(), by, before_fg_forced());
+    if (!on.arms()) {
+        swofty::log("[overlay] swapchain %p presents from %s and its present queue cannot be read; the core's device "
+                    "hooks stay off (%s), so the overlay does not draw on it",
+                    static_cast<void *>(sc), by.empty() ? "an unknown module" : by.c_str(), on.refused.c_str());
+        return false;
+    }
+    swofty::log("[overlay] frame generation source: %s; swapchain %p presents from %s and its present queue cannot be "
+                "read, so the core's device hooks arm now to learn the queue from ExecuteCommandLists, and the overlay "
+                "draws on it from the next frame (SWOFTY_OVERLAY_FG=0 / \"overlay_fg\": false keeps them off)",
+                on.source.c_str(), static_cast<void *>(sc), by.empty() ? "an unknown module" : by.c_str());
+    std::string why = "a swapchain whose present queue cannot be read reached Present with " + on.source +
+                      " in the process";
+    arm_before_fg(why.c_str());
+    return device_hooked;
+}
 
 bool arm()
 {
@@ -1818,6 +1857,7 @@ bool arm()
         return false;
     d3d12hooks::on_present(draw_frame);
     d3d12hooks::on_presented(presented);
+    d3d12hooks::on_unread_queue(arm_for_unread_queue);
     d3d12hooks::ProbeScope probe;
     bool swapchain = d3d12hooks::arm_swapchain();
     if (before_fg_wanted()) {
@@ -1833,6 +1873,8 @@ bool arm()
 
 void arm_before_fg(const char *why)
 {
+    if (std::exchange(before_fg_tried, true))
+        return;
     std::string rival = device_hook_rival();
     if (!hud::guard::device_hooks_allowed(rival, before_fg_forced())) {
         device_hook_rival_seen = rival;

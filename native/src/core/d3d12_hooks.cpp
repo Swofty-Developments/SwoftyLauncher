@@ -43,6 +43,7 @@ Subs<SetNameFn> setnames;
 Subs<ResetFn> resets;
 Subs<RenderTargetsFn> render_targets;
 Subs<RtvFn> rtvs;
+Subs<UnreadQueueFn> unread_queues;
 
 template <class T> void release(T *&p)
 {
@@ -201,10 +202,17 @@ bool recent_direct_queue(DWORD tid, hud::guard::ExecSeen &out)
     return e != nullptr;
 }
 
+std::vector<void *> refused, waiting;
+bool unread_arm_asked;
+
+bool listed(const std::vector<void *> &v, void *sc)
+{
+    return std::find(v.begin(), v.end(), sc) != v.end();
+}
+
 bool learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg, Swapchain &out)
 {
-    static std::vector<void *> refused, waiting;
-    if (std::find(refused.begin(), refused.end(), sc) != refused.end())
+    if (listed(refused, sc))
         return false;
     DWORD tid = GetCurrentThreadId();
     ID3D12CommandQueue *q = nullptr;
@@ -246,10 +254,19 @@ bool learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg, Swapchain 
         qd = q->GetDesc();
         q->Release();
     } else {
-        bool told = std::find(waiting.begin(), waiting.end(), sc) != waiting.end();
+        bool told = listed(waiting, sc);
         if (!told && waiting.size() < 16)
             waiting.push_back(sc);
-        if (!h_exec) {
+        using hud::guard::UnreadQueue;
+        UnreadQueue step = hud::guard::unread_queue_step(bool(h_exec), unread_arm_asked, false);
+        if (step == UnreadQueue::Arm) {
+            unread_arm_asked = true;
+            for (int i = 0, k = unread_queues.n.load(); i < k; i++)
+                if (unread_queues.fns[i](sc, caller))
+                    break;
+            step = hud::guard::unread_queue_step(bool(h_exec), unread_arm_asked, false);
+        }
+        if (step == UnreadQueue::Refuse) {
             refused.push_back(sc);
             swofty::log("[d3d12] swapchain %p was made before the creation hooks and its present queue cannot be read; "
                         "ignored (GetDevice: 0x%08lx; %s)",
@@ -257,7 +274,8 @@ bool learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg, Swapchain 
             return false;
         }
         execs_wanted.store(true, std::memory_order_relaxed);
-        if (!recent_direct_queue(tid, exec)) {
+        bool seen = recent_direct_queue(tid, exec);
+        if (hud::guard::unread_queue_step(true, unread_arm_asked, seen) == UnreadQueue::Wait) {
             if (!told)
                 swofty::log("[d3d12] swapchain %p was made before the creation hooks and its present queue cannot be "
                             "read (GetDevice: 0x%08lx; %s); no direct command queue has executed command lists yet, "
@@ -964,6 +982,16 @@ void on_create_rtv(RtvFn fn)
 void on_reset(ResetFn fn)
 {
     resets.add(fn);
+}
+
+void on_unread_queue(UnreadQueueFn fn)
+{
+    unread_queues.add(fn);
+}
+
+bool learning(void *sc)
+{
+    return listed(waiting, sc) && !listed(refused, sc);
 }
 
 void exec_original(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists)
