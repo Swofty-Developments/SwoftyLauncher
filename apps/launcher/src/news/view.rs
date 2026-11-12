@@ -307,7 +307,8 @@ impl Shell {
             .on_click(cx.listener(|this, _, _, cx| this.fetch_news(cx)));
         let stacked = self.content_width < STACK_BELOW;
         let side = (self.content_width * 0.32).clamp(260., 380.);
-        self.news_scroll.sync(&self.news, short, stacked);
+        let show_banner = !self.is_card_dismissed(crate::discord::BANNER_CARD_ID);
+        self.news_scroll.sync(&self.news, short, stacked, show_banner);
         if stacked {
             return v_flex()
                 .size_full()
@@ -331,7 +332,14 @@ impl Shell {
             .pt(px(4.))
             .pb(px(20.))
             .gap(px(16.))
-            .child(crate::discord::banner(short))
+            .when(show_banner, |d| {
+                d.child(crate::discord::banner(
+                    short,
+                    cx.listener(|this, _, _, cx| {
+                        this.dismiss_card(crate::discord::BANNER_CARD_ID, cx);
+                    }),
+                ))
+            })
             .child(columns);
         v_flex()
             .size_full()
@@ -547,7 +555,12 @@ impl Shell {
                         let row = match this.news_scroll.stacked_rows[i] {
                             StackedRow::Banner => div()
                                 .pb(px(16.))
-                                .child(crate::discord::banner(short))
+                                .child(crate::discord::banner(
+                                    short,
+                                    cx.listener(|this, _, _, cx| {
+                                        this.dismiss_card(crate::discord::BANNER_CARD_ID, cx);
+                                    }),
+                                ))
                                 .into_any_element(),
                             StackedRow::ArticlesTop => panel()
                                 .rounded_t(px(10.))

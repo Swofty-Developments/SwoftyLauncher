@@ -1,5 +1,5 @@
 use super::feed::{Post, Trouble, embedded, format_date, image_format, merge, parse};
-use super::state::News;
+use super::state::{News, NewsScroll, StackedRow};
 
 fn post(id: &str, date: &str) -> Post {
     Post {
@@ -92,4 +92,25 @@ fn formats_dates() {
 fn knows_image_formats() {
     assert!(image_format(b"\x89PNG\r\n").is_some());
     assert!(image_format(b"<svg").is_none());
+}
+
+#[test]
+fn stacked_sync_tracks_banner_visibility() {
+    let news = News::load(std::path::Path::new("/nonexistent"));
+    let mut scroll = NewsScroll::default();
+
+    scroll.sync(&news, false, true, true);
+    let initial = scroll.stacked_rows.len();
+    assert!(matches!(scroll.stacked_rows.first(), Some(StackedRow::Banner)));
+    assert_eq!(scroll.stacked.item_count(), initial);
+
+    scroll.sync(&news, false, true, false);
+    assert_eq!(scroll.stacked_rows.len(), initial - 1);
+    assert!(!matches!(scroll.stacked_rows.first(), Some(StackedRow::Banner)));
+    assert_eq!(scroll.stacked.item_count(), initial - 1);
+
+    scroll.sync(&news, false, true, true);
+    assert_eq!(scroll.stacked_rows.len(), initial);
+    assert!(matches!(scroll.stacked_rows.first(), Some(StackedRow::Banner)));
+    assert_eq!(scroll.stacked.item_count(), initial);
 }
