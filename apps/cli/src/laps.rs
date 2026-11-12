@@ -137,7 +137,8 @@ fn list(store: &Store) {
         println!("no Time Trial laps yet");
     }
     if let Ok(game) = crate::build::game(store, None) {
-        for pair in timetrial::game_replay::ready(&game.dir, unix_now()) {
+        let dirs = timetrial::game_replay::dirs(&store.root, &game.dir);
+        for pair in timetrial::game_replay::ready(&dirs, unix_now()) {
             println!("game replay of a {} lap  waiting", clock(pair.lap_ms));
         }
     }
@@ -193,7 +194,8 @@ fn send(store: &Store, profile: &str, file: Option<PathBuf>) -> Result<()> {
                 report.uploaded, report.waiting, report.rejected
             );
             if let Ok(game) = crate::build::game(store, None) {
-                timetrial::game_replay::send(&queue, &game.dir, &api, unix_now(), &|| false, &mut |l| {
+                let dirs = timetrial::game_replay::dirs(&store.root, &game.dir);
+                timetrial::game_replay::send(&queue, &dirs, &api, unix_now(), &|| false, &mut |l| {
                     println!("{l}")
                 });
             }

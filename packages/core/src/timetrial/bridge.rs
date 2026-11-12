@@ -1,6 +1,7 @@
-//! The in-game bridge's mailbox pump. The core writes a request to `<game>/swofty/tt/outbox/<seq>.json`;
-//! the pump asks the server and writes `<game>/swofty/tt/inbox/<seq>.json` (`{seq, status, body}`) so the
-//! game never waits for its own timeout.
+//! The in-game bridge's mailbox pump. The core writes a request to `<mailbox>/outbox/<seq>.json`; the
+//! pump asks the server and writes `<mailbox>/inbox/<seq>.json` (`{seq, status, body}`) so the game never
+//! waits for its own timeout. The mailbox is the data folder's `tt`, or `<game>/swofty/tt` when the core
+//! can't write the data folder ([`mailboxes`]); the pump serves both.
 
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
@@ -17,17 +18,24 @@ const POLL_EVERY: Duration = Duration::from_millis(100);
 const STALE_AFTER: Duration = Duration::from_secs(60);
 const PER_SWEEP: usize = 4;
 
-pub fn outbox(game: &Path) -> PathBuf {
-    game.join(MAILBOX_DIR).join("outbox")
+/// The folders the core keeps the mailbox in: the data folder's `tt`, which the game can always write
+/// (it can't create files in `<game>/swofty` of an EA app copy under Program Files), then the game
+/// folder's.
+pub fn mailboxes(data: &Path, game: &Path) -> [PathBuf; 2] {
+    [data.join("tt"), game.join(MAILBOX_DIR)]
 }
 
-pub fn inbox(game: &Path) -> PathBuf {
-    game.join(MAILBOX_DIR).join("inbox")
+pub fn outbox(mailbox: &Path) -> PathBuf {
+    mailbox.join("outbox")
+}
+
+pub fn inbox(mailbox: &Path) -> PathBuf {
+    mailbox.join("inbox")
 }
 
 /// Empty both folders, for the start and the end of a session.
-pub fn clean(game: &Path) {
-    for dir in [outbox(game), inbox(game)] {
+pub fn clean(mailbox: &Path) {
+    for dir in [outbox(mailbox), inbox(mailbox)] {
         for entry in std::fs::read_dir(dir).into_iter().flatten().flatten() {
             if entry.path().is_file() {
                 std::fs::remove_file(entry.path()).ok();
@@ -71,8 +79,8 @@ fn answer_for(result: Result<Value, ApiError>) -> (u16, String) {
     }
 }
 
-fn write_answer(game: &Path, seq: u64, status: u16, body: &str) -> std::io::Result<()> {
-    let dir = inbox(game);
+fn write_answer(mailbox: &Path, seq: u64, status: u16, body: &str) -> std::io::Result<()> {
+    let dir = inbox(mailbox);
     std::fs::create_dir_all(&dir)?;
     let tmp = dir.join(format!("{seq}.json.tmp"));
     let done = dir.join(format!("{seq}.json"));
@@ -86,9 +94,9 @@ fn write_answer(game: &Path, seq: u64, status: u16, body: &str) -> std::io::Resu
 
 /// One pass over the outbox: answer at most four requests and drop what is stale or unreadable. Returns
 /// the log line of each request answered.
-pub fn sweep(game: &Path, api: &Api, stop: &AtomicBool) -> Vec<String> {
+pub fn sweep(mailbox: &Path, api: &Api, stop: &AtomicBool) -> Vec<String> {
     let mut lines = Vec::new();
-    let mut files: Vec<PathBuf> = std::fs::read_dir(outbox(game))
+    let mut files: Vec<PathBuf> = std::fs::read_dir(outbox(mailbox))
         .into_iter()
         .flatten()
         .flatten()
@@ -114,13 +122,13 @@ pub fn sweep(game: &Path, api: &Api, stop: &AtomicBool) -> Vec<String> {
         handled += 1;
         let method = request["method"].as_str().unwrap_or("?").to_owned();
         let (status, body) = answer_for(api.game_f1os(&request));
-        match write_answer(game, seq, status, &body) {
+        match write_answer(mailbox, seq, status, &body) {
             Ok(()) => lines.push(format!("bridge: {method} #{seq} -> {status}")),
             Err(e) => lines.push(format!("bridge: {method} #{seq}: couldn't write the answer: {e}")),
         }
         std::fs::remove_file(&path).ok();
     }
-    for path in std::fs::read_dir(inbox(game))
+    for path in std::fs::read_dir(inbox(mailbox))
         .into_iter()
         .flatten()
         .flatten()
@@ -133,24 +141,26 @@ pub fn sweep(game: &Path, api: &Api, stop: &AtomicBool) -> Vec<String> {
     lines
 }
 
-/// Polls the mailbox every 100 ms while the game runs.
+/// Polls the mailboxes every 100 ms while the game runs.
 pub struct Pump {
     stop: Arc<AtomicBool>,
     thread: Option<JoinHandle<()>>,
-    game: PathBuf,
+    mailboxes: Vec<PathBuf>,
 }
 
 impl Pump {
-    pub fn start(game: &Path, api: Api, say: impl Fn(&str) + Send + 'static) -> Self {
-        clean(game);
+    pub fn start(mailboxes: &[PathBuf], api: Api, say: impl Fn(&str) + Send + 'static) -> Self {
+        mailboxes.iter().for_each(|m| clean(m));
         let stop = Arc::new(AtomicBool::new(false));
-        let (flag, dir) = (stop.clone(), game.to_owned());
+        let (flag, dirs) = (stop.clone(), mailboxes.to_vec());
         let thread = std::thread::Builder::new()
             .name("tt-bridge".into())
             .spawn(move || {
                 while !flag.load(Ordering::Relaxed) {
-                    for line in sweep(&dir, &api, &flag) {
-                        say(&line);
+                    for dir in &dirs {
+                        for line in sweep(dir, &api, &flag) {
+                            say(&line);
+                        }
                     }
                     std::thread::sleep(POLL_EVERY);
                 }
@@ -159,7 +169,7 @@ impl Pump {
         Self {
             stop,
             thread,
-            game: game.to_owned(),
+            mailboxes: mailboxes.to_vec(),
         }
     }
 
@@ -168,7 +178,7 @@ impl Pump {
         if let Some(t) = self.thread.take() {
             t.join().ok();
         }
-        clean(&self.game);
+        self.mailboxes.iter().for_each(|m| clean(m));
     }
 }
 
@@ -367,11 +377,42 @@ mod tests {
     }
 
     #[test]
+    fn the_pump_serves_the_data_folder_and_the_game_folder_mailboxes() {
+        let server = serve("200 OK", r#"{"status":200,"body":"{}"}"#);
+        let root = game("both");
+        let (data, game_dir) = (root.join("data"), root.join("game"));
+        let boxes = mailboxes(&data, &game_dir);
+        assert_eq!(boxes[0], data.join("tt"));
+        assert_eq!(boxes[1], game_dir.join("swofty").join("tt"));
+        for b in &boxes {
+            std::fs::create_dir_all(outbox(b)).unwrap();
+        }
+        let pump = Pump::start(&boxes, Api::with_server(&server.url, "tok"), |_| {});
+        request(&boxes[0], 31);
+        request(&boxes[1], 32);
+        let until = std::time::Instant::now() + Duration::from_secs(5);
+        while !(inbox(&boxes[0]).join("31.json").exists() && inbox(&boxes[1]).join("32.json").exists())
+            && std::time::Instant::now() < until
+        {
+            std::thread::sleep(Duration::from_millis(20));
+        }
+        assert_eq!(answer(&boxes[0], 31)["status"], 200);
+        assert_eq!(answer(&boxes[1], 32)["status"], 200);
+        assert!(!inbox(&boxes[0]).join("32.json").exists());
+        pump.finish();
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn the_pump_answers_while_running_and_cleans_up_at_both_ends() {
         let server = serve("200 OK", r#"{"status":200,"body":"{\"ok\":1}"}"#);
         let game = game("pump");
         std::fs::write(inbox(&game).join("99.json"), "{}").unwrap();
-        let pump = Pump::start(&game, Api::with_server(&server.url, "tok"), |_| {});
+        let pump = Pump::start(
+            std::slice::from_ref(&game),
+            Api::with_server(&server.url, "tok"),
+            |_| {},
+        );
         assert!(!inbox(&game).join("99.json").exists());
         request(&game, 21);
         let until = std::time::Instant::now() + Duration::from_secs(5);

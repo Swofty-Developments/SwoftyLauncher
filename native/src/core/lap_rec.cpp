@@ -33,7 +33,8 @@
 
 // The lap recorder: in a Time Trial, while swofty\tt.json carries "tt_boards": true, the flow tick samples the
 // player's car and the line crossings of ers_newlap.cpp (session.lap) cut it into laps; each completed lap is written
-// to swofty\laps\<UTC stamp>-<n>.swlap (lap_file_logic.hpp). The state machine is lap_rec_logic.hpp. Crossings are
+// to laps\<UTC stamp>-<n>.swlap in the launcher's data folder (runtime::files_root), or in swofty\ when the data
+// folder refuses it (lap_file_logic.hpp). The state machine is lap_rec_logic.hpp. Crossings are
 // queued and handled on the next flow tick, so the game reads stay on the flow thread. The flow tick runs once a
 // frame; the car is read only when the recorder is due a sample (60 Hz), under a Trust so the heap checks are
 // paid once per HEAP_TRUST_MS, and the inbox is drained only when a crossing, a game result or a blob is waiting.
@@ -140,6 +141,7 @@ struct Job {
     std::vector<uint8_t> samples;
     uint32_t count = 0;
     std::vector<uint8_t> ghost;
+    std::vector<std::wstring> dirs;
     std::wstring path;
     std::string name, narrow_path;
     Board board;
@@ -413,7 +415,22 @@ void write_job(Job &j)
     done.path = j.narrow_path;
     done.time_ms = j.time_ms;
     done.valid = j.valid;
-    done.ok = runtime::write_file(j.path, std::string(body.begin(), body.end()));
+    std::string bytes(body.begin(), body.end());
+    for (size_t i = 0; i < j.dirs.size() && !done.ok; i++) {
+        const std::wstring &dir = j.dirs[i];
+        std::wstring path = dir + runtime::wide(j.name);
+        CreateDirectoryW(dir.c_str(), nullptr);
+        done.ok = runtime::write_file(path, bytes);
+        if (done.ok) {
+            done.path = runtime::narrow(path);
+            if (i)
+                swofty::log("[laps] wrote %s to %s instead", j.name.c_str(), runtime::narrow(dir).c_str());
+        } else {
+            DWORD e = GetLastError();
+            swofty::log("[laps] writing %s to %s failed (error %lu)%s", j.name.c_str(), runtime::narrow(dir).c_str(), e,
+                        i + 1 < j.dirs.size() ? "; trying the next folder" : "");
+        }
+    }
     if (!done.ok)
         swofty::log("[laps] writing %s failed", j.name.c_str());
     else {
@@ -594,11 +611,10 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
 
     SYSTEMTIME st;
     utc_now(&st);
-    std::wstring dir = runtime::swofty_root() + L"laps\\";
-    CreateDirectoryW(dir.c_str(), nullptr);
     Job j;
+    j.dirs = lr::lap_dirs(runtime::files_root(), runtime::swofty_root());
     j.name = lr::file_name(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, lap.index);
-    j.path = dir + runtime::wide(j.name);
+    j.path = (j.dirs.empty() ? std::wstring() : j.dirs.front()) + runtime::wide(j.name);
     j.narrow_path = runtime::narrow(j.path);
     j.header = std::move(h);
     j.layout = plan.layout;

@@ -55,6 +55,10 @@ const std::string &config_source();
 const std::wstring &game_root();
 const std::wstring &swofty_root();
 const std::wstring &state_root();
+// Where the core writes the files the launcher collects (laps, the Time Trial mailbox, replay copies): the launcher's
+// data folder (state_root), or swofty\ when the core can't write there. The game can't create files in swofty\ of an
+// EA app copy under Program Files.
+const std::wstring &files_root();
 bool enabled(const char *feature, const char *what);
 std::string load_stage();
 bool same_build();

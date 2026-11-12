@@ -494,11 +494,11 @@ impl Shell {
 
     /// Ask the running game to play lap `id` as the ghost in Time Trial.
     pub(crate) fn online_add_to_game(&mut self, id: String, cx: &mut Context<Self>) {
-        let (Some(api), Some(game)) = (
+        let (Some(api), Some(_)) = (
             self.mp
                 .as_ref()
                 .map(|s| swofty_core::timetrial::api::Api::new(&s.token)),
-            self.install.as_ref().map(|i| i.dir.clone()),
+            self.install.as_ref(),
         ) else {
             return;
         };
@@ -509,7 +509,9 @@ impl Shell {
             let lap = id.clone();
             let done = cx
                 .background_executor()
-                .spawn(async move { swofty_core::timetrial::game_replay::add(&api, &game, &lap) })
+                .spawn(async move {
+                    swofty_core::timetrial::game_replay::add(&api, &swofty_core::paths::data_dir(), &lap)
+                })
                 .await;
             this.update(cx, |s, cx| {
                 s.online.watch_notice = Some(match done {
