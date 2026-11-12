@@ -86,7 +86,19 @@ Sprites are PNGs whose sizes are multiples of 4, drawn at 3 pixels per HUD unit.
         "team_colour": "#27F4D2"
       },
       "variants": {
-        "f2": { "dial": "f2", "remove": ["ers"] }
+        "f2": { "dial": "f2", "remove": ["ers"] },
+        "f1_25": {
+          "dial": "f1_25",
+          "add": [
+            { "kind": "group", "id": "drs", "after": "base", "children": [
+                { "kind": "sprite", "id": "drs_idle", "sprite": "lamp", "at": [48, -26] },
+                { "kind": "sprite", "id": "drs_live", "sprite": "lamp", "at": [48, -26] } ] }
+          ],
+          "decisions": [
+            { "id": "drs", "type": "mvcd", "game": "drs_pit_state", "initial": "invalid",
+              "states": { "invalid": ["drs_idle"], "drs_live": ["drs_live"] } }
+          ]
+        }
       }
     }
   }
@@ -96,6 +108,7 @@ Sprites are PNGs whose sizes are multiples of 4, drawn at 3 pixels per HUD unit.
 - `"game": "speed_str"`, `"revs"` and `"ers_stored"` are values of the dial's own view model. The build checks each against the tags the stock template binds.
 - `"view_model": "view_model_data.hud_dial_gear"` is a leaf your plugin writes. A text binds a text leaf, `visible` binds a bool leaf. The build refuses a leaf bound with another type than the one it declares.
 - `"stock": "park"` moves the stock frame, fuel and pit parts off screen. The F2 variant removes the ERS bar, because an F2 car has no ERS.
+- The 2025 variant adds a DRS pill right behind the base in the draw order (`after`) and a decision of its own on `drs_pit_state`, a value the 2026 dial has no stock decision for. `initial` keeps the grey pill on screen until the value first fires. A variant may also `replace` an element of the base under the same id, and set `root_y` when its root must land on one exact spot.
 - `editor.preview` is what the HUD editor shows, since the editor runs no template.
 
 The full record format, element kinds, decisions and the rules the composer keeps are in [HUD elements](/reference/ops/hud).
@@ -283,6 +296,84 @@ swofty run --apply
 ```
 
 `swofty hud compose` writes the same overlay archives the build writes, so you can read what the composer made. `swofty hud check` reads the game's original files and needs a game folder.
+
+## Rows
+
+A timing tower is one row design composed many times. The record writes the row once as a `group` with `repeat`; the composer makes the copies, appends the index to every name and substitutes `{NN}` (two digits) and `{N}` (plain) in every binding of the copy. A nested repeat gives each row its per-car groups, and `slot_var` makes a `session_car` binding read the car the index names. The rows sit in a `stack`, the game's own stacker: the header above them grows when a flag card shows and the rows move down with it.
+
+```json
+{
+  "hud.element": {
+    "tower": {
+      "dial": "f1_26",
+      "units": "tower",
+      "box": [0, 0, 120, 320],
+      "sprites": {
+        "hdr":   { "png": "art/hdr.png",   "bounds": [0, 0, 92.4, 10.5] },
+        "strip": { "png": "art/strip.png", "bounds": [0, 0, 2.3, 12.981] },
+        "panel": { "png": "art/panel.png", "bounds": [2.3, 0, 92.4, 12.981] },
+        "me":    { "png": "art/me.png",    "bounds": [0, 0, 92.4, 12.981] },
+        "bar":   { "png": "art/bar.png",   "bounds": [0, -3.6, 1.2, 3.6] },
+        "chq":   { "png": "art/chq.png",   "bounds": [0, 0, 92.4, 12.981] }
+      },
+      "elements": [
+        { "kind": "stack", "id": "stack", "dir": "down", "gap": 0,
+          "children": [
+            { "kind": "group", "id": "top", "visible": { "view_model": "view_model_data.hud_tt_hdr" },
+              "children": [
+                { "kind": "sprite", "id": "hdr_bg", "sprite": "hdr", "layer": 20 },
+                { "kind": "centre", "id": "lapc", "at": [46.2, 7.4],
+                  "children": [
+                    { "kind": "text", "id": "lap_word", "style": "OSD_19_regular", "align": "right", "box": 12,
+                      "cap_height": 3.5, "literal_id": "lng_lap" },
+                    { "kind": "text", "id": "lap", "style": "OSD_24_bold", "align": "left", "box": 12,
+                      "cap_height": 4.5, "at": [1.0, 0], "value": { "view_model": "view_model_data.hud_tt_lap" } } ] },
+                { "kind": "group", "id": "chq", "at": [0, 10.5], "visible": { "view_model": "view_model_data.hud_tt_chq" },
+                  "children": [ { "kind": "sprite", "id": "chq_bg", "sprite": "chq", "layer": 20 } ] } ] },
+            { "kind": "group", "id": "rows", "at": [0, 3.435],
+              "children": [
+                { "kind": "group", "id": "r", "repeat": { "count": 22, "var": "N", "pitch": [0, 12.981] },
+                  "visible": { "view_model": "view_model_data.hud_tt_r{NN}_on" },
+                  "children": [
+                    { "kind": "sprite", "id": "s", "sprite": "strip", "layer": 20 },
+                    { "kind": "sprite", "id": "p", "sprite": "panel", "layer": 20 },
+                    { "kind": "sprite", "id": "me", "sprite": "me", "layer": 22,
+                      "visible": { "view_model": "view_model_data.hud_tt_r{NN}_me" } },
+                    { "kind": "group", "id": "pa", "visible": { "view_model": "view_model_data.hud_tt_r{NN}_up", "not": true, "default": true },
+                      "children": [
+                        { "kind": "group", "id": "pb", "visible": { "view_model": "view_model_data.hud_tt_r{NN}_dn", "not": true, "default": true },
+                          "children": [
+                            { "kind": "text", "id": "pos", "style": "OSD_19_regular", "align": "centre", "box": 5.4,
+                              "cap_height": 3.54, "at": [3.2, 8.76], "value": { "view_model": "view_model_data.hud_tt_r{NN}_pos" } } ] } ] },
+                    { "kind": "group", "id": "cn", "at": [8.5, 8.76],
+                      "children": [
+                        { "kind": "group", "id": "v", "repeat": { "count": 24, "var": "V" },
+                          "visible": { "view_model": "view_model_data.hud_tt_r{NN}_c{VV}" },
+                          "children": [
+                            { "kind": "text", "id": "code", "style": "OSD_24_bold", "align": "left", "box": 14.7,
+                              "cap_height": 4.5, "wrap": "clampwidth", "value": { "session_car": "driver.name_code", "slot_var": "V" } },
+                            { "kind": "sprite", "id": "bar", "sprite": "bar", "layer": 30, "at": [-1.6, 0],
+                              "tint": { "session_car": "nub_colour", "slot_var": "V", "default": "#00000000" } } ] } ] },
+                    { "kind": "text", "id": "gap", "style": "OSD_19_regular", "align": "right", "box": 20,
+                      "cap_height": 3.54, "at": [90.0, 8.76], "value": { "view_model": "view_model_data.hud_tt_r{NN}_gap" } } ] } ] } ] }
+      ],
+      "editor": {
+        "rows": 5,
+        "preview": {
+          "view_model_data.hud_tt_hdr": true, "view_model_data.hud_tt_lap": "10",
+          "view_model_data.hud_tt_r00_on": true, "view_model_data.hud_tt_r00_pos": "10", "view_model_data.hud_tt_r00_gap": "+1.2",
+          "view_model_data.hud_tt_r01_on": true, "view_model_data.hud_tt_r01_pos": "11", "view_model_data.hud_tt_r01_gap": "+0.9",
+          "view_model_data.hud_tt_r02_on": true, "view_model_data.hud_tt_r02_pos": "12", "view_model_data.hud_tt_r02_gap": "+0.5", "view_model_data.hud_tt_r02_me": true,
+          "view_model_data.hud_tt_r03_on": true, "view_model_data.hud_tt_r03_pos": "13", "view_model_data.hud_tt_r03_gap": "+1.4",
+          "view_model_data.hud_tt_r04_on": true, "view_model_data.hud_tt_r04_pos": "14", "view_model_data.hud_tt_r04_gap": "+0.7"
+        }
+      }
+    }
+  }
+}
+```
+
+`"units": "tower"` reads every number above in Project Halo's tower unit (1/3 px at 1080p; row pitch 12.981), so Halo's `tower.js` geometry copies over unchanged. The composer writes `tower_r00` … `tower_r21` with `tower_r00_s`, `tower_r00_pos`, `tower_r00_v00` … `tower_r00_v23`, `tower_r00_v17_code`, `tower_r00_v17_bar`, and the template nodes `v_r00`, `t_r00_pos`, `v_r00_v17`, `t_r00_v17_code` (`#session.cars.car17.driver.name_code`), `c_r00_v17_bar` (`#session.cars.car17.nub_colour`, default transparent). The HUD editor shows five rows from `editor.preview`; the std lib's `timing::TowerLeaves` publishes `hud_tt_r00_on` … `hud_tt_r21_c23`, so the row leaves need no code of your own. Team logos and colour bars are the `unit` kind and `texture` bindings, in [HUD textures and units](/reference/ops/hud-textures); the standings board, the replay screen and the spectator tower are the `screen` field, with the stock board and lap counter hidden while the tower shows, in [HUD screens](/reference/ops/hud-screens). The HUD editor shows the standings copy with `editor.rows` rows from `editor.preview`.
 
 ## What is experimental
 

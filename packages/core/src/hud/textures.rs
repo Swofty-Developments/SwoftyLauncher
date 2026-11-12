@@ -8,7 +8,14 @@
 use swofty_formats::surface::{Surface, TextureResources};
 use swofty_formats::{emb, material};
 
+use super::Stock;
 use crate::{Error, Result};
+
+/// The game's own textures a sprite may draw without a PNG (present in flow_race, flow_options and
+/// persistent): the F1 logo of the lap counter and the FIA badge of the message system.
+pub const F1_LOGO: &str = "eaid://ui_package/art/osd/textures/lap_counter/osd_customisation/lc_f1_logo.tif";
+pub const FIA_LOGO: &str = "eaid://ui_package/art/osd/textures/message_system/ms_fia_logo.tif";
+pub const STOCK_TEXTURES: [&str; 2] = [F1_LOGO, FIA_LOGO];
 
 fn err(msg: impl std::fmt::Display) -> Error {
     Error::Other(format!("hud: {msg}"))
@@ -88,18 +95,68 @@ pub fn hex_colour(s: &str) -> Result<[u8; 3]> {
     Ok([b(0)?, b(2)?, b(4)?])
 }
 
-/// The stock fill material with white colour constants and its diffuse texture linked to `tex`.
-pub fn material(stock: &[u8], tex: &str) -> Result<Vec<u8>> {
+/// `#RRGGBB` or `#RRGGBBAA` (alpha 255 when left out).
+pub fn hex_rgba(s: &str) -> Result<[u8; 4]> {
+    let h = s.trim_start_matches('#');
+    if !(h.len() == 6 || h.len() == 8) || !h.bytes().all(|c| c.is_ascii_hexdigit()) {
+        return Err(err(format!("colour {s}: #RRGGBB or #RRGGBBAA")));
+    }
+    let [r, g, b] = hex_colour(s)?;
+    let a = if h.len() == 8 {
+        u8::from_str_radix(&h[6..8], 16).map_err(|_| err(format!("colour {s}")))?
+    } else {
+        255
+    };
+    Ok([r, g, b, a])
+}
+
+/// The stock fill material with its diffuse texture linked to `tex`, `me_colour` set to `tint`
+/// (white without one: the material multiplies the texture by it) and `me_finalColourTint` white.
+pub fn material_with(stock: &[u8], tex: &str, tint: Option<[u8; 4]>) -> Result<Vec<u8>> {
     let mut m = material::Material::parse(stock).map_err(|e| err(format!("fill material: {e}")))?;
-    for name in ["me_colour", "me_finalColourTint"] {
-        if m.param(name).is_some() {
-            m.set_floats(name, &[1.0; 4])
-                .map_err(|e| err(format!("{name}: {e}")))?;
-        }
+    let colour = tint.map_or([1.0; 4], |t| t.map(|c| c as f32 / 255.0));
+    if m.param("me_colour").is_some() || tint.is_some() {
+        m.set_floats("me_colour", &colour)
+            .map_err(|e| err(format!("me_colour: {e}")))?;
+    }
+    if m.param("me_finalColourTint").is_some() {
+        m.set_floats("me_finalColourTint", &[1.0; 4])
+            .map_err(|e| err(format!("me_finalColourTint: {e}")))?;
     }
     m.link_texture("me_diffuseTex", tex)
         .map_err(|e| err(format!("fill material: {e}")))?;
     Ok(m.to_bytes())
+}
+
+/// The stock fill material with white colour constants and its diffuse texture linked to `tex`.
+pub fn material(stock: &[u8], tex: &str) -> Result<Vec<u8>> {
+    material_with(stock, tex, None)
+}
+
+/// The pixel size of a stock texture, from the header of its surface (`<tex>.image`) in `erp`.
+pub fn texture_size(stock: &dyn Stock, erp: &str, tex: &str) -> Result<(u32, u32)> {
+    let name = format!("{tex}.image");
+    let frags = stock.read(erp, &name)?;
+    let head = frags
+        .first()
+        .ok_or_else(|| err(format!("{name}: no header fragment")))?;
+    let (_, w, h, _) = Surface::parse_header(head).map_err(|e| err(format!("{name}: {e}")))?;
+    if w == 0 || h == 0 {
+        return Err(err(format!("{name}: {w} x {h} px")));
+    }
+    Ok((w, h))
+}
+
+/// The bounds (HUD units, centred on the origin) of a texture of pixel size `size` scaled into the
+/// box `[w, h]` keeping its aspect.
+pub fn fit(size: (u32, u32), bx: [f64; 2]) -> [f64; 4] {
+    let a = size.0 as f64 / size.1 as f64;
+    let (w, h) = if bx[0] / bx[1] < a {
+        (bx[0], bx[0] / a)
+    } else {
+        (bx[1] * a, bx[1])
+    };
+    [-w / 2.0, -h / 2.0, w / 2.0, h / 2.0]
 }
 
 /// Re-encodes a material the way it is stored; equal to the input for every stock material.
@@ -128,8 +185,37 @@ pub fn names(prefix: &str, sprite: &str) -> Names {
     }
 }
 
+/// The names of a sprite drawn by another scene's quad mesh: the same texture and material, its
+/// `.emb` under `components/hud/<mesh>/`. A sprite a dial and the standings cap both draw keeps one
+/// binding per mesh slot this way.
+pub fn mesh_names(prefix: &str, sprite: &str, mesh: &str) -> Names {
+    let key = format!("{prefix}{sprite}");
+    Names {
+        emb: format!("eaid://ui_package/art/osd/components/hud/{mesh}/{key}.emb?context=default"),
+        ..names(prefix, sprite)
+    }
+}
+
+/// The names of a sprite that draws the stock texture `tex`: its own material and bindings, the
+/// game's texture.
+pub fn stock_names(prefix: &str, sprite: &str, tex: &str) -> Names {
+    Names {
+        tex: tex.to_owned(),
+        ..names(prefix, sprite)
+    }
+}
+
 /// One resource to add to a ready archive: name, type, fragments.
 pub type Res = (String, &'static str, Vec<Vec<u8>>);
+
+/// The material of a stock-texture sprite; no surface is written, the material links the game's.
+pub fn stock_sprite_resources(n: &Names, fill_material: &[u8], tint: Option<[u8; 4]>) -> Result<Vec<Res>> {
+    Ok(vec![(
+        n.material.clone(),
+        "GfxMaterialRes",
+        vec![material_with(fill_material, &n.tex, tint)?],
+    )])
+}
 
 /// The surface, view and material of one sprite.
 pub fn sprite_resources(n: &Names, art: &Art, fill_material: &[u8]) -> Result<Vec<Res>> {
@@ -203,5 +289,24 @@ mod tests {
         assert_eq!(&art.rgba[..4], &[200, 200, 200, 255]);
         assert_eq!(hex_colour("#27F4D2").unwrap(), [0x27, 0xf4, 0xd2]);
         assert!(material(&[0; 4], "x").is_err());
+    }
+
+    #[test]
+    fn stock_texture_sprites_fit_their_box_and_keep_the_games_texture() {
+        assert_eq!(hex_rgba("#00000000").unwrap(), [0, 0, 0, 0]);
+        assert_eq!(hex_rgba("#27F4D2").unwrap(), [0x27, 0xf4, 0xd2, 255]);
+        assert!(hex_rgba("#27F4D").is_err());
+        assert!(hex_rgba("red").is_err());
+        let wide = fit((400, 100), [34.2, 12.0]);
+        assert!((wide[2] - 17.1).abs() < 1e-9 && (wide[3] - 17.1 / 4.0).abs() < 1e-9);
+        let tall = fit((100, 400), [8.0, 8.0]);
+        assert!((tall[2] - 1.0).abs() < 1e-9 && (tall[3] - 4.0).abs() < 1e-9);
+        let n = stock_names("t_", "f1", F1_LOGO);
+        assert_eq!(n.tex, F1_LOGO);
+        assert_eq!(
+            n.material,
+            "eaid://ui_package/art/osd/materials/hud/t_f1.material"
+        );
+        assert!(stock_sprite_resources(&n, &[0; 4], None).is_err());
     }
 }

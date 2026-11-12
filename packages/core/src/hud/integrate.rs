@@ -8,7 +8,7 @@ use std::path::PathBuf;
 use swofty_addon::asset::{AssetOp, Op, Origin};
 use swofty_addon::ops::ErpOp;
 
-use super::{Input, Layered, Output, Stock, TemplateBase, compose_with, dials};
+use super::{Input, Layered, Output, Stock, TemplateBase, compose_with, dials, screen_build, screens};
 use crate::erpbuild::ErpBuild;
 use crate::store::Store;
 use crate::{Error, Result};
@@ -32,8 +32,19 @@ pub struct Composed {
     pub warnings: Vec<String>,
 }
 
+/// The archives screen records write beyond the dials' (`hud/screens.rs`).
+pub const SCREEN_ERPS: [&str; 4] = [
+    screens::FLOW_REPLAY,
+    screens::FLOW_FRONTEND,
+    screens::REPLAY_SCREEN_ERP,
+    "2025_asset_groups/ui_package/flow_options.erp",
+];
+
 fn touched(op: &ErpOp, written: &BTreeSet<&str>, source: &dyn Fn() -> Option<PathBuf>) -> bool {
-    let ours = |erps: &[&str]| erps.iter().any(|e| dials::SCENE_ERPS.contains(e));
+    let ours = |erps: &[&str]| {
+        erps.iter()
+            .any(|e| dials::SCENE_ERPS.contains(e) || SCREEN_ERPS.contains(e))
+    };
     match op {
         ErpOp::PutResource {
             erp,
@@ -73,6 +84,16 @@ pub fn compose_in_build(
 ) -> Result<Composed> {
     let mut written: BTreeSet<&str> = dials::written().into_iter().collect();
     written.extend(inputs.iter().filter_map(|i| i.record.scene.as_deref()));
+    written.extend(
+        inputs
+            .iter()
+            .flat_map(|i| i.record.stock_nodes.iter())
+            .filter(|s| !s.wrap.is_empty())
+            .filter_map(|s| s.scene.as_deref()),
+    );
+    if inputs.iter().any(|i| i.record.screen.is_some()) {
+        written.extend(screen_build::written());
+    }
     let mut scratch = ErpBuild::new(cx.base).with_baseline(cx.baseline);
     let mut lines = Vec::new();
     let mut warnings = Vec::new();
@@ -83,7 +104,11 @@ pub fn compose_in_build(
         v.dedup();
         v
     };
-    for rel in cx.puts.iter().filter(|r| dials::SCENE_ERPS.contains(&r.as_str())) {
+    for rel in cx
+        .puts
+        .iter()
+        .filter(|r| dials::SCENE_ERPS.contains(&r.as_str()) || SCREEN_ERPS.contains(&r.as_str()))
+    {
         scratch.load(rel)?;
         lines.push(format!(
             "{rel} is replaced whole by an addon; the composed overlay starts from that archive's resources"

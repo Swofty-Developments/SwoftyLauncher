@@ -4,6 +4,8 @@
 //! is in OSD units (1 unit = screen width / 19.2), `y` up. Measured in game, not derived.
 
 pub const K: f64 = 0.018;
+/// Project Halo's tower unit: 1/3 px at 1080p.
+pub const KT: f64 = 0.03;
 /// The game font's cap height over its em, measured on OSD_24_bold and 17_bold.
 pub const CAP_EM: f64 = 0.672;
 /// The cap centre's height above the eText origin, in em; the origin is the baseline.
@@ -18,8 +20,15 @@ pub fn scene_point(u: f64, v: f64) -> [f64; 3] {
 pub const STYLES: &[(&str, f64)] = &[
     ("17_bold", 17.0),
     ("24_bold", 24.0),
+    ("34_regular", 34.0),
     ("OSD_24_bold", 24.0),
     ("OSD_17_bold", 17.0),
+    ("OSD_17_regular", 17.0),
+    ("OSD_19_regular", 19.0),
+    ("OSD_24_regular", 24.0),
+    ("OSD_26_bold", 26.0),
+    ("OSD_30_bold", 30.0),
+    ("OSD_34_bold", 34.0),
 ];
 
 pub fn style_height(style: &str) -> Option<f64> {
@@ -91,6 +100,29 @@ pub fn leaf_name(pattern: &str, index: u32) -> String {
     pattern.replace("{nn}", &format!("{index:02}"))
 }
 
+/// `{VV}` in a pattern is the two-digit zero-padded index of the repeat var `V`, `{V}` the plain one.
+pub fn substitute(pattern: &str, vars: &[(char, u32)]) -> String {
+    let mut out = pattern.to_owned();
+    for (v, i) in vars {
+        out = out
+            .replace(&format!("{{{v}{v}}}"), &format!("{i:02}"))
+            .replace(&format!("{{{v}}}"), &i.to_string());
+    }
+    out
+}
+
+/// Whether `s` still holds a `{V}` or `{VV}` placeholder of some repeat var.
+pub fn has_placeholder(s: &str) -> bool {
+    let b = s.as_bytes();
+    (0..b.len()).any(|i| {
+        b[i] == b'{'
+            && (b.get(i + 1).is_some_and(|c| c.is_ascii_uppercase()) && b.get(i + 2) == Some(&b'}')
+                || b.get(i + 1).is_some_and(|c| c.is_ascii_uppercase())
+                    && b.get(i + 2) == b.get(i + 1)
+                    && b.get(i + 3) == Some(&b'}'))
+    })
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -131,5 +163,20 @@ mod tests {
             leaf_name("view_model_data.hud_x_dp{nn}", 7),
             "view_model_data.hud_x_dp07"
         );
+    }
+
+    #[test]
+    fn substitution_pads_the_doubled_var_only() {
+        let vars = [('N', 3), ('V', 17)];
+        assert_eq!(
+            substitute("hud_tt_r{NN}_c{VV} car{V} r{N}", &vars),
+            "hud_tt_r03_c17 car17 r3"
+        );
+        assert!(has_placeholder("a{N}"));
+        assert!(has_placeholder("a{VV}b"));
+        assert!(!has_placeholder("a{nn}"));
+        assert!(!has_placeholder("plain"));
+        assert_eq!(style_height("OSD_30_bold"), Some(30.0));
+        assert_eq!(style_height("34_regular"), Some(34.0));
     }
 }

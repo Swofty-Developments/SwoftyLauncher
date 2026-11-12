@@ -15,9 +15,10 @@ use swofty_formats::pkg::{Node, Pkg, Val, Value};
 
 use super::dials::{self, DialFacts};
 use super::geom::{self, K};
-use super::model::{Bind, Decision, Element, HudElement, Kind};
+use super::model::{self, Bind, Decision, Element, HudElement, Kind};
 use super::template::{self, Resolved, Usage};
 use super::textures::Names;
+use super::units;
 use crate::ui::idf;
 use crate::ui::node::{NodeExt, ObjExt};
 use crate::{Error, Result};
@@ -54,6 +55,7 @@ pub struct ColourItem {
     pub name: String,
     pub element: String,
     pub db: String,
+    pub default: Option<[u8; 4]>,
 }
 
 #[derive(Debug, Clone)]
@@ -63,8 +65,16 @@ pub struct TextItem {
     pub tag: [u8; 4],
     pub db: Option<String>,
     pub literal: String,
+    pub localise: bool,
     pub visible: Option<Resolved>,
 }
+
+/// The stock scenes the stacker and centre elements are cloned from, in `flow_race.erp`.
+pub const STACKED: &str =
+    "eaid://ui_package/art/osd/components/driver_position_table/driver_position_table_stacked.idf";
+pub const LAP_COUNTER: &str = "eaid://ui_package/art/osd/components/lap_counter/lap_counter.idf";
+pub const STACKER_DONOR: &str = "full_stacker";
+pub const CENTRE_DONOR: &str = "centre_lap_value";
 
 #[derive(Debug, Clone)]
 pub struct FracItem {
@@ -78,6 +88,21 @@ pub struct ShowItem {
     pub name: String,
     pub element: String,
     pub default: bool,
+}
+
+/// A fixed colour on one element (`colour` on a text or sprite).
+#[derive(Debug, Clone)]
+pub struct StaticColour {
+    pub name: String,
+    pub element: String,
+    pub colour: [u8; 4],
+}
+
+/// The record's `clock`, resolved: the output leaf path and the start bool.
+#[derive(Debug, Clone)]
+pub struct ClockSpec {
+    pub output: Option<String>,
+    pub start: Option<Resolved>,
 }
 
 #[derive(Debug, Clone)]
@@ -99,13 +124,17 @@ pub struct Plan {
     pub preview: bool,
     pub vis: Vec<VisItem>,
     pub colours: Vec<ColourItem>,
+    pub textures: Vec<units::TexItem>,
     pub texts: Vec<TextItem>,
     pub fractions: Vec<FracItem>,
     pub shows: Vec<ShowItem>,
     pub decisions: Vec<Decision>,
     pub clips: Vec<ClipSpec>,
+    pub motions: Vec<super::motion::MotionItem>,
     pub pv_texts: Vec<(String, String)>,
     pub known: Vec<(String, [u8; 4])>,
+    pub statics: Vec<StaticColour>,
+    pub clock: Option<ClockSpec>,
     pub root_hidden: bool,
     pub root_y: f64,
     pub footprint: [f64; 4],
@@ -140,12 +169,16 @@ struct Templates {
     window: Node,
     mask: Node,
     mesh: (f64, f64),
+    stacker: Option<Node>,
+    centre: Option<Node>,
 }
 
 pub struct Builder {
     pub facts: &'static DialFacts,
     pub pkg: Pkg,
     t: Templates,
+    /// The stock units a `unit` element may instance (`units::load`); empty until loaded.
+    pub units: units::Units,
     pub names: BTreeSet<String>,
     stock_ids: BTreeMap<String, u32>,
     stock_names: BTreeSet<String>,
@@ -278,11 +311,36 @@ impl Builder {
                 window,
                 mask,
                 mesh,
+                stacker: None,
+                centre: None,
             },
+            units: units::Units::new(),
             names: BTreeSet::new(),
             stock_ids,
             stock_names,
         })
+    }
+
+    /// The stacker and centre donors: `full_stacker` of the stacked standings table and
+    /// `centre_lap_value` of the lap counter, both with the facts the composer relies on.
+    pub fn with_donors(&mut self, stacked: &[u8], lap_counter: &[u8]) -> Result<()> {
+        let stacker = template_of(stacked, STACKER_DONOR)?;
+        if idf::param_str(&stacker, "stackerType") != Some("t") {
+            return Err(err(format!(
+                "{STACKER_DONOR} of {STACKED} is not a top-down stacker"
+            )));
+        }
+        let centre = template_of(lap_counter, CENTRE_DONOR)?;
+        let centre_x = idf::param(&centre, "centreX")
+            .is_some_and(|v| matches!(&v.value, Value::Raw(b) if b.first() == Some(&1)));
+        if !centre_x {
+            return Err(err(format!(
+                "{CENTRE_DONOR} of {LAP_COUNTER} does not centre on x"
+            )));
+        }
+        self.t.stacker = Some(stacker);
+        self.t.centre = Some(centre);
+        Ok(())
     }
 
     /// A builder over a stock scene that is no dial: its templates (text, null, window, mask) come from
@@ -316,8 +374,11 @@ impl Builder {
                 window: template_of(mods, "mod_1_icon_fill_mask")?,
                 mask: template_of(bar, "ers_battery_fill_mask")?,
                 mesh: (1.0, 1.0),
+                stacker: None,
+                centre: None,
             },
             pkg,
+            units: units::Units::new(),
             names: BTreeSet::new(),
             stock_ids,
             stock_names,
@@ -326,22 +387,64 @@ impl Builder {
 
     /// Adds one record's elements under the scene's root element, in HUD units from the scene's origin,
     /// and returns its plan.
+    fn clock_of(rec: &HudElement) -> Result<Option<ClockSpec>> {
+        let Some(c) = &rec.clock else { return Ok(None) };
+        let output = match &c.output {
+            Some(o) => {
+                let r = template::resolve(&Bind::leaf(o), Usage::Text, "clock output")?;
+                Some(r.db)
+            }
+            None => None,
+        };
+        let start = match &c.start {
+            Some(b) => Some(template::resolve(b, Usage::Visible, "clock start")?),
+            None => None,
+        };
+        Ok(Some(ClockSpec { output, start }))
+    }
+
     pub fn add_scene_record(&mut self, rec: &HudElement, pfx: &str, sprites: &Sprites) -> Result<Plan> {
+        self.add_scene_record_in(rec, pfx, sprites, Mode::Live)
+    }
+
+    /// [`Self::add_scene_record`] in a mode: in preview mode the root is `<pfx>_pv`, shown, and
+    /// holds `editor.rows` copies of a repeated group and only the elements the preview state lights.
+    pub fn add_scene_record_in(
+        &mut self,
+        rec: &HudElement,
+        pfx: &str,
+        sprites: &Sprites,
+        mode: Mode,
+    ) -> Result<Plan> {
+        let preview = matches!(mode, Mode::Preview(_));
+        let root_name = if preview {
+            format!("{pfx}_pv")
+        } else {
+            pfx.to_owned()
+        };
         let mut plan = Plan {
             pfx: pfx.to_owned(),
-            root: pfx.to_owned(),
+            root: root_name.clone(),
+            preview,
+            clock: Self::clock_of(rec)?,
             ..Plan::default()
         };
-        let mut root = self.null(pfx, [0.0; 3], None, false, false)?;
+        let mut root = self.null(&root_name, [0.0; 3], None, false, false)?;
+        let rows = if preview {
+            rec.editor.as_ref().and_then(|e| e.rows)
+        } else {
+            None
+        };
         let mut cx = Cx {
-            names: format!("{pfx}_"),
+            names: format!("{root_name}_"),
             sprites,
-            mode: Mode::Live,
-            switched: BTreeSet::new(),
+            mode,
+            switched: switched_by(&rec.decisions),
             plan: &mut plan,
         };
+        cx.plan.decisions = rec.decisions.clone();
         let mut kids = Vec::new();
-        for e in &rec.elements {
+        for e in &model::expand(&rec.elements, rows)? {
             if let Some(n) = self.element(&mut cx, e)? {
                 kids.push(n);
             }
@@ -486,6 +589,34 @@ impl Builder {
         Ok(o)
     }
 
+    fn stack(&mut self, name: &str, pos: [f64; 3], dir: &str, gap: f64) -> Result<Node> {
+        let tmpl = self
+            .t
+            .stacker
+            .clone()
+            .ok_or_else(|| err(format!("{name}: a stack needs the stacker donor ({STACKED})")))?;
+        let kind = match dir {
+            "down" => "t",
+            "up" => "b",
+            "right" => "l",
+            "left" => "r",
+            other => return Err(err(format!("{name}: no stack dir {other}"))),
+        };
+        let mut o = self.base(&tmpl, name, pos, geom::QUAT_IDENTITY, [1.0; 3])?;
+        idf::set_param_like(&mut o, "stackerType", Val::str(kind))?;
+        idf::set_param_like(&mut o, "gap", idf::fp32(K * gap))?;
+        Ok(o)
+    }
+
+    fn centre(&mut self, name: &str, pos: [f64; 3]) -> Result<Node> {
+        let tmpl = self
+            .t
+            .centre
+            .clone()
+            .ok_or_else(|| err(format!("{name}: a centre needs the centre donor ({LAP_COUNTER})")))?;
+        self.base(&tmpl, name, pos, geom::QUAT_IDENTITY, [1.0; 3])
+    }
+
     pub fn customisation_mut(&mut self) -> Result<&mut Node> {
         let root = scene_root_mut(&mut self.pkg)?;
         idf::find_mut(root, dials::CUSTOMISATION)
@@ -525,9 +656,11 @@ impl Builder {
 
     /// Adds one record's root under the customisation element and returns its plan.
     pub fn add_record(&mut self, rec: &HudElement, pfx: &str, sprites: &Sprites, mode: Mode) -> Result<Plan> {
-        let bottom = self.bottom()?;
         let footprint = box_of(rec, sprites)?;
-        let root_y = bottom + K * footprint[3];
+        let root_y = match rec.root_y {
+            Some(y) => -K * y,
+            None => self.bottom()? + K * footprint[3],
+        };
         let preview = matches!(mode, Mode::Preview(_));
         let root_name = if preview {
             format!("{pfx}_pv")
@@ -541,6 +674,7 @@ impl Builder {
             preview,
             root_y,
             footprint,
+            clock: Self::clock_of(rec)?,
             ..Plan::default()
         };
         let mut root = self.null(&root_name, [0.0, root_y, 0.0], None, false, live_hidden)?;
@@ -548,17 +682,17 @@ impl Builder {
             names: format!("{root_name}_"),
             sprites,
             mode,
-            switched: rec
-                .decisions
-                .iter()
-                .flat_map(|d| d.yes.iter().chain(&d.no).chain(d.states.values().flatten()))
-                .cloned()
-                .collect(),
+            switched: switched_by(&rec.decisions),
             plan: &mut plan,
         };
         cx.plan.decisions = rec.decisions.clone();
+        let rows = if preview {
+            rec.editor.as_ref().and_then(|e| e.rows)
+        } else {
+            None
+        };
         let mut kids = Vec::new();
-        for e in &rec.elements {
+        for e in &model::expand(&rec.elements, rows)? {
             if let Some(n) = self.element(&mut cx, e)? {
                 kids.push(n);
             }
@@ -621,7 +755,7 @@ impl Builder {
             .kind
             .ok_or_else(|| err(format!("element {} has no kind", e.id)))?;
         let name = format!("{}{}", cx.names, e.id);
-        let switched = cx.switched.contains(&e.id);
+        let switched = cx.switched.contains_key(&e.id);
         if switched && e.visible.is_some() {
             return Err(err(format!(
                 "element {} is shown by a decision and has its own visible",
@@ -629,7 +763,7 @@ impl Builder {
             )));
         }
         if let Mode::Preview(_) = cx.mode {
-            if switched {
+            if switched && cx.switched.get(&e.id) != Some(&true) {
                 return Ok(None);
             }
             if let Some(b) = &e.visible
@@ -663,18 +797,35 @@ impl Builder {
                 }
                 q
             }
-            Kind::Group => {
-                let mut g = self.null(
-                    &name,
-                    [0.0; 3],
-                    None,
-                    false,
-                    e.hidden.unwrap_or(false) && !preview,
-                )?;
+            Kind::Group | Kind::Stack | Kind::Centre => {
+                let pos = geom::scene_point(at[0], at[1]);
+                let mut g = match kind {
+                    Kind::Stack => self.stack(
+                        &name,
+                        pos,
+                        e.dir.as_deref().unwrap_or("down"),
+                        e.gap.unwrap_or(0.0),
+                    )?,
+                    Kind::Centre => self.centre(&name, pos)?,
+                    _ => self.null(&name, pos, None, false, e.hidden.unwrap_or(false) && !preview)?,
+                };
+                let mut holder = match (&e.motion, preview) {
+                    (Some(m), false) => {
+                        let hn = super::motion::holder_name(&name, m);
+                        let slides = m.track()? == super::motion::Track::Slide;
+                        let h = self.null(&hn, [0.0; 3], None, slides, false)?;
+                        super::motion::plan(cx.plan, e, m, &hn)?;
+                        Some(h)
+                    }
+                    _ => None,
+                };
                 for c in &e.children {
                     if let Some(n) = self.element(cx, c)? {
-                        idf::children_mut(&mut g)?.push(n);
+                        idf::children_mut(holder.as_mut().unwrap_or(&mut g))?.push(n);
                     }
+                }
+                if let Some(h) = holder {
+                    idf::children_mut(&mut g)?.push(h);
                 }
                 g
             }
@@ -748,6 +899,10 @@ impl Builder {
             }
             Kind::Gauge => self.gauge(cx, e, &name)?,
             Kind::Sweep => self.sweep(cx, e, &name)?,
+            Kind::Unit => match units::build(self, cx, e, &name)? {
+                Some(n) => n,
+                None => return Ok(None),
+            },
         };
         self.finish_leaf(cx, e, &name, node, switched)
     }
@@ -769,7 +924,7 @@ impl Builder {
             cx.plan.shows.push(ShowItem {
                 name: vn.clone(),
                 element: outer.clone(),
-                default: false,
+                default: cx.switched.get(&e.id) == Some(&true),
             });
             cx.plan.switched.insert(e.id.clone(), vn);
         } else if let Some(b) = &e.visible {
@@ -782,9 +937,24 @@ impl Builder {
                 negate: r.negate,
                 default: r.default,
             });
+        } else if e.hidden == Some(true) {
+            // isHidden alone does not hide in game: a static visible = false node does
+            cx.plan.shows.push(ShowItem {
+                name: format!("v_{}", e.id),
+                element: outer.clone(),
+                default: false,
+            });
+        }
+        if let Some(c) = &e.colour {
+            cx.plan.statics.push(StaticColour {
+                name: format!("c_{}", e.id),
+                element: outer.clone(),
+                colour: super::textures::hex_rgba(c)?,
+            });
         }
         if let Some(b) = &e.tint {
             let r = template::resolve(b, Usage::Colour, name)?;
+            cx.plan.known.push((r.db.clone(), r.tag));
             let target = if e.kind == Some(Kind::Sweep) {
                 format!("{name}_fill")
             } else {
@@ -794,6 +964,7 @@ impl Builder {
                 name: format!("c_{}", e.id),
                 element: target,
                 db: r.db,
+                default: r.colour,
             });
         }
         Ok(Some(node))
@@ -823,9 +994,10 @@ impl Builder {
         idf::children_mut(&mut holder)?.push(t);
         let plan = &mut *cx.plan;
         let preview_value = if let Mode::Preview(state) = &cx.mode {
-            match (&e.value, &e.literal) {
-                (Some(b), _) => state.get(&preview_key(b)).map(show_value),
-                (None, Some(l)) => Some(l.clone()),
+            match (&e.value, &e.literal, &e.literal_id) {
+                (Some(b), _, _) => state.get(&preview_key(b)).map(show_value),
+                (None, Some(l), _) => Some(l.clone()),
+                (None, None, Some(id)) => Some(id.clone()),
                 _ => None,
             }
         } else {
@@ -838,13 +1010,14 @@ impl Builder {
             plan.pv_texts.push((name.to_owned(), text));
             return Ok(Some(holder));
         }
-        let (tag, db, literal) = match (&e.value, &e.literal) {
-            (Some(b), _) => {
+        let (tag, db, literal, localise) = match (&e.value, &e.literal, &e.literal_id) {
+            (Some(b), _, _) => {
                 let r = template::resolve(b, Usage::Text, name)?;
                 plan.known.push((r.db.clone(), r.tag));
-                (r.tag, Some(r.db), String::new())
+                (r.tag, Some(r.db), String::new(), false)
             }
-            (None, Some(l)) => (*b"stri", None, l.clone()),
+            (None, Some(l), _) => (*b"stri", None, l.clone(), false),
+            (None, None, Some(id)) => (*b"stri", None, id.clone(), true),
             _ => return Err(err(format!("text {} has no value", e.id))),
         };
         let visible = match &e.visible {
@@ -861,8 +1034,23 @@ impl Builder {
             tag,
             db,
             literal,
+            localise,
             visible,
         });
+        if e.hidden == Some(true) && e.visible.is_none() {
+            plan.shows.push(ShowItem {
+                name: format!("v_{}", e.id),
+                element: idf::elem_name(&holder).to_owned(),
+                default: false,
+            });
+        }
+        if let Some(c) = &e.colour {
+            plan.statics.push(StaticColour {
+                name: format!("c_{}", e.id),
+                element: name.to_owned(),
+                colour: super::textures::hex_rgba(c)?,
+            });
+        }
         Ok(Some(holder))
     }
 
@@ -1105,12 +1293,27 @@ pub(crate) struct Cx<'a, 'p> {
     pub names: String,
     pub sprites: &'a Sprites,
     pub mode: Mode<'a>,
-    pub switched: BTreeSet<String>,
+    /// The elements the decisions show, and whether each starts shown (its decision's `initial`).
+    pub switched: BTreeMap<String, bool>,
     pub plan: &'p mut Plan,
 }
 
+/// The elements `decisions` switch, each with whether it starts shown.
+pub fn switched_by(decisions: &[Decision]) -> BTreeMap<String, bool> {
+    let mut out: BTreeMap<String, bool> = BTreeMap::new();
+    for d in decisions {
+        for id in d.targets() {
+            out.entry(id.clone()).or_insert(false);
+        }
+        for id in d.initial_targets() {
+            out.insert(id.clone(), true);
+        }
+    }
+    out
+}
+
 pub fn preview_key(b: &Bind) -> String {
-    if let Some(l) = &b.view_model {
+    if let Some(l) = b.view_model.as_ref().or(b.path.as_ref()) {
         return l.trim_start_matches('#').to_owned();
     }
     if let Some(g) = &b.game {
@@ -1184,4 +1387,30 @@ pub fn scene_box(plan: &Plan) -> [f64; 4] {
 
 pub fn union_box(a: [f64; 4], b: [f64; 4]) -> [f64; 4] {
     [a[0].min(b[0]), a[1].max(b[1]), a[2].max(b[2]), a[3].min(b[3])]
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn switched_elements_start_shown_by_their_decisions_initial_state() {
+        let v = serde_json::json!([
+            { "id": "drs", "type": "mvcd", "game": "drs_pit_state", "initial": "invalid",
+              "states": { "invalid": ["idle"], "drs_live": ["live", "shared"] } },
+            { "id": "mode", "type": "svcd", "game": "ers_mode", "equals": 2, "yes": ["hot"], "no": ["shared"] }
+        ]);
+        let decisions: Vec<Decision> = serde_json::from_value(v).unwrap();
+        let s = switched_by(&decisions);
+        assert_eq!(
+            s.iter().map(|(k, v)| (k.as_str(), *v)).collect::<Vec<_>>(),
+            [("hot", false), ("idle", true), ("live", false), ("shared", false)]
+        );
+        let mut d = decisions;
+        d[1].initial = Some("no".into());
+        assert!(switched_by(&d)["shared"]);
+        d[1].initial = Some("yes".into());
+        assert!(!switched_by(&d)["shared"]);
+        assert!(switched_by(&d)["hot"]);
+    }
 }

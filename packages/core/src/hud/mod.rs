@@ -15,9 +15,14 @@ pub mod editor;
 pub mod geom;
 pub mod integrate;
 pub mod model;
+pub mod motion;
 pub mod scene;
+pub mod screen_build;
+pub mod screens;
+pub mod stock_edit;
 pub mod template;
 pub mod textures;
+pub mod units;
 
 use std::cell::RefCell;
 use std::collections::BTreeMap;
@@ -311,18 +316,66 @@ struct Loaded {
     resources: Vec<Res>,
 }
 
-fn load_sprites(
-    input: &Input,
-    pfx: &str,
-    fill_material: &[u8],
+fn bind_slots(resources: &mut Vec<Res>, n: &textures::Names, uses_fill: bool, uses_edge: bool) {
+    if uses_fill {
+        resources.push(textures::binding_resource(n, "central_bg_fill", false));
+    }
+    if uses_edge {
+        resources.push(textures::binding_resource(n, "central_bg_edge", true));
+    }
+}
+
+/// What every sprite of a build shares: the stock files, the fill material and the quad slots in use.
+struct SpriteEnv<'a> {
+    stock: &'a dyn Stock,
+    fill_material: &'a [u8],
     uses_fill: bool,
     uses_edge: bool,
+}
+
+fn load_sprites(
+    env: &SpriteEnv,
+    input: &Input,
+    pfx: &str,
     tinted: &std::collections::BTreeSet<String>,
     team: [u8; 3],
 ) -> Result<Loaded> {
+    let SpriteEnv {
+        stock,
+        fill_material,
+        uses_fill,
+        uses_edge,
+    } = *env;
     let mut sprites = Sprites::new();
     let mut resources = Vec::new();
     for (name, s) in &input.record.sprites {
+        if let Some(tex) = &s.texture {
+            let names = textures::stock_names(&format!("{pfx}_"), name, tex);
+            let tint = s.tint.as_deref().map(textures::hex_rgba).transpose()?;
+            resources.extend(textures::stock_sprite_resources(&names, fill_material, tint)?);
+            bind_slots(&mut resources, &names, uses_fill, uses_edge);
+            let bounds = match (s.bounds, s.fit) {
+                (Some(b), _) => b,
+                (None, Some(f)) => textures::fit(textures::texture_size(stock, dials::STOCK_ERP, tex)?, f),
+                (None, None) => {
+                    return Err(err(format!(
+                        "sprite {name}: a texture sprite needs fit or bounds"
+                    )));
+                }
+            };
+            sprites.insert(
+                name.clone(),
+                SpriteInfo {
+                    bounds,
+                    names,
+                    tinted: None,
+                },
+            );
+            continue;
+        }
+        if s.png.is_empty() {
+            return Err(err(format!("sprite {name}: needs png or texture")));
+        }
         let path = input.dir.join(&s.png);
         let data = std::fs::read(&path).map_err(|e| Error::Io {
             path: path.clone(),
@@ -336,15 +389,7 @@ fn load_sprites(
         let key = format!("{pfx}_");
         let names = textures::names(&key, name);
         resources.extend(textures::sprite_resources(&names, &art, fill_material)?);
-        let mut emit = |n: &textures::Names| {
-            if uses_fill {
-                resources.push(textures::binding_resource(n, "central_bg_fill", false));
-            }
-            if uses_edge {
-                resources.push(textures::binding_resource(n, "central_bg_edge", true));
-            }
-        };
-        emit(&names);
+        bind_slots(&mut resources, &names, uses_fill, uses_edge);
         let pv = if tinted.contains(name) {
             let pv_names = textures::names(&key, &format!("{name}_pv"));
             resources.extend(textures::sprite_resources(
@@ -423,9 +468,15 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         v
     };
 
+    let mut is_screen = Vec::with_capacity(inputs.len());
+    for input in inputs {
+        let t = screens::targets(&input.record)
+            .map_err(|e| err(format!("{}/{}: {e}", input.addon, input.key)))?;
+        is_screen.push(t.is_some());
+    }
     let mut live: Vec<Expanded> = Vec::new();
     for (i, input) in inputs.iter().enumerate() {
-        if input.record.scene_target().is_some() {
+        if input.record.scene_target().is_some() || is_screen[i] {
             continue;
         }
         live.push(Expanded {
@@ -448,11 +499,20 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
     let bar = read(dials::BAR)?;
     let clip_template = read(dials::CLIP_TEMPLATE)?;
     let om_xm = read(dials::F126.scene)?;
+    let stacked = read(scene::STACKED)?;
+    let lap_counter = read(scene::LAP_COUNTER)?;
 
     let used: std::collections::BTreeSet<Dial> = live.iter().map(|e| e.rec.dial).collect();
     let mut resources: BTreeMap<String, Res> = BTreeMap::new();
     let mut loaded: Vec<Loaded> = Vec::new();
     for (i, input) in inputs.iter().enumerate() {
+        if is_screen[i] {
+            loaded.push(Loaded {
+                sprites: Sprites::new(),
+                resources: Vec::new(),
+            });
+            continue;
+        }
         let mut tinted = std::collections::BTreeSet::new();
         tinted_sprites(&input.record.elements, &mut tinted);
         let team = match input
@@ -464,15 +524,13 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
             Some(c) => textures::hex_colour(c)?,
             None => [0x27, 0xf4, 0xd2],
         };
-        let l = load_sprites(
-            input,
-            &pfx_of[i],
-            &fill,
-            true,
-            used.contains(&Dial::F2),
-            &tinted,
-            team,
-        )?;
+        let env = SpriteEnv {
+            stock,
+            fill_material: &fill,
+            uses_fill: true,
+            uses_edge: used.contains(&Dial::F2),
+        };
+        let l = load_sprites(&env, input, &pfx_of[i], &tinted, team)?;
         for r in &l.resources {
             resources.insert(r.0.clone(), r.clone());
         }
@@ -507,6 +565,10 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         let scene_bytes = first(stock.read(dials::STOCK_ERP, facts.scene)?, facts.scene)?;
         let text_from = (dial != Dial::F126).then_some(om_xm.as_slice());
         let mut b = Builder::new(facts, &scene_bytes, &mods, &bar, text_from)?;
+        b.with_donors(&stacked, &lap_counter)?;
+        if here.iter().any(|e| units::used(&e.rec.elements)) {
+            b.units = units::load(stock, dials::STOCK_ERP)?;
+        }
         let mut parked = false;
         let mut footprint: Option<[f64; 4]> = None;
         let mut plans: Vec<(&Expanded, Plan)> = Vec::new();
@@ -560,7 +622,7 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         if want_preview {
             for (i, input) in inputs.iter().enumerate() {
                 let rec = &input.record;
-                if rec.scene_target().is_some() {
+                if rec.scene_target().is_some() || is_screen[i] {
                     continue;
                 }
                 let state = rec.editor.as_ref().map(|e| e.preview.clone()).unwrap_or_default();
@@ -590,32 +652,9 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
                 preview_plans.push((i, plan));
             }
         }
-        let mut names: Vec<String> = plans.iter().flat_map(|(_, p)| p.anim_names()).collect();
-        names.sort();
-        let strtab = first(stock.read(dials::STOCK_ERP, facts.strtab)?, facts.strtab)?;
         let mut new_scene = b.finish(footprint)?;
-        if !names.is_empty() {
-            let refs: Vec<&str> = names.iter().map(String::as_str).collect();
-            let (tab, first) = animclip::append_strings(&strtab, &refs)?;
-            scene_resources.push((facts.strtab.to_owned(), "ACStringTable", vec![tab]));
-            for (_, plan) in &plans {
-                for c in &plan.clips {
-                    let at = names.iter().position(|n| *n == c.node).expect("collected above");
-                    let (temp, syst) = animclip::build_clip(
-                        &clip_template,
-                        &c.node,
-                        (first + at) as i32,
-                        facts.strtab,
-                        &c.channels,
-                    )?;
-                    scene_resources.push((
-                        format!("{}/{}?context=animation", facts.scene, c.node),
-                        "AnimClip",
-                        vec![temp, syst],
-                    ));
-                }
-            }
-        }
+        let planned: Vec<&Plan> = plans.iter().map(|(_, p)| p).collect();
+        clip_resources(stock, facts, &clip_template, &planned, &mut scene_resources)?;
         scene_resources.push((
             facts.scene.to_owned(),
             "UILayout",
@@ -693,12 +732,15 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         let facts = dials::target_facts(scene, parent);
         let bytes = first(stock.read(dials::STOCK_ERP, scene)?, scene)?;
         let mut b = Builder::for_scene(facts, &bytes, &om_xm, &mods, &bar)?;
+        b.with_donors(&stacked, &lap_counter)?;
         let mut plans = Vec::new();
         for &i in members {
             let plan = b.add_scene_record(&inputs[i].record, &pfx_of[i], &loaded[i].sprites)?;
             plans.push((i, plan));
         }
         target_scenes.push((scene.clone(), "UILayout", vec![b.finish(None)?]));
+        let planned: Vec<&Plan> = plans.iter().map(|(_, p)| p).collect();
+        clip_resources(stock, facts, &clip_template, &planned, &mut target_scenes)?;
         for (i, plan) in &plans {
             let checked = template::attach_scene(&mut template.root, &race_tags, parent, scene, plan)?;
             out.lines.push(format!(
@@ -710,6 +752,21 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
             ));
         }
     }
+    let screens_out = screen_build::compose_screens(
+        stock,
+        inputs,
+        &pfx_of,
+        &mut template,
+        &race_stock,
+        &mut spectator,
+        &spec_stock,
+        &fill,
+        &mods,
+        &bar,
+        &om_xm,
+    )?;
+    spectator_used |= screens_out.spectator_used;
+    out.lines.extend(screens_out.lines.iter().cloned());
     let mut all: Vec<Res> = resources.into_values().collect();
     all.extend(scene_resources);
     if !all.is_empty() {
@@ -745,16 +802,55 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         )?,
     });
     if spectator_used {
+        let mut res = vec![(dials::SPECTATOR.to_owned(), "UIDF", vec![spectator.to_bytes()?])];
+        res.extend(screens_out.spectator_scene.iter().cloned());
         out.archives.push(Built {
             file: "hud_spectator.erp".into(),
             erps: dials::SPECTATOR_ERPS.iter().map(|s| (*s).to_owned()).collect(),
-            bytes: archive(
-                stock,
-                vec![(dials::SPECTATOR.to_owned(), "UIDF", vec![spectator.to_bytes()?])],
-            )?,
+            bytes: archive(stock, res)?,
         });
     }
+    out.archives.extend(screen_build::archives(stock, &screens_out)?);
     Ok(out)
+}
+
+/// The anim string table and the clips the plans put in `facts.scene`: the new names appended
+/// to the stock table in order, one `AnimClip` per clip, built on `clip_template`. Nothing when
+/// no plan has a clip.
+pub fn clip_resources(
+    stock: &dyn Stock,
+    facts: &DialFacts,
+    clip_template: &[u8],
+    plans: &[&Plan],
+    out: &mut Vec<Res>,
+) -> Result<()> {
+    let mut names: Vec<String> = plans.iter().flat_map(|p| p.anim_names()).collect();
+    names.sort();
+    if names.is_empty() {
+        return Ok(());
+    }
+    let strtab = first(stock.read(dials::STOCK_ERP, facts.strtab)?, facts.strtab)?;
+    let refs: Vec<&str> = names.iter().map(String::as_str).collect();
+    let (tab, first_index) = animclip::append_strings(&strtab, &refs)?;
+    out.push((facts.strtab.to_owned(), "ACStringTable", vec![tab]));
+    for plan in plans {
+        for c in &plan.clips {
+            let at = names.iter().position(|n| *n == c.node).expect("collected above");
+            let (temp, syst) = animclip::build_clip(
+                clip_template,
+                &c.node,
+                (first_index + at) as i32,
+                facts.strtab,
+                &c.channels,
+            )?;
+            out.push((
+                format!("{}/{}?context=animation", facts.scene, c.node),
+                "AnimClip",
+                vec![temp, syst],
+            ));
+        }
+    }
+    Ok(())
 }
 
 /// A ready archive of `resources`, each laid out like the stock resource it is made after.
@@ -802,6 +898,7 @@ pub fn inputs_of(addon: &str, dir: &Path, file: &str) -> Result<Vec<Input>> {
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::ui::node::{NodeExt, ObjExt};
 
     fn game() -> Option<GameStock> {
         let Some(dir) = std::env::var_os("F1_25_DIR") else {
@@ -980,6 +1077,255 @@ mod tests {
                 "{parent}"
             );
         }
+        std::fs::remove_dir_all(dir).ok();
+    }
+
+    fn tower_record() -> serde_json::Value {
+        serde_json::json!({
+            "screen": "standings",
+            "show": { "view_model": "view_model_data.hud_tt_show" },
+            "also": { "replay": { "show": { "view_model": "view_model_data.hud_tt_on" } },
+                      "spectator": { "show": { "view_model": "view_model_data.hud_tt_on" } } },
+            "sprites": {
+                "strip": { "png": "art/base.png", "bounds": [0, 0, 64, 20] },
+                "bn_m": { "png": "art/solid.png", "bounds": [0, 0, 8, 8] }
+            },
+            "elements": [
+                { "kind": "group", "id": "r00", "visible": { "view_model": "view_model_data.hud_tt_r00_on" }, "children": [
+                    { "kind": "sprite", "id": "s", "sprite": "strip", "layer": 20 },
+                    { "kind": "text", "id": "pos", "style": "OSD_24_bold", "align": "centre", "box": 12, "cap_height": 6,
+                      "at": [6, 10], "value": { "view_model": "view_model_data.hud_tt_r00_pos" } },
+                    { "kind": "text", "id": "code", "style": "OSD_24_bold", "align": "left", "box": 24, "cap_height": 7,
+                      "at": [20, 10], "value": { "session_car": "driver.second_name", "slot": 0 } }
+                ] }
+            ],
+            "stock_nodes": [
+                { "template": screens::LAPC_PARENT, "hide": screens::LAPC_HIDE,
+                  "while": { "view_model": "view_model_data.hud_tt_show" } }
+            ],
+            "restyle": { "preset": "banner", "sprite": "bn_m" },
+            "editor": { "rows": 5, "preview": { "view_model_data.hud_tt_r00_on": true, "view_model_data.hud_tt_r00_pos": "10" } }
+        })
+    }
+
+    fn pkg_in(erp: &Erp, name: &str) -> Pkg {
+        Pkg::parse(&erp.find(name).unwrap().fragments[0].data().unwrap()).unwrap()
+    }
+
+    #[test]
+    fn a_screen_record_composes_the_three_screens_and_the_banner() {
+        let Some(stock) = game() else { return };
+        let dir = addon_dir("tower");
+        let rec = HudElement::parse(&tower_record()).unwrap();
+        let input = Input {
+            addon: "test.tower".into(),
+            key: "tower".into(),
+            dir: dir.clone(),
+            record: rec,
+        };
+        let out = compose(&stock, &[input]).unwrap();
+        for l in &out.lines {
+            eprintln!("{l}");
+        }
+        let names: Vec<&str> = out.archives.iter().map(|a| a.file.as_str()).collect();
+        assert_eq!(
+            names,
+            [
+                "hud_template.erp",
+                "hud_spectator.erp",
+                "hud_screen_scene.erp",
+                "hud_replay.erp",
+                "hud_replay_scene.erp"
+            ]
+        );
+        assert_eq!(out.archives[2].erps, screen_build::SCREEN_SCENE_ERPS);
+        let scene = Erp::parse(&out.archives[2].bytes).unwrap();
+        let cap = pkg_in(&scene, screens::CAP);
+        assert!(crate::ui::idf::id_problems(&cap).unwrap().is_empty());
+        let root = stock_edit::scene_root(&cap).unwrap();
+        let mine = crate::ui::idf::find(root, "test_tower").unwrap();
+        assert_eq!(
+            crate::ui::idf::param(mine, "isHidden").and_then(stock_edit::as_bool),
+            Some(true)
+        );
+        assert!(crate::ui::idf::find(root, "test_tower_s").is_some());
+        assert!(crate::ui::idf::find(root, "test_tower_pos").is_some());
+        let stacked = pkg_in(&scene, screens::STACKED);
+        assert!(crate::ui::idf::id_problems(&stacked).unwrap().is_empty());
+        let host =
+            crate::ui::idf::find(stock_edit::scene_root(&stacked).unwrap(), "test_tower_host").unwrap();
+        assert_eq!(crate::ui::idf::param_str(host, "fileRef"), Some(screens::CAP));
+        let pv = crate::ui::idf::find(root, "test_tower_pv").expect("the editor copy");
+        assert_ne!(
+            crate::ui::idf::param(pv, "isHidden").and_then(stock_edit::as_bool),
+            Some(true)
+        );
+        assert!(crate::ui::idf::find(root, "test_tower_pv_pos").is_some());
+        let pre = swofty_formats::uipre::Uipre::parse(
+            &scene.find(screens::STACKED_UIPRE).unwrap().fragments[0]
+                .data()
+                .unwrap(),
+        )
+        .unwrap();
+        let host = screens::standings().host_name("test_tower");
+        let inside = pre.element_ids_in(&host);
+        for name in [
+            "pill_rotation_anim",
+            "test_tower",
+            "test_tower_pv",
+            "test_tower_pv_pos",
+        ] {
+            assert!(
+                inside.contains(&swofty_formats::uipre::element_id(name)),
+                "{name} in the host's preview"
+            );
+        }
+        assert!(
+            pre.element_ids()
+                .contains(&swofty_formats::uipre::element_id(screens::STACKED_MASK))
+        );
+        assert!(
+            scene
+                .resources
+                .iter()
+                .any(|r| r.name.ends_with("test_tower_strip.tif.image"))
+        );
+        assert!(scene.find(&stock_edit::emb_name("test_tower", "bn_m")).is_ok());
+        for (rel, fills, twin, hide, _) in stock_edit::BANNER_SCENES {
+            let sc = stock_edit::banner_scene(rel);
+            let p = pkg_in(&scene, &sc);
+            assert!(crate::ui::idf::id_problems(&p).unwrap().is_empty(), "{sc}");
+            let root = stock_edit::scene_root(&p).unwrap();
+            for (el, _) in fills {
+                let e = crate::ui::idf::find(root, el).unwrap();
+                let m = e.o().unwrap().at("geoms").unwrap().a().unwrap()[0]
+                    .o()
+                    .unwrap()
+                    .str_at("materialid")
+                    .unwrap();
+                assert_eq!(m, stock_edit::emb_name("test_tower", "bn_m"), "{sc}/{el}");
+            }
+            if let Some(t) = twin {
+                assert!(crate::ui::idf::find(root, &format!("{t}_bn")).is_some(), "{sc}");
+            }
+            for el in hide {
+                let e = crate::ui::idf::find(root, el).unwrap();
+                assert_eq!(
+                    crate::ui::idf::param(e, "isHidden").and_then(stock_edit::as_bool),
+                    Some(true),
+                    "{sc}/{el}"
+                );
+            }
+        }
+        assert!(scene.find(stock_edit::BANNER_SYSTEM).is_ok());
+
+        let mut ours: std::collections::BTreeSet<String> =
+            ["test_tower_ctl", "test_tower_sn0", "test_tower_sn1"]
+                .map(String::from)
+                .into();
+        for (_, _, _, hide, _) in stock_edit::BANNER_SCENES {
+            ours.extend(hide.iter().map(|h| format!("test_tower_hide_{h}")));
+        }
+        let tmpl = Erp::parse(&out.archives[0].bytes).unwrap();
+        let t = pkg_in(&tmpl, dials::TEMPLATE);
+        let base = format!("{}.test_tower_ctl", screens::STANDINGS_PARENT);
+        for sub in [
+            "mask_0",
+            "host_n",
+            "host_n.v_cap",
+            "host_n.v_pv",
+            "host_n.root_n",
+            "host_n.v_r00",
+            "host_n.t_pos",
+        ] {
+            assert!(
+                crate::ui::node::find_path(&t.root, &format!("{base}.{sub}")).is_ok(),
+                "{sub}"
+            );
+        }
+        let at = crate::ui::node::find_path(&t.root, screens::STANDINGS_PARENT).unwrap();
+        let parent = crate::ui::node::node_at(&t.root, &at).unwrap();
+        let enable = parent
+            .slot(crate::ui::node::COMMANDS)
+            .unwrap()
+            .iter()
+            .find(|c| c.as_obj().unwrap().str_at("commandName").unwrap() == "enable")
+            .unwrap();
+        assert!(format!("{enable:?}").contains("test_tower_ctl"));
+        let lapc =
+            crate::ui::node::find_path(&t.root, &format!("{}.test_tower_sn0", screens::LAPC_PARENT)).unwrap();
+        let grp = crate::ui::node::node_at(&t.root, &lapc).unwrap();
+        assert_eq!(
+            grp.slot(crate::ui::node::CHILDREN).unwrap().len(),
+            screens::LAPC_HIDE.len()
+        );
+        for root in ["v_test_tower", "v_test_tower_pv"] {
+            assert!(
+                crate::ui::node::find_path(
+                    &t.root,
+                    &format!("{}.test_tower_sn1.{root}", screens::STANDINGS_CAP_NODE)
+                )
+                .is_ok(),
+                "{root}"
+            );
+        }
+        assert!(crate::ui::node::find_path(
+            &t.root,
+            "hud_notifications_dynamic_p2.osd_visibility_option.hud_notifications_dynamic_p2.notification_0.hud_message.right.central_message.test_tower_hide_ms_colour"
+        )
+        .is_ok());
+        let stock_t = Pkg::parse(&stock.read(dials::STOCK_ERP, dials::TEMPLATE).unwrap()[0]).unwrap();
+        assert!(
+            check::stock_kept(&stock_t, &t, &ours).unwrap(),
+            "a stock template node changed"
+        );
+
+        let spec = Erp::parse(&out.archives[1].bytes).unwrap();
+        let s = pkg_in(&spec, dials::SPECTATOR);
+        assert!(
+            crate::ui::node::find_path(
+                &s.root,
+                &format!("{}.test_tower_ctl.host_n", screens::SPECT_PARENT)
+            )
+            .is_ok()
+        );
+        let stock_s = Pkg::parse(&stock.read(dials::STOCK_ERP, dials::SPECTATOR).unwrap()[0]).unwrap();
+        assert!(
+            check::stock_kept(&stock_s, &s, &ours).unwrap(),
+            "a stock spectator node changed"
+        );
+        let table = pkg_in(&spec, screens::SPECT_TABLE);
+        assert!(crate::ui::idf::id_problems(&table).unwrap().is_empty());
+        let host = crate::ui::idf::find(stock_edit::scene_root(&table).unwrap(), "test_tower_host").unwrap();
+        assert_eq!(crate::ui::idf::param_str(host, "fileRef"), Some(screens::CAP));
+
+        let replay = Erp::parse(&out.archives[3].bytes).unwrap();
+        assert_eq!(
+            out.archives[3].erps,
+            [screens::FLOW_REPLAY, screens::REPLAY_SCREEN_ERP]
+        );
+        assert_eq!(out.archives[4].erps, [screens::FLOW_FRONTEND]);
+        let rt = pkg_in(&replay, screens::REPLAY_UI);
+        assert!(
+            crate::ui::node::find_path(
+                &rt.root,
+                &format!("{}.test_tower_ctl.extra_hide", screens::REPLAY_ROOT)
+            )
+            .is_ok()
+        );
+        let stock_r = Pkg::parse(&stock.read(screens::FLOW_REPLAY, screens::REPLAY_UI).unwrap()[0]).unwrap();
+        assert!(
+            check::stock_kept(&stock_r, &rt, &ours).unwrap(),
+            "a stock replay node changed"
+        );
+        let rs = pkg_in(&replay, screens::REPLAY_SCENE);
+        assert!(crate::ui::idf::id_problems(&rs).unwrap().is_empty());
+        let host = crate::ui::idf::find(stock_edit::scene_root(&rs).unwrap(), "test_tower_host").unwrap();
+        assert_eq!(crate::ui::idf::param_str(host, "fileRef"), Some(screens::CAP));
+        let p = crate::ui::idf::position(host).unwrap();
+        assert!((p[0] - screens::REPLAY_POS[0]).abs() < 1e-4 && (p[1] - screens::REPLAY_POS[1]).abs() < 1e-4);
+        let rs2 = Erp::parse(&out.archives[4].bytes).unwrap();
+        assert!(rs2.find(screens::REPLAY_SCENE).is_ok());
         std::fs::remove_dir_all(dir).ok();
     }
 

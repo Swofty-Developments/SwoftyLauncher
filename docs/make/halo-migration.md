@@ -35,9 +35,9 @@ What an addon keeps is the layout. Halo's `_halo` function and `Geo` become the 
 | | Lines now | After |
 |---|---|---|
 | Halo build tools | 3,543 | about 1,100 to 1,400: the sprite drawing and a layout that is data |
-| Timing tower build tools | 3,860 | not moved: the composer has no tower primitives yet |
+| Timing tower build tools | 3,860 | about 400: the sprite export and one record; the scene, template, replay, spectator, banner and editor preview builds move |
 
-The composer covers the dial. The tower's scene, banner restyle and replay tables are still Halo's own build.
+The composer covers the dial and the tower. `tower.js`'s geometry becomes one `hud.element` record with `"units": "tower"`: `header()`, `row()` and `yellow()` are a `stack` holding a header `group` and a `group` with `repeat` (22 rows, a nested repeat of 24 per-car groups with `slot_var`), the flag cards are groups shown by `hud_tt_chq`, `hud_tt_red`, `hud_tt_sc`, `hud_tt_vsc` and nested NOT groups ([rows](/reference/ops/hud#rows)). `tower_native.py`'s `build_stacked`, `build_template`, `build_replay_*` and `build_spectator_*` are `"screen": "standings"` with `"also": { "replay", "spectator" }` and `show` leaves; `lap_counter_nodes` is a `stock_nodes` entry on `hud_lap_counter.osd_visibility_option` with `while`; `banner_native.py` is `"restyle": { "preset": "banner", "sprite": "<navy fill>" }`; `preview_state()` and `build_uipre` are `editor.rows` and `editor.preview` ([HUD screens](/reference/ops/hud-screens)). `tower_resources.py`'s game textures (`g_f1`, `g_fia`, `g_fia_k`) are sprites with `texture` and `fit`; the team logo eXRefs and `textureOverride` nodes are `unit` elements with a `texture` binding; the colour bars are sprites with a `tint` on `nub_colour` with a transparent default ([HUD textures and units](/reference/ops/hud-textures)). What stays is drawing the sprites (`export_tower.js`, `export_sprites.py`) into PNGs the record names. The Time Trial board's decisions on the game's own pill values are not in the composer yet; a screen record with `decisions` is refused.
 
 ## Native side
 
@@ -102,7 +102,7 @@ Halo vendors 18 SDK headers, about 3,100 lines, and uses four of them (`mixin.hp
 
 - The G-meter indicator thresholds and the flash rules, the 2026 power to capsule scale, and the 2025 scale.
 - The sprite drawing, the leaf names that are Halo's contract, and the layout of each dial class.
-- The tower's scene, banner and replay build.
+- The tower's sprite drawing and the Time Trial board's decisions.
 - Fastest lap, purple and green sectors and lap times: Halo has no source for them either. `timing::Car` declares the fields.
 
 ## Credits

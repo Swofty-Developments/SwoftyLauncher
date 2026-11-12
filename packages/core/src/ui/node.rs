@@ -904,6 +904,7 @@ fn tagged(tag: [u8; 4], v: &str) -> Node {
     match &tag {
         b"stri" => s(v),
         b"ui32" => u32v(v.parse().unwrap_or(0)),
+        b"si32" => i32v(v.parse().unwrap_or(0)),
         b"fp32" => f32v(v.parse().unwrap_or(0.0)),
         b"bool" => boolv(v == "true"),
         b"rgba" => Node::Val(Val::raw(
@@ -957,18 +958,43 @@ pub fn visible_node(name: &str, element: &str, default: bool, db: Option<&str>, 
     )
 }
 
-/// The node that tints a scene element with a bound colour.
-pub fn colour_node(name: &str, element: &str, db: &str) -> Node {
+/// The node that tints a scene element with a bound colour; `default` holds while the value is
+/// absent (the stock nodes use white).
+pub fn colour_node(name: &str, element: &str, db: &str, default: [u8; 4]) -> Node {
     group_node(
         name,
         vec![(
             "colourOverride",
             obj(vec![
-                ("value", Node::Val(Val::raw(*b"rgba", [255u8; 4]))),
+                ("value", Node::Val(Val::raw(*b"rgba", default))),
                 ("dbentry", s(db)),
             ]),
         )],
         &[element],
+        vec![],
+    )
+}
+
+/// The node that tints a scene element with one fixed colour (a text's own colour, a quad's tint).
+pub fn static_colour_node(name: &str, element: &str, colour: [u8; 4]) -> Node {
+    group_node(
+        name,
+        vec![(
+            "colourOverride",
+            obj(vec![("value", Node::Val(Val::raw(*b"rgba", colour)))]),
+        )],
+        &[element],
+        vec![],
+    )
+}
+
+/// The node that sets a scene element's texture from a bound value: `textureOverride` on `layout`
+/// (an eXRef, then the quad inside its unit) with the tag the stock node binds it with.
+pub fn texture_node(name: &str, layout: &[&str], tag: [u8; 4], default: &str, db: &str) -> Node {
+    group_node(
+        name,
+        vec![("textureOverride", typed_prop(tag, default, db))],
+        layout,
         vec![],
     )
 }

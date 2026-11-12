@@ -424,14 +424,14 @@ fn a_scene_target_record_is_checked_when_it_is_read() {
         edit(&mut rec);
         hud::model::HudElement::parse(&rec).unwrap_err().to_string()
     };
-    assert!(parse(&|r| r["dial"] = "f2".into()).contains("not both"));
+    assert!(parse(&|r| r["dial"] = "f2".into()).contains("not two"));
     assert!(
         parse(&|r| {
             r.as_object_mut().unwrap().remove("parent_ui");
         })
         .contains("go together")
     );
-    assert!(parse(&|r| r["elements"][0]["kind"] = "sprite".into()).contains("text and group"));
+    assert!(parse(&|r| r["elements"][0]["kind"] = "sprite".into()).contains("text, group"));
     assert!(parse(&|r| r["sprites"] = serde_json::json!({ "a": { "png": "a.png" } })).contains("sprites"));
     assert!(parse(&|r| r["scene"] = "dial_om_xm.idf".into()).contains("eaid://"));
     let neither = hud::model::HudElement::parse(&serde_json::json!({ "elements": [] }))
@@ -507,4 +507,285 @@ fn a_scene_target_grows_the_scene_another_addon_replaced() {
         "{:#?}",
         built.lines
     );
+}
+
+fn signals_of(entry: &swofty_formats::pkg::Node) -> Vec<(String, String)> {
+    use swofty_formats::pkg::Node;
+    let text = |o: &Node, key: &str| -> String {
+        o.as_obj()
+            .and_then(|o| o.get(key))
+            .and_then(Node::as_val)
+            .and_then(|v| v.as_str())
+            .unwrap_or_default()
+            .to_owned()
+    };
+    entry
+        .as_obj()
+        .and_then(|o| o.get("signals"))
+        .and_then(Node::as_arr)
+        .map(|a| {
+            a.items
+                .iter()
+                .map(|s| (text(s, "to_object_name"), text(s, "to_pin_name")))
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
+fn command_signals(n: &swofty_formats::pkg::Node, name: &str) -> Vec<(String, String)> {
+    use swofty_formats::pkg::Node;
+    n.slot(swofty_core::ui::node::COMMANDS)
+        .unwrap()
+        .iter()
+        .find(|c| {
+            c.as_obj()
+                .and_then(|o| o.get("commandName"))
+                .and_then(Node::as_val)
+                .and_then(|v| v.as_str())
+                == Some(name)
+        })
+        .map(signals_of)
+        .unwrap_or_else(|| panic!("{} has no {name} command", n.name()))
+}
+
+/// The stock fact behind a decision's `initial`: a dial's `show` triggers the group that holds the
+/// stock MVCD on `drs_pit_state`, and that trigger registers and queries the MVCD, so the current
+/// state fires again on every show, but only once the value has one. The composer's `<prefix>_ctl`
+/// is wired the same way, so decision targets are re-synced on show and `initial` covers the frames
+/// before the value first exists.
+#[test]
+fn the_dials_show_registers_and_queries_the_stock_drs_decision() {
+    let Some(game) = real() else { return };
+    let stock = GameStock::with_baseline(&game, &Store::open_default().root).unwrap();
+    let t = template_of(&stock.original(FLOW_RACE));
+    let mut paths = Vec::new();
+    swofty_core::ui::node::node_paths_of(&t.root, "", &mut paths);
+    for d in [hud::model::Dial::F125, hud::model::Dial::F2] {
+        let parent = dials::facts(d).race_parent;
+        let mvcds: Vec<&String> = paths
+            .iter()
+            .filter(|(p, n)| {
+                p.starts_with(&format!("{parent}.")) && n.type_code() == "MVCD" && {
+                    n.props()
+                        .ok()
+                        .and_then(|p| p.get("dbEntry"))
+                        .and_then(|v| v.as_obj())
+                        .and_then(|o| o.get("value"))
+                        .and_then(|v| v.as_val())
+                        .and_then(|v| v.as_str())
+                        == Some("drs_pit_state")
+                }
+            })
+            .map(|(p, _)| p)
+            .collect();
+        let [mvcd] = mvcds[..] else {
+            panic!("{parent}: {} MVCDs on drs_pit_state", mvcds.len())
+        };
+        let owner = mvcd.rsplit_once('.').unwrap().0.to_owned();
+        let (_, f1hd) = paths.iter().find(|(p, _)| *p == parent).unwrap();
+        let show = command_signals(f1hd, "show");
+        assert!(
+            show.contains(&(owner.clone(), "trigger".to_owned())),
+            "{parent}: show -> {show:?}"
+        );
+        let hide = command_signals(f1hd, "hide");
+        assert!(
+            hide.contains(&(owner.clone(), "untrigger".to_owned())),
+            "{hide:?}"
+        );
+        let (_, grp) = paths.iter().find(|(p, _)| *p == owner).unwrap();
+        let trigger = command_signals(grp, "trigger");
+        assert!(
+            trigger.contains(&(mvcd.clone(), "register".to_owned())),
+            "{trigger:?}"
+        );
+        assert!(
+            trigger.contains(&(mvcd.clone(), "query".to_owned())),
+            "{trigger:?}"
+        );
+    }
+}
+
+/// A record whose f1_26 base has a plate, a bar and a speed text; the f1_25 and f2 variants add a
+/// two-state pill switched by a decision of their own, place their adds in the draw order and the
+/// f2 one sets the root y.
+fn pill_record() -> serde_json::Value {
+    let variant = |dial: &str| {
+        serde_json::json!({
+            "dial": dial,
+            "remove": ["bar_b"],
+            "add": [
+                { "kind": "sprite", "id": "plate", "sprite": "bar", "before": "base" },
+                { "kind": "sprite", "id": "bar_a", "sprite": "bar", "at": [0, 4], "replace": "bar_a" },
+                { "kind": "group", "id": "pill", "after": "base", "children": [
+                    { "kind": "sprite", "id": "pill_idle", "sprite": "lit" },
+                    { "kind": "sprite", "id": "pill_live", "sprite": "lit" } ] }
+            ],
+            "decisions": [
+                { "id": "drs", "type": "mvcd", "game": "drs_pit_state", "initial": "invalid",
+                  "states": { "invalid": ["pill_idle"], "drs_live": ["pill_live"] } }
+            ]
+        })
+    };
+    let mut f2 = variant("f2");
+    f2["root_y"] = 16.into();
+    serde_json::json!({
+        "dial": "f1_26",
+        "sprites": {
+            "base": { "png": "art/base.png", "bounds": [-60, -20, 60, 20] },
+            "bar": { "png": "art/lit.png", "bounds": [-40, 0, 40, 8] },
+            "lit": { "png": "art/lit.png", "bounds": [-8, -8, 8, 8] }
+        },
+        "elements": [
+            { "kind": "sprite", "id": "base", "sprite": "base", "layer": 20 },
+            { "kind": "group", "id": "energy", "children": [
+                { "kind": "sprite", "id": "bar_a", "sprite": "bar" },
+                { "kind": "sprite", "id": "bar_b", "sprite": "bar", "at": [0, 10] } ] },
+            { "kind": "text", "id": "speed", "style": "OSD_24_bold", "align": "centre", "box": 40,
+              "cap_height": 9.5, "at": [0, -6], "value": { "game": "speed_str" } }
+        ],
+        "variants": { "f1_25": variant("f1_25"), "f2": f2 }
+    })
+}
+
+fn bool_value(n: &swofty_formats::pkg::Node, prop: &str) -> Option<bool> {
+    use swofty_formats::pkg::Value;
+    let v = n.props().ok()?.get(prop)?.as_obj()?.get("value")?.as_val()?;
+    match &v.value {
+        Value::Raw(b) => Some(b.first() == Some(&1)),
+        _ => None,
+    }
+}
+
+#[test]
+fn a_variants_decision_placed_adds_and_root_y_compose_for_its_dial_only() {
+    let Some(game) = real() else { return };
+    let stock = GameStock::with_baseline(&game, &Store::open_default().root).unwrap();
+    let dir = std::env::temp_dir().join(format!("swofty-hud-pill-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    png(&dir.join("art/base.png"), 64, 28);
+    png(&dir.join("art/lit.png"), 16, 8);
+    let input = hud::Input {
+        addon: "one.pill".into(),
+        key: "dial".into(),
+        dir: dir.clone(),
+        record: hud::model::HudElement::parse(&pill_record()).unwrap(),
+    };
+    let out = hud::compose(&stock, &[input]).unwrap();
+    let pfx = "one_pill_dial";
+    let scene = Erp::parse(
+        &out.archives
+            .iter()
+            .find(|a| a.file == "hud_scene.erp")
+            .unwrap()
+            .bytes,
+    )
+    .unwrap();
+    let tmpl = Erp::parse(
+        &out.archives
+            .iter()
+            .find(|a| a.file == "hud_template.erp")
+            .unwrap()
+            .bytes,
+    )
+    .unwrap();
+    let t = Pkg::parse(&tmpl.find(dials::TEMPLATE).unwrap().fragments[0].data().unwrap()).unwrap();
+    let k = hud::geom::K;
+    for dial in hud::model::Dial::ALL {
+        let f = dials::facts(dial);
+        let p = Pkg::parse(&scene.find(f.scene).unwrap().fragments[0].data().unwrap()).unwrap();
+        let root = swofty_core::ui::idf::scenes(&p).unwrap()[0]
+            .o()
+            .unwrap()
+            .at("scene")
+            .unwrap();
+        let ours = swofty_core::ui::idf::find(root, pfx).unwrap();
+        let kids: Vec<String> = ours
+            .o()
+            .unwrap()
+            .at("children")
+            .unwrap()
+            .a()
+            .unwrap()
+            .iter()
+            .map(|c| swofty_core::ui::idf::elem_name(c).to_owned())
+            .collect();
+        let y = swofty_core::ui::idf::position(ours).unwrap()[1];
+        let ctl = format!("{}.{pfx}_ctl", f.race_parent);
+        let drs = find_path(&t.root, &format!("{ctl}.d_drs"));
+        if dial == hud::model::Dial::F126 {
+            assert_eq!(
+                kids,
+                [
+                    format!("{pfx}_base"),
+                    format!("{pfx}_energy"),
+                    format!("{pfx}_speed_n")
+                ],
+                "{}",
+                f.scene
+            );
+            assert!(drs.is_err(), "the base dial has no pill decision");
+            assert!(
+                (y - (f.bottom_y + k * 20.0)).abs() < 1e-4,
+                "{}: root y {y}",
+                f.scene
+            );
+            continue;
+        }
+        assert_eq!(
+            kids,
+            [
+                format!("{pfx}_plate"),
+                format!("{pfx}_base"),
+                format!("{pfx}_pill"),
+                format!("{pfx}_energy"),
+                format!("{pfx}_speed_n")
+            ],
+            "{}",
+            f.scene
+        );
+        let energy = swofty_core::ui::idf::find(root, &format!("{pfx}_energy")).unwrap();
+        let bars: Vec<String> = energy
+            .o()
+            .unwrap()
+            .at("children")
+            .unwrap()
+            .a()
+            .unwrap()
+            .iter()
+            .map(|c| swofty_core::ui::idf::elem_name(c).to_owned())
+            .collect();
+        assert_eq!(bars, [format!("{pfx}_bar_a")], "{}", f.scene);
+        if dial == hud::model::Dial::F2 {
+            let want = -k * 16.0;
+            assert_eq!(
+                y as f32, want as f32,
+                "{}: an explicit root y lands exactly",
+                f.scene
+            );
+        } else {
+            let want = f.bottom_y + k * 20.0;
+            assert!((y - want).abs() < 1e-4, "{}: root y {y}, want {want}", f.scene);
+        }
+        let node = swofty_core::ui::node::node_at(&t.root, &drs.unwrap()).unwrap();
+        assert_eq!(node.type_code(), "MVCD", "{ctl}");
+        let idle = find_path(&t.root, &format!("{ctl}.v_pill_idle")).unwrap();
+        let live = find_path(&t.root, &format!("{ctl}.v_pill_live")).unwrap();
+        assert_eq!(
+            bool_value(swofty_core::ui::node::node_at(&t.root, &idle).unwrap(), "visible"),
+            Some(true),
+            "{ctl}: the initial state's element starts shown"
+        );
+        assert_eq!(
+            bool_value(swofty_core::ui::node::node_at(&t.root, &live).unwrap(), "visible"),
+            Some(false),
+            "{ctl}: the other state's element starts hidden"
+        );
+        assert!(
+            swofty_core::ui::idf::id_problems(&p).unwrap().is_empty(),
+            "{}",
+            f.scene
+        );
+    }
+    std::fs::remove_dir_all(dir).ok();
 }
