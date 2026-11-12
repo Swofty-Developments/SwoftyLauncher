@@ -691,6 +691,10 @@ fn mod_menu_route(groupings: &[Node]) -> Result<Node> {
 }
 
 pub const SHOWROOM_ROUTE: &str = "swofty_showroom";
+pub const CUSTOMISATION_ROUTE: &str = "swofty_customisation";
+pub const CUSTOMISATION_GROUP: &str = "customisation_f1_life_entry";
+const CUSTOMISATION_FLOW: &str = "customisation_flow";
+const CUSTOMISATION_ENTRY: &str = "enter_f1_life_customisation";
 pub const HOME_BACK_ROUTE: &str = "swofty_home";
 pub const BACK_HOME_FROM_CONTAINER: &str = "swofty_back_home";
 pub const TIME_TRIAL_ROUTE: &str = "swofty_time_trial";
@@ -841,6 +845,88 @@ fn showroom_route(groupings: &[Node]) -> Result<Node> {
     Ok(r)
 }
 
+/// The main menu's Customisation route: a copy of fe_home's own `customisation` (a wipe, close the home screen and
+/// its slices, then `Migrate customisation_flow enter_f1_life_customisation`). F1 World's own `customisation`
+/// closes the hub instead.
+fn customisation_route(groupings: &[Node]) -> Result<Node> {
+    let mut r = home_route(groupings, "customisation")?;
+    let cmds = r.o()?.at("Commands")?.a()?;
+    let enters = cmds.iter().any(|c| {
+        cmd_type(c) == Some("Migrate")
+            && attr_value(c, "Flow").as_deref() == Some(CUSTOMISATION_FLOW)
+            && attr_value(c, "Activator").as_deref() == Some(CUSTOMISATION_ENTRY)
+    });
+    let closes = cmds
+        .iter()
+        .any(|c| cmd_type(c) == Some("CloseScreen") && attr_value(c, "Target").as_deref() == Some("fe_home"));
+    if !enters || !closes {
+        return Err(err(format!(
+            "fe_home's customisation route does not close fe_home and enter {CUSTOMISATION_FLOW} at {CUSTOMISATION_ENTRY}"
+        )));
+    }
+    set_str(r.o_mut()?, "Id", CUSTOMISATION_ROUTE)?;
+    Ok(r)
+}
+
+/// routes_customisation_and_store.uir with `swofty_back_home` in the Customisation screen's group, the activity
+/// container's `home` route from `f1_world` (routes_f1_world.uir) as `f1_world_routes` adds it: a wipe, `Migrate
+/// frontend_flow enter_fe_home`, then fe_home with its slices and scene. The game's `back_1` there migrates to
+/// the F1 World hub; the core swaps it for this route after a Customisation card press.
+pub fn customisation_routes(data: &[u8], f1_world: &[u8]) -> Result<Vec<u8>> {
+    let stock = swofty_formats::pkg::Pkg::parse(f1_world)?;
+    let home = stock
+        .root
+        .o()?
+        .at("RouteGroupings")?
+        .a()?
+        .iter()
+        .find(|g| id_of(g) == Some("f1_world_activity_container"))
+        .ok_or_else(|| err("the routes have no f1_world_activity_container grouping"))?
+        .o()?
+        .at("Routes")?
+        .a()?
+        .iter()
+        .find(|r| id_of(r) == Some("home"))
+        .cloned()
+        .ok_or_else(|| err("f1_world_activity_container has no home route"))?;
+    let home = container_home_route(&home)?;
+    edit(data, |p| {
+        let routes = root_obj(p)?
+            .at_mut("RouteGroupings")?
+            .a_mut()?
+            .iter_mut()
+            .find(|g| id_of(g) == Some(CUSTOMISATION_GROUP))
+            .ok_or_else(|| err(format!("the routes have no {CUSTOMISATION_GROUP} grouping")))?
+            .o_mut()?
+            .at_mut("Routes")?
+            .a_mut()?;
+        if !routes.iter().any(|r| id_of(r) == Some("back_1")) {
+            return Err(err(format!("{CUSTOMISATION_GROUP} has no back_1 route")));
+        }
+        routes.retain(|r| id_of(r) != Some(BACK_HOME_FROM_CONTAINER));
+        routes.push(home);
+        Ok(())
+    })
+}
+
+pub fn has_route(data: &[u8], group: &str, id: &str) -> bool {
+    let Ok(p) = swofty_formats::pkg::Pkg::parse(data) else {
+        return false;
+    };
+    p.root
+        .o()
+        .and_then(|o| o.at("RouteGroupings"))
+        .and_then(|g| g.a())
+        .is_ok_and(|gs| {
+            gs.iter().filter(|g| id_of(g) == Some(group)).any(|g| {
+                g.o()
+                    .and_then(|o| o.at("Routes"))
+                    .and_then(|r| r.a())
+                    .is_ok_and(|rs| rs.iter().any(|r| id_of(r) == Some(id)))
+            })
+        })
+}
+
 fn home_route(groupings: &[Node], id: &str) -> Result<Node> {
     groupings
         .iter()
@@ -896,6 +982,7 @@ pub fn routes(data: &[u8], groups: Vec<Node>, optional: Vec<Node>) -> Result<Vec
         let gs = root_obj(p)?.at_mut("RouteGroupings")?.a_mut()?;
         let replace = mod_menu_route(gs)?;
         let showroom = showroom_route(gs).ok();
+        let customisation = customisation_route(gs).ok();
         let nav = nav_routes(gs).ok();
         for g in optional {
             if !gs.iter().any(|x| id_of(x) == id_of(&g)) {
@@ -923,7 +1010,7 @@ pub fn routes(data: &[u8], groups: Vec<Node>, optional: Vec<Node>) -> Result<Vec
             routes.retain(|r| id_of(r) != Some(SHOWROOM_ROUTE));
             routes.push(showroom);
         }
-        for r in nav.into_iter().flatten() {
+        for r in nav.into_iter().flatten().chain(customisation) {
             let id = id_of(&r).unwrap_or_default().to_owned();
             routes.retain(|x| id_of(x) != Some(&id));
             routes.push(r);
@@ -1913,6 +2000,160 @@ mod tests {
             attr_value(&stock_cmds[1], "Video").as_deref(),
             Some("ui_wipes/ui_wipe_tiny_right.bk2")
         );
+    }
+
+    fn home_customisation_route(flow: &str) -> Node {
+        route(
+            "customisation",
+            vec![
+                route_cmd(
+                    "TransitionScreen",
+                    1,
+                    &[("Direction", "out"), ("Target", "fe_home")],
+                    None,
+                ),
+                route_cmd("CloseScreen", 2, &[("Target", "fe_home")], Some("1")),
+                migrate_cmd(3, flow, CUSTOMISATION_ENTRY),
+            ],
+            "2,3",
+            1,
+            Some(CUSTOMISATION_GROUP),
+        )
+    }
+
+    #[test]
+    fn the_home_gets_a_customisation_route_copied_from_its_own() {
+        let data = pkg_of(vec![
+            route_group(
+                "fe_home",
+                vec![
+                    route("options", vec![], "", 0, None),
+                    home_customisation_route(CUSTOMISATION_FLOW),
+                ],
+            ),
+            route_group("settings_container", vec![]),
+        ]);
+        let out = routes(&data, Vec::new(), Vec::new()).unwrap();
+        assert!(has_route(&out, "fe_home", CUSTOMISATION_ROUTE));
+        assert!(has_route(&out, "fe_home", "customisation"));
+        let p = Pkg::parse(&out).unwrap();
+        let ours = route_in(&p, "fe_home", CUSTOMISATION_ROUTE);
+        let cmds = ours.o().unwrap().at("Commands").unwrap().a().unwrap();
+        assert_eq!(attr_value(&cmds[1], "Target").as_deref(), Some("fe_home"));
+        assert_eq!(attr_value(&cmds[2], "Flow").as_deref(), Some(CUSTOMISATION_FLOW));
+        assert_eq!(
+            attr_value(&cmds[2], "Activator").as_deref(),
+            Some(CUSTOMISATION_ENTRY)
+        );
+        let twice = routes(&out, Vec::new(), Vec::new()).unwrap();
+        let ids = route_ids_of(&Pkg::parse(&twice).unwrap(), "fe_home");
+        assert_eq!(ids.iter().filter(|i| *i == CUSTOMISATION_ROUTE).count(), 1);
+    }
+
+    #[test]
+    fn a_home_customisation_route_into_another_flow_is_not_copied() {
+        for groups in [
+            vec![route_group(
+                "fe_home",
+                vec![route("options", vec![], "", 0, None)],
+            )],
+            vec![route_group(
+                "fe_home",
+                vec![
+                    route("options", vec![], "", 0, None),
+                    home_customisation_route("frontend_flow"),
+                ],
+            )],
+        ] {
+            let mut groups = groups;
+            groups.push(route_group("settings_container", vec![]));
+            let out = routes(&pkg_of(groups), Vec::new(), Vec::new()).unwrap();
+            assert!(!has_route(&out, "fe_home", CUSTOMISATION_ROUTE));
+        }
+    }
+
+    #[test]
+    fn the_customisation_screen_gets_the_containers_route_to_the_main_menu() {
+        let f1_world = pkg_of(vec![route_group(
+            "f1_world_activity_container",
+            vec![home_route_with(
+                "ui_wipes/ui_wipe_tiny_right.bk2",
+                "tran_wipe_tiny_right_dly_c",
+            )],
+        )]);
+        let back = migrate_cmd(1, "frontend_flow", "enter_fe_f1_world");
+        let data = pkg_of(vec![
+            route_group(
+                CUSTOMISATION_GROUP,
+                vec![
+                    route("back_1", vec![back], "1", 2, Some("fe_f1_world")),
+                    route("back_2", vec![], "", 2, Some("fe_news")),
+                ],
+            ),
+            route_group(
+                "customisation_driver_suit",
+                vec![route("back_1", vec![], "", 2, None)],
+            ),
+        ]);
+        let out = customisation_routes(&data, &f1_world).unwrap();
+        let p = Pkg::parse(&out).unwrap();
+        assert_eq!(
+            route_ids_of(&p, CUSTOMISATION_GROUP),
+            ["back_1", "back_2", BACK_HOME_FROM_CONTAINER]
+        );
+        assert_eq!(route_ids_of(&p, "customisation_driver_suit"), ["back_1"]);
+        assert!(has_route(&out, CUSTOMISATION_GROUP, BACK_HOME_FROM_CONTAINER));
+        let ours = route_in(&p, CUSTOMISATION_GROUP, BACK_HOME_FROM_CONTAINER);
+        let cmds = ours.o().unwrap().at("Commands").unwrap().a().unwrap();
+        assert_eq!(attr_value(&cmds[4], "Flow").as_deref(), Some("frontend_flow"));
+        assert_eq!(
+            attr_value(&cmds[4], "Activator").as_deref(),
+            Some("enter_fe_home")
+        );
+        assert_eq!(
+            cmds[3].o().unwrap().str_at("Dependencies").unwrap(),
+            "5",
+            "the overlay opens after the migration"
+        );
+        let stock_back = route_in(&p, CUSTOMISATION_GROUP, "back_1");
+        let stock_cmds = stock_back.o().unwrap().at("Commands").unwrap().a().unwrap();
+        assert_eq!(
+            attr_value(&stock_cmds[0], "Activator").as_deref(),
+            Some("enter_fe_f1_world"),
+            "the game's own Back stays"
+        );
+        let twice = customisation_routes(&out, &f1_world).unwrap();
+        let ids = route_ids_of(&Pkg::parse(&twice).unwrap(), CUSTOMISATION_GROUP);
+        assert_eq!(ids.iter().filter(|i| *i == BACK_HOME_FROM_CONTAINER).count(), 1);
+    }
+
+    #[test]
+    fn the_customisation_back_route_needs_the_stock_screen_and_container() {
+        let f1_world = pkg_of(vec![route_group(
+            "f1_world_activity_container",
+            vec![home_route_with(
+                "ui_wipes/ui_wipe_tiny_right.bk2",
+                "tran_wipe_tiny_right_dly_c",
+            )],
+        )]);
+        let no_back = pkg_of(vec![route_group(
+            CUSTOMISATION_GROUP,
+            vec![route("open", vec![], "", 0, None)],
+        )]);
+        assert!(customisation_routes(&no_back, &f1_world).is_err());
+        let no_group = pkg_of(vec![route_group(
+            "customisation_car",
+            vec![route("back_1", vec![], "", 2, None)],
+        )]);
+        assert!(customisation_routes(&no_group, &f1_world).is_err());
+        let no_home = pkg_of(vec![route_group("f1_world_activity_container", vec![])]);
+        let data = pkg_of(vec![route_group(
+            CUSTOMISATION_GROUP,
+            vec![route("back_1", vec![], "", 2, None)],
+        )]);
+        assert!(customisation_routes(&data, &no_home).is_err());
+        assert!(!has_route(&data, CUSTOMISATION_GROUP, BACK_HOME_FROM_CONTAINER));
+        assert!(!has_route(b"not a pkg", CUSTOMISATION_GROUP, "back_1"));
     }
 
     fn group<'a>(p: &'a Pkg, id: &str) -> Option<&'a Node> {
