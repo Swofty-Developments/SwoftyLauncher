@@ -162,17 +162,51 @@ HRESULT STDMETHODCALLTYPE create_comp_hook(IDXGIFactory2 *f, IUnknown *dev, cons
     return hr;
 }
 
+using SlGetNativeInterface = int(__cdecl *)(void *proxy, void **native);
+
 bool learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg, Swapchain &out)
 {
     static void *refused;
     if (sc == refused)
         return false;
     ID3D12CommandQueue *q = nullptr;
-    if (FAILED(sc->GetDevice(IID_PPV_ARGS(&q))) || !q) {
+    HRESULT hr = sc->GetDevice(IID_PPV_ARGS(&q));
+    const char *via = "IDXGISwapChain::GetDevice at Present";
+    std::string native_note;
+    if (FAILED(hr) || !q) {
+        q = nullptr;
+        HMODULE sl = GetModuleHandleW(L"sl.interposer.dll");
+        auto get_native = sl ? reinterpret_cast<SlGetNativeInterface>(GetProcAddress(sl, "slGetNativeInterface"))
+                             : nullptr;
+        if (!sl)
+            native_note = "sl.interposer.dll is not loaded";
+        else if (!get_native)
+            native_note = "sl.interposer.dll has no slGetNativeInterface";
+        else {
+            void *native = nullptr;
+            int sr = get_native(sc, &native);
+            if (!hud::guard::streamline_result_ok(sr) || !native) {
+                char buf[64];
+                snprintf(buf, sizeof buf, "slGetNativeInterface returned %d", sr);
+                native_note = buf;
+            } else {
+                HRESULT nhr = static_cast<IDXGISwapChain *>(native)->GetDevice(IID_PPV_ARGS(&q));
+                if (FAILED(nhr) || !q) {
+                    q = nullptr;
+                    char buf[96];
+                    snprintf(buf, sizeof buf, "native swapchain %p GetDevice failed: 0x%08lx", native,
+                             static_cast<unsigned long>(nhr));
+                    native_note = buf;
+                } else
+                    via = "slGetNativeInterface + IDXGISwapChain::GetDevice at Present";
+            }
+        }
+    }
+    if (!q) {
         refused = sc;
-        swofty::log("[d3d12] swapchain %p was made before the creation hooks and does not name a D3D12 command queue; "
-                    "ignored",
-                    static_cast<void *>(sc));
+        swofty::log("[d3d12] swapchain %p was made before the creation hooks and its present queue cannot be read; "
+                    "ignored (GetDevice: 0x%08lx; %s)",
+                    static_cast<void *>(sc), static_cast<unsigned long>(hr), native_note.c_str());
         return false;
     }
     D3D12_COMMAND_QUEUE_DESC qd = q->GetDesc();
@@ -181,7 +215,7 @@ bool learn(IDXGISwapChain3 *sc, void *caller, const std::string &pfg, Swapchain 
     out = Swapchain();
     out.sc = sc;
     out.queue = q;
-    out.how = "IDXGISwapChain::GetDevice at Present";
+    out.how = via;
     out.by = by;
     out.fg = hud::guard::learned_fg(qd.Type == D3D12_COMMAND_LIST_TYPE_DIRECT, pfg);
     out.streamline = hud::guard::streamline_caller(by);

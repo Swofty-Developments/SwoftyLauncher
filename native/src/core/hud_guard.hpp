@@ -73,6 +73,12 @@ inline bool streamline_caller(std::string_view path)
     return same_name(name, "sl.interposer.dll") || same_name(name, "sl.common.dll") || streamline_hook(name);
 }
 
+// sl::Result::eOk is 0; Streamline's other codes are all failures.
+inline bool streamline_result_ok(int result)
+{
+    return result == 0;
+}
+
 // What a queue learned from a swapchain's own GetDevice makes of the swapchain: only a direct queue is drawn on.
 inline std::string learned_fg(bool direct_queue, std::string_view present_fg)
 {
