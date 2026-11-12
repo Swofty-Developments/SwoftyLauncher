@@ -19,6 +19,9 @@ use crate::session::Config;
 
 const WATCH_EVERY: Duration = Duration::from_secs(5);
 const FINAL_SWEEP: Duration = Duration::from_secs(6);
+/// How long a new lap waits for the replay the core saves of a personal best, so the two upload together.
+const REPLAY_WAIT: Duration = Duration::from_secs(10);
+const HOLD_POLL: Duration = Duration::from_millis(300);
 const NONCE_RETRIES: [Duration; 3] = [
     Duration::from_secs(2),
     Duration::from_secs(5),
@@ -170,6 +173,10 @@ pub fn flush(data: &Path, game: Option<&Path>, config: &Config) -> Report {
 
 /// Upload the game replays the core saved in `game` whose laps the server has, if someone is signed in.
 pub fn replays(data: &Path, game: &Path, config: &Config, stop: &dyn Fn() -> bool, say: &dyn Fn(&str)) {
+    static BUSY: std::sync::Mutex<()> = std::sync::Mutex::new(());
+    let Ok(_busy) = BUSY.try_lock() else {
+        return;
+    };
     if !game_replay::any(game) {
         return;
     }
@@ -230,9 +237,17 @@ impl Watcher {
             .spawn(move || {
                 let mut cached: Option<Option<Value>> = None;
                 while !stop.load(Ordering::Relaxed) {
-                    if has_laps(&game) || has_outbox(&data) {
+                    let laps = has_laps(&game);
+                    if laps && waiting_for_replay(&game) {
+                        std::thread::sleep(HOLD_POLL);
+                        continue;
+                    }
+                    if laps || has_outbox(&data) {
                         let print = cached.get_or_insert_with(|| fingerprint()).clone();
                         pass(&data, &game, &config, print.as_ref(), None, &*say);
+                        if laps {
+                            replays(&data, &game, &config, &|| stop.load(Ordering::Relaxed), &*say);
+                        }
                     }
                     let until = Instant::now() + WATCH_EVERY;
                     while Instant::now() < until && !stop.load(Ordering::Relaxed) {
@@ -292,6 +307,32 @@ impl Watcher {
     }
 }
 
+/// Whether a lap is held back for its replay: the newest lap is younger than [`REPLAY_WAIT`] and no
+/// replay saved since it was written is ready yet.
+fn hold_for_replay(lap_age: Duration, replay_ready: bool) -> bool {
+    !replay_ready && lap_age < REPLAY_WAIT
+}
+
+fn waiting_for_replay(game: &Path) -> bool {
+    let Some(written) = std::fs::read_dir(laps_dir(game)).ok().and_then(|d| {
+        d.filter_map(Result::ok)
+            .filter(|e| e.path().extension().is_some_and(|x| x == "swlap"))
+            .filter_map(|e| e.metadata().ok()?.modified().ok())
+            .max()
+    }) else {
+        return false;
+    };
+    let age = written.elapsed().unwrap_or_default();
+    let since = written
+        .duration_since(std::time::UNIX_EPOCH)
+        .map_or(0, |d| d.as_secs())
+        .saturating_sub(2);
+    let ready = game_replay::ready(game, unix_now())
+        .iter()
+        .any(|p| p.secs >= since);
+    hold_for_replay(age, ready)
+}
+
 fn has_laps(game: &Path) -> bool {
     std::fs::read_dir(laps_dir(game)).is_ok_and(|d| {
         d.filter_map(Result::ok)
@@ -333,6 +374,14 @@ fn pass(
 
 #[cfg(test)]
 mod tests {
+
+    #[test]
+    fn a_new_lap_waits_for_its_replay_but_never_long() {
+        assert!(super::hold_for_replay(Duration::from_secs(2), false));
+        assert!(!super::hold_for_replay(Duration::from_secs(2), true));
+        assert!(!super::hold_for_replay(super::REPLAY_WAIT, false));
+    }
+
     use super::*;
     use crate::timetrial::api::Uploaded;
 
