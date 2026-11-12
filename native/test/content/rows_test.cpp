@@ -232,7 +232,7 @@ static void leaderboard_tests(const std::string &regs)
     st.set_validator(&registry::schema_validator());
     const SwoftyRegistry *t = registry::table();
     for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
-        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.2.json" : "/1.0.json"));
+        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.3.json" : "/1.0.json"));
         t->declare(name, SwoftyText{schema.data(), schema.size()});
     }
     auto package = [](const char *list, const char *board) {
@@ -2035,7 +2035,7 @@ static void virtual_list_tests(const std::string &regs)
     st.set_validator(&registry::schema_validator());
     const SwoftyRegistry *t = registry::table();
     for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
-        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.2.json" : "/1.0.json"));
+        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.3.json" : "/1.0.json"));
         t->declare(name, SwoftyText{schema.data(), schema.size()});
     }
     auto package = [](const char *list, bool virt) {
