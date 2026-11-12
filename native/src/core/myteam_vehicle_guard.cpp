@@ -45,6 +45,7 @@ uintptr_t next_base = 0;
 bool offered = false, settled = false;
 std::mutex logged_lock;
 mv::Labels logged;
+mv::Labels left_logged;
 
 struct Game {
     bool u64(uint64_t a, uint64_t &out)
@@ -92,12 +93,28 @@ void say(const mv::Skip &skip)
                     (unsigned long long)skip.index, skip.stat_id, skip.label.c_str(), more);
 }
 
+void say_left(const mv::Skip &skip)
+{
+    bool first;
+    {
+        std::lock_guard<std::mutex> hold(logged_lock);
+        first = left_logged.first(skip.label);
+    }
+    if (first)
+        swofty::log("[myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s', whose row index reads as missing; "
+                    "it is not a known addon's vehicle, so the game's own load runs for it",
+                    (unsigned long long)skip.index, skip.stat_id, skip.label.c_str());
+}
+
 void ai_config_load(SwoftyContext *c)
 {
     Game game;
     mv::Skip skip;
-    if (!mv::skip_base(game, c->rsp, c->r12, skip))
+    if (!mv::skip_base(game, c->rsp, c->r12, skip)) {
+        if (skip.left)
+            say_left(skip);
         return;
+    }
     c->rdi = skip.container;
     c->r12 = skip.index;
     c->rip = next_base;
