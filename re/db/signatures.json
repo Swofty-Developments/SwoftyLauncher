@@ -187126,7 +187126,7 @@
     }
    ],
    "used_by": [
-    "addons/career-editor/native/src/season.cpp"
+    "addons/career-editor/native/src/weekend_trace.cpp"
    ]
   },
   {
@@ -187152,7 +187152,7 @@
     }
    ],
    "used_by": [
-    "addons/career-editor/native/src/season.cpp"
+    "addons/career-editor/native/src/weekend_trace.cpp"
    ]
   }
  ]
