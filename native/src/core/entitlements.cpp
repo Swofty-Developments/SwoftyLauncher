@@ -58,7 +58,7 @@ void entitlements_tick()
     static unsigned recheck = 0;
     int now = f1_2026.load();
     if (now == ent::OWNED || !code_ready() || !ent::frontend_settled(frontend_at.load(), GetTickCount64()) ||
-        (now == ent::NOT_OWNED && ++recheck % 600))
+        (now == ent::NOT_OWNED && ++recheck % 100))
         return;
     uintptr_t slot = swofty::api->resolve("g_FeTile_Ctx");
     if (!slot || !swofty::game::FeTile_Check_EntrantListUsable.address()) {

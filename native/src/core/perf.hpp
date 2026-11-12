@@ -66,6 +66,7 @@ private:
 void flow_tick();
 bool frame_claim();
 void frame_release();
+void background();
 void mark(const char *kind, const std::string &what);
 void attach();
 void start();

@@ -34,12 +34,13 @@
 // The lap recorder: in a Time Trial, while swofty\tt.json carries "tt_boards": true, the flow tick samples the
 // player's car and the line crossings of ers_newlap.cpp (session.lap) cut it into laps; each completed lap is written
 // to swofty\laps\<UTC stamp>-<n>.swlap (lap_file_logic.hpp). The state machine is lap_rec_logic.hpp. Crossings are
-// queued and handled on the next flow tick, so the game reads stay on the flow thread. The flow tick runs several
-// times a frame; the car is read only when the recorder is due a sample (60 Hz), under a Trust so the heap checks are
+// queued and handled on the next flow tick, so the game reads stay on the flow thread. The flow tick runs once a
+// frame; the car is read only when the recorder is due a sample (60 Hz), under a Trust so the heap checks are
 // paid once per HEAP_TRUST_MS, and the inbox is drained only when a crossing, a game result or a blob is waiting.
 // The board (content, track) and the player's team label are read once per session, during the out-lap, never at
 // the line. At the line the flow thread builds the file header from state it already has and hands the samples to
-// one writer thread, which builds the file, runs laps.sealing and writes it; the completions (the bridge's
+// one writer thread, which builds the file, runs laps.sealing (under a Trust, its time kept off the game threads in
+// perf) and writes it; the completions (the bridge's
 // lap_finished, laps.recorded) come back through an Outbox and fire from the flow tick in lap order.
 // lap_result() decides the lap time: the game's own lap record when the hook below delivered one, else the clock.
 // With the game hooks armed a completed lap waits up to two seconds for the game's lap result and, on a valid lap, for
@@ -370,6 +371,7 @@ void write_job(Job &j)
 {
     LARGE_INTEGER t0, t1, f;
     QueryPerformanceCounter(&t0);
+    mem::Trust trust(runtime::HEAP_TRUST_MS);
     std::vector<uint8_t> body = lf::build(j.header, j.layout, j.samples.data(), j.count, j.ghost, {});
     body.resize(body.size() - 8);
 
@@ -413,6 +415,7 @@ void write_job(Job &j)
 
 void worker_main()
 {
+    perf::background();
     for (;;) {
         Job j;
         {
