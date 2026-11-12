@@ -499,10 +499,20 @@ inline bool replay_precheck_blocks(bool main_found, uint64_t full_buffer, uint64
     return main_found && (full_buffer == 0 || key_buffer == 0);
 }
 
-// A lap marks a replay save when it is valid (or validity is unknown, -1) and faster than the session's best so far (0 = none yet).
-inline bool replay_lap_is_best(int64_t lap_ms, int valid, int64_t session_best_ms)
+// A lap marks a replay save when it is valid (or validity is unknown, -1) and faster than the session's best so far (0 = none yet). A best
+// the game confirmed valid is never taken by a lap of unknown validity, and a lap the game confirms beats a best that was not confirmed:
+// a restart mid-lap writes a short clock-timed lap that would otherwise hold the best for the whole session.
+inline bool replay_lap_is_best(int64_t lap_ms, int valid, int64_t session_best_ms, bool best_confirmed)
 {
-    return lap_ms > 0 && valid != 0 && (session_best_ms <= 0 || lap_ms < session_best_ms);
+    if (lap_ms <= 0 || valid == 0)
+        return false;
+    if (session_best_ms <= 0)
+        return true;
+    if (valid == 1 && !best_confirmed)
+        return true;
+    if (valid != 1 && best_confirmed)
+        return false;
+    return lap_ms < session_best_ms;
 }
 
 // The save may be started only with the bridge on, with a replay system whose vtable is the game's and a recording enabled. The content is
