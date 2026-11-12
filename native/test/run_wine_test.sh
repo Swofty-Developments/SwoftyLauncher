@@ -998,7 +998,7 @@ for guard in on off; do
     if [[ $guard == on ]]; then
         once "myteam_vehicle on: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(my team vehicle base guard\)': 1 mixin"
         once "myteam_vehicle on: the guard is armed" '\[myteam\] vehicle base guard armed'
-        once "myteam_vehicle on: the missing vehicle is logged once, naming the base and the row" "\[myteam\] save: My Team vehicle base 1 \(stat id 0\) uses vehicle 'myteam_mes_porsche_2026', which is not in the game data"
+        once "myteam_vehicle on: the missing vehicle is logged once, naming the base and the row" "\[myteam\] save: My Team vehicle base 1 \(stat id 0\) uses vehicle 'myteam_mes_porsche_2026' from More Engine Suppliers \(mildtdesign\.more-engine-suppliers\), which is not in the game data"
         grep -q 'FAIL' "$OUT/myteam_vehicle.out" && { echo "FAIL: myteam_vehicle on: a check failed"; status=1; } || echo "ok  : myteam_vehicle on: the fake game's checks pass"
         grep -q 'myteam vehicle on: the load returned, 2 bases stored' "$OUT/myteam_vehicle.out" && echo "ok  : myteam_vehicle on: the load returned with the two bases that have a row" ||
             { echo "FAIL: myteam_vehicle on: the load did not return"; status=1; }

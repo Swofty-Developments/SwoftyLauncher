@@ -114,6 +114,12 @@ int main()
     empty_label.s[LABEL] = "";
     expect(mv::skip_base(empty_label, RSP, ROW, skip) && skip.label == "(unreadable)", "an empty file_name still skips the base");
 
+    const mv::KnownAddon *mes = mv::addon_for("myteam_mes_porsche_2026");
+    expect(mes && !std::strcmp(mes->name, "More Engine Suppliers") && !std::strcmp(mes->id, "mildtdesign.more-engine-suppliers"),
+           "a myteam_mes_ vehicle is named as More Engine Suppliers");
+    expect(!mv::addon_for("myteam_ferrari") && !mv::addon_for("mes_porsche") && !mv::addon_for(""),
+           "other vehicles name no addon");
+
     mv::Labels labels;
     expect(labels.first("myteam_mes_porsche_2026"), "the first skip of a vehicle is logged");
     expect(!labels.first("myteam_mes_porsche_2026"), "a second skip of the same vehicle is not");

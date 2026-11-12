@@ -33,6 +33,24 @@ inline uint32_t stat_id(uint32_t saved)
     return saved & STAT_ID_MASK;
 }
 
+struct KnownAddon {
+    const char *prefix;
+    const char *name;
+    const char *id;
+};
+
+inline constexpr KnownAddon KNOWN_ADDONS[] = {
+    {"myteam_mes_", "More Engine Suppliers", "mildtdesign.more-engine-suppliers"},
+};
+
+inline const KnownAddon *addon_for(const std::string &label)
+{
+    for (const KnownAddon &a : KNOWN_ADDONS)
+        if (label.rfind(a.prefix, 0) == 0)
+            return &a;
+    return nullptr;
+}
+
 struct Skip {
     uint64_t container = 0;
     uint64_t index = 0;

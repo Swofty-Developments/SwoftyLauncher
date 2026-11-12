@@ -18,14 +18,17 @@
 // Gdb_Find_RowByLabel, and builds the base's AI config from that row with Sess_Load_VehicleAiConfig, with no check
 // that the row was found. A file_name whose row is gone, such as an engine supplier addon's My Team base
 // (myteam_mes_porsche_2026) with the addon off, leaves the row 'Invalid' with index -1. The first field read then
-// returns Gdb_Get_FieldInt's miss slot, and Sess_Load_VehicleAiConfig faults reading -1 (ACCESS_VIOLATION at
-// F1_25.exe+0x2502abd, Sess_Load_VehicleAiConfig+0x2dd < Game_Load_MyTeamVehicleBases+0xafa).
+// returns Gdb_Get_FieldInt's miss slot, and Sess_Load_VehicleAiConfig faults reading -1: at F1_25.exe+0x2502abd
+// (Sess_Load_VehicleAiConfig+0x2dd) when the slot's qword is not canonical, or in Gdb_Find_RowByLabel+0x31 under
+// Sess_Load_VehicleAiConfig+0x452 when it is and the vehicle_package label is read through it. The slot's content
+// depends on the loaded game data, so the same save crashes at either place.
 //
 // site_Game_MyTeamVehicleBases_AiConfigLoad is the AI config call's argument setup (r12 = the row). When the row's
 // index is -1 the guard restores the loop's index and container from the frame and continues at
 // site_Game_MyTeamVehicleBases_NextBase, the loop step after the game stores a base. That base is not stored and the
 // rest of the save loads. A base whose row exists runs the game's code unchanged. Each missing row is logged once with
-// the base and the row's name, so Send Logs names the addon to turn back on.
+// the base and the row's name, and with the addon's name for a row prefix a known addon uses (myteam_mes_ is More
+// Engine Suppliers), so Send Logs names the addon to turn back on.
 //
 // SWOFTY_MYTEAM_VEHICLE_GUARD=0 turns it off.
 
@@ -73,12 +76,19 @@ void say(const mv::Skip &skip)
         first = logged.first(skip.label);
         last = logged.last();
     }
-    if (first)
+    if (!first)
+        return;
+    const char *more = last ? " (further vehicles are not logged)" : "";
+    if (const mv::KnownAddon *addon = mv::addon_for(skip.label))
+        swofty::log("[myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s' from %s (%s), which is not in "
+                    "the game data (no entrants.vehicles row; the addon is off or gone); the base is skipped and the rest of the "
+                    "career loads. Turn %s back on to bring this car back%s",
+                    (unsigned long long)skip.index, skip.stat_id, skip.label.c_str(), addon->name, addon->id, addon->name, more);
+    else
         swofty::log("[myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s', which is not in the game data "
                     "(no entrants.vehicles row; the addon that adds it is off or gone); the base is skipped and the rest of "
                     "the career loads. Turn that addon back on to bring this car back%s",
-                    (unsigned long long)skip.index, skip.stat_id, skip.label.c_str(),
-                    last ? " (further vehicles are not logged)" : "");
+                    (unsigned long long)skip.index, skip.stat_id, skip.label.c_str(), more);
 }
 
 void ai_config_load(SwoftyContext *c)
