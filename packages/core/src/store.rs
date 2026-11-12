@@ -882,11 +882,7 @@ impl Store {
     /// Refuses a name that isn't valid, or that another profile holds. Windows ignores
     /// capitals in file names, so `Grid` and `grid` would be one profile's files.
     fn check_new_profile_name(&self, name: &str) -> Result<()> {
-        if !profile::valid_name(name) {
-            return Err(Error::Other(format!(
-                "{name:?} is not a valid profile name (letters, digits, - and _)"
-            )));
-        }
+        check_new_name(name)?;
         if let Some(taken) = self
             .profile_names()?
             .iter()
@@ -989,11 +985,7 @@ impl Store {
     /// straight across would write over the profile and then delete it: it goes by way of
     /// another name.
     fn rename_profile_capitals(&self, from: &str, to: &str) -> Result<Profile> {
-        if !profile::valid_name(to) {
-            return Err(Error::Other(format!(
-                "{to:?} is not a valid profile name (letters, digits, - and _)"
-            )));
-        }
+        check_new_name(to)?;
         if self.profile_names()?.iter().any(|n| n == to) {
             return Err(Error::Other(format!("a profile named {to} already exists")));
         }
@@ -1366,6 +1358,20 @@ fn warn_once(text: String) {
     if seen.insert(text.clone()) {
         eprintln!("swofty: warning: {text}");
     }
+}
+
+fn check_new_name(name: &str) -> Result<()> {
+    if profile::reads_as_flag(name) {
+        return Err(Error::Other(format!(
+            "{name:?} starts with -, which commands read as an option; start the profile name with a letter, digit or _"
+        )));
+    }
+    if !profile::valid_name(name) {
+        return Err(Error::Other(format!(
+            "{name:?} is not a valid profile name (letters, digits, - and _)"
+        )));
+    }
+    Ok(())
 }
 
 fn load_profile(path: &Path) -> Result<Option<Profile>> {
@@ -2477,6 +2483,39 @@ mod tests {
             assert!(err.to_string().contains("already exists"), "{name}: {err}");
         }
         assert!(!store.profile_names().unwrap().contains(&"Grid".to_owned()));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_profile_named_with_a_leading_dash_keeps_working_but_no_new_one_gets_that_name() {
+        let root = tmp("leading-dash");
+        let store = Store::new(&root);
+        // Earlier launchers let a profile be named this way.
+        store.save_profile(&Profile::new("-swofty")).unwrap();
+        store.set_active_profile("-swofty").unwrap();
+        touch(&store.saves_dir("-swofty").join("remote/save"));
+
+        assert!(store.profile_names().unwrap().contains(&"-swofty".to_owned()));
+        assert_eq!(store.active_profile(), "-swofty");
+        assert_eq!(store.profile("-swofty").unwrap().name, "-swofty");
+
+        for name in ["-grid", "--profile"] {
+            let err = store.create_profile(name, None).unwrap_err();
+            assert!(err.to_string().contains("starts with -"), "{name}: {err}");
+            let err = store.create_profile(name, Some("-swofty")).unwrap_err();
+            assert!(err.to_string().contains("starts with -"), "{name}: {err}");
+            let err = store.rename_profile("-swofty", name).unwrap_err();
+            assert!(err.to_string().contains("starts with -"), "{name}: {err}");
+        }
+        let err = store.rename_profile("-swofty", "-Swofty").unwrap_err();
+        assert!(err.to_string().contains("starts with -"), "{err}");
+        assert!(store.profiles_dir().join("-swofty.json").is_file());
+        assert!(store.saves_dir("-swofty").join("remote/save").is_file());
+
+        assert_eq!(store.rename_profile("-swofty", "swofty").unwrap().name, "swofty");
+        assert_eq!(store.active_profile(), "swofty");
+        assert!(store.saves_dir("swofty").join("remote/save").is_file());
+        assert!(!store.profile_names().unwrap().contains(&"-swofty".to_owned()));
         std::fs::remove_dir_all(&root).ok();
     }
 
