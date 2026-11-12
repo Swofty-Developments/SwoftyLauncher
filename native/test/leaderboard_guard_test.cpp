@@ -24,6 +24,8 @@ int main()
     expect(!lg::board_missing(0x32b702d80), "a board that was found runs the game's code");
     expect(lg::tab_child_missing(0), "a null child list model skips the tab activation");
     expect(!lg::tab_child_missing(0x2e9607f98), "a child list model that exists runs the game's code");
+    expect(lg::tab_child_missing(0) && !lg::tab_child_missing(0x3575c3fa0),
+           "the garage monitor's bound tab activation skips a null child list model the same way");
     expect(lg::reference_board_missing(0), "a reference with no board skips the game's log line");
     expect(!lg::reference_board_missing(0x3410bcc40), "a reference with a board logs it as the game does");
     expect(lg::reference_list_unboarded(0), "a selected list without a leaderboard leaves the reference unset");

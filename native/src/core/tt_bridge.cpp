@@ -359,6 +359,32 @@ bool content_ours()
     return session_custom.load(std::memory_order_relaxed) || tb::addon_content(current_content());
 }
 
+std::atomic<uint8_t> board_state{uint8_t(tb::BoardListed::unknown)};
+std::string board_state_key;
+
+tb::BoardListed session_board_listed() { return tb::BoardListed(board_state.load(std::memory_order_relaxed)); }
+
+bool garage_tab_allowed() { return tb::garage_tab_allowed(bridge_on, content_ours(), session_board_listed()); }
+
+bool garage_board_missing() { return bridge_on && content_ours() && session_board_listed() == tb::BoardListed::missing; }
+
+std::string session_board_text()
+{
+    std::lock_guard<std::mutex> g(lock);
+    return board_state_key.empty() ? std::string("?") : board_state_key;
+}
+
+void note_board_lookup(const std::string &key, bool found)
+{
+    {
+        std::lock_guard<std::mutex> g(lock);
+        board_state_key = key;
+    }
+    uint8_t now = uint8_t(tb::board_listed(found));
+    if (board_state.exchange(now) != now)
+        ++content_gen;
+}
+
 tb::BoardTrack board_track_of(const tb::BoardName &bn)
 {
     std::string code;
@@ -843,6 +869,10 @@ void session_lookup_tick()
                 name.c_str());
 }
 
+tb::Mem cached_mem();
+
+// Runs where onSessionEnter starts its own search for the key it just built: r14 holds the board list at [r14+0x478]+0x10, the
+// list the leaderboard view searches too. The list is only read, through checked reads.
 void board_key_mid(safetyhook::Context &c)
 {
     uint64_t np = peek64(c.rsp + 0x38);
@@ -856,6 +886,20 @@ void board_key_mid(safetyhook::Context &c)
         swofty::log("[boards] session board key %s built by the game at onSessionEnter (%s, from settings tt_weather)", key.c_str(), tb::weather_word(b.weather));
     else
         swofty::log("[boards] session board key at onSessionEnter is not a board name ('%s'); the lap recorder gets no dry/wet from it", key.c_str());
+    if (!b.ok)
+        return;
+    swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
+    tb::Mem m = cached_mem();
+    uint64_t holder = 0, reg = 0, first = 0, last = 0;
+    if (!m.get(c.r14 + 0x478, holder) || !holder || !m.get(holder + 0x10, reg))
+        return;
+    if (reg && (!m.get(reg + tb::BOARD_LIST_BEGIN, first) || !m.get(reg + tb::BOARD_LIST_END, last)))
+        return;
+    tb::BoardScan scan = tb::scan_boards(m, first, last, key);
+    note_board_lookup(key, scan.found);
+    if (!scan.found && bridge_on && content_ours())
+        swofty::log("[boards] session board %s is not among the %zu listed board(s): the garage monitor's leaderboard tab is left to the game for this session", key.c_str(),
+                    scan.listed);
 }
 
 
@@ -947,7 +991,7 @@ void priv_mid(safetyhook::Context &c)
                 }
         }
         int at = type == 2 ? tb::garage_node_offset(win, have) : -1;
-        static std::atomic<int> granted{0}, missed{0}, dumped{0};
+        static std::atomic<int> granted{0}, missed{0}, dumped{0}, unlisted{0};
         if (type == 2 && (diag_on || broad) && dumped.load() < 4 && dumped.fetch_add(1) < 4) {
             swofty::log("[boards] diag: type 2 control 0x%llx (readable window %zu bytes, leaderboard_privilege_check id 0x%x %s in it); first 0x%zx bytes follow",
                         (unsigned long long)c.r14, have, tb::GARAGE_LEADERBOARD_NODE, at >= 0 ? "found" : "not found", have);
@@ -958,6 +1002,13 @@ void priv_mid(safetyhook::Context &c)
                     k += snprintf(line + k, sizeof line - k, " %08x", uint32_t(win[i]) | uint32_t(win[i + 1]) << 8 | uint32_t(win[i + 2]) << 16 | uint32_t(win[i + 3]) << 24);
                 swofty::log("[boards] diag:   %s", line);
             }
+        }
+        if ((at >= 0 || broad) && garage_board_missing()) {
+            if (++unlisted <= 4)
+                swofty::log("[boards] garage monitor: privilege check type 2 of control 0x%llx left to the game: the session's board %s is not listed, so the leaderboard tab "
+                            "would have no board and keeps the game's own no-leaderboard state",
+                            (unsigned long long)c.r14, session_board_text().c_str());
+            return;
         }
         if (at >= 0 || broad) {
             c.rflags |= 0x40;
@@ -1097,13 +1148,15 @@ void garage_done_mid(safetyhook::Context &c)
         return;
     static std::atomic<int> logged{0};
     uint8_t value = runtime::readable(reinterpret_cast<void *>(c.rbx + 8), 1) ? *reinterpret_cast<uint8_t *>(c.rbx + 8) : 0xff;
-    uint8_t result = tb::garage_result(value, bridge_on, content_ours());
-    bool grant = result != value;
+    uint8_t result = tb::garage_result(value, bridge_on, garage_tab_allowed());
+    bool grant = result != value, unlisted = value == 0 && garage_board_missing();
     if (grant)
         *reinterpret_cast<uint8_t *>(c.rbx + 8) = result;
     if (++logged <= 8)
-        swofty::log("[boards] garage monitor: tt_privilege_check_done arrived with %s%s", value == 1 ? "granted" : value == 0 ? "denied" : "an unreadable value",
-                    grant ? "; changed to granted for our content so car_monitor_tt_leaderboard_privilege_check enables the leaderboard tab" : "");
+        swofty::log("[boards] garage monitor: tt_privilege_check_done arrived with %s%s%s", value == 1 ? "granted" : value == 0 ? "denied" : "an unreadable value",
+                    grant ? "; changed to granted for our content so car_monitor_tt_leaderboard_privilege_check enables the leaderboard tab"
+                          : unlisted ? "; left denied: the session's board " : "",
+                    unlisted ? (session_board_text() + " is not listed").c_str() : "");
 }
 
 void garage_cmd_mid(safetyhook::Context &c)
@@ -1138,11 +1191,12 @@ void garage_tab_gate_mid(safetyhook::Context &c)
     static std::atomic<int> logged{0};
     int session = int(uint32_t(c.rbp));
     uint8_t was = runtime::readable(reinterpret_cast<void *>(c.rcx + 0x80), 1) ? *reinterpret_cast<uint8_t *>(c.rcx + 0x80) : 0xff;
-    bool ours = bridge_on && content_ours();
-    bool change = tb::garage_gate_byte(was, bridge_on, content_ours(), session) != was;
+    bool ours = bridge_on && content_ours(), unlisted = garage_board_missing();
+    bool change = tb::garage_gate_byte(was, bridge_on, garage_tab_allowed(), session) != was;
     if (++logged <= 12)
-        swofty::log("[boards] garage monitor tab build: gate byte [[panel+0x938]+0x80] = %u, session type 0x%x, our content %d%s", unsigned(was), unsigned(session), ours ? 1 : 0,
-                    change ? ": read as 1, the leaderboard block is entered" : "");
+        swofty::log("[boards] garage monitor tab build: gate byte [[panel+0x938]+0x80] = %u, session type 0x%x, our content %d%s%s", unsigned(was), unsigned(session), ours ? 1 : 0,
+                    change ? ": read as 1, the leaderboard block is entered" : unlisted ? ": left as it is, the session's board " : "",
+                    unlisted && !change ? (session_board_text() + " is not listed").c_str() : "");
     if (!change)
         return;
     buf[0x80] = 1;
@@ -1155,7 +1209,7 @@ void garage_tab_block_mid(safetyhook::Context &c)
         return;
     static uint8_t zero[0x20] = {};
     static std::atomic<int> logged{0};
-    if (!bridge_on || !content_ours())
+    if (!garage_tab_allowed())
         return;
     uint8_t was = runtime::readable(reinterpret_cast<void *>(c.rcx + 0x18), 1) ? *reinterpret_cast<uint8_t *>(c.rcx + 0x18) : 0xff;
     c.rcx = reinterpret_cast<uint64_t>(zero) - 0x18;
@@ -1169,7 +1223,7 @@ void garage_tab_flags_mid(safetyhook::Context &c)
         return;
     static thread_local uint64_t copy = 0;
     static std::atomic<int> logged{0};
-    if (!bridge_on || !content_ours() || !runtime::readable(reinterpret_cast<void *>(c.rax), 8))
+    if (!garage_tab_allowed() || !runtime::readable(reinterpret_cast<void *>(c.rax), 8))
         return;
     uint64_t was = *reinterpret_cast<uint64_t *>(c.rax);
     copy = tb::garage_feature_flags(was, bridge_on, true);
@@ -2744,7 +2798,7 @@ void garage_build_mid(safetyhook::Context &c)
     uint64_t panel = c.rcx, inner = peek64(panel + 0x268), mgr = inner ? peek64(inner + 0x1a8) : 0;
     uint32_t session = mgr ? peek32(mgr + 4) : 0xffffffffu;
     bool ours = bridge_on && content_ours();
-    if (ours)
+    if (ours && garage_tab_allowed())
         garage_built_ours = panel;
     if (++logged <= 12)
         swofty::log("[boards] garage monitor tab builder runs for panel 0x%llx: session type 0x%x, %llu tab(s) before, our content %d", (unsigned long long)panel, session,
@@ -2766,6 +2820,16 @@ void garage_update_mid(safetyhook::Context &c)
     if (!content_ours()) {
         garage_idle_gen = gen;
         garage_idle_panel = panel;
+        return;
+    }
+    if (garage_board_missing()) {
+        garage_idle_gen = gen;
+        garage_idle_panel = panel;
+        static std::atomic<int> unlisted{0};
+        if (++unlisted <= 4)
+            swofty::log("[boards] garage monitor: panel 0x%llx left to the game for our content: the session's board %s is not listed, so the leaderboard tab is not built "
+                        "again and car_monitor_tt_leaderboard_privilege_check is not raised",
+                        (unsigned long long)panel, session_board_text().c_str());
         return;
     }
     uint64_t tb_ = 0, te = 0;
@@ -2871,22 +2935,12 @@ void select_board_mid(safetyhook::Context &c)
             return;
         select_walked = walk;
     }
-    size_t listed = first && last >= first ? size_t(std::min<uint64_t>((last - first) / 8, 100000)) : 0, same_descriptor = 0;
-    bool found = false;
-    std::string prefix = key.size() >= 5 ? key.substr(0, 5) : key, sample;
-    for (size_t i = 0; i < listed; i++) {
-        uint64_t board = cached64(first + 8 * i), np = board ? cached64(board + 0x68) : 0;
-        std::string name = np ? tb::read_c(cached_mem(), np) : std::string();
-        if (!_stricmp(name.c_str(), key.c_str()))
-            found = true;
-        if (name.compare(0, prefix.size(), prefix) == 0) {
-            same_descriptor++;
-            if (sample.size() < 80 && name.size() > 5)
-                sample += (sample.empty() ? "" : " ") + name.substr(5);
-        }
-    }
+    tb::BoardScan scan = tb::scan_boards(cached_mem(), first, last, key);
+    if (!key.empty())
+        note_board_lookup(key, scan.found);
+    std::string prefix = key.size() >= 5 ? key.substr(0, 5) : key;
     char tag[96];
-    snprintf(tag, sizeof tag, "%s/%zu/%d", key.c_str(), listed, found);
+    snprintf(tag, sizeof tag, "%s/%zu/%d", key.c_str(), scan.listed, scan.found);
     {
         std::lock_guard<std::mutex> lk(lock);
         if (select_seen == tag)
@@ -2894,8 +2948,8 @@ void select_board_mid(safetyhook::Context &c)
         select_seen = tag;
     }
     swofty::log("[boards] %sleaderboard screen board lookup: key '%s', %zu board(s) listed (registry 0x%llx), %s; %zu with the prefix %s (tracks %s)",
-                diag_on ? "diag: " : "", key.c_str(), listed, (unsigned long long)reg, found ? "FOUND" : "NOT in the list: the screen opens empty",
-                same_descriptor, prefix.c_str(), sample.empty() ? "none" : sample.c_str());
+                diag_on ? "diag: " : "", key.c_str(), scan.listed, (unsigned long long)reg, scan.found ? "FOUND" : "NOT in the list: the screen opens empty",
+                scan.same_prefix, prefix.c_str(), scan.sample.empty() ? "none" : scan.sample.c_str());
 }
 
 void describe_checks(uint64_t handler, const std::string &board)
@@ -3727,9 +3781,12 @@ std::string tt_bridge_session_board()
 
 void tt_bridge_session_exit()
 {
+    board_state = uint8_t(tb::BoardListed::unknown);
     ++content_gen;
     std::lock_guard<std::mutex> g(lock);
     session_key.clear();
+    board_state_key.clear();
+    select_walked.clear();
 }
 
 void tt_bridge_session_enter()

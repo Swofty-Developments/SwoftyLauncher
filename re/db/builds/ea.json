@@ -1841,6 +1841,12 @@
   },
   "site_Game_MyTeamVehicleBases_NextBase": {
    "match": "0x2502c4d"
+  },
+  "site_Sess_TimeTrialLeaderboard_BoundTabChild": {
+   "match": "0x2fc1146"
+  },
+  "site_Sess_TimeTrialLeaderboard_BoundTabDone": {
+   "match": "0x2fc1156"
   }
  },
  "unresolvable": {}

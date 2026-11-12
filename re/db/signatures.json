@@ -164149,6 +164149,60 @@
    "used_by": [
     "native/src/core/gp_weekend_track_guard.cpp"
    ]
+  },
+  {
+   "id": "session.time_trial_leaderboard_bound_tab_child",
+   "section": ".xtls",
+   "pattern": "48 8B 01 B2 01 FF 50 30 48 89 F1 E8 ?? ?? ?? ?? 90 48 83 C4 40 5E C3 CC CC CC 56 48 83 EC 40",
+   "match": "0x142fcd166",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fcd166",
+   "kind": "mid",
+   "expect": "48 8B 01 B2 01",
+   "names": [
+    "site_Sess_TimeTrialLeaderboard_BoundTabChild"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "ttgaragetab",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
+  },
+  {
+   "id": "session.time_trial_leaderboard_bound_tab_done",
+   "section": ".xtls",
+   "pattern": "90 48 83 C4 40 5E C3 CC CC CC 56 48 83 EC 40",
+   "match": "0x142fcd176",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fcd176",
+   "kind": "mid",
+   "expect": "90 48 83 C4 40",
+   "names": [
+    "site_Sess_TimeTrialLeaderboard_BoundTabDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "ttgaragetab",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
   }
  ]
 }

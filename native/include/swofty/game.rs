@@ -16701,6 +16701,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Sess_TimeTrialLeaderboard_BoundTabChild: Binding = Binding {
+        id: "site_Sess_TimeTrialLeaderboard_BoundTabChild",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_TimeTrialLeaderboard_BoundTabDone: Binding = Binding {
+        id: "site_Sess_TimeTrialLeaderboard_BoundTabDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Sess_TimeTrialLeaderboard_TabChild: Binding = Binding {
         id: "site_Sess_TimeTrialLeaderboard_TabChild",
         kind: "site",
