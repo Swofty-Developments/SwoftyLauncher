@@ -1772,9 +1772,9 @@ void replay_save_entry_mid(safetyhook::Context &c)
 int64_t replay_after_ms = 0;
 std::atomic<int64_t> replay_session_best_ms{0};
 bool replay_capture_any = false;
-// SWOFTY_TT_REPLAY_RESTART=1 lets a lap restart the game's replay recording (clear + reset) so the next file starts at its line. It is off
-// until it is proven on a driven lap: no released build has run it, and with it off a replay file keeps the seconds before its lap.
-bool replay_restart_on = false;
+// A lap restarts the game's replay recording (clear + reset) so the next file starts at its line. SWOFTY_TT_REPLAY_RESTART=0 turns it off,
+// and a replay file then keeps the seconds before its lap.
+bool replay_restart_on = true;
 
 std::atomic<double> replay_lap_path{0}, replay_lap_length{0};
 // `asked`: the restart before the line was requested on this lap; `restarted`: it ran (set by replay_restart).
@@ -2523,7 +2523,7 @@ void replay_restart(uint64_t sys)
     if (!replay_restart_on) {
         static bool told = false;
         if (!told)
-            swofty::log("[replay] restart (%s): off, the recording keeps running (SWOFTY_TT_REPLAY_RESTART=1 turns it on)", when);
+            swofty::log("[replay] restart (%s): off (SWOFTY_TT_REPLAY_RESTART=0), the recording keeps running", when);
         told = true;
         return;
     }
@@ -3092,7 +3092,7 @@ void setup()
         replay_capture_any = rn && rn < sizeof rv && !strcmp(rv, "any");
         char sv[8] = {};
         DWORD sn = GetEnvironmentVariableA("SWOFTY_TT_REPLAY_RESTART", sv, sizeof sv);
-        replay_restart_on = sn && sn < sizeof sv && !strcmp(sv, "1");
+        replay_restart_on = !(sn && sn < sizeof sv && !strcmp(sv, "0"));
         char av[8] = {};
         DWORD an = GetEnvironmentVariableA("SWOFTY_TT_REPLAY_AFTER", av, sizeof av);
         replay_after_ms = an && an < sizeof av ? int64_t(atoi(av)) * 1000 : 0;
