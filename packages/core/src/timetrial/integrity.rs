@@ -24,6 +24,9 @@ const SIGNED_PREFIX: &str = "swofty-tt-integrity-v1";
 const MAX_SIZE: u64 = 16 * 1024 * 1024;
 const DOWNLOAD_TIMEOUT: Duration = Duration::from_secs(60);
 const KEEP: usize = 2;
+/// Names a locally built module to place for the session in place of the server's, for testing a build
+/// before it is published. Unset in normal use.
+pub const LOCAL_ENV: &str = "SWOFTY_TT_INTEGRITY_DLL";
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct Module {
@@ -42,6 +45,25 @@ struct Offer {
 
 pub fn dir(data: &Path) -> PathBuf {
     data.join("timetrial").join("integrity")
+}
+
+/// The file [`LOCAL_ENV`] names, when it is set: `None` when it is unset or empty, else that file as a
+/// module with the version `local`, or why it cannot be used. No server is asked and no signature is checked.
+pub fn local() -> Option<Result<Module, String>> {
+    let path = std::env::var_os(LOCAL_ENV).filter(|p| !p.is_empty())?;
+    Some(local_at(Path::new(&path)))
+}
+
+fn local_at(path: &Path) -> Result<Module, String> {
+    let bytes = std::fs::read(path).map_err(|e| format!("reading {}: {e}", path.display()))?;
+    if bytes.len() as u64 > MAX_SIZE || !bytes.starts_with(b"MZ") {
+        return Err(format!("{} is not a Windows DLL under 16 MiB", path.display()));
+    }
+    Ok(Module {
+        version: "local".to_owned(),
+        dll: path.to_path_buf(),
+        sha256: sha256_bytes(&bytes),
+    })
 }
 
 /// The verified module for this session: the cached copy when it has the offered hash, else a download.
@@ -524,6 +546,23 @@ mod tests {
             .collect();
         left.sort();
         assert_eq!(left, ["a3", "b1"]);
+        std::fs::remove_dir_all(d).ok();
+    }
+
+    #[test]
+    fn a_local_build_is_used_as_it_is_and_a_file_that_is_no_dll_is_refused() {
+        let d = data("local");
+        std::fs::create_dir_all(&d).unwrap();
+        let dll = d.join(DLL);
+        std::fs::write(&dll, BYTES).unwrap();
+        let m = local_at(&dll).unwrap();
+        assert_eq!(
+            (m.version.as_str(), &m.dll, m.sha256),
+            ("local", &dll, sha256_bytes(BYTES))
+        );
+        std::fs::write(&dll, b"not a dll").unwrap();
+        assert!(local_at(&dll).unwrap_err().contains("not a Windows DLL"));
+        assert!(local_at(&d.join("missing.dll")).unwrap_err().contains("reading"));
         std::fs::remove_dir_all(d).ok();
     }
 

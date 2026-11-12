@@ -241,7 +241,17 @@ pub fn begin(
 /// Any trouble is one log line and the session goes on without it.
 pub fn integrity(store: &Store, out: &dyn Fn(&str)) -> Option<Module> {
     let token = token(&store.root, &store.config())?;
-    match integrity::ensure(&store.root, &Api::new(&token)) {
+    let found = match integrity::local() {
+        Some(local) => {
+            out(&format!(
+                "integrity module: {} is set; the local build is placed unsigned and the server's module is not used",
+                integrity::LOCAL_ENV
+            ));
+            local
+        }
+        None => integrity::ensure(&store.root, &Api::new(&token)),
+    };
+    match found {
         Ok(m) => Some(m),
         Err(why) => {
             out(&format!("integrity module: not loaded for this session: {why}"));
