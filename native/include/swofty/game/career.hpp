@@ -1258,6 +1258,10 @@ inline constexpr site<"site_Career_RnDTreeRowCountProbe"> site_Career_RnDTreeRow
 inline constexpr site<"site_Career_RnDUpgradeInfoTypeLabel"> site_Career_RnDUpgradeInfoTypeLabel{}; // L2 experimental
 inline constexpr site<"site_Career_RnDUpgradeInfoTypeLabelJoin"> site_Career_RnDUpgradeInfoTypeLabelJoin{}; // L2 experimental
 inline constexpr site<"site_Career_RnDUpgradeListDeptIcon"> site_Career_RnDUpgradeListDeptIcon{}; // L2 experimental
+inline constexpr site<"site_Career_ScheduleComponent_TrackListEntryDone"> site_Career_ScheduleComponent_TrackListEntryDone{}; // L2 experimental
+inline constexpr site<"site_Career_ScheduleComponent_TrackListNextRow"> site_Career_ScheduleComponent_TrackListNextRow{}; // L2 experimental
+inline constexpr site<"site_Career_ScheduleComponent_TrackListPush"> site_Career_ScheduleComponent_TrackListPush{}; // L2 experimental
+inline constexpr site<"site_Career_ScheduleComponent_TrackListSave"> site_Career_ScheduleComponent_TrackListSave{}; // L2 experimental
 inline constexpr site<"site_Career_StandingsWeekendTrackDone"> site_Career_StandingsWeekendTrackDone{}; // L2 experimental
 inline constexpr site<"site_Career_StandingsWeekendTrackLoad"> site_Career_StandingsWeekendTrackLoad{}; // L2 experimental
 inline constexpr site<"site_Career_TeamDeptEnumStore"> site_Career_TeamDeptEnumStore{}; // L2 experimental

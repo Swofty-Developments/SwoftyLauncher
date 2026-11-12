@@ -1010,6 +1010,32 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : myteam_vehicle off: process ended with $code" || { echo "FAIL: myteam_vehicle off: process exited 0"; status=1; }
     fi
 done
+for guard in on off; do
+    echo "==== track_list ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_TRACK_LIST_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" track_list >"$OUT/track_list.out" 2>&1 || code=$?
+    grep -E '\[saves\] (career calendar|custom_track_list)' "$LOG" || true
+    grep -E 'track list|FAIL' "$OUT/track_list.out" || true
+    grep -q 'FAIL' "$OUT/track_list.out" && { echo "FAIL: track_list $guard: a check failed"; status=1; } || echo "ok  : track_list $guard: the fake game's checks pass"
+    grep -q "track list $guard: cycle 3" "$OUT/track_list.out" && echo "ok  : track_list $guard: the save and load cycles ran" ||
+        { echo "FAIL: track_list $guard: the test did not reach its end"; status=1; }
+    count "track_list $guard: no unhandled fault" 0 '\[crash\] unhandled '
+    [[ $code == 0 ]] && echo "ok  : track_list $guard: process exited 0" || { echo "FAIL: track_list $guard: process ended with $code"; status=1; }
+    if [[ $guard == on ]]; then
+        once "track_list on: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(career calendar track list guard\)': 1 mixin"
+        once "track_list on: the count lines are a core mixin set of their own" "core mixin set 'swofty_core\.dll \(career calendar track list log\)': 2 mixin"
+        once "track_list on: the guard is armed" '\[saves\] career calendar track list guard armed'
+        count "track_list on: each load of the 5-event calendar loads 5 events" 6 '\[saves\] custom_track_list loaded \(schedule component 0x[0-9a-f]+\): 5 stored entries -> 5 calendar events \(season event list 5\); 45 more matching events the game would also have loaded skipped[[:space:]]*$'
+        count "track_list on: a track twice with one event row loads both races" 2 '\[saves\] custom_track_list loaded \(schedule component 0x[0-9a-f]+\): 4 stored entries -> 4 calendar events \(season event list 4\); 18 more matching events the game would also have loaded skipped; 1 entry repeat an event already in the calendar[[:space:]]*$'
+        once "track_list on: a blown-up save loads back to the season's 5 events" '\[saves\] custom_track_list loaded \(schedule component 0x[0-9a-f]+\): 65535 stored entries -> 5 calendar events \(season event list 5\); 45 more matching events the game would also have loaded skipped; blown up \(more than 5 entries\): a run of one id reads as one entry, 65530 stored entries dropped[[:space:]]*$'
+        count "track_list on: a save count is logged when it changes" 3 '\[saves\] custom_track_list saved \(schedule component 0x[0-9a-f]+\): (5|4|5) calendar events[[:space:]]*$'
+    else
+        once "track_list off: the guard is off" '\[saves\] career calendar track list guard off \(SWOFTY_TRACK_LIST_GUARD=0\)'
+        once "track_list off: the load line shows the game's own growth" '\[saves\] custom_track_list loaded \(schedule component 0x[0-9a-f]+\): 500 stored entries -> 5000 calendar events[[:space:]]*$'
+        count "track_list off: each save with a new count is logged" 3 '\[saves\] custom_track_list saved \(schedule component 0x[0-9a-f]+\): (50|500|5000) calendar events[[:space:]]*$'
+    fi
+done
 echo "==== ntpage"
 cp "$OUT/t_ntpage.dll" "$SW/mods/core/ntpage_hook.dll"
 rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp

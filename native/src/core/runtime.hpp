@@ -315,6 +315,8 @@ std::vector<CoreMixins> estimate_laptime_mixins();
 std::vector<CoreMixins> gp_continue_mixins();
 void gp_continue_commit();
 void estimate_laptime_commit();
+std::vector<CoreMixins> track_list_guard_mixins();
+void track_list_guard_commit();
 std::vector<CoreMixins> garage_setup_mixins();
 void garage_setup_commit();
 std::vector<CoreMixins> theatre_list_mixins();

@@ -15941,6 +15941,26 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Career_ScheduleComponent_TrackListEntryDone: Binding = Binding {
+        id: "site_Career_ScheduleComponent_TrackListEntryDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Career_ScheduleComponent_TrackListNextRow: Binding = Binding {
+        id: "site_Career_ScheduleComponent_TrackListNextRow",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Career_ScheduleComponent_TrackListPush: Binding = Binding {
+        id: "site_Career_ScheduleComponent_TrackListPush",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Career_ScheduleComponent_TrackListSave: Binding = Binding {
+        id: "site_Career_ScheduleComponent_TrackListSave",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Career_StandingsWeekendTrackDone: Binding = Binding {
         id: "site_Career_StandingsWeekendTrackDone",
         kind: "site",
