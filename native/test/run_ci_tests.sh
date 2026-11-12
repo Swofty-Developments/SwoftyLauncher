@@ -113,6 +113,7 @@ t "AI line set guard unit test" native/test/run_ai_line_set_test.sh
 t "Audio job queue fix unit test" native/test/run_audio_queue_test.sh
 t "Shader resource view clamp unit test" native/test/run_srv_clamp_test.sh
 t "Heap size table unit test" native/test/run_heap_sizes_test.sh
+t "Profiler minute summary unit test" native/test/run_perf_logic_test.sh
 t "Save temp heap size unit test" native/test/run_save_heap_test.sh
 t "Boot watchdog grace unit test" native/test/run_watchdog_grace_test.sh
 t "Load-stall watchdog trigger unit test" native/test/run_load_stall_test.sh
