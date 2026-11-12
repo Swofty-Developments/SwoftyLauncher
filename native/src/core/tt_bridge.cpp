@@ -271,6 +271,14 @@ std::vector<std::string> seen_methods;
 
 bool diag_on = false;
 bool replay_capture_on = false;
+// Bumped when what content_ours() answers may change: the session's track was read, a session entered or ended.
+std::atomic<uint32_t> content_gen{1};
+std::atomic<uint32_t> method_form{0};
+
+bool outside_tt()
+{
+    return tb::tt_hooks_idle(swofty_core::apply::moments::mode_kind(), diag_on);
+}
 // Replay capture saves and uploads the game replay of a personal best. It needs Time Trial boards (uploads), not the in-game
 // leaderboards bridge; the bridge adds playing other drivers' replays in Theatre.
 bool capture_on() { return replay_capture_on && (bridge_on || boards_on); }
@@ -516,7 +524,19 @@ void push_mid(safetyhook::Context &c)
 {
     uint64_t op = c.rcx;
     std::string name;
-    tb::Method m = tb::method_at_op(game_mem(), op, &name);
+    static std::atomic<int> name_reads{0};
+    bool want_name = diag_on || (seen_methods.size() < 40 && name_reads.load(std::memory_order_relaxed) < 200);
+    tb::StrForm form = tb::unpack_form(method_form.load(std::memory_order_relaxed));
+    bool learned = form.ok();
+    tb::Method m = tb::method_with_form(game_mem(), op, form, want_name ? &name : nullptr);
+    if (!learned && form.ok()) {
+        method_form = tb::pack_form(form);
+        swofty::log("[boards] request redirect: method names read as %s; a request is told by one read from now on", tb::form_name(form));
+    }
+    if (want_name && !diag_on && m == tb::Method::none)
+        ++name_reads;
+    if (name.empty() && m != tb::Method::none)
+        name = tb::method_name(m);
     if (diag_on && ++diag_push_logged <= 60) {
         uint64_t sp = peek64(op + tb::OP_SERVICE);
         std::string service = sp ? tb::read_c(game_mem(), sp) : std::string();
@@ -721,6 +741,8 @@ void gate_mid(int idx, safetyhook::Context &c)
     tb::gate::State st = read_gate_state(c, g, &flags, &user, &session_flag, &token);
     tb::gate::Why why = tb::gate::first_failure(st);
     log_presence_user(user);
+    if (!tb::gate_reads_op(diag_on, bridge_on, push_hooked, found.on_result[int(m)] != 0, why != tb::gate::Why::none))
+        return;
     std::string name;
     tb::Method seen = tb::method_at_op(game_mem(), op, &name);
     tb::Args a;
@@ -881,6 +903,8 @@ uint8_t flag_byte(uintptr_t global)
 
 void ts_flag_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     uint8_t al = uint8_t(c.rax), joining = flag_byte(ts_global_b), blocked = flag_byte(ts_global_a);
     bool ours = screen_ours(), force = ours && !al;
     if (force) {
@@ -906,6 +930,8 @@ void ts_flag_mid(safetyhook::Context &c)
 
 void priv_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     uint32_t type = uint32_t(c.rbp);
     if (bridge_on && type != 1 && type < 12 && content_ours()) {
         char sw[8] = {};
@@ -1024,6 +1050,8 @@ uint64_t handler_ready_hook(uint64_t handler)
 
 void garage_msg_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static std::atomic<int> logged{0};
     uint64_t msg = peek64(c.rdx);
     uint32_t id = msg ? peek32(msg) : 0;
@@ -1036,6 +1064,8 @@ std::atomic<int> rearm_count{0};
 
 void rearm_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     int n = ++rearm_count;
     if (n <= 6 || n % 200 == 0)
         swofty::log("[boards] session timer (system at handler+0x18): re-armed %d time(s) by a validator reporting activity; object 0x%llx, new limit follows at +0xbd0 = %u s", n,
@@ -1044,6 +1074,8 @@ void rearm_mid(safetyhook::Context &c)
 
 void trip_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static std::atomic<int> logged{0};
     if (++logged <= 6) {
         LARGE_INTEGER q;
@@ -1061,6 +1093,8 @@ void trip_mid(safetyhook::Context &c)
 // nothing in the game.
 void garage_done_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static std::atomic<int> logged{0};
     uint8_t value = runtime::readable(reinterpret_cast<void *>(c.rbx + 8), 1) ? *reinterpret_cast<uint8_t *>(c.rbx + 8) : 0xff;
     uint8_t result = tb::garage_result(value, bridge_on, content_ours());
@@ -1074,6 +1108,8 @@ void garage_done_mid(safetyhook::Context &c)
 
 void garage_cmd_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static std::atomic<int> logged{0};
     static std::mutex m;
     static std::set<uint32_t> seen;
@@ -1096,6 +1132,8 @@ void garage_cmd_mid(safetyhook::Context &c)
 // through readable() for the log. Nothing is written to the game and nothing is called.
 void garage_tab_gate_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static uint8_t buf[0x100] = {};
     static std::atomic<int> logged{0};
     int session = int(uint32_t(c.rbp));
@@ -1113,6 +1151,8 @@ void garage_tab_gate_mid(safetyhook::Context &c)
 
 void garage_tab_block_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static uint8_t zero[0x20] = {};
     static std::atomic<int> logged{0};
     if (!bridge_on || !content_ours())
@@ -1125,6 +1165,8 @@ void garage_tab_block_mid(safetyhook::Context &c)
 
 void garage_tab_flags_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static thread_local uint64_t copy = 0;
     static std::atomic<int> logged{0};
     if (!bridge_on || !content_ours() || !runtime::readable(reinterpret_cast<void *>(c.rax), 8))
@@ -1142,6 +1184,8 @@ void garage_tab_flags_mid(safetyhook::Context &c)
 // Nothing is read or written and nothing is called.
 void garage_friends_tab_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static std::atomic<int> logged{0};
     if (tb::garage_append_tab(1, bridge_on, content_ours()))
         return;
@@ -2674,13 +2718,16 @@ void replay_frame_mid(safetyhook::Context &c)
     replay_tick(0, "beginFrameWrite");
 }
 
-std::atomic<uint64_t> garage_driven_panel{0}, garage_driven_count{0}, garage_built_ours{0};
+std::atomic<uint64_t> garage_driven_panel{0}, garage_driven_count{0}, garage_built_ours{0}, garage_idle_panel{0};
+std::atomic<uint32_t> garage_idle_gen{0};
 uintptr_t garage_build_fn = 0;
 
 // Read-only: logs every run of the tab builder (panel, session type, tab count before, whether our content was active) and remembers the
 // panel when it ran for our content, so the Update hook does not rebuild it again.
 void garage_build_mid(safetyhook::Context &c)
 {
+    if (outside_tt())
+        return;
     static std::atomic<int> logged{0};
     uint64_t panel = c.rcx, inner = peek64(panel + 0x268), mgr = inner ? peek64(inner + 0x1a8) : 0;
     uint32_t session = mgr ? peek32(mgr + 4) : 0xffffffffu;
@@ -2699,8 +2746,16 @@ uintptr_t garage_priv_sub = 0;
 void garage_update_mid(safetyhook::Context &c)
 {
     uint64_t panel = c.rcx;
-    if (!garage_priv_sub || !bridge_on || garage_driven_panel.load() == panel)
+    if (!garage_priv_sub || !bridge_on || outside_tt())
         return;
+    uint32_t gen = content_gen.load(std::memory_order_relaxed);
+    if (tb::garage_update_idle(panel, garage_driven_panel.load(), garage_idle_panel.load(), garage_idle_gen.load(), gen))
+        return;
+    if (!content_ours()) {
+        garage_idle_gen = gen;
+        garage_idle_panel = panel;
+        return;
+    }
     uint64_t tb_ = 0, te = 0;
     if (!runtime::readable(reinterpret_cast<void *>(panel + 0x408), 16))
         return;
@@ -2708,7 +2763,7 @@ void garage_update_mid(safetyhook::Context &c)
     if (garage_build_fn) {
         uint64_t inner = peek64(panel + 0x268), mgr = inner ? peek64(inner + 0x1a8) : 0;
         int session = mgr ? int(peek32(mgr + 4)) : -1;
-        if (tb::garage_should_rebuild(bridge_on, content_ours(), panel, garage_built_ours.load(), session, te > tb_ ? (te - tb_) / 8 : 0)) {
+        if (tb::garage_should_rebuild(bridge_on, true, panel, garage_built_ours.load(), session, te > tb_ ? (te - tb_) / 8 : 0)) {
             garage_built_ours = panel;
             reinterpret_cast<void (*)(uint64_t)>(garage_build_fn)(panel);
             tb_ = peek64(panel + 0x408), te = peek64(panel + 0x410);
@@ -2716,7 +2771,7 @@ void garage_update_mid(safetyhook::Context &c)
                         (unsigned long long)(te > tb_ ? (te - tb_) / 8 : 0));
         }
     }
-    if (!tb::garage_should_drive(bridge_on, content_ours(), panel, tb_, te, garage_driven_panel.load(), garage_driven_count.load()))
+    if (!tb::garage_should_drive(bridge_on, true, panel, tb_, te, garage_driven_panel.load(), garage_driven_count.load()))
         return;
     garage_driven_panel = panel;
     garage_driven_count = (te - tb_) / 8;
@@ -3223,6 +3278,7 @@ void setup()
         return;
     }
     resolve_game();
+    swofty_core::apply::moments::mode_watch();
     char gv[16] = {};
     DWORD gn = GetEnvironmentVariableA("SWOFTY_TT_GUARDS", gv, sizeof gv);
     guards_on = (gate.is_object() && gate["tt_guards"].as_bool(false)) || (gn && gn < sizeof gv && !strcmp(gv, "1"));
@@ -3523,6 +3579,7 @@ std::string read_session_track()
 {
     std::string code = runtime::lower(runtime::direct_start::tt::session_track());
     session_custom = tb::board_track(swofty_core::apply::tracks::base(), code).custom;
+    ++content_gen;
     std::lock_guard<std::mutex> g(lock);
     session_code = code;
     return code;
@@ -3534,6 +3591,7 @@ namespace runtime {
 
 void tt_bridge_track_watch(bool session_live)
 {
+    ++content_gen;
     bool time_trial = session_live && swofty_core::apply::moments::session_mode_track().first == "time_trial";
     bool replay_on = tb::replay_session_on(session_live, time_trial);
     if (replay_tt_session.exchange(replay_on) != replay_on && (h_replay_tick || h_replay_update || h_replay_frame))
@@ -3639,6 +3697,17 @@ std::string tt_bridge_last_board()
     return last_board;
 }
 
+bool tt_bridge_session_track(std::string &code)
+{
+    if (!track_session.load(std::memory_order_relaxed) || !track_reads.known.load())
+        return false;
+    std::lock_guard<std::mutex> g(lock);
+    if (session_code.empty())
+        return false;
+    code = session_code;
+    return true;
+}
+
 std::string tt_bridge_session_board()
 {
     std::lock_guard<std::mutex> g(lock);
@@ -3647,12 +3716,14 @@ std::string tt_bridge_session_board()
 
 void tt_bridge_session_exit()
 {
+    ++content_gen;
     std::lock_guard<std::mutex> g(lock);
     session_key.clear();
 }
 
 void tt_bridge_session_enter()
 {
+    ++content_gen;
     std::lock_guard<std::mutex> g(lock);
     last_board.clear();
     replay_session_best_ms = 0;
