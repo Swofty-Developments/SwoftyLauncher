@@ -82,7 +82,8 @@ void say(const mv::Skip &skip)
     if (const mv::KnownAddon *addon = mv::addon_for(skip.label))
         swofty::log("[myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s' from %s (%s), which is not in "
                     "the game data (no entrants.vehicles row; the addon is off or gone); the base is skipped and the rest of the "
-                    "career loads. Turn %s back on to bring this car back%s",
+                    "career loads. Turn %s back on, or if it is on, add that engine back in its settings, to bring this car "
+                    "back%s",
                     (unsigned long long)skip.index, skip.stat_id, skip.label.c_str(), addon->name, addon->id, addon->name, more);
     else
         swofty::log("[myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s', which is not in the game data "
