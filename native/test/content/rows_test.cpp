@@ -1863,6 +1863,76 @@ static void older_rows(Db &db)
     db.put("game_setup.scenarios.scenario_1.statId", 0, "16");
 }
 
+static void shared_switch_tests(const std::string &regs)
+{
+    registry::reset_store();
+    auto &st = registry::store();
+    st.set_order({"swofty.classic-seasons-2017", "swofty.swofty-seasons-2017"});
+    st.set_validator(&registry::schema_validator());
+    const SwoftyRegistry *t = registry::table();
+    for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
+        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "vehicle" ? "/1.1.json" : "/1.0.json"));
+        t->declare(name, SwoftyText{schema.data(), schema.size()});
+    }
+    int r1 = registry::load_data_file("swofty.classic-seasons-2017", "registry/content.json", R"j({
+      "engine_sound": { "honda": { "bundle": "sounds/cs17_honda.bdl", "settings_from": "game/mercedes_2025" } },
+      "vehicle": { "toro_rosso": { "label": "cs17_toro_rosso", "donor": "game/mercedes_2025", "stat_id": 526,
+                                   "engine_sound": "swofty.classic-seasons-2017/honda",
+                                   "audio_switch": "f1_M_mercedes", "audio_from": "f1_m_mercedes" } } })j");
+    int r2 = registry::load_data_file("swofty.swofty-seasons-2017", "registry/content.json", R"j({
+      "engine_sound": { "renault": { "bundle": "sounds/sw17_renault.bdl", "settings_from": "game/mercedes_2025" } },
+      "vehicle": { "lotus": { "label": "sw17_lotus", "donor": "game/mercedes_2025", "stat_id": 919,
+                              "engine_sound": "swofty.swofty-seasons-2017/renault",
+                              "audio_switch": "f1_M_mercedes", "audio_from": "f1_m_mercedes" } },
+      "content.package": { "sw_2017": {
+        "title": { "literal": "SWOFTY 2017" }, "entrant_list": "sw_f1_2017", "season": 2017,
+        "teams": [ { "key": "lotus", "vehicle": "swofty.swofty-seasons-2017/lotus",
+                     "drivers": [ { "driver": "game/max_verstappen", "number": 33, "look": null } ] } ],
+        "database": { "entrant_list_from": "f1_2025", "standings_from": "f1_teams_2024", "content_sets": ["2025"] } } } })j");
+    st.end_register();
+    check(r1 == SWOFTY_ASSET_OK && r2 == SWOFTY_ASSET_OK, "two packs whose cars name one sound switch register");
+
+    Db db;
+    stock_package_rows(db);
+    apply::ids::Store ids;
+    auto text = [&](const std::string &path) -> std::optional<std::string> {
+        auto r = db.base()(content::gvdb::fnv64(path));
+        return r ? std::optional<std::string>(r->text) : std::nullopt;
+    };
+    for (auto &scan : content::scan_all_pools(text))
+        ids.define_pool(scan.registry, {{{scan.lo, scan.hi}}});
+    for (auto &p : content::pins(st))
+        ids.pin(p.registry, p.id, p.stat_id, "test");
+    content::StatIds stat = [&](const std::string &reg, const std::string &id, int64_t pin) -> int64_t {
+        return pin >= 0 ? ids.pin(reg, id, pin, "test").id : ids.allocate(reg, id, "test").id;
+    };
+    content::Expansion x(db.base());
+    content::expand(st, x, stat);
+    for (auto &l : x.lines["vehicle"])
+        std::printf("      %s\n", l.c_str());
+    auto has_label = [&](const std::string &table, const std::string &row, const std::string &label) {
+        for (int i = 0; i < 8; i++)
+            if (written(x.engine, table + "." + row + "_" + std::to_string(i) + "._metadata_") == label)
+                return table + "." + row + "_" + std::to_string(i);
+        return std::string();
+    };
+    check(x.records["vehicle"] == 2 && x.refused["vehicle"] == 0 && x.left_out.empty(),
+          "both cars apply and nothing is left out");
+    std::string first = has_label("entrants.vehicles", "vehicle", "cs17_toro_rosso");
+    std::string second = has_label("entrants.vehicles", "vehicle", "sw17_lotus");
+    check(!first.empty() && !second.empty() && written(x.engine, second + ".stat_id") == "919",
+          "the later car keeps its row, so every entrant list that names sw17_lotus finds it");
+    check(written(x.engine, "audio.audio_car_data.f1_M_mercedes.bundle_name") == "cs17_honda.bdl",
+          "the switch's sound rows stay the earlier car's");
+    bool said = false;
+    for (auto &l : x.lines["vehicle"])
+        said |= l.find("vehicle swofty.swofty-seasons-2017/lotus: sound switch f1_M_mercedes is "
+                       "swofty.classic-seasons-2017/toro_rosso's") == 0;
+    check(said, "the log names the car that has the switch");
+    check(x.records["content.package"] == 1 && !has_label("entrants.entrant_lists", "entrant_list", "sw_f1_2017").empty(),
+          "the later car's own season list is not left out");
+}
+
 static void id_clash_tests(const std::string &regs)
 {
     registry::reset_store();
@@ -2110,6 +2180,8 @@ int main(int argc, char **argv)
         drs_tests(argv[1]);
     if (argc > 1)
         career_registry_tests(argv[1]);
+    if (argc > 1)
+        shared_switch_tests(argv[1]);
     if (argc > 1)
         id_clash_tests(argv[1]);
     if (argc > 1)

@@ -537,6 +537,48 @@ inline void lower_seat_entrants(registry::Store &st, Expansion &x, const Lookup 
     }
 }
 
+// Classic Seasons and the SWOFTY seasons both pick a car's sound switch as a case variant of its slot's stock label,
+// numbered by the season, so two packs of one year can name the same switch. The game keeps one audio_car_data row
+// per switch name and the car's archive names the switch, so the later car shares the earlier car's sound rows: it
+// drops its own instead of being left out, which would leave every entrant list that names it (Progressive's season
+// lists, built by database operations) pointing at a car row the game can't find, and the game crashes at boot.
+inline void share_taken_switch(const std::string &id, const Value &rec, Plan &plan, const rows::Engine &engine)
+{
+    if (!rec["audio_switch"].is_string())
+        return;
+    std::string sw(rec["audio_switch"].as_string());
+    std::string prefix = std::string(AUDIO_CARS) + "." + sw + ".";
+    auto ours = [&](const Value &op) {
+        return op["op"].as_string() == "put-record" && op["key"].as_string().starts_with(prefix);
+    };
+    std::string taker;
+    for (std::size_t i = 0; i < plan.ops.size() && taker.empty(); i++)
+        if (ours(plan.ops[i])) {
+            std::string by = engine.creator(std::string(plan.ops[i]["key"].as_string()));
+            if (by != id)
+                taker = by;
+        }
+    if (taker.empty())
+        return;
+    Value kept = Value::array();
+    std::vector<std::string> owners;
+    std::size_t dropped = 0;
+    for (std::size_t i = 0; i < plan.ops.size(); i++) {
+        if (ours(plan.ops[i])) {
+            dropped++;
+            continue;
+        }
+        kept.push_back(plan.ops[i]);
+        owners.push_back(i < plan.owners.size() ? plan.owners[i] : plan.owner);
+    }
+    plan.ops = std::move(kept);
+    plan.owners = std::move(owners);
+    plan.keys -= std::min(plan.keys, dropped);
+    plan.lines.push_back("vehicle " + id + ": sound switch " + sw + " is " + taker +
+                         "'s, so the car keeps its row and plays that car's sound (" + std::to_string(dropped) +
+                         " audio records not written)");
+}
+
 inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const std::set<std::string> &skip = {})
 {
     std::map<std::string, Value> keep;
@@ -592,6 +634,7 @@ inline void expand(registry::Store &st, Expansion &x, const StatIds &stat, const
                 lower_vehicle_package(id, *rec, plan, stat);
             else if (r == "vehicle") {
                 lower_vehicle(id, *rec, lookup, source, plan, stat, &dropped);
+                share_taken_switch(id, *rec, plan, x.engine);
                 auto linked = vehicle_tower.find(id);
                 if (plan.ops.size() == 0 && plan.refused) {
                 } else if (linked == vehicle_tower.end())
