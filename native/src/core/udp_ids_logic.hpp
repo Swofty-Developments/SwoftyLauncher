@@ -43,8 +43,9 @@
 //
 // Tracks. Session (1), 2024 and 2025: 753 bytes, trackId i8 at 36 (published F1 24 / F1 25 specification). An added
 // track's statId is given per install (254 down), so the byte means nothing to an overlay and differs between PCs.
-// For a track swofty/udp_ids.json or the core's track records name, the Session packet carries trackId -1 (the
-// specification's "unknown") and is followed by a Swofty Track packet: the same 29-byte header with packetId 200 and
+// For a track swofty/udp_ids.json or the core's track records name, the Session packet carries the trackId the
+// Swofty list gives it (`track_udp`, byte 64..254, the same on every PC; 128..254 read as -128..-2) or else -1 (the specification's "unknown"), and is
+// followed by a Swofty Track packet: the same 29-byte header with packetId 200 and
 // packetVersion 1, then u32 swoftyTrackId at 29 (packages/core/src/udp_ids.rs, the same on every PC: a listed id,
 // else 0x80000000 | FNV-1a 32 of "<addon>/<code>"), u8 the game's statId at 33 and char[64] "<addon>/<code>"
 // (NUL-terminated) at 34: 98 bytes. The 2026 Session packet's layout is not catalogued, so it is left alone.
@@ -70,6 +71,7 @@ struct Map {
     mutable int model = MODEL_UNKNOWN;
     std::map<int, std::string> tracks;
     std::map<std::string, uint32_t> track_ids;
+    std::map<std::string, int> track_udp;
 
     Map()
     {
@@ -122,6 +124,11 @@ inline bool load(const std::string &text, Map &out, std::string &why)
         double n = id.num(-1);
         if (n >= 0 && n <= 4294967295.0)
             m.track_ids[key] = uint32_t(n);
+    }
+    for (auto &[key, n] : v["track_udp"].o) {
+        double t = n.num(-1);
+        if (t >= 64 && t <= 254)
+            m.track_udp[key] = int(t);
     }
     m.any = !m.teams.empty() || !m.drivers.empty();
     out = std::move(m);
@@ -290,7 +297,8 @@ inline uint32_t swofty_track_id(const Map &m, const std::string &key)
     return it != m.track_ids.end() ? it->second : hashed_track_id(key);
 }
 
-// For a 2024 or 2025 Session packet of a track in `tracks` (statId -> "<addon>/<code>"): sets its trackId to -1 and
+// For a 2024 or 2025 Session packet of a track in `tracks` (statId -> "<addon>/<code>"): sets its trackId to its listed
+// one or -1 and
 // writes the Swofty Track packet into `out` (TRACK_PACKET_SIZE bytes). False, and nothing written, otherwise.
 inline bool session_track(const Map &m, const std::map<int, std::string> &tracks, uint8_t *p, size_t len, uint8_t *out)
 {
@@ -312,7 +320,8 @@ inline bool session_track(const Map &m, const std::map<int, std::string> &tracks
     out[HEADER + 4] = stat;
     memset(out + HEADER + 5, 0, TRACK_KEY);
     memcpy(out + HEADER + 5, it->second.data(), std::min(it->second.size(), TRACK_KEY - 1));
-    p[SESSION_TRACK] = 0xff;
+    auto listed = m.track_udp.find(it->second);
+    p[SESSION_TRACK] = listed != m.track_udp.end() ? uint8_t(listed->second) : 0xff;
     return true;
 }
 

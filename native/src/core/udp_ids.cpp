@@ -66,9 +66,9 @@ int session(SOCKET s, const char *buf, int len, int flags, const sockaddr *to, i
     if (!track_said.exchange(true)) {
         uint32_t id = uint32_t(extra[ids::HEADER]) | uint32_t(extra[ids::HEADER + 1]) << 8 |
                       uint32_t(extra[ids::HEADER + 2]) << 16 | uint32_t(extra[ids::HEADER + 3]) << 24;
-        swofty::log("[udp] first Session packet of an added track: statId %u sent as -1, Swofty Track packet %u "
+        swofty::log("[udp] first Session packet of an added track: statId %u sent as %d, Swofty Track packet %u "
                     "with id %u (%s)",
-                    unsigned(extra[ids::HEADER + 4]), unsigned(ids::TRACK_PACKET), id,
+                    unsigned(extra[ids::HEADER + 4]), int(int8_t(copy[ids::SESSION_TRACK])), unsigned(ids::TRACK_PACKET), id,
                     reinterpret_cast<const char *>(extra + ids::HEADER + 5));
     }
     SetLastError(err);

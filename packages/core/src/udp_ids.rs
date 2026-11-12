@@ -44,6 +44,9 @@ pub struct UdpIds {
     /// `<addon>/<code>` -> Swofty track id of each track package in the build.
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub track_ids: BTreeMap<String, u32>,
+    /// `<addon>/<code>` -> the Session packet trackId byte [`LISTED`] gives it (64..=254), for the tracks in the build.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub track_udp: BTreeMap<String, i64>,
 }
 
 impl UdpIds {
@@ -58,13 +61,38 @@ impl UdpIds {
             self.tracks.insert(id, key.clone());
         }
         let id = swofty_track_id(&key);
+        if let Some(n) = session_track_id(&key) {
+            self.track_udp.insert(key.clone(), n);
+        }
         self.track_ids.insert(key, id);
     }
 }
 
-/// Swofty track ids given by hand, `<addon>/<code>` -> id, in 1..0x8000_0000 and never reused: a track whose hashed
-/// id would clash with another's gets an entry here. Ids 0..=255 are left to the game's stock tracks.
-pub const LISTED: &[(&str, u32)] = &[];
+/// A track given ids by hand, never reused once listed.
+pub struct Listed {
+    /// `<addon>/<code>`.
+    pub key: &'static str,
+    /// Its Swofty track id, in 256..0x8000_0000 (0..=255 are left to the game's stock tracks), or 0 to keep the hashed one.
+    pub id: u32,
+    /// The trackId its Session packets carry, in [`SESSION_TRACK_IDS`], or -1 for none (the packet says -1).
+    pub session: i64,
+}
+
+/// The Session packet's trackId bytes Swofty gives listed tracks: the stock tracks use 0..=41 in F1 25, 42..=63 stay
+/// free for tracks the game may add and 255 is -1, unknown. The field is an `int8`, so 128..=254 reach an overlay as
+/// -128..=-2: give out 64..=127 first.
+pub const SESSION_TRACK_IDS: std::ops::RangeInclusive<i64> = 64..=254;
+
+/// Tracks with ids given by hand, so every PC and every overlay knows them by the same numbers.
+pub const LISTED: &[Listed] = &[];
+
+/// The Session packet trackId [`LISTED`] gives the track keyed `key`.
+pub fn session_track_id(key: &str) -> Option<i64> {
+    LISTED
+        .iter()
+        .find(|l| l.key == key && SESSION_TRACK_IDS.contains(&l.session))
+        .map(|l| l.session)
+}
 
 /// The key a track's Swofty track id is made from.
 pub fn track_key(addon: &str, code: &str) -> String {
@@ -73,8 +101,8 @@ pub fn track_key(addon: &str, code: &str) -> String {
 
 /// The Swofty track id of the track keyed `key` (see the module notes): the same on every PC.
 pub fn swofty_track_id(key: &str) -> u32 {
-    if let Some((_, id)) = LISTED.iter().find(|(k, _)| *k == key) {
-        return *id;
+    if let Some(l) = LISTED.iter().find(|l| l.key == key && l.id != 0) {
+        return l.id;
     }
     let mut h: u32 = 0x811c_9dc5;
     for b in key.bytes() {
@@ -208,8 +236,21 @@ mod tests {
         assert_ne!(a, swofty_track_id("mod.sokol/sokol_short"));
         // FNV-1a 32 of "a" is 0xe40c292c; the core computes the same (udp_ids_logic.hpp).
         assert_eq!(swofty_track_id("a"), 0x8000_0000 | (0xe40c_292c & 0x7fff_ffff));
-        for (k, id) in LISTED {
-            assert!((1..0x8000_0000).contains(id) && swofty_track_id(k) == *id, "{k}");
+        let mut keys = HashSet::new();
+        let mut ids = HashSet::new();
+        let mut sessions = HashSet::new();
+        for l in LISTED {
+            assert!(keys.insert(l.key), "{} listed twice", l.key);
+            assert!(
+                l.id == 0 || ((256..0x8000_0000).contains(&l.id) && ids.insert(l.id)),
+                "{}",
+                l.key
+            );
+            assert!(
+                l.session == -1 || (SESSION_TRACK_IDS.contains(&l.session) && sessions.insert(l.session)),
+                "{}",
+                l.key
+            );
         }
         let mut u = UdpIds::default();
         u.add_track("mod.sokol", "sokol_gp", Some(250));

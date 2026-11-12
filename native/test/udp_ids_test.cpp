@@ -357,7 +357,8 @@ static void test_session_track()
     ids::Map m;
     std::string why;
     CHECK(ids::load(R"j({"version": 1, "tracks": {"250": "mod.sokol/sokol_gp"},
-                        "track_ids": {"mod.sokol/sokol_gp": 4000, "mod.rec/rec": 2147483999}})j",
+                        "track_ids": {"mod.sokol/sokol_gp": 4000, "mod.rec/rec": 2147483999},
+                        "track_udp": {"mod.x/y": 64, "mod.sokol/sokol_gp": 200, "mod.rec/rec": 255}})j",
                     m, why));
     CHECK(m.tracks.at(250) == "mod.sokol/sokol_gp" && m.track_ids.at("mod.rec/rec") == 2147483999u);
     CHECK(!m.any);
@@ -371,7 +372,7 @@ static void test_session_track()
     Bytes s = header(2025, 1, 753);
     s[36] = 250;
     CHECK(ids::session_track(m, tracks, s.data(), s.size(), out));
-    CHECK(s[36] == 0xff);
+    CHECK(s[36] == 200 && int8_t(s[36]) == -56);
     CHECK(out[0] == s[0] && out[1] == s[1] && out[7] == 0x11 && out[5] == 1 && out[6] == 200);
     CHECK((out[29] | out[30] << 8 | out[31] << 16 | uint32_t(out[32]) << 24) == 4000u);
     CHECK(out[33] == 250 && std::string(reinterpret_cast<char *>(out + 34)) == "mod.sokol/sokol_gp");
@@ -380,6 +381,7 @@ static void test_session_track()
     Bytes b = header(2024, 1, 753);
     b[36] = 251;
     CHECK(ids::session_track(m, tracks, b.data(), b.size(), out));
+    CHECK(b[36] == 64 && m.track_udp.count("mod.rec/rec") == 0);
     CHECK((out[29] | out[30] << 8 | out[31] << 16 | uint32_t(out[32]) << 24) == ids::hashed_track_id("mod.x/y"));
 
     Bytes stock = header(2025, 1, 753);
