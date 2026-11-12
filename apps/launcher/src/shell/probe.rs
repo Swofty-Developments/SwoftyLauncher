@@ -77,7 +77,7 @@ impl Shell {
         self.processes = std::mem::take(&mut probe.processes);
         self.sync_shaders(false, cx);
         self.attribute();
-        self.finish_launch(&probe, window, cx);
+        self.finish_launch(&probe);
         self.watch_session(probe.session.as_ref(), cx);
         self.session = probe.session;
         self.db_poll(cx);
@@ -158,7 +158,7 @@ impl Shell {
         }
     }
 
-    fn finish_launch(&mut self, probe: &Probe, window: &mut Window, cx: &mut Context<Self>) {
+    fn finish_launch(&mut self, probe: &Probe) {
         if let Some(launch) = self.launch.as_mut() {
             launch.saw_game |= self.owners.iter().any(|o| !matches!(o, Owner::Other(_)));
             launch.stage = probe.launch_stage.clone();
@@ -179,8 +179,6 @@ impl Shell {
                         .as_ref()
                         .filter(|f| f.at >= launch.at)
                         .map(|f| f.headline().to_owned());
-                    let unexplained =
-                        !refused && not_stock.is_none() && self.blocked.is_none() && failed.is_none();
                     self.notice = Some(match &self.blocked {
                         _ if refused => {
                             tr("an antivirus removed mod files, so F1 25 was not started").to_owned()
@@ -198,9 +196,6 @@ impl Shell {
                     if self.notice.is_some() {
                         crate::app_log::action("start F1 25").failed(&why);
                     }
-                    if unexplained && self.notice.is_some() {
-                        self.show_launch_exited(&why, window, cx);
-                    }
                     self.mp_launch_ended(Some(why));
                 } else {
                     self.mp_launch_ended(None);
@@ -208,21 +203,6 @@ impl Shell {
                 self.launch = None;
             }
         }
-    }
-
-    /// A launch that ended before the game started with no report that
-    /// explains it, such as a command line the CLI refused.
-    fn show_launch_exited(&mut self, why: &str, window: &mut Window, cx: &mut Context<Self>) {
-        let shell = cx.entity().downgrade();
-        window.notify(
-            Notification::error(game::cause_first(why))
-                .title(tr("Launch failed"))
-                .autohide(false)
-                .action(crate::send_logs::short_label(), move |window, cx| {
-                    shell.update(cx, |s, cx| s.send_logs(window, cx)).ok();
-                }),
-            cx,
-        );
     }
 
     fn watch_session(&mut self, session: Option<&SessionRecord>, cx: &mut Context<Self>) {
