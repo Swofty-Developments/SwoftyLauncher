@@ -124,6 +124,7 @@ bool have_session_board = false;
 std::string session_team;
 bool have_session_team = false;
 double next_board_try_s = 0;
+int board_tries = 0;
 bool last_has_wetness = false;
 float last_wetness = 0;
 bool weather_logged = false;
@@ -306,7 +307,9 @@ Board session_snapshot()
     Board b;
     auto facts = swofty_core::hooks::core().current();
     b.content = facts && !facts->content.empty() ? facts->content : "game/f1_2025";
-    std::string code = runtime::direct_start::tt::session_track();
+    std::string code;
+    if (!runtime::tt_bridge_session_track(code))
+        code = runtime::direct_start::tt::session_track();
     runtime::tt_bridge::BoardTrack t = runtime::tt_bridge_board_track(runtime::lower(code),
                                                                       runtime::tt_bridge::parse_board(runtime::tt_bridge_last_board()).track);
     b.track = t.key;
@@ -317,14 +320,15 @@ Board session_snapshot()
 }
 
 // Reads the board and the team label once; a session whose track is not known yet is asked again later.
-void resolve_session(double now)
+void resolve_session(double now, bool forced = false)
 {
     if (have_session_board && have_session_team)
         return;
     if (now < next_board_try_s)
         return;
     next_board_try_s = now + 1.0;
-    if (!have_session_board) {
+    if (!have_session_board && lr::board_read_due(forced, board_tries)) {
+        ++board_tries;
         Board b = session_snapshot();
         std::lock_guard<std::mutex> g(lock);
         session_board = std::move(b);
@@ -343,7 +347,7 @@ Board board_now(bool force)
 {
     if (force) {
         next_board_try_s = 0;
-        resolve_session(now_seconds());
+        resolve_session(now_seconds(), true);
     }
     Board b = session_board;
     std::string key = last_has_wetness ? std::string() : runtime::tt_bridge_session_board();
@@ -912,6 +916,7 @@ void lap_rec_session_enter()
     session_board = Board{};
     session_team.clear();
     next_board_try_s = 0;
+    board_tries = 0;
     last_has_wetness = false;
     weather_logged = false;
     gate = lr::gate_of(read_file(swofty_root() + L"tt.json", size_t(1) << 20));
