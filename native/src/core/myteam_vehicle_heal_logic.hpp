@@ -24,7 +24,7 @@ constexpr uint8_t KIND_CUSTOM = 1;
 constexpr uint8_t KINDS = 3;
 constexpr uint16_t MAX_ID = 0x400;
 constexpr size_t MAX_SLOTS = 0x4000;
-constexpr size_t MAX_ENTRANTS = 64;
+constexpr size_t MAX_ENTRANTS = 128;
 constexpr size_t LOG_IDS = 32;
 
 inline bool switch_off(const char *value)
@@ -200,6 +200,27 @@ inline bool pick(const Stock &s, bool y2026, Source &out)
 template <class Mem> bool plan(Mem &mem, uint64_t entrants, uint64_t first, uint64_t end, Source &out)
 {
     return pick(stock(mem, entrants), season_2026(mem, entrants, first, end), out);
+}
+
+template <class Mem> std::vector<uint32_t> missing(Mem &mem, uint64_t entrants, uint64_t first, uint64_t end)
+{
+    std::vector<uint32_t> out;
+    if (!first || end <= first || (end - first) % ENTRANT_SIZE)
+        return out;
+    size_t n = static_cast<size_t>((end - first) / ENTRANT_SIZE);
+    if (n > MAX_ENTRANTS)
+        n = MAX_ENTRANTS;
+    for (size_t i = 0; i < n; i++) {
+        uint32_t handle = 0;
+        if (!mem.u32(first + i * ENTRANT_SIZE + ENTRANT_VEHICLE, handle) || !healable(handle) || vehicle(mem, entrants, handle))
+            continue;
+        bool seen = false;
+        for (uint32_t h : out)
+            seen = seen || h == handle;
+        if (!seen)
+            out.push_back(handle);
+    }
+    return out;
 }
 
 inline bool replaced(int result)

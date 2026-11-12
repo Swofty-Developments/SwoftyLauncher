@@ -174,6 +174,28 @@ int main()
     torn.q[STOCK_TABLE + mh::SLOTS_END] = STOCK_SLOTS + 8;
     expect(mh::stock(torn, ENTRANTS).myteam.empty(), "a slot vector whose size is not whole slots is not read");
 
+    Fake career = game(stock, 2);
+    entrants(career, {stock_handle(6), stock_handle(7), custom_handle(4), custom_handle(4), stock_handle(1), custom_handle(0)});
+    std::vector<uint32_t> lost = mh::missing(career, ENTRANTS, LIST, list_end(6));
+    expect(lost.size() == 2 && lost[0] == custom_handle(4) && lost[1] == custom_handle(0),
+           "cazslip18's career: the kind 1 cars its entrants hold that resolve to nothing are listed once each");
+
+    Fake whole = game(stock, 5);
+    whole.q[CUSTOM_SLOTS + 4 * mh::SLOT_SIZE + mh::SLOT_VEHICLE] = car(4);
+    whole.q[CUSTOM_SLOTS + 0 * mh::SLOT_SIZE + mh::SLOT_VEHICLE] = car(5);
+    entrants(whole, {stock_handle(6), custom_handle(4), custom_handle(4), custom_handle(0)});
+    expect(mh::missing(whole, ENTRANTS, LIST, list_end(4)).empty(), "a career whose cars all resolve rebuilds nothing");
+
+    Fake stock_only = game(stock, 2);
+    entrants(stock_only, {stock_handle(0), stock_handle(1), 0x3fff0000u, stock_handle(99)});
+    expect(mh::missing(stock_only, ENTRANTS, LIST, list_end(4)).empty(),
+           "a Driver Career or Grand Prix grid (stock and empty handles only) rebuilds nothing");
+
+    Fake torn_list = game(stock, 2);
+    entrants(torn_list, {custom_handle(1)});
+    expect(mh::missing(torn_list, ENTRANTS, LIST, LIST + 0x40).empty() && mh::missing(torn_list, ENTRANTS, 0, 0).empty(),
+           "an entrant range that is empty or not whole records is not read");
+
     expect(mh::replaced(0) && mh::replaced(2) && mh::replaced(4), "ReplaceVehicle's replaced, added and unchanged results count");
     expect(!mh::replaced(1) && !mh::replaced(3) && !mh::replaced(5), "its no-table, failed-store and preloaded results do not");
 

@@ -259,6 +259,7 @@ std::vector<CoreMixins> myteam_vehicle_guard_mixins();
 void myteam_vehicle_guard_commit();
 std::vector<CoreMixins> myteam_vehicle_heal_mixins();
 void myteam_vehicle_heal_commit();
+void myteam_vehicle_heal_entrants(uintptr_t entrants, uintptr_t first, uintptr_t end);
 std::vector<CoreMixins> ai_corner_guard_mixins();
 void ai_corner_guard_commit();
 std::vector<CoreMixins> replay_grid_guard_mixins();

@@ -54,10 +54,13 @@ constexpr const char *TEAM_HQ_MIXIN = "swofty_core.dll (Team HQ answer)";
 constexpr uintptr_t REGISTRY_GET_SLOT = 0x10;
 constexpr uint32_t HUMAN_FLAG = 0x10000000u;
 constexpr size_t MAX_ENTRANTS = 128;
+constexpr uintptr_t MANAGER_ENTRANTS_SYSTEM = 0x290;
 constexpr const char *STATUS[4] = {"None", "Entering", "Updating", "Exiting"};
 
 using RegistryGet = void *(void *registry, const void *desc, uint32_t search_parents);
 using Post = uint64_t(void *bus, void *msg);
+
+template <class E = g::CareerEntity, class R = g::EntrantRecord> void heal_my_team_cars();
 
 std::mutex lock;
 Tracker tracker;
@@ -151,6 +154,8 @@ void publish(const runtime::career::Edges &e, const SwoftyCareerState &s)
                     : s.components == SWOFTY_CAREER_COMPONENTS_FALLBACK ? "fallback to flow"
                                                                         : "unseen",
                     mode_name(s.component_mode), mode_name(s.team_hq_mode));
+        if (s.mode == SWOFTY_CAREER_MY_TEAM)
+            heal_my_team_cars();
         std::string id = runtime::snapshots_career_loaded(s.key, s.mode);
         swofty_core::apply::moments::career_loaded(id.c_str(), s.mode);
         fire(SWOFTY_EVENT_CAREER_LOADED, s.mode, 0, &s);
@@ -362,6 +367,21 @@ void entrants(uintptr_t e, runtime::career::Components &out)
             out.driver = out.team = 0;
     } else {
         (void)e, (void)out;
+    }
+}
+
+template <class E, class R> void heal_my_team_cars()
+{
+    if constexpr (layout::CAREER && layout::ENTRANT) {
+        mem::Trust trust(runtime::HEAP_TRUST_MS);
+        uintptr_t e = championship_entity(), b = 0, en = 0, slot = binding("g_Game_Manager"), mgr = 0, es = 0;
+        if (!e || !mem::read(e + offsetof(E, entrants_begin), b) || !mem::read(e + offsetof(E, entrants_end), en) || !b ||
+            en < b || (en - b) % sizeof(R) || (en - b) / sizeof(R) > MAX_ENTRANTS || (en != b && !mem::readable(b, en - b)))
+            return;
+        if (!slot || !mem::read(slot, mgr) || !mgr || !mem::read(mgr + MANAGER_ENTRANTS_SYSTEM, es) || !es)
+            return;
+        static_assert(offsetof(R, vehicle_ref) == 0x5c && sizeof(R) == 0x88);
+        runtime::myteam_vehicle_heal_entrants(es, b, en);
     }
 }
 
