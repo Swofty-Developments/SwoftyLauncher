@@ -397,65 +397,8 @@ pub(crate) fn discord_link(id: &'static str, p: Palette) -> Stateful<Div> {
         .on_click(|_, _, cx| cx.open_url(INVITE))
 }
 
-#[derive(Clone)]
-struct FooterFocus {
-    importer: FocusHandle,
-    restore: FocusHandle,
-    repair: FocusHandle,
-}
-
-impl FooterFocus {
-    fn new(cx: &mut App) -> Self {
-        Self {
-            importer: cx.focus_handle(),
-            restore: cx.focus_handle(),
-            repair: cx.focus_handle(),
-        }
-    }
-}
-
-fn open_importer(shell: &WeakEntity<Shell>, window: &mut Window, cx: &mut App) {
-    window.close_dialog(cx);
-    shell.update(cx, |s, cx| s.open_page(Page::Importer, cx)).ok();
-}
-
-fn restore_folder(shell: &WeakEntity<Shell>, window: &mut Window, cx: &mut App) {
-    window.close_dialog(cx);
-    shell.update(cx, |s, cx| s.restore_game_folder(window, cx)).ok();
-}
-
-fn start_repair(open: Open, window: &mut Window, cx: &mut App) {
-    cx.open_url(open.url);
-    window.close_dialog(cx);
-    window.notify(
-        Notification::info(tr("Press Play again when Steam has finished."))
-            .title(tr("Steam is verifying F1 25")),
-        cx,
-    );
-}
-
-fn confirm_focused(
-    focus: &FooterFocus,
-    shell: &WeakEntity<Shell>,
-    open: Option<Open>,
-    window: &mut Window,
-    cx: &mut App,
-) -> bool {
-    if focus.importer.is_focused(window) {
-        open_importer(shell, window, cx);
-    } else if focus.restore.is_focused(window) {
-        restore_folder(shell, window, cx);
-    } else if let Some(open) = open.filter(|_| focus.repair.is_focused(window)) {
-        start_repair(open, window, cx);
-    } else {
-        return true;
-    }
-    false
-}
-
 fn footer(
     shell: WeakEntity<Shell>,
-    focus: &FooterFocus,
     leftovers: bool,
     importer_shown: bool,
     open: Option<Open>,
@@ -477,8 +420,10 @@ fn footer(
                             .h(px(36.))
                             .px(px(14.))
                             .label(tr("Go to Simplified Importer"))
-                            .track_focus(&focus.importer)
-                            .on_click(move |_, window, cx| open_importer(&importer, window, cx)),
+                            .on_click(move |_, window, cx| {
+                                window.close_dialog(cx);
+                                importer.update(cx, |s, cx| s.open_page(Page::Importer, cx)).ok();
+                            }),
                     )
                 })
                 .when(leftovers, |d| {
@@ -489,8 +434,10 @@ fn footer(
                             .px(px(14.))
                             .icon(IconName::RotateCcw)
                             .label(tr("Restore game folder"))
-                            .track_focus(&focus.restore)
-                            .on_click(move |_, window, cx| restore_folder(&restore, window, cx)),
+                            .on_click(move |_, window, cx| {
+                                window.close_dialog(cx);
+                                restore.update(cx, |s, cx| s.restore_game_folder(window, cx)).ok();
+                            }),
                     )
                 })
                 .when_some(open, |d, open| {
@@ -501,8 +448,15 @@ fn footer(
                             .px(px(14.))
                             .icon(IconName::ShieldCheck)
                             .label(open.label)
-                            .track_focus(&focus.repair)
-                            .on_click(move |_, window, cx| start_repair(open, window, cx)),
+                            .on_click(move |_, window, cx| {
+                                cx.open_url(open.url);
+                                window.close_dialog(cx);
+                                window.notify(
+                                    Notification::info(tr("Press Play again when Steam has finished."))
+                                        .title(tr("Steam is verifying F1 25")),
+                                    cx,
+                                );
+                            }),
                     )
                 })
                 .child(
@@ -535,13 +489,10 @@ impl Shell {
         let shell = cx.entity().downgrade();
         let p = palette(cx);
         let repair = repair(self.install.as_ref().map_or(Source::Steam, |i| i.source));
-        let focus = FooterFocus::new(cx);
         window.open_alert_dialog(cx, move |alert, window, _| {
             let (shell, edited) = (shell.clone(), edited.clone());
             let vh = f32::from(window.viewport_size().height);
             let top = ((vh - 660.) / 2.).max(12.);
-            let (confirm_focus, confirm_shell, confirm_open) =
-                (focus.clone(), shell.clone(), edited.open(&repair));
             alert
                 .width(px(680.))
                 .margin_top(px(top))
@@ -554,12 +505,8 @@ impl Shell {
                         .child(files_box(&edited, p))
                         .child(steps(&edited, &repair, p)),
                 )
-                .on_ok(move |_, window, cx| {
-                    confirm_focused(&confirm_focus, &confirm_shell, confirm_open, window, cx)
-                })
                 .footer(footer(
                     shell,
-                    &focus,
                     edited.leftovers(),
                     edited.missing().is_none(),
                     edited.open(&repair),
