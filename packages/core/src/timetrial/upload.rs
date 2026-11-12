@@ -14,7 +14,7 @@ use super::bridge::Pump;
 use super::game_replay;
 use super::queue::{Event, Folder, Limits, Queue, Report, unix_now};
 use super::toast;
-use super::{laps_dir, token, write_session_keys};
+use super::{laps_dirs, token, write_session_keys};
 use crate::session::Config;
 
 const WATCH_EVERY: Duration = Duration::from_secs(5);
@@ -43,7 +43,7 @@ pub fn line(event: &Event) -> String {
 
 /// Tell the core a lap is the player's new best. Only while the game runs: the final sweep after it
 /// exits has nobody to show it to.
-fn toast(game: &Path, queue: &Queue, event: &Event, say: &dyn Fn(&str)) {
+fn toast(data: &Path, queue: &Queue, event: &Event, say: &dyn Fn(&str)) {
     let Event::Uploaded {
         board,
         time_ms,
@@ -57,7 +57,7 @@ fn toast(game: &Path, queue: &Queue, event: &Event, say: &dyn Fn(&str)) {
     let Some(doc) = toast::message(board, *time_ms, answer, previous, unix_now()) else {
         return;
     };
-    match toast::write(game, &doc) {
+    match toast::write(data, &doc) {
         Ok(()) => say(&format!(
             "toast: P{} on {}/{}",
             doc["position"], board.content, board.track
@@ -132,7 +132,9 @@ pub fn sweep(
 ) -> Report {
     let queue = Queue::new(data);
     if let Some(game) = game {
-        queue.collect(&laps_dir(game), fingerprint).ok();
+        for laps in laps_dirs(data, game) {
+            queue.collect(&laps, fingerprint).ok();
+        }
     }
     let now = unix_now();
     queue.prune(now);
@@ -166,7 +168,14 @@ pub fn flush(data: &Path, game: Option<&Path>, config: &Config) -> Report {
         &mut |_| {},
     );
     if let (Some(game), Some(api)) = (game, &api) {
-        game_replay::send(&Queue::new(data), game, api, unix_now(), &|| false, &mut |_| {});
+        game_replay::send(
+            &Queue::new(data),
+            &game_replay::dirs(data, game),
+            api,
+            unix_now(),
+            &|| false,
+            &mut |_| {},
+        );
     }
     report
 }
@@ -177,13 +186,14 @@ pub fn replays(data: &Path, game: &Path, config: &Config, stop: &dyn Fn() -> boo
     let Ok(_busy) = BUSY.try_lock() else {
         return;
     };
-    if !game_replay::any(game) {
+    let dirs = game_replay::dirs(data, game);
+    if !game_replay::any(&dirs) {
         return;
     }
     let Some(api) = token(data, config).map(|t| Api::new(&t)) else {
         return;
     };
-    game_replay::send(&Queue::new(data), game, &api, unix_now(), stop, &mut |l| say(l));
+    game_replay::send(&Queue::new(data), &dirs, &api, unix_now(), stop, &mut |l| say(l));
 }
 
 /// Sweeps while the game runs. [`Watcher::finish`] makes the last sweep, with a few seconds at most.
@@ -222,7 +232,9 @@ impl Watcher {
                 .flatten()
                 .map(|t| {
                     let say = say.clone();
-                    Pump::start(game, Api::new(&t), move |l| say(l))
+                    Pump::start(&super::bridge::mailboxes(data, game), Api::new(&t), move |l| {
+                        say(l)
+                    })
                 }),
             data: data.to_owned(),
             game: game.to_owned(),
@@ -237,8 +249,8 @@ impl Watcher {
             .spawn(move || {
                 let mut cached: Option<Option<Value>> = None;
                 while !stop.load(Ordering::Relaxed) {
-                    let laps = has_laps(&game);
-                    if laps && waiting_for_replay(&game) {
+                    let laps = has_laps(&data, &game);
+                    if laps && waiting_for_replay(&data, &game) {
                         std::thread::sleep(HOLD_POLL);
                         continue;
                     }
@@ -295,7 +307,9 @@ impl Watcher {
         if let Some(t) = self.thread.take() {
             t.join().ok();
         }
-        let print = has_laps(&self.game).then(|| (self.fingerprint)()).flatten();
+        let print = has_laps(&self.data, &self.game)
+            .then(|| (self.fingerprint)())
+            .flatten();
         pass(
             &self.data,
             &self.game,
@@ -313,13 +327,15 @@ fn hold_for_replay(lap_age: Duration, replay_ready: bool) -> bool {
     !replay_ready && lap_age < REPLAY_WAIT
 }
 
-fn waiting_for_replay(game: &Path) -> bool {
-    let Some(written) = std::fs::read_dir(laps_dir(game)).ok().and_then(|d| {
-        d.filter_map(Result::ok)
-            .filter(|e| e.path().extension().is_some_and(|x| x == "swlap"))
-            .filter_map(|e| e.metadata().ok()?.modified().ok())
-            .max()
-    }) else {
+fn waiting_for_replay(data: &Path, game: &Path) -> bool {
+    let Some(written) = laps_dirs(data, game)
+        .iter()
+        .filter_map(|dir| std::fs::read_dir(dir).ok())
+        .flat_map(|d| d.filter_map(Result::ok))
+        .filter(|e| e.path().extension().is_some_and(|x| x == "swlap"))
+        .filter_map(|e| e.metadata().ok()?.modified().ok())
+        .max()
+    else {
         return false;
     };
     let age = written.elapsed().unwrap_or_default();
@@ -327,16 +343,18 @@ fn waiting_for_replay(game: &Path) -> bool {
         .duration_since(std::time::UNIX_EPOCH)
         .map_or(0, |d| d.as_secs())
         .saturating_sub(2);
-    let ready = game_replay::ready(game, unix_now())
+    let ready = game_replay::ready(&game_replay::dirs(data, game), unix_now())
         .iter()
         .any(|p| p.secs >= since);
     hold_for_replay(age, ready)
 }
 
-fn has_laps(game: &Path) -> bool {
-    std::fs::read_dir(laps_dir(game)).is_ok_and(|d| {
-        d.filter_map(Result::ok)
-            .any(|e| e.path().extension().is_some_and(|x| x == "swlap"))
+fn has_laps(data: &Path, game: &Path) -> bool {
+    laps_dirs(data, game).iter().any(|dir| {
+        std::fs::read_dir(dir).is_ok_and(|d| {
+            d.filter_map(Result::ok)
+                .any(|e| e.path().extension().is_some_and(|x| x == "swlap"))
+        })
     })
 }
 
@@ -366,7 +384,7 @@ fn pass(
         &mut |e| {
             say(&line(&e));
             if deadline.is_none() {
-                toast(game, &queue, &e, say);
+                toast(data, &queue, &e, say);
             }
         },
     );
@@ -418,7 +436,7 @@ mod tests {
     fn a_sweep_with_no_sign_in_collects_and_uploads_nothing() {
         let root = std::env::temp_dir().join(format!("swofty-ttu-{}", std::process::id()));
         std::fs::remove_dir_all(&root).ok();
-        let laps = laps_dir(&root.join("game"));
+        let [_, laps] = laps_dirs(&root.join("data"), &root.join("game"));
         std::fs::create_dir_all(&laps).unwrap();
         std::fs::write(laps.join("a.swlap"), crate::timetrial::swlap::sample(1, true)).unwrap();
         let r = sweep(
@@ -432,6 +450,27 @@ mod tests {
         assert_eq!((r.uploaded, r.waiting), (0, 1));
         assert!(!laps.join("a.swlap").exists());
         assert_eq!(Queue::new(&root.join("data")).list(Folder::Outbox).len(), 1);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn laps_in_the_data_folder_and_the_game_folder_are_both_collected() {
+        let root = std::env::temp_dir().join(format!("swofty-ttu-both-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let (data, game) = (root.join("data"), root.join("game"));
+        assert!(!has_laps(&data, &game));
+        let [new, old] = laps_dirs(&data, &game);
+        assert_eq!(new, data.join("laps"));
+        assert_eq!(old, game.join("swofty").join("laps"));
+        std::fs::create_dir_all(&new).unwrap();
+        std::fs::write(new.join("a.swlap"), crate::timetrial::swlap::sample(1, true)).unwrap();
+        assert!(has_laps(&data, &game));
+        std::fs::create_dir_all(&old).unwrap();
+        std::fs::write(old.join("b.swlap"), crate::timetrial::swlap::sample(2, true)).unwrap();
+        let r = sweep(&data, Some(&game), None, None, None, &mut |_| {});
+        assert_eq!((r.uploaded, r.waiting), (0, 2));
+        assert!(!new.join("a.swlap").exists() && !old.join("b.swlap").exists());
+        assert!(!has_laps(&data, &game));
         std::fs::remove_dir_all(&root).ok();
     }
 }

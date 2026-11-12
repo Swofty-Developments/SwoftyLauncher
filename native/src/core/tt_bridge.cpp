@@ -42,7 +42,7 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 //    track the stock boards name, per weather (tt_bridge_logic.hpp extend_xml). Only with "tt_bridge": true in tt.json.
 // 2. Requests. A mid hook at the entry of Game_F1os_RequestRing_Push (rcx = the op) reads the op's method name and
 //    LeaderboardID. For the five Time Trial methods on an addon board (descriptor >= 6) it returns from the push without
-//    sending. The request is written to swofty\tt\outbox\<seq>.json; the flow tick polls swofty\tt\inbox\<seq>.json and
+//    sending. The request is written to tt\outbox\<seq>.json under runtime::files_root(); the flow tick polls tt\inbox\<seq>.json and
 //    completes the op by calling the method's OnResult with a synthetic response (+0x88 0, +0x98 0, +0x9c status, +0xa0 ->
 //    {data, ?, length}). Unanswered after 8 s: status 504. Only with "tt_bridge": true.
 // 3. Guards, off until "tt_guards": true in tt.json or SWOFTY_TT_GUARDS=1 (their facts are not confirmed in game): a lap in
@@ -340,7 +340,7 @@ uint64_t unix_seconds()
 
 void make_dirs()
 {
-    std::wstring root = runtime::swofty_root();
+    std::wstring root = runtime::files_root();
     CreateDirectoryW((root + L"tt").c_str(), nullptr);
     outbox = root + L"tt\\outbox\\";
     inbox = root + L"tt\\inbox\\";
@@ -1508,7 +1508,9 @@ void replay_load_slot_mid(safetyhook::Context &c)
 std::wstring replay_setup_path(const std::wstring &frr)
 {
     size_t cut = frr.find_last_of(L"\\/");
-    return runtime::swofty_root() + L"tt\\replays\\" + (cut == std::wstring::npos ? frr : frr.substr(cut + 1)) + L".json";
+    std::wstring name = L"tt\\replays\\" + (cut == std::wstring::npos ? frr : frr.substr(cut + 1)) + L".json";
+    std::wstring own = runtime::files_root() + name, old = runtime::swofty_root() + name;
+    return GetFileAttributesW(own.c_str()) == INVALID_FILE_ATTRIBUTES && GetFileAttributesW(old.c_str()) != INVALID_FILE_ATTRIBUTES ? old : own;
 }
 
 void replay_write_setup(const std::wstring &frr, bool beside_game_file)
@@ -1769,7 +1771,7 @@ void replay_watch_file(std::wstring path, uint32_t lap_ms, uint64_t stamp)
             last = size;
             continue;
         }
-        std::wstring root = runtime::swofty_root();
+        std::wstring root = runtime::files_root();
         CreateDirectoryW((root + L"tt").c_str(), nullptr);
         std::wstring dir = root + L"tt\\replays\\";
         CreateDirectoryW(dir.c_str(), nullptr);
@@ -1784,7 +1786,14 @@ void replay_watch_file(std::wstring path, uint32_t lap_ms, uint64_t stamp)
         }
         int magic = tb::replay_magic_offset(head, got);
         // The file leaves the game's replay folder: Theatre lists only the laps the player adds from the boards. The setup is written
-        // last, so the pair is complete once the .json is there.
+        // last, so the pair is complete once the .json is there. The game saves the replay read-only; a move to another volume (a
+        // data folder on another drive or filesystem) is a copy that then can't delete the source, and the copy keeps the flag, so
+        // the source and a copy left by an earlier attempt lose it first.
+        for (const std::wstring *p : {&path, &dest}) {
+            DWORD a = GetFileAttributesW(p->c_str());
+            if (a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_READONLY))
+                SetFileAttributesW(p->c_str(), a & ~DWORD(FILE_ATTRIBUTE_READONLY));
+        }
         bool copied = MoveFileExW(path.c_str(), dest.c_str(), MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) != 0;
         if (!copied && CopyFileW(path.c_str(), dest.c_str(), FALSE)) {
             copied = true;
@@ -1798,8 +1807,9 @@ void replay_watch_file(std::wstring path, uint32_t lap_ms, uint64_t stamp)
         }
         if (copied)
             replay_write_setup(dest.substr(0, dest.size() - 7), false);
-        swofty::log("[replay] capture: game save %s settled at %llu bytes; header %s; magic 0xe32fcaa8 %s; copy to tt/replays/%s %s", narrow(path.c_str()).c_str(), (unsigned long long)size,
-                    hex_dump(head, got).c_str(), magic >= 0 ? ("found at +" + std::to_string(magic)).c_str() : "NOT found", name.c_str(), copied ? "done" : "FAILED");
+        DWORD copy_error = copied ? 0 : GetLastError();
+        swofty::log("[replay] capture: game save %s settled at %llu bytes; header %s; magic 0xe32fcaa8 %s; copy to %s%s %s (error %lu)", narrow(path.c_str()).c_str(), (unsigned long long)size,
+                    hex_dump(head, got).c_str(), magic >= 0 ? ("found at +" + std::to_string(magic)).c_str() : "NOT found", narrow(dir.c_str()).c_str(), name.c_str(), copied ? "done" : "FAILED", copy_error);
         return;
     }
     swofty::log("[replay] capture: the game's save %s did not appear within 180 s", narrow(path.c_str()).c_str());
@@ -1828,8 +1838,14 @@ std::wstring replay_game_dir()
 // where Theatre lists it, and its setup beside our own under tt\replays, where a Theatre pick reads it.
 void replay_inbox()
 {
-    std::wstring root = runtime::swofty_root(), inbox = root + L"tt\\replays\\inbox\\";
-    for (;;) {
+    std::wstring root = runtime::files_root();
+    std::vector<std::wstring> inboxes{root + L"tt\\replays\\inbox\\"};
+    if (runtime::swofty_root() != root)
+        inboxes.push_back(runtime::swofty_root() + L"tt\\replays\\inbox\\");
+    CreateDirectoryW((root + L"tt").c_str(), nullptr);
+    CreateDirectoryW((root + L"tt\\replays").c_str(), nullptr);
+    for (size_t turn = 0;; turn++) {
+        const std::wstring &inbox = inboxes[turn % inboxes.size()];
         WIN32_FIND_DATAW d{};
         HANDLE h = FindFirstFileW((inbox + L"*.frr.json").c_str(), &d);
         if (h != INVALID_HANDLE_VALUE) {
@@ -1848,7 +1864,8 @@ void replay_inbox()
                 swofty::log("[replay] inbox: %s %s into %s; its setup %s", narrow(frr.c_str()).c_str(), a ? "moved" : "NOT moved", narrow(game.c_str()).c_str(), b ? "placed" : "NOT placed");
             }
         }
-        Sleep(3000);
+        if ((turn + 1) % inboxes.size() == 0)
+            Sleep(3000);
     }
 }
 

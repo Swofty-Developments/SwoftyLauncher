@@ -110,6 +110,10 @@ $DATA/
     ids.json                            the stat-id store, kept by the core
   careers/
     index.json                          the career index
+  laps/                                 Time Trial lap files, written by the core
+  tt/
+    outbox/  inbox/                     the in-game boards mailbox
+    replays/                            the game's replays of personal bests, and Add to game's inbox/
 
 <game>/swofty/
   state.json                            names $DATA to the core, placed by the install
