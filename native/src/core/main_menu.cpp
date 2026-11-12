@@ -34,11 +34,12 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 // site_FeHome_AfterCareerCall (swofty_core.cpp) runs right after the Career tile and calls add_tiles, which adds
 // Grand Prix and Time Trial as two copies of the F1 World item (their own id, title and description over the
 // stock populate), Split Screen as the stock Local Multiplayer item with its own title (its route opens the
-// game's Local Multiplayer list, the lone Splitscreen tile), the challenge tile when the game builds it and
-// Theatre; swofty_core then adds Addon Settings last. arm_patch overwrites the first instruction of the F1 World
-// block (lea r15d,[r12+1]) with a jmp to the block's final jmp, so F1 World, the divider, League Racing, Player Hub
-// and the stock Theatre are never added. The block is matched byte for byte first and the adders are the call
-// targets read from it; when anything does not match nothing is patched, no tile is added and the stock menu stays.
+// game's Local Multiplayer list, the lone Splitscreen tile), the challenge tile when the game builds it, the stock
+// Player Hub (the game's own item and route: driver customisation, the Podium Pass and the profile) and Theatre;
+// swofty_core then adds Addon Settings last. arm_patch overwrites the first instruction of the F1 World block
+// (lea r15d,[r12+1]) with a jmp to the block's final jmp, so F1 World, the divider, League Racing and the stock
+// Theatre are never added there. The block is matched byte for byte first and the adders are the call targets read
+// from it; when anything does not match nothing is patched, no tile is added and the stock menu stays.
 //
 // The status strip, the sign-in state and the latest video card are painted by the overlay frame
 // (paint) from swofty/home_menu.json while the home screen is open. Images (the Discord avatar and the video
@@ -75,7 +76,8 @@ namespace {
 using namespace swofty::game;
 namespace logic = ::runtime::main_menu;
 
-constexpr size_t OFF_F1WORLD = 11, OFF_CHALLENGE = 32, OFF_DIVIDER = 47, OFF_LOCAL_MP = 59, OFF_THEATRE = 98, OFF_END_JMP = 103;
+constexpr size_t OFF_F1WORLD = 11, OFF_CHALLENGE = 32, OFF_DIVIDER = 47, OFF_LOCAL_MP = 59, OFF_HUB = 83, OFF_THEATRE = 98,
+                 OFF_END_JMP = 103;
 constexpr size_t NESTR_CHARS = 9;
 
 const runtime::Sig S_BLOCK{"FeHome_F1WorldBlock",
@@ -91,7 +93,7 @@ using GetAction_t = Action *(*)(HomeItem *, Action *);
 
 struct Block {
     uint8_t *at = nullptr;
-    Add_t f1world = nullptr, challenge = nullptr, divider = nullptr, local_mp = nullptr, theatre = nullptr;
+    Add_t f1world = nullptr, challenge = nullptr, divider = nullptr, local_mp = nullptr, hub = nullptr, theatre = nullptr;
 } block;
 
 std::atomic<bool> resolved{false}, patched{false}, home_open{false};
@@ -164,10 +166,13 @@ bool resolve()
         block.challenge = target(at, OFF_CHALLENGE);
         block.divider = target(at, OFF_DIVIDER);
         block.local_mp = target(at, OFF_LOCAL_MP);
+        block.hub = target(at, OFF_HUB);
         block.theatre = target(at, OFF_THEATRE);
-        swofty::log("[main-menu] home tile block at %p; adders F1 World %p, challenge %p, Local Multiplayer %p, Theatre %p", at,
-                    reinterpret_cast<void *>(block.f1world), reinterpret_cast<void *>(block.challenge),
-                    reinterpret_cast<void *>(block.local_mp), reinterpret_cast<void *>(block.theatre));
+        swofty::log("[main-menu] home tile block at %p; adders F1 World %p, challenge %p, Local Multiplayer %p, Player Hub %p, "
+                    "Theatre %p",
+                    at, reinterpret_cast<void *>(block.f1world), reinterpret_cast<void *>(block.challenge),
+                    reinterpret_cast<void *>(block.local_mp), reinterpret_cast<void *>(block.hub),
+                    reinterpret_cast<void *>(block.theatre));
         resolved = true;
     });
     return resolved.load();
@@ -1167,7 +1172,7 @@ bool arm_patch()
     hook_migrate();
     hook_gohome();
     hook_addtabs();
-    swofty::log("[main-menu] stock F1 World, divider, League Racing, Player Hub and Theatre tiles skipped");
+    swofty::log("[main-menu] stock F1 World, divider, League Racing and Theatre tiles skipped");
     return true;
 }
 
@@ -1182,6 +1187,12 @@ uint8_t add_tiles(void *list_, uint8_t career_index, const uint8_t *flags)
     add_split_screen(list, ++index);
     if (flags && (flags[8] & 1))
         block.challenge(list, ++index);
+    block.hub(list, ++index);
+    HomeItem *hub = last_item(list);
+    bool hub_added = hub && !std::strcmp(id_of(hub), logic::ID_HUB);
+    if (!hub_added)
+        swofty::log("[main-menu] player hub: the stock Player Hub adder left no player_hub item (last item '%s')",
+                    hub ? id_of(hub) : "");
     block.theatre(list, ++index);
     bool showroom = menu_on();
     if (showroom)
@@ -1192,8 +1203,9 @@ uint8_t add_tiles(void *list_, uint8_t career_index, const uint8_t *flags)
         swofty::log("[main-menu] divider tile added before Addon Settings (index %u)", unsigned(index));
     }
     style_list(list);
-    swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial, Split Screen%s, Theatre%s (last index %u)",
-                flags && (flags[8] & 1) ? ", challenge" : "", showroom ? ", Showroom" : "", unsigned(index));
+    swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial, Split Screen%s%s, Theatre%s (last index %u)",
+                flags && (flags[8] & 1) ? ", challenge" : "", hub_added ? ", Player Hub" : "", showroom ? ", Showroom" : "",
+                unsigned(index));
     return index;
 }
 

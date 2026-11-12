@@ -46,7 +46,7 @@ constexpr const char *TEMPLATE_WIDE_C = "swofty_home_wide_c";
 inline const char *template_for(const std::string &id, bool rows = true)
 {
     if (!rows)
-        return id == ID_THEATRE || id == ID_SHOWROOM || id == ID_LOCAL ? TEMPLATE_DEFAULT : "";
+        return id == ID_THEATRE || id == ID_SHOWROOM || id == ID_LOCAL || id == ID_HUB ? TEMPLATE_DEFAULT : "";
     if (id == ID_DIVIDER)
         return TEMPLATE_DIVIDER;
     if (id == ID_STORY)
@@ -215,7 +215,7 @@ struct Plan {
 
 inline bool removed(const std::string &id)
 {
-    return id == ID_F1_WORLD || id == ID_LEAGUE || id == ID_HUB || id == ID_MOVIE || id == "divider";
+    return id == ID_F1_WORLD || id == ID_LEAGUE || id == ID_MOVIE || id == "divider";
 }
 
 inline Plan layout(const std::vector<std::string> &stock, bool showroom_available)
@@ -236,7 +236,8 @@ inline Plan layout(const std::vector<std::string> &stock, bool showroom_availabl
     if (has(ID_CHALLENGE))
         top(ID_CHALLENGE);
     for (auto &s : stock) {
-        if (s == ID_CAREER || s == ID_STORY || s == ID_CHALLENGE || s == ID_LOCAL || s == ID_THEATRE || s == ID_SETTINGS)
+        if (s == ID_CAREER || s == ID_STORY || s == ID_CHALLENGE || s == ID_LOCAL || s == ID_HUB || s == ID_THEATRE ||
+            s == ID_SETTINGS)
             continue;
         if (removed(s))
             plan.dropped.push_back(s);
@@ -250,6 +251,8 @@ inline Plan layout(const std::vector<std::string> &stock, bool showroom_availabl
     if (has(ID_LOCAL))
         plan.cards.push_back({ID_LOCAL, 1, 2, false});
     int row = 2;
+    if (has(ID_HUB))
+        plan.cards.push_back({ID_HUB, row++, 0, true});
     if (has(ID_THEATRE))
         plan.cards.push_back({ID_THEATRE, row++, 0, true});
     if (showroom_available)

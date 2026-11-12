@@ -37,15 +37,17 @@ int main()
     expect(at(p, 0, 0) == "story" && at(p, 0, 1) == "career", "Braking Point and Career lead the first row");
     expect(at(p, 1, 0) == mm::ID_GRAND_PRIX && at(p, 1, 1) == mm::ID_TIME_TRIAL, "Grand Prix and Time Trial share row 2");
     expect(at(p, 1, 2) == "local_multiplayer", "the Split Screen card (the stock Local Multiplayer item) ends row 2");
-    expect(at(p, 2, 0) == "theatre" && p.cards[5].wide, "Theatre is a full-width row under them");
-    expect(at(p, 3, 0) == mm::ID_SHOWROOM, "Showroom follows Theatre");
-    expect(at(p, 4, 0) == mm::ID_DIVIDER, "a divider sits between the cards and Addon Settings");
-    expect(at(p, 5, 0) == "mod_menu" && p.cards.back().id == "mod_menu", "Addon Settings is last");
+    expect(at(p, 2, 0) == "player_hub" && p.cards[5].wide, "Player Hub is a full-width row under them");
+    expect(at(p, 3, 0) == "theatre", "Theatre follows Player Hub");
+    expect(at(p, 4, 0) == mm::ID_SHOWROOM, "Showroom follows Theatre");
+    expect(at(p, 5, 0) == mm::ID_DIVIDER, "a divider sits between the cards and Addon Settings");
+    expect(at(p, 6, 0) == "mod_menu" && p.cards.back().id == "mod_menu", "Addon Settings is last");
     for (auto &c : p.cards)
-        expect(c.id != "f1_world" && c.id != "pro_leagues" && c.id != "player_hub", "removed entry gone: " + c.id);
-    expect(!mm::removed("local_multiplayer") && mm::removed("f1_world") && mm::removed("pro_leagues") && mm::removed("player_hub"),
-           "Local Multiplayer is kept (it is the only way to Split Screen); F1 World, League Racing and Player Hub go");
-    expect(p.dropped.size() == 4, "the three removed entries and the divider are reported dropped");
+        expect(c.id != "f1_world" && c.id != "pro_leagues", "removed entry gone: " + c.id);
+    expect(!mm::removed("local_multiplayer") && !mm::removed("player_hub") && mm::removed("f1_world") && mm::removed("pro_leagues"),
+           "Local Multiplayer (the only way to Split Screen) and Player Hub (driver customisation) are kept; F1 World and "
+           "League Racing go");
+    expect(p.dropped.size() == 3, "the two removed entries and the divider are reported dropped");
     auto bare = mm::layout({"career", "f1_world", "theatre", "mod_menu"}, true);
     expect(at(bare, 1, 2) == "", "no Split Screen card when the game builds no Local Multiplayer tile");
 
@@ -73,8 +75,9 @@ int main()
            "every card has its row template and unknown ids have none");
     expect(std::string(mm::template_for("theatre", false)) == mm::TEMPLATE_DEFAULT && std::string(mm::template_for("swofty_showroom", false)) == mm::TEMPLATE_DEFAULT &&
                std::string(mm::template_for("local_multiplayer", false)) == mm::TEMPLATE_DEFAULT &&
+               std::string(mm::template_for("player_hub", false)) == mm::TEMPLATE_DEFAULT &&
                std::string(mm::template_for("career", false)).empty() && std::string(mm::template_for("swofty_divider")) == mm::TEMPLATE_DIVIDER,
-           "without rows Theatre, Showroom and Split Screen take the default large tile; with rows the divider has its slot");
+           "without rows Theatre, Showroom, Split Screen and Player Hub take the default large tile; with rows the divider has its slot");
     expect(std::string(mm::SPLIT_SCREEN_TITLE) == "SPLIT SCREEN" && !std::string(mm::SPLIT_SCREEN_DESCRIPTION).empty(),
            "the Local Multiplayer item is titled Split Screen");
     expect(mm::with_separators(1234) == "1,234" && mm::with_separators(999) == "999" && mm::with_separators(1000000) == "1,000,000" &&
