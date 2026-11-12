@@ -1591,6 +1591,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         planner.keep_entrant_lists(crate::entrant_lists::StockLists::new(&shipped_db));
         planner.keep_row_ids(row_ids);
         let added = planner.apply_db_report(&mut db, &stock, &tracked, &mut db_report)?;
+        built.lines.extend(crate::virtual_lists::settle(&mut db, &stock));
         if let Some(ids) = planner.take_row_ids() {
             if let Some(missed) = ids.lent_missed() {
                 return Err(Error::Resolve(missed));

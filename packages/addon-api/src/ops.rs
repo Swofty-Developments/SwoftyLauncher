@@ -116,6 +116,22 @@ pub struct StatIdCeiling {
     pub from: Option<i64>,
 }
 
+/// The record that lists the virtual entrant lists (comma-separated labels) for the build's settle step.
+pub const VIRTUAL_LISTS: &str = "swofty.virtual_entrant_lists";
+const VIRTUAL_LISTS_TAG: u8 = 4;
+
+fn virtual_lists(db: &Db) -> Vec<String> {
+    db.text(fnv1a64(VIRTUAL_LISTS))
+        .map(|t| {
+            t.split(',')
+                .map(str::trim)
+                .filter(|l| !l.is_empty())
+                .map(String::from)
+                .collect()
+        })
+        .unwrap_or_default()
+}
+
 const STAT_ID_CEILINGS: &[(&str, &str, StatIdCeiling)] = &[
     // Vehicle and team ids are 14 bits in the game's packed keys (0x3fff = none), like driver ids; the core's
     // registry pools end at the same 16382 (VEHICLE_STAT_MAX / TEAM_STAT_MAX in apply/content/lower.hpp).
@@ -313,6 +329,13 @@ pub enum DbOp {
         key: String,
         #[serde(default, skip_serializing_if = "std::ops::Not::not")]
         allow_stock_removal: bool,
+    },
+    /// Marks the entrant list labelled `list` as virtual: the build moves its row above the table's count, so the
+    /// game loads no list object for it and it takes no stat id and no entrant setup mode slot. The core reads it
+    /// into `swofty_virtual_list` when a box naming it is pressed. Put it before the `add-row` that adds the list:
+    /// that row then passes the 255 ceiling of `entrants.entrant_lists`.
+    VirtualList {
+        list: String,
     },
 }
 
@@ -1372,6 +1395,23 @@ fn apply(db: &mut Db, op: &DbOp, names: &dyn FieldNames, cx: &mut Cx) -> Result<
             }
             Ok(Some(k))
         }
+        DbOp::VirtualList { list } => {
+            let key = fnv1a64(VIRTUAL_LISTS);
+            let mut labels = virtual_lists(db);
+            if !labels.iter().any(|l| l == list) {
+                labels.push(list.clone());
+            }
+            let value = labels.join(",").into_bytes();
+            match db.get_mut(key) {
+                Some(r) => r.value = value,
+                None => db.push(Record {
+                    key,
+                    tag: VIRTUAL_LISTS_TAG,
+                    value,
+                }),
+            }
+            Ok(Some(key))
+        }
         DbOp::RemoveRecord {
             key,
             allow_stock_removal,
@@ -1669,7 +1709,11 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
             indexed && top_level
         }
     };
-    let ceiling = stat_id_ceiling(&path, row).filter(|_| top_level);
+    let virtual_row = path == "entrants.entrant_lists"
+        && set
+            .get("_metadata_")
+            .is_some_and(|l| virtual_lists(db).contains(l));
+    let ceiling = stat_id_ceiling(&path, row).filter(|_| top_level && !virtual_row);
     let field = stat_id_field(&path, row);
     let kept = names.row_ids().filter(|_| top_level);
     let label = rows
@@ -3009,6 +3053,39 @@ mod tests {
             "{:?}",
             report.lines
         );
+    }
+
+    #[test]
+    fn a_virtual_entrant_list_passes_the_byte_ceiling_its_row_never_reaches() {
+        const LISTS: &str = "entrants.entrant_lists";
+        let mut db = table(LISTS, "entrant_list", &[0, 255]);
+        let stock: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
+        let full = apply_db_ops_report(
+            &mut db.clone(),
+            &add_rows(LISTS, "entrant_list", &[("season_1960", None)]),
+            &stock,
+            &mut DbReport::default(),
+        )
+        .unwrap_err();
+        assert!(
+            full.to_string().contains("has no free stat_id up to 255"),
+            "{full}"
+        );
+        let mut ops = add_rows(LISTS, "entrant_list", &[("season_1960", None)]);
+        ops.ops.insert(
+            0,
+            DbOp::VirtualList {
+                list: "season_1960".into(),
+            },
+        );
+        apply_db_ops_report(&mut db, &ops, &stock, &mut DbReport::default()).unwrap();
+        assert_eq!(db.get_text(VIRTUAL_LISTS).as_deref(), Some("season_1960"));
+        assert_eq!(
+            db.get_text("entrants.entrant_lists.entrant_list_2._metadata_")
+                .as_deref(),
+            Some("season_1960")
+        );
+        assert_eq!(ids(&db, LISTS, "entrant_list"), [0, 255, 256]);
     }
 
     #[test]

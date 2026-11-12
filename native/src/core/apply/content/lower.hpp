@@ -93,6 +93,7 @@ struct Plan {
     std::vector<GarageArt> garages;
     std::vector<std::pair<std::string, std::string>> texts;
     std::vector<std::string> lines;
+    std::vector<std::string> virtual_lists;
     std::size_t keys = 0;
     std::size_t refused = 0;
 };
@@ -105,6 +106,8 @@ inline constexpr const char *SETUP_PRESETS = "car_setup.presets.vehicle_package_
 inline constexpr const char *ENTRANTS = "entrants.entrant_lists.entrants.entrant";
 inline constexpr const char *STANDINGS = "entrants.standings.standings";
 inline constexpr const char *LISTS = "entrants.entrant_lists.entrant_list";
+// The list the core fills on a press of a box whose entrant list is virtual (era_picker.cpp, VIRTUAL_HOST).
+inline constexpr const char *VIRTUAL_HOST_LIST = "swofty_virtual_list";
 inline constexpr const char *SCENARIOS = "game_setup.scenarios.scenario";
 inline constexpr const char *SETUP_ROW = "entrants.entrant_setup_modes.entrant_setup_mode";
 inline constexpr const char *CATEGORY =
@@ -698,7 +701,12 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
                      std::move(descriptor));
         }
     }
-    auto list_id = stat_of(stat, "content.package", id, pin_of(rec));
+    // A virtual list (content.package "virtual_list": true) is moved above the table's count after every record is
+    // lowered (settle_virtual_lists in boot.hpp): it takes no stat id and is not offered under its setup mode.
+    bool virt = rec["virtual_list"].is_bool() && rec["virtual_list"].as_bool();
+    if (virt)
+        plan.virtual_lists.push_back(list);
+    auto list_id = virt ? std::optional<int64_t>() : stat_of(stat, "content.package", id, pin_of(rec));
     if (list_id)
         row["stat_id"] = std::to_string(*list_id);
     if (wide)
@@ -756,13 +764,16 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
     push_row(plan, CATEGORY, std::string(CATEGORY) + ".value[_metadata_=f1_2025]",
              Value::object({{"_metadata_", list}, {"game_value", list}, {"loc_tag", category_tag}}));
     for (const char *field : {"entrant_lists", "selectable_entrant_lists"})
-        push_op(plan, append_op(std::string(SETUP_ROW) + "[_metadata_=" + mode + "]", field, list));
+        if (!virt)
+            push_op(plan, append_op(std::string(SETUP_ROW) + "[_metadata_=" + mode + "]", field, list));
     std::vector<std::string> sets;
     if (db["content_sets"].is_array())
         for (std::size_t i = 0; i < db["content_sets"].size(); i++)
             sets.emplace_back(db["content_sets"][i].as_string());
     else
         sets = {"2025", "2026"};
+    if (virt)
+        sets.clear();
     for (auto &cs : sets)
         push_op(plan, append_op("content_sets.content_set[_metadata_=" + cs + "].available_entrant_lists_0",
                                 "entrant_lists", list));
