@@ -1010,6 +1010,30 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : myteam_vehicle off: process ended with $code" || { echo "FAIL: myteam_vehicle off: process exited 0"; status=1; }
     fi
 done
+for heal in on off; do
+    echo "==== myteam_heal ($heal)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_MYTEAM_VEHICLE_HEAL=$([[ $heal == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" myteam_heal >"$OUT/myteam_heal.out" 2>&1 || code=$?
+    grep -E '\[myteam\] (heal|vehicle heal)|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    grep -E 'myteam heal|FAIL' "$OUT/myteam_heal.out" || true
+    if [[ $heal == on ]]; then
+        once "myteam_heal on: the heal is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(my team vehicle heal\)': 1 mixin"
+        once "myteam_heal on: the heal is armed" '\[myteam\] vehicle heal armed'
+        once "myteam_heal on: the rebuilt car is logged once, naming the stock car" "\[myteam\] heal: the player's My Team car \(custom vehicle 2\) was missing from the save .*rebuilt it from the stock My Team car 'myteam_mercedes_2026' \(2026 season\)"
+        grep -q 'FAIL' "$OUT/myteam_heal.out" && { echo "FAIL: myteam_heal on: a check failed"; status=1; } || echo "ok  : myteam_heal on: the fake game's checks pass"
+        grep -q "myteam heal on: the session entered, 4 classes, 4 entrants classified, 1 rebuilt, custom vehicle 2 is 'myteam_mercedes_2026'" "$OUT/myteam_heal.out" &&
+            echo "ok  : myteam_heal on: the session entered with the rebuilt car" || { echo "FAIL: myteam_heal on: the session did not enter"; status=1; }
+        count "myteam_heal on: no unhandled fault" 0 '\[crash\] unhandled '
+        [[ $code == 0 ]] && echo "ok  : myteam_heal on: process exited 0" || { echo "FAIL: myteam_heal on: process ended with $code"; status=1; }
+    else
+        once "myteam_heal off: the heal is off" '\[myteam\] vehicle heal off \(SWOFTY_MYTEAM_VEHICLE_HEAL=0\)'
+        check "myteam_heal off: the session start faults where the game does" '\[crash\]   reading 0xcea'
+        grep -q 'myteam heal off: the session entered' "$OUT/myteam_heal.out" && { echo "FAIL: myteam_heal off: the session entered"; status=1; } ||
+            echo "ok  : myteam_heal off: the session does not enter"
+        [[ $code != 0 ]] && echo "ok  : myteam_heal off: process ended with $code" || { echo "FAIL: myteam_heal off: process exited 0"; status=1; }
+    fi
+done
 for guard in on off; do
     echo "==== track_list ($guard)"
     code=0
