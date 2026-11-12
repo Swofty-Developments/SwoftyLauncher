@@ -14,6 +14,15 @@
 
 namespace runtime::lap_rec {
 
+// The session's board needs the game's current-track getter, which costs 100 ms or more a call. While the track is not known
+// the tick asks again once a second, at most BOARD_TRIES times a session; a lap's timing start asks once more whatever the count.
+constexpr int BOARD_TRIES = 10;
+
+inline bool board_read_due(bool forced, int tries)
+{
+    return forced || tries < BOARD_TRIES;
+}
+
 // Three basis vectors of a body, one per row of c, as read from memory.
 inline bool unit_axes(const float m[3][3])
 {

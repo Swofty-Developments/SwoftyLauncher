@@ -746,8 +746,16 @@ static void outbox()
     expect(box.ready().empty() && box.in_flight() == 0 && box.completed() == 0, "a session end clears it");
 }
 
+static void board_reads()
+{
+    expect(lr::board_read_due(false, 0) && lr::board_read_due(false, lr::BOARD_TRIES - 1), "the tick reads the board while it has tries left");
+    expect(!lr::board_read_due(false, lr::BOARD_TRIES) && !lr::board_read_due(false, lr::BOARD_TRIES + 5), "then the tick stops asking");
+    expect(lr::board_read_due(true, lr::BOARD_TRIES + 5), "a lap's timing start always asks");
+}
+
 int main()
 {
+    board_reads();
     sample_gate();
     outbox();
     stalls();

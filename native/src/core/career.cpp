@@ -555,6 +555,8 @@ void career_setup()
     team_hq_live = core_mixins_active(TEAM_HQ_MIXIN);
     armed = flow_live;
     set_up = true;
+    if (armed)
+        swofty_core::apply::moments::mode_watch();
     career_start_setup();
     swofty::log("[career] setup: %s; flow states %s, Team HQ answer %s, career layout %s, entrants %s, bus %s, "
                 "string key %s",
@@ -572,7 +574,17 @@ void career_tick()
     if (!schedule.due(now, was, in_session.load(std::memory_order_relaxed)) ||
         !last_poll.compare_exchange_strong(was, now))
         return;
-    runtime::career::Components c = poll();
+    namespace facts = swofty_core::apply::facts;
+    facts::ModeKind kind = swofty_core::apply::moments::mode_kind();
+    runtime::career::Where where = kind == facts::ModeKind::career  ? runtime::career::Where::career
+                                   : kind == facts::ModeKind::unknown ? runtime::career::Where::unknown
+                                                                      : runtime::career::Where::elsewhere;
+    bool reads = runtime::career::poll_reads(where);
+    static std::atomic<int> said{-1};
+    if (said.exchange(reads) != int(reads))
+        swofty::log("[career] component poll %s (game mode %s)", reads ? "reads the game" : "off: no career can be loaded here, it reports none without a read",
+                    facts::mode_kind_name(kind));
+    runtime::career::Components c = reads ? poll() : runtime::career::Components{};
     {
         std::lock_guard<std::mutex> g(lock);
         tracker.components(c, now);

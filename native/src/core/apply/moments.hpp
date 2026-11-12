@@ -5,6 +5,7 @@
 #include <utility>
 #include <vector>
 
+#include "facts.hpp"
 #include "ids.hpp"
 #include "room.hpp"
 
@@ -27,6 +28,9 @@ void box_picked(const char *entrant_list);
 void box_picked(const char *entrant_list, const void *mode_context);
 void session_load(const char *source);
 std::pair<std::string, std::string> session_mode_track();
+// The kind of game mode the game is in: kept by a watch on its own thread (started by mode_watch) and by every session load.
+facts::ModeKind mode_kind();
+void mode_watch();
 void grand_prix_track_check();
 void session_end(const char *source);
 void window();
