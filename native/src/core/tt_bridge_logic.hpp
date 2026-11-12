@@ -623,6 +623,19 @@ inline int replay_magic_offset(const uint8_t *bytes, size_t n)
     return -1;
 }
 
+// The replay loader's save-slot lookup of a Time Trial file, whose game mode has no save-slot component of its own. Our component stands in
+// only while the load start hook is armed (it applies the replay's setup and presses its box before the game's own load runs), and never for
+// a Theatre pick that came without its setup file: the game's own load of a Time Trial file starts a session without the player's car.
+// The answer is why nothing stands in, or null when our component does.
+inline const char *replay_stand_in_refusal(bool load_start_armed, int64_t bare_pick_ms, int64_t now_ms, int64_t window_ms = 10000)
+{
+    if (!load_start_armed)
+        return "the load start hook is not armed, so the replay's setup could not be applied";
+    if (bare_pick_ms > 0 && now_ms >= bare_pick_ms && now_ms - bare_pick_ms < window_ms)
+        return "the Theatre pick has no setup file (tt/replays/<file>.json), and the game's own load would start a Time Trial without the player's car";
+    return nullptr;
+}
+
 inline std::string replay_capture_name(uint64_t unix_seconds, uint32_t lap_ms)
 {
     return "pb_" + std::to_string(unix_seconds) + "_" + std::to_string(lap_ms) + ".replay";

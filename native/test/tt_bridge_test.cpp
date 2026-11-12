@@ -211,6 +211,12 @@ int main()
         expect(tb::replay_magic_offset(z, 16) == -1 && tb::replay_magic_offset(z, 0) == -1, "a file without the magic is rejected");
     }
     expect(tb::replay_capture_name(1700000000, 87893) == "pb_1700000000_87893.replay", "the capture file name carries the time and the lap time");
+    expect(tb::replay_stand_in_refusal(false, 0, 5000) && tb::replay_stand_in_refusal(false, 4990, 5000),
+           "no save-slot component stands in for a Time Trial file while the load start hook is unarmed (In-game leaderboards off before the fix)");
+    expect(tb::replay_stand_in_refusal(true, 4990, 5000) && tb::replay_stand_in_refusal(true, 5000, 5000),
+           "a Theatre pick that went to the game's own load without its setup file gets no stand-in");
+    expect(!tb::replay_stand_in_refusal(true, 0, 5000) && !tb::replay_stand_in_refusal(true, 1000, 20000) && !tb::replay_stand_in_refusal(true, 9000, 5000),
+           "with the load start hook armed our component stands in for the list, a pick with its setup, and after a stale or future mark");
     expect(tb::replay_capture_allowed(true, true, true, 1, 0x10) && !tb::replay_capture_allowed(false, true, true, 1, 0x10) && !tb::replay_capture_allowed(true, false, true, 1, 0x10) &&
                !tb::replay_capture_allowed(true, true, false, 1, 0x10) && !tb::replay_capture_allowed(true, true, true, 0, 0x10) && !tb::replay_capture_allowed(true, true, true, 150, 0x10) &&
                !tb::replay_capture_allowed(true, true, true, 1, 0),
