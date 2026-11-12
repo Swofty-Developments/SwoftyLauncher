@@ -18,6 +18,11 @@ inline bool tab_child_missing(uint64_t child)
     return child == 0;
 }
 
+inline bool reference_board_missing(uint64_t board)
+{
+    return board == 0;
+}
+
 inline Say say(int occurrence)
 {
     if (occurrence < 1 || occurrence > LOG_FIRST)

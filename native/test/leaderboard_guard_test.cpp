@@ -1,5 +1,6 @@
 // Host-native unit test for the core's Time Trial leaderboard guards (native/src/core/leaderboard_guard_logic.hpp):
-// when a missing board or child list model is skipped, how often the skip is logged, and how the env switches parse.
+// when a missing board, child list model or reference board is skipped, how often the skip is logged, and how the env
+// switches parse.
 // Built and run by native/test/run_leaderboard_guard_test.sh.
 
 #include "leaderboard_guard_logic.hpp"
@@ -23,6 +24,8 @@ int main()
     expect(!lg::board_missing(0x32b702d80), "a board that was found runs the game's code");
     expect(lg::tab_child_missing(0), "a null child list model skips the tab activation");
     expect(!lg::tab_child_missing(0x2e9607f98), "a child list model that exists runs the game's code");
+    expect(lg::reference_board_missing(0), "a reference with no board skips the game's log line");
+    expect(!lg::reference_board_missing(0x3410bcc40), "a reference with a board logs it as the game does");
 
     expect(lg::say(0) == lg::Say::none, "occurrence 0 is not logged");
     expect(lg::say(1) == lg::Say::line, "the first skip is logged");
@@ -38,6 +41,7 @@ int main()
     expect(!lg::switch_off("offer"), "offer keeps it on");
     expect(!lg::switch_off(""), "an empty value keeps it on");
     expect(!lg::switch_off(nullptr), "an unset variable keeps it on");
+    expect(lg::switch_off("off"), "SWOFTY_TT_REFERENCE_LOG_GUARD=off turns it off");
 
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;

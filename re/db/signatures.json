@@ -163852,6 +163852,114 @@
    "used_by": [
     "native/src/core/era_picker.cpp"
    ]
+  },
+  {
+   "id": "game.time_trial_set_reference_log_board",
+   "section": ".xtls",
+   "pattern": "E9 ?? ?? ?? ?? 48 8B 86 78 02 02 00 48 8B 78 40",
+   "match": "0x14147bc8f",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14147bc94",
+   "kind": "mid",
+   "expect": "48 8B 86 78 02",
+   "names": [
+    "site_Game_TimeTrial_SetReferenceLogBoard"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "ttrefnull",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.time_trial_set_reference_log_done",
+   "section": ".xtls",
+   "pattern": "FF 50 38 48 89 F1 31 D2 E8 ?? ?? ?? ?? 48 8B 4E 30",
+   "match": "0x14147bd97",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14147bd9a",
+   "kind": "mid",
+   "expect": "48 89 F1 31 D2",
+   "names": [
+    "site_Game_TimeTrial_SetReferenceLogDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "ttrefnull",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.ghostlap_trace_rival_log_board",
+   "section": ".xtls",
+   "pattern": "C3 48 8B 86 78 02 02 00 48 8B 40 40",
+   "match": "0x141482fb6",
+   "anchor": "0x1",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141482fb7",
+   "kind": "mid",
+   "expect": "48 8B 86 78 02",
+   "names": [
+    "site_Game_GhostlapTrace_RivalLogBoard"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "ttrefnull",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.ghostlap_trace_rival_log_done",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 48 8B 46 10 48 8B 80 88 02 00 00",
+   "match": "0x141482fdf",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141482fe4",
+   "kind": "mid",
+   "expect": "48 8B 46 10 48",
+   "names": [
+    "site_Game_GhostlapTrace_RivalLogDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "ttrefnull",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
   }
  ]
 }
