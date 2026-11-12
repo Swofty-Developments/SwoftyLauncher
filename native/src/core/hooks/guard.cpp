@@ -2,6 +2,7 @@
 
 #include "guard.hpp"
 
+#include <atomic>
 #include <cstring>
 
 namespace swofty_core::hooks::guard {
@@ -95,14 +96,96 @@ int blamed_call(SwoftyHookFn fn, void *user, SwoftyHookCall *call, BlameFn blame
     }
 }
 
+namespace {
+
+using Copy_t = void *(*)(void *, const void *, size_t);
+Copy_t volatile copy_call = &memcpy;
+thread_local int reading;
+std::atomic<uint32_t> read_faults{0};
+
+int read_filter(EXCEPTION_POINTERS *e)
+{
+    const EXCEPTION_RECORD *r = e->ExceptionRecord;
+    if (r->ExceptionCode == STATUS_GUARD_PAGE_VIOLATION) {
+        if (r->NumberParameters >= 2) {
+            void *at = reinterpret_cast<void *>(r->ExceptionInformation[1] & ~uintptr_t(0xfff));
+            MEMORY_BASIC_INFORMATION m{};
+            DWORD was = 0;
+            if (VirtualQuery(at, &m, sizeof m) == sizeof m && m.State == MEM_COMMIT && !(m.Protect & PAGE_GUARD))
+                VirtualProtect(at, 1, m.Protect | PAGE_GUARD, &was);
+        }
+    } else if (r->ExceptionCode != EXCEPTION_ACCESS_VIOLATION && r->ExceptionCode != EXCEPTION_IN_PAGE_ERROR) {
+        return EXCEPTION_CONTINUE_SEARCH;
+    }
+    read_faults.fetch_add(1, std::memory_order_relaxed);
+    return EXCEPTION_EXECUTE_HANDLER;
+}
+
+bool guarded_copy(void *out, const void *from, size_t n)
+{
+    reading++;
+    bool ok = true;
+    __try {
+        copy_call(out, from, n);
+    } __except (read_filter(GetExceptionInformation())) {
+        ok = false;
+    }
+    reading--;
+    return ok;
+}
+
+bool guarded_touch(uintptr_t p, size_t n)
+{
+    reading++;
+    bool ok = true;
+    __try {
+        uint8_t b;
+        uintptr_t last = p + n - 1;
+        copy_call(&b, reinterpret_cast<const void *>(p), 1);
+        for (uintptr_t page = (p | 0xfff) + 1; page <= last; page += 0x1000)
+            copy_call(&b, reinterpret_cast<const void *>(page), 1);
+        if (last != p)
+            copy_call(&b, reinterpret_cast<const void *>(last), 1);
+    } __except (read_filter(GetExceptionInformation())) {
+        ok = false;
+    }
+    reading--;
+    return ok;
+}
+
+}
+
 bool copy_memory(void *out, const void *from, size_t n)
 {
-    __try {
-        memcpy(out, from, n);
-        return true;
-    } __except (GetExceptionCode() == EXCEPTION_ACCESS_VIOLATION ? EXCEPTION_EXECUTE_HANDLER : EXCEPTION_CONTINUE_SEARCH) {
+    return guarded_copy(out, from, n);
+}
+
+bool reading_now()
+{
+    return reading != 0;
+}
+
+uint32_t read_fault_count()
+{
+    return read_faults.load(std::memory_order_relaxed);
+}
+
+}
+
+namespace swofty::mem::guarded {
+
+bool readable(uintptr_t p, size_t n)
+{
+    if (!p || p + (n ? n : 1) < p)
         return false;
-    }
+    return swofty_core::hooks::guard::guarded_touch(p, n ? n : 1);
+}
+
+bool copy(void *out, uintptr_t from, size_t n)
+{
+    if (!from || from + n < from)
+        return false;
+    return swofty_core::hooks::guard::guarded_copy(out, reinterpret_cast<const void *>(from), n);
 }
 
 }
