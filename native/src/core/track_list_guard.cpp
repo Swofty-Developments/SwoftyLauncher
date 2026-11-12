@@ -25,15 +25,22 @@
 // asks SAVE_PROPERTY_BAG_TEMP for a child per entry until the pool is full (Ne_TempPool_ReportError <
 // Ne_TempPool_Alloc < Ne_SaveObject_ReserveChildSlot from F1_25.exe+0x1272188), and the u16 child count wraps.
 //
-// site_Career_ScheduleComponent_TrackListPush is the push (rsi = the component, rbx = the matching event row). The
-// guard lets each event row into the calendar once per load: a row that is already in it continues the row walk at
-// site_Career_ScheduleComponent_TrackListNextRow, as a row with another id does. Every row the game would load is
-// still loaded, in the game's order, so careers keep their events; a blown-up save loads back to at most one entry
-// per event and saves that. site_Career_ScheduleComponent_TrackListEntryDone (after each stored entry) logs the load
-// once its last entry is done, and site_Career_ScheduleComponent_TrackListSave logs the count a save writes when it
-// changed for that component.
+// site_Career_ScheduleComponent_TrackListPush is the push (rsi = the component, rbx = the matching event row, rbp =
+// the event list's end, r13b = the stored id, r15 = the stored entry, rdi = the stored array). At an entry's first
+// match the guard picks the one row that entry loads: the first row with its id that this load has not pushed yet, or
+// the first match again when every such row is in the calendar (a track twice in one season with one event row). It
+// sets rbx to that row and lets the push run; every other match of the entry continues the walk at
+// site_Career_ScheduleComponent_TrackListNextRow, as a row with another id does. So each stored entry loads exactly
+// one event and the calendar keeps its length across saves and loads.
 //
-// SWOFTY_TRACK_LIST_GUARD=0 turns the repeat skip off; the count lines stay.
+// A save the game already blew up holds far more entries than the season has events. The bound is the season's event
+// list length the component keeps at +0x2c8 (written by vt_Game_TrackListComponent slot 16 from the default track
+// list), or 64 when that is not set. Past the bound, each run of one id (one original entry, multiplied) reads as one
+// entry and entries past the bound are dropped, so the calendar comes back to the season's length.
+// site_Career_ScheduleComponent_TrackListEntryDone (after each stored entry) logs the load once its last entry is
+// done, and site_Career_ScheduleComponent_TrackListSave logs the count a save writes when it changed for that component.
+//
+// SWOFTY_TRACK_LIST_GUARD=0 turns the guard off; the count lines stay.
 
 namespace {
 
@@ -50,6 +57,7 @@ uintptr_t next_row = 0;
 bool offered = false, settled = false, guarded = false, logging = false;
 std::mutex lock;
 tl::Load load;
+std::vector<uintptr_t> matches;
 tl::SaveLog saves;
 
 size_t calendar_size(uintptr_t component)
@@ -63,9 +71,29 @@ size_t calendar_size(uintptr_t component)
 void track_list_push(SwoftyContext *c)
 {
     size_t calendar = calendar_size(c->rsi);
+    uint16_t stored = 0;
+    uint32_t season = 0;
+    swofty::mem::read(c->rdi + 0x10, stored);
+    swofty::mem::read(c->rsi + tl::SEASON_EVENTS, season);
+    uint8_t id = uint8_t(c->r13);
     std::lock_guard<std::mutex> hold(lock);
-    if (!tl::take(load, c->rsi, calendar, c->rbx))
+    if (!tl::enter(load, c->rsi, calendar, stored, tl::season_events(season), c->r15, id)) {
         c->rip = next_row;
+        return;
+    }
+    matches.clear();
+    for (uintptr_t row = c->rbx; row < c->rbp; row += tl::ENTRY) {
+        uint8_t row_id = 0;
+        if (!swofty::mem::read(row + 8, row_id))
+            break;
+        if (row_id == id)
+            matches.push_back(row);
+    }
+    uintptr_t pick = tl::choose(load, matches);
+    if (!pick)
+        c->rip = next_row;
+    else
+        c->rbx = pick;
 }
 
 void track_list_entry_done(SwoftyContext *c)
@@ -74,12 +102,17 @@ void track_list_entry_done(SwoftyContext *c)
     if (!swofty::mem::read(c->rdi + 0x10, stored) || !tl::last_entry(c->r15, stored))
         return;
     size_t loaded = calendar_size(c->rsi);
-    size_t repeats;
+    tl::Load done;
     {
         std::lock_guard<std::mutex> hold(lock);
-        repeats = tl::finish(load, c->rsi);
+        done = tl::finish(load, c->rsi);
     }
-    swofty::log("%s", tl::load_line(c->rsi, stored, loaded, repeats, guarded).c_str());
+    if (guarded && !done.component) {
+        uint32_t season = 0;
+        swofty::mem::read(c->rsi + tl::SEASON_EVENTS, season);
+        tl::reset(done, c->rsi, stored, tl::season_events(season));
+    }
+    swofty::log("%s", tl::load_line(c->rsi, stored, loaded, guarded ? &done : nullptr).c_str());
 }
 
 void track_list_save(SwoftyContext *c)
@@ -145,7 +178,7 @@ void track_list_guard_commit()
     if (guarded) {
         guarded = core_mixins_active(MIXIN);
         swofty::log("[saves] career calendar track list guard %s",
-                    guarded ? "armed: a career save's custom_track_list loads each event once instead of once per repeated id"
+                    guarded ? "armed: each stored custom_track_list entry loads one event instead of every event with its id"
                             : "did not install (see the [core] lines)");
     }
     if (logging && !core_mixins_active(LOG_MIXIN))
