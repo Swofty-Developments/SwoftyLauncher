@@ -1616,6 +1616,12 @@
   "site_Game_GhostlapTrace_RivalLogDone": {
    "match": "0x147d3af"
   },
+  "site_Game_GrandPrixContinueVm_F1wCarCheck": {
+   "match": "0x1bc8f5c"
+  },
+  "site_Game_GrandPrixContinueVm_F1wWarningCheck": {
+   "match": "0x1bc92d5"
+  },
   "site_Game_SaveData_ContainersChildren": {
    "match": "0x3641dd8"
   },
