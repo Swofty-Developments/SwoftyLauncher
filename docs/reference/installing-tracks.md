@@ -78,6 +78,8 @@ mod.sokol: 1 added row(s) keep these stat ids
   tracks.Track/sokol   48  kept, seeded from a profile's last build or a game session from before 1.6.10
 ```
 
+The game reads a track's `statId` as one byte, so at most 255 tracks (stock ones included) are on at once. More can be installed: when every id is kept for some track, a new track takes the id of a track whose addon the build leaves out and no career uses, and that track takes a free or spare id again when it is turned on. Telemetry does not depend on the `statId`: an added track reports its [Swofty track id](/reference/std/telemetry#added-tracks-the-swofty-track-packet), the same on every PC.
+
 - A track the file has no id for takes the id the profile's last build gave it (`older-tracks.json`), else the first free id above the table's highest, up to 254, the highest the game reads.
 - A track that is off keeps its id. No other track takes it, so a calendar that names it never lands on a different circuit.
 - A kept id that a row of the database now holds moves to the next free id.

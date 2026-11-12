@@ -1007,15 +1007,48 @@ impl Store {
             Some(_) => IdFrom::Moved,
             None => IdFrom::Next,
         };
-        let id = (top.max(0)..=TRACK_STAT_MAX)
+        let free = (top.max(0)..=TRACK_STAT_MAX)
             .chain(0..top.clamp(0, TRACK_STAT_MAX + 1))
-            .find(|id| !blocked(self, *id))
-            .ok_or_else(|| {
-                format!(
-                    "{code}: tracks have no free statId up to {TRACK_STAT_MAX}, the highest the game reads"
-                )
-            })?;
+            .find(|id| !blocked(self, *id));
+        // Every id is kept for some track ever installed: the id of a track whose addon this build leaves out (and no
+        // career holds) goes to this one. The left-out track takes a free or spare id again when it is turned on; the
+        // ids UDP telemetry reports never change with it (udp_ids.rs, swofty_track_id).
+        let spare = || {
+            self.by_id
+                .get(TRACK_TABLE)
+                .into_iter()
+                .flatten()
+                .filter(|(id, k)| {
+                    **k != key
+                        && (0..=TRACK_STAT_MAX).contains(*id)
+                        && !held(**id)
+                        && self.spare_row(TRACK_TABLE, **id, k)
+                })
+                .map(|(id, k)| (*id, k.clone()))
+                .min()
+        };
+        let (id, from, lent) = match free {
+            Some(id) => (id, from, None),
+            None => match spare() {
+                Some((id, k)) => (id, IdFrom::Reused, Some(k)),
+                None => {
+                    return Err(format!(
+                        "{code}: tracks have no free statId up to {TRACK_STAT_MAX}, the highest the game reads, and                          every track holding one is on in this build or used by a career"
+                    ));
+                }
+            },
+        };
         self.put(&key, id, from);
+        if let Some(k) = lent {
+            self.reused += 1;
+            return Ok((
+                id,
+                format!(
+                    "stat id {id} (every id is kept; this one was {}, whose addon is off)",
+                    row_name(&k)
+                ),
+            ));
+        }
         let why = match kept {
             Some(old) => format!("stat id {id} (the {old} kept for it is held by another track)"),
             None => format!("stat id {id} (new, kept in {FILE})"),
@@ -1464,6 +1497,47 @@ mod tests {
             .unwrap();
         assert_eq!(id, 250);
         let err = store.track_stat_id("mod.b", "b", None, 0, &|_| true).unwrap_err();
+        assert!(err.contains("254"), "{err}");
+    }
+
+    #[test]
+    fn a_full_track_pool_lends_the_id_of_a_track_whose_addon_is_off() {
+        let mut store = Store::default();
+        for i in 0..=TRACK_STAT_MAX {
+            store
+                .track_stat_id(&format!("mod.t{i}"), "t", None, 0, &|_| false)
+                .unwrap();
+        }
+        let off = store.get("mod.t7/tracks.Track/t").unwrap();
+        let on: Vec<String> = (0..=TRACK_STAT_MAX)
+            .filter(|i| *i != 7)
+            .map(|i| format!("mod.t{i}"))
+            .chain(["mod.new".to_owned()])
+            .collect();
+        store.building(on.clone());
+        for a in on.iter().filter(|a| *a != "mod.new") {
+            store.track_stat_id(a, "t", None, 0, &|_| false).unwrap();
+        }
+        let (id, why) = store.track_stat_id("mod.new", "t", None, 0, &|_| false).unwrap();
+        assert_eq!(id, off);
+        assert!(why.contains("mod.t7"), "{why}");
+        assert_eq!(store.get("mod.t7/tracks.Track/t"), None);
+
+        let mut full = Store::default();
+        for i in 0..=TRACK_STAT_MAX {
+            full.track_stat_id(&format!("mod.t{i}"), "t", None, 0, &|_| false)
+                .unwrap();
+        }
+        full.building(
+            (0..=TRACK_STAT_MAX)
+                .map(|i| format!("mod.t{i}"))
+                .chain(["mod.x".to_owned()]),
+        );
+        for i in 0..=TRACK_STAT_MAX {
+            full.track_stat_id(&format!("mod.t{i}"), "t", None, 0, &|_| false)
+                .unwrap();
+        }
+        let err = full.track_stat_id("mod.x", "t", None, 0, &|_| false).unwrap_err();
         assert!(err.contains("254"), "{err}");
     }
 

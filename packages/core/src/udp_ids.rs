@@ -5,6 +5,13 @@
 //! so is any driver id above 254 with no stock ancestor. The 2024 and 2025 formats carry one byte
 //! per id, so `teams_byte` and `drivers_byte` hold only the ids whose low byte no stock row and no
 //! other mapped id shares; the 2026 format carries 16 bits and reads `teams` and `drivers`.
+//!
+//! Tracks: the Session packet's trackId is one signed byte, and an added track's statId differs from one install to
+//! the next (row_ids.rs gives it per install). Every added track therefore has a Swofty track id, the same on every
+//! PC: the number [`LISTED`] gives its `<addon>/<code>`, else `0x8000_0000 | (fnv1a32(key) & 0x7fff_ffff)`.
+//! `track_ids` holds it for every track package in the build and `tracks` the statId -> key of the tracks the
+//! launcher gave an id; the core adds the track records it gives ids at boot (apply/tracks/boot.cpp) and sends
+//! the Swofty Track packet (udp_ids_logic.hpp) after each Session packet of such a track.
 
 use std::collections::{BTreeMap, HashMap, HashSet};
 
@@ -31,12 +38,50 @@ pub struct UdpIds {
     pub drivers_byte: BTreeMap<i64, i64>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub lines: Vec<String>,
+    /// statId -> `<addon>/<code>` of each added track the launcher gave its statId.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub tracks: BTreeMap<i64, String>,
+    /// `<addon>/<code>` -> Swofty track id of each track package in the build.
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub track_ids: BTreeMap<String, u32>,
 }
 
 impl UdpIds {
     pub fn is_empty(&self) -> bool {
-        self.teams.is_empty() && self.drivers.is_empty()
+        self.teams.is_empty() && self.drivers.is_empty() && self.track_ids.is_empty()
     }
+
+    /// Notes the track package `code` of `addon`, and its statId when the launcher gave it one.
+    pub fn add_track(&mut self, addon: &str, code: &str, stat_id: Option<i64>) {
+        let key = track_key(addon, code);
+        if let Some(id) = stat_id {
+            self.tracks.insert(id, key.clone());
+        }
+        let id = swofty_track_id(&key);
+        self.track_ids.insert(key, id);
+    }
+}
+
+/// Swofty track ids given by hand, `<addon>/<code>` -> id, in 1..0x8000_0000 and never reused: a track whose hashed
+/// id would clash with another's gets an entry here. Ids 0..=255 are left to the game's stock tracks.
+pub const LISTED: &[(&str, u32)] = &[];
+
+/// The key a track's Swofty track id is made from.
+pub fn track_key(addon: &str, code: &str) -> String {
+    format!("{addon}/{code}")
+}
+
+/// The Swofty track id of the track keyed `key` (see the module notes): the same on every PC.
+pub fn swofty_track_id(key: &str) -> u32 {
+    if let Some((_, id)) = LISTED.iter().find(|(k, _)| *k == key) {
+        return *id;
+    }
+    let mut h: u32 = 0x811c_9dc5;
+    for b in key.bytes() {
+        h ^= u32::from(b);
+        h = h.wrapping_mul(0x0100_0193);
+    }
+    0x8000_0000 | (h & 0x7fff_ffff)
 }
 
 struct Table {
@@ -154,6 +199,25 @@ pub fn build(db: &Gvdb, copies: &[Copy]) -> UdpIds {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_track_keeps_one_swofty_id_and_listed_ones_win() {
+        let a = swofty_track_id("mod.sokol/sokol_gp");
+        assert_eq!(a, swofty_track_id("mod.sokol/sokol_gp"));
+        assert!(a >= 0x8000_0000);
+        assert_ne!(a, swofty_track_id("mod.sokol/sokol_short"));
+        // FNV-1a 32 of "a" is 0xe40c292c; the core computes the same (udp_ids_logic.hpp).
+        assert_eq!(swofty_track_id("a"), 0x8000_0000 | (0xe40c_292c & 0x7fff_ffff));
+        for (k, id) in LISTED {
+            assert!((1..0x8000_0000).contains(id) && swofty_track_id(k) == *id, "{k}");
+        }
+        let mut u = UdpIds::default();
+        u.add_track("mod.sokol", "sokol_gp", Some(250));
+        u.add_track("mod.rec", "rec", None);
+        assert_eq!(u.tracks[&250], "mod.sokol/sokol_gp");
+        assert_eq!(u.track_ids.len(), 2);
+        assert!(!u.is_empty());
+    }
     use swofty_formats::gvdb::Record;
 
     fn row(records: &mut Vec<Record>, table: (&str, &str), i: usize, id: i64, extra: &[(&str, &str)]) {

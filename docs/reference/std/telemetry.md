@@ -305,6 +305,31 @@ The core logs the first packet of each format and id whose length differs from t
 
 `SWOFTY_UDP_STOCK_IDS=0` turns the rewrite off, for a tool that reads the real ids through an addon's registry `stat_id`.
 
+### Added tracks: the Swofty Track packet
+
+The Session packet's `m_trackId` is one signed byte, and an added track's `statId` is given per install (from 254 down), so the byte differs from one PC to the next and names no track an overlay knows. Every added track has a **Swofty track id** instead: a `u32` that is the same on every PC.
+
+- A track listed in `LISTED` (`packages/core/src/udp_ids.rs`) has the id given there, in `1..0x80000000`. Ids `0..=255` are left to the game's stock tracks.
+- Any other track has `0x80000000 | (FNV-1a 32 of "<addon id>/<track code>" & 0x7fffffff)`. Nothing has to be registered: everyone who installs the same track package gets the same id.
+
+For a Session packet (2024 and 2025 formats, 753 bytes) of an added track, the core sends `m_trackId` as `-1` (the specification's unknown track) and sends this packet right after it, to the same address:
+
+```text
+Swofty Track (200), packetVersion 1, 98 B
+  0   PacketHeader (29 B)   copied from the Session packet; m_packetId 200, m_packetVersion 1
+  29  uint32 m_swoftyTrackId
+  33  uint8  m_gameTrackId   the statId the game used on this PC (what m_trackId would have been)
+  34  char   m_trackKey[64]  "<addon id>/<track code>", NUL-terminated
+```
+
+Overlays that don't know packet id 200 skip it. Stock tracks keep their `m_trackId` and get no Swofty Track packet. The 2026 Session packet's layout is not catalogued, so in that format the track id stays as the game sends it.
+
+`swofty/udp_ids.json` carries `tracks` (`statId` -> key, the tracks the launcher gave a `statId`) and `track_ids` (key -> Swofty track id, every track package in the build); the core adds the track records it gives a `statId` at boot.
+
+```text
+[udp] first Session packet of an added track: statId 250 sent as -1, Swofty Track packet 200 with id 2297057032 (mod.sokol/sokol_gp)
+```
+
 ## Availability
 
 `telemetry` is experimental and off unless an addon asks for it. List it in the addon's `swofty.json`; while the addon is enabled, the build writes `telemetry` into `features` in `swofty/assets.json`, and the core turns the feature on. Addons that don't list it leave it off, and every call returns `unavailable`.
