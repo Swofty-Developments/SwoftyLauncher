@@ -1610,6 +1610,12 @@
   "site_Game_ErsNewLap_VehicleLookup": {
    "match": "0x2511450"
   },
+  "site_Game_GhostlapTrace_RivalLogBoard": {
+   "match": "0x147d386"
+  },
+  "site_Game_GhostlapTrace_RivalLogDone": {
+   "match": "0x147d3af"
+  },
   "site_Game_SaveData_ContainersChildren": {
    "match": "0x3641dd8"
   },
@@ -1633,6 +1639,12 @@
   },
   "site_Game_TimeTrialLeaderboard_BoardsDone": {
    "match": "0x2fc2d72"
+  },
+  "site_Game_TimeTrial_SetReferenceLogBoard": {
+   "match": "0x147605f"
+  },
+  "site_Game_TimeTrial_SetReferenceLogDone": {
+   "match": "0x1476167"
   },
   "site_Gdb_DeptCountStore": {
    "match": "0x4598b6f"

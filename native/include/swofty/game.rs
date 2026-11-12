@@ -16286,6 +16286,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_GhostlapTrace_RivalLogBoard: Binding = Binding {
+        id: "site_Game_GhostlapTrace_RivalLogBoard",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_GhostlapTrace_RivalLogDone: Binding = Binding {
+        id: "site_Game_GhostlapTrace_RivalLogDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_PitLane_BoxPoseFalse: Binding = Binding {
         id: "site_Game_PitLane_BoxPoseFalse",
         kind: "site",
@@ -16368,6 +16378,16 @@ pub mod bindings {
     };
     pub const site_Game_TimeTrialLeaderboard_BoardsDone: Binding = Binding {
         id: "site_Game_TimeTrialLeaderboard_BoardsDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TimeTrial_SetReferenceLogBoard: Binding = Binding {
+        id: "site_Game_TimeTrial_SetReferenceLogBoard",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TimeTrial_SetReferenceLogDone: Binding = Binding {
+        id: "site_Game_TimeTrial_SetReferenceLogDone",
         kind: "site",
         status: Status::Experimental,
     };
