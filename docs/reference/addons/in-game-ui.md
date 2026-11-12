@@ -493,16 +493,16 @@ The tiles stay in the stock vertical list at the stock position, all in the larg
 The Customisation card reaches the game's customisation screen without the F1 World hub:
 
 - `swofty_customisation` is a route the launcher adds to the `fe_home` group, a copy of the home's own `customisation` route: the standard wipe, close `fe_home`, `slice_bg_content_underlay` and `fe_planes`, then `Migrate customisation_flow enter_f1_life_customisation`, which opens `customisation_f1_life_entry`. The F1 World hub's own `customisation` route closes `fe_f1_world` instead.
-- Back from that screen fires `back_1` in the `customisation_f1_life_entry` group, `Migrate frontend_flow enter_fe_f1_world`, which opens the F1 World hub. The launcher adds `swofty_back_home` to that group in `routes_customisation_and_store.uir`, the activity container's `home` route as the container's own `swofty_back_home` has it. After a Customisation card press the core replaces `back_1` (or `back_2`, the screen's Back to the news) with it: Back returns to the main menu. A Customisation screen reached any other way keeps the game's Back. The press stays armed until the swap, a migration to `frontend_flow`, or `fe_home` opens; the help page some customisation screens open (`team_hq_flow`) keeps it.
+- Back from that screen fires a route in the `customisation_f1_life_entry` group: `back_1` (`Migrate frontend_flow enter_fe_f1_world`, which opens the F1 World hub) when the screen was opened from the hub, and `back`, which leads nowhere, when it was opened from the main menu. The launcher adds `swofty_back_home` to that group in `routes_customisation_and_store.uir`, the activity container's `home` route as the container's own `swofty_back_home` has it. After a Customisation card press the core replaces `back` (or `back_1`, or `back_2`, the screen's Back to the news) with it: Back returns to the main menu. A Customisation screen reached any other way keeps the game's Back. The press stays armed until the swap, a migration to `frontend_flow`, or `fe_home` opens; the help page some customisation screens open (`team_hq_flow`) keeps it.
 - The launcher writes `swofty/ui/home_customisation.flag` only when both routes are in the build; without it the core adds no Customisation card. A build that cannot add them warns `ui: no Customisation card on the main menu: ...`.
 
 ```text
 [main-menu] the launcher's Customisation routes are in this build
 [main-menu] customisation card pressed (item 0x...): route swofty_customisation; the Customisation screen's Back returns to the main menu
 [main-menu] nav: Migrate command: flow 'customisation_flow' entry 'enter_f1_life_customisation' -> accepted; the flow the game last accepted is now customisation_flow
-[main-menu] nav: route 'back_1' fired in group 0x... (customisation_f1_life_entry)
-[main-menu] back: the Customisation screen was entered from the main menu card; its Back (route back_1 in customisation_f1_life_entry) returns to the main menu
-[main-menu] back: the game's handler fired route back_1 from its own view model (group 0x...); it is replaced by swofty_back_home in the same group, so the F1 World hub is never opened
+[main-menu] nav: route 'back' fired in group 0x... (customisation_f1_life_entry)
+[main-menu] back: the Customisation screen was entered from the main menu card; its Back (route back in customisation_f1_life_entry) returns to the main menu
+[main-menu] back: the game's handler fired route back from its own view model (group 0x...); it is replaced by swofty_back_home in the same group, so the F1 World hub is never opened
 ```
 
 When the home tile block does not match byte for byte, the core logs `the home tile block did not resolve on this build; the stock main menu stays` and changes nothing.
