@@ -343,6 +343,22 @@ bool content_ours()
     return session_custom.load(std::memory_order_relaxed) || tb::addon_content(current_content());
 }
 
+tb::BoardTrack board_track_of(const tb::BoardName &bn)
+{
+    std::string code;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        code = session_code;
+    }
+    return tb::request_track(swofty_core::apply::tracks::base(), bn, code);
+}
+
+bool board_ours(const std::string &board)
+{
+    tb::BoardName bn = tb::parse_board(board);
+    return bn.ok && tb::board_ours(bn, board_track_of(bn).custom, content_ours());
+}
+
 std::string hex_dump(const uint8_t *p, size_t n)
 {
     std::string s;
@@ -511,13 +527,11 @@ void push_mid(safetyhook::Context &c)
         log_unreadable(op, m, name);
         return;
     }
-    std::string code;
     {
         std::lock_guard<std::mutex> g(lock);
         last_board = a.board_text;
-        code = session_code;
     }
-    tb::BoardTrack track = tb::request_track(swofty_core::apply::tracks::base(), a.board, code);
+    tb::BoardTrack track = board_track_of(a.board);
     tb::Route route = tb::route_of(m, a.board, bridge_on, track.custom || content_ours());
     if (route == tb::Route::local && !request_guard)
         route = tb::Route::pass;
@@ -707,12 +721,7 @@ void gate_mid(int idx, safetyhook::Context &c)
     if (seen == m) {
         a = tb::decode_args(game_mem(), op, m);
         if (a.ok) {
-            std::string code;
-            {
-                std::lock_guard<std::mutex> lk(lock);
-                code = session_code;
-            }
-            track = tb::request_track(swofty_core::apply::tracks::base(), a.board, code);
+            track = board_track_of(a.board);
             route = tb::route_of(m, a.board, bridge_on, track.custom || content_ours());
             if (route == tb::Route::local && !request_guard)
                 route = tb::Route::pass;
@@ -811,8 +820,7 @@ void finder_mid(safetyhook::Context &c)
     uint64_t handler = c.rsi, finder = c.rdi;
     uint64_t ctx = peek64(handler + 0x58), np = ctx ? peek64(ctx + 0x68) : 0;
     std::string board = np ? tb::read_c(game_mem(), np) : std::string();
-    tb::BoardName bn = tb::parse_board(board);
-    bool ours = bn.ok && tb::ours(bn.descriptor, content_ours());
+    bool ours = board_ours(board);
     bool open = user_online && s60 && s64;
     bool bypass = bridge_on && ours && push_hooked && !open;
     char key[96];
@@ -949,8 +957,7 @@ uint64_t write_ready_hook(uint64_t handler)
         return r;
     uint64_t ctx = peek64(handler + 0x58), np = ctx ? peek64(ctx + 0x68) : 0;
     std::string board = np ? tb::read_c(game_mem(), np) : std::string();
-    tb::BoardName bn = tb::parse_board(board);
-    if (!bn.ok || !tb::ours(bn.descriptor, content_ours()))
+    if (!board_ours(board))
         return r;
     {
         std::lock_guard<std::mutex> lk(lock);
@@ -969,8 +976,7 @@ void write_token_mid(safetyhook::Context &c)
         return;
     uint64_t handler = c.rsi, ctx = peek64(handler + 0x58), np = ctx ? peek64(ctx + 0x68) : 0;
     std::string board = np ? tb::read_c(game_mem(), np) : std::string();
-    tb::BoardName bn = tb::parse_board(board);
-    if (!bn.ok || !tb::ours(bn.descriptor, content_ours()))
+    if (!board_ours(board))
         return;
     c.rcx |= 1;
     static std::atomic<int> logged{0};
@@ -2812,8 +2818,7 @@ void handler_watch(uint64_t handler, const uint8_t *block, int finder_state, con
     };
     auto b = [&](uint64_t off) { return unsigned(block[off]); };
     int32_t state = int32_t(w(0x1d8));
-    tb::BoardName bn = tb::parse_board(board);
-    bool ours = bridge_on && bn.ok && tb::ours(bn.descriptor, content_ours());
+    bool ours = bridge_on && board_ours(board);
     char force[8] = {};
     bool forced = ours && state == 4 && GetEnvironmentVariableA("SWOFTY_TT_FORCE_EMPTY", force, sizeof force) && force[0] == '1';
     if (forced) {

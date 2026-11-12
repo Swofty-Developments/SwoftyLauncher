@@ -699,6 +699,14 @@ inline uint8_t garage_block_byte(uint8_t block, bool bridge_on, bool ours_conten
 
 inline bool ours(int descriptor, bool track_custom) { return descriptor >= FIRST_ADDON_DESCRIPTOR || track_custom; }
 
+// Whether a board is the bridge's, the same answer for the request hooks and the ghost handler's hooks (write precondition,
+// session token test, rival finder). The board's own track counts as well as the session's content: the session's track is read
+// only once the session is entered, and a custom track's board is in use from the loading screen on.
+inline bool board_ours(const BoardName &b, bool board_track_custom, bool content_ours)
+{
+    return b.ok && ours(b.descriptor, board_track_custom || content_ours);
+}
+
 // Routing
 
 enum class Route { pass, mailbox, local };
