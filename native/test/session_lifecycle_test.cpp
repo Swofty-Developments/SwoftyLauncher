@@ -86,6 +86,12 @@ int main()
         r.unloading();
         expect(r.log == "start end unload start end unload ", "a second session gets its own full sequence");
     }
+    expect(sl::kind_of("time_trial") == sl::TIME_TRIAL, "a time trial session is TIME_TRIAL");
+    expect(sl::kind_of("grand_prix") == sl::OTHER && sl::kind_of("career") == sl::OTHER && sl::kind_of("") == sl::OTHER,
+           "grand prix, career and an unread mode are OTHER");
+    expect(sl::time_trial_live(sl::TIME_TRIAL) && !sl::time_trial_live(sl::OTHER) && !sl::time_trial_live(sl::NONE),
+           "only a time trial session is time trial live");
+    expect(sl::session_live(sl::TIME_TRIAL) && sl::session_live(sl::OTHER) && !sl::session_live(sl::NONE), "NONE is no session");
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;
 }
