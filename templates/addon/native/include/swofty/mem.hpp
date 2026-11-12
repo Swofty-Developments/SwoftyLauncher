@@ -170,9 +170,22 @@ private:
     uint32_t was_;
 };
 
+#ifdef SWOFTY_MEM_GUARDED
+// The core's build: readable() touches the bytes and read() copies them under a structured exception
+// guard (native/src/core/hooks/guard.cpp), so a good pointer costs no system call. VirtualQuery inside
+// the game's multi-GB heaps costs milliseconds of kernel time on Windows, on every thread that asks.
+namespace guarded {
+bool readable(uintptr_t p, size_t n);
+bool copy(void *out, uintptr_t from, size_t n);
+}
+#endif
+
 // n bytes at p are committed and readable.
 inline bool readable(uintptr_t p, size_t n)
 {
+#ifdef SWOFTY_MEM_GUARDED
+    return guarded::readable(p, n);
+#else
     if (!p || p + n < p)
         return false;
     for (uintptr_t at = p, end = p + (n ? n : 1); at < end;) {
@@ -182,6 +195,7 @@ inline bool readable(uintptr_t p, size_t n)
         at = hi;
     }
     return true;
+#endif
 }
 
 inline bool readable(const void *p, size_t n)
@@ -192,10 +206,18 @@ inline bool readable(const void *p, size_t n)
 // Copy a T from addr into out when its bytes are readable.
 template <class T> bool read(uintptr_t addr, T &out)
 {
+#ifdef SWOFTY_MEM_GUARDED
+    alignas(T) unsigned char got[sizeof(T)];
+    if (!guarded::copy(got, addr, sizeof(T)))
+        return false;
+    std::memcpy(&out, got, sizeof(T));
+    return true;
+#else
     if (!readable(addr, sizeof(T)))
         return false;
     std::memcpy(&out, reinterpret_cast<const void *>(addr), sizeof(T));
     return true;
+#endif
 }
 
 template <class T> bool read(const void *addr, T &out)
