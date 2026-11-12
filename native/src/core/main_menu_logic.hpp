@@ -77,6 +77,8 @@ constexpr const char *BACK_HOME_FROM_CONTAINER = "swofty_back_home";
 constexpr const char *TIME_TRIAL_ROUTE = "swofty_time_trial";
 constexpr const char *GRAND_PRIX_ROUTE = "swofty_grand_prix";
 constexpr const char *GRAND_PRIX_SAVES_ROUTE = "swofty_grand_prix_saves";
+constexpr const char *STOCK_ACTIVITY_ROUTE = "home_to_activity";
+constexpr const char *GRAND_PRIX_COMMAND = "solo_gp";
 constexpr const char *FRONTEND_FLOW = "frontend_flow";
 constexpr const char *F1_WORLD_FLOW = "f1_world_flow";
 
@@ -334,36 +336,33 @@ inline bool hides_panel(const std::string &route)
     return route.rfind("swofty_", 0) != 0 || route == TIME_TRIAL_ROUTE || route == GRAND_PRIX_ROUTE || route == GRAND_PRIX_SAVES_ROUTE;
 }
 
-enum class Mode { none, time_trial, grand_prix_new, grand_prix_saves };
+enum class Mode { none, time_trial, grand_prix };
 
 inline const char *press_route(Mode m)
 {
     switch (m) {
     case Mode::time_trial:
         return TIME_TRIAL_ROUTE;
-    case Mode::grand_prix_new:
-        return GRAND_PRIX_ROUTE;
-    case Mode::grand_prix_saves:
-        return GRAND_PRIX_SAVES_ROUTE;
+    case Mode::grand_prix:
+        return STOCK_ACTIVITY_ROUTE;
     default:
         return "";
     }
 }
 
-// The Grand Prix card opens the game's own saves screen (grand_prix_continue), which lists the saved seasons and the
-// New Grand Prix cards and selects the save slot a new season saves into; SWOFTY_MAIN_MENU_GPSAVES=0 raises
-// grand_prix_new on the bare activity container instead, which skips the slot screen.
-inline Mode grand_prix_mode(bool saves_screen_on) { return saves_screen_on ? Mode::grand_prix_saves : Mode::grand_prix_new; }
+// The Grand Prix card opens the activity container through the game's own home_to_activity (an entry with no command)
+// and raises solo_gp on it, the command the container's own Grand Prix card raises. The game answers with
+// grand_prix_resume, whose route migrates to the front-end flow's enter_gp_resume and opens grand_prix_continue: the
+// saved seasons, Continue and New Grand Prix, as F1 World > Play > Grand Prix shows them; with no saved season the game
+// opens the new Grand Prix picker itself.
 
 inline const char *return_command(Mode m)
 {
     switch (m) {
     case Mode::time_trial:
         return "time_trial";
-    case Mode::grand_prix_new:
-        return "grand_prix_new";
-    case Mode::grand_prix_saves:
-        return "grand_prix_resume";
+    case Mode::grand_prix:
+        return GRAND_PRIX_COMMAND;
     default:
         return "";
     }
@@ -383,16 +382,26 @@ inline Back back_variant_of(const std::string &v, bool data_in_build)
 }
 
 // The route the launcher fires in place of the game's own Back route (nullptr: the game's stays). The container's
-// Back fires f1_world (to the hub) or home; the Showroom's and the Grand Prix saves list's fire back_1.
+// Back fires f1_world (to the hub) or home; the Showroom's fires back_1.
 inline const char *back_replacement(Back variant, uint32_t group, const std::string &route)
 {
     if (variant == Back::route || variant == Back::home) {
         if (group == djb2("f1_world_activity_container") && (route == "f1_world" || route == "home"))
             return variant == Back::home ? "home" : BACK_HOME_FROM_CONTAINER;
     }
-    if (variant == Back::route && route == "back_1" && (group == djb2("fe_showroom") || group == djb2("grand_prix_continue")))
+    if (variant == Back::route && route == "back_1" && group == djb2("fe_showroom"))
         return HOME_BACK_ROUTE;
     return nullptr;
+}
+
+// The saves list's Back (route back in grand_prix_continue) stays the game's: it migrates to the activity container,
+// and swapping it for a front-end route home left a black screen. After a Grand Prix card press the core then leaves
+// the container for the main menu once its tabs exist, so one Back from the saves list returns home.
+constexpr uint64_t SAVES_BACK_DELAY_MS = 400, SAVES_BACK_TIMEOUT_MS = 6000;
+
+inline bool saves_back_leaves_home(Back variant, uint32_t group, const std::string &route, Mode mode)
+{
+    return variant == Back::route && mode == Mode::grand_prix && group == djb2("grand_prix_continue") && route == "back";
 }
 
 enum class Expect { none, container, saves, home };
