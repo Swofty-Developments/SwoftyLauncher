@@ -109,6 +109,49 @@ int main()
     expect(!tb::diag_tick_due(false, 10000, 0) && !tb::diag_tick_due(true, 10499, 10000) && tb::diag_tick_due(true, 10500, 10000) && tb::diag_tick_due(true, 500, 0),
            "the diagnostics tick runs at most twice a second, and only while on");
     expect(!tb::diag_tick_due(tb::diag_tick_on(true, true, false), 99999, 0), "the diagnostics switch alone never makes the tick due outside a Time Trial");
+    {
+        uint8_t block[tb::HANDLER_BLOCK] = {};
+        block[0x1d8] = 4;
+        uint64_t key = tb::handler_key(block, sizeof block, 0);
+        expect(key == tb::handler_key(block, sizeof block, 0), "the handler key is the same for the same fields");
+        uint8_t other[tb::HANDLER_BLOCK];
+        bool every_field = true;
+        for (const tb::HandlerField &f : tb::HANDLER_KEY_FIELDS)
+            for (size_t i = 0; i < f.size; i++) {
+                memcpy(other, block, sizeof block);
+                other[f.at + i] ^= 1;
+                every_field = every_field && tb::handler_key(other, sizeof other, 0) != key;
+            }
+        expect(every_field, "a change in any field the watch line prints changes the key");
+        memcpy(other, block, sizeof block);
+        other[0x1d8] = 1;
+        expect(tb::handler_key(other, sizeof other, 0) != key, "the entry state going from 4 to 1 changes the key");
+        expect(tb::handler_key(block, sizeof block, 3) != key, "the rival finder's state is part of the key");
+        memcpy(other, block, sizeof block);
+        other[0x200] = 0x55;
+        other[0x4f0] = 0x55;
+        expect(tb::handler_key(other, sizeof other, 0) == key, "bytes the watch line does not print leave the key alone");
+        expect(tb::handler_key(block, 0x100, 0) != key && tb::handler_key(nullptr, 0, 0) == tb::handler_key(nullptr, 0, 0), "a short block reads its missing fields as zero");
+
+        tb::HandlerWatch seen;
+        expect(!tb::handler_watch_full(false, 0, key, 1000, seen) && !tb::handler_watch_full(true, 0, key, 1000, seen), "no handler, no description");
+        expect(tb::handler_watch_full(false, 0x3474bd830, key, 1000, seen), "the first handler is described in full");
+        seen = {0x3474bd830, key, 1000};
+        expect(!tb::handler_watch_full(false, 0x3474bd830, key, 1500, seen) && !tb::handler_watch_full(false, 0x3474bd830, key, 1000 + tb::HANDLER_REFRESH_MS - 1, seen),
+               "the same handler with the same fields is not described again on the next ticks");
+        expect(tb::handler_watch_full(false, 0x3474bd830, key, 1000 + tb::HANDLER_REFRESH_MS, seen), "the save checks are described again after the refresh period");
+        expect(tb::handler_watch_full(false, 0x3474bd830, key ^ 1, 1500, seen), "a changed field is described at once");
+        expect(tb::handler_watch_full(false, 0x3474bd000, key, 1500, seen), "a new handler is described at once");
+        expect(tb::handler_watch_full(true, 0x3474bd830, key, 1500, seen), "diagnostics mode describes the handler on every tick");
+        int full = 0;
+        tb::HandlerWatch w;
+        for (int64_t t = 0; t < 60000; t += 500)
+            if (tb::handler_watch_full(false, 0x3474bd830, key, t, w)) {
+                full++;
+                w = {0x3474bd830, key, t};
+            }
+        expect(full == 6, "a steady handler is described in full 6 times a minute instead of 120");
+    }
     expect(tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0), "a panel with seven tabs is driven once");
     expect(!tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0x1000, 7), "the same panel is not driven twice");
     expect(!tb::garage_should_drive(false, true, 0x1000, 0x2000, 0x2038, 0) && !tb::garage_should_drive(true, false, 0x1000, 0x2000, 0x2038, 0),
