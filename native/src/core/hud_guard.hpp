@@ -149,6 +149,52 @@ inline bool present_hook_yields(const ArmReasons &reasons, std::string_view riva
     return reasons.menu_only() && !rival.empty();
 }
 
+// Present layers that make the game's swapchain on a path the core's creation hooks miss, and the swapchain
+// does not name its queue at Present either. Its present queue is then learned from ExecuteCommandLists,
+// which takes the device hooks.
+inline constexpr std::string_view PRESENT_LAYERS[] = {"NvPresent64.dll"};
+
+inline std::string present_layer_in(const std::vector<std::string> &modules)
+{
+    for (auto &m : modules)
+        for (auto l : PRESENT_LAYERS)
+            if (same_name(base_name(m), l))
+                return std::string(l);
+    return {};
+}
+
+inline bool device_hooks_wanted_for(const std::vector<std::string> &modules)
+{
+    return !present_layer_in(modules).empty();
+}
+
+constexpr int LIST_TYPE_DIRECT = 0;
+
+// A command queue seen in ExecuteCommandLists: its type from one GetDesc, and the thread and tick of its
+// last call while it is direct.
+struct ExecSeen {
+    void *queue;
+    int type;
+    uint32_t tid;
+    uint64_t tick;
+};
+
+// The present queue of a swapchain the creation hooks missed: the direct queue that last executed command
+// lists on the presenting thread, else the direct queue that executed most recently; nullptr when none has.
+inline const ExecSeen *present_queue_from_execs(const std::vector<ExecSeen> &seen, uint32_t tid)
+{
+    const ExecSeen *same = nullptr, *newest = nullptr;
+    for (auto &e : seen) {
+        if (e.type != LIST_TYPE_DIRECT)
+            continue;
+        if (e.tid == tid && (!same || e.tick > same->tick))
+            same = &e;
+        if (!newest || e.tick > newest->tick)
+            newest = &e;
+    }
+    return same ? same : newest;
+}
+
 inline bool xml_int(const std::string &text, const char *element, const char *attr, int &out)
 {
     size_t at = text.find(std::string("<") + element + " ");

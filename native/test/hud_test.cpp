@@ -768,6 +768,23 @@ static void test_guard()
     CHECK(!removal_after_draw(5000, 0), "a removal with no overlay draw is not attributed");
     CHECK(removal_after_draw(15000, 10000), "a removal 5 s after a draw is attributed");
     CHECK(removal_after_draw(20000, 10000) && !removal_after_draw(20001, 10000), "the window is 10 s");
+    CHECK(device_hooks_wanted_for({"C:\\Windows\\System32\\NvPresent64.dll", "F1_25.exe"}) &&
+              present_layer_in({"swofty_core.dll", "NVPRESENT64.DLL"}) == "NvPresent64.dll",
+          "the NVIDIA app's present layer in the process wants the device hooks");
+    CHECK(!device_hooks_wanted_for({"sl.interposer.dll", "sl.common.dll", "RTSSHooks64.dll", "F1_25.exe"}) &&
+              !device_hooks_wanted_for({}),
+          "Streamline, RivaTuner and the game alone do not");
+    int direct = 0, compute = 1, copy = 2;
+    void *a = &direct, *b = &compute, *c = &copy, *d = &a;
+    std::vector<ExecSeen> execs;
+    CHECK(!present_queue_from_execs(execs, 7), "no queue has executed yet");
+    execs = {{a, direct, 7, 100}, {b, direct, 9, 200}};
+    CHECK(present_queue_from_execs(execs, 7)->queue == a, "the direct queue on the presenting thread beats a newer one on another thread");
+    CHECK(present_queue_from_execs(execs, 5)->queue == b, "with no queue on the presenting thread the most recent direct queue wins");
+    execs = {{a, direct, 7, 100}, {c, direct, 7, 300}, {b, compute, 7, 400}, {d, copy, 7, 500}};
+    CHECK(present_queue_from_execs(execs, 7)->queue == c, "the newest direct queue on the thread wins over an older one");
+    execs = {{b, compute, 7, 400}, {d, copy, 7, 500}};
+    CHECK(!present_queue_from_execs(execs, 7), "compute and copy queues are never the present queue");
 }
 
 // Models d3d12hooks::exec_original: the hook sits on the native queue's ExecuteCommandLists (vtable
