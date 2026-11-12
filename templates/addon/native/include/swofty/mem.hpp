@@ -25,7 +25,10 @@
 // the rest of the region (about 7 us per GB), so the region table is what makes the checks cheap
 // enough for per-frame use on large heaps; invalidate() drops every thread's cache
 // at once (call it after the game frees or remaps memory you were reading, or never: entries
-// expire on their own). in_image() and object_like() tell game objects from garbage: a C++ object
+// expire on their own). With SWOFTY_MEM_SHARED (the core defines it and links mem_pages.cpp),
+// readable() asks one page table shared by every thread instead, filled from the working set
+// (QueryWorkingSetEx, constant time per page) and from VirtualQuery only for pages that are not
+// resident; it never touches a page to test it, so guard pages stay armed. in_image() and object_like() tell game objects from garbage: a C++ object
 // of the game starts with a vtable inside the exe image. c_string() reads a NUL-terminated string
 // and accepts it only as printable UTF-8, so a pointer's own bytes never pass as a name.
 
@@ -149,10 +152,24 @@ inline bool query(uintptr_t at, uintptr_t &hi)
 
 }
 
+#ifdef SWOFTY_MEM_SHARED
+namespace shared {
+struct Counts {
+    uint64_t resident, region;
+};
+bool readable(uintptr_t p, size_t n);
+void invalidate();
+Counts counts();
+}
+#endif
+
 // Drop every thread's cached VirtualQuery answers.
 inline void invalidate()
 {
     detail::generation.fetch_add(1, std::memory_order_relaxed);
+#ifdef SWOFTY_MEM_SHARED
+    shared::invalidate();
+#endif
 }
 
 // While one is alive, this thread's reads keep a big region's answer for ms
@@ -173,6 +190,9 @@ private:
 // n bytes at p are committed and readable.
 inline bool readable(uintptr_t p, size_t n)
 {
+#ifdef SWOFTY_MEM_SHARED
+    return shared::readable(p, n);
+#endif
     if (!p || p + n < p)
         return false;
     for (uintptr_t at = p, end = p + (n ? n : 1); at < end;) {
