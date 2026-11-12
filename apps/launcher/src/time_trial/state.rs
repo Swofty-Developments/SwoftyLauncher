@@ -2,6 +2,7 @@ use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
 use swofty_core::timetrial::api::Api;
 use swofty_core::timetrial::boards::{Group, Row, Run, RunBoard};
+use swofty_i18n::{tr, trf};
 
 use crate::shell::Shell;
 
@@ -99,6 +100,56 @@ impl TtPage {
             .collect()
     }
 
+    /// The seasons (`season`) or the tracks of the picked seasons that have runs, as key and label,
+    /// sorted by label. A name two entries share gets its key after it.
+    pub(super) fn choices(&self, season: bool) -> Vec<(String, String)> {
+        let boards = self.run_boards.iter();
+        if season {
+            labelled(boards.map(|b| (b.content.as_str(), b.season.as_deref())))
+        } else {
+            labelled(
+                boards
+                    .filter(|b| self.run_seasons.is_empty() || self.run_seasons.contains(&b.content))
+                    .map(|b| (b.track.as_str(), b.track_name.as_deref())),
+            )
+        }
+    }
+
+    pub(super) fn picked(&self, season: bool) -> &[String] {
+        if season {
+            &self.run_seasons
+        } else {
+            &self.run_tracks
+        }
+    }
+
+    /// What the season or track filter button reads for the picks.
+    pub(super) fn filter_label(&self, season: bool, choices: &[(String, String)]) -> String {
+        let name = |key: &String| {
+            choices
+                .iter()
+                .find(|(k, _)| k == key)
+                .map_or(key.as_str(), |(_, label)| label.as_str())
+                .to_owned()
+        };
+        match (season, self.picked(season)) {
+            (true, []) => tr("All seasons").to_owned(),
+            (false, []) => tr("All tracks").to_owned(),
+            (true, [one]) => trf!("Season: {name}", name = name(one)),
+            (false, [one]) => trf!("Track: {name}", name = name(one)),
+            (true, many) => trf!("Season: {count} picked", count = many.len()),
+            (false, many) => trf!("Track: {count} picked", count = many.len()),
+        }
+    }
+
+    fn keep_listed_tracks(&mut self) {
+        if self.run_boards.is_empty() {
+            return;
+        }
+        let listed = self.choices(false);
+        self.run_tracks.retain(|t| listed.iter().any(|(k, _)| k == t));
+    }
+
     pub(super) fn waiting(&self) -> usize {
         match &self.runs {
             Load::Ready(runs) => runs.iter().filter(|r| r.pending()).count(),
@@ -112,6 +163,25 @@ impl TtPage {
         };
         swofty_core::timetrial::boards::by_driver(rows, &self.query)
     }
+}
+
+fn labelled<'a>(items: impl Iterator<Item = (&'a str, Option<&'a str>)>) -> Vec<(String, String)> {
+    let mut out: Vec<(String, String)> = Vec::new();
+    for (key, name) in items {
+        if out.iter().any(|(k, _)| k == key) {
+            continue;
+        }
+        let name = name.map(str::trim).filter(|n| !n.is_empty()).unwrap_or(key);
+        out.push((key.to_owned(), name.to_owned()));
+    }
+    let names: Vec<String> = out.iter().map(|(_, label)| label.to_lowercase()).collect();
+    for (i, (key, label)) in out.iter_mut().enumerate() {
+        if label != key && names.iter().filter(|n| **n == names[i]).count() > 1 {
+            *label = format!("{label} ({key})");
+        }
+    }
+    out.sort_by_cached_key(|(key, label)| (label.to_lowercase(), key.clone()));
+    out
 }
 
 impl Shell {
@@ -192,7 +262,8 @@ impl Shell {
         .detach();
     }
 
-    /// Turn one season or track filter on or off and load the runs again.
+    /// Turn one season or track filter on or off and load the runs again. Picked tracks that no picked
+    /// season has are dropped.
     pub(super) fn tt_toggle_filter(&mut self, season: bool, value: &str, cx: &mut Context<Self>) {
         let list = if season {
             &mut self.tt.run_seasons
@@ -204,6 +275,19 @@ impl Shell {
                 list.remove(i);
             }
             None => list.push(value.to_owned()),
+        }
+        if season {
+            self.tt.keep_listed_tracks();
+        }
+        self.tt_load_runs(cx);
+        cx.notify();
+    }
+
+    pub(super) fn tt_clear_filter(&mut self, season: bool, cx: &mut Context<Self>) {
+        if season {
+            self.tt.run_seasons.clear();
+        } else {
+            self.tt.run_tracks.clear();
         }
         self.tt_load_runs(cx);
         cx.notify();
@@ -340,5 +424,96 @@ impl Shell {
         }));
         self.tt.search = Some(state.clone());
         state
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{RunBoard, TtPage};
+
+    fn board(content: &str, season: &str, track: &str, name: &str) -> RunBoard {
+        RunBoard {
+            content: content.to_owned(),
+            season: Some(season.to_owned()).filter(|s| !s.is_empty()),
+            track: track.to_owned(),
+            track_name: Some(name.to_owned()).filter(|n| !n.is_empty()),
+            laps: 1,
+        }
+    }
+
+    fn page() -> TtPage {
+        TtPage {
+            run_boards: vec![
+                board(
+                    "swofty.swofty-seasons-2016/f1_2016",
+                    "SWOFTY 2016",
+                    "silverstone",
+                    "Silverstone",
+                ),
+                board("game/f1_25", "F1 25", "silverstone", "Silverstone"),
+                board("game/f1_25", "F1 25", "austria_reverse", ""),
+                board("mod.fuji/season", "Fuji", "mod.fuji", "Fuji Speedway"),
+                board("other.fuji/season", "", "other.fuji", "Fuji Speedway"),
+                board("game/f1_25", "F1 25", "bahrain", "Bahrain"),
+            ],
+            ..TtPage::default()
+        }
+    }
+
+    #[test]
+    fn seasons_are_sorted_by_name_once_each() {
+        let labels: Vec<String> = page().choices(true).into_iter().map(|(_, l)| l).collect();
+        assert_eq!(labels, ["F1 25", "Fuji", "other.fuji/season", "SWOFTY 2016"]);
+    }
+
+    #[test]
+    fn tracks_sharing_a_name_show_their_code() {
+        let tracks = page().choices(false);
+        let labels: Vec<&str> = tracks.iter().map(|(_, l)| l.as_str()).collect();
+        assert_eq!(
+            labels,
+            [
+                "austria_reverse",
+                "Bahrain",
+                "Fuji Speedway (mod.fuji)",
+                "Fuji Speedway (other.fuji)",
+                "Silverstone"
+            ]
+        );
+    }
+
+    #[test]
+    fn tracks_follow_the_picked_seasons() {
+        let mut tt = page();
+        tt.run_seasons = vec!["swofty.swofty-seasons-2016/f1_2016".to_owned()];
+        let keys: Vec<String> = tt.choices(false).into_iter().map(|(k, _)| k).collect();
+        assert_eq!(keys, ["silverstone"]);
+    }
+
+    #[test]
+    fn a_season_pick_drops_tracks_it_does_not_have() {
+        let mut tt = page();
+        tt.run_tracks = vec!["bahrain".to_owned(), "silverstone".to_owned()];
+        tt.run_seasons = vec!["swofty.swofty-seasons-2016/f1_2016".to_owned()];
+        tt.keep_listed_tracks();
+        assert_eq!(tt.run_tracks, ["silverstone"]);
+    }
+
+    #[test]
+    fn the_button_names_the_picks() {
+        let mut tt = page();
+        assert_eq!(tt.filter_label(true, &tt.choices(true)), "All seasons");
+        assert_eq!(tt.filter_label(false, &tt.choices(false)), "All tracks");
+        tt.run_seasons = vec!["swofty.swofty-seasons-2016/f1_2016".to_owned()];
+        assert_eq!(tt.filter_label(true, &tt.choices(true)), "Season: SWOFTY 2016");
+        tt.run_seasons.clear();
+        tt.run_tracks = vec!["mod.fuji".to_owned()];
+        assert_eq!(
+            tt.filter_label(false, &tt.choices(false)),
+            "Track: Fuji Speedway (mod.fuji)"
+        );
+        tt.run_tracks
+            .extend(["bahrain".to_owned(), "silverstone".to_owned()]);
+        assert_eq!(tt.filter_label(false, &tt.choices(false)), "Track: 3 picked");
     }
 }
