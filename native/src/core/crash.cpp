@@ -2244,8 +2244,8 @@ void stall_tables()
 const char *export_near(const Mod *m, uintptr_t a, uint32_t &off)
 {
     const IMAGE_DATA_DIRECTORY *d = image_dir(m->base, IMAGE_DIRECTORY_ENTRY_EXPORT);
-    if (!d || uint64_t(d->VirtualAddress) + sizeof(IMAGE_EXPORT_DIRECTORY) > m->size ||
-        !readable(m->base + d->VirtualAddress, sizeof(IMAGE_EXPORT_DIRECTORY)))
+    if (!d || d->Size < sizeof(IMAGE_EXPORT_DIRECTORY) || uint64_t(d->VirtualAddress) + d->Size > m->size ||
+        !readable(m->base + d->VirtualAddress, d->Size))
         return nullptr;
     auto ed = reinterpret_cast<const IMAGE_EXPORT_DIRECTORY *>(m->base + d->VirtualAddress);
     if (!ed->NumberOfNames || ed->NumberOfNames > 0x10000 || ed->NumberOfFunctions > 0x10000 ||
@@ -2265,11 +2265,10 @@ const char *export_near(const Mod *m, uintptr_t a, uint32_t &off)
         DWORD f = funcs[o];
         if (f > rva || f < best || (f >= d->VirtualAddress && f < d->VirtualAddress + d->Size))
             continue;
-        const char *s = reinterpret_cast<const char *>(m->base + names[i]);
-        if (names[i] >= m->size || !readable(uintptr_t(s), 1))
+        if (names[i] < d->VirtualAddress || names[i] >= d->VirtualAddress + d->Size)
             continue;
         best = f;
-        name = s;
+        name = reinterpret_cast<const char *>(m->base + names[i]);
     }
     if (!name || rva - best >= 0x20000)
         return nullptr;
