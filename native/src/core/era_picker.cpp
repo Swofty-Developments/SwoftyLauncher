@@ -1439,6 +1439,37 @@ void availability_entry(void *self, void *availability)
     availability_orig(self, availability);
 }
 
+// An era tile press (0x1424b3640 -> 0x1424b2c90) collects the game mode's setup modes into a pointer vector
+// with Sess_Collect_GameModeSetupModes, backed by a 256-byte arena on the caller's stack (0x1424b31af). The
+// vector grows 1, 2, 3, 4, 6, 9, 13, so a game mode with a 10th matching setup mode asks the arena for 104 more
+// bytes, gets null and the game memcpys to address 0. With the stack arena swapped for the game's default
+// allocator the list grows on the heap; the vector keeps its allocator and the caller frees through it (vt+0x38).
+constexpr const char *SETUP_LIST_MIXIN = "swofty_core.dll (era press setup mode list)";
+constexpr const char *SETUP_LIST_FN = "Sess_Collect_GameModeSetupModes";
+using CollectSetupModes_t = void *(void *out, void *allocator);
+CollectSetupModes_t *setup_list_orig;
+std::atomic<bool> setup_list_bound;
+std::atomic<uint32_t> setup_list_swaps;
+
+bool on_this_stack(const void *p)
+{
+    auto tib = reinterpret_cast<NT_TIB *>(NtCurrentTeb());
+    auto a = reinterpret_cast<uintptr_t>(p);
+    return a >= reinterpret_cast<uintptr_t>(tib->StackLimit) && a < reinterpret_cast<uintptr_t>(tib->StackBase);
+}
+
+void *setup_list_entry(void *out, void *allocator)
+{
+    uintptr_t slot = swofty::api->resolve("g_Ne_DefaultAllocator"), heap = 0;
+    if (allocator && on_this_stack(allocator) && slot && mem::read(slot, heap) && heap) {
+        if (setup_list_swaps++ < LOG_FIRST)
+            swofty::log("[era] era press: the game mode's setup mode list grows on the heap, not in the 256-byte "
+                        "stack arena that holds 9");
+        return setup_list_orig(out, reinterpret_cast<void *>(heap));
+    }
+    return setup_list_orig(out, allocator);
+}
+
 std::vector<CoreMixins> tt_guard_mixins()
 {
     std::vector<CoreMixins> out;
@@ -1458,6 +1489,15 @@ std::vector<CoreMixins> tt_guard_mixins()
         availability_bound = true;
         out.push_back({AVAILABILITY_MIXIN,
                        {{AVAILABILITY_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&availability_entry, (void **)&availability_orig}}});
+    }
+    if (!swofty::api->resolve(SETUP_LIST_FN) || !swofty::api->resolve("g_Ne_DefaultAllocator")) {
+        swofty::log("[era] era press setup mode list off: needs %s and g_Ne_DefaultAllocator, which this build does "
+                    "not resolve",
+                    SETUP_LIST_FN);
+    } else {
+        setup_list_bound = true;
+        out.push_back({SETUP_LIST_MIXIN,
+                       {{SETUP_LIST_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&setup_list_entry, (void **)&setup_list_orig}}});
     }
     return out;
 }
@@ -1507,6 +1547,11 @@ void tt_guard_commit()
         swofty::log("[era] setup mode guard %s",
                     core_mixins_active(AVAILABILITY_MIXIN)
                         ? "armed: when the game rebuilds its setup modes the core drops the pointers it keeps into them"
+                        : "did not install (see the [core] lines)");
+    if (setup_list_bound)
+        swofty::log("[era] era press setup mode list %s",
+                    core_mixins_active(SETUP_LIST_MIXIN)
+                        ? "armed: a game mode with more than 9 setup modes no longer crashes an era tile press"
                         : "did not install (see the [core] lines)");
 }
 
