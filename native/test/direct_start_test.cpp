@@ -4,6 +4,7 @@
 #include "direct_start_logic.hpp"
 
 #include <cstdio>
+#include <vector>
 
 namespace ds = runtime::direct_start;
 
@@ -88,6 +89,19 @@ int main()
     expect(!ds::link_needed(ds::Phase::left, true, true, 1000, 2000, 60000, false), "a session target is done once its screen is up");
     expect(!ds::link_needed(ds::Phase::left, true, false, 1000, 1000 + 60000, 60000, false), "or once the cover's wait ran out");
     expect(ds::link_needed(ds::Phase::left, false, true, 1000, 1000000, 60000, true), "the direct start diag keeps the link hook working");
+
+    std::vector<ds::SetupModeOffer> modes = {{"f1_25", true}, {"f1_26", true}, {"swofty_f1", true}};
+    expect(ds::pick_setup_mode(modes, "", "swofty_f1") == 2, "the host setup mode is taken when it offers the list");
+    modes[2].offers = false;
+    modes[0].offers = false;
+    expect(ds::pick_setup_mode(modes, "", "swofty_f1") == 1,
+           "the first mode offering the list is taken when the host mode does not (the 2026 list under f1_26)");
+    modes[1].offers = false;
+    expect(ds::pick_setup_mode(modes, "", "swofty_f1") == 2, "the host mode is kept when no mode offers the list");
+    expect(ds::pick_setup_mode(modes, "f1_25", "swofty_f1") == 0, "a requested setup mode is taken as it is");
+    expect(ds::pick_setup_mode(modes, "f1_99", "swofty_f1") == ds::NO_SETUP_MODE, "a requested mode the game lacks is none");
+    expect(ds::pick_setup_mode({{"f1_26", false}}, "", "swofty_f1") == ds::NO_SETUP_MODE,
+           "no host mode and no offer is none");
 
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;
