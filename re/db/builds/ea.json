@@ -1829,6 +1829,12 @@
   },
   "vt_Sess_HumanController": {
    "match": "0x3883bc7"
+  },
+  "site_Game_MyTeamVehicleBases_AiConfigLoad": {
+   "match": "0x2501675"
+  },
+  "site_Game_MyTeamVehicleBases_NextBase": {
+   "match": "0x2502c4d"
   }
  },
  "unresolvable": {}

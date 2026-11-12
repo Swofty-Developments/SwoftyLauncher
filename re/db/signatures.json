@@ -164014,6 +164014,60 @@
    "used_by": [
     "native/src/core/gp_continue_guard.cpp"
    ]
+  },
+  {
+   "id": "game.myteam_vehicle_bases_ai_config_load",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 48 8D 8C 24 50 1A 00 00 4C 89 E2 E8",
+   "match": "0x1425082f5",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1425082fa",
+   "kind": "mid",
+   "expect": "48 8D 8C 24 50",
+   "names": [
+    "site_Game_MyTeamVehicleBases_AiConfigLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "myteam-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/myteam_vehicle_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.myteam_vehicle_bases_next_base",
+   "section": ".xtls",
+   "pattern": "48 8D 94 24 50 0D 00 00 E8 ?? ?? ?? ?? 49 FF C4 0F B7 47 10 49 39 C4 0F 82 ?? ?? ?? ?? E9",
+   "match": "0x1425098cd",
+   "anchor": "0xd",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1425098da",
+   "kind": "mid",
+   "expect": "49 FF C4 0F B7",
+   "names": [
+    "site_Game_MyTeamVehicleBases_NextBase"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "myteam-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/myteam_vehicle_guard.cpp"
+   ]
   }
  ]
 }
