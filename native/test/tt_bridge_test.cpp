@@ -299,6 +299,40 @@ int main()
     expect(tb::garage_result(0, false, true) == 0 && tb::garage_result(0, true, false) == 0, "it stays denied with the bridge off or for stock content");
     expect(tb::garage_result(1, true, true) == 1 && tb::garage_result(0xff, true, true) == 0xff && tb::garage_result(2, true, true) == 2,
            "a granted, unreadable or unknown value is left alone");
+    {
+        Fake f;
+        uint64_t list = 0x50000;
+        const char *names[] = {"LBV0182D", "LBV0182W", "lbv0184d", "LBV0283D"};
+        for (int i = 0; i < 4; i++) {
+            uint64_t board = 0x60000 + 0x100 * i;
+            f.put<uint64_t>(list + 8 * i, board);
+            f.put<uint64_t>(board + tb::BOARD_NAME, board + 0x80);
+            f.cstr(board + 0x80, names[i]);
+        }
+        f.put<uint64_t>(list + 8 * 4, 0);
+        tb::BoardScan miss = tb::scan_boards(f.mem(), list, list + 8 * 5, "LBV0183D");
+        expect(!miss.found && miss.listed == 5 && miss.same_prefix == 2 && miss.sample == "82D 82W",
+               "a key that no listed board carries is not found; the boards of its descriptor are counted");
+        expect(tb::scan_boards(f.mem(), list, list + 8 * 5, "LBV0184D").found && tb::scan_boards(f.mem(), list, list + 8 * 5, "lbv0182w").found,
+               "a listed board is found whatever the case of its name");
+        expect(!tb::scan_boards(f.mem(), 0, 0, "LBV0182D").found && tb::scan_boards(f.mem(), 0, 0, "LBV0182D").listed == 0 &&
+                   !tb::scan_boards(f.mem(), list + 8, list, "LBV0182D").found,
+               "a missing or inverted list finds nothing");
+        expect(!tb::scan_boards(f.mem(), list, list + 8 * 5, "").found, "an empty key never matches a board");
+        expect(tb::scan_boards(f.mem(), list, list + 8 * 6, "LBV0283D").found, "a null or unreadable slot is skipped and the walk goes on");
+    }
+    expect(tb::board_listed(true) == tb::BoardListed::listed && tb::board_listed(false) == tb::BoardListed::missing, "a lookup records listed or missing");
+    expect(tb::garage_tab_allowed(true, true, tb::BoardListed::listed) && tb::garage_tab_allowed(true, true, tb::BoardListed::unknown),
+           "the garage leaderboard tab is forced for our content when its board is listed or before any lookup");
+    expect(!tb::garage_tab_allowed(true, true, tb::BoardListed::missing), "no board found: the garage leaderboard tab is not forced");
+    expect(!tb::garage_tab_allowed(false, true, tb::BoardListed::listed) && !tb::garage_tab_allowed(true, false, tb::BoardListed::listed),
+           "never with the bridge off or for stock content");
+    expect(tb::garage_result(0, true, tb::garage_tab_allowed(true, true, tb::BoardListed::missing)) == 0 &&
+               tb::garage_result(0, true, tb::garage_tab_allowed(true, true, tb::BoardListed::listed)) == 1,
+           "no board found: a denied tt_privilege_check_done stays denied (no grant)");
+    expect(tb::garage_gate_byte(0, true, tb::garage_tab_allowed(true, true, tb::BoardListed::missing), tb::GARAGE_TT_SESSION) == 0 &&
+               tb::garage_gate_byte(0, true, tb::garage_tab_allowed(true, true, tb::BoardListed::listed), tb::GARAGE_TT_SESSION) == 1,
+           "no board found: the tab builder's gate byte keeps the game's value (no tab)");
 
     // methods and routing
     expect(tb::method_of("GetTTLeaderboard") == tb::Method::get_tt && tb::method_of("Nope") == tb::Method::none &&

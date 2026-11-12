@@ -525,6 +525,69 @@ inline bool save_checks_due(bool diag_on, uint64_t handler, int64_t now_ms, cons
     return diag_on || handler != seen.handler || now_ms - seen.read_ms >= period_ms;
 }
 
+// The game looks a Time Trial board up by its key ('LBV<descriptor><track><D|W>') in the board list (the registry's begin +0x18
+// and end +0x20, 8-byte board pointers, each board's C-string name at +0x68): once at the ghost lap storage system's
+// onSessionEnter and again when the leaderboard view selects its board. scan_boards walks that list the same way, with the
+// case of the name ignored, and counts the boards that share the key's first five characters (its descriptor) for the log.
+constexpr uint64_t BOARD_LIST_BEGIN = 0x18, BOARD_LIST_END = 0x20, BOARD_NAME = 0x68;
+constexpr size_t BOARD_LIST_MAX = 100000;
+
+struct BoardScan {
+    size_t listed = 0, same_prefix = 0;
+    bool found = false;
+    std::string sample;
+};
+
+inline bool same_board_name(const std::string &a, const std::string &b)
+{
+    if (a.size() != b.size())
+        return false;
+    for (size_t i = 0; i < a.size(); i++) {
+        char x = a[i] >= 'a' && a[i] <= 'z' ? char(a[i] - 32) : a[i], y = b[i] >= 'a' && b[i] <= 'z' ? char(b[i] - 32) : b[i];
+        if (x != y)
+            return false;
+    }
+    return true;
+}
+
+inline BoardScan scan_boards(const Mem &m, uint64_t first, uint64_t last, const std::string &key)
+{
+    BoardScan out;
+    if (!first || last < first)
+        return out;
+    out.listed = size_t(std::min<uint64_t>((last - first) / 8, BOARD_LIST_MAX));
+    std::string prefix = key.size() >= 5 ? key.substr(0, 5) : key;
+    for (size_t i = 0; i < out.listed; i++) {
+        uint64_t board = 0, np = 0;
+        std::string name;
+        if (m.get(first + 8 * i, board) && board && m.get(board + BOARD_NAME, np) && np)
+            name = read_c(m, np);
+        if (!key.empty() && same_board_name(name, key))
+            out.found = true;
+        if (name.compare(0, prefix.size(), prefix) == 0) {
+            out.same_prefix++;
+            if (out.sample.size() < 80 && name.size() > 5)
+                out.sample += (out.sample.empty() ? "" : " ") + name.substr(5);
+        }
+    }
+    return out;
+}
+
+// The garage monitor's leaderboard tab of our content shows the session's board. A leaderboard view whose lookup finds no board
+// skips its board work and never makes its child list model (+0x9a0), and activating that tab reads the null child. So the core
+// forces the tab for our content (builds it, raises car_monitor_tt_leaderboard_privilege_check, grants its type 2 privilege check,
+// turns a denied tt_privilege_check_done into granted) only while the session's latest lookup did not miss the board. Before any
+// lookup of the session the forcing stands as it was; after a lookup that missed, the tab is left to the game, which builds no
+// leaderboard tab for a Time Trial without a board.
+enum class BoardListed : uint8_t { unknown, listed, missing };
+
+inline BoardListed board_listed(bool found) { return found ? BoardListed::listed : BoardListed::missing; }
+
+inline bool garage_tab_allowed(bool bridge_on, bool ours_content, BoardListed listed)
+{
+    return bridge_on && ours_content && listed != BoardListed::missing;
+}
+
 // One rule for "this board is ours": an addon's descriptor or a custom track. The request redirect and the guards use it.
 // The garage monitor's `tt_privilege_check_done` command carries one byte, the privilege result. A denied result (0) becomes
 // granted (1) for our content with the bridge on; a granted result, an unreadable value (0xff) and any other value stay.
