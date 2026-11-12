@@ -1646,11 +1646,17 @@
   "site_Game_TimeTrialLeaderboard_BoardsDone": {
    "match": "0x2fc2d72"
   },
+  "site_Game_TimeTrial_SetReferenceListBoard": {
+   "match": "0x1475fc2"
+  },
   "site_Game_TimeTrial_SetReferenceLogBoard": {
    "match": "0x147605f"
   },
   "site_Game_TimeTrial_SetReferenceLogDone": {
    "match": "0x1476167"
+  },
+  "site_Game_TimeTrial_SetReferenceNoList": {
+   "match": "0x14762ae"
   },
   "site_Gdb_DeptCountStore": {
    "match": "0x4598b6f"

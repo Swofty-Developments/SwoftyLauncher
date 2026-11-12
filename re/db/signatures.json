@@ -164014,6 +164014,60 @@
    "used_by": [
     "native/src/core/gp_continue_guard.cpp"
    ]
+  },
+  {
+   "id": "game.time_trial_set_reference_list_board",
+   "section": ".xtls",
+   "pattern": "80 BA F0 00 00 00 00 0F 84 ?? ?? ?? ?? 45 85 F6",
+   "match": "0x14147bbf2",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14147bbf2",
+   "kind": "mid",
+   "names": [
+    "site_Game_TimeTrial_SetReferenceListBoard"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "ttlistboard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ],
+   "expect": "80 BA F0 00 00 00 00"
+  },
+  {
+   "id": "game.time_trial_set_reference_no_list",
+   "section": ".xtls",
+   "pattern": "48 8D 35 ?? ?? ?? ?? 48 89 74 24 60 48 8B 44 24 68",
+   "match": "0x14147bede",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14147bede",
+   "kind": "mid",
+   "names": [
+    "site_Game_TimeTrial_SetReferenceNoList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "ttlistboard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ],
+   "expect": "48 8D 35"
   }
  ]
 }

@@ -16391,6 +16391,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_TimeTrial_SetReferenceListBoard: Binding = Binding {
+        id: "site_Game_TimeTrial_SetReferenceListBoard",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_TimeTrial_SetReferenceLogBoard: Binding = Binding {
         id: "site_Game_TimeTrial_SetReferenceLogBoard",
         kind: "site",
@@ -16398,6 +16403,11 @@ pub mod bindings {
     };
     pub const site_Game_TimeTrial_SetReferenceLogDone: Binding = Binding {
         id: "site_Game_TimeTrial_SetReferenceLogDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TimeTrial_SetReferenceNoList: Binding = Binding {
+        id: "site_Game_TimeTrial_SetReferenceNoList",
         kind: "site",
         status: Status::Experimental,
     };
