@@ -13,7 +13,7 @@ use serde_json::Value;
 use swofty_addon::asset::{AssetBatch, Op, Origin};
 use swofty_addon::helper::{
     ADDON_CALLS, API_VERSION, Built, Call, Hello, HostCall, Incoming, MOVE_ADDON, PROFILE_HEADS, RESTART,
-    Reply, Request, TASKS, Welcome,
+    Reply, Request, SAVE_DIR, TASKS, Welcome,
 };
 use swofty_addon::launcher::{
     Addon, BuildCx, Claim, CommandSpec, Cx, Importer, ProfileInfo, Progress, Summary,
@@ -510,6 +510,7 @@ fn host_calls(cx: &Cx) -> Vec<String> {
     if cx.game.is_some() {
         calls.push(PROFILE_HEADS);
     }
+    calls.push(SAVE_DIR);
     calls.into_iter().map(String::from).collect()
 }
 
@@ -547,6 +548,7 @@ fn host_call(cx: &Cx, call: HostCall) -> std::result::Result<Value, String> {
             serde_json::to_value(status).map_err(|e| swofty_addon::Error::Other(e.to_string()))
         }
         HostCall::SteamSaveDir => Ok(path_value(cx.game.and_then(|g| g.steam_save_dir()))),
+        HostCall::SaveDir => Ok(path_value(cx.game.and_then(|g| g.save_dir(&cx.profile.name)))),
         HostCall::ProfileTracks => match cx.game {
             Some(g) => g
                 .profile_tracks(&cx.profile.name)
@@ -1068,6 +1070,10 @@ exec sleep 60
         fn steam_save_dir(&self) -> Option<PathBuf> {
             Some(self.0.join("remote"))
         }
+
+        fn save_dir(&self, profile: &str) -> Option<PathBuf> {
+            Some(self.0.join("saves").join(profile))
+        }
     }
 
     const LIVE: &str = r#"
@@ -1077,6 +1083,7 @@ answer '{"id":0,"method":"game_dir"}'
 answer '{"id":1,"method":"addon_game_dir"}'
 answer '{"id":2,"method":"game_status"}'
 answer '{"id":3,"method":"steam_save_dir"}'
+answer '{"id":4,"method":"save_dir"}'
 read -r l; echo "$l" >> received
 echo '{"method":"invalidate","params":{"section":"items"}}'
 echo '{"id":1,"result":{"subtitle":"s","body":{"blocks":[]},"tick":true}}'
@@ -1132,7 +1139,7 @@ read -r l
         assert_eq!(received[0]["params"]["launcher"], env!("CARGO_PKG_VERSION"));
         assert_eq!(
             received[0]["params"]["host_calls"],
-            serde_json::json!(["tasks", PROFILE_HEADS])
+            serde_json::json!(["tasks", PROFILE_HEADS, SAVE_DIR])
         );
         let game_dir = root.join("F1 25");
         assert_eq!(received[2]["result"], game_dir.to_string_lossy().as_ref());
@@ -1148,13 +1155,18 @@ read -r l
             received[5]["result"],
             game_dir.join("remote").to_string_lossy().as_ref()
         );
-        assert_eq!(received[6]["method"], "tick");
-        assert_eq!(received[6]["params"]["section"], "items");
+        assert_eq!(
+            received[6]["result"],
+            game_dir.join("saves/default").to_string_lossy().as_ref()
+        );
+        assert_eq!(received[7]["method"], "tick");
+        assert_eq!(received[7]["params"]["section"], "items");
         h.stop();
         let none = Cx::new("t.helper", &p, &data, &cache, None, &state);
         assert_eq!(host_call(&none, HostCall::GameDir).unwrap(), Value::Null);
         assert_eq!(host_call(&none, HostCall::AddonGameDir).unwrap(), Value::Null);
         assert_eq!(host_call(&none, HostCall::ProfileTracks).unwrap(), Value::Null);
+        assert_eq!(host_call(&none, HostCall::SaveDir).unwrap(), Value::Null);
         assert!(host_call(&none, HostCall::Invalidate(Default::default())).is_err());
         let e = host_call(&none, HostCall::Addons).unwrap_err();
         assert!(e.contains("can't be managed"), "{e}");
@@ -1203,7 +1215,7 @@ read -r l
         let p = profile("default");
         let moves = Moves::default();
         let none = Cx::new("t.helper", &p, &data, &cache, None, &state);
-        assert_eq!(host_calls(&none), ["tasks"]);
+        assert_eq!(host_calls(&none), ["tasks", SAVE_DIR]);
         let e = host_call(
             &none,
             HostCall::MoveAddon {
@@ -1222,7 +1234,8 @@ read -r l
                 "set_addon_enabled",
                 "remove_addon",
                 "move_addon",
-                "tasks"
+                "tasks",
+                SAVE_DIR
             ]
         );
         let call: HostCall = serde_json::from_value(
