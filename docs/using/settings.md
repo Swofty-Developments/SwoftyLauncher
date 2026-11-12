@@ -21,6 +21,8 @@ description: Settings holds the launcher's own options in five categories, shows
 
 **Start Steam automatically** (or the EA app) starts your game's store when you press **Play**, as the same item in the **Play** menu does.
 
+**Home screen video** shows the latest Swofty video in the bottom right of the F1 25 home screen, with **RB** (**V** on a keyboard) to watch it. It is on by default. Turned off, the home screen has no video card from the next time you press **Play**, and the launcher no longer fetches the latest video.
+
 ## Display
 
 **Display mode** switches between **PC mode**, the normal layout, and **TV mode**, which scales the whole launcher up by 30% and widens the scrollbars, for handhelds and couch play. The welcome wizard asks for it, with your language, the first time the launcher opens and once after an update that changes the wizard. Each choice applies as you pick it, Esc or **Skip** closes the wizard, and you can change both here at any time.

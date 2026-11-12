@@ -451,7 +451,7 @@ To apply the same `clone-entry` and `set-value` edits to `!pkg` resources, use t
 
 ## Main menu state files
 
-The launcher writes `swofty/home_menu.json` into the game folder at launch and rewrites it when the latest video has been fetched. The core reads it for the main menu's top-right strip and the video card.
+The launcher writes `swofty/home_menu.json` into the game folder at launch and rewrites it when the latest video has been fetched. The core reads it for the main menu's top-right strip and the video card. With the **Home screen video** setting off (`"home_video": false` in `config.json`) the file has no `video`, the launcher doesn't fetch it, and the home screen has no video card.
 
 ```json
 {
@@ -519,4 +519,4 @@ While the main menu is open the overlay paints the Swofty Launcher version, the 
 
 The top-right account panel and the bottom-right video card are game UI. The launcher build adds two component slots to `fe_home.idf` (`swofty_details_account` and `swofty_details_video`, copies of the `details_offline` and `details_news` slots of the "Launched with" and news cards) and two groups to `contextual_panels` in `fe_home.ui` (`swofty_account_panel` and `swofty_video_panel`, copies of `offline_contextual_panel` and `news_contextual_panel`, always visible). Their text reads `ui_menu_data.swofty_panel_text`, `swofty_video_title` and `swofty_video_prompt`, which the core sets on the flow thread.
 
-The overlay draws only the two images: the video thumbnail inside the news card's image area and the Discord avatar beside the account panel. Positions are in scene units (the front end spans about 17.8 by 10 units), converted with the frame height, so they follow the game's resolution.
+The overlay draws only the two images: the video thumbnail inside the news card's image area and the Discord avatar beside the account panel. Positions are in scene units (the front end spans about 17.8 by 10 units), converted through the 16:9 band the front end is laid out in: the full height of a 16:9 or wider frame, and the full width of a taller one such as a Steam Deck's 16:10, centred with the game's backdrop above and below. Sizes scale with the band's height.
