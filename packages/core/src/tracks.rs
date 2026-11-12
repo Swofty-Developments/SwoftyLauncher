@@ -352,6 +352,7 @@ pub fn record_package(
         code: Some(t.code.clone()),
         name: Some(t.name.clone().unwrap_or_else(|| t.code.clone())),
         why,
+        fix: None,
     };
     let Some(rel) = t.files.as_deref() else {
         return Err(unusable(format!(
@@ -463,6 +464,7 @@ pub fn record_packages(
                             code: Some(t.code.clone()),
                             name: Some(t.name.clone().unwrap_or_else(|| t.code.clone())),
                             why: format!("{by} adds a track with the code {} too", t.code),
+                            fix: None,
                         },
                     ));
                     continue;
@@ -500,6 +502,137 @@ pub fn keep_track_folders(store: &Store, tracks: &[BuildTrack], std16: &mut BTre
         }
         s.files.files.retain(|f| !f.starts_with(&prefix));
     }
+}
+
+/// The most tracks the game's track lists hold. F1 25 gives each listed track one bit of a 64-bit set when it
+/// loads its options at boot (`cmp eax, 0x40` then `bts` at 0x142ae87c7 on Steam) and throws
+/// `Ne_Std_ThrowInvalidBitsetPosition` for the 65th, which leaves the screen black after the EA logo.
+pub const TRACK_LIST_ROOM: usize = 64;
+/// The track the game leaves out of those lists by name.
+const UNLISTED_TRACK: &str = "madrid";
+/// The fewest added tracks that can fill the lists: F1 25 ships 43 track rows.
+const FILL_FROM: usize = TRACK_LIST_ROOM - 43 + 1;
+
+/// The tracks a database puts in the game's track lists: its tracks.Track rows with a TrackData row in any
+/// dataset, but madrid.
+#[derive(Debug, Clone, Default, PartialEq)]
+pub struct ListedTracks {
+    rows: BTreeSet<String>,
+    with_data: BTreeSet<String>,
+}
+
+impl ListedTracks {
+    pub fn of(db: &Gvdb) -> Self {
+        let at: HashMap<u64, usize> = db.records.iter().enumerate().map(|(i, r)| (r.key, i)).collect();
+        let text = |path: &str| {
+            at.get(&fnv1a64(path))
+                .map(|&i| db.records[i].text().trim().to_owned())
+        };
+        let count = |table: &str| {
+            let (container, row) = table.rsplit_once('.').expect("a table path");
+            text(&swofty_formats::gvdb::instance_count_path(container, row))
+                .and_then(|n| n.parse::<usize>().ok())
+                .unwrap_or(0)
+        };
+        let rows = (0..count(TRACKS))
+            .filter_map(|i| text(&format!("{TRACKS}_{i}._metadata_")))
+            .collect();
+        let mut with_data = BTreeSet::new();
+        for s in 0..count(TRACK_DATA) {
+            let table = format!("{TRACK_DATA}_{s}.TrackData");
+            with_data.extend((0..count(&table)).filter_map(|i| text(&format!("{table}_{i}.track"))));
+        }
+        Self { rows, with_data }
+    }
+
+    /// How many of the game's own tracks the lists hold.
+    pub fn stock(&self) -> usize {
+        self.rows.iter().filter(|c| self.lists(c)).count()
+    }
+
+    fn lists(&self, code: &str) -> bool {
+        code != UNLISTED_TRACK && self.rows.contains(code) && self.with_data.contains(code)
+    }
+
+    /// Whether activating `pkg` adds a track to the lists: activation copies its base track's TrackData rows to
+    /// it, so a track whose base has none stays out of them, and a code the lists hold already adds nothing.
+    fn adds(&self, pkg: &TrackPackage) -> bool {
+        let code = pkg.track_code.as_str();
+        code != UNLISTED_TRACK
+            && !self.lists(code)
+            && pkg
+                .activation
+                .base_track()
+                .is_some_and(|base| self.with_data.contains(base))
+    }
+}
+
+/// Whether `added` tracks can fill the game's track lists, so a build has to read the database to know.
+pub fn may_fill_track_lists(added: usize) -> bool {
+    added >= FILL_FROM
+}
+
+/// The build's tracks the game's track lists have room for, and the ones left out: the tracks of `recorded`
+/// addons first, since the core adds their rows in game whatever the build does, then the others in load
+/// order until the lists are full. A track that adds nothing to the lists is always kept.
+pub fn fit_track_lists(
+    listed: &ListedTracks,
+    tracks: Vec<BuildTrack>,
+    recorded: &BTreeSet<String>,
+) -> (Vec<BuildTrack>, Vec<(BuildTrack, Unusable)>) {
+    let room = TRACK_LIST_ROOM.saturating_sub(listed.stock());
+    let mut used = tracks
+        .iter()
+        .filter(|(_, p, o)| recorded.contains(&o.addon) && listed.adds(p))
+        .count();
+    let mut kept = Vec::with_capacity(tracks.len());
+    let mut left_out = Vec::new();
+    for t in tracks {
+        let (_, pkg, origin) = &t;
+        if recorded.contains(&origin.addon) || !listed.adds(pkg) {
+            kept.push(t);
+            continue;
+        }
+        if used < room {
+            used += 1;
+            kept.push(t);
+            continue;
+        }
+        let why = Unusable {
+            code: Some(pkg.track_code.clone()),
+            name: Some(pkg.display_name().to_owned()),
+            why: track_lists_full(listed),
+            fix: Some("Turn some track addons off to make room for it".to_owned()),
+        };
+        left_out.push((t, why));
+    }
+    (kept, left_out)
+}
+
+fn track_lists_full(listed: &ListedTracks) -> String {
+    let stock = listed.stock();
+    format!(
+        "the game has room for {TRACK_LIST_ROOM} tracks, {stock} of its own and {} added ones, and the track \
+         addons before it in the load order fill them",
+        TRACK_LIST_ROOM.saturating_sub(stock)
+    )
+}
+
+/// The build's notice for the tracks [`fit_track_lists`] leaves out, given by name.
+pub fn track_lists_full_warning(listed: &ListedTracks, left_out: &[String]) -> Option<String> {
+    let shown = match left_out.len() {
+        0 => return None,
+        n if n <= 8 => left_out.join(", "),
+        n => format!("{} and {} more", left_out[..8].join(", "), n - 8),
+    };
+    let stock = listed.stock();
+    Some(format!(
+        "Too many tracks: {} track(s) are left out of this build because the game has room for {TRACK_LIST_ROOM} \
+         tracks, {stock} of its own and {} added ones, and more stop it at a black screen after the EA logo: \
+         {shown}. Turn some track addons off to play them",
+        left_out.len(),
+        TRACK_LIST_ROOM.saturating_sub(stock)
+    ))
 }
 
 /// Writes `$DATA/registry/older-tracks.json` for the tracks `track.add` added for addons with no
@@ -1036,6 +1169,223 @@ mod tests {
         );
         assert_eq!(db.get_text("tracks._Track_instancecount_").as_deref(), Some("3"));
         assert_eq!(db.get_text("tracks.Track_0.statId").as_deref(), Some("9"));
+    }
+
+    const STOCK_WITH_DATA: [&str; 36] = [
+        "melbourne",
+        "suzuka",
+        "shanghai",
+        "bahrain",
+        "jeddah",
+        "miami",
+        "imola",
+        "monaco",
+        "catalunya",
+        "montreal",
+        "austria",
+        "silverstone",
+        "spa_francorchamps",
+        "hungaroring",
+        "zandvoort",
+        "monza",
+        "baku",
+        "singapore",
+        "texas",
+        "mexico",
+        "brazil",
+        "las_vegas",
+        "losail",
+        "abu_dhabi",
+        "portimao",
+        "texas_nat",
+        "suzuka_east",
+        "bahrain_pad",
+        "silverstone_int",
+        "sochi",
+        "styria",
+        "hanoi",
+        "silverstone_reverse",
+        "austria_reverse",
+        "zandvoort_reverse",
+        "madrid",
+    ];
+    const STOCK_WITHOUT_DATA: [&str; 7] = [
+        "paul_ricard",
+        "imola_prototype",
+        "melbourne24",
+        "bahrain24",
+        "suzuka24",
+        "imola24",
+        "miami24",
+    ];
+
+    fn stock_lists() -> Gvdb {
+        let codes: Vec<&str> = STOCK_WITH_DATA
+            .iter()
+            .chain(&STOCK_WITHOUT_DATA)
+            .copied()
+            .collect();
+        let mut records = vec![
+            rec("tracks._Track_instancecount_", &codes.len().to_string()),
+            rec("track_data.game_setup._TrackDataSet_instancecount_", "2"),
+            rec(&format!("{TRACK_DATA}_0._TrackData_instancecount_"), "30"),
+            rec(&format!("{TRACK_DATA}_1._TrackData_instancecount_"), "6"),
+        ];
+        for (i, code) in codes.iter().enumerate() {
+            records.push(rec(&format!("{TRACKS}_{i}._metadata_"), code));
+        }
+        for (i, code) in STOCK_WITH_DATA.iter().enumerate() {
+            let (set, row) = match i < 30 {
+                true => (0, i),
+                false => (1, i - 30),
+            };
+            records.push(rec(&format!("{TRACK_DATA}_{set}.TrackData_{row}.track"), code));
+        }
+        Gvdb { records }
+    }
+
+    fn build_track(addon: &str, code: &str, base: &str) -> BuildTrack {
+        let pkg = TrackPackage {
+            track_code: code.into(),
+            track_name: Some(format!("{code} circuit")),
+            version: None,
+            author_name: None,
+            erp: format!("{code}.erp"),
+            activation: crate::map::Activation {
+                copy_from_track: Some(base.into()),
+                ..Default::default()
+            },
+            ers: Default::default(),
+            copy_directories: Vec::new(),
+            ui: None,
+            extra: Default::default(),
+        };
+        let origin = Origin {
+            addon: addon.into(),
+            item: None,
+        };
+        (PathBuf::from(format!("/addons/{addon}/track")), pkg, origin)
+    }
+
+    fn codes(tracks: &[BuildTrack]) -> Vec<&str> {
+        tracks.iter().map(|(_, p, _)| p.track_code.as_str()).collect()
+    }
+
+    #[test]
+    fn the_track_lists_hold_the_stock_tracks_with_track_data_but_madrid() {
+        let listed = ListedTracks::of(&stock_lists());
+        assert_eq!(listed.stock(), 35);
+        assert!(!listed.lists("madrid"));
+        assert!(!listed.lists("bahrain24"));
+        assert!(listed.lists("texas_nat"));
+        assert_eq!(ListedTracks::of(&Gvdb::default()).stock(), 0);
+    }
+
+    #[test]
+    fn only_enough_added_tracks_to_fill_the_lists_read_the_database() {
+        assert!(!may_fill_track_lists(21));
+        assert!(may_fill_track_lists(22));
+    }
+
+    #[test]
+    fn the_tracks_past_the_track_lists_room_are_left_out_in_load_order() {
+        let listed = ListedTracks::of(&stock_lists());
+        let mut tracks = Vec::new();
+        for slot in ["bahrain24", "miami24", "suzuka24", "paul_ricard"] {
+            tracks.push(build_track(&format!("mod.{slot}"), slot, slot));
+        }
+        tracks.push(build_track("mod.hanoi", "hanoi", "hanoi"));
+        tracks.push(build_track("mod.sochi", "sochi", "melbourne"));
+        let added: Vec<String> = (0..36).map(|i| format!("added_{i:02}")).collect();
+        for code in &added {
+            tracks.push(build_track(&format!("mod.{code}"), code, "melbourne"));
+        }
+        assert_eq!(tracks.len(), 42);
+        let (kept, left_out) = fit_track_lists(&listed, tracks.clone(), &BTreeSet::new());
+        let mut want: Vec<&str> = vec![
+            "bahrain24",
+            "miami24",
+            "suzuka24",
+            "paul_ricard",
+            "hanoi",
+            "sochi",
+        ];
+        want.extend(added[..29].iter().map(String::as_str));
+        assert_eq!(codes(&kept), want);
+        let gone: Vec<&str> = left_out
+            .iter()
+            .map(|((_, p, _), _)| p.track_code.as_str())
+            .collect();
+        assert_eq!(gone, added[29..].iter().map(String::as_str).collect::<Vec<_>>());
+        for ((_, pkg, origin), why) in &left_out {
+            assert_eq!(why.code.as_deref(), Some(pkg.track_code.as_str()));
+            assert_eq!(origin.addon, format!("mod.{}", pkg.track_code));
+        }
+        assert_eq!(
+            left_out[0].1.text(),
+            "track added_29 circuit is left out; the game has room for 64 tracks, 35 of its own and 29 added ones, \
+             and the track addons before it in the load order fill them. Turn some track addons off to make room \
+             for it"
+        );
+        assert_eq!(
+            fit_track_lists(&listed, tracks, &BTreeSet::new()),
+            (kept, left_out)
+        );
+    }
+
+    #[test]
+    fn a_track_with_a_base_that_has_no_track_data_takes_no_room() {
+        let listed = ListedTracks::of(&stock_lists());
+        let mut tracks: Vec<BuildTrack> = (0..29)
+            .map(|i| build_track(&format!("mod.r{i}"), &format!("r{i}"), "melbourne"))
+            .collect();
+        tracks.push(build_track("mod.ricard", "magny_cours", "paul_ricard"));
+        tracks.push(build_track("mod.sepang", "bahrain24", "bahrain"));
+        tracks.push(build_track("mod.late", "late", "suzuka"));
+        let (kept, left_out) = fit_track_lists(&listed, tracks, &BTreeSet::new());
+        assert_eq!(kept.len(), 30);
+        assert!(codes(&kept).contains(&"magny_cours"));
+        let gone: Vec<&str> = left_out
+            .iter()
+            .map(|((_, p, _), _)| p.track_code.as_str())
+            .collect();
+        assert_eq!(gone, ["bahrain24", "late"]);
+    }
+
+    #[test]
+    fn the_tracks_the_core_adds_take_their_room_first() {
+        let listed = ListedTracks::of(&stock_lists());
+        let mut tracks: Vec<BuildTrack> = (0..29)
+            .map(|i| build_track(&format!("mod.r{i}"), &format!("r{i}"), "melbourne"))
+            .collect();
+        tracks.push(build_track("std.recorded", "recorded_a", "suzuka"));
+        tracks.push(build_track("std.recorded", "recorded_b", "suzuka"));
+        let recorded: BTreeSet<String> = ["std.recorded".to_owned()].into();
+        let (kept, left_out) = fit_track_lists(&listed, tracks, &recorded);
+        let gone: Vec<&str> = left_out
+            .iter()
+            .map(|((_, p, _), _)| p.track_code.as_str())
+            .collect();
+        assert_eq!(gone, ["r27", "r28"]);
+        assert_eq!(&codes(&kept)[27..], ["recorded_a", "recorded_b"]);
+    }
+
+    #[test]
+    fn the_full_lists_notice_names_the_tracks_left_out() {
+        let listed = ListedTracks::of(&stock_lists());
+        assert_eq!(track_lists_full_warning(&listed, &[]), None);
+        assert_eq!(
+            track_lists_full_warning(&listed, &["Mugello".into(), "Kymi Ring (Kymiring)".into()]).unwrap(),
+            "Too many tracks: 2 track(s) are left out of this build because the game has room for 64 tracks, 35 \
+             of its own and 29 added ones, and more stop it at a black screen after the EA logo: Mugello, Kymi \
+             Ring (Kymiring). Turn some track addons off to play them"
+        );
+        let many: Vec<String> = (0..10).map(|i| format!("T{i}")).collect();
+        assert!(
+            track_lists_full_warning(&listed, &many)
+                .unwrap()
+                .contains(": T0, T1, T2, T3, T4, T5, T6, T7 and 2 more. Turn")
+        );
     }
 
     fn rec(path: &str, value: &str) -> Record {

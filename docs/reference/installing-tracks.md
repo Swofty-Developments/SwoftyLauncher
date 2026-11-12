@@ -49,7 +49,14 @@ How the build handles this depends on the in-game core. When its `features.json`
 - `ai/<vehicle_package>/<team>/<team>` for every AI team folder in the archive;
 - the `worldAssetGroup` of every track layer row (`track_data.track_layers`) whose `[FILENAME]` world lies outside the game's own `environment_package` worlds, such as `<package>/tracks/<code>/wep/<code>_<variant>`, unless an addon registers that group itself.
 
-You can enable any number of tracks this way.
+The game's track lists hold 64 tracks: the 35 stock tracks with a `TrackData` row in some dataset (`madrid` isn't listed) and 29 added ones. A track takes a place when its base track has `TrackData`; a track that replaces a listed stock track takes none. A 65th track stops F1 25 at a black screen after the EA logo. A build keeps the tracks in load order until the lists are full and leaves out the rest:
+
+```text
+warning: Too many tracks: 7 track(s) are left out of this build because the game has room for 64 tracks, 35 of its own and 29 added ones, and more stop it at a black screen after the EA logo: Mugello, Okayama, ... Turn some track addons off to play them
+warning: Mugello (mod.mugello): track Mugello is left out; the game has room for 64 tracks, 35 of its own and 29 added ones, and the track addons before it in the load order fill them. Turn some track addons off to make room for it
+```
+
+Tracks from track records take their places first: the core adds their rows in game.
 
 Otherwise, the build puts the package's whole `<code>.erp` into an existing invitational event slot, `2025_asset_groups/ui_package/texture_arrays/invitational_events/event_images/invitational_image_<n>.erp`, alongside the slot's own pictures. Your profile's tracks take `invitational_image_4`, `_10`, `_13` to `_18` in order. That leaves room for at most eight enabled tracks; a ninth fails the build with `at most 8 tracks can be enabled at once`.
 
