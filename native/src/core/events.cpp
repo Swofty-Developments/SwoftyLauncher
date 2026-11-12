@@ -1,5 +1,4 @@
 #include <atomic>
-#include <map>
 #include "runtime.hpp"
 #include "main_menu.hpp"
 
@@ -74,62 +73,89 @@ std::string who(const void *from)
     return id.empty() ? dll : id;
 }
 
+struct Step {
+    const char *name;
+    void (*fn)();
+};
+
+const Step STEPS[] = {
+    {"career_tick", [] { runtime::career_tick(); }},
+    {"live_tick", [] { runtime::live_tick(now_seconds()); }},
+    {"telemetry_tick", [] { runtime::telemetry_tick(); }},
+    {"lap_rec_tick", [] { runtime::lap_rec_tick(); }},
+    {"tt_bridge_tick", [] { runtime::tt_bridge_tick(); }},
+    {"popup_tick", [] { runtime::popup_tick(); }},
+    {"main_menu::tick", [] { runtime::main_menu::tick(); }},
+    {"mfd_tick", [] { runtime::mfd_tick(); }},
+    {"netplay_tick", [] { runtime::netplay_tick(); }},
+    {"career_content_tick", [] { runtime::career_content_tick(); }},
+    {"entitlements_tick", [] { runtime::entitlements_tick(); }},
+    {"hub_tick", [] { runtime::hub_tick(); }},
+    {"tyre_models_tick", [] { runtime::tyre_models_tick(); }},
+    {"testagent_tick", [] { runtime::testagent_tick(); }},
+    {"direct_start_tick", [] { runtime::direct_start_tick(); }},
+};
+constexpr size_t STEP_COUNT = sizeof STEPS / sizeof STEPS[0];
+
+// Only the thread holding the frame claim runs the steps, so their totals need no lock.
+double step_ms[STEP_COUNT];
+double steps_since;
+uint64_t slow_steps;
+
+void report_steps(double now)
+{
+    double span = now - steps_since;
+    if (span < 60.0)
+        return;
+    std::string line;
+    for (size_t i = 0; i < STEP_COUNT; i++)
+        if (step_ms[i] / span >= 1.0) {
+            char b[96];
+            snprintf(b, sizeof b, "%s%s %.1f", line.empty() ? "" : ", ", STEPS[i].name, step_ms[i] / span);
+            line += b;
+        }
+    if (!line.empty())
+        swofty::log("[perf] flow tick steps over 1 ms/s in the last %.0f s (ms per second): %s", span, line.c_str());
+    for (double &ms : step_ms)
+        ms = 0;
+    steps_since = now;
+}
+
+// Once per frame: a step that holds the flow thread for over 100 ms is named in the log (first hits, then every 50th).
+void run_steps()
+{
+    double t0 = now_seconds();
+    if (!steps_since)
+        steps_since = t0;
+    for (size_t i = 0; i < STEP_COUNT; i++) {
+        STEPS[i].fn();
+        double t1 = now_seconds(), ms = (t1 - t0) * 1000.0;
+        t0 = t1;
+        step_ms[i] += ms;
+        if (ms > 100.0) {
+            uint64_t n = ++slow_steps;
+            if (n <= 10 || n % 50 == 0)
+                swofty::log("[perf] flow tick step %s took %.0f ms (slow step %llu)", STEPS[i].name, ms,
+                            static_cast<unsigned long long>(n));
+        }
+    }
+    report_steps(t0);
+}
+
+// The game runs the flow state machine several times a frame, on several threads; the steps and the on_frame
+// callbacks run on the one tick a frame that takes the frame claim.
 void flow_mid(safetyhook::Context &)
 {
     static const uint32_t probe = perf::probe("core", "flow tick (events, career poll)");
     perf::flow_tick();
-    perf::Scope p(probe);
-    // A step that holds the flow thread for over 100 ms is named in the log (first hits, then every 50th).
-    auto step = [](const char *name, void (*fn)()) {
-        double t0 = now_seconds();
-        fn();
-        double ms = (now_seconds() - t0) * 1000.0;
-        static std::mutex lock;
-        static std::map<std::string, double> total;
-        static double since = now_seconds();
-        {
-            std::lock_guard<std::mutex> g(lock);
-            total[name] += ms;
-            double span = now_seconds() - since;
-            if (span >= 60.0) {
-                std::string line;
-                for (auto &kv : total)
-                    if (kv.second / span >= 1.0) {
-                        char b[96];
-                        snprintf(b, sizeof b, "%s%s %.1f", line.empty() ? "" : ", ", kv.first.c_str(), kv.second / span);
-                        line += b;
-                    }
-                if (!line.empty())
-                    swofty::log("[perf] flow tick steps over 1 ms/s in the last %.0f s (ms per second): %s", span, line.c_str());
-                total.clear();
-                since = now_seconds();
-            }
-        }
-        static std::atomic<uint64_t> slow{0};
-        if (ms > 100.0) {
-            uint64_t n = ++slow;
-            if (n <= 10 || n % 50 == 0)
-                swofty::log("[perf] flow tick step %s took %.0f ms (slow step %llu)", name, ms, static_cast<unsigned long long>(n));
-        }
-    };
-    step("career_tick", [] { runtime::career_tick(); });
-    step("live_tick", [] { runtime::live_tick(now_seconds()); });
-    step("telemetry_tick", [] { runtime::telemetry_tick(); });
-    step("lap_rec_tick", [] { runtime::lap_rec_tick(); });
-    step("tt_bridge_tick", [] { runtime::tt_bridge_tick(); });
-    step("popup_tick", [] { runtime::popup_tick(); });
-    step("main_menu::tick", [] { runtime::main_menu::tick(); });
-    step("mfd_tick", [] { runtime::mfd_tick(); });
-    step("netplay_tick", [] { runtime::netplay_tick(); });
-    step("career_content_tick", [] { runtime::career_content_tick(); });
-    step("entitlements_tick", [] { runtime::entitlements_tick(); });
-    step("hub_tick", [] { runtime::hub_tick(); });
-    step("tyre_models_tick", [] { runtime::tyre_models_tick(); });
-    step("testagent_tick", [] { runtime::testagent_tick(); });
-    step("direct_start_tick", [] { runtime::direct_start_tick(); });
     if (!perf::frame_claim())
         return;
-    double dt = disp.tick(now_seconds());
+    double dt;
+    {
+        perf::Scope p(probe);
+        run_steps();
+        dt = disp.tick(now_seconds());
+    }
     perf::frame_release();
     static int logged;
     if (logged < 2)
