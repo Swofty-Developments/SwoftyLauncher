@@ -1000,7 +1000,7 @@ static void team_tests(const std::string &regs)
     bool pool = false;
     for (auto &scan : content::scan_all_pools(text)) {
         ids.define_pool(scan.registry, {{{scan.lo, scan.hi}}});
-        pool |= scan.registry == "team.identity" && scan.lo == 4 && scan.hi == 1023;
+        pool |= scan.registry == "team.identity" && scan.lo == 4 && scan.hi == 16382;
     }
     check(pool, "the team stat id pool starts above the table's ids");
     for (auto &p : pins)

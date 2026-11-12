@@ -73,7 +73,7 @@ struct Identity {                                  // one entrants.teams row
     std::string audio_id;                          // audio_id
     int prestige = 0;                              // prestige
     std::string nationality;                       // nationality
-    StatId stat_id = StatId::automatic;            // team ids run to 514
+    StatId stat_id = StatId::automatic;            // team ids run to 16382
     std::string team_boss;                         // team_boss: the principal, an entrants.characters label ("toto_wollf")
     Text team_base;                                // team_base: the base, a lang key or a literal (1.1)
     json::Value extra;
@@ -376,7 +376,7 @@ teams::set_logo(teams::identities["game/williams"], teams::logos["swofty.progres
 
 - **Partial.** The logo format sites (`site_Game_DriverSelect_TeamLogoFormat`, `site_Game_TeamSelect_TeamLogoFormat`) are L2 and shipped. The HUD badge builders are L1. The team record layout behind `Sess_Load_Teams` is L1, and `set_colours` waits on it.
 - **Unknown:** a single logo-key resolver (logos are formatted at several sites) and the display-name lookups behind `team.name.resolve`.
-- **Stat ids:** teams use ids up to 514, from the install's store.
+- **Stat ids:** teams use ids up to 16382 (14 bits in the game's team keys, 0x3fff = none), from the install's store.
 - **A new team row needs all 30 keys,** `story_info` included, or the game reads garbage.
 - **Side data** is found by team label. The core copies the donor's rows, relabelled, in every data group that holds one: pit times, initial cash, facilities, driver market, recognition, renown and form, primary sponsors and showroom history. Team customisation per season (suit, gloves) belongs to the wearables records, animation team data follows the vehicle, and the team icons and story standings are not copied.
 - **Constructors:** a `team.constructor` record names the team that is that constructor, the last enabled one in load order. A team reference by constructor resolves to that team's row label.
