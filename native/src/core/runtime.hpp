@@ -255,6 +255,8 @@ std::vector<CoreMixins> standings_guard_mixins();
 void standings_guard_commit();
 std::vector<CoreMixins> fe_tile_guard_mixins();
 void fe_tile_guard_commit();
+std::vector<CoreMixins> myteam_vehicle_guard_mixins();
+void myteam_vehicle_guard_commit();
 std::vector<CoreMixins> ai_corner_guard_mixins();
 void ai_corner_guard_commit();
 std::vector<CoreMixins> replay_grid_guard_mixins();
