@@ -288,6 +288,7 @@ void ready()
     netplay_drive_setup();
     testagent_setup();
     direct_start_setup();
+    load_stall_setup();
     perf::start();
 }
 

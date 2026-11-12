@@ -1102,6 +1102,37 @@ fn finds_a_crash_report_kept_in_a_session_folder() {
 }
 
 #[test]
+fn sends_load_stall_reports_from_the_game_folder_and_sessions_but_not_as_a_crash() {
+    let root = tmp("stall");
+    let (store, game) = fake_data(&root);
+    put(
+        &game.join("swofty/stall-20261112-123300.txt"),
+        "== Load stall report 1 of at most 2\n",
+    );
+    put(&game.join("swofty/stall-20261112-123130.txt"), "older\n");
+    put(&game.join("swofty/stall-20261112-123000.txt"), "oldest\n");
+    let newest = store.sessions_dir().join("20261020-090000");
+    put(&newest.join("game-logs/stall-20261020-093000.txt"), "kept\n");
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "x");
+    let names: Vec<_> = bundle.entries.iter().map(|e| e.path.clone()).collect();
+    let live: Vec<_> = names.iter().filter(|n| n.starts_with("game/stall-")).collect();
+    assert_eq!(live.len(), 2, "{names:?}");
+    assert!(
+        names.contains(&"game/stall-20261112-123300.txt".to_string()),
+        "{names:?}"
+    );
+    assert!(
+        names.contains(&"sessions/20261020-090000/game-logs/stall-20261020-093000.txt".to_string()),
+        "{names:?}"
+    );
+    assert!(
+        !names.iter().any(|n| n.starts_with("crash/")),
+        "a stall is not a crash: {names:?}"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn sends_the_career_editor_snapshot_a_game_that_cant_write_its_folder_left_in_the_data_folder() {
     let root = tmp("snapshot-kept");
     let (store, game) = fake_data(&root);

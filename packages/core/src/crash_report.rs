@@ -15,6 +15,12 @@ pub fn is_crash_name(name: &str) -> bool {
     name.starts_with("crash-") && (name.ends_with(".txt") || name.ends_with(".dmp"))
 }
 
+/// A load-stall report (`stall-<time>.txt`): every thread's stack, written beside the crash reports when a load
+/// stops moving. The game did not crash, so it is kept and sent but never read as a crash.
+pub fn is_stall_name(name: &str) -> bool {
+    name.starts_with("stall-") && name.ends_with(".txt")
+}
+
 /// The path the loader's last `crash report <path>.txt:` line names, as written: `swofty\crash-….txt` for the
 /// game folder, a full path for the data folder.
 pub fn logged_path(loader: &str) -> Option<String> {
@@ -32,14 +38,16 @@ pub fn logged_name(loader: &str) -> Option<String> {
     path.rsplit(['\\', '/']).next().map(str::to_owned)
 }
 
-/// Move the crash reports the core wrote to the data folder since `launched` into `dest`. Returns how many
-/// files moved.
+/// Move the crash and load-stall reports the core wrote to the data folder since `launched` into `dest`. Returns
+/// how many files moved.
 pub fn keep_fallback(data: &Path, dest: &Path, launched: SystemTime) -> usize {
     let dir = data.join(FALLBACK_DIR);
     let mut moved = 0;
     for e in std::fs::read_dir(&dir).into_iter().flatten().flatten() {
         let path = e.path();
-        if !is_crash_name(&e.file_name().to_string_lossy()) || !path.is_file() {
+        let name = e.file_name();
+        let name = name.to_string_lossy();
+        if !(is_crash_name(&name) || is_stall_name(&name)) || !path.is_file() {
             continue;
         }
         let fresh = std::fs::metadata(&path)
@@ -89,6 +97,15 @@ mod tests {
     }
 
     #[test]
+    fn tells_stall_reports_from_crash_reports() {
+        assert!(is_stall_name("stall-20261112-123300.txt"));
+        assert!(is_stall_name("stall-20261112-123300-2.txt"));
+        assert!(!is_stall_name("stall-20261112-123300.dmp"));
+        assert!(!is_crash_name("stall-20261112-123300.txt"));
+        assert!(!is_stall_name("crash-20261112-123300.txt"));
+    }
+
+    #[test]
     fn moves_only_this_sessions_fallback_reports() {
         let root = std::env::temp_dir().join(format!("swofty-crash-report-{}", std::process::id()));
         std::fs::remove_dir_all(&root).ok();
@@ -106,8 +123,10 @@ mod tests {
         std::fs::write(state.join("crash-20261101-125350.txt"), "new").unwrap();
         std::fs::write(state.join("crash-20261101-125350.dmp"), "MDMP").unwrap();
         std::fs::write(state.join("loader-fallback.log"), "log").unwrap();
+        std::fs::write(state.join("stall-20261101-125300.txt"), "stall").unwrap();
         let dest = root.join("sessions/one/game-logs");
-        assert_eq!(keep_fallback(&root, &dest, launched), 2);
+        assert_eq!(keep_fallback(&root, &dest, launched), 3);
+        assert!(dest.join("stall-20261101-125300.txt").is_file());
         assert!(dest.join("crash-20261101-125350.txt").is_file());
         assert!(dest.join("crash-20261101-125350.dmp").is_file());
         assert!(old.is_file() && state.join("loader-fallback.log").is_file());
