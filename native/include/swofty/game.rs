@@ -16250,6 +16250,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_CareerEventsSequencerTeamMateDriver: Binding = Binding {
+        id: "site_Game_CareerEventsSequencerTeamMateDriver",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_CareerEventsSequencerTeamMateDriverJoin: Binding = Binding {
+        id: "site_Game_CareerEventsSequencerTeamMateDriverJoin",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_CareerWizardConfirm_NextRoute: Binding = Binding {
         id: "site_Game_CareerWizardConfirm_NextRoute",
         kind: "site",
