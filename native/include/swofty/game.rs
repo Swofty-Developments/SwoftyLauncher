@@ -3217,6 +3217,8 @@ pub type Car_Register_DetachablePart_Thunk_t = unsafe extern "C" fn(
     k: f32,
 );
 pub type Car_Reset_LastFittedUpgrade_t = unsafe extern "C" fn(inst: *mut c_void);
+pub type Car_SuspensionDamage_OnCollision_t =
+    unsafe extern "C" fn(susp_damage: *mut c_void, contact: *mut c_void);
 pub type Car_Tyre_SetWearFactor_t =
     unsafe extern "C" fn(tyre_component: *mut c_void, apply_set: bool, force: u16);
 pub type Career_Add_SeasonWeekend_t = unsafe extern "C" fn(season: *mut c_void, weekend: *mut c_void) -> u64;
@@ -3932,6 +3934,11 @@ pub mod bindings {
     };
     pub const Car_SteeringWheelLeds_Update: Binding = Binding {
         id: "Car_SteeringWheelLeds_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_SuspensionDamage_OnCollision: Binding = Binding {
+        id: "Car_SuspensionDamage_OnCollision",
         kind: "func",
         status: Status::Experimental,
     };

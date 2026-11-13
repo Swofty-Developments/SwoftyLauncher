@@ -550,6 +550,9 @@
   "Car_Reset_LastFittedUpgrade": {
    "match": "0x3507f80"
   },
+  "Car_SuspensionDamage_OnCollision": {
+   "match": "0x464afa0"
+  },
   "Career_Add_SeasonWeekend": {
    "match": "0xae4ad0"
   },

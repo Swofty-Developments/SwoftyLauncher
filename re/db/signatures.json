@@ -12170,6 +12170,30 @@
    "used_by": []
   },
   {
+   "id": "car.suspension_damage_on_collision",
+   "section": ".xtls",
+   "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 8B 41 08 F6 80 30 01 00 00 01",
+   "match": "0x144654d10",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144654d10",
+   "kind": "func_start",
+   "names": [
+    "Car_SuspensionDamage_OnCollision"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "susp-collision",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
    "id": "car.create_detachable_part",
    "section": ".xtls",
    "pattern": "41 57 41 56 56 57 55 53 48 81 EC 98 0A 00 00 C5 78 29 94 24 80 0A 00 00",
