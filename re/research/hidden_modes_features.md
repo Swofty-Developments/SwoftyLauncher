@@ -8,7 +8,7 @@ Survey of game modes, editions and features that ship in `F1_25.exe` and `gameda
 
 Three layers, outermost first:
 
-1. **Engine settings** (`system/config.xml`, `system/config_sku.xml`, loaded by `Ne_Load_SystemConfigXml` 0x1443c24b0). About 960 dotted names, read through `Ne_Get_SettingBool` 0x143a43b90, `Ne_Get_SettingU32` 0x143a43240, `Ne_Config_GetString` 0x143a44700 and related getters. One of them, `ContentSet.currentContentSet` (read by `Sess_Read_CurrentContentSetSetting` 0x1413e1cd0, default empty), names the edition (content set) to use.
+1. **Engine settings** (`system/config.xml`, `system/config_sku.xml`, loaded by `Ne_Load_SystemConfigXml` 0x1443c24b0). About 960 dotted names, read through `Ne_Get_SettingBool` 0x143a43b90, `Ne_Get_SettingU32` 0x143a43240, `Ne_Config_GetString` 0x143a44700 and related getters. One of them, `ContentSet.currentContentSet` (read by `Sess_Get_CurrentContentSetName` 0x1413e1cd0, default empty; falls back to a game-DB value), names the edition (content set) to use.
 2. **Content set** (`content_sets.content_set_N`). Lists the game modes the edition offers (`available_game_modes_0.game_modes`, `.game_mode_championships`, `.game_mode_time_trials`) and holds a feature-bit row (`feature_list_0`) that `Game_Features_LoadContentSetMask` 0x1413ed470 turns into a 128-bit mask. A set inherits from its `base_content_set`.
 3. **Game mode rows** (`game_modes.ModeChampionship_N`, `game_modes.GameMode_N`). Each row has `available` (False in the DB; set at startup), `disabled`, `statId`, `game_setup_modes` and the per-mode options.
 
@@ -102,7 +102,17 @@ Bits that look like unreleased or edition-only features: `invitationals` (False 
 
 ## 5. Developer settings
 
-80 functions that read a gameplay-relevant setting and were missing from the KB are now L1 rows: `Game_Read_*Setting` when the function is small (< 0x180 bytes) and references one name, `Game_Unk_<addr>` otherwise; the notes list the settings. Plus `Ne_Load_SystemConfigXml` and `Sess_Read_CurrentContentSetSetting`. Highlights:
+69 functions that read a gameplay-relevant setting and were missing from the KB are new rows: 67 setting readers plus `Ne_Load_SystemConfigXml` and `Sess_Get_CurrentContentSetName`.
+
+How the rows were made:
+
+- **Decompiled and named:** each was decompiled in Ghidra (`re/decomp/<addr9>.c`, local only) and named by an analysis pass.
+- **Verified:** the names were checked blind by separate verifiers (`verify-hm-0..3` in `verify.tsv`).
+- **55 at L2:** verifiers agreed on these. 53 carry a byte signature and a binding (`re/promotions/2026-11-13/`).
+- **14 at L1:** 7 partial verdicts with `CORRECTION(V…)` notes and 7 whose role was not clear enough.
+- **Dropped:** 13 rows of the first L1 pass. Their "reference" was 4 bytes inside another instruction; every string reference is now checked against an instruction boundary (57 of 1278 raw hits were false).
+
+Highlights:
 
 - **Grid:** `Grid.Override`, `Grid.CarsInRow`, `Grid.RowOffset`, `Grid.StaggerOffset`, `Grid.PoleLR` (`Game_Read_GridOverrideConfig` 0x142f61640, already in the KB).
 - **Session shortcuts:** `Qualifying.full` / `.short` / `.one_shot`, `Game.SkipPreRace`, `Game.SkipIntroVideo`, `Game.SkipIntroCameras`, `Game.SkipGridRundown`, `Game.SkipWinnerSequence`, `Game.SkipRewardSequence`, `Game.IgnoreMinimumLoadingTime`.
@@ -124,231 +134,231 @@ Bits that look like unreleased or edition-only features: `invitationals` (False 
 
 ## Appendix: settings by group
 
-Every name below is referenced from code (string xref). Function names come from the KB; `?` means no KB row.
+Every name below is referenced from code (string xref checked against the instruction boundary). Function names and levels come from the KB; `?` means no KB row.
 
 ### `Game`
 
 | setting | read in |
 |---|---|
-| `Game.AlwaysVirtualiseSessionsIndividually` | Game_Unk_140bd3b30 `0x140bd3b30`, Game_Championship_VirtualiseSession `0x140bd4bc0` |
-| `Game.AutoProfile.enabled` | Game_Read_GameConfig `0x1407f7320` |
-| `Game.AutoProfile.framesToCapture` | Game_Read_GameConfig `0x1407f7320` |
-| `Game.AutoProfile.framesToWait` | Game_Read_GameConfig `0x1407f7320` |
-| `Game.Career.Online.EnableSaving` | Game_TOPLevelUI_TriggerProfileSave `0x140ff7cf0` |
-| `Game.CareerSync.DumpComponents` | Game_CareerOnlineDocumentComp_InternalSerialiseAndCalculateHash `0x140fd0990` |
-| `Game.CareerSync.DumpComponentsVerbose` | Game_CareerOnlineDocumentComp_InternalSerialiseAndCalculateHash `0x140fd0990` |
-| `Game.ChampionshipWon.ForceOn` | Game_Unk_142d54f20 `0x142d54f20` |
+| `Game.AlwaysVirtualiseSessionsIndividually` | Game_Championship_VirtualisePendingSessions `0x140bd3b30` (L2), Game_Championship_VirtualiseSession `0x140bd4bc0` (L1) |
+| `Game.AutoProfile.enabled` | Game_Read_GameConfig `0x1407f7320` (L1) |
+| `Game.AutoProfile.framesToCapture` | Game_Read_GameConfig `0x1407f7320` (L1) |
+| `Game.AutoProfile.framesToWait` | Game_Read_GameConfig `0x1407f7320` (L1) |
+| `Game.Career.Online.EnableSaving` | Game_TOPLevelUI_TriggerProfileSave `0x140ff7cf0` (L1) |
+| `Game.CareerSync.DumpComponents` | Game_CareerOnlineDocumentComp_InternalSerialiseAndCalculateHash `0x140fd0990` (L1) |
+| `Game.CareerSync.DumpComponentsVerbose` | Game_CareerOnlineDocumentComp_InternalSerialiseAndCalculateHash `0x140fd0990` (L1) |
+| `Game.ChampionshipWon.ForceOn` | Sess_ChampionshipWonDecision_Update `0x142d54f20` (L2) |
 | `Game.ClientHello` | no code reference found |
-| `Game.Context.TeamLivery` | Game_CutSceneScript_RunCommand `0x14023c600`, Game_Unk_142a9d730 `0x142a9d730`, Game_PlayerTeamModelComponent_Initialise `0x142a9f390` |
-| `Game.Context.TrackName` | Game_Unk_14020a460 `0x14020a460`, Game_GridCutSceneScript_SetupDriverTalkToPress `0x140345f60`, Game_Podium2019CutSceneScript_ChooseCutScenesToPlay `0x140356a20` +1 |
-| `Game.Context.overrideEmote` | Game_Podium2019CutSceneScript_ChooseCutScenesToPlay `0x140356a20` |
-| `Game.Context.overrideTeamLivery` | Game_CutSceneScript_RunCommand `0x14023c600`, Game_Unk_142a9d730 `0x142a9d730`, Game_PlayerTeamModelComponent_Initialise `0x142a9f390` |
-| `Game.Context.overrideTrackName` | Game_Unk_14020a460 `0x14020a460`, Game_GridCutSceneScript_SetupDriverTalkToPress `0x140345f60`, Game_Podium2019CutSceneScript_ChooseCutScenesToPlay `0x140356a20` +1 |
-| `Game.DRL.IgnoreCarSpeed` | Game_Unk_14243a840 `0x14243a840` |
-| `Game.DecalGenerationService.MandatoryMipsDefault` | Game_DecalGeneration_CreateService `0x141428060` |
-| `Game.DecalGenerationService.MandatoryMipsForLocalHumanPlayer` | Game_DecalGeneration_CreateService `0x141428060` |
-| `Game.DonutSequence.Endless` | Sess_DoughnutSequence_Update `0x142d5a150` |
-| `Game.DonutSequence.ForceOn` | Sess_DoughnutSequence_Enter `0x142d59920` |
-| `Game.DonutSequence.Vehicle` | Sess_DoughnutSequence_Enter `0x142d59920` |
-| `Game.DriverHQIntro.DriverHQIntro.ForceOn` | Game_Read_GameConfig_7 `0x1436c5ef0` |
-| `Game.DriverHQIntro.DriverRatingsMilestone.ForceOn` | Game_Read_GameConfig_7 `0x1436c5ef0` |
-| `Game.DriverHQIntro.DriverWonWorldChampionship.ForceOn` | Game_Read_GameConfig_7 `0x1436c5ef0` |
-| `Game.DriverHQIntro.NewSeasonEstablishingCutscene.ForceOn` | Game_Read_GameConfig_7 `0x1436c5ef0` |
-| `Game.EnableLoading` | Game_Read_GameConfig_6 `0x14365a8b0` |
+| `Game.Context.TeamLivery` | Game_CutSceneScript_RunCommand `0x14023c600` (L2), Game_LiveryModel_Init `0x142a9d730` (L1), Game_PlayerTeamModelComponent_Initialise `0x142a9f390` (L1) |
+| `Game.Context.TrackName` | Game_CameraHelicopter_Reset `0x14020a460` (L2), Game_GridCutSceneScript_SetupDriverTalkToPress `0x140345f60` (L2), Game_Podium2019CutSceneScript_ChooseCutScenesToPlay `0x140356a20` (L1) +1 |
+| `Game.Context.overrideEmote` | Game_Podium2019CutSceneScript_ChooseCutScenesToPlay `0x140356a20` (L1) |
+| `Game.Context.overrideTeamLivery` | Game_CutSceneScript_RunCommand `0x14023c600` (L2), Game_LiveryModel_Init `0x142a9d730` (L1), Game_PlayerTeamModelComponent_Initialise `0x142a9f390` (L1) |
+| `Game.Context.overrideTrackName` | Game_CameraHelicopter_Reset `0x14020a460` (L2), Game_GridCutSceneScript_SetupDriverTalkToPress `0x140345f60` (L2), Game_Podium2019CutSceneScript_ChooseCutScenesToPlay `0x140356a20` (L1) +1 |
+| `Game.DRL.IgnoreCarSpeed` | Game_DRLSystem_ResolveDependencies `0x14243a840` (L2) |
+| `Game.DecalGenerationService.MandatoryMipsDefault` | Game_DecalGeneration_CreateService `0x141428060` (L1) |
+| `Game.DecalGenerationService.MandatoryMipsForLocalHumanPlayer` | Game_DecalGeneration_CreateService `0x141428060` (L1) |
+| `Game.DonutSequence.Endless` | Sess_DoughnutSequence_Update `0x142d5a150` (L2) |
+| `Game.DonutSequence.ForceOn` | Sess_DoughnutSequence_Enter `0x142d59920` (L2) |
+| `Game.DonutSequence.Vehicle` | Sess_DoughnutSequence_Enter `0x142d59920` (L2) |
+| `Game.DriverHQIntro.DriverHQIntro.ForceOn` | Game_Read_GameConfig_7 `0x1436c5ef0` (L1) |
+| `Game.DriverHQIntro.DriverRatingsMilestone.ForceOn` | Game_Read_GameConfig_7 `0x1436c5ef0` (L1) |
+| `Game.DriverHQIntro.DriverWonWorldChampionship.ForceOn` | Game_Read_GameConfig_7 `0x1436c5ef0` (L1) |
+| `Game.DriverHQIntro.NewSeasonEstablishingCutscene.ForceOn` | Game_Read_GameConfig_7 `0x1436c5ef0` (L1) |
+| `Game.EnableLoading` | Game_Read_GameConfig_6 `0x14365a8b0` (L1) |
 | `Game.EnableMarshalLightShaders` | no code reference found |
 | `Game.EnablePitExitLightShdaers` | no code reference found |
 | `Game.EnablePitExitLights` | no code reference found |
-| `Game.EnableRaceUI` | Sess_State_OnStateEnter `0x1436f6740` |
-| `Game.EnableSaveGame` | Game_Read_GameConfig `0x1407f7320`, Game_Read_GameConfig_6 `0x14365a8b0` |
-| `Game.EnableSaveSystemInSkipFE` | Game_Read_GameConfig_6 `0x14365a8b0` |
-| `Game.EnableSaving` | Game_Read_GameConfig_6 `0x14365a8b0` |
-| `Game.F1World.ForceFanzoneChoices` | Game_Unk_14170c8c0 `0x14170c8c0`, Game_Read_GameConfig_2 `0x1418cfc90`, Game_Read_GameConfig_3 `0x141b19e80` |
-| `Game.F1World.Ranked.AutoUpdateCadence` | Game_Unk_142747e00 `0x142747e00` |
-| `Game.F1World.SkipFanzoneChoices` | Game_Read_GameConfig_2 `0x1418cfc90`, Game_Read_GameConfig_3 `0x141b19e80` |
-| `Game.F1World.SkipOnboarding` | Game_Read_GameF1WorldSkipOnboardingSetting `0x1427447d0` |
-| `Game.ForceTrackReload` | Sess_Loader_UnloadSession `0x142d48040`, Game_Unk_142d4b4c0 `0x142d4b4c0`, Game_StateSession_OnStateExit `0x1436f8340` |
+| `Game.EnableRaceUI` | Sess_State_OnStateEnter `0x1436f6740` (L2) |
+| `Game.EnableSaveGame` | Game_Read_GameConfig `0x1407f7320` (L1), Game_Read_GameConfig_6 `0x14365a8b0` (L1) |
+| `Game.EnableSaveSystemInSkipFE` | Game_Read_GameConfig_6 `0x14365a8b0` (L1) |
+| `Game.EnableSaving` | Game_Read_GameConfig_6 `0x14365a8b0` (L1) |
+| `Game.F1World.ForceFanzoneChoices` | Game_F1World_AssignDefaultFanzoneChoices `0x14170c8c0` (L2), Game_Read_GameConfig_2 `0x1418cfc90` (L1), Game_Read_GameConfig_3 `0x141b19e80` (L1) |
+| `Game.F1World.Ranked.AutoUpdateCadence` | Game_F1WRankedComponent_Init `0x142747e00` (L2) |
+| `Game.F1World.SkipFanzoneChoices` | Game_Read_GameConfig_2 `0x1418cfc90` (L1), Game_Read_GameConfig_3 `0x141b19e80` (L1) |
+| `Game.F1World.SkipOnboarding` | Game_F1World_ApplySkipOnboarding `0x1427447d0` (L2) |
+| `Game.ForceTrackReload` | Sess_Loader_UnloadSession `0x142d48040` (L2), Sess_Loader_UpdateFrontendLoad `0x142d4b4c0` (L1), Game_StateSession_OnStateExit `0x1436f8340` (L2) |
 | `Game.GameSessionActivity` | no code reference found |
-| `Game.IgnoreMinimumLoadingTime` | Sess_Loader_RequestTrackLoad `0x142da7870`, Game_Read_GameIgnoreMinimumLoadingTimeSetting `0x1436f9890`, Game_Unk_1436fb5e0 `0x1436fb5e0` |
+| `Game.IgnoreMinimumLoadingTime` | Sess_Loader_RequestTrackLoad `0x142da7870` (L2), Sess_SessionTransition_OnStateUpdate `0x1436f9890` (L2), Sess_StoryHub_OnStateEnter `0x1436fb5e0` (L2) |
 | `Game.LoadForever` | no code reference found |
-| `Game.NegotiationsAfterEveryWeekend` | Game_Unk_14126a1a0 `0x14126a1a0` |
-| `Game.ReturnToGarageTimeLimit` | Game_Unk_1424ac650 `0x1424ac650` |
+| `Game.NegotiationsAfterEveryWeekend` | Game_Unk_14126a1a0 `0x14126a1a0` (L1) |
+| `Game.ReturnToGarageTimeLimit` | Game_Check_ReturnToGarageTimeLimit `0x1424ac650` (L2) |
 | `Game.SkipCamSequence` | no code reference found |
-| `Game.SkipGridRundown` | Game_GridRundown_ShouldPlay `0x140ac6b30` |
+| `Game.SkipGridRundown` | Game_GridRundown_ShouldPlay `0x140ac6b30` (L1) |
 | `Game.SkipIntroCameras` | no code reference found |
-| `Game.SkipIntroVideo` | Game_Unk_142d6cc30 `0x142d6cc30` |
-| `Game.SkipPreRace` | Game_Unk_142d78c80 `0x142d78c80`, Sess_PreRaceGridState_OnEnter `0x142d81270` |
-| `Game.SkipRewardSequence` | Game_CVar_Ctor_SkipRewardSequence `0x142c747f0` |
+| `Game.SkipIntroVideo` | Sess_IntroVideo_ParseParams `0x142d6cc30` (L2) |
+| `Game.SkipPreRace` | Sess_PlayCutScene_ParseParams `0x142d78c80` (L2), Sess_PreRaceGridState_OnEnter `0x142d81270` (L2) |
+| `Game.SkipRewardSequence` | Game_CVar_Ctor_SkipRewardSequence `0x142c747f0` (L1) |
 | `Game.SkipTalkingPoints` | no code reference found |
 | `Game.SkipWinnerSequence` | no code reference found |
 | `Game.SummonToGameSessionActivity` | no code reference found |
-| `Game.Thumbnails.driverPreloadTimeoutInSeconds` | Game_Read_GameConfig_4 `0x142e22c60` |
-| `Game.Thumbnails.enableThumbnailGeneration` | Game_Read_GameConfig_4 `0x142e22c60` |
-| `Game.Thumbnails.preloadTimeoutInSeconds` | Game_Read_GameConfig_4 `0x142e22c60` |
+| `Game.Thumbnails.driverPreloadTimeoutInSeconds` | Game_Read_GameConfig_4 `0x142e22c60` (L1) |
+| `Game.Thumbnails.enableThumbnailGeneration` | Game_Read_GameConfig_4 `0x142e22c60` (L1) |
+| `Game.Thumbnails.preloadTimeoutInSeconds` | Game_Read_GameConfig_4 `0x142e22c60` (L1) |
 | `Game.Tutorials.SkipVideoTutorials` | no code reference found |
-| `Game.Tyres.WarmUpSetsPerCompound` | Game_TyreAllocation_ValidateWarmUpSets `0x140bce940` |
-| `Game.UseSMSSteer` | Car_Create_F1AssistsSystem `0x1447546c0` |
-| `Game.VehicleDamage.tyres` | Game_Read_VehicleConfig `0x14463a800` |
-| `Game.VehicleSpawning.EnableMemorySnapshots` | Game_Read_GameConfig_5 `0x142f3a5d0` |
-| `Game.VehicleSpawning.MaxConcurrentSpawns` | Game_Read_GameConfig_5 `0x142f3a5d0` |
-| `Game.VehicleSpawning.VehicleTimeout` | Game_Read_GameConfig_5 `0x142f3a5d0` |
-| `Game.WeekendSessionManagerInFirstSession` | Sess_WeekendManager_PrepareTrackLoad `0x142409db0` |
-| `Game.driverSelectOverride` | Game_Unk_14245a0d0 `0x14245a0d0` |
-| `Game.ecaEnabled` | Game_Unk_14244fe70 `0x14244fe70` |
-| `Game.equalPerformance` | Game_Read_GameEqualPerformanceSetting `0x1407e1d90` |
-| `Game.forceIgnoreCareerDriverInTT` | Game_Unk_142933c70 `0x142933c70` |
-| `Game.setup_mode` | Game_Unk_1407dfb60 `0x1407dfb60` |
-| `Game.suppressWarnings` | Game_Read_GameConfig `0x1407f7320` |
-| `Game.teamPositionOverride` | Game_Unk_142933c70 `0x142933c70` |
-| `Game.teamSelectOverride` | Sess_Entrant_BuildCandidate `0x1424a15d0` |
-| `Game.team_name` | Game_Unk_1407dfda0 `0x1407dfda0` |
-| `Game.time_of_day` | Game_Unk_1407e1040 `0x1407e1040` |
-| `Game.vehicleSelectOverride` | Sess_Collect_FilteredEntrants `0x1424a1c20` |
-| `Game.weather` | Game_Unk_1407e1470 `0x1407e1470` |
+| `Game.Tyres.WarmUpSetsPerCompound` | Game_TyreAllocation_ValidateWarmUpSets `0x140bce940` (L1) |
+| `Game.UseSMSSteer` | Car_Create_F1AssistsSystem `0x1447546c0` (L2) |
+| `Game.VehicleDamage.tyres` | Game_Read_VehicleConfig `0x14463a800` (L1) |
+| `Game.VehicleSpawning.EnableMemorySnapshots` | Game_Read_GameConfig_5 `0x142f3a5d0` (L1) |
+| `Game.VehicleSpawning.MaxConcurrentSpawns` | Game_Read_GameConfig_5 `0x142f3a5d0` (L1) |
+| `Game.VehicleSpawning.VehicleTimeout` | Game_Read_GameConfig_5 `0x142f3a5d0` (L1) |
+| `Game.WeekendSessionManagerInFirstSession` | Sess_WeekendManager_PrepareTrackLoad `0x142409db0` (L2) |
+| `Game.driverSelectOverride` | Sess_Build_SelectableDriverList `0x14245a0d0` (L2) |
+| `Game.ecaEnabled` | Game_Eca_OnMessageGameModeChanged `0x14244fe70` (L2) |
+| `Game.equalPerformance` | Game_Apply_PresetEqualPerformance `0x1407e1d90` (L2) |
+| `Game.forceIgnoreCareerDriverInTT` | Game_Unk_142933c70 `0x142933c70` (L1) |
+| `Game.setup_mode` | Game_Apply_PresetSetupMode `0x1407dfb60` (L2) |
+| `Game.suppressWarnings` | Game_Read_GameConfig `0x1407f7320` (L1) |
+| `Game.teamPositionOverride` | Game_Unk_142933c70 `0x142933c70` (L1) |
+| `Game.teamSelectOverride` | Sess_Entrant_BuildCandidate `0x1424a15d0` (L2) |
+| `Game.team_name` | Game_Apply_PresetTeamName `0x1407dfda0` (L2) |
+| `Game.time_of_day` | Game_Apply_PresetTimeOfDay `0x1407e1040` (L2) |
+| `Game.vehicleSelectOverride` | Sess_Collect_FilteredEntrants `0x1424a1c20` (L2) |
+| `Game.weather` | Game_Apply_PresetWeather `0x1407e1470` (L2) |
 
 ### `UI`
 
 | setting | read in |
 |---|---|
-| `UI.ChallengeCareer.shouldValidateTracks` | Game_Unk_141fc0740 `0x141fc0740` |
+| `UI.ChallengeCareer.shouldValidateTracks` | Game_ChallengeCareer_BuildTrackTiles `0x141fc0740` (L2) |
 | `UI.DemoEvent` | no code reference found |
-| `UI.DisableMessages` | Game_Unk_1442a3070 `0x1442a3070` |
+| `UI.DisableMessages` | Ui_DataDrivenMessage_Init `0x1442a3070` (L2) |
 | `UI.DisplayWatermark` | no code reference found |
-| `UI.EnableAttract` | Game_Unk_1419f4b20 `0x1419f4b20`, Game_Unk_141e9d630 `0x141e9d630` |
+| `UI.EnableAttract` | Game_AttractVideoVM_OnScreenActivated `0x1419f4b20` (L1), Game_TitleScreenVM_OnScreenActivated `0x141e9d630` (L2) |
 | `UI.EnableCredits` | no code reference found |
-| `UI.EnableMouseSupport` | Game_Read_UIConfig `0x1444a1b30` |
-| `UI.ForceFanZoneSeasonResults` | Game_FanZoneSeasonResults_Exit `0x14238da40`, Game_Unk_145127550 `0x145127550`, Game_Unk_14536f23c `0x14536f23c` |
-| `UI.IsTextProcessorEnabled` | Game_Read_UIConfig `0x1444a1b30` |
+| `UI.EnableMouseSupport` | Game_Read_UIConfig `0x1444a1b30` (L1) |
+| `UI.ForceFanZoneSeasonResults` | Game_FanZoneSeasonResults_Exit `0x14238da40` (L2) |
+| `UI.IsTextProcessorEnabled` | Game_Read_UIConfig `0x1444a1b30` (L1) |
 | `UI.L` | no code reference found |
-| `UI.MovieBuild` | Game_Read_UIMovieBuildSetting `0x143034b20` |
-| `UI.PreviewEvent` | Game_Read_AudioConfig `0x140a249f0`, Game_Unk_141758910 `0x141758910`, Game_Unk_141a10d50 `0x141a10d50` +5 |
-| `UI.RoundSwipeAnimation` | Game_Unk_1437f47d0 `0x1437f47d0` |
-| `UI.ShowInProgressRoute` | Game_Read_UIConfig `0x1444a1b30` |
-| `UI.ShowLoadingTips` | Game_LoadingScreenVM_OnScreenActivated `0x141ca43e0`, Game_Unk_142bb74b0 `0x142bb74b0` |
-| `UI.SkipFanZoneSeasonResults` | Game_FanZoneSeasonResults_Exit `0x14238da40` |
-| `UI.TextEngine` | Game_Read_UIConfig `0x1444a1b30` |
-| `UI.TextProcessorAffectsRTLLanguagesOnly` | Game_Unk_142e106f0 `0x142e106f0`, Game_Read_UIConfig `0x1444a1b30` |
+| `UI.MovieBuild` | Game_Read_UIMovieBuildSetting `0x143034b20` (L2) |
+| `UI.PreviewEvent` | Game_Read_AudioConfig `0x140a249f0` (L1), Ui_Init_CarDriverTeamSelectors `0x141758910` (L2), Game_CareerContinueDriver_StartNewCareer `0x141a10d50` (L2) +5 |
+| `UI.RoundSwipeAnimation` | Ui_F1CsElement_Init `0x1437f47d0` (L1) |
+| `UI.ShowInProgressRoute` | Game_Read_UIConfig `0x1444a1b30` (L1) |
+| `UI.ShowLoadingTips` | Game_LoadingScreenVM_OnScreenActivated `0x141ca43e0` (L2), Game_PauseAvailabilityVM_OnActivate `0x142bb74b0` (L2) |
+| `UI.SkipFanZoneSeasonResults` | Game_FanZoneSeasonResults_Exit `0x14238da40` (L2) |
+| `UI.TextEngine` | Game_Read_UIConfig `0x1444a1b30` (L1) |
+| `UI.TextProcessorAffectsRTLLanguagesOnly` | Game_Read_UIConfig `0x1444a1b30` (L1) |
 | `UI.UnicodePlurals` | no code reference found |
-| `UI.UseKeyboardOnlyIconFont` | Game_Read_GameVersionNumberConfig `0x1437d4130` |
-| `UI.defaultTrack` | Game_Read_UIDefaultTrackSetting `0x1438520f0` |
-| `UI.overrideMainMenuState` | Game_FEHomeViewModel_OnScreenActivated `0x141bb17f0` |
-| `UI.skipDLCUpsell` | Game_Unk_141a25dd0 `0x141a25dd0`, Game_Unk_141a2d460 `0x141a2d460`, Game_Unk_141a5df70 `0x141a5df70` +2 |
-| `UI.skipFEFullPlatformLoginFlowEnabled` | Game_GhostlapTrace_OnLeaderboardEntryRead `0x142fa53c0` |
-| `UI.skipFirstTimeBoot` | Game_Unk_141bb7bf0 `0x141bb7bf0`, Game_SplashTransitionViewModel_OnScreenActivated `0x141e9b9f0`, FeFlow_Recalculate_TransitionState `0x1436d1500` |
+| `UI.UseKeyboardOnlyIconFont` | Game_Read_GameVersionNumberConfig `0x1437d4130` (L1) |
+| `UI.defaultTrack` | Game_UITrack_Select_DefaultTrack `0x1438520f0` (L2) |
+| `UI.overrideMainMenuState` | Game_FEHomeViewModel_OnScreenActivated `0x141bb17f0` (L1) |
+| `UI.skipDLCUpsell` | Game_CareerWizardAddonDrivers_HandleChoice `0x141a25dd0` (L2), Game_MyTeamTeamIcons_HandleChoice `0x141a2d460` (L1), Game_DriverCareerDriverSelect_HandleCommand `0x141a5df70` (L1) +2 |
+| `UI.skipFEFullPlatformLoginFlowEnabled` | no code reference found |
+| `UI.skipFirstTimeBoot` | Game_FrontendTransitionVM_OnScreenActivated `0x141bb7bf0` (L2), Game_SplashTransitionViewModel_OnScreenActivated `0x141e9b9f0` (L1), FeFlow_Recalculate_TransitionState `0x1436d1500` (L2) |
 
 ### `Replay`
 
 | setting | read in |
 |---|---|
-| `Replay.FullRaceReplay.Enabled` | Game_Unk_142c45070 `0x142c45070` |
-| `Replay.disable_onboarding_tutorials` | Game_Unk_140f39ce0 `0x140f39ce0`, Game_Read_ReplayConfig `0x142c04a30` |
-| `Replay.force_advanced_replay_ui` | Game_Read_ReplayConfig `0x142c04a30` |
-| `Replay.reset_onboarding_flags` | Game_Read_ReplayConfig `0x142c04a30` |
+| `Replay.FullRaceReplay.Enabled` | Game_FullRaceReplaySystem_Init `0x142c45070` (L2) |
+| `Replay.disable_onboarding_tutorials` | Game_Read_ReplayConfig `0x142c04a30` (L1) |
+| `Replay.force_advanced_replay_ui` | Game_Read_ReplayConfig `0x142c04a30` (L1) |
+| `Replay.reset_onboarding_flags` | Game_Read_ReplayConfig `0x142c04a30` (L1) |
 
 ### `PhotoMode`
 
 | setting | read in |
 |---|---|
-| `PhotoMode.allow360VideosWithAnyReplayDuration` | Game_Read_PhotoModeConfig `0x141cea5d0` |
-| `PhotoMode.allowAllWeatherChanges` | Game_Read_PhotoModeConfig `0x141cea5d0` |
-| `PhotoMode.allowPhotoModeInPitlane` | Game_NetworkTransport_KickConnection `0x14406fa70` |
+| `PhotoMode.allow360VideosWithAnyReplayDuration` | Game_Read_PhotoModeConfig `0x141cea5d0` (L1) |
+| `PhotoMode.allowAllWeatherChanges` | Game_Read_PhotoModeConfig `0x141cea5d0` (L1) |
+| `PhotoMode.allowPhotoModeInPitlane` | no code reference found |
 | `PhotoMode.cameraCollisionAvoidance` | no code reference found |
 | `PhotoMode.cameraLockedToBoundingBoxAroundCar` | no code reference found |
 | `PhotoMode.cameraLockedToHeightAboveTrack` | no code reference found |
 | `PhotoMode.canPositionCars` | no code reference found |
-| `PhotoMode.debugNum360VideoFramesToStopAfter` | Game_Unk_142bcd750 `0x142bcd750` |
-| `PhotoMode.devEnabled` | Game_Read_PhotoModeConfig `0x141cea5d0` |
-| `PhotoMode.showCaptureTypeMenuOptions` | Game_Read_PhotoModeConfig `0x141cea5d0` |
-| `PhotoMode.showLogoPositionOffOption` | Game_Read_PhotoModeConfig `0x141cea5d0` |
+| `PhotoMode.debugNum360VideoFramesToStopAfter` | Game_PhotoMode_InitDependencies `0x142bcd750` (L2) |
+| `PhotoMode.devEnabled` | Game_Read_PhotoModeConfig `0x141cea5d0` (L1) |
+| `PhotoMode.showCaptureTypeMenuOptions` | Game_Read_PhotoModeConfig `0x141cea5d0` (L1) |
+| `PhotoMode.showLogoPositionOffOption` | Game_Read_PhotoModeConfig `0x141cea5d0` (L1) |
 
 ### `DevSessionDataContract`
 
 | setting | read in |
 |---|---|
-| `DevSessionDataContract.ChampionshipComponentEnabled` | Sess_DevSession_ReadChampionshipComponentEnabled `0x1409995c0`, Game_Unk_140affe60 `0x140affe60`, Sess_DevSession_Apply `0x141125e80` |
-| `DevSessionDataContract.Entrants.entrant_list` | ? `0x1407a38e0`, Sess_DevSession_Apply `0x141125e80` |
-| `DevSessionDataContract.ForceStaggeredStart` | Sess_Build_AiSystem `0x1405ff750` |
-| `DevSessionDataContract.Game.DefaultEntrantGarageOverrides` | Game_Read_DevSessionDataContractEntrantsConfig `0x141127eb0` |
-| `DevSessionDataContract.Game.entrant_setup_mode` | Sess_PitStopUpdateJob_Update `0x1403c06a0`, Sess_DevSession_Apply `0x141125e80` |
-| `DevSessionDataContract.Game.equalPerformance` | Game_Unk_140ab7720 `0x140ab7720`, Sess_DevSession_Apply `0x141125e80` |
-| `DevSessionDataContract.Game.laps` | Asset_Load_DevSessionWorlds `0x141124b30` |
-| `DevSessionDataContract.Game.race_length` | Asset_Load_DevSessionWorlds `0x141124b30` |
-| `DevSessionDataContract.Game.sessionLengthInSeconds` | Asset_Load_DevSessionWorlds `0x141124b30` |
-| `DevSessionDataContract.Game.session_id` | Sess_DevSession_Apply `0x141125e80` |
-| `DevSessionDataContract.Game.setup_mode` | Sess_DevSession_Apply `0x141125e80` |
-| `DevSessionDataContract.Track.clear_extra_worlds` | Asset_Load_DevSessionWorlds `0x141124b30` |
-| `DevSessionDataContract.Track.layer` | Sess_DevSession_Apply `0x141125e80` |
-| `DevSessionDataContract.Track.list` | Sess_DevSession_Apply `0x141125e80` |
-| `DevSessionDataContract.Track.name` | Sess_DevSession_Apply `0x141125e80`, Game_Read_DevSessionDataContractTrackNameSetting `0x143853ef0` |
-| `DevSessionDataContract.Track.worldAssetGroup` | Sess_DevSession_Apply `0x141125e80` |
+| `DevSessionDataContract.ChampionshipComponentEnabled` | Sess_DevSession_ReadChampionshipComponentEnabled `0x1409995c0` (L2), Game_Unk_140affe60 `0x140affe60` (L1), Sess_DevSession_Apply `0x141125e80` (L2) |
+| `DevSessionDataContract.Entrants.entrant_list` | ? `0x1407a38e0`, Sess_DevSession_Apply `0x141125e80` (L2) |
+| `DevSessionDataContract.ForceStaggeredStart` | Sess_Build_AiSystem `0x1405ff750` (L2) |
+| `DevSessionDataContract.Game.DefaultEntrantGarageOverrides` | Game_Read_DevSessionDataContractEntrantsConfig `0x141127eb0` (L1) |
+| `DevSessionDataContract.Game.entrant_setup_mode` | Sess_DevSession_Apply `0x141125e80` (L2) |
+| `DevSessionDataContract.Game.equalPerformance` | Sess_DevSession_Apply `0x141125e80` (L2) |
+| `DevSessionDataContract.Game.laps` | Asset_Load_DevSessionWorlds `0x141124b30` (L2) |
+| `DevSessionDataContract.Game.race_length` | Asset_Load_DevSessionWorlds `0x141124b30` (L2) |
+| `DevSessionDataContract.Game.sessionLengthInSeconds` | Asset_Load_DevSessionWorlds `0x141124b30` (L2) |
+| `DevSessionDataContract.Game.session_id` | Sess_DevSession_Apply `0x141125e80` (L2) |
+| `DevSessionDataContract.Game.setup_mode` | Sess_DevSession_Apply `0x141125e80` (L2) |
+| `DevSessionDataContract.Track.clear_extra_worlds` | Asset_Load_DevSessionWorlds `0x141124b30` (L2) |
+| `DevSessionDataContract.Track.layer` | Sess_DevSession_Apply `0x141125e80` (L2) |
+| `DevSessionDataContract.Track.list` | Sess_DevSession_Apply `0x141125e80` (L2) |
+| `DevSessionDataContract.Track.name` | Sess_DevSession_Apply `0x141125e80` (L2), Game_UITrack_Apply_DevContractTrack `0x143853ef0` (L2) |
+| `DevSessionDataContract.Track.worldAssetGroup` | Sess_DevSession_Apply `0x141125e80` (L2) |
 
 ### `ContentSet`
 
 | setting | read in |
 |---|---|
-| `ContentSet.currentContentSet` | Sess_Read_CurrentContentSetSetting `0x1413e1cd0` |
+| `ContentSet.currentContentSet` | Sess_Get_CurrentContentSetName `0x1413e1cd0` (L2) |
 
 ### `Grid`
 
 | setting | read in |
 |---|---|
-| `Grid.CarsInRow` | Game_Read_GridConfig `0x142f62120` |
-| `Grid.Override` | Game_Read_GridOverrideConfig `0x142f61640` |
-| `Grid.PoleLR` | Game_Read_GridConfig `0x142f62120` |
-| `Grid.RowOffset` | Game_Read_GridConfig `0x142f62120` |
-| `Grid.StaggerOffset` | Game_Read_GridConfig `0x142f62120` |
+| `Grid.CarsInRow` | Game_Read_GridConfig `0x142f62120` (L1) |
+| `Grid.Override` | Game_Read_GridOverrideConfig `0x142f61640` (L1) |
+| `Grid.PoleLR` | Game_Read_GridConfig `0x142f62120` (L1) |
+| `Grid.RowOffset` | Game_Read_GridConfig `0x142f62120` (L1) |
+| `Grid.StaggerOffset` | Game_Read_GridConfig `0x142f62120` (L1) |
 
 ### `Qualifying`
 
 | setting | read in |
 |---|---|
-| `Qualifying.full` | Game_Read_QualifyingConfig `0x142e44b50` |
-| `Qualifying.one_shot` | Game_Read_QualifyingConfig `0x142e44b50` |
-| `Qualifying.short` | Game_Read_QualifyingConfig `0x142e44b50` |
+| `Qualifying.full` | Game_Read_QualifyingConfig `0x142e44b50` (L1) |
+| `Qualifying.one_shot` | Game_Read_QualifyingConfig `0x142e44b50` (L1) |
+| `Qualifying.short` | Game_Read_QualifyingConfig `0x142e44b50` (L1) |
 
 ### `VTE`
 
 | setting | read in |
 |---|---|
-| `VTE.Sessions.override` | Game_Read_VTEConfig `0x142f7f7b0` |
-| `VTE.enabled` | Game_Read_VteEnabled `0x1407972c0`, Game_Read_GameConfig `0x1407f7320`, Game_Read_GridOverrideConfig `0x142f61640` +2 |
-| `VTE.imgui` | Game_Read_VTEConfig `0x142f7f7b0` |
+| `VTE.Sessions.override` | Game_Read_VTEConfig `0x142f7f7b0` (L1) |
+| `VTE.enabled` | Game_Read_VteEnabled `0x1407972c0` (L1), Game_Read_GameConfig `0x1407f7320` (L1), Game_Read_GridOverrideConfig `0x142f61640` (L1) +2 |
+| `VTE.imgui` | Game_Read_VTEConfig `0x142f7f7b0` (L1) |
 
 ### `Testing`
 
 | setting | read in |
 |---|---|
-| `Testing.EnableSmokeTest` | Render_Gfx_BuildConfigObject `0x140104f70`, Game_ModeChampionship_Build `0x1407d2820`, Game_Unk_1407fd8d0 `0x1407fd8d0` +7 |
-| `Testing.OverrideGraphicsPreset` | Game_Application_InitialiseHardwareSettings `0x1443c4fa0` |
+| `Testing.EnableSmokeTest` | Render_Gfx_BuildConfigObject `0x140104f70` (L1), Game_ModeChampionship_Build `0x1407d2820` (L1), Game_Game_HandleInterruptEvent `0x1407fd8d0` (L2) +7 |
+| `Testing.OverrideGraphicsPreset` | Game_Application_InitialiseHardwareSettings `0x1443c4fa0` (L1) |
 
 ### `Story`
 
 | setting | read in |
 |---|---|
 | `Story.disableCinematicCinemascope` | no code reference found |
-| `Story.forcedTitleUpdateValue` | Game_Read_StoryForcedTitleUpdateValueSetting `0x141869690` |
+| `Story.forcedTitleUpdateValue` | Game_Read_StoryForcedTitleUpdateValueSetting `0x141869690` (L2) |
 
 ### `SafetyCar`
 
 | setting | read in |
 |---|---|
-| `SafetyCar.noGhost` | Game_Unk_142f1b700 `0x142f1b700` |
+| `SafetyCar.noGhost` | Game_VehicleGhost_Init `0x142f1b700` (L1) |
 
 ### `DebugCamera`
 
 | setting | read in |
 |---|---|
-| `DebugCamera.enableDpadCommands` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
-| `DebugCamera.fov` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
-| `DebugCamera.invertVerticalLook` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
-| `DebugCamera.quickSpeedMultiplier` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
+| `DebugCamera.enableDpadCommands` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
+| `DebugCamera.fov` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
+| `DebugCamera.invertVerticalLook` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
+| `DebugCamera.quickSpeedMultiplier` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
 | `DebugCamera.shake.isActive` | no code reference found |
 | `DebugCamera.shake.positionLimitsInMetres.x` | no code reference found |
 | `DebugCamera.shake.positionLimitsInMetres.y` | no code reference found |
 | `DebugCamera.shake.positionLimitsInMetres.z` | no code reference found |
-| `DebugCamera.speedMultiplier` | Game_Read_VideoCaptureConfig `0x140ad22a0`, Game_Unk_1446690f0 `0x1446690f0` |
+| `DebugCamera.speedMultiplier` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
 | `DebugCamera.wobble.isActive` | no code reference found |
-| `DebugCamera.wobble.overallSpeedMultipler` | Render_Gfx_CreateTrackConstantsAndPuddleBuffers `0x1447889a0` |
-| `DebugCamera.wobble.rotationLimitsInDegrees.x` | ? `0x144e81953` |
+| `DebugCamera.wobble.overallSpeedMultipler` | no code reference found |
+| `DebugCamera.wobble.rotationLimitsInDegrees.x` | no code reference found |
 | `DebugCamera.wobble.rotationLimitsInDegrees.y` | no code reference found |
 | `DebugCamera.wobble.rotationLimitsInDegrees.z` | no code reference found |
 | `DebugCamera.wobble.rotationSpeedMultipliers.x` | no code reference found |
@@ -359,173 +369,173 @@ Every name below is referenced from code (string xref). Function names come from
 
 | setting | read in |
 |---|---|
-| `DebugOSD.DisplayFPSonSpeedo` | Game_Unk_141d5d910 `0x141d5d910` |
+| `DebugOSD.DisplayFPSonSpeedo` | Game_HudVM_ResolveSystems `0x141d5d910` (L2) |
 | `DebugOSD.DisplayResOnERS` | no code reference found |
-| `DebugOSD.GameInputModule.showInputProviders` | Game_Read_LeadPlayerConfig_2 `0x142a733f0` |
+| `DebugOSD.GameInputModule.showInputProviders` | Game_Read_LeadPlayerConfig_2 `0x142a733f0` (L1) |
 
 ### `VideoCapture`
 
 | setting | read in |
 |---|---|
-| `VideoCapture.enabled` | Game_Read_VideoCaptureConfig `0x140ad22a0`, Ne_InputSystem_Init `0x14442f0c0`, Game_Unk_1445d54e0 `0x1445d54e0` |
-| `VideoCapture.farMax` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
-| `VideoCapture.farMin` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
-| `VideoCapture.fovMax` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
-| `VideoCapture.fovMin` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
-| `VideoCapture.nearMax` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
-| `VideoCapture.nearMin` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
-| `VideoCapture.rotationSpeedMax` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
-| `VideoCapture.rotationSpeedMin` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
-| `VideoCapture.translationSpeedMax` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
-| `VideoCapture.translationSpeedMin` | Game_Read_VideoCaptureConfig `0x140ad22a0` |
+| `VideoCapture.enabled` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1), Ne_InputSystem_Init `0x14442f0c0` (L2), Game_ReplaySystem_ReadDbSettings `0x1445d54e0` (L2) |
+| `VideoCapture.farMax` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
+| `VideoCapture.farMin` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
+| `VideoCapture.fovMax` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
+| `VideoCapture.fovMin` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
+| `VideoCapture.nearMax` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
+| `VideoCapture.nearMin` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
+| `VideoCapture.rotationSpeedMax` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
+| `VideoCapture.rotationSpeedMin` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
+| `VideoCapture.translationSpeedMax` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
+| `VideoCapture.translationSpeedMin` | Game_Read_VideoCaptureConfig `0x140ad22a0` (L1) |
 
 ### `VideoExport`
 
 | setting | read in |
 |---|---|
-| `VideoExport.Enabled` | Game_Unk_1444b1130 `0x1444b1130` |
+| `VideoExport.Enabled` | Game_VideoExportModule_Initialise `0x1444b1130` (L2) |
 
 ### `EnvArtMode`
 
 | setting | read in |
 |---|---|
-| `EnvArtMode.enabled` | Game_Unk_142d80950 `0x142d80950`, Game_Unk_1436e5850 `0x1436e5850` |
+| `EnvArtMode.enabled` | Sess_PreRace_ResolveComponents `0x142d80950` (L2), Sess_Persistent_OnStateEnter `0x1436e5850` (L2) |
 
 ### `HudCustomisation`
 
 | setting | read in |
 |---|---|
-| `HudCustomisation.disableLegacyScript` | Game_Read_GameVersionNumberConfig `0x1437d4130`, Game_Unk_143808570 `0x143808570` |
-| `HudCustomisation.imguiEnabled` | Game_Unk_1438072f0 `0x1438072f0` |
+| `HudCustomisation.disableLegacyScript` | Game_Read_GameVersionNumberConfig `0x1437d4130` (L1), Ui_F1HeElement_Slot138 `0x143808570` (L1) |
+| `HudCustomisation.imguiEnabled` | Ui_F1HeElement_ResolveSystems `0x1438072f0` (L1) |
 
 ### `Career`
 
 | setting | read in |
 |---|---|
-| `Career.Online.KickFailingSynchronisation` | Game_Unk_140fcd6b0 `0x140fcd6b0` |
+| `Career.Online.KickFailingSynchronisation` | Game_CareerOnlineDocumentComponent_Initialise `0x140fcd6b0` (L2) |
 
 ### `TimeManager`
 
 | setting | read in |
 |---|---|
-| `TimeManager.cap` | Game_Read_TimeManagerConfig `0x1443d1bc0` |
-| `TimeManager.capValue` | Game_Read_TimeManagerConfig `0x1443d1bc0` |
-| `TimeManager.fixedTimeStep` | Game_Read_TimeManagerConfig `0x1443d1bc0`, Game_Read_TimeManagerFixedTimeStepSetting `0x1443da4d0` |
-| `TimeManager.mode` | Game_Read_TimeManagerConfig `0x1443d1bc0` |
-| `TimeManager.smoothing` | Game_Read_TimeManagerConfig `0x1443d1bc0` |
+| `TimeManager.cap` | Game_Read_TimeManagerConfig `0x1443d1bc0` (L1) |
+| `TimeManager.capValue` | Game_Read_TimeManagerConfig `0x1443d1bc0` (L1) |
+| `TimeManager.fixedTimeStep` | Game_Read_TimeManagerConfig `0x1443d1bc0` (L1), Game_TimeManager_OnResetFixedTimeStep `0x1443da4d0` (L2) |
+| `TimeManager.mode` | Game_Read_TimeManagerConfig `0x1443d1bc0` (L1) |
+| `TimeManager.smoothing` | Game_Read_TimeManagerConfig `0x1443d1bc0` (L1) |
 
 ### `Network.LAN`
 
 | setting | read in |
 |---|---|
-| `Network.LAN.active` | Game_Unk_14172c5a0 `0x14172c5a0`, Game_Unk_14172c840 `0x14172c840` |
+| `Network.LAN.active` | Ui_OnlineCustomItem_Init `0x14172c5a0` (L2), Ui_OnlineCustomItem_GetAction `0x14172c840` (L2) |
 
 ### `Network.Season`
 
 | setting | read in |
 |---|---|
-| `Network.Season.AIDifficulty` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.AIDrivers` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.AISkillRatingMax` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.AISkillRatingMin` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.AbsAllowed` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.BrakingAssistsAllowed` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.CanReturnToGarage` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.CarPerformanceType` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.CarSetupOptions` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.CollisionsFirstLapOnly` | Game_Read_NetworkConfig `0x143040da0`, Game_Unk_1433002e0 `0x1433002e0` |
-| `Network.Season.CollisionsOn` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.ContentDomain` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.Enabled` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.FormationLap` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.FormationLapType` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.GearBoxAllowed` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.Ghosting` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.ParcFermeRulesOn` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.PitAssistAllowed` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.PracticeType` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.QualifyingType` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.RaceLength` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.RaceStarts` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.RaceStartsAllowed` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.RaceType` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.RacingLineAllowed` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.SafetyCarFrequency` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.SafetyCarType` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.Scenario` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.StartingGridType` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.TimeOfDay` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.TimeOfDayType` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.Track` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.TractionControlAllowed` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.TyreCarcass` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.VehicleDamageType` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.Versus` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Season.WeatherType` | Game_Read_NetworkConfig `0x143040da0`, Game_Unk_144f3cd2b `0x144f3cd2b` |
-| `Network.Season.ersModeAllowed` | Game_Read_NetworkConfig `0x143040da0` |
+| `Network.Season.AIDifficulty` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.AIDrivers` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.AISkillRatingMax` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.AISkillRatingMin` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.AbsAllowed` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.BrakingAssistsAllowed` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.CanReturnToGarage` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.CarPerformanceType` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.CarSetupOptions` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.CollisionsFirstLapOnly` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.CollisionsOn` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.ContentDomain` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.Enabled` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.FormationLap` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.FormationLapType` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.GearBoxAllowed` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.Ghosting` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.ParcFermeRulesOn` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.PitAssistAllowed` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.PracticeType` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.QualifyingType` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.RaceLength` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.RaceStarts` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.RaceStartsAllowed` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.RaceType` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.RacingLineAllowed` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.SafetyCarFrequency` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.SafetyCarType` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.Scenario` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.StartingGridType` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.TimeOfDay` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.TimeOfDayType` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.Track` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.TractionControlAllowed` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.TyreCarcass` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.VehicleDamageType` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.Versus` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.WeatherType` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Season.ersModeAllowed` | Game_Read_NetworkConfig `0x143040da0` (L1) |
 
 ### `Network.Dev`
 
 | setting | read in |
 |---|---|
-| `Network.Dev.AllowMultiplayerRestart` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.DepartedTimeOut` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.FailSteamAuthentication` | Game_Unk_143369930 `0x143369930` |
-| `Network.Dev.ForceCrashOnGameModeDeselectionDuringMultiplayerSession` | Game_Read_NetworkConfig `0x143040da0` |
+| `Network.Dev.AllowMultiplayerRestart` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.DepartedTimeOut` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.FailSteamAuthentication` | Game_OnlineLogInTask_Init `0x143369930` (L2) |
+| `Network.Dev.ForceCrashOnGameModeDeselectionDuringMultiplayerSession` | Game_Read_NetworkConfig `0x143040da0` (L1) |
 | `Network.Dev.ForceDirectP2P` | no code reference found |
-| `Network.Dev.ForceLOD` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ForceSpectate` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.LeaveMultiplayerOnGameModeDeselection` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.PacketCapture.AutoPacketCapture` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.PacketCapture.SendToElasticSearch` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.PacketCapture.SendToLogFileServer` | Game_Read_NetworkConfig `0x143040da0`, Game_Read_NetworkDevPacketCaptureSendToLogFileServerSetting `0x1449fcee0` |
-| `Network.Dev.PitEveryLaps` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.RandomisePlayerCars` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.Robodriver` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowAuthorityManager` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowBandwidthGraph` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowBandwidthStats` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowConnectionMap` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowConnectionQuality` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowContentDomainVerification` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowFontHeight` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowHopperMatching` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowPlayerSet` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowProgressAnalysis` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowProgressBandwidth` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowProgressCalculator` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowProgressClock` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowProgressHistory` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowProgressInfo` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowProgressLogger` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowProgressObservers` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowProgressTrackspace` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowReadyMonitor` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSafetyRating` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSavedChampionshipState` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSessionAttribs` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSessionDrivers` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSessionFormationLap` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSessionMigration` | Game_Read_NetworkConfig `0x143040da0`, Game_Unk_144dfbfe0 `0x144dfbfe0` |
-| `Network.Dev.ShowSessionNextTrackVoting` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSessionPlayers` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSessionRaceInfo` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSessionRaceStatus` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSessionSeason` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSessionStartLights` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSessionStats` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSessionTeams` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSessionVoting` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowSkillRatingSimulator` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowVehicleControllers` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowVehicleControlsState` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowVehicleGhostingState` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowVehicleLaptimes` | Game_Read_NetworkConfig `0x143040da0`, Game_Unk_14532c7e8 `0x14532c7e8` |
-| `Network.Dev.ShowVehicleMechanicalState` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowVehiclePenaltyState` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowVehiclePitState` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowVehicleProgressState` | Game_Read_NetworkConfig `0x143040da0`, Game_Unk_143cfc0d0 `0x143cfc0d0` |
-| `Network.Dev.ShowXpos` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.ShowYpos` | Game_Read_NetworkConfig `0x143040da0` |
-| `Network.Dev.TestVehicleDelta` | Game_Read_NetworkConfig `0x143040da0`, Game_Unk_14437a6e0 `0x14437a6e0` |
-| `Network.Dev.TraceLogging` | Game_Read_NetworkConfig `0x143040da0` |
+| `Network.Dev.ForceLOD` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ForceSpectate` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.LeaveMultiplayerOnGameModeDeselection` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.PacketCapture.AutoPacketCapture` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.PacketCapture.SendToElasticSearch` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.PacketCapture.SendToLogFileServer` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.PitEveryLaps` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.RandomisePlayerCars` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.Robodriver` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowAuthorityManager` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowBandwidthGraph` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowBandwidthStats` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowConnectionMap` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowConnectionQuality` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowContentDomainVerification` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowFontHeight` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowHopperMatching` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowPlayerSet` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowProgressAnalysis` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowProgressBandwidth` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowProgressCalculator` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowProgressClock` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowProgressHistory` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowProgressInfo` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowProgressLogger` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowProgressObservers` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowProgressTrackspace` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowReadyMonitor` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSafetyRating` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSavedChampionshipState` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSessionAttribs` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSessionDrivers` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSessionFormationLap` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSessionMigration` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSessionNextTrackVoting` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSessionPlayers` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSessionRaceInfo` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSessionRaceStatus` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSessionSeason` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSessionStartLights` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSessionStats` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSessionTeams` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSessionVoting` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowSkillRatingSimulator` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowVehicleControllers` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowVehicleControlsState` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowVehicleGhostingState` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowVehicleLaptimes` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowVehicleMechanicalState` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowVehiclePenaltyState` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowVehiclePitState` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowVehicleProgressState` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowXpos` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.ShowYpos` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.TestVehicleDelta` | Game_Read_NetworkConfig `0x143040da0` (L1) |
+| `Network.Dev.TraceLogging` | Game_Read_NetworkConfig `0x143040da0` (L1) |
