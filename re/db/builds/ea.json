@@ -770,6 +770,9 @@
   "Game_F1WorldActivityContainer_SelectEntrantList": {
    "match": "0x1a735f0"
   },
+  "Game_Fill_PerformanceComparison": {
+   "match": "0x188b3b0"
+  },
   "Game_PracticeTrackAcclimatisation_RefreshState": {
    "match": "0x2997720"
   },
