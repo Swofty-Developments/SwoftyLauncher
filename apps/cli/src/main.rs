@@ -913,6 +913,7 @@ fn settings(store: &Store, profile: &str, cmd: SettingsCommand) -> Result<()> {
         SettingsCommand::List { id } => {
             let p = store.profile(profile)?;
             let pending = p.rebuild_pending(&addons);
+            let on = swofty_core::settings::OnAddons::of(&p, &addons);
             for m in addons
                 .values()
                 .filter(|m| id.as_deref().is_none_or(|i| i == m.id))
@@ -922,11 +923,11 @@ fn settings(store: &Store, profile: &str, cmd: SettingsCommand) -> Result<()> {
                 }
                 println!("{} ({})", m.name, m.id);
                 for o in &m.options {
-                    let v = p.option(m, o);
-                    let mark = if pending.contains(&format!("{}.{}", m.id, o.id)) {
-                        ", rebuild pending"
-                    } else {
-                        ""
+                    let v = on.value(&p, m, o);
+                    let mark = match on.missing(o) {
+                        Some(n) => format!(", off: needs {n} on"),
+                        None if pending.contains(&format!("{}.{}", m.id, o.id)) => ", rebuild pending".into(),
+                        None => String::new(),
                     };
                     let binds = match o.binds {
                         Binds::Native => "live",
