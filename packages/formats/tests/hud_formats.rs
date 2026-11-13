@@ -3,7 +3,7 @@
 
 use std::path::PathBuf;
 
-use swofty_formats::animclip::{append_strings, build_clip, read_clip, read_strings};
+use swofty_formats::animclip::{self, append_strings, build_clip, read_clip, read_strings};
 use swofty_formats::emb;
 use swofty_formats::erp::{Erp, Resource};
 use swofty_formats::material::{Material, ParamValue};
@@ -33,7 +33,7 @@ fn frag(r: &Resource, i: usize) -> Vec<u8> {
 }
 
 #[test]
-fn stock_anim_clips_rebuild_byte_for_byte() {
+fn stock_anim_clips_rebuild_byte_for_byte_up_to_the_syst_padding() {
     let Some(clips) = archive("flow_race.erp", &["AnimClip"]) else {
         return;
     };
@@ -57,7 +57,12 @@ fn stock_anim_clips_rebuild_byte_for_byte() {
             &clip.channels,
         )
         .unwrap();
-        if again == (temp, syst) {
+        let padded = {
+            let mut s = syst.clone();
+            s.resize(s.len().next_multiple_of(animclip::SYST_ALIGN), 0);
+            s
+        };
+        if again == (temp, padded) {
             same += 1;
         } else {
             eprintln!("differs: {}", r.name);

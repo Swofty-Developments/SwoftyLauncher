@@ -1165,6 +1165,7 @@ mod tests {
         }
         let names: Vec<&str> = out.archives.iter().map(|a| a.file.as_str()).collect();
         assert_eq!(names, ["hud_scene.erp", "hud_template.erp", "hud_spectator.erp"]);
+        assert!(check::unpadded_clips(&out.archives).unwrap().is_empty());
         let scene = Erp::parse(&out.archives[0].bytes).unwrap();
         for dial in Dial::ALL {
             let f = dials::facts(dial);
@@ -1303,6 +1304,7 @@ mod tests {
         );
         assert!(check::uncovered(&stock, &out.archives).unwrap().is_empty());
         assert!(check::constant_rotations(&out.archives).unwrap().is_empty());
+        assert!(check::unpadded_clips(&out.archives).unwrap().is_empty());
         let also = Erp::parse(&out.archives[5].bytes).unwrap();
         let main = Erp::parse(&out.archives[2].bytes).unwrap();
         for name in [screens::CAP, screens::STACKED, screens::STACKED_UIPRE] {
@@ -1535,6 +1537,45 @@ mod tests {
                 .collect(),
         }
         .to_bytes()
+    }
+
+    #[test]
+    fn a_clip_whose_syst_is_not_a_multiple_of_16_bytes_is_reported() {
+        use swofty_formats::erp::{Fragment, HEADER_LEN, MAGIC, STORED};
+        let frag = |name: &[u8; 4], raw: Vec<u8>| Fragment {
+            name: *name,
+            offset: 0,
+            size: raw.len() as u64,
+            flags: 0x10,
+            compression: STORED,
+            packed: raw.len() as u64,
+            raw,
+        };
+        let clip = |name: &str, syst: usize| Resource {
+            name: name.into(),
+            kind: swofty_formats::erp::kind("AnimClip").unwrap(),
+            unk: vec![0; 4],
+            fragments: vec![frag(b"temp", vec![0]), frag(b"syst", vec![0; syst])],
+            hash: [0; 16],
+        };
+        let mut header = [0u8; HEADER_LEN];
+        header[..4].copy_from_slice(MAGIC);
+        header[4..8].copy_from_slice(&3u32.to_le_bytes());
+        let bytes = Erp {
+            header,
+            version: 3,
+            resources: vec![clip("slide", 92), clip("needle", 112), clip("short", 108)],
+        }
+        .to_bytes();
+        let built = [Built {
+            file: "hud_scene.erp".into(),
+            erps: vec![],
+            bytes,
+        }];
+        assert_eq!(
+            check::unpadded_clips(&built).unwrap(),
+            ["slide (92 bytes)", "short (108 bytes)"]
+        );
     }
 
     #[test]
