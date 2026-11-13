@@ -102,7 +102,7 @@ Bits that look like unreleased or edition-only features: `invitationals` (False 
 
 ## 5. Developer settings
 
-82 functions that read a gameplay-relevant setting and were missing from the KB are now L1 rows: `Game_Read_*Setting` when the function is small (< 0x180 bytes) and references one name, `Game_Unk_<addr>` otherwise; the notes list the settings. Plus `Ne_Load_SystemConfigXml` and `Sess_Read_CurrentContentSetSetting`. Highlights:
+80 functions that read a gameplay-relevant setting and were missing from the KB are now L1 rows: `Game_Read_*Setting` when the function is small (< 0x180 bytes) and references one name, `Game_Unk_<addr>` otherwise; the notes list the settings. Plus `Ne_Load_SystemConfigXml` and `Sess_Read_CurrentContentSetSetting`. Highlights:
 
 - **Grid:** `Grid.Override`, `Grid.CarsInRow`, `Grid.RowOffset`, `Grid.StaggerOffset`, `Grid.PoleLR` (`Game_Read_GridOverrideConfig` 0x142f61640, already in the KB).
 - **Session shortcuts:** `Qualifying.full` / `.short` / `.one_shot`, `Game.SkipPreRace`, `Game.SkipIntroVideo`, `Game.SkipIntroCameras`, `Game.SkipGridRundown`, `Game.SkipWinnerSequence`, `Game.SkipRewardSequence`, `Game.IgnoreMinimumLoadingTime`.
