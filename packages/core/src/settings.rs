@@ -1,4 +1,4 @@
-use std::collections::{BTreeMap, HashMap};
+use std::collections::{BTreeMap, BTreeSet, HashMap};
 
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
@@ -21,15 +21,25 @@ pub const UI_DIR: &str = "swofty/ui";
 /// The addons on in a build, each with its version: what an op's `when.addon` and an option's `needs`
 /// are checked against.
 #[derive(Debug, Clone, Default, PartialEq)]
-pub struct OnAddons(BTreeMap<String, semver::Version>);
+pub struct OnAddons {
+    on: BTreeMap<String, semver::Version>,
+    off: BTreeSet<(String, String)>,
+}
 
 impl OnAddons {
     pub fn new<'a>(on: impl IntoIterator<Item = &'a AddonManifest>) -> Self {
-        Self(
-            on.into_iter()
+        Self {
+            on: on
+                .into_iter()
                 .map(|m| (m.id.clone(), m.version.clone()))
                 .collect(),
-        )
+            off: BTreeSet::new(),
+        }
+    }
+
+    /// Turns toggle `option` of `addon` off for this build, whatever the profile holds.
+    pub fn force_off(&mut self, addon: &str, option: &str) {
+        self.off.insert((addon.to_owned(), option.to_owned()));
     }
 
     /// The installed addons the profile has on.
@@ -38,7 +48,7 @@ impl OnAddons {
     }
 
     pub fn has(&self, need: &AddonNeed) -> bool {
-        self.0
+        self.on
             .get(&need.id)
             .is_some_and(|v| crate::version::satisfies(&need.version, v))
     }
@@ -48,11 +58,12 @@ impl OnAddons {
         o.needs.iter().find(|n| !self.has(n))
     }
 
-    /// The option's value in a build: the profile's, or off while an addon it needs is off.
+    /// The option's value in a build: the profile's, or off while an addon it needs is off or the build
+    /// turned it off.
     pub fn value(&self, profile: &Profile, m: &AddonManifest, o: &AddonOption) -> Value {
-        match self.missing(o) {
-            Some(_) => Value::Bool(false),
-            None => profile.option(m, o),
+        match self.missing(o).is_some() || self.off.contains(&(m.id.clone(), o.id.clone())) {
+            true => Value::Bool(false),
+            false => profile.option(m, o),
         }
     }
 }
