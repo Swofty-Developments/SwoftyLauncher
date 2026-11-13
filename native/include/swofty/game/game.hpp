@@ -519,6 +519,8 @@ inline constexpr address<"Game_FanZoneStandingsVM_OnScreenDeactivated"> Game_Fan
 inline constexpr address<"Game_FanZoneStandingsVM_OnSkip"> Game_FanZoneStandingsVM_OnSkip{}; // L2 experimental
 inline constexpr address<"Game_FanZone_BuildStandingsDriverList"> Game_FanZone_BuildStandingsDriverList{}; // L2 experimental
 inline constexpr address<"Game_FanzonesOnboardingVM_FadeIn"> Game_FanzonesOnboardingVM_FadeIn{}; // L2 experimental
+using Game_Fill_PerformanceComparison_t = void(void *comparison);
+inline constexpr fn<"Game_Fill_PerformanceComparison", Game_Fill_PerformanceComparison_t> Game_Fill_PerformanceComparison{}; // L2 experimental
 inline constexpr address<"Game_FlowState_EnterBootLogout"> Game_FlowState_EnterBootLogout{}; // L2 experimental
 inline constexpr address<"Game_FormationLapPresentation_BuildTimeline"> Game_FormationLapPresentation_BuildTimeline{}; // L2 experimental
 inline constexpr address<"Game_FreeLookCameraModifier_Update"> Game_FreeLookCameraModifier_Update{}; // L2 experimental

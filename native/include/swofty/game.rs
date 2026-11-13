@@ -3435,6 +3435,7 @@ pub type Game_EntrantsUi_OnCharacterListLoaded_t =
     unsafe extern "C" fn(ctx: *mut c_void, message: *const c_void) -> i64;
 pub type Game_F1WorldActivityContainer_SelectEntrantList_t =
     unsafe extern "C" fn(container: *mut c_void, entrant_list: *const c_char);
+pub type Game_Fill_PerformanceComparison_t = unsafe extern "C" fn(comparison: *mut c_void);
 pub type Game_Game_SetCurrentGameMode_t =
     unsafe extern "C" fn(mode_context: *mut c_void, mode: *mut c_void) -> u64;
 pub type Game_Get_ModelNodeId_t = unsafe extern "C" fn(name: *const c_char) -> u32;
@@ -6079,6 +6080,11 @@ pub mod bindings {
     };
     pub const Game_FanzonesOnboardingVM_FadeIn: Binding = Binding {
         id: "Game_FanzonesOnboardingVM_FadeIn",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Fill_PerformanceComparison: Binding = Binding {
+        id: "Game_Fill_PerformanceComparison",
         kind: "func",
         status: Status::Experimental,
     };
