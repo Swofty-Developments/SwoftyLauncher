@@ -697,21 +697,81 @@ __attribute__((used, noinline)) void fake_mtv_find(void *cursor, uint8_t *row, c
     *(int32_t *)(row + 0x200) = -1;
 }
 
+static int mtv_keep_rows, mtv_last_keep;
+
 __attribute__((used, noinline)) void fake_mtv_ai(void *out, uint8_t *row)
 {
     (void)out;
-    const volatile uint64_t *slot = *(int32_t *)(row + 0x200) < 0 ? &mtv_miss : &mtv_hit;
+    mtv_last_keep = !strcmp((const char *)row, "entrants.vehicles") && !strncmp((const char *)row + 0x100, "vehicle_", 8);
+    if (mtv_last_keep)
+        mtv_keep_rows++;
+    const volatile uint64_t *slot = row[0x204] == 1 ? &mtv_hit : &mtv_miss;
     uint64_t rec = *slot;
     if (rec && *(const volatile uint64_t *)(rec + 0x40) != 1)
         mtv_ai_calls++;
 }
 
-__attribute__((used, noinline)) void fake_mtv_store(uint64_t index, void *record)
+static uint8_t mtv_cars[4][0xd10];
+
+__attribute__((used, noinline)) uint8_t *fake_mtv_store(uint64_t index, void *record)
 {
     (void)record;
     if (fake_mtv_stored < sizeof mtv_stored_ids / sizeof *mtv_stored_ids)
         mtv_stored_ids[fake_mtv_stored] = mtv_bases[index].stat_id & 0x3fff;
     fake_mtv_stored++;
+    if (index >= 4)
+        return NULL;
+    uint8_t *car = mtv_cars[index];
+    memset(car, 0, sizeof mtv_cars[index]);
+    *(uint32_t *)car = (uint32_t)(mtv_bases[index].stat_id & 0x3fff) << 16 | 1;
+    snprintf((char *)car + 0x70, 0x100, "%s", mtv_last_keep ? "myteam_mercedes_2026" : mtv_bases[index].file_name);
+    snprintf((char *)car + 0x2a0, 0x100, "saved display %u", (unsigned)index);
+    car[0xce9] = (uint8_t)(0x15 + index);
+    *(uint32_t *)(car + 0xcf2) = 0x00a40000u + (uint32_t)index;
+    return car;
+}
+
+// Game_Save_MyTeamVehicleBases's read of the car being written (0x1425070b3..0x1425070c9), copied byte for byte from the
+// Steam build, so core's My Team vehicle keep resolves site_Game_MyTeamVehicleBases_SaveRecord here: r14 the car,
+// [rsp+0x38] the child bag call's error (0). fake_mtv_write reads the entry's fields through r14 as the writer does.
+__asm__(
+    ".section .xtls,\"xr\"\n"
+    ".globl fake_mtv_save\n"
+    ".def fake_mtv_save; .scl 2; .type 32; .endef\n"
+    ".seh_proc fake_mtv_save\n"
+    "fake_mtv_save:\n"
+    "push %r14\n.seh_pushreg %r14\n"
+    "push %rbp\n.seh_pushreg %rbp\n"
+    "sub $0x48,%rsp\n.seh_stackalloc 0x48\n"
+    ".seh_endprologue\n"
+    "mov %rcx,%r14\n"
+    "movl $0,0x38(%rsp)\n"
+    ".byte 0x8B,0x6C,0x24,0x38,0x85,0xED,0x0F,0x85\n"
+    ".long 9f - (. + 4)\n"
+    ".byte 0x41,0x8B,0x06,0xC1,0xE0,0x0E,0x66,0x41,0x0B,0x46,0x02\n"
+    "mov %r14,%rcx\n"
+    "call fake_mtv_write\n"
+    "9:\n"
+    "add $0x48,%rsp\n"
+    "pop %rbp\n"
+    "pop %r14\n"
+    "ret\n"
+    ".seh_endproc\n"
+    ".section .drectve\n"
+    ".ascii \" -export:fake_mtv_save\"\n"
+    ".text\n");
+void fake_mtv_save(uint8_t *car);
+
+static char mtv_written_name[0x100];
+static uint8_t mtv_written_engine;
+static uint32_t mtv_written_base, mtv_written_handle;
+
+__attribute__((used, noinline)) void fake_mtv_write(const uint8_t *car)
+{
+    mtv_written_handle = *(const uint32_t *)car;
+    snprintf(mtv_written_name, sizeof mtv_written_name, "%s", (const char *)car + 0x70);
+    mtv_written_engine = car[0xce9];
+    mtv_written_base = *(const uint32_t *)(car + 0xcf2);
 }
 
 static void test_myteam_vehicle_guard(int on)
@@ -1123,6 +1183,43 @@ static void test_myteam_vehicle_heal(int on)
     expect(sv_replaced == 1, "myteam heal: the lost car is rebuilt once for both of its entrants");
     expect(!strcmp(label, "myteam_mercedes_2026"), "myteam heal: a 2026 session rebuilds it from myteam_mercedes_2026");
     expect(sv_classes == 4 && sv_classified == 4, "myteam heal: every entrant gets its class");
+}
+
+static void test_myteam_vehicle_keep(int on)
+{
+    SetErrorMode(SEM_NOGPFAULTERRORBOX);
+    mtv_hit = (uint64_t)(uintptr_t)mtv_record;
+    *(uint64_t *)(mtv_record + 0x40) = 2;
+    *(uint16_t *)(mtv_list + 0x10) = (uint16_t)(sizeof mtv_bases / sizeof *mtv_bases);
+    *(struct mtv_base **)(mtv_list + 0x18) = mtv_bases;
+    fake_mtv_stored = 0;
+    mtv_ai_calls = 0;
+    mtv_keep_rows = 0;
+    printf("      myteam keep %s: loading 4 saved bases, 2 of them on myteam_mes_porsche_2026 (the test car, no row)\n", on ? "on" : "off");
+    fflush(stdout);
+    uint32_t n = fake_mtv_load(mtv_list);
+    printf("      myteam keep %s: the load returned, %u bases stored, %d AI configs built, %d from a stock row\n", on ? "on" : "off", n,
+           mtv_ai_calls, mtv_keep_rows);
+    for (int i = 0; i < 4; i++) {
+        uint8_t *car = mtv_cars[i];
+        fake_mtv_save(car);
+        printf("      myteam keep %s: base %d live '%s' engine %u base %08x, saved as '%s' engine %u base %08x\n", on ? "on" : "off", i,
+               (const char *)car + 0x70, car[0xce9], *(uint32_t *)(car + 0xcf2), mtv_written_name, mtv_written_engine, mtv_written_base);
+    }
+    fflush(stdout);
+    expect(n == 4 && mtv_ai_calls == 4 && mtv_keep_rows == 2, "myteam keep: every base is stored, the two test cars from a stock row");
+    expect(!strcmp((const char *)mtv_cars[1] + 0x70, "myteam_mercedes_2026") && mtv_cars[1][0xce9] == 2 &&
+               *(uint32_t *)(mtv_cars[1] + 0xcf2) == 0x02160000u,
+           "myteam keep: the test car loads as the stock placeholder");
+    fake_mtv_save(mtv_cars[1]);
+    expect(!strcmp(mtv_written_name, "myteam_mes_porsche_2026") && mtv_written_engine == 0x16 && mtv_written_base == 0x00a40001u &&
+               mtv_written_handle == 1u,
+           "myteam keep: the save writes the test car as saved");
+    fake_mtv_save(mtv_cars[0]);
+    expect(!strcmp(mtv_written_name, "myteam_ferrari") && mtv_written_base == 0x00a40000u, "myteam keep: another car is written as it is");
+    snprintf((char *)mtv_cars[3] + 0x70, 0x100, "%s", "myteam_renault");
+    fake_mtv_save(mtv_cars[3]);
+    expect(!strcmp(mtv_written_name, "myteam_renault"), "myteam keep: a placeholder replaced in place is written as it is");
 }
 
 static void crash_leaderboard_guard(void)
@@ -3626,6 +3723,10 @@ int main(int argc, char **argv)
     if (argc > 1 && !strcmp(argv[1], "pit_slots")) {
         const char *off = getenv("SWOFTY_PIT_SLOT_GUARD");
         test_pit_slots(!(off && *off));
+    }
+    if (argc > 1 && !strcmp(argv[1], "myteam_keep")) {
+        const char *off = getenv("SWOFTY_MYTEAM_VEHICLE_KEEP");
+        test_myteam_vehicle_keep(!(off && *off));
     }
     if (argc > 1 && !strcmp(argv[1], "myteam_vehicle")) {
         const char *off = getenv("SWOFTY_MYTEAM_VEHICLE_GUARD");

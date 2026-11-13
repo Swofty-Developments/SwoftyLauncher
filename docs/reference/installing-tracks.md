@@ -58,6 +58,12 @@ warning: Mugello (mod.mugello): track Mugello is left out; the game has room for
 
 Tracks from track records take their places first: the core adds their rows in game.
 
+A change from any addon to a row of a left-out track is skipped, and the rest of the profile still loads:
+
+```text
+warning: Classic Career: change skipped: track_data.game_setup.TrackDataSet[_metadata_=f1_2026].TrackData[_metadata_=anderst]: no row matches in track_data.game_setup.TrackDataSet_16.TrackData; it changes track Anderstorp, which is left out of this build because the game has room for 64 tracks. Turn some track addons off to make room for it
+```
+
 Otherwise, the build puts the package's whole `<code>.erp` into an existing invitational event slot, `2025_asset_groups/ui_package/texture_arrays/invitational_events/event_images/invitational_image_<n>.erp`, alongside the slot's own pictures. Your profile's tracks take `invitational_image_4`, `_10`, `_13` to `_18` in order. That leaves room for at most eight enabled tracks; a ninth fails the build with `at most 8 tracks can be enabled at once`.
 
 The build also fills gaps in the archive:

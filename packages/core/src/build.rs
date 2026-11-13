@@ -1357,6 +1357,11 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 }
             })
             .collect();
+        for (((_, pkg, _), _), name) in full.iter().zip(&names) {
+            if !tracks.iter().any(|(_, p, _)| p.track_code == pkg.track_code) {
+                planner.leave_out_track(&pkg.track_code, name);
+            }
+        }
         built
             .warnings
             .extend(crate::tracks::track_lists_full_warning(&listed, &names));
@@ -8738,6 +8743,50 @@ mod tests {
                 Some("65")
             );
         }
+
+        let career = |id: &str, name: &str, track: &str| {
+            let src = root.join("src").join(id);
+            std::fs::create_dir_all(&src).unwrap();
+            std::fs::write(
+                src.join("swofty.json"),
+                format!(
+                    r#"{{ "schema_version": 1, "id": "{id}", "name": "{name}", "version": "1.0.0", "author": "t",
+                         "compat": {{ "game": "f1_25" }}, "operations": {{ "assets": ["ops.json"] }} }}"#
+                ),
+            )
+            .unwrap();
+            std::fs::write(
+                src.join("ops.json"),
+                format!(
+                    r#"{{ "schema_version": 1, "ops": [{{"op":"db.set",
+                         "select":"track_data.game_setup.TrackDataSet[_metadata_=f1].TrackData[track={track}]",
+                         "field":"track","value":"{track}"}}] }}"#
+                ),
+            )
+            .unwrap();
+            store.install_addon(&src).unwrap();
+            store
+                .update_profile("default", |p| p.set_enabled(id, true))
+                .unwrap();
+        };
+        career("t.career", "Career", "added_21");
+        let built = build(&store, "default", &game).unwrap();
+        let skipped = "Career: change skipped: track_data.game_setup.TrackDataSet[_metadata_=f1].TrackData[track=added_21]: \
+                       no row matches in track_data.game_setup.TrackDataSet_0.TrackData; it changes track added_21, \
+                       which is left out of this build because the game has room for 64 tracks. Turn some track \
+                       addons off to make room for it";
+        assert!(
+            built.warnings.iter().any(|w| w == skipped),
+            "{:?}",
+            built.warnings
+        );
+
+        career("t.other", "Other", "nowhere");
+        let e = build(&store, "default", &game).unwrap_err().to_string();
+        assert!(
+            e.contains("applying t.other: track_data.game_setup.TrackDataSet[_metadata_=f1].TrackData[track=nowhere]: no row matches"),
+            "{e}"
+        );
         std::fs::remove_dir_all(&root).ok();
     }
 
