@@ -1145,7 +1145,10 @@ inline constexpr site<"site_Game_SaveSlot_Selected"> site_Game_SaveSlot_Selected
 inline constexpr site<"site_Game_TeamSelect_NumberResult"> site_Game_TeamSelect_NumberResult{}; // L2 experimental
 inline constexpr call<"site_Game_TeamSelect_TeamLogoFormat"> site_Game_TeamSelect_TeamLogoFormat{}; // L2 experimental
 inline constexpr site<"site_Game_TheatreList_EntryStep"> site_Game_TheatreList_EntryStep{}; // L2 experimental
+inline constexpr site<"site_Game_TheatreList_EntryStepAlt"> site_Game_TheatreList_EntryStepAlt{}; // L2 experimental
 inline constexpr site<"site_Game_TheatreList_NoSlot"> site_Game_TheatreList_NoSlot{}; // L2 experimental
+inline constexpr site<"site_Game_TheatreList_NoSlotAlt"> site_Game_TheatreList_NoSlotAlt{}; // L2 experimental
+inline constexpr site<"site_Game_TheatreRows_RowOffset"> site_Game_TheatreRows_RowOffset{}; // L2 experimental
 inline constexpr site<"site_Game_ThrustmasterLcd_EntrantRecord"> site_Game_ThrustmasterLcd_EntrantRecord{}; // L2 experimental
 inline constexpr site<"site_Game_ThrustmasterLcd_SectorTail"> site_Game_ThrustmasterLcd_SectorTail{}; // L2 experimental
 inline constexpr site<"site_Game_TimeTrialLeaderboard_BoardRead"> site_Game_TimeTrialLeaderboard_BoardRead{}; // L2 experimental
