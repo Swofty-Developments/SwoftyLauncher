@@ -122682,7 +122682,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/rnd_suppliers_guard.cpp"
+   ]
   },
   {
    "id": "career.run_upgrade_auto_fit",
@@ -127309,7 +127311,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/rnd_suppliers_guard.cpp"
+   ]
   },
   {
    "id": "game.state_career_data_sync_on_state_enter",

@@ -59,6 +59,7 @@ pub mod quarantine;
 pub mod recovery;
 pub mod registry;
 pub mod resolver;
+pub mod rnd_budget;
 pub mod row_ids;
 pub mod rowkeys;
 pub mod runtime;
