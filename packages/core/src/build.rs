@@ -2938,6 +2938,9 @@ fn record_merge(built: &mut Built, planner: &mut Planner, origin: &Origin, m: Sl
     built
         .warnings
         .extend(m.notes.iter().map(|n| format!("erp: {origin}: {n}")));
+    if m.refused {
+        return;
+    }
     let slice = |slice: usize| Target::Slice {
         erp: m.erp.clone(),
         uri: m.resource.clone(),
