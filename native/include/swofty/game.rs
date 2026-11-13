@@ -15007,6 +15007,11 @@ pub mod bindings {
         kind: "data",
         status: Status::Experimental,
     };
+    pub const g_Ne_InlineStr128Vtable: Binding = Binding {
+        id: "g_Ne_InlineStr128Vtable",
+        kind: "data",
+        status: Status::Experimental,
+    };
     pub const g_Ne_LogGate: Binding = Binding {
         id: "g_Ne_LogGate",
         kind: "data",
@@ -16715,6 +16720,16 @@ pub mod bindings {
     pub const site_Sess_InGamePlayerFinishedAiCall: Binding = Binding {
         id: "site_Sess_InGamePlayerFinishedAiCall",
         kind: "call",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_InGameRaceRetirementDriver: Binding = Binding {
+        id: "site_Sess_InGameRaceRetirementDriver",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_InGameRaceRetirementDriverJoin: Binding = Binding {
+        id: "site_Sess_InGameRaceRetirementDriverJoin",
+        kind: "site",
         status: Status::Experimental,
     };
     pub const site_Sess_InGameSessionCompleteAiCall: Binding = Binding {

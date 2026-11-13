@@ -164502,6 +164502,88 @@
     "native/src/core/sequencer_records_guard.cpp"
    ],
    "expect": "C6 83 E4 05"
+  },
+  {
+   "id": "core.ne_inline_str128_vtable",
+   "section": ".xtls",
+   "pattern": "66 C7 44 24 70 6E 74 C6 44 24 72 00 48 8D 05",
+   "match": "0x142d62409",
+   "anchor": "0xf",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0xc",
+    "len": 7
+   },
+   "target": "0x145613670",
+   "kind": "data",
+   "names": [
+    "g_Ne_InlineStr128Vtable"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "retiredriver",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/race_retirement_guard.cpp"
+   ]
+  },
+  {
+   "id": "session.in_game_race_retirement_driver",
+   "section": ".xtls",
+   "pattern": "48 85 C0 74 09 48 89 C1 48 83 C1 08 EB 02 31 C9 48 83 C1 18 48 8D 54 24 50",
+   "match": "0x142d624d0",
+   "anchor": "0x10",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d624e0",
+   "kind": "mid",
+   "names": [
+    "site_Sess_InGameRaceRetirementDriver"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "retiredriver",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/race_retirement_guard.cpp"
+   ],
+   "expect": "48 83 C1 18 48 8D 54 24 50"
+  },
+  {
+   "id": "session.in_game_race_retirement_driver_join",
+   "section": ".xtls",
+   "pattern": "48 8D 54 24 50 E8 ?? ?? ?? ?? 48 8B 54 24 60 48 C7 44 24 38 00 00 00 00",
+   "match": "0x142d624e4",
+   "anchor": "0xa",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142d624ee",
+   "kind": "mid",
+   "names": [
+    "site_Sess_InGameRaceRetirementDriverJoin"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "retiredriver",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/race_retirement_guard.cpp"
+   ],
+   "expect": "48 8B 54 24 60"
   }
  ]
 }
