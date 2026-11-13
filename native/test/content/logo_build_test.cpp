@@ -598,5 +598,148 @@ int main(int argc, char **argv)
               }),
               "the build logs the placeholder keys and the slice every new key lands on");
     }
+    {
+        namespace la = content::logo_array;
+        fs::path dir_out = out / "carriers";
+        fs::create_directories(dir_out);
+        std::string array = "teams.driver_select_team_logos";
+        std::string image = std::string(lb::ARRAY_URI) + array + ".texarray.image", view = std::string(lb::ARRAY_URI) + array + ".texarray";
+        auto frag_of = [&](const fs::path &file, const std::string &name, size_t n) {
+            auto src = open_file(file);
+            ef::Archive arc;
+            std::string bytes, w2;
+            if (src && ef::open(*src, arc, w2)) {
+                const ef::Entry *e = arc.find(name);
+                if (e && e->frags.size() > n)
+                    ef::fragment(*src, arc, e->frags[n], bytes, w2);
+            }
+            return bytes;
+        };
+        auto names_in = [&](const std::string &db_bytes) {
+            content::uidb::Pkg q;
+            q.read(db_bytes);
+            std::vector<std::string> names;
+            if (auto *n = q.find(lb::list_path(array)))
+                for (auto &e : n->list)
+                    names.push_back(content::uidb::Pkg::text_of(e, "Name"));
+            return names;
+        };
+        std::string head0 = frag_of(game / list[1], image, 0), data0 = frag_of(game / list[1], image, 1), view0 = frag_of(game / list[1], view, 0);
+        uint32_t count0 = la::le32(head0, la::HEAD_COUNT), side = la::le32(head0, la::HEAD_FORMAT + 4);
+        size_t slice = size_t(side) * la::le32(head0, la::HEAD_FORMAT + 8);
+        std::vector<std::string> names0 = names_in(frag_of(game / lb::DATABASES, lb::OVERRIDES, 0));
+        size_t donor_at = size_t(std::find(names0.begin(), names0.end(), "b") - names0.begin());
+        check(names0.size() == count0 && count0 >= 3 && donor_at < count0 && data0.size() == count0 * slice,
+              "the carriers fixture starts as one stock array of named slices with the donor key b");
+        auto copy_with = [&](uint32_t count, const std::string &data, uint32_t format, uint32_t size) {
+            std::string head = head0, vw = view0;
+            la::put32(head, la::HEAD_COUNT, count);
+            la::put32(head, la::HEAD_FORMAT, format);
+            la::put32(head, la::HEAD_FORMAT + 4, size);
+            la::put32(head, la::HEAD_FORMAT + 8, size);
+            la::put32(vw, la::VIEW_COUNT, count);
+            return std::vector<std::string>{head, data, vw};
+        };
+        auto write_copy = [&](const std::string &rel, const std::string &name, const std::vector<std::string> &frags) {
+            auto src = open_file(game / rel);
+            ef::Archive arc;
+            ef::open(*src, arc, why);
+            ef::Changes edit;
+            edit[image] = {frags[0], frags[1]};
+            edit[view] = {frags[2]};
+            std::ofstream(dir_out / name, std::ios::binary) << rewrite_to_string(*src, arc, edit, why);
+            return dir_out / name;
+        };
+        auto env_with = [&](const std::map<std::string, fs::path> &swapped) {
+            lb::Env e;
+            e.list = [&] { return list; };
+            e.open = [&, swapped](const std::string &rel) {
+                auto it = swapped.find(rel);
+                return open_file(it != swapped.end() ? it->second : game / rel);
+            };
+            return e;
+        };
+        auto grown_of = [&](lb::Result &r, const std::string &rel, std::string &head, std::string &data, std::string &vw) {
+            auto c = r.changes.find(rel);
+            if (c == r.changes.end() || !c->second.count(image) || !c->second.count(view))
+                return false;
+            head = *c->second[image][0];
+            data = *c->second[image][1];
+            vw = *c->second[view][0];
+            return true;
+        };
+        auto has_line = [](const lb::Result &r, std::initializer_list<std::string> parts) {
+            return std::count_if(r.lines.begin(), r.lines.end(), [&](const std::string &l) {
+                return std::all_of(parts.begin(), parts.end(), [&](const std::string &p) { return l.find(p) != std::string::npos; });
+            });
+        };
+        std::vector<lb::Want> two(2);
+        two[0] = {array, "carrier_img", "", std::string(px, 64 * 64 * 4), 64, 64};
+        two[1].array = array;
+        two[1].key = "carrier_copy";
+        two[1].donor = "b";
+        std::string zeros(slice * 4, '\0');
+        std::string blank = content::bc7::encode_logo(reinterpret_cast<const uint8_t *>(zeros.data()), int(side), int(side));
+
+        std::string short_data = data0.substr(0, (count0 - 1) * slice), long_data = data0 + std::string(slice, char(0x5a)) + std::string(slice, char(0xa5));
+        auto short_copy = copy_with(count0 - 1, short_data, la::FORMAT_BC7, side), long_copy = copy_with(count0 + 2, long_data, la::FORMAT_BC7, side);
+        lb::Env split = env_with({{list[1], write_copy(list[1], "short_flow_a.erp", short_copy)},
+                                  {list[3], write_copy(list[3], "long_screens_b.erp", long_copy)}});
+        lb::Result rs;
+        check(lb::build(split, two, rs) && rs.built == 2 && rs.refused == 0,
+              "two carriers whose copies hold different slice counts both build instead of refusing every slot");
+        std::string ha, da, va, hb, db, vb;
+        bool both = grown_of(rs, list[1], ha, da, va) && grown_of(rs, list[3], hb, db, vb);
+        uint32_t total = count0 + 2 + 2;
+        std::vector<std::string> names_out = rs.changes.count(lb::DATABASES) ? names_in(*rs.changes[lb::DATABASES][lb::OVERRIDES][0]) : std::vector<std::string>{};
+        check(both && la::le32(ha, la::HEAD_COUNT) == total && la::le32(hb, la::HEAD_COUNT) == total && la::le32(va, la::VIEW_COUNT) == total &&
+                  la::le32(vb, la::VIEW_COUNT) == total && da.size() == total * slice && db.size() == total * slice,
+              "both copies grow to the same " + std::to_string(total) + " slices with views that match");
+        check(names_out.size() == total && names_out[count0 + 2] == "carrier_img" && names_out[count0 + 3] == "carrier_copy" &&
+                  names_out[count0].rfind("swofty_pad_", 0) == 0 && names_out[count0 + 1].rfind("swofty_pad_", 0) == 0,
+              "the one key list names the extra slices and puts the new keys at slices " + std::to_string(count0 + 2) + " and " +
+                  std::to_string(count0 + 3));
+        check(both && da.compare(0, short_data.size(), short_data) == 0 && db.compare(0, long_data.size(), long_data) == 0,
+              "each copy keeps its own existing slices byte for byte");
+        check(both && da.compare((count0 - 1) * slice, slice, blank) == 0 && da.compare(count0 * slice, slice, blank) == 0 &&
+                  da.compare((count0 + 1) * slice, slice, blank) == 0,
+              "the shorter copy is padded with blank slices up to the longer copy's count");
+        check(both && da.compare((count0 + 2) * slice, 2 * slice, db, (count0 + 2) * slice, 2 * slice) == 0 &&
+                  db.compare((count0 + 3) * slice, slice, long_data, donor_at * slice, slice) == 0,
+              "the new logos sit at the same slice in both copies and the donor copy is slice " + std::to_string(donor_at));
+        check(has_line(rs, {"hold 2 different copies (" + std::to_string(count0 - 1) + ", " + std::to_string(count0 + 2) + " slices)"}) == 1 &&
+                  has_line(rs, {"in 2025_asset_groups/ui_package/flow_a.erp lists ", "another addon replaced the whole array"}) == 1 &&
+                  has_line(rs, {"(2 different copies)"}) == 1 && has_line(rs, {"refused"}) == 0,
+              "the build logs the differing copies and the padding of the short one, and refuses nothing");
+
+        std::string wide_data;
+        for (uint32_t i = 0; i < count0; i++)
+            wide_data += std::string(slice * 4, char(i + 1));
+        lb::Env sized = env_with({{list[3], write_copy(list[3], "wide_screens_b.erp", copy_with(count0, wide_data, la::FORMAT_BC7, side * 2))}});
+        lb::Result rw;
+        check(lb::build(sized, two, rw) && rw.built == 2 && rw.refused == 0 && grown_of(rw, list[1], ha, da, va) && grown_of(rw, list[3], hb, db, vb) &&
+                  da.size() == (count0 + 2) * slice && db.size() == (count0 + 2) * slice * 4 &&
+                  db.compare((count0 + 1) * slice * 4, slice * 4, wide_data, donor_at * slice * 4, slice * 4) == 0 &&
+                  has_line(rw, {"carrier_img scaled 64x64 -> " + std::to_string(side * 2)}) == 1,
+              "a copy at another slice size gets the logo encoded at its own size and the donor slice from its own image");
+
+        lb::Env odd = env_with({{list[1], write_copy(list[1], "bc1_flow_a.erp", copy_with(count0, data0, 71, side))}});
+        lb::Result ro;
+        check(lb::build(odd, two, ro) && ro.built == 2 && ro.refused == 0 && !ro.changes.count(list[1]) && grown_of(ro, list[3], hb, db, vb) &&
+                  la::le32(hb, la::HEAD_COUNT) == count0 + 2,
+              "a carrier in another format is left as it is and the other carrier still builds");
+        check(has_line(ro, {"team.logo: skipped teams.driver_select_team_logos in 2025_asset_groups/ui_package/flow_a.erp: unexpected stock array (format 71",
+                            "left as it is, the other 1 archive(s) build"}) == 1 &&
+                  has_line(ro, {"skipped"}) == 1,
+              "the skipped carrier is logged in one line");
+
+        lb::Env none = env_with({{list[1], write_copy(list[1], "bc1_a.erp", copy_with(count0, data0, 71, side))},
+                                 {list[3], write_copy(list[3], "bc1_b.erp", copy_with(count0, data0, 71, side))}});
+        lb::Result rn;
+        lb::build(none, two, rn);
+        check(rn.built == 0 && rn.refused == 2 && rn.changes.empty() &&
+                  has_line(rn, {"2 slot(s) refused: teams.driver_select_team_logos: unexpected stock array (format 71"}) == 1,
+              "when no carrier's copy can grow the slots are refused with the reason");
+    }
     return failures ? 1 : 0;
 }
