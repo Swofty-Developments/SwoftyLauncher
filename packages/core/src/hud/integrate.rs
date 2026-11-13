@@ -162,6 +162,14 @@ pub fn compose_in_build(
             rotations.join("; ")
         )));
     }
+    let unpadded = super::check::unpadded_clips(&output.archives)?;
+    if !unpadded.is_empty() {
+        return Err(Error::Other(format!(
+            "the composed HUD of {} has clips whose key data the game can place misaligned and crash on: {}",
+            huds.join(", "),
+            unpadded.join("; ")
+        )));
+    }
     let owner = inputs.first().map(|i| i.addon.clone()).unwrap_or_default();
     let ops = output
         .ops("hud")
