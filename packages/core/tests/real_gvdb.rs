@@ -5,7 +5,7 @@ use swofty_core::manifest::AddonManifest;
 use swofty_core::ops::{DbOps, apply_db_ops};
 use swofty_core::owned;
 use swofty_core::profile::Profile;
-use swofty_core::settings::render_ops;
+use swofty_core::settings::{OnAddons, render_ops};
 use swofty_formats::gvdb::Gvdb;
 
 #[test]
@@ -23,7 +23,7 @@ fn template_db_ops_resolve_against_the_real_database() {
     let m = AddonManifest::load(&template).unwrap();
     let mut doc: serde_json::Value =
         serde_json::from_slice(&std::fs::read(template.join("db/example.json")).unwrap()).unwrap();
-    render_ops(&mut doc, &m, &Profile::new("test")).unwrap();
+    render_ops(&mut doc, &m, &Profile::new("test"), &OnAddons::default()).unwrap();
     let ops: DbOps = serde_json::from_value(doc).unwrap();
     apply_db_ops(&mut db, &ops, &BTreeMap::<String, Vec<String>>::new()).unwrap();
     assert_eq!(

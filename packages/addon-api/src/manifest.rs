@@ -710,6 +710,89 @@ fn any_version() -> VersionReq {
     VersionReq::STAR
 }
 
+/// An addon that must be on in the profile: an option's `needs`, or the `addon` of an op's `when`.
+/// Written as the addon's id, or as `{ "id", "version" }` like a requirement.
+#[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
+#[serde(try_from = "serde_json::Value", into = "serde_json::Value")]
+pub struct AddonNeed {
+    pub id: String,
+    pub version: VersionReq,
+}
+
+impl AddonNeed {
+    pub fn parse(v: &serde_json::Value) -> std::result::Result<Self, String> {
+        use serde_json::Value;
+        let (id, version) = match v {
+            Value::String(id) => (id.as_str(), None),
+            Value::Object(o) => {
+                if let Some(k) = o.keys().find(|k| *k != "id" && *k != "version") {
+                    return Err(format!("{k:?} is not a key of an addon; use id and version"));
+                }
+                let id = o
+                    .get("id")
+                    .and_then(Value::as_str)
+                    .ok_or("an addon needs its id")?;
+                match o.get("version") {
+                    None => (id, None),
+                    Some(Value::String(r)) => (id, Some(r.as_str())),
+                    Some(r) => return Err(format!("version {r} is not a version range like \">=1.2.0\"")),
+                }
+            }
+            v => return Err(format!("{v} is not an addon id or {{ \"id\", \"version\" }}")),
+        };
+        if !valid_id(id) {
+            return Err(format!("{id:?} is not an addon id"));
+        }
+        let version = match version {
+            None => VersionReq::STAR,
+            Some(r) => VersionReq::parse(r).map_err(|e| format!("version {r:?}: {e}"))?,
+        };
+        Ok(Self {
+            id: id.to_owned(),
+            version,
+        })
+    }
+
+    /// One addon, or a list of addons that must all be on.
+    pub fn parse_list(v: &serde_json::Value) -> std::result::Result<Vec<Self>, String> {
+        match v {
+            serde_json::Value::Array(a) if a.is_empty() => Err("lists no addon".into()),
+            serde_json::Value::Array(a) => a
+                .iter()
+                .enumerate()
+                .map(|(i, v)| Self::parse(v).map_err(|e| format!("[{i}]: {e}")))
+                .collect(),
+            v => Self::parse(v).map(|n| vec![n]),
+        }
+    }
+}
+
+impl TryFrom<serde_json::Value> for AddonNeed {
+    type Error = String;
+
+    fn try_from(v: serde_json::Value) -> std::result::Result<Self, String> {
+        Self::parse(&v)
+    }
+}
+
+impl From<AddonNeed> for serde_json::Value {
+    fn from(n: AddonNeed) -> Self {
+        match n.version == VersionReq::STAR {
+            true => n.id.into(),
+            false => serde_json::json!({ "id": n.id, "version": n.version.to_string() }),
+        }
+    }
+}
+
+impl std::fmt::Display for AddonNeed {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.version == VersionReq::STAR {
+            true => f.write_str(&self.id),
+            false => write!(f, "{} {}", self.id, self.version),
+        }
+    }
+}
+
 #[derive(Debug, Clone, Serialize, Deserialize, PartialEq)]
 #[serde(deny_unknown_fields)]
 pub struct Conflict {
@@ -795,6 +878,10 @@ pub struct AddonOption {
     /// page or hub tab shows.
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub hidden: bool,
+    /// Addons a toggle needs on in the profile: while one is off, the toggle is off and locked, and its
+    /// stored value is kept for when the addon is back on.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub needs: Vec<AddonNeed>,
     /// `cosmetic` leaves the option out of the multiplayer match of a gameplay addon.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub multiplayer: Option<Multiplayer>,
@@ -973,6 +1060,9 @@ impl AddonManifest {
             }
             if let Err(e) = o.validate() {
                 return fail(format!("option {}: {e}", o.id));
+            }
+            if o.needs.iter().any(|n| n.id == self.id) {
+                return fail(format!("option {}: needs names the addon itself", o.id));
             }
         }
         let mut screens = BTreeMap::new();
@@ -2202,6 +2292,89 @@ mod tests {
         .unwrap();
         assert!(m.options[0].hidden);
         assert_eq!(serde_json::to_value(&m).unwrap()["options"][0]["hidden"], true);
+    }
+
+    fn with_toggle(option: &str) -> Result<AddonManifest> {
+        AddonManifest::parse(
+            &GRID24.replace(r#""binds": "db" }]"#, &format!(r#""binds": "db" }}, {option}]"#)),
+        )
+    }
+
+    #[test]
+    fn a_toggle_needs_addons_by_id_or_with_a_version_range() {
+        let m = with_toggle(
+            r#"{ "id": "istanbul_park", "type": "toggle", "default": true, "binds": "db",
+                 "needs": ["track.istanbul_park", { "id": "swofty.std", "version": ">=1.8.0" }] }"#,
+        )
+        .unwrap();
+        let needs = &m.options[1].needs;
+        assert_eq!(needs[0].id, "track.istanbul_park");
+        assert_eq!(needs[0].version, VersionReq::STAR);
+        assert_eq!(needs[1].to_string(), "swofty.std >=1.8.0");
+        let json = serde_json::to_value(&m).unwrap();
+        assert_eq!(
+            json["options"][1]["needs"],
+            serde_json::json!(["track.istanbul_park", { "id": "swofty.std", "version": ">=1.8.0" }])
+        );
+        assert_eq!(AddonManifest::parse(&json.to_string()).unwrap(), m);
+        assert!(json["options"][0].get("needs").is_none());
+    }
+
+    #[test]
+    fn a_bad_need_is_a_manifest_error() {
+        let err = |needs: &str| {
+            with_toggle(&format!(
+                r#"{{ "id": "istanbul_park", "type": "toggle", "default": false, "binds": "db", "needs": {needs} }}"#
+            ))
+            .unwrap_err()
+            .to_string()
+        };
+        assert!(err(r#"["Istanbul Park"]"#).contains(r#""Istanbul Park" is not an addon id"#));
+        assert!(
+            err(r#"[{ "id": "track.istanbul_park", "versoin": "1" }]"#).contains(r#""versoin" is not a key"#)
+        );
+        assert!(err(r#"[{ "id": "track.istanbul_park", "version": "soon" }]"#).contains(r#"version "soon""#));
+        assert!(err(r#"[{ "version": "1" }]"#).contains("an addon needs its id"));
+        assert!(err("[3]").contains("3 is not an addon id"));
+        assert!(
+            err(r#"["swofty.f1-2026-grid24"]"#)
+                .contains("option istanbul_park: needs names the addon itself")
+        );
+        let choice = AddonManifest::parse(&GRID24.replace(
+            r#""binds": "db" }]"#,
+            r#""binds": "db", "needs": ["track.istanbul_park"] }]"#,
+        ))
+        .unwrap_err()
+        .to_string();
+        assert!(
+            choice.contains("option team_livery: needs is only for a toggle"),
+            "{choice}"
+        );
+        let reserved = with_toggle(r#"{ "id": "addon", "type": "toggle", "default": false, "binds": "db" }"#)
+            .unwrap_err()
+            .to_string();
+        assert!(
+            reserved.contains("option addon: the id addon is reserved"),
+            "{reserved}"
+        );
+    }
+
+    #[test]
+    fn an_addon_list_takes_one_addon_or_several() {
+        let one = AddonNeed::parse_list(&serde_json::json!("track.istanbul_park")).unwrap();
+        assert_eq!(one.len(), 1);
+        let two =
+            AddonNeed::parse_list(&serde_json::json!(["track.a", { "id": "track.b", "version": "^2" }]))
+                .unwrap();
+        assert_eq!(two[1].version, VersionReq::parse("^2").unwrap());
+        assert_eq!(
+            AddonNeed::parse_list(&serde_json::json!([])).unwrap_err(),
+            "lists no addon"
+        );
+        assert_eq!(
+            AddonNeed::parse_list(&serde_json::json!(["track.a", "nope"])).unwrap_err(),
+            r#"[1]: "nope" is not an addon id"#
+        );
     }
 
     #[test]

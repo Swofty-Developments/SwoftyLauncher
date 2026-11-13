@@ -10,6 +10,7 @@ use swofty_core::manifest::{AddonManifest, Category, Kind};
 use swofty_core::ops::ErpOp;
 use swofty_core::profile::{Profile, VANILLA};
 use swofty_core::registry::Registry;
+use swofty_core::settings::OnAddons;
 use swofty_core::store::{Store, Unreadable};
 use swofty_core::view::SectionSpec;
 
@@ -133,7 +134,7 @@ pub struct Changes {
 
 impl Changes {
     /// Reads the op files as a build does, with the profile's settings for the addon's options.
-    pub fn read(store: &Store, profile: &Profile, item: &AddonItem) -> Self {
+    pub fn read(store: &Store, profile: &Profile, on: &OnAddons, item: &AddonItem) -> Self {
         let m = &item.manifest;
         let dir = store.addons_dir().join(&m.id);
         let mut c = Self {
@@ -142,7 +143,7 @@ impl Changes {
             ..Self::default()
         };
         let ops = m.operations.op_files().flat_map(|(kind, rel)| {
-            let file = swofty_core::build::read_op_file(&dir.join(rel), kind, m, profile).ok();
+            let file = swofty_core::build::read_op_file(&dir.join(rel), kind, m, profile, on).ok();
             if file.is_none() {
                 c.unreadable.push(rel.to_owned());
             }
@@ -444,6 +445,11 @@ impl Library {
 
     /// The addons the Addons page lists: track addons are on the Tracks page
     /// while the sidebar shows one.
+    /// The addons on in the profile, that options' `needs` and ops' `when.addon` are checked against.
+    pub fn on(&self) -> OnAddons {
+        OnAddons::new(self.addons.iter().filter(|a| a.enabled).map(|a| &a.manifest))
+    }
+
     pub fn listed(&self) -> impl Iterator<Item = &AddonItem> {
         listed(&self.addons, self.tracks_page)
     }
@@ -558,7 +564,12 @@ mod tests {
         )
         .unwrap();
         let mut profile = Profile::new("t");
-        let c = Changes::read(&store, &profile, &item);
+        let c = Changes::read(
+            &store,
+            &profile,
+            &swofty_core::settings::OnAddons::default(),
+            &item,
+        );
         assert_eq!(
             (c.database, c.unreadable),
             (1, vec!["db/missing.json".to_owned()])
@@ -566,7 +577,16 @@ mod tests {
         profile
             .set_option(&item.manifest, "failures", true.into())
             .unwrap();
-        assert_eq!(Changes::read(&store, &profile, &item).database, 2);
+        assert_eq!(
+            Changes::read(
+                &store,
+                &profile,
+                &swofty_core::settings::OnAddons::default(),
+                &item
+            )
+            .database,
+            2
+        );
         std::fs::remove_dir_all(&root).ok();
     }
 }
