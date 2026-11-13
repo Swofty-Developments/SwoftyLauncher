@@ -164608,6 +164608,87 @@
     "native/src/core/race_retirement_guard.cpp"
    ],
    "expect": "48 8B 54 24 60"
+  },
+  {
+   "id": "game.theatre_rows_row_offset",
+   "section": ".xtls",
+   "pattern": "89 7C 24 30 4C 69 F7 C8 04 00 00 4A 8B B4 33 D0 00 00 00",
+   "match": "0x141f0b9a2",
+   "anchor": "0x4",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141f0b9a6",
+   "kind": "mid",
+   "names": [
+    "site_Game_TheatreRows_RowOffset"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-14",
+     "by": "re-career-teams",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/theatre_list.cpp"
+   ],
+   "expect": "4C 69 F7 C8 04 00 00"
+  },
+  {
+   "id": "game.theatre_list_entry_step_alt",
+   "section": ".xtls",
+   "pattern": "48 8B B9 C8 02 00 00 48 8B 49 40 48 69 DA A0 01 00 00 8B 44 1F 08",
+   "match": "0x142bfc790",
+   "anchor": "0x173",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142bfc903",
+   "kind": "mid",
+   "names": [
+    "site_Game_TheatreList_EntryStepAlt"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-14",
+     "by": "re-career-teams",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/theatre_list.cpp"
+   ],
+   "expect": "4A 8D 14 C2 4D 8B 41 38"
+  },
+  {
+   "id": "game.theatre_list_no_slot_alt",
+   "section": ".xtls",
+   "pattern": "48 8B B9 C8 02 00 00 48 8B 49 40 48 69 DA A0 01 00 00 8B 44 1F 08",
+   "match": "0x142bfc790",
+   "anchor": "0x231",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142bfc9c1",
+   "kind": "mid",
+   "names": [
+    "site_Game_TheatreList_NoSlotAlt"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-14",
+     "by": "re-career-teams",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/theatre_list.cpp"
+   ],
+   "expect": "48 83 C4 28 5B"
   }
  ]
 }

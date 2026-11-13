@@ -16453,8 +16453,23 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_TheatreList_EntryStepAlt: Binding = Binding {
+        id: "site_Game_TheatreList_EntryStepAlt",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_TheatreList_NoSlot: Binding = Binding {
         id: "site_Game_TheatreList_NoSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TheatreList_NoSlotAlt: Binding = Binding {
+        id: "site_Game_TheatreList_NoSlotAlt",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TheatreRows_RowOffset: Binding = Binding {
+        id: "site_Game_TheatreRows_RowOffset",
         kind: "site",
         status: Status::Experimental,
     };

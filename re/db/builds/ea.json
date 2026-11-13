@@ -1892,6 +1892,15 @@
   },
   "site_Sess_InGameRaceRetirementDriverJoin": {
    "match": "0x2d56224"
+  },
+  "site_Game_TheatreRows_RowOffset": {
+   "match": "0x1f04f42"
+  },
+  "site_Game_TheatreList_EntryStepAlt": {
+   "match": "0x2bf0d20"
+  },
+  "site_Game_TheatreList_NoSlotAlt": {
+   "match": "0x2bf0d20"
   }
  },
  "unresolvable": {}
