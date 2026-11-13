@@ -26,6 +26,7 @@ const SwoftyHooks *table();
 Table &core();
 GameOps game_ops();
 void declare_game_points(Table &t);
+void arm_game_points();
 void declare_session_points(Table &t);
 void declare_car_points(Table &t);
 void arm_session_points();

@@ -4,19 +4,27 @@
 namespace swofty::game {
 
 struct ActivityDef {
-    uint8_t _pad_0x0[0x10];
+    uint8_t _pad_0x0[0x8];
+    uint16_t id; // L2 experimental
+    uint8_t _pad_0xa[0x6];
     uint8_t type; // L2 experimental
+    uint8_t _pad_0x11[0x1];
+    uint16_t duration; // L2 experimental
 };
+static_assert(offsetof(ActivityDef, id) == 0x8);
 static_assert(offsetof(ActivityDef, type) == 0x10);
+static_assert(offsetof(ActivityDef, duration) == 0x12);
 
 struct CalendarActivity {
     uint8_t _pad_0x0[0xa];
     uint16_t day; // L2 experimental
-    uint8_t _pad_0xc[0x4];
+    uint8_t state; // L2 experimental
+    uint8_t _pad_0xd[0x3];
     ActivityDef *activity; // L2 experimental
     uint8_t _pad_0x18[0x8];
 };
 static_assert(offsetof(CalendarActivity, day) == 0xa);
+static_assert(offsetof(CalendarActivity, state) == 0xc);
 static_assert(offsetof(CalendarActivity, activity) == 0x10);
 static_assert(sizeof(CalendarActivity) == 0x20);
 
@@ -121,9 +129,14 @@ struct ScheduleComponent {
     uint8_t _pad_0x0[0x410];
     ScheduleSeason *seasons_begin; // L2 experimental
     ScheduleSeason *seasons_end; // L2 experimental
+    uint8_t _pad_0x420[0x8];
+    uint32_t current_season; // L2 experimental
+    uint8_t season_over; // L2 experimental
 };
 static_assert(offsetof(ScheduleComponent, seasons_begin) == 0x410);
 static_assert(offsetof(ScheduleComponent, seasons_end) == 0x418);
+static_assert(offsetof(ScheduleComponent, current_season) == 0x428);
+static_assert(offsetof(ScheduleComponent, season_over) == 0x42c);
 
 struct ScheduleSeason {
     uint8_t _pad_0x0[0x40];

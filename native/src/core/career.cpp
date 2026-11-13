@@ -257,6 +257,7 @@ void on_flow(SwoftyContext *c)
     if (perf_on())
         perf_flow(hash, uint32_t(from), to, name);
     runtime::watchdog_flow(hash, to, name.c_str());
+    runtime::hub_calendar_flow(hash, to);
     runtime::load_stall_flow(hash, to, name.c_str());
     runtime::netplay_flow(hash, to);
     runtime::entitlements_flow(hash, to);
