@@ -1116,11 +1116,7 @@ impl Builder {
             for (node, ks) in [(wn.clone(), win_keys), (cn.clone(), ctr_keys)] {
                 cx.plan.clips.push(ClipSpec {
                     node: node.clone(),
-                    channels: vec![
-                        clip_channel(Channel::position(times.clone(), ks)),
-                        clip_channel(Channel::rotation(vec![0.0], vec![[0.0, 0.0, 0.0, -1.0]])),
-                        clip_channel(Channel::scale(vec![0.0], vec![[1.0; 3]])),
-                    ],
+                    channels: vec![clip_channel(Channel::position(times.clone(), ks))],
                 });
                 cx.plan.fractions.push(FracItem {
                     name: format!("x_{}_{}", e.id, if node == wn { "win" } else { "ctr" }),

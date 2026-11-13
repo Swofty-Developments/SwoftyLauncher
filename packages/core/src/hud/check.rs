@@ -126,6 +126,27 @@ pub fn uncovered(stock: &dyn Stock, archives: &[super::Built]) -> crate::Result<
     Ok(out)
 }
 
+/// Every composed clip in `archives` that carries a one-key rotation channel. The game copies
+/// that quaternion with an aligned 16-byte load straight from the clip's `syst` buffer, which it
+/// can place 8 bytes past a 16-byte boundary; the HUD load then faults.
+pub fn constant_rotations(archives: &[super::Built]) -> crate::Result<Vec<String>> {
+    let mut out = Vec::new();
+    for a in archives {
+        let erp = swofty_formats::erp::Erp::parse(&a.bytes)?;
+        for res in &erp.resources {
+            if res.kind() != "AnimClip" || res.fragments.len() < 2 {
+                continue;
+            }
+            let temp = res.fragments[0].data()?;
+            let syst = res.fragments[1].data()?;
+            if swofty_formats::animclip::has_constant_rotation(&temp, &syst)? {
+                out.push(res.name.clone());
+            }
+        }
+    }
+    Ok(out)
+}
+
 fn short(name: &str) -> &str {
     name.rsplit('/').next().unwrap_or(name)
 }

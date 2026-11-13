@@ -154,6 +154,14 @@ pub fn compose_in_build(
             huds.join(", ")
         )));
     }
+    let rotations = super::check::constant_rotations(&output.archives)?;
+    if !rotations.is_empty() {
+        return Err(Error::Other(format!(
+            "the composed HUD of {} has clips with a one-key rotation the game can read misaligned and crash on: {}",
+            huds.join(", "),
+            rotations.join("; ")
+        )));
+    }
     let owner = inputs.first().map(|i| i.addon.clone()).unwrap_or_default();
     let ops = output
         .ops("hud")

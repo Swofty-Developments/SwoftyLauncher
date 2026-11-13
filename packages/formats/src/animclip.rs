@@ -310,6 +310,17 @@ pub fn read_clip(temp: &[u8], syst: &[u8]) -> Result<Clip> {
     Ok(clip)
 }
 
+/// True when the clip carries a rotation channel of one key: a constant quaternion the game
+/// copies with an aligned 16-byte load from the clip's `syst` buffer. The game does not always
+/// place that buffer on 16 bytes (a 92-byte `syst` landed 8 bytes past a 16-byte boundary), and
+/// the load then faults, so a composed clip leaves the rotation out instead.
+pub fn has_constant_rotation(temp: &[u8], syst: &[u8]) -> Result<bool> {
+    Ok(read_clip(temp, syst)?
+        .channels
+        .iter()
+        .any(|c| c.target == Target::Rotation && c.times.len() == 1))
+}
+
 /// Appends element names to a scene's `ACStringTable` and returns the new table with the index
 /// of the first appended name. A clip refers to its element by that index. Names must be new.
 /// Most scenes' tables are sorted, and Halo's scenes keep them so: when the table is sorted, the
@@ -438,6 +449,16 @@ mod tests {
         )
         .unwrap();
         assert_eq!(again, (temp, syst));
+    }
+
+    #[test]
+    fn a_one_key_rotation_is_told_apart() {
+        let (temp, syst) = build_clip(&template(), "n", 0, "t", &channels()).unwrap();
+        assert!(!has_constant_rotation(&temp, &syst).unwrap());
+        let mut c = channels();
+        c.push(Channel::rotation(vec![0.0], vec![[0.0, 0.0, 0.0, -1.0]]));
+        let (temp, syst) = build_clip(&template(), "n", 0, "t", &c).unwrap();
+        assert!(has_constant_rotation(&temp, &syst).unwrap());
     }
 
     #[test]
