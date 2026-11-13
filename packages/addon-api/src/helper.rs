@@ -20,7 +20,7 @@ pub const MOVE_ADDON: &str = "move_addon";
 pub const TASKS: &str = "tasks";
 // Listed from launcher 1.5.12 when the host knows the game.
 pub const PROFILE_HEADS: &str = "profile_heads";
-// Listed from launcher 1.9.28, after the other host calls.
+// Listed from launcher 1.9.29, after the other host calls.
 pub const SAVE_DIR: &str = "save_dir";
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]

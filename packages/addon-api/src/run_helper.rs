@@ -317,7 +317,7 @@ impl GameFiles for Host {
         host_path(self.call(HostCall::SteamSaveDir)).ok()
     }
 
-    // None on a launcher before 1.9.28, which doesn't list save_dir.
+    // None on a launcher before 1.9.29, which doesn't list save_dir.
     fn save_dir(&self, _profile: &str) -> Option<PathBuf> {
         if !self.saves.load(Ordering::Relaxed) {
             return None;
