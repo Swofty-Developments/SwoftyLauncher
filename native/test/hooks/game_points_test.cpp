@@ -193,6 +193,7 @@ template <class P, class F> static uint32_t on(Table &t, const char *addon, uint
 struct T1 {};
 struct T2 {};
 struct T3 {};
+struct T4 {};
 
 static void test_untouched_without_subscribers()
 {
@@ -210,6 +211,35 @@ static void test_untouched_without_subscribers()
     trail.clear();
     add_fn(&player_calendar, &contract_event, 40);
     expect(joined() == "game add_activity day 40", "and the game's code runs as before: " + joined());
+}
+
+static void test_core_arm_moves_day()
+{
+    lines.clear();
+    Prologues pro;
+    pro.take();
+    Table t(Platform0::make());
+    t.declare_core();
+    gp::Probe p = probe();
+    static int probed = 0;
+    probed = 0;
+    p.add_activity = [](ce::AddActivity &) { probed++; };
+    p.observe_add = [](void *calendar, const void *activity, uint32_t day) -> uint32_t {
+        return calendar == &player_calendar && activity == &contract_event && day == 40 ? 44u : day;
+    };
+    gp::Set<T4>::declare(t, ops(), std::move(p));
+    t.arm();
+    gp::Set<T4>::arm();
+    expect(!pro.all(), "the core's arm installs the add_activity point with no subscriber");
+    trail.clear();
+    add_fn(&player_calendar, &contract_event, 40);
+    expect(joined() == "game add_activity day 44", "the day observe_add answers reaches the game's code: " + joined());
+    trail.clear();
+    add_fn(&other_calendar, &contract_event, 40);
+    expect(joined() == "game add_activity day 40", "an unchanged day passes as it was: " + joined());
+    expect(probed == 0, "with no subscriber the payload probe does not run");
+    gp::Set<T4>::add.reset();
+    expect(pro.all(), "and with the point gone the function is the game's again");
 }
 
 static void test_points()
@@ -461,6 +491,7 @@ int main()
 {
     setvbuf(stdout, nullptr, _IONBF, 0);
     test_untouched_without_subscribers();
+    test_core_arm_moves_day();
     test_points();
     test_raw_mixins();
     test_payload_layout();

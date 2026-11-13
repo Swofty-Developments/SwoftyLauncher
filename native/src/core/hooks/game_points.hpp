@@ -28,7 +28,7 @@ namespace ce = swofty::career::events;
 namespace te = swofty::tracks::events;
 
 struct Probe {
-    std::function<void(void *calendar, const void *activity, uint32_t day)> observe_add;
+    std::function<uint32_t(void *calendar, const void *activity, uint32_t day)> observe_add;
     std::function<void(ce::AddActivity &)> add_activity;
     std::function<void(ce::ContractSign &)> contract_sign;
     std::function<std::string(void *setup, uint32_t &session_type)> fuel_track;
@@ -52,7 +52,7 @@ template <class Tag> struct Set {
     static void d_add_activity(void *calendar, const void *activity, uint32_t day)
     {
         if (probe.observe_add)
-            probe.observe_add(calendar, activity, day);
+            day = probe.observe_add(calendar, activity, day);
         ce::AddActivity a;
         payloads::add_activity(a, calendar, activity, day);
         if (probe.add_activity && table->handlers(ADD_ACTIVITY.point))
@@ -99,7 +99,7 @@ template <class Tag> struct Set {
     }
 
     // Installs the add_activity point from the window stage on with no subscriber, for the core's own calendar
-    // diagnostic (observe_add); the probe still runs only for subscribers.
+    // diagnostic and race weekend fix (observe_add, which may move the day); the probe still runs only for subscribers.
     static void arm()
     {
         add->keep(true);

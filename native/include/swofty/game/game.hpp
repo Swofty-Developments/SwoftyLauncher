@@ -152,11 +152,14 @@ struct SecretMeeting {
     uint32_t id; // L2 experimental
     uint8_t _pad_0x4[0x10];
     uint8_t reason; // L2 experimental
-    uint8_t _pad_0x15[0xb];
+    uint8_t _pad_0x15[0x3];
+    uint16_t day_added; // L2 experimental
+    uint8_t _pad_0x1a[0x6];
     uint32_t team; // L2 experimental
 };
 static_assert(offsetof(SecretMeeting, id) == 0x0);
 static_assert(offsetof(SecretMeeting, reason) == 0x14);
+static_assert(offsetof(SecretMeeting, day_added) == 0x18);
 static_assert(offsetof(SecretMeeting, team) == 0x20);
 static_assert(sizeof(SecretMeeting) == 0x24);
 

@@ -2481,11 +2481,14 @@ pub struct SecretMeeting {
     pub id: u32,
     _pad_0x4: [u8; 0x10],
     pub reason: u8,
-    _pad_0x15: [u8; 0xb],
+    _pad_0x15: [u8; 0x3],
+    pub day_added: u16,
+    _pad_0x1a: [u8; 0x6],
     pub team: u32,
 }
 const _: () = assert!(core::mem::offset_of!(SecretMeeting, id) == 0x0);
 const _: () = assert!(core::mem::offset_of!(SecretMeeting, reason) == 0x14);
+const _: () = assert!(core::mem::offset_of!(SecretMeeting, day_added) == 0x18);
 const _: () = assert!(core::mem::offset_of!(SecretMeeting, team) == 0x20);
 const _: () = assert!(core::mem::size_of::<SecretMeeting>() == 0x24);
 

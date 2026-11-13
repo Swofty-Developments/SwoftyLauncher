@@ -17,13 +17,21 @@
 // (current season, season over, seasons), the season's driver calendars, their activities and definitions through
 // KB structs (L2), and the clock through CareerTimeComponent.current_minutes. A build whose game headers lack a field
 // logs that the calendar is not readable.
+//
+// The fix: a contract event or secret meeting added to the human's calendar on a day a pending race weekend covers
+// would be the first deciding item on that day and send the hub back to Team HQ as the session opens. The point moves
+// it to the day after the weekend (after the next one too when that starts right after), and a secret meeting's own
+// day with it. Only later, only those two types, and a calendar that doesn't read leaves the item as it is.
 
 namespace swofty::game {
 struct ActivityDef;
 struct CalendarActivity;
 struct CareerTimeComponent;
 struct DriverCalendar;
+struct DriverCareerContractsManagerComponent;
+struct DriverSecretMeetings;
 struct ScheduleComponent;
+struct SecretMeeting;
 struct ScheduleSeason;
 }
 
@@ -218,6 +226,95 @@ template <class D = g::ActivityDef> uint8_t def_type(uintptr_t def)
         return 0xff;
 }
 
+bool writable(uintptr_t p, size_t n)
+{
+    MEMORY_BASIC_INFORMATION mbi{};
+    if (!p || VirtualQuery(reinterpret_cast<const void *>(p), &mbi, sizeof mbi) != sizeof mbi)
+        return false;
+    if (mbi.State != MEM_COMMIT || (mbi.Protect & PAGE_GUARD))
+        return false;
+    DWORD w = PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY;
+    return (mbi.Protect & w) && p + n <= reinterpret_cast<uintptr_t>(mbi.BaseAddress) + mbi.RegionSize;
+}
+
+// The secret meeting the offer just made for driver keeps its own day (SecretMeeting.day_added, saved as dayAdded):
+// moved with the calendar item when it still holds the old day. Game_DriverContracts_OfferSecretMeeting stores it in
+// DriverSecretMeetings.current before it adds the calendar item, and keeps an older current meeting instead of the
+// new one, whose day then differs.
+template <class M = g::DriverCareerContractsManagerComponent, class R = g::DriverSecretMeetings,
+          class S = g::SecretMeeting>
+const char *move_meeting_day(uint32_t driver, uint32_t from, uint32_t to)
+{
+    if constexpr (requires(M *m, R *r, S *x) {
+                      m->secret_meetings_begin;
+                      m->secret_meetings_end;
+                      r->current;
+                      r->driver;
+                      x->day_added;
+                  }) {
+        uintptr_t contracts = component("DriverCareerContractsManagerComponent");
+        uintptr_t b = rd<uintptr_t>(contracts ? contracts + offsetof(M, secret_meetings_begin) : 0);
+        uintptr_t e = rd<uintptr_t>(contracts ? contracts + offsetof(M, secret_meetings_end) : 0);
+        if (!b || e < b || (e - b) % 16 || (e - b) / 16 > 1024)
+            return "the secret meeting records do not read; its own day is left";
+        for (uintptr_t slot = b; slot < e; slot += 16) {
+            uintptr_t record = rd<uintptr_t>(slot + 8);
+            uint32_t key = 0;
+            if (!record || !mem::read(record + offsetof(R, driver), key) || !same_key(key, driver))
+                continue;
+            uintptr_t meeting = rd<uintptr_t>(record + offsetof(R, current));
+            uint16_t had = 0;
+            if (!meeting || !mem::read(meeting + offsetof(S, day_added), had))
+                return "the driver's current secret meeting does not read; its own day is left";
+            if (had != from)
+                return "the driver's current secret meeting is on another day; its own day is left";
+            uint16_t v = uint16_t(to);
+            if (!writable(meeting + offsetof(S, day_added), sizeof v))
+                return "the secret meeting is not writable; its own day is left";
+            std::memcpy(reinterpret_cast<void *>(meeting + offsetof(S, day_added)), &v, sizeof v);
+            return "its own day moved with it";
+        }
+        return "no secret meeting record for the driver; its own day is left";
+    } else {
+        (void)driver, (void)from, (void)to;
+        return "this core was built without the secret meeting layout; its own day is left";
+    }
+}
+
+template <class C = g::DriverCalendar, class A = g::CalendarActivity, class D = g::ActivityDef>
+uint32_t out_of_weekends(uintptr_t calendar, uint32_t driver, uint8_t type, uint32_t day)
+{
+    if constexpr (requires(C *c, A *a, D *d) {
+                      c->activities_begin;
+                      a->day;
+                      a->state;
+                      a->activity;
+                      d->id;
+                      d->type;
+                      d->duration;
+                  }) {
+        hc::Layout L{offsetof(C, activities_begin), offsetof(C, activities_end), offsetof(A, day), offsetof(A, state),
+                     offsetof(A, activity), offsetof(D, id), offsetof(D, type), offsetof(D, duration)};
+        std::vector<hc::Item> all;
+        if (!hc::collect_all(calendar, L, read_raw, nullptr, all)) {
+            swofty::log("[career] %s on day %u left in place: the calendar's race weekends do not read",
+                        hc::type_name(type), day);
+            return day;
+        }
+        int inside = 0;
+        uint32_t to = hc::after_weekends(day, hc::pending_weekends(all), &inside);
+        if (to == day || to > 0xffff)
+            return day;
+        const char *own = type == hc::SECRET_MEETING ? move_meeting_day(driver, day, to) : nullptr;
+        swofty::log("[career] moved %s from day %u to day %u (inside race weekend %d)%s%s", hc::type_name(type), day,
+                    to, inside, own ? "; " : "", own ? own : "");
+        return to;
+    } else {
+        (void)calendar, (void)driver, (void)type;
+        return day;
+    }
+}
+
 }
 
 namespace runtime {
@@ -241,29 +338,34 @@ void hub_calendar_flow(uint32_t hash, uint32_t to)
         left(ms);
 }
 
-void hub_calendar_added(void *calendar, const void *activity, uint32_t day)
+uint32_t hub_calendar_added(void *calendar, const void *activity, uint32_t day)
 {
     uint8_t type = def_type(reinterpret_cast<uintptr_t>(activity));
     if (!hc::logs_add(type))
-        return;
+        return day;
     uint32_t key = 0, player = 0;
     bool known = calendar_driver(reinterpret_cast<uintptr_t>(calendar), key);
     bool mine = known && player_driver(player) && same_key(key, player);
     if (type == hc::CONTRACT_EVENT && !mine)
-        return;
+        return day;
+    bool fresh;
     {
         std::lock_guard<std::mutex> g(lock);
-        if (!adds.fresh(reinterpret_cast<uintptr_t>(calendar), type, day))
-            return;
+        fresh = adds.fresh(reinterpret_cast<uintptr_t>(calendar), type, day);
     }
-    uint16_t now = 0;
-    bool clock = today(now);
-    char when[32] = "unknown";
-    if (clock)
-        snprintf(when, sizeof when, "%u", unsigned(now));
-    swofty::log("[career] calendar add: %s (0x%02x) on day %u, today %s, %s calendar 0x%llx (driver 0x%08x)",
-                hc::type_name(type), type, day, when, mine ? "the human's" : "another",
-                static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(calendar)), key);
+    if (fresh) {
+        uint16_t now = 0;
+        bool clock = today(now);
+        char when[32] = "unknown";
+        if (clock)
+            snprintf(when, sizeof when, "%u", unsigned(now));
+        swofty::log("[career] calendar add: %s (0x%02x) on day %u, today %s, %s calendar 0x%llx (driver 0x%08x)",
+                    hc::type_name(type), type, day, when, mine ? "the human's" : "another",
+                    static_cast<unsigned long long>(reinterpret_cast<uintptr_t>(calendar)), key);
+    }
+    if (!mine)
+        return day;
+    return out_of_weekends(reinterpret_cast<uintptr_t>(calendar), key, type, day);
 }
 
 }

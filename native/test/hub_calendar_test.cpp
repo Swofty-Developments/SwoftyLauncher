@@ -197,6 +197,51 @@ static void watch_and_adds()
     expect(a.fresh(CAL + 0xc8, hc::SECRET_MEETING, 246), "another calendar logs");
 }
 
+static void weekend_moves()
+{
+    std::vector<hc::Weekend> one{{243, 246, 12}};
+    int inside = -1;
+    expect(hc::after_weekends(244, one, &inside) == 247 && inside == 12,
+           "a meeting inside a weekend moves to the day after its last day");
+    expect(hc::after_weekends(243, one, &inside) == 247 && inside == 12, "its first day too");
+    expect(hc::after_weekends(246, one, &inside) == 247 && inside == 12, "its last day too");
+    expect(hc::after_weekends(247, one, &inside) == 247 && inside == 0, "the day after it stays");
+    expect(hc::after_weekends(240, one, &inside) == 240 && inside == 0, "a day before it stays");
+
+    std::vector<hc::Weekend> two{{229, 232, 11}, {243, 246, 12}};
+    expect(hc::after_weekends(236, two, &inside) == 236 && inside == 0, "a day between two weekends stays");
+
+    std::vector<hc::Weekend> back{{243, 246, 12}, {247, 250, 13}};
+    expect(hc::after_weekends(245, back, &inside) == 251 && inside == 12,
+           "back to back, it moves past the second weekend it would land in");
+    expect(hc::after_weekends(247, back, &inside) == 251 && inside == 13,
+           "the day after one weekend that starts the next moves past the next");
+    std::vector<hc::Weekend> unsorted{{247, 250, 13}, {243, 246, 12}};
+    expect(hc::after_weekends(245, unsorted, &inside) == 251, "the weekends' order does not matter");
+    expect(hc::after_weekends(245, {}, &inside) == 245, "no weekend, no move");
+    for (uint32_t d = 200; d < 260; ++d)
+        expect(hc::after_weekends(d, back) >= d, "never earlier: day " + std::to_string(d));
+
+    Memory m;
+    std::vector<Def> defs{{12, hc::RACE_WEEKEND, 4}, {37, hc::SECRET_MEETING, 1}, {3, 0x06, 30}};
+    calendar(m, {{229, 2}, {236, 1}, {243, 1}, {247, 1}, {247, 0}}, defs, {0, 2, 0, 0, 1});
+    std::vector<hc::Item> all;
+    expect(hc::collect_all(CAL, L, read, &m, all) && all.size() == 5, "collect_all reads every item");
+    auto w = hc::pending_weekends(all);
+    expect(w.size() == 2 && w[0].first == 243 && w[0].last == 246 && w[0].number == 2 && w[1].number == 3,
+           "only pending race weekends block, numbered among all the calendar's race weekends");
+    expect(hc::after_weekends(230, w) == 230, "a race weekend not in state 1 does not block");
+    expect(hc::after_weekends(247, w, &inside) == 251 && inside == 3, "a meeting on round 3's first day moves after it");
+
+    Memory bad;
+    calendar(bad, {{243, 1}}, defs, {0});
+    bad.put<uint64_t>(LIST + 8, 0x99999);
+    expect(!hc::collect_all(CAL, L, read, &bad, all), "an item that doesn't read fails collect_all, so nothing moves");
+    expect(hc::moves(hc::SECRET_MEETING) && hc::moves(hc::CONTRACT_EVENT) && !hc::moves(hc::RACE_WEEKEND) &&
+               !hc::moves(0x09),
+           "only secret meetings and contract events move");
+}
+
 int main()
 {
     secret_meeting_on_p1();
@@ -205,6 +250,7 @@ int main()
     unreadable();
     lines();
     watch_and_adds();
+    weekend_moves();
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;
 }

@@ -146,6 +146,24 @@ inline bool read_item(uint64_t at, const Layout &L, Read rd, void *user, Item &o
     return true;
 }
 
+// Every activity on the calendar, in calendar order; false when the list itself or one of its items doesn't read.
+inline bool collect_all(uint64_t calendar, const Layout &L, Read rd, void *user, std::vector<Item> &out)
+{
+    out.clear();
+    uint64_t b = 0, e = 0;
+    if (!get(rd, user, calendar + L.list_begin, b) || !get(rd, user, calendar + L.list_end, e) || !b || e < b ||
+        (e - b) % SLOT_SIZE || (e - b) / SLOT_SIZE > MAX_ITEMS)
+        return false;
+    for (uint64_t slot = b; slot < e; slot += SLOT_SIZE) {
+        uint64_t at = 0;
+        Item it;
+        if (!get(rd, user, slot + SLOT_ITEM, at) || !at || !read_item(at, L, rd, user, it))
+            return false;
+        out.push_back(it);
+    }
+    return true;
+}
+
 // The calendar's activities running on day, in calendar order; false when the list itself doesn't read.
 inline bool collect(uint64_t calendar, uint16_t day, const Layout &L, Read rd, void *user, std::vector<Item> &out,
                     size_t *total = nullptr)
@@ -168,6 +186,54 @@ inline bool collect(uint64_t calendar, uint16_t day, const Layout &L, Read rd, v
             out.push_back(it);
     }
     return true;
+}
+
+// A race weekend on a calendar: its days and its number among the calendar's race weekends (1-based).
+struct Weekend {
+    uint16_t first = 0, last = 0;
+    int number = 0;
+};
+
+// The race weekends a contract event or secret meeting must not start inside: the calendar's pending (state 1)
+// race weekend items, numbered in calendar order among all its race weekends.
+inline std::vector<Weekend> pending_weekends(const std::vector<Item> &all)
+{
+    std::vector<Weekend> out;
+    int n = 0;
+    for (const Item &i : all) {
+        if (i.type != RACE_WEEKEND || !i.def)
+            continue;
+        ++n;
+        if (i.state == 1 && i.last >= i.first)
+            out.push_back({i.first, i.last, n});
+    }
+    return out;
+}
+
+inline bool moves(uint8_t type)
+{
+    return type == CONTRACT_EVENT || type == SECRET_MEETING;
+}
+
+// The first day at or after day that no weekend covers: inside a weekend the day after its last day, again for a
+// weekend that starts right after it. Never earlier than day; inside is the number of the first weekend it was in.
+inline uint32_t after_weekends(uint32_t day, const std::vector<Weekend> &weekends, int *inside = nullptr)
+{
+    if (inside)
+        *inside = 0;
+    for (size_t pass = 0; pass <= weekends.size(); ++pass) {
+        bool moved = false;
+        for (const Weekend &w : weekends)
+            if (w.first <= day && day <= w.last) {
+                if (inside && !*inside)
+                    *inside = w.number;
+                day = uint32_t(w.last) + 1;
+                moved = true;
+            }
+        if (!moved)
+            break;
+    }
+    return day;
 }
 
 inline std::string describe(const Item &i)
