@@ -1439,6 +1439,23 @@ typedef struct SwoftyCarOps {
     int (*set_fuel_mix)(uint32_t index, uint32_t mode);
 } SwoftyCarOps;
 
+/* Memory checks (standard library, swofty/mem.hpp), from the core export SwoftyCoreMem; not a SwoftyApi field, so
+   SWOFTY_API_VERSION is unchanged and the table carries its own version. The core keeps one page table shared by
+   every thread of every module, filled from the process working set (K32QueryWorkingSetEx, constant time per page)
+   and from VirtualQuery only for pages that are not resident. It never touches a page to test it, so guard pages
+   stay armed. An answer stays good for 250 ms, a refused one for 32 ms. Both calls are safe from any thread.
+   Table version 1.
+   readable: nonzero when all n bytes at p are committed and readable (an n of 0 counts as 1); 0 for a null
+   pointer, an address in the first 64 KB or above user space, a range that wraps, and pages marked PAGE_GUARD or
+   PAGE_NOACCESS. invalidate: drops every answer in the table, for every thread. */
+#define SWOFTY_MEM_VERSION 1
+
+typedef struct SwoftyMem {
+    uint32_t version;
+    int (*readable)(const void *p, size_t n);
+    void (*invalidate)(void);
+} SwoftyMem;
+
 typedef struct SwoftyApi {
     uint32_t version;
     void (*log)(const char *fmt, ...);
@@ -1484,6 +1501,7 @@ typedef const SwoftySessionOps *(*SwoftyCoreSessionOpsFn)(void);
 typedef const SwoftyCarOps *(*SwoftyCoreCarOpsFn)(void);
 typedef const SwoftyContentOps *(*SwoftyCoreContentOpsFn)(void);
 typedef const SwoftyLive *(*SwoftyCoreLiveFn)(void);
+typedef const SwoftyMem *(*SwoftyCoreMemFn)(void);
 
 #define SWOFTY_STAGE_WINDOW 1
 
@@ -1505,6 +1523,7 @@ SWOFTY_EXPORT const SwoftySessionOps *SwoftyCoreSessionOps(void);
 SWOFTY_EXPORT const SwoftyCarOps *SwoftyCoreCarOps(void);
 SWOFTY_EXPORT const SwoftyContentOps *SwoftyCoreContentOps(void);
 SWOFTY_EXPORT const SwoftyLive *SwoftyCoreLive(void);
+SWOFTY_EXPORT const SwoftyMem *SwoftyCoreMem(void);
 
 #ifdef __cplusplus
 }

@@ -914,6 +914,8 @@ mod tests {
             "const SwoftyServices *services;",
             "#define SWOFTY_REGISTRY_VERSION 1",
             "SwoftyCoreRegistry(void);",
+            "#define SWOFTY_MEM_VERSION 1",
+            "SwoftyCoreMem(void);",
             "} SwoftyEraBox;",
             "#define SWOFTY_EVENT_CAREER_HUB \"career.hub\"",
             "} SwoftyCareerState;",
