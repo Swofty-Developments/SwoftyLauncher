@@ -1,6 +1,8 @@
-// Host-native unit test for the core's My Team vehicle heal (native/src/core/myteam_vehicle_heal_logic.hpp).
+// Host-native unit test for the core's My Team vehicle heal (native/src/core/myteam_vehicle_heal_logic.hpp) and the
+// game manager's entrants system displacement it reads the cars through (native/src/core/game_manager_layout.hpp).
 // Built and run by native/test/run_myteam_vehicle_heal_test.sh.
 
+#include "game_manager_layout.hpp"
 #include "myteam_vehicle_heal_logic.hpp"
 
 #include <cstdio>
@@ -105,6 +107,15 @@ static uint64_t list_end(size_t n)
 
 int main()
 {
+    namespace gm = runtime::game_manager;
+    expect(gm::entrants_system("steam") == 0x290, "the entrants system is [g_Game_Manager]+0x290 on Steam");
+    expect(gm::entrants_system("ea") == 0x260, "and +0x260 on the EA App build (George's and jhxsh's empty heal reads)");
+    expect(gm::entrants_system("unknown") == 0x290, "an unknown build keeps the KB displacement");
+    expect(gm::tail_field(0x2d0, "ea") == 0x2a0 && gm::tail_field(0x2e8, "ea") == 0x2b8 && gm::tail_field(0x278, "ea") == 0x248,
+           "every EA qword field from Steam +0x278 on is 0x30 lower (the live progress system +0x2d0 is +0x2a0)");
+    expect(gm::tail_field(0x2d0, "steam") == 0x2d0 && gm::tail_field(0x290, "unknown") == 0x290,
+           "Steam and an unknown build read every field where the KB has it");
+
     expect(mh::kind(0x4000) == 0 && mh::kind(custom_handle(7)) == 1 && mh::id(custom_handle(7)) == 7,
            "a vehicle handle is the kind in its low byte and the stat id in its high word");
     expect(mh::healable(custom_handle(0)) && mh::healable(custom_handle(8)), "My Team handles (kind 1) are healed");

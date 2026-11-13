@@ -65,6 +65,8 @@ bool same_build();
 // The builds whose struct layouts were checked against the signatures' functions (re/tools/sigverify.py): the Steam KB build and
 // the EA App link of the same version. Code that finds every address by signature gates on this instead of same_build().
 bool verified_build();
+// [g_Game_Manager]'s entrants system displacement on the running build (game_manager_layout.hpp): +0x290 on Steam, +0x260 on EA.
+uintptr_t manager_entrants_system();
 
 uintptr_t find(const Sig &s, const char *tag, const char *channel = "assets");
 bool readable(const void *p, size_t n);

@@ -261,7 +261,6 @@ constexpr size_t ESM_VEHICLE_FLAGS = 0x258;
 constexpr uint32_t TAKES_LIST = 1, TAKES_POOL_A = 2, TAKES_POOL_B = 4;
 constexpr size_t ES_POOL_A = 0x338;
 constexpr size_t ES_POOL_B = 0x348;
-constexpr size_t GM_ENTRANTS_SYSTEM = 0x290;
 constexpr size_t POOL_SLOT = 0x10;
 constexpr size_t MAX_POOL = 8192;
 

@@ -758,7 +758,7 @@ std::vector<uint32_t> pool_refs(uint32_t pools)
 {
     std::vector<uint32_t> refs;
     uintptr_t slot = swofty::api ? swofty::api->resolve("g_Game_Manager") : 0, gm = 0, es = 0;
-    if (!slot || !mem::read(slot, gm) || !gm || !mem::read(gm + logic::GM_ENTRANTS_SYSTEM, es) || !es)
+    if (!slot || !mem::read(slot, gm) || !gm || !mem::read(gm + runtime::manager_entrants_system(), es) || !es)
         return refs;
     for (auto [bit, off] : {std::pair<uint32_t, size_t>{logic::TAKES_POOL_A, logic::ES_POOL_A},
                             std::pair<uint32_t, size_t>{logic::TAKES_POOL_B, logic::ES_POOL_B}}) {
