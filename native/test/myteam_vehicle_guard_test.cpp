@@ -24,9 +24,17 @@ struct Fake {
     std::map<uint64_t, uint32_t> d;
     std::map<uint64_t, std::string> s;
     std::map<std::string, mv::Row> rows;
+    std::string forced_label;
+
+    bool forced(const std::string &label)
+    {
+        return !forced_label.empty() && label == forced_label;
+    }
 
     mv::Row vehicle_row(const std::string &label)
     {
+        if (forced(label))
+            return mv::Row::missing;
         auto it = rows.find(label);
         return it == rows.end() ? mv::Row::missing : it->second;
     }
@@ -129,6 +137,13 @@ int main()
     Fake stock26 = frame(0xffffffffu, 1, 0x4000);
     stock26.s[LABEL] = "myteam_honda_2026";
     expect(!mv::skip_base(stock26, RSP, ROW, skip) && skip.left, "cosj_06's 'myteam_honda_2026' is left to the game");
+
+    Fake forced = frame(0xffffffffu, 0, 0x4000);
+    forced.s[LABEL] = "myteam_honda_2026";
+    forced.rows["myteam_honda_2026"] = mv::Row::present;
+    forced.forced_label = "myteam_honda_2026";
+    expect(mv::skip_base(forced, RSP, ROW, skip) && skip.label == "myteam_honda_2026" && skip.stat_id == 0,
+           "the keep test car (SWOFTY_TEST_MYTEAM_KEEP_LABEL) is handled like an addon car whose row is gone");
 
     Fake present_mes = frame(0xffffffffu, 8, 0x4000);
     present_mes.s[LABEL] = "myteam_mes_custom_2";

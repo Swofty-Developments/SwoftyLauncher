@@ -226,7 +226,16 @@ int main()
     based.d[mt + mh::VEHICLE_BASE] = stock_handle(10);
     expect(!mh::unbased(based, mt), "a My Team car with a stock base is left alone");
     based.s[mt + mh::VEHICLE_FILE_NAME] = "myteam_mes_porsche_2026";
-    expect(mh::base_for(based, ENTRANTS, mt) == mh::NO_VEHICLE, "an addon car gets no stock base by name");
+    expect(mh::base_for(based, ENTRANTS, mt) == mh::NO_VEHICLE, "an addon car whose own vehicle is not loaded gets no base");
+    based.s[mt + mh::VEHICLE_FILE_NAME] = "myteam_mes_nissan_2026";
+    expect(mh::base_for(based, ENTRANTS, mt) == stock_handle(8),
+           "George's More Engine Suppliers car takes its own myteam_mes_ vehicle (loaded, addon on) as its base");
+    based.s[mt + mh::VEHICLE_FILE_NAME] = "ferrari_2026";
+    expect(mh::base_for(based, ENTRANTS, mt) == mh::NO_VEHICLE, "a car that is not a My Team car gets no base");
+    mh::Tables tb = mh::tables(based, ENTRANTS);
+    expect(tb.stock == STOCK_TABLE && tb.stock_slots == stock.size() && tb.custom == CUSTOM_TABLE && tb.custom_slots == 3,
+           "the diagnostic reads both tables and their slot counts");
+    expect(mh::tables(no_tables, ENTRANTS).stock == 0, "an unreadable entrants system reads as no tables");
 
     expect(mh::replaced(0) && mh::replaced(2) && mh::replaced(4), "ReplaceVehicle's replaced, added and unchanged results count");
     expect(!mh::replaced(1) && !mh::replaced(3) && !mh::replaced(5), "its no-table, failed-store and preloaded results do not");

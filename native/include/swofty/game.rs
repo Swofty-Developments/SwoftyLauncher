@@ -3681,6 +3681,8 @@ pub type Sess_Tyres_ClosestAvailableCompound_t = unsafe extern "C" fn(
     preference: *const u32,
     wear_scale: f32,
 ) -> u32;
+pub type Sess_VehicleTable_EmplaceAt_t =
+    unsafe extern "C" fn(table: *mut c_void, record: *const c_void) -> *mut c_void;
 pub type Sess_WeatherComponent_SetSystemRandomSeed_t = unsafe extern "C" fn(component: *mut c_void);
 pub type Sess_Weekend_Start_t =
     unsafe extern "C" fn(weekend: *mut c_void, entrants: *const c_void, begin: bool);
@@ -14698,6 +14700,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_VehicleTable_EmplaceAt: Binding = Binding {
+        id: "Sess_VehicleTable_EmplaceAt",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_ViewReplay_EnterPhotoMode: Binding = Binding {
         id: "Sess_ViewReplay_EnterPhotoMode",
         kind: "func",
@@ -16340,6 +16347,11 @@ pub mod bindings {
     };
     pub const site_Game_MyTeamVehicleBases_NextBase: Binding = Binding {
         id: "site_Game_MyTeamVehicleBases_NextBase",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_MyTeamVehicleBases_SaveRecord: Binding = Binding {
+        id: "site_Game_MyTeamVehicleBases_SaveRecord",
         kind: "site",
         status: Status::Experimental,
     };

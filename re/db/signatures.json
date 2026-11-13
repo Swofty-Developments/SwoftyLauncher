@@ -7005,7 +7005,8 @@
     "addons/career-editor/native/src/components.cpp",
     "native/src/core/career.cpp",
     "native/src/core/netplay_room.cpp",
-    "native/src/core/testagent/agent.cpp"
+    "native/src/core/testagent/agent.cpp",
+    "native/src/core/myteam_vehicle_keep.cpp"
    ]
   },
   {
@@ -164045,7 +164046,8 @@
     }
    ],
    "used_by": [
-    "native/src/core/myteam_vehicle_guard.cpp"
+    "native/src/core/myteam_vehicle_guard.cpp",
+    "native/src/core/myteam_vehicle_keep.cpp"
    ]
   },
   {
@@ -164072,7 +164074,8 @@
     }
    ],
    "used_by": [
-    "native/src/core/myteam_vehicle_guard.cpp"
+    "native/src/core/myteam_vehicle_guard.cpp",
+    "native/src/core/myteam_vehicle_keep.cpp"
    ]
   },
   {
@@ -164343,6 +164346,33 @@
    ],
    "used_by": [
     "native/src/core/myteam_vehicle_heal.cpp"
+   ]
+  },
+  {
+   "id": "game.myteam_vehicle_bases_save_record",
+   "section": ".xtls",
+   "pattern": "8B 6C 24 38 85 ED 0F 85 ?? ?? ?? ?? 41 8B 06 C1 E0 0E 66 41 0B 46 02",
+   "match": "0x1425070b3",
+   "anchor": "0xc",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1425070bf",
+   "kind": "mid",
+   "expect": "41 8B 06 C1",
+   "names": [
+    "site_Game_MyTeamVehicleBases_SaveRecord"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "myteam-keep",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/myteam_vehicle_keep.cpp"
    ]
   }
  ]

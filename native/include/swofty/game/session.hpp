@@ -657,6 +657,8 @@ inline constexpr address<"Sess_VehiclePlacement_HandleGridRequest"> Sess_Vehicle
 inline constexpr address<"Sess_VehiclePlacement_PlaceOnSlot"> Sess_VehiclePlacement_PlaceOnSlot{}; // L2 experimental
 inline constexpr address<"Sess_VehiclePlacement_ResolveTransform"> Sess_VehiclePlacement_ResolveTransform{}; // L2 experimental
 inline constexpr address<"Sess_VehicleProgress_IsPastLapFraction"> Sess_VehicleProgress_IsPastLapFraction{}; // L2 experimental
+using Sess_VehicleTable_EmplaceAt_t = void *(void *table, const void *record);
+inline constexpr fn<"Sess_VehicleTable_EmplaceAt", Sess_VehicleTable_EmplaceAt_t> Sess_VehicleTable_EmplaceAt{}; // L2 experimental
 inline constexpr address<"Sess_ViewReplay_EnterPhotoMode"> Sess_ViewReplay_EnterPhotoMode{}; // L2 experimental
 inline constexpr address<"Sess_VirtualLapsRuleset_FinaliseResults"> Sess_VirtualLapsRuleset_FinaliseResults{}; // L2 experimental
 inline constexpr address<"Sess_VirtualLapsRuleset_ForceFinishAll"> Sess_VirtualLapsRuleset_ForceFinishAll{}; // L2 experimental

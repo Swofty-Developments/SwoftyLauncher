@@ -7,6 +7,7 @@
 #include <swofty/mixin.hpp>
 
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <mutex>
 #include <string>
@@ -85,10 +86,14 @@ uint64_t rebuild(Game &game, uint64_t entrants, uint32_t handle, uint64_t first,
             return 0;
     mh::Source source;
     if (!mh::plan(game, entrants, first, end, source)) {
-        if (failed.first(id))
+        if (failed.first(id)) {
+            mh::Tables t = mh::tables(game, entrants);
             swofty::log("[myteam] heal: the player's My Team car (custom vehicle %u) is missing from the save and no stock My "
-                        "Team car is loaded to rebuild it from (%s); the career fails as before",
-                        (unsigned)id, when);
+                        "Team car is loaded to rebuild it from (%s; entrants %p: stock table %p with %zu slots, My Team table %p "
+                        "with %zu slots); the career fails as before",
+                        (unsigned)id, when, reinterpret_cast<void *>(entrants), reinterpret_cast<void *>(t.stock),
+                        t.stock_slots, reinterpret_cast<void *>(t.custom), t.custom_slots);
+        }
         return 0;
     }
     static uint8_t data[mh::VEHICLE_DATA_SIZE];
@@ -186,23 +191,38 @@ void myteam_vehicle_heal_entrants(uintptr_t entrants, uintptr_t first, uintptr_t
         uint32_t handle = 0;
         game.u32(car, handle);
         if (base == mh::NO_VEHICLE || !mem::readable(static_cast<uintptr_t>(car + mh::VEHICLE_BASE), sizeof base)) {
-            if (failed.first(mh::id(handle)))
-                swofty::log("[myteam] heal: the player's My Team car (custom vehicle %u, '%s') has no base car and no stock My "
-                            "Team car of that name is loaded to give it one",
-                            (unsigned)mh::id(handle), name.c_str());
+            if (failed.first(mh::id(handle))) {
+                mh::Tables t = mh::tables(game, entrants);
+                swofty::log("[myteam] heal: the player's My Team car (custom vehicle %u, '%s') has no base car and no stock car "
+                            "of that name is loaded to give it one (entrants %p: stock table %p with %zu slots)",
+                            (unsigned)mh::id(handle), name.c_str(), reinterpret_cast<void *>(entrants),
+                            reinterpret_cast<void *>(t.stock), t.stock_slots);
+            }
             continue;
         }
         *reinterpret_cast<uint32_t *>(static_cast<uintptr_t>(car + mh::VEHICLE_BASE)) = base;
         based++;
         if (healed.first(mh::id(handle)))
             swofty::log("[myteam] heal: the player's My Team car (custom vehicle %u, '%s') had no base car (launcher 1.9.25 "
-                        "rebuilt it from a stock car without one), which stops Team HQ loading; set its base to the stock "
-                        "'%s' as the career loaded. The next save keeps it",
+                        "rebuilt it from a stock car without one, or the car was made without one), which stops Team HQ "
+                        "loading; set its base to the stock '%s' as the career loaded. The next save keeps it",
                         (unsigned)mh::id(handle), name.c_str(), name.c_str());
     }
     std::string ids;
     for (uint16_t i : census.ids)
         ids += (ids.empty() ? "" : ", ") + std::to_string(i);
+    for (uint64_t car : mh::held(game, entrants, first, end)) {
+        uint32_t h = 0, base = 0;
+        uint8_t engine = 0;
+        std::string name;
+        game.u32(car, h);
+        game.u32(car + mh::VEHICLE_BASE, base);
+        mem::read(static_cast<uintptr_t>(car + mh::VEHICLE_ENGINE), engine);
+        mh::label(game, car, name);
+        char b[192];
+        snprintf(b, sizeof b, "; custom vehicle %u '%s' engine %u base car %08x", h >> 16, name.c_str(), engine, base);
+        ids += b;
+    }
     swofty::log("[myteam] heal: the career's %zu entrants include %zu on My Team cars (custom vehicle %s) as it loaded: %zu "
                 "missing and rebuilt, %zu given a base car, the rest present",
                 census.entrants, census.on_my_team, ids.c_str(), rebuilt, based);

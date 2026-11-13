@@ -112,6 +112,7 @@ t "Front-end tile list guard unit test" native/test/run_fe_tile_guard_test.sh
 t "Stock game message log unit test" native/test/run_game_message_log_test.sh
 t "My Team vehicle base guard unit test" native/test/run_myteam_vehicle_guard_test.sh
 t "My Team vehicle heal unit test" native/test/run_myteam_vehicle_heal_test.sh
+t "My Team vehicle keep unit test" native/test/run_myteam_vehicle_keep_test.sh
 t "Main menu logic unit test" native/test/run_main_menu_test.sh
 t "Grand Prix remembered-track fallback unit test" native/test/run_gp_track_test.sh
 t "Grand Prix weekend track guard unit test" native/test/run_gp_weekend_track_test.sh

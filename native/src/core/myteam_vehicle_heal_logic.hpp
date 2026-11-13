@@ -16,6 +16,7 @@ constexpr uint64_t SLOT_VEHICLE = 0x8;
 constexpr uint64_t VEHICLE_DATA = 0x10;
 constexpr uint64_t VEHICLE_FILE_NAME = 0x70;
 constexpr uint64_t VEHICLE_BASE = 0xcf2;
+constexpr uint64_t VEHICLE_ENGINE = 0xce9;
 constexpr size_t VEHICLE_DATA_SIZE = 0xce6;
 constexpr uint32_t NO_VEHICLE = 0x3fff0000;
 constexpr size_t LABEL_CHARS = 0x100;
@@ -226,15 +227,40 @@ template <class Mem> bool unbased(Mem &mem, uint64_t car)
 
 template <class Mem> uint32_t base_for(Mem &mem, uint64_t entrants, uint64_t car)
 {
-    std::string name;
-    if (!label(mem, car, name) || !stock_myteam(name))
+    std::string name, other;
+    if (!label(mem, car, name) || !starts_with(name, "myteam_"))
         return NO_VEHICLE;
-    for (const auto &e : stock(mem, entrants).myteam) {
+    uint64_t begin = 0;
+    size_t count = 0;
+    if (!slots(mem, entrants, KIND_STOCK, begin, count))
+        return NO_VEHICLE;
+    if (count > MAX_SLOTS)
+        count = MAX_SLOTS;
+    for (size_t i = 0; i < count; i++) {
+        uint64_t v = 0;
         uint32_t h = NO_VEHICLE;
-        if (e.second == name && mem.u32(e.first, h) && kind(h) == KIND_STOCK && id(h) < 0x3fff)
+        if (!mem.u64(begin + i * SLOT_SIZE + SLOT_VEHICLE, v) || !v || !label(mem, v, other) || other != name)
+            continue;
+        if (mem.u32(v, h) && kind(h) == KIND_STOCK && id(h) < 0x3fff)
             return h;
     }
     return NO_VEHICLE;
+}
+
+struct Tables {
+    uint64_t stock = 0, custom = 0;
+    size_t stock_slots = 0, custom_slots = 0;
+};
+
+template <class Mem> Tables tables(Mem &mem, uint64_t entrants)
+{
+    Tables t;
+    uint64_t begin = 0;
+    mem.u64(entrants + TABLES, t.stock);
+    mem.u64(entrants + TABLES + TABLE_STRIDE, t.custom);
+    slots(mem, entrants, KIND_STOCK, begin, t.stock_slots);
+    slots(mem, entrants, KIND_CUSTOM, begin, t.custom_slots);
+    return t;
 }
 
 template <class Mem> std::vector<uint64_t> held(Mem &mem, uint64_t entrants, uint64_t first, uint64_t end)
