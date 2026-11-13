@@ -1302,6 +1302,7 @@ mod tests {
             ]
         );
         assert!(check::uncovered(&stock, &out.archives).unwrap().is_empty());
+        assert!(check::constant_rotations(&out.archives).unwrap().is_empty());
         let also = Erp::parse(&out.archives[5].bytes).unwrap();
         let main = Erp::parse(&out.archives[2].bytes).unwrap();
         for name in [screens::CAP, screens::STACKED, screens::STACKED_UIPRE] {
