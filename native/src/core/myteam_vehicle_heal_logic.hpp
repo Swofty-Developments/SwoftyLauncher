@@ -16,6 +16,7 @@ constexpr uint64_t SLOT_VEHICLE = 0x8;
 constexpr uint64_t VEHICLE_DATA = 0x10;
 constexpr uint64_t VEHICLE_FILE_NAME = 0x70;
 constexpr uint64_t VEHICLE_BASE = 0xcf2;
+constexpr uint64_t VEHICLE_ENGINE = 0xce9;
 constexpr size_t VEHICLE_DATA_SIZE = 0xce6;
 constexpr uint32_t NO_VEHICLE = 0x3fff0000;
 constexpr size_t LABEL_CHARS = 0x100;

@@ -7,6 +7,7 @@
 #include <swofty/mixin.hpp>
 
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <mutex>
 #include <string>
@@ -203,6 +204,18 @@ void myteam_vehicle_heal_entrants(uintptr_t entrants, uintptr_t first, uintptr_t
     std::string ids;
     for (uint16_t i : census.ids)
         ids += (ids.empty() ? "" : ", ") + std::to_string(i);
+    for (uint64_t car : mh::held(game, entrants, first, end)) {
+        uint32_t h = 0, base = 0;
+        uint8_t engine = 0;
+        std::string name;
+        game.u32(car, h);
+        game.u32(car + mh::VEHICLE_BASE, base);
+        mem::read(static_cast<uintptr_t>(car + mh::VEHICLE_ENGINE), engine);
+        mh::label(game, car, name);
+        char b[192];
+        snprintf(b, sizeof b, "; custom vehicle %u '%s' engine %u base car %08x", h >> 16, name.c_str(), engine, base);
+        ids += b;
+    }
     swofty::log("[myteam] heal: the career's %zu entrants include %zu on My Team cars (custom vehicle %s) as it loaded: %zu "
                 "missing and rebuilt, %zu given a base car, the rest present",
                 census.entrants, census.on_my_team, ids.c_str(), rebuilt, based);
