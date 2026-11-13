@@ -1,4 +1,5 @@
 #include <swofty/mem.hpp>
+#include <swofty_api.h>
 
 #include <atomic>
 
@@ -95,4 +96,20 @@ Counts counts()
     return {resident_answers.load(std::memory_order_relaxed), region_answers.load(std::memory_order_relaxed)};
 }
 
+namespace {
+
+int export_readable(const void *p, size_t n)
+{
+    return readable(reinterpret_cast<uintptr_t>(p), n) ? 1 : 0;
+}
+
+const SwoftyMem export_table = {SWOFTY_MEM_VERSION, export_readable, invalidate};
+
+}
+
+}
+
+extern "C" __declspec(dllexport) const SwoftyMem *SwoftyCoreMem(void)
+{
+    return &swofty::mem::shared::export_table;
 }

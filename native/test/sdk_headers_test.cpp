@@ -16,6 +16,7 @@
 #include <swofty/hud_frame.hpp>
 #include <swofty/hud_leaves.hpp>
 #include <swofty/log_csv.hpp>
+#include <swofty/mem.hpp>
 #include <swofty/settings_struct.hpp>
 #include <swofty/timing.hpp>
 #include <swofty/hooks.hpp>
