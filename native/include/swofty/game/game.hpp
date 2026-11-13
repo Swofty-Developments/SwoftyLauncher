@@ -1165,7 +1165,11 @@ inline constexpr site<"site_Game_AcclimPenalty_Entry"> site_Game_AcclimPenalty_E
 inline constexpr site<"site_Game_AcclimPenalty_Return"> site_Game_AcclimPenalty_Return{}; // L2 experimental
 inline constexpr call<"site_Game_CareerContinue_DriverSlotTitle"> site_Game_CareerContinue_DriverSlotTitle{}; // L2 experimental
 inline constexpr site<"site_Game_CareerEventsSequencerFirstRecord"> site_Game_CareerEventsSequencerFirstRecord{}; // L2 experimental
+inline constexpr site<"site_Game_CareerEventsSequencerPlayerDriver"> site_Game_CareerEventsSequencerPlayerDriver{}; // L2 experimental
+inline constexpr site<"site_Game_CareerEventsSequencerPlayerDriverJoin"> site_Game_CareerEventsSequencerPlayerDriverJoin{}; // L2 experimental
 inline constexpr site<"site_Game_CareerEventsSequencerRecordsJoin"> site_Game_CareerEventsSequencerRecordsJoin{}; // L2 experimental
+inline constexpr site<"site_Game_CareerEventsSequencerTeamMateDriver"> site_Game_CareerEventsSequencerTeamMateDriver{}; // L2 experimental
+inline constexpr site<"site_Game_CareerEventsSequencerTeamMateDriverJoin"> site_Game_CareerEventsSequencerTeamMateDriverJoin{}; // L2 experimental
 inline constexpr site<"site_Game_CareerWizardConfirm_NextRoute"> site_Game_CareerWizardConfirm_NextRoute{}; // L2 experimental
 inline constexpr site<"site_Game_CareerWizard_BackRoute"> site_Game_CareerWizard_BackRoute{}; // L2 experimental
 inline constexpr call<"site_Game_DriverSelectHeader_BuildTabs"> site_Game_DriverSelectHeader_BuildTabs{}; // L2 experimental

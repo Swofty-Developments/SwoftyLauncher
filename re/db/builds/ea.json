@@ -1595,6 +1595,24 @@
   "site_Game_CareerContinue_DriverSlotTitle": {
    "match": "0x1a09c74"
   },
+  "site_Game_CareerEventsSequencerFirstRecord": {
+   "match": "0xc6d128"
+  },
+  "site_Game_CareerEventsSequencerPlayerDriver": {
+   "match": "0xc6d399"
+  },
+  "site_Game_CareerEventsSequencerPlayerDriverJoin": {
+   "match": "0xc6d3a1"
+  },
+  "site_Game_CareerEventsSequencerRecordsJoin": {
+   "match": "0xc6d16c"
+  },
+  "site_Game_CareerEventsSequencerTeamMateDriver": {
+   "match": "0xc6d13f"
+  },
+  "site_Game_CareerEventsSequencerTeamMateDriverJoin": {
+   "match": "0xc6d147"
+  },
   "site_Game_CareerWizardConfirm_NextRoute": {
    "match": "0x1a1e15d"
   },
