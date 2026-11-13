@@ -39,7 +39,9 @@
 //   Sess_Build_SessionVehicleClassLists, ahead of the unchecked one: a kind 1 handle that resolves to nothing is rebuilt
 //   and the car is returned in rax.
 // The next save keeps the rebuilt car: the career is healed with the stock car in place of the lost one. Every rebuilt
-// car is logged once with the stock car it took. When every car resolves, the heal only reads.
+// car is logged once with the stock car it took. When every car resolves, the heal only reads. A career load that
+// stops before the census (a championship entity or entrant read that fails, a null entrants system, a heal that is
+// not set up, or no entrant on a My Team car) logs one line with the step and the values it read.
 //
 // SWOFTY_MYTEAM_VEHICLE_HEAL=0 turns it off.
 
@@ -56,6 +58,7 @@ using Replace_t = int (*)(void *entrants, uint32_t handle, const void *vehicle);
 
 uintptr_t replace_at = 0;
 bool offered = false, settled = false;
+const char *setup = nullptr;
 std::mutex heal_lock;
 mh::Ids healed;
 mh::Ids failed;
@@ -125,6 +128,16 @@ uint64_t rebuild(Game &game, uint64_t entrants, uint32_t handle, uint64_t first,
     return v;
 }
 
+std::string heal_state()
+{
+    if (setup)
+        return setup;
+    if (!offered)
+        return std::string("never offered, the game code reads ") +
+               (runtime::code_ready() ? "decrypted now" : "encrypted still");
+    return runtime::core_mixins_active(MIXIN) ? "armed" : "armed for the career load only";
+}
+
 void session_vehicle(SwoftyContext *c)
 {
     if (c->rax || !replace_at)
@@ -153,11 +166,13 @@ std::vector<CoreMixins> myteam_vehicle_heal_mixins()
     char v[16] = {};
     DWORD n = GetEnvironmentVariableA("SWOFTY_MYTEAM_VEHICLE_HEAL", v, sizeof v);
     if (n && n < sizeof v && mh::switch_off(v)) {
+        setup = "off (SWOFTY_MYTEAM_VEHICLE_HEAL)";
         swofty::log("[myteam] vehicle heal off (SWOFTY_MYTEAM_VEHICLE_HEAL=%s)", v);
         return out;
     }
     replace_at = swofty::api->resolve(REPLACE);
     if (!replace_at) {
+        setup = "off (Ent_EntrantsSystem_ReplaceVehicle is not resolved)";
         swofty::log("[myteam] vehicle heal off: needs %s, which this build does not resolve", REPLACE);
         return out;
     }
@@ -170,14 +185,18 @@ std::vector<CoreMixins> myteam_vehicle_heal_mixins()
     return out;
 }
 
-void myteam_vehicle_heal_entrants(uintptr_t entrants, uintptr_t first, uintptr_t end)
+void myteam_vehicle_heal_entrants(const myteam_heal::Load &load)
 {
-    if (!replace_at || !entrants)
-        return;
     Game game;
-    mh::Census census = mh::census(game, first, end);
-    if (!census.on_my_team)
+    mh::Census census = mh::census(game, load.first, load.end);
+    if (const char *stop = mh::heal_stop(load, replace_at != 0, census)) {
+        std::string heal = heal_state();
+        mh::Tables t = load.system ? mh::tables(game, load.system) : mh::Tables{};
+        size_t cars = load.system ? mh::loaded(game, load.system, mh::KIND_CUSTOM) : 0;
+        swofty::log("[myteam] heal: %s", mh::stopped(stop, load, census, t, cars, heal.c_str()).c_str());
         return;
+    }
+    uint64_t entrants = load.system, first = load.first, end = load.end;
     std::vector<uint32_t> lost = mh::missing(game, entrants, first, end);
     std::lock_guard<std::mutex> hold(heal_lock);
     size_t rebuilt = 0, based = 0;

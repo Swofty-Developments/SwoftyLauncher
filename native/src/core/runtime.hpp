@@ -23,6 +23,10 @@ class Store;
 
 namespace runtime {
 
+namespace myteam_heal {
+struct Load;
+}
+
 enum Stage { STAGE_WINDOW = 1 };
 
 // How long a reader of the game's heaps trusts a big region's VirtualQuery answer (swofty::mem::Trust). A fresh
@@ -265,7 +269,7 @@ std::vector<CoreMixins> myteam_vehicle_guard_mixins();
 void myteam_vehicle_guard_commit();
 std::vector<CoreMixins> myteam_vehicle_heal_mixins();
 void myteam_vehicle_heal_commit();
-void myteam_vehicle_heal_entrants(uintptr_t entrants, uintptr_t first, uintptr_t end);
+void myteam_vehicle_heal_entrants(const myteam_heal::Load &load);
 std::vector<CoreMixins> myteam_vehicle_keep_mixins();
 void myteam_vehicle_keep_commit();
 bool myteam_keep_forced(const std::string &label);
