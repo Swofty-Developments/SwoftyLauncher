@@ -315,6 +315,7 @@ void window_stage()
     t.arm();
     arm_session_points();
     arm_car_points();
+    arm_game_points();
     for (auto &[point, subs] : t.undefined())
         swofty::log("[hooks] %s: handlers from %s are attached, and no addon has defined it", point.c_str(), subs.c_str());
     if (runtime::enabled("events", nullptr))

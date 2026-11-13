@@ -151,10 +151,17 @@ template <class R = g::TrackDataRecord> std::string fuel_track(void *setup, uint
 void declare_game_points(Table &t)
 {
     game_points::Probe p;
+    p.observe_add = runtime::hub_calendar_added;
     p.add_activity = probe_add_activity;
     p.contract_sign = probe_contract_sign;
     p.fuel_track = [](void *setup, uint32_t &type) { return fuel_track(setup, type); };
     Points::declare(t, game_ops(), std::move(p));
+}
+
+void arm_game_points()
+{
+    if (runtime::same_build())
+        Points::arm();
 }
 
 }
