@@ -68,8 +68,15 @@ struct Game {
         return mem::c_string(static_cast<uintptr_t>(a), out, mv::LABEL_CHARS);
     }
 
+    bool forced(const std::string &label)
+    {
+        return runtime::myteam_keep_forced(label);
+    }
+
     mv::Row vehicle_row(const std::string &label)
     {
+        if (runtime::myteam_keep_forced(label))
+            return mv::Row::missing;
         const SwoftyDb *db = runtime::db_table();
         if (!db)
             return mv::Row::unknown;
@@ -128,6 +135,8 @@ void ai_config_load(SwoftyContext *c)
             say_left(skip);
         return;
     }
+    if (runtime::myteam_keep_substitute(c, skip.stat_id, skip.label))
+        return;
     c->rdi = skip.container;
     c->r12 = skip.index;
     c->rip = next_base;

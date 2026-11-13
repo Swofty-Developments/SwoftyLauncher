@@ -1010,6 +1010,34 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : myteam_vehicle off: process ended with $code" || { echo "FAIL: myteam_vehicle off: process exited 0"; status=1; }
     fi
 done
+for keep in on off; do
+    echo "==== myteam_keep ($keep)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_MYTEAM_VEHICLE_KEEP=$([[ $keep == off ]] && echo 0) SWOFTY_TEST_MYTEAM_KEEP_LABEL=myteam_mes_porsche_2026 \
+        SWOFTY_TEST_MYTEAM_KEEP_STOCK=myteam_mercedes_2026:0x02160000:2:412 \
+        timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" myteam_keep >"$OUT/myteam_keep.out" 2>&1 || code=$?
+    grep -E '\[myteam\] (keep|vehicle keep|save:)|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    grep -E 'myteam keep|FAIL' "$OUT/myteam_keep.out" || true
+    if [[ $keep == on ]]; then
+        once "myteam_keep on: the keep is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(my team vehicle keep\)': 2 mixin"
+        once "myteam_keep on: the keep is armed with the test car" '\[myteam\] vehicle keep armed: .*; test car myteam_mes_porsche_2026'
+        once "myteam_keep on: the first test car is kept as the stock placeholder" "\[myteam\] keep: My Team car \(custom vehicle 0\) on 'myteam_mes_porsche_2026' \(engine 22, base car 00a40001\) has no vehicle row .* loads as the stock 'myteam_mercedes_2026' \(engine 2, base car 02160000\)"
+        once "myteam_keep on: the second test car is kept too" "\[myteam\] keep: My Team car \(custom vehicle 5\) on 'myteam_mes_porsche_2026' \(engine 24, base car 00a40003\)"
+        once "myteam_keep on: the save writes the original car" "\[myteam\] keep: the save writes My Team car \(custom vehicle 0\) as its original 'myteam_mes_porsche_2026' \(engine 22, base car 00a40001\)"
+        count "myteam_keep on: no base is skipped" 0 '\[myteam\] save: .* the base is skipped'
+        grep -q 'FAIL' "$OUT/myteam_keep.out" && { echo "FAIL: myteam_keep on: a check failed"; status=1; } || echo "ok  : myteam_keep on: the fake game's checks pass"
+        grep -q "myteam keep on: base 1 live 'myteam_mercedes_2026' engine 2 base 02160000, saved as 'myteam_mes_porsche_2026' engine 22 base 00a40001" "$OUT/myteam_keep.out" &&
+            echo "ok  : myteam_keep on: the live car is the placeholder and the save keeps the original" || { echo "FAIL: myteam_keep on: placeholder or save wrong"; status=1; }
+        count "myteam_keep on: no unhandled fault" 0 '\[crash\] unhandled '
+        [[ $code == 0 ]] && echo "ok  : myteam_keep on: process exited 0" || { echo "FAIL: myteam_keep on: process ended with $code"; status=1; }
+    else
+        once "myteam_keep off: the keep is off" '\[myteam\] vehicle keep off \(SWOFTY_MYTEAM_VEHICLE_KEEP=0\)'
+        count "myteam_keep off: nothing is kept" 0 '\[myteam\] keep: '
+        check "myteam_keep off: the test car is left to the game, which faults" '\[crash\] unhandled ACCESS_VIOLATION .*Sess_Load_VehicleAiConfig\+0x'
+        [[ $code != 0 ]] && echo "ok  : myteam_keep off: process ended with $code" || { echo "FAIL: myteam_keep off: process exited 0"; status=1; }
+    fi
+done
 for heal in on off; do
     echo "==== myteam_heal ($heal)"
     code=0

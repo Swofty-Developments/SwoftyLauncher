@@ -24,6 +24,7 @@ want = {b'fake_crash': 'Fake_Crash_Here', b'fake_heap_free': 'Fake_Heap_Free',
         b'fake_lb_select': 'Game_TimeTrialLeaderboard_SelectBoard',
         b'fake_mtv_load': 'Game_Load_MyTeamVehicleBases',
         b'fake_mtv_ai': 'Sess_Load_VehicleAiConfig',
+        b'fake_mtv_save': 'Game_Save_MyTeamVehicleBases',
         b'fake_sv_classes': 'Sess_Build_SessionVehicleClassLists',
         b'fake_mtv_replace': 'Ent_EntrantsSystem_ReplaceVehicle'}
 rows = []
