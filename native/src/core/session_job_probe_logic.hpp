@@ -4,7 +4,7 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
-#include <mutex>
+#include <cstring>
 
 // The wheel tyre instance probe (session_job_probe.cpp). Four 1.9.6-1.9.39 hangs entering the next session of a race
 // weekend had a job thread inside game function 0x1445acb00 (Game_Vfx_UpdateWheelTyreInstance), which the renderer
@@ -12,8 +12,15 @@
 // 0x20-byte items whose count is (end - begin) >> 5, tested unsigned against the index, and for every outer index scans
 // an inner list of entry pointers, each with a u32 list; every miss captures a stack trace. An outer list whose end is
 // below its begin gives a count the unsigned test never reaches, and a huge one runs for hours. The probe reads both
-// lists on entry and logs their sizes and pointers once per session per distinct value, with a [warning] line when a
-// size is negative, huge or not a whole number of items.
+// lists on entry and logs their sizes and pointers once per distinct value, with a [warning] line when a size is
+// negative, huge or not a whole number of items.
+//
+// The function runs for every wheel of every car every frame on the game's job threads, so the probe is armed only
+// while a session is entered: Window arms when StateSession or StateLoadSession goes to Entering (the next session of
+// a weekend enters through StateSession alone, and the four hangs stopped there) for kArmMs, cut to kSettleMs after
+// StateSession reaches Updating. Outside the window a call costs one relaxed atomic load. Inside it the dedupe is a
+// fixed array of atomic keys taken by compare-and-swap, with no lock; the kPerSession-th distinct value disarms the
+// window for the rest of that session, and so does the deadline, checked against the caller's tick.
 
 namespace runtime::session_job_probe {
 
@@ -22,6 +29,8 @@ constexpr uint64_t kInnerItem = 8;
 constexpr uint64_t kListItem = 4;
 constexpr int64_t kHuge = int64_t(1) << 16;
 constexpr int kPerSession = 8;
+constexpr uint64_t kArmMs = 20000;
+constexpr uint64_t kSettleMs = 10000;
 constexpr int kListsRead = 64;
 
 enum Gate : uint32_t {
@@ -134,48 +143,89 @@ inline bool bad(const Entry &e)
     return (o != Ok && o != NotRead) || (i != Ok && i != NotRead) || e.lists_bad || e.list_max > kHuge;
 }
 
-enum Admit : uint32_t { Repeat = 0, First = 1, Last = 2 };
+enum Admit : uint32_t { Repeat = 0, First = 1, FirstLast = 2 };
 
-class Seen {
+inline bool arms(uint32_t to, const char *name)
+{
+    return to == 1 && name && (!std::strcmp(name, "StateSession") || !std::strcmp(name, "StateLoadSession"));
+}
+
+inline bool settles(uint32_t to, const char *name)
+{
+    return to == 2 && name && !std::strcmp(name, "StateSession");
+}
+
+class Window {
 public:
-    Admit admit(uint64_t serial, uint64_t k)
+    void flow(uint32_t to, const char *name, uint64_t now)
     {
-        if (serial_.load(std::memory_order_acquire) == serial + 1) {
-            int n = count_.load(std::memory_order_acquire);
-            for (int i = 0; i < n && i < kPerSession; i++)
-                if (keys_[i].load(std::memory_order_relaxed) == k)
-                    return Repeat;
-            if (n > kPerSession)
+        if (arms(to, name)) {
+            armed_.store(0, std::memory_order_relaxed);
+            for (auto &k : keys_)
+                k.store(0, std::memory_order_relaxed);
+            until_.store(now + kArmMs, std::memory_order_relaxed);
+            uint32_t g = gen_.load(std::memory_order_relaxed) + 1;
+            gen_.store(g ? g : 1, std::memory_order_relaxed);
+            armed_.store(g ? g : 1, std::memory_order_release);
+        } else if (settles(to, name) && armed_.load(std::memory_order_relaxed)) {
+            uint64_t settle = now + kSettleMs;
+            if (settle < until_.load(std::memory_order_relaxed))
+                until_.store(settle, std::memory_order_relaxed);
+        }
+    }
+
+    uint32_t armed() const
+    {
+        return armed_.load(std::memory_order_relaxed);
+    }
+
+    bool live(uint32_t g, uint64_t now)
+    {
+        if (!g)
+            return false;
+        std::atomic_thread_fence(std::memory_order_acquire);
+        if (now < until_.load(std::memory_order_relaxed))
+            return true;
+        disarm(g);
+        return false;
+    }
+
+    Admit admit(uint32_t g, uint64_t key)
+    {
+        uint64_t k = (key ^ (uint64_t(g) * 0x9e3779b97f4a7c15ull)) | 1;
+        for (int i = 0; i < kPerSession; i++) {
+            uint64_t have = keys_[i].load(std::memory_order_acquire);
+            if (have == k)
+                return Repeat;
+            if (have)
+                continue;
+            uint64_t expected = 0;
+            if (keys_[i].compare_exchange_strong(expected, k, std::memory_order_acq_rel)) {
+                if (i < kPerSession - 1)
+                    return First;
+                disarm(g);
+                return FirstLast;
+            }
+            if (expected == k)
                 return Repeat;
         }
-        std::lock_guard<std::mutex> g(lock_);
-        if (serial_.load(std::memory_order_relaxed) != serial + 1) {
-            for (auto &x : keys_)
-                x.store(0, std::memory_order_relaxed);
-            count_.store(0, std::memory_order_relaxed);
-            serial_.store(serial + 1, std::memory_order_release);
-        }
-        int n = count_.load(std::memory_order_relaxed);
-        for (int i = 0; i < n && i < kPerSession; i++)
-            if (keys_[i].load(std::memory_order_relaxed) == k)
-                return Repeat;
-        if (n > kPerSession)
-            return Repeat;
-        if (n == kPerSession) {
-            count_.store(n + 1, std::memory_order_release);
-            return Last;
-        }
-        keys_[n].store(k, std::memory_order_relaxed);
-        count_.store(n + 1, std::memory_order_release);
-        return First;
+        disarm(g);
+        return Repeat;
     }
 
 private:
-    std::mutex lock_;
-    std::atomic<uint64_t> serial_{0};
-    std::atomic<int> count_{0};
+    std::atomic<uint32_t> armed_{0};
+    std::atomic<uint32_t> gen_{0};
+    std::atomic<uint64_t> until_{0};
     std::atomic<uint64_t> keys_[kPerSession] = {};
+
+    void disarm(uint32_t g)
+    {
+        armed_.compare_exchange_strong(g, 0, std::memory_order_relaxed);
+    }
 };
+
+static_assert(std::atomic<uint64_t>::is_always_lock_free && std::atomic<uint32_t>::is_always_lock_free);
 
 inline size_t clip(int n, size_t cap)
 {
@@ -254,8 +304,8 @@ inline size_t last_line(uint64_t serial, char *out, size_t cap)
     if (!out || !cap)
         return 0;
     return clip(std::snprintf(out, cap,
-                              "[session-job] 0x1445acb00: %d distinct values logged in session %llu; further values "
-                              "this session are not logged",
+                              "[session-job] 0x1445acb00: %d distinct values logged in session %llu; the probe is "
+                              "off until the next session load",
                               kPerSession, (unsigned long long)serial),
                 cap);
 }

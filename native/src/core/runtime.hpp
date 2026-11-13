@@ -282,6 +282,7 @@ std::vector<CoreMixins> watchdog_grace_mixins();
 void watchdog_grace_commit();
 void watchdog_flow(uint32_t hash, uint32_t to, const char *name);
 void load_stall_flow(uint32_t hash, uint32_t to, const char *name);
+void session_job_probe_flow(uint32_t to, const char *name);
 void load_stall_screen(const char *name);
 void load_stall_signal(uint32_t trigger, uint64_t detail_ms);
 void load_stall_game_line(const char *line);

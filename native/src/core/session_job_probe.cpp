@@ -9,6 +9,7 @@
 #include <swofty/mixin.hpp>
 
 #include <algorithm>
+#include <atomic>
 #include <cstdint>
 #include <cstdio>
 #include <cstring>
@@ -26,9 +27,11 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 //   lists = [holder+0x40], pending list [state+0x20]..[state+0x28] (the loop runs only while it is empty),
 //   outer list [[lists+0x1e8]+0x48]..[[lists+0x1e8]+0x50] (0x20-byte items, count tested unsigned),
 //   inner list [lists+0x178]..[lists+0x180] (entry pointers, each with a u32 list at +0x170..+0x178).
-// It changes nothing. A value it has not logged in the live session (gate and both sizes) gets one [session-job] line
-// with the pointers and the entries' u32 list lengths, and a [session-job] [warning] line when a size is negative, huge
-// or ragged; at most kPerSession values per session, and a black-box note for the stall and crash reports.
+// It changes nothing, and it reads only inside the armed window (session_job_probe_logic.hpp: a session's entry, from
+// the flow transitions career.cpp passes in); outside it a call is one relaxed atomic load. A value it has not logged in
+// the window (gate and both sizes) gets one [session-job] line with the pointers and the entries' u32 list lengths, a
+// [session-job] [warning] line when a size is negative, huge or ragged, and a black-box note for the stall and crash
+// reports; the kPerSession-th value disarms the window.
 // SWOFTY_SESSION_JOB_PROBE=0 turns it off.
 
 namespace {
@@ -51,7 +54,8 @@ constexpr uintptr_t INNER_BEGIN = 0x178;
 constexpr uintptr_t ENTRY_LIST = 0x170;
 
 safetyhook::MidHook hook;
-sj::Seen seen;
+sj::Window window;
+std::atomic<bool> hooked{false};
 
 bool span(uintptr_t at, sj::Span &s)
 {
@@ -137,17 +141,15 @@ sj::Entry read_entry(const safetyhook::Context &c)
 
 void on_entry(safetyhook::Context &c)
 {
+    uint32_t g = window.armed();
+    if (!g || !window.live(g, GetTickCount64()))
+        return;
     sj::Entry e = read_entry(c);
-    uint64_t serial = runtime::session_serial();
-    sj::Admit a = seen.admit(serial, sj::key(e));
+    sj::Admit a = window.admit(g, sj::key(e));
     if (a == sj::Repeat)
         return;
+    uint64_t serial = runtime::session_serial();
     static thread_local char text[1024];
-    if (a == sj::Last) {
-        sj::last_line(serial, text, sizeof text);
-        swofty::log("%s", text);
-        return;
-    }
     entry_lists(e);
     sj::line(e, serial, text, sizeof text);
     swofty::log("%s", text);
@@ -158,6 +160,10 @@ void on_entry(safetyhook::Context &c)
     blackbox::note("session-job", note);
     if (sj::bad(e)) {
         sj::warning(e, serial, text, sizeof text);
+        swofty::log("%s", text);
+    }
+    if (a == sj::FirstLast) {
+        sj::last_line(serial, text, sizeof text);
         swofty::log("%s", text);
     }
 }
@@ -181,9 +187,22 @@ void setup()
         return;
     }
     hook = std::move(*h);
-    swofty::log("[session-job] 0x1445acb00 entry probe armed at 0x%llx (%s): logs the wheel tyre instance list sizes "
-                "once per session per value, at most %d per session, and warns on a negative or huge size",
-                (unsigned long long)at, FUNC, sj::kPerSession);
+    hooked.store(true);
+    swofty::log("[session-job] 0x1445acb00 entry probe hooked at 0x%llx (%s): while a session is entered (StateSession or "
+                "StateLoadSession Entering, for %llu s, cut to %llu s after StateSession updates) it logs the wheel tyre "
+                "instance list sizes once per value, at most %d per session, and warns on a negative or huge size",
+                (unsigned long long)at, FUNC, (unsigned long long)(sj::kArmMs / 1000),
+                (unsigned long long)(sj::kSettleMs / 1000), sj::kPerSession);
+}
+
+}
+
+namespace runtime {
+
+void session_job_probe_flow(uint32_t to, const char *name)
+{
+    if (hooked.load(std::memory_order_relaxed))
+        window.flow(to, name, GetTickCount64());
 }
 
 }
