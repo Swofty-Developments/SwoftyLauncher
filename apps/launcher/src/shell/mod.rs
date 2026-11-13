@@ -113,6 +113,8 @@ pub struct Shell {
     pub(crate) time_trial_boards: bool,
     /// `time_trial_ingame` from config.json: on unless turned off, shows the boards inside Time Trial.
     pub(crate) time_trial_ingame: bool,
+    /// `home_video` from config.json: on unless turned off, shows the latest video card on the F1 25 home screen.
+    pub(crate) home_video: bool,
     reload_generation: u64,
     slow_logged: bool,
     /// `updates.check` from config.json, read when the library loads.

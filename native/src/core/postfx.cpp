@@ -122,7 +122,7 @@ struct Toggle {
 struct Mark {
     bool tonemap = false, ui = false, left_rt = false;
     int slot = -1;
-    ID3D12Resource *target = nullptr, *hudless = nullptr, *depth = nullptr, *ran_back = nullptr;
+    ID3D12Resource *target = nullptr, *hudless = nullptr, *depth = nullptr, *ran_back = nullptr, *drew = nullptr;
     D3D12_RESOURCE_STATES state = D3D12_RESOURCE_STATE_COMMON, hudless_state = D3D12_RESOURCE_STATE_COMMON,
                           depth_state = D3D12_RESOURCE_STATE_COMMON;
     std::vector<D3D12_RESOURCE_BARRIER> seen;
@@ -423,6 +423,8 @@ Frame frame;
 std::vector<Retired> retired;
 std::atomic<bool> fg_on{true};
 ULONGLONG started, last_check, live_at, frame_at;
+std::atomic<ULONGLONG> present_at;
+postfx::FrameClock frame_clock;
 float frametime;
 unsigned frame_count, ran_total;
 
@@ -435,6 +437,7 @@ std::vector<std::wstring> named_seen;
 struct Stats {
     unsigned presented = 0, in_list = 0, between = 0, without = 0, doubled = 0, ui_together = 0, unknown_state = 0,
              busy = 0, deferred = 0, dropped = 0;
+    unsigned generated = 0, runs = 0, unplaced = 0;
 };
 Stats stats;
 unsigned stat_lines;
@@ -1725,6 +1728,7 @@ bool record(const Where &w, int k)
         capture_next = now + 10000;
     }
     trace.runs++;
+    stats.runs++;
     trace.ran = s.passes;
     trace.path = w.path;
     trace.back = w.back;
@@ -2222,6 +2226,7 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
                 !(b.Transition.StateBefore & (READ_STATES | D3D12_RESOURCE_STATE_RENDER_TARGET))) {
                 BackUse &u = back_use(r);
                 u.fresh = !postfx::placed_lately(frame_count, u.placed_at);
+                m->drew = r;
             }
         }
     }
@@ -2246,8 +2251,11 @@ void on_reset(ID3D12GraphicsCommandList *list)
     unmark(list);
 }
 
+void game_frame(const void *was, ULONGLONG now);
+
 // Submits the game's lists, the core's own list after a picture list that ended before the HUD, and a
-// fence signal after any list the passes were recorded into, so their slot is known done.
+// fence signal after any list the passes were recorded into, so their slot is known done. A list that draws into
+// the game's next back buffer closes the passes' frame while the game's own frames do (postfx::FrameClock).
 void on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, d3d12hooks::ExecPlan &plan)
 {
     static const uint32_t probe = perf::probe("core", "postfx ExecuteCommandLists");
@@ -2268,6 +2276,12 @@ void on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, d3d1
             if (!mark)
                 continue;
             Mark &m = *mark;
+            if (m.drew) {
+                const void *was = frame_clock.drawn;
+                ULONGLONG now = GetTickCount64();
+                if (frame_clock.submit(m.drew, now, started))
+                    game_frame(was, now);
+            }
             if (m.slot >= 0 && signals < FRAMES)
                 signal[signals++] = m.slot;
             if (m.tonemap && !diag_done) {
@@ -2818,11 +2832,17 @@ void on_rule_event(const SwoftyEvent *ev, void *user)
     pending_events[s].fetch_add(1);
 }
 
+void on_flow_frame(double, void *);
+
 void subscribe_rule_events()
 {
     const SwoftyEvents *ev = runtime::events_table();
     if (!ev || !ev->subscribe)
         return;
+    uint32_t frame_token = 0;
+    if (!ev->on_frame || ev->on_frame(on_flow_frame, nullptr, &frame_token) != SWOFTY_ASSET_OK)
+        swofty::log("[postfx] the game's flow tick is not read: while no Present reaches the core, the toggle keys and "
+                    "live settings wait for one");
     struct Feed {
         const char *event;
         int signal;
@@ -2978,16 +2998,9 @@ void final_land()
     }
 }
 
-// Present closes the frame: its trace line and counts, the toggle keys, and the live settings.
-void on_present(IDXGISwapChain3 *, const d3d12hooks::Swapchain *known, void *)
+// The frame closes: the passes' frame clock, its trace line and its counts.
+void end_frame(ULONGLONG now)
 {
-    static const uint32_t probe = perf::probe("core", "postfx Present");
-    perf::Scope p(probe);
-    std::lock_guard<std::recursive_mutex> g(lock);
-    if (broken)
-        return;
-    fg_on = !known || !known->queue || !known->fg.empty() || (known->streamline && frame_gen_on());
-    ULONGLONG now = GetTickCount64();
     frametime = frame_at ? float(double(now - frame_at) / 1000.0) : 0.0f;
     frame_at = now;
     frame_count++;
@@ -2998,6 +3011,11 @@ void on_present(IDXGISwapChain3 *, const d3d12hooks::Swapchain *known, void *)
     clip_land();
     log_trace();
     trace = Trace{};
+}
+
+// The toggle keys, the live settings, the shader config and the rules.
+void tick(ULONGLONG now)
+{
     check_trace_file(now);
     poll_toggles();
     check_active(now, false);
@@ -3007,19 +3025,112 @@ void on_present(IDXGISwapChain3 *, const d3d12hooks::Swapchain *known, void *)
         live_at = now;
         refresh_live();
     }
-    if (stat_lines < STAT_LINES && now >= stat_at) {
-        if (stat_at && ran_total)
-            swofty::log("[postfx] last 60 s: %u frame(s) presented; passes ran in the game's list on %u and between "
-                        "its lists on %u (%u after a list that left its HUD-less step to another queue; %u recorded into "
-                        "lists the game reset unsubmitted); %u without passes "
-                        "(%u with the picture and the HUD in one list, %u with list state from before the hooks, %u "
-                        "with the GPU behind); %u frame(s) ran them twice",
-                        stats.presented, stats.in_list, stats.between, stats.deferred, stats.dropped, stats.without,
-                        stats.ui_together, stats.unknown_state, stats.busy, stats.doubled);
-        stat_lines += stat_at != 0 && ran_total;
-        stat_at = now + 60000;
-        stats = Stats{};
+}
+
+void stat_line(ULONGLONG now)
+{
+    if (stat_lines >= STAT_LINES || now < stat_at)
+        return;
+    bool game_frames = frame_clock.game_frames(now, started), told = false;
+    if (stat_at && game_frames && !passes.empty()) {
+        told = true;
+        swofty::log("[postfx] %s: %u real frame(s), %u pass run(s), %u skipped in the last 60 s (%u in the game's list, "
+                    "%u between its lists, %u with the GPU behind); %u Present(s) from frame generation",
+                    stats.generated ? "xess fg" : "no present", stats.presented, stats.runs, stats.unplaced,
+                    stats.in_list, stats.between, stats.busy, stats.generated);
+    } else if (stat_at && ran_total) {
+        told = true;
+        swofty::log("[postfx] last 60 s: %u frame(s) presented; passes ran in the game's list on %u and between "
+                    "its lists on %u (%u after a list that left its HUD-less step to another queue; %u recorded into "
+                    "lists the game reset unsubmitted); %u without passes "
+                    "(%u with the picture and the HUD in one list, %u with list state from before the hooks, %u "
+                    "with the GPU behind); %u frame(s) ran them twice",
+                    stats.presented, stats.in_list, stats.between, stats.deferred, stats.dropped, stats.without,
+                    stats.ui_together, stats.unknown_state, stats.busy, stats.doubled);
     }
+    stat_lines += told;
+    stat_at = now + 60000;
+    stats = Stats{};
+}
+
+// The frame generation module that presents frames of its own on a swapchain (postfx::presents_own_frames): the
+// one its creation named, or for a swapchain the core does not know, the module that calls Present.
+std::string own_frames_by(const d3d12hooks::Swapchain *known, void *caller)
+{
+    if (known)
+        return postfx::presents_own_frames(known->fg) ? known->fg : std::string();
+    static void *seen;
+    static std::string by;
+    if (caller != seen) {
+        seen = caller;
+        by = d3d12hooks::module_of(caller);
+        if (!postfx::presents_own_frames(by))
+            by.clear();
+    }
+    return by;
+}
+
+// Present closes the frame (its trace line and counts) and runs the toggle keys and the live settings. While
+// frame generation presents frames of its own, a Present is not one of the game's frames: it only runs the
+// toggle keys and the live settings, and the game's own frames close the frame where their lists are submitted.
+void on_present(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *caller)
+{
+    static const uint32_t probe = perf::probe("core", "postfx Present");
+    perf::Scope p(probe);
+    std::lock_guard<std::recursive_mutex> g(lock);
+    if (broken)
+        return;
+    fg_on = !known || !known->queue || !known->fg.empty() || (known->streamline && frame_gen_on());
+    ULONGLONG now = GetTickCount64();
+    present_at.store(now, std::memory_order_relaxed);
+    std::string by = own_frames_by(known, caller);
+    bool generated = !by.empty();
+    stats.generated += generated;
+    if (frame_clock.present(now, generated, started)) {
+        end_frame(now);
+        tick(now);
+        stat_line(now);
+        return;
+    }
+    static bool told;
+    if (generated && !std::exchange(told, true))
+        swofty::log("[postfx] %s presents the game's frames and its own generated ones on swapchain %p; the passes' "
+                    "frames close once per frame the game draws, where it submits the list that draws into its next "
+                    "back buffer",
+                    by.c_str(), static_cast<void *>(sc));
+    tick(now);
+}
+
+// The game drew into its next back buffer while its own frames close the passes' frames: the frame before closes,
+// counted as skipped when the passes did not run on its back buffer.
+void game_frame(const void *was, ULONGLONG now)
+{
+    for (auto &u : back_uses)
+        if (was && u.back == was && !postfx::placed_lately(frame_count, u.placed_at))
+            stats.unplaced++;
+    end_frame(now);
+    stat_line(now);
+}
+
+// While no Present reaches the core's hooks the game's flow tick runs the toggle keys and the live settings. It
+// does not close the passes' frames: the game's own frames do, where their lists are submitted.
+void on_flow_frame(double, void *)
+{
+    if (!device_armed.load(std::memory_order_relaxed))
+        return;
+    ULONGLONG now = GetTickCount64(), presented = present_at.load(std::memory_order_relaxed);
+    if (!postfx::presents_gone(now, presented, started))
+        return;
+    std::lock_guard<std::recursive_mutex> g(lock);
+    if (broken || !frame_clock.flow(now, started))
+        return;
+    static bool told;
+    if (!std::exchange(told, true))
+        swofty::log("[postfx] no Present has reached the core's swapchain hooks for %llu ms; the game's own frames "
+                    "close the passes' frames where it submits the list that draws into its next back buffer, and the "
+                    "game's flow tick runs the toggle keys and live settings",
+                    static_cast<unsigned long long>(now - std::max(frame_clock.present_at, started)));
+    tick(now);
 }
 
 int texture_named(const std::string &name)

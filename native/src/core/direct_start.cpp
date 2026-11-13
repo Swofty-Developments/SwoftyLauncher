@@ -1,6 +1,7 @@
 #include "runtime.hpp"
 
 #include <safetyhook.hpp>
+#include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
 #include <atomic>
@@ -78,7 +79,7 @@ constexpr uintptr_t RVA_SET_SETUP_MODE = 0x79f300, RVA_LIST_STAT_ID = 0x24286e0,
                     RVA_ADD_TRACK = 0xb99450, RVA_BUILD_SEASON = 0x1207290, RVA_FILL_ENTRANTS = 0x2460230;
 // A session request without a box or track gets the stock 2025 grid at Albert Park; it never continues a saved Grand
 // Prix, whose weekend may be one the session load can't take.
-constexpr const char *DEFAULT_BOX = "f1_2025", *DEFAULT_TRACK = "melbourne";
+constexpr const char *DEFAULT_BOX = "f1_2025", *DEFAULT_TRACK = "melbourne", *HOST_SETUP_MODE = "swofty_f1";
 constexpr uintptr_t MANAGER_ENTRANTS = 0x290, ES_LISTS = 0x560, ENTITY_TRACKS = 0xf58,
                     ENTITY_LIST = 0xe18, ENTITY_ENTRANTS = 0x2e0, ENTRANT_SIZE = 0x88;
 
@@ -503,19 +504,26 @@ void log_chain()
 }
 
 std::atomic<runtime::FlowLinkListener> link_listener{nullptr};
+// Set when the start arms, cleared once ds::link_needed says the start has nothing left to do at the flow link.
+std::atomic<bool> link_live{false};
 
+// The listener (a Theatre pick's viewer) is handed the node unread: it checks its own stage before it reads anything.
 void link_mid(safetyhook::Context &c)
 {
-    auto listener = link_listener.load();
-    if (!listener && !armed.load())
+    auto listener = link_listener.load(std::memory_order_relaxed);
+    bool live = link_live.load(std::memory_order_relaxed);
+    if (!listener && !live)
         return;
     auto *state = reinterpret_cast<uint8_t *>(c.rdi);
-    if (!state || !runtime::readable(state, STATE_PARENT + 8))
+    if (!state)
         return;
     auto *slot = reinterpret_cast<uint32_t *>(c.rsp + LINK_SLOT);
     if (listener)
         listener(state, slot);
-    if (!armed.load())
+    if (!live)
+        return;
+    swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
+    if (!runtime::readable(state, STATE_PARENT + 8))
         return;
     uint32_t hash = *reinterpret_cast<uint32_t *>(state + STATE_HASH);
     bool child = *reinterpret_cast<void **>(state + STATE_CHILD) != nullptr;
@@ -581,6 +589,11 @@ void link_mid(safetyhook::Context &c)
         }
     }
     note_phase();
+    if (!ds::link_needed(driver.phase, driver.target.name == "session", session_screen.load(), session_at.load(), GetTickCount64(),
+                         SESSION_SCREEN_WAIT_MS, diag_on) &&
+        link_live.exchange(false))
+        swofty::log("[direct] %s start: the flow link has nothing left to do (%s); it returns at once from now on", driver.target.name.c_str(),
+                    ds::phase_name(driver.phase));
 }
 
 void *registry_call(uint8_t *entity, size_t slot, const void *a2, int a3)
@@ -970,29 +983,9 @@ ds::Setup new_grand_prix(std::string &why)
     }
     swofty::log("[direct] Grand Prix: rounds component %p after %llu ms", rounds_seen,
                 (unsigned long long)(GetTickCount64() - mode_set_at));
-    std::string setup_name = request["setup_mode"].str("swofty_f1"), list_name = request["box"].str(DEFAULT_BOX),
+    std::string requested_mode = request["setup_mode"].str(), list_name = request["box"].str(DEFAULT_BOX),
                 track_name = request["track"].str(DEFAULT_TRACK);
-    // 1. The game setup mode by name, from E's setup modes (vt+0x1d0: a vector at +8..+0x10).
-    auto **evt = *reinterpret_cast<void ***>(e);
-    auto *modes_vec = reinterpret_cast<uint8_t *(*)(void *)>(evt[0x1d0 / 8])(e);
-    uint8_t *gsm = nullptr;
-    for (auto **p = *reinterpret_cast<uint8_t ***>(modes_vec + 8), **end = *reinterpret_cast<uint8_t ***>(modes_vec + 0x10);
-         p && p != end; ++p) {
-        uint8_t *m = *p;
-        void *holder = m && runtime::readable(m, 0xe0) ? *reinterpret_cast<void **>(m + 0xd8) : nullptr;
-        const char *name = holder ? *reinterpret_cast<const char **>(static_cast<uint8_t *>(holder) + 0x10) : nullptr;
-        if (name && setup_name == name) {
-            gsm = m;
-            break;
-        }
-    }
-    if (!gsm) {
-        why = "the Grand Prix mode has no game setup mode '" + setup_name + "'";
-        return ds::Setup::failed;
-    }
-    at_rva<void(void *, void *, int)>(RVA_SET_SETUP_MODE)(e, gsm, 0);
-    swofty::log("[direct] Grand Prix: setup mode %s (%p) set on %p", setup_name.c_str(), gsm, e);
-    // 2. The entrant list by name: EntrantsSystem +0x560, 16-byte entries, the list at +8.
+    // 1. The entrant list by name: EntrantsSystem +0x560, 16-byte entries, the list at +8.
     uint8_t *es = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(mgr) + MANAGER_ENTRANTS);
     uint8_t id = at_rva<uint8_t(const char *)>(RVA_LIST_STAT_ID)(list_name.c_str());
     auto *lists = *reinterpret_cast<uint8_t **>(es + ES_LISTS), *lists_end = *reinterpret_cast<uint8_t **>(es + ES_LISTS + 8);
@@ -1012,9 +1005,52 @@ ds::Setup new_grand_prix(std::string &why)
                     held.c_str());
         return ds::Setup::failed;
     }
+    // 2. The game setup mode from E's setup modes (vt+0x1d0: a vector at +8..+0x10): the requested one, else the
+    // one that offers the list (entrant setup modes at +0x10, count +0x70; their lists at +0x130, count +0x230).
+    auto **evt = *reinterpret_cast<void ***>(e);
+    auto *modes_vec = reinterpret_cast<uint8_t *(*)(void *)>(evt[0x1d0 / 8])(e);
+    std::vector<uint8_t *> setup_modes;
+    std::vector<ds::SetupModeOffer> offers;
+    for (auto **p = *reinterpret_cast<uint8_t ***>(modes_vec + 8), **end = *reinterpret_cast<uint8_t ***>(modes_vec + 0x10);
+         p && p != end; ++p) {
+        uint8_t *m = *p;
+        void *holder = m && runtime::readable(m, 0xe0) ? *reinterpret_cast<void **>(m + 0xd8) : nullptr;
+        const char *name = holder ? *reinterpret_cast<const char **>(static_cast<uint8_t *>(holder) + 0x10) : nullptr;
+        if (!name)
+            continue;
+        bool offered = false;
+        int64_t setups = *reinterpret_cast<int64_t *>(m + 0x70);
+        for (int64_t i = 0; i < setups && i < 12 && !offered; i++) {
+            uint8_t *esm = *reinterpret_cast<uint8_t **>(m + 0x10 + size_t(i) * 8);
+            if (!esm || !runtime::readable(esm, 0x238))
+                continue;
+            int64_t n = *reinterpret_cast<int64_t *>(esm + 0x230);
+            for (int64_t k = 0; k < n && k < 32 && !offered; k++)
+                offered = *reinterpret_cast<void **>(esm + 0x130 + size_t(k) * 8) == list;
+        }
+        setup_modes.push_back(m);
+        offers.push_back({name, offered});
+    }
+    size_t pick = ds::pick_setup_mode(offers, requested_mode, HOST_SETUP_MODE);
+    if (pick == ds::NO_SETUP_MODE) {
+        why = "the Grand Prix mode has no game setup mode '" +
+              (requested_mode.empty() ? std::string(HOST_SETUP_MODE) : requested_mode) + "'";
+        return ds::Setup::failed;
+    }
+    uint8_t *gsm = setup_modes[pick];
+    const std::string &setup_name = offers[pick].name;
+    std::string offering;
+    for (auto &o : offers)
+        if (o.offers)
+            offering += (offering.empty() ? "" : ", ") + o.name;
+    swofty::log("[direct] Grand Prix: setup mode %s for entrant list %s (%s; setup modes offering the list: %s)",
+                setup_name.c_str(), list_name.c_str(),
+                !requested_mode.empty() ? "requested" : offers[pick].offers ? "it offers the list" : "none offers the list",
+                offering.empty() ? "none" : offering.c_str());
+    at_rva<void(void *, void *, int)>(RVA_SET_SETUP_MODE)(e, gsm, 0);
+    swofty::log("[direct] Grand Prix: setup mode %s (%p) set on %p", setup_name.c_str(), gsm, e);
     *reinterpret_cast<void **>(e + ENTITY_LIST) = list;
     swofty::log("[direct] Grand Prix: entrant list %s (stat id %u) is %p", list_name.c_str(), unsigned(id), list);
-    swofty_core::apply::moments::box_picked(list_name.c_str());
     // 3. The track by name in E's track system: 16-byte entries at +0x28..+0x30, the record at +8, its name at +0x78.
     uint8_t *tracks = *reinterpret_cast<uint8_t **>(e + ENTITY_TRACKS);
     uint8_t *track = nullptr;
@@ -1196,6 +1232,7 @@ void direct_start_setup()
     }
     runtime::title::want(true);
     armed = true;
+    link_live = true;
 }
 
 void log_stack(const char *what)

@@ -1,7 +1,8 @@
 // Host-native unit test for the core's load-stall watchdog trigger (native/src/core/load_stall_logic.hpp): when a
 // load that has stopped moving gets its reports, replayed from the flow and screen sequences of the 1.9.9 Suzuka
 // Time Trial stall (session 20261112-013117), of the 1.9.x first-session hangs the game ends itself with its
-// deadlock WARN (cptovius, session 20261112-044919) and of working loads. Built and run by
+// deadlock WARN (cptovius, session 20261112-044919), of the 1.9.15 boot an addon held on splash_transition (ArS3nic,
+// session 20261112-121623) and of working loads. Built and run by
 // native/test/run_load_stall_test.sh.
 
 #include "load_stall_logic.hpp"
@@ -38,6 +39,27 @@ static uint64_t first_session(ls::Watch &w, uint64_t t)
     w.flow(0x10, ls::None, "StateLoadSession", t + 12470);
     w.flow(0x20, ls::Entering, "StateSession", t + 12568);
     return t + 12568;
+}
+
+static void boot_to_splash_transition(ls::Watch &w)
+{
+    w.screen("persistent", 25000);
+    w.screen("audio_themes", 25000);
+    w.screen("tutorials_masked", 25000);
+    w.screen("video_1", 25250);
+    w.flow(0xe4ef00ba, ls::Entering, "#e4ef00ba", 25712);
+    w.flow(0x290b11ae, ls::Entering, "#290b11ae", 25712);
+    w.screen("legal", 25972);
+    w.screen("legal_2", 26288);
+    w.screen("seizure_warning", 26653);
+    w.flow(0xa4d3a4b2, ls::Entering, "#a4d3a4b2", 34619);
+    w.screen("splash", 34807);
+    w.screen("render_badge", 36558);
+    w.flow(0xa4d3a4b2, ls::Exiting, "#a4d3a4b2", 37668);
+    w.flow(0xfd9f4f95, ls::Entering, "#fd9f4f95", 37668);
+    w.flow(0xfd9f4f95, ls::Exiting, "#fd9f4f95", 37668);
+    w.flow(0x04fc8ffa, ls::Entering, "#04fc8ffa", 37668);
+    w.screen("splash_transition", 39345);
 }
 
 static const char kWarn[] =
@@ -153,6 +175,36 @@ int main()
         CHECK(w.in_loading_screen());
         w.screen("pause", 1);
         CHECK(!w.in_loading_screen() && w.threshold() == 0);
+    }
+    {
+        ls::Watch w;
+        boot_to_splash_transition(w);
+        CHECK(w.in_loading_screen() && w.in_boot_loading_screen() && w.threshold() == ls::kLoadingMs);
+        CHECK(!w.poll(39345 + ls::kLoadingMs - 1).report);
+        ls::Due d = w.poll(39345 + ls::kLoadingMs);
+        CHECK(d.report && d.index == 1 && d.trigger == ls::Threshold && d.threshold_ms == ls::kLoadingMs);
+        CHECK(!w.poll(39345 + ls::kRepeatFactor * ls::kLoadingMs - 1).report);
+        d = w.poll(39345 + ls::kRepeatFactor * ls::kLoadingMs);
+        CHECK(d.report && d.index == 2);
+        CHECK(!w.poll(166730).report && w.reports() == 2);
+        char text[1024];
+        w.describe(text, sizeof text, 166730);
+        CHECK(std::strstr(text, "newest screen \"splash_transition\", opened 127.4 s ago (a loading screen)"));
+    }
+    {
+        ls::Watch w;
+        boot_to_splash_transition(w);
+        w.flow(0x04fc8ffa, ls::Exiting, "#04fc8ffa", 39345 + 18000);
+        w.flow(0x957880c6, ls::Entering, "#957880c6", 39345 + 18000);
+        w.screen("playercard", 39345 + 21000);
+        CHECK(!w.in_loading_screen() && w.threshold() == 0);
+        CHECK(!w.poll(39345 + 21000 + 10 * ls::kLoadingMs).report && w.reports() == 0);
+    }
+    {
+        ls::Watch w;
+        boot_to_splash_transition(w);
+        w.screen("splash", 40000);
+        CHECK(!w.poll(40000 + 10 * ls::kLoadingMs).report);
     }
     {
         ls::Watch w;
@@ -293,6 +345,10 @@ int main()
     CHECK(!ls::game_deadlock_line(nullptr));
     CHECK(ls::loading_screen("loading_transitions") && ls::loading_screen("loading") && !ls::loading_screen("hud"));
     CHECK(!ls::loading_screen(nullptr));
+    CHECK(ls::loading_screen("splash_transition") && ls::boot_loading_screen("splash_transition"));
+    CHECK(!ls::boot_loading_screen("loading_transitions") && !ls::boot_loading_screen(nullptr));
+    CHECK(!ls::loading_screen("splash") && !ls::loading_screen("render_badge") && !ls::loading_screen("video_1"));
+    CHECK(!ls::loading_screen("seizure_warning") && !ls::loading_screen("frontend_transition"));
     CHECK(ls::session_load_flow("StateLoadSession") && ls::session_load_flow("StateUnloadSession"));
     CHECK(!ls::session_load_flow("StateSession") && !ls::session_load_flow(nullptr));
     CHECK(!std::strcmp(ls::status_name(3), "Exiting") && !std::strcmp(ls::status_name(9), "?"));

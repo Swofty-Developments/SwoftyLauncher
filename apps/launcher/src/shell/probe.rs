@@ -193,6 +193,9 @@ impl Shell {
                     })
                     .filter(|n| !n.contains(swofty_core::busy::CANCELLED));
                     let why = self.notice.clone().unwrap_or_else(|| launch.failure());
+                    if self.notice.is_some() {
+                        crate::app_log::action("start F1 25").failed(&why);
+                    }
                     self.mp_launch_ended(Some(why));
                 } else {
                     self.mp_launch_ended(None);

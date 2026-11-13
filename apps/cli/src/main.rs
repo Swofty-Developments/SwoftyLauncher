@@ -1394,6 +1394,35 @@ mod tests {
     }
 
     #[test]
+    fn a_profile_that_starts_with_a_dash_goes_through_as_one_value() {
+        use swofty_core::process::flag;
+        let root = std::env::temp_dir().join(format!("swofty-cli-dash-profile-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let store = store(&root);
+        let cmd = AddonCommands::load(&store).command();
+        let args = vec![
+            OsString::from("swofty"),
+            flag("data-dir", "/data/-swofty"),
+            flag("profile", "-swofty"),
+            "run".into(),
+            "--apply".into(),
+            flag("game", "/games/-F1 25"),
+        ];
+        let cli = Cli::from_arg_matches(&cmd.clone().try_get_matches_from(&args).unwrap()).unwrap();
+        assert_eq!(cli.profile.as_deref(), Some("-swofty"));
+        assert_eq!(cli.data_dir.as_deref(), Some(Path::new("/data/-swofty")));
+        assert!(matches!(cli.command, Command::Run(_)));
+        assert_eq!(command_at(&args), Some(3));
+        assert_eq!(data_dir_arg(&args), Some("/data/-swofty".into()));
+
+        let split = cmd
+            .try_get_matches_from(["swofty", "--profile", "-swofty", "run", "--apply"])
+            .unwrap_err();
+        assert_eq!(split.kind(), clap::error::ErrorKind::UnknownArgument);
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn mods_is_a_hidden_alias_of_addons() {
         for name in ["addons", "mods"] {
             let cli = Cli::try_parse_from(["swofty", name, "enable", "a.b"]).unwrap();

@@ -14,7 +14,8 @@ use swofty_core::launch;
 use swofty_core::loader_check;
 use swofty_core::multiplayer::bridge::{ENV as NETPLAY_ENV, armed_env, with_network_log_channels};
 use swofty_core::process::{
-    descends_from, game_processes, game_running_in, games_in, steamvr_running, stop_game_in, stop_process,
+    descends_from, flag, game_processes, game_running_in, games_in, steamvr_running, stop_game_in,
+    stop_process,
 };
 use swofty_core::quarantine::{self, Attach, AttachWatch, Stage};
 use swofty_core::recovery::{Scope, SessionLock};
@@ -175,7 +176,12 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
     let loader = game.join(LOADER_LOG);
     let before = LogMark::read(&loader);
     let asked = now_secs();
-    let _home_menu = swofty_core::home_menu::publish(&store.root, &game, env!("CARGO_PKG_VERSION"));
+    let _home_menu = swofty_core::home_menu::publish(
+        &store.root,
+        &game,
+        env!("CARGO_PKG_VERSION"),
+        store.config().home_video,
+    );
     let mut wrapper =
         launch(store, &game, args.direct, mode, &args.game_arg).inspect_err(|e| note_blocked(store, e))?;
     let mut silence = Silence::new();
@@ -497,7 +503,12 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
         crate::build::install(store, &profile, g, true, &info)?;
     }
     let installed = apply.then(Instant::now);
-    let _home_menu = swofty_core::home_menu::publish(&store.root, &game, env!("CARGO_PKG_VERSION"));
+    let _home_menu = swofty_core::home_menu::publish(
+        &store.root,
+        &game,
+        env!("CARGO_PKG_VERSION"),
+        store.config().home_video,
+    );
     become_subreaper();
     let vanilla = store.profile(&profile).is_ok_and(|p| p.is_vanilla());
     if crate::ea::stages_offline(args.via_ea, vanilla) {
@@ -1716,11 +1727,9 @@ fn launch(store: &Store, game: &Path, direct: bool, mode: LaunchMode, extra: &[S
         .unwrap_or(false);
     if crate::ea::store_start(Source::detect(game)) == crate::ea::StoreStart::EaApp {
         let mut c = Command::new(std::env::current_exe()?);
-        c.arg("--data-dir")
-            .arg(&store.root)
+        c.arg(flag("data-dir", &store.root))
             .arg("run")
-            .arg("--game")
-            .arg(game)
+            .arg(flag("game", game))
             .arg("--via-ea")
             .args(wrapper_command(None, game, mode, extra));
         #[cfg(unix)]
@@ -1743,11 +1752,9 @@ fn launch(store: &Store, game: &Path, direct: bool, mode: LaunchMode, extra: &[S
     if cfg!(windows) || direct || !wrapped {
         let me = std::env::current_exe()?;
         let mut c = Command::new(&me);
-        c.arg("--data-dir")
-            .arg(&store.root)
+        c.arg(flag("data-dir", &store.root))
             .arg("run")
-            .arg("--game")
-            .arg(game);
+            .arg(flag("game", game));
         if let Some(g) = install.as_ref().filter(|_| !cfg!(windows)) {
             let tool = steam::compat_tool(&g.steam_root)
                 .context("Steam has no Proton build set for F1 25 and no default; pick one in the game's Properties > Compatibility")?;

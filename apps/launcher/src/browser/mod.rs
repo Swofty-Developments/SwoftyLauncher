@@ -19,6 +19,7 @@ mod sync;
 #[cfg(test)]
 mod tests;
 mod tiles;
+mod tracks;
 mod updates;
 
 pub(crate) use state::Browser;

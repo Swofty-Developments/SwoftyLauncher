@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <utility>
+#include <vector>
 
 using namespace postfx;
 
@@ -16,6 +17,97 @@ static int failed;
             failed++;                                                                                                  \
         }                                                                                                              \
     } while (0)
+
+// The placement gate the way postfx.cpp runs it, over game frames that rotate through `buffers` back buffers. Each
+// frame records and submits the picture's list (the back buffer becomes a render target; in menus the passes run at
+// its HUD-less step while the buffer is fresh), then the HUD's list (the buffer becomes a render target again and
+// the HUD reads it: the passes run there unless they ran on this buffer lately), and in menus a second list that
+// reads it too. Frame generation calls Present1 `presents(f)` times in frame f, at the steps `at(f, k)`. With
+// game_clock the frame closes as FrameClock says (the core now); without it every Present closes it (1.9.17).
+struct Sim {
+    unsigned buffers = 3, frames = 600;
+    bool menus = false, game_clock = true, generated = true, flow_only = false;
+    unsigned (*presents)(unsigned f) = nullptr;
+    unsigned (*at)(unsigned f, unsigned k) = nullptr;
+
+    std::vector<unsigned> run()
+    {
+        int back[8];
+        unsigned placed[8], count = 0;
+        bool fresh[8] = {};
+        for (auto &p : placed)
+            p = LONG_AGO;
+        FrameClock clock;
+        uint64_t now = 100000, started = 1000;
+        std::vector<unsigned> runs(frames, 0);
+        auto present = [&] {
+            if (!game_clock || clock.present(now, generated, started))
+                count++;
+        };
+        auto submit = [&](int *b) {
+            if (game_clock && clock.submit(b, now, started))
+                count++;
+        };
+        for (unsigned f = 0; f < frames; f++) {
+            unsigned i = f % buffers, n = presents && !flow_only ? presents(f) : 0;
+            int *b = &back[i];
+            auto step = [&](unsigned s) {
+                for (unsigned k = 0; k < n; k++)
+                    if (at(f, k) == s)
+                        present();
+                now += 2;
+            };
+            step(0);
+            fresh[i] = !placed_lately(count, placed[i]);
+            if (menus && fresh[i]) {
+                fresh[i] = false;
+                placed[i] = count;
+                runs[f]++;
+            }
+            step(1);
+            submit(b);
+            step(2);
+            fresh[i] = !placed_lately(count, placed[i]);
+            if (!placed_lately(count, placed[i])) {
+                fresh[i] = false;
+                placed[i] = count;
+                runs[f]++;
+            }
+            step(3);
+            submit(b);
+            step(4);
+            if (menus && !placed_lately(count, placed[i])) {
+                placed[i] = count;
+                runs[f]++;
+            }
+            step(5);
+            submit(b);
+            now += 4;
+        }
+        return runs;
+    }
+};
+
+static unsigned once_per_run(const std::vector<unsigned> &runs, unsigned &skipped, unsigned &doubled)
+{
+    skipped = doubled = 0;
+    unsigned off = 0;
+    for (size_t f = 8; f < runs.size(); f++) {
+        skipped += runs[f] == 0;
+        doubled += runs[f] > 1;
+        off += runs[f] != 1;
+    }
+    return off;
+}
+
+static unsigned rnd(unsigned f, unsigned k)
+{
+    unsigned x = f * 2654435761u + k * 40503u + 0x9e3779b9u;
+    x ^= x >> 15;
+    x *= 2246822519u;
+    x ^= x >> 13;
+    return x;
+}
 
 int main()
 {
@@ -129,6 +221,108 @@ int main()
     CHECK(!placed_lately(0, LONG_AGO) && !placed_lately(5000, LONG_AGO));
     CHECK(placed_lately(100, 100) && placed_lately(101, 100) && !placed_lately(102, 100) && !placed_lately(103, 100));
     CHECK(placed_lately(0, 0u - 1) && !placed_lately(1, 0u - 1));
+
+    CHECK(!presents_gone(500000, 0, 0));
+    CHECK(!presents_gone(10999, 0, 10000) && presents_gone(11000, 0, 10000));
+    CHECK(!presents_gone(20500, 20000, 10000) && presents_gone(21000, 20000, 10000));
+    CHECK(!presents_gone(9000, 0, 10000) && !presents_gone(5000, 20000, 10000));
+
+    CHECK(presents_own_frames("libxess_fg.dll") && presents_own_frames("LibXeSS_FG.DLL"));
+    CHECK(presents_own_frames("libxess_fg.dll (calls Present)") && presents_own_frames("C:\\game\\libxess_fg.dll"));
+    CHECK(!presents_own_frames("") && !presents_own_frames("amd_fidelityfx_dx12.dll") &&
+          !presents_own_frames("sl.dlss_g.dll") && !presents_own_frames("nvngx_dlssg.dll"));
+    CHECK(!presents_own_frames("libxess_fg.dll.bak") && !presents_own_frames("a non-direct present queue") &&
+          !presents_own_frames("libxess.dll"));
+
+    {
+        int a, b, c;
+        FrameClock plain;
+        CHECK(plain.present(20000, false, 10000) && plain.present(20016, false, 10000));
+        CHECK(!plain.submit(&a, 20020, 10000) && !plain.submit(&b, 20030, 10000) && !plain.flow(20030, 10000));
+        CHECK(plain.present(20033, false, 10000) && !plain.flow(21032, 10000) && plain.flow(21033, 10000));
+
+        FrameClock xess;
+        CHECK(!xess.present(20000, true, 10000) && !xess.present(20008, true, 10000));
+        CHECK(xess.submit(&a, 20010, 10000) && !xess.submit(&a, 20012, 10000) && !xess.submit(nullptr, 20012, 10000));
+        CHECK(!xess.present(20016, false, 10000) && !xess.present(20017, true, 10000));
+        CHECK(xess.submit(&b, 20020, 10000) && xess.submit(&c, 20040, 10000) && xess.submit(&a, 20060, 10000));
+        CHECK(!xess.flow(20060, 10000));
+        CHECK(xess.submit(&b, 21016, 10000) && xess.present(21017, false, 10000));
+        CHECK(!xess.submit(&c, 21020, 10000) && xess.present(21033, false, 10000));
+
+        FrameClock none;
+        CHECK(!none.submit(&a, 10500, 10000) && !none.flow(10999, 10000) && none.flow(11000, 10000));
+        CHECK(none.submit(&b, 11000, 10000) && none.submit(&a, 11016, 10000) && !none.submit(&a, 11020, 10000));
+        CHECK(none.present(11030, false, 10000) && !none.flow(11040, 10000));
+        CHECK(!none.submit(&b, 11050, 10000));
+        CHECK(none.submit(&c, 12100, 10000));
+    }
+
+    {
+        unsigned skipped = 0, doubled = 0;
+        Sim plain;
+        plain.generated = false;
+        plain.presents = [](unsigned) { return 1u; };
+        plain.at = [](unsigned, unsigned) { return 5u; };
+        CHECK(once_per_run(plain.run(), skipped, doubled) == 0);
+        plain.game_clock = false;
+        CHECK(once_per_run(plain.run(), skipped, doubled) == 0);
+        plain.game_clock = true;
+        plain.menus = true;
+        CHECK(once_per_run(plain.run(), skipped, doubled) == 0);
+
+        Sim fg_on;
+        fg_on.presents = [](unsigned f) { return 1u + rnd(f, 99) % 3; };
+        fg_on.at = [](unsigned f, unsigned k) { return rnd(f, k) % 6; };
+        fg_on.game_clock = false;
+        unsigned off = once_per_run(fg_on.run(), skipped, doubled);
+        std::printf("xess fg on, every Present1 closing the frame (1.9.17): %u of %u frames off (%u skipped, %u doubled)\n",
+                    off, fg_on.frames - 8, skipped, doubled);
+        fg_on.menus = true;
+        off = once_per_run(fg_on.run(), skipped, doubled);
+        std::printf("xess fg on in menus (1.9.17): %u of %u frames off (%u skipped, %u doubled)\n", off,
+                    fg_on.frames - 8, skipped, doubled);
+        CHECK(off > 0 && doubled > 0);
+        for (unsigned buffers : {3u, 4u})
+            for (bool menus : {false, true}) {
+                fg_on.game_clock = true;
+                fg_on.buffers = buffers;
+                fg_on.menus = menus;
+                CHECK(once_per_run(fg_on.run(), skipped, doubled) == 0);
+            }
+
+        Sim fg_off;
+        fg_off.presents = [](unsigned f) { return rnd(f, 77) % 3; };
+        fg_off.at = [](unsigned f, unsigned k) { return rnd(f, k + 5) % 6; };
+        fg_off.game_clock = false;
+        off = once_per_run(fg_off.run(), skipped, doubled);
+        std::printf("xess swapchain, frame generation off, Present1 paced on its own thread (1.9.17): %u of %u frames "
+                    "off (%u skipped, %u doubled)\n",
+                    off, fg_off.frames - 8, skipped, doubled);
+        CHECK(off > 0 && skipped > 0);
+        fg_off.game_clock = true;
+        for (bool menus : {false, true}) {
+            fg_off.menus = menus;
+            CHECK(once_per_run(fg_off.run(), skipped, doubled) == 0);
+        }
+
+        Sim mixed = fg_on;
+        mixed.presents = [](unsigned f) { return 2u + rnd(f, 55) % 2; };
+        mixed.at = [](unsigned f, unsigned k) { return k == 2 ? 3u : rnd(f, k + 9) % 6; };
+        mixed.game_clock = true;
+        mixed.menus = false;
+        mixed.buffers = 3;
+        CHECK(once_per_run(mixed.run(), skipped, doubled) == 0);
+
+        Sim gone;
+        gone.flow_only = true;
+        gone.game_clock = true;
+        gone.generated = false;
+        for (bool menus : {false, true}) {
+            gone.menus = menus;
+            CHECK(once_per_run(gone.run(), skipped, doubled) == 0);
+        }
+    }
 
     SideMarks<List, Res, int, 2, 2> cramped;
     CHECK(cramped.find(&many[0], true) && cramped.find(&many[1], true));

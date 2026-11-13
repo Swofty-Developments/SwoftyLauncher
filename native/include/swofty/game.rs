@@ -3598,6 +3598,8 @@ pub type Career_Write_UpgradesAndAdaptPercent_t =
 pub type Career_Write_UpgradesList_t = unsafe extern "C" fn(self_: *mut c_void, a2: *mut i64) -> c_int;
 pub type Ent_Deserialise_EntrantVector_t =
     unsafe extern "C" fn(vector_object: *mut c_void, bag: *mut c_void) -> c_int;
+pub type Ent_EntrantsSystem_ReplaceVehicle_t =
+    unsafe extern "C" fn(entrants: *mut c_void, handle: u32, vehicle: *const c_void) -> c_int;
 pub type FeHome_Add_CareerTile_t = unsafe extern "C" fn(list: *mut TileList, index: u8);
 pub type FeHome_Handle_Command_t =
     unsafe extern "C" fn(vm: *mut FEHomeViewModel, cmd: *mut *mut NeStr) -> u64;
@@ -7103,6 +7105,11 @@ pub mod bindings {
     };
     pub const Ent_Deserialise_EntrantVector: Binding = Binding {
         id: "Ent_Deserialise_EntrantVector",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ent_EntrantsSystem_ReplaceVehicle: Binding = Binding {
+        id: "Ent_EntrantsSystem_ReplaceVehicle",
         kind: "func",
         status: Status::Experimental,
     };
@@ -19971,6 +19978,26 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Career_ScheduleComponent_TrackListEntryDone: Binding = Binding {
+        id: "site_Career_ScheduleComponent_TrackListEntryDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Career_ScheduleComponent_TrackListNextRow: Binding = Binding {
+        id: "site_Career_ScheduleComponent_TrackListNextRow",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Career_ScheduleComponent_TrackListPush: Binding = Binding {
+        id: "site_Career_ScheduleComponent_TrackListPush",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Career_ScheduleComponent_TrackListSave: Binding = Binding {
+        id: "site_Career_ScheduleComponent_TrackListSave",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Career_StandingsWeekendTrackDone: Binding = Binding {
         id: "site_Career_StandingsWeekendTrackDone",
         kind: "site",
@@ -20326,6 +20353,26 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_GrandPrixContinueVm_F1wCarCheck: Binding = Binding {
+        id: "site_Game_GrandPrixContinueVm_F1wCarCheck",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_GrandPrixContinueVm_F1wWarningCheck: Binding = Binding {
+        id: "site_Game_GrandPrixContinueVm_F1wWarningCheck",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_MyTeamVehicleBases_AiConfigLoad: Binding = Binding {
+        id: "site_Game_MyTeamVehicleBases_AiConfigLoad",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_MyTeamVehicleBases_NextBase: Binding = Binding {
+        id: "site_Game_MyTeamVehicleBases_NextBase",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_PitLane_BoxPoseFalse: Binding = Binding {
         id: "site_Game_PitLane_BoxPoseFalse",
         kind: "site",
@@ -20411,6 +20458,11 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_TimeTrial_SetReferenceListBoard: Binding = Binding {
+        id: "site_Game_TimeTrial_SetReferenceListBoard",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_TimeTrial_SetReferenceLogBoard: Binding = Binding {
         id: "site_Game_TimeTrial_SetReferenceLogBoard",
         kind: "site",
@@ -20418,6 +20470,11 @@ pub mod bindings {
     };
     pub const site_Game_TimeTrial_SetReferenceLogDone: Binding = Binding {
         id: "site_Game_TimeTrial_SetReferenceLogDone",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TimeTrial_SetReferenceNoList: Binding = Binding {
+        id: "site_Game_TimeTrial_SetReferenceNoList",
         kind: "site",
         status: Status::Experimental,
     };
@@ -20698,6 +20755,21 @@ pub mod bindings {
     };
     pub const site_Sess_PuPanel_SlotHolder: Binding = Binding {
         id: "site_Sess_PuPanel_SlotHolder",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_SessionEnter_VehicleLookup: Binding = Binding {
+        id: "site_Sess_SessionEnter_VehicleLookup",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_TimeTrialLeaderboard_BoundTabChild: Binding = Binding {
+        id: "site_Sess_TimeTrialLeaderboard_BoundTabChild",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Sess_TimeTrialLeaderboard_BoundTabDone: Binding = Binding {
+        id: "site_Sess_TimeTrialLeaderboard_BoundTabDone",
         kind: "site",
         status: Status::Experimental,
     };

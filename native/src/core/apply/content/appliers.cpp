@@ -5,6 +5,7 @@
 #include "../files_api.hpp"
 #include "../ids.hpp"
 #include "../moments.hpp"
+#include "../scheduler.hpp"
 #include "boot.hpp"
 #include "garage_build.hpp"
 #include "gvdb.hpp"
@@ -182,7 +183,7 @@ Expansion &plan_run(Store &st)
         Database &d = database();
         s.plan = std::make_unique<Expansion>(base_of(d));
         if (d.ok)
-            expand(st, *s.plan, {});
+            expand(st, *s.plan, planning_ids());
     }
     return *s.plan;
 }
@@ -257,7 +258,25 @@ void run_boot(Store &st)
     for (const char *registry : {"vehicle", "vehicle.package", "content.package", "team.identity"})
         if (scans.count(registry))
             ids::store().set_live(registry, st.list(registry, ""));
-    Admission adm = admit(st.order(), plan.addon_fresh, db::staging().room());
+    uint64_t room = db::staging().room();
+    if (room != db::UNMEASURED) {
+        uint64_t tracks = scheduler().planned_keys("track");
+        room = tracks < room ? room - tracks : 0;
+    }
+    Admission adm = admit(st.order(), plan.addon_fresh, room);
+    expand(st, *s.boot, stat_id, adm.skip);
+    for (;;) {
+        Admission again = readmit(st.order(), s.boot->addon_fresh, adm, room);
+        if (again.skip.size() == adm.skip.size())
+            break;
+        for (std::size_t i = adm.refused.size(); i < again.refused.size(); i++)
+            swofty::log("[registry] room: %s counted %zu new key(s) at boot, past the room the plan left; the boot's "
+                        "rows are laid out again without it",
+                        again.refused[i].first.c_str(), again.refused[i].second);
+        adm = std::move(again);
+        s.boot = std::make_unique<Expansion>(base_of(d));
+        expand(st, *s.boot, stat_id, adm.skip);
+    }
     for (auto &[addon, keys] : adm.refused) {
         db::Refusal r{addon, {}, keys};
         for (const char *reg : ROW_REGISTRIES)
@@ -269,7 +288,6 @@ void run_boot(Store &st)
                 }
         db::staging().refuse(std::move(r));
     }
-    expand(st, *s.boot, stat_id, adm.skip);
 }
 
 void redirect_bundles(Store &st, Expansion &x, Report &report)

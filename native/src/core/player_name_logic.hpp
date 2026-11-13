@@ -106,6 +106,90 @@ inline bool is_local_id(const uint8_t id[0x50], const presence_id::Id &me)
     return (a ^ b) == me.value[0] && me.value[0] != 0 && (id[0x39] != 0) == me.flag39;
 }
 
+// The local presence id packed for the lookup hook's lock-free compare: is_local_id only reads type, value[0] and flag39.
+inline uint32_t id_tag(const presence_id::Id &me)
+{
+    return uint32_t(me.type) | (me.flag39 ? 0x100u : 0u);
+}
+
+inline presence_id::Id id_of(uint32_t tag, uint64_t value0)
+{
+    presence_id::Id me;
+    me.type = uint8_t(tag & 0xff);
+    me.flag39 = (tag & 0x100u) != 0;
+    me.value[0] = value0;
+    return me;
+}
+
+// The account worker reads home_menu.json again only when it appears, disappears or gets a new write time.
+inline bool account_reread(bool read_once, bool had, bool have, bool same_stamp)
+{
+    return !read_once || had != have || (have && !same_stamp);
+}
+
+// The lookup hook renames only in the session the rename was armed for (a session counter), and only while that session
+// is a Time Trial.
+inline bool lookup_renames(bool time_trial_live, bool armed, uint64_t armed_serial, uint64_t serial)
+{
+    return time_trial_live && armed && armed_serial == serial;
+}
+
+// The source swap (a scan of the game's writable memory for copies of the stock persona) runs only in a Time Trial session
+// on our content, with the stock persona known and a different name to show: once when that session first meets those
+// conditions, again when the stock or the shown name changes in it, and again when the pin pass still finds the stock name
+// on a screen after the last scan (copies built since), no sooner than SWAP_GAP_MS after it and at most MAX_REVISITS times
+// a session. A scan's rewrites stay in memory; nothing repeats on a timer.
+constexpr uint64_t SWAP_SETTLE_MS = 4000, SWAP_GAP_MS = 30000;
+constexpr int MAX_REVISITS = 2;
+constexpr size_t SWAP_MAX_STOCK = 15;
+
+enum class SwapWhy { none, session, renamed, visible };
+
+struct SwapPlan {
+    bool done = false;
+    uint64_t serial = 0, done_at = 0;
+    std::string stock, name;
+    int revisits = 0;
+};
+
+inline SwapWhy swap_due(const SwapPlan &last, bool live_ours, uint64_t serial, const std::string &stock, const std::string &name,
+                        bool stock_visible, uint64_t now)
+{
+    if (!live_ours || stock.empty() || name.empty() || name == stock || stock.size() > SWAP_MAX_STOCK)
+        return SwapWhy::none;
+    if (!last.done || last.serial != serial)
+        return SwapWhy::session;
+    if (last.stock != stock || last.name != name)
+        return SwapWhy::renamed;
+    if (stock_visible && last.revisits < MAX_REVISITS && now >= last.done_at && now - last.done_at >= SWAP_GAP_MS)
+        return SwapWhy::visible;
+    return SwapWhy::none;
+}
+
+inline void swap_taken(SwapPlan &p, SwapWhy why, uint64_t serial, const std::string &stock, const std::string &name, uint64_t now)
+{
+    p.revisits = why == SwapWhy::visible && p.done && p.serial == serial ? p.revisits + 1 : 0;
+    p.done = true;
+    p.serial = serial;
+    p.done_at = now;
+    p.stock = stock;
+    p.name = name;
+}
+
+inline const char *swap_word(SwapWhy why)
+{
+    return why == SwapWhy::session   ? "the Time Trial session on our content started"
+           : why == SwapWhy::renamed ? "the stock or the shown name changed"
+           : why == SwapWhy::visible ? "the stock name is on a screen again"
+                                     : "none";
+}
+
+// The scan stops as soon as the session it was planned for is over.
+inline bool swap_continues(bool time_trial_live, uint64_t planned_serial, uint64_t serial)
+{
+    return time_trial_live && planned_serial == serial;
+}
+
 inline bool root_allowed(uint32_t h)
 {
     static const uint32_t roots[] = {djb2("network_drivers"), djb2("players"), djb2("view_model_data")};

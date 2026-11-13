@@ -42,7 +42,7 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 //    track the stock boards name, per weather (tt_bridge_logic.hpp extend_xml). Only with "tt_bridge": true in tt.json.
 // 2. Requests. A mid hook at the entry of Game_F1os_RequestRing_Push (rcx = the op) reads the op's method name and
 //    LeaderboardID. For the five Time Trial methods on an addon board (descriptor >= 6) it returns from the push without
-//    sending. The request is written to swofty\tt\outbox\<seq>.json; the flow tick polls swofty\tt\inbox\<seq>.json and
+//    sending. The request is written to tt\outbox\<seq>.json under runtime::files_root(); the flow tick polls tt\inbox\<seq>.json and
 //    completes the op by calling the method's OnResult with a synthetic response (+0x88 0, +0x98 0, +0x9c status, +0xa0 ->
 //    {data, ?, length}). Unanswered after 8 s: status 504. Only with "tt_bridge": true.
 // 3. Guards, off until "tt_guards": true in tt.json or SWOFTY_TT_GUARDS=1 (their facts are not confirmed in game): a lap in
@@ -340,7 +340,7 @@ uint64_t unix_seconds()
 
 void make_dirs()
 {
-    std::wstring root = runtime::swofty_root();
+    std::wstring root = runtime::files_root();
     CreateDirectoryW((root + L"tt").c_str(), nullptr);
     outbox = root + L"tt\\outbox\\";
     inbox = root + L"tt\\inbox\\";
@@ -357,6 +357,32 @@ std::string current_content()
 bool content_ours()
 {
     return session_custom.load(std::memory_order_relaxed) || tb::addon_content(current_content());
+}
+
+std::atomic<uint8_t> board_state{uint8_t(tb::BoardListed::unknown)};
+std::string board_state_key;
+
+tb::BoardListed session_board_listed() { return tb::BoardListed(board_state.load(std::memory_order_relaxed)); }
+
+bool garage_tab_allowed() { return tb::garage_tab_allowed(bridge_on, content_ours(), session_board_listed()); }
+
+bool garage_board_missing() { return bridge_on && content_ours() && session_board_listed() == tb::BoardListed::missing; }
+
+std::string session_board_text()
+{
+    std::lock_guard<std::mutex> g(lock);
+    return board_state_key.empty() ? std::string("?") : board_state_key;
+}
+
+void note_board_lookup(const std::string &key, bool found)
+{
+    {
+        std::lock_guard<std::mutex> g(lock);
+        board_state_key = key;
+    }
+    uint8_t now = uint8_t(tb::board_listed(found));
+    if (board_state.exchange(now) != now)
+        ++content_gen;
 }
 
 tb::BoardTrack board_track_of(const tb::BoardName &bn)
@@ -843,6 +869,10 @@ void session_lookup_tick()
                 name.c_str());
 }
 
+tb::Mem cached_mem();
+
+// Runs where onSessionEnter starts its own search for the key it just built: r14 holds the board list at [r14+0x478]+0x10, the
+// list the leaderboard view searches too. The list is only read, through checked reads.
 void board_key_mid(safetyhook::Context &c)
 {
     uint64_t np = peek64(c.rsp + 0x38);
@@ -856,6 +886,20 @@ void board_key_mid(safetyhook::Context &c)
         swofty::log("[boards] session board key %s built by the game at onSessionEnter (%s, from settings tt_weather)", key.c_str(), tb::weather_word(b.weather));
     else
         swofty::log("[boards] session board key at onSessionEnter is not a board name ('%s'); the lap recorder gets no dry/wet from it", key.c_str());
+    if (!b.ok)
+        return;
+    swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
+    tb::Mem m = cached_mem();
+    uint64_t holder = 0, reg = 0, first = 0, last = 0;
+    if (!m.get(c.r14 + 0x478, holder) || !holder || !m.get(holder + 0x10, reg))
+        return;
+    if (reg && (!m.get(reg + tb::BOARD_LIST_BEGIN, first) || !m.get(reg + tb::BOARD_LIST_END, last)))
+        return;
+    tb::BoardScan scan = tb::scan_boards(m, first, last, key);
+    note_board_lookup(key, scan.found);
+    if (!scan.found && bridge_on && content_ours())
+        swofty::log("[boards] session board %s is not among the %zu listed board(s): the garage monitor's leaderboard tab is left to the game for this session", key.c_str(),
+                    scan.listed);
 }
 
 
@@ -947,7 +991,7 @@ void priv_mid(safetyhook::Context &c)
                 }
         }
         int at = type == 2 ? tb::garage_node_offset(win, have) : -1;
-        static std::atomic<int> granted{0}, missed{0}, dumped{0};
+        static std::atomic<int> granted{0}, missed{0}, dumped{0}, unlisted{0};
         if (type == 2 && (diag_on || broad) && dumped.load() < 4 && dumped.fetch_add(1) < 4) {
             swofty::log("[boards] diag: type 2 control 0x%llx (readable window %zu bytes, leaderboard_privilege_check id 0x%x %s in it); first 0x%zx bytes follow",
                         (unsigned long long)c.r14, have, tb::GARAGE_LEADERBOARD_NODE, at >= 0 ? "found" : "not found", have);
@@ -958,6 +1002,13 @@ void priv_mid(safetyhook::Context &c)
                     k += snprintf(line + k, sizeof line - k, " %08x", uint32_t(win[i]) | uint32_t(win[i + 1]) << 8 | uint32_t(win[i + 2]) << 16 | uint32_t(win[i + 3]) << 24);
                 swofty::log("[boards] diag:   %s", line);
             }
+        }
+        if ((at >= 0 || broad) && garage_board_missing()) {
+            if (++unlisted <= 4)
+                swofty::log("[boards] garage monitor: privilege check type 2 of control 0x%llx left to the game: the session's board %s is not listed, so the leaderboard tab "
+                            "would have no board and keeps the game's own no-leaderboard state",
+                            (unsigned long long)c.r14, session_board_text().c_str());
+            return;
         }
         if (at >= 0 || broad) {
             c.rflags |= 0x40;
@@ -1097,13 +1148,15 @@ void garage_done_mid(safetyhook::Context &c)
         return;
     static std::atomic<int> logged{0};
     uint8_t value = runtime::readable(reinterpret_cast<void *>(c.rbx + 8), 1) ? *reinterpret_cast<uint8_t *>(c.rbx + 8) : 0xff;
-    uint8_t result = tb::garage_result(value, bridge_on, content_ours());
-    bool grant = result != value;
+    uint8_t result = tb::garage_result(value, bridge_on, garage_tab_allowed());
+    bool grant = result != value, unlisted = value == 0 && garage_board_missing();
     if (grant)
         *reinterpret_cast<uint8_t *>(c.rbx + 8) = result;
     if (++logged <= 8)
-        swofty::log("[boards] garage monitor: tt_privilege_check_done arrived with %s%s", value == 1 ? "granted" : value == 0 ? "denied" : "an unreadable value",
-                    grant ? "; changed to granted for our content so car_monitor_tt_leaderboard_privilege_check enables the leaderboard tab" : "");
+        swofty::log("[boards] garage monitor: tt_privilege_check_done arrived with %s%s%s", value == 1 ? "granted" : value == 0 ? "denied" : "an unreadable value",
+                    grant ? "; changed to granted for our content so car_monitor_tt_leaderboard_privilege_check enables the leaderboard tab"
+                          : unlisted ? "; left denied: the session's board " : "",
+                    unlisted ? (session_board_text() + " is not listed").c_str() : "");
 }
 
 void garage_cmd_mid(safetyhook::Context &c)
@@ -1138,11 +1191,12 @@ void garage_tab_gate_mid(safetyhook::Context &c)
     static std::atomic<int> logged{0};
     int session = int(uint32_t(c.rbp));
     uint8_t was = runtime::readable(reinterpret_cast<void *>(c.rcx + 0x80), 1) ? *reinterpret_cast<uint8_t *>(c.rcx + 0x80) : 0xff;
-    bool ours = bridge_on && content_ours();
-    bool change = tb::garage_gate_byte(was, bridge_on, content_ours(), session) != was;
+    bool ours = bridge_on && content_ours(), unlisted = garage_board_missing();
+    bool change = tb::garage_gate_byte(was, bridge_on, garage_tab_allowed(), session) != was;
     if (++logged <= 12)
-        swofty::log("[boards] garage monitor tab build: gate byte [[panel+0x938]+0x80] = %u, session type 0x%x, our content %d%s", unsigned(was), unsigned(session), ours ? 1 : 0,
-                    change ? ": read as 1, the leaderboard block is entered" : "");
+        swofty::log("[boards] garage monitor tab build: gate byte [[panel+0x938]+0x80] = %u, session type 0x%x, our content %d%s%s", unsigned(was), unsigned(session), ours ? 1 : 0,
+                    change ? ": read as 1, the leaderboard block is entered" : unlisted ? ": left as it is, the session's board " : "",
+                    unlisted && !change ? (session_board_text() + " is not listed").c_str() : "");
     if (!change)
         return;
     buf[0x80] = 1;
@@ -1155,7 +1209,7 @@ void garage_tab_block_mid(safetyhook::Context &c)
         return;
     static uint8_t zero[0x20] = {};
     static std::atomic<int> logged{0};
-    if (!bridge_on || !content_ours())
+    if (!garage_tab_allowed())
         return;
     uint8_t was = runtime::readable(reinterpret_cast<void *>(c.rcx + 0x18), 1) ? *reinterpret_cast<uint8_t *>(c.rcx + 0x18) : 0xff;
     c.rcx = reinterpret_cast<uint64_t>(zero) - 0x18;
@@ -1169,7 +1223,7 @@ void garage_tab_flags_mid(safetyhook::Context &c)
         return;
     static thread_local uint64_t copy = 0;
     static std::atomic<int> logged{0};
-    if (!bridge_on || !content_ours() || !runtime::readable(reinterpret_cast<void *>(c.rax), 8))
+    if (!garage_tab_allowed() || !runtime::readable(reinterpret_cast<void *>(c.rax), 8))
         return;
     uint64_t was = *reinterpret_cast<uint64_t *>(c.rax);
     copy = tb::garage_feature_flags(was, bridge_on, true);
@@ -1419,6 +1473,10 @@ void replay_load_session_mid(safetyhook::Context &c)
         swofty::log("[replay] load: header session id 0x%x -> session host 0x%llx%s", unsigned(peek32(c.rsp + 0xa4)), (unsigned long long)c.rax, c.rax ? "" : " (no live session has that id: the load fails)");
 }
 
+safetyhook::InlineHook h_load_start;
+// When a Theatre pick went to the game's own load without a setup file: the next save-slot lookup is that load's.
+std::atomic<int64_t> replay_bare_pick_ms{0};
+
 void replay_load_slot_mid(safetyhook::Context &c)
 {
     static std::atomic<int> n{0};
@@ -1426,8 +1484,14 @@ void replay_load_slot_mid(safetyhook::Context &c)
     bool log = ++n <= 40;
     if (log)
         swofty::log("[replay] load: session host 0x%llx, game mode 0x%llx, its save-slot component 0x%llx", (unsigned long long)c.r12, (unsigned long long)mode, (unsigned long long)c.rax);
+    int64_t bare = replay_bare_pick_ms.exchange(0);
     if (c.rax || replay_force != 2 || !mode)
         return;
+    if (const char *why = tb::replay_stand_in_refusal(bool(h_load_start), bare, now_ms())) {
+        if (log || bare)
+            swofty::log("[replay] load: no save-slot component stands in for this Time Trial file, so the game's load fails: %s", why);
+        return;
+    }
     if (log)
         describe_component("load game mode", mode);
     uint64_t comp = replay_make_save_slot(c.rsi, mode);
@@ -1444,7 +1508,9 @@ void replay_load_slot_mid(safetyhook::Context &c)
 std::wstring replay_setup_path(const std::wstring &frr)
 {
     size_t cut = frr.find_last_of(L"\\/");
-    return runtime::swofty_root() + L"tt\\replays\\" + (cut == std::wstring::npos ? frr : frr.substr(cut + 1)) + L".json";
+    std::wstring name = L"tt\\replays\\" + (cut == std::wstring::npos ? frr : frr.substr(cut + 1)) + L".json";
+    std::wstring own = runtime::files_root() + name, old = runtime::swofty_root() + name;
+    return GetFileAttributesW(own.c_str()) == INVALID_FILE_ATTRIBUTES && GetFileAttributesW(old.c_str()) != INVALID_FILE_ATTRIBUTES ? old : own;
 }
 
 void replay_write_setup(const std::wstring &frr, bool beside_game_file)
@@ -1467,7 +1533,6 @@ void replay_write_setup(const std::wstring &frr, bool beside_game_file)
     swofty::log("[replay] setup for %s: %s %s", narrow(frr.c_str()).c_str(), json.c_str(), ok ? "written" : "NOT written");
 }
 
-safetyhook::InlineHook h_load_start;
 // The play request: a replay file, played in the live session once the recorder has run for replay_play_delay_ms in a row. Set by the
 // SWOFTY_TT_REPLAY_PLAY test switch (30 s) or by a Theatre pick of one of our Time Trial replays (6 s).
 std::string replay_play_path;
@@ -1500,9 +1565,12 @@ bool replay_load_start_hook(uint64_t mgr, const wchar_t *path)
 {
     std::wstring p = path && runtime::readable(const_cast<wchar_t *>(path), 4) ? std::wstring(path) : std::wstring();
     std::string setup = p.empty() || replay_force != 2 ? std::string() : runtime::read_file(replay_setup_path(p), size_t(1) << 16);
-    swofty::log("[replay] load requested on manager 0x%llx: %s; our setup file: %s", (unsigned long long)mgr, narrow(p.c_str()).c_str(), setup.empty() ? "none (the game's own load runs now)" : setup.c_str());
-    if (setup.empty())
+    swofty::log("[replay] load requested on manager 0x%llx: %s; our setup file: %s", (unsigned long long)mgr, narrow(p.c_str()).c_str(),
+                setup.empty() ? "none (the game's own load runs now; a Time Trial file is refused at its save-slot lookup)" : setup.c_str());
+    if (setup.empty()) {
+        replay_bare_pick_ms = now_ms();
         return h_load_start.call<bool>(mgr, path);
+    }
     std::lock_guard<std::mutex> g(replay_load_lock);
     replay_load_path = p;
     replay_load_setup = setup;
@@ -1703,7 +1771,7 @@ void replay_watch_file(std::wstring path, uint32_t lap_ms, uint64_t stamp)
             last = size;
             continue;
         }
-        std::wstring root = runtime::swofty_root();
+        std::wstring root = runtime::files_root();
         CreateDirectoryW((root + L"tt").c_str(), nullptr);
         std::wstring dir = root + L"tt\\replays\\";
         CreateDirectoryW(dir.c_str(), nullptr);
@@ -1718,7 +1786,14 @@ void replay_watch_file(std::wstring path, uint32_t lap_ms, uint64_t stamp)
         }
         int magic = tb::replay_magic_offset(head, got);
         // The file leaves the game's replay folder: Theatre lists only the laps the player adds from the boards. The setup is written
-        // last, so the pair is complete once the .json is there.
+        // last, so the pair is complete once the .json is there. The game saves the replay read-only; a move to another volume (a
+        // data folder on another drive or filesystem) is a copy that then can't delete the source, and the copy keeps the flag, so
+        // the source and a copy left by an earlier attempt lose it first.
+        for (const std::wstring *p : {&path, &dest}) {
+            DWORD a = GetFileAttributesW(p->c_str());
+            if (a != INVALID_FILE_ATTRIBUTES && (a & FILE_ATTRIBUTE_READONLY))
+                SetFileAttributesW(p->c_str(), a & ~DWORD(FILE_ATTRIBUTE_READONLY));
+        }
         bool copied = MoveFileExW(path.c_str(), dest.c_str(), MOVEFILE_COPY_ALLOWED | MOVEFILE_REPLACE_EXISTING) != 0;
         if (!copied && CopyFileW(path.c_str(), dest.c_str(), FALSE)) {
             copied = true;
@@ -1732,8 +1807,9 @@ void replay_watch_file(std::wstring path, uint32_t lap_ms, uint64_t stamp)
         }
         if (copied)
             replay_write_setup(dest.substr(0, dest.size() - 7), false);
-        swofty::log("[replay] capture: game save %s settled at %llu bytes; header %s; magic 0xe32fcaa8 %s; copy to tt/replays/%s %s", narrow(path.c_str()).c_str(), (unsigned long long)size,
-                    hex_dump(head, got).c_str(), magic >= 0 ? ("found at +" + std::to_string(magic)).c_str() : "NOT found", name.c_str(), copied ? "done" : "FAILED");
+        DWORD copy_error = copied ? 0 : GetLastError();
+        swofty::log("[replay] capture: game save %s settled at %llu bytes; header %s; magic 0xe32fcaa8 %s; copy to %s%s %s (error %lu)", narrow(path.c_str()).c_str(), (unsigned long long)size,
+                    hex_dump(head, got).c_str(), magic >= 0 ? ("found at +" + std::to_string(magic)).c_str() : "NOT found", narrow(dir.c_str()).c_str(), name.c_str(), copied ? "done" : "FAILED", copy_error);
         return;
     }
     swofty::log("[replay] capture: the game's save %s did not appear within 180 s", narrow(path.c_str()).c_str());
@@ -1762,8 +1838,14 @@ std::wstring replay_game_dir()
 // where Theatre lists it, and its setup beside our own under tt\replays, where a Theatre pick reads it.
 void replay_inbox()
 {
-    std::wstring root = runtime::swofty_root(), inbox = root + L"tt\\replays\\inbox\\";
-    for (;;) {
+    std::wstring root = runtime::files_root();
+    std::vector<std::wstring> inboxes{root + L"tt\\replays\\inbox\\"};
+    if (runtime::swofty_root() != root)
+        inboxes.push_back(runtime::swofty_root() + L"tt\\replays\\inbox\\");
+    CreateDirectoryW((root + L"tt").c_str(), nullptr);
+    CreateDirectoryW((root + L"tt\\replays").c_str(), nullptr);
+    for (size_t turn = 0;; turn++) {
+        const std::wstring &inbox = inboxes[turn % inboxes.size()];
         WIN32_FIND_DATAW d{};
         HANDLE h = FindFirstFileW((inbox + L"*.frr.json").c_str(), &d);
         if (h != INVALID_HANDLE_VALUE) {
@@ -1782,7 +1864,8 @@ void replay_inbox()
                 swofty::log("[replay] inbox: %s %s into %s; its setup %s", narrow(frr.c_str()).c_str(), a ? "moved" : "NOT moved", narrow(game.c_str()).c_str(), b ? "placed" : "NOT placed");
             }
         }
-        Sleep(3000);
+        if ((turn + 1) % inboxes.size() == 0)
+            Sleep(3000);
     }
 }
 
@@ -2432,12 +2515,12 @@ void replay_tick(uint64_t sys, const char *slot)
     if (n <= 5 || n % 20000 == 0)
         swofty::log("[replay] tick %s entry %llu (replay system 0x%llx, GameReplaySystem vtable %s, %llu such entries); pending mark %lld", slot, (unsigned long long)n, (unsigned long long)sys,
                     vt_ok ? "yes" : "no", (unsigned long long)ours_entries[which].load(), (long long)replay_pending_ms.load());
-    // SWOFTY_TT_REPLAY_PLAY=<replay file path as the game sees it> is a test switch: 40 s into a session with the bridge on the file is loaded into
+    // SWOFTY_TT_REPLAY_PLAY=<replay file path as the game sees it> is a test switch: 40 s into a session with the load start hook armed the file is loaded into
     // the live session through the game's own load, and 8 s later the replay system is put into full replay playback of the whole buffer
     // (mode 0, state 2, clip over the module's duration), the way the fastest lap view's update does it. Every step is logged.
-    if (vt_ok && bridge_on && h_load_start)
+    if (vt_ok && h_load_start)
         view::tick(sys);
-    if (vt_ok && !replay_play_path.empty() && bridge_on && h_load_start) {
+    if (vt_ok && !replay_play_path.empty() && h_load_start) {
         std::atomic<int64_t> &at = replay_play_at;
         std::atomic<int> &stage = replay_play_stage;
         int64_t now = now_ms();
@@ -2732,7 +2815,7 @@ void garage_build_mid(safetyhook::Context &c)
     uint64_t panel = c.rcx, inner = peek64(panel + 0x268), mgr = inner ? peek64(inner + 0x1a8) : 0;
     uint32_t session = mgr ? peek32(mgr + 4) : 0xffffffffu;
     bool ours = bridge_on && content_ours();
-    if (ours)
+    if (ours && garage_tab_allowed())
         garage_built_ours = panel;
     if (++logged <= 12)
         swofty::log("[boards] garage monitor tab builder runs for panel 0x%llx: session type 0x%x, %llu tab(s) before, our content %d", (unsigned long long)panel, session,
@@ -2754,6 +2837,16 @@ void garage_update_mid(safetyhook::Context &c)
     if (!content_ours()) {
         garage_idle_gen = gen;
         garage_idle_panel = panel;
+        return;
+    }
+    if (garage_board_missing()) {
+        garage_idle_gen = gen;
+        garage_idle_panel = panel;
+        static std::atomic<int> unlisted{0};
+        if (++unlisted <= 4)
+            swofty::log("[boards] garage monitor: panel 0x%llx left to the game for our content: the session's board %s is not listed, so the leaderboard tab is not built "
+                        "again and car_monitor_tt_leaderboard_privilege_check is not raised",
+                        (unsigned long long)panel, session_board_text().c_str());
         return;
     }
     uint64_t tb_ = 0, te = 0;
@@ -2859,22 +2952,12 @@ void select_board_mid(safetyhook::Context &c)
             return;
         select_walked = walk;
     }
-    size_t listed = first && last >= first ? size_t(std::min<uint64_t>((last - first) / 8, 100000)) : 0, same_descriptor = 0;
-    bool found = false;
-    std::string prefix = key.size() >= 5 ? key.substr(0, 5) : key, sample;
-    for (size_t i = 0; i < listed; i++) {
-        uint64_t board = cached64(first + 8 * i), np = board ? cached64(board + 0x68) : 0;
-        std::string name = np ? tb::read_c(cached_mem(), np) : std::string();
-        if (!_stricmp(name.c_str(), key.c_str()))
-            found = true;
-        if (name.compare(0, prefix.size(), prefix) == 0) {
-            same_descriptor++;
-            if (sample.size() < 80 && name.size() > 5)
-                sample += (sample.empty() ? "" : " ") + name.substr(5);
-        }
-    }
+    tb::BoardScan scan = tb::scan_boards(cached_mem(), first, last, key);
+    if (!key.empty())
+        note_board_lookup(key, scan.found);
+    std::string prefix = key.size() >= 5 ? key.substr(0, 5) : key;
     char tag[96];
-    snprintf(tag, sizeof tag, "%s/%zu/%d", key.c_str(), listed, found);
+    snprintf(tag, sizeof tag, "%s/%zu/%d", key.c_str(), scan.listed, scan.found);
     {
         std::lock_guard<std::mutex> lk(lock);
         if (select_seen == tag)
@@ -2882,8 +2965,8 @@ void select_board_mid(safetyhook::Context &c)
         select_seen = tag;
     }
     swofty::log("[boards] %sleaderboard screen board lookup: key '%s', %zu board(s) listed (registry 0x%llx), %s; %zu with the prefix %s (tracks %s)",
-                diag_on ? "diag: " : "", key.c_str(), listed, (unsigned long long)reg, found ? "FOUND" : "NOT in the list: the screen opens empty",
-                same_descriptor, prefix.c_str(), sample.empty() ? "none" : sample.c_str());
+                diag_on ? "diag: " : "", key.c_str(), scan.listed, (unsigned long long)reg, scan.found ? "FOUND" : "NOT in the list: the screen opens empty",
+                scan.same_prefix, prefix.c_str(), scan.sample.empty() ? "none" : scan.sample.c_str());
 }
 
 void describe_checks(uint64_t handler, const std::string &board)
@@ -3178,9 +3261,10 @@ void resolve_game()
         swofty::log("[replay] recording restart off: its functions did not resolve on this build");
 }
 
-// The replay hooks: capture (the save of a personal best and the game's save messages) always, and with `playback` the hooks that
-// load a downloaded replay into Theatre for the in-game leaderboards.
-void arm_replay(bool playback)
+// The replay hooks: capture (the save of a personal best and the game's save messages), and with the save-slot stand-in the hooks that play
+// a Time Trial replay in Theatre (a lap added to the game from the boards, or one downloaded for the in-game leaderboards). The stand-in lets
+// Theatre list and load a Time Trial file, so the load start hook that applies its setup is armed with it, leaderboards on or off.
+void arm_replay()
 {
     uintptr_t path_fn = runtime::find(S_REPLAY_PATH, "boards", "boards"), save_fn = runtime::find(S_REPLAY_SAVE, "boards", "boards"), tick = runtime::find(S_REPLAY_TICK, "boards", "boards");
     if (path_fn && save_fn && tick && game.replay_system_vt && hook_mid(h_replay_tick, tick, replay_tick_mid, "replay system tick")) {
@@ -3203,29 +3287,27 @@ void arm_replay(bool playback)
             if (uintptr_t snap = runtime::find(S_SAVE_SLOT_SNAPSHOT, "boards", "boards"))
                 if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(snap), reinterpret_cast<void *>(&slot_snapshot_hook)))
                     h_slot_snapshot = std::move(*h);
-            if (playback) {
-                if (uintptr_t a = runtime::find(S_REPLAY_LOAD_START, "boards", "boards"))
-                    if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&replay_load_start_hook)))
-                        h_load_start = std::move(*h);
-                swofty::log("[replay] load start hook %s", h_load_start ? "armed" : "NOT armed");
-                if (uintptr_t a = runtime::find(S_REPLAY_META, "boards", "boards"))
-                    if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&replay_meta_hook)))
-                        h_replay_meta = std::move(*h);
-                swofty::log("[replay] metadata hook %s", h_replay_meta ? "armed" : "NOT armed");
-                if (uintptr_t a = runtime::find(S_REPLAY_TITLE, "boards", "boards"))
-                    hook_mid(h_replay_title, a, replay_title_mid, "replay title");
-                view::flying_lap_fn = runtime::find(S_FLYING_LAP, "boards", "boards");
-                if (uintptr_t a = runtime::find(S_REPLAY_INFO_LOAD, "boards", "boards"))
-                    if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&info_load_hook)))
-                        h_info_load = std::move(*h);
-                if (uintptr_t a = runtime::find(S_VM_SESSION_SETUP, "boards", "boards"))
-                    if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&vm_session_setup_hook)))
-                        h_vm_session_setup = std::move(*h);
-                if (uintptr_t a = game.view_resume ? runtime::find(S_VIEW_ENTER, "boards", "boards") : 0)
-                    hook_mid(view::h_enter, a, view::enter_mid, "fastest lap viewer enter");
-                if (uintptr_t a = runtime::find(S_REPLAY_LOAD_READY, "boards", "boards"))
-                    hook_mid(h_load_ready, a, replay_load_ready_mid, "load start readiness");
-            }
+            if (uintptr_t a = runtime::find(S_REPLAY_LOAD_START, "boards", "boards"))
+                if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&replay_load_start_hook)))
+                    h_load_start = std::move(*h);
+            swofty::log("[replay] load start hook %s", h_load_start ? "armed" : "NOT armed");
+            if (uintptr_t a = runtime::find(S_REPLAY_META, "boards", "boards"))
+                if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&replay_meta_hook)))
+                    h_replay_meta = std::move(*h);
+            swofty::log("[replay] metadata hook %s", h_replay_meta ? "armed" : "NOT armed");
+            if (uintptr_t a = runtime::find(S_REPLAY_TITLE, "boards", "boards"))
+                hook_mid(h_replay_title, a, replay_title_mid, "replay title");
+            view::flying_lap_fn = runtime::find(S_FLYING_LAP, "boards", "boards");
+            if (uintptr_t a = runtime::find(S_REPLAY_INFO_LOAD, "boards", "boards"))
+                if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&info_load_hook)))
+                    h_info_load = std::move(*h);
+            if (uintptr_t a = runtime::find(S_VM_SESSION_SETUP, "boards", "boards"))
+                if (auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(a), reinterpret_cast<void *>(&vm_session_setup_hook)))
+                    h_vm_session_setup = std::move(*h);
+            if (uintptr_t a = game.view_resume ? runtime::find(S_VIEW_ENTER, "boards", "boards") : 0)
+                hook_mid(view::h_enter, a, view::enter_mid, "fastest lap viewer enter");
+            if (uintptr_t a = runtime::find(S_REPLAY_LOAD_READY, "boards", "boards"))
+                hook_mid(h_load_ready, a, replay_load_ready_mid, "load start readiness");
             // Both hooks go on the function's jump thunk in ordinary code, never into the protector's section.
             auto thunk = [](const runtime::Sig &sig) -> uintptr_t {
                 uintptr_t a = runtime::find(sig, "boards", "boards");
@@ -3405,7 +3487,7 @@ void setup()
                 if (hook_mid(h_tab_friends, at, garage_friends_tab_mid, "garage friends tab"))
                     swofty::log("[boards] garage friends tab skipped for our content at base+0x%llx", (unsigned long long)(at - swofty::api->module_base()));
         if (bridge_on && replay_capture_on)
-            arm_replay(true);
+            arm_replay();
         if (bridge_on || diag_on)
             if (uintptr_t fn = runtime::find(S_GARAGE_BUILD, "boards", "boards"))
                 if (hook_mid(h_tab_build, fn + 0x1c, garage_build_mid, "garage tab builder")) {
@@ -3441,7 +3523,7 @@ void setup()
                             bridge_on ? "our leaderboard button needs no platform check" : "diagnostics only");
     }
     if (!bridge_on && boards_on && replay_capture_on)
-        arm_replay(false);
+        arm_replay();
     if (bridge_on || diag_on)
         if (uintptr_t at = runtime::find(S_ACCOUNT_ERROR, "boards", "boards"))
             if (hook_mid(h_account_error, at, account_error_mid, "account state error"))
@@ -3716,9 +3798,12 @@ std::string tt_bridge_session_board()
 
 void tt_bridge_session_exit()
 {
+    board_state = uint8_t(tb::BoardListed::unknown);
     ++content_gen;
     std::lock_guard<std::mutex> g(lock);
     session_key.clear();
+    board_state_key.clear();
+    select_walked.clear();
 }
 
 void tt_bridge_session_enter()

@@ -1,7 +1,27 @@
 #pragma once
 #include <cstdint>
+#include <string_view>
 
 namespace runtime::session_life {
+
+// The live session's kind: set when StateLoadSession enters and again at Game_GameModule_OnSessionEnter, NONE once the
+// session ends or unloads. Modules that only work in one kind of session read it as one atomic load.
+enum Kind : int { NONE = 0, TIME_TRIAL = 1, OTHER = 2 };
+
+inline int kind_of(std::string_view mode)
+{
+    return mode == "time_trial" ? TIME_TRIAL : OTHER;
+}
+
+inline bool time_trial_live(int kind)
+{
+    return kind == TIME_TRIAL;
+}
+
+inline bool session_live(int kind)
+{
+    return kind != NONE;
+}
 
 constexpr int64_t END_EXITED = 0;
 constexpr int64_t END_RESTART = 1;

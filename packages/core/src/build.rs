@@ -939,9 +939,15 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     if let Some(core) = addons.get(CORE_ID) {
         lenient.insert(CORE_ID.to_owned(), core.name.clone());
     }
+    let names = resolved
+        .order
+        .iter()
+        .map(|id| (id.clone(), addons[id].name.clone()))
+        .collect();
     let mut planner = Planner::new(&features, &config.runtime_assets)
         .build_only(&config.build_assets)
         .lenient(lenient)
+        .names(names)
         .overlays(&overlay_names)
         .mipmaps(&mipmap_names);
     if features != Features::default() {
@@ -1333,6 +1339,29 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     let (more, unusable) = crate::tracks::record_packages(store, &resolved.order, &std16, &tracks);
     tracks.extend(more);
     left_out.extend(unusable);
+    if crate::tracks::may_fill_track_lists(tracks.len()) {
+        let path = original(&store.root, game, GVDB);
+        let shipped = Gvdb::parse(&std::fs::read(&path).map_err(io_err(&path))?)?;
+        let listed = crate::tracks::ListedTracks::of(&shipped);
+        let (kept, full) = crate::tracks::fit_track_lists(&listed, tracks, &recorded);
+        tracks = kept;
+        let names: Vec<String> = full
+            .iter()
+            .map(|((_, pkg, origin), _)| {
+                let addon = addons
+                    .get(&origin.addon)
+                    .map_or(origin.addon.as_str(), |m| m.name.as_str());
+                match pkg.display_name() == addon {
+                    true => addon.to_owned(),
+                    false => format!("{} ({addon})", pkg.display_name()),
+                }
+            })
+            .collect();
+        built
+            .warnings
+            .extend(crate::tracks::track_lists_full_warning(&listed, &names));
+        left_out.extend(full.into_iter().map(|((_, _, origin), why)| (origin, why)));
+    }
     crate::tracks::keep_track_folders(store, &tracks, &mut std16);
     for (origin, why) in &left_out {
         let name = addons
@@ -8601,6 +8630,113 @@ mod tests {
             );
             let plan: serde_json::Value = crate::read_json(&built.overlay.join(PLAN_FILE)).unwrap();
             assert_eq!(plan["tracks"], serde_json::json!([]), "{pass}");
+        }
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn leaves_out_the_tracks_the_game_s_track_lists_have_no_room_for() {
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-track-room-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let stock: Vec<String> = (0..64)
+            .map(|i| format!("stock_{i:02}"))
+            .chain(["madrid".to_owned()])
+            .collect();
+        let mut records = vec![
+            Record::new("tracks._Track_instancecount_", 0, stock.len().to_string()),
+            Record::new("track_data.game_setup._TrackDataSet_instancecount_", 0, "1"),
+            Record::new("track_data.game_setup.TrackDataSet_0._metadata_", 2, "f1"),
+            Record::new(
+                "track_data.game_setup.TrackDataSet_0._TrackData_instancecount_",
+                0,
+                stock.len().to_string(),
+            ),
+        ];
+        for (i, code) in stock.iter().enumerate() {
+            records.push(Record::new(
+                &format!("tracks.Track_{i}._metadata_"),
+                2,
+                code.as_str(),
+            ));
+            records.push(Record::new(
+                &format!("track_data.game_setup.TrackDataSet_0.TrackData_{i}.track"),
+                2,
+                code.as_str(),
+            ));
+        }
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        let codes: Vec<String> = (0..22).map(|i| format!("added_{i:02}")).collect();
+        for code in &codes {
+            let id = format!("mod.{code}");
+            let src = root.join("src").join(&id);
+            std::fs::create_dir_all(src.join("track")).unwrap();
+            std::fs::write(
+                src.join("swofty.json"),
+                format!(
+                    r#"{{ "schema_version": 1, "id": "{id}", "name": "{code}", "version": "1.0.0", "author": "t",
+                         "compat": {{ "game": "f1_25" }}, "operations": {{ "assets": ["ops.json"] }} }}"#
+                ),
+            )
+            .unwrap();
+            std::fs::write(
+                src.join("ops.json"),
+                r#"{ "schema_version": 1, "ops": [{"op":"track.add","source":"track"}] }"#,
+            )
+            .unwrap();
+            std::fs::write(
+                src.join("track/manifest.json"),
+                format!(
+                    r#"{{ "track_code": "{code}", "track_name": "{code}", "erp": "{code}.erp",
+                         "activation": {{ "copy_from_track": "stock_00" }} }}"#
+                ),
+            )
+            .unwrap();
+            store.install_addon(&src).unwrap();
+            store
+                .update_profile("default", |p| p.set_enabled(&id, true))
+                .unwrap();
+        }
+        let built = build(&store, "default", &game).unwrap();
+        let notice = built
+            .warnings
+            .iter()
+            .find(|w| w.starts_with("Too many tracks: "))
+            .unwrap_or_else(|| panic!("{:?}", built.warnings));
+        assert!(
+            notice.starts_with(
+                "Too many tracks: 22 track(s) are left out of this build because the game has room for 64 tracks, \
+                 64 of its own and 0 added ones"
+            ),
+            "{notice}"
+        );
+        assert!(notice.contains(": added_00, added_01, "), "{notice}");
+        for code in &codes {
+            let line = format!(
+                "{code} (mod.{code}): track {code} is left out; the game has room for 64 tracks, 64 of its own and \
+                 0 added ones, and the track addons before it in the load order fill them. Turn some track addons \
+                 off to make room for it"
+            );
+            assert!(built.warnings.contains(&line), "{line}: {:?}", built.warnings);
+        }
+        if let Some(db) = built.plan.data.get(GVDB) {
+            let out = Gvdb::parse(&std::fs::read(db).unwrap()).unwrap();
+            assert_eq!(
+                out.get_text("tracks._Track_instancecount_").as_deref(),
+                Some("65")
+            );
         }
         std::fs::remove_dir_all(&root).ok();
     }

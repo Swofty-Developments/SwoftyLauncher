@@ -260,6 +260,12 @@ std::string read_file(const std::wstring &path, size_t limit)
     return out;
 }
 
+const std::wstring &files_root()
+{
+    const std::wstring &state = state_root();
+    return state.empty() ? swofty_root() : state;
+}
+
 bool write_file(const std::wstring &path, const std::string &data)
 {
     std::wstring tmp = path + L".tmp";
@@ -275,7 +281,9 @@ bool write_file(const std::wstring &path, const std::string &data)
     }
     CloseHandle(f);
     if (!ok || !MoveFileExW(tmp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING)) {
+        DWORD e = GetLastError();
         DeleteFileW(tmp.c_str());
+        SetLastError(e);
         return false;
     }
     return true;

@@ -9,7 +9,8 @@
 // wrapped function) so it is not counted as swofty time. Frames come from the frame index the game
 // passes to Streamline (or, while it is not updated, from gaps between flow-state ticks), which also
 // paces the on_frame callbacks through frame_claim; the report goes to swofty/perf.log every 15 s and
-// at exit, and a one-line summary goes to loader.log every minute.
+// at exit, and summary lines go to loader.log every minute: frames and swofty time, VirtualQuery calls
+// from swofty modules and the process's CPU use.
 
 namespace perf {
 

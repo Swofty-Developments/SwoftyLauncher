@@ -444,6 +444,7 @@ impl Shell {
     pub(super) fn thin_track_row(
         &self,
         t: &TrackCard,
+        byline: Option<String>,
         idx: usize,
         mine: Option<u64>,
         p: Palette,
@@ -467,19 +468,30 @@ impl Shell {
             .hover(move |s| s.bg(p.hover))
             .child(self.layout_art(t.layout.as_ref(), 28., p.accent_hover, p))
             .child(
-                h_flex()
+                v_flex()
                     .w(px(200.))
                     .flex_shrink_0()
-                    .gap(px(8.))
-                    .items_center()
+                    .min_w_0()
                     .child(
+                        h_flex()
+                            .gap(px(8.))
+                            .items_center()
+                            .child(
+                                div()
+                                    .truncate()
+                                    .text_size(px(14.))
+                                    .font_weight(FontWeight::MEDIUM)
+                                    .child(t.name.clone()),
+                            )
+                            .children(self.flag_chip(&t.flag, p)),
+                    )
+                    .children(byline.map(|b| {
                         div()
                             .truncate()
-                            .text_size(px(14.))
-                            .font_weight(FontWeight::MEDIUM)
-                            .child(t.name.clone()),
-                    )
-                    .children(self.flag_chip(&t.flag, p)),
+                            .text_size(px(11.))
+                            .text_color(p.text_muted)
+                            .child(b)
+                    })),
             )
             .child(
                 h_flex()

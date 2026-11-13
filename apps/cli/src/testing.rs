@@ -18,7 +18,7 @@ use swofty_core::addon_storage;
 use swofty_core::builtin::CORE_ID;
 use swofty_core::install::Game;
 use swofty_core::journal::Journal;
-use swofty_core::process::{descends_from, game_processes, games_in, stop_process};
+use swofty_core::process::{descends_from, flag, game_processes, games_in, stop_process};
 use swofty_core::recovery::SessionLock;
 use swofty_core::session::{LOADER_LOG, LogMark, SessionRecord, request_stop};
 use swofty_core::store::Store;
@@ -774,16 +774,13 @@ impl Launcher for SwoftyRun {
     ) -> Result<Box<dyn Running>> {
         let log = std::fs::File::create(dir.join("launcher.log"))?;
         let mut c = Command::new(std::env::current_exe()?);
-        c.arg("--data-dir")
-            .arg(&self.data)
-            .arg("--profile")
-            .arg(profile)
+        c.arg(flag("data-dir", &self.data))
+            .arg(flag("profile", profile))
             .arg("run")
             .arg("--apply")
             .arg("--direct")
             .arg("--no-start-store")
-            .arg("--game")
-            .arg(&self.game);
+            .arg(flag("game", &self.game));
         for a in game_args {
             c.arg(format!("--game-arg={a}"));
         }

@@ -55,6 +55,10 @@ const std::string &config_source();
 const std::wstring &game_root();
 const std::wstring &swofty_root();
 const std::wstring &state_root();
+// Where the core writes the files the launcher collects (laps, the Time Trial mailbox, replay copies): the launcher's
+// data folder (state_root), or swofty\ when the core can't write there. The game can't create files in swofty\ of an
+// EA app copy under Program Files.
+const std::wstring &files_root();
 bool enabled(const char *feature, const char *what);
 std::string load_stage();
 bool same_build();
@@ -117,6 +121,11 @@ void events_drop_module(void *module);
 size_t events_fire(const char *event, int64_t a, int64_t b, const void *data);
 void session_emit(const session_life::Emit &e);
 void session_flow(const char *known, int to);
+// The live session's session_life::Kind and a counter that moves on every change of it; both are atomic loads.
+int session_kind();
+uint64_t session_serial();
+// Arms or drops the Time Trial player name rename for the live session (player_name.cpp).
+void player_name_session();
 
 struct CoreMixins {
     const char *name;
@@ -250,6 +259,11 @@ std::vector<CoreMixins> standings_guard_mixins();
 void standings_guard_commit();
 std::vector<CoreMixins> fe_tile_guard_mixins();
 void fe_tile_guard_commit();
+std::vector<CoreMixins> myteam_vehicle_guard_mixins();
+void myteam_vehicle_guard_commit();
+std::vector<CoreMixins> myteam_vehicle_heal_mixins();
+void myteam_vehicle_heal_commit();
+void myteam_vehicle_heal_entrants(uintptr_t entrants, uintptr_t first, uintptr_t end);
 std::vector<CoreMixins> ai_corner_guard_mixins();
 void ai_corner_guard_commit();
 std::vector<CoreMixins> replay_grid_guard_mixins();
@@ -305,7 +319,11 @@ void leaderboard_guard_commit();
 std::vector<CoreMixins> thrustmaster_lcd_mixins();
 void thrustmaster_lcd_commit();
 std::vector<CoreMixins> estimate_laptime_mixins();
+std::vector<CoreMixins> gp_continue_mixins();
+void gp_continue_commit();
 void estimate_laptime_commit();
+std::vector<CoreMixins> track_list_guard_mixins();
+void track_list_guard_commit();
 std::vector<CoreMixins> garage_setup_mixins();
 void garage_setup_commit();
 std::vector<CoreMixins> theatre_list_mixins();

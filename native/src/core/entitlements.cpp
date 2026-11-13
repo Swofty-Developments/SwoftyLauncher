@@ -55,11 +55,16 @@ void entitlements_flow(uint32_t hash, uint32_t to)
 
 void entitlements_tick()
 {
-    static unsigned recheck = 0;
+    static uint64_t last_read = 0;
     int now = f1_2026.load();
-    if (now == ent::OWNED || !code_ready() || !ent::frontend_settled(frontend_at.load(), GetTickCount64()) ||
-        (now == ent::NOT_OWNED && ++recheck % 100))
+    if (now == ent::OWNED)
         return;
+    uint64_t ms = GetTickCount64();
+    if (!ent::read_due(now, session_life::session_live(session_kind()), last_read, ms) || !code_ready() ||
+        !ent::frontend_settled(frontend_at.load(), ms))
+        return;
+    last_read = ms;
+    mem::Trust trust(HEAP_TRUST_MS);
     uintptr_t slot = swofty::api->resolve("g_FeTile_Ctx");
     if (!slot || !swofty::game::FeTile_Check_EntrantListUsable.address()) {
         if (!reported_missing) {

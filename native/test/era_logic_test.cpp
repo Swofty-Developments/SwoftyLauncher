@@ -1,6 +1,6 @@
 // Host unit test for the era picker logic (era_logic.hpp): the box check, the default title and image,
-// the box order, the Time Trial list and car limit, the press guard, the addon row's handle links and the DRS
-// group swap. run_events_test.sh builds and runs it.
+// the box order, the Time Trial list and car limit, the press guard, the addon row's handle links, the DRS
+// group swap and the restore stack of list cuts. run_events_test.sh builds and runs it.
 #include "../src/core/era_logic.hpp"
 
 #include <cstdio>
@@ -293,6 +293,167 @@ struct GridSetup {
     void set(int32_t v) { *reinterpret_cast<int32_t *>(mem + era::ENTRANT_SETUP_MAX_ENTRANTS) = v; }
     int32_t get() const { return *reinterpret_cast<const int32_t *>(mem + era::ENTRANT_SETUP_MAX_ENTRANTS); }
 };
+
+// An entrant setup mode's list array (the lists at +0x130, their count at +0x230, max_entrants at +0x268) over 16 fake
+// list objects, laid out like swofty_f1's Time Trial mode in the illanori bundle: the 24-car bdy_s5_2010 first.
+struct Esm {
+    alignas(8) uint8_t mem[0x300] = {};
+    int objects[era::ESM_LIST_SLOTS] = {};
+    std::vector<void *> original;
+    explicit Esm(size_t n, int32_t max_entrants = 24)
+    {
+        for (size_t i = 0; i < n; ++i)
+            original.push_back(&objects[i]);
+        reset();
+        limit() = max_entrants;
+    }
+    void reset()
+    {
+        memcpy(era::esm_lists(mem), original.data(), original.size() * sizeof(void *));
+        era::esm_list_count(mem) = int64_t(original.size());
+    }
+    void *list(size_t i) { return &objects[i]; }
+    int32_t &limit() { return *reinterpret_cast<int32_t *>(mem + era::ENTRANT_SETUP_MAX_ENTRANTS); }
+    std::vector<void *> now()
+    {
+        int64_t n = era::esm_list_count(mem);
+        void **arr = era::esm_lists(mem);
+        return std::vector<void *>(arr, arr + std::max<int64_t>(n, 0));
+    }
+    bool whole() { return now() == original; }
+};
+
+struct TtLoad {
+    era::ListCut stack[16];
+    size_t used = 0;
+    era::TtHold held;
+    bool holding = false;
+    std::vector<const era::ListCut *> failed;
+    auto on_failed()
+    {
+        return [this](const era::ListCut &n) { failed.push_back(&n); };
+    }
+    void load(Esm &esm, size_t fit_slot, const std::vector<size_t> &cut)
+    {
+        held = {};
+        held.esm = esm.mem;
+        era::swap_into_first(held, esm.mem, fit_slot);
+        held.limit_was = esm.limit();
+        esm.limit() = era::time_trial_limit(esm.limit());
+        holding = true;
+        for (size_t i : cut)
+            era::cut_list(stack, used, std::size(stack), esm.mem, esm.list(i));
+    }
+};
+
+static void cut_restore_tests()
+{
+    {
+        Esm esm(16);
+        TtLoad tt;
+        tt.load(esm, 5, {7, 9, 12, 14});
+        expect(esm.now().size() == 12 && esm.now()[0] == esm.list(5) && tt.used == 1 && esm.limit() == 23,
+               "the 2010 load swaps the Time Trial list into slot 0, cuts 4 lists after it and lowers max_entrants");
+        era::CutsPutBack r = era::end_hold(tt.stack, tt.used, tt.held, tt.holding, true, tt.on_failed());
+        expect(r.put == 1 && r.failed == 0 && tt.failed.empty() && esm.whole() && esm.limit() == 24 && tt.used == 0 &&
+                   !tt.holding,
+               "the unload puts the cut back before the swap: all 16 lists are back in their order, max_entrants 24");
+    }
+    {
+        Esm esm(16);
+        TtLoad tt;
+        tt.load(esm, 5, {7, 9, 12, 14});
+        era::put_back_hold(tt.held);
+        tt.holding = false;
+        era::CutsPutBack r = era::put_back_cuts(tt.stack, tt.used, true, tt.on_failed());
+        auto out = tt.failed.empty() ? std::vector<void *>{} : era::left_out(*tt.failed[0]);
+        expect(r.put == 0 && r.failed == 1 && esm.now().size() == 12 && tt.used == 0,
+               "the old order (swap first, then the cut) changes the array, so the cut is not put back and not counted");
+        expect(out == std::vector<void *>{esm.list(7), esm.list(9), esm.list(12), esm.list(14)},
+               "the failed entry names the 4 lists it left out, in the mode's order");
+    }
+    {
+        Esm esm(16);
+        TtLoad tt;
+        tt.load(esm, 5, {1, 2, 9});
+        era::CutsPutBack r = era::end_hold(tt.stack, tt.used, tt.held, tt.holding, true, tt.on_failed());
+        expect(r.put == 1 && r.failed == 0 && esm.whole(),
+               "a cut before the swapped slot shifts it, and the cut-first order still puts every list back unswapped");
+    }
+    {
+        Esm esm(16);
+        TtLoad tt;
+        tt.load(esm, 5, {1, 2, 9});
+        era::put_back_hold(tt.held);
+        era::put_back_cuts(tt.stack, tt.used, true, tt.on_failed());
+        expect(esm.now().size() == 16 && esm.now()[0] == esm.list(5) && !esm.whole(),
+               "the old order with a cut before the swapped slot leaves the Time Trial list stuck in slot 0");
+    }
+    {
+        Esm esm(16);
+        TtLoad tt;
+        for (size_t i : {3, 4})
+            era::cut_list(tt.stack, tt.used, std::size(tt.stack), esm.mem, esm.list(i));
+        expect(tt.used == 1 && tt.stack[0].kept == 14 && tt.stack[0].count == 16,
+               "a second cut of the same mode extends its entry instead of pushing another");
+        tt.load(esm, 6, {10, 11});
+        expect(tt.used == 1 && tt.stack[0].kept == 12, "the load's cut extends the entry of a stock press's keep");
+        era::CutsPutBack r = era::end_hold(tt.stack, tt.used, tt.held, tt.holding, true, tt.on_failed());
+        expect(r.put == 1 && esm.whole() && esm.limit() == 24,
+               "the entry made before the swap puts the whole array back; the swap then finds nothing to undo");
+    }
+    {
+        Esm host(16), other(8);
+        TtLoad tt;
+        tt.load(host, 5, {7, 9});
+        era::cut_list(tt.stack, tt.used, std::size(tt.stack), other.mem, other.list(2));
+        era::ListCut &narrowed = tt.stack[tt.used++];
+        narrowed = {};
+        Esm press(4);
+        narrowed.setup = press.mem;
+        narrowed.count = 4;
+        narrowed.kept = 1;
+        memcpy(narrowed.lists, press.original.data(), 4 * sizeof(void *));
+        narrowed.kept_lists[0] = press.list(2);
+        era::esm_lists(press.mem)[0] = press.list(2);
+        era::esm_list_count(press.mem) = 1;
+        era::esm_lists(other.mem)[0] = other.list(7);
+        era::CutsPutBack r = era::end_hold(tt.stack, tt.used, tt.held, tt.holding, true, tt.on_failed());
+        expect(r.put == 1 && r.failed == 1 && tt.failed.size() == 1 && host.whole() && !other.whole(),
+               "a mode the game changed since is not overwritten: 1 of 2 Time Trial entries put back, 1 counted failed");
+        expect(tt.used == 1 && tt.stack[0].setup == press.mem && era::esm_list_count(press.mem) == 1,
+               "the unload leaves a box press's narrowing on the stack and in its mode");
+        era::put_back_cuts(tt.stack, tt.used, false, tt.on_failed());
+        expect(tt.used == 0 && press.whole(), "a restore of every entry puts the narrowing back too");
+    }
+    {
+        Esm esm(16);
+        TtLoad tt;
+        era::cut_list(tt.stack, tt.used, std::size(tt.stack), esm.mem, esm.list(3));
+        era::CutsPutBack r = era::end_hold(tt.stack, tt.used, tt.held, tt.holding, false, tt.on_failed());
+        expect(r.put == 0 && tt.used == 1 && esm.now().size() == 15,
+               "a press without a held swap leaves the Time Trial cuts for the unload");
+        tt.used = 0;
+        esm.reset();
+        tt.load(esm, 5, {8});
+        r = era::end_hold(tt.stack, tt.used, tt.held, tt.holding, false, tt.on_failed());
+        expect(r.put == 1 && tt.used == 0 && esm.whole() && !tt.holding,
+               "a press or a load that ends a held swap puts that load's cut back first");
+    }
+    {
+        Esm esm(4);
+        era::ListCut full[2];
+        size_t used = 2;
+        full[0].setup = full[1].setup = nullptr;
+        expect(!era::cut_list(full, used, 2, esm.mem, esm.list(1)) && esm.whole() && used == 2,
+               "with the restore stack full a cut is not made");
+    }
+    std::string line = era::put_back_failed_line({"bdx_s5_2012", "bdx_s5_2012_tt", "ms_f1_2014", "f1_2022_supercar"}, 12, 12, true);
+    expect(line.find("Time Trial guard") != std::string::npos &&
+               line.find("bdx_s5_2012, bdx_s5_2012_tt, ms_f1_2014, f1_2022_supercar stay out") != std::string::npos &&
+               line.find("12 now, 12 left") != std::string::npos,
+           "a failed put-back names the lists that stay out (" + line + ")");
+}
 
 static void grid_limit_tests()
 {
@@ -856,6 +1017,7 @@ int main()
     continue_tests();
     setup_guard_tests();
     grid_limit_tests();
+    cut_restore_tests();
     front_end_leak_tests();
 
     printf("%s\n", fails ? "era_logic_test: FAILED" : "era_logic_test: all passed");

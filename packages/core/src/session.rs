@@ -129,6 +129,9 @@ pub struct Config {
     /// Show the Swofty boards and rival ghosts inside Time Trial; on unless turned off.
     #[serde(default = "on", skip_serializing_if = "is_on")]
     pub time_trial_ingame: bool,
+    /// Show the latest Swofty video card on the F1 25 home screen; on unless turned off.
+    #[serde(default = "on", skip_serializing_if = "is_on")]
+    pub home_video: bool,
 }
 
 fn on() -> bool {
@@ -1019,6 +1022,23 @@ mod tests {
         let json = serde_json::to_string(&off).unwrap();
         assert!(json.contains(r#""time_trial_ingame":false"#));
         assert!(!serde_json::from_str::<Config>(&json).unwrap().time_trial_ingame);
+    }
+
+    #[test]
+    fn home_video_is_on_unless_turned_off() {
+        assert!(Config::default().home_video);
+        assert!(
+            !serde_json::to_string(&Config::default())
+                .unwrap()
+                .contains("home_video")
+        );
+        let off = Config {
+            home_video: false,
+            ..Config::default()
+        };
+        let json = serde_json::to_string(&off).unwrap();
+        assert!(json.contains(r#""home_video":false"#));
+        assert!(!serde_json::from_str::<Config>(&json).unwrap().home_video);
     }
 
     #[test]

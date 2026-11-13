@@ -507,6 +507,15 @@ inline const char *weather_from_name(WeatherFrom f)
     return f == WeatherFrom::wetness ? "the track wetness" : f == WeatherFrom::board ? "the game's session board key" : "nowhere";
 }
 
+inline std::vector<std::wstring> lap_dirs(const std::wstring &files_root, const std::wstring &swofty_root)
+{
+    std::vector<std::wstring> dirs;
+    for (const std::wstring *root : {&swofty_root, &files_root})
+        if (!root->empty() && (dirs.empty() || dirs.front() != *root + L"laps\\"))
+            dirs.push_back(*root + L"laps\\");
+    return dirs;
+}
+
 inline std::string file_name(int year, int month, int day, int hour, int minute, int second, uint32_t n)
 {
     char b[64];

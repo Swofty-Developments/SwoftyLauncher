@@ -50,12 +50,11 @@ pub fn command(store: &Store, profile: &str, cmd: LapsCommand) -> Result<ExitCod
 }
 
 fn toast_test(store: &Store, record: bool) -> Result<()> {
-    let game = crate::build::game(store, None)?;
     let doc = timetrial::toast::sample(unix_now(), record);
-    timetrial::toast::write(&game.dir, &doc)?;
+    timetrial::toast::write(&store.root, &doc)?;
     println!(
         "wrote {}; it shows within a second in a running Time Trial session",
-        timetrial::toast::dir(&game.dir).display()
+        timetrial::toast::dir(&store.root).display()
     );
     Ok(())
 }
@@ -137,7 +136,8 @@ fn list(store: &Store) {
         println!("no Time Trial laps yet");
     }
     if let Ok(game) = crate::build::game(store, None) {
-        for pair in timetrial::game_replay::ready(&game.dir, unix_now()) {
+        let dirs = timetrial::game_replay::dirs(&store.root, &game.dir);
+        for pair in timetrial::game_replay::ready(&dirs, unix_now()) {
             println!("game replay of a {} lap  waiting", clock(pair.lap_ms));
         }
     }
@@ -193,7 +193,8 @@ fn send(store: &Store, profile: &str, file: Option<PathBuf>) -> Result<()> {
                 report.uploaded, report.waiting, report.rejected
             );
             if let Ok(game) = crate::build::game(store, None) {
-                timetrial::game_replay::send(&queue, &game.dir, &api, unix_now(), &|| false, &mut |l| {
+                let dirs = timetrial::game_replay::dirs(&store.root, &game.dir);
+                timetrial::game_replay::send(&queue, &dirs, &api, unix_now(), &|| false, &mut |l| {
                     println!("{l}")
                 });
             }

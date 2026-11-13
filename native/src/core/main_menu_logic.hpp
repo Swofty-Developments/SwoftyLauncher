@@ -21,6 +21,7 @@ constexpr const char *ID_SETTINGS = "mod_menu";
 constexpr const char *ID_GRAND_PRIX = "swofty_grand_prix";
 constexpr const char *ID_TIME_TRIAL = "swofty_time_trial";
 constexpr const char *ID_SHOWROOM = "swofty_showroom";
+constexpr const char *ID_CUSTOMISATION = "swofty_customisation";
 constexpr const char *ID_DIVIDER = "swofty_divider";
 constexpr const char *STOCK_ROUTE_F1_WORLD = "f1_world";
 constexpr const char *TEMPLATE_DEFAULT = "fe_tile_button_default";
@@ -46,7 +47,7 @@ constexpr const char *TEMPLATE_WIDE_C = "swofty_home_wide_c";
 inline const char *template_for(const std::string &id, bool rows = true)
 {
     if (!rows)
-        return id == ID_THEATRE || id == ID_SHOWROOM || id == ID_LOCAL ? TEMPLATE_DEFAULT : "";
+        return id == ID_THEATRE || id == ID_SHOWROOM || id == ID_CUSTOMISATION || id == ID_LOCAL ? TEMPLATE_DEFAULT : "";
     if (id == ID_DIVIDER)
         return TEMPLATE_DIVIDER;
     if (id == ID_STORY)
@@ -72,6 +73,9 @@ inline const char *template_for(const std::string &id, bool rows = true)
 
 constexpr uint16_t WATCH_PAD_MASK = 0x0200;
 constexpr const char *SHOWROOM_ROUTE = "swofty_showroom";
+constexpr const char *CUSTOMISATION_ROUTE = "swofty_customisation";
+constexpr const char *CUSTOMISATION_TITLE = "CUSTOMISATION";
+constexpr const char *CUSTOMISATION_DESCRIPTION = "Your helmet, race suit, gloves, car and badges";
 constexpr const char *HOME_BACK_ROUTE = "swofty_home";
 constexpr const char *BACK_HOME_FROM_CONTAINER = "swofty_back_home";
 constexpr const char *TIME_TRIAL_ROUTE = "swofty_time_trial";
@@ -81,6 +85,8 @@ constexpr const char *STOCK_ACTIVITY_ROUTE = "home_to_activity";
 constexpr const char *GRAND_PRIX_COMMAND = "solo_gp";
 constexpr const char *FRONTEND_FLOW = "frontend_flow";
 constexpr const char *F1_WORLD_FLOW = "f1_world_flow";
+constexpr const char *CUSTOMISATION_FLOW = "customisation_flow";
+constexpr const char *CUSTOMISATION_GROUP = "customisation_f1_life_entry";
 
 constexpr uint32_t WATCH_KEY_VK = 0x56;
 constexpr double PANEL_BUDGET_MS = 4.0;
@@ -152,10 +158,31 @@ inline VideoCard plan_card(float k, float text_w)
     return c;
 }
 
+// The 16:9 band the front end is laid out in, centred in the frame: the full height of a 16:9 or wider frame and
+// the full width of a taller one (16:10 on a Steam Deck), with the game's backdrop above and below it.
+struct Band {
+    float left = 0, top = 0, width = 0, height = 0;
+};
+
+inline Band ui_band(float width, float height)
+{
+    Band b;
+    b.height = width * 9.0f / 16.0f < height ? width * 9.0f / 16.0f : height;
+    b.width = b.height * 16.0f / 9.0f;
+    b.left = (width - b.width) * 0.5f;
+    b.top = (height - b.height) * 0.5f;
+    return b;
+}
+
+// The panel's size unit: 1 at a band 1028 px tall.
+inline float panel_scale(float width, float height) { return ui_band(width, height).height / 1028.0f; }
+
 inline Point scene_to_px(double x, double y, float width, float height)
 {
-    float s = scene_scale(height);
-    return {width * 0.5f + float(SCENE_CENTRE_X_SHIFT) * height + s * float(x), float(SCENE_CENTRE_Y) * height - s * float(y)};
+    Band b = ui_band(width, height);
+    float s = scene_scale(b.height);
+    return {width * 0.5f + float(SCENE_CENTRE_X_SHIFT) * b.height + s * float(x),
+            b.top + float(SCENE_CENTRE_Y) * b.height - s * float(y)};
 }
 
 constexpr uint32_t djb2(const char *s)
@@ -197,7 +224,7 @@ inline bool removed(const std::string &id)
     return id == ID_F1_WORLD || id == ID_LEAGUE || id == ID_HUB || id == ID_MOVIE || id == "divider";
 }
 
-inline Plan layout(const std::vector<std::string> &stock, bool showroom_available)
+inline Plan layout(const std::vector<std::string> &stock, bool showroom_available, bool customisation_available)
 {
     Plan plan;
     auto has = [&](const char *id) {
@@ -233,6 +260,8 @@ inline Plan layout(const std::vector<std::string> &stock, bool showroom_availabl
         plan.cards.push_back({ID_THEATRE, row++, 0, true});
     if (showroom_available)
         plan.cards.push_back({ID_SHOWROOM, row++, 0, true});
+    if (customisation_available)
+        plan.cards.push_back({ID_CUSTOMISATION, row++, 0, true});
     if (has(ID_SETTINGS)) {
         plan.cards.push_back({ID_DIVIDER, row++, 0, true});
         plan.cards.push_back({ID_SETTINGS, row++, 0, true});
@@ -333,7 +362,8 @@ inline bool time_trial_warning_due(const State &s, bool is_time_trial, bool alre
 // A route fired from the home screen hides the panel, except the launcher's own that keep the screen (the Showroom's, Addon Settings').
 inline bool hides_panel(const std::string &route)
 {
-    return route.rfind("swofty_", 0) != 0 || route == TIME_TRIAL_ROUTE || route == GRAND_PRIX_ROUTE || route == GRAND_PRIX_SAVES_ROUTE;
+    return route.rfind("swofty_", 0) != 0 || route == TIME_TRIAL_ROUTE || route == GRAND_PRIX_ROUTE || route == GRAND_PRIX_SAVES_ROUTE ||
+           route == CUSTOMISATION_ROUTE;
 }
 
 enum class Mode { none, time_trial, grand_prix };
@@ -408,6 +438,24 @@ inline const char *back_replacement(Back variant, uint32_t group, const std::str
     return nullptr;
 }
 
+// The Customisation screen's Back after a Customisation card press: back (what the screen fires when it was opened
+// from the main menu; it leads nowhere there), back_1 (to the F1 World hub) or back_2 (to the news) becomes the
+// launcher's swofty_back_home in that screen's group, the container's home route.
+inline const char *customisation_back(Back variant, bool from_card, uint32_t group, const std::string &route)
+{
+    if ((variant == Back::route || variant == Back::home) && from_card && group == djb2(CUSTOMISATION_GROUP) &&
+        (route == "back" || route == "back_1" || route == "back_2"))
+        return BACK_HOME_FROM_CONTAINER;
+    return nullptr;
+}
+
+// A Customisation card press stays armed until the front-end flow is entered again: the customisation screens' help
+// page (team_hq_flow) migrates back into the customisation flow.
+inline bool customisation_disarms(const std::string &flow)
+{
+    return flow == FRONTEND_FLOW;
+}
+
 // The saves list's Back (route back in grand_prix_continue) stays the game's: it migrates to the activity container,
 // and swapping it for a front-end route home left a black screen. After a Grand Prix card press the core then leaves
 // the container for the main menu once its tabs exist, so one Back from the saves list returns home.
@@ -428,7 +476,7 @@ inline Recovery recovery_for(Expect e, const std::string &flow_now, bool home_sc
 {
     if (e == Expect::none || (e == Expect::home && home_screen_open))
         return Recovery::none;
-    if (flow_now == F1_WORLD_FLOW)
+    if (flow_now == F1_WORLD_FLOW || flow_now == CUSTOMISATION_FLOW)
         return Recovery::back_home_route;
     return home_screen_open ? Recovery::none : Recovery::open_home;
 }
@@ -449,6 +497,22 @@ inline EntryPointWrite entry_point_write(uintptr_t resolved, bool writable)
 inline bool migrate_failed(const std::string &text)
 {
     return text.find("failed to migrate") != std::string::npos || text.find("No screen called") != std::string::npos;
+}
+
+// A Migrate command is logged when it fails or moves the tracked flow, not on every migrate.
+inline bool migrate_logged(bool failed, const std::string &flow, const std::string &flow_before)
+{
+    return failed || (!flow.empty() && flow != flow_before);
+}
+
+// One VirtualQuery answer (state committed or not, protection, region base and size) says whether n bytes at p can be written.
+// The protection values are the Windows PAGE_* constants.
+inline bool region_writable(bool committed, uint32_t protect, uintptr_t base, uint64_t size, uintptr_t p, size_t n)
+{
+    constexpr uint32_t NOACCESS = 0x01, GUARD = 0x100, WRITABLE = 0x04 | 0x08 | 0x40 | 0x80;
+    if (!p || !committed || (protect & (NOACCESS | GUARD)) || !(protect & WRITABLE))
+        return false;
+    return p >= base && p + n <= base + size;
 }
 
 // A session that ended after a Time Trial or Grand Prix card press hands over to the f1_world flow's container; the

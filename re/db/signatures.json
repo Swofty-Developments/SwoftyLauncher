@@ -40706,7 +40706,9 @@
      "how": "static"
     }
    ],
-   "used_by": []
+   "used_by": [
+    "native/src/core/myteam_vehicle_heal.cpp"
+   ]
   },
   {
    "id": "entrants.entrants_system_add_vehicle",
@@ -163959,6 +163961,384 @@
    ],
    "used_by": [
     "native/src/core/leaderboard_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.grand_prix_continue_vm_f1w_car_check",
+   "section": ".xtls",
+   "pattern": "0F 84 ?? ?? ?? ?? 49 39 88 80 05 00 00",
+   "match": "0x141bceaec",
+   "anchor": "0x6",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141bceaf2",
+   "kind": "mid",
+   "expect": "49 39 88 80 05 00 00",
+   "names": [
+    "site_Game_GrandPrixContinueVm_F1wCarCheck"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "gpf1w",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/gp_continue_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.grand_prix_continue_vm_f1w_warning_check",
+   "section": ".xtls",
+   "pattern": "74 13 49 8B 0E 48 39 88 80 05 00 00",
+   "match": "0x141bcee65",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141bcee6a",
+   "kind": "mid",
+   "expect": "48 39 88 80 05 00 00",
+   "names": [
+    "site_Game_GrandPrixContinueVm_F1wWarningCheck"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "gpf1w",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/gp_continue_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.myteam_vehicle_bases_ai_config_load",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 48 8D 8C 24 50 1A 00 00 4C 89 E2 E8",
+   "match": "0x1425082f5",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1425082fa",
+   "kind": "mid",
+   "expect": "48 8D 8C 24 50",
+   "names": [
+    "site_Game_MyTeamVehicleBases_AiConfigLoad"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "myteam-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/myteam_vehicle_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.myteam_vehicle_bases_next_base",
+   "section": ".xtls",
+   "pattern": "48 8D 94 24 50 0D 00 00 E8 ?? ?? ?? ?? 49 FF C4 0F B7 47 10 49 39 C4 0F 82 ?? ?? ?? ?? E9",
+   "match": "0x1425098cd",
+   "anchor": "0xd",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1425098da",
+   "kind": "mid",
+   "expect": "49 FF C4 0F B7",
+   "names": [
+    "site_Game_MyTeamVehicleBases_NextBase"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "myteam-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/myteam_vehicle_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.time_trial_set_reference_list_board",
+   "section": ".xtls",
+   "pattern": "80 BA F0 00 00 00 00 0F 84 ?? ?? ?? ?? 45 85 F6",
+   "match": "0x14147bbf2",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14147bbf2",
+   "kind": "mid",
+   "names": [
+    "site_Game_TimeTrial_SetReferenceListBoard"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "ttlistboard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ],
+   "expect": "80 BA F0 00 00 00 00"
+  },
+  {
+   "id": "game.time_trial_set_reference_no_list",
+   "section": ".xtls",
+   "pattern": "48 8D 35 ?? ?? ?? ?? 48 89 74 24 60 48 8B 44 24 68",
+   "match": "0x14147bede",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14147bede",
+   "kind": "mid",
+   "names": [
+    "site_Game_TimeTrial_SetReferenceNoList"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "ttlistboard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ],
+   "expect": "48 8D 35"
+  },
+  {
+   "id": "game.tyre_allocation_component_preset_track_read",
+   "section": ".xtls",
+   "pattern": "4C 89 4C 24 40 41 0F B6 81 78 02 00 00",
+   "match": "0x140bcbb1a",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140bcbb1f",
+   "kind": "mid",
+   "expect": "41 0F B6 81 78 02 00 00",
+   "names": [
+    "site_Game_TyreAllocationComponent_PresetTrackRead"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "ea-gp",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/gp_weekend_track_guard.cpp"
+   ]
+  },
+  {
+   "id": "session.time_trial_leaderboard_bound_tab_child",
+   "section": ".xtls",
+   "pattern": "48 8B 01 B2 01 FF 50 30 48 89 F1 E8 ?? ?? ?? ?? 90 48 83 C4 40 5E C3 CC CC CC 56 48 83 EC 40",
+   "match": "0x142fcd166",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fcd166",
+   "kind": "mid",
+   "expect": "48 8B 01 B2 01",
+   "names": [
+    "site_Sess_TimeTrialLeaderboard_BoundTabChild"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "ttgaragetab",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
+  },
+  {
+   "id": "session.time_trial_leaderboard_bound_tab_done",
+   "section": ".xtls",
+   "pattern": "90 48 83 C4 40 5E C3 CC CC CC 56 48 83 EC 40",
+   "match": "0x142fcd176",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x142fcd176",
+   "kind": "mid",
+   "expect": "90 48 83 C4 40",
+   "names": [
+    "site_Sess_TimeTrialLeaderboard_BoundTabDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "ttgaragetab",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/leaderboard_guard.cpp"
+   ]
+  },
+  {
+   "id": "career.schedule_track_list_push",
+   "section": ".xtls",
+   "pattern": "44 38 6B 08 75 ED 4C 89 F1 48 89 DA E8 ?? ?? ?? ?? EB E0",
+   "match": "0x141272d2d",
+   "anchor": "0x6",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141272d33",
+   "kind": "mid",
+   "expect": "4C 89 F1 48 89",
+   "names": [
+    "site_Career_ScheduleComponent_TrackListPush"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "tracklist",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/track_list_guard.cpp"
+   ]
+  },
+  {
+   "id": "career.schedule_track_list_next_row",
+   "section": ".xtls",
+   "pattern": "48 83 C3 28 48 39 EB 0F 84 ?? ?? ?? ?? 44 38 6B 08 75 ED",
+   "match": "0x141272d20",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141272d20",
+   "kind": "mid",
+   "expect": "48 83 C3 28 48",
+   "names": [
+    "site_Career_ScheduleComponent_TrackListNextRow"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "tracklist",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/track_list_guard.cpp"
+   ]
+  },
+  {
+   "id": "career.schedule_track_list_entry_done",
+   "section": ".xtls",
+   "pattern": "49 FF C7 0F B7 47 10 49 39 C7 4C 8B 6C 24 38 0F 83",
+   "match": "0x141272c60",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141272c60",
+   "kind": "mid",
+   "expect": "49 FF C7 0F B7",
+   "names": [
+    "site_Career_ScheduleComponent_TrackListEntryDone"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "tracklist",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/track_list_guard.cpp"
+   ]
+  },
+  {
+   "id": "career.schedule_track_list_save",
+   "section": ".xtls",
+   "pattern": "66 89 77 12 4D 8B A6 B0 02 00 00 4D 39 A6 B8 02 00 00",
+   "match": "0x141272150",
+   "anchor": "0x4",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x141272154",
+   "kind": "mid",
+   "expect": "4D 8B A6 B0 02",
+   "names": [
+    "site_Career_ScheduleComponent_TrackListSave"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-12",
+     "by": "tracklist",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/track_list_guard.cpp"
+   ]
+  },
+  {
+   "id": "session.session_enter_vehicle_lookup",
+   "section": ".xtls",
+   "pattern": "48 89 D9 E8 ?? ?? ?? ?? 48 85 C0 74 E3 48 0F BE 88 EA 0C 00 00",
+   "match": "0x14098f70f",
+   "anchor": "0x8",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14098f717",
+   "kind": "mid",
+   "expect": "48 85 C0 74",
+   "names": [
+    "site_Sess_SessionEnter_VehicleLookup"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "myteam-heal",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/myteam_vehicle_heal.cpp"
    ]
   },
   {

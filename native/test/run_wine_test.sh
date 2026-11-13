@@ -988,6 +988,78 @@ for guard in on off; do
         [[ $code != 0 ]] && echo "ok  : leaderboard off: process ended with $code" || { echo "FAIL: leaderboard off: process exited 0"; status=1; }
     fi
 done
+for guard in on off; do
+    echo "==== myteam_vehicle ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_MYTEAM_VEHICLE_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" myteam_vehicle >"$OUT/myteam_vehicle.out" 2>&1 || code=$?
+    grep -E '\[myteam\]|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    grep -E 'myteam vehicle|FAIL' "$OUT/myteam_vehicle.out" || true
+    if [[ $guard == on ]]; then
+        once "myteam_vehicle on: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(my team vehicle base guard\)': 1 mixin"
+        once "myteam_vehicle on: the guard is armed" '\[myteam\] vehicle base guard armed'
+        once "myteam_vehicle on: a base the database can't confirm missing is left to the game" "\\[myteam\\] save: My Team vehicle base 1 \\(stat id 0\\) uses vehicle 'myteam_mes_porsche_2026', whose row index reads as missing; it is not a known addon's vehicle or its entrants\\.vehicles row is in the game data, so the game's own load runs for it"
+        count "myteam_vehicle on: no base is skipped without the database confirming its row is missing" 0 '\[myteam\] save: .* the base is skipped'
+        check "myteam_vehicle on: the load faults where the game does, as with the guard off" '\[crash\] unhandled ACCESS_VIOLATION .*Sess_Load_VehicleAiConfig\+0x'
+        [[ $code != 0 ]] && echo "ok  : myteam_vehicle on: process ended with $code" || { echo "FAIL: myteam_vehicle on: process exited 0"; status=1; }
+    else
+        once "myteam_vehicle off: the guard is off" '\[myteam\] vehicle base guard off \(SWOFTY_MYTEAM_VEHICLE_GUARD=0\)'
+        check "myteam_vehicle off: the load faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Sess_Load_VehicleAiConfig\+0x'
+        grep -q 'myteam vehicle off: the load returned' "$OUT/myteam_vehicle.out" && { echo "FAIL: myteam_vehicle off: the load returned"; status=1; } ||
+            echo "ok  : myteam_vehicle off: the load does not return"
+        [[ $code != 0 ]] && echo "ok  : myteam_vehicle off: process ended with $code" || { echo "FAIL: myteam_vehicle off: process exited 0"; status=1; }
+    fi
+done
+for heal in on off; do
+    echo "==== myteam_heal ($heal)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_MYTEAM_VEHICLE_HEAL=$([[ $heal == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" myteam_heal >"$OUT/myteam_heal.out" 2>&1 || code=$?
+    grep -E '\[myteam\] (heal|vehicle heal)|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    grep -E 'myteam heal|FAIL' "$OUT/myteam_heal.out" || true
+    if [[ $heal == on ]]; then
+        once "myteam_heal on: the heal is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(my team vehicle heal\)': 1 mixin"
+        once "myteam_heal on: the heal is armed" '\[myteam\] vehicle heal armed'
+        once "myteam_heal on: the rebuilt car is logged once, naming the stock car" "\[myteam\] heal: the player's My Team car \(custom vehicle 2\) was missing from the save .*rebuilt it from the stock My Team car 'myteam_mercedes_2026' \(2026 season\)"
+        grep -q 'FAIL' "$OUT/myteam_heal.out" && { echo "FAIL: myteam_heal on: a check failed"; status=1; } || echo "ok  : myteam_heal on: the fake game's checks pass"
+        grep -q "myteam heal on: the session entered, 4 classes, 4 entrants classified, 1 rebuilt, custom vehicle 2 is 'myteam_mercedes_2026'" "$OUT/myteam_heal.out" &&
+            echo "ok  : myteam_heal on: the session entered with the rebuilt car" || { echo "FAIL: myteam_heal on: the session did not enter"; status=1; }
+        count "myteam_heal on: no unhandled fault" 0 '\[crash\] unhandled '
+        [[ $code == 0 ]] && echo "ok  : myteam_heal on: process exited 0" || { echo "FAIL: myteam_heal on: process ended with $code"; status=1; }
+    else
+        once "myteam_heal off: the heal is off" '\[myteam\] vehicle heal off \(SWOFTY_MYTEAM_VEHICLE_HEAL=0\)'
+        check "myteam_heal off: the session start faults where the game does" '\[crash\]   reading 0xcea'
+        grep -q 'myteam heal off: the session entered' "$OUT/myteam_heal.out" && { echo "FAIL: myteam_heal off: the session entered"; status=1; } ||
+            echo "ok  : myteam_heal off: the session does not enter"
+        [[ $code != 0 ]] && echo "ok  : myteam_heal off: process ended with $code" || { echo "FAIL: myteam_heal off: process exited 0"; status=1; }
+    fi
+done
+for guard in on off; do
+    echo "==== track_list ($guard)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_TRACK_LIST_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" track_list >"$OUT/track_list.out" 2>&1 || code=$?
+    grep -E '\[saves\] (career calendar|custom_track_list)' "$LOG" || true
+    grep -E 'track list|FAIL' "$OUT/track_list.out" || true
+    grep -q 'FAIL' "$OUT/track_list.out" && { echo "FAIL: track_list $guard: a check failed"; status=1; } || echo "ok  : track_list $guard: the fake game's checks pass"
+    grep -q "track list $guard: cycle 3" "$OUT/track_list.out" && echo "ok  : track_list $guard: the save and load cycles ran" ||
+        { echo "FAIL: track_list $guard: the test did not reach its end"; status=1; }
+    count "track_list $guard: no unhandled fault" 0 '\[crash\] unhandled '
+    [[ $code == 0 ]] && echo "ok  : track_list $guard: process exited 0" || { echo "FAIL: track_list $guard: process ended with $code"; status=1; }
+    if [[ $guard == on ]]; then
+        once "track_list on: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(career calendar track list guard\)': 1 mixin"
+        once "track_list on: the count lines are a core mixin set of their own" "core mixin set 'swofty_core\.dll \(career calendar track list log\)': 2 mixin"
+        once "track_list on: the guard is armed" '\[saves\] career calendar track list guard armed'
+        count "track_list on: each load of the 5-event calendar loads 5 events" 6 '\[saves\] custom_track_list loaded \(schedule component 0x[0-9a-f]+\): 5 stored entries -> 5 calendar events \(season event list 5\); 45 more matching events the game would also have loaded skipped[[:space:]]*$'
+        count "track_list on: a track twice with one event row loads both races" 2 '\[saves\] custom_track_list loaded \(schedule component 0x[0-9a-f]+\): 4 stored entries -> 4 calendar events \(season event list 4\); 18 more matching events the game would also have loaded skipped; 1 entry repeat an event already in the calendar[[:space:]]*$'
+        once "track_list on: a blown-up save loads back to the season's 5 events" '\[saves\] custom_track_list loaded \(schedule component 0x[0-9a-f]+\): 65535 stored entries -> 5 calendar events \(season event list 5\); 45 more matching events the game would also have loaded skipped; blown up \(more than 5 entries\): a run of one id reads as one entry, 65530 stored entries dropped[[:space:]]*$'
+        count "track_list on: a save count is logged when it changes" 3 '\[saves\] custom_track_list saved \(schedule component 0x[0-9a-f]+\): (5|4|5) calendar events[[:space:]]*$'
+    else
+        once "track_list off: the guard is off" '\[saves\] career calendar track list guard off \(SWOFTY_TRACK_LIST_GUARD=0\)'
+        once "track_list off: the load line shows the game's own growth" '\[saves\] custom_track_list loaded \(schedule component 0x[0-9a-f]+\): 500 stored entries -> 5000 calendar events[[:space:]]*$'
+        count "track_list off: each save with a new count is logged" 3 '\[saves\] custom_track_list saved \(schedule component 0x[0-9a-f]+\): (50|500|5000) calendar events[[:space:]]*$'
+    fi
+done
 echo "==== ntpage"
 cp "$OUT/t_ntpage.dll" "$SW/mods/core/ntpage_hook.dll"
 rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp

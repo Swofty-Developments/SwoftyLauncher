@@ -53,6 +53,7 @@ t "Live to timing tower adapter test" native/test/run_timing_live_test.sh
 t "HUD dial template host test" templates/hud-dial/native/test/run_test.sh
 # The 1.6 handler guard, built as build.sh builds it, against faults and SDK handlers that throw.
 t "Handler guard Wine test" native/test/run_guard_test.sh
+t "Memory page checks Wine test" native/test/run_mem_pages_test.sh
 t "Career list Wine test" native/test/run_career_list_test.sh
 t "Hook points, events and services host test" native/test/run_hooks_test.sh
 t "Game hook points host test" native/test/run_game_points_test.sh
@@ -85,12 +86,14 @@ t "Direct start unit test" native/test/run_direct_start_test.sh
 t "Direct start Time Trial unit test" native/test/run_direct_start_tt_test.sh
 t "Thrustmaster LCD guard unit test" native/test/run_thrustmaster_lcd_test.sh
 t "Estimate lap time guard unit test" native/test/run_estimate_laptime_test.sh
+t "Career calendar track list guard unit test" native/test/run_track_list_guard_test.sh
 t "Garage setup guard unit test" native/test/run_garage_setup_test.sh
 t "Theatre list guard unit test" native/test/run_theatre_list_test.sh
 t "Core site names exported (host-only)" native/test/run_core_sites_exported_test.sh
 t "Garage crew guard unit test" native/test/run_garage_crew_test.sh
 t "Garage crew guard sites export test" native/test/run_garage_crew_sites_test.sh
 t "Leaderboard guard unit test" native/test/run_leaderboard_guard_test.sh
+t "Grand Prix continue guard unit test" native/test/run_gp_continue_test.sh
 t "Lap file format unit test" native/test/run_lap_file_test.sh
 t "Time Trial boards bridge unit test" native/test/run_tt_bridge_test.sh
 t "Lap recorder state machine, field plan and session gate unit test" native/test/run_lap_rec_test.sh
@@ -105,13 +108,18 @@ t "Memory scan helpers unit test" native/test/run_mem_scan_test.sh
 t "Lap assists capture unit test" native/test/run_lap_assists_test.sh
 t "Ghost request file unit test" native/test/run_ghost_request_test.sh
 t "Front-end tile list guard unit test" native/test/run_fe_tile_guard_test.sh
+t "Stock game message log unit test" native/test/run_game_message_log_test.sh
+t "My Team vehicle base guard unit test" native/test/run_myteam_vehicle_guard_test.sh
+t "My Team vehicle heal unit test" native/test/run_myteam_vehicle_heal_test.sh
 t "Main menu logic unit test" native/test/run_main_menu_test.sh
 t "Grand Prix remembered-track fallback unit test" native/test/run_gp_track_test.sh
+t "Grand Prix weekend track guard unit test" native/test/run_gp_weekend_track_test.sh
 t "Session enter guard unit test" native/test/run_session_enter_test.sh
 t "AI line set guard unit test" native/test/run_ai_line_set_test.sh
 t "Audio job queue fix unit test" native/test/run_audio_queue_test.sh
 t "Shader resource view clamp unit test" native/test/run_srv_clamp_test.sh
 t "Heap size table unit test" native/test/run_heap_sizes_test.sh
+t "Profiler minute summary unit test" native/test/run_perf_logic_test.sh
 t "Save temp heap size unit test" native/test/run_save_heap_test.sh
 t "Boot watchdog grace unit test" native/test/run_watchdog_grace_test.sh
 t "Load-stall watchdog trigger unit test" native/test/run_load_stall_test.sh

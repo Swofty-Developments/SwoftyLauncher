@@ -135,6 +135,14 @@ static void plans()
                "no key or a key that is not a board name leaves the weather unknown, never dry by default");
     }
     expect(lr::file_name(2026, 11, 10, 4, 10, 11, 3) == "20261110T041011Z-3.swlap", "file names are a UTC stamp and the lap number");
+    expect(lr::lap_dirs(L"C:\\Users\\p\\AppData\\Local\\Swofty\\", L"C:\\Program Files\\EA Games\\F1 25\\swofty\\") ==
+               std::vector<std::wstring>{L"C:\\Program Files\\EA Games\\F1 25\\swofty\\laps\\",
+                                         L"C:\\Users\\p\\AppData\\Local\\Swofty\\laps\\"},
+           "laps go to the game's swofty folder first, where the integrity seal finds the session nonce, and to the "
+           "data folder when the game folder refuses them");
+    expect(lr::lap_dirs(L"", L"D:\\F1 25\\swofty\\") == std::vector<std::wstring>{L"D:\\F1 25\\swofty\\laps\\"},
+           "with no data folder the laps go to the game's swofty folder alone");
+    expect(lr::lap_dirs(L"D:\\F1 25\\swofty\\", L"D:\\F1 25\\swofty\\").size() == 1, "one folder is never tried twice");
 }
 
 struct Fake {

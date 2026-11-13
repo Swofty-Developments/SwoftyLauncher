@@ -229,3 +229,73 @@ fn platform_tags_name_each_listed_platform_or_not_tested() {
     assert_eq!(tags(serde_json::json!(["gog"])), [Where::NotTested]);
     assert_eq!(Where::ALL.map(Where::label), ["Steam", "EA", "Not tested"]);
 }
+
+fn listed_addon(versions: serde_json::Value) -> Addon {
+    serde_json::from_value(serde_json::json!({
+        "id": "twilight.bahrain-reverse", "name": "Bahrain Reverse", "author": "Twilight Sparkle",
+        "publisher": {"id": "1", "name": "Twilighty Sparkle"}, "versions": versions
+    }))
+    .unwrap()
+}
+
+fn track_offer(addon: &Addon, installed: Option<&str>) -> super::model::Offer {
+    let launcher = semver::Version::new(1, 9, 14);
+    super::offer::standing(
+        addon.offered(&launcher),
+        installed.map(|v| semver::Version::parse(v).unwrap()),
+        || false,
+    )
+}
+
+#[test]
+fn a_listed_track_that_is_not_installed_offers_its_download() {
+    use super::model::Offer;
+    use super::tracks::offers_track;
+    let listed = listed_addon(serde_json::json!([
+        {"version": "1.0.0", "size": 9, "sha256": "", "url": "", "launcher": ">=1.4.0"}
+    ]));
+    assert_eq!(track_offer(&listed, None), Offer::Install);
+    assert!(offers_track(&track_offer(&listed, None)));
+    assert!(!offers_track(&track_offer(&listed, Some("1.0.0"))));
+    assert!(!offers_track(&track_offer(&listed, Some("0.9.0"))));
+    let yanked = listed_addon(serde_json::json!([
+        {"version": "1.0.0", "size": 9, "sha256": "", "url": "", "yanked": true}
+    ]));
+    assert_eq!(track_offer(&yanked, None), Offer::TooOld);
+    assert!(!offers_track(&track_offer(&yanked, None)));
+    let too_new = listed_addon(serde_json::json!([
+        {"version": "1.0.0", "size": 9, "sha256": "", "url": "", "launcher": ">=9.0.0"}
+    ]));
+    assert!(!offers_track(&track_offer(&too_new, None)));
+    for busy in [
+        Offer::Queued,
+        Offer::Failed,
+        Offer::Blocked,
+        Offer::Working(Progress::Verifying),
+    ] {
+        assert!(offers_track(&busy), "{busy:?}");
+    }
+}
+
+#[test]
+fn a_byline_names_the_author_and_the_addon_when_that_tells_tracks_apart() {
+    use super::tracks::byline_text;
+    use swofty_core::timetrial::boards::Byline;
+    let byline = |author: Option<&str>, addon: Option<&str>| Byline {
+        author: author.map(str::to_owned),
+        addon: addon.map(str::to_owned),
+    };
+    assert_eq!(
+        byline_text(&byline(Some("Twilighty Sparkle"), None)),
+        "by Twilighty Sparkle"
+    );
+    assert_eq!(
+        byline_text(&byline(Some("ashton"), Some("mod.lgsgp"))),
+        "by ashton \u{b7} mod.lgsgp"
+    );
+    assert_eq!(byline_text(&byline(None, Some("mod.suzuka24"))), "mod.suzuka24");
+    assert_eq!(
+        listed_addon(serde_json::json!([])).author_name(),
+        "Twilighty Sparkle"
+    );
+}

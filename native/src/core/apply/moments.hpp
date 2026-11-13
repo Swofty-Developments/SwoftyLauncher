@@ -32,6 +32,7 @@ std::pair<std::string, std::string> session_mode_track();
 facts::ModeKind mode_kind();
 void mode_watch();
 void grand_prix_track_check();
+std::string current_mode(const char *where);
 void session_end(const char *source);
 void window();
 int write_reports(const char *when);

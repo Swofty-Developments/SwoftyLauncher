@@ -630,7 +630,7 @@ void boot_without_database(room::Report report)
         swofty::log("[registry] register: %s %zu database record(s) refused (late): %s", addon.c_str(), n,
                     report.reason.c_str());
     }
-    report.registry_asked = scheduler().planned_keys();
+    report.registry_planned = report.registry_asked = scheduler().planned_keys();
     save_ids();
     write_room(report);
     if (runtime::load_stage() != "early")
@@ -742,6 +742,11 @@ std::pair<std::string, std::string> session_mode_track()
     attach();
     SessionFacts f = game::at_session_load();
     return {f.mode, f.track};
+}
+
+std::string current_mode(const char *where)
+{
+    return game::mode_of(game::current_context(), where);
 }
 
 void grand_prix_track_check()

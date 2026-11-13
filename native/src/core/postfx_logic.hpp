@@ -4,6 +4,7 @@
 
 #include <algorithm>
 #include <array>
+#include <cctype>
 #include <cmath>
 #include <atomic>
 #include <cstddef>
@@ -177,6 +178,77 @@ inline uint32_t groups(uint32_t size, uint32_t threads)
 {
     return threads ? (size + threads - 1) / threads : 0;
 }
+
+inline constexpr uint64_t PRESENT_GONE_MS = 1000;
+
+// Whether no Present has reached the core's swapchain hooks for a second since the passes were made (started),
+// or since the last one.
+inline bool presents_gone(uint64_t now, uint64_t present_at, uint64_t started)
+{
+    if (!started)
+        return false;
+    uint64_t last = present_at > started ? present_at : started;
+    return now >= last && now - last >= PRESENT_GONE_MS;
+}
+
+// Frame generation that presents the game's frames and its own generated ones through the swapchain at its own
+// pace: XeSS frame generation's libxess_fg.dll calls Present1 from its own thread, once per frame it shows, so its
+// Presents are not the game's frames. `fg` is a Swapchain::fg: a module name, or one with " (calls Present)" after it.
+inline bool presents_own_frames(std::string_view fg)
+{
+    std::string_view name = fg.substr(0, fg.find(' '));
+    size_t at = name.find_last_of("\\/");
+    name = at == std::string_view::npos ? name : name.substr(at + 1);
+    constexpr std::string_view XESS_FG = "libxess_fg.dll";
+    if (name.size() != XESS_FG.size())
+        return false;
+    for (size_t i = 0; i < name.size(); i++)
+        if (char(std::tolower(static_cast<unsigned char>(name[i]))) != XESS_FG[i])
+            return false;
+    return true;
+}
+
+// What closes the passes' frame (frame_count, which the placement gate, the depth copy and the previous frame
+// read). A swapchain that presents each of the game's frames once closes it at Present. While frame generation
+// presents frames of its own (presents_own_frames) or no Present reaches the hooks, the game's own frames close
+// it instead, where its lists are submitted: a list that makes a back buffer other than the last one a render
+// target starts the next frame, one per frame the game draws whatever frame generation shows. The game's flow
+// tick never closes it; while no Present arrives it only keeps the toggle keys and live settings running.
+struct FrameClock {
+    uint64_t present_at = 0, generated_at = 0;
+    const void *drawn = nullptr;
+
+    bool game_frames(uint64_t now, uint64_t started) const
+    {
+        if (generated_at && now >= generated_at && now - generated_at < PRESENT_GONE_MS)
+            return true;
+        return presents_gone(now, present_at, started);
+    }
+
+    // A Present the hooks dispatch, from frame generation's own presenter or not: true when it closes the frame.
+    bool present(uint64_t now, bool generated, uint64_t started)
+    {
+        present_at = now;
+        if (generated)
+            generated_at = now;
+        return !game_frames(now, started);
+    }
+
+    // A submitted list that made back buffer back a render target (nullptr for none): true when it closes the frame.
+    bool submit(const void *back, uint64_t now, uint64_t started)
+    {
+        if (!back || back == drawn)
+            return false;
+        drawn = back;
+        return game_frames(now, started);
+    }
+
+    // The game's flow tick: true when it runs the toggle keys and live settings, as no Present arrives.
+    bool flow(uint64_t now, uint64_t started) const
+    {
+        return presents_gone(now, present_at, started);
+    }
+};
 
 // A frame count far enough back that the passes count as not run lately.
 inline constexpr unsigned LONG_AGO = 0u - 8;

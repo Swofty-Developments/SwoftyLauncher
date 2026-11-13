@@ -60,6 +60,9 @@ impl Shell {
         let time_trial_ingame = Switch::new("settings-time-trial-ingame")
             .checked(self.time_trial_ingame)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_time_trial_ingame(*on, window, cx)));
+        let home_video = Switch::new("settings-home-video")
+            .checked(self.home_video)
+            .on_click(cx.listener(|this, on: &bool, window, cx| this.set_home_video(*on, window, cx)));
         SettingsSection::new(tr("General"))
             .row(
                 SettingRow::new(tr("Language"))
@@ -80,6 +83,11 @@ impl Shell {
                 SettingRow::new(tr("In-game leaderboards"))
                     .description(tr("Show the Swofty boards and rival ghosts inside Time Trial for addon seasons. Experimental."))
                     .control(time_trial_ingame),
+            )
+            .row(
+                SettingRow::new(tr("Home screen video"))
+                    .description(tr("Show the latest Swofty video in the bottom right of the F1 25 home screen. A change shows the next time you press Play."))
+                    .control(home_video),
             )
             .into_any_element()
     }

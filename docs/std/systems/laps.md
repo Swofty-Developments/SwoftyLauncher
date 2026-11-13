@@ -5,7 +5,7 @@ description: The lap files the core records in Time Trial, and the two events ar
 
 # Laps
 
-While Time Trial boards are on, the core records every completed Time Trial lap to a file under `swofty/laps/`. An addon reads those files, adds a section to one before it is written, or reacts when one lands.
+While Time Trial boards are on, the core records every completed Time Trial lap to a file under `laps/` in the launcher's data folder. When the core can't write the data folder, the file goes under `swofty/laps/` in the game folder instead. An addon reads those files, adds a section to one before it is written, or reacts when one lands.
 
 The recorder runs when the launcher writes `"tt_boards": true` into `swofty/tt.json` and the session is a Time Trial. It samples the player's car at 60 Hz. A lap starts at a line crossing and ends at the next one. The lap out of the garage is not recorded. A lap is dropped when the car is reset or moved, when the session ends, or when it is too short or too long to be a lap.
 
@@ -13,7 +13,7 @@ On the build the core's lap offsets are from, the core also hooks the game's own
 
 ## The file
 
-A lap is one file, `swofty/laps/20261110T041011Z-3.swlap`: the UTC time it was written and the lap's number in the session. It is written as a `.tmp` file and renamed.
+A lap is one file, `laps/20261110T041011Z-3.swlap`: the UTC time it was written and the lap's number in the session. It is written as a `.tmp` file and renamed. A write that fails in the data folder goes to `swofty/laps/`, and the loader log names the folder and the Windows error code of the failed write. The launcher collects laps from both folders. On an EA app copy under `C:\Program Files\EA Games` the game can't create files in `swofty/`.
 
 ```
 0   8   magic  "SWLAP\0\1\0"
@@ -155,7 +155,7 @@ Board definitions. When the game loads `leaderboard.xml` the core appends one co
 [boards] board definitions: appended 96 board(s) for 2 addon descriptor(s) over 24 track(s) (ids 41..136, 0 already defined), 12 of them for 2 custom track(s) (all addon descriptors and 1 stock descriptor(s)), buffer 2918 -> 41872 bytes
 ```
 
-Requests. Five methods carry the screen's data: `GetTTLeaderboard`, `GetFriendsTTLeaderboard`, `GetBinaryDataForUser`, `AddLeaderboardEntry`, `UpdateLeaderboardEntryBinaryData`. When one names an addon board the core does not send it. It writes the request to `swofty/tt/outbox/<seq>.json`:
+Requests. Five methods carry the screen's data: `GetTTLeaderboard`, `GetFriendsTTLeaderboard`, `GetBinaryDataForUser`, `AddLeaderboardEntry`, `UpdateLeaderboardEntryBinaryData`. When one names an addon board the core does not send it. It writes the request to `tt/outbox/<seq>.json` in the launcher's data folder (`swofty/tt/outbox/` in the game folder when the core can't write the data folder):
 
 ```json
 { "seq": 12, "method": "GetTTLeaderboard",
@@ -164,7 +164,7 @@ Requests. Five methods carry the screen's data: `GetTTLeaderboard`, `GetFriendsT
   "player": { "ghost_id": "<base64 of the 0x30-byte id block, once a personal best was committed>" } }
 ```
 
-`args` holds every key of the method's argument struct the core could read. Binary data is not copied into it. The answer is `swofty/tt/inbox/<seq>.json`, `{ "seq": 12, "status": 200, "body": "<JSON text>" }`. Both sides write a `.tmp` file and rename it, and both ignore files older than 60 seconds. The core deletes an answer it used. The flow tick finds the answer and gives the game's `OnResult` for that method a response with that status and body. A request with no answer after 8 seconds completes with status 504 and the body `{"Message":"The request timed out","Data":null}`. Every other request goes to the game's servers unchanged.
+`args` holds every key of the method's argument struct the core could read. Binary data is not copied into it. The answer is `tt/inbox/<seq>.json` beside it, `{ "seq": 12, "status": 200, "body": "<JSON text>" }`. Both sides write a `.tmp` file and rename it, and both ignore files older than 60 seconds. The core deletes an answer it used. The flow tick finds the answer and gives the game's `OnResult` for that method a response with that status and body. A request with no answer after 8 seconds completes with status 504 and the body `{"Message":"The request timed out","Data":null}`. Every other request goes to the game's servers unchanged.
 
 ```
 [boards] request GetTTLeaderboard LBV0605D redirected (seq 1789200100, to the mailbox, string form NeStr*@word0)

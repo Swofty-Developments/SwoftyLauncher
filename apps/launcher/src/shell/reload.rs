@@ -44,6 +44,7 @@ impl Shell {
         self.clear_old_session_logs = config.clear_old_session_logs;
         self.time_trial_boards = config.time_trial_boards;
         self.time_trial_ingame = config.time_trial_ingame;
+        self.home_video = config.home_video;
         self.vr_profiles = config.vr_profiles;
         self.start_store = config.launch.start_store;
         self.update_check = config.updates.check;

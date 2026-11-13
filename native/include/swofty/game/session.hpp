@@ -707,6 +707,9 @@ inline constexpr site<"site_Sess_PitRankListNext"> site_Sess_PitRankListNext{}; 
 inline constexpr site<"site_Sess_PitRankListSlot"> site_Sess_PitRankListSlot{}; // L2 experimental
 inline constexpr site<"site_Sess_PitRankOwnSlot"> site_Sess_PitRankOwnSlot{}; // L2 experimental
 inline constexpr site<"site_Sess_PuPanel_SlotHolder"> site_Sess_PuPanel_SlotHolder{}; // L2 experimental
+inline constexpr site<"site_Sess_SessionEnter_VehicleLookup"> site_Sess_SessionEnter_VehicleLookup{}; // L2 experimental
+inline constexpr site<"site_Sess_TimeTrialLeaderboard_BoundTabChild"> site_Sess_TimeTrialLeaderboard_BoundTabChild{}; // L2 experimental
+inline constexpr site<"site_Sess_TimeTrialLeaderboard_BoundTabDone"> site_Sess_TimeTrialLeaderboard_BoundTabDone{}; // L2 experimental
 inline constexpr site<"site_Sess_TimeTrialLeaderboard_TabChild"> site_Sess_TimeTrialLeaderboard_TabChild{}; // L2 experimental
 inline constexpr site<"site_Sess_TimeTrialLeaderboard_TabDone"> site_Sess_TimeTrialLeaderboard_TabDone{}; // L2 experimental
 inline constexpr site<"site_Sess_TyreVisSlotLookup"> site_Sess_TyreVisSlotLookup{}; // L2 experimental
