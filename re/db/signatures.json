@@ -164370,6 +164370,114 @@
    "used_by": [
     "native/src/core/myteam_vehicle_keep.cpp"
    ]
+  },
+  {
+   "id": "game.career_events_sequencer_team_mate_driver",
+   "section": ".xtls",
+   "pattern": "48 8B 4C 24 38 4C 89 EA 49 89 C0 E8",
+   "match": "0x140c72eaf",
+   "anchor": "0x8",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c72eb7",
+   "kind": "mid",
+   "expect": "49 89 C0 E8",
+   "names": [
+    "site_Game_CareerEventsSequencerTeamMateDriver"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "seqmate",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/sequencer_records_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.career_events_sequencer_team_mate_driver_join",
+   "section": ".xtls",
+   "pattern": "49 89 C0 E8 ?? ?? ?? ?? 48 8B 94 24 A0 00 00 00",
+   "match": "0x140c72eb7",
+   "anchor": "0x8",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c72ebf",
+   "kind": "mid",
+   "expect": "48 8B 94 24",
+   "names": [
+    "site_Game_CareerEventsSequencerTeamMateDriverJoin"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "seqmate",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/sequencer_records_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.career_events_sequencer_player_driver",
+   "section": ".xtls",
+   "pattern": "48 8B 4C 24 38 4C 89 FA 49 89 C0 E8",
+   "match": "0x140c73109",
+   "anchor": "0x8",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c73111",
+   "kind": "mid",
+   "expect": "49 89 C0 E8",
+   "names": [
+    "site_Game_CareerEventsSequencerPlayerDriver"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "seqmate",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/sequencer_records_guard.cpp"
+   ]
+  },
+  {
+   "id": "game.career_events_sequencer_player_driver_join",
+   "section": ".xtls",
+   "pattern": "49 89 C0 E8 ?? ?? ?? ?? C6 83 E4 05 00 00 01",
+   "match": "0x140c73111",
+   "anchor": "0x8",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x140c73119",
+   "kind": "mid",
+   "names": [
+    "site_Game_CareerEventsSequencerPlayerDriverJoin"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-13",
+     "by": "seqmate",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/sequencer_records_guard.cpp"
+   ],
+   "expect": "C6 83 E4 05"
   }
  ]
 }
