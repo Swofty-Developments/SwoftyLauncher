@@ -219,10 +219,21 @@ inline void set_base(uint8_t *data, uint32_t base)
     p[0] = uint8_t(base), p[1] = uint8_t(base >> 8), p[2] = uint8_t(base >> 16), p[3] = uint8_t(base >> 24);
 }
 
-template <class Mem> bool unbased(Mem &mem, uint64_t car)
+template <class Mem> bool unbased(Mem &mem, uint64_t entrants, uint64_t car)
 {
     uint32_t base = 0;
-    return car && mem.u32(car + VEHICLE_BASE, base) && (kind(base) != KIND_STOCK || id(base) >= 0x3fff);
+    if (!car || !mem.u32(car + VEHICLE_BASE, base))
+        return false;
+    return kind(base) != KIND_STOCK || id(base) >= 0x3fff || !vehicle(mem, entrants, base);
+}
+
+template <class Mem> bool base_label(Mem &mem, uint64_t entrants, uint64_t car, std::string &out)
+{
+    out.clear();
+    uint32_t base = 0;
+    if (!car || !mem.u32(car + VEHICLE_BASE, base) || kind(base) != KIND_STOCK || id(base) >= 0x3fff)
+        return false;
+    return label(mem, vehicle(mem, entrants, base), out);
 }
 
 template <class Mem> uint32_t base_for(Mem &mem, uint64_t entrants, uint64_t car)

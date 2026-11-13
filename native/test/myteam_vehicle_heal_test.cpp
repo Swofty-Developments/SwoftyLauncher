@@ -1,6 +1,8 @@
-// Host-native unit test for the core's My Team vehicle heal (native/src/core/myteam_vehicle_heal_logic.hpp).
+// Host-native unit test for the core's My Team vehicle heal (native/src/core/myteam_vehicle_heal_logic.hpp) and the
+// game manager's entrants system displacement it reads the cars through (native/src/core/game_manager_layout.hpp).
 // Built and run by native/test/run_myteam_vehicle_heal_test.sh.
 
+#include "game_manager_layout.hpp"
 #include "myteam_vehicle_heal_logic.hpp"
 
 #include <cstdio>
@@ -105,6 +107,15 @@ static uint64_t list_end(size_t n)
 
 int main()
 {
+    namespace gm = runtime::game_manager;
+    expect(gm::entrants_system("steam") == 0x290, "the entrants system is [g_Game_Manager]+0x290 on Steam");
+    expect(gm::entrants_system("ea") == 0x260, "and +0x260 on the EA App build (George's and jhxsh's empty heal reads)");
+    expect(gm::entrants_system("unknown") == 0x290, "an unknown build keeps the KB displacement");
+    expect(gm::tail_field(0x2d0, "ea") == 0x2a0 && gm::tail_field(0x2e8, "ea") == 0x2b8 && gm::tail_field(0x278, "ea") == 0x248,
+           "every EA qword field from Steam +0x278 on is 0x30 lower (the live progress system +0x2d0 is +0x2a0)");
+    expect(gm::tail_field(0x2d0, "steam") == 0x2d0 && gm::tail_field(0x290, "unknown") == 0x290,
+           "Steam and an unknown build read every field where the KB has it");
+
     expect(mh::kind(0x4000) == 0 && mh::kind(custom_handle(7)) == 1 && mh::id(custom_handle(7)) == 7,
            "a vehicle handle is the kind in its low byte and the stat id in its high word");
     expect(mh::healable(custom_handle(0)) && mh::healable(custom_handle(8)), "My Team handles (kind 1) are healed");
@@ -221,10 +232,22 @@ int main()
     entrants(based, {stock_handle(6), custom_handle(2), custom_handle(2)});
     std::vector<uint64_t> cars = mh::held(based, ENTRANTS, LIST, list_end(3));
     expect(cars.size() == 1 && cars[0] == mt, "the career's resolved My Team cars are listed once");
-    expect(mh::unbased(based, mt), "a My Team car rebuilt by 1.9.25 (base 0x3fff0000) has no base car");
+    expect(mh::unbased(based, ENTRANTS, mt), "a My Team car rebuilt by 1.9.25 (base 0x3fff0000) has no base car");
+    std::string bl;
+    expect(!mh::base_label(based, ENTRANTS, mt, bl) && bl.empty(), "a car with no base car has no base label");
     expect(mh::base_for(based, ENTRANTS, mt) == stock_handle(10), "its base is the stock car of the same name");
     based.d[mt + mh::VEHICLE_BASE] = stock_handle(10);
-    expect(!mh::unbased(based, mt), "a My Team car with a stock base is left alone");
+    expect(!mh::unbased(based, ENTRANTS, mt), "a My Team car with a stock base is left alone");
+    expect(mh::base_label(based, ENTRANTS, mt, bl) && bl == "myteam_mercedes_2026", "its base label is the stock car's");
+    based.d[mt + mh::VEHICLE_BASE] = stock_handle(2);
+    expect(mh::unbased(based, ENTRANTS, mt), "a base on an empty stock slot (a vehicle that is not loaded) is no base car");
+    expect(!mh::base_label(based, ENTRANTS, mt, bl), "and has no base label");
+    based.d[mt + mh::VEHICLE_BASE] = stock_handle(200);
+    expect(mh::unbased(based, ENTRANTS, mt), "a base past the stock table is no base car");
+    based.d[mt + mh::VEHICLE_BASE] = custom_handle(2);
+    expect(mh::unbased(based, ENTRANTS, mt), "a base that is a My Team car is no base car");
+    expect(!mh::unbased(based, ENTRANTS, 0) && !mh::unbased(no_tables, ENTRANTS, mt), "an unreadable car is not rebased");
+    based.d[mt + mh::VEHICLE_BASE] = stock_handle(10);
     based.s[mt + mh::VEHICLE_FILE_NAME] = "myteam_mes_porsche_2026";
     expect(mh::base_for(based, ENTRANTS, mt) == mh::NO_VEHICLE, "an addon car whose own vehicle is not loaded gets no base");
     based.s[mt + mh::VEHICLE_FILE_NAME] = "myteam_mes_nissan_2026";

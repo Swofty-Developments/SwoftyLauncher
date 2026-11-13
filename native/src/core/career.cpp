@@ -54,7 +54,6 @@ constexpr const char *TEAM_HQ_MIXIN = "swofty_core.dll (Team HQ answer)";
 constexpr uintptr_t REGISTRY_GET_SLOT = 0x10;
 constexpr uint32_t HUMAN_FLAG = 0x10000000u;
 constexpr size_t MAX_ENTRANTS = 128;
-constexpr uintptr_t MANAGER_ENTRANTS_SYSTEM = 0x290;
 constexpr const char *STATUS[4] = {"None", "Entering", "Updating", "Exiting"};
 
 using RegistryGet = void *(void *registry, const void *desc, uint32_t search_parents);
@@ -378,7 +377,7 @@ template <class E, class R> void heal_my_team_cars()
         if (!e || !mem::read(e + offsetof(E, entrants_begin), b) || !mem::read(e + offsetof(E, entrants_end), en) || !b ||
             en < b || (en - b) % sizeof(R) || (en - b) / sizeof(R) > MAX_ENTRANTS || (en != b && !mem::readable(b, en - b)))
             return;
-        if (!slot || !mem::read(slot, mgr) || !mgr || !mem::read(mgr + MANAGER_ENTRANTS_SYSTEM, es) || !es)
+        if (!slot || !mem::read(slot, mgr) || !mgr || !mem::read(mgr + runtime::manager_entrants_system(), es) || !es)
             return;
         static_assert(offsetof(R, vehicle_ref) == 0x5c && sizeof(R) == 0x88);
         runtime::myteam_vehicle_heal_entrants(es, b, en);

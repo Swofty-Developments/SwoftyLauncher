@@ -1,4 +1,5 @@
 #pragma once
+#include "../game_manager_layout.hpp"
 #include "live_layout.hpp"
 #include "live_mem.hpp"
 
@@ -158,7 +159,8 @@ inline constexpr BuildProof KB_BUILD = {1789118616u, "Steam", ALL_GROUPS, layout
 
 inline constexpr uint32_t EA_GROUPS = ALL_GROUPS;
 
-inline constexpr BuildProof EA_BUILD = {1789128892u, "EA", EA_GROUPS, 0x2a0};
+inline constexpr BuildProof EA_BUILD = {1789128892u, "EA", EA_GROUPS,
+                                         runtime::game_manager::tail_field(layout::progress::from_manager, "ea")};
 
 inline constexpr const BuildProof *PROVEN_BUILDS[] = {&KB_BUILD, &EA_BUILD};
 

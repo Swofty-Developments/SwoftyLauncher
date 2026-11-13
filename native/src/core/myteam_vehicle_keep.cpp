@@ -49,7 +49,6 @@ constexpr const char *MIXIN = "swofty_core.dll (my team vehicle keep)";
 constexpr const char *LOAD = "site_Game_MyTeamVehicleBases_AiConfigLoad";
 constexpr const char *NEXT = "site_Game_MyTeamVehicleBases_NextBase";
 constexpr const char *SAVE = "site_Game_MyTeamVehicleBases_SaveRecord";
-constexpr uintptr_t MANAGER_ENTRANTS = 0x290;
 
 bool offered = false, settled = false, live = false;
 uintptr_t manager_slot = 0;
@@ -95,7 +94,7 @@ bool stock_car(const std::string &label, mk::Stock &out)
     Game game;
     uintptr_t mgr = 0, entrants = 0;
     mh::Source source;
-    if (manager_slot && mem::read(manager_slot, mgr) && mgr && mem::read(mgr + MANAGER_ENTRANTS, entrants) && entrants &&
+    if (manager_slot && mem::read(manager_slot, mgr) && mgr && mem::read(mgr + runtime::manager_entrants_system(), entrants) && entrants &&
         mk::pick(mh::stock(game, entrants), label, source)) {
         uint8_t engine = 0;
         out.label = source.label;

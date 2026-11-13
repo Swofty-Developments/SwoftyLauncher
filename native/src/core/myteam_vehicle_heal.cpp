@@ -31,7 +31,8 @@
 // 2026 ones, else myteam_mercedes and the other 2025 cars) with that stock car's handle as its base car (vehicle +0xcf2,
 // the saved base_vehicle_stat_id), stored under the lost car's handle with Ent_EntrantsSystem_ReplaceVehicle. A My Team
 // car whose base is 0x3fff0000 keeps Team HQ's load in its loading screen for good (launcher 1.9.25 rebuilt cars that
-// way), so on career.loaded a car without a base gets the stock car of its name as its base. It runs in two places:
+// way), so on career.loaded a car without a base, or with a base that names no loaded stock car, gets the stock car
+// of its name as its base. It runs in two places:
 // - career.loaded (career.cpp): every kind 1 handle the career's entrants (CareerEntity entrants_begin..entrants_end)
 //   hold that the entrants system resolves to nothing is rebuilt, before the weekend's cutscene reads it.
 // - site_Sess_SessionEnter_VehicleLookup, the zero check after the first lookup of each session entrant's vehicle in
@@ -183,19 +184,20 @@ void myteam_vehicle_heal_entrants(uintptr_t entrants, uintptr_t first, uintptr_t
     for (uint32_t handle : lost)
         rebuilt += rebuild(game, entrants, handle, first, end, "as the career loaded") != 0;
     for (uint64_t car : mh::held(game, entrants, first, end)) {
-        if (!mh::unbased(game, car))
+        if (!mh::unbased(game, entrants, car))
             continue;
         uint32_t base = mh::base_for(game, entrants, car);
         std::string name;
         mh::label(game, car, name);
-        uint32_t handle = 0;
+        uint32_t handle = 0, was = 0;
         game.u32(car, handle);
+        game.u32(car + mh::VEHICLE_BASE, was);
         if (base == mh::NO_VEHICLE || !mem::readable(static_cast<uintptr_t>(car + mh::VEHICLE_BASE), sizeof base)) {
             if (failed.first(mh::id(handle))) {
                 mh::Tables t = mh::tables(game, entrants);
-                swofty::log("[myteam] heal: the player's My Team car (custom vehicle %u, '%s') has no base car and no stock car "
-                            "of that name is loaded to give it one (entrants %p: stock table %p with %zu slots)",
-                            (unsigned)mh::id(handle), name.c_str(), reinterpret_cast<void *>(entrants),
+                swofty::log("[myteam] heal: the player's My Team car (custom vehicle %u, '%s') has no base car (base %08x) and "
+                            "no stock car of that name is loaded to give it one (entrants %p: stock table %p with %zu slots)",
+                            (unsigned)mh::id(handle), name.c_str(), was, reinterpret_cast<void *>(entrants),
                             reinterpret_cast<void *>(t.stock), t.stock_slots);
             }
             continue;
@@ -203,10 +205,11 @@ void myteam_vehicle_heal_entrants(uintptr_t entrants, uintptr_t first, uintptr_t
         *reinterpret_cast<uint32_t *>(static_cast<uintptr_t>(car + mh::VEHICLE_BASE)) = base;
         based++;
         if (healed.first(mh::id(handle)))
-            swofty::log("[myteam] heal: the player's My Team car (custom vehicle %u, '%s') had no base car (launcher 1.9.25 "
-                        "rebuilt it from a stock car without one, or the car was made without one), which stops Team HQ "
-                        "loading; set its base to the stock '%s' as the career loaded. The next save keeps it",
-                        (unsigned)mh::id(handle), name.c_str(), name.c_str());
+            swofty::log("[myteam] heal: the player's My Team car (custom vehicle %u, '%s') had no base car or one that is "
+                        "not loaded (base %08x; launcher 1.9.25 rebuilt it from a stock car without one, or the car was "
+                        "made without one), which stops Team HQ loading; set its base to the stock '%s' (%08x) as the "
+                        "career loaded. The next save keeps it",
+                        (unsigned)mh::id(handle), name.c_str(), was, name.c_str(), base);
     }
     std::string ids;
     for (uint16_t i : census.ids)
@@ -214,14 +217,16 @@ void myteam_vehicle_heal_entrants(uintptr_t entrants, uintptr_t first, uintptr_t
     for (uint64_t car : mh::held(game, entrants, first, end)) {
         uint32_t h = 0, base = 0;
         uint8_t engine = 0;
-        std::string name;
+        std::string name, base_name;
         game.u32(car, h);
         game.u32(car + mh::VEHICLE_BASE, base);
         mem::read(static_cast<uintptr_t>(car + mh::VEHICLE_ENGINE), engine);
         mh::label(game, car, name);
-        char b[192];
-        snprintf(b, sizeof b, "; custom vehicle %u '%s' engine %u base car %08x", h >> 16, name.c_str(), engine, base);
-        ids += b;
+        bool named = mh::base_label(game, entrants, car, base_name);
+        char b[64];
+        snprintf(b, sizeof b, "' engine %u base car %08x", engine, base);
+        ids += "; custom vehicle " + std::to_string(h >> 16) + " '" + name + b +
+               (named ? " '" + base_name + "'" : std::string(" (no stock car)"));
     }
     swofty::log("[myteam] heal: the career's %zu entrants include %zu on My Team cars (custom vehicle %s) as it loaded: %zu "
                 "missing and rebuilt, %zu given a base car, the rest present",
