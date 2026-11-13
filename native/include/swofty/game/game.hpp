@@ -1076,6 +1076,8 @@ inline constexpr address<"Game_VehicleProgressSystem_SubscribeAndClearNet"> Game
 inline constexpr address<"Game_VehicleRaceStart_SendRaceStartMessages"> Game_VehicleRaceStart_SendRaceStartMessages{}; // L2 experimental
 inline constexpr address<"Game_VendorA_Initialise"> Game_VendorA_Initialise{}; // L2 experimental
 inline constexpr address<"Game_VfxManager_Initialise"> Game_VfxManager_Initialise{}; // L2 experimental
+using Game_Vfx_UpdateWheelTyreInstance_t = void(void *studio, uint8_t vehicle_id, uint32_t wheel, void *tyre_vis, void *tyre_asset, const void *wheel_params);
+inline constexpr fn<"Game_Vfx_UpdateWheelTyreInstance", Game_Vfx_UpdateWheelTyreInstance_t> Game_Vfx_UpdateWheelTyreInstance{}; // L2 experimental
 inline constexpr address<"Game_VictoryVO_DetectWinnerAndNotify"> Game_VictoryVO_DetectWinnerAndNotify{}; // L2 experimental
 inline constexpr address<"Game_VictoryVO_OnSpeechFinished"> Game_VictoryVO_OnSpeechFinished{}; // L2 experimental
 inline constexpr address<"Game_VictoryVO_PlayVictoryVO"> Game_VictoryVO_PlayVictoryVO{}; // L2 experimental

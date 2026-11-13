@@ -803,6 +803,9 @@
   "Game_SpeechSystem_PostLine": {
    "match": "0xa2f4d0"
   },
+  "Game_Vfx_UpdateWheelTyreInstance": {
+   "match": "0x45a2d90"
+  },
   "Gdb_Lookup_Key": {
    "match": "0x4598580"
   },
