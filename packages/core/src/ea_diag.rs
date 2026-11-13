@@ -260,18 +260,41 @@ pub fn newest_logs(dirs: &[PathBuf], n: usize) -> Vec<PathBuf> {
 pub const PROXY_LOG: &str = "EAEgsProxy.log";
 const VIRUS_TEXT: &str = "contains a virus or potentially unwanted software";
 const VIRUS_CODE: &str = "0xe1";
+const NOT_FOUND_TEXT: &str = "cannot find the file specified";
+const NOT_FOUND_CODE: &str = " 0x2";
 
 pub fn proxy_virus_block(log: &str, exe: &str, since: i64) -> bool {
+    proxy_start_failed(log, exe, (VIRUS_TEXT, VIRUS_CODE), |t| {
+        t.is_none_or(|t| t >= since)
+    })
+}
+
+/// The proxy found no file to start at or after `staged`, when offline play
+/// put its file there. Something removed that file within seconds, which is
+/// an antivirus: an EA app repair writes EA's own file in its place. Only a
+/// line with its time counts.
+pub fn proxy_file_missing(log: &str, exe: &str, staged: i64) -> bool {
+    proxy_start_failed(log, exe, (NOT_FOUND_TEXT, NOT_FOUND_CODE), |t| {
+        t.is_some_and(|t| t >= staged)
+    })
+}
+
+fn proxy_start_failed(
+    log: &str,
+    exe: &str,
+    (text, code): (&str, &str),
+    when: impl Fn(Option<i64>) -> bool,
+) -> bool {
     let exe = exe.to_ascii_lowercase();
     log.lines().any(|line| {
         let lower = line.to_ascii_lowercase();
         lower.contains("createprocess")
             && lower.contains(&exe)
-            && (lower.contains(VIRUS_TEXT) || lower.trim_end().ends_with(VIRUS_CODE))
-            && line
-                .split_once('[')
-                .and_then(|(_, rest)| crate::catalog::epoch(rest))
-                .is_none_or(|t| t >= since)
+            && (lower.contains(text) || lower.trim_end().ends_with(code))
+            && when(
+                line.split_once('[')
+                    .and_then(|(_, rest)| crate::catalog::epoch(rest)),
+            )
     })
 }
 
@@ -339,6 +362,34 @@ Fault bucket, type 5\nP1: EADesktop.exe\n";
         ));
         let after = crate::catalog::epoch("2026-11-01T02:00:00Z").unwrap();
         assert!(!proxy_virus_block(PROXY_BLOCKED, EXE, after));
+    }
+
+    const PROXY_MISSING: &str = "\
+1255:    17\t[2026-11-13T10:00:00.698Z]\tPID: 14048\tTID: 19396\tERROR   \t(eax::services::process::ProcessWin::createProcess)\t[PROCESS] Create Process: The system cannot find the file specified. | exe=[C:\\Program Files\\EA Games\\F1 25\\EAAntiCheat.GameServiceLauncher.exe], args=[], dir=[C:\\Program Files\\EA Games\\F1 25\\], breakaway=[true], inheritEnv=[false], uac=[false] ut=[false] capture=[false], cwd=[C:\\Program Files\\EA Games\\F1 25] | OS ErrorCode:  0x2
+1256:    18\t[2026-11-13T10:00:00.699Z]\tPID: 14048\tTID: 19396\tERROR   \t(eax::apps::ProxyComponent::launchProcess)\tProcess create error.
+";
+    const PROXY_STARTED: &str = "\
+1140:    17\t[2026-11-13T09:51:51.791Z]\tPID: 25288\tTID: 10620\tINFO    \t(eax::services::process::ProcessWin::createProcess)\t[PROCESS] exe=[C:\\Program Files\\EA Games\\F1 25\\EAAntiCheat.GameServiceLauncher.exe], args=[], dir=[C:\\Program Files\\EA Games\\F1 25\\], breakaway=[true], inheritEnv=[false], uac=[false] ut=[false] capture=[false], cwd=[C:\\Program Files\\EA Games\\F1 25] | PID: 1264 |
+";
+
+    #[test]
+    fn finds_the_proxy_missing_the_stub_after_staging() {
+        let staged = crate::catalog::epoch("2026-11-13T09:59:49Z").unwrap();
+        assert!(proxy_file_missing(PROXY_MISSING, EXE, staged));
+        assert!(!proxy_virus_block(PROXY_MISSING, EXE, 0));
+        let code_only = PROXY_MISSING.replace("The system cannot find the file specified.", "failed");
+        assert!(proxy_file_missing(&code_only, EXE, staged));
+    }
+
+    #[test]
+    fn a_missing_file_before_staging_or_a_started_launcher_is_not_a_removal() {
+        let later = crate::catalog::epoch("2026-11-13T10:01:00Z").unwrap();
+        assert!(!proxy_file_missing(PROXY_MISSING, EXE, later));
+        assert!(!proxy_file_missing(PROXY_MISSING, "EADesktop.exe", 0));
+        assert!(!proxy_file_missing(PROXY_STARTED, EXE, 0));
+        assert!(!proxy_file_missing(PROXY_BLOCKED, EXE, 0));
+        let undated = PROXY_MISSING.replace("[2026-11-13T10:00:00.698Z]", "");
+        assert!(!proxy_file_missing(&undated, EXE, 0));
     }
 
     #[test]

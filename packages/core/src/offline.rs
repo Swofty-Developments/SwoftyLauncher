@@ -352,14 +352,55 @@ fn av_error(e: Error) -> Error {
     }
 }
 
-pub fn stub_blocked(game: &Path, proxy_logs: &[String], since: i64) -> Option<Block> {
-    let logged = proxy_logs
-        .iter()
-        .any(|log| crate::ea_diag::proxy_virus_block(log, EAC_EXE, since));
-    logged.then(|| Block {
+/// The EA app's proxy failed to start offline play's file: an antivirus
+/// blocked it (logged since `since`), or removed it after the session staged
+/// it at `staged`, so the proxy found no file.
+pub fn stub_blocked(game: &Path, proxy_logs: &[String], since: i64, staged: Option<i64>) -> Option<Block> {
+    let logged = proxy_logs.iter().any(|log| {
+        crate::ea_diag::proxy_virus_block(log, EAC_EXE, since)
+            || staged.is_some_and(|at| crate::ea_diag::proxy_file_missing(log, EAC_EXE, at))
+    });
+    logged.then(|| stub_removed(game))
+}
+
+/// Offline play's file in the anti-cheat launcher's place, as an antivirus
+/// blocked or removed it.
+pub fn stub_removed(game: &Path) -> Block {
+    Block {
         program: game.join(EAC_EXE),
         code: crate::quarantine::ERROR_VIRUS_INFECTED,
-    })
+    }
+}
+
+/// When the session staged offline play, or last put its file back: the
+/// journal's last write.
+pub fn staged_at(journal: &Path) -> Option<std::time::SystemTime> {
+    std::fs::metadata(journal).ok()?.modified().ok()
+}
+
+const STUB: &str = "f1op_stub.exe";
+
+/// The extension's stub when it is the one file missing from the extension
+/// folder, with the hook still beside it: an antivirus removed it.
+pub fn stub_removed_from_extension(data: &Path) -> Option<PathBuf> {
+    let dir = extension_dir(data);
+    let stub = dir.join(STUB);
+    let rest = REQUIRED
+        .iter()
+        .filter(|n| **n != STUB)
+        .all(|n| dir.join(n).is_file());
+    (rest && !stub.is_file()).then_some(stub)
+}
+
+pub fn stub_removed_text(data: &Path, stub: &Path) -> String {
+    format!(
+        "{STUB} is missing from {} while f1op_hook.dll is still there, so an antivirus most likely removed it. \
+         Restore {STUB} from the antivirus's quarantine (Windows Security > Virus & threat protection > \
+         Protection history) and add an exclusion for the Swofty data folder ({}) and the F1 25 folder, or \
+         the antivirus removes it again",
+        stub.parent().unwrap_or(stub).display(),
+        data.display()
+    )
 }
 
 fn virus_code(code: i32) -> bool {
@@ -2186,9 +2227,9 @@ mod tests {
         let game = d.join("game");
         std::fs::create_dir_all(&game).unwrap();
         std::fs::write(game.join(EAC_BAK), "real").unwrap();
-        assert_eq!(stub_blocked(&game, &[], 0), None);
+        assert_eq!(stub_blocked(&game, &[], 0, None), None);
         let other = "20\t[2026-11-01T01:57:04.895Z]\tINFO\tcreateProcess ok".to_owned();
-        assert_eq!(stub_blocked(&game, &[other], 0), None);
+        assert_eq!(stub_blocked(&game, &[other], 0, None), None);
         std::fs::remove_dir_all(&d).ok();
     }
 
@@ -2204,8 +2245,77 @@ mod tests {
              potentially unwanted software. | exe=[{}] | OS ErrorCode:  0xe1\n",
             game.join(EAC_EXE).display()
         );
-        let block = stub_blocked(&game, &[log], 0).unwrap();
+        let block = stub_blocked(&game, &[log], 0, None).unwrap();
         assert_eq!(block.code, 225);
+        std::fs::remove_dir_all(&d).ok();
+    }
+
+    fn missing_line(game: &Path, at: &str) -> String {
+        format!(
+            "17\t[{at}]\tERROR   \t(eax::services::process::ProcessWin::createProcess)\t[PROCESS] Create Process: \
+             The system cannot find the file specified. | exe=[{}] | OS ErrorCode:  0x2\n",
+            game.join(EAC_EXE).display()
+        )
+    }
+
+    #[test]
+    fn the_proxy_finding_no_stub_after_staging_is_an_antivirus_removal() {
+        let game = Path::new(r"C:\Program Files\EA Games\F1 25");
+        let staged = crate::catalog::epoch("2026-11-13T09:59:49Z").unwrap();
+        let log = missing_line(game, "2026-11-13T10:00:00.698Z");
+        let block = stub_blocked(game, std::slice::from_ref(&log), 0, Some(staged)).unwrap();
+        assert_eq!(block, stub_removed(game));
+        assert_eq!(block.blocker(), Some(crate::app_control::Blocker::Antivirus));
+        assert!(block.text().contains("antivirus"), "{}", block.text());
+        assert_eq!(stub_blocked(game, std::slice::from_ref(&log), 0, None), None);
+        let restaged = crate::catalog::epoch("2026-11-13T10:12:00Z").unwrap();
+        assert_eq!(stub_blocked(game, &[log], 0, Some(restaged)), None);
+    }
+
+    #[test]
+    fn a_genuine_ea_repair_leaves_no_antivirus_trace_in_the_proxy_log() {
+        let game = Path::new(r"C:\Program Files\EA Games\F1 25");
+        let staged = crate::catalog::epoch("2026-11-12T05:50:00Z").unwrap();
+        let started = format!(
+            "17\t[2026-11-12T05:54:53.240Z]\tINFO    \t(eax::services::process::ProcessWin::createProcess)\t\
+             [PROCESS] exe=[{}], args=[] | PID: 16136 | \n",
+            game.join(EAC_EXE).display()
+        );
+        assert_eq!(stub_blocked(game, &[started], 0, Some(staged)), None);
+    }
+
+    #[test]
+    fn the_staging_time_is_the_journals_last_write() {
+        let d = temp("staged-at");
+        let journal = d.join("staging.jsonl");
+        assert_eq!(staged_at(&journal), None);
+        std::fs::write(&journal, "{}\n").unwrap();
+        let at = staged_at(&journal).unwrap();
+        assert!(at.elapsed().unwrap_or_default() < std::time::Duration::from_secs(60));
+        std::fs::remove_dir_all(&d).ok();
+    }
+
+    #[test]
+    fn names_the_stub_when_only_it_is_gone_from_the_extension() {
+        let d = temp("ext-stub-gone");
+        let dir = extension_dir(&d);
+        std::fs::create_dir_all(&dir).unwrap();
+        for name in REQUIRED {
+            std::fs::write(dir.join(name), "x").unwrap();
+        }
+        assert_eq!(stub_removed_from_extension(&d), None);
+        std::fs::remove_file(dir.join(STUB)).unwrap();
+        let stub = stub_removed_from_extension(&d).unwrap();
+        assert_eq!(stub, dir.join(STUB));
+        let text = stub_removed_text(&d, &stub);
+        assert!(text.contains("antivirus most likely removed it"), "{text}");
+        assert!(
+            text.contains("quarantine") && text.contains("exclusion"),
+            "{text}"
+        );
+        assert!(text.contains(&d.display().to_string()), "{text}");
+        std::fs::remove_file(dir.join("f1op_hook.dll")).unwrap();
+        assert_eq!(stub_removed_from_extension(&d), None);
         std::fs::remove_dir_all(&d).ok();
     }
 }
