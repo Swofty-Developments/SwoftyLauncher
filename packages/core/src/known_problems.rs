@@ -756,6 +756,11 @@ const SEQUENCER_RECORD: &str = "Game_CareerEventsSequencer_Initialise+0x1020";
 /// The fault in the career hub's set-up when a driver of the player's team is not in the game's driver list: the
 /// driver morph data read of the driver the lookup did not find.
 const MORPH_DRIVER: &str = "Game_CareerEventResourceManager_AddDriverMorphData+0x82";
+/// The frame that called the game's driver name fill for a race's retirement message: the return address of the call
+/// whose driver the lookup did not find.
+const RETIREMENT_NAME: &str = "Sess_InGameRace_Update+0x77e";
+/// What the driver name fill reads for a missing driver: the composed name pointer of a null driver's name holder.
+const RETIREMENT_READ: &str = "reading 0x1f0";
 /// The game function that reads a car's racing line, which a car with no line of its own faults in.
 const LINE_CACHE: &str = "Ai_LineCache_UpdateIfChanged+";
 /// What the core logs for a car that is the third of its team.
@@ -1631,6 +1636,31 @@ fn morph_driver_crash(f: &Fatal) -> bool {
     f.module.as_deref() == Some("f1_25.exe") && f.frames.first().is_some_and(|l| l.contains(MORPH_DRIVER))
 }
 
+/// Whether F1 25 faulted naming the driver of a car that retired from a race: the frame after the nearest is
+/// [`RETIREMENT_NAME`] and the fault read [`RETIREMENT_READ`].
+fn retirement_driver_crash(f: &Fatal) -> bool {
+    f.module.as_deref() == Some("f1_25.exe")
+        && f.frames.get(1).is_some_and(|l| l.contains(RETIREMENT_NAME))
+        && f.record.iter().any(|l| l.trim_end().ends_with(RETIREMENT_READ))
+}
+
+fn race_driver_missing() -> Diagnosis {
+    Diagnosis {
+        id: "race_driver_missing",
+        title: "A car in your race has a driver F1 25 can't find".to_owned(),
+        what: "F1 25 crashed as a car retired from the race, while it named that car's driver in the retirement \
+               message. That car's driver is not in the game's driver list, usually because an addon changed the \
+               career's drivers or line-ups."
+            .to_owned(),
+        steps: vec![
+            "Turn off the addon that changes your career's drivers or line-ups (a driver market, team and driver \
+             editor or DB Editor package)."
+                .to_owned(),
+            "Press Play again.".to_owned(),
+        ],
+    }
+}
+
 fn career_driver_missing() -> Diagnosis {
     Diagnosis {
         id: "career_driver_missing",
@@ -2090,6 +2120,9 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
     }
     if morph_driver_crash(&f) {
         return Some(career_driver_missing());
+    }
+    if retirement_driver_crash(&f) {
+        return Some(race_driver_missing());
     }
     if third_car_line_crash(e, &f) {
         return Some(third_car_line(e));
@@ -3467,6 +3500,56 @@ runtime      Windows
             diagnose(&ev(&other, &[])).map(|d| d.id),
             None,
             "another offset of the function"
+        );
+    }
+
+    const RETIREMENT: &str = "\
+2026-11-12 20:54:48.502 [29072] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 29072, 612 s after load, at F1_25.exe+0xcb8a5e1 .data1 fn base+0xcb8a5d0+0x11
+2026-11-12 20:54:48.502 [29072] [crash]   reading 0x1f0
+2026-11-12 20:54:48.502 [29072] [crash]   rax=0000000000000000 rbx=0000000000000018 rcx=0000000000000018 rdx=0000000067dce2c0
+2026-11-12 20:54:48.502 [29072] [crash]   stack:
+2026-11-12 20:54:48.502 [29072] [crash]   #0  F1_25.exe+0xcb8a5e1 .data1 fn base+0xcb8a5d0+0x11
+2026-11-12 20:54:48.503 [29072] [crash]   #1  F1_25.exe+0x2d624ee .xtls Sess_InGameRace_Update+0x77e
+2026-11-12 20:54:48.503 [29072] [crash]   #2  F1_25.exe+0x2d56e08 .xtls Sess_InGame_UpdateBase+0x768
+2026-11-12 20:54:48.511 [29072] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0xcb8a5e1 .data1 fn base+0xcb8a5d0+0x11 reached the top-level filter; passing it to the game's filter
+";
+
+    #[test]
+    fn a_crash_naming_a_retired_car_without_a_driver_names_no_addon() {
+        let mut e = with_names(
+            ev(RETIREMENT, &[]),
+            &[
+                ("kizi.canned", "Canned DNFs"),
+                ("progressive.career", "Progressive Career"),
+                ("custom.team-names", "Team & Driver Editor"),
+            ],
+        );
+        e.enabled = vec![
+            "kizi.canned".to_owned(),
+            "progressive.career".to_owned(),
+            "custom.team-names".to_owned(),
+        ];
+        let d = diagnose(&e).unwrap();
+        assert_eq!(d.id, "race_driver_missing");
+        assert_eq!(d.title, "A car in your race has a driver F1 25 can't find");
+        for addon in ["Canned DNFs", "Progressive Career", "Team & Driver Editor"] {
+            assert!(!d.text().contains(addon), "{addon} is named: {}", d.text());
+        }
+
+        e.enabled = vec![];
+        assert_eq!(diagnose(&e).unwrap(), d, "the same diagnosis with no addon on");
+
+        let other = RETIREMENT.replace("Sess_InGameRace_Update+0x77e", "Sess_InGameRace_Update+0x6a1");
+        assert_eq!(
+            diagnose(&ev(&other, &[])).map(|d| d.id),
+            None,
+            "another call in the race update"
+        );
+        let read = RETIREMENT.replace("reading 0x1f0", "reading 0x8");
+        assert_eq!(
+            diagnose(&ev(&read, &[])).map(|d| d.id),
+            None,
+            "another read under the same call"
         );
     }
 

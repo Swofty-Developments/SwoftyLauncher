@@ -71,6 +71,7 @@ t "Round track record guard unit test" native/test/run_track_record_test.sh
 t "Team HQ track guard unit test" native/test/run_teamhq_track_test.sh
 t "Activity resume guard unit test" native/test/run_activity_resume_test.sh
 t "Events sequencer record guard unit test" native/test/run_sequencer_records_test.sh
+t "Race retirement driver guard unit test" native/test/run_race_retirement_test.sh
 t "Standings dropped scores unit test" native/test/run_standings_drop_test.sh
 t "AI team curves guard unit test" native/test/run_ai_curves_test.sh
 t "Teammate pairs guard unit test" native/test/run_teammate_pairs_test.sh

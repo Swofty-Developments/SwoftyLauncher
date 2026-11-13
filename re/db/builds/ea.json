@@ -1880,6 +1880,15 @@
   },
   "site_Sess_TimeTrialLeaderboard_BoundTabDone": {
    "match": "0x2fc1156"
+  },
+  "g_Ne_InlineStr128Vtable": {
+   "match": "0x2d56149"
+  },
+  "site_Sess_InGameRaceRetirementDriver": {
+   "match": "0x2d56210"
+  },
+  "site_Sess_InGameRaceRetirementDriverJoin": {
+   "match": "0x2d56224"
   }
  },
  "unresolvable": {}
