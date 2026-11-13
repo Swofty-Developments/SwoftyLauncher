@@ -145,6 +145,15 @@ pub fn compose_in_build(
     };
     let output = compose_with(&layered, inputs, template)
         .map_err(|e| Error::Other(format!("the HUD elements do not compose: {e}")))?;
+    let left = super::check::uncovered(&layered, &output.archives)?;
+    if !left.is_empty() {
+        return Err(Error::Other(format!(
+            "the composed HUD of {} would leave the game's own copy of a resource beside the composed one, and the game crashes loading the HUD when it mixes them: {}. Turn {} off in this profile and use Send Logs.",
+            huds.join(", "),
+            left.join("; "),
+            huds.join(", ")
+        )));
+    }
     let owner = inputs.first().map(|i| i.addon.clone()).unwrap_or_default();
     let ops = output
         .ops("hud")

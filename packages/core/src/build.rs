@@ -3120,41 +3120,6 @@ fn after_puts(op: &mut Op, puts: &BTreeMap<String, ArchivePut>, rank: usize) -> 
     }
 }
 
-fn index_of(path: &Path) -> Option<Vec<u8>> {
-    use std::io::{Read, Seek, SeekFrom};
-    let mut f = std::fs::File::open(path).ok()?;
-    let mut head = [0u8; 0x30];
-    f.read_exact(&mut head).ok()?;
-    if &head[..4] != b"ERPK" {
-        return None;
-    }
-    let at = u64::from_le_bytes(head[0x10..0x18].try_into().ok()?);
-    let len = u64::from_le_bytes(head[0x18..0x20].try_into().ok()?);
-    if len > 1 << 28 {
-        return None;
-    }
-    let mut index = vec![0; len as usize];
-    f.seek(SeekFrom::Start(at)).ok()?;
-    f.read_exact(&mut index).ok()?;
-    Some(index)
-}
-
-fn erp_files(dir: &Path, rel: &str, out: &mut Vec<String>) {
-    let Ok(entries) = std::fs::read_dir(dir) else {
-        return;
-    };
-    for e in entries.flatten() {
-        let name = e.file_name().to_string_lossy().into_owned();
-        let path = e.path();
-        let child = format!("{rel}/{name}");
-        if path.is_dir() {
-            erp_files(&path, &child, out);
-        } else if name.to_ascii_lowercase().ends_with(".erp") {
-            out.push(child);
-        }
-    }
-}
-
 // The game loads a resource from whichever archive reads it first, so a
 // resized resource that another stock archive also carries can still show
 // the stock copy. Each name is matched as it sits in an archive index.
@@ -3172,27 +3137,17 @@ fn stock_holders(game_dir: &Path, resized: &[Resized]) -> Vec<String> {
     for (root, mut uris) in by_root {
         uris.sort_unstable();
         uris.dedup();
-        let needles: Vec<(&str, Vec<u8>)> = uris
-            .iter()
-            .map(|u| {
-                let mut n = ((u.len() + 1) as u16).to_le_bytes().to_vec();
-                n.extend_from_slice(u.as_bytes());
-                n.push(0);
-                (*u, n)
-            })
-            .collect();
         let mut files = Vec::new();
-        erp_files(&game_dir.join(&root), &root, &mut files);
+        crate::erpbuild::erp_files(&game_dir.join(&root), &root, &mut files);
         files.sort();
         for rel in files {
-            let Some(index) = index_of(&game_dir.join(&rel)) else {
+            let Some(index) = crate::erpbuild::index_of(&game_dir.join(&rel)) else {
                 continue;
             };
-            for (uri, needle) in &needles {
-                let held = index
-                    .windows(needle.len())
-                    .any(|w| w[0] == needle[0] && w == needle.as_slice());
-                if held && !written.contains(&(rel.to_ascii_lowercase(), *uri)) {
+            for uri in &uris {
+                if crate::erpbuild::index_holds(&index, uri)
+                    && !written.contains(&(rel.to_ascii_lowercase(), *uri))
+                {
                     out.push(format!(
                         "erp: {uri} is resized, but {rel} also carries it and keeps the stock copy; replace it there too, or the game may show either one"
                     ));
