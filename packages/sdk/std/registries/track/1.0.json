@@ -84,6 +84,14 @@
     "stat_id": {
       "$ref": "#/$defs/stat_id"
     },
+    "sprint": {
+      "description": "The TrackDataSet labels (\"f1\", \"f1_2026\") in which an added track's weekend is a sprint weekend. Every other data set gets weekend_format default, whatever the base has.",
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "uniqueItems": true
+    },
     "extends": {
       "description": "Data files only: this record is a variant of that record, and its value is a merge patch on the base.",
       "type": "string",
