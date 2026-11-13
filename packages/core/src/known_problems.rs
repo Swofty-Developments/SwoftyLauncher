@@ -756,15 +756,6 @@ const SEQUENCER_RECORD: &str = "Game_CareerEventsSequencer_Initialise+0x1020";
 /// The fault in the career hub's set-up when a driver of the player's team is not in the game's driver list: the
 /// driver morph data read of the driver the lookup did not find.
 const MORPH_DRIVER: &str = "Game_CareerEventResourceManager_AddDriverMorphData+0x82";
-/// Words in the ids of addons that change a career's drivers or line-ups.
-const ROSTER_ADDON_KEYS: [&str; 6] = [
-    "silly",
-    "transfer",
-    "lineup",
-    "line-up",
-    "team-names",
-    "driver-editor",
-];
 /// The game function that reads a car's racing line, which a car with no line of its own faults in.
 const LINE_CACHE: &str = "Ai_LineCache_UpdateIfChanged+";
 /// What the core logs for a car that is the third of its team.
@@ -1640,51 +1631,20 @@ fn morph_driver_crash(f: &Fatal) -> bool {
     f.module.as_deref() == Some("f1_25.exe") && f.frames.first().is_some_and(|l| l.contains(MORPH_DRIVER))
 }
 
-/// The enabled addons that change a career's drivers or line-ups: driver markets, team and driver editors, and DB
-/// Editor packages.
-fn roster_addons(e: &Evidence) -> Vec<String> {
-    e.enabled
-        .iter()
-        .filter(|id| {
-            let id = id.to_ascii_lowercase();
-            ROSTER_ADDON_KEYS.iter().any(|k| id.contains(k)) || id.starts_with("dbedit.")
-        })
-        .map(|id| name(e, id))
-        .collect()
-}
-
-fn career_driver_missing(e: &Evidence) -> Diagnosis {
-    let roster = roster_addons(e);
-    let (title, cause) = match roster.as_slice() {
-        [] => (
-            "Your career has a driver F1 25 can't find".to_owned(),
-            "A driver of your team in this career is not in the game's driver list, usually because an addon \
-             changed the career's drivers or line-ups."
-                .to_owned(),
-        ),
-        _ => (
-            format!("{} changed your career's drivers", list(&roster)),
-            format!(
-                "{} changed the drivers or line-ups of this career, and a driver of your team now points at a driver \
-                 the game can't find.",
-                list(&roster)
-            ),
-        ),
-    };
-    let off = match roster.as_slice() {
-        [] => "Turn off the addon that changes your career's drivers or line-ups (a driver market, team and driver \
-               editor or DB Editor package)."
-            .to_owned(),
-        _ => format!("Turn off {}, then load the career again.", list(&roster)),
-    };
+fn career_driver_missing() -> Diagnosis {
     Diagnosis {
         id: "career_driver_missing",
-        title,
-        what: format!(
-            "F1 25 crashed as your career's session loaded, while it set up the driver models of your team for \
-             the career hub. {cause}"
-        ),
-        steps: vec![off, "Press Play again.".to_owned()],
+        title: "Your career has a driver F1 25 can't find".to_owned(),
+        what: "F1 25 crashed as your career's session loaded, while it set up the driver models of your team for \
+               the career hub. A driver of your team in this career is not in the game's driver list, usually \
+               because an addon changed the career's drivers or line-ups."
+            .to_owned(),
+        steps: vec![
+            "Turn off the addon that changes your career's drivers or line-ups (a driver market, team and driver \
+             editor or DB Editor package)."
+                .to_owned(),
+            "Press Play again.".to_owned(),
+        ],
     }
 }
 
@@ -2129,7 +2089,7 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
         return Some(calendar_event_missing(e));
     }
     if morph_driver_crash(&f) {
-        return Some(career_driver_missing(e));
+        return Some(career_driver_missing());
     }
     if third_car_line_crash(e, &f) {
         return Some(third_car_line(e));
@@ -3478,7 +3438,7 @@ runtime      Windows
 ";
 
     #[test]
-    fn a_crash_reading_a_missing_team_driver_names_the_driver_addon() {
+    fn a_crash_reading_a_missing_team_driver_names_no_addon() {
         let mut e = with_names(
             ev(MORPH, &[]),
             &[
@@ -3494,21 +3454,13 @@ runtime      Windows
         ];
         let d = diagnose(&e).unwrap();
         assert_eq!(d.id, "career_driver_missing");
-        assert_eq!(
-            d.title,
-            "Silly Season and Team & Driver Editor changed your career's drivers"
-        );
-        assert!(
-            d.steps[0].starts_with("Turn off Silly Season and Team & Driver Editor"),
-            "{}",
-            d.steps[0]
-        );
-        assert!(!d.text().contains("More Driver Models"), "{}", d.text());
-
-        e.enabled = vec!["mildtdesign.more-driver-models".to_owned()];
-        let d = diagnose(&e).unwrap();
-        assert_eq!(d.id, "career_driver_missing");
         assert_eq!(d.title, "Your career has a driver F1 25 can't find");
+        for addon in ["Silly Season", "Team & Driver Editor", "More Driver Models"] {
+            assert!(!d.text().contains(addon), "{addon} is named: {}", d.text());
+        }
+
+        e.enabled = vec![];
+        assert_eq!(diagnose(&e).unwrap(), d, "the same diagnosis with no addon on");
 
         let other = MORPH.replace("AddDriverMorphData+0x82", "AddDriverMorphData+0x44");
         assert_eq!(
