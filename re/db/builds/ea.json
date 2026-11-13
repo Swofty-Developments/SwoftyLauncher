@@ -1598,6 +1598,12 @@
   "site_Game_CareerEventsSequencerFirstRecord": {
    "match": "0xc6d128"
   },
+  "site_Game_CareerEventsSequencerPlayerDriver": {
+   "match": "0xc6d399"
+  },
+  "site_Game_CareerEventsSequencerPlayerDriverJoin": {
+   "match": "0xc6d3a1"
+  },
   "site_Game_CareerEventsSequencerRecordsJoin": {
    "match": "0xc6d16c"
   },

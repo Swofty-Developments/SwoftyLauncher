@@ -19,6 +19,13 @@ inline bool says(uint64_t first_match, bool &said)
 
 enum class Miss { unread, domain, no_table, past_end, empty_slot };
 
+enum class Driver { team_mate, player };
+
+inline const char *who(Driver d)
+{
+    return d == Driver::player ? "the player's own driver" : "the team mate's driver";
+}
+
 inline uint64_t driver_count(uint64_t begin, uint64_t end)
 {
     return end > begin ? (end - begin) >> 4 : 0;

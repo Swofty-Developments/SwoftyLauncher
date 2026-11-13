@@ -1,6 +1,7 @@
 #include "sequencer_records_logic.hpp"
 
 #include <cstdio>
+#include <cstring>
 #include <initializer_list>
 
 static int failures;
@@ -45,5 +46,12 @@ int main()
         texts = texts && miss_text(m) && *miss_text(m);
     CHECK(texts, "every miss has a log text");
     CHECK(miss_text(Miss::past_end) != miss_text(Miss::empty_slot), "the past-end and empty-slot texts differ");
+
+    bool player_said = false;
+    CHECK(says(0, player_said) && !says(0, player_said), "a missing player driver is logged once");
+    bool mate_said = false;
+    CHECK(says(0, mate_said), "the player's log does not use up the team mate's");
+    CHECK(std::strcmp(who(Driver::player), "the player's own driver") == 0, "the player hook names the player");
+    CHECK(std::strcmp(who(Driver::team_mate), "the team mate's driver") == 0, "the team mate hook names the team mate");
     return failures ? 1 : 0;
 }

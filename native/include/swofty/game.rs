@@ -16245,6 +16245,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_CareerEventsSequencerPlayerDriver: Binding = Binding {
+        id: "site_Game_CareerEventsSequencerPlayerDriver",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_CareerEventsSequencerPlayerDriverJoin: Binding = Binding {
+        id: "site_Game_CareerEventsSequencerPlayerDriverJoin",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_CareerEventsSequencerRecordsJoin: Binding = Binding {
         id: "site_Game_CareerEventsSequencerRecordsJoin",
         kind: "site",

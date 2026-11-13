@@ -753,6 +753,18 @@ const ENTRANT_LIST_SEARCH: &str = "F1_25.exe+0x1738f30 ";
 const SETUP_TRACK: &str = "Sess_Loader_SetupTrackAssets";
 /// The fault in the career hub's set-up: the read of the first record of a calendar event that matched nothing.
 const SEQUENCER_RECORD: &str = "Game_CareerEventsSequencer_Initialise+0x1020";
+/// The fault in the career hub's set-up when a driver of the player's team is not in the game's driver list: the
+/// driver morph data read of the driver the lookup did not find.
+const MORPH_DRIVER: &str = "Game_CareerEventResourceManager_AddDriverMorphData+0x82";
+/// Words in the ids of addons that change a career's drivers or line-ups.
+const ROSTER_ADDON_KEYS: [&str; 6] = [
+    "silly",
+    "transfer",
+    "lineup",
+    "line-up",
+    "team-names",
+    "driver-editor",
+];
 /// The game function that reads a car's racing line, which a car with no line of its own faults in.
 const LINE_CACHE: &str = "Ai_LineCache_UpdateIfChanged+";
 /// What the core logs for a car that is the third of its team.
@@ -1622,6 +1634,60 @@ fn calendar_event_missing(e: &Evidence) -> Diagnosis {
     }
 }
 
+/// Whether F1 25 faulted reading the driver it passes to the career hub's driver morph data while a career session
+/// was entered: the nearest frame is [`MORPH_DRIVER`].
+fn morph_driver_crash(f: &Fatal) -> bool {
+    f.module.as_deref() == Some("f1_25.exe") && f.frames.first().is_some_and(|l| l.contains(MORPH_DRIVER))
+}
+
+/// The enabled addons that change a career's drivers or line-ups: driver markets, team and driver editors, and DB
+/// Editor packages.
+fn roster_addons(e: &Evidence) -> Vec<String> {
+    e.enabled
+        .iter()
+        .filter(|id| {
+            let id = id.to_ascii_lowercase();
+            ROSTER_ADDON_KEYS.iter().any(|k| id.contains(k)) || id.starts_with("dbedit.")
+        })
+        .map(|id| name(e, id))
+        .collect()
+}
+
+fn career_driver_missing(e: &Evidence) -> Diagnosis {
+    let roster = roster_addons(e);
+    let (title, cause) = match roster.as_slice() {
+        [] => (
+            "Your career has a driver F1 25 can't find".to_owned(),
+            "A driver of your team in this career is not in the game's driver list, usually because an addon \
+             changed the career's drivers or line-ups."
+                .to_owned(),
+        ),
+        _ => (
+            format!("{} changed your career's drivers", list(&roster)),
+            format!(
+                "{} changed the drivers or line-ups of this career, and a driver of your team now points at a driver \
+                 the game can't find.",
+                list(&roster)
+            ),
+        ),
+    };
+    let off = match roster.as_slice() {
+        [] => "Turn off the addon that changes your career's drivers or line-ups (a driver market, team and driver \
+               editor or DB Editor package)."
+            .to_owned(),
+        _ => format!("Turn off {}, then load the career again.", list(&roster)),
+    };
+    Diagnosis {
+        id: "career_driver_missing",
+        title,
+        what: format!(
+            "F1 25 crashed as your career's session loaded, while it set up the driver models of your team for \
+             the career hub. {cause}"
+        ),
+        steps: vec![off, "Press Play again.".to_owned()],
+    }
+}
+
 /// The text `rdi` points at in the crash report's memory dump, the name the game looked up.
 fn searched_name(report: &str) -> Option<String> {
     let mut lines = report
@@ -2061,6 +2127,9 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
     }
     if sequencer_record_crash(&f) {
         return Some(calendar_event_missing(e));
+    }
+    if morph_driver_crash(&f) {
+        return Some(career_driver_missing(e));
     }
     if third_car_line_crash(e, &f) {
         return Some(third_car_line(e));
@@ -3391,6 +3460,57 @@ runtime      Windows
         assert_eq!(d.title, "Your career's calendar has a round F1 25 can't find");
 
         let other = SEQUENCER.replace("Initialise+0x1020", "Initialise+0x44");
+        assert_eq!(
+            diagnose(&ev(&other, &[])).map(|d| d.id),
+            None,
+            "another offset of the function"
+        );
+    }
+
+    const MORPH: &str = "\
+2026-11-12 19:34:23.598 [ 3048] [silly-season] session start: race session, weekend round 4
+2026-11-12 19:34:23.598 [ 3048] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 3048, 111 s after load, at F1_25.exe+0xc80962 .xtls Game_CareerEventResourceManager_AddDriverMorphData+0x82
+2026-11-12 19:34:23.598 [ 3048] [crash]   reading 0x8
+2026-11-12 19:34:23.599 [ 3048] [crash]   stack:
+2026-11-12 19:34:23.599 [ 3048] [crash]   #0  F1_25.exe+0xc80962 .xtls Game_CareerEventResourceManager_AddDriverMorphData+0x82
+2026-11-12 19:34:23.599 [ 3048] [crash]   #1  F1_25.exe+0xc72ebf .xtls Game_CareerEventsSequencer_Initialise+0x103f
+2026-11-12 19:34:23.599 [ 3048] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0xc80962 .xtls Game_CareerEventResourceManager_AddDriverMorphData+0x82 reached the top-level filter; passing it to the game's filter
+";
+
+    #[test]
+    fn a_crash_reading_a_missing_team_driver_names_the_driver_addon() {
+        let mut e = with_names(
+            ev(MORPH, &[]),
+            &[
+                ("alexs.silly-season", "Silly Season"),
+                ("custom.team-names", "Team & Driver Editor"),
+                ("mildtdesign.more-driver-models", "More Driver Models"),
+            ],
+        );
+        e.enabled = vec![
+            "mildtdesign.more-driver-models".to_owned(),
+            "alexs.silly-season".to_owned(),
+            "custom.team-names".to_owned(),
+        ];
+        let d = diagnose(&e).unwrap();
+        assert_eq!(d.id, "career_driver_missing");
+        assert_eq!(
+            d.title,
+            "Silly Season and Team & Driver Editor changed your career's drivers"
+        );
+        assert!(
+            d.steps[0].starts_with("Turn off Silly Season and Team & Driver Editor"),
+            "{}",
+            d.steps[0]
+        );
+        assert!(!d.text().contains("More Driver Models"), "{}", d.text());
+
+        e.enabled = vec!["mildtdesign.more-driver-models".to_owned()];
+        let d = diagnose(&e).unwrap();
+        assert_eq!(d.id, "career_driver_missing");
+        assert_eq!(d.title, "Your career has a driver F1 25 can't find");
+
+        let other = MORPH.replace("AddDriverMorphData+0x82", "AddDriverMorphData+0x44");
         assert_eq!(
             diagnose(&ev(&other, &[])).map(|d| d.id),
             None,
