@@ -14,7 +14,7 @@ use crate::conflicts::Pair;
 use crate::install::LOADER_DIR;
 use crate::launch::LOW_DISK;
 use crate::manifest::{AddonManifest, Category};
-use crate::overlay_guard::SessionOverlay;
+use crate::overlay_guard::{Removal, SessionOverlay};
 use crate::session::SessionRecord;
 use crate::store::Store;
 
@@ -2186,8 +2186,11 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
     }
     if windows && gpu_removed(e) {
         let overlay = SessionOverlay::scan(&e.loader).unwrap_or_default();
-        if overlay.removed.is_some() && overlay.drew && !painters(e, &overlay).is_empty() {
-            let addons = painters(e, &overlay);
+        let addons = match overlay.removal {
+            Some(Removal::AfterDraw { .. }) if overlay.drew => painters(e, &overlay),
+            _ => Vec::new(),
+        };
+        if overlay.removal == Some(Removal::AfterDraw { at_present: true }) && !addons.is_empty() {
             let mut steps = vec![format!(
                 "Turn off {} in your profile, then play again.",
                 list(&addons)
@@ -2215,6 +2218,12 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
                 .into_iter()
                 .filter(|s| !frame_gen || !s.starts_with("Turn off frame generation")),
         );
+        if !addons.is_empty() {
+            steps.push(format!(
+                "If it keeps happening, turn off {} in your profile for one session.",
+                list(&addons)
+            ));
+        }
         let also = if mods.is_empty() {
             String::new()
         } else {
@@ -2495,6 +2504,113 @@ mod tests {
             d.steps[0].contains("dxgi.dll, ReShade.ini and dlss5-feed.addon64"),
             "{}",
             d.steps[0]
+        );
+    }
+
+    /// A report's session: the overlay drew on the main menu only, the game aborted in its own
+    /// resource creation half a minute later, and Present had returned 0.
+    const GPU_LONG_AFTER_OVERLAY: &str = "\
+2026-11-14 10:35:11.303 [12808] [overlay] at start the game's hardware settings (C:\\Users\\id\\Documents\\My Games\\F1 25\\hardwaresettings\\hardware_settings_config.xml) have frame generation on (frame_gen mode 1, multi_frame_gen 3); drawing before frame generation is on
+2026-11-14 10:35:23.897 [12808] [overlay] api: alexs.silly-season on_paint -> ok (token 1)
+2026-11-14 10:35:23.917 [12808] [overlay] api: kizi.ai-tweaks on_paint -> ok (token 2)
+2026-11-14 10:35:38.567 [12808] [overlay] the game's hardware settings (C:\\Users\\id\\Documents\\My Games\\F1 25\\hardwaresettings\\hardware_settings_config.xml) have frame generation on (frame_gen mode 1, multi_frame_gen 3)
+2026-11-14 10:37:02.225 [17276] [overlay] first overlay frame submitted: 2820 vertices
+2026-11-14 10:37:38.712 [12808] [overlay] last 60 s: 281 frame(s) drawn, 0 skipped while the GPU still held the slot; GPU 0.031 ms per drawn frame (278 timed)
+2026-11-14 10:38:11.319 [17276] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 17276, 183 s after load, at F1_25.exe+0x39182a4 .xtls Ne_FatalAbort+0x4
+2026-11-14 10:38:11.319 [17276] [crash]   writing 0x1
+2026-11-14 10:38:11.319 [17276] [crash]   rsi=00000001c3603440 rdi=00000000887a0005 rbp=00000000887a0001 rsp=000000007d08f470
+2026-11-14 10:38:11.320 [17276] [crash]   stack:
+2026-11-14 10:38:11.320 [17276] [crash]   #0  F1_25.exe+0x39182a4 .xtls Ne_FatalAbort+0x4
+2026-11-14 10:38:11.320 [17276] [crash]   #1  F1_25.exe+0x39b8802 .xtls Render_Check_GfxResult+0x2f2
+2026-11-14 10:38:11.320 [17276] [crash]   #2  F1_25.exe+0x39b84b5 .xtls Render_Gfx2_PlacedResourceForward_C+0x25
+2026-11-14 10:38:11.320 [17276] [crash]   #3  F1_25.exe+0x39b9c46 .xtls Render_Gfx2Heap_BumpAllocPlacedResource+0x1b6
+2026-11-14 10:38:11.320 [17276] [overlay] the GPU was removed (present 0x00000000, reason 0x887a0001) more than 10 s after the overlay last drew; the overlay stops drawing
+2026-11-14 10:38:13.897 [17276] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x39182a4 .xtls Ne_FatalAbort+0x4 reached the top-level filter; passing it to the game's filter
+";
+
+    /// A report's session: the device went 0.1 s after an overlay frame at a session's start, found
+    /// by the game's own resource creation and not by a Present.
+    const GPU_JUST_AFTER_OVERLAY: &str = "\
+2026-11-14 11:10:28.332 [ 4324] [overlay] api: kizi.ai-tweaks on_paint -> ok (token 1)
+2026-11-14 11:10:28.337 [ 4324] [overlay] api: dromodf.skip-cutscenes on_paint -> ok (token 2)
+2026-11-14 11:10:28.372 [ 4324] [overlay] api: alexs.silly-season on_paint -> ok (token 3)
+2026-11-14 11:10:35.253 [ 4324] [overlay] drawing on swapchain 000000007A32A040 with the direct queue 000000007BA5D780 from CreateSwapChainForHwnd (2560x1440, format 28, 3 buffer(s), created by sl.interposer.dll <- amd_fidelityfx_dx12.dll <- F1_25.exe <- KERNEL32.DLL <- ntdll.dll)
+2026-11-14 11:23:28.091 [ 4324] [overlay] first overlay frame submitted: 3330 vertices
+2026-11-14 11:24:34.769 [ 4324] [overlay] last 60 s: 227 frame(s) drawn, 0 skipped while the GPU still held the slot; GPU 0.038 ms per drawn frame (227 timed)
+2026-11-14 11:25:46.381 [ 4324] [overlay] the GPU was removed (present 0x00000000, reason 0x887a0006) 0.1 s after the overlay last drew (swapchain by sl.interposer.dll <- amd_fidelityfx_dx12.dll <- F1_25.exe <- KERNEL32.DLL <- ntdll.dll); the overlay stops drawing
+2026-11-14 11:25:46.384 [ 4324] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 4324, 949 s after load, at F1_25.exe+0x39182a4 .xtls Ne_FatalAbort+0x4
+2026-11-14 11:25:46.384 [ 4324] [crash]   rsi=00000001c3603440 rdi=00000000887a0005 rbp=00000000887a0006 rsp=000000000015bdf0
+2026-11-14 11:25:46.384 [ 4324] [crash]   stack:
+2026-11-14 11:25:46.384 [ 4324] [crash]   #0  F1_25.exe+0x39182a4 .xtls Ne_FatalAbort+0x4
+";
+
+    fn overlay_addons(log: &str) -> Evidence {
+        with_names(
+            ev(log, &["F1_25.exe"]),
+            &[
+                ("alexs.silly-season", "Silly Season"),
+                ("kizi.ai-tweaks", "Contact Physics"),
+                ("dromodf.skip-cutscenes", "Skip Cutscenes"),
+            ],
+        )
+    }
+
+    #[test]
+    fn a_gpu_removed_long_after_the_overlay_drew_is_not_the_overlay() {
+        let d = diagnose(&overlay_addons(GPU_LONG_AFTER_OVERLAY)).unwrap();
+        assert_eq!(d.id, "gpu_removed");
+        assert_eq!(d.title, "Your graphics driver stopped responding");
+        assert!(d.what.contains("Frame generation was on"), "{}", d.what);
+        assert_eq!(d.steps[0], FRAME_GEN_OFF);
+        let all = format!("{} {} {}", d.title, d.what, d.steps.join(" "));
+        for word in ["overlay", "Silly Season", "Contact Physics"] {
+            assert!(!all.contains(word), "{word}: {all}");
+        }
+    }
+
+    #[test]
+    fn a_gpu_removed_before_the_overlay_drew_is_not_the_overlay() {
+        let log = GPU_LONG_AFTER_OVERLAY.replace(
+            "more than 10 s after the overlay last drew",
+            "and the overlay had not drawn",
+        );
+        assert!(log.contains("and the overlay had not drawn"));
+        assert_eq!(diagnose(&overlay_addons(&log)).unwrap().id, "gpu_removed");
+        let unknown =
+            GPU_LONG_AFTER_OVERLAY.replace("more than 10 s after the overlay last drew", "at some point");
+        assert_eq!(diagnose(&overlay_addons(&unknown)).unwrap().id, "gpu_removed");
+    }
+
+    #[test]
+    fn a_gpu_the_game_found_removed_just_after_an_overlay_frame_is_the_driver() {
+        let d = diagnose(&overlay_addons(GPU_JUST_AFTER_OVERLAY)).unwrap();
+        assert_eq!(d.id, "gpu_removed");
+        assert_eq!(d.title, "Your graphics driver stopped responding");
+        assert!(!d.what.contains("overlay"), "{}", d.what);
+        assert!(
+            d.steps[0].starts_with("Update your graphics driver"),
+            "{:?}",
+            d.steps
+        );
+        let named: Vec<&String> = d.steps.iter().filter(|s| s.contains("Silly Season")).collect();
+        assert_eq!(
+            named,
+            [
+                "If it keeps happening, turn off Contact Physics, Skip Cutscenes and Silly Season in your profile \
+                 for one session."
+            ]
+        );
+        assert_eq!(d.steps.last(), Some(named[0]));
+    }
+
+    #[test]
+    fn a_present_that_returned_the_removal_just_after_an_overlay_frame_names_the_addons() {
+        let log = GPU_JUST_AFTER_OVERLAY.replace("present 0x00000000", "present 0x887a0005");
+        let d = diagnose(&overlay_addons(&log)).unwrap();
+        assert_eq!(d.id, "gpu_removed_overlay");
+        assert_eq!(
+            d.steps[0],
+            "Turn off Contact Physics, Skip Cutscenes and Silly Season in your profile, then play again."
         );
     }
 
