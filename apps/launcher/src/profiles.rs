@@ -64,6 +64,13 @@ fn deletion_summary(plan: &ProfileDeletion, p: Palette) -> impl IntoElement {
         )
 }
 
+fn copy_name(from: &str) -> String {
+    match from.trim_start_matches('-') {
+        "" => "profile-copy".to_owned(),
+        base => format!("{base}-copy"),
+    }
+}
+
 impl Shell {
     pub(crate) fn profile_prompt(
         &mut self,
@@ -83,7 +90,7 @@ impl Shell {
         }
         let (title, ok, initial) = match (&from, rename) {
             (Some(f), true) => (tr("Rename profile"), tr("Rename"), f.clone()),
-            (Some(f), false) => (tr("Duplicate profile"), tr("Duplicate"), format!("{f}-copy")),
+            (Some(f), false) => (tr("Duplicate profile"), tr("Duplicate"), copy_name(f)),
             (None, _) => (tr("New profile"), tr("Create"), String::new()),
         };
         self.prompt(
@@ -96,6 +103,12 @@ impl Shell {
                 ok,
                 browse: None,
                 action: Rc::new(move |store, name| {
+                    if swofty_core::profile::reads_as_flag(name) {
+                        return Err(tr(
+                            "A profile name can't start with -. Start it with a letter, a digit or _.",
+                        )
+                        .to_owned());
+                    }
                     let result = match (&from, rename) {
                         (Some(f), true) => store.rename_profile(f, name),
                         (f, _) => store.create_profile(name, f.as_deref()),
@@ -171,5 +184,21 @@ impl Shell {
                     true
                 })
         });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::copy_name;
+    use swofty_core::profile::valid_new_name;
+
+    #[test]
+    fn a_duplicate_of_a_profile_named_with_a_leading_dash_gets_a_name_it_can_keep() {
+        assert_eq!(copy_name("grid"), "grid-copy");
+        assert_eq!(copy_name("-swofty"), "swofty-copy");
+        assert_eq!(copy_name("-"), "profile-copy");
+        for from in ["grid", "-swofty", "--default", "-"] {
+            assert!(valid_new_name(&copy_name(from)), "{from}");
+        }
     }
 }

@@ -99,6 +99,8 @@ impl Shell {
             game: install.dir.clone(),
             anyway: std::mem::take(&mut self.play_anyway),
         };
+        // This press's ask only: a dialog, a cancel or a stale result must not hand it to the next Play.
+        let steam_saves_once = std::mem::take(&mut self.steam_saves_once);
         cx.notify();
         let is_room = room.is_some();
         cx.spawn_in(window, async move |this, cx| {
@@ -110,7 +112,7 @@ impl Shell {
                 if !s.play_pending.finish(generation) {
                     return;
                 }
-                let started = s.play_checked(checked, room, window, cx);
+                let started = s.play_checked(checked, room, steam_saves_once, window, cx);
                 if is_room {
                     s.mp_room_launch_result(started);
                 }
@@ -126,6 +128,7 @@ impl Shell {
         &mut self,
         checked: play_checks::Checked,
         room: Option<crate::multiplayer::RoomLaunch>,
+        steam_saves_once: bool,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> bool {
@@ -134,7 +137,6 @@ impl Shell {
             || self.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
         let Some(install) = self.install.clone().filter(|_| !stale) else {
             crate::app_log::note("[play] dropped: the profile or game copy changed during the checks");
-            self.steam_saves_once = false;
             return false;
         };
         let gate = checked.gate;
@@ -167,12 +169,10 @@ impl Shell {
             play_checks::Verdict::Go => {}
             play_checks::Verdict::Stop(stop) => {
                 self.notice = Some(stop);
-                self.steam_saves_once = false;
                 return false;
             }
             play_checks::Verdict::Confirm(text) => {
                 self.confirm_missing_rows(text, window, cx);
-                self.steam_saves_once = false;
                 return false;
             }
         }
@@ -206,7 +206,7 @@ impl Shell {
             armed,
             room.as_ref().and_then(|r| r.row_ids.as_deref()),
             room.as_ref().map(|r| r.direct_start.as_str()),
-            std::mem::take(&mut self.steam_saves_once),
+            steam_saves_once,
         ) {
             Ok(l) => {
                 self.launch = Some(l);

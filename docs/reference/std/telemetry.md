@@ -324,7 +324,7 @@ Swofty Track (200), packetVersion 1, 98 B
   34  char   m_trackKey[64]  "<addon id>/<track code>", NUL-terminated
 ```
 
-Overlays that don't know packet id 200 skip it. Stock tracks keep their `m_trackId` and get no Swofty Track packet. The 2026 Session packet's layout is not catalogued, so in that format the track id stays as the game sends it.
+The game's own packet ids are `0..=15`. Overlays that don't know packet id 200 skip it; a tool that fails on an unknown packet id needs `SWOFTY_UDP_TRACK_PACKET=0`, which keeps the `m_trackId` rewrite and sends no Swofty Track packet. Stock tracks keep their `m_trackId` and get no Swofty Track packet. The 2026 Session packet's layout is not catalogued, so in that format the track id stays as the game sends it.
 
 `swofty/udp_ids.json` carries `tracks` (`statId` -> key, the tracks the launcher gave a `statId`), `track_ids` (key -> Swofty track id, every track package in the build) and `track_udp` (key -> listed `m_trackId`); the core adds the track records it gives a `statId` at boot.
 

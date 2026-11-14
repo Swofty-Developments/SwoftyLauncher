@@ -1,6 +1,7 @@
 #include "moments.hpp"
 
 #include "../hooks/hooks.hpp"
+#include "../perf.hpp"
 #include "../registry/table.hpp"
 #include "../runtime.hpp"
 #include "content/appliers.hpp"
@@ -27,6 +28,7 @@
 #include <map>
 #include <mutex>
 #include <set>
+#include <thread>
 
 namespace swofty_core::apply::moments {
 
@@ -628,7 +630,7 @@ void boot_without_database(room::Report report)
         swofty::log("[registry] register: %s %zu database record(s) refused (late): %s", addon.c_str(), n,
                     report.reason.c_str());
     }
-    report.registry_asked = scheduler().planned_keys();
+    report.registry_planned = report.registry_asked = scheduler().planned_keys();
     save_ids();
     write_room(report);
     if (runtime::load_stage() != "early")
@@ -678,6 +680,38 @@ void box_picked(const char *entrant_list, const void *mode_context)
     scheduler().content_picked(entrant_list ? entrant_list : "", game::mode_of(ctx, "the box press"));
 }
 
+namespace {
+
+constexpr DWORD MODE_WATCH_MS = 250;
+std::atomic<int> mode_now{int(facts::ModeKind::unknown)};
+std::once_flag mode_watch_once;
+
+facts::ModeKind read_mode_kind()
+{
+    swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
+    uintptr_t ctx = game::current_context();
+    uintptr_t holder = ctx ? game::holder_of(ctx) : 0;
+    std::string name = holder ? game::mode_name(holder) : std::string();
+    std::string mode = name.empty() ? std::string() : facts::mode_of(name);
+    return facts::mode_kind(ctx != 0, holder != 0, mode);
+}
+
+void note_mode(facts::ModeKind k, const char *how)
+{
+    if (mode_now.exchange(int(k), std::memory_order_relaxed) != int(k))
+        swofty::log("[apply] game mode now %s (%s)", facts::mode_kind_name(k), how);
+}
+
+void mode_watch_main()
+{
+    perf::background();
+    for (;; Sleep(MODE_WATCH_MS))
+        if (runtime::code_ready())
+            note_mode(read_mode_kind(), "the mode watch");
+}
+
+}
+
 void session_load(const char *source)
 {
     attach();
@@ -686,8 +720,21 @@ void session_load(const char *source)
     if (!flow && scheduler().in_session() && loaded_from_flow.load())
         return;
     loaded_from_flow = flow;
-    scheduler().session_load(game::at_session_load());
+    SessionFacts f = game::at_session_load();
+    if (facts::ModeKind k = facts::mode_kind(true, true, f.mode); k != facts::ModeKind::unknown)
+        note_mode(k, "the session load");
+    scheduler().session_load(f);
     write_reports(from.c_str());
+}
+
+facts::ModeKind mode_kind()
+{
+    return facts::ModeKind(mode_now.load(std::memory_order_relaxed));
+}
+
+void mode_watch()
+{
+    std::call_once(mode_watch_once, [] { std::thread(mode_watch_main).detach(); });
 }
 
 std::pair<std::string, std::string> session_mode_track()
@@ -695,6 +742,11 @@ std::pair<std::string, std::string> session_mode_track()
     attach();
     SessionFacts f = game::at_session_load();
     return {f.mode, f.track};
+}
+
+std::string current_mode(const char *where)
+{
+    return game::mode_of(game::current_context(), where);
 }
 
 void grand_prix_track_check()

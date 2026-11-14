@@ -865,6 +865,94 @@ mod tests {
         std::fs::remove_dir_all(&root).ok();
     }
 
+    fn copy_switch(name: &str, ea: bool) -> std::path::PathBuf {
+        let root = std::env::temp_dir().join(format!("swofty-careers-{name}-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let game = root.join("game");
+        std::fs::create_dir_all(&game).unwrap();
+        std::fs::write(game.join(crate::GAME_EXE), b"exe").unwrap();
+        match ea {
+            true => {
+                std::fs::create_dir_all(game.join("__Installer")).unwrap();
+                std::fs::write(game.join("__Installer/installerdata.xml"), b"<game/>").unwrap();
+            }
+            false => std::fs::write(game.join("EAJavelinInstaller_installscript.vdf"), b"").unwrap(),
+        }
+        let pfx = root.join("pfx");
+        std::fs::create_dir_all(pfx.join("drive_c/users/steamuser/AppData/Local/F1 25/savegame/ea/profile"))
+            .unwrap();
+        std::fs::write(pfx.join("user.reg"), b"").unwrap();
+        let store = crate::store::Store::new(&root);
+        let mut config = crate::session::Config::default();
+        config.games.active = Some(game.clone());
+        config.games.added = vec![game];
+        config.launch.ea_prefix = Some(pfx);
+        store.save_config(&config).unwrap();
+        let dir = root.join("profiles");
+        std::fs::create_dir_all(&dir).unwrap();
+        for p in ["hi", "default"] {
+            std::fs::write(
+                dir.join(format!("{p}.json")),
+                format!(r#"{{"name":"{p}","launcher_saves":true}}"#),
+            )
+            .unwrap();
+        }
+        root
+    }
+
+    fn classic_careers() -> Vec<Career> {
+        parse(&format!(
+            r#"[{{"career":"dc-2019","profile":"default","label":"Driver Career 2019","addons":[
+                   {{"id":"swofty.classic-seasons","version":"1.0.0","why":"{ROWS_WHY}"}}]}},
+                {{"career":"dc-hi","profile":"hi","label":"Driver Career","addons":[]}}]"#
+        ))
+    }
+
+    #[test]
+    fn an_ea_copy_profile_switch_warns_about_the_careers_of_the_shared_save() {
+        let root = copy_switch("ea-switch", true);
+        let list = classic_careers();
+        let installed = installed_of(&["swofty.classic-seasons"]);
+        let scoped: Vec<Career> = in_save_of(&list, &root, "hi").into_iter().cloned().collect();
+        let ids: Vec<&str> = scoped.iter().map(|c| c.career.as_str()).collect();
+        assert_eq!(ids, ["dc-2019", "dc-hi"]);
+        let stop = stop_line(&scoped, &[], &installed).expect("the careers of default share the save");
+        assert!(stop.contains("N swofty.classic-seasons (off)"), "{stop}");
+        assert!(stop.contains("Driver Career 2019"), "{stop}");
+        assert_eq!(
+            stop_line(&scoped, &["swofty.classic-seasons".to_owned()], &installed),
+            None
+        );
+        if !cfg!(windows) {
+            for p in ["hi", "default", crate::profile::VANILLA] {
+                let at = crate::vault::Location::of_profile(&root, p).expect("the EA save");
+                assert_eq!(
+                    (at.source.as_str(), at.layout),
+                    ("ea-steamuser", crate::vault::Layout::Ea),
+                    "{p}"
+                );
+            }
+        }
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_steam_copy_profile_switch_keeps_each_profiles_own_save() {
+        let root = copy_switch("steam-switch", false);
+        let list = classic_careers();
+        let installed = installed_of(&["swofty.classic-seasons"]);
+        let scoped: Vec<Career> = in_save_of(&list, &root, "hi").into_iter().cloned().collect();
+        let ids: Vec<&str> = scoped.iter().map(|c| c.career.as_str()).collect();
+        assert_eq!(ids, ["dc-hi"]);
+        assert_eq!(stop_line(&scoped, &[], &installed), None);
+        let at = crate::vault::Location::of_profile(&root, "hi").expect("the launcher save");
+        assert_eq!(
+            (at.source.as_str(), at.layout),
+            ("launcher-hi", crate::vault::Layout::Launcher)
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
     #[test]
     fn stops_play_when_a_saved_rows_addon_is_off_or_gone_in_any_career() {
         let installed = installed_of(&["x.engines"]);

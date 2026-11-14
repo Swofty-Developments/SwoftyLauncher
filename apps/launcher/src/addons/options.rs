@@ -1,7 +1,7 @@
 use crate::scale::{Hit, px};
 use crate::shell::{Shell, SliderSlot};
 use crate::theme::Palette;
-use crate::ui::label;
+use crate::ui::{Toggle, label};
 use gpui_kit::component::button::Button;
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::slider::{Slider, SliderEvent, SliderState};
@@ -9,7 +9,8 @@ use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::manifest::{AddonManifest, AddonOption, Binds, OptionType};
-use swofty_i18n::tr;
+use swofty_core::settings::OnAddons;
+use swofty_i18n::{fill, tr};
 
 impl Shell {
     pub(crate) fn options_panel(
@@ -32,11 +33,12 @@ impl Shell {
                     this.update_profile(window, cx, |p| p.reset_options(&man).map(drop))
                 }))
         });
+        let on = self.library.on();
         let rows: Vec<AnyElement> = man
             .options
             .iter()
             .enumerate()
-            .map(|(i, o)| self.setting_row(man, o, i == 0, p, cx))
+            .map(|(i, o)| self.setting_row(man, o, &on, i == 0, p, cx))
             .collect();
         v_flex()
             .gap(px(6.))
@@ -61,29 +63,43 @@ impl Shell {
         &self,
         man: &AddonManifest,
         o: &AddonOption,
+        on: &OnAddons,
         first: bool,
         p: Palette,
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let key = format!("{}.{}", man.id, o.id);
         let pending = !self.vanilla() && self.library.rebuild.contains(&key);
-        let (hint, hint_color) = match o.binds {
-            Binds::Native => (tr("Applies live"), p.text_placeholder),
-            Binds::Db if pending => (tr("Rebuilds on next launch"), p.warning),
-            Binds::Db => (tr("Applies after a rebuild"), p.text_placeholder),
+        let needs = on.missing(o).map(|n| {
+            let name = self
+                .library
+                .addons
+                .iter()
+                .find(|a| a.manifest.id == n.id)
+                .map_or_else(|| n.id.clone(), |a| a.manifest.name.clone());
+            let addon = match n.version.comparators.is_empty() {
+                true => name,
+                false => format!("{name} {}", n.version),
+            };
+            fill(tr("Off: needs {addon} on"), &[("addon", addon)])
+        });
+        let locked = needs.is_some();
+        let (hint, hint_color) = match (needs, o.binds) {
+            (Some(text), _) => (text, p.warning),
+            (None, Binds::Native) => (tr("Applies live").to_owned(), p.text_placeholder),
+            (None, Binds::Db) if pending => (tr("Rebuilds on next launch").to_owned(), p.warning),
+            (None, Binds::Db) => (tr("Applies after a rebuild").to_owned(), p.text_placeholder),
         };
-        let value = self.library.profile.option(man, o);
+        let value = on.value(&self.library.profile, man, o);
         let control = match o.kind {
             OptionType::Toggle => {
                 let (man, id) = (man.clone(), o.id.clone());
-                self.toggle(
-                    format!("setting-{key}"),
-                    value == true,
-                    cx,
-                    move |this, on, window, cx| {
-                        this.update_profile(window, cx, |p| p.set_option(&man, &id, on.into()).map(drop))
-                    },
-                )
+                Toggle::new(format!("setting-{key}"), value == true)
+                    .disabled(self.vanilla() || locked)
+                    .on_change(cx.listener(move |this, on: &bool, window, cx| {
+                        this.update_profile(window, cx, |p| p.set_option(&man, &id, (*on).into()).map(drop))
+                    }))
+                    .into_any_element()
             }
             OptionType::Choice => self.choice(&key, man, o, &value, cx),
             OptionType::Slider => self.slider(&key, o, &value, p, cx),

@@ -72,6 +72,7 @@ impl Shell {
         let clear_old_session_logs = config.clear_old_session_logs;
         let time_trial_boards = config.time_trial_boards;
         let time_trial_ingame = config.time_trial_ingame;
+        let home_video = config.home_video;
         let update_check = config.updates.check;
         Self::guard_close(window, cx);
         Self::recover_in_background(&store, clear_old_session_logs, cx);
@@ -156,6 +157,7 @@ impl Shell {
             clear_old_session_logs,
             time_trial_boards,
             time_trial_ingame,
+            home_video,
             reload_generation: 0,
             slow_logged: false,
             update_check,

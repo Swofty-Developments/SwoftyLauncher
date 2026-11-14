@@ -14,6 +14,7 @@ mod crash_modal;
 mod data_move;
 mod db;
 mod developer;
+mod dialog_keys;
 mod discord;
 mod download_dock;
 mod download_queue;
@@ -67,6 +68,7 @@ fn main() {
         gpui_kit::init(cx);
         app_log::step("ui kit ready");
         theme::init(cx);
+        dialog_keys::init(cx);
         app_log::step("theme ready, opening the window");
         let options = WindowOptions {
             window_bounds: Some(WindowBounds::Windowed(Bounds::centered(
@@ -145,7 +147,7 @@ impl Render for Launcher {
                     .justify_center()
                     .gap(px(20.))
                     .child(pages::wordmark(220.))
-                    .child("Loading your launcher…"),
+                    .child(swofty_i18n::tr("Loading your launcher…")),
             )
             .into_any_element()
     }

@@ -882,11 +882,7 @@ impl Store {
     /// Refuses a name that isn't valid, or that another profile holds. Windows ignores
     /// capitals in file names, so `Grid` and `grid` would be one profile's files.
     fn check_new_profile_name(&self, name: &str) -> Result<()> {
-        if !profile::valid_name(name) {
-            return Err(Error::Other(format!(
-                "{name:?} is not a valid profile name (letters, digits, - and _)"
-            )));
-        }
+        check_new_name(name)?;
         if let Some(taken) = self
             .profile_names()?
             .iter()
@@ -989,11 +985,7 @@ impl Store {
     /// straight across would write over the profile and then delete it: it goes by way of
     /// another name.
     fn rename_profile_capitals(&self, from: &str, to: &str) -> Result<Profile> {
-        if !profile::valid_name(to) {
-            return Err(Error::Other(format!(
-                "{to:?} is not a valid profile name (letters, digits, - and _)"
-            )));
-        }
+        check_new_name(to)?;
         if self.profile_names()?.iter().any(|n| n == to) {
             return Err(Error::Other(format!("a profile named {to} already exists")));
         }
@@ -1101,16 +1093,15 @@ impl Store {
     }
 
     pub fn config(&self) -> Config {
-        let mut config = match crate::load_json(&self.config_path()) {
-            Ok(crate::Loaded::Found(c)) => c,
-            _ => Config::default(),
-        };
+        let mut config: Config = load_settings(&self.config_path());
         config.migrate_games();
         config
     }
 
     pub fn save_config(&self, config: &Config) -> Result<()> {
-        crate::write_json(&self.config_path(), config)
+        let path = self.config_path();
+        set_aside_unreadable::<Config>(&path)?;
+        crate::write_json(&path, config)
     }
 
     pub fn folders_path(&self) -> PathBuf {
@@ -1118,14 +1109,13 @@ impl Store {
     }
 
     pub fn folders(&self) -> crate::folders::Folders {
-        match crate::load_json(&self.folders_path()) {
-            Ok(crate::Loaded::Found(f)) => f,
-            _ => Default::default(),
-        }
+        load_settings(&self.folders_path())
     }
 
     pub fn save_folders(&self, folders: &crate::folders::Folders) -> Result<()> {
-        crate::write_json(&self.folders_path(), folders)
+        let path = self.folders_path();
+        set_aside_unreadable::<crate::folders::Folders>(&path)?;
+        crate::write_json(&path, folders)
     }
 
     pub fn active_profile(&self) -> String {
@@ -1366,6 +1356,49 @@ fn warn_once(text: String) {
     if seen.insert(text.clone()) {
         eprintln!("swofty: warning: {text}");
     }
+}
+
+/// A settings file, or the defaults when there is none or this build can't read it. One that is
+/// JSON in a shape this build can't read (a hand edit with a wrong type, a value a newer launcher
+/// wrote) stays where it is, so fixing it or going back to that launcher brings it back, until a
+/// save moves it aside with [`set_aside_unreadable`].
+fn load_settings<T: serde::de::DeserializeOwned + Default>(path: &Path) -> T {
+    match crate::load_json(path) {
+        Ok(crate::Loaded::Found(v)) => v,
+        Ok(crate::Loaded::Missing | crate::Loaded::Damaged(_)) => T::default(),
+        Err(e) => {
+            warn_once(format!("{e}; using the defaults until it can be read"));
+            T::default()
+        }
+    }
+}
+
+/// Before a save replaces the settings file at `path`, move one this build can't read aside to
+/// `<name>.unreadable-<unix time>`, so the defaults [`load_settings`] fell back to don't overwrite
+/// the only copy of the player's settings.
+fn set_aside_unreadable<T: serde::de::DeserializeOwned>(path: &Path) -> Result<()> {
+    if let Err(e @ Error::Json { .. }) = crate::load_json::<T>(path) {
+        let to = crate::set_aside(path, crate::UNREADABLE_SUFFIX)?;
+        warn(format!(
+            "{e}; moved it to {} and saved new settings in its place",
+            to.display()
+        ));
+    }
+    Ok(())
+}
+
+fn check_new_name(name: &str) -> Result<()> {
+    if profile::reads_as_flag(name) {
+        return Err(Error::Other(format!(
+            "{name:?} starts with -, which commands read as an option; start the profile name with a letter, digit or _"
+        )));
+    }
+    if !profile::valid_name(name) {
+        return Err(Error::Other(format!(
+            "{name:?} is not a valid profile name (letters, digits, - and _)"
+        )));
+    }
+    Ok(())
 }
 
 fn load_profile(path: &Path) -> Result<Option<Profile>> {
@@ -1925,6 +1958,42 @@ mod tests {
         std::fs::remove_dir_all(&root).ok();
     }
 
+    #[test]
+    fn a_save_keeps_a_config_or_folders_file_this_build_cant_read() {
+        let root = tmp("unreadable-config");
+        let store = Store::new(&root);
+        let config = r#"{"active_profile":"grid","launch":{"env":{"DXVK_ASYNC":1}}}"#;
+        let folders = r#"{"placed":{"t.a":1}}"#;
+        std::fs::write(store.config_path(), config).unwrap();
+        std::fs::write(store.folders_path(), folders).unwrap();
+        assert_eq!(store.config().active_profile, None);
+        assert_eq!(store.folders(), crate::folders::Folders::default());
+        assert_eq!(std::fs::read_to_string(store.config_path()).unwrap(), config);
+        assert_eq!(std::fs::read_to_string(store.folders_path()).unwrap(), folders);
+
+        let aside = |name: &str| -> Vec<PathBuf> {
+            let prefix = format!("{name}{}", crate::UNREADABLE_SUFFIX);
+            std::fs::read_dir(&root)
+                .unwrap()
+                .flatten()
+                .map(|e| e.path())
+                .filter(|p| p.file_name().unwrap().to_string_lossy().starts_with(&prefix))
+                .collect()
+        };
+        for round in ["other", "third"] {
+            store.set_active_profile(round).unwrap();
+            store.save_folders(&store.folders()).unwrap();
+            assert_eq!(store.config().active_profile.as_deref(), Some(round));
+            let kept = aside("config.json");
+            assert_eq!(kept.len(), 1, "{round}: {kept:?}");
+            assert_eq!(std::fs::read_to_string(&kept[0]).unwrap(), config, "{round}");
+            let kept = aside(crate::folders::FILE);
+            assert_eq!(kept.len(), 1, "{round}: {kept:?}");
+            assert_eq!(std::fs::read_to_string(&kept[0]).unwrap(), folders, "{round}");
+        }
+        std::fs::remove_dir_all(&root).ok();
+    }
+
     fn v3_store(name: &str, ids: &[&str]) -> (PathBuf, Store) {
         let root = tmp(name);
         let store = Store::new(&root);
@@ -2407,6 +2476,43 @@ mod tests {
     }
 
     #[test]
+    fn a_rename_onto_a_deleted_profiles_name_keeps_both_vaults() {
+        let root = tmp("rename-onto-deleted-vault");
+        let store = Store::new(&root);
+        store.create_profile("grid", None).unwrap();
+        store.create_profile("main", None).unwrap();
+        let vaults = root.join("career-vault");
+        for prefix in ["launcher-", "launcher-ea."] {
+            for name in ["grid", "main"] {
+                let vault = vaults.join(format!("{prefix}{name}"));
+                std::fs::create_dir_all(&vault).unwrap();
+                std::fs::write(vault.join("marker"), format!("{name}'s")).unwrap();
+            }
+        }
+        store.delete_profile("grid").unwrap();
+        store.rename_profile("main", "grid").unwrap();
+        for prefix in ["launcher-", "launcher-ea."] {
+            let read = |vault: &Path| std::fs::read_to_string(vault.join("marker")).unwrap();
+            assert_eq!(read(&vaults.join(format!("{prefix}grid"))), "main's", "{prefix}");
+            assert!(!vaults.join(format!("{prefix}main")).exists(), "{prefix}");
+            let aside: Vec<PathBuf> = std::fs::read_dir(&vaults)
+                .unwrap()
+                .flatten()
+                .map(|e| e.path())
+                .filter(|p| {
+                    p.file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                        .starts_with(&format!("{prefix}grid.deleted."))
+                })
+                .collect();
+            assert_eq!(aside.len(), 1, "{prefix}: {aside:?}");
+            assert_eq!(read(&aside[0]), "grid's", "{prefix}");
+        }
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn keeps_vanilla_and_the_last_profile() {
         let root = tmp("delete-last");
         let store = Store::new(&root);
@@ -2477,6 +2583,39 @@ mod tests {
             assert!(err.to_string().contains("already exists"), "{name}: {err}");
         }
         assert!(!store.profile_names().unwrap().contains(&"Grid".to_owned()));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_profile_named_with_a_leading_dash_keeps_working_but_no_new_one_gets_that_name() {
+        let root = tmp("leading-dash");
+        let store = Store::new(&root);
+        // Earlier launchers let a profile be named this way.
+        store.save_profile(&Profile::new("-swofty")).unwrap();
+        store.set_active_profile("-swofty").unwrap();
+        touch(&store.saves_dir("-swofty").join("remote/save"));
+
+        assert!(store.profile_names().unwrap().contains(&"-swofty".to_owned()));
+        assert_eq!(store.active_profile(), "-swofty");
+        assert_eq!(store.profile("-swofty").unwrap().name, "-swofty");
+
+        for name in ["-grid", "--profile"] {
+            let err = store.create_profile(name, None).unwrap_err();
+            assert!(err.to_string().contains("starts with -"), "{name}: {err}");
+            let err = store.create_profile(name, Some("-swofty")).unwrap_err();
+            assert!(err.to_string().contains("starts with -"), "{name}: {err}");
+            let err = store.rename_profile("-swofty", name).unwrap_err();
+            assert!(err.to_string().contains("starts with -"), "{name}: {err}");
+        }
+        let err = store.rename_profile("-swofty", "-Swofty").unwrap_err();
+        assert!(err.to_string().contains("starts with -"), "{err}");
+        assert!(store.profiles_dir().join("-swofty.json").is_file());
+        assert!(store.saves_dir("-swofty").join("remote/save").is_file());
+
+        assert_eq!(store.rename_profile("-swofty", "swofty").unwrap().name, "swofty");
+        assert_eq!(store.active_profile(), "swofty");
+        assert!(store.saves_dir("swofty").join("remote/save").is_file());
+        assert!(!store.profile_names().unwrap().contains(&"-swofty".to_owned()));
         std::fs::remove_dir_all(&root).ok();
     }
 

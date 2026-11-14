@@ -62,7 +62,16 @@ int main()
     CHECK(!none.read(false) && none.state() == ent::NOT_OWNED);
     CHECK(none.read(true) && none.state() == ent::OWNED);
 
-    CHECK(ent::NOT_OWNED_AFTER >= 3600);
+    CHECK(uint64_t(ent::NOT_OWNED_AFTER) * ent::READ_EVERY_MS >= 60000);
+
+    CHECK(ent::read_due(ent::UNKNOWN, false, 0, 1000));
+    CHECK(!ent::read_due(ent::UNKNOWN, false, 1000, 1000 + ent::READ_EVERY_MS - 1));
+    CHECK(ent::read_due(ent::UNKNOWN, false, 1000, 1000 + ent::READ_EVERY_MS));
+    CHECK(!ent::read_due(ent::UNKNOWN, true, 0, 1000) && !ent::read_due(ent::NOT_OWNED, true, 0, 100000));
+    CHECK(!ent::read_due(ent::OWNED, false, 0, 100000));
+    CHECK(!ent::read_due(ent::NOT_OWNED, false, 1000, 1000 + ent::RECHECK_EVERY_MS - 1));
+    CHECK(ent::read_due(ent::NOT_OWNED, false, 1000, 1000 + ent::RECHECK_EVERY_MS));
+    CHECK(ent::read_due(ent::UNKNOWN, false, 5000, 4000));
 
     ent::Settle late;
     for (int i = 0; i < ent::NOT_OWNED_AFTER - 1; i++)

@@ -91,6 +91,27 @@ pub struct DbReport {
     pub added_rows: Vec<AddedRow>,
     /// Each `add-row` whose `stat_id` a row added earlier held, or the game can't read, in order.
     pub moved_stat_ids: Vec<MovedStatId>,
+    /// Each record a `set`, `put-record` or `remove-record` changed, in order.
+    pub rewrites: Vec<Rewrite>,
+}
+
+/// A record an op changed: its value before and after, as text; `None` when it was missing or was removed.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Rewrite {
+    pub key: u64,
+    pub was: Option<String>,
+    pub now: Option<String>,
+}
+
+fn rewrote(cx: &mut Cx, key: u64, was: Option<&[u8]>, now: Option<&[u8]>) {
+    if was != now {
+        let text = |v: &[u8]| String::from_utf8_lossy(v).into_owned();
+        cx.report.rewrites.push(Rewrite {
+            key,
+            was: was.map(text),
+            now: now.map(text),
+        });
+    }
 }
 
 /// An `add-row` that set a `stat_id` a row added earlier holds, or one above the table's
@@ -1051,6 +1072,74 @@ pub fn no_row(e: &Error) -> bool {
     matches!(e, Error::Resolve(m) if m.contains(&format!(": {NO_ROW}")))
 }
 
+/// A selector segment of a path: it picks the row `{table}.{row}_{i}` whose `field` is `want`.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Selector {
+    pub table: String,
+    pub row: String,
+    pub field: String,
+    pub want: String,
+}
+
+impl Selector {
+    /// The key of row `i`'s `field`.
+    pub fn field_key(&self, i: usize) -> u64 {
+        row_name(&Base::Path(self.table.clone()), i, &self.row).key(&format!(".{}", self.field))
+    }
+
+    /// The key of the table's row count; `None` for a table of numbered rows, which has none.
+    pub fn count_key(&self) -> Option<u64> {
+        (!self.row.is_empty()).then(|| fnv1a64(instance_count_path(&self.table, &self.row)))
+    }
+}
+
+/// The selector segments of a [`no_row`] error's path, in order, ending with the one that matched no row.
+/// A segment after another selector has its table from the error, so only the failing one comes after one.
+pub fn no_row_selectors(e: &Error) -> Vec<Selector> {
+    let Error::Resolve(m) = e else {
+        return Vec::new();
+    };
+    let Some((upto, scope)) = m.split_once(&format!(": {NO_ROW}")) else {
+        return Vec::new();
+    };
+    let upto = upto.rsplit(": ").next().unwrap_or(upto);
+    let resolved = scope.strip_prefix(" in ").and_then(|s| s.rsplit_once('.'));
+    let mut out = Vec::new();
+    let mut plain = Some(String::new());
+    let mut rest = Some(upto);
+    while let Some(p) = rest {
+        let Ok((seg, tail)) = first_segment(p) else {
+            return Vec::new();
+        };
+        rest = tail;
+        let Some((field, want)) = seg.select else {
+            if let Some(path) = plain.as_mut() {
+                if !path.is_empty() {
+                    path.push('.');
+                }
+                path.push_str(seg.name);
+            }
+            continue;
+        };
+        let (table, row) = match (rest, resolved, plain.take()) {
+            (None, Some((table, row)), _) => (table.to_owned(), row.to_owned()),
+            (_, _, Some(path)) if path.is_empty() => (seg.name.to_owned(), String::new()),
+            (_, _, Some(path)) => (path, seg.name.to_owned()),
+            (_, _, None) => continue,
+        };
+        if table.starts_with('{') {
+            continue;
+        }
+        out.push(Selector {
+            table,
+            row,
+            field: field.to_owned(),
+            want: want.to_owned(),
+        });
+    }
+    out
+}
+
 /// Whether `e` is an `add-row` that found no free `stat_id` in the vehicle or team table, up to the highest the game reads.
 pub fn ids_exhausted(e: &Error) -> bool {
     matches!(e, Error::Resolve(m)
@@ -1325,19 +1414,22 @@ fn apply(db: &mut Db, op: &DbOp, names: &dyn FieldNames, cx: &mut Cx) -> Result<
                 true => resolve_path(db, &format!("{select}.{field}"))?.key(""),
                 false => resolve_row(db, select)?.field(field),
             };
-            match db.get_mut(key) {
-                Some(r) => r.value = value.into_bytes(),
+            let value = value.into_bytes();
+            let was = match db.get_mut(key) {
+                Some(r) => Some(std::mem::replace(&mut r.value, value.clone())),
                 None if *create => {
                     let tag =
                         tag.ok_or_else(|| Error::Resolve(format!("{select}.{field}: create needs type")))?;
                     db.push(Record {
                         key,
                         tag,
-                        value: value.into_bytes(),
+                        value: value.clone(),
                     });
+                    None
                 }
                 None => return Err(Error::Resolve(format!("{select}.{field}: no such key"))),
-            }
+            };
+            rewrote(cx, key, was.as_deref(), Some(&value));
             Ok(Some(key))
         }
         DbOp::AddRow {
@@ -1382,17 +1474,21 @@ fn apply(db: &mut Db, op: &DbOp, names: &dyn FieldNames, cx: &mut Cx) -> Result<
         DbOp::PutRecord { key, tag, value } => {
             let value = hex_bytes(key, value)?;
             let k = resolve_key(db, key)?;
-            match db.get_mut(k) {
+            let was = match db.get_mut(k) {
                 Some(r) => {
                     r.tag = *tag;
-                    r.value = value;
+                    Some(std::mem::replace(&mut r.value, value.clone()))
                 }
-                None => db.push(Record {
-                    key: k,
-                    tag: *tag,
-                    value,
-                }),
-            }
+                None => {
+                    db.push(Record {
+                        key: k,
+                        tag: *tag,
+                        value: value.clone(),
+                    });
+                    None
+                }
+            };
+            rewrote(cx, k, was.as_deref(), Some(&value));
             Ok(Some(k))
         }
         DbOp::VirtualList { list } => {
@@ -1431,7 +1527,9 @@ fn apply(db: &mut Db, op: &DbOp, names: &dyn FieldNames, cx: &mut Cx) -> Result<
                 cx.report.track_removals += 1;
                 return Ok(None);
             }
+            let was = db.get(k).map(|r| r.value.clone());
             db.remove(k);
+            rewrote(cx, k, was.as_deref(), None);
             Ok(Some(k))
         }
     }
@@ -2466,6 +2564,76 @@ mod tests {
                 .contains("bad selector")
         );
         assert!(set("track_data.game_setup..TrackDataSet[_metadata_=f1]").contains("empty segment"));
+    }
+
+    #[test]
+    fn no_row_errors_give_their_selectors() {
+        let fail = |select: &str| {
+            let op = DbOp::Set {
+                select: select.to_owned(),
+                field: "track".into(),
+                value: Some("x".into()),
+                value_from: None,
+                datasets: Vec::new(),
+                create: false,
+                tag: None,
+            };
+            no_row_selectors(&apply_db_op(&mut track_db(), &op, &names()).unwrap_err())
+        };
+        let sel = |table: &str, row: &str, want: &str| Selector {
+            table: table.into(),
+            row: row.into(),
+            field: "_metadata_".into(),
+            want: want.into(),
+        };
+        assert_eq!(
+            fail("track_data.game_setup.TrackDataSet[_metadata_=f9].TrackData[_metadata_=suzuka]"),
+            [sel(SETS, "TrackDataSet", "f9")]
+        );
+        assert_eq!(
+            fail("track_data.game_setup.TrackDataSet[_metadata_=f1_2026].TrackData[_metadata_=okayama]"),
+            [
+                sel(SETS, "TrackDataSet", "f1_2026"),
+                sel(&format!("{SETS}.TrackDataSet_1"), "TrackData", "okayama")
+            ]
+        );
+        let s = sel(SETS, "TrackDataSet", "f1_2026");
+        assert_eq!(
+            s.field_key(1),
+            fnv1a64(format!("{SETS}.TrackDataSet_1._metadata_"))
+        );
+        assert_eq!(
+            s.count_key(),
+            Some(fnv1a64(instance_count_path(SETS, "TrackDataSet")))
+        );
+        assert!(no_row_selectors(&Error::Resolve("t.x: no such key".into())).is_empty());
+    }
+
+    #[test]
+    fn reports_the_records_ops_change() {
+        let mut db = track_db();
+        let ops = ops(&format!(
+            r#"{{"schema_version":1,"ops":[
+            {{"op":"put-record","key":"{SETS}.TrackDataSet_1._metadata_","type":4,"value":"6631"}},
+            {{"op":"put-record","key":"{SETS}.TrackDataSet_0._metadata_","type":4,"value":"6631"}},
+            {{"op":"set","select":"{SETS}.TrackDataSet_0.TrackData_0","field":"track","value":"x"}},
+            {{"op":"remove-record","key":"{SETS}.TrackDataSet_0.TrackData_1.track"}}]}}"#
+        ));
+        let mut report = DbReport::default();
+        apply_db_ops_lenient(&mut db, &ops, &names(), &mut report);
+        let rw = |path: &str, was: Option<&str>, now: Option<&str>| Rewrite {
+            key: fnv1a64(format!("{SETS}.{path}")),
+            was: was.map(String::from),
+            now: now.map(String::from),
+        };
+        assert_eq!(
+            report.rewrites,
+            [
+                rw("TrackDataSet_1._metadata_", Some("f1_2026"), Some("f1")),
+                rw("TrackDataSet_0.TrackData_0.track", Some("melbourne"), Some("x")),
+                rw("TrackDataSet_0.TrackData_1.track", Some("okayama"), None),
+            ]
+        );
     }
 
     #[test]

@@ -1,6 +1,7 @@
 #include <atomic>
 #include "runtime.hpp"
 #include "main_menu.hpp"
+#include "tt_barred.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -86,6 +87,7 @@ const Step STEPS[] = {
     {"tt_bridge_tick", [] { runtime::tt_bridge_tick(); }},
     {"popup_tick", [] { runtime::popup_tick(); }},
     {"main_menu::tick", [] { runtime::main_menu::tick(); }},
+    {"tt_barred::tick", [] { runtime::tt_barred::tick(); }},
     {"mfd_tick", [] { runtime::mfd_tick(); }},
     {"netplay_tick", [] { runtime::netplay_tick(); }},
     {"career_content_tick", [] { runtime::career_content_tick(); }},
@@ -162,6 +164,21 @@ void flow_mid(safetyhook::Context &)
         swofty::log("[events] flow tick %d observed, dt %f; onFrame is live", ++logged, dt);
 }
 
+std::atomic<int> live_kind{runtime::session_life::NONE};
+std::atomic<uint64_t> live_serial{0};
+
+void set_kind(int kind)
+{
+    if (live_kind.exchange(kind, std::memory_order_relaxed) != kind)
+        live_serial.fetch_add(1, std::memory_order_relaxed);
+}
+
+void note_kind()
+{
+    set_kind(runtime::session_life::kind_of(swofty_core::apply::moments::session_mode_track().first));
+    runtime::player_name_session();
+}
+
 void session_enter_mid(safetyhook::Context &)
 {
     static const uint32_t probe = perf::probe("core", "session enter");
@@ -180,6 +197,7 @@ void session_enter_mid(safetyhook::Context &)
     }
     if (restart)
         runtime::session_emit({true, false, runtime::session_life::END_RESTART});
+    note_kind();
     runtime::tt_bridge_track_watch(true);
     disp.fire(SWOFTY_EVENT_SESSION_START, 0, 0, nullptr, now_seconds());
     swofty_core::hooks::bridge_legacy(SWOFTY_EVENT_SESSION_START, 0, 0, nullptr);
@@ -382,10 +400,22 @@ void events_setup()
     setup();
 }
 
+int session_kind()
+{
+    return live_kind.load(std::memory_order_relaxed);
+}
+
+uint64_t session_serial()
+{
+    return live_serial.load(std::memory_order_relaxed);
+}
+
 void session_emit(const session_life::Emit &e)
 {
-    if (e.end || e.unload)
+    if (e.end || e.unload) {
+        set_kind(session_life::NONE);
         tyre_models_drop();
+    }
     if (e.end) {
         lap_rec_session_end();
         tt_bridge_track_watch(false);
@@ -406,6 +436,8 @@ void session_flow(const char *known, int to)
 {
     if (!known || (to != 1 && to != 3))
         return;
+    if (to == 1 && !std::strcmp(known, "StateLoadSession"))
+        note_kind();
     session_life::Emit e;
     bool exiting = to == 3 && !std::strcmp(known, "StateSession");
     bool unloading = to == 1 && !std::strcmp(known, "StateUnloadSession");

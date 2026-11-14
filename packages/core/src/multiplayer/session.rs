@@ -803,6 +803,8 @@ struct Worker {
     teardown: bool,
     server_gone: bool,
     last_error: Option<String>,
+    /// The error the lobby connection's last drop set, cleared with it once the connection is back.
+    lobby_error: Option<String>,
     next_step: Instant,
     next_housekeeping: Instant,
     failures: u32,
@@ -863,6 +865,7 @@ impl Worker {
             teardown: false,
             server_gone: false,
             last_error: None,
+            lobby_error: None,
             next_step: now,
             next_housekeeping: now,
             failures: 0,
@@ -1816,9 +1819,15 @@ impl Worker {
             match event {
                 WsEvent::Connected => {
                     self.lobby_connected = true;
+                    if let Some(why) = self.lobby_error.take()
+                        && self.last_error.as_ref() == Some(&why)
+                    {
+                        self.last_error = None;
+                    }
                 }
                 WsEvent::Disconnected(why) => {
                     self.lobby_connected = false;
+                    self.lobby_error = Some(why.clone());
                     self.last_error = Some(why);
                 }
                 WsEvent::Gone(why) => {
@@ -3305,6 +3314,61 @@ mod tests {
         host.retry();
         wait_until(&host, "the lobby after retry", in_lobby);
         assert_eq!(game.host_attempts.load(Ordering::Relaxed), 2);
+    }
+
+    #[test]
+    fn a_lobby_reconnect_clears_only_the_error_its_drop_set() {
+        let game = FakeGame::new("reconnect");
+        let inner = Arc::new(Inner {
+            state: Mutex::new(SessionState::new(false)),
+            stop: AtomicBool::new(false),
+        });
+        let (_actions, inbox) = mpsc::channel();
+        let mut worker = Worker::new(
+            inner,
+            setup("http://127.0.0.1:1", "guest-token", &game, print(&[])),
+            Intent::Join("F1-7KQ2MX".into()),
+            inbox,
+        );
+        let events = worker.events_tx.clone();
+        events
+            .send(WsEvent::Disconnected(
+                "the lobby connection dropped: reset".into(),
+            ))
+            .unwrap();
+        worker.handle_events();
+        assert!(worker.last_error.is_some());
+        events.send(WsEvent::Connected).unwrap();
+        worker.handle_events();
+        assert_eq!(worker.last_error, None, "the reconnect clears the drop's error");
+
+        events
+            .send(WsEvent::Disconnected(
+                "couldn't reach the lobby: timed out".into(),
+            ))
+            .unwrap();
+        worker.handle_events();
+        worker.last_error = Some("the room key changed; leave and rejoin the room".into());
+        events.send(WsEvent::Connected).unwrap();
+        worker.handle_events();
+        assert_eq!(
+            worker.last_error.as_deref(),
+            Some("the room key changed; leave and rejoin the room"),
+            "an error set after the drop stays"
+        );
+    }
+
+    #[test]
+    fn a_join_with_a_malformed_code_fails_at_once_with_the_codes_message() {
+        let server = server();
+        let game = FakeGame::new("bad-code");
+        let guest = join(setup(&server.url, "guest-token", &game, print(&[])), "F1 7KQ2MX");
+        let state = wait_until(&guest, "the refusal", |s| s.phase.is_over());
+        assert_eq!(
+            state.phase,
+            Phase::Failed("'F1 7KQ2MX' is not an invite code (like F1-7KQ2MX)".into())
+        );
+        assert_eq!(state.last_error, None, "the code is not retried");
     }
 
     #[test]

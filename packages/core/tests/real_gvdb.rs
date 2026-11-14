@@ -5,7 +5,7 @@ use swofty_core::manifest::AddonManifest;
 use swofty_core::ops::{DbOps, apply_db_ops};
 use swofty_core::owned;
 use swofty_core::profile::Profile;
-use swofty_core::settings::render_ops;
+use swofty_core::settings::{OnAddons, render_ops};
 use swofty_formats::gvdb::Gvdb;
 
 #[test]
@@ -23,7 +23,7 @@ fn template_db_ops_resolve_against_the_real_database() {
     let m = AddonManifest::load(&template).unwrap();
     let mut doc: serde_json::Value =
         serde_json::from_slice(&std::fs::read(template.join("db/example.json")).unwrap()).unwrap();
-    render_ops(&mut doc, &m, &Profile::new("test")).unwrap();
+    render_ops(&mut doc, &m, &Profile::new("test"), &OnAddons::default()).unwrap();
     let ops: DbOps = serde_json::from_value(doc).unwrap();
     apply_db_ops(&mut db, &ops, &BTreeMap::<String, Vec<String>>::new()).unwrap();
     assert_eq!(
@@ -300,4 +300,18 @@ fn a_calendar_count_past_its_rows_comes_down_against_the_real_database() {
         )]
     );
     assert_eq!(db.get_text(count).as_deref(), Some("16"));
+}
+
+#[test]
+fn the_real_track_lists_hold_35_stock_tracks() {
+    let Some(dir) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {
+        eprintln!("F1_25_DIR is not set; skipping");
+        return;
+    };
+    let Ok(data) = std::fs::read(dir.join("game_package/gamedatabases/gamedatabases.2025.bin")) else {
+        eprintln!("no gamedatabases.2025.bin under F1_25_DIR; skipping");
+        return;
+    };
+    let listed = swofty_core::tracks::ListedTracks::of(&Gvdb::parse(&data).unwrap());
+    assert_eq!(listed.stock(), 35);
 }

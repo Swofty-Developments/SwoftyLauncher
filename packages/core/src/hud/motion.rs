@@ -217,8 +217,10 @@ impl Motion {
         )
     }
 
-    /// The slide's clip channels: the holder's position keys in scene units, with the one-key
-    /// rotation and scale channels every clip carries.
+    /// The slide's clip channels: the holder's position keys in scene units, and nothing else. The
+    /// game evaluates a quaternion channel with aligned 16-byte loads straight from the clip's
+    /// `syst` buffer, which it does not always place on 16 bytes, so a clip carries no rotation it
+    /// does not need (the stock loading spinners are position-only clips too).
     pub fn channels(&self) -> Vec<Channel> {
         let times: Vec<f32> = self.keys.iter().map(|(t, _)| *t as f32).collect();
         let keys: Vec<[f32; 3]> = self
@@ -232,11 +234,7 @@ impl Motion {
                 KeyValue::Alpha(_) => [0.0; 3],
             })
             .collect();
-        vec![
-            Channel::position(times, keys),
-            Channel::rotation(vec![0.0], vec![[0.0, 0.0, 0.0, -1.0]]),
-            Channel::scale(vec![0.0], vec![[1.0; 3]]),
-        ]
+        vec![Channel::position(times, keys)]
     }
 }
 
@@ -424,7 +422,7 @@ pub fn trigger_nodes(plan: &Plan, base: &str) -> Vec<Node> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use swofty_formats::animclip::{build_clip, read_clip};
+    use swofty_formats::animclip::{Target, build_clip, read_clip};
 
     fn clip_template() -> Vec<u8> {
         use swofty_formats::pkg::{Arr, Obj, Pkg, Val};
@@ -495,6 +493,13 @@ mod tests {
         let clip = read_clip(&temp, &syst).unwrap();
         assert_eq!(clip.node, "zh_t_rows_slide");
         assert_eq!(clip.channels, channels);
+    }
+
+    #[test]
+    fn a_slide_clip_carries_no_rotation() {
+        let channels = slide().channels();
+        assert_eq!(channels.len(), 1);
+        assert!(channels.iter().all(|c| c.target == Target::Position));
     }
 
     #[test]

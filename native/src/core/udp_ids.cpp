@@ -22,7 +22,8 @@
 // never looked at. SWOFTY_UDP_STOCK_IDS=0 turns it off. With the telemetry feature on, the same hook also hands every
 // such packet to the telemetry decoder (telemetry.cpp) before any rewrite. A Session packet of an added track gets
 // trackId -1 and is followed by the Swofty Track packet with the track's Swofty track id (udp_ids_logic.hpp,
-// session_track); SWOFTY_UDP_STOCK_IDS=0 turns that off too.
+// session_track); SWOFTY_UDP_STOCK_IDS=0 turns that off too, and SWOFTY_UDP_TRACK_PACKET=0 keeps the trackId rewrite
+// but sends no Swofty Track packet, for a tool that fails on a packet id it does not know.
 
 namespace {
 
@@ -46,6 +47,7 @@ std::mutex track_mu;
 std::map<int, std::string> tracks;
 std::atomic<bool> has_tracks;
 std::atomic<bool> track_said;
+std::atomic<bool> track_packet{true};
 
 int session(SOCKET s, const char *buf, int len, int flags, const sockaddr *to, int tolen, bool &sent)
 {
@@ -61,14 +63,15 @@ int session(SOCKET s, const char *buf, int len, int flags, const sockaddr *to, i
         return 0;
     int r = real(s, reinterpret_cast<const char *>(copy), len, flags, to, tolen);
     DWORD err = GetLastError();
-    if (r != SOCKET_ERROR)
+    bool packet = track_packet.load(std::memory_order_relaxed);
+    if (r != SOCKET_ERROR && packet)
         real(s, reinterpret_cast<const char *>(extra), int(sizeof extra), flags, to, tolen);
     if (!track_said.exchange(true)) {
         uint32_t id = uint32_t(extra[ids::HEADER]) | uint32_t(extra[ids::HEADER + 1]) << 8 |
                       uint32_t(extra[ids::HEADER + 2]) << 16 | uint32_t(extra[ids::HEADER + 3]) << 24;
-        swofty::log("[udp] first Session packet of an added track: statId %u sent as %d, Swofty Track packet %u "
-                    "with id %u (%s)",
-                    unsigned(extra[ids::HEADER + 4]), int(int8_t(copy[ids::SESSION_TRACK])), unsigned(ids::TRACK_PACKET), id,
+        swofty::log("[udp] first Session packet of an added track: statId %u sent as %d, %s %u with id %u (%s)",
+                    unsigned(extra[ids::HEADER + 4]), int(int8_t(copy[ids::SESSION_TRACK])),
+                    packet ? "Swofty Track packet" : "no Swofty Track packet", unsigned(ids::TRACK_PACKET), id,
                     reinterpret_cast<const char *>(extra + ids::HEADER + 5));
     }
     SetLastError(err);
@@ -174,8 +177,19 @@ bool wanted_off()
     return true;
 }
 
+bool track_packet_off()
+{
+    char v[16] = {};
+    DWORD n = GetEnvironmentVariableA("SWOFTY_UDP_TRACK_PACKET", v, sizeof v);
+    if (!n || n >= sizeof v || (strcmp(v, "0") && strcmp(v, "off")))
+        return false;
+    swofty::log("[udp] Swofty Track packet off (SWOFTY_UDP_TRACK_PACKET=%s)", v);
+    return true;
+}
+
 void setup()
 {
+    track_packet = !track_packet_off();
     bool tel = runtime::telemetry_wants_udp();
     bool rewrite = false;
     if (!wanted_off()) {

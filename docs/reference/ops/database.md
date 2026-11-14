@@ -543,12 +543,25 @@ A `db` [option](/reference/addons/manifest#options) changes operations at build 
 
 - <span v-pre>`{{id}}`</span> in any string is replaced with the option's value: `true` or `false`, the number, or the choice value.
 - `"when": { "id": value }` keeps the operation only when every listed option has that value.
+- `"addon"` in a `when` keeps the operation only while that addon is on in the profile and the build: an addon id, `{ "id", "version" }` with a semver range, or a list of them that must all be on. It combines with the option values.
+- A `when` at the top of the file applies to every operation in it.
 
 ```json
 { "op": "set", "select": "rules.stop_go_penalty", "field": "penalty_duration", "value": "{{penalty_seconds}}" },
 { "op": "set", "select": "entrants.teams.team[_metadata_=gm_cadillac_26]", "field": "display_name_code", "value": "CAD",
-  "when": { "short_names": true } }
+  "when": { "short_names": true } },
+{ "op": "set", "select": "f2.calendar.round[_metadata_=round_6]", "field": "track", "value": "istanbul_park",
+  "when": { "addon": "track.istanbul_park", "istanbul_park": true } }
 ```
+
+A bad `addon` value fails the build and names it:
+
+```text
+miguelvf3.f2-revamp: when.addon: "Istanbul Park" is not an addon id
+miguelvf3.f2-revamp: when.addon: "versoin" is not a key of an addon; use id and version
+```
+
+A toggle with [`needs`](/reference/addons/manifest#options) reads as off while an addon it needs is off. [Content that needs another addon](/reference/addons/settings#content-that-needs-another-addon) has a full example. A launcher before 1.9.34 fails the build on `addon` in a `when` and on a `when` at the top of a file.
 
 Changing a `db` option marks the profile for a rebuild. The next launch, or `swofty build`, applies it.
 

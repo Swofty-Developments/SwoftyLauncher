@@ -271,8 +271,10 @@ impl Drop for Refresh {
     }
 }
 
-pub fn publish(data: &Path, game: &Path, version: &str) -> Refresh {
-    publish_from(data, game, version, base_url(), REFRESH)
+/// Writes `home_menu.json` at launch and refreshes it while the game runs. With `show_video` off the file carries
+/// no video and the latest video is not fetched, so the home screen shows no video card.
+pub fn publish(data: &Path, game: &Path, version: &str, show_video: bool) -> Refresh {
+    publish_from(data, game, version, show_video, base_url(), REFRESH)
 }
 
 fn card_of(data: &Path, video: Video) -> VideoCard {
@@ -287,23 +289,34 @@ fn card_of(data: &Path, video: Video) -> VideoCard {
     }
 }
 
-fn publish_from(data: &Path, game: &Path, version: &str, registry: String, every: Duration) -> Refresh {
-    let _ = write(
-        game,
-        &state(data, version, cached_video(data).map(|v| card_of(data, v)), None),
-    );
+fn publish_from(
+    data: &Path,
+    game: &Path,
+    version: &str,
+    show_video: bool,
+    registry: String,
+    every: Duration,
+) -> Refresh {
+    let cached = || {
+        cached_video(data)
+            .filter(|_| show_video)
+            .map(|v| card_of(data, v))
+    };
+    let _ = write(game, &state(data, version, cached(), None));
     let stop = std::sync::Arc::new(std::sync::atomic::AtomicBool::new(false));
     let flag = stop.clone();
     let (data, game, version) = (data.to_path_buf(), game.to_path_buf(), version.to_owned());
     std::thread::spawn(move || {
         let mut online: Option<u64> = None;
-        let mut card: Option<VideoCard> = cached_video(&data).map(|v| card_of(&data, v));
+        let mut card: Option<VideoCard> = cached_video(&data)
+            .filter(|_| show_video)
+            .map(|v| card_of(&data, v));
         let mut first = true;
         while !flag.load(std::sync::atomic::Ordering::Relaxed) {
             if first {
                 fetch_avatar(&data);
             }
-            if let Some(fresh) = latest_video(&data, &registry) {
+            if show_video && let Some(fresh) = latest_video(&data, &registry) {
                 card = Some(fresh);
             }
             if let Some(n) = fetch_online(&registry) {
@@ -489,7 +502,7 @@ mod tests {
         let data = temp("online");
         let game = temp("online-game");
         let registry = serve_json(r#"{"online":{"total":77}}"#);
-        let guard = publish_from(&data, &game, "1.8.37", registry, Duration::from_millis(100));
+        let guard = publish_from(&data, &game, "1.8.37", true, registry, Duration::from_millis(100));
         let mut seen = None;
         for _ in 0..50 {
             std::thread::sleep(Duration::from_millis(100));
@@ -505,6 +518,39 @@ mod tests {
         assert_eq!(seen, Some(serde_json::json!(77)));
         std::fs::remove_dir_all(&data).ok();
         std::fs::remove_dir_all(&game).ok();
+    }
+
+    #[test]
+    fn a_cached_video_is_published_only_while_the_home_video_setting_is_on() {
+        for show in [true, false] {
+            let data = temp(&format!("show-{show}"));
+            let game = temp(&format!("show-{show}-game"));
+            let cache = data.join(CACHE_DIR);
+            std::fs::create_dir_all(&cache).unwrap();
+            std::fs::write(cache.join(THUMBNAIL), b"jpg").unwrap();
+            std::fs::write(
+                cache.join(VIDEO_CACHE),
+                video_json(
+                    "https://i.ytimg.com/vi/abc123/hqdefault.jpg",
+                    "https://youtu.be/abc123",
+                ),
+            )
+            .unwrap();
+            let guard = publish_from(
+                &data,
+                &game,
+                "1.9.19",
+                show,
+                "http://127.0.0.1:9".into(),
+                Duration::from_secs(60),
+            );
+            let written: serde_json::Value =
+                serde_json::from_slice(&std::fs::read(game.join(STATE_FILE)).unwrap()).unwrap();
+            drop(guard);
+            assert_eq!(written.get("video").is_some(), show, "show_video {show}");
+            std::fs::remove_dir_all(&data).ok();
+            std::fs::remove_dir_all(&game).ok();
+        }
     }
 
     #[test]

@@ -199,6 +199,8 @@ pub struct TrackEntry {
     pub best_ms: Option<u64>,
     #[serde(default, alias = "name")]
     pub track_name: Option<String>,
+    #[serde(default, alias = "addon")]
+    pub track_addon: Option<String>,
 }
 
 fn dry() -> String {
@@ -212,6 +214,67 @@ impl TrackEntry {
             _ => self.track.clone(),
         }
     }
+
+    pub fn addon(&self) -> Option<&str> {
+        track_addon(&self.track, self.track_addon.as_deref())
+    }
+}
+
+/// The addon a board's track comes from: the one the server names, else the `addon` of an `addon:track`
+/// key. A stock track such as `bahrain` has none, whatever box its board is in.
+pub fn track_addon<'a>(track: &'a str, named: Option<&'a str>) -> Option<&'a str> {
+    named.map(str::trim).filter(|n| !n.is_empty()).or_else(|| {
+        track
+            .split_once(':')
+            .map(|(addon, _)| addon.trim())
+            .filter(|a| !a.is_empty())
+    })
+}
+
+/// A track as a list shows it, for [`bylines`]: its name, its addon and that addon's author.
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub struct Listed<'a> {
+    pub name: &'a str,
+    pub addon: Option<&'a str>,
+    pub author: Option<&'a str>,
+}
+
+/// What a listed track shows next to its name, so two tracks with the same name can be told apart.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub struct Byline {
+    pub author: Option<String>,
+    /// The addon's id, when the author alone does not tell the track from another of the same name.
+    pub addon: Option<String>,
+}
+
+/// Each track's byline. An addon track names its addon's author, and also the addon's id when another
+/// addon's track has the same name and an author that is unknown or the same. A stock track has none.
+pub fn bylines(tracks: &[Listed<'_>]) -> Vec<Option<Byline>> {
+    let names: Vec<String> = tracks.iter().map(|t| t.name.trim().to_lowercase()).collect();
+    fn author<'a>(t: &Listed<'a>) -> Option<&'a str> {
+        t.author.map(str::trim).filter(|a| !a.is_empty())
+    }
+    tracks
+        .iter()
+        .enumerate()
+        .map(|(i, t)| {
+            let addon = t.addon?;
+            let by = author(t);
+            let needs_id = tracks
+                .iter()
+                .zip(&names)
+                .filter(|(o, name)| o.addon != Some(addon) && **name == names[i])
+                .any(|(o, _)| match (by, author(o)) {
+                    (None, _) => true,
+                    (Some(a), Some(b)) => o.addon.is_some() && a.to_lowercase() == b.to_lowercase(),
+                    (Some(_), None) => false,
+                });
+            (by.is_some() || needs_id).then(|| Byline {
+                author: by.map(str::to_owned),
+                addon: needs_id.then(|| addon.to_owned()),
+            })
+        })
+        .collect()
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
@@ -432,6 +495,93 @@ mod tests {
         t.join().unwrap();
         assert_eq!(boards.len(), 1);
         assert_eq!(boards[0].content, "game/f1_2025");
+    }
+
+    #[test]
+    fn a_track_names_its_addon_and_a_stock_track_has_none() {
+        assert_eq!(
+            track_addon("twilight.bahrain-reverse:sakhir_reverse", None),
+            Some("twilight.bahrain-reverse")
+        );
+        assert_eq!(track_addon("lisgp", Some("mod.lisgp")), Some("mod.lisgp"));
+        assert_eq!(track_addon("mod.lisgp:lisgp", Some(" ")), Some("mod.lisgp"));
+        for stock in ["bahrain", "silverstone_reverse", ":bahrain", ""] {
+            assert_eq!(track_addon(stock, None), None, "{stock}");
+        }
+        let entry: TrackEntry = serde_json::from_str(
+            r#"{"track":"dromodf.fuji-speedway:suzuka24","name":"Fuji Speedway","custom":true,"track_addon":"dromodf.fuji-speedway","weather":"dry","laps":4}"#,
+        )
+        .unwrap();
+        assert_eq!(entry.addon(), Some("dromodf.fuji-speedway"));
+        let stock: TrackEntry =
+            serde_json::from_str(r#"{"track":"monaco","name":"Circuit de Monaco"}"#).unwrap();
+        assert_eq!(stock.addon(), None);
+    }
+
+    fn listed<'a>(name: &'a str, addon: Option<&'a str>, author: Option<&'a str>) -> Listed<'a> {
+        Listed { name, addon, author }
+    }
+
+    fn by(author: Option<&str>, addon: Option<&str>) -> Option<Byline> {
+        Some(Byline {
+            author: author.map(str::to_owned),
+            addon: addon.map(str::to_owned),
+        })
+    }
+
+    #[test]
+    fn an_addon_track_names_its_author_and_a_stock_track_nothing() {
+        let got = bylines(&[
+            listed(
+                "Bahrain Reverse",
+                Some("twilight.bahrain-reverse"),
+                Some("Twilight Sparkle"),
+            ),
+            listed("Bahrain International Circuit", None, None),
+            listed("Okayama", Some("mod.okayama"), None),
+            listed("Okayama", Some("mod.okayama"), Some(" ")),
+        ]);
+        assert_eq!(got, [by(Some("Twilight Sparkle"), None), None, None, None]);
+    }
+
+    #[test]
+    fn tracks_with_the_same_name_are_told_apart() {
+        let got = bylines(&[
+            listed(
+                "Fuji Speedway",
+                Some("dromodf.fuji-speedway"),
+                Some("[FEL] Dromodf"),
+            ),
+            listed("fuji speedway ", Some("mod.suzuka24"), None),
+            listed("Laguna Seca", Some("kencitocco.laguna-seca"), Some("ashton")),
+            listed("Laguna Seca", Some("mod.lgsgp"), Some("Ashton")),
+            listed("Bahrain", None, None),
+            listed("Bahrain", Some("mod.bahrain"), None),
+            listed("Monza", Some("track.mza26"), Some("w7")),
+            listed("Monza", None, None),
+        ]);
+        assert_eq!(
+            got,
+            [
+                by(Some("[FEL] Dromodf"), None),
+                by(None, Some("mod.suzuka24")),
+                by(Some("ashton"), Some("kencitocco.laguna-seca")),
+                by(Some("Ashton"), Some("mod.lgsgp")),
+                None,
+                by(None, Some("mod.bahrain")),
+                by(Some("w7"), None),
+                None,
+            ]
+        );
+    }
+
+    #[test]
+    fn the_same_track_listed_twice_is_not_a_twin() {
+        let got = bylines(&[
+            listed("Fuji Speedway", Some("mod.suzuka24"), None),
+            listed("Fuji Speedway", Some("mod.suzuka24"), None),
+        ]);
+        assert_eq!(got, [None, None]);
     }
 
     #[test]

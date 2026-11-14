@@ -1,7 +1,8 @@
+use std::ffi::OsString;
 use std::fs::File;
 use std::io::{BufRead, BufReader};
 use std::path::{Path, PathBuf};
-use std::process::{Child, Command, Stdio};
+use std::process::{Child, Command, ExitStatus, Stdio};
 use std::sync::atomic::{AtomicBool, AtomicI64, Ordering};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
@@ -13,7 +14,7 @@ use swofty_core::ea_app;
 use swofty_core::install::{Game, Source};
 use swofty_core::launch;
 use swofty_core::multiplayer::bridge::armed_env;
-use swofty_core::process::{GameProcess, game_processes};
+use swofty_core::process::{GameProcess, flag, game_processes};
 use swofty_core::quarantine;
 use swofty_core::recovery::{self, Blocked, Notice, Scope, SessionLock};
 use swofty_core::session::{LaunchMode, SessionRecord};
@@ -21,6 +22,7 @@ use swofty_core::stock;
 use swofty_core::store::Store;
 use swofty_core::vault;
 use swofty_core::{GAME_EXE, steam, steam_client};
+use swofty_i18n::{fill, tr, trf, trn};
 
 const KB: &str = include_str!("../../../re/db/functions.tsv");
 
@@ -132,6 +134,12 @@ pub fn vault_at_start(store: &Store) {
         return;
     };
     for l in vault::watch::at_launcher_start(&store.root) {
+        crate::app_log::note(&l);
+    }
+    let game = vault::Location::active(&store.root);
+    for l in
+        swofty_core::save_stall::sweep(store, game.as_ref(), vault::restore::Running::now(), vault::now())
+    {
         crate::app_log::note(&l);
     }
     import_first_start(store);
@@ -315,20 +323,25 @@ pub fn restore(store: &Store, dir: PathBuf) -> Result<String, String> {
     let done = recovery::restore(&store.root, &g).map_err(|e| e.to_string())?;
     if !done.left.is_empty() {
         let left: Vec<String> = done.left.iter().map(ToString::to_string).collect();
-        return Err(format!("Not everything could be restored: {}", left.join("; ")));
-    }
-    let mut text = "The game folder matches the original game files.".to_owned();
-    if !done.set_aside.is_empty() {
-        text.push_str(&format!(
-            " {} moved to {}.",
-            match done.set_aside.len() {
-                1 => "1 file was".to_owned(),
-                n => format!("{n} files were"),
-            },
-            recovery::set_aside_dir(&store.root).display()
+        return Err(trf!(
+            "Not everything could be restored: {left}",
+            left = left.join("; ")
         ));
     }
-    Ok(text)
+    Ok(match done.set_aside.len() {
+        0 => tr("The game folder matches the original game files.").to_owned(),
+        n => fill(
+            &trn(
+                n,
+                "The game folder matches the original game files. {count} file was moved to {folder}.",
+                "The game folder matches the original game files. {count} files were moved to {folder}.",
+            ),
+            &[(
+                "folder",
+                recovery::set_aside_dir(&store.root).display().to_string(),
+            )],
+        ),
+    })
 }
 
 fn merge_requests(store: &Store, idle: bool, seen: Option<SystemTime>) -> (Option<SystemTime>, bool) {
@@ -402,6 +415,7 @@ pub const DIRECT_START_FILE: &str = "swofty/direct_start.json";
 
 pub struct Launch {
     child: Child,
+    status: Option<ExitStatus>,
     direct_start: Option<PathBuf>,
     pub since: Instant,
     pub at: f64,
@@ -431,19 +445,13 @@ impl Launch {
         let err = out.try_clone().map_err(|e| e.to_string())?;
         std::fs::remove_file(store.root.join(steam_client::STAGE_FILE)).ok();
         let mut c = Command::new(&cli);
-        c.arg("--data-dir")
-            .arg(&store.root)
-            .arg("--profile")
-            .arg(profile)
-            .arg("run")
-            .arg("--apply");
-        if mode.is_vr() {
-            c.arg("--vr");
-        }
-        if steam_saves_once {
-            c.arg("--steam-saves-once");
-        }
-        c.arg("--game").arg(&install.dir);
+        c.args(run_args(
+            &store.root,
+            profile,
+            &install.dir,
+            mode,
+            steam_saves_once,
+        ));
         if let Some(armed) = netplay {
             c.envs(armed_env(armed));
         }
@@ -471,6 +479,7 @@ impl Launch {
             .map_err(|e| not_started(store, &log, &cli, &e))?;
         Ok(Self {
             child,
+            status: None,
             direct_start,
             since: Instant::now(),
             at,
@@ -481,12 +490,16 @@ impl Launch {
     }
 
     pub fn finished(&mut self) -> Option<bool> {
-        self.child.try_wait().ok().flatten().map(|s| s.success())
+        let status = self.child.try_wait().ok().flatten()?;
+        self.status = Some(status);
+        Some(status.success())
     }
 
     pub fn failure(&self) -> String {
-        failure_line(&std::fs::read_to_string(&self.log).unwrap_or_default())
-            .unwrap_or_else(|| "the launch exited before the game started".into())
+        launch_failure(
+            &std::fs::read_to_string(&self.log).unwrap_or_default(),
+            self.status,
+        )
     }
 }
 
@@ -496,6 +509,31 @@ impl Drop for Launch {
             std::fs::remove_file(file).ok();
         }
     }
+}
+
+/// The CLI's arguments for Play. Values go as `--flag=value`, so a profile named
+/// `-swofty` from before such names were refused is not read as a flag.
+pub(crate) fn run_args(
+    data: &Path,
+    profile: &str,
+    game: &Path,
+    mode: LaunchMode,
+    steam_saves_once: bool,
+) -> Vec<OsString> {
+    let mut args = vec![
+        flag("data-dir", data),
+        flag("profile", profile),
+        "run".into(),
+        "--apply".into(),
+    ];
+    if mode.is_vr() {
+        args.push("--vr".into());
+    }
+    if steam_saves_once {
+        args.push("--steam-saves-once".into());
+    }
+    args.push(flag("game", game));
+    args
 }
 
 /// A CLI that would not start: the error goes in the launch log. One Windows
@@ -513,16 +551,45 @@ fn not_started(store: &Store, log: &Path, cli: &Path, e: &std::io::Error) -> Str
     block.map_or_else(|| e.to_string(), |b| b.text())
 }
 
+/// Why the CLI exited before the game started, from its log, or else its exit
+/// status.
+fn launch_failure(log: &str, status: Option<ExitStatus>) -> String {
+    failure_line(log).unwrap_or_else(|| match status {
+        Some(status) => trf!(
+            "the swofty command exited ({status}) before the game started, without saying why",
+            status = status
+        ),
+        None => tr("the launch exited before the game started").to_owned(),
+    })
+}
+
 /// The wrapper's last error, from its `swofty: ` line, or else the last line it
 /// wrote. An error over several lines gives its first, which says what failed.
+/// A command line the CLI refused gives clap's `error: ` line.
 fn failure_line(log: &str) -> Option<String> {
     let lines: Vec<&str> = log.lines().filter(|l| !l.trim().is_empty()).collect();
+    if let Some(error) = usage_error(&lines) {
+        return Some(trf!(
+            "the swofty command refused its command line: {error}",
+            error = error
+        ));
+    }
     lines
         .iter()
         .rev()
         .find_map(|l| l.strip_prefix("swofty: "))
         .or_else(|| lines.last().copied())
         .map(|l| l.trim_end_matches(':').to_owned())
+}
+
+/// clap's report of arguments it could not parse: an `error: ` line, then
+/// the usage.
+fn usage_error<'a>(lines: &[&'a str]) -> Option<&'a str> {
+    let at = lines.iter().position(|l| l.starts_with("error: "))?;
+    lines[at..]
+        .iter()
+        .any(|l| l.starts_with("Usage: "))
+        .then(|| lines[at].trim_start_matches("error: ").trim())
 }
 
 /// A failure as the play bar leads with it: a wrapper's error with its
@@ -584,12 +651,13 @@ pub fn crash_summary(session: &SessionRecord, game: Option<&Path>) -> Result<Str
         return Ok(fast_fail.join("\n"));
     }
     Ok(match scan.last_fatal {
-        Some((c, addr)) => format!(
-            "exit code {code}, last {} at {}",
-            fatal_name(c).unwrap_or("exception"),
-            scan.describe(addr, &symbols)
+        Some((c, addr)) => trf!(
+            "exit code {code}, last {exception} at {place}",
+            code = code,
+            exception = fatal_name(c).unwrap_or("exception"),
+            place = scan.describe(addr, &symbols)
         ),
-        None => format!("exit code {code}"),
+        None => trf!("exit code {code}", code = code),
     })
 }
 
@@ -608,7 +676,11 @@ mod tests {
     use swofty_core::launch;
     use swofty_core::store::Store;
 
-    use super::{IMPORT_RETRY_SECS, RetryGate, cause_first, failure_line, not_started, should_retry_import};
+    use super::{
+        IMPORT_RETRY_SECS, RetryGate, cause_first, failure_line, launch_failure, not_started, run_args,
+        should_retry_import,
+    };
+    use swofty_core::session::LaunchMode;
 
     fn idle_steam() -> RetryGate {
         RetryGate {
@@ -720,6 +792,78 @@ mod tests {
     }
 
     #[test]
+    fn play_passes_a_profile_that_starts_with_a_dash_as_the_profiles_value() {
+        let args = run_args(
+            Path::new("/data"),
+            "-swofty",
+            Path::new("/games/F1 25"),
+            LaunchMode::Normal,
+            false,
+        );
+        assert_eq!(
+            args,
+            [
+                "--data-dir=/data",
+                "--profile=-swofty",
+                "run",
+                "--apply",
+                "--game=/games/F1 25"
+            ]
+        );
+        let vr = run_args(Path::new("/data"), "grid", Path::new("/g"), LaunchMode::Vr, true);
+        assert_eq!(
+            vr,
+            [
+                "--data-dir=/data",
+                "--profile=grid",
+                "run",
+                "--apply",
+                "--vr",
+                "--steam-saves-once",
+                "--game=/g"
+            ]
+        );
+    }
+
+    #[test]
+    fn a_command_line_the_cli_refused_shows_claps_error() {
+        let log = "error: unexpected argument '-s' found\n\nUsage: swofty.exe [OPTIONS] <COMMAND>\n\nFor more information, try '--help'.\n";
+        assert_eq!(
+            failure_line(log).as_deref(),
+            Some("the swofty command refused its command line: unexpected argument '-s' found")
+        );
+        let tipped = "swofty: t.x: its command build has the name of a built-in command or another addon's; run it as swofty t.x:build\n\
+                      error: unexpected argument '--frobnicate' found\n\n  tip: to pass '--frobnicate' as a value, use '-- --frobnicate'\n\n\
+                      Usage: swofty run --apply\n\nFor more information, try '--help'.\n";
+        assert_eq!(
+            failure_line(tipped).as_deref(),
+            Some("the swofty command refused its command line: unexpected argument '--frobnicate' found")
+        );
+        assert_eq!(
+            failure_line("[wrapper] error: x\nswofty: the wrapper exited\n").as_deref(),
+            Some("the wrapper exited")
+        );
+    }
+
+    #[test]
+    fn a_launch_that_exits_without_a_word_says_how_it_exited() {
+        assert_eq!(
+            launch_failure("", None),
+            "the launch exited before the game started"
+        );
+        #[cfg(unix)]
+        {
+            use std::os::unix::process::ExitStatusExt;
+            let status = std::process::ExitStatus::from_raw(2 << 8);
+            assert_eq!(
+                launch_failure("\n", Some(status)),
+                format!("the swofty command exited ({status}) before the game started, without saying why")
+            );
+        }
+        assert_eq!(launch_failure("swofty: no room\n", None), "no room");
+    }
+
+    #[test]
     fn a_wrapper_failure_leads_with_its_innermost_cause() {
         let blocked = "the download was blocked on this PC or network, typically by antivirus HTTPS or web \
                        scanning, a VPN or proxy, a network filter or a Wi-Fi login page; turning that off or trying \
@@ -782,5 +926,19 @@ mod tests {
             format!("the wrapper exited (exit code: 1) before the game started: {outdated}")
         );
         assert_eq!(cause_first(&failure), outdated);
+    }
+
+    #[test]
+    fn a_row_an_earlier_addon_removed_leads_with_that_addon() {
+        let what = "Korea edits that row, but SERPS Ineos Mercedes Concept - Arabic Modder renamed it earlier in the \
+                    load. Turn SERPS Ineos Mercedes Concept - Arabic Modder off, or move it after Korea";
+        let doing = "applying pajko.korea: track_data.game_setup.TrackDataSet[_metadata_=f2_2026]: no row matches, \
+                     even after every addon's changes";
+        let log = format!(
+            "[info] building profile myteamporsche\n\
+             swofty: the wrapper exited (exit code: 1) before the game started: {doing}: {what}\n"
+        );
+        let failure = failure_line(&log).unwrap();
+        assert_eq!(cause_first(&failure), format!("{what} ({doing})"));
     }
 }

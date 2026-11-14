@@ -199,6 +199,7 @@ impl Shell {
         };
         let why_copy = match () {
             _ if view.others.is_empty() => Some(tr("No other profiles")),
+            _ if view.shared_by_every_profile() => Some(tr("Every profile plays on the EA copy's one save")),
             _ if !view.has_save => Some(tr("Nothing to copy yet")),
             _ if game => Some(close_game_first()),
             _ => None,

@@ -1,10 +1,11 @@
 //! Time Trial boards: the launcher's side of uploading laps the core records.
 //!
-//! The core writes one `.swlap` file per completed lap into `<game>/swofty/laps`. [`queue`] moves them
-//! into the launcher's data folder and uploads them through [`api`]; [`upload`] is the loop the wrapper
-//! and the launcher run for it.
+//! The core writes one `.swlap` file per completed lap into `<game>/swofty/laps`, or into the data folder's
+//! `laps` when it can't write the game folder (an EA app copy under Program Files). [`queue`] moves them into
+//! the outbox and uploads them through [`api`]; [`upload`] is the loop the wrapper and the launcher run for it.
 
 pub mod api;
+pub mod barred;
 pub mod boards;
 pub mod bridge;
 pub mod fingerprint;
@@ -26,8 +27,10 @@ pub const LAPS_DIR: &str = "swofty/laps";
 /// treats that file's existence as a mixin manifest and refuses every mixin it does not declare.
 pub const SESSION_FILE: &str = "swofty/tt.json";
 
-pub fn laps_dir(game: &Path) -> PathBuf {
-    game.join(LAPS_DIR)
+/// Where the core writes laps: the game folder, where the integrity seal finds the session's `tt.json`, then the
+/// data folder when the game folder refuses them (an EA app copy under Program Files).
+pub fn laps_dirs(data: &Path, game: &Path) -> [PathBuf; 2] {
+    [data.join("laps"), game.join(LAPS_DIR)]
 }
 
 /// The page that shows the boards.
@@ -50,9 +53,14 @@ pub fn token(data: &Path, config: &Config) -> Option<String> {
 
 const KEYS: [&str; 4] = ["tt_boards", "tt_nonce", "tt_bridge", "tt_ghost"];
 
+/// Held while [`SESSION_FILE`] is read and written again, so the nonce retries and the barred list refresh,
+/// each on a thread of its own, do not drop each other's keys.
+pub(crate) static SESSION_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 /// Tell the core, through [`SESSION_FILE`], that laps are to be recorded for the boards, which
 /// session nonce they carry and whether the in-game bridge is armed. Other keys in the file stay as they are.
 pub fn write_session_keys(game: &Path, nonce: Option<&str>, bridge: bool) -> std::io::Result<()> {
+    let _held = SESSION_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let path = game.join(SESSION_FILE);
     let mut doc = read_object(&path);
     doc.insert("tt_boards".into(), true.into());
@@ -75,6 +83,7 @@ pub fn write_session_keys(game: &Path, nonce: Option<&str>, bridge: bool) -> std
 
 /// Take [`write_session_keys`]'s keys back out; the file goes if nothing else is in it.
 pub fn clear_session_keys(game: &Path) {
+    let _held = SESSION_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let path = game.join(SESSION_FILE);
     let mut doc = read_object(&path);
     if KEYS.iter().all(|k| !doc.contains_key(*k)) {

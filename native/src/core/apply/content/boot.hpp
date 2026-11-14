@@ -14,6 +14,7 @@
 #include "../../registry/store.hpp"
 
 #include <map>
+#include <memory>
 #include <set>
 #include <string>
 #include <tuple>
@@ -749,6 +750,41 @@ inline Admission admit(const std::vector<std::string> &order, const std::map<std
         a.refused.push_back({addon, it->second});
     }
     return a;
+}
+
+// The expansion counts each addon's new keys once its rows are laid out. Every addon still in is charged what it
+// counted; one past the room is left out whole as well, so the rows are laid out again without it and stay
+// contiguous. An addon left out before stays out, and keys of owners outside the load order are charged first.
+inline Admission readmit(const std::vector<std::string> &order, const std::map<std::string, std::size_t> &counted,
+                         const Admission &before, uint64_t room)
+{
+    Admission a = before;
+    uint64_t left = room;
+    for (auto &[owner, keys] : counted)
+        if (std::find(order.begin(), order.end(), owner) == order.end())
+            left = keys < left ? left - keys : 0;
+    for (auto &addon : order) {
+        auto it = counted.find(addon);
+        if (a.skip.count(addon) || it == counted.end() || !it->second)
+            continue;
+        if (it->second <= left) {
+            left -= it->second;
+            continue;
+        }
+        a.skip.insert(addon);
+        a.refused.push_back({addon, it->second});
+    }
+    return a;
+}
+
+// The plan's stat ids: a record's own pin, else a distinct id per registry, so the plan lowers every record the
+// boot can give an id and counts its rows.
+inline StatIds planning_ids()
+{
+    auto next = std::make_shared<std::map<std::string, int64_t>>();
+    return [next](const std::string &registry, const std::string &, int64_t pin) -> int64_t {
+        return pin >= 0 ? pin : (*next)[registry]++;
+    };
 }
 
 inline const char *tag_name(int tag)

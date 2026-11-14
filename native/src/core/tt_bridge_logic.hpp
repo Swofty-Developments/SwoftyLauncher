@@ -1,5 +1,6 @@
 #pragma once
 
+#include "apply/facts.hpp"
 #include "apply/tracks/base.hpp"
 
 #include <swofty/json.hpp>
@@ -319,6 +320,38 @@ inline Method method_at_op(const Mem &m, uint64_t op, std::string *name = nullpt
     return Method::none;
 }
 
+// Every F1os op is built by one template, so its method name has one string form. Once a Time Trial method was read in a form
+// (`known`), a request is told by one string read in that form: a name that is not a Time Trial method passes without the probe of
+// the twelve forms. A read that gives no string probes as method_at_op does. The name of a request that is not a Time Trial
+// method is only looked for when `name` is given.
+inline Method method_with_form(const Mem &m, uint64_t op, StrForm &known, std::string *name)
+{
+    if (known.ok()) {
+        std::string s = read_with(m, op + OP_METHOD, known);
+        if (!s.empty()) {
+            Method got = method_of(s);
+            if (name)
+                *name = std::move(s);
+            return got;
+        }
+    }
+    std::string s;
+    StrForm f = probe_form(m, op + OP_METHOD, [](const std::string &v) { return method_of(v) != Method::none; }, &s);
+    if (f.ok()) {
+        known = f;
+        Method got = method_of(s);
+        if (name)
+            *name = std::move(s);
+        return got;
+    }
+    if (name)
+        probe_form(m, op + OP_METHOD, [](const std::string &v) { return v.size() >= 3; }, name);
+    return Method::none;
+}
+
+inline uint32_t pack_form(StrForm f) { return uint32_t(f.form) << 8 | (f.word & 0xff); }
+inline StrForm unpack_form(uint32_t v) { return {Form(v >> 8 & 0xff), v & 0xff}; }
+
 // Board track keys
 
 struct BoardTrack {
@@ -492,6 +525,69 @@ inline bool save_checks_due(bool diag_on, uint64_t handler, int64_t now_ms, cons
     return diag_on || handler != seen.handler || now_ms - seen.read_ms >= period_ms;
 }
 
+// The game looks a Time Trial board up by its key ('LBV<descriptor><track><D|W>') in the board list (the registry's begin +0x18
+// and end +0x20, 8-byte board pointers, each board's C-string name at +0x68): once at the ghost lap storage system's
+// onSessionEnter and again when the leaderboard view selects its board. scan_boards walks that list the same way, with the
+// case of the name ignored, and counts the boards that share the key's first five characters (its descriptor) for the log.
+constexpr uint64_t BOARD_LIST_BEGIN = 0x18, BOARD_LIST_END = 0x20, BOARD_NAME = 0x68;
+constexpr size_t BOARD_LIST_MAX = 100000;
+
+struct BoardScan {
+    size_t listed = 0, same_prefix = 0;
+    bool found = false;
+    std::string sample;
+};
+
+inline bool same_board_name(const std::string &a, const std::string &b)
+{
+    if (a.size() != b.size())
+        return false;
+    for (size_t i = 0; i < a.size(); i++) {
+        char x = a[i] >= 'a' && a[i] <= 'z' ? char(a[i] - 32) : a[i], y = b[i] >= 'a' && b[i] <= 'z' ? char(b[i] - 32) : b[i];
+        if (x != y)
+            return false;
+    }
+    return true;
+}
+
+inline BoardScan scan_boards(const Mem &m, uint64_t first, uint64_t last, const std::string &key)
+{
+    BoardScan out;
+    if (!first || last < first)
+        return out;
+    out.listed = size_t(std::min<uint64_t>((last - first) / 8, BOARD_LIST_MAX));
+    std::string prefix = key.size() >= 5 ? key.substr(0, 5) : key;
+    for (size_t i = 0; i < out.listed; i++) {
+        uint64_t board = 0, np = 0;
+        std::string name;
+        if (m.get(first + 8 * i, board) && board && m.get(board + BOARD_NAME, np) && np)
+            name = read_c(m, np);
+        if (!key.empty() && same_board_name(name, key))
+            out.found = true;
+        if (name.compare(0, prefix.size(), prefix) == 0) {
+            out.same_prefix++;
+            if (out.sample.size() < 80 && name.size() > 5)
+                out.sample += (out.sample.empty() ? "" : " ") + name.substr(5);
+        }
+    }
+    return out;
+}
+
+// The garage monitor's leaderboard tab of our content shows the session's board. A leaderboard view whose lookup finds no board
+// skips its board work and never makes its child list model (+0x9a0), and activating that tab reads the null child. So the core
+// forces the tab for our content (builds it, raises car_monitor_tt_leaderboard_privilege_check, grants its type 2 privilege check,
+// turns a denied tt_privilege_check_done into granted) only while the session's latest lookup did not miss the board. Before any
+// lookup of the session the forcing stands as it was; after a lookup that missed, the tab is left to the game, which builds no
+// leaderboard tab for a Time Trial without a board.
+enum class BoardListed : uint8_t { unknown, listed, missing };
+
+inline BoardListed board_listed(bool found) { return found ? BoardListed::listed : BoardListed::missing; }
+
+inline bool garage_tab_allowed(bool bridge_on, bool ours_content, BoardListed listed)
+{
+    return bridge_on && ours_content && listed != BoardListed::missing;
+}
+
 // One rule for "this board is ours": an addon's descriptor or a custom track. The request redirect and the guards use it.
 // The garage monitor's `tt_privilege_check_done` command carries one byte, the privilege result. A denied result (0) becomes
 // granted (1) for our content with the bridge on; a granted result, an unreadable value (0xff) and any other value stay.
@@ -515,6 +611,30 @@ inline int garage_node_offset(const uint8_t *bytes, size_t n, uint32_t want = GA
             return int(i);
     }
     return -1;
+}
+
+// The garage monitor, the track select's leaderboard button, the leaderboard privilege checks and the session timer matter only in
+// Time Trial (its front end and its sessions). Their hooks return at their first line in a game mode known to be another one (a
+// career, a Grand Prix, story, F1 World); an unknown mode (the main menu, a mode not listed, no read yet) and the diagnostics keep them.
+inline bool tt_hooks_idle(swofty_core::apply::facts::ModeKind kind, bool diag_on)
+{
+    using K = swofty_core::apply::facts::ModeKind;
+    return !diag_on && (kind == K::career || kind == K::other);
+}
+
+// An online-state gate skips the game's checks only for a request of ours whose checks fail, so the op is read (its method, board
+// and route) only when the checks fail and the bridge can answer it, or for the diagnostics.
+inline bool gate_reads_op(bool diag_on, bool bridge_on, bool push_hooked, bool on_result, bool checks_fail)
+{
+    return diag_on || (bridge_on && push_hooked && on_result && checks_fail);
+}
+
+// The garage monitor panel's update runs every frame. A panel that was driven, or that was seen with content that is not ours
+// while the content generation (bumped when the session's track is read and at a session's enter and exit) has not moved, returns
+// at once.
+inline bool garage_update_idle(uint64_t panel, uint64_t driven_panel, uint64_t idle_panel, uint32_t idle_gen, uint32_t gen)
+{
+    return !panel || panel == driven_panel || (panel == idle_panel && idle_gen == gen);
 }
 
 // Driving the garage monitor's `car_monitor_tt_leaderboard_privilege_check` ourselves: allowed once per panel object, only for our content with
@@ -564,6 +684,19 @@ inline int replay_magic_offset(const uint8_t *bytes, size_t n)
             return int(i);
     }
     return -1;
+}
+
+// The replay loader's save-slot lookup of a Time Trial file, whose game mode has no save-slot component of its own. Our component stands in
+// only while the load start hook is armed (it applies the replay's setup and presses its box before the game's own load runs), and never for
+// a Theatre pick that came without its setup file: the game's own load of a Time Trial file starts a session without the player's car.
+// The answer is why nothing stands in, or null when our component does.
+inline const char *replay_stand_in_refusal(bool load_start_armed, int64_t bare_pick_ms, int64_t now_ms, int64_t window_ms = 10000)
+{
+    if (!load_start_armed)
+        return "the load start hook is not armed, so the replay's setup could not be applied";
+    if (bare_pick_ms > 0 && now_ms >= bare_pick_ms && now_ms - bare_pick_ms < window_ms)
+        return "the Theatre pick has no setup file (tt/replays/<file>.json), and the game's own load would start a Time Trial without the player's car";
+    return nullptr;
 }
 
 inline std::string replay_capture_name(uint64_t unix_seconds, uint32_t lap_ms)

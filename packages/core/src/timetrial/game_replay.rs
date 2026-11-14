@@ -1,9 +1,10 @@
 //! The game's own replay file of a lap: uploading the ones the core saves, and "Add to game".
 //!
-//! The core writes `pb_<unix seconds>_<lap ms>.replay` into `<game>/swofty/tt/replays/` a few seconds after
-//! a personal best, then `pb_<…>.json` with its setup once the replay is complete. [`send`] uploads a
-//! pair to the lap the server took with that lap time. [`add`] puts a lap's replay into the `inbox`
-//! folder there, from which the core moves it into the game's Theatre.
+//! The core writes `pb_<unix seconds>_<lap ms>.replay` into the data folder's `tt/replays/` (or
+//! `<game>/swofty/tt/replays/` when it can't write the data folder, see [`dirs`]) a few seconds after a
+//! personal best, then `pb_<…>.json` with its setup once the replay is complete. [`send`] uploads a
+//! pair to the lap the server took with that lap time. [`add`] puts a lap's replay into the data
+//! folder's `tt/replays/inbox`, from which the core moves it into the game's Theatre.
 
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
@@ -25,8 +26,14 @@ pub fn dir(game: &Path) -> PathBuf {
     game.join("swofty").join("tt").join("replays")
 }
 
-pub fn inbox(game: &Path) -> PathBuf {
-    dir(game).join("inbox")
+/// Where the core saves its replays: the data folder, which the game can always write (it can't create
+/// files in `<game>/swofty` of an EA app copy under Program Files), then the game folder.
+pub fn dirs(data: &Path, game: &Path) -> [PathBuf; 2] {
+    [data.join("tt").join("replays"), dir(game)]
+}
+
+pub fn inbox(data: &Path) -> PathBuf {
+    data.join("tt").join("replays").join("inbox")
 }
 
 /// What [`send`] needs of the server, so its logic can run against a fake.
@@ -74,21 +81,28 @@ fn modified(path: &Path) -> Option<u64> {
     Some(at.duration_since(std::time::UNIX_EPOCH).ok()?.as_secs())
 }
 
-/// Whether the core left anything in the game's replay folder.
-pub fn any(game: &Path) -> bool {
-    std::fs::read_dir(dir(game)).is_ok_and(|d| {
-        d.filter_map(Result::ok).any(|e| {
-            e.file_name().to_string_lossy().starts_with("pb_")
-                && e.path().extension().is_some_and(|x| x == "replay" || x == "json")
+/// Whether the core left anything in its replay folders.
+pub fn any(dirs: &[PathBuf]) -> bool {
+    dirs.iter().any(|dir| {
+        std::fs::read_dir(dir).is_ok_and(|d| {
+            d.filter_map(Result::ok).any(|e| {
+                e.file_name().to_string_lossy().starts_with("pb_")
+                    && e.path().extension().is_some_and(|x| x == "replay" || x == "json")
+            })
         })
     })
 }
 
-/// The ready pairs in the game's replay folder, newest first. Halves and unreadable pairs older than two
+/// The ready pairs in the core's replay folders, newest first. Halves and unreadable pairs older than two
 /// days are removed.
-pub fn ready(game: &Path, now: u64) -> Vec<Pair> {
-    let dir = dir(game);
-    let Ok(read) = std::fs::read_dir(&dir) else {
+pub fn ready(dirs: &[PathBuf], now: u64) -> Vec<Pair> {
+    let mut pairs: Vec<Pair> = dirs.iter().flat_map(|dir| ready_in(dir, now)).collect();
+    pairs.sort_by(|a, b| (b.secs, &b.name).cmp(&(a.secs, &a.name)));
+    pairs
+}
+
+fn ready_in(dir: &Path, now: u64) -> Vec<Pair> {
+    let Ok(read) = std::fs::read_dir(dir) else {
         return Vec::new();
     };
     let names: BTreeSet<String> = read
@@ -157,19 +171,33 @@ fn not_for_upload(answer: &Uploaded) -> Option<&'static str> {
     }
 }
 
+/// The server's answer behind an upload that lost its connection. The proxy in front of the server resets
+/// the connection when the server refuses a replay before reading it, so the refusal never arrives while
+/// the body is still being sent. The same request without a body gets the same refusal; a server that
+/// would take the replay turns the empty body down as no replay file, and the lost connection stands.
+fn answer_behind(api: &dyn Replays, id: &str, setup: &str, lost: ApiError) -> ApiError {
+    if lost.status != 0 {
+        return lost;
+    }
+    match api.put_game_replay(id, setup, &[]) {
+        Err(answer) if matches!(answer.status, 403 | 404 | 409 | 429) => answer,
+        _ => lost,
+    }
+}
+
 /// Upload the ready pairs whose lap the server took, newest first. A pair goes once it is uploaded,
 /// refused for good, too big, or two days old with no lap; one the server could not take for now stays
 /// with a backoff and ends the pass.
 pub fn send(
     queue: &Queue,
-    game: &Path,
+    dirs: &[PathBuf],
     api: &dyn Replays,
     now: u64,
     stop: &dyn Fn() -> bool,
     say: &mut dyn FnMut(&str),
 ) -> Report {
     let mut report = Report::default();
-    let pairs = ready(game, now);
+    let pairs = ready(dirs, now);
     let state_file = queue.replays_state();
     if pairs.is_empty() {
         std::fs::remove_file(&state_file).ok();
@@ -238,9 +266,13 @@ pub fn send(
             report.waiting += 1;
             continue;
         }
+        let setup = setup.as_deref().unwrap_or_default();
         let sent = std::fs::read(&pair.replay)
             .map_err(|e| ApiError::network(format!("{}: {e}", pair.replay.display())))
-            .and_then(|bytes| api.put_game_replay(&id, setup.as_deref().unwrap_or_default(), &bytes));
+            .and_then(|bytes| {
+                api.put_game_replay(&id, setup, &bytes)
+                    .map_err(|e| answer_behind(api, &id, setup, e))
+            });
         match sent {
             Ok(()) => {
                 say(&format!("uploaded the game replay of lap {id} ({size} bytes)"));
@@ -279,14 +311,14 @@ pub fn send(
 }
 
 /// Write a lap's replay and its setup into the inbox, the setup last.
-pub fn place(game: &Path, id: &str, setup: &Value, replay: &[u8]) -> Result<PathBuf, String> {
+pub fn place(data: &Path, id: &str, setup: &Value, replay: &[u8]) -> Result<PathBuf, String> {
     if !valid_id(id) {
         return Err("not a lap id".to_owned());
     }
     if !setup.is_object() {
         return Err("the lap's game replay has no setup".to_owned());
     }
-    let dir = inbox(game);
+    let dir = inbox(data);
     let say = |what: &str, e: std::io::Error| format!("couldn't {what} in {}: {e}", dir.display());
     std::fs::create_dir_all(&dir).map_err(|e| say("make the folder", e))?;
     let put = |name: String, bytes: &[u8], what: &str| {
@@ -307,8 +339,9 @@ pub fn place(game: &Path, id: &str, setup: &Value, replay: &[u8]) -> Result<Path
     )
 }
 
-/// Download the game replay of lap `id` and put it where the core in `game` picks it up.
-pub fn add(api: &Api, game: &Path, id: &str) -> Result<(), String> {
+/// Download the game replay of lap `id` and put it in the inbox of the data folder `data`, where the
+/// core picks it up.
+pub fn add(api: &Api, data: &Path, id: &str) -> Result<(), String> {
     if !valid_id(id) {
         return Err("not a lap id".to_owned());
     }
@@ -327,7 +360,7 @@ pub fn add(api: &Api, game: &Path, id: &str) -> Result<(), String> {
     if replay.is_empty() {
         return Err(none());
     }
-    place(game, id, setup, &replay).map(|_| ())
+    place(data, id, setup, &replay).map(|_| ())
 }
 
 #[cfg(test)]
@@ -359,6 +392,14 @@ mod tests {
             Queue::new(&self.0.join("data"))
         }
 
+        fn data(&self) -> PathBuf {
+            self.0.join("data")
+        }
+
+        fn dirs(&self) -> [PathBuf; 2] {
+            dirs(&self.data(), &self.game())
+        }
+
         /// Record a lap of `ms` as uploaded at `now` with the server's id `id`.
         fn lap(&self, name: &str, ms: u64, id: &str, now: u64) {
             self.lap_as(name, ms, answer(id, "ranked", Some(true)), now);
@@ -376,8 +417,11 @@ mod tests {
         }
 
         fn pair(&self, secs: u64, ms: u64, bytes: &[u8]) -> PathBuf {
-            let dir = dir(&self.game());
-            std::fs::create_dir_all(&dir).unwrap();
+            self.pair_in(&dir(&self.game()), secs, ms, bytes)
+        }
+
+        fn pair_in(&self, dir: &Path, secs: u64, ms: u64, bytes: &[u8]) -> PathBuf {
+            std::fs::create_dir_all(dir).unwrap();
             let replay = dir.join(format!("pb_{secs}_{ms}.replay"));
             std::fs::write(&replay, bytes).unwrap();
             std::fs::write(replay.with_extension("json"), setup(ms).to_string()).unwrap();
@@ -442,7 +486,7 @@ mod tests {
 
     fn pass(root: &Root, api: &Fake, now: u64) -> (Report, Vec<String>) {
         let mut lines = Vec::new();
-        let r = send(&root.queue(), &root.game(), api, now, &|| false, &mut |l| {
+        let r = send(&root.queue(), &root.dirs(), api, now, &|| false, &mut |l| {
             lines.push(l.to_owned())
         });
         (r, lines)
@@ -472,19 +516,38 @@ mod tests {
     }
 
     #[test]
+    fn a_pair_in_the_data_folder_goes_beside_one_in_the_game_folder() {
+        let root = Root::new("both");
+        let [new, _] = root.dirs();
+        let fresh = root.pair_in(&new, 1001, 91000, b"NEW");
+        let old = root.pair(1000, 92000, b"OLD");
+        assert!(any(&root.dirs()));
+        let pairs = ready(&root.dirs(), 1010);
+        assert_eq!(pairs.iter().map(|p| p.lap_ms).collect::<Vec<_>>(), [91000, 92000]);
+        std::fs::remove_file(&old).ok();
+        std::fs::remove_file(old.with_extension("json")).ok();
+        root.lap("b.swlap", 91000, "00000000000000bb", 1021);
+        let api = Fake::new(vec![Ok(())]);
+        let (r, _) = pass(&root, &api, 1030);
+        assert_eq!(r.uploaded, 1);
+        assert_eq!(api.seen.borrow()[0].2, b"NEW");
+        assert!(!fresh.exists());
+    }
+
+    #[test]
     fn a_replay_without_its_setup_is_not_ready() {
         let root = Root::new("half");
         root.lap("a.swlap", 91000, "00000000000000aa", 1000);
         let replay = root.pair(1000, 91000, b"FRR");
         std::fs::remove_file(replay.with_extension("json")).unwrap();
-        assert!(any(&root.game()));
+        assert!(any(&root.dirs()));
         let (r, _) = pass(&root, &Fake::default(), 1010);
         assert_eq!(r, Report::default());
         assert!(replay.exists());
         std::fs::write(replay.with_extension("json"), "{\"lap_ms\":91").unwrap();
-        assert!(ready(&root.game(), 1010).is_empty());
+        assert!(ready(&root.dirs(), 1010).is_empty());
         assert!(replay.exists());
-        assert!(ready(&root.game(), 1000 + KEEP_SECS + 1).is_empty());
+        assert!(ready(&root.dirs(), 1000 + KEEP_SECS + 1).is_empty());
         assert!(!replay.exists() && !replay.with_extension("json").exists());
     }
 
@@ -495,10 +558,14 @@ mod tests {
         root.lap("b.swlap", 92000, "00000000000000bb", 1000);
         let old = root.pair(1001, 91000, b"A");
         let new = root.pair(1002, 92000, b"B");
-        let api = Fake::new(vec![Err(ApiError::network("down"))]);
+        let api = Fake::new(vec![
+            Err(ApiError::network("down")),
+            Err(ApiError::network("down")),
+        ]);
         let (r, lines) = pass(&root, &api, 1010);
         assert_eq!((r.uploaded, r.waiting, r.dropped), (0, 2, 0));
         assert_eq!(api.seen.borrow()[0].0, "00000000000000bb");
+        assert!(api.seen.borrow()[1].2.is_empty());
         assert!(lines[0].contains("will retry"));
         let state: BTreeMap<String, Waiting> = queue::read_json(&root.queue().replays_state()).unwrap();
         assert_eq!(
@@ -543,6 +610,58 @@ mod tests {
         assert_eq!((r.uploaded, r.waiting, r.dropped), (1, 0, 1));
         assert!(lines[0].contains("not uploaded"));
         assert!(!old.exists() && !new.exists() && !new.with_extension("json").exists());
+    }
+
+    fn not_a_replay() -> ApiError {
+        ApiError::from_body(400, r#"{"error": "the body is not a game replay file"}"#)
+    }
+
+    #[test]
+    fn a_refusal_lost_with_the_connection_is_asked_for_again_without_the_body() {
+        let root = Root::new("lost");
+        root.lap("a.swlap", 91000, "00000000000000aa", 1000);
+        root.lap("b.swlap", 92000, "00000000000000bb", 1000);
+        let old = root.pair(1001, 91000, b"A");
+        let new = root.pair(1002, 92000, b"B");
+        let refusal = ApiError::from_body(409, r#"{"error": "this lap is not your best on this board"}"#);
+        let api = Fake::new(vec![Err(ApiError::network("aborted")), Err(refusal), Ok(())]);
+        let (r, lines) = pass(&root, &api, 1010);
+        assert_eq!((r.uploaded, r.waiting, r.dropped), (1, 0, 1));
+        let seen = api.seen.borrow();
+        assert_eq!(
+            seen.iter().map(|s| (s.0.as_str(), s.2.len())).collect::<Vec<_>>(),
+            [
+                ("00000000000000bb", 1),
+                ("00000000000000bb", 0),
+                ("00000000000000aa", 1)
+            ]
+        );
+        assert!(lines[0].contains("not uploaded") && lines[0].contains("not your best"));
+        assert!(!old.exists() && !new.exists());
+    }
+
+    #[test]
+    fn a_lost_rate_limit_is_waited_out_and_a_real_network_failure_stands() {
+        let root = Root::new("lost429");
+        root.lap("a.swlap", 91000, "00000000000000aa", 1000);
+        let replay = root.pair(1001, 91000, b"A");
+        let mut busy = ApiError::from_body(429, "");
+        busy.retry_after = Some(45);
+        let api = Fake::new(vec![Err(ApiError::network("aborted")), Err(busy)]);
+        let (r, _) = pass(&root, &api, 1010);
+        assert_eq!(r.waiting, 1);
+        let state: BTreeMap<String, Waiting> = queue::read_json(&root.queue().replays_state()).unwrap();
+        assert_eq!(state["pb_1001_91000"].next_try, 1055);
+
+        let api = Fake::new(vec![Err(ApiError::network("aborted")), Err(not_a_replay())]);
+        let (r, lines) = pass(&root, &api, 1060);
+        assert_eq!(r.waiting, 1);
+        assert!(lines[0].contains("will retry: aborted"));
+        assert!(replay.exists());
+
+        let api = Fake::new(vec![Err(ApiError::from_body(503, ""))]);
+        pass(&root, &api, 5000);
+        assert_eq!(api.seen.borrow().len(), 1);
     }
 
     #[test]
@@ -650,8 +769,9 @@ mod tests {
     #[test]
     fn add_to_game_writes_the_pair_into_the_inbox() {
         let root = Root::new("inbox");
-        let json = place(&root.game(), "2949b7d7eaf78422", &setup(91000), b"FRR bytes").unwrap();
-        let inbox = inbox(&root.game());
+        let json = place(&root.data(), "2949b7d7eaf78422", &setup(91000), b"FRR bytes").unwrap();
+        let inbox = inbox(&root.data());
+        assert_eq!(inbox, root.dirs()[0].join("inbox"));
         assert_eq!(json, inbox.join("tt_2949b7d7eaf78422.frr.json"));
         assert_eq!(
             std::fs::read(inbox.join("tt_2949b7d7eaf78422.frr")).unwrap(),
@@ -660,14 +780,14 @@ mod tests {
         let doc: Value = serde_json::from_slice(&std::fs::read(&json).unwrap()).unwrap();
         assert_eq!(doc, setup(91000));
         assert_eq!(std::fs::read_dir(&inbox).unwrap().count(), 2);
-        assert!(ready(&root.game(), 1).is_empty());
+        assert!(ready(&root.dirs(), 1).is_empty());
     }
 
     #[test]
     fn a_bad_id_or_a_missing_setup_writes_nothing() {
         let root = Root::new("bad");
-        assert!(place(&root.game(), "../../etc/passwd", &setup(1), b"x").is_err());
-        assert!(place(&root.game(), "2949b7d7eaf78422", &Value::Null, b"x").is_err());
-        assert!(!inbox(&root.game()).exists());
+        assert!(place(&root.data(), "../../etc/passwd", &setup(1), b"x").is_err());
+        assert!(place(&root.data(), "2949b7d7eaf78422", &Value::Null, b"x").is_err());
+        assert!(!inbox(&root.data()).exists());
     }
 }

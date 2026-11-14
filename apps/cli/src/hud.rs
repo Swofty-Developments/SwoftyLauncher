@@ -12,11 +12,11 @@ use swofty_core::store::Store;
 #[derive(Subcommand)]
 pub enum HudCommand {
     #[command(
-        about = "Assert the stock dial facts the HUD composer relies on (scenes, quads, template parents, value tags) against the game's original files; exits 1 when one fails"
+        about = "Assert the stock dial facts the HUD composer relies on (scenes, quads, template parents, value tags, the archives that carry each resource it writes) against the game's original files; exits 1 when one fails"
     )]
     Check,
     #[command(
-        about = "Compose the hud.element records of an addon folder's hud file into ready overlay archives, written to a folder"
+        about = "Compose the hud.element records of an addon folder's hud file into ready overlay archives, written to a folder; exits 1 when a stock archive that carries a composed resource is left out"
     )]
     Compose {
         #[arg(help = "The addon's folder")]
@@ -59,7 +59,8 @@ pub fn command(store: &Store, cmd: HudCommand) -> Result<ExitCode> {
                     .map_or_else(|| "addon".into(), |n| n.to_string_lossy().into_owned())
             });
             let inputs = hud::inputs_of(&id, &addon, &file).with_context(|| file.clone())?;
-            let built = hud::compose(&stock(store)?, &inputs)?;
+            let stock = stock(store)?;
+            let built = hud::compose(&stock, &inputs)?;
             built.write(&out)?;
             for l in &built.lines {
                 println!("{l}");
@@ -72,7 +73,25 @@ pub fn command(store: &Store, cmd: HudCommand) -> Result<ExitCode> {
                     a.erps.len()
                 );
             }
-            Ok(ExitCode::SUCCESS)
+            let mut left = hud::check::uncovered(&stock, &built.archives)?;
+            left.extend(
+                hud::check::constant_rotations(&built.archives)?
+                    .into_iter()
+                    .map(|n| format!("{n} has a one-key rotation")),
+            );
+            left.extend(
+                hud::check::unpadded_clips(&built.archives)?
+                    .into_iter()
+                    .map(|n| format!("{n}: the syst is not a multiple of 16 bytes")),
+            );
+            for l in &left {
+                println!("FAIL  {l}");
+            }
+            Ok(if left.is_empty() {
+                ExitCode::SUCCESS
+            } else {
+                ExitCode::FAILURE
+            })
         }
     }
 }

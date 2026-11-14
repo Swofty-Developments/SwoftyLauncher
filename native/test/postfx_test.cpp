@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <cstring>
 #include <utility>
+#include <vector>
 
 using namespace postfx;
 
@@ -17,8 +18,250 @@ static int failed;
         }                                                                                                              \
     } while (0)
 
+// The placement gate the way postfx.cpp runs it, over game frames that rotate through `buffers` back buffers. Each
+// frame records and submits the picture's list (the back buffer becomes a render target; in menus the passes run at
+// its HUD-less step while the buffer is fresh), then the HUD's list (the buffer becomes a render target again and
+// the HUD reads it: the passes run there unless they ran on this buffer lately), and in menus a second list that
+// reads it too. Frame generation calls Present1 `presents(f)` times in frame f, at the steps `at(f, k)`. With
+// game_clock the frame closes as FrameClock says (the core now); without it every Present closes it (1.9.17).
+struct Sim {
+    unsigned buffers = 3, frames = 600;
+    bool menus = false, game_clock = true, generated = true, flow_only = false;
+    unsigned (*presents)(unsigned f) = nullptr;
+    unsigned (*at)(unsigned f, unsigned k) = nullptr;
+
+    std::vector<unsigned> run()
+    {
+        int back[8];
+        unsigned placed[8], count = 0;
+        bool fresh[8] = {};
+        for (auto &p : placed)
+            p = LONG_AGO;
+        FrameClock clock;
+        uint64_t now = 100000, started = 1000;
+        std::vector<unsigned> runs(frames, 0);
+        auto present = [&] {
+            if (!game_clock || clock.present(now, generated, started))
+                count++;
+        };
+        auto submit = [&](int *b) {
+            if (game_clock && clock.submit(b, now, started))
+                count++;
+        };
+        for (unsigned f = 0; f < frames; f++) {
+            unsigned i = f % buffers, n = presents && !flow_only ? presents(f) : 0;
+            int *b = &back[i];
+            auto step = [&](unsigned s) {
+                for (unsigned k = 0; k < n; k++)
+                    if (at(f, k) == s)
+                        present();
+                now += 2;
+            };
+            step(0);
+            fresh[i] = !placed_lately(count, placed[i]);
+            if (menus && fresh[i]) {
+                fresh[i] = false;
+                placed[i] = count;
+                runs[f]++;
+            }
+            step(1);
+            submit(b);
+            step(2);
+            fresh[i] = !placed_lately(count, placed[i]);
+            if (!placed_lately(count, placed[i])) {
+                fresh[i] = false;
+                placed[i] = count;
+                runs[f]++;
+            }
+            step(3);
+            submit(b);
+            step(4);
+            if (menus && !placed_lately(count, placed[i])) {
+                placed[i] = count;
+                runs[f]++;
+            }
+            step(5);
+            submit(b);
+            now += 4;
+        }
+        return runs;
+    }
+};
+
+static unsigned once_per_run(const std::vector<unsigned> &runs, unsigned &skipped, unsigned &doubled)
+{
+    skipped = doubled = 0;
+    unsigned off = 0;
+    for (size_t f = 8; f < runs.size(); f++) {
+        skipped += runs[f] == 0;
+        doubled += runs[f] > 1;
+        off += runs[f] != 1;
+    }
+    return off;
+}
+
+static unsigned rnd(unsigned f, unsigned k)
+{
+    unsigned x = f * 2654435761u + k * 40503u + 0x9e3779b9u;
+    x ^= x >> 15;
+    x *= 2246822519u;
+    x ^= x >> 13;
+    return x;
+}
+
+// Where one frame's passes run when the picture's list ends inside the HUD-less step, the way postfx.cpp drives
+// BackPlace: the picture's list makes the back buffer a render target, the closing list records its step barrier
+// before or after the picture's list is submitted (split step when it binds the back buffer), the closing list and
+// the HUD's list are submitted in either order, then Present. The closing list draws the rest of the picture first
+// when it binds the back buffer, so passes placed right after the picture's list are painted over.
+enum Ran : uint8_t { RAN_SPLIT, RAN_AFTER_PICTURE, RAN_AFTER_CLOSE, RAN_PRESENT };
+
+struct SplitFrame {
+    bool closing_recorded_first = false, bound = true, closing = true, direct = true, hud_first = false,
+         reset = false, may_defer = true;
+};
+
+static std::vector<Ran> split_frame(BackPlace &p, unsigned now, const SplitFrame &s)
+{
+    std::vector<Ran> ran;
+    p.drawn(now);
+    bool in_closing = false;
+    auto record_closing = [&] {
+        if (s.closing && s.bound && s.direct && p.split_step(now)) {
+            p.place(now);
+            in_closing = true;
+            ran.push_back(RAN_SPLIT);
+        }
+    };
+    if (s.closing_recorded_first)
+        record_closing();
+    if (p.picture_submitted(now, true, s.may_defer) == END_BETWEEN)
+        ran.push_back(RAN_AFTER_PICTURE);
+    if (!s.closing_recorded_first)
+        record_closing();
+    bool submitted = s.closing && !s.reset;
+    if (in_closing && s.reset) {
+        p.unplace();
+        ran.pop_back();
+    }
+    if (s.hud_first)
+        p.moved(false);
+    if (submitted && p.step_closed(now, s.direct))
+        ran.push_back(RAN_AFTER_CLOSE);
+    if (!s.hud_first)
+        p.moved(false);
+    if (p.presented(now))
+        ran.push_back(RAN_PRESENT);
+    return ran;
+}
+
+static bool shows(const std::vector<Ran> &ran, const SplitFrame &s)
+{
+    return ran.size() == 1 && !(ran[0] == RAN_AFTER_PICTURE && s.closing && s.bound);
+}
+
 int main()
 {
+    {
+        // The split step wins the race: the closing list records its step barrier before the picture's list is
+        // submitted. Before the fix and after, the passes run in the closing list.
+        BackPlace p;
+        SplitFrame s;
+        s.closing_recorded_first = true;
+        auto ran = split_frame(p, 10, s);
+        CHECK(ran == std::vector<Ran>{RAN_SPLIT} && shows(ran, s));
+        s.may_defer = false;
+        ran = split_frame(p, 13, s);
+        CHECK(ran == std::vector<Ran>{RAN_SPLIT} && shows(ran, s));
+    }
+    {
+        // The race the split step lost (1.9.41): the picture's list is submitted first. Placing the passes right
+        // after it gets them painted over by the closing list; waiting for the closing list runs them in it.
+        BackPlace p;
+        SplitFrame s;
+        s.may_defer = false;
+        auto ran = split_frame(p, 10, s);
+        CHECK(ran == std::vector<Ran>{RAN_AFTER_PICTURE} && !shows(ran, s));
+        s.may_defer = true;
+        ran = split_frame(p, 13, s);
+        CHECK(ran == std::vector<Ran>{RAN_SPLIT} && shows(ran, s));
+        CHECK(!p.waits(13) && !p.presented(13));
+    }
+    {
+        // A closing list that does not bind the back buffer leaves it alone: the passes run right after it, in
+        // either order of record and submit.
+        for (bool first : {false, true}) {
+            BackPlace p;
+            SplitFrame s;
+            s.bound = false;
+            s.closing_recorded_first = first;
+            auto ran = split_frame(p, 20, s);
+            CHECK(ran == std::vector<Ran>{RAN_AFTER_CLOSE} && shows(ran, s));
+        }
+    }
+    {
+        // No list closes the step, or only a compute list does: the passes run at Present.
+        BackPlace p;
+        SplitFrame s;
+        s.closing = false;
+        auto ran = split_frame(p, 30, s);
+        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+        s = SplitFrame{};
+        s.direct = false;
+        ran = split_frame(p, 33, s);
+        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+    }
+    {
+        // The HUD's list moved the back buffer out of render target before the closing list was submitted: not
+        // after the closing list, at Present.
+        BackPlace p;
+        SplitFrame s;
+        s.bound = false;
+        s.hud_first = true;
+        auto ran = split_frame(p, 40, s);
+        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+    }
+    {
+        // The closing list the passes were recorded into is reset unsubmitted: they run at Present.
+        BackPlace p;
+        SplitFrame s;
+        s.reset = true;
+        auto ran = split_frame(p, 50, s);
+        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+    }
+    {
+        // A step that stayed open past its frame (no Present closed it) no longer waits, and a new use of the back
+        // buffer starts closed.
+        BackPlace p;
+        p.drawn(60);
+        CHECK(p.picture_submitted(60, true, true) == END_DEFER && p.waits(60) && p.waits(61) && !p.waits(62));
+        CHECK(!p.step_closed(62, true) && !p.presented(62));
+        p.drawn(63);
+        CHECK(p.fresh && !p.open && !p.waits(63));
+        CHECK(p.picture_submitted(63, false, true) == END_BETWEEN && !p.fresh && p.placed_at == 63);
+        CHECK(p.picture_submitted(63, true, true) == END_NONE);
+    }
+    {
+        // Every order of record and submit, with or without a closing list, over frames that rotate through
+        // three back buffers: once a frame, and shown whenever the closing list repaints the picture.
+        BackPlace backs[3];
+        unsigned off = 0, frames = 0;
+        for (unsigned f = 8; f < 8 + 3 * 64; f++) {
+            unsigned bits = (f / 3) % 64;
+            SplitFrame s;
+            s.closing_recorded_first = bits & 1;
+            s.bound = bits & 2;
+            s.closing = !(bits & 4);
+            s.direct = !(bits & 8);
+            s.hud_first = bits & 16;
+            s.reset = bits & 32;
+            auto ran = split_frame(backs[f % 3], f, s);
+            off += !shows(ran, s);
+            frames++;
+        }
+        CHECK(frames == 192 && off == 0);
+    }
+
     When any;
     CHECK(!ineligible(any, UNKNOWN, 0, false));
     CHECK(!ineligible(any, CHASE_FAR, PAUSED | REPLAY, true));
@@ -129,6 +372,108 @@ int main()
     CHECK(!placed_lately(0, LONG_AGO) && !placed_lately(5000, LONG_AGO));
     CHECK(placed_lately(100, 100) && placed_lately(101, 100) && !placed_lately(102, 100) && !placed_lately(103, 100));
     CHECK(placed_lately(0, 0u - 1) && !placed_lately(1, 0u - 1));
+
+    CHECK(!presents_gone(500000, 0, 0));
+    CHECK(!presents_gone(10999, 0, 10000) && presents_gone(11000, 0, 10000));
+    CHECK(!presents_gone(20500, 20000, 10000) && presents_gone(21000, 20000, 10000));
+    CHECK(!presents_gone(9000, 0, 10000) && !presents_gone(5000, 20000, 10000));
+
+    CHECK(presents_own_frames("libxess_fg.dll") && presents_own_frames("LibXeSS_FG.DLL"));
+    CHECK(presents_own_frames("libxess_fg.dll (calls Present)") && presents_own_frames("C:\\game\\libxess_fg.dll"));
+    CHECK(!presents_own_frames("") && !presents_own_frames("amd_fidelityfx_dx12.dll") &&
+          !presents_own_frames("sl.dlss_g.dll") && !presents_own_frames("nvngx_dlssg.dll"));
+    CHECK(!presents_own_frames("libxess_fg.dll.bak") && !presents_own_frames("a non-direct present queue") &&
+          !presents_own_frames("libxess.dll"));
+
+    {
+        int a, b, c;
+        FrameClock plain;
+        CHECK(plain.present(20000, false, 10000) && plain.present(20016, false, 10000));
+        CHECK(!plain.submit(&a, 20020, 10000) && !plain.submit(&b, 20030, 10000) && !plain.flow(20030, 10000));
+        CHECK(plain.present(20033, false, 10000) && !plain.flow(21032, 10000) && plain.flow(21033, 10000));
+
+        FrameClock xess;
+        CHECK(!xess.present(20000, true, 10000) && !xess.present(20008, true, 10000));
+        CHECK(xess.submit(&a, 20010, 10000) && !xess.submit(&a, 20012, 10000) && !xess.submit(nullptr, 20012, 10000));
+        CHECK(!xess.present(20016, false, 10000) && !xess.present(20017, true, 10000));
+        CHECK(xess.submit(&b, 20020, 10000) && xess.submit(&c, 20040, 10000) && xess.submit(&a, 20060, 10000));
+        CHECK(!xess.flow(20060, 10000));
+        CHECK(xess.submit(&b, 21016, 10000) && xess.present(21017, false, 10000));
+        CHECK(!xess.submit(&c, 21020, 10000) && xess.present(21033, false, 10000));
+
+        FrameClock none;
+        CHECK(!none.submit(&a, 10500, 10000) && !none.flow(10999, 10000) && none.flow(11000, 10000));
+        CHECK(none.submit(&b, 11000, 10000) && none.submit(&a, 11016, 10000) && !none.submit(&a, 11020, 10000));
+        CHECK(none.present(11030, false, 10000) && !none.flow(11040, 10000));
+        CHECK(!none.submit(&b, 11050, 10000));
+        CHECK(none.submit(&c, 12100, 10000));
+    }
+
+    {
+        unsigned skipped = 0, doubled = 0;
+        Sim plain;
+        plain.generated = false;
+        plain.presents = [](unsigned) { return 1u; };
+        plain.at = [](unsigned, unsigned) { return 5u; };
+        CHECK(once_per_run(plain.run(), skipped, doubled) == 0);
+        plain.game_clock = false;
+        CHECK(once_per_run(plain.run(), skipped, doubled) == 0);
+        plain.game_clock = true;
+        plain.menus = true;
+        CHECK(once_per_run(plain.run(), skipped, doubled) == 0);
+
+        Sim fg_on;
+        fg_on.presents = [](unsigned f) { return 1u + rnd(f, 99) % 3; };
+        fg_on.at = [](unsigned f, unsigned k) { return rnd(f, k) % 6; };
+        fg_on.game_clock = false;
+        unsigned off = once_per_run(fg_on.run(), skipped, doubled);
+        std::printf("xess fg on, every Present1 closing the frame (1.9.17): %u of %u frames off (%u skipped, %u doubled)\n",
+                    off, fg_on.frames - 8, skipped, doubled);
+        fg_on.menus = true;
+        off = once_per_run(fg_on.run(), skipped, doubled);
+        std::printf("xess fg on in menus (1.9.17): %u of %u frames off (%u skipped, %u doubled)\n", off,
+                    fg_on.frames - 8, skipped, doubled);
+        CHECK(off > 0 && doubled > 0);
+        for (unsigned buffers : {3u, 4u})
+            for (bool menus : {false, true}) {
+                fg_on.game_clock = true;
+                fg_on.buffers = buffers;
+                fg_on.menus = menus;
+                CHECK(once_per_run(fg_on.run(), skipped, doubled) == 0);
+            }
+
+        Sim fg_off;
+        fg_off.presents = [](unsigned f) { return rnd(f, 77) % 3; };
+        fg_off.at = [](unsigned f, unsigned k) { return rnd(f, k + 5) % 6; };
+        fg_off.game_clock = false;
+        off = once_per_run(fg_off.run(), skipped, doubled);
+        std::printf("xess swapchain, frame generation off, Present1 paced on its own thread (1.9.17): %u of %u frames "
+                    "off (%u skipped, %u doubled)\n",
+                    off, fg_off.frames - 8, skipped, doubled);
+        CHECK(off > 0 && skipped > 0);
+        fg_off.game_clock = true;
+        for (bool menus : {false, true}) {
+            fg_off.menus = menus;
+            CHECK(once_per_run(fg_off.run(), skipped, doubled) == 0);
+        }
+
+        Sim mixed = fg_on;
+        mixed.presents = [](unsigned f) { return 2u + rnd(f, 55) % 2; };
+        mixed.at = [](unsigned f, unsigned k) { return k == 2 ? 3u : rnd(f, k + 9) % 6; };
+        mixed.game_clock = true;
+        mixed.menus = false;
+        mixed.buffers = 3;
+        CHECK(once_per_run(mixed.run(), skipped, doubled) == 0);
+
+        Sim gone;
+        gone.flow_only = true;
+        gone.game_clock = true;
+        gone.generated = false;
+        for (bool menus : {false, true}) {
+            gone.menus = menus;
+            CHECK(once_per_run(gone.run(), skipped, doubled) == 0);
+        }
+    }
 
     SideMarks<List, Res, int, 2, 2> cramped;
     CHECK(cramped.find(&many[0], true) && cramped.find(&many[1], true));

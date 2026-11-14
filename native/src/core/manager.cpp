@@ -71,6 +71,12 @@ std::vector<CoreMixins> standings_guard_mixins();
 void standings_guard_commit();
 std::vector<CoreMixins> fe_tile_guard_mixins();
 void fe_tile_guard_commit();
+std::vector<CoreMixins> myteam_vehicle_guard_mixins();
+void myteam_vehicle_guard_commit();
+std::vector<CoreMixins> myteam_vehicle_heal_mixins();
+void myteam_vehicle_heal_commit();
+std::vector<CoreMixins> myteam_vehicle_keep_mixins();
+void myteam_vehicle_keep_commit();
 std::vector<CoreMixins> ai_corner_guard_mixins();
 void ai_corner_guard_commit();
 std::vector<CoreMixins> replay_grid_guard_mixins();
@@ -114,11 +120,17 @@ void leaderboard_guard_commit();
 std::vector<CoreMixins> thrustmaster_lcd_mixins();
 void thrustmaster_lcd_commit();
 std::vector<CoreMixins> estimate_laptime_mixins();
+std::vector<CoreMixins> gp_continue_mixins();
+void gp_continue_commit();
 void estimate_laptime_commit();
+std::vector<CoreMixins> track_list_guard_mixins();
+void track_list_guard_commit();
 std::vector<CoreMixins> garage_setup_mixins();
 void garage_setup_commit();
 std::vector<CoreMixins> theatre_list_mixins();
 void theatre_list_commit();
+std::vector<CoreMixins> tile_list_select_mixins();
+void tile_list_select_commit();
 std::vector<CoreMixins> session_enter_mixins();
 std::vector<CoreMixins> ai_line_set_mixins();
 void ai_line_set_commit();
@@ -1808,9 +1820,9 @@ size_t offer_core_sets()
     for (auto *sets : {runtime::save_sandbox_mixins, runtime::career_content_mixins, runtime::characters_mixins, runtime::wizard_mixins,
                        runtime::tile_route_mixins, runtime::era_mixins, runtime::tt_guard_mixins, runtime::career_alias_mixins, runtime::car_category_mixins,
                        runtime::save_splice_mixins, runtime::ers_newlap_mixins, runtime::ers_mode_mixins, runtime::car_levers_mixins,
-                       runtime::garage_crew_mixins, runtime::pit_slots_mixins, runtime::pit_box_mixins, runtime::garage_slots_mixins, runtime::chassis_registry_mixins, runtime::standings_guard_mixins, runtime::ai_corner_guard_mixins, runtime::replay_grid_guard_mixins, runtime::fe_tile_guard_mixins, runtime::tyre_slots_mixins, runtime::tyre_models_mixins, runtime::track_acclim_mixins,
+                       runtime::garage_crew_mixins, runtime::pit_slots_mixins, runtime::pit_box_mixins, runtime::garage_slots_mixins, runtime::chassis_registry_mixins, runtime::standings_guard_mixins, runtime::ai_corner_guard_mixins, runtime::replay_grid_guard_mixins, runtime::fe_tile_guard_mixins, runtime::myteam_vehicle_guard_mixins, runtime::myteam_vehicle_heal_mixins, runtime::myteam_vehicle_keep_mixins, runtime::tyre_slots_mixins, runtime::tyre_models_mixins, runtime::track_acclim_mixins,
                        runtime::audio_queue_mixins, runtime::heap_sizes_mixins, runtime::team_slots_mixins, runtime::track_select_mixins, runtime::netplay_icons_mixins, runtime::netplay_keys_mixins, runtime::netplay_privilege_mixins,
-                       runtime::leaderboard_guard_mixins, runtime::lap_rec_mixins, runtime::thrustmaster_lcd_mixins, runtime::estimate_laptime_mixins, runtime::watchdog_grace_mixins, runtime::garage_setup_mixins, runtime::theatre_list_mixins, runtime::session_enter_mixins, runtime::ai_line_set_mixins})
+                       runtime::leaderboard_guard_mixins, runtime::lap_rec_mixins, runtime::thrustmaster_lcd_mixins, runtime::estimate_laptime_mixins, runtime::gp_continue_mixins, runtime::track_list_guard_mixins, runtime::watchdog_grace_mixins, runtime::garage_setup_mixins, runtime::theatre_list_mixins, runtime::tile_list_select_mixins, runtime::session_enter_mixins, runtime::ai_line_set_mixins})
         add_core_sets(sets());
     return addons.size() - before;
 }
@@ -1833,6 +1845,9 @@ void settle_core_sets()
     runtime::car_levers_commit();
     runtime::standings_guard_commit();
     runtime::fe_tile_guard_commit();
+    runtime::myteam_vehicle_guard_commit();
+    runtime::myteam_vehicle_heal_commit();
+    runtime::myteam_vehicle_keep_commit();
     runtime::ai_corner_guard_commit();
     runtime::replay_grid_guard_commit();
     runtime::watchdog_grace_commit();
@@ -1854,8 +1869,11 @@ void settle_core_sets()
     runtime::leaderboard_guard_commit();
     runtime::thrustmaster_lcd_commit();
     runtime::estimate_laptime_commit();
+    runtime::gp_continue_commit();
+    runtime::track_list_guard_commit();
     runtime::garage_setup_commit();
     runtime::theatre_list_commit();
+    runtime::tile_list_select_commit();
     runtime::session_enter_commit();
     runtime::ai_line_set_commit();
 }

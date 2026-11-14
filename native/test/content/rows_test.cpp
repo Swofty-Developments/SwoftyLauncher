@@ -1,5 +1,6 @@
 #include "../../src/core/apply/content/boot.hpp"
 #include "../../src/core/apply/ids.hpp"
+#include "../../src/core/apply/room.hpp"
 #include "../../src/core/apply/scheduler.hpp"
 #include "../../src/core/career_ops/teams_plan.hpp"
 #include "../../src/core/career_ops/teams_store.hpp"
@@ -56,6 +57,44 @@ static std::optional<std::string> written(const rows::Engine &e, const std::stri
 }
 
 static Value op(const char *json) { return swofty::json::parse(json); }
+
+static std::vector<std::string> holes(const std::vector<rows::Write> &applied, const rows::Base &base)
+{
+    std::unordered_map<uint64_t, std::string> have;
+    for (auto &w : applied)
+        have[w.key] = w.text;
+    auto exists = [&](const std::string &path) {
+        uint64_t k = content::gvdb::fnv64(path);
+        return have.count(k) || base(k);
+    };
+    const std::string tail = "_instancecount_";
+    std::vector<std::string> out;
+    for (auto &w : applied) {
+        std::size_t dot = w.path.rfind("._");
+        if (dot == std::string::npos || w.path.size() < tail.size() ||
+            w.path.compare(w.path.size() - tail.size(), tail.size(), tail) != 0)
+            continue;
+        std::string table = w.path.substr(0, dot);
+        std::string row = w.path.substr(dot + 2, w.path.size() - dot - 2 - tail.size());
+        auto stock = base(w.key);
+        int64_t from = stock ? std::strtoll(stock->text.c_str(), nullptr, 10) : 0;
+        for (int64_t i = from, n = std::strtoll(w.text.c_str(), nullptr, 10); i < n; i++) {
+            std::string at = table + "." + row + "_" + std::to_string(i);
+            if (!exists(at + "._metadata_") && !exists(at))
+                out.push_back(at);
+        }
+    }
+    return out;
+}
+
+static std::vector<rows::Write> owned_by(const rows::Engine &e, const std::set<std::string> &owners)
+{
+    std::vector<rows::Write> out;
+    for (auto &w : e.writes())
+        if (owners.count(w.owner))
+            out.push_back(w);
+    return out;
+}
 
 static void engine_tests()
 {
@@ -145,6 +184,59 @@ static void engine_tests()
 }
 
 // A small database with the stock rows a package copies.
+static void room_hole_tests()
+{
+    rows::Keys keys;
+    keys.parse("@t.rows.row_N\n_metadata_\nspeed\n");
+    Db db;
+    db.put("t.rows._row_instancecount_", 0, "1");
+    db.put("t.rows.row_0._metadata_", 4, "stock");
+    db.put("t.rows.row_0.speed", 1, "1.5");
+    std::vector<std::string> order = {"swofty.swofty-seasons-2015", "swofty.swofty-seasons-2024"};
+    auto lay = [&](const std::set<std::string> &skip) {
+        auto e = std::make_unique<rows::Engine>(db.base(), keys);
+        auto add = [&](const std::string &owner, const std::string &label) {
+            if (skip.count(owner))
+                return;
+            e->attribute(owner, "driver.identity");
+            e->apply(op(("{\"op\":\"add-row\",\"table\":\"t.rows\",\"from\":\"t.rows.row[_metadata_=stock]\","
+                         "\"set\":{\"_metadata_\":\"" + label + "\"}}").c_str()));
+            e->commit();
+        };
+        add(order[0], "sw15_driver");
+        add(order[1], "sw24_driver");
+        add(order[0], "sw-sw15_maldonado");
+        return e;
+    };
+    auto fresh_of = [](const rows::Engine &e) {
+        std::map<std::string, std::size_t> out;
+        for (auto &w : e.writes())
+            if (w.fresh)
+                out[w.owner]++;
+        return out;
+    };
+    auto full = lay({});
+    auto counted = fresh_of(*full);
+    check(counted[order[0]] == 4 && counted[order[1]] == 2 && written(*full, "t.rows._row_instancecount_") == "4",
+          "a seat entrant laid out after every registry sits past the later addon's row, and its addon owns the count");
+    namespace rm = apply::room;
+    std::vector<rm::AddonAsk> asks = {{order[0], counted[order[0]], 0}, {order[1], counted[order[1]], 0}};
+    auto per_addon = rm::admit(4, asks);
+    auto torn = holes(owned_by(*full, {order[0]}), db.base());
+    check(per_addon.addons[0].admitted && !per_addon.addons[1].admitted && torn.size() == 1 && torn[0] == "t.rows.row_2",
+          "refusing the later addon after layout leaves the count at 4 with row 2 never created (1121flatpunto45l's "
+          "crash): " + (torn.empty() ? std::string("none") : torn[0]));
+    auto whole = rm::admit_whole(4, asks);
+    check(!whole.admitted_keys && !whole.addons[0].admitted && holes(owned_by(*full, {}), db.base()).empty(),
+          "past the room after layout, nothing is applied and the table keeps its own rows");
+    auto again = content::readmit(order, counted, {}, 4);
+    check(again.skip == std::set<std::string>{order[1]}, "readmitted on its counted keys, the later addon is left out");
+    auto relaid = lay(again.skip);
+    check(holes(relaid->writes(), db.base()).empty() && written(*relaid, "t.rows._row_instancecount_") == "3" &&
+              written(*relaid, "t.rows.row_2._metadata_") == "sw-sw15_maldonado" && fresh_of(*relaid)[order[0]] <= 4,
+          "laid out again without it, the seat entrant takes row 2 and every counted row exists");
+}
+
 static void stock_package_rows(Db &db)
 {
     auto row = [&](const std::string &prefix, std::initializer_list<std::pair<const char *, std::string>> fields) {
@@ -492,6 +584,49 @@ static void variant_tests(const std::string &regs)
     check(y.records["content.package"] == 1 && written(y.engine, "entrants.entrant_lists.entrant_list_1._metadata_") ==
                                                    "esp_f1_2017_v10",
           "with the first addon left out, the next one's rows start at the table's next index");
+
+    content::Expansion p(db.base());
+    content::expand(st, p, content::planning_ids());
+    check(p.addon_fresh == x.addon_fresh && p.fresh == x.fresh, "the plan counts the new keys the boot writes, per addon");
+    std::vector<std::string> order = st.order();
+    check(holes(x.engine.writes(), db.base()).empty(), "a boot applied whole leaves no table claiming a missing row");
+    namespace rm = apply::room;
+    std::vector<rm::AddonAsk> asks;
+    for (auto &a : order)
+        asks.push_back({a, x.addon_fresh[a], 0});
+    uint64_t room = std::min(base_keys, var_keys) == var_keys ? var_keys : base_keys + var_keys - 1;
+    auto per_addon = rm::admit(room, asks);
+    std::set<std::string> kept;
+    for (auto &v : per_addon.addons)
+        if (v.admitted)
+            kept.insert(v.addon);
+    auto torn = holes(owned_by(x.engine, kept), db.base());
+    std::printf("      per-addon refusal at room %llu keeps %zu addon(s), %zu missing row(s)%s\n", (unsigned long long)room,
+                kept.size(), torn.size(), torn.empty() ? "" : (": first " + torn.front()).c_str());
+    if (var_keys < base_keys)
+        check(!torn.empty() && kept.count("mod.esp") && !kept.count("swofty.classic-seasons-2017"),
+              "refusing the first addon of a laid-out boot keeps the second's rows past the first's: the table claims "
+              "rows that were never created (1121flatpunto45l's crash)");
+    auto whole = rm::admit_whole(room, asks);
+    check(!whole.admitted_keys && holes(owned_by(x.engine, {}), db.base()).empty(),
+          "past the room, nothing of the laid-out boot is applied, so no table claims a missing row");
+    auto again = content::readmit(order, x.addon_fresh, {}, room);
+    check(again.skip.size() == 1, "the counted keys leave one addon out whole");
+    content::Expansion z(db.base());
+    content::expand(st, z, stat, again.skip);
+    std::size_t z_keys = 0;
+    for (auto &[a, n] : z.addon_fresh)
+        z_keys += n;
+    check(z_keys <= room && holes(z.engine.writes(), db.base()).empty(),
+          "laid out again without it, the boot fits the room and no table claims a missing row");
+    auto settled = content::readmit(order, z.addon_fresh, again, room);
+    check(settled.skip == again.skip, "the second layout fits, so the readmission settles");
+    auto none = content::readmit(order, x.addon_fresh, {}, base_keys + var_keys);
+    check(none.skip.empty(), "a boot that fits the room is laid out once");
+    std::map<std::string, std::size_t> core_first = x.addon_fresh;
+    core_first["swofty.core"] = 5;
+    check(content::readmit(order, core_first, {}, base_keys + var_keys).skip.size() == 1,
+          "keys of owners outside the load order are charged before any addon");
 }
 
 // The stock wide rows next to the ones a 24-car package copies (f1_2025 and f1_teams_2024 from stock_package_rows):
@@ -877,6 +1012,20 @@ static void livery_tests()
     check(foreign.ops.size() == 2 && fops.find("2025-mclarensilverstone") == std::string::npos &&
               fops.find("\"team_customisation\":\"\"") != std::string::npos,
           "a special on a car with no stock se_livery row takes no other team's team customisation");
+
+    recs["mod.a/car"] = Value::object({{"label", "cs17_mercedes"}, {"donor", "game/mercedes_2025"}});
+    db[std::string(content::SE_LIVERIES) + ".se_livery_0.compatible_vehicle"] = "cs17_mercedes";
+    db.erase(std::string(content::SE_LIVERIES) + ".se_livery_0.team_customisation");
+    content::Plan booted, unplanned, planned;
+    int s1 = 0, s2 = 0, s3 = 0;
+    content::lower_livery("mod.a/sp", sp, {}, lookup, read, booted, stat, &s1);
+    content::lower_livery("mod.a/sp", sp, {}, lookup, read, unplanned, {}, &s2);
+    content::lower_livery("mod.a/sp", sp, {}, lookup, read, planned, content::planning_ids(), &s3);
+    check(booted.ops.size() == 2 && unplanned.ops.size() == 0 && unplanned.refused == 1,
+          "without stat ids a special livery lowers to nothing, so the old plan missed its rows (315 keys of SWOFTY "
+          "2021-2024)");
+    check(planned.ops.size() == booted.ops.size() && !planned.refused,
+          "the plan's own stat ids lower it to the rows the boot writes");
 
     content::Plan missing;
     Value bad = Value::object({{"vehicle", "mod.a/car"}, {"archive", "a.erp"}});
@@ -2161,6 +2310,7 @@ int main(int argc, char **argv)
     seat_entrant_tests();
     slot_tests();
     engine_tests();
+    room_hole_tests();
     livery_tests();
     garage_tests();
     package_team_row_tests();
