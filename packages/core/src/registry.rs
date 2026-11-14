@@ -304,7 +304,9 @@ impl GameFiles for GameDir {
         if path.is_file() {
             Ok(path)
         } else {
-            Err(swofty_addon::Error::Other(format!("{rel} is not a game file")))
+            Err(swofty_addon::Error::Other(format!(
+                "{rel} is not in the game folder; if it is one of the game's own files, verify the game files in Steam or the EA app"
+            )))
         }
     }
 
