@@ -172,6 +172,35 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     std::set<std::string> overlay_rels;
     for (auto &[target, list] : overlays)
         overlay_rels.insert(list.begin(), list.end());
+    logo_build::Env env;
+    env.list = [&] { return files; };
+    env.overlays = [&](const std::string &rel) {
+        auto it = overlays.find(runtime::lower(rel));
+        return it == overlays.end() ? std::vector<std::string>{} : it->second;
+    };
+    env.open = [&](const std::string &rel) -> std::shared_ptr<erpfile::Source> {
+        auto fs = std::make_shared<FileSource>();
+        fs->h = CreateFileW(game_file(rel).c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
+        LARGE_INTEGER size;
+        if (fs->h == INVALID_HANDLE_VALUE || !GetFileSizeEx(fs->h, &size))
+            return nullptr;
+        fs->src.size = uint64_t(size.QuadPart);
+        HANDLE h = fs->h;
+        fs->src.read = [h](uint64_t off, size_t n, char *out) {
+            LARGE_INTEGER at;
+            at.QuadPart = LONGLONG(off);
+            DWORD got = 0;
+            return SetFilePointerEx(h, at, nullptr, FILE_BEGIN) && ReadFile(h, out, DWORD(n), &got, nullptr) && got == n;
+        };
+        return std::shared_ptr<erpfile::Source>(fs, &fs->src);
+    };
+    std::vector<std::string> boot = logo_build::array_layers(env, logo_build::BOOT_ARCHIVE);
+    if (!boot.empty()) {
+        files.push_back(logo_build::BOOT_ARCHIVE);
+        report.lines.push_back("team.logo: the boot archive " + std::string(logo_build::BOOT_ARCHIVE) + " carries logo arrays in " + boot[0] +
+                               (boot.size() > 1 ? " and " + std::to_string(boot.size() - 1) + " more layer(s)" : "") +
+                               "; its copies get the same slices as the ui_package ones");
+    }
     std::vector<std::string> keyed_files = files;
     for (auto &rel : files) {
         auto it = overlays.find(runtime::lower(rel));
@@ -207,28 +236,6 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         logo_cache::manifest_parse(manifest, [&](const std::string &file) {
             return GetFileAttributesW(runtime::under_swofty(dir + file).c_str()) != INVALID_FILE_ATTRIBUTES;
         }, cached_built, routes);
-    logo_build::Env env;
-    env.list = [&] { return files; };
-    env.overlays = [&](const std::string &rel) {
-        auto it = overlays.find(runtime::lower(rel));
-        return it == overlays.end() ? std::vector<std::string>{} : it->second;
-    };
-    env.open = [&](const std::string &rel) -> std::shared_ptr<erpfile::Source> {
-        auto fs = std::make_shared<FileSource>();
-        fs->h = CreateFileW(game_file(rel).c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE, nullptr, OPEN_EXISTING, 0, nullptr);
-        LARGE_INTEGER size;
-        if (fs->h == INVALID_HANDLE_VALUE || !GetFileSizeEx(fs->h, &size))
-            return nullptr;
-        fs->src.size = uint64_t(size.QuadPart);
-        HANDLE h = fs->h;
-        fs->src.read = [h](uint64_t off, size_t n, char *out) {
-            LARGE_INTEGER at;
-            at.QuadPart = LONGLONG(off);
-            DWORD got = 0;
-            return SetFilePointerEx(h, at, nullptr, FILE_BEGIN) && ReadFile(h, out, DWORD(n), &got, nullptr) && got == n;
-        };
-        return std::shared_ptr<erpfile::Source>(fs, &fs->src);
-    };
     struct Built {
         std::vector<std::string> lines;
         int built = 0, refused = 0;
