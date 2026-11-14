@@ -21,7 +21,7 @@ use super::stock_edit::{self, Restyle, StockNodes};
 use super::template::{self, StockTags, Usage};
 use super::textures::{self, Res};
 use super::units::{self, TexFacts};
-use super::{Input, Stock, art_bounds, editor, first};
+use super::{Input, Stock, art_bounds, editor, first, walk};
 use crate::ui::idf;
 use crate::ui::node::{self, NodeExt, ObjExt};
 use crate::{Error, Result};
@@ -43,6 +43,9 @@ pub const CAP_FACTS: DialFacts = DialFacts {
     bottom_y: 0.0,
     quad_size: Some(screens::CAP_MESH_SIZE),
 };
+
+/// A stock board instances the host scene once and the composer adds one more beside it.
+const HOST_INSTANCES: usize = 2;
 
 /// What the screen records added, per archive.
 #[derive(Debug, Default)]
@@ -606,8 +609,20 @@ pub fn compose_screens(
             .unwrap_or_default();
         previews.push(cap.add_scene_record_in(&r.input.record, &r.pfx, &r.sprites, Mode::Preview(&state))?);
     }
-    out.scene
-        .push((screens::CAP.to_owned(), "UILayout", vec![cap.finish(None)?]));
+    let host = cap.finish(None)?;
+    let host_pkg = Pkg::parse(&host)?;
+    let host_root = stock_edit::scene_root(&host_pkg)?;
+    for r in &recs {
+        let cost = |name: &str| idf::find(host_root, name).map(walk::cost).unwrap_or_default();
+        out.lines.extend(walk::lines(
+            &r.input.addon,
+            &r.pfx,
+            cost(&r.pfx),
+            cost(&preview_root(&r.pfx)),
+            HOST_INSTANCES,
+        ));
+    }
+    out.scene.push((screens::CAP.to_owned(), "UILayout", vec![host]));
     let planned: Vec<&Plan> = plans.iter().collect();
     if planned.iter().any(|p| !p.clips.is_empty()) {
         let clip_template = race_read(super::dials::CLIP_TEMPLATE)?;
