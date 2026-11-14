@@ -76,6 +76,8 @@ int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
 // mode's group at session load, at a full safety car end and at a red flag restart; every other mode keeps its own.
 // Points per box: the same narrowing points the race sessions of every swofty_f1 mode at the standings preset the
 // boot apply added for the box's rules.points (logic::PointsSwaps); the same put backs restore the game's presets.
+// Mandatory tyre change per box: the same narrowing writes the box's rules.mandatory_tyre_change into every
+// swofty_f1 mode's 39 tyre regulation requirement flags (+0x8b) (logic::TyreChangeSwaps); the same put backs restore them.
 // Tyre warmers per box: the same narrowing writes the box's rules.tyre_warmers into every swofty_f1 mode's
 // has_tyre_warmers byte (+0x1c8) and the same put backs restore the game's value (logic::WarmerSwaps).
 //
@@ -192,6 +194,8 @@ logic::WarmerSwaps warmers;
 std::string last_warmers_line;
 logic::PointsSwaps points;
 std::string last_points_line;
+logic::TyreChangeSwaps tyre_change;
+std::string last_tyre_change_line;
 
 template <class T> T at(const void *base, size_t off)
 {
@@ -351,6 +355,32 @@ void apply_points(void *mode, const char *list)
                         : box.line + "; not applied (no race session in a " + std::string(logic::HOST) + " mode)");
 }
 
+void log_tyre_change(const std::string &line)
+{
+    if (line == last_tyre_change_line)
+        return;
+    last_tyre_change_line = line;
+    swofty::log("[tyres] %s", line.c_str());
+}
+
+// Mandatory tyre change per box: the pressed box's rules.mandatory_tyre_change goes into every swofty_f1 mode's
+// tyre regulation requirement flags; a box without the rule puts the game's flags back.
+void apply_tyre_change(void *mode, const char *list)
+{
+    auto box = swofty_core::apply::content::tyre_change_for_box(list);
+    if (!box.required) {
+        tyre_change.put_back();
+        log_tyre_change(box.line);
+        return;
+    }
+    size_t modes = 0;
+    for_each_host_mode(mode, [&](uint8_t *m) {
+        tyre_change.swap(m, *box.required);
+        modes++;
+    });
+    log_tyre_change(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
+}
+
 void put_back_drs()
 {
     if (size_t n = drs.put_back())
@@ -359,6 +389,8 @@ void put_back_drs()
         log_warmers(std::string(logic::HOST) + "'s tyre warmer setting put back on " + std::to_string(n) + " mode(s)");
     if (size_t n = points.put_back())
         log_points(std::string(logic::HOST) + "'s points put back on " + std::to_string(n) + " race session(s)");
+    if (size_t n = tyre_change.put_back())
+        log_tyre_change(std::string(logic::HOST) + "'s tyre regulations put back on " + std::to_string(n) + " mode(s)");
 }
 
 logic::ListCars list_cars(const void *list);
@@ -551,6 +583,7 @@ void narrow(void *mode, const char *list)
     apply_drs(mode, list);
     apply_warmers(mode, list);
     apply_points(mode, list);
+    apply_tyre_change(mode, list);
 }
 
 bool time_trial(void *mode)
@@ -1578,6 +1611,10 @@ void drop_setup_pointers()
     last_drs_line.clear();
     last_warmers_line.clear();
     last_points_line.clear();
+    tyre_change.forget();
+    last_drs_line.clear();
+    last_warmers_line.clear();
+    last_tyre_change_line.clear();
     std::string line = logic::availability_drop_line(p);
     if (!line.empty() && !logged_dropped.exchange(true))
         swofty::log("[era] %s", line.c_str());
