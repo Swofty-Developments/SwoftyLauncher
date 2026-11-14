@@ -147,6 +147,9 @@ static_assert(offsetof(SecretMeeting, reason) == 0x14);
 static_assert(offsetof(SecretMeeting, team) == 0x20);
 static_assert(sizeof(SecretMeeting) == 0x24);
 
+struct TodCurveBinding {
+};
+
 struct TrackDataRecord {
     uint8_t _pad_0x0[0x1];
     uint8_t index; // L2 experimental
@@ -1104,6 +1107,7 @@ inline constexpr data<"g_Game_Scenarios", void *> g_Game_Scenarios{}; // L2 expe
 inline constexpr data<"g_Game_TrackLength", float> g_Game_TrackLength{}; // L2 experimental
 inline constexpr data<"g_Game_VehicleRecordManager", void *> g_Game_VehicleRecordManager{}; // L2 experimental
 inline constexpr data<"g_Game_VehicleStateRoot", void *> g_Game_VehicleStateRoot{}; // L2 experimental
+inline constexpr data<"g_Game_WeatherSurfaceState", void*> g_Game_WeatherSurfaceState{}; // L2 experimental
 inline constexpr data<"k_Game_TrackListComponentDesc", void *> k_Game_TrackListComponentDesc{}; // L2 experimental, TrackListComponent
 inline constexpr site<"site_Game_AcclimPenalty_Entry"> site_Game_AcclimPenalty_Entry{}; // L2 experimental
 inline constexpr site<"site_Game_AcclimPenalty_Return"> site_Game_AcclimPenalty_Return{}; // L2 experimental

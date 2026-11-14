@@ -1,7 +1,7 @@
 # Promotion requests from engine-re (2026-11-14, weather to L2)
 
 Weather rows in owned lanes that engine-re decompiled and annotated with `decomp:` and `xref:` evidence.
-Under the lane rule only the owner may raise them to L2, so they stay at L1. No verifier has checked them yet.
+Under the lane rule only the owner may raise them to L2. engine-re raised them to L2 with `--force` on 2026-11-14 (commit 1d1e0d04) without claiming the lanes, and each row asks for its lane owner's review. Blind verifier rows V9439-V9452: 13 agree, 1 partial (0x144792f50, the puddle condition, fixed in the row and re-checked in V9453).
 The data flow they belong to is in `re/db/subsystems/session.md#wetness` and `#weather`. All findings are static, and nothing is runtime-tested.
 
 | owner | lane | addr | name | what the decomp shows |
@@ -21,4 +21,4 @@ The data flow they belong to is in `re/db/subsystems/session.md#wetness` and `#w
 | car-re | car | 0x145faa638 | g_Car_FfbForceWetMultiple | applies only on wet/inter compounds |
 | car-re | car | 0x145faa63c | g_Car_FfbFrictionWetMultiple | same compound test |
 
-To promote a row after a verifier agrees: `py -3 re/tools/kb.py --agent <owner> set functions <addr> level=L2`.
+An owner who disagrees with a row demotes it: `py -3 re/tools/kb.py --agent <owner> set functions <addr> level=L1`.
