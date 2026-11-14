@@ -1257,6 +1257,17 @@ impl RowIds for Scoped<'_> {
         self.store.borrow_mut().put(key, id, from);
     }
 
+    fn registry_record(&self, table: &str, row: &str, label: Option<&str>, id: i64) -> Option<String> {
+        let s = self.store.borrow();
+        let table = format!("{table}.{row}");
+        let unheld = REGISTRY_TABLES
+            .iter()
+            .any(|(registry, t)| *t == table && UNHELD_REGISTRIES.contains(registry));
+        let record = s.pinned.get(&table).filter(|_| !unheld)?.get(&id)?;
+        let own = addon_of(record) == self.addon || record.rsplit('/').next() == label;
+        (s.pin_holds(record) && !own).then(|| record.clone())
+    }
+
     fn reclaim(
         &self,
         table: &str,
@@ -1386,8 +1397,12 @@ mod tests {
                 )]),
             );
             for label in *labels {
+                let (label, set_id) = match label.split_once('@') {
+                    Some((l, id)) => (l, format!(r#","stat_id":"{id}""#)),
+                    None => (*label, String::new()),
+                };
                 let json = format!(
-                    r#"{{"op":"db.add-row","table":"{table}","from":"{table}.{row}_0","set":{{"_metadata_":"{label}"}}}}"#
+                    r#"{{"op":"db.add-row","table":"{table}","from":"{table}.{row}_0","set":{{"_metadata_":"{label}"{set_id}}}}}"#
                 );
                 p.push(Op {
                     op: serde_json::from_str(&json).unwrap(),
@@ -1980,6 +1995,64 @@ mod tests {
         let aliases = store.id_aliases();
         assert_eq!(aliases.tables["vehicles"].get(&509), None);
         assert_eq!(aliases.tables["vehicles"].get(&600), Some(&725));
+    }
+
+    const DRIVERS: (&str, &str) = ("entrants.drivers", "driver");
+
+    fn career_holds_247(data: &Path) {
+        put(
+            &reports::path(data, reports::IDS),
+            r#"{"version":1,"ids":{"driver.identity":{"sw.2022/sw22_vettel":{"id":247,"since":"2026-11-12"}},
+            "vehicle.package":{"sw.2022/sw_2022":{"id":247,"since":"2026-11-12"}}},
+            "careers":{"dc-1":{"driver.identity":{"sw.2022/sw22_vettel":247}}}}"#,
+        );
+    }
+
+    #[test]
+    fn a_stat_id_an_addon_sets_yields_to_the_registry_record_a_career_holds_it_for() {
+        let data = data_dir("explicit-registry");
+        career_holds_247(&data);
+        let (store, _) = Store::load(&data, None, "p", None);
+        let rows: &[&str] = &["aarav_amin@247", "alex_gillon@246"];
+        let first = build(DRIVERS, 100, &[("mdm", rows)], store);
+        let got = first.ids["aarav_amin"];
+        assert_ne!(got, 247, "{:?}", first.lines);
+        assert_ne!(got, 246);
+        assert_eq!(first.ids["alex_gillon"], 246);
+        assert!(
+            first.lines.iter().any(|l| l.contains(
+                "stat_id 247 is kept for sw.2022/sw22_vettel, a record of the core's registry; stat_id"
+            )),
+            "{:?}",
+            first.lines
+        );
+        assert_eq!(first.store.get(&key("mdm", DRIVERS, "aarav_amin")), Some(got));
+        let mut kept = first.store;
+        let loaded = Store::load(&data, None, "p", None).0;
+        kept.pinned = loaded.pinned;
+        kept.career_held = loaded.career_held;
+        let again = build(DRIVERS, 100, &[("mdm", rows)], kept);
+        assert_eq!(again.ids["aarav_amin"], got);
+        assert_eq!(again.ids["alex_gillon"], 246);
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn a_stat_id_an_addon_sets_stays_on_its_own_record_and_where_saves_hold_no_ids() {
+        let data = data_dir("explicit-own");
+        career_holds_247(&data);
+        let (store, _) = Store::load(&data, None, "p", None);
+        let own = build(DRIVERS, 100, &[("sw.2022", &["other@247"])], store);
+        assert_eq!(own.ids["other"], 247);
+        let (store, _) = Store::load(&data, None, "p", None);
+        let same_row = build(DRIVERS, 100, &[("grid", &["sw22_vettel@247"])], store);
+        assert_eq!(same_row.ids["sw22_vettel"], 247);
+        let (store, _) = Store::load(&data, None, "p", None);
+        let package = build(PACKAGES, 100, &[("mdm", &["pkg@247"])], store);
+        assert_eq!(package.ids["pkg"], 247);
+        let free = build(DRIVERS, 100, &[("mdm", &["aarav_amin@247"])], Store::default());
+        assert_eq!(free.ids["aarav_amin"], 247);
+        std::fs::remove_dir_all(&data).ok();
     }
 
     #[test]

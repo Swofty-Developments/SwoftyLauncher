@@ -196,9 +196,12 @@ fn stat_row(row: &str) -> &str {
 /// which was above the table's ceiling when `holder` is `None`.
 pub fn moved_stat_id_line(addon: &str, holder: Option<&str>, m: &MovedStatId) -> String {
     let label = |l: &Option<String>, row: &str| l.clone().unwrap_or_else(|| row.to_owned());
-    let why = match (holder, &m.holder) {
-        (Some(holder), Some(row)) => {
+    let why = match (holder, &m.holder, &m.record) {
+        (Some(holder), Some(row), _) => {
             format!("is taken by {} from {holder}", label(&m.holder_label, row))
+        }
+        (_, _, Some(record)) => {
+            format!("is the id careers hold for {record}")
         }
         _ => {
             let table = stat_row(&m.row);

@@ -341,6 +341,12 @@ A `stat_id` in `set` above the table's highest moves the same way, and the build
 my-addon: stat_id 300 of my_car is above 254, the highest the game reads in entrants.vehicles.vehicle_packages.vehicle_package; the build gave it stat_id 59. The addon's author should leave stat_id out of add-row
 ```
 
+A `stat_id` in `set` that the core's `ids.json` keeps for another addon's registry record, in a table whose ids careers hold (teams, vehicles, drivers, driver heads, entrant lists, scenarios), moves the same way, and the build warns:
+
+```text
+my-addon: stat_id 247 of my_driver is the id careers hold for other-addon/their_driver; the build gave it stat_id 256. The addon's author should leave stat_id out of add-row
+```
+
 A `statId` in `set` on a `game_setup.scenarios` row moves the same way when a row added earlier holds it or it is above 254, and `[statId=<id>]` selectors follow. A scenario copy without a `statId` in `set` keeps its source's.
 
 The conflicts report counts each clash as a database conflict between the two addons. The id a copy moves to depends on the addons before it in the load order, so a career made with one load order expects that order's ids. An id that a stock row holds stays as set. A copy into a nested table, such as an entrant of an entrant list, keeps its source's id; the build prints a line when the nested table's ids were all different.
