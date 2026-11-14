@@ -2476,6 +2476,43 @@ mod tests {
     }
 
     #[test]
+    fn a_rename_onto_a_deleted_profiles_name_keeps_both_vaults() {
+        let root = tmp("rename-onto-deleted-vault");
+        let store = Store::new(&root);
+        store.create_profile("grid", None).unwrap();
+        store.create_profile("main", None).unwrap();
+        let vaults = root.join("career-vault");
+        for prefix in ["launcher-", "launcher-ea."] {
+            for name in ["grid", "main"] {
+                let vault = vaults.join(format!("{prefix}{name}"));
+                std::fs::create_dir_all(&vault).unwrap();
+                std::fs::write(vault.join("marker"), format!("{name}'s")).unwrap();
+            }
+        }
+        store.delete_profile("grid").unwrap();
+        store.rename_profile("main", "grid").unwrap();
+        for prefix in ["launcher-", "launcher-ea."] {
+            let read = |vault: &Path| std::fs::read_to_string(vault.join("marker")).unwrap();
+            assert_eq!(read(&vaults.join(format!("{prefix}grid"))), "main's", "{prefix}");
+            assert!(!vaults.join(format!("{prefix}main")).exists(), "{prefix}");
+            let aside: Vec<PathBuf> = std::fs::read_dir(&vaults)
+                .unwrap()
+                .flatten()
+                .map(|e| e.path())
+                .filter(|p| {
+                    p.file_name()
+                        .unwrap()
+                        .to_string_lossy()
+                        .starts_with(&format!("{prefix}grid.deleted."))
+                })
+                .collect();
+            assert_eq!(aside.len(), 1, "{prefix}: {aside:?}");
+            assert_eq!(read(&aside[0]), "grid's", "{prefix}");
+        }
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
     fn keeps_vanilla_and_the_last_profile() {
         let root = tmp("delete-last");
         let store = Store::new(&root);
