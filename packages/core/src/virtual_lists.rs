@@ -226,7 +226,9 @@ pub fn settle(db: &mut Gvdb, stock: &HashSet<u64>) -> Vec<String> {
             let line = add_host(db, &names, &first, host, &mut count);
             lines.push(line);
         }
-        hosts.push((host, career));
+        if (0..count).any(|i| label_at(db, i).as_deref() == Some(host)) {
+            hosts.push((host, career));
+        }
     }
     for set in ["2025", "2026"] {
         if let Some(path) = content_set_lists(db, set) {
@@ -257,6 +259,7 @@ pub fn settle(db: &mut Gvdb, stock: &HashSet<u64>) -> Vec<String> {
         refs.push(format!("{base}.entrant_lists"));
         refs.push(format!("{base}.selectable_entrant_lists"));
     }
+    let career_host = hosts.iter().any(|(_, career)| *career);
     let mut stripped = 0;
     for path in refs {
         let Some(v) = text(db, &path) else { continue };
@@ -264,7 +267,8 @@ pub fn settle(db: &mut Gvdb, stock: &HashSet<u64>) -> Vec<String> {
         for l in items(&v) {
             let l = match settled.get(&l) {
                 Some((false, _)) => continue,
-                Some((true, _)) => CAREER_HOST.to_owned(),
+                Some((true, _)) if career_host => CAREER_HOST.to_owned(),
+                Some((true, _)) => continue,
                 None => l,
             };
             if !kept.contains(&l) {
@@ -299,6 +303,7 @@ pub fn settle(db: &mut Gvdb, stock: &HashSet<u64>) -> Vec<String> {
     let mut pointed = 0;
     for path in setups {
         if let Some(v) = text(db, &path)
+            && career_host
             && matches!(settled.get(v.trim()), Some((true, _)))
         {
             set_text(db, &path, 4, CAREER_HOST);
