@@ -136,6 +136,12 @@ pub fn vault_at_start(store: &Store) {
     for l in vault::watch::at_launcher_start(&store.root) {
         crate::app_log::note(&l);
     }
+    let game = vault::Location::active(&store.root);
+    for l in
+        swofty_core::save_stall::sweep(store, game.as_ref(), vault::restore::Running::now(), vault::now())
+    {
+        crate::app_log::note(&l);
+    }
     import_first_start(store);
     BANNER_STALE.store(true, Ordering::Relaxed);
 }
