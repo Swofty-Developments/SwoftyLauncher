@@ -186973,6 +186973,32 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "session.race_strategy_red_flag_recompute",
+   "section": ".xtls",
+   "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 8B 42 10",
+   "match": "0x14369c7e0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14369c7e0",
+   "kind": "func_start",
+   "names": [
+    "Sess_RaceStrategy_RedFlagRecompute"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-14",
+     "by": "redflag-guard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/red_flag_recompute_guard.cpp"
+   ]
   }
  ]
 }

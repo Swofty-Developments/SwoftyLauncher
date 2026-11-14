@@ -553,6 +553,8 @@ inline constexpr address<"Sess_RaceStrategy_FinalisePlan"> Sess_RaceStrategy_Fin
 inline constexpr address<"Sess_RaceStrategy_GetCurrentTyreSet"> Sess_RaceStrategy_GetCurrentTyreSet{}; // L2 experimental
 inline constexpr address<"Sess_RaceStrategy_Initialise"> Sess_RaceStrategy_Initialise{}; // L2 experimental
 inline constexpr address<"Sess_RaceStrategy_IsPlanValid"> Sess_RaceStrategy_IsPlanValid{}; // L2 experimental
+using Sess_RaceStrategy_RedFlagRecompute_t = void(void *processor, void *race_session_data);
+inline constexpr fn<"Sess_RaceStrategy_RedFlagRecompute", Sess_RaceStrategy_RedFlagRecompute_t> Sess_RaceStrategy_RedFlagRecompute{}; // L2 experimental
 inline constexpr address<"Sess_RaceStrategy_SetPlanType"> Sess_RaceStrategy_SetPlanType{}; // L2 experimental
 inline constexpr address<"Sess_RaceStrategy_SortCandidatesA"> Sess_RaceStrategy_SortCandidatesA{}; // L2 experimental
 inline constexpr address<"Sess_RaceStrategy_SortCandidatesB"> Sess_RaceStrategy_SortCandidatesB{}; // L2 experimental

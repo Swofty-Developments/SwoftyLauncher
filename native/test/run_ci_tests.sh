@@ -89,6 +89,7 @@ t "Direct start unit test" native/test/run_direct_start_test.sh
 t "Direct start Time Trial unit test" native/test/run_direct_start_tt_test.sh
 t "Thrustmaster LCD guard unit test" native/test/run_thrustmaster_lcd_test.sh
 t "Estimate lap time guard unit test" native/test/run_estimate_laptime_test.sh
+t "Red flag recompute guard unit test" native/test/run_red_flag_recompute_test.sh
 t "Career calendar track list guard unit test" native/test/run_track_list_guard_test.sh
 t "Garage setup guard unit test" native/test/run_garage_setup_test.sh
 t "Theatre list guard unit test" native/test/run_theatre_list_test.sh

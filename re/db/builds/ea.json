@@ -1910,6 +1910,9 @@
   },
   "site_Game_TileListSelect_ChildNext": {
    "match": "0x38261f5"
+  },
+  "Sess_RaceStrategy_RedFlagRecompute": {
+   "match": "0x368ca20"
   }
  },
  "unresolvable": {}
