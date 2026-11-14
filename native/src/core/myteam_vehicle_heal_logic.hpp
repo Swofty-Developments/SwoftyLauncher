@@ -2,6 +2,7 @@
 
 #include <cstddef>
 #include <cstdint>
+#include <cstdio>
 #include <string>
 #include <vector>
 
@@ -22,6 +23,8 @@ constexpr uint32_t NO_VEHICLE = 0x3fff0000;
 constexpr size_t LABEL_CHARS = 0x100;
 constexpr uint64_t ENTRANT_SIZE = 0x88;
 constexpr uint64_t ENTRANT_VEHICLE = 0x5c;
+constexpr uint64_t ENTRANT_FLAGS = 0x48;
+constexpr uint32_t HUMAN_FLAG = 0x10000000u;
 constexpr uint64_t FRAME_FIRST_ENTRANT = 0x8;
 constexpr uint8_t KIND_STOCK = 0;
 constexpr uint8_t KIND_CUSTOM = 1;
@@ -219,10 +222,21 @@ inline void set_base(uint8_t *data, uint32_t base)
     p[0] = uint8_t(base), p[1] = uint8_t(base >> 8), p[2] = uint8_t(base >> 16), p[3] = uint8_t(base >> 24);
 }
 
-template <class Mem> bool unbased(Mem &mem, uint64_t car)
+template <class Mem> bool unbased(Mem &mem, uint64_t entrants, uint64_t car)
 {
     uint32_t base = 0;
-    return car && mem.u32(car + VEHICLE_BASE, base) && (kind(base) != KIND_STOCK || id(base) >= 0x3fff);
+    if (!car || !mem.u32(car + VEHICLE_BASE, base))
+        return false;
+    return kind(base) != KIND_STOCK || id(base) >= 0x3fff || !vehicle(mem, entrants, base);
+}
+
+template <class Mem> bool base_label(Mem &mem, uint64_t entrants, uint64_t car, std::string &out)
+{
+    out.clear();
+    uint32_t base = 0;
+    if (!car || !mem.u32(car + VEHICLE_BASE, base) || kind(base) != KIND_STOCK || id(base) >= 0x3fff)
+        return false;
+    return label(mem, vehicle(mem, entrants, base), out);
 }
 
 template <class Mem> uint32_t base_for(Mem &mem, uint64_t entrants, uint64_t car)
@@ -310,6 +324,8 @@ struct Census {
     size_t entrants = 0;
     size_t on_my_team = 0;
     std::vector<uint16_t> ids;
+    size_t kind1 = 0, stock = 0, empty = 0, unread = 0, humans = 0;
+    uint32_t human_vehicle = NO_VEHICLE;
 };
 
 template <class Mem> Census census(Mem &mem, uint64_t first, uint64_t end)
@@ -322,8 +338,20 @@ template <class Mem> Census census(Mem &mem, uint64_t first, uint64_t end)
         n = MAX_ENTRANTS;
     c.entrants = n;
     for (size_t i = 0; i < n; i++) {
-        uint32_t handle = 0;
-        if (!mem.u32(first + i * ENTRANT_SIZE + ENTRANT_VEHICLE, handle) || !healable(handle))
+        uint32_t handle = 0, flags = 0;
+        if (!mem.u32(first + i * ENTRANT_SIZE + ENTRANT_VEHICLE, handle)) {
+            c.unread++;
+            continue;
+        }
+        if (mem.u32(first + i * ENTRANT_SIZE + ENTRANT_FLAGS, flags) && (flags & HUMAN_FLAG) && !c.humans++)
+            c.human_vehicle = handle;
+        if (handle == NO_VEHICLE)
+            c.empty++;
+        else if (kind(handle) == KIND_STOCK)
+            c.stock++;
+        else if (kind(handle) == KIND_CUSTOM)
+            c.kind1++;
+        if (!healable(handle))
             continue;
         c.on_my_team++;
         bool seen = false;
@@ -333,6 +361,73 @@ template <class Mem> Census census(Mem &mem, uint64_t first, uint64_t end)
             c.ids.push_back(id(handle));
     }
     return c;
+}
+
+template <class Mem> size_t loaded(Mem &mem, uint64_t entrants, uint8_t k)
+{
+    uint64_t begin = 0;
+    size_t count = 0, out = 0;
+    if (!slots(mem, entrants, k, begin, count))
+        return 0;
+    if (count > MAX_ID)
+        count = MAX_ID;
+    for (size_t i = 0; i < count; i++) {
+        uint64_t v = 0;
+        out += mem.u64(begin + i * SLOT_SIZE + SLOT_VEHICLE, v) && v;
+    }
+    return out;
+}
+
+struct Load {
+    const char *stop = nullptr;
+    uint64_t manager = 0, context = 0, holder = 0, entity = 0, first = 0, end = 0, offset = 0, system = 0;
+};
+
+template <class Readable>
+const char *range_stop(bool read, uint64_t first, uint64_t end, size_t max, Readable readable)
+{
+    if (!read)
+        return "the entity's entrant range is unreadable";
+    if (!first)
+        return "the entity has no entrant list (begin null)";
+    if (end < first || (end - first) % ENTRANT_SIZE)
+        return "the entity's entrant range is not whole entrant records";
+    if ((end - first) / ENTRANT_SIZE > max)
+        return "the entity's entrant range holds more entrants than a grid";
+    if (end != first && !readable(first, end - first))
+        return "the entity's entrant records are not readable";
+    return nullptr;
+}
+
+inline const char *heal_stop(const Load &l, bool set_up, const Census &c)
+{
+    if (l.stop)
+        return l.stop;
+    if (!set_up)
+        return "the heal is not set up";
+    if (!c.on_my_team)
+        return "no entrant is on a My Team car";
+    return nullptr;
+}
+
+inline std::string stopped(const char *stop, const Load &l, const Census &c, const Tables &t, size_t cars, const char *heal)
+{
+    char player[48];
+    if (c.humans)
+        snprintf(player, sizeof player, "%zu human (car %08x)", c.humans, c.human_vehicle);
+    else
+        snprintf(player, sizeof player, "no human");
+    char out[768];
+    snprintf(out, sizeof out,
+             "no census as the career loaded: %s (heal %s; manager 0x%llx, mode context 0x%llx, championship holder 0x%llx, "
+             "entity 0x%llx, entrants 0x%llx..0x%llx, entrants system [manager+0x%llx] 0x%llx; %zu entrants read: %zu on "
+             "kind 1 cars, %zu on stock cars, %zu on no car, %zu unread, %s; stock table %zu slots, My Team table %zu "
+             "slots with %zu cars)",
+             stop ? stop : "?", heal ? heal : "?", (unsigned long long)l.manager, (unsigned long long)l.context,
+             (unsigned long long)l.holder, (unsigned long long)l.entity, (unsigned long long)l.first,
+             (unsigned long long)l.end, (unsigned long long)l.offset, (unsigned long long)l.system, c.entrants, c.kind1,
+             c.stock, c.empty, c.unread, player, t.stock_slots, t.custom_slots, cars);
+    return out;
 }
 
 inline bool replaced(int result)

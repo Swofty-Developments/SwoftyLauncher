@@ -919,6 +919,7 @@ inline constexpr address<"Ne_WorldInstance_ReleaseWarmedTextures"> Ne_WorldInsta
 inline constexpr address<"Ne_WorldLayerModule_DeregisterLayer"> Ne_WorldLayerModule_DeregisterLayer{}; // L2 experimental, NeWorldLayerModule::deregisterLayer
 inline constexpr address<"Ne_WorldLoadTask_Update"> Ne_WorldLoadTask_Update{}; // L2 experimental
 inline constexpr data<"g_Ne_DefaultAllocator", void *> g_Ne_DefaultAllocator{}; // L2 experimental
+inline constexpr data<"g_Ne_InlineStr128Vtable", void *> g_Ne_InlineStr128Vtable{}; // L2 experimental
 inline constexpr data<"g_Ne_LogGate", NeLogGate> g_Ne_LogGate{}; // L2 experimental
 inline constexpr data<"g_Ne_NameTable", void *> g_Ne_NameTable{}; // L2 experimental
 inline constexpr data<"g_Ne_StringTable", void *> g_Ne_StringTable{}; // L3 stable

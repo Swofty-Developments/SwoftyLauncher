@@ -699,6 +699,8 @@ inline constexpr call<"site_Sess_ControllerSystem_ApplyRecordCall"> site_Sess_Co
 inline constexpr site<"site_Sess_GarageSlots_Done"> site_Sess_GarageSlots_Done{}; // L2 experimental
 inline constexpr site<"site_Sess_GarageSlots_GarageLoad"> site_Sess_GarageSlots_GarageLoad{}; // L2 experimental
 inline constexpr call<"site_Sess_InGamePlayerFinishedAiCall"> site_Sess_InGamePlayerFinishedAiCall{}; // L2 experimental
+inline constexpr site<"site_Sess_InGameRaceRetirementDriver"> site_Sess_InGameRaceRetirementDriver{}; // L2 experimental
+inline constexpr site<"site_Sess_InGameRaceRetirementDriverJoin"> site_Sess_InGameRaceRetirementDriverJoin{}; // L2 experimental
 inline constexpr call<"site_Sess_InGameSessionCompleteAiCall"> site_Sess_InGameSessionCompleteAiCall{}; // L2 experimental
 inline constexpr site<"site_Sess_PitEvalListNext"> site_Sess_PitEvalListNext{}; // L2 experimental
 inline constexpr site<"site_Sess_PitEvalListSlot"> site_Sess_PitEvalListSlot{}; // L2 experimental

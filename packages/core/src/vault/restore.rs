@@ -115,20 +115,31 @@ pub fn restore_across(
     running: Running,
     now: i64,
 ) -> Result<Restored> {
-    let vault = from;
     if let Some(why) = blocker(loc.layout, running) {
-        vault.log(
+        from.log(
             &Event::new(now, EventKind::RestoreRefused)
                 .snapshot(id)
                 .detail(why.clone()),
         );
         return Err(Error::Other(why));
     }
-    let _session = SessionLock::wait(&vault.data, SESSION_GRACE)?.ok_or_else(|| {
+    let _session = SessionLock::wait(&from.data, SESSION_GRACE)?.ok_or_else(|| {
         Error::Other(
             "a Play session or another restore is running; wait for it to end, then restore again".to_owned(),
         )
     })?;
+    restore_held(from, id, loc, into, now)
+}
+
+/// [`restore_across`] for a caller that holds the session lock and checked [`blocker`] itself.
+pub(crate) fn restore_held(
+    from: &Vault,
+    id: &str,
+    loc: &Location,
+    into: &Vault,
+    now: i64,
+) -> Result<Restored> {
+    let vault = from;
     let same = from.source == into.source;
     let (first, second) = match from.source <= into.source {
         true => (from, into),

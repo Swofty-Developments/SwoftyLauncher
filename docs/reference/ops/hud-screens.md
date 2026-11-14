@@ -83,6 +83,7 @@ What one record composes:
 | `hud_spectator.erp` | flow_race, screens/hud_spectator_2 | `hud_spectator_2.ui` with `<prefix>_ctl` under `hud_spectator_2.content`, and the spectator table scene with its `<prefix>_host` |
 | `hud_replay.erp` | flow_replay, screens/replays_and_highlights | `replays_and_highlights.ui` with `<prefix>_ctl` under the screen root, and the replay scene with its `<prefix>_host` |
 | `hud_replay_scene.erp` | flow_frontend | the replay scene again (that archive has the scene without the template) |
+| `hud_screen_scene_2.erp` | screens/hud, screens/hud_player_1, screens/hud_player_2 | the cap and its anim string table, the standings table and its `.uipre`, the restyled Race Control scenes, with the sprites and clips of `hud_screen_scene.erp`: the six archives that carry the cap all get the composed copy |
 
 ## The control group
 

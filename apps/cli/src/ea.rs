@@ -1,8 +1,9 @@
 use std::path::Path;
 use std::process::{Child, Stdio};
-use std::time::{Duration, Instant};
+use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 use anyhow::{Result, anyhow, bail};
+use swofty_core::app_control::Block;
 use swofty_core::ea_app::{self, Handoff};
 use swofty_core::ea_diag::{self, Tracker};
 use swofty_core::install::{Game, Source};
@@ -27,6 +28,10 @@ const HANDOFF_TIMEOUT: Duration = Duration::from_secs(300);
 const SERVER_STOP_TIMEOUT: Duration = Duration::from_secs(30);
 const PRESS_PLAY_TIMEOUT: Duration = Duration::from_secs(600);
 const STUB_LOG_WINDOW: i64 = 6 * 3600;
+// An antivirus removes a file it flags within a second or two of it being
+// written, so the slot is checked this long after staging, before the link.
+const STUB_SETTLE: Duration = Duration::from_secs(2);
+const STUB_POLL: Duration = Duration::from_secs(5);
 const HANDOFF_LOG: &str = "ea_handoff.log";
 
 /// Which store Play brings up first for a copy of the game.
@@ -244,6 +249,7 @@ fn wait_for_game(
     timeout: Duration,
     handoff: &mut Option<Child>,
     mut watch: Option<&mut Tracker>,
+    mut stop: impl FnMut() -> Result<()>,
 ) -> Result<Option<u32>> {
     let since = Instant::now();
     loop {
@@ -258,6 +264,7 @@ fn wait_for_game(
         if ending() {
             bail!("asked to stop before F1 25 started");
         }
+        stop()?;
         if let Some(c) = handoff.as_mut()
             && let Ok(Some(exit)) = c.try_wait()
         {
@@ -289,6 +296,7 @@ fn say_elevation() {
 pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before: &[u32]) -> Result<Started> {
     let url = ea_app::install_url(game, args).map_err(|e| anyhow!(e))?;
     let h = handoff(store).ok_or_else(|| anyhow!("{}", ea_app::no_handoff()))?;
+    check_stub(store, game)?;
     let stage = StageFile(store.root.join(steam_client::STAGE_FILE));
     stage.set("Starting F1 25 through the EA app…");
     say("ea app", &format!("asking the EA app to launch F1 25: {url}"));
@@ -313,7 +321,15 @@ pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before
             None
         }
     };
-    let pid = match wait_for_game(game, before, HANDOFF_TIMEOUT, &mut handoff, Some(&mut tracker))? {
+    let mut removed = removed_after_link(store, game);
+    let pid = match wait_for_game(
+        game,
+        before,
+        HANDOFF_TIMEOUT,
+        &mut handoff,
+        Some(&mut tracker),
+        &mut removed,
+    )? {
         Some(pid) => pid,
         None => {
             if let Some((mut open, _)) = desktop_opener(&h) {
@@ -323,32 +339,112 @@ pub fn start(store: &Store, game: &Path, args: &[String], session: &Path, before
             match &slot {
                 Ok(Some(Slot::Staged)) => say("ea app", "offline play's file is in place"),
                 Ok(Some(Slot::Replaced)) => say("ea app", "the EA app put its own file over offline play's"),
-                Ok(Some(Slot::Missing)) => {
-                    say("ea app", "offline play's file is gone from the game folder");
-                    note_stub_blocked(store, game);
-                }
+                Ok(Some(Slot::Missing)) => say("ea app", "offline play's file is gone from the game folder"),
                 Ok(Some(Slot::Unknown)) => {
                     say("ea app", "offline play's file was changed by another program")
                 }
                 Ok(None) => {}
                 Err(e) => say("ea app", &format!("could not check offline play's file: {e}")),
             }
-            let (line, status) = waiting(slot.ok().flatten());
+            let (line, status) = match no_game(slot.ok().flatten(), || stub_block(store, game)) {
+                NoGame::Antivirus(block) => return Err(antivirus(store, block)),
+                NoGame::Wait { line, status } => (line, status),
+            };
             say("ea app", line);
             stage.set(status);
-            wait_for_game(game, before, PRESS_PLAY_TIMEOUT, &mut None, Some(&mut tracker))?.ok_or_else(
-                || {
-                    anyhow!(
-                        "F1 25 was not started from the EA app within {} min; the game files are rolled back",
-                        PRESS_PLAY_TIMEOUT.as_secs() / 60
-                    )
-                },
+            wait_for_game(
+                game,
+                before,
+                PRESS_PLAY_TIMEOUT,
+                &mut None,
+                Some(&mut tracker),
+                &mut removed,
             )?
+            .ok_or_else(|| {
+                anyhow!(
+                    "F1 25 was not started from the EA app within {} min; the game files are rolled back",
+                    PRESS_PLAY_TIMEOUT.as_secs() / 60
+                )
+            })?
         }
     };
     say("ea app", &format!("F1 25 started (pid {pid})"));
     restage(store, game);
     Ok(Started { pid, handoff })
+}
+
+/// Before the launch link: an antivirus that removes offline play's file
+/// does so within seconds of staging, and an EA app that finds the slot
+/// empty repairs F1 25. So the slot is checked a moment after staging, and
+/// an empty one stops the session before the EA app sees it.
+fn check_stub(store: &Store, game: &Path) -> Result<()> {
+    let journal = offline::journal_path(&store.root);
+    if let Some(left) =
+        offline::staged_at(&journal).and_then(|at| (at + STUB_SETTLE).duration_since(SystemTime::now()).ok())
+    {
+        std::thread::sleep(left.min(STUB_SETTLE));
+    }
+    if !matches!(offline::slot(&journal), Ok(Some(Slot::Missing))) {
+        return Ok(());
+    }
+    say(
+        "ea app",
+        "offline play's file is gone from the game folder seconds after staging; not sending the launch link",
+    );
+    Err(antivirus(store, offline::stub_removed(game)))
+}
+
+/// After the launch link: the EA app's proxy logs it when it finds no file
+/// to start, or an antivirus blocks it, which ends the wait at once.
+fn removed_after_link<'a>(store: &'a Store, game: &'a Path) -> impl FnMut() -> Result<()> + 'a {
+    let staged = staged_secs(store);
+    let mut next = Instant::now();
+    move || {
+        let Some(at) = staged else {
+            return Ok(());
+        };
+        if Instant::now() < next {
+            return Ok(());
+        }
+        next = Instant::now() + STUB_POLL;
+        match offline::stub_blocked(game, &ea_diag::proxy_logs(), at, Some(at)) {
+            Some(block) => {
+                say(
+                    "ea app",
+                    "the EA app could not start offline play's file: it is gone from the game folder or blocked",
+                );
+                Err(antivirus(store, block))
+            }
+            None => Ok(()),
+        }
+    }
+}
+
+fn staged_secs(store: &Store) -> Option<i64> {
+    let at = offline::staged_at(&offline::journal_path(&store.root))?;
+    Some(at.duration_since(UNIX_EPOCH).ok()?.as_secs() as i64)
+}
+
+#[derive(Debug, PartialEq)]
+enum NoGame {
+    Antivirus(Block),
+    Wait {
+        line: &'static str,
+        status: &'static str,
+    },
+}
+
+/// What the session does once the launch link started nothing. An empty
+/// slot the EA app's proxy logged as blocked or missing is an antivirus;
+/// otherwise the EA app is repairing F1 25 or waiting for Play.
+fn no_game(slot: Option<Slot>, blocked: impl FnOnce() -> Option<Block>) -> NoGame {
+    if slot == Some(Slot::Missing)
+        && let Some(block) = blocked()
+    {
+        return NoGame::Antivirus(block);
+    }
+    let (line, status) = waiting(slot);
+    NoGame::Wait { line, status }
 }
 
 /// What the session says and shows while it waits for the EA app after the
@@ -367,16 +463,32 @@ fn waiting(slot: Option<Slot>) -> (&'static str, &'static str) {
     }
 }
 
-pub fn note_stub_blocked(store: &Store, game: &Path) -> bool {
+fn stub_block(store: &Store, game: &Path) -> Option<Block> {
     let since = swofty_core::catalog::now_secs() - STUB_LOG_WINDOW;
-    let Some(block) = offline::stub_blocked(game, &ea_diag::proxy_logs(), since) else {
-        return false;
-    };
+    offline::stub_blocked(game, &ea_diag::proxy_logs(), since, staged_secs(store))
+}
+
+/// Record an antivirus block of offline play's file for the launcher and
+/// Send Logs, and end the session with its text.
+fn antivirus(store: &Store, block: Block) -> anyhow::Error {
+    let failure = record(store, block);
+    anyhow!("{}", failure.text())
+}
+
+fn record(store: &Store, block: Block) -> launch::Failure {
     let failure = launch::Failure::new(launch::Cause::Blocked(block));
     say("warning", &format!("{}: {}", failure.title(), failure.text()));
     if let Err(e) = failure.write(&store.root) {
         say("info", &format!("could not record it for the launcher: {e}"));
     }
+    failure
+}
+
+pub fn note_stub_blocked(store: &Store, game: &Path) -> bool {
+    let Some(block) = stub_block(store, game) else {
+        return false;
+    };
+    record(store, block);
     true
 }
 
@@ -450,13 +562,20 @@ pub fn launch_installed(store: &Store, g: &Game, vr: bool, opted_out: bool) -> R
     #[cfg(unix)]
     std::os::unix::process::CommandExt::process_group(&mut c, 0);
     let mut child = Some(c.spawn().map_err(|e| anyhow!("could not run {h}: {e}"))?);
-    let pid =
-        wait_for_game(&g.dir, &[], HANDOFF_TIMEOUT, &mut child, Some(&mut tracker))?.ok_or_else(|| {
-            anyhow!(
-                "F1 25 did not start within {} min of the launch link; press Play on F1 25 in the EA app",
-                HANDOFF_TIMEOUT.as_secs() / 60
-            )
-        })?;
+    let pid = wait_for_game(
+        &g.dir,
+        &[],
+        HANDOFF_TIMEOUT,
+        &mut child,
+        Some(&mut tracker),
+        || Ok(()),
+    )?
+    .ok_or_else(|| {
+        anyhow!(
+            "F1 25 did not start within {} min of the launch link; press Play on F1 25 in the EA app",
+            HANDOFF_TIMEOUT.as_secs() / 60
+        )
+    })?;
     say("ea app", &format!("F1 25 started (pid {pid})"));
     if let Some(line) = command_line(pid) {
         say("ea app", &format!("command line: {line}"));
@@ -527,6 +646,9 @@ pub fn wait(game: &Path, dir: &Path, before: &[u32], started: Started, mut tick:
 
 #[cfg(test)]
 mod tests {
+    #[cfg(unix)]
+    use std::path::PathBuf;
+
     use super::*;
 
     #[test]
@@ -610,6 +732,109 @@ mod tests {
             );
             assert_eq!(status, "Press Play on F1 25 in the EA app");
         }
+    }
+
+    #[test]
+    fn a_genuine_repair_still_waits_for_the_ea_app() {
+        let repairing = NoGame::Wait {
+            line: "the EA app took offline play's file out to repair F1 25; F1 25 starts without mods after the \
+                   repair",
+            status: "The EA app is repairing F1 25",
+        };
+        assert_eq!(no_game(Some(Slot::Replaced), || None), repairing);
+        assert_eq!(no_game(Some(Slot::Missing), || None), repairing);
+        assert_eq!(
+            no_game(Some(Slot::Replaced), || panic!("a replaced file is the EA app's")),
+            repairing
+        );
+        let block = offline::stub_removed(Path::new("F1 25"));
+        assert_eq!(
+            no_game(Some(Slot::Missing), || Some(block.clone())),
+            NoGame::Antivirus(block)
+        );
+        assert!(matches!(
+            no_game(Some(Slot::Staged), || None),
+            NoGame::Wait {
+                status: "Press Play on F1 25 in the EA app",
+                ..
+            }
+        ));
+    }
+
+    #[cfg(unix)]
+    fn ea_copy(name: &str) -> (PathBuf, PathBuf, Store, PathBuf) {
+        let root = std::env::temp_dir().join(format!("swofty-ea-{name}-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let game = root.join("F1 25");
+        std::fs::create_dir_all(game.join("__Installer")).unwrap();
+        std::fs::write(
+            game.join(ea_app::MARKER),
+            "<contentIDs><contentID>16425845</contentID><contentID>16425845_oa</contentID></contentIDs>",
+        )
+        .unwrap();
+        let store = Store::new(root.join("data"));
+        std::fs::create_dir_all(&store.root).unwrap();
+        let got = root.join("url.txt");
+        let mut config = store.config();
+        config.launch.ea_launch_command = Some(format!("printf %s {{url}} > '{}'", got.display()));
+        store.save_config(&config).unwrap();
+        (root, game, store, got)
+    }
+
+    #[cfg(unix)]
+    fn stage_journal(store: &Store, game: &Path, sha256: &str) -> PathBuf {
+        let journal = offline::journal_path(&store.root);
+        std::fs::create_dir_all(journal.parent().unwrap()).unwrap();
+        let slot = game.join("EAAntiCheat.GameServiceLauncher.exe");
+        let line = serde_json::json!({
+            "op": "copy", "from": "", "to": slot.display().to_string(), "source": "stub", "sha256": sha256,
+        });
+        std::fs::write(&journal, format!("{line}\n")).unwrap();
+        journal
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_stub_gone_seconds_after_staging_stops_before_the_launch_link() {
+        let (root, game, store, got) = ea_copy("stub-gone");
+        stage_journal(&store, &game, "0123");
+        let session = root.join("session");
+        std::fs::create_dir_all(&session).unwrap();
+        let since = Instant::now();
+        let err = start(&store, &game, &[], &session, &[]).err().unwrap();
+        assert!(since.elapsed() >= STUB_SETTLE - Duration::from_millis(500));
+        let block = offline::stub_removed(&game);
+        assert_eq!(err.to_string(), block.text());
+        assert!(err.to_string().contains("antivirus"), "{err}");
+        assert!(err.to_string().contains(&game.display().to_string()), "{err}");
+        assert_eq!(
+            launch::Failure::read(&store.root).map(|f| f.cause),
+            Some(launch::Cause::Blocked(block))
+        );
+        assert!(!got.exists(), "the launch link was sent");
+        assert!(!session.join(HANDOFF_LOG).exists());
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn a_stub_in_place_after_staging_lets_the_link_go() {
+        let (root, game, store, _) = ea_copy("stub-there");
+        let slot = game.join("EAAntiCheat.GameServiceLauncher.exe");
+        std::fs::write(&slot, "stub").unwrap();
+        let sha = swofty_core::baseline::sha256_file(&slot).unwrap();
+        let journal = stage_journal(&store, &game, &sha);
+        std::fs::File::options()
+            .write(true)
+            .open(&journal)
+            .unwrap()
+            .set_modified(SystemTime::now() - Duration::from_secs(30))
+            .unwrap();
+        let since = Instant::now();
+        check_stub(&store, &game).unwrap();
+        assert!(since.elapsed() < Duration::from_secs(1));
+        assert_eq!(launch::Failure::read(&store.root), None);
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[cfg(unix)]

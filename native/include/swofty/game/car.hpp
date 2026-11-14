@@ -485,6 +485,8 @@ using Car_Reset_LastFittedUpgrade_t = void(void *inst);
 inline constexpr fn<"Car_Reset_LastFittedUpgrade", Car_Reset_LastFittedUpgrade_t> Car_Reset_LastFittedUpgrade{}; // L2 experimental
 inline constexpr address<"Car_Setup_ApplyTuning"> Car_Setup_ApplyTuning{}; // L3 stable
 inline constexpr address<"Car_SteeringWheelLeds_Update"> Car_SteeringWheelLeds_Update{}; // L2 experimental
+using Car_SuspensionDamage_OnCollision_t = void(void *susp_damage, void *contact);
+inline constexpr fn<"Car_SuspensionDamage_OnCollision", Car_SuspensionDamage_OnCollision_t> Car_SuspensionDamage_OnCollision{}; // L2 experimental
 inline constexpr address<"Car_Systems_FindOrCreate"> Car_Systems_FindOrCreate{}; // L2 experimental
 inline constexpr address<"Car_Systems_Reset_Thunk"> Car_Systems_Reset_Thunk{}; // L3 stable
 inline constexpr address<"Car_Tuning_SetChassisZCom"> Car_Tuning_SetChassisZCom{}; // L2 experimental

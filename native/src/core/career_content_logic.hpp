@@ -273,14 +273,13 @@ template <class Each> void each_setup(const void *career, const Access &a, Each 
     }
 }
 
-// The entrant lists the game loaded, with no career: the EntrantsSystem at g_Game_Manager +0x290, the object the
-// CareerSetupComponent's +0x290 points at. Its list slots (+0x560..+0x568) are indexed by stat_id and run to the
-// highest loaded id; an id the game did not load has no list in its slot. The career tile's router
-// (FeTile_Route_CareerItem) and the save-slot predicates read a career's data group from these slots by its
-// entrant list stat_id, so an id past them or on an empty slot faults the router on the tile press (1.9.15: stat_id
-// 240 of 105 slots, null+0xf08). Field contents work at ids past the table's row count (stat_id 138 of 149 slots
-// with 91 rows), so the slots are the bound, not the row count.
-constexpr size_t GM_ENTRANTS = 0x290;
+// The entrant lists the game loaded, with no career: the EntrantsSystem at g_Game_Manager +0x290 (+0x260 on EA, see
+// runtime::manager_entrants_system), the object the CareerSetupComponent's +0x290 points at. Its list slots
+// (+0x560..+0x568) are indexed by stat_id and run to the highest loaded id; an id the game did not load has no list
+// in its slot. The career tile's router (FeTile_Route_CareerItem) and the save-slot predicates read a career's data
+// group from these slots by its entrant list stat_id, so an id past them or on an empty slot faults the router on the
+// tile press (1.9.15: stat_id 240 of 105 slots, null+0xf08). Field contents work at ids past the table's row count
+// (stat_id 138 of 149 slots with 91 rows), so the slots are the bound, not the row count.
 
 struct Loaded {
     bool known = false;

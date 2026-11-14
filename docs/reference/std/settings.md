@@ -218,6 +218,7 @@ api->watch_setting("grid_size", on_grid, NULL);
 ```
 
 - `api->setting(id, type, &out)` fills `out` with the calling addon's value and returns non-zero. If the addon has no option `id` of that `type`, it returns 0.
+- The core keeps each option's value and reads the registry again only after something changes it: a settings change, a layer, a profile or career change. A repeated read takes no lock, so a hook can read the setting on every call.
 - `api->watch_setting(id, fn, user)` calls `fn` with `user` on every change.
 
 Both calls need API version 3 and identify your addon by the calling DLL:

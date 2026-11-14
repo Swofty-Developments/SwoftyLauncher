@@ -64,6 +64,7 @@ pub mod row_ids;
 pub mod rowkeys;
 pub mod runtime;
 pub mod save_backup;
+pub mod save_stall;
 pub mod saves;
 pub mod send_logs;
 pub mod session;

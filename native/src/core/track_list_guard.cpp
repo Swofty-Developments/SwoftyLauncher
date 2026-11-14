@@ -33,12 +33,18 @@
 // site_Career_ScheduleComponent_TrackListNextRow, as a row with another id does. So each stored entry loads exactly
 // one event and the calendar keeps its length across saves and loads.
 //
-// A save the game already blew up holds far more entries than the season has events. The bound is the season's event
-// list length the component keeps at +0x2c8 (written by vt_Game_TrackListComponent slot 16 from the default track
-// list), or 64 when that is not set. A loaded Progressive career's five schedule components all hold 24 there at the
-// custom_track_list load (2026-11-13 in game), so the season's length is the bound in game. Past the bound, each run of
-// one id (one original entry, multiplied) reads as one entry and entries past the bound are dropped, so the calendar
-// comes back to the season's length.
+// A save the game already blew up holds far more entries than the season has events. The bound is the larger of two
+// counts. One is the event list length the component keeps at +0x2c8 (written by vt_Game_TrackListComponent slot 16
+// from the default track list), which every schedule component of a loaded career holds as the full default list's
+// length (24 in a 2026 career at the custom_track_list load, also for 16- and 10-race calendars; 2026-11-13 in game).
+// The other is the race weekends the career already runs on: the RaceWeekend activities (ActivityDef type 0x0a) on the
+// busiest driver calendar of the component's current season record (+0x428 into the 0x80-byte records at +0x410),
+// which Career_ScheduleComponent_Load reads from the same save before custom_track_list, trusted when it is 1..64. The
+// career clock stops at those activities and races Season.weekends[current_weekend] at each, and the daily tick
+// (0x14126a1a0) refills them from this calendar, so a calendar cut below them leaves the season's last rounds without
+// a race weekend and the season never completes (a 32-round season cut to 24 at a 2026-11-13 load). With neither
+// count the bound is 64. Past the bound, each run of one id (one original entry, multiplied) reads as one entry and
+// entries past the bound are dropped, so the calendar comes back to the season's length.
 // site_Career_ScheduleComponent_TrackListEntryDone (after each stored entry) logs the load once its last entry is
 // done, and site_Career_ScheduleComponent_TrackListSave logs the count a save writes when it changed for that component.
 //
@@ -70,16 +76,28 @@ size_t calendar_size(uintptr_t component)
     return tl::entries(begin, end);
 }
 
+size_t race_weekends(uintptr_t component)
+{
+    return tl::race_weekends(component, [](uintptr_t at, auto &out) { return swofty::mem::read(at, out); });
+}
+
+void reset(tl::Load &into, uintptr_t component, size_t stored)
+{
+    uint32_t season = 0;
+    swofty::mem::read(component + tl::SEASON_EVENTS, season);
+    tl::reset(into, component, stored, tl::season_events(season), race_weekends(component));
+}
+
 void track_list_push(SwoftyContext *c)
 {
     size_t calendar = calendar_size(c->rsi);
     uint16_t stored = 0;
-    uint32_t season = 0;
     swofty::mem::read(c->rdi + 0x10, stored);
-    swofty::mem::read(c->rsi + tl::SEASON_EVENTS, season);
     uint8_t id = uint8_t(c->r13);
     std::lock_guard<std::mutex> hold(lock);
-    if (!tl::enter(load, c->rsi, calendar, stored, tl::season_events(season), c->r15, id)) {
+    if (tl::fresh(load, c->rsi, calendar))
+        reset(load, c->rsi, stored);
+    if (!tl::enter(load, c->r15, id)) {
         c->rip = next_row;
         return;
     }
@@ -109,11 +127,8 @@ void track_list_entry_done(SwoftyContext *c)
         std::lock_guard<std::mutex> hold(lock);
         done = tl::finish(load, c->rsi);
     }
-    if (guarded && !done.component) {
-        uint32_t season = 0;
-        swofty::mem::read(c->rsi + tl::SEASON_EVENTS, season);
-        tl::reset(done, c->rsi, stored, tl::season_events(season));
-    }
+    if (guarded && !done.component)
+        reset(done, c->rsi, stored);
     swofty::log("%s", tl::load_line(c->rsi, stored, loaded, guarded ? &done : nullptr).c_str());
 }
 

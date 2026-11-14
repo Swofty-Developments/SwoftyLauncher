@@ -70,6 +70,110 @@ fn identical(stock: &dyn Stock, erps: &[&str], name: &str, r: &mut Report) -> Op
     found
 }
 
+/// Checks that every archive carrying `name` holds the same stock copy and that the archives the
+/// composer makes it for are among them; the composed copy, made from one of them, goes to all.
+fn carried(stock: &dyn Stock, made_for: &[&str], name: &str, r: &mut Report) -> Option<Vec<u8>> {
+    let carriers = match stock.carriers(&[name]) {
+        Ok(mut c) => c.remove(name).unwrap_or_default(),
+        Err(e) => {
+            r.fail(format!("{name}: {e}"));
+            return None;
+        }
+    };
+    if carriers.is_empty() {
+        r.fail(format!("{name}: no stock archive carries it"));
+        return None;
+    }
+    if let Some(e) = made_for.iter().find(|e| !carriers.iter().any(|c| c == *e)) {
+        r.fail(format!("{name}: {e} does not carry it"));
+        return None;
+    }
+    let all: Vec<&str> = carriers.iter().map(String::as_str).collect();
+    let found = identical(stock, &all, name, r)?;
+    r.pass(format!(
+        "{}: carried by {}; the composed copy goes to every one",
+        short(name),
+        all.iter().map(|e| short(e)).collect::<Vec<_>>().join(", ")
+    ));
+    Some(found)
+}
+
+/// Every stock copy a composed result leaves beside a composed one: for each stock resource in
+/// `archives`, each archive that carries it and that no archive of the result is overlaid on.
+pub fn uncovered(stock: &dyn Stock, archives: &[super::Built]) -> crate::Result<Vec<String>> {
+    let mut lands: std::collections::BTreeMap<String, BTreeSet<&str>> = std::collections::BTreeMap::new();
+    for a in archives {
+        let erp = swofty_formats::erp::Erp::parse(&a.bytes)?;
+        for res in erp.resources {
+            lands
+                .entry(res.name)
+                .or_default()
+                .extend(a.erps.iter().map(String::as_str));
+        }
+    }
+    let names: Vec<&str> = lands.keys().map(String::as_str).collect();
+    let carriers = stock.carriers(&names)?;
+    let mut out = Vec::new();
+    for (name, at) in &lands {
+        for c in carriers.get(name).into_iter().flatten() {
+            if !at.contains(c.as_str()) {
+                out.push(format!(
+                    "{name} is composed, but {c} also carries it and would keep the stock copy"
+                ));
+            }
+        }
+    }
+    Ok(out)
+}
+
+struct ClipBytes {
+    name: String,
+    temp: Vec<u8>,
+    syst: Vec<u8>,
+}
+
+fn clips(archives: &[super::Built]) -> crate::Result<Vec<ClipBytes>> {
+    let mut out = Vec::new();
+    for a in archives {
+        let erp = swofty_formats::erp::Erp::parse(&a.bytes)?;
+        for res in &erp.resources {
+            if res.kind() != "AnimClip" || res.fragments.len() < 2 {
+                continue;
+            }
+            out.push(ClipBytes {
+                name: res.name.clone(),
+                temp: res.fragments[0].data()?,
+                syst: res.fragments[1].data()?,
+            });
+        }
+    }
+    Ok(out)
+}
+
+/// Every composed clip in `archives` that carries a one-key rotation channel. The game copies
+/// that quaternion with an aligned 16-byte load straight from the clip's `syst` buffer, which it
+/// can place 8 bytes past a 16-byte boundary; the HUD load then faults.
+pub fn constant_rotations(archives: &[super::Built]) -> crate::Result<Vec<String>> {
+    let mut out = Vec::new();
+    for c in clips(archives)? {
+        if swofty_formats::animclip::has_constant_rotation(&c.temp, &c.syst)? {
+            out.push(c.name);
+        }
+    }
+    Ok(out)
+}
+
+/// Every composed clip in `archives` whose `syst` length is not a multiple of 16. The game can
+/// place such a buffer 8 bytes past a 16-byte boundary (`animclip::SYST_ALIGN`), and the aligned
+/// loads of its rotation keys then fault.
+pub fn unpadded_clips(archives: &[super::Built]) -> crate::Result<Vec<String>> {
+    Ok(clips(archives)?
+        .into_iter()
+        .filter(|c| !c.syst.len().is_multiple_of(swofty_formats::animclip::SYST_ALIGN))
+        .map(|c| format!("{} ({} bytes)", c.name, c.syst.len()))
+        .collect())
+}
+
 fn short(name: &str) -> &str {
     name.rsplit('/').next().unwrap_or(name)
 }
@@ -170,10 +274,10 @@ pub fn stock_facts(stock: &dyn Stock) -> Report {
     let scene_erps: Vec<&str> = dials::SCENE_ERPS.to_vec();
     for dial in Dial::ALL {
         let f = dials::facts(dial);
-        let Some(scene) = identical(stock, &scene_erps, f.scene, &mut r) else {
+        let Some(scene) = carried(stock, &scene_erps, f.scene, &mut r) else {
             continue;
         };
-        identical(stock, &scene_erps, f.strtab, &mut r);
+        carried(stock, &scene_erps, f.strtab, &mut r);
         let text_from = (dial != Dial::F126).then(|| om_xm.clone()).flatten();
         if let (Some(m), Some(b)) = (&mods, &bar) {
             let built = Builder::new(f, &scene, m, b, text_from.as_deref());
@@ -242,8 +346,8 @@ pub fn stock_facts(stock: &dyn Stock) -> Report {
     }
     let tmpl_erps: Vec<&str> = dials::TEMPLATE_ERPS.to_vec();
     let spec_erps: Vec<&str> = dials::SPECTATOR_ERPS.to_vec();
-    let template = identical(stock, &tmpl_erps, dials::TEMPLATE, &mut r);
-    let spectator = identical(stock, &spec_erps, dials::SPECTATOR, &mut r);
+    let template = carried(stock, &tmpl_erps, dials::TEMPLATE, &mut r);
+    let spectator = carried(stock, &spec_erps, dials::SPECTATOR, &mut r);
     let race = template.as_deref().and_then(|b| Pkg::parse(b).ok());
     let spec = spectator.as_deref().and_then(|b| Pkg::parse(b).ok());
     if let Some(p) = &race {
@@ -393,7 +497,9 @@ fn near_tag(root: &swofty_formats::pkg::Node, scope: &str, db: &str) -> Option<B
 pub fn screen_facts(stock: &dyn Stock, r: &mut Report) {
     let race = |name: &str| first(stock.read(screens::FLOW_RACE, name)?, name);
     let scene_erps: Vec<&str> = screen_build::SCREEN_SCENE_ERPS.to_vec();
-    let cap = identical(stock, &scene_erps, screens::CAP, r);
+    let cap = carried(stock, &scene_erps, screens::CAP, r);
+    carried(stock, &scene_erps, screen_build::CAP_FACTS.strtab, r);
+    carried(stock, &scene_erps, screens::STACKED_UIPRE, r);
     let mods = race(dials::MODS).ok();
     let bar = race(dials::BAR).ok();
     let om_xm = race(dials::F126.scene).ok();
@@ -417,7 +523,7 @@ pub fn screen_facts(stock: &dyn Stock, r: &mut Report) {
             }
         }
     }
-    if let Some((_, root)) = identical(stock, &scene_erps, screens::STACKED, r).and_then(|b| root_of(&b)) {
+    if let Some((_, root)) = carried(stock, &scene_erps, screens::STACKED, r).and_then(|b| root_of(&b)) {
         xref_facts(
             &root,
             screens::STACKED_CAP_REF,
@@ -623,7 +729,7 @@ pub fn screen_facts(stock: &dyn Stock, r: &mut Report) {
         }
     }
     let replay_erps = [screens::FLOW_REPLAY, screens::REPLAY_SCREEN_ERP];
-    if let Some(p) = identical(stock, &replay_erps, screens::REPLAY_UI, r).and_then(|b| Pkg::parse(&b).ok()) {
+    if let Some(p) = carried(stock, &replay_erps, screens::REPLAY_UI, r).and_then(|b| Pkg::parse(&b).ok()) {
         match node::find_path(&p.root, screens::REPLAY_ROOT)
             .and_then(|at| node::node_at(&p.root, &at).cloned())
         {
@@ -650,7 +756,7 @@ pub fn screen_facts(stock: &dyn Stock, r: &mut Report) {
         screens::FLOW_FRONTEND,
     ];
     if let Some((_, root)) =
-        identical(stock, &replay_scene_erps, screens::REPLAY_SCENE, r).and_then(|b| root_of(&b))
+        carried(stock, &replay_scene_erps, screens::REPLAY_SCENE, r).and_then(|b| root_of(&b))
     {
         let sc = short(screens::REPLAY_SCENE);
         match idf::find(&root, screens::REPLAY_GROUP) {
@@ -709,7 +815,7 @@ pub fn screen_facts(stock: &dyn Stock, r: &mut Report) {
             )),
         }
     }
-    if let Some((_, root)) = identical(stock, &spec_erps, screens::SPECT_TABLE, r).and_then(|b| root_of(&b)) {
+    if let Some((_, root)) = carried(stock, &spec_erps, screens::SPECT_TABLE, r).and_then(|b| root_of(&b)) {
         let sc = short(screens::SPECT_TABLE);
         let top: Vec<&str> = root
             .as_obj()

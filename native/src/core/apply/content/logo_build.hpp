@@ -168,11 +168,19 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
         for (auto &e : node->list)
             names.push_back(uidb::Pkg::text_of(e, "Name"));
         std::string image = ARRAY_URI + array + ".texarray.image", view = ARRAY_URI + array + ".texarray";
-        std::vector<std::string> carriers;
-        logo_array::Stock stock;
-        bool have = false, mismatch = false;
+        struct Copy {
+            logo_array::Stock stock;
+            logo_array::Shape shape;
+            std::vector<std::string> carriers;
+            std::vector<logo_array::Slice> add;
+        };
+        std::vector<Copy> copies;
+        std::map<std::string, std::vector<std::string>> skipped;
         std::map<std::string, std::string> repaired;
         std::map<std::string, std::vector<std::string>> image_in, view_in;
+        auto where = [](const std::vector<std::string> &rels) {
+            return rels[0] + (rels.size() > 1 ? " and " + std::to_string(rels.size() - 1) + " more archive(s)" : "");
+        };
         for (auto &rel : files) {
             if (!get(rel))
                 continue;
@@ -191,8 +199,7 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                 !erpfile::fragment(*fi.open->src, fi.open->arc, ei->frags[0], got.head, why) ||
                 !erpfile::fragment(*fi.open->src, fi.open->arc, ei->frags[1], got.data, why) ||
                 !erpfile::fragment(*fv.open->src, fv.open->arc, ev->frags[0], got.view, why)) {
-                out.lines.push_back("team.logo: " + rel + " carries " + array + " in a layout this build does not read");
-                mismatch = true;
+                skipped["a layout this build does not read"].push_back(rel);
                 continue;
             }
             uint32_t said = 0;
@@ -202,36 +209,53 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                     out.lines.push_back("team.logo: " + array + " view said " + std::to_string(said) + " slices for " +
                                         std::to_string(logo_array::le32(got.head, logo_array::HEAD_COUNT)) + "; fixed");
             }
-            if (have && (got.head != stock.head || got.data != stock.data || got.view != stock.view)) {
-                out.lines.push_back("team.logo: " + rel + " carries a different " + array + " than " + carriers[0]);
-                mismatch = true;
+            auto same = std::find_if(copies.begin(), copies.end(), [&](const Copy &c) {
+                return c.stock.head == got.head && c.stock.data == got.data && c.stock.view == got.view;
+            });
+            if (same != copies.end()) {
+                same->carriers.push_back(rel);
                 continue;
             }
-            stock = std::move(got);
-            have = true;
-            carriers.push_back(rel);
+            logo_array::Shape shape;
+            if (!logo_array::shape_of_images(got, shape, why)) {
+                skipped[why].push_back(rel);
+                continue;
+            }
+            copies.push_back({std::move(got), shape, {rel}, {}});
         }
         for (auto &[rel, bytes] : repaired)
             for (auto &l : view_in[rel])
                 out.changes[l][view] = {bytes};
-        stock.names = names;
-        logo_array::Shape shape;
-        bool sound = !mismatch && have && logo_array::shape_of_images(stock, shape, why);
-        if (sound && names.size() > shape.count) {
-            size_t dangling = names.size() - shape.count;
-            std::string blank = bc7::encode_logo(reinterpret_cast<const uint8_t *>(std::string(shape.slice_bytes() * 4, '\0').data()),
-                                                 int(shape.width), int(shape.height));
-            out.lines.push_back("team.logo: " + array + " lists " + std::to_string(names.size()) + " keys but its image holds " +
-                                std::to_string(shape.count) + " slice(s): another addon replaced the whole array, so " +
-                                std::to_string(dangling) + " key(s) from " + names[shape.count] + " on have no image of their own; padded with blank slices so new logos land on their own keys");
-            logo_array::pad(stock, shape, blank, uint32_t(names.size()));
-            shape.count = uint32_t(names.size());
+        size_t building = 0;
+        for (auto &c : copies)
+            building += c.carriers.size();
+        for (auto &[reason, rels] : skipped)
+            out.lines.push_back("team.logo: skipped " + array + " in " + where(rels) + ": " + reason + "; left as it is" +
+                                (copies.empty() ? "" : ", the other " + std::to_string(building) + " archive(s) build"));
+        if (copies.empty()) {
+            std::string reason = skipped.empty()       ? array + " is in no archive of the ui_package folder"
+                                 : skipped.size() == 1 ? array + ": " + skipped.begin()->first
+                                                       : "no archive's copy of " + array + " can grow";
+            refuse(reason, array + "/" + list[0]->key, int(list.size()));
+            continue;
         }
-        if (sound && names.size() < shape.count) {
-            size_t unnamed = shape.count - names.size();
+        size_t keys = names.size();
+        uint32_t most = 0;
+        for (auto &c : copies)
+            most = std::max(most, c.shape.count);
+        if (copies.size() > 1) {
+            std::string counts;
+            for (auto &c : copies)
+                counts += (counts.empty() ? "" : ", ") + std::to_string(c.shape.count);
+            out.lines.push_back("team.logo: the " + std::to_string(building) + " archives that carry " + array + " hold " +
+                                std::to_string(copies.size()) + " different copies (" + counts +
+                                " slices); each keeps its slices and grows to the same key list");
+        }
+        if (names.size() < most) {
+            size_t unnamed = most - names.size();
             std::string first = std::to_string(names.size()), failed;
             std::set<std::string> used(names.begin(), names.end());
-            for (size_t n = names.size(); n < shape.count && failed.empty(); n++) {
+            for (size_t n = names.size(); n < most && failed.empty(); n++) {
                 std::string pad = "swofty_pad_" + std::to_string(n);
                 while (!used.insert(pad).second)
                     pad += "_";
@@ -239,23 +263,37 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                     break;
                 names.push_back(pad);
             }
-            if (failed.empty()) {
-                uidb_changed = true;
-                out.lines.push_back("team.logo: " + array + " holds " + std::to_string(shape.count) + " slices for " +
-                                    std::to_string(shape.count - unnamed) + " keys: other addons added slices without keys, so " +
-                                    std::to_string(unnamed) + " placeholder key(s) from slice " + first +
-                                    " on name them and new logos land on their own keys");
-                stock.names = names;
+            if (!failed.empty()) {
+                refuse(array + ": " + failed, array + "/" + list[0]->key, int(list.size()));
+                continue;
             }
+            uidb_changed = true;
+            out.lines.push_back("team.logo: " + array + " holds " + std::to_string(most) + " slices for " + std::to_string(keys) +
+                                " keys: other addons added slices without keys, so " + std::to_string(unnamed) +
+                                " placeholder key(s) from slice " + first + " on name them and new logos land on their own keys");
         }
-        if (sound)
-            sound = logo_array::shape_of(stock, shape, why);
-        if (!sound) {
-            std::string reason = mismatch ? "the carriers of " + array + " do not agree" : !have ? array + " is in no archive of the ui_package folder" : array + ": " + why;
-            refuse(reason, array + "/" + list[0]->key, int(list.size()));
-            continue;
+        std::map<std::pair<uint32_t, uint32_t>, std::string> blanks;
+        for (auto &c : copies) {
+            std::string in = copies.size() > 1 ? " in " + where(c.carriers) : "";
+            if (c.shape.count < keys)
+                out.lines.push_back("team.logo: " + array + in + " lists " + std::to_string(keys) + " keys but its image holds " +
+                                    std::to_string(c.shape.count) + " slice(s): another addon replaced the whole array, so " +
+                                    std::to_string(keys - c.shape.count) + " key(s) from " + names[c.shape.count] +
+                                    " on have no image of their own; padded with blank slices so new logos land on their own keys");
+            else if (c.shape.count < names.size())
+                out.lines.push_back("team.logo: " + array + in + " holds " + std::to_string(c.shape.count) + " slice(s), " +
+                                    std::to_string(names.size() - c.shape.count) +
+                                    " fewer than another archive's copy; padded with blank slices so new logos land on the same slice in every archive");
+            if (c.shape.count < names.size()) {
+                auto [b, fresh] = blanks.try_emplace({c.shape.width, c.shape.height});
+                if (fresh)
+                    b->second = bc7::encode_logo(reinterpret_cast<const uint8_t *>(std::string(c.shape.slice_bytes() * 4, '\0').data()),
+                                                 int(c.shape.width), int(c.shape.height));
+                logo_array::pad(c.stock, c.shape, b->second, uint32_t(names.size()));
+                c.shape.count = uint32_t(names.size());
+            }
+            c.stock.names = names;
         }
-        std::vector<logo_array::Slice> add;
         std::set<std::string> seen(names.begin(), names.end());
         std::vector<const Want *> used;
         for (auto *w : list) {
@@ -263,7 +301,7 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                 out.lines.push_back("team.logo: " + array + " lists " + w->key + " already; its slice is kept");
                 continue;
             }
-            logo_array::Slice s{w->key, {}};
+            std::vector<std::string> slices(copies.size());
             if (!w->donor.empty()) {
                 auto at = std::find(names.begin(), names.end(), w->donor);
                 if (at == names.end()) {
@@ -274,49 +312,72 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                     seen.erase(w->key);
                     continue;
                 }
-                s.bc7 = stock.data.substr(size_t(at - names.begin()) * shape.slice_bytes(), shape.slice_bytes());
+                for (size_t i = 0; i < copies.size(); i++) {
+                    size_t bytes = copies[i].shape.slice_bytes();
+                    slices[i] = copies[i].stock.data.substr(size_t(at - names.begin()) * bytes, bytes);
+                }
             } else {
-                bool scaled = false;
-                if (!logo_array::slice_from_rgba(shape, reinterpret_cast<const uint8_t *>(w->rgba.data()), w->width, w->height, s.bc7,
-                                                 why, &scaled)) {
+                std::map<std::pair<uint32_t, uint32_t>, std::string> encoded;
+                bool ok = true;
+                for (size_t i = 0; i < copies.size() && ok; i++) {
+                    const logo_array::Shape &shape = copies[i].shape;
+                    auto [e, fresh] = encoded.try_emplace({shape.width, shape.height});
+                    bool scaled = false;
+                    if (fresh && !(ok = logo_array::slice_from_rgba(shape, reinterpret_cast<const uint8_t *>(w->rgba.data()), w->width,
+                                                                    w->height, e->second, why, &scaled)))
+                        break;
+                    if (scaled)
+                        out.lines.push_back("team.logo: " + w->key + " scaled " + std::to_string(w->width) + "x" + std::to_string(w->height) +
+                                            " -> " + std::to_string(shape.width) + "x" + std::to_string(shape.height) + " for " + array);
+                    slices[i] = e->second;
+                }
+                if (!ok) {
                     refuse(array + ": " + why, w->key);
                     seen.erase(w->key);
                     continue;
                 }
-                if (scaled)
-                    out.lines.push_back("team.logo: " + w->key + " scaled " + std::to_string(w->width) + "x" + std::to_string(w->height) +
-                                        " -> " + std::to_string(shape.width) + "x" + std::to_string(shape.height) + " for " + array);
             }
-            add.push_back(std::move(s));
+            for (size_t i = 0; i < copies.size(); i++)
+                copies[i].add.push_back({w->key, std::move(slices[i])});
             used.push_back(w);
         }
-        if (add.empty())
+        if (used.empty())
             continue;
-        logo_array::Stock grown;
-        if (!logo_array::grow(stock, add, grown, why)) {
-            refuse(array + ": " + why, array + "/" + add[0].key, int(add.size()));
+        size_t grew = 0, archives = 0;
+        for (auto &c : copies) {
+            logo_array::Stock grown;
+            if (!logo_array::grow(c.stock, c.add, grown, why)) {
+                if (copies.size() > 1)
+                    out.lines.push_back("team.logo: skipped " + array + " in " + where(c.carriers) + ": " + why + "; left as it is");
+                continue;
+            }
+            for (auto &rel : c.carriers) {
+                for (auto &l : image_in[rel])
+                    out.changes[l][image] = {grown.head, grown.data};
+                for (auto &l : view_in[rel])
+                    out.changes[l][view] = {grown.view};
+            }
+            grew++;
+            archives += c.carriers.size();
+        }
+        if (!grew) {
+            refuse(array + ": " + why, array + "/" + used[0]->key, int(used.size()));
             continue;
         }
-        for (auto &rel : carriers) {
-            for (auto &l : image_in[rel])
-                out.changes[l][image] = {grown.head, grown.data};
-            for (auto &l : view_in[rel])
-                out.changes[l][view] = {grown.view};
-        }
-        for (size_t at = 0; at < add.size(); at++)
-            out.lines.push_back("team.logo: " + array + " slice " + std::to_string(shape.count + at) + " = " + add[at].key +
+        for (size_t at = 0; at < used.size(); at++)
+            out.lines.push_back("team.logo: " + array + " slice " + std::to_string(names.size() + at) + " = " + used[at]->key +
                                 (used[at]->donor.empty() ? " (its image)" : " (copy of " + used[at]->donor + ", slice " +
                                  std::to_string(std::find(names.begin(), names.end(), used[at]->donor) - names.begin()) + ")"));
-        for (auto &s : add) {
+        for (auto *w : used) {
             std::string e;
-            if (!pkg.append_entry(*node, s.key, std::string(TEXTURE_PATH) + s.key + ".tif", e)) {
-                refuse(array + ": " + e, s.key);
+            if (!pkg.append_entry(*node, w->key, std::string(TEXTURE_PATH) + w->key + ".tif", e)) {
+                refuse(array + ": " + e, w->key);
             }
         }
         uidb_changed = true;
-        out.built += int(add.size());
-        out.lines.push_back("team.logo: " + array + " grows by " + std::to_string(add.size()) + " slice(s) in " +
-                            std::to_string(carriers.size()) + " archive(s)");
+        out.built += int(used.size());
+        out.lines.push_back("team.logo: " + array + " grows by " + std::to_string(used.size()) + " slice(s) in " + std::to_string(archives) +
+                            " archive(s)" + (grew > 1 ? " (" + std::to_string(grew) + " different copies)" : ""));
     }
     if (uidb_changed) {
         std::string written = pkg.write();

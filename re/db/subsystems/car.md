@@ -841,6 +841,17 @@ CAR_ collider, else 8, with the impact speed at wheel+0x24/+0x2c (gated by CarLi
 does the same in `Car_FrontWing_OnCollision`, and SideDetachScale (+0x34) is read by the visual side-broken state
 (0x144631a50).
 
+Addons can wrap it: it is the func binding `Car_SuspensionDamage_OnCollision` (signature
+`car.suspension_damage_on_collision`, prototype `void(void *susp_damage, void *contact)`, experimental), at RVA
+0x4654d10 on Steam and 0x464afa0 on EA (V9284 agrees). When its reset argument is 0, the system's Init 0x144653ad0
+hands `{fn, this}` (lea at 0x144653bb6) to the listener remove thunk 0x1446510d0 (body 0x155338ff0) and then to
+`Car_Collision_AddListener` 0x144651f90 (body 0x155339950), which work on the 15 `{fn, ctx}` slots at CarLive+0x9db8. `Car_Collision_Dispatch` calls each slot as `fn(ctx, &contact)` at 0x14473fd28, between
+EnterCriticalSection and LeaveCriticalSection on [CarLive+0xf0], and ignores the return. So `susp_damage` is the
+F1SuspensionDamage system (CarLive+0x5d0, its +8 is the CarLive) and `contact` is the dispatcher's stack record: +0
+CarLive, +8 the car's own hit body, +0x18 contact point pointer, +0x20 normal pointer, +0x30 the other collider (dword
+tag `CAR_` for a car), +0x38 the f32 that the front or rear damage scale multiplies, +0x40 a byte.
+`Car_FrontWing_OnCollision` is registered and called the same way.
+
 Will (william09leo, author of Heavier Damage) shared private findings from a live front wing damage test addon. They
 agree with this map on the data vtables of F1WingDamage, F1SuspensionDamage, FuelECU, Engine and EnergyRecoverySystem,
 the 4-slot data class, the data object at system+0x18, the XOR pair layout, the wing and suspension damage fields, the

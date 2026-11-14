@@ -145,6 +145,31 @@ pub fn compose_in_build(
     };
     let output = compose_with(&layered, inputs, template)
         .map_err(|e| Error::Other(format!("the HUD elements do not compose: {e}")))?;
+    let left = super::check::uncovered(&layered, &output.archives)?;
+    if !left.is_empty() {
+        return Err(Error::Other(format!(
+            "the composed HUD of {} would leave the game's own copy of a resource beside the composed one, and the game crashes loading the HUD when it mixes them: {}. Turn {} off in this profile and use Send Logs.",
+            huds.join(", "),
+            left.join("; "),
+            huds.join(", ")
+        )));
+    }
+    let rotations = super::check::constant_rotations(&output.archives)?;
+    if !rotations.is_empty() {
+        return Err(Error::Other(format!(
+            "the composed HUD of {} has clips with a one-key rotation the game can read misaligned and crash on: {}",
+            huds.join(", "),
+            rotations.join("; ")
+        )));
+    }
+    let unpadded = super::check::unpadded_clips(&output.archives)?;
+    if !unpadded.is_empty() {
+        return Err(Error::Other(format!(
+            "the composed HUD of {} has clips whose key data the game can place misaligned and crash on: {}",
+            huds.join(", "),
+            unpadded.join("; ")
+        )));
+    }
     let owner = inputs.first().map(|i| i.addon.clone()).unwrap_or_default();
     let ops = output
         .ops("hud")

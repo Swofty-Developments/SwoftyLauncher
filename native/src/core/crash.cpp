@@ -20,6 +20,7 @@
 #include "perf.hpp"
 #include "save_heap_logic.hpp"
 #include "safetyhook.hpp"
+#include "stall_order_logic.hpp"
 #include "stall_walk.hpp"
 #include "swofty_api.h"
 
@@ -2165,6 +2166,8 @@ struct Sampled {
     bool walked, faulted, self, writer;
     int frames, same_as;
     uint64_t rip[STALL_FRAMES], rsp[STALL_FRAMES];
+    uint64_t regs[runtime::stall_order::kRegs];
+    runtime::stall_order::Kept kept;
     char desc[80];
 };
 
@@ -2308,36 +2311,13 @@ void stall_frame(char *w, size_t cap, uint64_t ip)
 
 const char *wait_kind(const Sampled &s, char *w, size_t cap)
 {
-    static const char *const waits[] = {"NtWait",
-                                        "ZwWait",
-                                        "NtDelayExecution",
-                                        "ZwDelayExecution",
-                                        "NtRemoveIoCompletion",
-                                        "NtSignalAndWait",
-                                        "NtUserMsgWaitForMultipleObjects",
-                                        "RtlSleepConditionVariable",
-                                        "RtlAcquireSRWLock",
-                                        "RtlEnterCriticalSection",
-                                        "RtlpWaitOnCriticalSection",
-                                        "NtReadFile",
-                                        "NtDeviceIoControlFile",
-                                        "NtFsControlFile",
-                                        "WaitOnAddress",
-                                        "RtlWaitOnAddress",
-                                        "SleepEx",
-                                        "WaitForSingleObject",
-                                        "WaitForMultipleObjects",
-                                        "SleepConditionVariable"};
     for (int i = 0; i < s.frames && i < 4; i++) {
         uint32_t off = 0;
         const char *name = export_of(s.rip[i], off);
-        if (!name)
-            continue;
-        for (const char *p : waits)
-            if (!strncmp(name, p, strlen(p))) {
-                snprintf(w, cap, "%s", name);
-                return w;
-            }
+        if (name && runtime::stall_order::wait_export(name)) {
+            snprintf(w, cap, "%s", name);
+            return w;
+        }
     }
     return nullptr;
 }
@@ -2354,6 +2334,29 @@ DWORD loader_lock_owner(LONG &recursion)
         return 0;
     recursion = cs->RecursionCount;
     return DWORD(uintptr_t(cs->OwningThread));
+}
+
+void stall_regs(const CONTEXT &c, uint64_t *r)
+{
+    namespace so = runtime::stall_order;
+    r[so::Rax] = c.Rax;
+    r[so::Rbx] = c.Rbx;
+    r[so::Rcx] = c.Rcx;
+    r[so::Rdx] = c.Rdx;
+    r[so::Rsi] = c.Rsi;
+    r[so::Rdi] = c.Rdi;
+    r[so::Rbp] = c.Rbp;
+    r[so::Rsp] = c.Rsp;
+    r[so::R8] = c.R8;
+    r[so::R9] = c.R9;
+    r[so::R10] = c.R10;
+    r[so::R11] = c.R11;
+    r[so::R12] = c.R12;
+    r[so::R13] = c.R13;
+    r[so::R14] = c.R14;
+    r[so::R15] = c.R15;
+    r[so::Rip] = c.Rip;
+    r[so::EFlags] = c.EFlags;
 }
 
 int stall_sample()
@@ -2407,6 +2410,7 @@ int stall_sample()
         alignas(16) CONTEXT ctx{};
         ctx.ContextFlags = CONTEXT_FULL;
         if (GetThreadContext(h, &ctx)) {
+            stall_regs(ctx, s.regs);
             uintptr_t lo = 0, hi = 0;
             struct {
                 LONG status;
@@ -2421,8 +2425,12 @@ int stall_sample()
                 lo = reinterpret_cast<uintptr_t>(tib->StackLimit);
                 hi = reinterpret_cast<uintptr_t>(tib->StackBase);
             }
+            stall_walk::Kept kept;
+            kept.lo = exe_base;
+            kept.hi = exe_base + exe_size;
             s.frames = stall_walk::walk(&ctx, lo, hi ? hi : ctx.Rsp + 1, STALL_FRAMES, stall_lookup, readable, s.rip,
-                                        s.rsp, &s.faulted);
+                                        s.rsp, &s.faulted, exe_base ? &kept : nullptr);
+            s.kept = kept.at;
             s.walked = true;
         } else {
             s.error = GetLastError();
@@ -2476,6 +2484,56 @@ void stall_threads_text(int n)
         }
         if (s.frames <= 1)
             t.put("  (the unwind stopped at the first frame)\n");
+        if (s.faulted)
+            t.put("  (the unwind faulted reading this stack and stopped)\n");
+    }
+}
+
+void stall_running_text(int n)
+{
+    namespace so = runtime::stall_order;
+    static so::Thread order[STALL_THREADS];
+    static int pick[STALL_THREADS];
+    static char block[2048];
+    char w[512], kind[64];
+    int game = 0;
+    for (int i = 0; i < n; i++) {
+        const Sampled &s = stall_threads[i];
+        so::Thread &o = order[i];
+        o.read = s.walked && !s.self && !s.writer;
+        o.waiting = o.read && wait_kind(s, kind, sizeof kind);
+        o.game = o.read && s.kept.frame >= 0;
+        game += o.read && !o.waiting && o.game;
+    }
+    int k = so::running_first(order, n, pick);
+    Text &t = stall_text;
+    so::heading(k, game, block, sizeof block);
+    t.put("%s", block);
+    for (int j = 0; j < k; j++) {
+        const Sampled &s = stall_threads[pick[j]];
+        t.put("thread %lu%s%s%s, priority %ld, not in a wait%s\n", (unsigned long)s.tid, s.desc[0] ? " \"" : "", s.desc,
+              s.desc[0] ? "\"" : "", s.priority, s.kept.frame >= 0 ? ", in game code" : "");
+        t.put("  registers as suspended:\n");
+        so::regs_text(s.regs, block, sizeof block);
+        t.put("%s", block);
+        so::kept_text(s.kept, block, sizeof block);
+        t.put("%s", block);
+        if (s.kept.frame >= 0) {
+            uint64_t q[so::kFrameQwords] = {};
+            int got = 0;
+            while (got < so::kFrameQwords && readable(uintptr_t(s.kept.rsp) + got * 8u, 8)) {
+                q[got] = *reinterpret_cast<const uint64_t *>(uintptr_t(s.kept.rsp) + got * 8u);
+                got++;
+            }
+            so::stack_text(s.kept.rsp, q, got, block, sizeof block);
+            t.put("%s", block);
+        }
+        int top = std::min(s.frames, so::kTopFrames);
+        t.put("  top %d of %d frame(s):\n", top, s.frames);
+        for (int f = 0; f < top; f++) {
+            stall_frame(w, sizeof w, s.rip[f]);
+            t.put("  #%-2d %016llx rsp=%016llx  %s\n", f, (unsigned long long)s.rip[f], (unsigned long long)s.rsp[f], w);
+        }
         if (s.faulted)
             t.put("  (the unwind faulted reading this stack and stopped)\n");
     }
@@ -2575,6 +2633,7 @@ bool stall_report(int index, int max, const char *why, const char *state)
     else {
         t.put("threads read in %llu ms (each suspended only while its context was read and its stack unwound)\n",
               (unsigned long long)took);
+        stall_running_text(n);
         stall_threads_text(n);
         stall_core_text(n);
     }

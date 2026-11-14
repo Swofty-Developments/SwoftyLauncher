@@ -8,8 +8,9 @@
 //! `UIXA` node then plays a clip from a view-model fraction.
 //!
 //! Clips are built from a stock clip of the same scene (any `AnimClip` resource), which gives
-//! the packet shape. The writer reproduces a stock clip's two fragments byte for byte when it is
-//! given the clip's own channels back ([`read_clip`] then [`build_clip`]).
+//! the packet shape. The writer reproduces a stock clip's `temp` byte for byte when it is given
+//! the clip's own channels back ([`read_clip`] then [`build_clip`]), and its `syst` up to the zero
+//! padding that ends every written `syst` on a 16-byte multiple ([`SYST_ALIGN`]).
 //!
 //! ```no_run
 //! use swofty_formats::animclip::{Channel, build_clip};
@@ -164,6 +165,15 @@ fn packets(p: &mut Pkg) -> Result<&mut crate::pkg::Arr> {
         .ok_or_else(|| Error::Format("the clip has no packets".into()))
 }
 
+/// The length every written `syst` is a multiple of. The game's `AnimClip` handler asks the
+/// `EGO_ANIMATION_CLIPDATA` heap for the `syst` length plus 16 when that length is a multiple of 16,
+/// and plus 7 otherwise. Requests up to 128 bytes come from 8-byte small-block size classes laid
+/// back to back, which ignore the 16-byte alignment asked for, so a class that is 8 more than a
+/// multiple of 16 puts every other buffer 8 bytes past a 16-byte boundary. A multiple of 16 always
+/// lands in a 16-byte class, and the quaternion keys the game reads with aligned loads then sit
+/// on 16 bytes.
+pub const SYST_ALIGN: usize = 16;
+
 fn pad_to(syst: &mut Vec<u8>, align: usize) {
     while !syst.len().is_multiple_of(align) {
         syst.push(0);
@@ -172,7 +182,8 @@ fn pad_to(syst: &mut Vec<u8>, align: usize) {
 
 /// Builds an `AnimClip`'s two fragments, `(temp, syst)`, animating element `node` (index
 /// `name_index` in the scene's string table `string_table`).
-/// `template` is the `temp` fragment of any stock clip; its first packet is the model.
+/// `template` is the `temp` fragment of any stock clip; its first packet is the model. Every key
+/// array starts on a 16-byte offset and the `syst` length is a multiple of [`SYST_ALIGN`].
 pub fn build_clip(
     template: &[u8],
     node: &str,
@@ -201,7 +212,7 @@ pub fn build_clip(
         for t in &c.times {
             syst.extend_from_slice(&t.to_le_bytes());
         }
-        pad_to(&mut syst, 16);
+        pad_to(&mut syst, SYST_ALIGN);
         let keys_at = syst.len();
         for k in &c.keys {
             syst.extend_from_slice(&k.to_le_bytes());
@@ -238,6 +249,7 @@ pub fn build_clip(
         arr.items = vec![ch];
         out.push(pk);
     }
+    pad_to(&mut syst, SYST_ALIGN);
     packets(&mut p)?.items = out;
     p.root
         .as_obj_mut()
@@ -308,6 +320,17 @@ pub fn read_clip(temp: &[u8], syst: &[u8]) -> Result<Clip> {
         });
     }
     Ok(clip)
+}
+
+/// True when the clip carries a rotation channel of one key: a constant quaternion the game
+/// copies with an aligned 16-byte load from the clip's `syst` buffer. A `syst` whose length is not
+/// a multiple of [`SYST_ALIGN`] can land 8 bytes past a 16-byte boundary (a 92-byte one did), and
+/// the load then faults.
+pub fn has_constant_rotation(temp: &[u8], syst: &[u8]) -> Result<bool> {
+    Ok(read_clip(temp, syst)?
+        .channels
+        .iter()
+        .any(|c| c.target == Target::Rotation && c.times.len() == 1))
 }
 
 /// Appends element names to a scene's `ACStringTable` and returns the new table with the index
@@ -438,6 +461,92 @@ mod tests {
         )
         .unwrap();
         assert_eq!(again, (temp, syst));
+    }
+
+    #[test]
+    fn a_one_key_rotation_is_told_apart() {
+        let (temp, syst) = build_clip(&template(), "n", 0, "t", &channels()).unwrap();
+        assert!(!has_constant_rotation(&temp, &syst).unwrap());
+        let mut c = channels();
+        c.push(Channel::rotation(vec![0.0], vec![[0.0, 0.0, 0.0, -1.0]]));
+        let (temp, syst) = build_clip(&template(), "n", 0, "t", &c).unwrap();
+        assert!(has_constant_rotation(&temp, &syst).unwrap());
+    }
+
+    fn key_offsets(temp: &[u8]) -> Vec<u32> {
+        let mut p = Pkg::parse(temp).unwrap();
+        packets(&mut p)
+            .unwrap()
+            .items
+            .iter()
+            .map(|pk| {
+                let ch = pk
+                    .as_obj()
+                    .and_then(|o| o.get("channels"))
+                    .and_then(Node::as_arr)
+                    .and_then(|a| a.items.first())
+                    .unwrap();
+                u32_of(ch, "keyptr").unwrap()
+            })
+            .collect()
+    }
+
+    fn game_slot(syst_len: usize) -> usize {
+        let request = syst_len + if syst_len.is_multiple_of(16) { 16 } else { 7 };
+        let n = request - 1;
+        let shift = if n < 64 { 3 } else { 3 + (n >> 6).ilog2() };
+        ((n >> shift) + 1) << shift
+    }
+
+    fn needle(keys: usize) -> Vec<Channel> {
+        let times = (0..keys).map(|i| i as f32).collect();
+        vec![
+            Channel::position(vec![0.0], vec![[0.1, 0.2, 0.0]]),
+            Channel::rotation(times, vec![[0.0, 0.0, 0.0, -1.0]; keys]),
+            Channel::scale(vec![0.0], vec![[1.0; 3]]),
+        ]
+    }
+
+    fn slide(keys: usize) -> Vec<Channel> {
+        let times = (0..keys).map(|i| i as f32).collect();
+        vec![Channel::position(times, vec![[0.5, 0.25, 0.0]; keys])]
+    }
+
+    #[test]
+    fn the_game_slot_model_matches_the_crashed_and_the_stock_buffers() {
+        assert_eq!(game_slot(92), 104);
+        assert_eq!(game_slot(108), 120);
+        assert_eq!(game_slot(96), 112);
+        assert_eq!(game_slot(124), 144);
+        assert_eq!(game_slot(216), 224);
+    }
+
+    #[test]
+    fn every_syst_is_padded_to_16_bytes_with_its_keys_on_16() {
+        for keys in 1..=12 {
+            for channels in [needle(keys), slide(keys), channels()] {
+                let (temp, syst) = build_clip(&template(), "n", 0, "t", &channels).unwrap();
+                assert!(
+                    syst.len().is_multiple_of(SYST_ALIGN),
+                    "{keys} keys: {}",
+                    syst.len()
+                );
+                assert!(
+                    game_slot(syst.len()).is_multiple_of(16),
+                    "{keys} keys: {}",
+                    syst.len()
+                );
+                assert!(key_offsets(&temp).iter().all(|k| k % 16 == 0));
+                assert_eq!(read_clip(&temp, &syst).unwrap().channels, channels);
+            }
+        }
+    }
+
+    #[test]
+    fn a_two_key_needle_is_no_longer_108_bytes() {
+        let (_, syst) = build_clip(&template(), "n", 0, "t", &needle(2)).unwrap();
+        assert_eq!(syst.len(), 112);
+        assert_eq!(&syst[108..], &[0; 4]);
     }
 
     #[test]

@@ -321,6 +321,24 @@ The game builds cars on a loading thread, so the core holds each event and fires
 
 `Reset::upgrade` is always false from the core; the upgrade replay is its own event.
 
+A suspension hit has no event yet. `swofty/game.hpp` has the experimental binding `Car_SuspensionDamage_OnCollision(susp_damage, contact)`, which the game calls for every impact on a car: `susp_damage` is the car's F1SuspensionDamage system and `contact` the game's contact record, whose first field is the car that was hit. The function reads the speed threshold and the front and rear damage scales on every hit, so a change made before `orig` applies to that hit. The game calls it with the car's collision lock held, so keep the handler short.
+
+```cpp
+#include <swofty/game.hpp>
+#include <swofty/mixin.hpp>
+
+#include <atomic>
+
+std::atomic<uint32_t> suspension_hits[32];
+
+SWOFTY_WRAP(Car_SuspensionDamage_OnCollision, void, void *susp_damage, void *contact)
+{
+    auto *car = *static_cast<swofty::game::CarLive **>(contact);  // the car that was hit
+    suspension_hits[car->vehicle_id % 32]++;
+    orig(susp_damage, contact);                                    // the game adds this hit's damage
+}
+```
+
 ## R&D upgrades
 
 An R&D upgrade isn't a number in an array. Each upgrade type is a block inside the handling file, such as `radUpgradeEngine` or `radUpgradeFrontDownforce`, with the same sections and keys as the rest of the file. When the career fits an upgrade, the game reads the block on top of the car's values, scaled by the development progress `p` from 0 to 1:
