@@ -236,6 +236,22 @@ int main()
     expect(std::string(mh::range_stop(true, LIST, list_end(129), 128, yes)) ==
                "the entity's entrant range holds more entrants than a grid",
            "a range past 128 entrants");
+    expect(mh::range_stop(true, LIST, list_end(214), mh::MAX_ENTRANTS, yes) == nullptr,
+           "a range of 214 entrants (a More Driver Models career) is a real grid, not a stop");
+    expect(std::string(mh::range_stop(true, LIST, list_end(mh::MAX_ENTRANTS + 1), mh::MAX_ENTRANTS, yes)) ==
+               "the entity's entrant range holds more entrants than a grid",
+           "a range past the entrant bound is still a garbage range");
+    {
+        Fake big = game(stock, 2);
+        std::vector<uint32_t> handles(214, stock_handle(0));
+        handles[200] = custom_handle(1);
+        entrants(big, handles);
+        mh::Census bc = mh::census(big, LIST, list_end(214));
+        expect(bc.entrants == 214 && bc.on_my_team == 1 && bc.ids.size() == 1 && bc.ids[0] == 1 && bc.stock == 213,
+               "the census reads all 214 entrants, so a My Team car past the 128th is counted");
+        expect(mh::missing(big, ENTRANTS, LIST, list_end(214)).size() == 1,
+               "a lost My Team car past the 128th entrant is found to rebuild");
+    }
     expect(std::string(mh::range_stop(true, LIST, list_end(22), 128, no)) == "the entity's entrant records are not readable",
            "records that are not readable");
     expect(mh::range_stop(true, LIST, list_end(22), 128, yes) == nullptr && mh::range_stop(true, LIST, LIST, 128, no) == nullptr,
