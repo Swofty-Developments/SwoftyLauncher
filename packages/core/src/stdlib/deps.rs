@@ -22,6 +22,7 @@ use super::lock::Lock;
 use super::manifest::{Clash, Need, RegistryManifest, Target};
 use super::range::version;
 use crate::manifest::AddonManifest;
+use crate::resolver::Lacking;
 
 /// The CLI's exit code when the dependency check stops Play.
 pub const STOP_EXIT: u8 = 3;
@@ -328,16 +329,8 @@ pub fn check(scene: &Scene) -> Report {
                     .iter()
                     .map(|s| format!("{}: registry.json {s}; ignored", a.name)),
             );
-            for n in &r.requires {
-                if let Some(f) = need(scene, a, n, Level::Stop) {
-                    out.findings.push(f);
-                }
-            }
-            for n in &r.recommends {
-                if let Some(f) = need(scene, a, n, Level::Hint) {
-                    out.findings.push(f);
-                }
-            }
+            out.findings.extend(needs(scene, a, &r.requires, Level::Stop));
+            out.findings.extend(needs(scene, a, &r.recommends, Level::Hint));
             for c in &r.breaks {
                 for b in clashing(scene, a, c) {
                     out.findings.push(breaks(a, b, c));
@@ -397,6 +390,42 @@ fn sentence(text: &str) -> String {
 
 fn for_text(n: &Need) -> String {
     n.for_.as_deref().map(|f| format!(" for {f}")).unwrap_or_default()
+}
+
+fn needs(scene: &Scene, a: &Std, list: &[Need], level: Level) -> Vec<Finding> {
+    let mut lacking = Lacking::default();
+    let mut at = None;
+    let mut out = Vec::new();
+    for n in list {
+        match &n.target {
+            Target::Addon(id) if n.for_.is_none() && scene.on_addon(id).is_none() => {
+                match scene.installed_addon(id) {
+                    Some(dep) => lacking.off(&dep.name),
+                    None => lacking.missing(id),
+                }
+                at.get_or_insert(out.len());
+            }
+            _ => out.extend(need(scene, a, n, level)),
+        }
+    }
+    if let Some(at) = at {
+        out.insert(at, lacks(scene, a, &lacking, level));
+    }
+    out
+}
+
+fn lacks(scene: &Scene, a: &Std, lacking: &Lacking, level: Level) -> Finding {
+    let (verb, or_off) = match level {
+        Level::Stop => ("needs", format!(", or turn {} off", a.name)),
+        _ => ("recommends", String::new()),
+    };
+    Finding {
+        level,
+        addon: a.id.clone(),
+        against: None,
+        headline: lacking.headline(&a.name, verb, scene.profile.unwrap_or("any")),
+        detail: vec![format!("{}{or_off}.", lacking.fix())],
+    }
 }
 
 fn need(scene: &Scene, a: &Std, n: &Need, level: Level) -> Option<Finding> {
@@ -774,6 +803,60 @@ mod tests {
             )
             .add("b.y", "Y", "1.4.0", None, None);
         assert!(w.check(&["a.x", "b.y"]).is_empty());
+    }
+
+    #[test]
+    fn every_addon_requirement_that_is_off_or_not_installed_is_named_at_once() {
+        let career = |requires: &str| {
+            World::new()
+                .add(
+                    "p.career",
+                    "Progressive Career",
+                    "1.0.0",
+                    Some(&format!(r#"{{ "requires": [ {requires} ] }}"#)),
+                    None,
+                )
+                .add("s.2015", "SWOFTY 2015", "1.0.0", None, None)
+                .add("s.2016", "SWOFTY 2016", "1.0.0", None, None)
+                .add("s.2017", "SWOFTY 2017", "1.0.0", None, None)
+        };
+        let w = career(r#"{ "addon": "s.2015" }, { "addon": "s.2016" }, { "addon": "s.2017" }"#);
+        assert_eq!(
+            w.check(&["p.career"]).stop_text().unwrap(),
+            "Progressive Career needs SWOFTY 2015, SWOFTY 2016 and SWOFTY 2017, which are off in profile main. \
+             Turn them on on the Addons page, or turn Progressive Career off."
+        );
+        assert_eq!(
+            w.check(&["p.career", "s.2015", "s.2017"]).stop_text().unwrap(),
+            "Progressive Career needs SWOFTY 2016, which is off in profile main. Turn SWOFTY 2016 on on the \
+             Addons page, or turn Progressive Career off."
+        );
+        assert!(w.check(&["p.career", "s.2015", "s.2016", "s.2017"]).is_empty());
+        let w = career(
+            r#"{ "addon": "s.2015" }, { "addon": "x.one" }, { "addon": "s.2016", "version": "^2.0.0" },
+               { "addon": "s.2017" }, { "addon": "x.two" }"#,
+        );
+        assert_eq!(
+            lines(&w.check(&["p.career", "s.2016"]), Level::Stop),
+            [
+                "Progressive Career needs SWOFTY 2015 and SWOFTY 2017, which are off in profile main, and x.one \
+                 and x.two, which aren't installed. Turn on the ones that are off on the Addons page and install \
+                 the rest in the Addon Browser, or turn Progressive Career off.",
+                "Progressive Career needs SWOFTY 2016 ^2.0.0, and 1.0.0 is installed. Update SWOFTY 2016 in the \
+                 Addon Browser, or turn Progressive Career off."
+            ]
+        );
+        let w = World::new().add(
+            "a.x",
+            "X",
+            "1.0.0",
+            Some(r#"{ "recommends": [ { "addon": "c.y" }, { "addon": "c.z" } ] }"#),
+            None,
+        );
+        assert_eq!(
+            lines(&w.check(&["a.x"]), Level::Hint),
+            ["X recommends c.y and c.z, which aren't installed. Install them in the Addon Browser."]
+        );
     }
 
     #[test]

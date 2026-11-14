@@ -121,7 +121,7 @@ impl std::fmt::Display for Changes {
     }
 }
 
-fn and_list(parts: &[String]) -> String {
+pub(crate) fn and_list(parts: &[String]) -> String {
     match parts {
         [] => String::new(),
         [one] => one.clone(),
