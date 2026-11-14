@@ -137,8 +137,9 @@ struct Rules {                                 // a box's session rules (content
     Ref<RulesProfile> rules_profile;           // empty: the mode's
     bool refuelling = false;
     std::optional<float> race_fuel_kg;         // the race fuel load; nullopt: the track's
+    std::optional<bool> tyre_warmers;          // content.package 1.4: tyre warmers on or off; nullopt: the mode's
 };
-SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, refuelling, race_fuel_kg)
+SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, refuelling, race_fuel_kg, tyre_warmers)
 
 enum class PenaltyKind { warning, time, drive_through, stop_go, grid, disqualification };
 
