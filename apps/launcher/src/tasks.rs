@@ -11,6 +11,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::launcher::{TaskItem, TaskList, TaskState, Tasks};
 use swofty_core::view::{Effect, Shown};
+use swofty_i18n::trf;
 
 use crate::shell::Shell;
 use crate::theme::Palette;
@@ -72,13 +73,18 @@ impl Counts {
     }
 
     fn line(&self) -> String {
-        let mut line = format!("{} of {} done", self.done, self.total);
-        for (n, word) in [(self.failed, "failed"), (self.skipped, "skipped")] {
-            if n > 0 {
-                line.push_str(&format!(" · {n} {word}"));
-            }
+        let mut parts = vec![trf!(
+            "{done} of {total} done",
+            done = self.done,
+            total = self.total
+        )];
+        if self.failed > 0 {
+            parts.push(trf!("{count} failed", count = self.failed));
         }
-        line
+        if self.skipped > 0 {
+            parts.push(trf!("{count} skipped", count = self.skipped));
+        }
+        parts.join(" · ")
     }
 }
 

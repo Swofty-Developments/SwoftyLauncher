@@ -147,7 +147,7 @@ impl Render for Launcher {
                     .justify_center()
                     .gap(px(20.))
                     .child(pages::wordmark(220.))
-                    .child("Loading your launcher…"),
+                    .child(swofty_i18n::tr("Loading your launcher…")),
             )
             .into_any_element()
     }

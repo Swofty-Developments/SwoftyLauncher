@@ -16496,6 +16496,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_TileListSelect_ChildNext: Binding = Binding {
+        id: "site_Game_TileListSelect_ChildNext",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TileListSelect_ChildStep: Binding = Binding {
+        id: "site_Game_TileListSelect_ChildStep",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_TimeTrialLeaderboard_BoardRead: Binding = Binding {
         id: "site_Game_TimeTrialLeaderboard_BoardRead",
         kind: "site",
