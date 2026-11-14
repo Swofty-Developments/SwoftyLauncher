@@ -13789,7 +13789,7 @@
    "target": "0x1429805c0",
    "kind": "func_start",
    "names": [
-    "Ai_QualiPace_EstimateLapTime"
+    "Ai_QualiPace_CalcSegmentTime"
    ],
    "verified": [
     {
@@ -13813,7 +13813,7 @@
    "target": "0x142f5bb50",
    "kind": "func_start",
    "names": [
-    "Ai_SuggestedGear_ForGate"
+    "Ai_SuggestedGear_ComputeForZone"
    ],
    "verified": [
     {
@@ -15015,7 +15015,7 @@
    "target": "0x1409bc6c0",
    "kind": "func_start",
    "names": [
-    "Ai_CannedEvents_PerformAccident"
+    "Ai_CannedEvents_Update"
    ],
    "verified": [
     {
@@ -15903,7 +15903,7 @@
    "target": "0x14065dc50",
    "kind": "func_start",
    "names": [
-    "Ai_Parse_VehicleConfigGroups"
+    "Ai_Parse_DriverConfig"
    ],
    "verified": [
     {
@@ -49603,7 +49603,7 @@
    "target": "0x1405f5dd0",
    "kind": "func_start",
    "names": [
-    "Ai_Update_ExitThrottleError"
+    "Ai_Update_DriverTick"
    ],
    "verified": [
     {
@@ -49651,7 +49651,7 @@
    "target": "0x1405fbfd0",
    "kind": "func_start",
    "names": [
-    "Ai_Calc_FollowGap"
+    "Ai_Calc_FollowSpeedForGap"
    ],
    "verified": [
     {
@@ -108578,7 +108578,7 @@
    "target": "0x1403dcca0",
    "kind": "func_start",
    "names": [
-    "Ai_Json_WriteSessionHeader"
+    "Game_Analytics_WriteBaseCtx"
    ],
    "verified": [
     {
@@ -108698,7 +108698,7 @@
    "target": "0x140606fc0",
    "kind": "func_start",
    "names": [
-    "Ai_TestLimits_GetScaledDistance"
+    "Ai_TestGraph_EvalAtSpeed"
    ],
    "verified": [
     {
@@ -108770,7 +108770,7 @@
    "target": "0x14060ab60",
    "kind": "func_start",
    "names": [
-    "Ai_Car_UpdateLookaheadTarget"
+    "Ai_Steering_UpdateLateralPid"
    ],
    "verified": [
     {
@@ -108794,7 +108794,7 @@
    "target": "0x14060b130",
    "kind": "func_start",
    "names": [
-    "Ai_Car_ComputeHeadingErrorRate"
+    "Ai_Steering_UpdateYawRateCorrection"
    ],
    "verified": [
     {
@@ -108962,7 +108962,7 @@
    "target": "0x14060d720",
    "kind": "func_start",
    "names": [
-    "Ai_Calc_AwarenessTest"
+    "Ai_Calc_SpeedForRadius"
    ],
    "verified": [
     {
@@ -109130,7 +109130,7 @@
    "target": "0x140619140",
    "kind": "func_start",
    "names": [
-    "Ai_Awareness_QueryNearbyCars"
+    "Ai_TestGraph_EvalDistanceSpeedC"
    ],
    "verified": [
     {
@@ -109154,7 +109154,7 @@
    "target": "0x14063b2c0",
    "kind": "func_start",
    "names": [
-    "Ai_Awareness_QueryWithTimeLimit"
+    "Ai_TestGraph_EvalSpeed"
    ],
    "verified": [
     {
@@ -109178,7 +109178,7 @@
    "target": "0x140655580",
    "kind": "func_start",
    "names": [
-    "Ai_SpeedModifier_Ctor"
+    "Ai_BehaviourTestSpaceSeeking_Ctor"
    ],
    "verified": [
     {
@@ -109226,7 +109226,7 @@
    "target": "0x1406597b0",
    "kind": "func_start",
    "names": [
-    "Ai_DriverProfiles_ApplyPerDriver"
+    "Ai_DriverProfiles_ComputeTraitNormalisers"
    ],
    "verified": [
     {
@@ -109274,7 +109274,7 @@
    "target": "0x14065e650",
    "kind": "func_start",
    "names": [
-    "Ai_SpaceSeeking_AddBlockedInterval"
+    "Ai_IntervalProfile_AddRamps"
    ],
    "verified": [
     {
@@ -109394,7 +109394,7 @@
    "target": "0x140668d30",
    "kind": "func_start",
    "names": [
-    "Ai_ProfileMap_SelectById"
+    "Ai_StateMachine_SetStateById"
    ],
    "verified": [
     {
@@ -109538,7 +109538,7 @@
    "target": "0x14068ab50",
    "kind": "func_start",
    "names": [
-    "Ai_State_SetTargetIfChanged"
+    "Ai_Table_UpdateKeyCache"
    ],
    "verified": [
     {
@@ -109610,7 +109610,7 @@
    "target": "0x14068bfb0",
    "kind": "func_start",
    "names": [
-    "Ai_Curve_Interpolate1D"
+    "Ai_Table_SolveAxis0ForValue"
    ],
    "verified": [
     {
@@ -109802,7 +109802,7 @@
    "target": "0x1406d5030",
    "kind": "func_start",
    "names": [
-    "Ai_JsonWriter_WriteInt64"
+    "Ne_JsonWriter_WriteInt64"
    ],
    "verified": [
     {
@@ -110236,7 +110236,7 @@
    "target": "0x1409af680",
    "kind": "func_start",
    "names": [
-    "Ai_DriverVariation_IsCarEligible"
+    "Ai_DriverVariation_IsGraphAvailable"
    ],
    "verified": [
     {
@@ -110801,7 +110801,7 @@
    "used_by": []
   },
   {
-   "id": "ai.driver_variation_apply_entry",
+   "id": "ai.driver_variation_entry_has_id",
    "section": ".xtls",
    "pattern": "56 57 55 53 48 83 EC 28 48 8B 7A 68 48 8B 42 70",
    "match": "0x141147da0",
@@ -110812,7 +110812,7 @@
    "target": "0x141147da0",
    "kind": "func_start",
    "names": [
-    "Ai_DriverVariation_ApplyEntry"
+    "Ai_DriverVariation_EntryHasId"
    ],
    "verified": [
     {
@@ -111748,7 +111748,7 @@
    "target": "0x14251b3e0",
    "kind": "func_start",
    "names": [
-    "Ai_ErsTable_SampleStep"
+    "Ai_ErsTable_SampleKeyBlended"
    ],
    "verified": [
     {
@@ -118429,7 +118429,7 @@
    "target": "0x14060e460",
    "kind": "func_start",
    "names": [
-    "Ai_Gap_ComputeSideMargin"
+    "Ai_Gap_ComputeVehicleSpanLower"
    ],
    "verified": [
     {
@@ -118454,7 +118454,7 @@
    "target": "0x14060e6c0",
    "kind": "func_start",
    "names": [
-    "Ai_Gap_ComputeSideMarginAlt"
+    "Ai_Gap_ComputeVehicleSpanUpper"
    ],
    "verified": [
     {
@@ -118479,7 +118479,7 @@
    "target": "0x1406192a0",
    "kind": "func_start",
    "names": [
-    "Ai_Calc_TestLimits"
+    "Ai_TestGraph_EvalDistanceSpeedB"
    ],
    "verified": [
     {
@@ -118504,7 +118504,7 @@
    "target": "0x140621620",
    "kind": "func_start",
    "names": [
-    "Ai_Awareness_QueryByDistance"
+    "Ai_TestGraph_EvalDistanceSpeedA"
    ],
    "verified": [
     {
@@ -118554,7 +118554,7 @@
    "target": "0x14063c130",
    "kind": "func_start",
    "names": [
-    "Ai_Awareness_QueryByTime"
+    "Ai_TestGraph_EvalTimeSpeed"
    ],
    "verified": [
     {
@@ -118579,7 +118579,7 @@
    "target": "0x1406817f0",
    "kind": "func_start",
    "names": [
-    "Ai_Path_SampleLateralOffsets"
+    "Ai_Table_CalcSpeedChangeDistance"
    ],
    "verified": [
     {
@@ -118804,7 +118804,7 @@
    "target": "0x140b3fd90",
    "kind": "func_start",
    "names": [
-    "Ai_CannedEvent_AddFault"
+    "Ai_CannedEvents_PushQueueMessage"
    ],
    "verified": [
     {
@@ -120785,7 +120785,7 @@
    "target": "0x1405f11b0",
    "kind": "func_start",
    "names": [
-    "Ai_Build_SpeedModifiers"
+    "Ai_Build_BehaviourSystem"
    ],
    "verified": [
     {
@@ -120809,7 +120809,7 @@
    "target": "0x1405f5c50",
    "kind": "func_start",
    "names": [
-    "Ai_Unk_1405f5c50"
+    "Ai_Controller_UpdateStateAndDrive"
    ],
    "verified": [
     {
@@ -120929,7 +120929,7 @@
    "target": "0x1406807b0",
    "kind": "func_start",
    "names": [
-    "Ai_Unk_1406807b0"
+    "Ai_Lookahead_AdvancePhase"
    ],
    "verified": [
     {
@@ -120953,7 +120953,7 @@
    "target": "0x140681140",
    "kind": "func_start",
    "names": [
-    "Ai_Eval_LookaheadGraph"
+    "Ai_SpeedPlan_EvalAtDistance"
    ],
    "verified": [
     {
@@ -121372,7 +121372,7 @@
    "target": "0x140650f90",
    "kind": "func_start",
    "names": [
-    "Ai_Unk_140650f90"
+    "Ai_Build_SpeedProfileAhead"
    ],
    "verified": [
     {
