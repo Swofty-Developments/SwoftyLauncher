@@ -3550,6 +3550,14 @@ pub type Game_TrackData_GetTrack_t =
     unsafe extern "C" fn(system: *mut c_void, track_ref: *const c_void, query: *const u8) -> *mut c_void;
 pub type Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver_t =
     unsafe extern "C" fn(component: *mut c_void, preset: u32, local_player: c_int);
+pub type Game_Vfx_UpdateWheelTyreInstance_t = unsafe extern "C" fn(
+    studio: *mut c_void,
+    vehicle_id: u8,
+    wheel: u32,
+    tyre_vis: *mut c_void,
+    tyre_asset: *mut c_void,
+    wheel_params: *const c_void,
+);
 pub type Gdb_HashMap_Rehash_t = unsafe extern "C" fn(map: *mut GdbValueMap, num_buckets: u64);
 pub type Gdb_Load_GameDatabase_t =
     unsafe extern "C" fn(db: *mut GdbDatabase, cfg: *mut c_void) -> *mut GdbDatabase;
@@ -8650,6 +8658,11 @@ pub mod bindings {
     };
     pub const Game_VfxManager_Initialise: Binding = Binding {
         id: "Game_VfxManager_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Vfx_UpdateWheelTyreInstance: Binding = Binding {
+        id: "Game_Vfx_UpdateWheelTyreInstance",
         kind: "func",
         status: Status::Experimental,
     };
@@ -16453,8 +16466,23 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_TheatreList_EntryStepAlt: Binding = Binding {
+        id: "site_Game_TheatreList_EntryStepAlt",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_TheatreList_NoSlot: Binding = Binding {
         id: "site_Game_TheatreList_NoSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TheatreList_NoSlotAlt: Binding = Binding {
+        id: "site_Game_TheatreList_NoSlotAlt",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TheatreRows_RowOffset: Binding = Binding {
+        id: "site_Game_TheatreRows_RowOffset",
         kind: "site",
         status: Status::Experimental,
     };

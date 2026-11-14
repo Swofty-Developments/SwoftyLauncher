@@ -803,6 +803,9 @@
   "Game_SpeechSystem_PostLine": {
    "match": "0xa2f4d0"
   },
+  "Game_Vfx_UpdateWheelTyreInstance": {
+   "match": "0x45a2d90"
+  },
   "Gdb_Lookup_Key": {
    "match": "0x4598580"
   },
@@ -1892,6 +1895,15 @@
   },
   "site_Sess_InGameRaceRetirementDriverJoin": {
    "match": "0x2d56224"
+  },
+  "site_Game_TheatreRows_RowOffset": {
+   "match": "0x1f04f42"
+  },
+  "site_Game_TheatreList_EntryStepAlt": {
+   "match": "0x2bf0d20"
+  },
+  "site_Game_TheatreList_NoSlotAlt": {
+   "match": "0x2bf0d20"
   }
  },
  "unresolvable": {}
