@@ -21,6 +21,8 @@ pub const PRETEND_ENV: &str = "SWOFTY_UPDATE_PRETEND_VERSION";
 pub const FIXTURE_ENV: &str = "SWOFTY_TEST_GITHUB";
 pub const CHECK_TIMEOUT: Duration = Duration::from_secs(10);
 pub const STAGING_DIR: &str = ".update";
+/// Beside the staging folder rather than in it, so cleaning that folder never deletes a lock in use.
+const LOCK_FILE: &str = ".update.lock";
 pub const INSTALL_MANIFEST: &str = ".install-manifest";
 const SWEPT_DIRS: [&str; 3] = ["loader", "addons", crate::postfx::DXC_DIR];
 
@@ -669,7 +671,16 @@ impl Install {
         self.root.join(STAGING_DIR)
     }
 
+    /// Recover and remove what an update that died left in the staging folder. Leaves it alone and
+    /// returns false while another process's update holds it; true once the folder is gone.
     pub fn cleanup(&self) -> bool {
+        let Some(_lock) = UpdateLock::try_acquire(&self.root) else {
+            return false;
+        };
+        self.clean_staging()
+    }
+
+    fn clean_staging(&self) -> bool {
         let dir = self.staging();
         if let Ok(entries) = std::fs::read_dir(&dir) {
             for work in entries.flatten().map(|e| e.path()) {
@@ -691,13 +702,19 @@ impl Install {
         }
         refuse_data_root(&self.root, &crate::paths::data_dir())?;
         let asset = release.platform_asset()?;
-        self.cleanup();
+        let Some(_lock) = UpdateLock::try_acquire(&self.root) else {
+            return Err(Error::Other(
+                "another launcher or swofty update is updating this copy right now; wait for it to finish"
+                    .into(),
+            ));
+        };
+        self.clean_staging();
         let work = self
             .staging()
             .join(format!("{}-{}", std::process::id(), now_secs()));
         std::fs::create_dir_all(&work).map_err(io_err(&work))?;
         let result = self.stage_and_apply(release, asset, &work, progress);
-        self.cleanup();
+        self.clean_staging();
         result.map(|_| version)
     }
 
@@ -732,6 +749,32 @@ impl Install {
         refuse_data_root(&self.root, &crate::paths::data_dir())?;
         progress.report(0.95, "Replacing files");
         apply(&new, &self.root, &staging.join("old"))
+    }
+}
+
+/// Held for the whole of an update, so another launcher's start-up cleanup or a `swofty update`
+/// leaves its download and its half-applied swap alone. The operating system drops it when the
+/// process ends, which is how a later cleanup tells a dead update's leftovers from a live one.
+/// Where the file system cannot lock, updates go unguarded.
+struct UpdateLock {
+    _file: Option<std::fs::File>,
+}
+
+impl UpdateLock {
+    /// Take the lock, or `None` while another update holds it.
+    fn try_acquire(root: &Path) -> Option<Self> {
+        let file = std::fs::OpenOptions::new()
+            .create(true)
+            .truncate(false)
+            .write(true)
+            .open(root.join(LOCK_FILE));
+        let Ok(file) = file else {
+            return Some(Self { _file: None });
+        };
+        match file.try_lock() {
+            Err(std::fs::TryLockError::WouldBlock) => None,
+            Ok(()) | Err(std::fs::TryLockError::Error(_)) => Some(Self { _file: Some(file) }),
+        }
     }
 }
 
@@ -1662,6 +1705,36 @@ mod tests {
             "core v1"
         );
         assert!(!root.join("bin/added").exists());
+        assert!(!root.join(STAGING_DIR).exists());
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn cleanup_leaves_a_live_update_alone_and_recovers_a_dead_one() {
+        let dir = temp("live");
+        let (root, new) = (dir.join("install"), dir.join("new"));
+        release_tree(&root, "v1");
+        release_tree(&new, "v2");
+        let work = root.join(STAGING_DIR).join("w1");
+        apply(&new, &root, &work.join("old")).unwrap();
+        write(&work.join(APPLYING), "");
+        write(&work.join("swofty.zip"), "half a download");
+        let install = Install { root: root.clone() };
+
+        let live = UpdateLock::try_acquire(&root).expect("no update holds the lock yet");
+        assert!(UpdateLock::try_acquire(&root).is_none());
+        assert!(!install.cleanup());
+        assert_eq!(read(&root.join("bin").join(exe("swofty"))), "cli v2");
+        assert!(work.join(APPLYING).is_file());
+        assert_eq!(read(&work.join("swofty.zip")), "half a download");
+
+        drop(live);
+        assert!(install.cleanup());
+        assert_eq!(read(&root.join("bin").join(exe("swofty"))), "cli v1");
+        assert_eq!(
+            read(&root.join("loader").join(crate::builtin::CORE_DLL)),
+            "core v1"
+        );
         assert!(!root.join(STAGING_DIR).exists());
         std::fs::remove_dir_all(&dir).ok();
     }

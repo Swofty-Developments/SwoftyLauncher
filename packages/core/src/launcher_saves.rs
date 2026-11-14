@@ -162,6 +162,7 @@ pub fn seed(data: &Path, profile: &str, from: &Location, reason: Reason, now: i6
     if !has_files(from) {
         return Ok(Seeded::NoSource);
     }
+    crate::save_stall::refuse(data, from)?;
     let (files, bytes) = copy_files(from, &to)?;
     let meta = Meta::new(reason)
         .profile(profile)
@@ -210,7 +211,10 @@ pub fn rename_in_marker(data: &Path, from: &str, to: &str) -> Result<()> {
     crate::write_json(&marker_path(data), &m)
 }
 
-/// Move the vaults of launcher profile `from` to the names for `to`.
+/// Move the vaults of launcher profile `from` to the names for `to`. A vault already under `to`'s name
+/// is a deleted profile's (deleting a profile keeps its vault): it moves aside to
+/// `<name>.deleted.<unix time>` first, so the renamed profile shows its own history and the deleted
+/// profile's stays in the vault under a name no profile can have.
 pub fn rename_vaults(data: &Path, from: &str, to: &str) -> Result<()> {
     for (old, new) in [
         (Location::launcher(data, from), Location::launcher(data, to)),
@@ -218,11 +222,38 @@ pub fn rename_vaults(data: &Path, from: &str, to: &str) -> Result<()> {
     ] {
         let old = Vault::root(data).join(&old.source);
         let new = Vault::root(data).join(&new.source);
-        if old.is_dir() && !new.exists() {
-            std::fs::rename(&old, &new).map_err(io_err(&old))?;
+        if !old.is_dir() || old == new {
+            continue;
+        }
+        let aside = new.symlink_metadata().is_ok().then(|| deleted_vault_name(&new));
+        if let Some(aside) = &aside {
+            crate::with_retry(&new, || std::fs::rename(&new, aside))?;
+        }
+        if let Err(e) = crate::with_retry(&old, || std::fs::rename(&old, &new)) {
+            if let Some(aside) = &aside {
+                std::fs::rename(aside, &new).ok();
+            }
+            return Err(e);
         }
     }
     Ok(())
+}
+
+/// A free name beside `vault` for the vault of a deleted profile: `<name>.deleted.<unix time>`.
+fn deleted_vault_name(vault: &Path) -> PathBuf {
+    let name = vault
+        .file_name()
+        .unwrap_or_default()
+        .to_string_lossy()
+        .into_owned();
+    let stamp = crate::vault::now();
+    let mut aside = vault.with_file_name(format!("{name}.deleted.{stamp}"));
+    let mut n = 1;
+    while aside.symlink_metadata().is_ok() {
+        aside = vault.with_file_name(format!("{name}.deleted.{stamp}-{n}"));
+        n += 1;
+    }
+    aside
 }
 
 /// Whether the first-start import has not yet found a Steam save to read.
@@ -379,6 +410,7 @@ pub fn import(
             from.dir.display()
         )));
     }
+    crate::save_stall::refuse(data, from)?;
     let vault = Vault::of(data, &to)?;
     if has_files(&to) {
         vault.snapshot(
@@ -442,6 +474,7 @@ pub fn export(
             "the launcher saves of profile {profile} are empty; there is nothing to export"
         )));
     }
+    crate::save_stall::refuse(data, &from)?;
     let lv = Vault::of(data, &from)?;
     let id = match lv.snapshot(
         &from,

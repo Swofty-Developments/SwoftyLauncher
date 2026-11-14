@@ -91,6 +91,7 @@ t "Estimate lap time guard unit test" native/test/run_estimate_laptime_test.sh
 t "Career calendar track list guard unit test" native/test/run_track_list_guard_test.sh
 t "Garage setup guard unit test" native/test/run_garage_setup_test.sh
 t "Theatre list guard unit test" native/test/run_theatre_list_test.sh
+t "Tile list select guard unit test" native/test/run_tile_list_select_test.sh
 t "Core site names exported (host-only)" native/test/run_core_sites_exported_test.sh
 t "Garage crew guard unit test" native/test/run_garage_crew_test.sh
 t "Garage crew guard sites export test" native/test/run_garage_crew_sites_test.sh

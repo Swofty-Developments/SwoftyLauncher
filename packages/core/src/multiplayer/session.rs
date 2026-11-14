@@ -3308,6 +3308,19 @@ mod tests {
     }
 
     #[test]
+    fn a_join_with_a_malformed_code_fails_at_once_with_the_codes_message() {
+        let server = server();
+        let game = FakeGame::new("bad-code");
+        let guest = join(setup(&server.url, "guest-token", &game, print(&[])), "F1 7KQ2MX");
+        let state = wait_until(&guest, "the refusal", |s| s.phase.is_over());
+        assert_eq!(
+            state.phase,
+            Phase::Failed("'F1 7KQ2MX' is not an invite code (like F1-7KQ2MX)".into())
+        );
+        assert_eq!(state.last_error, None, "the code is not retried");
+    }
+
+    #[test]
     fn a_closed_game_is_started_for_the_room_then_driven_to_the_lobby() {
         let server = server();
         let game = FakeGame::new("launch-host");

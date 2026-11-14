@@ -12,7 +12,7 @@ use crate::discord::{BLURPLE, BLURPLE_HOVER, INVITE, LOGO};
 use crate::pages::{game_art, logo};
 use crate::shell::Shell;
 use crate::theme::{Palette, palette};
-use swofty_i18n::tr;
+use swofty_i18n::{tr, trf};
 
 const HEIGHT: f32 = 470.;
 const TITLE: &str = "EA app support is experimental";
@@ -245,7 +245,7 @@ impl Shell {
             }
             let (shell, dir) = (shell.clone(), moved.recorded.clone());
             alert
-                .ok_text(format!("Play the copy in {}", dir.display()))
+                .ok_text(trf!("Play the copy in {folder}", folder = dir.display()))
                 .show_cancel(true)
                 .on_ok(move |_, window, cx| {
                     shell.update(cx, |s, cx| s.use_copy(dir.clone(), window, cx)).ok();

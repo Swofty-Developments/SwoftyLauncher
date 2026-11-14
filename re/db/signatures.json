@@ -164691,6 +164691,60 @@
    "used_by": [
     "native/src/core/session_job_probe.cpp"
    ]
+  },
+  {
+   "id": "game.tile_list_select_child_step",
+   "section": ".xtls",
+   "pattern": "4C 8D 2D ?? ?? ?? ?? 48 8D 35 ?? ?? ?? ?? 48 8D 2D ?? ?? ?? ?? 66 0F 1F 44 00 00 49 8B 3F 4C 8B 77 30 EB 0F",
+   "match": "0x143838fb5",
+   "anchor": "0x1b",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x143838fd0",
+   "kind": "mid",
+   "names": [
+    "site_Game_TileListSelect_ChildStep"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-14",
+     "by": "re-career-teams",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/tile_list_select_guard.cpp"
+   ],
+   "expect": "49 8B 3F 4C 8B 77 30"
+  },
+  {
+   "id": "game.tile_list_select_child_next",
+   "section": ".xtls",
+   "pattern": "4C 8D 2D ?? ?? ?? ?? 48 8D 35 ?? ?? ?? ?? 48 8D 2D ?? ?? ?? ?? 66 0F 1F 44 00 00 49 8B 3F 4C 8B 77 30 EB 0F",
+   "match": "0x143838fb5",
+   "anchor": "0x99",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14383904e",
+   "kind": "mid",
+   "names": [
+    "site_Game_TileListSelect_ChildNext"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-14",
+     "by": "re-career-teams",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/tile_list_select_guard.cpp"
+   ],
+   "expect": "49 83 C7 08 4D 39 E7"
   }
  ]
 }
