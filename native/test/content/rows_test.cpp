@@ -1,4 +1,5 @@
 #include "../../src/core/apply/content/boot.hpp"
+#include "../../src/core/apply/content/tyre_warmers.hpp"
 #include "../../src/core/apply/ids.hpp"
 #include "../../src/core/apply/room.hpp"
 #include "../../src/core/apply/scheduler.hpp"
@@ -324,7 +325,7 @@ static void leaderboard_tests(const std::string &regs)
     st.set_validator(&registry::schema_validator());
     const SwoftyRegistry *t = registry::table();
     for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
-        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.3.json" : "/1.0.json"));
+        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.4.json" : "/1.0.json"));
         t->declare(name, SwoftyText{schema.data(), schema.size()});
     }
     auto package = [](const char *list, const char *board) {
@@ -1808,6 +1809,20 @@ static void drs_tests(const std::string &regs)
     Value p2010b = swofty::json::parse(R"({"entrant_list":"cs_2010"})");
     packages.push_back({"mod.b/f1_2010", &p2010b});
     check(!content::drs_pick("cs_2010", packages, groups).group, "the last package with the box's entrant list decides");
+
+    Value w1959 = swofty::json::parse(R"({"entrant_list":"f1_1959","rules":{"tyre_warmers":false}})");
+    Value w2009 = swofty::json::parse(R"({"entrant_list":"f1_2009","rules":{"tyre_warmers":null}})");
+    Value w2010 = swofty::json::parse(R"({"entrant_list":"f1_2010","rules":{"tyre_warmers":"off"}})");
+    std::vector<std::pair<std::string, const Value *>> boxes = {{"mod.a/f1_1959", &w1959}, {"mod.a/f1_2009", &w2009}, {"mod.a/f1_2010", &w2010}};
+    auto warm = content::tyre_warmers_pick("f1_1959", boxes);
+    std::printf("      %s\n", warm.line.c_str());
+    check(warm.warmers == false && warm.package == "mod.a/f1_1959", "a box whose package sets rules.tyre_warmers runs that setting");
+    check(!content::tyre_warmers_pick("f1_2009", boxes).warmers && !content::tyre_warmers_pick("f1_2010", boxes).warmers &&
+              !content::tyre_warmers_pick("f1_2025", boxes).warmers,
+          "null, a non-bool or a stock box: the mode keeps its own tyre warmer setting");
+    Value w1959b = swofty::json::parse(R"({"entrant_list":"f1_1959","rules":{"tyre_warmers":true}})");
+    boxes.push_back({"mod.b/f1_1959", &w1959b});
+    check(content::tyre_warmers_pick("f1_1959", boxes).warmers == true, "the last package with the box's entrant list decides");
 }
 
 static void stock_career_rows(Db &db)
@@ -2254,7 +2269,7 @@ static void virtual_list_tests(const std::string &regs)
     st.set_validator(&registry::schema_validator());
     const SwoftyRegistry *t = registry::table();
     for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
-        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.3.json" : "/1.0.json"));
+        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.4.json" : "/1.0.json"));
         t->declare(name, SwoftyText{schema.data(), schema.size()});
     }
     auto package = [](const char *list, bool virt) {

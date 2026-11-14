@@ -74,6 +74,8 @@ int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
 // group the core added at boot for the box's rules.drs (content.package rules.drs). A box without a rule, a stock
 // box press and a build that narrows to no addon list put the game's group back. The DRS system reads the current
 // mode's group at session load, at a full safety car end and at a red flag restart; every other mode keeps its own.
+// Tyre warmers per box: the same narrowing writes the box's rules.tyre_warmers into every swofty_f1 mode's
+// has_tyre_warmers byte (+0x1c8) and the same put backs restore the game's value (logic::WarmerSwaps).
 //
 // The three hooks are one core mixin set, offered at the first mixin commit after a box was registered,
 // so a game without registered boxes runs none of them.
@@ -184,6 +186,8 @@ constexpr size_t BOX_ONLY = offsetof(SwoftyEraBox, only);
 static_assert(BOX_TIME_TRIAL == 0x28 && BOX_ONLY == 0x30);
 logic::DrsSwaps drs;
 std::string last_drs_line;
+logic::WarmerSwaps warmers;
+std::string last_warmers_line;
 
 template <class T> T at(const void *base, size_t off)
 {
@@ -275,10 +279,38 @@ void apply_drs(void *mode, const char *list)
     log_drs(holder && modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
 }
 
+void log_warmers(const std::string &line)
+{
+    if (line == last_warmers_line)
+        return;
+    last_warmers_line = line;
+    swofty::log("[tyres] %s", line.c_str());
+}
+
+// Tyre warmers per box: the pressed box's rules.tyre_warmers goes into every swofty_f1 mode's has_tyre_warmers byte;
+// a box without the rule puts the game's value back.
+void apply_warmers(void *mode, const char *list)
+{
+    auto box = swofty_core::apply::content::tyre_warmers_for_box(list);
+    if (!box.warmers) {
+        warmers.put_back();
+        log_warmers(box.line);
+        return;
+    }
+    size_t modes = 0;
+    for_each_host_mode(mode, [&](uint8_t *m) {
+        warmers.swap(m, *box.warmers);
+        modes++;
+    });
+    log_warmers(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
+}
+
 void put_back_drs()
 {
     if (size_t n = drs.put_back())
         log_drs(std::string(logic::HOST) + "'s DRS group put back on " + std::to_string(n) + " mode(s)");
+    if (size_t n = warmers.put_back())
+        log_warmers(std::string(logic::HOST) + "'s tyre warmer setting put back on " + std::to_string(n) + " mode(s)");
 }
 
 logic::ListCars list_cars(const void *list);
@@ -469,6 +501,7 @@ void narrow(void *mode, const char *list)
             swofty::log("[era] %s offers only %s (of %lld lists)", logic::HOST, list, (long long)count);
     });
     apply_drs(mode, list);
+    apply_warmers(mode, list);
 }
 
 bool time_trial(void *mode)
@@ -1491,7 +1524,9 @@ void drop_setup_pointers()
         narrowed_count = 0;
     }
     p.drs = drs.forget();
+    warmers.forget();
     last_drs_line.clear();
+    last_warmers_line.clear();
     std::string line = logic::availability_drop_line(p);
     if (!line.empty() && !logged_dropped.exchange(true))
         swofty::log("[era] %s", line.c_str());

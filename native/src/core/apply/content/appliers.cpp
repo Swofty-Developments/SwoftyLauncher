@@ -11,6 +11,7 @@
 #include "gvdb.hpp"
 #include "logos.hpp"
 #include "teams.hpp"
+#include "tyre_warmers.hpp"
 #include "../tracks/boot.hpp"
 #include "../tracks/box.hpp"
 #include "../../career_ops/teams_plan.hpp"
@@ -844,6 +845,18 @@ DrsBox drs_for_box(const std::string &entrant_list)
         pick = drs_pick(entrant_list, packages, drs_groups);
     }
     return {pick.group ? pick.group->label : std::string(), pick.line};
+}
+
+WarmersBox tyre_warmers_for_box(const std::string &entrant_list)
+{
+    Store &st = registry::store();
+    std::map<std::string, Value> keep;
+    Lookup lookup = store_lookup(st, keep);
+    std::vector<std::pair<std::string, const Value *>> packages;
+    for (auto &id : in_load_order(st, "content.package"))
+        packages.push_back({id, lookup("content.package", id)});
+    WarmersPick pick = tyre_warmers_pick(entrant_list, packages);
+    return {pick.warmers, pick.line};
 }
 
 void register_appliers()
