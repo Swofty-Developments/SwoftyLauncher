@@ -33,6 +33,8 @@ inline constexpr address<"Ui_Construct_FacilityTileWidget"> Ui_Construct_Facilit
 inline constexpr address<"Ui_Copy_ListElementOrEmpty"> Ui_Copy_ListElementOrEmpty{}; // L2 experimental
 inline constexpr address<"Ui_Copy_MyTeamNodeArray"> Ui_Copy_MyTeamNodeArray{}; // L2 experimental
 inline constexpr address<"Ui_CreateMyTeamCareer_Description"> Ui_CreateMyTeamCareer_Description{}; // L2 experimental
+using Ui_DataDrivenMessage_Init_t = int(void *elem, void *rec);
+inline constexpr fn<"Ui_DataDrivenMessage_Init", Ui_DataDrivenMessage_Init_t> Ui_DataDrivenMessage_Init{}; // L2 experimental
 inline constexpr address<"Ui_DeptEvent_SetGotoButton"> Ui_DeptEvent_SetGotoButton{}; // L2 experimental
 inline constexpr address<"Ui_Dispatch_MyTeamActivitiesUiEvent"> Ui_Dispatch_MyTeamActivitiesUiEvent{}; // L2 experimental
 using Ui_DriverMarket_SetOpenedFromRenewalPopup_t = void(uint8_t value);
@@ -62,6 +64,8 @@ inline constexpr address<"Ui_Get_AcclaimProperty"> Ui_Get_AcclaimProperty{}; // 
 inline constexpr address<"Ui_Get_AcclaimValue"> Ui_Get_AcclaimValue{}; // L2 experimental
 inline constexpr address<"Ui_Get_UiRegistryEntry_A"> Ui_Get_UiRegistryEntry_A{}; // L2 experimental
 inline constexpr address<"Ui_Get_UiRegistryEntry_B"> Ui_Get_UiRegistryEntry_B{}; // L2 experimental
+using Ui_Init_CarDriverTeamSelectors_t = uint64_t(void *self);
+inline constexpr fn<"Ui_Init_CarDriverTeamSelectors", Ui_Init_CarDriverTeamSelectors_t> Ui_Init_CarDriverTeamSelectors{}; // L2 experimental
 inline constexpr address<"Ui_Init_TeamHqMyTeamTabData"> Ui_Init_TeamHqMyTeamTabData{}; // L2 experimental
 inline constexpr address<"Ui_Init_TeamHqTabButtonData_B"> Ui_Init_TeamHqTabButtonData_B{}; // L2 experimental
 inline constexpr address<"Ui_Link_ResearchRegistryNode"> Ui_Link_ResearchRegistryNode{}; // L2 experimental
@@ -84,8 +88,12 @@ inline constexpr address<"Ui_MyTeamTeamIcons_Select"> Ui_MyTeamTeamIcons_Select{
 inline constexpr address<"Ui_MyTeamWelcomeToTeamHq_Popup"> Ui_MyTeamWelcomeToTeamHq_Popup{}; // L2 experimental
 inline constexpr address<"Ui_NoyearCustomMyTeam_FlowState"> Ui_NoyearCustomMyTeam_FlowState{}; // L2 experimental
 inline constexpr address<"Ui_NoyearCustomMyTeam_Init"> Ui_NoyearCustomMyTeam_Init{}; // L2 experimental
+using Ui_OnlineCustomItem_GetAction_t = void *(void *item, void *out_action);
+inline constexpr fn<"Ui_OnlineCustomItem_GetAction", Ui_OnlineCustomItem_GetAction_t> Ui_OnlineCustomItem_GetAction{}; // L2 experimental
 inline constexpr address<"Ui_PaddockPass_OnShow_CloseTransactionQueue"> Ui_PaddockPass_OnShow_CloseTransactionQueue{}; // L2 experimental
 inline constexpr address<"Ui_Play_FacilityStageCutsceneByIndex"> Ui_Play_FacilityStageCutsceneByIndex{}; // L2 experimental
+using Ui_PresetEventItem_Populate_t = void(void *item);
+inline constexpr fn<"Ui_PresetEventItem_Populate", Ui_PresetEventItem_Populate_t> Ui_PresetEventItem_Populate{}; // L2 experimental
 inline constexpr address<"Ui_PurchaseItem_ResolveTypeName"> Ui_PurchaseItem_ResolveTypeName{}; // L2 experimental
 inline constexpr address<"Ui_PurchaseMessage_ApplySelectedTier"> Ui_PurchaseMessage_ApplySelectedTier{}; // L2 experimental
 inline constexpr address<"Ui_PurchaseMessage_OnConfirm"> Ui_PurchaseMessage_OnConfirm{}; // L2 experimental
