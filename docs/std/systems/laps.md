@@ -119,7 +119,7 @@ A board is the core's own when its descriptor is 6 or higher or when its track i
 
 ## The integrity module
 
-The launcher loads one more native addon for a session in which Time Trial boards is on and the player is signed in with Discord: `swofty.integrity`, a closed-source DLL that Swofty's server publishes. The launcher fetches it from `GET /v1/tt/integrity`, checks its size and sha256, and checks an Ed25519 signature over `swofty-tt-integrity-v1\0 || version || \0 || sha256` against the public key pinned in the launcher. A copy that passes is kept under `timetrial/integrity/<version>/` in the launcher's data folder, the newest two versions. The session places it as `swofty/addons/swofty.integrity/swofty_integrity.dll` and lists it in `swofty/settings.json` under `plugins`, and the session's rollback removes it with every other placed file.
+The launcher loads one more native addon for a session in which Time Trial boards is on and the player is signed in with Discord: `swofty.integrity`, a closed-source DLL that Swofty's server publishes. The launcher fetches it from `GET /v1/tt/integrity`, checks its size and sha256, and checks an Ed25519 signature over `swofty-tt-integrity-v1\0 || version || \0 || sha256` against the public key pinned in the launcher. A copy that passes is kept under `timetrial/integrity/<version>/` in the launcher's data folder, the newest two versions, with `offer.json` beside it: the offer it came with and `offered`, the unix time the server last offered it. The session places it as `swofty/addons/swofty.integrity/swofty_integrity.dll` and lists it in `swofty/settings.json` under `plugins`, and the session's rollback removes it with every other placed file.
 
 It is not an addon in any profile, the addon list, the load order or the addon set a lap is uploaded with. It is named in `loader.log` as an addon DLL and in the launcher's session log:
 
@@ -128,7 +128,50 @@ integrity: swofty_integrity.dll 2026.11.10.1 under swofty/addons/swofty.integrit
 integrity module: not loaded for this session: couldn't reach https://...
 ```
 
-When the offer is missing, unreachable or fails a check, the session starts without the module and the lap is written without an `ATST` section.
+The offer and the download are tried again after a timeout, a connection error or a 5xx answer: up to three tries each, 1 s and 3 s apart, within 18 s in all. A 4xx answer and a failed size, hash or signature check are not tried again.
+
+```
+integrity module: asking the server for the module failed (couldn't reach https://...: timeout); trying again in 1 s (try 2 of 3)
+integrity module: the server's copy could not be had (couldn't reach https://...: timeout); using the cached copy 2026.11.10.1, verified offline, last offered 3 h ago
+```
+
+When the server's module cannot be had, the launcher uses the cached copy the server offered last. Its `offer.json` signature is checked against the pinned key and its size and sha256 against the DLL, and `offered` is at most 14 days old.
+
+### Time Trial blocked
+
+The launcher tells the core what the session did through `swofty/tt.json` and takes both keys out when the game closes:
+
+```json
+{
+  "tt_boards": true,
+  "tt_module": { "version": "2026.11.10.1", "dll": "swofty_integrity.dll" }
+}
+```
+
+```json
+{
+  "tt_boards": true,
+  "tt_blocked": { "reason": "couldn't reach https://...: timeout" }
+}
+```
+
+`tt_module` names the module the session placed. `tt_blocked` is written when Time Trial boards is on, the player is signed in, the profile loads the core and no verified module could be placed. Neither key is written with Time Trial boards off, signed out or in a vanilla profile.
+
+The core blocks Time Trial while `tt_boards` is `true` and either `tt_blocked` is there, or `tt_module` is there and, from the first main menu on, `swofty_integrity.dll` is not in the process or `laps.sealing` has no handler. The main menu's Time Trial card and the activity container's `time_trial` command (F1 World > Play > Time Trial) are refused, and the game's own message popup says why:
+
+```
+Time Trial is unavailable
+The launcher could not load the Time Trial integrity module, so laps would not count. Check your connection and start the game from the launcher again. To play Time Trial without the boards, turn off Time Trial boards in the launcher.
+```
+
+The main menu's Time Trial card reads `Unavailable: the integrity module did not load`. When the game reaches Time Trial another way, the popup shows once on entry. `SWOFTY_TT_BLOCKED=0` turns the block off.
+
+```
+[tt-blocked] Time Trial is blocked: the launcher placed no integrity module; the launcher said: couldn't reach https://...: timeout
+[tt-blocked] the main menu's Time Trial card refused; popup queued
+```
+
+The launcher's session log says `integrity module: Time Trial is blocked in game this session, ...`, and the launcher's Time Trial page shows a notice while that session runs.
 
 At `laps.sealing` the module appends the `ATST` section: a length-prefixed JSON document and a 32-byte HMAC-SHA256 of it.
 
