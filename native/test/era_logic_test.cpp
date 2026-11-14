@@ -599,7 +599,7 @@ int main()
     for (size_t i = 0; i < era::MAX_BOXES; i++)
         full.push_back(box(("l" + std::to_string(i)).c_str()));
     era::Box over = box("one_more");
-    expect(!era::check(over, full).empty(), "a box past the 64th is refused");
+    expect(!era::check(over, full).empty(), "a box past the 255th is refused");
 
     std::vector<era::Box> mixed = {box("y2018", "", "", 2018), box("y2016", "", "", 2016), box("late_a"), box("y2017", "", "", 2017),
                                    box("late_b")};

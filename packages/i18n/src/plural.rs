@@ -115,6 +115,13 @@ mod tests {
     }
 
     #[test]
+    fn korean_never_changes_form() {
+        assert_eq!(category("ko", 1), Other);
+        assert_eq!(category("ko", 7), Other);
+        assert_eq!(categories("ko"), [Other]);
+    }
+
+    #[test]
     fn czech_and_arabic_and_french() {
         assert_eq!(
             (category("cs", 1), category("cs", 3), category("cs", 5)),
@@ -139,7 +146,7 @@ mod tests {
 
     #[test]
     fn every_category_a_rule_returns_is_listed() {
-        for code in ["en", "fr", "ru", "pl", "cs", "ar", "zh", "ja"] {
+        for code in ["en", "fr", "ru", "pl", "cs", "ar", "zh", "ja", "ko"] {
             for n in 0..1000 {
                 assert!(categories(code).contains(&category(code, n)), "{code} {n}");
             }

@@ -105,6 +105,7 @@ t "Ghost trace codec and lap converter unit test" native/test/run_ghost_trace_te
 t "Ghost arming state machine unit test" native/test/run_ghost_arm_test.sh
 t "Lap setup capture unit test" native/test/run_lap_setup_test.sh
 t "Lap toast message and state machine unit test" native/test/run_toast_test.sh
+t "Time Trial barred addons warning unit test" native/test/run_tt_barred_test.sh
 t "Player name sanitising unit test" native/test/run_player_name_test.sh
 t "UI registry walk unit test" native/test/run_ui_registry_walk_test.sh
 t "Presence id and ghost id stream unit test" native/test/run_presence_id_test.sh

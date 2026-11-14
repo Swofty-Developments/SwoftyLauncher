@@ -31,7 +31,7 @@ constexpr uint8_t KIND_CUSTOM = 1;
 constexpr uint8_t KINDS = 3;
 constexpr uint16_t MAX_ID = 0x400;
 constexpr size_t MAX_SLOTS = 0x4000;
-constexpr size_t MAX_ENTRANTS = 128;
+constexpr size_t MAX_ENTRANTS = 0x1000;
 constexpr size_t LOG_IDS = 32;
 
 inline bool switch_off(const char *value)
