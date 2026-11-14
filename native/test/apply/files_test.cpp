@@ -1,4 +1,5 @@
 #include "../../src/core/apply/content/lower.hpp"
+#include "../../src/core/apply/cache_place.hpp"
 #include "../../src/core/apply/files.hpp"
 
 #include <cstdio>
@@ -8,6 +9,7 @@
 #include <vector>
 
 namespace files = swofty_core::apply::files;
+namespace cache_place = swofty_core::apply::cache_place;
 namespace content = swofty_core::apply::content;
 using swofty::json::Value;
 
@@ -241,12 +243,83 @@ void lowering()
 
 }
 
+void away()
+{
+    std::string why;
+    std::string route = files::route_from_game(L"C:\\Program Files\\EA Games\\F1 25", L"C:\\Users\\p\\AppData\\Local\\Swofty\\addon-storage\\swofty.logos\\", 90, why);
+    check(route == "../../../Users/p/AppData/Local/Swofty/addon-storage/swofty.logos/", "the route climbs out of every game folder: " + route + why);
+    route = files::route_from_game(L"c:\\F1 25\\", L"C:\\data\\x\\", 10, why);
+    check(route == "../data/x/", "drive letters compare without case and a trailing slash on the game root is ignored: " + route);
+    check(files::route_from_game(L"C:\\F1 25", L"D:\\Swofty\\x\\", 10, why).empty() && why.find("another drive") != std::string::npos,
+          "another drive has no route: " + why);
+    check(files::route_from_game(L"C:\\F1 25", L"\\\\server\\share\\x\\", 10, why).empty(), "a network share has no route");
+    check(files::route_from_game(L"C:\\F1 25", L"C:\\Users\\Jos\u00e9\\x\\", 10, why).empty() && why.find("reject") != std::string::npos,
+          "a folder name with a non-ASCII character has no route: " + why);
+    check(files::route_from_game(L"C:\\F1 25", L"C:\\Users\\a (b)\\x\\", 10, why).empty(), "a folder name with parentheses has no route");
+    check(files::route_from_game(L"C:\\F1 25", L"C:\\" + std::wstring(200, L'a') + L"\\", 100, why).empty() && why.find("too long") != std::string::npos,
+          "a route too long once the file name is added has none: " + why);
+
+    Fake f;
+    files::Router r(f.sink());
+    std::string far = "../../Users/p/Swofty/addon-storage/swofty.logos/";
+    files::Outcome o = r.redirect("2025_asset_groups/ui_package/databases.erp", "swofty.logos", "logos_1_databases.erp", "team.logo", "logos", "boot", &far);
+    check(o.kind == files::Kind::routed, "a file outside swofty/ is routed without being installed there: " + o.line);
+    check(f.routes["2025_asset_groups/ui_package/databases.erp"] == far + "logos_1_databases.erp", "the route is the folder's route and the file");
+    check(r.winner("2025_asset_groups/ui_package/databases.erp") && r.winner("2025_asset_groups/ui_package/databases.erp")->away,
+          "the claim says the target is outside swofty/");
+    std::string tall = "../../" + std::string(240, 'a') + "/";
+    o = r.redirect("2025_asset_groups/ui_package/flow_boot.erp", "swofty.logos", "logos_1_flow_boot.erp", "team.logo", "logos", "boot", &tall);
+    check(o.kind == files::Kind::invalid && o.line.find("longer than") != std::string::npos, "an outside route past the game's path length is refused: " + o.line);
+}
+
+void places()
+{
+    const std::wstring game = L"C:\\Program Files\\EA Games\\F1 25", swofty = game + L"\\swofty\\",
+                       data = L"C:\\Users\\p\\AppData\\Local\\Swofty\\";
+    std::vector<std::wstring> probed;
+    std::set<std::wstring> refused;
+    auto refuses = [&](const std::wstring &dir) -> uint32_t {
+        probed.push_back(dir);
+        return refused.count(dir) ? 5u : 0u;
+    };
+    cache_place::Place p = cache_place::choose(game, swofty, data, "swofty.logos", 90, refuses);
+    check(!p.moved && p.dir == swofty + L"addons\\swofty.logos\\" && p.away.empty() && p.refused == 0 && p.note.empty(),
+          "a writable game folder keeps the cache in swofty/addons/swofty.logos/");
+    check(probed.size() == 1, "the data folder is not touched while the game folder works");
+
+    refused = {swofty + L"addons\\swofty.logos\\"};
+    probed.clear();
+    p = cache_place::choose(game, swofty, data, "swofty.logos", 90, refuses);
+    check(p.moved && p.dir == data + L"addon-storage\\swofty.logos\\" && p.refused == 5, "a game folder that refuses moves the cache to the data folder");
+    check(p.away == "../../../Users/p/AppData/Local/Swofty/addon-storage/swofty.logos/", "and the game reaches it through the route from its folder: " + p.away);
+
+    p = cache_place::choose(game, swofty, L"", "swofty.logos", 90, refuses);
+    check(!p.moved && p.dir == swofty + L"addons\\swofty.logos\\" && p.refused == 5 && p.note.find("data folder is not known") != std::string::npos,
+          "with no data folder the cache stays where it was and the note says why: " + p.note);
+
+    p = cache_place::choose(game, swofty, L"D:\\Swofty\\", "swofty.logos", 90, refuses);
+    check(!p.moved && p.note.find("another drive") != std::string::npos, "a data folder on another drive is not used: " + p.note);
+
+    refused.insert(data + L"addon-storage\\swofty.logos\\");
+    p = cache_place::choose(game, swofty, data, "swofty.logos", 90, refuses);
+    check(!p.moved && p.note.find("or in the data folder (error 5)") != std::string::npos, "a data folder that refuses too leaves the cache where it was: " + p.note);
+
+    refused.clear();
+    p = cache_place::choose(game, swofty, L"C:\\Users\\p\\AppData\\Local\\Swofty", "swofty.logos", 90, refuses);
+    check(!p.moved, "a data folder without its trailing backslash still joins");
+    refused = {swofty + L"addons\\swofty.logos\\"};
+    p = cache_place::choose(game, swofty, L"C:\\Users\\p\\AppData\\Local\\Swofty", "swofty.logos", 90, refuses);
+    check(p.moved && p.dir == data + L"addon-storage\\swofty.logos\\", "a data folder without its trailing backslash still joins when it is used");
+}
+
 int main()
 {
     paths();
     routing();
     origins();
     lowering();
+    away();
+    places();
     std::printf("files: %d check(s), %d failure(s)\n", checks, failures);
     return failures ? 1 : 0;
 }

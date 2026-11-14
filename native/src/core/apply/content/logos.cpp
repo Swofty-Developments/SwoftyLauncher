@@ -1,5 +1,6 @@
 #include "logos.hpp"
 
+#include "../cache_place.hpp"
 #include "../files_api.hpp"
 #include "../../runtime.hpp"
 #include "logo_build.hpp"
@@ -166,12 +167,21 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         if (it != overlays.end())
             keyed_files.insert(keyed_files.end(), it->second.begin(), it->second.end());
     }
-    std::string dir = "addons/" + std::string(CACHE_ADDON) + "/";
-    std::wstring dirw = runtime::under_swofty("addons");
-    CreateDirectoryW(dirw.c_str(), nullptr);
-    CreateDirectoryW(runtime::under_swofty(dir).c_str(), nullptr);
-    std::wstring stamps_path = runtime::under_swofty(dir + logo_cache::STAMPS);
-    DeleteFileW(runtime::under_swofty(dir + logo_cache::OLD_STAMPS).c_str());
+    std::size_t longest = 0;
+    for (auto &rel : files)
+        longest = std::max(longest, std::string("logos_").size() + 16 + 1 + flat(rel).size());
+    cache_place::Place place = cache_place::choose(runtime::game_root(), runtime::swofty_root(), runtime::state_root(), CACHE_ADDON,
+                                                   longest, runtime::write_refusal);
+    if (place.moved)
+        report.lines.push_back("team.logo: the game can't create files in swofty/addons/" + std::string(CACHE_ADDON) + "/ (error " +
+                               std::to_string(place.refused) + "); the logo archives are built in " + runtime::narrow(place.dir) +
+                               " and the game opens them through /game/" + place.away + "...");
+    else if (!place.note.empty())
+        report.lines.push_back("team.logo: " + place.note + "; the archives can't be written");
+    const std::wstring &dir = place.dir;
+    const std::string *away = place.moved ? &place.away : nullptr;
+    std::wstring stamps_path = dir + runtime::wide(logo_cache::STAMPS);
+    DeleteFileW((dir + runtime::wide(logo_cache::OLD_STAMPS)).c_str());
     std::string stamps_before = runtime::read_file(stamps_path, size_t(16) << 20);
     logo_cache::Env stamp_env{stat_file, hash_file};
     auto key_inputs = [&](const std::set<std::string> &inputs, const logo_cache::Stamps &before) {
@@ -188,18 +198,18 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     logo_cache::Keyed keyed = key_inputs(inputs, before);
     std::string id = runtime::hex16(keyed.key).substr(2);
     std::string manifest_name = "logos_" + id + ".manifest";
-    std::string manifest = runtime::read_file(runtime::under_swofty(dir + manifest_name), size_t(1) << 20);
+    std::string manifest = runtime::read_file(dir + runtime::wide(manifest_name), size_t(1) << 20);
     std::vector<std::pair<std::string, std::string>> routes;
     int cached_built = -1;
     if (!manifest.empty())
         logo_cache::manifest_parse(manifest, [&](const std::string &file) {
-            return GetFileAttributesW(runtime::under_swofty(dir + file).c_str()) != INVALID_FILE_ATTRIBUTES;
+            return GetFileAttributesW((dir + runtime::wide(file)).c_str()) != INVALID_FILE_ATTRIBUTES;
         }, cached_built, routes);
     if (!routes.empty()) {
         report.built = cached_built;
         report.lines.push_back("team.logo: " + std::to_string(routes.size()) + " cached archive(s) of " + id + " reused");
     } else {
-        DeleteFileW(runtime::under_swofty(dir + manifest_name).c_str());
+        DeleteFileW((dir + runtime::wide(manifest_name)).c_str());
         DWORD t0 = GetTickCount();
         logo_build::Env env;
         env.list = [&] { return files; };
@@ -240,15 +250,18 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             erpfile::Archive arc;
             std::string why;
             std::string file = "logos_" + id + "_" + flat(rel);
-            std::wstring path = runtime::under_swofty(dir + file), tmp = path + L".tmp";
+            std::wstring path = dir + runtime::wide(file), tmp = path + L".tmp";
             HANDLE out = CreateFileW(tmp.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
+            DWORD error = out == INVALID_HANDLE_VALUE ? GetLastError() : 0;
             bool ok = src && out != INVALID_HANDLE_VALUE && erpfile::open(*src, arc, why) &&
                       erpfile::rewrite(*src, arc, changes, [&](const char *p, size_t n) {
                           DWORD put = 0;
                           while (n) {
                               DWORD want = DWORD(std::min<size_t>(n, size_t(1) << 24));
-                              if (!WriteFile(out, p, want, &put, nullptr) || !put)
+                              if (!WriteFile(out, p, want, &put, nullptr) || !put) {
+                                  error = GetLastError();
                                   return false;
+                              }
                               p += put;
                               n -= put;
                           }
@@ -256,16 +269,21 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
                       }, why);
             if (out != INVALID_HANDLE_VALUE)
                 CloseHandle(out);
-            if (!ok || !MoveFileExW(tmp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING)) {
+            if (ok && !MoveFileExW(tmp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING)) {
+                error = GetLastError();
+                ok = false;
+            }
+            if (!ok) {
                 DeleteFileW(tmp.c_str());
-                report.lines.push_back("team.logo: " + rel + " could not be rewritten" + (why.empty() ? "" : ": " + why));
+                report.lines.push_back("team.logo: " + rel + " could not be rewritten" + (why.empty() ? "" : ": " + why) +
+                                       (error ? " (error " + std::to_string(error) + " on " + runtime::narrow(path) + ")" : ""));
                 report.refused++;
                 continue;
             }
             routes.emplace_back(rel, file);
         }
         if (logo_cache::cacheable(routes.size(), res.changes.size(), res.refused))
-            runtime::write_file(runtime::under_swofty(dir + manifest_name), logo_cache::manifest_text(res.built, routes));
+            runtime::write_file(dir + runtime::wide(manifest_name), logo_cache::manifest_text(res.built, routes));
         report.built = res.built;
         report.lines.push_back("team.logo: " + std::to_string(res.built) + " slice(s) built into " + std::to_string(routes.size()) +
                                " archive(s) in " + std::to_string(GetTickCount() - t0) + " ms");
@@ -278,17 +296,17 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         keep.insert(r.second);
     keep.insert(manifest_name);
     WIN32_FIND_DATAW fd;
-    HANDLE h = FindFirstFileW((runtime::under_swofty(dir) + L"logos_*").c_str(), &fd);
+    HANDLE h = FindFirstFileW((dir + L"logos_*").c_str(), &fd);
     if (h != INVALID_HANDLE_VALUE) {
         do {
             std::string n = runtime::narrow(fd.cFileName);
             if (!keep.count(n))
-                DeleteFileW((runtime::under_swofty(dir) + runtime::wide(n)).c_str());
+                DeleteFileW((dir + runtime::wide(n)).c_str());
         } while (FindNextFileW(h, &fd));
         FindClose(h);
     }
     for (auto &[game, file] : routes) {
-        auto o = files::redirect(game, CACHE_ADDON, file, "team.logo", ROUTE_ID, "boot");
+        auto o = files::redirect(game, CACHE_ADDON, file, "team.logo", ROUTE_ID, "boot", away);
         if (o.refused())
             report.refused++;
     }
