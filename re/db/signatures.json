@@ -186999,6 +186999,32 @@
    "used_by": [
     "native/src/core/red_flag_recompute_guard.cpp"
    ]
+  },
+  {
+   "id": "game.tile_list_push_child_selection_thunk",
+   "section": ".xtls",
+   "pattern": "E9 ?? ?? ?? ?? B6 ED CC E9 ?? ?? ?? ?? 20 0F 8A 4E 56",
+   "match": "0x14383b390",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14383b390",
+   "kind": "func_start",
+   "names": [
+    "Game_TileList_PushChildSelection_Thunk"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-14",
+     "by": "choose-driver-second-walk",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/tile_list_select_guard.cpp"
+   ]
   }
  ]
 }

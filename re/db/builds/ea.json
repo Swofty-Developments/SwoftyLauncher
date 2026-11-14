@@ -544,6 +544,10 @@
    "pattern": "31 F6 48 8D 8C 24 D8 00 00 00 48 89 F2",
    "expect": "31 F6 48 8D 8C",
    "note": "The inlined lookup's not-found join (xor esi,esi, then the name node built from rsi) at F1_25.exe+0xc2076f; Steam's equivalent is the function exit that returns rsi."
+  },
+  "Game_TileList_PushChildSelection_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 0F 85 D5 4D 16 00 D5 0C 41 CF 00 4E C7",
+   "note": "the bytes after the 5-byte jmp are not code and differ on EA (thunk 0x1438285d0 to the body 0x14f622850)"
   }
  },
  "hints": {
@@ -1913,6 +1917,9 @@
   },
   "Sess_RaceStrategy_RedFlagRecompute": {
    "match": "0x368ca20"
+  },
+  "Game_TileList_PushChildSelection_Thunk": {
+   "match": "0x38285d0"
   }
  },
  "unresolvable": {}

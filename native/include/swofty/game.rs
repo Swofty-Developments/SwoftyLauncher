@@ -4050,6 +4050,8 @@ pub type Game_Teleport_Vehicle_t = unsafe extern "C" fn(
     dt: f32,
     flags: u32,
 );
+pub type Game_TileList_PushChildSelection_Thunk_t =
+    unsafe extern "C" fn(widget: *mut c_void, child: *mut c_void);
 pub type Game_TimeManager_OnResetFixedTimeStep_t =
     unsafe extern "C" fn(ctx: *mut c_void, msg: *const c_void) -> c_int;
 pub type Game_TitleScreenVM_OnScreenActivated_t = unsafe extern "C" fn(vm: *mut c_void);
@@ -11903,6 +11905,11 @@ pub mod bindings {
     };
     pub const Game_Thrustmaster_SetWheelRange: Binding = Binding {
         id: "Game_Thrustmaster_SetWheelRange",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_TileList_PushChildSelection_Thunk: Binding = Binding {
+        id: "Game_TileList_PushChildSelection_Thunk",
         kind: "func",
         status: Status::Experimental,
     };
