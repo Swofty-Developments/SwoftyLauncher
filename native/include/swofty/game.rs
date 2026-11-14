@@ -183,11 +183,6 @@ pub struct RnDDepartmentConfig {
 }
 
 #[repr(C)]
-pub struct TodCurveBinding {
-    _opaque: [u8; 0],
-}
-
-#[repr(C)]
 pub struct UiLayoutStep {
     _opaque: [u8; 0],
 }
@@ -2812,26 +2807,45 @@ const _: () = assert!(core::mem::offset_of!(TileList, items_end) == 0x80);
 
 #[repr(C)]
 pub struct TimeOfDayClock {
-    _pad_0x0: [u8; 0x68],
+    _pad_0x0: [u8; 0x22],
+    pub hours_24: u8,
+    _pad_0x23: [u8; 0x45],
     pub time_a: f64,
     pub time_b: f64,
     _pad_0x78: [u8; 0x8],
     pub time_scale: f32,
     pub length: f32,
-    _pad_0x88: [u8; 0x200],
+    _pad_0x88: [u8; 0x8],
+    pub fixed_fraction: f32,
+    _pad_0x94: [u8; 0x1f4],
 }
+const _: () = assert!(core::mem::offset_of!(TimeOfDayClock, hours_24) == 0x22);
 const _: () = assert!(core::mem::offset_of!(TimeOfDayClock, time_a) == 0x68);
 const _: () = assert!(core::mem::offset_of!(TimeOfDayClock, time_b) == 0x70);
 const _: () = assert!(core::mem::offset_of!(TimeOfDayClock, time_scale) == 0x80);
 const _: () = assert!(core::mem::offset_of!(TimeOfDayClock, length) == 0x84);
+const _: () = assert!(core::mem::offset_of!(TimeOfDayClock, fixed_fraction) == 0x90);
 const _: () = assert!(core::mem::size_of::<TimeOfDayClock>() == 0x288);
 
 #[repr(C)]
+pub struct TodCurveBinding {}
+
+#[repr(C)]
 pub struct TimeOfDayOwner {
-    _pad_0x0: [u8; 0x2d0],
+    _pad_0x0: [u8; 0x2c8],
+    pub rain_render: *mut c_void,
     pub tod: *mut TimeOfDaySystem,
+    _pad_0x2d8: [u8; 0x2c],
+    pub tod_version: i32,
+    _pad_0x308: [u8; 0xc],
+    pub rain_clamp_knee: f32,
+    pub rain_intensity: f32,
 }
+const _: () = assert!(core::mem::offset_of!(TimeOfDayOwner, rain_render) == 0x2c8);
 const _: () = assert!(core::mem::offset_of!(TimeOfDayOwner, tod) == 0x2d0);
+const _: () = assert!(core::mem::offset_of!(TimeOfDayOwner, tod_version) == 0x304);
+const _: () = assert!(core::mem::offset_of!(TimeOfDayOwner, rain_clamp_knee) == 0x314);
+const _: () = assert!(core::mem::offset_of!(TimeOfDayOwner, rain_intensity) == 0x318);
 
 #[repr(C)]
 pub struct WeatherState {
@@ -2847,14 +2861,31 @@ const _: () = assert!(core::mem::offset_of!(WeatherState, transition) == 0xc);
 const _: () = assert!(core::mem::size_of::<WeatherState>() == 0x10);
 
 #[repr(C)]
+pub struct WeatherTransition {
+    _pad_0x0: [u8; 0x10],
+    pub name: *mut c_char,
+    _pad_0x18: [u8; 0x28],
+    pub from_intensity: f32,
+    pub to_intensity: f32,
+    pub steps: u32,
+    _pad_0x4c: [u8; 0x4],
+}
+const _: () = assert!(core::mem::offset_of!(WeatherTransition, name) == 0x10);
+const _: () = assert!(core::mem::offset_of!(WeatherTransition, from_intensity) == 0x40);
+const _: () = assert!(core::mem::offset_of!(WeatherTransition, to_intensity) == 0x44);
+const _: () = assert!(core::mem::offset_of!(WeatherTransition, steps) == 0x48);
+const _: () = assert!(core::mem::size_of::<WeatherTransition>() == 0x50);
+
+#[repr(C)]
 pub struct WeatherDataset {
-    _pad_0x0: [u8; 0xb90],
+    pub transitions: [WeatherTransition; 37],
     pub states: [WeatherState; 38],
     pub state_total: u32,
     _pad_0xdf4: [u8; 0x4],
     pub state_count: u32,
     _pad_0xdfc: [u8; 0x4],
 }
+const _: () = assert!(core::mem::offset_of!(WeatherDataset, transitions) == 0x0);
 const _: () = assert!(core::mem::offset_of!(WeatherDataset, states) == 0xb90);
 const _: () = assert!(core::mem::offset_of!(WeatherDataset, state_total) == 0xdf0);
 const _: () = assert!(core::mem::offset_of!(WeatherDataset, state_count) == 0xdf8);
@@ -2887,17 +2918,25 @@ pub struct TimeOfDaySystem {
     _pad_0xb340: [u8; 0x10],
     pub dataset_length: [f32; 10],
     pub type_ranges: [WeatherTypeRange; 6],
-    _pad_0xb3f0: [u8; 0x36],
+    _pad_0xb3f0: [u8; 0x18],
+    pub max_random_states: u32,
+    _pad_0xb40c: [u8; 0x8],
+    pub current_state: u32,
+    pub state_fraction: f32,
+    _pad_0xb41c: [u8; 0xa],
     pub exact_timing: u8,
     _pad_0xb427: [u8; 0x2],
     pub ready_a: u8,
     pub ready_b: u8,
-    _pad_0xb42b: [u8; 0x2],
+    pub dirty: u8,
+    pub dirty_frame: u8,
     pub random_override: u8,
     _pad_0xb42e: [u8; 0x4],
     pub busy: u8,
     _pad_0xb433: [u8; 0x3],
     pub override_active: u8,
+    _pad_0xb437: [u8; 0x1],
+    pub curve_version: i32,
 }
 const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, clocks) == 0x2c8);
 const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, scripted_scenario) == 0x2654);
@@ -2906,12 +2945,18 @@ const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, datasets) == 0x26d8
 const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, seed) == 0xb33c);
 const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, dataset_length) == 0xb350);
 const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, type_ranges) == 0xb378);
+const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, max_random_states) == 0xb408);
+const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, current_state) == 0xb414);
+const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, state_fraction) == 0xb418);
 const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, exact_timing) == 0xb426);
 const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, ready_a) == 0xb429);
 const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, ready_b) == 0xb42a);
+const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, dirty) == 0xb42b);
+const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, dirty_frame) == 0xb42c);
 const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, random_override) == 0xb42d);
 const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, busy) == 0xb432);
 const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, override_active) == 0xb436);
+const _: () = assert!(core::mem::offset_of!(TimeOfDaySystem, curve_version) == 0xb438);
 
 #[repr(C)]
 pub struct TrackDataRecord {
@@ -3175,16 +3220,52 @@ const _: () = assert!(core::mem::offset_of!(WeatherAndTimeOfDayComponent, weathe
 const _: () = assert!(core::mem::offset_of!(WeatherAndTimeOfDayComponent, random_seed) == 0x2c4);
 
 #[repr(C)]
+pub struct WeatherSlotBlock {
+    pub length_s: f32,
+    pub count: u32,
+    pub hold_s: [f32; 6],
+    pub trans_s: [f32; 6],
+    pub random: [u8; 6],
+    pub r#type: [u8; 6],
+}
+const _: () = assert!(core::mem::offset_of!(WeatherSlotBlock, length_s) == 0x0);
+const _: () = assert!(core::mem::offset_of!(WeatherSlotBlock, count) == 0x4);
+const _: () = assert!(core::mem::offset_of!(WeatherSlotBlock, hold_s) == 0x8);
+const _: () = assert!(core::mem::offset_of!(WeatherSlotBlock, trans_s) == 0x20);
+const _: () = assert!(core::mem::offset_of!(WeatherSlotBlock, random) == 0x38);
+const _: () = assert!(core::mem::offset_of!(WeatherSlotBlock, r#type) == 0x3e);
+const _: () = assert!(core::mem::size_of::<WeatherSlotBlock>() == 0x44);
+
+#[repr(C)]
 pub struct WeatherSessionSettings {
     _pad_0x0: [u8; 0x4],
     pub session_type: u32,
-    _pad_0x8: [u8; 0xb0c],
+    _pad_0x8: [u8; 0xb08],
+    pub tod_flag_a: u8,
+    pub tod_flag_b: u8,
+    _pad_0xb12: [u8; 0x2],
     pub mode: u32,
     pub exact_timing: u8,
+    pub tod_start_preset: u8,
+    _pad_0xb1a: [u8; 0x2],
+    pub time_scale: f32,
+    pub single_count: u32,
+    _pad_0xb24: [u8; 0x44],
+    pub single_random: [u8; 6],
+    pub single_types: [u8; 6],
+    pub slots: [WeatherSlotBlock; 8],
 }
 const _: () = assert!(core::mem::offset_of!(WeatherSessionSettings, session_type) == 0x4);
+const _: () = assert!(core::mem::offset_of!(WeatherSessionSettings, tod_flag_a) == 0xb10);
+const _: () = assert!(core::mem::offset_of!(WeatherSessionSettings, tod_flag_b) == 0xb11);
 const _: () = assert!(core::mem::offset_of!(WeatherSessionSettings, mode) == 0xb14);
 const _: () = assert!(core::mem::offset_of!(WeatherSessionSettings, exact_timing) == 0xb18);
+const _: () = assert!(core::mem::offset_of!(WeatherSessionSettings, tod_start_preset) == 0xb19);
+const _: () = assert!(core::mem::offset_of!(WeatherSessionSettings, time_scale) == 0xb1c);
+const _: () = assert!(core::mem::offset_of!(WeatherSessionSettings, single_count) == 0xb20);
+const _: () = assert!(core::mem::offset_of!(WeatherSessionSettings, single_random) == 0xb68);
+const _: () = assert!(core::mem::offset_of!(WeatherSessionSettings, single_types) == 0xb6e);
+const _: () = assert!(core::mem::offset_of!(WeatherSessionSettings, slots) == 0xb74);
 
 #[repr(C)]
 pub struct Weekend {
@@ -14962,6 +15043,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_TimeOfDayOwner_BindRainCurves: Binding = Binding {
+        id: "Sess_TimeOfDayOwner_BindRainCurves",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_TimeOfDayOwner_EvalRainIntensity: Binding = Binding {
         id: "Sess_TimeOfDayOwner_EvalRainIntensity",
         kind: "func",
@@ -15359,6 +15445,11 @@ pub mod bindings {
     };
     pub const g_Game_VehicleStateRoot: Binding = Binding {
         id: "g_Game_VehicleStateRoot",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const g_Game_WeatherSurfaceState: Binding = Binding {
+        id: "g_Game_WeatherSurfaceState",
         kind: "data",
         status: Status::Experimental,
     };

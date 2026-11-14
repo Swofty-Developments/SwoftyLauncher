@@ -230,7 +230,9 @@ struct VmPropHolder;
 struct WeatherAndTimeOfDayComponent;
 struct WeatherDataset;
 struct WeatherSessionSettings;
+struct WeatherSlotBlock;
 struct WeatherState;
+struct WeatherTransition;
 struct WeatherTypeRange;
 struct Weekend;
 
