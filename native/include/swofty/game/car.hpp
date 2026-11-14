@@ -473,6 +473,8 @@ inline constexpr address<"Car_FuelEcu_SetMode_Thunk"> Car_FuelEcu_SetMode_Thunk{
 inline constexpr address<"Car_Load_Vtf"> Car_Load_Vtf{}; // L2 experimental
 inline constexpr address<"Car_Model_BindCockpitNodes"> Car_Model_BindCockpitNodes{}; // L2 experimental
 inline constexpr address<"Car_Physics_PostVehicleUpdate"> Car_Physics_PostVehicleUpdate{}; // L2 experimental
+using Car_PitStop_ApplyTyreAndWingVisuals_t = void(void *car_visual, float a2, bool a3);
+inline constexpr fn<"Car_PitStop_ApplyTyreAndWingVisuals", Car_PitStop_ApplyTyreAndWingVisuals_t> Car_PitStop_ApplyTyreAndWingVisuals{}; // L2 experimental
 inline constexpr address<"Car_Powertrain_Step"> Car_Powertrain_Step{}; // L2 experimental
 inline constexpr address<"Car_Read_Engine"> Car_Read_Engine{}; // L2 experimental
 inline constexpr address<"Car_Read_F1Aero"> Car_Read_F1Aero{}; // L2 experimental

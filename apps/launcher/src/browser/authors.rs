@@ -753,7 +753,10 @@ impl Shell {
                                 .text_size(px(12.))
                                 .text_color(p.text_placeholder)
                                 .whitespace_nowrap()
-                                .child(format!("{} this month", format::compact(c.downloads_30d))),
+                                .child(trf!(
+                                    "{downloads} this month",
+                                    downloads = format::compact(c.downloads_30d)
+                                )),
                         )
                     }),
             )

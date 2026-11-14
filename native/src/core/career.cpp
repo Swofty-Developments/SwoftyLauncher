@@ -54,7 +54,7 @@ constexpr const char *FLOW_MIXIN = "swofty_core.dll (flow states)";
 constexpr const char *TEAM_HQ_MIXIN = "swofty_core.dll (Team HQ answer)";
 constexpr uintptr_t REGISTRY_GET_SLOT = 0x10;
 constexpr uint32_t HUMAN_FLAG = 0x10000000u;
-constexpr size_t MAX_ENTRANTS = 128;
+constexpr size_t MAX_ENTRANTS = runtime::myteam_heal::MAX_ENTRANTS;
 constexpr const char *STATUS[4] = {"None", "Entering", "Updating", "Exiting"};
 
 using RegistryGet = void *(void *registry, const void *desc, uint32_t search_parents);

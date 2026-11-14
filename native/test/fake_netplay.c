@@ -403,8 +403,9 @@ static void check_real_adapters(void)
 
 static int wait_log(const wchar_t *path, const char *needle)
 {
-    static char text[1 << 20];
-    for (int i = 0; i < 300; i++) {
+    static char text[1 << 23]; // the core log passes 1 MB before the netplay lines once bindings.json grows
+    // 60 s: CI runs this test niced beside the template builds.
+    for (int i = 0; i < 1200; i++) {
         if (read_file(path, text, sizeof text) > 0 && strstr(text, needle))
             return 1;
         Sleep(50);
@@ -473,7 +474,7 @@ int main(void)
            hooked ? "the bridge logged that it is armed" : "netplay setup ran");
     Sleep(hooked ? 0 : 200);
     if (!hooked) {
-        static char text[1 << 20];
+        static char text[1 << 23]; // the core log passes 1 MB before the netplay lines once bindings.json grows
         expect(read_file(log_path, text, sizeof text) > 0 && !strstr(text, "[netplay]"),
                "without SWOFTY_NETPLAY the log has no [netplay] lines");
     }

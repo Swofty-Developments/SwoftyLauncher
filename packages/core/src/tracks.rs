@@ -820,38 +820,45 @@ pub fn left_out_lines(store: &Store, m: &AddonManifest) -> Vec<String> {
         .collect()
 }
 
+/// The track a weekend with no stock track to go back to races at when its own track is left out, as the
+/// game's Grand Prix does when its remembered track has no record: melbourne, else the first track the
+/// build holds.
+const FALLBACK_TRACK: &str = "melbourne";
+
 /// Puts each race weekend at a track a build left out back at its stock
-/// track, and says so; a weekend the game doesn't ship is only named.
-pub(crate) fn restore_weekends(db: &mut Gvdb, shipped: &Gvdb, left_out: &[&str]) -> Vec<String> {
+/// track, and says so; a weekend the game doesn't ship, an addon's own row,
+/// races at [`FALLBACK_TRACK`] instead. Names the weekends the build holds no
+/// track to put anywhere.
+pub(crate) fn restore_weekends(
+    db: &mut Gvdb,
+    shipped: &Gvdb,
+    left_out: &[&str],
+) -> std::result::Result<Vec<String>, Vec<String>> {
     let text = |db: &Gvdb, path: &str| db.get_text(path).map(|t| t.trim().to_owned());
     let count = |db: &Gvdb, table: &str| {
         let (container, row) = table.rsplit_once('.').expect("a table path");
         db.instance_count(container, row).unwrap_or(0)
     };
-    let mut gone: Option<Vec<&str>> = None;
+    let mut held: Option<Vec<String>> = None;
     let mut out = Vec::new();
+    let mut stuck = Vec::new();
     for i in 0..count(db, ACTIVITIES) {
         let path = format!("{ACTIVITIES}_{i}.track");
         let Some(code) = text(db, &path).filter(|c| left_out.contains(&c.as_str())) else {
             continue;
         };
-        let gone = gone.get_or_insert_with(|| {
-            let have: Vec<String> = (0..count(db, TRACKS))
+        let held = held.get_or_insert_with(|| {
+            (0..count(db, TRACKS))
                 .filter_map(|t| text(db, &format!("{TRACKS}_{t}._metadata_")))
-                .collect();
-            left_out
-                .iter()
-                .copied()
-                .filter(|c| !have.iter().any(|h| h == c))
                 .collect()
         });
-        if !gone.contains(&code.as_str()) {
+        if held.contains(&code) {
             continue;
         }
         let weekend = text(db, &format!("{ACTIVITIES}_{i}._metadata_")).unwrap_or_else(|| i.to_string());
         let stock = shipped
             .get(&path)
-            .filter(|r| !left_out.contains(&r.text().trim()))
+            .filter(|r| !left_out.contains(&r.text().trim()) && held.iter().any(|h| h == r.text().trim()))
             .cloned();
         match stock {
             Some(r) => {
@@ -862,10 +869,93 @@ pub(crate) fn restore_weekends(db: &mut Gvdb, shipped: &Gvdb, left_out: &[&str])
                     ));
                 }
             }
-            None => out.push(format!(
-                "race weekend {weekend}: races at {code}, which is left out of this build; set its track in Race weekends"
-            )),
+            None => {
+                let usable = |h: &&String| !left_out.contains(&h.as_str());
+                let to = held
+                    .iter()
+                    .find(|h| *h == FALLBACK_TRACK)
+                    .or_else(|| {
+                        held.iter()
+                            .filter(usable)
+                            .find(|h| !DORMANT.contains(&h.as_str()))
+                    })
+                    .or_else(|| held.iter().find(usable))
+                    .cloned();
+                match to {
+                    Some(to) if db.set(&path, to.clone().into_bytes(), None).is_ok() => out.push(format!(
+                        "race weekend {weekend}: races at {to} instead; track {code} is left out of this build \
+                         and the game won't start with a race weekend at it"
+                    )),
+                    _ => stuck.push(format!(
+                        "race weekend {weekend} races at {code}, which is left out of this build, and the build \
+                         holds no other track to move it to; the game won't start like this"
+                    )),
+                }
+            }
         }
+    }
+    match stuck.is_empty() {
+        true => Ok(out),
+        false => Err(stuck),
+    }
+}
+
+const SORTED_ORDER: &str = "track_data.sorted_track_order.sorted_track_order";
+
+/// Takes each `left_out` track out of the game's sorted track orders, the lists its menus read tracks from,
+/// and names the orders it was in.
+pub(crate) fn drop_left_out_orders(db: &mut Gvdb, left_out: &[&str]) -> Vec<String> {
+    let count = |db: &Gvdb, container: &str, row: &str| db.instance_count(container, row).unwrap_or(0);
+    let mut out = Vec::new();
+    for o in 0..count(db, "track_data.sorted_track_order", "sorted_track_order") {
+        let order = format!("{SORTED_ORDER}_{o}");
+        let rows: Vec<(Option<Record>, Option<Record>)> = (0..count(db, &order, "TrackRef"))
+            .map(|r| {
+                (
+                    db.get(&format!("{order}.TrackRef_{r}._metadata_")).cloned(),
+                    db.get(&format!("{order}.TrackRef_{r}.track")).cloned(),
+                )
+            })
+            .collect();
+        let held = |(_, t): &&(Option<Record>, Option<Record>)| {
+            !t.as_ref().is_some_and(|t| left_out.contains(&t.text().trim()))
+        };
+        let kept: Vec<_> = rows.iter().filter(held).collect();
+        if kept.len() == rows.len() {
+            continue;
+        }
+        let gone: Vec<String> = rows
+            .iter()
+            .filter(|r| !held(r))
+            .filter_map(|(_, t)| Some(t.as_ref()?.text().trim().to_owned()))
+            .collect();
+        for (r, (meta, track)) in kept.iter().enumerate() {
+            for (field, rec) in [("_metadata_", meta), ("track", track)] {
+                if let Some(rec) = rec {
+                    let _ = db.set(
+                        &format!("{order}.TrackRef_{r}.{field}"),
+                        rec.value.clone(),
+                        Some(rec.tag),
+                    );
+                }
+            }
+        }
+        for r in kept.len()..rows.len() {
+            db.remove(&format!("{order}.TrackRef_{r}._metadata_"));
+            db.remove(&format!("{order}.TrackRef_{r}.track"));
+        }
+        let _ = db.set(
+            &swofty_formats::gvdb::instance_count_path(&order, "TrackRef"),
+            kept.len().to_string().into_bytes(),
+            None,
+        );
+        let label = db
+            .get_text(&format!("{order}._metadata_"))
+            .map_or_else(|| o.to_string(), |l| l.trim().to_owned());
+        out.push(format!(
+            "sorted track order {label} listed {}, which is left out of this build; the build takes it out",
+            gone.join(", ")
+        ));
     }
     out
 }
@@ -1961,21 +2051,155 @@ mod tests {
             .unwrap();
         built.records.extend(weekend(2, "rw_added", "portimao"));
         built.records.extend(weekend(3, "rw_other", "monza"));
-        let warnings = restore_weekends(&mut built, &shipped, &["portimao", "okayama"]);
+        let warnings = restore_weekends(&mut built, &shipped, &["portimao", "okayama"]).unwrap();
         assert_eq!(
             warnings,
             [
                 "race weekend suzuka: races at suzuka again; track portimao is left out of this build",
-                "race weekend rw_added: races at portimao, which is left out of this build; set its track in Race weekends",
+                "race weekend rw_added: races at suzuka instead; track portimao is left out of this build and the game won't start with a race weekend at it",
             ]
         );
         let track = |i: usize| built.get_text(&format!("{ACTIVITIES}_{i}.track")).unwrap();
         assert_eq!(
             [track(0), track(1), track(2), track(3)],
-            ["suzuka", "okayama", "portimao", "monza"]
+            ["suzuka", "okayama", "suzuka", "monza"]
         );
         let mut untouched = shipped.clone();
-        assert!(restore_weekends(&mut untouched, &shipped, &["monza"]).is_empty());
+        assert!(
+            restore_weekends(&mut untouched, &shipped, &["monza"])
+                .unwrap()
+                .is_empty()
+        );
+    }
+
+    fn weekends(db: &mut Gvdb, rows: &[(&str, &str)]) {
+        let n = rows.len();
+        db.set(
+            "schedule.activities._activity_race_weekend_instancecount_",
+            n.to_string(),
+            Some(2),
+        )
+        .unwrap();
+        for (i, (label, track)) in rows.iter().enumerate() {
+            db.set(&format!("{ACTIVITIES}_{i}._metadata_"), *label, Some(2))
+                .unwrap();
+            db.set(&format!("{ACTIVITIES}_{i}.track"), *track, Some(2))
+                .unwrap();
+        }
+    }
+
+    #[test]
+    fn a_calendar_addons_own_weekend_at_a_left_out_track_races_at_a_held_track() {
+        let shipped = db();
+        let mut built = shipped.clone();
+        weekends(
+            &mut built,
+            &[("suzuka", "suzuka"), ("dejw_career_nurburgring", "nurburgring")],
+        );
+        let said = restore_weekends(&mut built, &shipped, &["nurburgring", "sepang"]).unwrap();
+        assert_eq!(
+            said,
+            [
+                "race weekend dejw_career_nurburgring: races at suzuka instead; track nurburgring is left out of \
+              this build and the game won't start with a race weekend at it"
+            ]
+        );
+        assert_eq!(
+            built.get_text(&format!("{ACTIVITIES}_1.track")).unwrap(),
+            "suzuka"
+        );
+    }
+
+    #[test]
+    fn season_addon_weekends_at_left_out_tracks_race_at_melbourne_when_the_build_holds_it() {
+        let shipped = db();
+        let mut built = shipped.clone();
+        built.set("tracks._Track_instancecount_", "4", None).unwrap();
+        built
+            .set("tracks.Track_3._metadata_", "melbourne", Some(2))
+            .unwrap();
+        weekends(
+            &mut built,
+            &[
+                ("suzuka", "suzuka"),
+                ("cs_brhgp", "brh"),
+                ("cs_daytona", "daytona"),
+                ("cs_hanoi_ac", "hanoi_ac"),
+            ],
+        );
+        let said = restore_weekends(&mut built, &shipped, &["brh", "daytona", "hanoi_ac"]).unwrap();
+        assert_eq!(said.len(), 3);
+        for i in 1..4 {
+            assert_eq!(
+                built.get_text(&format!("{ACTIVITIES}_{i}.track")).unwrap(),
+                "melbourne"
+            );
+        }
+        assert_eq!(
+            built.get_text(&format!("{ACTIVITIES}_0.track")).unwrap(),
+            "suzuka"
+        );
+    }
+
+    #[test]
+    fn a_weekend_with_no_track_to_move_to_stops_the_build() {
+        let shipped = db();
+        let mut built = shipped.clone();
+        built.set("tracks._Track_instancecount_", "0", None).unwrap();
+        weekends(&mut built, &[("dejw_career_nurburgring", "nurburgring")]);
+        let stuck = restore_weekends(&mut built, &shipped, &["nurburgring"]).unwrap_err();
+        assert_eq!(stuck.len(), 1);
+        assert!(stuck[0].contains("the game won't start like this"));
+    }
+
+    #[test]
+    fn a_sorted_track_order_loses_a_left_out_track() {
+        let mut built = Gvdb::default();
+        let order = format!("{SORTED_ORDER}_0");
+        built
+            .set(
+                "track_data.sorted_track_order._sorted_track_order_instancecount_",
+                "1",
+                Some(0),
+            )
+            .unwrap();
+        built
+            .set(
+                &format!("{order}._metadata_"),
+                "default_sorted_track_order",
+                Some(2),
+            )
+            .unwrap();
+        built
+            .set(&format!("{order}._TrackRef_instancecount_"), "3", Some(0))
+            .unwrap();
+        for (i, t) in ["melbourne", "suzuka_reverse", "monza"].iter().enumerate() {
+            built
+                .set(&format!("{order}.TrackRef_{i}._metadata_"), *t, Some(2))
+                .unwrap();
+            built
+                .set(&format!("{order}.TrackRef_{i}.track"), *t, Some(2))
+                .unwrap();
+        }
+        let said = drop_left_out_orders(&mut built, &["suzuka_reverse"]);
+        assert_eq!(
+            said,
+            [
+                "sorted track order default_sorted_track_order listed suzuka_reverse, which is left out of this build; the build takes it out"
+            ]
+        );
+        assert_eq!(
+            built
+                .get_text(&format!("{order}._TrackRef_instancecount_"))
+                .unwrap(),
+            "2"
+        );
+        assert_eq!(
+            built.get_text(&format!("{order}.TrackRef_1.track")).unwrap(),
+            "monza"
+        );
+        assert!(built.get(&format!("{order}.TrackRef_2.track")).is_none());
+        assert!(drop_left_out_orders(&mut built, &["suzuka_reverse"]).is_empty());
     }
 
     #[test]

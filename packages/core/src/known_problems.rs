@@ -282,7 +282,7 @@ fn evidence(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Evid
     Evidence::read(session, game, names, Some(&store.root)).with_profile(store, &addons)
 }
 
-fn read_perf(dir: &Path) -> Option<String> {
+pub(crate) fn read_perf(dir: &Path) -> Option<String> {
     ["perf.log", "game-logs/perf.log"]
         .iter()
         .find_map(|rel| read_capped(&dir.join(rel)))
@@ -1245,7 +1245,7 @@ fn timeline_row(line: &str) -> Option<(f64, &str)> {
 
 /// How long the game had been on the start screen when perf.log was last
 /// written, when that is the last screen its timeline shows.
-fn perf_start_screen(perf: &str) -> Option<f64> {
+pub(crate) fn perf_start_screen(perf: &str) -> Option<f64> {
     let uptime: f64 = perf
         .lines()
         .find_map(|l| l.strip_prefix("uptime: "))?
@@ -1269,6 +1269,30 @@ fn perf_start_screen(perf: &str) -> Option<f64> {
     }
     let (at, screen) = last?;
     (screen == START_SCREEN).then_some(uptime - at)
+}
+
+/// The last screen the perf timeline names.
+pub(crate) fn last_screen(perf: &str) -> Option<&str> {
+    let mut timeline = false;
+    let mut last = None;
+    for line in perf.lines() {
+        if let Some(section) = line.strip_prefix("== ") {
+            timeline = section.starts_with("Timeline");
+            continue;
+        }
+        let Some((_, what)) = timeline.then(|| timeline_row(line)).flatten() else {
+            continue;
+        };
+        if let Some(screen) = what.split("; ").filter_map(|w| w.strip_prefix("screen ")).last() {
+            last = Some(screen.split(' ').next().unwrap_or(screen));
+        }
+    }
+    last
+}
+
+/// Whether an addon known to stall the boot explains the session's stall.
+pub(crate) fn addon_stall(session: &SessionRecord, store: &Store) -> bool {
+    boot_stall(&evidence(session, None, store)).is_some()
 }
 
 /// How long the game had been on the start screen when it ended: from the
@@ -1315,7 +1339,9 @@ fn minutes(secs: f64) -> String {
 /// The cause of a session that ended without a crash, from the first rule that
 /// recognises it.
 pub fn stalled(e: &Evidence) -> Option<Diagnosis> {
-    let (addon, secs) = boot_stall(e)?;
+    let Some((addon, secs)) = boot_stall(e) else {
+        return stalled_save(e);
+    };
     Some(Diagnosis {
         id: "boot_stall",
         title: format!("{addon} kept F1 25 on the loading screen"),
@@ -1327,6 +1353,37 @@ pub fn stalled(e: &Evidence) -> Option<Diagnosis> {
         steps: vec![format!(
             "Turn off {addon} in your profile, then press Play again."
         )],
+    })
+}
+
+/// What the core logs for each profile load.
+const PROFILE_LOAD: &str = "[saves] profile load ";
+
+/// A start-screen stall right after the game read the profile save, with no addon known to cause one.
+fn stalled_save(e: &Evidence) -> Option<Diagnosis> {
+    let secs = start_screen_secs(e).filter(|s| *s >= crate::save_stall::STALL_SECS)?;
+    if !e.loader.contains(PROFILE_LOAD) {
+        return None;
+    }
+    Some(Diagnosis {
+        id: "stalled_save",
+        title: "F1 25 stayed on the loading screen after reading your save".to_owned(),
+        what: format!(
+            "F1 25 read your profile save, then stayed on Loading... after Press any button for {} and never \
+             reached the main menu. A save last played with addon content that is off now (a career, livery or \
+             item from an addon) can do this, also from Steam or the EA app without the launcher. When the same \
+             save stalls again, the launcher moves it into the career vault before the next Play and puts back \
+             the newest version that isn't stuck.",
+            minutes(secs)
+        ),
+        steps: vec![
+            "Press Play again. If it stalls a second time, the launcher puts back an earlier version of your save; \
+             the stuck one stays on the Saves page."
+                .to_owned(),
+            "To get the stuck save back as it is, turn on the addons you last played it with, then restore it from \
+             the Saves page."
+                .to_owned(),
+        ],
     })
 }
 
@@ -2860,6 +2917,37 @@ runtime      Windows
         assert_eq!(
             timeline_row("at          took ms   frames   slow   worst ms  swofty ms  what"),
             None
+        );
+    }
+
+    #[test]
+    fn a_stall_right_after_the_profile_load_points_at_the_save() {
+        let load = "2026-11-04 03:32:34.875 [ 5256] [saves] profile load 1: manager 5 slot 2: gm_my_team id=16 \
+                    key=66f051ee751e04d1 career=my_team:66f051ee751e04d1 flags=0x20 name=\"My Team Save 3\"\n";
+        let mut e = stuck(SPLASH, 408, &[]);
+        e.loader = load.into();
+        let d = stalled(&e).unwrap();
+        assert_eq!(d.id, "stalled_save");
+        assert_eq!(
+            d.title,
+            "F1 25 stayed on the loading screen after reading your save"
+        );
+        assert!(d.what.contains("for 5 minutes"), "{}", d.what);
+        assert_eq!(d.steps.len(), 2);
+        let mut quick = stuck(SPLASH, 120, &[]);
+        quick.loader = load.into();
+        assert_eq!(stalled(&quick), None, "30 s is a normal load");
+        assert_eq!(
+            stalled(&stuck(SPLASH, 408, &[])),
+            None,
+            "no profile load, no save to blame"
+        );
+        let mut addon = stuck(SPLASH, 408, &[LIVERY]);
+        addon.loader = load.into();
+        assert_eq!(
+            stalled(&addon).unwrap().id,
+            "boot_stall",
+            "the known addon comes first"
         );
     }
 

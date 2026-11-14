@@ -301,7 +301,9 @@ pub fn restore_locked(_lock: &SessionLock, data: &Path, game: &Game) -> Result<R
         }
         Blocked::clear(data)?;
     }
-    out.left = Installer::new(data, game).restore()?;
+    let (left, proxy) = Installer::new(data, game).restore_setting_aside()?;
+    out.left = left;
+    out.set_aside.extend(proxy);
     Ok(out)
 }
 

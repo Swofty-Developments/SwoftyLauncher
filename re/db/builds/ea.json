@@ -1904,6 +1904,12 @@
   },
   "site_Game_TheatreList_NoSlotAlt": {
    "match": "0x2bf0d20"
+  },
+  "site_Game_TileListSelect_ChildStep": {
+   "match": "0x38261f5"
+  },
+  "site_Game_TileListSelect_ChildNext": {
+   "match": "0x38261f5"
   }
  },
  "unresolvable": {}

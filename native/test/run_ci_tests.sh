@@ -91,6 +91,7 @@ t "Estimate lap time guard unit test" native/test/run_estimate_laptime_test.sh
 t "Career calendar track list guard unit test" native/test/run_track_list_guard_test.sh
 t "Garage setup guard unit test" native/test/run_garage_setup_test.sh
 t "Theatre list guard unit test" native/test/run_theatre_list_test.sh
+t "Tile list select guard unit test" native/test/run_tile_list_select_test.sh
 t "Core site names exported (host-only)" native/test/run_core_sites_exported_test.sh
 t "Garage crew guard unit test" native/test/run_garage_crew_test.sh
 t "Garage crew guard sites export test" native/test/run_garage_crew_sites_test.sh
@@ -103,6 +104,7 @@ t "Ghost trace codec and lap converter unit test" native/test/run_ghost_trace_te
 t "Ghost arming state machine unit test" native/test/run_ghost_arm_test.sh
 t "Lap setup capture unit test" native/test/run_lap_setup_test.sh
 t "Lap toast message and state machine unit test" native/test/run_toast_test.sh
+t "Time Trial barred addons warning unit test" native/test/run_tt_barred_test.sh
 t "Player name sanitising unit test" native/test/run_player_name_test.sh
 t "UI registry walk unit test" native/test/run_ui_registry_walk_test.sh
 t "Presence id and ghost id stream unit test" native/test/run_presence_id_test.sh

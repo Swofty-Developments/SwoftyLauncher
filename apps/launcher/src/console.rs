@@ -340,7 +340,7 @@ impl Console {
         let count = lines.len();
         cx.write_to_clipboard(ClipboardItem::new_string(text));
         window.notify(
-            Notification::success(format!("Copied {}", trn(count, "{count} line", "{count} lines"))),
+            Notification::success(trn(count, "Copied {count} line", "Copied {count} lines")),
             cx,
         );
     }

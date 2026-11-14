@@ -156,6 +156,9 @@ fn before_session_at(
             &format!("saves: could not move save-backups into the career vault: {e}"),
         ),
     }
+    for line in swofty_core::save_stall::sweep(store, game_loc.as_ref(), Running::now(), vault::now()) {
+        say("warning", &line);
+    }
     let p = store.profile(profile);
     let launcher = match (&game_loc, &p) {
         (Some(l), Ok(p)) if !p.is_vanilla() && p.launcher_saves => {

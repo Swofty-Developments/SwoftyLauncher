@@ -1,5 +1,6 @@
 #pragma once
 #include <swofty/game/base.hpp>
+#include <swofty/game/game.hpp>
 
 namespace swofty::game {
 
@@ -110,25 +111,41 @@ static_assert(offsetof(SpectatorDirector, requested_driver) == 0xdc);
 static_assert(offsetof(SpectatorDirector, requested_camera) == 0xe0);
 
 struct TimeOfDayClock {
-    uint8_t _pad_0x0[0x68];
+    uint8_t _pad_0x0[0x22];
+    uint8_t hours_24; // L2 experimental
+    uint8_t _pad_0x23[0x45];
     double time_a; // L2 experimental
     double time_b; // L2 experimental
     uint8_t _pad_0x78[0x8];
     float time_scale; // L2 experimental
     float length; // L2 experimental
-    uint8_t _pad_0x88[0x200];
+    uint8_t _pad_0x88[0x8];
+    float fixed_fraction; // L2 experimental
+    uint8_t _pad_0x94[0x1f4];
 };
+static_assert(offsetof(TimeOfDayClock, hours_24) == 0x22);
 static_assert(offsetof(TimeOfDayClock, time_a) == 0x68);
 static_assert(offsetof(TimeOfDayClock, time_b) == 0x70);
 static_assert(offsetof(TimeOfDayClock, time_scale) == 0x80);
 static_assert(offsetof(TimeOfDayClock, length) == 0x84);
+static_assert(offsetof(TimeOfDayClock, fixed_fraction) == 0x90);
 static_assert(sizeof(TimeOfDayClock) == 0x288);
 
 struct TimeOfDayOwner {
-    uint8_t _pad_0x0[0x2d0];
+    uint8_t _pad_0x0[0x2c8];
+    void *rain_render; // L2 experimental
     TimeOfDaySystem *tod; // L2 experimental
+    uint8_t _pad_0x2d8[0x2c];
+    int32_t tod_version; // L2 experimental
+    uint8_t _pad_0x308[0xc];
+    float rain_clamp_knee; // L2 experimental
+    float rain_intensity; // L2 experimental
 };
+static_assert(offsetof(TimeOfDayOwner, rain_render) == 0x2c8);
 static_assert(offsetof(TimeOfDayOwner, tod) == 0x2d0);
+static_assert(offsetof(TimeOfDayOwner, tod_version) == 0x304);
+static_assert(offsetof(TimeOfDayOwner, rain_clamp_knee) == 0x314);
+static_assert(offsetof(TimeOfDayOwner, rain_intensity) == 0x318);
 
 struct WeatherState {
     uint32_t type; // L2 experimental
@@ -142,14 +159,30 @@ static_assert(offsetof(WeatherState, end) == 0x8);
 static_assert(offsetof(WeatherState, transition) == 0xc);
 static_assert(sizeof(WeatherState) == 0x10);
 
+struct WeatherTransition {
+    uint8_t _pad_0x0[0x10];
+    char *name; // L2 experimental
+    uint8_t _pad_0x18[0x28];
+    float from_intensity; // L2 experimental
+    float to_intensity; // L2 experimental
+    uint32_t steps; // L2 experimental
+    uint8_t _pad_0x4c[0x4];
+};
+static_assert(offsetof(WeatherTransition, name) == 0x10);
+static_assert(offsetof(WeatherTransition, from_intensity) == 0x40);
+static_assert(offsetof(WeatherTransition, to_intensity) == 0x44);
+static_assert(offsetof(WeatherTransition, steps) == 0x48);
+static_assert(sizeof(WeatherTransition) == 0x50);
+
 struct WeatherDataset {
-    uint8_t _pad_0x0[0xb90];
+    WeatherTransition transitions[37]; // L2 experimental
     WeatherState states[38]; // L2 experimental
     uint32_t state_total; // L2 experimental
     uint8_t _pad_0xdf4[0x4];
     uint32_t state_count; // L2 experimental
     uint8_t _pad_0xdfc[0x4];
 };
+static_assert(offsetof(WeatherDataset, transitions) == 0x0);
 static_assert(offsetof(WeatherDataset, states) == 0xb90);
 static_assert(offsetof(WeatherDataset, state_total) == 0xdf0);
 static_assert(offsetof(WeatherDataset, state_count) == 0xdf8);
@@ -180,17 +213,25 @@ struct TimeOfDaySystem {
     uint8_t _pad_0xb340[0x10];
     float dataset_length[10]; // L2 experimental
     WeatherTypeRange type_ranges[6]; // L2 experimental
-    uint8_t _pad_0xb3f0[0x36];
+    uint8_t _pad_0xb3f0[0x18];
+    uint32_t max_random_states; // L2 experimental
+    uint8_t _pad_0xb40c[0x8];
+    uint32_t current_state; // L2 experimental
+    float state_fraction; // L2 experimental
+    uint8_t _pad_0xb41c[0xa];
     uint8_t exact_timing; // L2 experimental
     uint8_t _pad_0xb427[0x2];
     uint8_t ready_a; // L2 experimental
     uint8_t ready_b; // L2 experimental
-    uint8_t _pad_0xb42b[0x2];
+    uint8_t dirty; // L2 experimental
+    uint8_t dirty_frame; // L2 experimental
     uint8_t random_override; // L2 experimental
     uint8_t _pad_0xb42e[0x4];
     uint8_t busy; // L2 experimental
     uint8_t _pad_0xb433[0x3];
     uint8_t override_active; // L2 experimental
+    uint8_t _pad_0xb437[0x1];
+    int32_t curve_version; // L2 experimental
 };
 static_assert(offsetof(TimeOfDaySystem, clocks) == 0x2c8);
 static_assert(offsetof(TimeOfDaySystem, scripted_scenario) == 0x2654);
@@ -199,12 +240,18 @@ static_assert(offsetof(TimeOfDaySystem, datasets) == 0x26d8);
 static_assert(offsetof(TimeOfDaySystem, seed) == 0xb33c);
 static_assert(offsetof(TimeOfDaySystem, dataset_length) == 0xb350);
 static_assert(offsetof(TimeOfDaySystem, type_ranges) == 0xb378);
+static_assert(offsetof(TimeOfDaySystem, max_random_states) == 0xb408);
+static_assert(offsetof(TimeOfDaySystem, current_state) == 0xb414);
+static_assert(offsetof(TimeOfDaySystem, state_fraction) == 0xb418);
 static_assert(offsetof(TimeOfDaySystem, exact_timing) == 0xb426);
 static_assert(offsetof(TimeOfDaySystem, ready_a) == 0xb429);
 static_assert(offsetof(TimeOfDaySystem, ready_b) == 0xb42a);
+static_assert(offsetof(TimeOfDaySystem, dirty) == 0xb42b);
+static_assert(offsetof(TimeOfDaySystem, dirty_frame) == 0xb42c);
 static_assert(offsetof(TimeOfDaySystem, random_override) == 0xb42d);
 static_assert(offsetof(TimeOfDaySystem, busy) == 0xb432);
 static_assert(offsetof(TimeOfDaySystem, override_active) == 0xb436);
+static_assert(offsetof(TimeOfDaySystem, curve_version) == 0xb438);
 
 struct WeatherAndTimeOfDayComponent {
     uint8_t _pad_0x0[0x2a0];
@@ -215,16 +262,51 @@ struct WeatherAndTimeOfDayComponent {
 static_assert(offsetof(WeatherAndTimeOfDayComponent, weather_system) == 0x2a0);
 static_assert(offsetof(WeatherAndTimeOfDayComponent, random_seed) == 0x2c4);
 
+struct WeatherSlotBlock {
+    float length_s; // L2 experimental
+    uint32_t count; // L2 experimental
+    float hold_s[6]; // L2 experimental
+    float trans_s[6]; // L2 experimental
+    uint8_t random[6]; // L2 experimental
+    uint8_t type[6]; // L2 experimental
+};
+static_assert(offsetof(WeatherSlotBlock, length_s) == 0x0);
+static_assert(offsetof(WeatherSlotBlock, count) == 0x4);
+static_assert(offsetof(WeatherSlotBlock, hold_s) == 0x8);
+static_assert(offsetof(WeatherSlotBlock, trans_s) == 0x20);
+static_assert(offsetof(WeatherSlotBlock, random) == 0x38);
+static_assert(offsetof(WeatherSlotBlock, type) == 0x3e);
+static_assert(sizeof(WeatherSlotBlock) == 0x44);
+
 struct WeatherSessionSettings {
     uint8_t _pad_0x0[0x4];
     uint32_t session_type; // L2 experimental
-    uint8_t _pad_0x8[0xb0c];
+    uint8_t _pad_0x8[0xb08];
+    uint8_t tod_flag_a; // L2 experimental
+    uint8_t tod_flag_b; // L2 experimental
+    uint8_t _pad_0xb12[0x2];
     uint32_t mode; // L2 experimental
     uint8_t exact_timing; // L2 experimental
+    uint8_t tod_start_preset; // L2 experimental
+    uint8_t _pad_0xb1a[0x2];
+    float time_scale; // L2 experimental
+    uint32_t single_count; // L2 experimental
+    uint8_t _pad_0xb24[0x44];
+    uint8_t single_random[6]; // L2 experimental
+    uint8_t single_types[6]; // L2 experimental
+    WeatherSlotBlock slots[8]; // L2 experimental
 };
 static_assert(offsetof(WeatherSessionSettings, session_type) == 0x4);
+static_assert(offsetof(WeatherSessionSettings, tod_flag_a) == 0xb10);
+static_assert(offsetof(WeatherSessionSettings, tod_flag_b) == 0xb11);
 static_assert(offsetof(WeatherSessionSettings, mode) == 0xb14);
 static_assert(offsetof(WeatherSessionSettings, exact_timing) == 0xb18);
+static_assert(offsetof(WeatherSessionSettings, tod_start_preset) == 0xb19);
+static_assert(offsetof(WeatherSessionSettings, time_scale) == 0xb1c);
+static_assert(offsetof(WeatherSessionSettings, single_count) == 0xb20);
+static_assert(offsetof(WeatherSessionSettings, single_random) == 0xb68);
+static_assert(offsetof(WeatherSessionSettings, single_types) == 0xb6e);
+static_assert(offsetof(WeatherSessionSettings, slots) == 0xb74);
 
 using Sess_Apply_ContentAvailability_t = void(void *self, void *availability);
 inline constexpr fn<"Sess_Apply_ContentAvailability", Sess_Apply_ContentAvailability_t> Sess_Apply_ContentAvailability{}; // L2 experimental
@@ -236,8 +318,14 @@ inline constexpr address<"Sess_Build_ChampionshipEntrantSelection"> Sess_Build_C
 using Sess_Build_GroupResult_t = void(void *weekend, uint8_t group, void *result);
 inline constexpr fn<"Sess_Build_GroupResult", Sess_Build_GroupResult_t> Sess_Build_GroupResult{}; // L2 experimental
 inline constexpr address<"Sess_Build_SafetyCarLogicGraph"> Sess_Build_SafetyCarLogicGraph{}; // L2 experimental
+using Sess_Build_SelectableDriverList_t = NeVecU32 *(NeVecU32 *out, void *ctx, void *entrants, const void *filter, void *alloc, uint8_t flag);
+inline constexpr fn<"Sess_Build_SelectableDriverList", Sess_Build_SelectableDriverList_t> Sess_Build_SelectableDriverList{}; // L2 experimental
 inline constexpr address<"Sess_ChallengeRuleset_UpdateLapDelta"> Sess_ChallengeRuleset_UpdateLapDelta{}; // L2 experimental
+using Sess_ChampionshipWonDecision_Update_t = uint32_t *(void *state, uint32_t *route);
+inline constexpr fn<"Sess_ChampionshipWonDecision_Update", Sess_ChampionshipWonDecision_Update_t> Sess_ChampionshipWonDecision_Update{}; // L2 experimental, SessionStateChampionshipWonDecision.
 inline constexpr address<"Sess_Classification_CompareEntries"> Sess_Classification_CompareEntries{}; // L2 experimental
+using Sess_Collect_AvailableTracks_t = void(void *track_data_system, const void *stat_id_bytes, void *out_ptr_vec);
+inline constexpr fn<"Sess_Collect_AvailableTracks", Sess_Collect_AvailableTracks_t> Sess_Collect_AvailableTracks{}; // L2 experimental
 inline constexpr address<"Sess_Collect_CareerSetupEntrantLists"> Sess_Collect_CareerSetupEntrantLists{}; // L2 experimental
 inline constexpr address<"Sess_Collect_EntrantsForSetupMode"> Sess_Collect_EntrantsForSetupMode{}; // L2 experimental
 inline constexpr address<"Sess_Collect_FilteredEntrants"> Sess_Collect_FilteredEntrants{}; // L2 experimental
@@ -308,6 +396,8 @@ inline constexpr address<"Sess_GarageState_OnStateExit"> Sess_GarageState_OnStat
 inline constexpr address<"Sess_GarageState_RefreshHudVisibility"> Sess_GarageState_RefreshHudVisibility{}; // L2 experimental
 inline constexpr address<"Sess_Garage_HasPendingName"> Sess_Garage_HasPendingName{}; // L2 experimental
 inline constexpr address<"Sess_Get_CarDriverName"> Sess_Get_CarDriverName{}; // L2 experimental
+using Sess_Get_CurrentContentSetName_t = NeInlineStr128 *(NeInlineStr128 *out);
+inline constexpr fn<"Sess_Get_CurrentContentSetName", Sess_Get_CurrentContentSetName_t> Sess_Get_CurrentContentSetName{}; // L2 experimental
 using Sess_Get_PlayerVehicleIndex_t = uint8_t(void *ctx, int local_player);
 inline constexpr fn<"Sess_Get_PlayerVehicleIndex", Sess_Get_PlayerVehicleIndex_t> Sess_Get_PlayerVehicleIndex{}; // L2 experimental
 using Sess_GridRundown_Update_t = uint32_t *(void *state, uint32_t *route, double dt);
@@ -324,6 +414,8 @@ inline constexpr fn<"Sess_InGame_UpdateBase", Sess_InGame_UpdateBase_t> Sess_InG
 inline constexpr address<"Sess_IntroVideo_CanFinish"> Sess_IntroVideo_CanFinish{}; // L2 experimental
 inline constexpr address<"Sess_IntroVideo_OnStateEnter"> Sess_IntroVideo_OnStateEnter{}; // L2 experimental
 inline constexpr address<"Sess_IntroVideo_OnVideoDoneFadeIn"> Sess_IntroVideo_OnVideoDoneFadeIn{}; // L2 experimental
+using Sess_IntroVideo_ParseParams_t = uint64_t(void *state, void *params);
+inline constexpr fn<"Sess_IntroVideo_ParseParams", Sess_IntroVideo_ParseParams_t> Sess_IntroVideo_ParseParams{}; // L2 experimental, SessionStateIntroVideo
 inline constexpr address<"Sess_IntroVideo_PushAllocRequest"> Sess_IntroVideo_PushAllocRequest{}; // L2 experimental
 using Sess_Invalidate_Lap_Thunk_t = void(void *rules, uint32_t vehicle, uint32_t reason, char mode);
 inline constexpr fn<"Sess_Invalidate_Lap_Thunk", Sess_Invalidate_Lap_Thunk_t> Sess_Invalidate_Lap_Thunk{}; // L2 experimental
@@ -418,9 +510,13 @@ inline constexpr address<"Sess_PenaltyLog_SendRecord"> Sess_PenaltyLog_SendRecor
 inline constexpr address<"Sess_PenaltyLog_SendRecord_2"> Sess_PenaltyLog_SendRecord_2{}; // L2 experimental
 inline constexpr address<"Sess_Penalty_ApplyBlackFlagDsq"> Sess_Penalty_ApplyBlackFlagDsq{}; // L2 experimental
 inline constexpr address<"Sess_PersistStream_LoadFromFile"> Sess_PersistStream_LoadFromFile{}; // L2 experimental
+using Sess_Persistent_OnStateEnter_t = bool(void *state);
+inline constexpr fn<"Sess_Persistent_OnStateEnter", Sess_Persistent_OnStateEnter_t> Sess_Persistent_OnStateEnter{}; // L2 experimental, StatePersistent.
 using Sess_PitStopUpdateJob_Update_t = void(void *job);
 inline constexpr fn<"Sess_PitStopUpdateJob_Update", Sess_PitStopUpdateJob_Update_t> Sess_PitStopUpdateJob_Update{}; // L2 experimental
 inline constexpr address<"Sess_PlayCutScene_OnStateEnter"> Sess_PlayCutScene_OnStateEnter{}; // L2 experimental
+using Sess_PlayCutScene_ParseParams_t = uint64_t(void *state, void *params);
+inline constexpr fn<"Sess_PlayCutScene_ParseParams", Sess_PlayCutScene_ParseParams_t> Sess_PlayCutScene_ParseParams{}; // L2 experimental, SessionStatePlayCutScene.
 inline constexpr address<"Sess_PlayerDescList_Append"> Sess_PlayerDescList_Append{}; // L2 experimental
 inline constexpr address<"Sess_PlayerTerminalDamage_Enter"> Sess_PlayerTerminalDamage_Enter{}; // L2 experimental
 inline constexpr address<"Sess_PostRaceSceneSetup_OnStateEnter"> Sess_PostRaceSceneSetup_OnStateEnter{}; // L2 experimental
@@ -431,6 +527,8 @@ using Sess_PreRaceToRace_Update_t = uint32_t *(void *state, uint32_t *route);
 inline constexpr fn<"Sess_PreRaceToRace_Update", Sess_PreRaceToRace_Update_t> Sess_PreRaceToRace_Update{}; // L2 experimental
 inline constexpr address<"Sess_PreRace_OnStateExit"> Sess_PreRace_OnStateExit{}; // L2 experimental
 inline constexpr address<"Sess_PreRace_PlayGridPlayerShotCutscene"> Sess_PreRace_PlayGridPlayerShotCutscene{}; // L2 experimental
+using Sess_PreRace_ResolveComponents_t = int(void *state, void *serviceProvider, void *componentMap);
+inline constexpr fn<"Sess_PreRace_ResolveComponents", Sess_PreRace_ResolveComponents_t> Sess_PreRace_ResolveComponents{}; // L2 experimental, SessionStatePreRace
 using Sess_PreRace_Update_t = uint32_t *(void *state, uint32_t *route, double dt);
 inline constexpr fn<"Sess_PreRace_Update", Sess_PreRace_Update_t> Sess_PreRace_Update{}; // L2 experimental
 inline constexpr address<"Sess_Progress_ComputeTimeGap"> Sess_Progress_ComputeTimeGap{}; // L2 experimental
@@ -598,6 +696,8 @@ inline constexpr address<"Sess_SessionClock_SetTime"> Sess_SessionClock_SetTime{
 inline constexpr address<"Sess_SessionExit_OnStateEnter"> Sess_SessionExit_OnStateEnter{}; // L2 experimental
 inline constexpr address<"Sess_SessionStateIntroCameras_OnEnter"> Sess_SessionStateIntroCameras_OnEnter{}; // L2 experimental
 inline constexpr address<"Sess_SessionStateMidSessionSaveCutscene_OnEnter"> Sess_SessionStateMidSessionSaveCutscene_OnEnter{}; // L2 experimental
+using Sess_SessionTransition_OnStateUpdate_t = uint32_t *(void *state, uint32_t *out_link);
+inline constexpr fn<"Sess_SessionTransition_OnStateUpdate", Sess_SessionTransition_OnStateUpdate_t> Sess_SessionTransition_OnStateUpdate{}; // L2 experimental, StateSessionTransition::onStateUpdate
 inline constexpr address<"Sess_Session_ResetForRestart"> Sess_Session_ResetForRestart{}; // L2 experimental
 inline constexpr address<"Sess_Set_RowsAvailable"> Sess_Set_RowsAvailable{}; // L2 experimental
 using Sess_Set_SafetyCarDeploymentType_t = void(void *sc_state, const void *sc_deployment_msg);
@@ -625,11 +725,14 @@ inline constexpr address<"Sess_State_Unpause"> Sess_State_Unpause{}; // L2 exper
 inline constexpr address<"Sess_StopGoPenalty_ReceiveData"> Sess_StopGoPenalty_ReceiveData{}; // L2 experimental
 inline constexpr address<"Sess_StopGoPenalty_SendData"> Sess_StopGoPenalty_SendData{}; // L2 experimental
 inline constexpr address<"Sess_StopGoPenalty_SendData_2"> Sess_StopGoPenalty_SendData_2{}; // L2 experimental
+using Sess_StoryHub_OnStateEnter_t = bool(void *state);
+inline constexpr fn<"Sess_StoryHub_OnStateEnter", Sess_StoryHub_OnStateEnter_t> Sess_StoryHub_OnStateEnter{}; // L2 experimental, StateStoryHub::onStateEnter
 inline constexpr address<"Sess_StoryPreLights_Update"> Sess_StoryPreLights_Update{}; // L2 experimental
 inline constexpr address<"Sess_StoryRollingStart_OnStateEnter"> Sess_StoryRollingStart_OnStateEnter{}; // L2 experimental
 inline constexpr address<"Sess_StoryStartLights_OnStateEnter"> Sess_StoryStartLights_OnStateEnter{}; // L2 experimental
 inline constexpr address<"Sess_Strategy_TyreClassTimeLoss"> Sess_Strategy_TyreClassTimeLoss{}; // L2 experimental
 inline constexpr address<"Sess_Strategy_UpdateTeammatePairs"> Sess_Strategy_UpdateTeammatePairs{}; // L2 experimental
+inline constexpr address<"Sess_TimeOfDayOwner_BindRainCurves"> Sess_TimeOfDayOwner_BindRainCurves{}; // L2 experimental
 inline constexpr address<"Sess_TimeOfDayOwner_EvalRainIntensity"> Sess_TimeOfDayOwner_EvalRainIntensity{}; // L2 experimental
 inline constexpr address<"Sess_TodStitch_BuildDefaultInstance"> Sess_TodStitch_BuildDefaultInstance{}; // L2 experimental
 inline constexpr address<"Sess_TodStitch_GetWetDeltaAtPos"> Sess_TodStitch_GetWetDeltaAtPos{}; // L2 experimental
