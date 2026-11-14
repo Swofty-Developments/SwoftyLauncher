@@ -4156,6 +4156,8 @@ pub type Sess_PreRace_Update_t =
     unsafe extern "C" fn(state: *mut c_void, route: *mut u32, dt: f64) -> *mut u32;
 pub type Sess_PuPanel_FillComponent_t =
     unsafe extern "C" fn(vm: *mut c_void, a2: u64, slot: u32, a4: u8, a5: u8, entry: *mut c_void);
+pub type Sess_RaceStrategy_RedFlagRecompute_t =
+    unsafe extern "C" fn(processor: *mut c_void, race_session_data: *mut c_void);
 pub type Sess_RaceStrategy_UpdateVehicle_t =
     unsafe extern "C" fn(proc: *mut c_void, race_session_data: *mut c_void);
 pub type Sess_Record_GroupTimes_t =
@@ -17210,6 +17212,11 @@ pub mod bindings {
     };
     pub const Sess_RaceStrategy_IsPlanValid: Binding = Binding {
         id: "Sess_RaceStrategy_IsPlanValid",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_RaceStrategy_RedFlagRecompute: Binding = Binding {
+        id: "Sess_RaceStrategy_RedFlagRecompute",
         kind: "func",
         status: Status::Experimental,
     };
