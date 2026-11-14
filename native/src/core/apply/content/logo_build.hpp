@@ -15,12 +15,17 @@
 // The archives a set of team logos changes. Each logo is a slice for one stock texture array (an encoded image, or a
 // copy of the slice a stock key already has) under a key in overrides.uidb. The result names, for every archive in
 // the game's ui_package folder that carries a changed array and for databases.erp, the fragments to replace, and the
-// archives whose contents it read: databases.erp and every archive that carries a wanted array.
+// archives whose contents it read: databases.erp and every archive that carries a wanted array. The archive list may
+// name the boot archive too (see array_layers): the game draws from its copy of an array when it has one, so that
+// copy gets the same slices at the same indices. A copy there that is an image with no view of its own is built with
+// the view of a ui_package copy, and one that holds fewer slices than a ui_package copy of the same slice size takes
+// that copy's slices for the keys it lacks.
 
 namespace swofty_core::apply::content::logo_build {
 
 inline constexpr const char *UI_FOLDER = "2025_asset_groups/ui_package/";
 inline constexpr const char *DATABASES = "2025_asset_groups/ui_package/databases.erp";
+inline constexpr const char *BOOT_ARCHIVE = "2025_asset_groups/vfx_package/common.erp";
 inline constexpr const char *OVERRIDES = "eaid://ui_package/databases/overrides.uidb";
 inline constexpr const char *ARRAY_URI = "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.";
 inline constexpr const char *TEXTURE_PATH = "ui_package/art/textures/swofty/team_logos/";
@@ -72,6 +77,26 @@ inline std::string list_path(const std::string &array)
         rest = rest.substr(dot + 1);
     }
     return path + rest + ".Contents";
+}
+
+inline std::vector<std::string> array_layers(const Env &env, const std::string &rel)
+{
+    std::vector<std::string> layers{rel}, out;
+    if (env.overlays)
+        for (auto &o : env.overlays(rel))
+            if (std::find(layers.begin(), layers.end(), o) == layers.end())
+                layers.push_back(o);
+    size_t prefix = std::char_traits<char>::length(ARRAY_URI);
+    for (auto &l : layers) {
+        auto src = env.open(l);
+        erpfile::Archive arc;
+        std::string why;
+        if (!src || !erpfile::open(*src, arc, why))
+            continue;
+        if (std::any_of(arc.entries.begin(), arc.entries.end(), [&](const erpfile::Entry &e) { return e.name.compare(0, prefix, ARRAY_URI) == 0; }))
+            out.push_back(l);
+    }
+    return out;
 }
 
 inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
@@ -173,6 +198,8 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
             logo_array::Shape shape;
             std::vector<std::string> carriers;
             std::vector<logo_array::Slice> add;
+            bool outside = false;
+            uint32_t had = 0;
         };
         std::vector<Copy> copies;
         std::map<std::string, std::vector<std::string>> skipped;
@@ -194,13 +221,26 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                 view_in[rel].push_back(l), out.read.insert(l);
             out.read.insert(rel);
             const erpfile::Entry *ei = fi.entry, *ev = fv.entry;
+            bool outside = rel.compare(0, std::char_traits<char>::length(UI_FOLDER), UI_FOLDER) != 0;
+            bool lent = ei && !ev && !copies.empty() && outside;
             logo_array::Stock got;
-            if (!ei || !ev || ei->frags.size() != 2 || ev->frags.size() != 1 ||
+            if (!ei || (!ev && !lent) || ei->frags.size() != 2 || (ev && ev->frags.size() != 1) ||
                 !erpfile::fragment(*fi.open->src, fi.open->arc, ei->frags[0], got.head, why) ||
                 !erpfile::fragment(*fi.open->src, fi.open->arc, ei->frags[1], got.data, why) ||
-                !erpfile::fragment(*fv.open->src, fv.open->arc, ev->frags[0], got.view, why)) {
+                (ev && !erpfile::fragment(*fv.open->src, fv.open->arc, ev->frags[0], got.view, why))) {
                 skipped["a layout this build does not read"].push_back(rel);
                 continue;
+            }
+            if (lent) {
+                got.view = copies.front().stock.view;
+                if (got.head.size() < logo_array::HEAD_SIZE || got.view.size() < logo_array::VIEW_COUNT + 4) {
+                    skipped["a layout this build does not read"].push_back(rel);
+                    continue;
+                }
+                uint32_t held = logo_array::le32(got.head, logo_array::HEAD_COUNT);
+                logo_array::put32(got.view, logo_array::VIEW_COUNT, held);
+                out.lines.push_back("team.logo: " + array + " in " + rel + " is an image of " + std::to_string(held) +
+                                    " slice(s) with no view; it is built with the view of " + copies.front().carriers[0]);
             }
             uint32_t said = 0;
             if (logo_array::repair_view(got, said)) {
@@ -214,6 +254,7 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
             });
             if (same != copies.end()) {
                 same->carriers.push_back(rel);
+                same->outside = same->outside && outside;
                 continue;
             }
             logo_array::Shape shape;
@@ -221,7 +262,7 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                 skipped[why].push_back(rel);
                 continue;
             }
-            copies.push_back({std::move(got), shape, {rel}, {}});
+            copies.push_back({std::move(got), shape, {rel}, {}, outside, shape.count});
         }
         for (auto &[rel, bytes] : repaired)
             for (auto &l : view_in[rel])
@@ -273,8 +314,26 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                                 " placeholder key(s) from slice " + first + " on name them and new logos land on their own keys");
         }
         std::map<std::pair<uint32_t, uint32_t>, std::string> blanks;
-        for (auto &c : copies) {
+        auto fill = [&](Copy &c) {
             std::string in = copies.size() > 1 ? " in " + where(c.carriers) : "";
+            const Copy *donor = nullptr;
+            if (c.outside)
+                for (auto &d : copies)
+                    if (!d.outside && d.shape.width == c.shape.width && d.shape.height == c.shape.height && d.had > c.had &&
+                        (!donor || d.had > donor->had))
+                        donor = &d;
+            if (donor) {
+                out.lines.push_back("team.logo: " + array + in + " holds " + std::to_string(c.had) + " slice(s) for " +
+                                    std::to_string(names.size()) + " key(s); slices " + std::to_string(c.had) + ".." +
+                                    std::to_string(donor->had - 1) + " are copied from " + donor->carriers[0] +
+                                    " so every key reads its own logo from this copy too");
+                c.stock.data += donor->stock.data.substr(size_t(c.had) * c.shape.slice_bytes());
+                logo_array::put32(c.stock.head, logo_array::HEAD_COUNT, uint32_t(names.size()));
+                logo_array::put32(c.stock.view, logo_array::VIEW_COUNT, uint32_t(names.size()));
+                c.shape.count = uint32_t(names.size());
+                c.stock.names = names;
+                return;
+            }
             if (c.shape.count < keys)
                 out.lines.push_back("team.logo: " + array + in + " lists " + std::to_string(keys) + " keys but its image holds " +
                                     std::to_string(c.shape.count) + " slice(s): another addon replaced the whole array, so " +
@@ -293,7 +352,13 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                 c.shape.count = uint32_t(names.size());
             }
             c.stock.names = names;
-        }
+        };
+        for (auto &c : copies)
+            if (!c.outside)
+                fill(c);
+        for (auto &c : copies)
+            if (c.outside)
+                fill(c);
         std::set<std::string> seen(names.begin(), names.end());
         std::vector<const Want *> used;
         for (auto *w : list) {

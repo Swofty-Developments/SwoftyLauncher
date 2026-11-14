@@ -740,6 +740,98 @@ int main(int argc, char **argv)
         check(rn.built == 0 && rn.refused == 2 && rn.changes.empty() &&
                   has_line(rn, {"2 slot(s) refused: teams.driver_select_team_logos: unexpected stock array (format 71"}) == 1,
               "when no carrier's copy can grow the slots are refused with the reason");
+
+        std::string boot_rel = lb::BOOT_ARCHIVE;
+        std::vector<std::string> with_boot = list;
+        with_boot.push_back(boot_rel);
+        auto boot_env = [&](const std::map<std::string, fs::path> &swapped, const std::vector<std::string> &layers = {}) {
+            lb::Env e;
+            e.list = [&] { return with_boot; };
+            e.open = [&, swapped](const std::string &rel) {
+                auto it = swapped.find(rel);
+                return open_file(it != swapped.end() ? it->second : game / rel);
+            };
+            e.overlays = [&, layers](const std::string &rel) { return rel == boot_rel ? layers : std::vector<std::string>{}; };
+            return e;
+        };
+        std::string own_data = std::string(slice, char(0x11)) + data0.substr(slice);
+        fs::path boot_same = write_copy(list[1], "boot_game_sized.erp", copy_with(count0, own_data, la::FORMAT_BC7, side));
+        lb::Result plain, rb;
+        lb::build(env, two, plain);
+        check(lb::array_layers(boot_env({}), boot_rel).empty() &&
+                  lb::array_layers(boot_env({{boot_rel, boot_same}}), boot_rel) == std::vector<std::string>{boot_rel} &&
+                  lb::array_layers(boot_env({{"ov/boot.erp", boot_same}}, {"ov/boot.erp"}), boot_rel) == std::vector<std::string>{"ov/boot.erp"},
+              "the boot archive is named only when it or one of its overlay layers carries a logo array");
+        lb::Env absent = boot_env({});
+        lb::Result ra;
+        bool unchanged = lb::build(absent, two, ra) && ra.built == plain.built && ra.refused == plain.refused && ra.lines == plain.lines &&
+                         ra.read == plain.read && ra.changes.size() == plain.changes.size();
+        for (auto &[rel, changes] : plain.changes) {
+            unchanged = unchanged && ra.changes.count(rel) && ra.changes[rel].size() == changes.size();
+            for (auto &[name, frags] : changes) {
+                unchanged = unchanged && ra.changes[rel].count(name) && ra.changes[rel][name].size() == frags.size();
+                for (size_t i = 0; unchanged && i < frags.size(); i++)
+                    unchanged = *ra.changes[rel][name][i] == *frags[i];
+            }
+        }
+        check(unchanged, "with no boot copy the build writes the same bytes and lines as before");
+
+        check(lb::build(boot_env({{boot_rel, boot_same}}), two, rb) && rb.built == 2 && rb.refused == 0 && grown_of(rb, boot_rel, ha, da, va) &&
+                  grown_of(rb, list[1], hb, db, vb) && rb.read.count(boot_rel),
+              "a game-sized boot copy builds with the ui_package copies");
+        check(la::le32(ha, la::HEAD_COUNT) == count0 + 2 && la::le32(va, la::VIEW_COUNT) == count0 + 2 && da.size() == (count0 + 2) * slice &&
+                  da.compare(0, own_data.size(), own_data) == 0 && da.compare(count0 * slice, 2 * slice, db, count0 * slice, 2 * slice) == 0 &&
+                  db.compare(0, data0.size(), data0) == 0,
+              "the boot copy keeps its own slices and gets the new logos at the slices the ui_package copy has them");
+        names_out = names_in(*rb.changes[lb::DATABASES][lb::OVERRIDES][0]);
+        check(names_out.size() == count0 + 2 && names_out[count0] == "carrier_img" && names_out[count0 + 1] == "carrier_copy" &&
+                  has_line(rb, {"hold 2 different copies"}) == 1 && has_line(rb, {"grows by 2 slice(s) in 3 archive(s)"}) == 1,
+              "the key list grows once and the build counts the boot archive");
+
+        fs::path boot_long = write_copy(list[1], "boot_grown.erp", long_copy);
+        lb::Result rg;
+        check(lb::build(boot_env({{boot_rel, game / list[2]}, {"ov/boot.erp", boot_long}}, {"ov/boot.erp"}), two, rg) && rg.built == 2 && rg.refused == 0 &&
+                  grown_of(rg, "ov/boot.erp", ha, da, va) && grown_of(rg, list[1], hb, db, vb) && !rg.changes.count(boot_rel) &&
+                  la::le32(ha, la::HEAD_COUNT) == total && la::le32(hb, la::HEAD_COUNT) == total && la::le32(va, la::VIEW_COUNT) == total &&
+                  da.compare(0, long_data.size(), long_data) == 0 && da.compare((count0 + 2) * slice, 2 * slice, db, (count0 + 2) * slice, 2 * slice) == 0,
+              "a boot copy another addon grew in an overlay layer keeps its slices and both copies put the new logos at slice " +
+                  std::to_string(count0 + 2));
+
+        lb::Result rf;
+        lb::Env behind = boot_env({{list[1], write_copy(list[1], "ui_long_a.erp", long_copy)},
+                                   {list[3], write_copy(list[3], "ui_long_b.erp", long_copy)},
+                                   {boot_rel, boot_same}});
+        check(lb::build(behind, two, rf) && rf.built == 2 && rf.refused == 0 && grown_of(rf, boot_rel, ha, da, va) && grown_of(rf, list[1], hb, db, vb) &&
+                  la::le32(ha, la::HEAD_COUNT) == total && la::le32(va, la::VIEW_COUNT) == total && da.size() == total * slice &&
+                  da.compare(0, own_data.size(), own_data) == 0 && da.compare(count0 * slice, 4 * slice, db, count0 * slice, 4 * slice) == 0,
+              "a boot copy shorter than the ui_package copies takes their slices for the keys it lacks and grows to all " + std::to_string(total));
+        check(has_line(rf, {"in " + boot_rel + " holds " + std::to_string(count0) + " slice(s) for " + std::to_string(count0 + 2) + " key(s)",
+                            "are copied from " + list[1]}) == 1 &&
+                  has_line(rf, {"padded with blank"}) == 0,
+              "the fill of the short boot copy is logged in one line with the archive and the counts");
+
+        std::string viewless = slurp(boot_same), view_name = view + std::string(1, '\0');
+        size_t name_at = viewless.find(view_name);
+        check(name_at != std::string::npos && viewless.find(view_name, name_at + 1) == std::string::npos, "the fixture names the view once");
+        viewless[name_at + view.size() - 1] = 'x';
+        std::ofstream(dir_out / "boot_viewless.erp", std::ios::binary) << viewless;
+        lb::Result rv;
+        bool built = lb::build(boot_env({{boot_rel, dir_out / "boot_viewless.erp"}}), two, rv) && rv.built == 2 && rv.refused == 0;
+        auto bc = rv.changes.find(boot_rel);
+        check(built && bc != rv.changes.end() && bc->second.count(image) && !bc->second.count(view) &&
+                  la::le32(*bc->second[image][0], la::HEAD_COUNT) == count0 + 2 && bc->second[image][1]->size() == (count0 + 2) * slice &&
+                  bc->second[image][1]->compare(0, own_data.size(), own_data) == 0 && grown_of(rv, list[1], hb, db, vb) &&
+                  la::le32(vb, la::VIEW_COUNT) == count0 + 2,
+              "a boot image with no view of its own grows whole to the count of the ui_package view the game reads with it");
+        check(has_line(rv, {"in " + boot_rel + " is an image of " + std::to_string(count0) + " slice(s) with no view"}) == 1 &&
+                  has_line(rv, {"skipped"}) == 0,
+              "the borrowed view is logged in one line with the archive and the count");
+
+        lb::Result rx;
+        lb::build(boot_env({{boot_rel, write_copy(list[1], "boot_bc1.erp", copy_with(count0, data0, 71, side))}}), two, rx);
+        check(rx.built == 2 && rx.refused == 0 && !rx.changes.count(boot_rel) && grown_of(rx, list[1], hb, db, vb) &&
+                  has_line(rx, {"skipped teams.driver_select_team_logos in " + boot_rel + ": unexpected stock array (format 71"}) == 1,
+              "a boot copy this build cannot grow is left whole and named in one line");
     }
     return failures ? 1 : 0;
 }
