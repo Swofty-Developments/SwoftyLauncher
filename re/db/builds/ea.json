@@ -550,6 +550,9 @@
   "Car_Reset_LastFittedUpgrade": {
    "match": "0x3507f80"
   },
+  "Car_SuspensionDamage_OnCollision": {
+   "match": "0x464afa0"
+  },
   "Career_Add_SeasonWeekend": {
    "match": "0xae4ad0"
   },
@@ -767,6 +770,9 @@
   "Game_F1WorldActivityContainer_SelectEntrantList": {
    "match": "0x1a735f0"
   },
+  "Game_Fill_PerformanceComparison": {
+   "match": "0x188b3b0"
+  },
   "Game_PracticeTrackAcclimatisation_RefreshState": {
    "match": "0x2997720"
   },
@@ -796,6 +802,9 @@
   },
   "Game_SpeechSystem_PostLine": {
    "match": "0xa2f4d0"
+  },
+  "Game_Vfx_UpdateWheelTyreInstance": {
+   "match": "0x45a2d90"
   },
   "Gdb_Lookup_Key": {
    "match": "0x4598580"
@@ -1877,6 +1886,30 @@
   },
   "site_Sess_TimeTrialLeaderboard_BoundTabDone": {
    "match": "0x2fc1156"
+  },
+  "g_Ne_InlineStr128Vtable": {
+   "match": "0x2d56149"
+  },
+  "site_Sess_InGameRaceRetirementDriver": {
+   "match": "0x2d56210"
+  },
+  "site_Sess_InGameRaceRetirementDriverJoin": {
+   "match": "0x2d56224"
+  },
+  "site_Game_TheatreRows_RowOffset": {
+   "match": "0x1f04f42"
+  },
+  "site_Game_TheatreList_EntryStepAlt": {
+   "match": "0x2bf0d20"
+  },
+  "site_Game_TheatreList_NoSlotAlt": {
+   "match": "0x2bf0d20"
+  },
+  "site_Game_TileListSelect_ChildStep": {
+   "match": "0x38261f5"
+  },
+  "site_Game_TileListSelect_ChildNext": {
+   "match": "0x38261f5"
   }
  },
  "unresolvable": {}

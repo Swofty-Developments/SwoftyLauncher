@@ -146,7 +146,11 @@ impl Shell {
         SettingsSection::new(tr("Location"))
             .row(
                 SettingRow::new(tr("Your addons and saves"))
-                    .description(self.store.root.display().to_string())
+                    .description(
+                        swofty_core::data_move::link::real_folder(&self.store.root)
+                            .display()
+                            .to_string(),
+                    )
                     .control(open)
                     .control(moving),
             )

@@ -1,12 +1,13 @@
 // Host-native unit test for the core's career calendar track list guard (native/src/core/track_list_guard_logic.hpp):
 // the game's custom_track_list load loop is replayed with and without the guard over event rows that share ids, a
-// track twice in one season, duplicate event rows, clean saves over several save and load cycles, and a save the game
-// already blew up.
+// track twice in one season, duplicate event rows, clean saves over several save and load cycles, a save the game
+// already blew up, a season longer than the default event list, and the race weekends read from the career calendar.
 // Built and run by native/test/run_track_list_guard_test.sh.
 
 #include "track_list_guard_logic.hpp"
 
 #include <cstdio>
+#include <cstring>
 #include <string>
 #include <vector>
 
@@ -27,7 +28,7 @@ static uintptr_t addr(size_t row)
 }
 
 static std::vector<size_t> load(const std::vector<uint8_t> &rows, const std::vector<uint8_t> &stored, tl::Load *guard, size_t season,
-                                tl::Load *done = nullptr, uintptr_t component = 1)
+                                tl::Load *done = nullptr, uintptr_t component = 1, size_t weekends = 0)
 {
     std::vector<size_t> calendar;
     std::vector<uintptr_t> matches;
@@ -39,7 +40,9 @@ static std::vector<size_t> load(const std::vector<uint8_t> &rows, const std::vec
                 calendar.push_back(r);
                 continue;
             }
-            if (!tl::enter(*guard, component, calendar.size(), stored.size(), season, e, stored[e]))
+            if (tl::fresh(*guard, component, calendar.size()))
+                tl::reset(*guard, component, stored.size(), season, weekends);
+            if (!tl::enter(*guard, e, stored[e]))
                 continue;
             matches.clear();
             for (size_t m = r; m < rows.size(); m++)
@@ -148,12 +151,129 @@ int main()
     }
 
     {
+        std::vector<uint8_t> rows = stock;
+        rows.insert(rows.end(), stock.begin(), stock.end());
+        std::vector<uint8_t> merged;
+        for (uint8_t id = 0; id < 24; id++) {
+            merged.push_back(id);
+            if (id % 3 == 0)
+                merged.push_back(id);
+        }
+        tl::Load done;
+        auto cal = load(rows, merged, &guard, 24, &done, 1, 32);
+        expect(merged.size() == 32 && cal.size() == 32 && save(rows, cal) == merged,
+               "a 32-round season (8 tracks twice) on a 24-event default list loads all 32 rounds in order when the career calendar races 32 weekends");
+        expect(!done.blown && done.dropped == 0 && done.limit == 32, "the 32-round season is not read as blown up");
+        bool flat = true;
+        std::vector<uint8_t> ids = merged;
+        for (int cycle = 0; cycle < 5; cycle++) {
+            cal = load(rows, ids, &guard, 24, nullptr, 1, 32);
+            flat = flat && cal.size() == 32;
+            ids = save(rows, cal);
+        }
+        expect(flat && ids == merged, "the 32-round season keeps its 32 rounds over 5 save and load cycles");
+        std::string line = tl::load_line(1, 32, 32, &done);
+        expect(line.find("(season event list 24, 32 race weekends on the career calendar)") != std::string::npos &&
+                   line.find("more entries than the season event list, all kept: the career calendar races 32 weekends") != std::string::npos &&
+                   line.find("blown up") == std::string::npos,
+               "the load line names the race weekends and says the longer list was kept");
+        std::vector<uint8_t> scattered;
+        for (uint8_t id = 0; id < 24; id++)
+            scattered.push_back(id);
+        for (uint8_t id = 0; id < 8; id++)
+            scattered.push_back(uint8_t(id * 3));
+        expect(load(rows, scattered, &guard, 24, nullptr, 1, 32).size() == 32,
+               "a 32-round season whose repeated tracks are not side by side also keeps all 32 rounds");
+        expect(load(rows, merged, &guard, 24, nullptr, 1, 0).size() == 24 && load(rows, merged, &guard, 24, nullptr, 1, 24).size() == 24,
+               "without race weekends past 24 the same list is still bounded by the default event list");
+        expect(load(rows, merged, &guard, 0, nullptr, 1, 32).size() == 32, "the race weekends bound the load when the event list length is not set");
+    }
+
+    {
+        std::vector<uint8_t> rows = stock;
+        rows.insert(rows.end(), stock.begin(), stock.end());
+        std::vector<uint8_t> season22(stock.begin(), stock.begin() + 22);
+        auto doubled = save(rows, load(rows, season22, nullptr, 24));
+        expect(doubled.size() == 44, "two event rows per id: the game alone doubles a 22-round season to 44 entries in one load");
+        tl::Load done;
+        auto healed = load(rows, doubled, &guard, 24, &done, 1, 22);
+        expect(healed.size() == 22 && save(rows, healed) == season22 && done.blown && done.dropped == 22,
+               "the 44 = 22x2 doubled list loads back to its 22 rounds in order when the career calendar races 22 weekends");
+        healed = load(rows, doubled, &guard, 24, &done, 1, 0);
+        expect(healed.size() == 22 && save(rows, healed) == season22, "the doubled list also heals to 22 when the race weekends are unreadable");
+        auto kept = load(rows, doubled, &guard, 24, &done, 1, 44);
+        expect(kept.size() == 44 && !done.blown,
+               "a career that already races the 44 weekends keeps all 44: a shorter calendar would strand the season's last rounds");
+        auto blown = doubled;
+        for (int cycle = 0; cycle < 3; cycle++)
+            blown = save(rows, load(rows, blown, nullptr, 24));
+        expect(blown.size() == 352 && load(rows, blown, &guard, 24, nullptr, 1, 22).size() == 22,
+               "a list the game kept doubling (352 entries) heals to the season's 22 rounds");
+    }
+
+    {
+        std::vector<uint8_t> mem(0x40000);
+        const uintptr_t base = 0x100000;
+        auto at = [&](uintptr_t a) { return mem.data() + (a - base); };
+        auto put = [&](uintptr_t a, auto v) { std::memcpy(at(a), &v, sizeof v); };
+        auto read = [&](uintptr_t a, auto &out) {
+            if (a < base || a + sizeof out > base + mem.size())
+                return false;
+            std::memcpy(&out, at(a), sizeof out);
+            return true;
+        };
+        const uintptr_t component = base, seasons = base + 0x1000, calendars = base + 0x2000, slots = base + 0x8000;
+        const uintptr_t acts = base + 0x20000, race_def = base + 0x3f000, other_def = base + 0x3f100;
+        put(race_def + tl::DEF_TYPE, uint8_t(tl::RACE_WEEKEND));
+        put(other_def + tl::DEF_TYPE, uint8_t(0x0e));
+        put(component + tl::SEASONS_BEGIN, uint64_t(seasons));
+        put(component + tl::SEASONS_END, uint64_t(seasons + 3 * tl::SEASON_RECORD));
+        put(component + tl::SEASON_INDEX, uint32_t(1));
+        uintptr_t slot = slots, act = acts;
+        auto calendar = [&](uintptr_t cal, size_t races, size_t others) {
+            put(cal + tl::ACTIVITIES_BEGIN, uint64_t(slot));
+            for (size_t i = 0; i < races + others; i++, slot += tl::ACTIVITY_SLOT, act += 0x20) {
+                put(slot + tl::SLOT_ACTIVITY, uint64_t(act));
+                put(act + tl::ACTIVITY_DEF, uint64_t(i < races ? race_def : other_def));
+            }
+            put(cal + tl::ACTIVITIES_END, uint64_t(slot));
+        };
+        uintptr_t current = seasons + tl::SEASON_RECORD;
+        put(current + tl::DRIVER_CALENDARS_BEGIN, uint64_t(calendars));
+        put(current + tl::DRIVER_CALENDARS_END, uint64_t(calendars + 3 * tl::DRIVER_CALENDAR));
+        calendar(calendars, 30, 5);
+        calendar(calendars + tl::DRIVER_CALENDAR, 32, 9);
+        calendar(calendars + 2 * tl::DRIVER_CALENDAR, 0, 0);
+        uintptr_t previous = seasons;
+        put(previous + tl::DRIVER_CALENDARS_BEGIN, uint64_t(calendars + 3 * tl::DRIVER_CALENDAR));
+        put(previous + tl::DRIVER_CALENDARS_END, uint64_t(calendars + 4 * tl::DRIVER_CALENDAR));
+        calendar(calendars + 3 * tl::DRIVER_CALENDAR, 50, 0);
+        expect(tl::race_weekends(component, read) == 32,
+               "race weekends: the busiest driver calendar of the current season record, RaceWeekend activities only");
+        put(component + tl::SEASON_INDEX, uint32_t(0));
+        expect(tl::race_weekends(component, read) == 50, "race weekends follow the component's current season index");
+        put(component + tl::SEASON_INDEX, uint32_t(2));
+        expect(tl::race_weekends(component, read) == 0, "a season record without driver calendars reads as unknown");
+        put(component + tl::SEASON_INDEX, uint32_t(3));
+        expect(tl::race_weekends(component, read) == 0, "a season index past the records reads as unknown");
+        put(component + tl::SEASON_INDEX, uint32_t(1));
+        calendar(calendars + tl::DRIVER_CALENDAR, 65, 0);
+        expect(tl::race_weekends(component, read) == 0, "more than 64 race weekends is not a real season and reads as unknown");
+        put(component + tl::SEASONS_END, uint64_t(seasons + 0x81));
+        expect(tl::race_weekends(component, read) == 0, "a season record vector that is not whole records reads as unknown");
+        expect(tl::race_weekends(base + 0x3ff00, read) == 0, "an unreadable component reads as unknown");
+    }
+
+    {
         tl::Load l;
-        expect(tl::enter(l, 1, 0, 3, 24, 0, 7), "an entry's first match picks a row");
-        expect(!tl::enter(l, 1, 1, 3, 24, 0, 7), "the entry's other matches continue the walk");
-        expect(tl::enter(l, 1, 1, 3, 24, 1, 7), "the next entry picks again");
-        expect(tl::enter(l, 1, 0, 3, 24, 0, 7) && l.kept == 0, "an empty calendar (a new load) starts over");
-        expect(tl::enter(l, 2, 1, 3, 24, 0, 7) && l.component == 2, "another component starts over");
+        expect(tl::fresh(l, 1, 0), "an empty calendar (a new load) starts over");
+        tl::reset(l, 1, 3, 24);
+        expect(tl::enter(l, 0, 7), "an entry's first match picks a row");
+        expect(!tl::enter(l, 0, 7), "the entry's other matches continue the walk");
+        expect(tl::enter(l, 1, 7), "the next entry picks again");
+        expect(!tl::fresh(l, 1, 1) && tl::fresh(l, 1, 0) && tl::fresh(l, 2, 1), "a new load or another component starts over");
+        tl::reset(l, 2, 3, 24);
+        expect(l.component == 2 && l.kept == 0 && l.entry == UINT64_MAX, "a reset clears the load for the new component");
         tl::Load d = tl::finish(l, 3);
         expect(d.component == 0 && l.component == 0 && l.rows.empty(), "finishing another component reports nothing and clears the state");
     }
@@ -161,6 +281,8 @@ int main()
     expect(tl::season_events(24) == 24 && tl::season_events(0) == 0 && tl::season_events(0x10000) == 0,
            "the season event list length is read when it is 1..255");
     expect(tl::limit_for(24) == 24 && tl::limit_for(0) == 64, "the bound is the season's length, or 64");
+    expect(tl::limit_for(24, 32) == 32 && tl::limit_for(24, 16) == 24 && tl::limit_for(0, 32) == 32,
+           "the bound is the larger of the event list length and the race weekends");
     expect(tl::last_entry(4, 5) && !tl::last_entry(3, 5), "the last stored entry is index count - 1");
     expect(tl::entries(0x1000, 0x1000 + 3 * tl::ENTRY) == 3 && tl::entries(0x2000, 0x1000) == 0, "calendar size from begin and end");
 

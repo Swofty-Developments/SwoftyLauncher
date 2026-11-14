@@ -1037,22 +1037,209 @@ pub(crate) fn keep_track_refs(
 pub(crate) fn adders(store: &Store, codes: &BTreeSet<String>) -> BTreeMap<String, String> {
     let mut out = BTreeMap::new();
     for (id, m) in store.addons().unwrap_or_default() {
-        let dir = store.addons_dir().join(&id);
-        let added = added_dirs(store, &id, &m)
-            .iter()
-            .filter_map(|d| match crate::map::read_package(d) {
-                Ok(pkg) => Some(pkg.track_code),
-                Err(why) => why.code,
-            })
-            .collect::<Vec<_>>();
-        let recorded = record_tracks(&dir, &id, &crate::stdlib::data::files(&dir));
-        for code in added.into_iter().chain(recorded.into_iter().map(|t| t.code)) {
+        for (code, _) in added_codes(store, &id, &m) {
             if codes.contains(&code) {
                 out.entry(code).or_insert_with(|| id.clone());
             }
         }
     }
     out
+}
+
+/// The track codes addon `id`'s `track.add` ops and `track` records add, each with whether its package reads.
+fn added_codes(store: &Store, id: &str, m: &AddonManifest) -> Vec<(String, bool)> {
+    let dir = store.addons_dir().join(id);
+    let added = added_dirs(store, id, m)
+        .iter()
+        .filter_map(|d| match crate::map::read_package(d) {
+            Ok(pkg) => Some((pkg.track_code, true)),
+            Err(why) => why.code.map(|c| (c, false)),
+        })
+        .collect::<Vec<_>>();
+    let recorded = record_tracks(&dir, id, &crate::stdlib::data::files(&dir));
+    added
+        .into_iter()
+        .chain(recorded.into_iter().map(|t| (t.code, true)))
+        .collect()
+}
+
+/// The stock rows of the tracks table with no track archive: a round there has no track until an addon fills
+/// the row.
+pub(crate) const DORMANT: [&str; 9] = [
+    "paul_ricard",
+    "portimao",
+    "sochi",
+    "hanoi",
+    "texas_nat",
+    "suzuka_east",
+    "bahrain_pad",
+    "silverstone_int",
+    "bahrain24",
+];
+
+const ACTIVITY_TABLE: &str = "schedule.activities";
+const EVENT_TABLE: &str = "schedule.all_track_events";
+
+/// The shipped schedule an addon's added rounds are checked against: each race weekend's track and each
+/// event's race weekend, by label, and the stock tracks with a track archive.
+#[derive(Debug, Clone, Default)]
+pub(crate) struct Schedule {
+    weekends: HashMap<String, String>,
+    events: HashMap<String, String>,
+    tracks: HashSet<String>,
+}
+
+impl Schedule {
+    pub(crate) fn of(db: &Gvdb) -> Self {
+        let text = |path: &str| db.get_text(path).map(|t| t.trim().to_owned());
+        let count = |table: &str| {
+            let (container, row) = table.rsplit_once('.').expect("a table path");
+            db.instance_count(container, row).unwrap_or(0)
+        };
+        let pairs = |table: &str, field: &str| {
+            (0..count(table))
+                .filter_map(|i| {
+                    Some((
+                        text(&format!("{table}_{i}._metadata_"))?,
+                        text(&format!("{table}_{i}.{field}"))?,
+                    ))
+                })
+                .collect()
+        };
+        Self {
+            weekends: pairs(ACTIVITIES, "track"),
+            events: pairs(EVENTS, "activity"),
+            tracks: (0..count(TRACKS))
+                .filter_map(|i| text(&format!("{TRACKS}_{i}._metadata_")))
+                .filter(|c| !DORMANT.contains(&c.as_str()))
+                .collect(),
+        }
+    }
+
+    /// The tracks a build holds: the stock tracks with a track archive and the tracks the addons in `order`
+    /// add, dormant rows they fill included.
+    pub(crate) fn held(
+        &self,
+        store: &Store,
+        order: &[String],
+        addons: &BTreeMap<String, AddonManifest>,
+    ) -> HashSet<String> {
+        let mut out = self.tracks.clone();
+        for id in order {
+            if let Some(m) = addons.get(id) {
+                out.extend(
+                    added_codes(store, id, m)
+                        .into_iter()
+                        .filter(|(_, ok)| *ok)
+                        .map(|(c, _)| c),
+                );
+            }
+        }
+        out
+    }
+}
+
+/// A toggle of an addon whose rows add a round at a track the build doesn't hold.
+#[derive(Debug, Clone, PartialEq, Eq, PartialOrd, Ord)]
+pub(crate) struct OptionTrack {
+    pub option: String,
+    pub track: String,
+}
+
+impl OptionTrack {
+    /// The build's warning, with the addon's name, the option's label and the addon that adds the track when
+    /// one is installed.
+    pub(crate) fn line(&self, addon: &str, option: &str, adds: Option<&str>) -> String {
+        let fix = match adds {
+            Some(adds) => format!("turn {adds} on"),
+            None => format!("install and turn on the addon that adds {}", self.track),
+        };
+        format!(
+            "{addon}: option {option} adds rounds at {}, which isn't in this build, so the build leaves that \
+             option's rows out and builds as if it were off; {fix}, or turn the option off",
+            self.track
+        )
+    }
+}
+
+/// The toggles of `m` whose `when`-gated `add-row`s, in its database op files `docs`, add a race weekend or a
+/// calendar event at a track `held` doesn't name. A weekend's track is the row's `track`, else its source
+/// row's; an event's is its weekend's, from the row's `activity`, else its source row's.
+pub(crate) fn option_tracks(
+    m: &AddonManifest,
+    docs: &[serde_json::Value],
+    stock: &Schedule,
+    held: &HashSet<String>,
+) -> Vec<OptionTrack> {
+    use serde_json::Value;
+    use swofty_addon::manifest::OptionType;
+    let toggles = |when: Option<&Value>| -> Vec<String> {
+        when.and_then(Value::as_object)
+            .into_iter()
+            .flatten()
+            .filter(|(id, want)| {
+                want.as_bool() == Some(true)
+                    && m.options
+                        .iter()
+                        .any(|o| &o.id == *id && o.kind == OptionType::Toggle)
+            })
+            .map(|(id, _)| id.clone())
+            .collect()
+    };
+    let label = |from: &str| {
+        let (_, rest) = from.split_once("[_metadata_=")?;
+        rest.split_once(']').map(|(l, _)| l.trim().to_owned())
+    };
+    let mut rows = Vec::new();
+    for doc in docs {
+        let file = toggles(doc.get("when"));
+        for op in doc.get("ops").and_then(Value::as_array).into_iter().flatten() {
+            if op.get("op").and_then(Value::as_str) != Some("add-row") {
+                continue;
+            }
+            let field = |f: &str| {
+                op.get("set")
+                    .and_then(|s| s.get(f))
+                    .and_then(Value::as_str)
+                    .map(|v| v.trim().to_owned())
+            };
+            let from = op.get("from").and_then(Value::as_str).unwrap_or_default();
+            let mut gates = file.clone();
+            gates.extend(toggles(op.get("when")));
+            match op.get("table").and_then(Value::as_str) {
+                Some(ACTIVITY_TABLE) if from.starts_with(ACTIVITIES) => {
+                    let track = field("track").or_else(|| stock.weekends.get(&label(from)?).cloned());
+                    rows.push((true, field("_metadata_"), track, gates));
+                }
+                Some(EVENT_TABLE) if from.starts_with(EVENTS) => {
+                    let weekend = field("activity").or_else(|| stock.events.get(&label(from)?).cloned());
+                    rows.push((false, weekend, None, gates));
+                }
+                _ => {}
+            }
+        }
+    }
+    let mut weekends = stock.weekends.clone();
+    for (weekend, label, track) in rows.iter().map(|(w, l, t, _)| (w, l, t)) {
+        if let (true, Some(label), Some(track)) = (weekend, label, track) {
+            weekends.insert(label.clone(), track.clone());
+        }
+    }
+    let mut out = BTreeSet::new();
+    for (weekend, label, track, gates) in rows {
+        let track = match weekend {
+            true => track,
+            false => label.and_then(|w| weekends.get(&w).cloned()),
+        };
+        let Some(track) = track.filter(|t| !t.is_empty() && !held.contains(t)) else {
+            continue;
+        };
+        out.extend(gates.into_iter().map(|option| OptionTrack {
+            option,
+            track: track.clone(),
+        }));
+    }
+    out.into_iter().collect()
 }
 
 /// The shipped records `db` holds with other values: what the tracks changed.
@@ -1940,6 +2127,101 @@ mod tests {
         assert_eq!(
             got,
             BTreeMap::from([("testring".to_owned(), "track.testring".to_owned())])
+        );
+    }
+
+    fn schedule() -> Schedule {
+        let mut records = vec![
+            rec("tracks._Track_instancecount_", "4"),
+            rec("schedule.activities._activity_race_weekend_instancecount_", "3"),
+            rec("schedule.all_track_events._fixed_event_instancecount_", "3"),
+        ];
+        for (i, code) in ["melbourne", "spa_francorchamps", "portimao", "sochi"]
+            .iter()
+            .enumerate()
+        {
+            records.push(rec(&format!("{TRACKS}_{i}._metadata_"), code));
+        }
+        for (i, code) in ["spa_francorchamps", "portimao", "sochi"].iter().enumerate() {
+            records.push(rec(&format!("{ACTIVITIES}_{i}._metadata_"), code));
+            records.push(rec(&format!("{ACTIVITIES}_{i}.track"), code));
+            records.push(rec(&format!("{EVENTS}_{i}._metadata_"), &format!("rw_{code}")));
+            records.push(rec(&format!("{EVENTS}_{i}.activity"), code));
+        }
+        Schedule::of(&Gvdb { records })
+    }
+
+    #[test]
+    fn an_option_adding_rounds_at_a_track_the_build_lacks_is_named_and_present_or_filled_tracks_are_not() {
+        let m = AddonManifest::parse(
+            r#"{ "schema_version": 1, "id": "t.f2", "name": "F2", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" },
+                 "options": [
+                   { "id": "istanbul", "type": "toggle", "default": false, "binds": "db" },
+                   { "id": "spa", "type": "toggle", "default": false, "binds": "db" },
+                   { "id": "portimao", "type": "toggle", "default": false, "binds": "db" },
+                   { "id": "sochi", "type": "toggle", "default": false, "binds": "db" },
+                   { "id": "laps", "type": "choice", "default": "a", "binds": "db",
+                     "values": [{ "value": "a", "label": "A" }, { "value": "b", "label": "B" }] }
+                 ] }"#,
+        )
+        .unwrap();
+        let docs = vec![serde_json::json!({ "schema_version": 1, "ops": [
+                { "op": "add-row", "table": "schedule.activities",
+                  "from": "schedule.activities.activity_race_weekend[_metadata_=spa_francorchamps]",
+                  "set": { "_metadata_": "istanbul_park", "track": "istanbul_park" }, "when": { "istanbul": true } },
+                { "op": "add-row", "table": "schedule.all_track_events",
+                  "from": "schedule.all_track_events.fixed_event[_metadata_=rw_spa_francorchamps]",
+                  "set": { "_metadata_": "rw_istanbul_27", "activity": "istanbul_park" }, "when": { "istanbul": true } },
+                { "op": "add-row", "table": "schedule.all_track_events",
+                  "from": "schedule.all_track_events.fixed_event[_metadata_=rw_spa_francorchamps]",
+                  "set": { "_metadata_": "rw_spa_27" }, "when": { "spa": true } },
+                { "op": "add-row", "table": "schedule.all_track_events",
+                  "from": "schedule.all_track_events.fixed_event[_metadata_=rw_portimao]",
+                  "set": { "_metadata_": "rw_portimao_27" }, "when": { "portimao": true } },
+                { "op": "add-row", "table": "schedule.all_track_events",
+                  "from": "schedule.all_track_events.fixed_event[_metadata_=rw_sochi]",
+                  "set": { "_metadata_": "rw_sochi_27" }, "when": { "sochi": true, "laps": "b" } },
+                { "op": "add-row", "table": "schedule.all_track_events",
+                  "from": "schedule.all_track_events.fixed_event[_metadata_=rw_spa_francorchamps]",
+                  "set": { "_metadata_": "rw_mugello", "activity": "istanbul_park" } },
+                { "op": "set", "select": "schedule.track_lists.track_event_list[_metadata_=F1_2027]",
+                  "field": "_fixed_event_reference_instancecount_", "value": "24",
+                  "when": { "istanbul": true, "portimao": true } }
+            ] })];
+        let stock = schedule();
+        let found = |held: &[&str]| -> Vec<(String, String)> {
+            let held: HashSet<String> = held.iter().map(|c| (*c).to_owned()).collect();
+            option_tracks(&m, &docs, &stock, &stock.tracks.union(&held).cloned().collect())
+                .into_iter()
+                .map(|t| (t.option, t.track))
+                .collect()
+        };
+        let pair = |o: &str, t: &str| (o.to_owned(), t.to_owned());
+        assert!(!stock.tracks.contains("portimao") && stock.tracks.contains("spa_francorchamps"));
+        assert_eq!(
+            found(&[]),
+            [
+                pair("istanbul", "istanbul_park"),
+                pair("portimao", "portimao"),
+                pair("sochi", "sochi")
+            ]
+        );
+        assert_eq!(found(&["istanbul_park", "portimao", "sochi"]), []);
+        assert_eq!(
+            found(&["sochi"]),
+            [pair("istanbul", "istanbul_park"), pair("portimao", "portimao")]
+        );
+        let line = OptionTrack {
+            option: "istanbul".into(),
+            track: "istanbul_park".into(),
+        }
+        .line("F2 Revamp", "Turkish GP (Istanbul Park)", Some("Istanbul Park"));
+        assert_eq!(
+            line,
+            "F2 Revamp: option Turkish GP (Istanbul Park) adds rounds at istanbul_park, which isn't in this build, \
+             so the build leaves that option's rows out and builds as if it were off; turn Istanbul Park on, or \
+             turn the option off"
         );
     }
 }

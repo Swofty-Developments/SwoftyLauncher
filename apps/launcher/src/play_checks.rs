@@ -3,6 +3,7 @@ use std::time::{Duration, Instant};
 
 use swofty_core::data_usage::Room;
 use swofty_core::store::Store;
+use swofty_i18n::{fill, tr, trf, trn};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub(crate) enum NoteLevel {
@@ -151,18 +152,21 @@ fn lonely(
 fn lonely_note(base: &str, family: &[String]) -> Note {
     let shown = family.iter().take(4).cloned().collect::<Vec<_>>().join(", ");
     let more = family.len().saturating_sub(4);
-    let more = if more > 0 {
-        format!(" and {more} more")
+    let body = if more > 0 {
+        trf!(
+            "{base} is on, but none of its addons are, so it adds nothing to pick on its own. Install at least one in the Addon Browser, such as {shown} and {more} more, and turn it on.",
+            base = base,
+            shown = shown,
+            more = more
+        )
     } else {
-        String::new()
+        trf!(
+            "{base} is on, but none of its addons are, so it adds nothing to pick on its own. Install at least one in the Addon Browser, such as {shown}, and turn it on.",
+            base = base,
+            shown = shown
+        )
     };
-    Note::warning(
-        &format!("{base} needs one of its addons"),
-        format!(
-            "{base} is on, but none of its addons are, so it adds nothing to pick on its own. Install at \
-             least one in the Addon Browser, such as {shown}{more}, and turn it on."
-        ),
-    )
+    Note::warning(&trf!("{base} needs one of its addons", base = base), body)
 }
 
 fn registry(
@@ -205,18 +209,18 @@ fn registry(
 }
 
 fn vanilla_note(using: usize) -> Option<Note> {
-    let text = match using {
-        0 => return None,
-        1 => format!(
-            "1 career uses addons; loading it in {} can lose its progress.",
-            swofty_core::profile::VANILLA
+    if using == 0 {
+        return None;
+    }
+    let text = fill(
+        &trn(
+            using,
+            "{count} career uses addons; loading it in {profile} can lose its progress.",
+            "{count} careers use addons; loading them in {profile} can lose their progress.",
         ),
-        n => format!(
-            "{n} careers use addons; loading them in {} can lose their progress.",
-            swofty_core::profile::VANILLA
-        ),
-    };
-    Some(Note::warning("Careers that need addons", text))
+        &[("profile", swofty_core::profile::VANILLA.to_string())],
+    );
+    Some(Note::warning(tr("Careers that need addons"), text))
 }
 
 fn finding_note(f: &swofty_core::stdlib::deps::Finding) -> Note {

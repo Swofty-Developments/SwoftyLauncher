@@ -77,6 +77,8 @@ pub struct Activation {
     pub overrides: Vec<Override>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub track_overrides: Vec<Override>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub sprint: Vec<String>,
 }
 
 impl Activation {

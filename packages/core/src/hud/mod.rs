@@ -25,7 +25,7 @@ pub mod textures;
 pub mod units;
 
 use std::cell::RefCell;
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
@@ -56,6 +56,9 @@ pub trait Stock {
     /// stock archive under `name` keeps its own layout.
     fn layout(&self, name: &str, kind: &str, fragments: usize) -> Result<Resource>;
     fn header(&self) -> Result<([u8; swofty_formats::erp::HEADER_LEN], u32)>;
+    /// For each of `names`, every stock archive of its asset group that carries it, sorted. The game
+    /// loads a resource from whichever of them reads it first, so a composed resource goes to all.
+    fn carriers(&self, names: &[&str]) -> Result<BTreeMap<String, Vec<String>>>;
 }
 
 /// The stock archives of a game folder.
@@ -63,6 +66,7 @@ pub struct GameStock {
     game: PathBuf,
     originals: BTreeMap<String, PathBuf>,
     files: RefCell<BTreeMap<String, Rc<ErpFile>>>,
+    carried: RefCell<BTreeMap<String, Vec<String>>>,
 }
 
 impl GameStock {
@@ -71,6 +75,7 @@ impl GameStock {
             game: game.into(),
             originals: BTreeMap::new(),
             files: RefCell::new(BTreeMap::new()),
+            carried: RefCell::new(BTreeMap::new()),
         }
     }
 
@@ -110,6 +115,7 @@ impl GameStock {
             game,
             originals,
             files: RefCell::new(BTreeMap::new()),
+            carried: RefCell::new(BTreeMap::new()),
         })
     }
 
@@ -133,6 +139,56 @@ impl GameStock {
         let f = Rc::new(ErpFile::open(&path)?);
         self.files.borrow_mut().insert(erp.to_owned(), f.clone());
         Ok(f)
+    }
+
+    /// Reads which archives carry each of `names` into the cache, one pass over each asset group
+    /// folder; every archive is read from the original the launcher keeps of it when there is one.
+    fn scan(&self, names: &[&str]) -> Result<()> {
+        let mut by_group: BTreeMap<String, BTreeSet<&str>> = BTreeMap::new();
+        {
+            let carried = self.carried.borrow();
+            for n in names.iter().filter(|n| !carried.contains_key(**n)) {
+                match crate::erpbuild::group_dir(n) {
+                    Some(g) => {
+                        by_group.entry(g).or_default().insert(n);
+                    }
+                    None => {
+                        by_group.entry(String::new()).or_default().insert(n);
+                    }
+                }
+            }
+        }
+        let mut found: BTreeMap<String, Vec<String>> = BTreeMap::new();
+        for (group, wanted) in &by_group {
+            for n in wanted {
+                found.insert((*n).to_owned(), Vec::new());
+            }
+            if group.is_empty() {
+                continue;
+            }
+            let dir = self.game.join(group);
+            if !dir.is_dir() {
+                return Err(err(format!("{} is not a folder", dir.display())));
+            }
+            let mut files = Vec::new();
+            crate::erpbuild::erp_files(&dir, group, &mut files);
+            files.sort();
+            for rel in files {
+                let Ok(f) = ErpFile::open(&self.original(&rel)) else {
+                    continue;
+                };
+                for r in &f.erp.resources {
+                    if wanted.contains(r.name.as_str())
+                        && let Some(list) = found.get_mut(&r.name)
+                        && list.last() != Some(&rel)
+                    {
+                        list.push(rel.clone());
+                    }
+                }
+            }
+        }
+        self.carried.borrow_mut().extend(found);
+        Ok(())
     }
 }
 
@@ -177,6 +233,15 @@ impl Stock for GameStock {
         let f = self.file(dials::STOCK_ERP)?;
         Ok((f.erp.header, f.erp.version))
     }
+
+    fn carriers(&self, names: &[&str]) -> Result<BTreeMap<String, Vec<String>>> {
+        self.scan(names)?;
+        let carried = self.carried.borrow();
+        Ok(names
+            .iter()
+            .map(|n| ((*n).to_owned(), carried.get(*n).cloned().unwrap_or_default()))
+            .collect())
+    }
 }
 
 /// The stock archives with the changes other addons make to the resources the composer writes whole.
@@ -200,6 +265,10 @@ impl Stock for Layered<'_> {
 
     fn header(&self) -> Result<([u8; swofty_formats::erp::HEADER_LEN], u32)> {
         self.inner.header()
+    }
+
+    fn carriers(&self, names: &[&str]) -> Result<BTreeMap<String, Vec<String>>> {
+        self.inner.carriers(names)
     }
 }
 
@@ -811,7 +880,91 @@ pub fn compose_with(stock: &dyn Stock, inputs: &[Input], base: Option<TemplateBa
         });
     }
     out.archives.extend(screen_build::archives(stock, &screens_out)?);
+    cover_carriers(stock, &mut out.archives, &mut out.lines)?;
     Ok(out)
+}
+
+/// Overlays every stock resource of `archives` on every stock archive that carries it, not only on
+/// the archives each is made for: the game loads a resource from whichever archive reads it first,
+/// so a stock copy left beside a composed one mixes the two. Each added archive holds the stock
+/// resources its targets carry and every new resource of the archive it comes from, so a composed
+/// copy keeps the clips, sprites and materials it references.
+pub fn cover_carriers(stock: &dyn Stock, archives: &mut Vec<Built>, lines: &mut Vec<String>) -> Result<()> {
+    let parsed: Vec<Erp> = archives
+        .iter()
+        .map(|a| Erp::parse(&a.bytes).map_err(|e| err(format!("{}: {e}", a.file))))
+        .collect::<Result<_>>()?;
+    let names: Vec<&str> = parsed
+        .iter()
+        .flat_map(|e| e.resources.iter().map(|r| r.name.as_str()))
+        .collect();
+    let carriers = stock.carriers(&names)?;
+    let mut lands: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    for (a, e) in archives.iter().zip(&parsed) {
+        for r in &e.resources {
+            lands
+                .entry(r.name.clone())
+                .or_default()
+                .extend(a.erps.iter().cloned());
+        }
+    }
+    let mut added = Vec::new();
+    for (a, e) in archives.iter().zip(&parsed) {
+        let mut held: BTreeMap<String, BTreeSet<usize>> = BTreeMap::new();
+        let mut new = BTreeSet::new();
+        for (i, r) in e.resources.iter().enumerate() {
+            let of = carriers.get(&r.name).map(Vec::as_slice).unwrap_or_default();
+            if of.is_empty() {
+                new.insert(i);
+            }
+            for erp in of.iter().filter(|erp| !lands[&r.name].contains(*erp)) {
+                held.entry(erp.clone()).or_default().insert(i);
+            }
+        }
+        let mut groups: BTreeMap<BTreeSet<usize>, Vec<String>> = BTreeMap::new();
+        for (erp, idx) in held {
+            groups.entry(idx).or_default().push(erp);
+        }
+        let stem = a.file.strip_suffix(".erp").unwrap_or(&a.file);
+        for (n, (idx, erps)) in groups.into_iter().enumerate() {
+            for i in &idx {
+                if let Some(l) = lands.get_mut(&e.resources[*i].name) {
+                    l.extend(erps.iter().cloned());
+                }
+            }
+            let resources: Vec<Resource> = e
+                .resources
+                .iter()
+                .enumerate()
+                .filter(|(i, _)| idx.contains(i) || new.contains(i))
+                .map(|(_, r)| r.clone())
+                .collect();
+            let file = format!("{stem}_{}.erp", n + 2);
+            lines.push(format!(
+                "{file}: {} also carry {} of the stock resources {} writes ({}), so they get the composed copies and the {} new resources beside them",
+                erps.iter().map(|e| e.rsplit('/').next().unwrap_or(e)).collect::<Vec<_>>().join(", "),
+                idx.len(),
+                a.file,
+                idx.iter()
+                    .map(|i| e.resources[*i].name.rsplit('/').next().unwrap_or_default())
+                    .collect::<Vec<_>>()
+                    .join(", "),
+                new.len()
+            ));
+            let mut erp = Erp {
+                header: e.header,
+                version: e.version,
+                resources,
+            };
+            added.push(Built {
+                file,
+                erps,
+                bytes: erp.to_bytes(),
+            });
+        }
+    }
+    archives.extend(added);
+    Ok(())
 }
 
 /// The anim string table and the clips the plans put in `facts.scene`: the new names appended
@@ -1012,6 +1165,7 @@ mod tests {
         }
         let names: Vec<&str> = out.archives.iter().map(|a| a.file.as_str()).collect();
         assert_eq!(names, ["hud_scene.erp", "hud_template.erp", "hud_spectator.erp"]);
+        assert!(check::unpadded_clips(&out.archives).unwrap().is_empty());
         let scene = Erp::parse(&out.archives[0].bytes).unwrap();
         for dial in Dial::ALL {
             let f = dials::facts(dial);
@@ -1135,10 +1289,36 @@ mod tests {
                 "hud_spectator.erp",
                 "hud_screen_scene.erp",
                 "hud_replay.erp",
-                "hud_replay_scene.erp"
+                "hud_replay_scene.erp",
+                "hud_screen_scene_2.erp"
             ]
         );
         assert_eq!(out.archives[2].erps, screen_build::SCREEN_SCENE_ERPS);
+        assert_eq!(
+            out.archives[5].erps,
+            [
+                "2025_asset_groups/ui_package/screens/hud.erp",
+                "2025_asset_groups/ui_package/screens/hud_player_1.erp",
+                "2025_asset_groups/ui_package/screens/hud_player_2.erp"
+            ]
+        );
+        assert!(check::uncovered(&stock, &out.archives).unwrap().is_empty());
+        assert!(check::constant_rotations(&out.archives).unwrap().is_empty());
+        assert!(check::unpadded_clips(&out.archives).unwrap().is_empty());
+        let also = Erp::parse(&out.archives[5].bytes).unwrap();
+        let main = Erp::parse(&out.archives[2].bytes).unwrap();
+        for name in [screens::CAP, screens::STACKED, screens::STACKED_UIPRE] {
+            assert_eq!(
+                also.find(name).unwrap().fragments[0].data().unwrap(),
+                main.find(name).unwrap().fragments[0].data().unwrap(),
+                "{name}"
+            );
+        }
+        assert!(
+            also.resources
+                .iter()
+                .any(|r| r.name.ends_with("test_tower_strip.tif.image"))
+        );
         let scene = Erp::parse(&out.archives[2].bytes).unwrap();
         let cap = pkg_in(&scene, screens::CAP);
         assert!(crate::ui::idf::id_problems(&cap).unwrap().is_empty());
@@ -1327,6 +1507,158 @@ mod tests {
         let rs2 = Erp::parse(&out.archives[4].bytes).unwrap();
         assert!(rs2.find(screens::REPLAY_SCENE).is_ok());
         std::fs::remove_dir_all(dir).ok();
+    }
+
+    fn fake_archive(names: &[&str]) -> Vec<u8> {
+        use swofty_formats::erp::{Fragment, HEADER_LEN, MAGIC, STORED};
+        let mut header = [0u8; HEADER_LEN];
+        header[..4].copy_from_slice(MAGIC);
+        header[4..8].copy_from_slice(&3u32.to_le_bytes());
+        Erp {
+            header,
+            version: 3,
+            resources: names
+                .iter()
+                .map(|n| Resource {
+                    name: (*n).into(),
+                    kind: swofty_formats::erp::kind("UILayout").unwrap(),
+                    unk: vec![0; 4],
+                    fragments: vec![Fragment {
+                        name: *b"temp",
+                        offset: 0,
+                        size: 1,
+                        flags: 0x10,
+                        compression: STORED,
+                        packed: 1,
+                        raw: vec![n.len() as u8],
+                    }],
+                    hash: [0; 16],
+                })
+                .collect(),
+        }
+        .to_bytes()
+    }
+
+    #[test]
+    fn a_clip_whose_syst_is_not_a_multiple_of_16_bytes_is_reported() {
+        use swofty_formats::erp::{Fragment, HEADER_LEN, MAGIC, STORED};
+        let frag = |name: &[u8; 4], raw: Vec<u8>| Fragment {
+            name: *name,
+            offset: 0,
+            size: raw.len() as u64,
+            flags: 0x10,
+            compression: STORED,
+            packed: raw.len() as u64,
+            raw,
+        };
+        let clip = |name: &str, syst: usize| Resource {
+            name: name.into(),
+            kind: swofty_formats::erp::kind("AnimClip").unwrap(),
+            unk: vec![0; 4],
+            fragments: vec![frag(b"temp", vec![0]), frag(b"syst", vec![0; syst])],
+            hash: [0; 16],
+        };
+        let mut header = [0u8; HEADER_LEN];
+        header[..4].copy_from_slice(MAGIC);
+        header[4..8].copy_from_slice(&3u32.to_le_bytes());
+        let bytes = Erp {
+            header,
+            version: 3,
+            resources: vec![clip("slide", 92), clip("needle", 112), clip("short", 108)],
+        }
+        .to_bytes();
+        let built = [Built {
+            file: "hud_scene.erp".into(),
+            erps: vec![],
+            bytes,
+        }];
+        assert_eq!(
+            check::unpadded_clips(&built).unwrap(),
+            ["slide (92 bytes)", "short (108 bytes)"]
+        );
+    }
+
+    #[test]
+    fn a_resource_carried_outside_the_made_for_archives_goes_there_too() {
+        let dir = std::env::temp_dir().join(format!("swofty-hud-carriers-{}", std::process::id()));
+        std::fs::remove_dir_all(&dir).ok();
+        let ui = "2025_asset_groups/ui_package";
+        let toast = "eaid://ui_package/art/osd/units/message_system/central_message.idf";
+        let sprite = "eaid://ui_package/art/osd/tt_strip.tif.image";
+        for (rel, names) in [
+            ("flow_race.erp", vec![screens::CAP, toast]),
+            ("flow_options.erp", vec![screens::CAP]),
+            ("persistent.erp", vec![screens::CAP]),
+            ("screens/hud.erp", vec![screens::CAP, "eaid://ui_package/x.idf"]),
+            ("screens/hud_player_1.erp", vec![screens::CAP]),
+            ("screens/other.erp", vec!["eaid://ui_package/y.idf"]),
+        ] {
+            let path = dir.join(ui).join(rel);
+            std::fs::create_dir_all(path.parent().unwrap()).unwrap();
+            std::fs::write(path, fake_archive(&names)).unwrap();
+        }
+        std::fs::write(dir.join(ui).join("screens/junk.erp"), b"not an archive").unwrap();
+        let stock = GameStock::new(&dir);
+        let made_for: Vec<String> = screen_build::SCREEN_SCENE_ERPS
+            .iter()
+            .map(|s| (*s).to_owned())
+            .collect();
+        let mut archives = vec![Built {
+            file: "hud_screen_scene.erp".into(),
+            erps: made_for.clone(),
+            bytes: fake_archive(&[screens::CAP, toast, sprite]),
+        }];
+        let left = check::uncovered(&stock, &archives).unwrap();
+        assert_eq!(
+            left,
+            [
+                format!(
+                    "{} is composed, but {ui}/screens/hud.erp also carries it and would keep the stock copy",
+                    screens::CAP
+                ),
+                format!(
+                    "{} is composed, but {ui}/screens/hud_player_1.erp also carries it and would keep the stock copy",
+                    screens::CAP
+                ),
+            ]
+        );
+        let mut lines = Vec::new();
+        cover_carriers(&stock, &mut archives, &mut lines).unwrap();
+        assert_eq!(archives.len(), 2);
+        assert_eq!(archives[0].erps, made_for);
+        assert_eq!(archives[1].file, "hud_screen_scene_2.erp");
+        assert_eq!(
+            archives[1].erps,
+            [
+                format!("{ui}/screens/hud.erp"),
+                format!("{ui}/screens/hud_player_1.erp")
+            ]
+        );
+        let added = Erp::parse(&archives[1].bytes).unwrap();
+        let names: Vec<&str> = added.resources.iter().map(|r| r.name.as_str()).collect();
+        assert_eq!(names, [screens::CAP, sprite]);
+        assert_eq!(lines.len(), 1, "{lines:?}");
+        assert!(check::uncovered(&stock, &archives).unwrap().is_empty());
+
+        let mut shared = vec![
+            Built {
+                file: "a.erp".into(),
+                erps: vec![format!("{ui}/flow_race.erp"), format!("{ui}/flow_options.erp")],
+                bytes: fake_archive(&[screens::CAP]),
+            },
+            Built {
+                file: "b.erp".into(),
+                erps: vec![
+                    format!("{ui}/persistent.erp"),
+                    format!("{ui}/screens/hud.erp"),
+                    format!("{ui}/screens/hud_player_1.erp"),
+                ],
+                bytes: fake_archive(&[screens::CAP]),
+            },
+        ];
+        cover_carriers(&stock, &mut shared, &mut lines).unwrap();
+        assert_eq!(shared.len(), 2, "every carrier is covered between the two");
+        std::fs::remove_dir_all(&dir).ok();
     }
 
     #[test]

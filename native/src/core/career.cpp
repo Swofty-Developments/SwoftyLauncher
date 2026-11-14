@@ -13,6 +13,7 @@
 #include "career_state.hpp"
 #include "dbread_logic.hpp"
 #include "layout.hpp"
+#include "myteam_vehicle_heal_logic.hpp"
 #include "perf.hpp"
 #include "view_state.hpp"
 
@@ -54,7 +55,6 @@ constexpr const char *TEAM_HQ_MIXIN = "swofty_core.dll (Team HQ answer)";
 constexpr uintptr_t REGISTRY_GET_SLOT = 0x10;
 constexpr uint32_t HUMAN_FLAG = 0x10000000u;
 constexpr size_t MAX_ENTRANTS = 128;
-constexpr uintptr_t MANAGER_ENTRANTS_SYSTEM = 0x290;
 constexpr const char *STATUS[4] = {"None", "Entering", "Updating", "Exiting"};
 
 using RegistryGet = void *(void *registry, const void *desc, uint32_t search_parents);
@@ -258,6 +258,7 @@ void on_flow(SwoftyContext *c)
         perf_flow(hash, uint32_t(from), to, name);
     runtime::watchdog_flow(hash, to, name.c_str());
     runtime::load_stall_flow(hash, to, name.c_str());
+    runtime::session_job_probe_flow(to, name.c_str());
     runtime::netplay_flow(hash, to);
     runtime::entitlements_flow(hash, to);
     runtime::testagent_flow(name, to);
@@ -296,16 +297,28 @@ void on_team_hq(SwoftyContext *c)
 
 template <class M = g::GameManager, class C = g::GameModeContext, class H = g::ChampionshipHolder,
           class E = g::CareerEntity>
-uintptr_t championship_entity()
+uintptr_t championship_entity(runtime::myteam_heal::Load *trace = nullptr)
 {
     if constexpr (layout::career_chain<M, C, H, E>) {
+        runtime::myteam_heal::Load own;
+        auto &t = trace ? *trace : own;
         uintptr_t slot = binding("g_Game_Manager"), mgr = 0, ctx = 0, holder = 0, e = 0;
-        if (!slot || !mem::read(slot, mgr) || !mgr || !mem::read(mgr + offsetof(M, mode_context), ctx) || !ctx ||
-            !mem::read(ctx + offsetof(C, championship_holder), holder) || !holder ||
-            !mem::read(holder + offsetof(H, entity), e) || !e)
-            return 0;
-        return mem::object_like(e) && mem::object_like(e + offsetof(E, component_registry)) ? e : 0;
+        if (!slot)
+            t.stop = "g_Game_Manager is not resolved";
+        else if (!mem::read(slot, mgr) || !mgr)
+            t.stop = "[g_Game_Manager] reads null";
+        else if (!mem::read(mgr + offsetof(M, mode_context), ctx) || !ctx)
+            t.stop = "the game manager's mode context reads null";
+        else if (!mem::read(ctx + offsetof(C, championship_holder), holder) || !holder)
+            t.stop = "the championship holder reads null";
+        else if (!mem::read(holder + offsetof(H, entity), e) || !e)
+            t.stop = "the championship entity reads null";
+        else if (!mem::object_like(e) || !mem::object_like(e + offsetof(E, component_registry)))
+            t.stop = "the championship entity is not a game object";
+        t.manager = mgr, t.context = ctx, t.holder = holder, t.entity = e;
+        return t.stop ? 0 : e;
     } else {
+        (void)trace;
         return 0;
     }
 }
@@ -373,15 +386,24 @@ void entrants(uintptr_t e, runtime::career::Components &out)
 template <class E, class R> void heal_my_team_cars()
 {
     if constexpr (layout::CAREER && layout::ENTRANT) {
+        static_assert(offsetof(R, vehicle_ref) == runtime::myteam_heal::ENTRANT_VEHICLE &&
+                      offsetof(R, ordinal_flags) == runtime::myteam_heal::ENTRANT_FLAGS &&
+                      sizeof(R) == runtime::myteam_heal::ENTRANT_SIZE);
         mem::Trust trust(runtime::HEAP_TRUST_MS);
-        uintptr_t e = championship_entity(), b = 0, en = 0, slot = binding("g_Game_Manager"), mgr = 0, es = 0;
-        if (!e || !mem::read(e + offsetof(E, entrants_begin), b) || !mem::read(e + offsetof(E, entrants_end), en) || !b ||
-            en < b || (en - b) % sizeof(R) || (en - b) / sizeof(R) > MAX_ENTRANTS || (en != b && !mem::readable(b, en - b)))
-            return;
-        if (!slot || !mem::read(slot, mgr) || !mgr || !mem::read(mgr + MANAGER_ENTRANTS_SYSTEM, es) || !es)
-            return;
-        static_assert(offsetof(R, vehicle_ref) == 0x5c && sizeof(R) == 0x88);
-        runtime::myteam_vehicle_heal_entrants(es, b, en);
+        runtime::myteam_heal::Load load;
+        uintptr_t e = championship_entity(&load), b = 0, en = 0, es = 0;
+        if (e) {
+            bool read = mem::read(e + offsetof(E, entrants_begin), b) && mem::read(e + offsetof(E, entrants_end), en);
+            load.first = b, load.end = en;
+            load.stop = runtime::myteam_heal::range_stop(read, b, en, MAX_ENTRANTS,
+                                                         [](uint64_t p, uint64_t n) { return mem::readable(p, n); });
+        }
+        load.offset = runtime::manager_entrants_system();
+        if (load.manager && mem::read(load.manager + load.offset, es))
+            load.system = es;
+        if (!load.stop && !es)
+            load.stop = "the entrants system reads null";
+        runtime::myteam_vehicle_heal_entrants(load);
     }
 }
 

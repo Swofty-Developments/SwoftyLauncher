@@ -918,9 +918,10 @@ pub fn compose_screens(
     Ok(out)
 }
 
-/// The archives screen records write beyond the dials' ones: the host, the standings instance, the
-/// `.uipre`, the sprites and the restyled scenes go to the three archives that carry the cap, and the
-/// replay screen's two.
+/// The archives the screen records' scene archive is made for: the host, the standings instance, the
+/// `.uipre`, the sprites and the restyled scenes go here. Six stock archives carry the cap and the
+/// standings board; [`super::cover_carriers`] adds `screens/hud.erp`, `hud_player_1.erp` and
+/// `hud_player_2.erp`, and any other carrier, so no stock copy stays beside a composed one.
 pub const SCREEN_SCENE_ERPS: [&str; 3] = [
     "2025_asset_groups/ui_package/flow_race.erp",
     "2025_asset_groups/ui_package/flow_options.erp",

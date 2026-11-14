@@ -41,7 +41,9 @@ constexpr const char *HOST = "swofty_f1";
 constexpr const char *SELECTED_ADDON_TILE = "selected_addon_tile";
 constexpr const char *ADDON_TILES_VISIBLE = "addon_tiles_visible";
 constexpr const char *IMAGE_ARRAY = "#overrides.home_screen.tiles_solo_6x6";
-constexpr size_t MAX_BOXES = 64;
+// FeTile_Add_EraTile takes the tile index as a byte (the count of tiles added so far; the tiles themselves go into
+// a growing vector and VM list), so the addon row holds up to 255 boxes, index 0..254.
+constexpr size_t MAX_BOXES = 255;
 constexpr uint32_t ONLY_ANY = 0, ONLY_GRAND_PRIX = 1, ONLY_TIME_TRIAL = 2;
 constexpr size_t LIST_NAME_MAX = 63;
 constexpr size_t TEXT_MAX = 255;
@@ -115,7 +117,7 @@ inline std::string check(Box &box, const std::vector<Box> &have)
         if (h.entrant_list == box.entrant_list)
             return "a box for this entrant list is already registered by " + h.owner;
     if (have.size() >= MAX_BOXES)
-        return "the core holds at most 64 boxes";
+        return "the core holds at most 255 boxes";
     return {};
 }
 
@@ -261,7 +263,6 @@ constexpr size_t ESM_VEHICLE_FLAGS = 0x258;
 constexpr uint32_t TAKES_LIST = 1, TAKES_POOL_A = 2, TAKES_POOL_B = 4;
 constexpr size_t ES_POOL_A = 0x338;
 constexpr size_t ES_POOL_B = 0x348;
-constexpr size_t GM_ENTRANTS_SYSTEM = 0x290;
 constexpr size_t POOL_SLOT = 0x10;
 constexpr size_t MAX_POOL = 8192;
 

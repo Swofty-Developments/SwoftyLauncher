@@ -966,6 +966,7 @@ inline constexpr address<"Ne_Wwise_ConvolutionReverb_Init"> Ne_Wwise_Convolution
 using Ne_Wwise_ConvolutionReverb_InitImpl_t = uint64_t(void *fx, uint32_t a2, uint32_t a3);
 inline constexpr fn<"Ne_Wwise_ConvolutionReverb_InitImpl", Ne_Wwise_ConvolutionReverb_InitImpl_t> Ne_Wwise_ConvolutionReverb_InitImpl{}; // L2 experimental
 inline constexpr data<"g_Ne_DefaultAllocator", void *> g_Ne_DefaultAllocator{}; // L2 experimental
+inline constexpr data<"g_Ne_InlineStr128Vtable", void *> g_Ne_InlineStr128Vtable{}; // L2 experimental
 inline constexpr data<"g_Ne_LogGate", NeLogGate> g_Ne_LogGate{}; // L2 experimental
 inline constexpr data<"g_Ne_NameTable", void *> g_Ne_NameTable{}; // L2 experimental
 inline constexpr data<"g_Ne_StringTable", void *> g_Ne_StringTable{}; // L3 stable

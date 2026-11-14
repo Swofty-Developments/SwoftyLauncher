@@ -3,6 +3,7 @@
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
+#include "game_manager_layout.hpp"
 #include "state_logic.hpp"
 
 #include <mutex>
@@ -213,6 +214,11 @@ bool verified_build()
     auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(b + reinterpret_cast<const IMAGE_DOS_HEADER *>(b)->e_lfanew);
     uint32_t stamp = nt->FileHeader.TimeDateStamp, size = nt->OptionalHeader.SizeOfImage;
     return (stamp == 1789118616u && size > 0x6000000) || (stamp == 1789128892u && size == 0x155dc000);
+}
+
+uintptr_t manager_entrants_system()
+{
+    return game_manager::entrants_system(build_distribution());
 }
 
 uintptr_t find(const Sig &s, const char *tag, const char *channel)

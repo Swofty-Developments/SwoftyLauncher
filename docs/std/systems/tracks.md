@@ -24,7 +24,7 @@ What 1.6.5 ships:
 - **The four registries,** in code and in data files, with their schemas in `packages/sdk/std/registries/`.
 - **The stock tracks as records.** Every `tracks.Track` row with assets is `game/<code>` with `time_trial` true, each real circuit is `venue/<key>`, and each stock data block is `game/<code>/<data set>`.
 - **Tracks made for 1.5** (`track.add` in `ops/`) as records `<addon id>/<code>`. The launcher keeps adding their rows and files, and reports them to the core.
-- **A track record** (`registry/track.json`, or `tracks::tracks.add`): the core adds its rows at boot, and the launcher places its files.
+- **A track record** (`registry/track.json`, or `tracks::tracks.add`): the core adds its rows at boot, and the launcher places its files. An added track runs normal weekends in every data set, whatever its base runs; the record's `sprint` (in code, `extra["sprint"]`) lists the data sets in which it runs sprint weekends, such as `["f1_2026"]`.
 - **Each box's track list** in the log and in `catalog.json`, and a guard on the track select screen that stops a track the box can't run.
 - **The venues table,** `packages/sdk/std/data/venues.json`: the 39 venues the core seeds, with the names a track made for 1.5 is matched against.
 - **Real calendars in Classic Seasons:** each season from 2016 to 2024 registers its calendar as `career.calendar` `f1_<year>`, and its package names it.

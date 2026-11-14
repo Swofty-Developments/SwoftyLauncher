@@ -542,6 +542,8 @@ inline constexpr address<"Game_FanZoneStandingsVM_OnScreenDeactivated"> Game_Fan
 inline constexpr address<"Game_FanZoneStandingsVM_OnSkip"> Game_FanZoneStandingsVM_OnSkip{}; // L2 experimental
 inline constexpr address<"Game_FanZone_BuildStandingsDriverList"> Game_FanZone_BuildStandingsDriverList{}; // L2 experimental
 inline constexpr address<"Game_FanzonesOnboardingVM_FadeIn"> Game_FanzonesOnboardingVM_FadeIn{}; // L2 experimental
+using Game_Fill_PerformanceComparison_t = void(void *comparison);
+inline constexpr fn<"Game_Fill_PerformanceComparison", Game_Fill_PerformanceComparison_t> Game_Fill_PerformanceComparison{}; // L2 experimental
 inline constexpr address<"Game_FlowState_EnterBootLogout"> Game_FlowState_EnterBootLogout{}; // L2 experimental
 inline constexpr address<"Game_FormationLapPresentation_BuildTimeline"> Game_FormationLapPresentation_BuildTimeline{}; // L2 experimental
 inline constexpr address<"Game_FreeLookCameraModifier_Update"> Game_FreeLookCameraModifier_Update{}; // L2 experimental
@@ -1132,6 +1134,8 @@ inline constexpr address<"Game_VehicleProgressSystem_SubscribeAndClearNet"> Game
 inline constexpr address<"Game_VehicleRaceStart_SendRaceStartMessages"> Game_VehicleRaceStart_SendRaceStartMessages{}; // L2 experimental
 inline constexpr address<"Game_VendorA_Initialise"> Game_VendorA_Initialise{}; // L2 experimental
 inline constexpr address<"Game_VfxManager_Initialise"> Game_VfxManager_Initialise{}; // L2 experimental
+using Game_Vfx_UpdateWheelTyreInstance_t = void(void *studio, uint8_t vehicle_id, uint32_t wheel, void *tyre_vis, void *tyre_asset, const void *wheel_params);
+inline constexpr fn<"Game_Vfx_UpdateWheelTyreInstance", Game_Vfx_UpdateWheelTyreInstance_t> Game_Vfx_UpdateWheelTyreInstance{}; // L2 experimental
 inline constexpr address<"Game_VictoryVO_DetectWinnerAndNotify"> Game_VictoryVO_DetectWinnerAndNotify{}; // L2 experimental
 inline constexpr address<"Game_VictoryVO_OnSpeechFinished"> Game_VictoryVO_OnSpeechFinished{}; // L2 experimental
 inline constexpr address<"Game_VictoryVO_PlayVictoryVO"> Game_VictoryVO_PlayVictoryVO{}; // L2 experimental
@@ -1203,9 +1207,14 @@ inline constexpr site<"site_Game_SaveSlot_Selected"> site_Game_SaveSlot_Selected
 inline constexpr site<"site_Game_TeamSelect_NumberResult"> site_Game_TeamSelect_NumberResult{}; // L2 experimental
 inline constexpr call<"site_Game_TeamSelect_TeamLogoFormat"> site_Game_TeamSelect_TeamLogoFormat{}; // L2 experimental
 inline constexpr site<"site_Game_TheatreList_EntryStep"> site_Game_TheatreList_EntryStep{}; // L2 experimental
+inline constexpr site<"site_Game_TheatreList_EntryStepAlt"> site_Game_TheatreList_EntryStepAlt{}; // L2 experimental
 inline constexpr site<"site_Game_TheatreList_NoSlot"> site_Game_TheatreList_NoSlot{}; // L2 experimental
+inline constexpr site<"site_Game_TheatreList_NoSlotAlt"> site_Game_TheatreList_NoSlotAlt{}; // L2 experimental
+inline constexpr site<"site_Game_TheatreRows_RowOffset"> site_Game_TheatreRows_RowOffset{}; // L2 experimental
 inline constexpr site<"site_Game_ThrustmasterLcd_EntrantRecord"> site_Game_ThrustmasterLcd_EntrantRecord{}; // L2 experimental
 inline constexpr site<"site_Game_ThrustmasterLcd_SectorTail"> site_Game_ThrustmasterLcd_SectorTail{}; // L2 experimental
+inline constexpr site<"site_Game_TileListSelect_ChildNext"> site_Game_TileListSelect_ChildNext{}; // L2 experimental
+inline constexpr site<"site_Game_TileListSelect_ChildStep"> site_Game_TileListSelect_ChildStep{}; // L2 experimental
 inline constexpr site<"site_Game_TimeTrialLeaderboard_BoardRead"> site_Game_TimeTrialLeaderboard_BoardRead{}; // L2 experimental
 inline constexpr site<"site_Game_TimeTrialLeaderboard_BoardsDone"> site_Game_TimeTrialLeaderboard_BoardsDone{}; // L2 experimental
 inline constexpr site<"site_Game_TimeTrial_SetReferenceListBoard"> site_Game_TimeTrial_SetReferenceListBoard{}; // L2 experimental

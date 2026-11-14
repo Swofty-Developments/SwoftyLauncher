@@ -1,6 +1,8 @@
-// Host-native unit test for the core's My Team vehicle heal (native/src/core/myteam_vehicle_heal_logic.hpp).
+// Host-native unit test for the core's My Team vehicle heal (native/src/core/myteam_vehicle_heal_logic.hpp) and the
+// game manager's entrants system displacement it reads the cars through (native/src/core/game_manager_layout.hpp).
 // Built and run by native/test/run_myteam_vehicle_heal_test.sh.
 
+#include "game_manager_layout.hpp"
 #include "myteam_vehicle_heal_logic.hpp"
 
 #include <cstdio>
@@ -105,6 +107,15 @@ static uint64_t list_end(size_t n)
 
 int main()
 {
+    namespace gm = runtime::game_manager;
+    expect(gm::entrants_system("steam") == 0x290, "the entrants system is [g_Game_Manager]+0x290 on Steam");
+    expect(gm::entrants_system("ea") == 0x260, "and +0x260 on the EA App build (George's and jhxsh's empty heal reads)");
+    expect(gm::entrants_system("unknown") == 0x290, "an unknown build keeps the KB displacement");
+    expect(gm::tail_field(0x2d0, "ea") == 0x2a0 && gm::tail_field(0x2e8, "ea") == 0x2b8 && gm::tail_field(0x278, "ea") == 0x248,
+           "every EA qword field from Steam +0x278 on is 0x30 lower (the live progress system +0x2d0 is +0x2a0)");
+    expect(gm::tail_field(0x2d0, "steam") == 0x2d0 && gm::tail_field(0x290, "unknown") == 0x290,
+           "Steam and an unknown build read every field where the KB has it");
+
     expect(mh::kind(0x4000) == 0 && mh::kind(custom_handle(7)) == 1 && mh::id(custom_handle(7)) == 7,
            "a vehicle handle is the kind in its low byte and the stat id in its high word");
     expect(mh::healable(custom_handle(0)) && mh::healable(custom_handle(8)), "My Team handles (kind 1) are healed");
@@ -186,6 +197,74 @@ int main()
     expect(cs.entrants == 6 && cs.on_my_team == 3 && cs.ids.size() == 2 && cs.ids[0] == 4 && cs.ids[1] == 0,
            "the career census counts every entrant on a My Team car (sma's teammate included) and each car once");
     expect(mh::census(career, 0, 0).entrants == 0, "an unreadable entrant range counts nothing");
+    expect(cs.kind1 == 3 && cs.stock == 3 && cs.empty == 0 && cs.unread == 0 && cs.humans == 0 &&
+               cs.human_vehicle == mh::NO_VEHICLE,
+           "the census counts kind 1 and stock cars, and no human when no entrant has the human flag");
+
+    Fake ea_mes = game(stock, 2);
+    entrants(ea_mes, {stock_handle(6), stock_handle(7), mh::NO_VEHICLE, custom_handle(0x3fff)});
+    ea_mes.d[LIST + 1 * mh::ENTRANT_SIZE + mh::ENTRANT_FLAGS] = mh::HUMAN_FLAG | 0x7;
+    mh::Census ms = mh::census(ea_mes, LIST, list_end(5));
+    expect(ms.entrants == 5 && ms.on_my_team == 0 && ms.kind1 == 1 && ms.stock == 2 && ms.empty == 1 && ms.unread == 1,
+           "an EA MES career with no My Team car on its grid: no My Team entrant, an out-of-range kind 1, an empty car and "
+           "an unreadable record are counted apart");
+    expect(ms.humans == 1 && ms.human_vehicle == stock_handle(7), "the human entrant's car is the one with the human flag");
+
+    mh::Load load;
+    load.first = LIST, load.end = list_end(5), load.manager = 0x2a0000000, load.offset = 0x260, load.system = ENTRANTS;
+    expect(mh::heal_stop(load, true, cs) == nullptr, "an armed heal with My Team entrants prints its census");
+    expect(std::string(mh::heal_stop(load, true, ms)) == "no entrant is on a My Team car",
+           "an armed heal with no My Team entrant says so");
+    expect(std::string(mh::heal_stop(load, false, cs)) == "the heal is not set up", "a heal that never armed says so");
+    mh::Load chain = load;
+    chain.stop = "the championship entity reads null";
+    expect(std::string(mh::heal_stop(chain, false, cs)) == "the championship entity reads null",
+           "a career read that stopped first is the reason, ahead of the heal's own");
+
+    auto yes = [](uint64_t, uint64_t) { return true; };
+    auto no = [](uint64_t, uint64_t) { return false; };
+    expect(std::string(mh::range_stop(false, LIST, list_end(2), 128, yes)) == "the entity's entrant range is unreadable",
+           "an entrant range whose pointers can't be read");
+    expect(std::string(mh::range_stop(true, 0, 0, 128, yes)) == "the entity has no entrant list (begin null)",
+           "an entity with no entrant list yet");
+    expect(std::string(mh::range_stop(true, LIST, LIST + 0x40, 128, yes)) ==
+               "the entity's entrant range is not whole entrant records",
+           "a range that is not whole records");
+    expect(std::string(mh::range_stop(true, list_end(2), LIST, 128, yes)) ==
+               "the entity's entrant range is not whole entrant records",
+           "a range that ends before it begins");
+    expect(std::string(mh::range_stop(true, LIST, list_end(129), 128, yes)) ==
+               "the entity's entrant range holds more entrants than a grid",
+           "a range past 128 entrants");
+    expect(std::string(mh::range_stop(true, LIST, list_end(22), 128, no)) == "the entity's entrant records are not readable",
+           "records that are not readable");
+    expect(mh::range_stop(true, LIST, list_end(22), 128, yes) == nullptr && mh::range_stop(true, LIST, LIST, 128, no) == nullptr,
+           "a readable range, or an allocated empty one, goes on to the census");
+
+    mh::Tables mt_tables = mh::tables(ea_mes, ENTRANTS);
+    std::string line = mh::stopped(mh::heal_stop(load, true, ms), load, ms, mt_tables, mh::loaded(ea_mes, ENTRANTS, mh::KIND_CUSTOM),
+                                   "armed");
+    std::printf("      %s\n", line.c_str());
+    expect(line.rfind("no census as the career loaded: no entrant is on a My Team car (heal armed; manager 0x2a0000000, ", 0) == 0,
+           "the line names the reason, the heal state and the manager");
+    expect(line.find("entrants 0x360000000..0x3600002a8, entrants system [manager+0x260] 0x340d01000") != std::string::npos,
+           "and the entrant range and the entrants system with the offset it was read at");
+    expect(line.find("5 entrants read: 1 on kind 1 cars, 2 on stock cars, 1 on no car, 1 unread, 1 human (car 00070000)") !=
+               std::string::npos,
+           "and the census counts and the human's car");
+    expect(line.find("stock table 11 slots, My Team table 2 slots with 0 cars)") != std::string::npos,
+           "and both vehicle tables, with the My Team cars loaded");
+    expect(mh::stopped("the championship entity reads null", mh::Load{}, mh::Census{}, mh::Tables{}, 0,
+                       "never offered, the game code reads encrypted still")
+                   .find("0 entrants read: 0 on kind 1 cars, 0 on stock cars, 0 on no car, 0 unread, no human") !=
+               std::string::npos,
+           "a stop before the entrant list reads zero counts and no human");
+
+    Fake loaded = game(stock, 4);
+    loaded.q[CUSTOM_SLOTS + 1 * mh::SLOT_SIZE + mh::SLOT_VEHICLE] = car(1);
+    loaded.q[CUSTOM_SLOTS + 3 * mh::SLOT_SIZE + mh::SLOT_VEHICLE] = car(3);
+    expect(mh::loaded(loaded, ENTRANTS, mh::KIND_CUSTOM) == 2 && mh::loaded(no_tables, ENTRANTS, mh::KIND_CUSTOM) == 0,
+           "the My Team cars loaded are the filled kind 1 slots");
 
     Fake whole = game(stock, 5);
     whole.q[CUSTOM_SLOTS + 4 * mh::SLOT_SIZE + mh::SLOT_VEHICLE] = car(4);
@@ -221,10 +300,22 @@ int main()
     entrants(based, {stock_handle(6), custom_handle(2), custom_handle(2)});
     std::vector<uint64_t> cars = mh::held(based, ENTRANTS, LIST, list_end(3));
     expect(cars.size() == 1 && cars[0] == mt, "the career's resolved My Team cars are listed once");
-    expect(mh::unbased(based, mt), "a My Team car rebuilt by 1.9.25 (base 0x3fff0000) has no base car");
+    expect(mh::unbased(based, ENTRANTS, mt), "a My Team car rebuilt by 1.9.25 (base 0x3fff0000) has no base car");
+    std::string bl;
+    expect(!mh::base_label(based, ENTRANTS, mt, bl) && bl.empty(), "a car with no base car has no base label");
     expect(mh::base_for(based, ENTRANTS, mt) == stock_handle(10), "its base is the stock car of the same name");
     based.d[mt + mh::VEHICLE_BASE] = stock_handle(10);
-    expect(!mh::unbased(based, mt), "a My Team car with a stock base is left alone");
+    expect(!mh::unbased(based, ENTRANTS, mt), "a My Team car with a stock base is left alone");
+    expect(mh::base_label(based, ENTRANTS, mt, bl) && bl == "myteam_mercedes_2026", "its base label is the stock car's");
+    based.d[mt + mh::VEHICLE_BASE] = stock_handle(2);
+    expect(mh::unbased(based, ENTRANTS, mt), "a base on an empty stock slot (a vehicle that is not loaded) is no base car");
+    expect(!mh::base_label(based, ENTRANTS, mt, bl), "and has no base label");
+    based.d[mt + mh::VEHICLE_BASE] = stock_handle(200);
+    expect(mh::unbased(based, ENTRANTS, mt), "a base past the stock table is no base car");
+    based.d[mt + mh::VEHICLE_BASE] = custom_handle(2);
+    expect(mh::unbased(based, ENTRANTS, mt), "a base that is a My Team car is no base car");
+    expect(!mh::unbased(based, ENTRANTS, 0) && !mh::unbased(no_tables, ENTRANTS, mt), "an unreadable car is not rebased");
+    based.d[mt + mh::VEHICLE_BASE] = stock_handle(10);
     based.s[mt + mh::VEHICLE_FILE_NAME] = "myteam_mes_porsche_2026";
     expect(mh::base_for(based, ENTRANTS, mt) == mh::NO_VEHICLE, "an addon car whose own vehicle is not loaded gets no base");
     based.s[mt + mh::VEHICLE_FILE_NAME] = "myteam_mes_nissan_2026";

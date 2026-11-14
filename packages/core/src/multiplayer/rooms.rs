@@ -512,12 +512,13 @@ struct Wrapped {
     lobby: Lobby,
 }
 
-/// An invite code as a path segment: letters, digits and dashes only.
+/// An invite code as a path segment: letters, digits and dashes only, with a pasted en or em dash read
+/// as a dash. A code that isn't one is refused like a bad request, so it is not retried.
 fn path_code(code: &str) -> Result<String, ApiError> {
-    let code = code.trim();
+    let code = code.trim().replace(['\u{2013}', '\u{2014}'], "-");
     if code.is_empty() || code.len() > 16 || !code.bytes().all(|b| b.is_ascii_alphanumeric() || b == b'-') {
         return Err(ApiError {
-            status: 0,
+            status: 400,
             reason: "bad_code".into(),
             message: format!("'{code}' is not an invite code (like F1-7KQ2MX)"),
             lobby: None,
@@ -643,6 +644,11 @@ mod tests {
             "ws://127.0.0.1:8471/v1/mp/lobbies/7KQ2MX/ws"
         );
         assert_eq!(api.ws_url("../admin").unwrap_err().reason, "bad_code");
+        assert!(!api.ws_url("F1 7KQ2MX").unwrap_err().transient());
+        assert_eq!(
+            api.ws_url("f1\u{2013}7kq2mx").unwrap(),
+            "wss://api.f1.swofty.net/v1/mp/lobbies/F1-7KQ2MX/ws"
+        );
         assert!(!format!("{api:?}").contains("\"t\""));
     }
 

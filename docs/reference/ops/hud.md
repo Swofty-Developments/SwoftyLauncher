@@ -66,7 +66,7 @@ A Halo-like dial: a base, a speed text, a boost lamp, a level bar, a battery gau
 }
 ```
 
-`swofty hud compose <addon folder> registry/hud.json` writes the archives to a folder, `swofty hud check` asserts the stock facts below against the game's original files.
+`swofty hud compose <addon folder> registry/hud.json` writes the archives to a folder and exits 1 when a stock archive that carries a composed resource is left out. `swofty hud check` asserts the stock facts below against the game's original files, with the archives that carry each resource the composer writes and that they all hold the same copy.
 
 ## Units and placement
 
@@ -360,7 +360,7 @@ A compose error (an unknown game value, a missing sprite, a prefix two records s
 - Stock element ids never move, element names are unique in the scene, and every id is the djb2 hash of its dotted path; the build stops otherwise.
 - Every bound property has the tag of its value; decision nodes read the values the stock dial reads.
 - Everything hangs off `boundless_customisation`; the selection box (`tl_customisation`, `br_customisation`) is the union of the records' boxes.
-- One scene is stored in several archives; the composed archives go to all of them.
+- A resource the composer writes goes to every stock archive that carries it, not only to the archives its overlay is made for; an archive that also carries the resource gets an added `<archive>_2.erp` with the composed copies and the archive's new resources. A build that would leave a stock copy beside a composed one stops with `the composed HUD of <addons> would leave the game's own copy of a resource beside the composed one`.
 - A record's nodes are checked against the stock files: the template without the added groups and the signals to them is the stock template, node for node.
 
 The anim nodes a gauge or sweep adds are named `zh_<element>...`, which sorts after every stock name in the scene's anim string table.
