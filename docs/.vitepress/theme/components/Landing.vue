@@ -211,7 +211,10 @@ const footPaths = footBands.map((b) => ({ color: b.color, d: wave(b, 1440, 420) 
           <a href="https://github.com/geode-sdk/docs" rel="noopener">Geode docs</a> under the MIT licence; see
           <a :href="`${repo}/blob/main/THIRD_PARTY.md`" rel="noopener">THIRD_PARTY.md</a>.
         </p>
-        <p class="lp-copyright">&copy; {{ year }} Swofty Developments</p>
+        <p>
+          <a :href="to('/terms')">Terms of Service</a> and <a :href="to('/privacy')">Privacy Policy</a>
+        </p>
+        <p class="lp-copyright">&copy; {{ year }} Swofty</p>
       </div>
     </footer>
   </div>

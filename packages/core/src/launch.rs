@@ -23,7 +23,7 @@ pub const EARLY_EXIT: Duration = Duration::from_secs(15);
 pub const SECOND_COPY: &str = "single instance: ";
 /// The loader's lines once the game reached its window: the window stage
 /// after an early load, or the window trigger itself.
-const WINDOW: &[&str] = &[
+pub(crate) const WINDOW: &[&str] = &[
     "stage: window (",
     "trigger: USER32!",
     "trigger: main window visible",
