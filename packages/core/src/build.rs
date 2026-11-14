@@ -1664,9 +1664,13 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             ));
         }
         let older = crate::tracks::read_older(&store.root, profile);
+        // A full track id pool lends the id of a track whose addon this build leaves out (Store::track_stat_id).
+        row_ids.building(resolved.order.iter().cloned());
+        let mut track_udp: Vec<(String, String, Option<i64>)> = Vec::new();
         let mut track_ids: Vec<(String, String, i64)> = Vec::new();
         for (((_, pkg), slot), (_, _, origin)) in maps.iter().zip(&slots).zip(&tracks) {
             if recorded.contains(&origin.addon) {
+                track_udp.push((origin.addon.clone(), pkg.track_code.clone(), None));
                 built.lines.push(format!(
                     "{}: files only; its track record adds its rows in game",
                     pkg.track_code
@@ -1696,6 +1700,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 id
             };
             let report = activate_with(&mut db, pkg, &reg, Some(&route), &lists, Some(&mut give))?;
+            track_udp.push((origin.addon.clone(), pkg.track_code.clone(), given));
             if let Some(id) = given {
                 track_ids.push((origin.addon.clone(), pkg.track_code.clone(), id));
             }
@@ -1843,6 +1848,9 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 .insert(crate::row_ids::track_row(code), *id);
         }
         udp_ids = crate::udp_ids::build(&db, &copies);
+        for (addon, code, stat_id) in &track_udp {
+            udp_ids.add_track(addon, code, *stat_id);
+        }
         let addon_name = |id: &str| addons.get(id).map_or(id, |m| m.name.as_str()).to_owned();
         let side = crate::dbedit::deps::check(&db, &copies, &addon_name);
         built.warnings.extend(side.warnings);
@@ -2516,9 +2524,10 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 crate::write_json(&src, &udp_ids)?;
                 built.plan.loader.insert(rel, src);
                 built.lines.push(format!(
-                    "udp: telemetry reports {} added team id(s) and {} added driver id(s) under stock ids",
+                    "udp: telemetry reports {} added team id(s) and {} added driver id(s) under stock ids, {} track(s) by Swofty track id",
                     udp_ids.teams.len(),
-                    udp_ids.drivers.len()
+                    udp_ids.drivers.len(),
+                    udp_ids.track_ids.len()
                 ));
             }
             if !id_aliases.is_empty() {
