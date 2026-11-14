@@ -103,6 +103,50 @@ struct Resolved {
     bool ok() const { return why.empty(); }
 };
 
+// The route from the game folder to `dir`, a folder outside swofty/, as the game's paths write it: ../ for every folder
+// of the game root, then the folders of `dir`, ending in '/'. Empty with `why` set when the game's paths can't hold it:
+// another drive or a network share, a character they reject, or a name over GAME_PATH_MAX once `longest` more
+// characters (a file name) are added.
+inline std::string route_from_game(const std::wstring &game_root, const std::wstring &dir, std::size_t longest, std::string &why)
+{
+    auto split = [](const std::wstring &p) {
+        std::vector<std::wstring> parts;
+        std::size_t at = 0;
+        while (at <= p.size()) {
+            std::size_t end = p.find_first_of(L"\\/", at);
+            if (end == std::wstring::npos)
+                end = p.size();
+            if (end > at)
+                parts.push_back(p.substr(at, end - at));
+            at = end + 1;
+        }
+        return parts;
+    };
+    auto drive = [](const std::wstring &p) {
+        return p.size() >= 3 && p[1] == L':' && (p[2] == L'\\' || p[2] == L'/') &&
+               ((p[0] >= L'A' && p[0] <= L'Z') || (p[0] >= L'a' && p[0] <= L'z'));
+    };
+    if (!drive(game_root) || !drive(dir))
+        return why = "the game folder or the folder is not on a lettered drive", std::string();
+    if ((game_root[0] | 0x20) != (dir[0] | 0x20))
+        return why = "the folder is on another drive than the game folder", std::string();
+    std::vector<std::wstring> from = split(game_root.substr(2)), to = split(dir.substr(2));
+    std::string out;
+    for (std::size_t i = 0; i < from.size(); i++)
+        out += "../";
+    for (auto &part : to) {
+        for (wchar_t c : part)
+            if (c >= 0x80 || !game_char(static_cast<unsigned char>(c)))
+                return why = "a folder name has a character the game's paths reject", std::string();
+        for (wchar_t c : part)
+            out += static_cast<char>(c);
+        out += '/';
+    }
+    if (6 + out.size() + longest > GAME_PATH_MAX)
+        return why = "the route /game/" + out + " is too long for the " + std::to_string(GAME_PATH_MAX) + " characters the game's paths hold", std::string();
+    return out;
+}
+
 // A Path written by `addon`, as the file under the swofty folder it names: addons/<addon>/<file>.
 inline Resolved resolve(std::string_view addon, std::string_view file)
 {
@@ -120,6 +164,7 @@ inline Resolved resolve(std::string_view addon, std::string_view file)
 struct Claim {
     std::string path, addon, file, target, registry, id, scope;
     std::size_t seq = 0;
+    bool away = false;
 };
 
 struct Sink {
@@ -170,7 +215,8 @@ public:
     const std::string &prefix() const { return sink_.prefix; }
 
     Outcome redirect(std::string_view raw_path, const std::string &addon, std::string_view file,
-                     const std::string &registry, const std::string &id, const std::string &scope)
+                     const std::string &registry, const std::string &id, const std::string &scope,
+                     const std::string *away = nullptr)
     {
         Outcome o;
         o.addon = addon;
@@ -187,12 +233,15 @@ public:
             return o;
         }
         std::string shown = addon + "/" + r.file;
-        if (6 + sink_.prefix.size() + r.target.size() > GAME_PATH_MAX) {
-            o.line = who + ": " + o.path + " not redirected: /game/" + sink_.prefix + r.target + " is longer than the " +
+        if (away)
+            r.target = *away + r.file;
+        std::string prefix = away ? std::string() : sink_.prefix;
+        if (6 + prefix.size() + r.target.size() > GAME_PATH_MAX) {
+            o.line = who + ": " + o.path + " not redirected: /game/" + prefix + r.target + " is longer than the " +
                      std::to_string(GAME_PATH_MAX) + " characters the game's paths hold";
             return o;
         }
-        if (sink_.exists && !sink_.exists(r.target)) {
+        if (!away && sink_.exists && !sink_.exists(r.target)) {
             bool there = sink_.in_game && sink_.in_game(o.path);
             o.kind = there ? Kind::kept : Kind::missing;
             o.line = who + ": " + sink_.prefix + r.target + " is not installed; " +
@@ -211,7 +260,7 @@ public:
                                     " wins (later in load order)";
                 return o;
             }
-        Claim c{o.path, addon, r.file, r.target, registry, id, scope, ++seq_};
+        Claim c{o.path, addon, r.file, r.target, registry, id, scope, ++seq_, away != nullptr};
         const Claim *before = winner(o.path);
         Claim before_copy = before ? *before : Claim{};
         bool had = before != nullptr;

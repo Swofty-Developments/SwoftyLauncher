@@ -26,6 +26,7 @@ constexpr uintptr_t LNG_FOLDER_BYTE = 0x44361da;
 struct Redirect {
     std::string rel, target, source;
     std::atomic<unsigned> uses{0};
+    bool away = false;
 };
 
 struct Table {
@@ -329,6 +330,11 @@ void *resolve_hook(void *fs, void *after, const char *path, void *out, uint8_t w
                 {
                     perf::Pause game;
                     m = h_resolve.call<void *>(fs, after, static_cast<const char *>(buf), out, wild, want);
+                    if (!m && r->away) {
+                        swofty::log("[assets] overlay: %s -> %s did not resolve; the game's own file is used (%s)", path, buf,
+                                    r->source.c_str());
+                        m = h_resolve.call<void *>(fs, after, path, out, wild, want);
+                    }
                 }
                 unsigned use = r->uses.fetch_add(1);
                 if (use < 4) {
@@ -575,14 +581,15 @@ bool runtime::file_route_target(const std::string &game_path, std::string &targe
     return found;
 }
 
-bool runtime::file_route(const std::string &game_path, const std::string *target, const std::string &source, std::string &why)
+bool runtime::file_route(const std::string &game_path, const std::string *target, const std::string &source, std::string &why,
+                         bool from_game_root)
 {
     std::string rel = runtime::lower(game_path);
     uint64_t h = runtime::fnv64(rel);
     Redirect *r = nullptr;
     if (target) {
         std::string prefix;
-        if (!swofty_prefix(prefix, why))
+        if (!from_game_root && !swofty_prefix(prefix, why))
             return false;
         if (!hook_resolve()) {
             why = "the core's file route is not available on this build (the Fs_Resolve_Mount signature did not resolve "
@@ -593,6 +600,7 @@ bool runtime::file_route(const std::string &game_path, const std::string *target
         made->rel = rel;
         made->target = prefix + *target;
         made->source = source;
+        made->away = from_game_root;
         r = made.get();
         AcquireSRWLockExclusive(&redirect_lock);
         route_store.push_back(std::move(made));

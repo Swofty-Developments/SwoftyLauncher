@@ -63,6 +63,8 @@ const std::wstring &state_root();
 // data folder (state_root), or swofty\ when the core can't write there. The game can't create files in swofty\ of an
 // EA app copy under Program Files.
 const std::wstring &files_root();
+// 0 when the game can create files in `dir` (made if it is missing), else the Win32 error. The probe file is not kept.
+uint32_t write_refusal(const std::wstring &dir);
 bool enabled(const char *feature, const char *what);
 std::string load_stage();
 bool same_build();
@@ -465,7 +467,9 @@ void db_older_edits(const std::function<void(uint64_t key, int tag, const std::s
 int lang_add(const json::Value &entry);
 int file_add(const json::Value &entry);
 std::string file_route_prefix();
-bool file_route(const std::string &game_path, const std::string *target, const std::string &source, std::string &why);
+// `from_game_root`: the target is already the route from the game folder (it may leave it with ../), not a path under swofty/.
+bool file_route(const std::string &game_path, const std::string *target, const std::string &source, std::string &why,
+                bool from_game_root = false);
 bool file_route_target(const std::string &game_path, std::string &target);
 
 struct Robin {
