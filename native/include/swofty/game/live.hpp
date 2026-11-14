@@ -73,6 +73,26 @@ struct DriveThroughObject {
 static_assert(offsetof(DriveThroughObject, records_begin) == 0x68);
 static_assert(offsetof(DriveThroughObject, records_end) == 0x70);
 
+struct DriverSetRef {
+    uint8_t _pad_0x0[0x8];
+    DriverSlots *slots; // L2 experimental
+};
+static_assert(offsetof(DriverSetRef, slots) == 0x8);
+
+struct DriverSlot {
+    uint8_t _pad_0x0[0x8];
+    DriverRecord *record; // L2 experimental
+};
+static_assert(offsetof(DriverSlot, record) == 0x8);
+
+struct DriverSlots {
+    uint8_t _pad_0x0[0x8];
+    DriverSlot *begin; // L2 experimental
+    DriverSlot *end; // L2 experimental
+};
+static_assert(offsetof(DriverSlots, begin) == 0x8);
+static_assert(offsetof(DriverSlots, end) == 0x10);
+
 struct TeamSetRef {
     uint8_t _pad_0x0[0x8];
     TeamSlots *slots; // L2 experimental
@@ -80,9 +100,12 @@ struct TeamSetRef {
 static_assert(offsetof(TeamSetRef, slots) == 0x8);
 
 struct EntrantsSystem {
-    uint8_t _pad_0x0[0x2c0];
+    uint8_t _pad_0x0[0x260];
+    DriverSetRef driver_sets[3]; // L2 experimental
+    uint8_t _pad_0x290[0x30];
     TeamSetRef team_sets[3]; // L2 experimental
 };
+static_assert(offsetof(EntrantsSystem, driver_sets) == 0x260);
 static_assert(offsetof(EntrantsSystem, team_sets) == 0x2c0);
 
 struct GameManagerLive {
@@ -371,11 +394,19 @@ static_assert(offsetof(TyreSystem, vehicles_begin) == 0x110);
 static_assert(offsetof(TyreSystem, vehicles_end) == 0x118);
 
 struct VehicleHelperSystem {
-    uint8_t _pad_0x0[0x568];
+    uint8_t _pad_0x0[0x60];
+    char *player_name; // L2 experimental
+    uint8_t _pad_0x68[0x20];
+    VehicleHelperParticipant **participants_begin; // L2 experimental
+    VehicleHelperParticipant **participants_end; // L2 experimental
+    uint8_t _pad_0x98[0x4d0];
     DriveThroughObject *drive_through; // L2 experimental
     uint8_t _pad_0x570[0x8];
     StopGoObject *stop_go; // L2 experimental
 };
+static_assert(offsetof(VehicleHelperSystem, player_name) == 0x60);
+static_assert(offsetof(VehicleHelperSystem, participants_begin) == 0x88);
+static_assert(offsetof(VehicleHelperSystem, participants_end) == 0x90);
 static_assert(offsetof(VehicleHelperSystem, drive_through) == 0x568);
 static_assert(offsetof(VehicleHelperSystem, stop_go) == 0x578);
 

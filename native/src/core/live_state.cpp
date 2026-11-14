@@ -345,6 +345,16 @@ int live_team_badge(uint32_t vehicle, char *key, uint32_t cap)
     return g_live->read_team_badge(vehicle, key, cap) ? SWOFTY_ASSET_OK : SWOFTY_ASSET_UNAVAILABLE;
 }
 
+int live_driver_name(uint32_t vehicle, char *out, uint32_t cap)
+{
+    if (!g_on || !g_live)
+        return SWOFTY_ASSET_UNAVAILABLE;
+    if (!out || cap < 2 || vehicle >= SWOFTY_LIVE_MAX_CARS)
+        return SWOFTY_ASSET_INVALID;
+    std::lock_guard<std::mutex> g(g_lock);
+    return g_live->read_driver_name(vehicle, out, cap) ? SWOFTY_ASSET_OK : SWOFTY_ASSET_UNAVAILABLE;
+}
+
 int live_seq(uint64_t *frame)
 {
     if (!g_on)
@@ -356,8 +366,8 @@ int live_seq(uint64_t *frame)
     return SWOFTY_ASSET_OK;
 }
 
-const SwoftyLive table = {SWOFTY_LIVE_VERSION, live_available, live_session,      live_car,        live_subject,
-                          live_turn,           live_track_turns, live_team_badge, live_seq};
+const SwoftyLive table = {SWOFTY_LIVE_VERSION, live_available,   live_session,    live_car, live_subject,
+                          live_turn,           live_track_turns, live_team_badge, live_seq, live_driver_name};
 
 }
 

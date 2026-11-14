@@ -59,9 +59,9 @@ SWOFTY_ADDON()
 ```
 
 - **Header:** `swofty/live.hpp`, namespace `swofty::live`; host test fake `swofty/fake_live.hpp`
-- **Table:** the core export `SwoftyCoreLive` (`SwoftyLive`, table version 1); `SWOFTY_API_VERSION` is unchanged
+- **Table:** the core export `SwoftyCoreLive` (`SwoftyLive`, table version 2; version 1 ends at `seq` and has no `driver_name`); `SWOFTY_API_VERSION` is unchanged
 - **Feature:** `telemetry`, experimental, off by default (the live state is the memory source of std telemetry)
-- **Thread:** any thread; every call copies from the core's per-frame snapshot
+- **Thread:** any thread; every call copies from the core's per-frame snapshot, except `team_badge` and `driver_name`, which read the game's memory at the call
 
 ## What a call answers
 
@@ -218,16 +218,21 @@ The table holds the 24 stock circuits' official turn numbers, picked by the game
 
 The table is Project Halo's, by nyannoying ("Uses work from Project Halo by nyannoying", <https://github.com/nyannoying1337/f1-25-project-halo>); see `THIRD_PARTY.md` in the launcher repository.
 
-## team_badge and frame
+## team_badge, driver_name and frame
 
 ```cpp
 if (auto key = live::team_badge(car.vehicle)) // "ferrari_2026"
     texture = "#overrides.osd.timing_tower.team_badges_hud." + *key;
 
+if (auto name = live::driver_name(car.vehicle)) // "Charles Leclerc", UTF-8
+    label = *name; // e.g. the text leaf of this standings row
+
 auto f = live::frame(); // changes on every core refresh; poll it to skip unchanged frames
 ```
 
 `team_badge` answers empty for My Team and for teams the game draws a rendered badge for.
+
+`driver_name` is the name the game itself shows for the car (`Sess_Get_CarDriverName`): the player's name for a car a human drives, else the display name of the driver record the car's session entrant points at, so a tower with one text leaf per row can fill each row from the classification order instead of carrying a copy of every car. The C call `driver_name(vehicle, out, cap)` writes at most `cap - 1` bytes, cut at a UTF-8 character boundary, then a NUL; it answers `SWOFTY_ASSET_INVALID` for a null buffer, `cap < 2` or a vehicle id of 32 or more, and `SWOFTY_ASSET_UNAVAILABLE` for a car the game has no name for. The C++ wrapper asks with a 128-byte buffer and answers empty on a core whose table is older than version 2. It reads the driver names group, which is off on the EA App build until its layout is compared there.
 
 ## Test it on the host
 
@@ -244,6 +249,7 @@ fake.add_car(1, 1);
 fake.set_order({1, 0});
 fake.set_player(0);
 fake.set_turns({/* SwoftyLiveTurn rows */});
+fake.set_driver_name(1, "Charles Leclerc");
 fake.install();
 
 assert(swofty::live::gap_ahead_ms(*swofty::live::car(0)) == 950);
@@ -252,9 +258,9 @@ assert(swofty::live::order().ahead(0)->vehicle == 1);
 
 ## When a group reads
 
-The core reads each group (car systems, ERS, progress, classification, timing, pit, pit lane, penalties, tyres, flags, controllers, spectator, game mode, track and the game's message bus) only when every site it needs resolves on the running build and its KB rows are verified. The two tests are the same one: the generated bindings export a site only for a row that is L2 or better with an independent `agree`, and the generated game headers declare a struct field under the same rule, so a group turns on by itself when its rows land and the headers are regenerated. The offsets the reader uses are tied to the generated structs with `static_assert`s, so a header that declares a field somewhere else fails the build.
+The core reads each group (car systems, ERS, progress, classification, timing, pit, pit lane, penalties, tyres, flags, controllers, spectator, game mode, team badges, driver names, track and the game's message bus) only when every site it needs resolves on the running build and its KB rows are verified. The two tests are the same one: the generated bindings export a site only for a row that is L2 or better with an independent `agree`, and the generated game headers declare a struct field under the same rule, so a group turns on by itself when its rows land and the headers are regenerated. The offsets the reader uses are tied to the generated structs with `static_assert`s, so a header that declares a field somewhere else fails the build.
 
-A group also needs its layout proven for the running build. The Steam build is the one the knowledge base describes. The EA App build (PE timestamp 1789128892) runs every group, because each struct field the groups read was compared against the Steam code that reads it, and every site they need resolves in the EA bindings set. One displacement differs and the core applies it for you: the game manager's progress system is at `+0x2a0` on EA and at `+0x2d0` on Steam, so the progress group (and everything the core derives from lap distance) reads that field at the right place on each build. A build in neither column, such as a future patch, runs no group at all.
+A group also needs its layout proven for the running build. The Steam build is the one the knowledge base describes. The EA App build (PE timestamp 1789128892) runs every group but driver names, because each struct field the groups read was compared against the Steam code that reads it, and every site they need resolves in the EA bindings set. One displacement differs and the core applies it for you: the game manager's progress system is at `+0x2a0` on EA and at `+0x2d0` on Steam, so the progress group (and everything the core derives from lap distance) reads that field at the right place on each build. A build in neither column, such as a future patch, runs no group at all.
 
 | group | Steam | EA App |
 |---|---|---|
@@ -264,6 +270,7 @@ A group also needs its layout proven for the running build. The Steam build is t
 | spectator, spectator gap, track, track name | yes | yes |
 | tyres, game mode, team badges | yes | yes |
 | bus events (collision, retirement) | yes | yes |
+| driver names | yes | no, layout not compared yet |
 
 A group that is yes still waits for its rows, as above, and the EA proof is static: it compares code, so run an EA race with `SWOFTY_TELEMETRY_VERIFY=1` once to compare the values with the game's UDP output. A group with any site that does not resolve stays off even with `SWOFTY_LIVE_FORCE=1`, which reads the groups whose sites resolve without waiting for verification, and on EA also without waiting for the layout proof; use it on a test machine to produce the evidence that verifies them, together with `SWOFTY_TELEMETRY_VERIFY=1` (see [Telemetry](./telemetry#memory-source)).
 

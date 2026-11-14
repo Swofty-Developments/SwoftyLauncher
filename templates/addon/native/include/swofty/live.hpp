@@ -145,6 +145,17 @@ inline std::optional<std::string> team_badge(uint32_t vehicle)
     return std::string(key);
 }
 
+// The driver name the game shows for the car (the player's name for a human), UTF-8. Empty on a core whose live table
+// is older than version 2 or while the driver names group is off.
+inline std::optional<std::string> driver_name(uint32_t vehicle)
+{
+    auto t = detail::table();
+    char name[128] = {};
+    if (!t || t->version < 2 || !t->driver_name || t->driver_name(vehicle, name, sizeof name) != SWOFTY_ASSET_OK)
+        return std::nullopt;
+    return std::string(name);
+}
+
 inline std::optional<uint64_t> frame()
 {
     auto t = detail::table();

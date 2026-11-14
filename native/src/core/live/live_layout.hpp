@@ -152,6 +152,20 @@ constexpr uintptr_t entrant_team = 0x58, entrant_vid = 0x82, tables = 0x2c8, tab
 constexpr unsigned max_kind = 2, my_team_kind = 1;
 }
 
+// Driver names, as Sess_Get_CarDriverName (0x142f28c10) resolves them: the car's VehicleHelperSystem participant (found
+// by [[p+0x18]+0x58]+0xe8 == vehicle id) with bit 7 of its flags byte set is a human and gets the system's player name;
+// any other car gets the name of the driver record its session entrant (badge:: chain) points at through the
+// EntrantsSystem driver tables (Ent_Get_Driver_Thunk 0x1423dbcf0).
+namespace driver {
+constexpr uintptr_t player_name = 0x60, participants = 0x88;
+constexpr uintptr_t participant_physics = 0x18, participant_flags = 0x32, physics_car = 0x58;
+constexpr uint8_t human_flag = 0x80;
+constexpr uintptr_t entrant_ref = 0x50, sets = 0x268, set_stride = 0x10, table_vec = 0x8, slot_record = 0x8,
+                    record_name = 0xc8;
+constexpr unsigned max_domain = 2;
+constexpr size_t max_participants = 64, max_name = 128;
+}
+
 namespace track {
 constexpr uintptr_t world_to_a = 0xd0, a_to_b = 0xe8, b_to_name = 0xa0;
 constexpr uintptr_t sector_end = 0x0, sector_length = 0x58, sector_count = 0x5c;
@@ -304,6 +318,21 @@ LIVE_TIE(TeamSlot, record, badge::slot_record);
 LIVE_SIZE(TeamSlot, 16);
 LIVE_TIE(TeamRecord, timing_tower_texture_path, badge::record_key);
 LIVE_TIE(TeamRecord, show_custom_badge_in_ui, badge::record_render);
+LIVE_TIE(VehicleHelperSystem, player_name, driver::player_name);
+LIVE_TIE(VehicleHelperSystem, participants_begin, driver::participants);
+LIVE_TIE(VehicleHelperSystem, participants_end, driver::participants + 8);
+LIVE_TIE(VehicleHelperParticipant, physics, driver::participant_physics);
+LIVE_TIE(VehicleHelperParticipant, driver_kind, driver::participant_flags);
+LIVE_TIE(CarPhysicsRecord, car, driver::physics_car);
+LIVE_TIE(SessionEntrantView, driver_ref, driver::entrant_ref);
+LIVE_TIE(EntrantsSystem, driver_sets, driver::sets - 8);
+LIVE_TIE(DriverSetRef, slots, 0x8);
+LIVE_SIZE(DriverSetRef, driver::set_stride);
+LIVE_TIE(DriverSlots, begin, driver::table_vec);
+LIVE_TIE(DriverSlots, end, driver::table_vec + 8);
+LIVE_TIE(DriverSlot, record, driver::slot_record);
+LIVE_SIZE(DriverSlot, 16);
+LIVE_TIE(DriverRecord, display_name, driver::record_name);
 LIVE_TIE(RacingVehicles, owner, track::world_to_a);
 LIVE_TIE(RacingOwner, track, track::a_to_b);
 LIVE_TIE(RacingTrack, name, track::b_to_name);

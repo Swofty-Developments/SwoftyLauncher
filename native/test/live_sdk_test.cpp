@@ -45,6 +45,7 @@ int main()
         fake.set_player(0);
         fake.set_turns({turn(1, 500.f), turn(2, 1200.f)});
         fake.set_badge(1, "ferrari_2026");
+        fake.set_driver_name(1, "Charles Leclerc");
         fake.install();
         (void)b;
 
@@ -61,6 +62,10 @@ int main()
         CHECK(t && t->number == 1 && t->distance_ahead_m == 100.f);
         CHECK(live::track_turns().size() == 2);
         CHECK(live::team_badge(1) == std::string("ferrari_2026") && !live::team_badge(0));
+        CHECK(live::driver_name(1) == std::string("Charles Leclerc") && !live::driver_name(0));
+        fake.set_table_version(1);
+        CHECK(!live::driver_name(1) && live::team_badge(1));
+        fake.set_table_version(SWOFTY_LIVE_VERSION);
         auto o = live::order();
         CHECK(o.ids.size() == 3 && o.player_rank == 1 && o.ahead(0) && o.ahead(0)->vehicle == 1);
         CHECK(o.ahead(1) && o.ahead(1)->vehicle == 0 && !o.behind(2) && o.behind(1)->vehicle == 0);

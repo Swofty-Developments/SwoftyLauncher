@@ -143,6 +143,11 @@ pub struct DepartmentData {
 }
 
 #[repr(C)]
+pub struct DriverRecord {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
 pub struct FEHomeViewModel {
     _opaque: [u8; 0],
 }
@@ -204,6 +209,11 @@ pub struct UpgradeEffectDef {
 
 #[repr(C)]
 pub struct UpgradeRecord {
+    _opaque: [u8; 0],
+}
+
+#[repr(C)]
+pub struct VehicleHelperParticipant {
     _opaque: [u8; 0],
 }
 
@@ -1526,6 +1536,29 @@ const _: () = assert!(core::mem::offset_of!(DriverSecretMeetings, driver) == 0x4
 const _: () = assert!(core::mem::size_of::<DriverSecretMeetings>() == 0x48);
 
 #[repr(C)]
+pub struct DriverSetRef {
+    _pad_0x0: [u8; 0x8],
+    pub slots: *mut DriverSlots,
+}
+const _: () = assert!(core::mem::offset_of!(DriverSetRef, slots) == 0x8);
+
+#[repr(C)]
+pub struct DriverSlot {
+    _pad_0x0: [u8; 0x8],
+    pub record: *mut DriverRecord,
+}
+const _: () = assert!(core::mem::offset_of!(DriverSlot, record) == 0x8);
+
+#[repr(C)]
+pub struct DriverSlots {
+    _pad_0x0: [u8; 0x8],
+    pub begin: *mut DriverSlot,
+    pub end: *mut DriverSlot,
+}
+const _: () = assert!(core::mem::offset_of!(DriverSlots, begin) == 0x8);
+const _: () = assert!(core::mem::offset_of!(DriverSlots, end) == 0x10);
+
+#[repr(C)]
 pub struct EvolutionCurve {
     pub vtable: *mut *mut c_void,
     pub inv_x_range: f32,
@@ -1721,9 +1754,12 @@ const _: () = assert!(core::mem::offset_of!(TeamSetRef, slots) == 0x8);
 
 #[repr(C)]
 pub struct EntrantsSystem {
-    _pad_0x0: [u8; 0x2c0],
+    _pad_0x0: [u8; 0x260],
+    pub driver_sets: [DriverSetRef; 3],
+    _pad_0x290: [u8; 0x30],
     pub team_sets: [TeamSetRef; 3],
 }
+const _: () = assert!(core::mem::offset_of!(EntrantsSystem, driver_sets) == 0x260);
 const _: () = assert!(core::mem::offset_of!(EntrantsSystem, team_sets) == 0x2c0);
 
 #[repr(C)]
@@ -3182,11 +3218,19 @@ const _: () = assert!(core::mem::offset_of!(UpgradesComponent, career_time) == 0
 
 #[repr(C)]
 pub struct VehicleHelperSystem {
-    _pad_0x0: [u8; 0x568],
+    _pad_0x0: [u8; 0x60],
+    pub player_name: *mut c_char,
+    _pad_0x68: [u8; 0x20],
+    pub participants_begin: *mut *mut VehicleHelperParticipant,
+    pub participants_end: *mut *mut VehicleHelperParticipant,
+    _pad_0x98: [u8; 0x4d0],
     pub drive_through: *mut DriveThroughObject,
     _pad_0x570: [u8; 0x8],
     pub stop_go: *mut StopGoObject,
 }
+const _: () = assert!(core::mem::offset_of!(VehicleHelperSystem, player_name) == 0x60);
+const _: () = assert!(core::mem::offset_of!(VehicleHelperSystem, participants_begin) == 0x88);
+const _: () = assert!(core::mem::offset_of!(VehicleHelperSystem, participants_end) == 0x90);
 const _: () = assert!(core::mem::offset_of!(VehicleHelperSystem, drive_through) == 0x568);
 const _: () = assert!(core::mem::offset_of!(VehicleHelperSystem, stop_go) == 0x578);
 
