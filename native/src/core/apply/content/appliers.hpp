@@ -1,5 +1,6 @@
 #pragma once
 
+#include <optional>
 #include <string>
 
 namespace swofty_core::apply::content {
@@ -13,5 +14,13 @@ struct DrsBox {
     std::string label, line;
 };
 DrsBox drs_for_box(const std::string &entrant_list);
+
+// The tyre warmer setting the box with this entrant list runs: its content.package's rules.tyre_warmers (none when the
+// package has no rule), and the line to log.
+struct WarmersBox {
+    std::optional<bool> warmers;
+    std::string line;
+};
+WarmersBox tyre_warmers_for_box(const std::string &entrant_list);
 
 }
