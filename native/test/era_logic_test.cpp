@@ -100,6 +100,44 @@ static void warmer_swap_tests()
            "GameSetupMode +0x1c8 has_tyre_warmers (re/db structs/GameSetupMode.h)");
 }
 
+static void tyre_change_tests()
+{
+    era::TyreChangeSwaps swaps;
+    Mode a("f1_2024"), b("f1_2024");
+    for (size_t i = 0; i < era::TYRE_REQUIREMENT_BYTES; i++) {
+        a.mem[era::MODE_TYRE_REQUIREMENTS + i] = uint8_t(i % 3 == 0);
+        b.mem[era::MODE_TYRE_REQUIREMENTS + i] = 1;
+    }
+    a.mem[era::MODE_TYRE_REQUIREMENTS - 1] = 7;                          // tyre_setup_enabled, next to the flags
+    a.mem[era::MODE_TYRE_REQUIREMENTS + era::TYRE_REQUIREMENT_BYTES] = 9;
+    auto all = [](Mode &m, uint8_t v) {
+        for (size_t i = 0; i < era::TYRE_REQUIREMENT_BYTES; i++)
+            if (m.mem[era::MODE_TYRE_REQUIREMENTS + i] != v)
+                return false;
+        return true;
+    };
+    swaps.swap(a.mem, false);
+    swaps.swap(b.mem, false);
+    expect(all(a, 0) && all(b, 0) && swaps.active() == 2 && a.mem[era::MODE_TYRE_REQUIREMENTS - 1] == 7 &&
+               a.mem[era::MODE_TYRE_REQUIREMENTS + era::TYRE_REQUIREMENT_BYTES] == 9,
+           "a press clears the 39 requirement flags of every host mode and nothing next to them");
+    swaps.swap(a.mem, true);
+    expect(all(a, 1) && swaps.active() == 2, "a second press keeps the game's flags once");
+    expect(swaps.put_back() == 2 && a.mem[era::MODE_TYRE_REQUIREMENTS] == 1 && a.mem[era::MODE_TYRE_REQUIREMENTS + 1] == 0 &&
+               all(b, 1) && swaps.active() == 0,
+           "put back restores the game's flags in every swapped mode");
+    swaps.swap(a.mem, false);
+    a.mem[era::MODE_TYRE_REQUIREMENTS + 5] = 1;                          // the game reloaded the mode since the press
+    expect(swaps.put_back() == 0 && a.mem[era::MODE_TYRE_REQUIREMENTS + 5] == 1, "put back leaves flags the game changed");
+    swaps.swap(a.mem, true);
+    expect(swaps.forget() == 1 && all(a, 1) && swaps.put_back() == 0, "forget writes nothing");
+    swaps.swap(nullptr, true);
+    expect(swaps.active() == 0, "no mode: nothing is swapped");
+    expect(era::MODE_TYRE_REQUIREMENTS == 0x8b && era::MODE_TYRE_REQUIREMENTS + era::TYRE_REQUIREMENT_BYTES == 0xb2 &&
+               era::MODE_TYRE_REQUIREMENTS + era::TYRE_REQUIREMENT_BYTES < era::MODE_TYRE_WARMERS,
+           "GameSetupMode +0x8b..+0xb1 tyre regulation requirements (re/db structs/GameSetupMode.h)");
+}
+
 static void setup_guard_tests()
 {
     era::DrsSwaps swaps;
@@ -1045,6 +1083,7 @@ int main()
 
     drs_swap_tests();
     warmer_swap_tests();
+    tyre_change_tests();
     continue_tests();
     setup_guard_tests();
     grid_limit_tests();
