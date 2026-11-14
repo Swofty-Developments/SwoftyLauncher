@@ -1,6 +1,7 @@
 #include <atomic>
 #include "runtime.hpp"
 #include "main_menu.hpp"
+#include "tt_barred.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -86,6 +87,7 @@ const Step STEPS[] = {
     {"tt_bridge_tick", [] { runtime::tt_bridge_tick(); }},
     {"popup_tick", [] { runtime::popup_tick(); }},
     {"main_menu::tick", [] { runtime::main_menu::tick(); }},
+    {"tt_barred::tick", [] { runtime::tt_barred::tick(); }},
     {"mfd_tick", [] { runtime::mfd_tick(); }},
     {"netplay_tick", [] { runtime::netplay_tick(); }},
     {"career_content_tick", [] { runtime::career_content_tick(); }},
