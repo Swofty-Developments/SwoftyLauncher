@@ -1242,6 +1242,8 @@ inline constexpr fn<"Game_Teleport_Vehicle", Game_Teleport_Vehicle_t> Game_Telep
 inline constexpr address<"Game_TerminalDamage_Initialise"> Game_TerminalDamage_Initialise{}; // L2 experimental
 inline constexpr address<"Game_ThrustmasterLcd_UpdateSectors"> Game_ThrustmasterLcd_UpdateSectors{}; // L2 experimental
 inline constexpr address<"Game_Thrustmaster_SetWheelRange"> Game_Thrustmaster_SetWheelRange{}; // L2 experimental
+using Game_TileList_PushChildSelection_Thunk_t = void(void *widget, void *child);
+inline constexpr fn<"Game_TileList_PushChildSelection_Thunk", Game_TileList_PushChildSelection_Thunk_t> Game_TileList_PushChildSelection_Thunk{}; // L2 experimental
 inline constexpr address<"Game_TimeAttackGates_CreateGateModel"> Game_TimeAttackGates_CreateGateModel{}; // L2 experimental
 using Game_TimeManager_OnResetFixedTimeStep_t = int(void *ctx, const void *msg);
 inline constexpr fn<"Game_TimeManager_OnResetFixedTimeStep", Game_TimeManager_OnResetFixedTimeStep_t> Game_TimeManager_OnResetFixedTimeStep{}; // L2 experimental
