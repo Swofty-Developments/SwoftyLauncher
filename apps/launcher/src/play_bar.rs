@@ -798,7 +798,7 @@ impl Shell {
                     div()
                         .text_size(px(15.))
                         .font_weight(FontWeight::SEMIBOLD)
-                        .child(format!("Play {host}'s Lobby")),
+                        .child(trf!("Play {host}'s Lobby", host = host)),
                 )
                 .on_click(cx.listener(|this, _, window, cx| this.mp_view_play(window, cx)))
                 .into_any_element(),

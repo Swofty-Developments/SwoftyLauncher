@@ -1153,6 +1153,8 @@ inline constexpr site<"site_Game_TheatreList_NoSlotAlt"> site_Game_TheatreList_N
 inline constexpr site<"site_Game_TheatreRows_RowOffset"> site_Game_TheatreRows_RowOffset{}; // L2 experimental
 inline constexpr site<"site_Game_ThrustmasterLcd_EntrantRecord"> site_Game_ThrustmasterLcd_EntrantRecord{}; // L2 experimental
 inline constexpr site<"site_Game_ThrustmasterLcd_SectorTail"> site_Game_ThrustmasterLcd_SectorTail{}; // L2 experimental
+inline constexpr site<"site_Game_TileListSelect_ChildNext"> site_Game_TileListSelect_ChildNext{}; // L2 experimental
+inline constexpr site<"site_Game_TileListSelect_ChildStep"> site_Game_TileListSelect_ChildStep{}; // L2 experimental
 inline constexpr site<"site_Game_TimeTrialLeaderboard_BoardRead"> site_Game_TimeTrialLeaderboard_BoardRead{}; // L2 experimental
 inline constexpr site<"site_Game_TimeTrialLeaderboard_BoardsDone"> site_Game_TimeTrialLeaderboard_BoardsDone{}; // L2 experimental
 inline constexpr site<"site_Game_TimeTrial_SetReferenceListBoard"> site_Game_TimeTrial_SetReferenceListBoard{}; // L2 experimental

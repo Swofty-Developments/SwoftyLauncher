@@ -7,8 +7,8 @@
 // 0x14479b950 inside Game_TimeOfDay_LockAll / UnlockAll on tod. Raised by ce-weather; curve slots, rain_render,
 // tod_version and rain_intensity by engine-re (weather to L2).
 struct TimeOfDayOwner {
-    /* 0x020 */ TodCurveBinding sun_light_intensity_curve; // L1 decomp:re/decomp/14479b950.c;xref:0x14479ba7d write-only so far (no reader found, V9348); "sky/sunLightIntensity", first dataset in the order 0x145bf461c that has it (dataset 1 = the active clock)
-    /* 0x0a0 */ TodCurveBinding wind_scale_curve; // L1 decomp:re/decomp/14479b950.c;xref:0x14479bc6d write-only so far (no reader found, V9349); "weather/atmospherics/wind_scale", same dataset search
+    /* 0x020 */ TodCurveBinding sun_light_intensity_curve; // L1 decomp:re/decomp/14479b950.c;xref:0x14479ba7d write-only so far (no reader found, V9413); "sky/sunLightIntensity", first dataset in the order 0x145bf461c that has it (dataset 1 = the active clock)
+    /* 0x0a0 */ TodCurveBinding wind_scale_curve; // L1 decomp:re/decomp/14479b950.c;xref:0x14479bc6d write-only so far (no reader found, V9414); "weather/atmospherics/wind_scale", same dataset search
     /* 0x0d0 */ TodCurveBinding rain_intensity_curve[10]; // L2 decomp:re/decomp/14479b950.c;decomp:re/decomp/14479ca80.c;xref:0x14479bd36,0x14479bddd,0x14479c315 "weather/rainfall/intensity" bound once per dataset clock (tod+0x2c8 + d*0x288, d = 0..9); Sess_TimeOfDayOwner_EvalRainIntensity reads +0xd0 + d*0x30 (corrects the earlier 4-dataset reading, V1985)
     /* 0x2c8 */ void *rain_render;      // L2 decomp:re/decomp/14479c3f0.c;xref:0x14479b3f7,0x14479c472,0x14479c47e set at 0x14479b3f7 from a vtable +0x28 lookup in 0x14479b3a0 (owner vtable 0x145c06a90 slot 2); rain renderer block; the update writes the rain intensity to +0x75ca4
     /* 0x2d0 */ TimeOfDaySystem *tod;   // L2 decomp:re/decomp/155755570.c;xref:0x1557555ed,0x1438b776e the TimeOfDaySystem the thunk bodies build into (same object as GameWeatherSystem+0x1d98)

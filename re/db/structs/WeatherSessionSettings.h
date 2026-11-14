@@ -4,7 +4,7 @@
 // notes: the session weather settings setupSession reads (rdx): filled from the WeatherAndTimeOfDay
 // component by Sess_WeatherComponent_FillSessionSettings 0x140bde510 (weekend hub) or by the scripted-weather
 // filler 0x141352160. Single-dataset path (session_type 0x12, or a current game mode whose class chain DOES
-// contain 0x14604e6b8: slot path iff NOT IsA and session_type != 0x12, 0x1438b7568..0x1438b768a, V9332): single_count, single_random and
+// contain 0x14604e6b8: slot path iff NOT IsA and session_type != 0x12, 0x1438b7568..0x1438b768a, V9397): single_count, single_random and
 // single_types go to Sess_Tod_BuildDataset_Thunk 0x14461bb70 for dataset 0 with null hold/trans. Every other
 // session builds all eight datasets from slots[] (kb:subsystems/session.md#weather). Time-of-day block
 // +0xb28 + d*8 (d = 0..7, L1, not listed): {u8 start preset 0..7 (hub 0x140bde633, read 0x1438b7d05 into the

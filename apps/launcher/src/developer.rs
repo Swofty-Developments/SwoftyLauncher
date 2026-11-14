@@ -13,7 +13,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
 use crate::pages::label;
-use crate::shell::Shell;
+use crate::shell::{PlayState, Shell};
 use crate::theme::Palette;
 use swofty_i18n::tr;
 
@@ -33,6 +33,20 @@ pub const ACTIONS: &[(&str, &str)] = &[
 
 pub fn dev_args(verb: &str, folder: &std::path::Path) -> Vec<std::ffi::OsString> {
     vec!["dev".into(), verb.into(), "--".into(), folder.into()]
+}
+
+/// Why Run, which presses Play, can't start now: `None` only when the Play button would play.
+fn run_blocked(state: &PlayState) -> Option<&'static str> {
+    match state {
+        PlayState::Ready | PlayState::Crashed(_) => None,
+        PlayState::Running | PlayState::Elsewhere(_) => Some(tr("Close F1 25 before running it again")),
+        PlayState::Preparing | PlayState::Launching => Some(tr("F1 25 is launching")),
+        PlayState::Restoring => Some(tr("Restoring the game files…")),
+        PlayState::Building => Some(tr("Wait for the build to finish")),
+        PlayState::NotInstalled => Some(tr("Install it with Steam or the EA app, or locate its folder")),
+        PlayState::Detecting => Some(tr("Detecting F1 25…")),
+        PlayState::Checking => Some(tr("Checking conflicts…")),
+    }
 }
 
 impl Shell {
@@ -117,6 +131,7 @@ impl Shell {
         }
         let running = self.developer.running;
         let has_folder = self.developer.folder.is_some();
+        let blocked = run_blocked(&self.play_state()).or(self.mp_starting_label());
         let folder = self
             .developer
             .folder
@@ -154,7 +169,8 @@ impl Shell {
                 .primary()
                 .tap_sm()
                 .label("Run")
-                .disabled(!has_folder || running.is_some())
+                .when_some(blocked, |b, why| b.tooltip(why))
+                .disabled(!has_folder || running.is_some() || blocked.is_some())
                 .on_click(cx.listener(|this, _, window, cx| this.play(window, cx))),
         );
         let output = self.developer.output.clone().map(|(text, ok)| {
@@ -194,7 +210,9 @@ impl Shell {
 
 #[cfg(test)]
 mod tests {
-    use super::{ACTIONS, dev_args};
+    use super::{ACTIONS, dev_args, run_blocked};
+    use crate::game::Owner;
+    use crate::shell::PlayState;
 
     #[test]
     fn actions_run_the_cli_dev_commands() {
@@ -210,5 +228,23 @@ mod tests {
             ACTIONS.iter().map(|a| a.0).collect::<Vec<_>>(),
             ["check", "test", "pack", "logs"]
         );
+    }
+
+    #[test]
+    fn run_waits_for_the_game_like_play_does() {
+        assert_eq!(run_blocked(&PlayState::Ready), None);
+        for state in [
+            PlayState::Running,
+            PlayState::Elsewhere(Owner::Unknown),
+            PlayState::Preparing,
+            PlayState::Launching,
+            PlayState::Restoring,
+            PlayState::Building,
+            PlayState::NotInstalled,
+            PlayState::Detecting,
+            PlayState::Checking,
+        ] {
+            assert!(run_blocked(&state).is_some());
+        }
     }
 }

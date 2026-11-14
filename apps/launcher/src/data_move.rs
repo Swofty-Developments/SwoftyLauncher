@@ -18,7 +18,7 @@ use swofty_core::launcher::Progress;
 use swofty_i18n::{tr, trf};
 
 use crate::format::size_coarse as size;
-use crate::shell::Shell;
+use crate::shell::{PlayState, Shell};
 use crate::theme::Palette;
 use crate::ui::LockPanel;
 
@@ -58,6 +58,19 @@ pub(crate) fn install_folder() -> Option<PathBuf> {
     bin.parent().map(Path::to_path_buf)
 }
 
+/// A Play still under way: its checks, the launch, or the rollback after the game exits.
+fn launch_refusal(state: &PlayState) -> Option<&'static str> {
+    match state {
+        PlayState::Preparing | PlayState::Launching => Some(tr(
+            "Wait for F1 25 to finish launching before moving your addons and saves",
+        )),
+        PlayState::Restoring => Some(tr(
+            "Wait for the game files to be restored before moving your addons and saves",
+        )),
+        _ => None,
+    }
+}
+
 impl Shell {
     pub(crate) fn move_refusal(&self) -> Option<String> {
         if self.moving.is_some() {
@@ -69,6 +82,9 @@ impl Shell {
         }
         if self.build.is_some() || Busy::live(&self.store.root).is_some() {
             return Some(tr("Wait for the build to finish before moving your addons and saves").to_owned());
+        }
+        if let Some(why) = launch_refusal(&self.play_state()) {
+            return Some(why.to_owned());
         }
         if self.download_pending() > 0 {
             return Some(
@@ -354,6 +370,27 @@ impl Shell {
                     cx,
                 );
             }
+        }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::launch_refusal;
+    use crate::shell::PlayState;
+
+    #[test]
+    fn a_play_under_way_refuses_the_move() {
+        for state in [PlayState::Preparing, PlayState::Launching, PlayState::Restoring] {
+            assert!(launch_refusal(&state).is_some());
+        }
+        for state in [
+            PlayState::Ready,
+            PlayState::Detecting,
+            PlayState::NotInstalled,
+            PlayState::Checking,
+        ] {
+            assert!(launch_refusal(&state).is_none());
         }
     }
 }

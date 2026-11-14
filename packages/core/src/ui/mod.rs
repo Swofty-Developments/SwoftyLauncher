@@ -443,7 +443,8 @@ pub fn build(
             Box::new(|d| {
                 let mut groups = patch::route_groups(&homes, &pages);
                 groups.extend(setup_groups);
-                let b = patch::routes(d, groups, patch::screen_route_groups(&addon_groups))?;
+                let f1_world = read_frag(&src_p, F1_WORLD_ROUTES, 0).unwrap_or_default();
+                let b = patch::routes(d, groups, patch::screen_route_groups(&addon_groups), &f1_world)?;
                 let b = patch::setup_routes(&b, &setups, &mut placed.borrow_mut())?;
                 *routes_out.borrow_mut() = b.clone();
                 Ok(b)
@@ -1343,7 +1344,7 @@ mod tests {
         let routes = read_frag(&src, F1_WORLD_ROUTES, 0).unwrap();
         let out = patch::f1_world_routes(&routes).unwrap();
         let home_routes = read_frag(&src, ROUTES, 0).unwrap();
-        let home_out = patch::routes(&home_routes, Vec::new(), Vec::new()).unwrap();
+        let home_out = patch::routes(&home_routes, Vec::new(), Vec::new(), &routes).unwrap();
         let customisation = read_frag(&src, CUSTOMISATION_ROUTES, 0).unwrap();
         let customisation_out = patch::customisation_routes(&customisation, &routes).unwrap();
         customisation_built(&home_out, &customisation_out, None).unwrap();
@@ -1394,6 +1395,59 @@ mod tests {
             assert!(text.contains(entry), "{entry}");
         }
         assert!(text.contains("time_trial") && text.contains("grand_prix_new"));
+        use node::{NodeExt, ObjExt};
+        let route_text = |data: &[u8], group: &str, id: &str| {
+            let p = swofty_formats::pkg::Pkg::parse(data).unwrap();
+            let r = p
+                .root
+                .o()
+                .unwrap()
+                .at("RouteGroupings")
+                .unwrap()
+                .a()
+                .unwrap()
+                .iter()
+                .filter(|g| g.o().unwrap().str_at("Id").ok() == Some(group))
+                .flat_map(|g| g.o().unwrap().at("Routes").unwrap().a().unwrap().iter())
+                .find(|r| r.o().unwrap().str_at("Id").ok() == Some(id))
+                .unwrap()
+                .clone();
+            let cmds = r.o().unwrap().at("Commands").unwrap().a().unwrap();
+            cmds.iter()
+                .map(|c| {
+                    let c = c.o().unwrap();
+                    let attrs: Vec<String> = c
+                        .at("Attributes")
+                        .unwrap()
+                        .a()
+                        .unwrap()
+                        .iter()
+                        .map(|a| {
+                            let a = a.o().unwrap();
+                            format!("{}={}", a.str_at("Id").unwrap(), a.str_at("Value").unwrap())
+                        })
+                        .collect();
+                    format!(
+                        "{} [{}] after {}",
+                        c.str_at("Type").unwrap(),
+                        attrs.join(", "),
+                        c.str_at("Dependencies").unwrap_or("-")
+                    )
+                })
+                .collect::<Vec<_>>()
+                .join("\n")
+        };
+        let ours = route_text(
+            &read_frag(&dst, ROUTES, 0).unwrap(),
+            "fe_home",
+            patch::SHOWROOM_ROUTE,
+        );
+        let hub = route_text(&routes, "fe_f1_world", "showroom").replace("=fe_f1_world", "=fe_home");
+        assert_eq!(
+            ours, hub,
+            "the main menu's Showroom route is the hub's own showroom route from the home screen"
+        );
+        assert!(!ours.contains("slice_bg_content_underlay") && !ours.contains("theatre_container"));
         std::fs::remove_dir_all(&dir).ok();
     }
 
