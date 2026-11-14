@@ -138,6 +138,31 @@ static void walk(bool guard)
         expect(faults == 1 && visited == 2, "without the guard the walk faults on the first bare tile");
 }
 
+static void focused_tile()
+{
+    constexpr uint64_t WIDGET = 0x1436b018, BARE = 0x11ba7660;
+    Memory m;
+    Tile first = add_tile(m, 0, 0x20590000, true);
+    add_tile(m, 1, BARE, false);
+    m.words[WIDGET + ts::COMPONENTS_AT] = first.components;
+    m.words[WIDGET + ts::CHILDREN_BEGIN_AT] = CHILDREN;
+    m.words[WIDGET + ts::CHILDREN_END_AT] = CHILDREN + 2 * 8;
+    expect(ts::check_tile(WIDGET, read, &m) == ts::Child::Usable, "a list widget with components passes");
+    expect(ts::check_tile(first.at, read, &m) == ts::Child::Usable, "a focused tile with components is written to the selection");
+    expect(ts::check_tile(BARE, read, &m) == ts::Child::NoComponents,
+           "the GDPika focused tile (rsi 0x11ba7660, [rsi+0x30] = 0) is not written to the selection");
+    expect(ts::check_tile(0, read, &m) == ts::Child::Unreadable, "a null node is not usable");
+    expect(ts::check_tile(0x30000000, read, &m) == ts::Child::Unreadable, "a node that does not read is not usable");
+    ts::Position p = ts::find_child(WIDGET, BARE, read, &m);
+    expect(p.known && p.index == 1 && p.count == 2, "the log names the focused tile's index among the list's children");
+    expect(!ts::find_child(WIDGET, 0x20600000, read, &m).known, "a node that is not a child has no position");
+    expect(!ts::find_child(0, BARE, read, &m).known, "a null widget has no position");
+    m.words[WIDGET + ts::CHILDREN_END_AT] = CHILDREN + (ts::MAX_CHILDREN + 1) * 8;
+    expect(!ts::find_child(WIDGET, BARE, read, &m).known, "an implausible child count is not walked");
+    m.words[WIDGET + ts::CHILDREN_END_AT] = CHILDREN - 8;
+    expect(!ts::find_child(WIDGET, BARE, read, &m).known, "children that end before they begin are not walked");
+}
+
 static void messages()
 {
     expect(!strcmp(ts::why(ts::Child::NoComponents), "has no component array"), "the no-components skip names its cause");
@@ -152,6 +177,7 @@ int main()
     positions();
     walk(false);
     walk(true);
+    focused_tile();
     messages();
     if (failed) {
         std::printf("%d check(s) failed\n", failed);
