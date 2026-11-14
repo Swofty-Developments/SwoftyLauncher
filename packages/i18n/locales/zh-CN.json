@@ -1316,5 +1316,6 @@
   "{v} is available. Update addons from the play bar.": "{v} 已推出。请在游戏栏中更新插件。",
   "{v} is not a number": "{v} 不是数字",
   "{when}: {downloads}": "{when}：{downloads}",
-  "{wins} wins - {podiums} podiums": "{wins} 胜 - {podiums} 次登上领奖台"
+  "{wins} wins - {podiums} podiums": "{wins} 胜 - {podiums} 次登上领奖台",
+  "The integrity module could not be loaded, so Time Trial is blocked in game this session. Start the game again with a working connection, or turn off Time Trial boards in Settings to play it without the boards.": "无法加载完整性模块，因此本次会话中游戏内的计时赛已被锁定。请在网络连接正常时重新启动游戏，或在设置中关闭计时赛排行榜以在没有排行榜的情况下游玩。"
 }

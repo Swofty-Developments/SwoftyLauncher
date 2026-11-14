@@ -1316,5 +1316,6 @@
   "{v} is available. Update addons from the play bar.": "Доступна версия {v}. Обновите аддоны с панели запуска.",
   "{v} is not a number": "{v} — не число",
   "{when}: {downloads}": "{when}: {downloads}",
-  "{wins} wins - {podiums} podiums": "Победы: {wins} - подиумы: {podiums}"
+  "{wins} wins - {podiums} podiums": "Победы: {wins} - подиумы: {podiums}",
+  "The integrity module could not be loaded, so Time Trial is blocked in game this session. Start the game again with a working connection, or turn off Time Trial boards in Settings to play it without the boards.": "Не удалось загрузить модуль целостности, поэтому заезд на время заблокирован в игре на эту сессию. Запустите игру снова при работающем соединении или отключите «Таблицы заезда на время» в настройках, чтобы играть без таблиц."
 }
