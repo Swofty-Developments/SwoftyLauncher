@@ -52,8 +52,23 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 // null rax resumes at the call's return (site_Game_CareerEventsSequencerPlayerDriverJoin), which is also where the
 // function goes when it finds no player entrant. The player's domain and stat id are logged once.
 //
-// All six sites are exported by the bindings (L2 with an agree verify). SWOFTY_SEQUENCER_RECORDS_GUARD=0 turns all
-// three off.
+// Recognition record guard (site_Team_RecognitionFirstRecord). The Driver Career recognition notification
+// (Team_Build_RecognitionTeamIcon, 0x1420bb330, a view model method reached from Vm_Dispatch_BindingMessage) builds its
+// one item the same way: it finds the player's entrant record in the career event table, collects the records that
+// match it (0x1424ceb70 fills a pointer vector at [rsp+0xf0], begin at [rsp+0xf8]) and reads the first collected record
+// (mov rax,[rax] at 0x1420bbb4a) for the driver ref it passes to the item's name and team icon setup (0x1416e17b0). A
+// career whose session event collects nothing in the sequencer collects nothing here either, so the session the first
+// guard let in faults reading 0x0 at Team_Build_RecognitionTeamIcon+0x81a when the notification is built, seconds to
+// minutes into the session or as it ends.
+//
+// At the site a null rax resumes at the function's own exit for a notification it stops building
+// (site_Team_RecognitionRecordsExit, the target of je 0x1420bc680 at 0x1420bbb95 and 0x1420bc117), which frees the
+// collected vector when it has a begin and falls into the epilogue. The function changes rsp only in its prologue and
+// epilogue and the exit reads nothing but the frame, so the frame is the one the game's own jump leaves. The item keeps
+// the names and icon it was constructed with and gets no perk values. Logged once.
+//
+// All eight sites are exported by the bindings (L2 with an agree verify). SWOFTY_SEQUENCER_RECORDS_GUARD=0 turns all
+// four guards off.
 
 namespace {
 
@@ -66,6 +81,8 @@ constexpr const char *SITE_DRIVER = "site_Game_CareerEventsSequencerTeamMateDriv
 constexpr const char *SITE_DRIVER_JOIN = "site_Game_CareerEventsSequencerTeamMateDriverJoin";
 constexpr const char *SITE_PLAYER = "site_Game_CareerEventsSequencerPlayerDriver";
 constexpr const char *SITE_PLAYER_JOIN = "site_Game_CareerEventsSequencerPlayerDriverJoin";
+constexpr const char *SITE_RECOGNITION = "site_Team_RecognitionFirstRecord";
+constexpr const char *SITE_RECOGNITION_EXIT = "site_Team_RecognitionRecordsExit";
 constexpr uintptr_t RECORDS_BEGIN = 0xa0;
 constexpr uintptr_t DRIVER_REF = 0x50;
 constexpr uintptr_t DRIVER_TABLES = 0x268;
@@ -73,13 +90,16 @@ constexpr uintptr_t DRIVER_TABLES = 0x268;
 uintptr_t join_at = 0;
 uintptr_t driver_join_at = 0;
 uintptr_t player_join_at = 0;
+uintptr_t recognition_exit_at = 0;
 bool said = false;
 bool said_driver = false;
 bool said_player = false;
+bool said_recognition = false;
 std::mutex said_lock;
 safetyhook::MidHook h_first;
 safetyhook::MidHook h_driver;
 safetyhook::MidHook h_player;
+safetyhook::MidHook h_recognition;
 
 void first_record(safetyhook::Context &c)
 {
@@ -143,6 +163,17 @@ void player_driver(safetyhook::Context &c)
         log_missing(sr::who(sr::Driver::player), c.r12, c.r15);
 }
 
+void recognition_record(safetyhook::Context &c)
+{
+    if (!sr::skips(c.rax))
+        return;
+    c.rip = recognition_exit_at;
+    if (first_miss(c.rax, said_recognition))
+        swofty::log("[career] recognition notification: the player's entrant record collects no matching record of the "
+                    "career event table (its track or calendar entry is missing); the notification is left without its "
+                    "names, team icon and perk values");
+}
+
 bool arm(const char *what, const char *site, const char *join, safetyhook::MidHookFn fn, safetyhook::MidHook &hook,
          uintptr_t &resume)
 {
@@ -150,13 +181,12 @@ bool arm(const char *what, const char *site, const char *join, safetyhook::MidHo
     resume = swofty::api->resolve(join);
     if (!at || !resume) {
         resume = 0;
-        swofty::log("[career] events sequencer %s off: needs %s and %s, which this build does not resolve", what, site,
-                    join);
+        swofty::log("[career] %s off: needs %s and %s, which this build does not resolve", what, site, join);
         return false;
     }
     auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), fn);
     if (!h) {
-        swofty::log("[career] events sequencer %s: the hook failed: %s", what, runtime::hook_error(h.error()).c_str());
+        swofty::log("[career] %s: the hook failed: %s", what, runtime::hook_error(h.error()).c_str());
         return false;
     }
     hook = std::move(*h);
@@ -168,20 +198,24 @@ void setup()
     char v[16] = {};
     DWORD n = GetEnvironmentVariableA("SWOFTY_SEQUENCER_RECORDS_GUARD", v, sizeof v);
     if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[career] events sequencer record, team mate driver and player driver guards off "
-                    "(SWOFTY_SEQUENCER_RECORDS_GUARD=%s)",
+        swofty::log("[career] events sequencer record, team mate driver and player driver guards and the recognition "
+                    "record guard off (SWOFTY_SEQUENCER_RECORDS_GUARD=%s)",
                     v);
         return;
     }
-    if (arm("record guard", SITE_FIRST, SITE_JOIN, first_record, h_first, join_at))
+    if (arm("events sequencer record guard", SITE_FIRST, SITE_JOIN, first_record, h_first, join_at))
         swofty::log("[career] events sequencer record guard armed: a session whose event has no record in the career event "
                     "table enters without the team mate asset groups instead of faulting");
-    if (arm("team mate driver guard", SITE_DRIVER, SITE_DRIVER_JOIN, team_mate_driver, h_driver, driver_join_at))
+    if (arm("events sequencer team mate driver guard", SITE_DRIVER, SITE_DRIVER_JOIN, team_mate_driver, h_driver, driver_join_at))
         swofty::log("[career] events sequencer team mate driver guard armed: a session whose team mate's driver is not "
                     "in the entrants system enters without the team mate's driver morph assets instead of faulting");
-    if (arm("player driver guard", SITE_PLAYER, SITE_PLAYER_JOIN, player_driver, h_player, player_join_at))
+    if (arm("events sequencer player driver guard", SITE_PLAYER, SITE_PLAYER_JOIN, player_driver, h_player, player_join_at))
         swofty::log("[career] events sequencer player driver guard armed: a session whose player's own driver is not "
                     "in the entrants system enters without the player's driver morph assets instead of faulting");
+    if (arm("recognition record guard", SITE_RECOGNITION, SITE_RECOGNITION_EXIT, recognition_record, h_recognition,
+            recognition_exit_at))
+        swofty::log("[career] recognition record guard armed: a recognition notification whose player record collects "
+                    "no matching record of the career event table is left unbuilt instead of faulting");
 }
 
 }
