@@ -9,6 +9,7 @@ bool enabled();
 bool wants_overlay();
 bool drawing();
 bool arm_patch();
+void arm_container();
 uint8_t add_tiles(void *list, uint8_t career_index, const uint8_t *flags);
 void screen(const char *name);
 void session_enter();

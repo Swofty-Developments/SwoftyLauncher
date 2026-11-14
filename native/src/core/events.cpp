@@ -2,6 +2,7 @@
 #include "runtime.hpp"
 #include "main_menu.hpp"
 #include "tt_barred.hpp"
+#include "tt_blocked.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -88,6 +89,7 @@ const Step STEPS[] = {
     {"popup_tick", [] { runtime::popup_tick(); }},
     {"main_menu::tick", [] { runtime::main_menu::tick(); }},
     {"tt_barred::tick", [] { runtime::tt_barred::tick(); }},
+    {"tt_blocked::tick", [] { runtime::tt_blocked::tick(); }},
     {"mfd_tick", [] { runtime::mfd_tick(); }},
     {"netplay_tick", [] { runtime::netplay_tick(); }},
     {"career_content_tick", [] { runtime::career_content_tick(); }},
