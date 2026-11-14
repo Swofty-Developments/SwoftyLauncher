@@ -20,8 +20,8 @@ impl SavesWarning {
         })
     }
 
-    /// Adds to the warning the careers in `needing` (see `stdlib::careers::needing`): they won't
-    /// load while the addon is off or gone. `of` gives the manifest's warning, if any, to build on.
+    /// Adds to the warning the careers in `needing` (see `stdlib::careers::needing`): they may not
+    /// load as saved while the addon is off or gone. `of` gives the manifest's warning, if any, to build on.
     pub fn with_careers(of: Option<Self>, id: &str, name: &str, needing: &[&Career]) -> Option<Self> {
         if needing.is_empty() {
             return of;
@@ -45,7 +45,7 @@ impl SavesWarning {
             String::new()
         };
         let line = format!(
-            "{} need{} it: {shown}{more}. They won't load, and the game may not start, while it is off or removed.",
+            "{} need{} it: {shown}{more}. They may not load, or may load with stock content in its place, while it is off or removed.",
             match needing.len() {
                 1 => "1 career".to_owned(),
                 n => format!("{n} careers"),
@@ -125,7 +125,7 @@ mod tests {
         assert_eq!(
             w.message.as_deref(),
             Some(
-                "2 careers need it: My Team; b. They won't load, and the game may not start, while it is off or removed."
+                "2 careers need it: My Team; b. They may not load, or may load with stock content in its place, while it is off or removed."
             )
         );
         let base = SavesWarning::of(&manifest(r#","saves":{"affects":true,"message":"m"}"#));

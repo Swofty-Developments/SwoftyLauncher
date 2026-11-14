@@ -454,14 +454,12 @@ impl<'a> Installer<'a> {
         }
         crate::stdlib::careers::sync(self.data, Some(&self.game.dir), Some(&j.profile)).ok();
         if j.session {
-            let started =
-                j.id.split('-')
-                    .next()
-                    .and_then(|n| u128::from_str_radix(n, 16).ok());
-            let since_ms = started.map_or(0, |n| (n / 1_000_000) as i64);
             let log =
                 std::fs::read_to_string(self.game.dir.join(crate::session::LOADER_LOG)).unwrap_or_default();
-            crate::stdlib::careers::record_session(self.data, &j.profile, since_ms, &log).ok();
+            crate::stdlib::careers::record_session(self.data, &j.profile, &log, || {
+                crate::build::stock_max_ids(self.data, self.game)
+            })
+            .ok();
         }
         let mut report = Vec::new();
         let stranded = self.stranded(&j);
