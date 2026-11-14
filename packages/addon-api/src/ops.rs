@@ -124,9 +124,11 @@ pub struct MovedStatId {
     pub label: Option<String>,
     pub old: i64,
     pub new: i64,
-    /// The row added earlier that holds `old`; `None` when `old` is above the ceiling.
+    /// The row added earlier that holds `old`; `None` when `old` is above the ceiling or kept for `record`.
     pub holder: Option<String>,
     pub holder_label: Option<String>,
+    /// The record of the core's registry `old` is kept for in `ids.json`.
+    pub record: Option<String>,
 }
 
 /// The highest `stat_id` the game reads for a row of a table it keeps the id of in a byte, and
@@ -624,6 +626,12 @@ pub trait RowIds {
     /// holds and `free` accepts, moved to `key`, and the key that held it.
     fn reclaim(&self, table: &str, row: &str, key: &str, free: &dyn Fn(i64) -> bool)
     -> Option<(i64, String)>;
+
+    /// The record of the core's registry that `id` of `table`'s rows named `row` is kept for, when saves
+    /// hold the table's ids and the record is another addon's with a row label other than `label`.
+    fn registry_record(&self, _table: &str, _row: &str, _label: Option<&str>, _id: i64) -> Option<String> {
+        None
+    }
 }
 
 /// A row's claimed key, its kept id, and the id the profile's last build gave a row with its label.
@@ -1957,22 +1965,30 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
             old,
             None,
             None,
+            None,
             format!("is above {}, the highest the game reads", c.max),
         )),
         // Stock scenarios share statId 14, but the core keeps an id pool for them.
         (Some(old), _) if top_level && (field != "stat_id" || indexed()) => {
-            added_holder(db, names, &path, row, n, old).map(|holder| {
-                let label = db.text(fnv1a64(format!("{holder}._metadata_")));
-                let why = format!(
-                    "is taken by {holder} ({})",
-                    label.as_deref().unwrap_or("no label")
-                );
-                (old, Some(holder), label, why)
-            })
+            added_holder(db, names, &path, row, n, old)
+                .map(|holder| {
+                    let label = db.text(fnv1a64(format!("{holder}._metadata_")));
+                    let why = format!(
+                        "is taken by {holder} ({})",
+                        label.as_deref().unwrap_or("no label")
+                    );
+                    (old, Some(holder), label, None, why)
+                })
+                // A career holds the id the core gave a registry record, so the copy takes another.
+                .or_else(|| {
+                    let record = kept?.registry_record(&path, row, label.as_deref(), old)?;
+                    let why = format!("is kept for {record}, a record of the core's registry");
+                    Some((old, None, None, Some(record), why))
+                })
         }
         _ => None,
     };
-    if let Some((old, holder, holder_label, why)) = moved
+    if let Some((old, holder, holder_label, record, why)) = moved
         && let Some(r) = rows.iter_mut().find(|r| r.key == id_key)
     {
         let (new, note) = give()?;
@@ -1992,6 +2008,7 @@ fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddRow) -> Resu
             new,
             holder,
             holder_label,
+            record,
         });
     }
     cx.report
@@ -3084,6 +3101,7 @@ mod tests {
                 new: 9,
                 holder: Some("modes.mode_2".into()),
                 holder_label: Some("first".into()),
+                record: None,
             }]
         );
         assert!(
@@ -3363,6 +3381,7 @@ mod tests {
                 new: 59,
                 holder: None,
                 holder_label: None,
+                record: None,
             }]
         );
     }
