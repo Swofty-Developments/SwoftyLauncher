@@ -648,6 +648,7 @@
   "Off": "Aus",
   "Off by default. When on, the launcher clears old logs as it starts, as Clear old does: keeps the newest {sessions} sessions and the last {days} days": "Standardmäßig aus. Wenn an, löscht der Launcher beim Start alte Logs wie „Alte löschen“: behält die neuesten {sessions} Sitzungen und die letzten {days} Tage",
   "Off in {vanilla}": "Aus in {vanilla}",
+  "Off: needs {addon} on": "Aus: {addon} muss an sein",
   "Offline · no addons saved yet": "Offline · noch keine Addons gespeichert",
   "Offline · showing the {count} addon saved last time": ["Offline · zeige das {count} zuletzt gespeicherte Addon", "Offline · zeige die {count} zuletzt gespeicherten Addons"],
   "Offline · showing {addons} from {host}": "Offline · zeige {addons} von {host}",
