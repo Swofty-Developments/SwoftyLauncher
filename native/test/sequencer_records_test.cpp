@@ -53,5 +53,12 @@ int main()
     CHECK(says(0, mate_said), "the player's log does not use up the team mate's");
     CHECK(std::strcmp(who(Driver::player), "the player's own driver") == 0, "the player hook names the player");
     CHECK(std::strcmp(who(Driver::team_mate), "the team mate's driver") == 0, "the team mate hook names the team mate");
+
+    bool recognition_said = false;
+    CHECK(skips(0), "a recognition notification with an empty record collection leaves through the function's exit");
+    CHECK(!skips(0x3410e9c80), "a recognition notification with a first record runs the game's code");
+    CHECK(says(0, recognition_said) && !says(0, recognition_said), "an empty recognition collection is logged once");
+    bool sequencer_said = false;
+    CHECK(says(0, sequencer_said), "the recognition log does not use up the sequencer's");
     return failures ? 1 : 0;
 }

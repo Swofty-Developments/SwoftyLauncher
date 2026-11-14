@@ -21771,6 +21771,16 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Team_RecognitionFirstRecord: Binding = Binding {
+        id: "site_Team_RecognitionFirstRecord",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Team_RecognitionRecordsExit: Binding = Binding {
+        id: "site_Team_RecognitionRecordsExit",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Team_SessionCarBadgeLabel: Binding = Binding {
         id: "site_Team_SessionCarBadgeLabel",
         kind: "site",

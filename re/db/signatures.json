@@ -186999,6 +186999,60 @@
    "used_by": [
     "native/src/core/red_flag_recompute_guard.cpp"
    ]
+  },
+  {
+   "id": "teams.recognition_first_record",
+   "section": ".xtls",
+   "pattern": "44 8B 43 58 48 8B 00 8B 50 50 48 8D 05",
+   "match": "0x1420bbb46",
+   "anchor": "0x4",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1420bbb4a",
+   "kind": "mid",
+   "expect": "48 8B 00 8B 50 50",
+   "names": [
+    "site_Team_RecognitionFirstRecord"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-15",
+     "by": "recogguard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/sequencer_records_guard.cpp"
+   ]
+  },
+  {
+   "id": "teams.recognition_records_exit",
+   "section": ".xtls",
+   "pattern": "48 89 48 28 E9 ?? ?? ?? ?? 48 8B 94 24 F8 00 00 00",
+   "match": "0x1420bc677",
+   "anchor": "0x9",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1420bc680",
+   "kind": "mid",
+   "expect": "48 8B 94 24 F8 00 00 00",
+   "names": [
+    "site_Team_RecognitionRecordsExit"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-15",
+     "by": "recogguard",
+     "how": "static"
+    }
+   ],
+   "used_by": [
+    "native/src/core/sequencer_records_guard.cpp"
+   ]
   }
  ]
 }
