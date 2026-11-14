@@ -3,6 +3,7 @@
 #include "../../src/core/apply/content/box_options.hpp"
 #include "../../src/core/apply/content/grid_rules.hpp"
 #include "../../src/core/apply/content/quali_tyres.hpp"
+#include "../../src/core/apply/content/tyre_change.hpp"
 #include "../../src/core/apply/content/tyre_warmers.hpp"
 #include "../../src/core/apply/content/weekend.hpp"
 #include "../../src/core/apply/ids.hpp"
@@ -1828,6 +1829,16 @@ static void drs_tests(const std::string &regs)
     Value w1959b = swofty::json::parse(R"({"entrant_list":"f1_1959","rules":{"tyre_warmers":true}})");
     boxes.push_back({"mod.b/f1_1959", &w1959b});
     check(content::tyre_warmers_pick("f1_1959", boxes).warmers == true, "the last package with the box's entrant list decides");
+    Value c1950 = swofty::json::parse(R"({"entrant_list":"f1_1950","rules":{"mandatory_tyre_change":false}})");
+    Value c2007 = swofty::json::parse(R"({"entrant_list":"f1_2007","rules":{"mandatory_tyre_change":true}})");
+    Value c2008 = swofty::json::parse(R"({"entrant_list":"f1_2008","rules":{"mandatory_tyre_change":null}})");
+    std::vector<std::pair<std::string, const Value *>> change = {{"mod.a/f1_1950", &c1950}, {"mod.a/f1_2007", &c2007}, {"mod.a/f1_2008", &c2008}};
+    auto chg = content::tyre_change_pick("f1_1950", change);
+    std::printf("      %s\n", chg.line.c_str());
+    check(chg.required == false && content::tyre_change_pick("f1_2007", change).required == true,
+          "a box whose package sets rules.mandatory_tyre_change runs that rule");
+    check(!content::tyre_change_pick("f1_2008", change).required && !content::tyre_change_pick("f1_2025", change).required,
+          "null or a stock box: the mode keeps its own tyre regulations");
 
     Value k1959 = swofty::json::parse(R"({"entrant_list":"f1_1959","rules":{"race_time_limit_s":10800,"weekend_mode":"swofty_f1_short_quali"}})");
     Value k2004 = swofty::json::parse(R"({"entrant_list":"f1_2004","rules":{"weekend_mode":"swofty_f1_one_shot"}})");

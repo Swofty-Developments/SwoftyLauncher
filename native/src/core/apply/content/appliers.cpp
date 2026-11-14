@@ -15,6 +15,7 @@
 #include "quali_tyres.hpp"
 #include "teams.hpp"
 #include "box_options.hpp"
+#include "tyre_change.hpp"
 #include "tyre_warmers.hpp"
 #include "weekend.hpp"
 #include "../tracks/boot.hpp"
@@ -990,6 +991,18 @@ PointsBox points_for_box(const std::string &entrant_list)
         box.rule = pick.system->rule;
     }
     return box;
+}
+
+TyreChangeBox tyre_change_for_box(const std::string &entrant_list)
+{
+    Store &st = registry::store();
+    std::map<std::string, Value> keep;
+    Lookup lookup = store_lookup(st, keep);
+    std::vector<std::pair<std::string, const Value *>> packages;
+    for (auto &id : in_load_order(st, "content.package"))
+        packages.push_back({id, lookup("content.package", id)});
+    TyreChangePick pick = tyre_change_pick(entrant_list, packages);
+    return {pick.required, pick.line};
 }
 
 void register_appliers()

@@ -233,6 +233,13 @@
           ],
           "description": "Whether the box's races run with tyre warmers; the era picker writes it into swofty_f1's has_tyre_warmers when the box is pressed. Missing or null: the setup mode's own setting."
         },
+        "mandatory_tyre_change": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether the box's races require two dry compounds (the game's tyre regulations): false clears every race length requirement of swofty_f1, true sets them all, when the box is pressed. Missing or null: the setup mode's own requirements."
+        },
         "race_time_limit_s": {
           "type": [
             "integer",
