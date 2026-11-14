@@ -610,17 +610,19 @@ pub fn compose_screens(
         previews.push(cap.add_scene_record_in(&r.input.record, &r.pfx, &r.sprites, Mode::Preview(&state))?);
     }
     let host = cap.finish(None)?;
-    let host_pkg = Pkg::parse(&host)?;
-    let host_root = stock_edit::scene_root(&host_pkg)?;
-    for r in &recs {
-        let cost = |name: &str| idf::find(host_root, name).map(walk::cost).unwrap_or_default();
-        out.lines.extend(walk::lines(
-            &r.input.addon,
-            &r.pfx,
-            cost(&r.pfx),
-            cost(&preview_root(&r.pfx)),
-            HOST_INSTANCES,
-        ));
+    if let Ok(host_pkg) = Pkg::parse(&host)
+        && let Ok(host_root) = stock_edit::scene_root(&host_pkg)
+    {
+        for r in &recs {
+            let cost = |name: &str| idf::find(host_root, name).map(walk::cost).unwrap_or_default();
+            out.lines.extend(walk::lines(
+                &r.input.addon,
+                &r.pfx,
+                cost(&r.pfx),
+                cost(&preview_root(&r.pfx)),
+                HOST_INSTANCES,
+            ));
+        }
     }
     out.scene.push((screens::CAP.to_owned(), "UILayout", vec![host]));
     let planned: Vec<&Plan> = plans.iter().collect();
