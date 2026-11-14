@@ -23,6 +23,7 @@ pub mod stock_edit;
 pub mod template;
 pub mod textures;
 pub mod units;
+pub mod walk;
 
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet};
