@@ -162,6 +162,7 @@ pub fn seed(data: &Path, profile: &str, from: &Location, reason: Reason, now: i6
     if !has_files(from) {
         return Ok(Seeded::NoSource);
     }
+    crate::save_stall::refuse(data, from)?;
     let (files, bytes) = copy_files(from, &to)?;
     let meta = Meta::new(reason)
         .profile(profile)
@@ -379,6 +380,7 @@ pub fn import(
             from.dir.display()
         )));
     }
+    crate::save_stall::refuse(data, from)?;
     let vault = Vault::of(data, &to)?;
     if has_files(&to) {
         vault.snapshot(
@@ -442,6 +444,7 @@ pub fn export(
             "the launcher saves of profile {profile} are empty; there is nothing to export"
         )));
     }
+    crate::save_stall::refuse(data, &from)?;
     let lv = Vault::of(data, &from)?;
     let id = match lv.snapshot(
         &from,
