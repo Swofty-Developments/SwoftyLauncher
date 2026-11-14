@@ -77,7 +77,7 @@ impl Shell {
                 })
                 .on_click(cx.listener(move |this, _, _, cx| this.online_load_board(key.clone(), at, cx)))
         });
-        let header = self.board_header(&page, p);
+        let header = self.board_header(&page, p, cx);
         let filters = self.filter_chips(p, cx);
         let pinned = page
             .mine
@@ -127,8 +127,13 @@ impl Shell {
             .into_any_element()
     }
 
-    fn board_header(&self, page: &BoardPage, p: Palette) -> AnyElement {
+    fn board_header(&self, page: &BoardPage, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let t = &page.track;
+        let byline = self.online_bylines(&[t]).into_iter().next().flatten();
+        let download = t
+            .addon
+            .as_deref()
+            .and_then(|addon| self.track_download_button(addon, "board-download-track", cx));
         panel(p)
             .child(
                 h_flex()
@@ -138,6 +143,8 @@ impl Shell {
                     .child(self.layout_art(t.layout.as_ref(), 84., p.accent_hover, p))
                     .child(
                         v_flex()
+                            .flex_1()
+                            .min_w_0()
                             .gap(px(4.))
                             .child(
                                 h_flex()
@@ -151,6 +158,7 @@ impl Shell {
                                     )
                                     .children(self.flag_chip(&t.flag, p)),
                             )
+                            .children(byline.map(|b| div().text_size(px(14.)).text_color(p.text).child(b)))
                             .child(
                                 div()
                                     .text_size(px(13.))
@@ -179,7 +187,8 @@ impl Shell {
                                     .child(self.tt_face(&r.driver, 26., p))
                                     .child(div().text_size(px(14.)).child(r.driver.name.clone()))
                             })),
-                    ),
+                    )
+                    .children(download),
             )
             .into_any_element()
     }
@@ -352,7 +361,10 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> AnyElement {
         let url = lap_url(lap_id);
-        let add = self.add_to_game_button(&format!("add-{key}"), lap_id, game_replay, cx);
+        let add = game_replay.then(|| {
+            self.add_to_game_button(&format!("add-{key}"), lap_id, true, cx)
+                .tap_xs()
+        });
         h_flex()
             .flex_shrink_0()
             .gap(px(6.))
@@ -364,7 +376,7 @@ impl Shell {
                     .label(tr("Web"))
                     .on_click(move |_, _, cx| cx.open_url(&url)),
             )
-            .child(add.tap_xs())
+            .children(add)
             .into_any_element()
     }
 

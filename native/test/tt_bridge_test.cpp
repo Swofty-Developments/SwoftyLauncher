@@ -106,9 +106,6 @@ int main()
     expect(!tb::diag_tick_on(true, false, false) && !tb::diag_tick_on(true, true, false), "the diagnostics tick is off outside a live Time Trial, whatever is on");
     expect(tb::diag_tick_on(true, false, true) && tb::diag_tick_on(false, true, true), "a live Time Trial runs the diagnostics tick for the bridge or the diagnostics");
     expect(!tb::diag_tick_on(false, false, true), "a live Time Trial with nothing on does not run it");
-    expect(!tb::diag_tick_due(false, 10000, 0) && !tb::diag_tick_due(true, 10499, 10000) && tb::diag_tick_due(true, 10500, 10000) && tb::diag_tick_due(true, 500, 0),
-           "the diagnostics tick runs at most twice a second, and only while on");
-    expect(!tb::diag_tick_due(tb::diag_tick_on(true, true, false), 99999, 0), "the diagnostics switch alone never makes the tick due outside a Time Trial");
     {
         uint8_t block[tb::HANDLER_BLOCK] = {};
         block[0x1d8] = 4;
@@ -151,6 +148,30 @@ int main()
                 w = {0x3474bd830, key, t};
             }
         expect(full == 6, "a steady handler is described in full 6 times a minute instead of 120");
+
+        tb::SaveChecks walked;
+        expect(!tb::save_checks_due(false, 0, 1000, walked) && !tb::save_checks_due(true, 0, 1000, walked), "no handler, no save-check walk");
+        expect(tb::save_checks_due(false, 0x3474bd830, 1000, walked), "a new handler's save checks are walked at once");
+        walked = {0x3474bd830, 1000};
+        expect(!tb::save_checks_due(false, 0x3474bd830, 1000 + tb::SAVE_CHECKS_MS - 1, walked) && tb::save_checks_due(false, 0x3474bd830, 1000 + tb::SAVE_CHECKS_MS, walked),
+               "the same handler's save checks are walked again only after SAVE_CHECKS_MS");
+        expect(tb::save_checks_due(false, 0x3474bd000, 1500, walked), "a handler change walks the save checks at once");
+        expect(tb::save_checks_due(true, 0x3474bd830, 1500, walked), "diagnostics mode walks the save checks on every description");
+        int walks = 0, lines = 0;
+        tb::HandlerWatch line;
+        tb::SaveChecks walk;
+        for (int64_t t = 0; t < 10000; t += tb::WATCH_PERIOD_MS) {
+            uint64_t changing = key + uint64_t(t / tb::WATCH_PERIOD_MS);
+            if (!tb::handler_watch_full(false, 0x3474bd830, changing, t, line))
+                continue;
+            line = {0x3474bd830, changing, t};
+            lines++;
+            if (tb::save_checks_due(false, 0x3474bd830, t, walk)) {
+                walks++;
+                walk = {0x3474bd830, t};
+            }
+        }
+        expect(lines == 20 && walks == 2, "a handler whose fields change on every tick gets a watch line each tick but a save-check walk only every 5 s");
     }
     expect(tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0), "a panel with seven tabs is driven once");
     expect(!tb::garage_should_drive(true, true, 0x1000, 0x2000, 0x2038, 0x1000, 7), "the same panel is not driven twice");
@@ -180,6 +201,8 @@ int main()
     expect(tb::garage_gate_byte(0, false, true, 0x12) == 0 && tb::garage_gate_byte(0, true, false, 0x12) == 0 && tb::garage_gate_byte(0, true, true, 0x10) == 0 &&
                tb::garage_gate_byte(0, true, true, -1) == 0,
            "it is untouched with the bridge off, for stock content and in other session types");
+    expect(tb::replay_session_on(true, true) && !tb::replay_session_on(true, false) && !tb::replay_session_on(false, true) && !tb::replay_session_on(false, false),
+           "the replay system hooks act only in a live Time Trial session, never in a Grand Prix, a career race or the front end");
     expect(tb::replay_capture_due(1000, 2500, 1500) && !tb::replay_capture_due(1000, 2499, 1500) && !tb::replay_capture_due(0, 9999, 1500), "a capture is due after its delay and never without a pending mark");
     {
         uint8_t h[16] = {0, 0, 0, 0, 0xa8, 0xca, 0x2f, 0xe3};
@@ -188,6 +211,12 @@ int main()
         expect(tb::replay_magic_offset(z, 16) == -1 && tb::replay_magic_offset(z, 0) == -1, "a file without the magic is rejected");
     }
     expect(tb::replay_capture_name(1700000000, 87893) == "pb_1700000000_87893.replay", "the capture file name carries the time and the lap time");
+    expect(tb::replay_stand_in_refusal(false, 0, 5000) && tb::replay_stand_in_refusal(false, 4990, 5000),
+           "no save-slot component stands in for a Time Trial file while the load start hook is unarmed (In-game leaderboards off before the fix)");
+    expect(tb::replay_stand_in_refusal(true, 4990, 5000) && tb::replay_stand_in_refusal(true, 5000, 5000),
+           "a Theatre pick that went to the game's own load without its setup file gets no stand-in");
+    expect(!tb::replay_stand_in_refusal(true, 0, 5000) && !tb::replay_stand_in_refusal(true, 1000, 20000) && !tb::replay_stand_in_refusal(true, 9000, 5000),
+           "with the load start hook armed our component stands in for the list, a pick with its setup, and after a stale or future mark");
     expect(tb::replay_capture_allowed(true, true, true, 1, 0x10) && !tb::replay_capture_allowed(false, true, true, 1, 0x10) && !tb::replay_capture_allowed(true, false, true, 1, 0x10) &&
                !tb::replay_capture_allowed(true, true, false, 1, 0x10) && !tb::replay_capture_allowed(true, true, true, 0, 0x10) && !tb::replay_capture_allowed(true, true, true, 150, 0x10) &&
                !tb::replay_capture_allowed(true, true, true, 1, 0),
@@ -270,6 +299,40 @@ int main()
     expect(tb::garage_result(0, false, true) == 0 && tb::garage_result(0, true, false) == 0, "it stays denied with the bridge off or for stock content");
     expect(tb::garage_result(1, true, true) == 1 && tb::garage_result(0xff, true, true) == 0xff && tb::garage_result(2, true, true) == 2,
            "a granted, unreadable or unknown value is left alone");
+    {
+        Fake f;
+        uint64_t list = 0x50000;
+        const char *names[] = {"LBV0182D", "LBV0182W", "lbv0184d", "LBV0283D"};
+        for (int i = 0; i < 4; i++) {
+            uint64_t board = 0x60000 + 0x100 * i;
+            f.put<uint64_t>(list + 8 * i, board);
+            f.put<uint64_t>(board + tb::BOARD_NAME, board + 0x80);
+            f.cstr(board + 0x80, names[i]);
+        }
+        f.put<uint64_t>(list + 8 * 4, 0);
+        tb::BoardScan miss = tb::scan_boards(f.mem(), list, list + 8 * 5, "LBV0183D");
+        expect(!miss.found && miss.listed == 5 && miss.same_prefix == 2 && miss.sample == "82D 82W",
+               "a key that no listed board carries is not found; the boards of its descriptor are counted");
+        expect(tb::scan_boards(f.mem(), list, list + 8 * 5, "LBV0184D").found && tb::scan_boards(f.mem(), list, list + 8 * 5, "lbv0182w").found,
+               "a listed board is found whatever the case of its name");
+        expect(!tb::scan_boards(f.mem(), 0, 0, "LBV0182D").found && tb::scan_boards(f.mem(), 0, 0, "LBV0182D").listed == 0 &&
+                   !tb::scan_boards(f.mem(), list + 8, list, "LBV0182D").found,
+               "a missing or inverted list finds nothing");
+        expect(!tb::scan_boards(f.mem(), list, list + 8 * 5, "").found, "an empty key never matches a board");
+        expect(tb::scan_boards(f.mem(), list, list + 8 * 6, "LBV0283D").found, "a null or unreadable slot is skipped and the walk goes on");
+    }
+    expect(tb::board_listed(true) == tb::BoardListed::listed && tb::board_listed(false) == tb::BoardListed::missing, "a lookup records listed or missing");
+    expect(tb::garage_tab_allowed(true, true, tb::BoardListed::listed) && tb::garage_tab_allowed(true, true, tb::BoardListed::unknown),
+           "the garage leaderboard tab is forced for our content when its board is listed or before any lookup");
+    expect(!tb::garage_tab_allowed(true, true, tb::BoardListed::missing), "no board found: the garage leaderboard tab is not forced");
+    expect(!tb::garage_tab_allowed(false, true, tb::BoardListed::listed) && !tb::garage_tab_allowed(true, false, tb::BoardListed::listed),
+           "never with the bridge off or for stock content");
+    expect(tb::garage_result(0, true, tb::garage_tab_allowed(true, true, tb::BoardListed::missing)) == 0 &&
+               tb::garage_result(0, true, tb::garage_tab_allowed(true, true, tb::BoardListed::listed)) == 1,
+           "no board found: a denied tt_privilege_check_done stays denied (no grant)");
+    expect(tb::garage_gate_byte(0, true, tb::garage_tab_allowed(true, true, tb::BoardListed::missing), tb::GARAGE_TT_SESSION) == 0 &&
+               tb::garage_gate_byte(0, true, tb::garage_tab_allowed(true, true, tb::BoardListed::listed), tb::GARAGE_TT_SESSION) == 1,
+           "no board found: the tab builder's gate byte keeps the game's value (no tab)");
 
     // methods and routing
     expect(tb::method_of("GetTTLeaderboard") == tb::Method::get_tt && tb::method_of("Nope") == tb::Method::none &&
@@ -388,6 +451,48 @@ int main()
     mo2.put<uint64_t>(op + tb::OP_METHOD, 0x57000);
     mo2.cstr(0x57000, "UpdateSession");
     expect(tb::method_at_op(mo2.mem(), op, &name) == tb::Method::none && name == "UpdateSession", "another method is named and not redirected");
+
+    // method with a learned string form
+    {
+        tb::StrForm form;
+        std::string got;
+        expect(tb::method_with_form(mo2.mem(), op, form, nullptr) == tb::Method::none && !form.ok(), "a request that is no Time Trial method teaches no form");
+        expect(tb::method_with_form(mo2.mem(), op, form, &got) == tb::Method::none && got == "UpdateSession", "its name is still read when asked for");
+        expect(tb::method_with_form(mo.mem(), op, form, &got) == tb::Method::get_tt && got == "GetTTLeaderboard" && form.ok() && form.form == tb::Form::c_str &&
+                   form.word == 0,
+               "a Time Trial method teaches its string form");
+        expect(tb::unpack_form(tb::pack_form(form)).form == form.form && tb::unpack_form(tb::pack_form(form)).word == form.word && !tb::unpack_form(0).ok(),
+               "a form packs into one word and back; zero is no form");
+        got.clear();
+        expect(tb::method_with_form(mo2.mem(), op, form, &got) == tb::Method::none && got == "UpdateSession", "with the form known another method is one read");
+        Fake ne;
+        ne.put<uint64_t>(op + tb::OP_METHOD, 0x58000);
+        ne.ne(0x58000, "AddLeaderboardEntry");
+        tb::StrForm learned = form;
+        expect(tb::method_with_form(ne.mem(), op, learned, &got) == tb::Method::add_entry && got == "AddLeaderboardEntry",
+               "a name in another form gives no string in the known form and is probed in full");
+        Fake none;
+        tb::StrForm keep = form;
+        expect(tb::method_with_form(none.mem(), op, keep, nullptr) == tb::Method::none && keep.form == form.form, "an unreadable op passes and keeps the form");
+    }
+
+    // hooks that matter only in Time Trial
+    {
+        using K = swofty_core::apply::facts::ModeKind;
+        expect(!tb::tt_hooks_idle(K::time_trial, false) && !tb::tt_hooks_idle(K::unknown, false), "Time Trial and an unknown mode keep the hooks");
+        expect(tb::tt_hooks_idle(K::career, false) && tb::tt_hooks_idle(K::other, false), "a career or another mode idles them");
+        expect(!tb::tt_hooks_idle(K::career, true) && !tb::tt_hooks_idle(K::other, true), "the diagnostics keep them everywhere");
+        expect(tb::gate_reads_op(false, true, true, true, true), "a failing check of a request the bridge can answer reads the op");
+        expect(!tb::gate_reads_op(false, true, true, true, false), "checks that pass leave the op unread");
+        expect(!tb::gate_reads_op(false, false, true, true, true) && !tb::gate_reads_op(false, true, false, true, true) && !tb::gate_reads_op(false, true, true, false, true),
+               "the bridge off, no push hook or no OnResult leave the op unread");
+        expect(tb::gate_reads_op(true, false, false, false, false), "the diagnostics read every op");
+        expect(tb::garage_update_idle(0, 0, 0, 0, 1), "no panel: idle");
+        expect(tb::garage_update_idle(0x1000, 0x1000, 0, 0, 1), "a driven panel: idle");
+        expect(tb::garage_update_idle(0x1000, 0, 0x1000, 3, 3), "a panel seen with content not ours: idle while the generation holds");
+        expect(!tb::garage_update_idle(0x1000, 0, 0x1000, 3, 4), "the generation moved: the panel is looked at again");
+        expect(!tb::garage_update_idle(0x2000, 0, 0x1000, 3, 3) && !tb::garage_update_idle(0x2000, 0x1000, 0, 0, 1), "another panel is looked at");
+    }
 
     // XML
     for (const char *eol : {"\n", "\r\n"})

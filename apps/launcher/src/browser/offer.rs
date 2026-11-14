@@ -31,13 +31,11 @@ impl Shell {
         if self.browser.failed.contains_key(&a.id) {
             return Offer::Failed;
         }
-        match (a.offered(&current_version()), self.installed_version(&a.id)) {
-            (Some(v), Some(m)) if v.version > m => Offer::Update(m, v.version.clone()),
-            (_, Some(m)) => Offer::Installed(m),
-            (Some(_), None) if self.needs_of(a).1.is_some() => Offer::Blocked,
-            (Some(_), None) => Offer::Install,
-            (None, None) => Offer::TooOld,
-        }
+        standing(
+            a.offered(&current_version()),
+            self.installed_version(&a.id),
+            || self.needs_of(a).1.is_some(),
+        )
     }
 
     /// What installing the version of `a` this launcher would get also
@@ -104,10 +102,24 @@ impl Shell {
     }
 
     pub(crate) fn offer_button(&self, a: &Addon, id: String, cx: &mut Context<Self>) -> Button {
+        self.offer_button_as(a, id, tr("Install"), cx)
+    }
+
+    /// The install button, reading `install` while the addon can be installed.
+    pub(super) fn offer_button_as(
+        &self,
+        a: &Addon,
+        id: String,
+        install: &str,
+        cx: &mut Context<Self>,
+    ) -> Button {
         let target = a.id.clone();
         let button = Button::new(SharedString::from(id)).tap_sm();
         let button = match self.offer(a) {
-            Offer::Install => button.primary().icon(IconName::Download).label(tr("Install")),
+            Offer::Install => button
+                .primary()
+                .icon(IconName::Download)
+                .label(install.to_owned()),
             Offer::Update(from, to) => {
                 return button
                     .outline()
@@ -170,5 +182,21 @@ impl Shell {
             cx.stop_propagation();
             this.install_from_catalog(&target, cx);
         }))
+    }
+}
+
+/// Where an addon stands for this launcher: `offered` is the newest version it can install, `installed`
+/// the version it has, and `blocked` whether the requirements of `offered` can't all be met.
+pub(super) fn standing(
+    offered: Option<&catalog::Version>,
+    installed: Option<semver::Version>,
+    blocked: impl FnOnce() -> bool,
+) -> Offer {
+    match (offered, installed) {
+        (Some(v), Some(m)) if v.version > m => Offer::Update(m, v.version.clone()),
+        (_, Some(m)) => Offer::Installed(m),
+        (Some(_), None) if blocked() => Offer::Blocked,
+        (Some(_), None) => Offer::Install,
+        (None, None) => Offer::TooOld,
     }
 }

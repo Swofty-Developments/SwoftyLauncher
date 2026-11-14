@@ -46,10 +46,9 @@ impl Shell {
         let (title, body, button) = if !installed {
             (
                 trf!("Install {name}", name = managed::NAME),
-                format!(
-                    "{} is an addon by Team Simplified. Its Simplified Importer turns mods made for the game \
-                     folder into Swofty addons. The launcher downloads it from GitHub.",
-                    managed::NAME
+                trf!(
+                    "{name} is an addon by Team Simplified. Its Simplified Importer turns mods made for the game folder into Swofty addons. The launcher downloads it from GitHub.",
+                    name = managed::NAME
                 ),
                 Button::new("importer-install")
                     .primary()
@@ -116,10 +115,10 @@ impl Shell {
             .child(self.header(Page::Importer.label(), tr("Team Simplified").to_owned(), div(), p))
             .child(self.empty(
                 IconName::ShieldCheck,
-                "Vanilla stays stock",
-                format!(
-                    "The {VANILLA} profile plays F1 25 as it shipped, without addons, so mods aren't \
-                     imported or turned on here."
+                tr("Vanilla stays stock"),
+                trf!(
+                    "The {profile} profile plays F1 25 as it shipped, without addons, so mods aren't imported or turned on here.",
+                    profile = VANILLA
                 ),
                 action,
                 p,

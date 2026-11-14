@@ -558,12 +558,11 @@ bool g_levers_offered = false;
 
 void engine_torque(SwoftyContext *c)
 {
-    c->xmm0.f32[0] = swofty_core::hooks::Ops::drive_torque(c->rbx, c->xmm0.f32[0], c->xmm7.f32[0],
-                                                          [&] {
-                                                              float limiter = 0;
-                                                              swofty::mem::read(c->rbx + 0x2528, limiter);
-                                                              return limiter;
-                                                          }());
+    c->xmm0.f32[0] = swofty_core::hooks::Ops::drive_torque_with(c->rbx, c->xmm0.f32[0], c->xmm7.f32[0], [&] {
+        float limiter = 0;
+        swofty::mem::read(c->rbx + 0x2528, limiter);
+        return limiter;
+    });
 }
 
 void ai_system_built(SwoftyContext *c)

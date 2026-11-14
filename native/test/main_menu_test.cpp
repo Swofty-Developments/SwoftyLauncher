@@ -33,28 +33,34 @@ static std::string at(const mm::Plan &p, int row, int col)
 
 int main()
 {
-    auto p = mm::layout(retail(), true);
+    auto p = mm::layout(retail(), true, true);
     expect(at(p, 0, 0) == "story" && at(p, 0, 1) == "career", "Braking Point and Career lead the first row");
     expect(at(p, 1, 0) == mm::ID_GRAND_PRIX && at(p, 1, 1) == mm::ID_TIME_TRIAL, "Grand Prix and Time Trial share row 2");
     expect(at(p, 1, 2) == "local_multiplayer", "the Split Screen card (the stock Local Multiplayer item) ends row 2");
     expect(at(p, 2, 0) == "theatre" && p.cards[5].wide, "Theatre is a full-width row under them");
     expect(at(p, 3, 0) == mm::ID_SHOWROOM, "Showroom follows Theatre");
-    expect(at(p, 4, 0) == mm::ID_DIVIDER, "a divider sits between the cards and Addon Settings");
-    expect(at(p, 5, 0) == "mod_menu" && p.cards.back().id == "mod_menu", "Addon Settings is last");
+    expect(at(p, 4, 0) == mm::ID_CUSTOMISATION && p.cards[7].wide, "Customisation follows Showroom, full width");
+    expect(at(p, 5, 0) == mm::ID_DIVIDER, "a divider sits between the cards and Addon Settings");
+    expect(at(p, 6, 0) == "mod_menu" && p.cards.back().id == "mod_menu", "Addon Settings is last");
     for (auto &c : p.cards)
         expect(c.id != "f1_world" && c.id != "pro_leagues" && c.id != "player_hub", "removed entry gone: " + c.id);
     expect(!mm::removed("local_multiplayer") && mm::removed("f1_world") && mm::removed("pro_leagues") && mm::removed("player_hub"),
            "Local Multiplayer is kept (it is the only way to Split Screen); F1 World, League Racing and Player Hub go");
     expect(p.dropped.size() == 4, "the three removed entries and the divider are reported dropped");
-    auto bare = mm::layout({"career", "f1_world", "theatre", "mod_menu"}, true);
+    auto bare = mm::layout({"career", "f1_world", "theatre", "mod_menu"}, true, true);
     expect(at(bare, 1, 2) == "", "no Split Screen card when the game builds no Local Multiplayer tile");
 
-    auto q = mm::layout({"career", "home_navigate_to_challenge_event", "theatre", "mod_menu", "f1_world"}, false);
+    auto q = mm::layout({"career", "home_navigate_to_challenge_event", "theatre", "mod_menu", "f1_world"}, false, false);
     expect(at(q, 0, 1) == "home_navigate_to_challenge_event", "the challenge tile joins the first row");
-    expect(at(q, 4, 0) == "mod_menu", "no Showroom card when its route is unavailable");
-    auto r = mm::layout({"career", "future_tile", "theatre", "mod_menu", "f1_world"}, true);
+    expect(at(q, 4, 0) == "mod_menu", "no Showroom or Customisation card when their routes are unavailable");
+    auto c = mm::layout({"career", "theatre", "mod_menu", "f1_world"}, false, true);
+    expect(at(c, 3, 0) == mm::ID_CUSTOMISATION && at(c, 5, 0) == "mod_menu", "a Customisation card without the Showroom takes the Showroom's row");
+    auto no_c = mm::layout(retail(), true, false);
+    for (auto &card : no_c.cards)
+        expect(card.id != mm::ID_CUSTOMISATION, "no Customisation card when its routes are not in the build");
+    auto r = mm::layout({"career", "future_tile", "theatre", "mod_menu", "f1_world"}, true, true);
     expect(at(r, 0, 1) == "future_tile", "an unknown stock entry stays in the first row");
-    auto none = mm::layout({"career", "theatre", "mod_menu"}, true);
+    auto none = mm::layout({"career", "theatre", "mod_menu"}, true, true);
     expect(at(none, 1, 0) == "" && at(none, 1, 1) == "", "no Grand Prix or Time Trial card without the F1 World tile");
 
     auto s = mm::parse_state(
@@ -73,8 +79,12 @@ int main()
            "every card has its row template and unknown ids have none");
     expect(std::string(mm::template_for("theatre", false)) == mm::TEMPLATE_DEFAULT && std::string(mm::template_for("swofty_showroom", false)) == mm::TEMPLATE_DEFAULT &&
                std::string(mm::template_for("local_multiplayer", false)) == mm::TEMPLATE_DEFAULT &&
+               std::string(mm::template_for("swofty_customisation", false)) == mm::TEMPLATE_DEFAULT &&
                std::string(mm::template_for("career", false)).empty() && std::string(mm::template_for("swofty_divider")) == mm::TEMPLATE_DIVIDER,
-           "without rows Theatre, Showroom and Split Screen take the default large tile; with rows the divider has its slot");
+           "without rows Theatre, Showroom, Customisation and Split Screen take the default large tile; with rows the divider has its slot");
+    expect(std::string(mm::CUSTOMISATION_TITLE) == "CUSTOMISATION" && std::string(mm::CUSTOMISATION_ROUTE) == mm::ID_CUSTOMISATION &&
+               std::string(mm::CUSTOMISATION_DESCRIPTION).find("helmet") != std::string::npos,
+           "the Customisation card is titled for the game's screen and fires its own launcher route");
     expect(std::string(mm::SPLIT_SCREEN_TITLE) == "SPLIT SCREEN" && !std::string(mm::SPLIT_SCREEN_DESCRIPTION).empty(),
            "the Local Multiplayer item is titled Split Screen");
     expect(mm::with_separators(1234) == "1,234" && mm::with_separators(999) == "999" && mm::with_separators(1000000) == "1,000,000" &&
@@ -109,6 +119,18 @@ int main()
         expect(std::abs(big.thumb_w / big.thumb_h - 16.0 / 9.0) < 1e-4, "the thumbnail is 16:9");
         auto br = mm::scene_to_px(mm::CARD_RIGHT_X, mm::CARD_BOTTOM_Y, 1908, 1028);
         expect(br.x > 1795 && br.x < 1805 && br.y > 950 && br.y < 962, "the card's right and bottom anchors land at (1800, 956) at 1908x1028");
+        auto deck = mm::scene_to_px(mm::CARD_RIGHT_X, mm::CARD_BOTTOM_Y, 1280, 800);
+        auto wide = mm::scene_to_px(mm::CARD_RIGHT_X, mm::CARD_BOTTOM_Y, 1280, 720);
+        expect(std::abs(deck.x - wide.x) < 0.01f && std::abs(deck.y - (wide.y + 40)) < 0.01f,
+               "at 16:10 the card keeps its 16:9 place, moved down by the 40 px band above it (1280x800)");
+        expect(deck.x < 1280 && deck.y < 760, "at 16:10 the card ends inside the frame and above the band's bottom edge");
+        expect(std::abs(mm::panel_scale(1280, 800) - mm::panel_scale(1280, 720)) < 1e-6f &&
+                   std::abs(mm::panel_scale(1908, 1028) - 1.0f) < 1e-6f,
+               "the panel's size follows the band, not the frame height");
+        auto ultra = mm::scene_to_px(mm::CARD_RIGHT_X, mm::CARD_BOTTOM_Y, 3440, 1440);
+        auto ultra_band = mm::ui_band(3440, 1440);
+        expect(ultra_band.top == 0 && ultra_band.left > 0 && ultra.x < ultra_band.left + ultra_band.width,
+               "on a 21:9 frame the band is the full height and the card stays inside it");
     }
     expect(mm::panel_due(true, true, true, false, true), "the panel is due on the open home screen once prepared");
     expect(!mm::panel_due(false, true, true, false, true) && !mm::panel_due(true, false, true, false, true) &&
@@ -138,6 +160,22 @@ int main()
     expect(std::string(mm::return_command(mm::Mode::time_trial)) == "time_trial" &&
                std::string(mm::return_command(mm::Mode::grand_prix)) == "solo_gp" && std::string(mm::return_command(mm::Mode::none)).empty(),
            "the session-end hand-over raises the command of the card that started the session");
+    expect(mm::driven_mode(mm::Mode::grand_prix, "time_trial") == mm::Mode::time_trial &&
+               std::string(mm::return_command(mm::driven_mode(mm::Mode::grand_prix, "time_trial"))) == "time_trial",
+           "a Grand Prix card press that ends in a Time Trial (the container's Time Trial tab) hands over to the Time Trial picker");
+    expect(mm::driven_mode(mm::Mode::time_trial, "grand_prix") == mm::Mode::grand_prix &&
+               std::string(mm::return_command(mm::driven_mode(mm::Mode::time_trial, "grand_prix"))) == "solo_gp",
+           "a Time Trial card press that ends in a Grand Prix hands over to the Grand Prix");
+    expect(mm::driven_mode(mm::Mode::grand_prix, "grand_prix") == mm::Mode::grand_prix &&
+               mm::driven_mode(mm::Mode::time_trial, "time_trial") == mm::Mode::time_trial,
+           "a session of the pressed card's own mode keeps the card");
+    expect(mm::driven_mode(mm::Mode::grand_prix, "") == mm::Mode::grand_prix && mm::driven_mode(mm::Mode::grand_prix, "unknown") == mm::Mode::grand_prix &&
+               mm::driven_mode(mm::Mode::time_trial, "unknown") == mm::Mode::time_trial,
+           "an unread or unknown game mode keeps the card that was pressed");
+    expect(mm::driven_mode(mm::Mode::grand_prix, "split_screen") == mm::Mode::none && mm::driven_mode(mm::Mode::time_trial, "f1_world") == mm::Mode::none,
+           "a session of another mode from the container's tabs raises no card command");
+    expect(mm::driven_mode(mm::Mode::none, "time_trial") == mm::Mode::none && mm::driven_mode(mm::Mode::none, "grand_prix") == mm::Mode::none,
+           "a session no card started never arms a hand-over");
     {
         auto route = mm::Back::route;
         expect(std::string(mm::back_replacement(route, mm::djb2("f1_world_activity_container"), "f1_world")) == "swofty_back_home" &&
@@ -164,14 +202,35 @@ int main()
                    !mm::saves_back_leaves_home(mm::Back::stock, mm::djb2("grand_prix_continue"), "back", mm::Mode::grand_prix) &&
                    !mm::saves_back_leaves_home(route, mm::djb2("grand_prix_continue"), "accept", mm::Mode::grand_prix),
                "after a Grand Prix card press the saves list's Back leads home through the container");
+        uint32_t entry = mm::djb2("customisation_f1_life_entry");
+        expect(std::string(mm::customisation_back(route, true, entry, "back")) == "swofty_back_home" &&
+                   std::string(mm::customisation_back(route, true, entry, "back_1")) == "swofty_back_home" &&
+                   std::string(mm::customisation_back(route, true, entry, "back_2")) == "swofty_back_home" &&
+                   std::string(mm::customisation_back(mm::Back::home, true, entry, "back_1")) == "swofty_back_home",
+               "after a Customisation card press the Customisation screen's Back (back from the main menu, to the hub or "
+               "the news) becomes the launcher's route home");
+        expect(mm::customisation_back(route, false, entry, "back_1") == nullptr &&
+                   mm::customisation_back(route, false, entry, "back") == nullptr,
+               "a Customisation screen the card did not open keeps the game's Back");
+        expect(mm::customisation_back(route, true, entry, "to_customisation_car_category_select") == nullptr &&
+                   mm::customisation_back(route, true, mm::djb2("customisation_driver_suit"), "back_1") == nullptr &&
+                   mm::customisation_back(route, true, mm::djb2("fe_f1_world"), "back_1") == nullptr,
+               "the Customisation screen's other routes and its sub-screens' Backs stay the game's");
+        expect(mm::customisation_back(mm::Back::stock, true, entry, "back_1") == nullptr &&
+                   mm::customisation_back(mm::Back::twostep, true, entry, "back_1") == nullptr,
+               "the stock and two-step variants leave the Customisation screen's Back alone");
+        expect(mm::back_replacement(route, entry, "back_1") == nullptr, "the Customisation swap is armed by the card only");
+        expect(!mm::customisation_disarms("customisation_flow") && !mm::customisation_disarms("") &&
+                   !mm::customisation_disarms("team_hq_flow") && mm::customisation_disarms("frontend_flow"),
+               "a Customisation card press stays armed through the customisation flow and its help page and ends when the front end is entered");
         expect(mm::back_variant_of("", true) == mm::Back::route && mm::back_variant_of("", false) == mm::Back::stock &&
                    mm::back_variant_of("home", false) == mm::Back::home && mm::back_variant_of("twostep", true) == mm::Back::twostep &&
                    mm::back_variant_of("stock", true) == mm::Back::stock,
                "the default Back is the launcher's route when its data is in the build, else the game's");
     }
     expect(mm::hides_panel("home_to_activity") && mm::hides_panel("swofty_time_trial") && mm::hides_panel("swofty_grand_prix_saves") &&
-               !mm::hides_panel("swofty_showroom"),
-           "the card routes hide the panel, the Showroom's route does not");
+               mm::hides_panel("swofty_customisation") && !mm::hides_panel("swofty_showroom"),
+           "the card routes and the Customisation route hide the panel, the Showroom's route does not");
     expect(mm::recovery_for(mm::Expect::none, "frontend_flow", false) == mm::Recovery::none &&
                mm::recovery_for(mm::Expect::home, "frontend_flow", true) == mm::Recovery::none,
            "nothing to recover when nothing was expected or the main menu is up");
@@ -179,6 +238,8 @@ int main()
                mm::recovery_for(mm::Expect::container, "f1_world_flow", false) == mm::Recovery::back_home_route &&
                mm::recovery_for(mm::Expect::saves, "f1_world_flow", false) == mm::Recovery::back_home_route,
            "a screen that did not open while the f1_world flow is current takes the migration back to the main menu");
+    expect(mm::recovery_for(mm::Expect::home, "customisation_flow", false) == mm::Recovery::back_home_route,
+           "a main menu that did not open after the Customisation screen's Back takes the migration back too");
     expect(mm::recovery_for(mm::Expect::container, "frontend_flow", false) == mm::Recovery::open_home &&
                mm::recovery_for(mm::Expect::saves, "frontend_flow", false) == mm::Recovery::open_home &&
                mm::recovery_for(mm::Expect::home, "frontend_flow", false) == mm::Recovery::open_home,
@@ -191,6 +252,17 @@ int main()
                !mm::return_due(false, false, mm::Mode::time_trial, true) && !mm::return_due(true, true, mm::Mode::time_trial, true) &&
                !mm::return_due(true, false, mm::Mode::time_trial, false),
            "the hand-over is armed when a session that a card started has ended");
+    expect(mm::migrate_logged(true, "", "frontend") && mm::migrate_logged(false, "f1_world", "frontend"), "a failed or flow-changing migrate is logged");
+    expect(!mm::migrate_logged(false, "frontend", "frontend") && !mm::migrate_logged(false, "", "frontend"), "a migrate within the same flow is not logged");
+    expect(mm::region_writable(true, 0x04, 0x1000, 0x1000, 0x1ffc, 4), "read-write memory inside its region is writable");
+    expect(mm::region_writable(true, 0x08, 0x1000, 0x1000, 0x1000, 4) && mm::region_writable(true, 0x40, 0x1000, 0x1000, 0x1000, 4),
+           "write-copy and execute-read-write are writable");
+    expect(!mm::region_writable(true, 0x02, 0x1000, 0x1000, 0x1000, 4) && !mm::region_writable(true, 0x20, 0x1000, 0x1000, 0x1000, 4),
+           "read-only and execute-read are not writable");
+    expect(!mm::region_writable(false, 0x04, 0x1000, 0x1000, 0x1000, 4), "reserved memory is not writable");
+    expect(!mm::region_writable(true, 0x104, 0x1000, 0x1000, 0x1000, 4), "a guard page is not writable");
+    expect(!mm::region_writable(true, 0x04, 0x1000, 0x1000, 0x1ffe, 4), "bytes past the region are not writable");
+    expect(!mm::region_writable(true, 0x04, 0x1000, 0x1000, 0, 4), "null is not writable");
     expect(mm::entry_point_write(0x146066c74, true) == mm::EntryPointWrite::write,
            "the F1 World entry point is cleared through the address the binding set resolved");
     expect(mm::entry_point_write(0, true) == mm::EntryPointWrite::unresolved && mm::entry_point_write(0, false) == mm::EntryPointWrite::unresolved,

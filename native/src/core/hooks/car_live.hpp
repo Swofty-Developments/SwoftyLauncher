@@ -956,10 +956,17 @@ template <class Tag> struct Ops {
 
     static float drive_torque(uintptr_t engine, float torque, float rad_s, float limiter_rad_s)
     {
+        return drive_torque_with(engine, torque, rad_s, [&] { return limiter_rad_s; });
+    }
+
+    // The site runs for every car on the physics threads; with no power layer it reads no memory, so the engine's
+    // limiter is read only once a layer needs it.
+    template <class Limiter> static float drive_torque_with(uintptr_t engine, float torque, float rad_s, Limiter limiter)
+    {
         uint32_t index = 0;
         if (!power_active.load(std::memory_order_relaxed) || !car_index_of_system(engine, index))
             return torque;
-        return shaped_torque(torque, rad_s, limiter_rad_s, virt[index][0].load(std::memory_order_relaxed),
+        return shaped_torque(torque, rad_s, limiter(), virt[index][0].load(std::memory_order_relaxed),
                              virt[index][1].load(std::memory_order_relaxed));
     }
 

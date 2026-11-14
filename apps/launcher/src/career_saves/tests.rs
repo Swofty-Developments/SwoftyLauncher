@@ -439,3 +439,69 @@ fn restore_waits_for_what_is_running() {
     );
     assert_eq!(short_block(Layout::Steam, run(false, false)), None);
 }
+
+fn copy_of(name: &str, ea: bool) -> PathBuf {
+    let root = std::env::temp_dir().join(format!("swofty-saves-copy-{name}-{}", std::process::id()));
+    std::fs::remove_dir_all(&root).ok();
+    let game = root.join("game");
+    std::fs::create_dir_all(game.join("__Installer")).unwrap();
+    std::fs::write(game.join(swofty_core::GAME_EXE), b"exe").unwrap();
+    match ea {
+        true => std::fs::write(game.join("__Installer/installerdata.xml"), b"<game/>").unwrap(),
+        false => std::fs::write(game.join("EAJavelinInstaller_installscript.vdf"), b"").unwrap(),
+    }
+    let pfx = root.join("pfx");
+    let save = pfx.join("drive_c/users/steamuser/AppData/Local/F1 25/savegame/ea/profile");
+    std::fs::create_dir_all(&save).unwrap();
+    std::fs::write(save.join("NXDSMWW.BWW"), b"data").unwrap();
+    std::fs::write(pfx.join("user.reg"), b"").unwrap();
+    let mut config = swofty_core::session::Config::default();
+    config.games.active = Some(game.clone());
+    config.games.added = vec![game];
+    config.launch.ea_prefix = Some(pfx);
+    swofty_core::store::Store::new(&root)
+        .save_config(&config)
+        .unwrap();
+    std::fs::create_dir_all(root.join("profiles")).unwrap();
+    for p in ["hi", "default"] {
+        std::fs::write(
+            root.join("profiles").join(format!("{p}.json")),
+            format!(r#"{{"name":"{p}","launcher_saves":true}}"#),
+        )
+        .unwrap();
+    }
+    root
+}
+
+#[cfg(not(windows))]
+#[test]
+fn an_ea_copy_profile_shows_the_one_save_every_profile_plays_on() {
+    let root = copy_of("ea", true);
+    let store = swofty_core::store::Store::new(&root);
+    for p in ["hi", "default"] {
+        let built = build_saves(&store, None, p, false);
+        let loc = built.view.loc.as_ref().expect("the EA save");
+        assert_eq!(
+            (loc.source.as_str(), loc.layout),
+            ("ea-steamuser", vault::Layout::Ea),
+            "{p}"
+        );
+        assert!(built.view.has_save, "{p}");
+        assert!(built.view.shared_by_every_profile(), "{p}");
+    }
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn a_steam_copy_profile_shows_its_own_launcher_save() {
+    let root = copy_of("steam", false);
+    let store = swofty_core::store::Store::new(&root);
+    let built = build_saves(&store, None, "hi", false);
+    let loc = built.view.loc.as_ref().expect("the launcher save");
+    assert_eq!(
+        (loc.source.as_str(), loc.layout),
+        ("launcher-hi", vault::Layout::Launcher)
+    );
+    assert!(!built.view.shared_by_every_profile());
+    std::fs::remove_dir_all(&root).ok();
+}

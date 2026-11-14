@@ -1,6 +1,7 @@
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::input::Input;
+use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};
 use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -107,52 +108,10 @@ impl Shell {
                 ))
             }),
         );
-        let mut seasons: Vec<(String, String)> = Vec::new();
-        let mut tracks: Vec<(String, String)> = Vec::new();
-        for b in &self.tt.run_boards {
-            if !seasons.iter().any(|(c, _)| c == &b.content) {
-                let name = b
-                    .season
-                    .clone()
-                    .filter(|s| !s.is_empty())
-                    .unwrap_or_else(|| b.content.clone());
-                seasons.push((b.content.clone(), name));
-            }
-            let in_season = self.tt.run_seasons.is_empty() || self.tt.run_seasons.contains(&b.content);
-            if in_season && !tracks.iter().any(|(t, _)| t == &b.track) {
-                let name = b
-                    .track_name
-                    .clone()
-                    .filter(|s| !s.is_empty())
-                    .unwrap_or_else(|| b.track.clone());
-                tracks.push((b.track.clone(), name));
-            }
-        }
-        let group =
-            |title: &'static str, season: bool, items: Vec<(String, String)>, cx: &mut Context<Self>| {
-                let picked = if season {
-                    &self.tt.run_seasons
-                } else {
-                    &self.tt.run_tracks
-                };
-                let chips: Vec<_> = items
-                    .into_iter()
-                    .map(|(key, label)| {
-                        let on = picked.contains(&key);
-                        chip(format!("tt-run-{title}-{key}"), label, on).on_click(
-                            cx.listener(move |this, _, _, cx| this.tt_toggle_filter(season, &key, cx)),
-                        )
-                    })
-                    .collect();
-                (!chips.is_empty()).then(|| {
-                    v_flex()
-                        .gap(px(4.))
-                        .child(div().text_size(px(11.)).text_color(p.text_muted).child(tr(title)))
-                        .child(h_flex().gap(px(6.)).flex_wrap().children(chips))
-                })
-            };
-        let season_chips = group("Seasons", true, seasons, cx);
-        let track_chips = group("Tracks", false, tracks, cx);
+        let filters = h_flex()
+            .gap(px(6.))
+            .child(self.tt_filter_menu(true, cx))
+            .child(self.tt_filter_menu(false, cx));
         let list: AnyElement = match &self.tt.runs {
             Load::Failed(e) => div()
                 .text_size(px(13.))
@@ -236,8 +195,7 @@ impl Shell {
             .gap(px(10.))
             .child(Input::new(&search).small())
             .child(statuses)
-            .children(season_chips)
-            .children(track_chips)
+            .child(filters)
             .child(list);
         let open = self.tt.open_lap.as_ref().and_then(|id| match &self.tt.runs {
             Load::Ready(runs) => runs.iter().find(|r| &r.lap_id == id).cloned(),
@@ -256,6 +214,48 @@ impl Shell {
             .child(left)
             .child(div().flex_1().min_w_0().h_full().min_h_0().child(right))
             .into_any_element()
+    }
+
+    fn tt_filter_menu(&self, season: bool, cx: &mut Context<Self>) -> impl IntoElement + use<> {
+        let choices = self.tt.choices(season);
+        let picked = self.tt.picked(season).to_vec();
+        let label = self.tt.filter_label(season, &choices);
+        let all = if season {
+            tr("All seasons")
+        } else {
+            tr("All tracks")
+        };
+        let shell = cx.entity().downgrade();
+        Button::new(if season { "tt-run-season" } else { "tt-run-track" })
+            .small()
+            .when_else(picked.is_empty(), |b| b.outline(), |b| b.primary())
+            .max_w(px((RUNS_WIDTH - 6.) / 2.))
+            .label(label)
+            .dropdown_caret(true)
+            .disabled(choices.is_empty() && picked.is_empty())
+            .dropdown_menu(move |mut menu, _, _| {
+                menu = menu.scrollable(true).min_w(px(220.)).max_w(px(420.));
+                let clear = shell.clone();
+                menu =
+                    menu.item(PopupMenuItem::new(all).checked(picked.is_empty()).on_click(
+                        move |_, _, cx| {
+                            clear.update(cx, |this, cx| this.tt_clear_filter(season, cx)).ok();
+                        },
+                    ))
+                    .separator();
+                for (key, label) in &choices {
+                    let on = picked.contains(key);
+                    let (shell, key) = (shell.clone(), key.clone());
+                    menu = menu.item(PopupMenuItem::new(label.clone()).checked(on).on_click(
+                        move |_, _, cx| {
+                            shell
+                                .update(cx, |this, cx| this.tt_toggle_filter(season, &key, cx))
+                                .ok();
+                        },
+                    ));
+                }
+                menu
+            })
     }
 
     fn tt_run_detail(

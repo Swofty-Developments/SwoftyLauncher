@@ -278,6 +278,28 @@ fn expand(db: &Db, row_key: u64, path: &str) -> Result<Vec<u64>> {
     Ok(if db.has(k) { vec![k] } else { Vec::new() })
 }
 
+pub const WEEKEND_TABLE: &str = "TrackAuthenticWeekendData";
+
+pub fn weekend_format(db: &Db, data_row: u64) -> Option<String> {
+    db.text(field(
+        row(sub_table(data_row, WEEKEND_TABLE), 0),
+        "weekend_format",
+    ))
+}
+
+fn set_weekend_format(db: &mut Db, data_row: u64, format: &str) -> Result<bool> {
+    let n = db.count(sub_count(data_row, WEEKEND_TABLE)).unwrap_or(0);
+    let mut set = false;
+    for i in 0..n {
+        let k = field(row(sub_table(data_row, WEEKEND_TABLE), i), "weekend_format");
+        if db.has(k) {
+            db.set_text(k, format, "weekend_format")?;
+            set = true;
+        }
+    }
+    Ok(set)
+}
+
 pub struct Dataset {
     pub label: String,
     pub table: Table,
@@ -514,11 +536,14 @@ pub fn activate_with(
     }
     let sets = datasets(&db, reg)?;
     let mut in_sets = Vec::new();
+    let mut sprint_sets = Vec::new();
     for ds in &sets {
         let Some(src) = ds.table.row_of(&db, from, "track") else {
             continue;
         };
-        let dst = match ds.table.row_of(&db, code, "track") {
+        let held = ds.table.row_of(&db, code, "track");
+        let own = held.and_then(|r| weekend_format(&db, r));
+        let dst = match held {
             Some(r) => r,
             None => ds.table.push(&mut db)?,
         };
@@ -526,6 +551,16 @@ pub fn activate_with(
         let paths: Vec<&str> = pkg.activation.overrides.iter().map(|o| o.path.as_str()).collect();
         copy_paths(&mut db, src, dst, &paths);
         relabel(&mut db, dst, &reg.track_data.labels, code)?;
+        if dst != src {
+            let sprint = pkg.activation.sprint.contains(&ds.label);
+            let format = match sprint {
+                true => "sprint".to_owned(),
+                false => own.unwrap_or_else(|| "default".to_owned()),
+            };
+            if set_weekend_format(&mut db, dst, &format)? && sprint {
+                sprint_sets.push(ds.label.clone());
+            }
+        }
         in_sets.push(ds.label.clone());
     }
     report.note(format!(
@@ -533,6 +568,17 @@ pub fn activate_with(
         in_sets.len(),
         in_sets.join(", ")
     ));
+    if !sprint_sets.is_empty() {
+        report.note(format!(
+            "weekend format: {code} runs sprint weekends in {}",
+            sprint_sets.join(", ")
+        ));
+    }
+    for set in pkg.activation.sprint.iter().filter(|s| !sprint_sets.contains(s)) {
+        report.warnings.push(format!(
+            "sprint {set}: {code} has no weekend format in that data set, so it takes its parent data set's"
+        ));
+    }
     for spec in &reg.sorted_orders {
         let t = Table::of(spec)?;
         let l = label(spec);

@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use swofty_core::baseline::{Identity, sha256_bytes};
 use swofty_core::install::{Drift, Game, Installer, OVERRIDE_HEADER, Plan};
 use swofty_core::journal::{Journal, Op, State};
+use swofty_core::recovery;
 
 const GVDB: &str = "game_package/gamedatabases/gamedatabases.2025.bin";
 const UI: &str = "2025_asset_groups/ui_package/flow_frontend.erp";
@@ -463,6 +464,83 @@ fn a_game_update_in_between_never_restores_old_originals() {
 }
 
 #[test]
+fn an_empty_loader_folder_is_not_drift() {
+    let f = Fixture::new("empty-loader");
+    let game = f.game("1");
+    let inst = Installer::new(&f.data, &game);
+    inst.apply(&f.plan("a")).unwrap();
+    inst.apply(&Plan::vanilla()).unwrap();
+    assert!(!f.game.join("swofty").exists());
+
+    std::fs::create_dir_all(f.game.join("swofty")).unwrap();
+    assert_eq!(inst.verify().unwrap(), []);
+}
+
+#[test]
+fn a_loader_folder_of_empty_folders_is_not_drift() {
+    let f = Fixture::new("empty-loader-dirs");
+    let game = f.game("1");
+    let inst = Installer::new(&f.data, &game);
+    inst.apply(&f.plan("a")).unwrap();
+    inst.apply(&Plan::vanilla()).unwrap();
+
+    for dir in [
+        "swofty/addons/core",
+        "swofty/addons/t.empty",
+        "swofty/tt/replays/inbox",
+    ] {
+        std::fs::create_dir_all(f.game.join(dir)).unwrap();
+    }
+    assert_eq!(inst.verify().unwrap(), []);
+}
+
+#[test]
+fn a_loader_folder_holding_a_file_is_drift_named_by_the_file() {
+    let f = Fixture::new("loader-with-file");
+    let game = f.game("1");
+    let inst = Installer::new(&f.data, &game);
+    inst.apply(&f.plan("a")).unwrap();
+    inst.apply(&Plan::vanilla()).unwrap();
+
+    std::fs::create_dir_all(f.game.join("swofty/addons/t.empty")).unwrap();
+    write(&f.game.join("swofty/tt/inbox/1.json"), "{}");
+    assert_eq!(
+        inst.verify().unwrap(),
+        [Drift::Addition("swofty/tt/inbox/1.json".into())]
+    );
+    assert_eq!(
+        Drift::Addition("swofty/tt/inbox/1.json".into()).to_string(),
+        "swofty/tt/inbox/1.json is not part of the game"
+    );
+
+    assert_eq!(inst.restore().unwrap(), []);
+    assert!(!f.game.join("swofty").exists());
+}
+
+#[cfg(unix)]
+#[test]
+fn a_restore_that_leaves_an_empty_loader_folder_in_place_reports_nothing_left() {
+    use std::os::unix::fs::PermissionsExt;
+    let f = Fixture::new("loader-left-in-place");
+    let original = f.snapshot();
+    let game = f.game("1");
+    let inst = Installer::new(&f.data, &game);
+    inst.apply(&f.plan("a")).unwrap();
+    inst.apply(&Plan::vanilla()).unwrap();
+
+    let loader = f.game.join("swofty");
+    std::fs::create_dir_all(loader.join("addons")).unwrap();
+    std::fs::set_permissions(&loader, std::fs::Permissions::from_mode(0o555)).unwrap();
+    let restored = inst.restore();
+    std::fs::set_permissions(&loader, std::fs::Permissions::from_mode(0o755)).unwrap();
+
+    assert_eq!(restored.unwrap(), []);
+    let mut left = f.snapshot();
+    left.retain(|k, _| !k.starts_with("swofty/"));
+    assert_eq!(left, original);
+}
+
+#[test]
 fn drift_from_outside_is_reported_and_restored() {
     let f = Fixture::new("drift");
     let original = f.snapshot();
@@ -482,6 +560,62 @@ fn drift_from_outside_is_reported_and_restored() {
     assert!(inst.apply(&f.plan("a")).is_err());
 
     assert_eq!(inst.restore().unwrap(), []);
+    assert_eq!(f.snapshot(), original);
+}
+
+#[test]
+fn a_restore_sets_aside_a_version_dll_swofty_did_not_place() {
+    let f = Fixture::new("foreign-proxy");
+    let original = f.snapshot();
+    let game = f.game("1");
+    let inst = Installer::new(&f.data, &game);
+    inst.apply(&f.plan("a")).unwrap();
+    inst.apply(&Plan::vanilla()).unwrap();
+    write(&f.game.join("version.dll"), "an asi loader");
+
+    let done = recovery::restore(&f.data, &game).unwrap();
+    assert_eq!(done.left, []);
+    assert_eq!(done.set_aside.len(), 1, "{:?}", done.set_aside);
+    assert!(done.set_aside[0].starts_with(recovery::set_aside_dir(&f.data)));
+    assert!(done.set_aside[0].ends_with("version.dll"));
+    assert_eq!(
+        std::fs::read_to_string(&done.set_aside[0]).unwrap(),
+        "an asi loader"
+    );
+    assert_eq!(f.snapshot(), original);
+
+    // One put over the launcher's own proxy mid-session is kept the same way.
+    inst.apply(&f.plan("a")).unwrap();
+    write(&f.game.join("version.dll"), "an upscaler renamed");
+    let done = recovery::restore(&f.data, &game).unwrap();
+    assert_eq!(done.left, []);
+    let kept: Vec<String> = done
+        .set_aside
+        .iter()
+        .map(|p| std::fs::read_to_string(p).unwrap())
+        .collect();
+    assert_eq!(kept, ["an upscaler renamed"]);
+    assert_eq!(f.snapshot(), original);
+}
+
+#[test]
+fn a_restore_removes_the_proxy_swofty_ships_without_setting_it_aside() {
+    let f = Fixture::new("shipped-proxy");
+    let loader = f.root.join("loader");
+    write(&loader.join("version.dll"), "proxy");
+    write(&loader.join(swofty_core::builtin::CORE_DLL), "core");
+    let _pin = swofty_core::builtin::LoaderPin::to(loader);
+    let original = f.snapshot();
+    let game = f.game("1");
+    let inst = Installer::new(&f.data, &game);
+    inst.apply(&f.plan("a")).unwrap();
+    inst.apply(&Plan::vanilla()).unwrap();
+    write(&f.game.join("version.dll"), "proxy");
+
+    let done = recovery::restore(&f.data, &game).unwrap();
+    assert_eq!(done.left, []);
+    assert!(done.set_aside.is_empty(), "{:?}", done.set_aside);
+    assert!(!recovery::set_aside_dir(&f.data).exists());
     assert_eq!(f.snapshot(), original);
 }
 

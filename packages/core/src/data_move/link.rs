@@ -21,6 +21,12 @@ pub fn target(at: &Path) -> Option<PathBuf> {
     }
 }
 
+/// The folder the data really lives in: where the link at `root` points, or
+/// `root` itself when it is not a link.
+pub fn real_folder(root: &Path) -> PathBuf {
+    target(root).unwrap_or_else(|| root.to_path_buf())
+}
+
 #[cfg(not(windows))]
 pub fn create(target: &Path, at: &Path) -> io::Result<()> {
     std::os::unix::fs::symlink(target, at)

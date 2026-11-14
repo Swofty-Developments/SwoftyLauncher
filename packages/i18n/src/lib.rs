@@ -286,8 +286,22 @@ mod tests {
         );
         assert!(
             all.contains(&Language {
+                code: "de",
+                name: "Deutsch"
+            }),
+            "{all:?}"
+        );
+        assert!(
+            all.contains(&Language {
                 code: "es",
                 name: "Español"
+            }),
+            "{all:?}"
+        );
+        assert!(
+            all.contains(&Language {
+                code: "ko",
+                name: "한국어"
             }),
             "{all:?}"
         );

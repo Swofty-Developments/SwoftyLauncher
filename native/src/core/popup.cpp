@@ -13,6 +13,7 @@
 #include <string>
 #include <vector>
 
+#include "game_message_log_logic.hpp"
 #include "hud_leaves_logic.hpp"
 #include "perf.hpp"
 #include "text_entry.hpp"
@@ -37,6 +38,8 @@
 // While a launcher netplay command drives the LAN menus, the wrap hands it the LAN Game dialog and
 // the Join via IP prompt instead of queueing them (runtime::netplay_popup): the caller gets an empty
 // handle, which the handle setter and release accept, and netplay answers the response callback.
+//
+// The wrap also logs each stock message id once per session (game_message_log_logic.hpp).
 //
 // Toasts go through the same system as hud_main messages, the queue the race HUD's central
 // notification (hud_notifications_dynamic, F1HM bound to #ui_messages.hud_main_queue.hud_main) draws.
@@ -130,10 +133,26 @@ std::deque<Set> sets;
 std::atomic<size_t> sets_pending;
 std::atomic<uint32_t> sets_dropped;
 runtime::hud_leaves::Table leaf_table;
+std::mutex game_messages_lock;
+runtime::game_message_log::Seen game_messages;
+thread_local bool opening;
 
 uintptr_t rel32(uintptr_t at)
 {
     return at + 4 + *reinterpret_cast<const int32_t *>(at);
+}
+
+void log_game_message(const char *name, bool built)
+{
+    bool first, last;
+    {
+        std::lock_guard<std::mutex> hold(game_messages_lock);
+        first = game_messages.first(name);
+        last = game_messages.last();
+    }
+    if (first)
+        swofty::log("[popup] game message '%s'%s%s", name, built ? "" : " (not constructed)",
+                    last ? " (further messages are not logged)" : "");
 }
 
 Handle *construct_hook(void *s, Handle *out, FixedId *id, Callback *cb, const char *a5, uint64_t a6)
@@ -155,7 +174,10 @@ Handle *construct_hook(void *s, Handle *out, FixedId *id, Callback *cb, const ch
         *out = Handle{s, nullptr};
         return out;
     }
-    return h_construct.call<Handle *>(s, out, id, cb, a5, a6);
+    Handle *r = h_construct.call<Handle *>(s, out, id, cb, a5, a6);
+    if (runtime::game_message_log::stock(name, opening))
+        log_game_message(name, r && swofty::mem::readable(r, sizeof *r) && r->msg);
+    return r;
 }
 
 bool make_id(FixedId &id, const char *name)
@@ -178,8 +200,11 @@ Handle open(void *s, const char *name)
     Handle h{};
     FixedId id{};
     Callback cb{};
-    if (make_id(id, name))
+    if (make_id(id, name)) {
+        opening = true;
         reinterpret_cast<Construct_t *>(a_construct)(s, &h, &id, &cb, nullptr, 0);
+        opening = false;
+    }
     return h;
 }
 

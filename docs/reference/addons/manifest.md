@@ -283,11 +283,13 @@ Careers that use its drivers won't load without it.
     "values": ["titlesponsor", { "value": "tier01", "label": "Tier 1 sponsor" }, "replica"], "binds": "db" },
   { "id": "debug_overlay", "type": "toggle", "label": "Debug overlay", "default": false, "binds": "native",
     "description": "Shown under the label.",
-    "hidden": true }                 // kept off the ADDON SETTINGS page in game; launcher 1.5.13 or later
+    "hidden": true },                // kept off the ADDON SETTINGS page in game; launcher 1.5.13 or later
+  { "id": "istanbul_park", "type": "toggle", "label": "Istanbul Park round", "default": true, "binds": "db",
+    "needs": ["track.istanbul_park", { "id": "swofty.std", "version": ">=1.8.0" }] }   // launcher 1.9.34 or later
 ]
 ```
 
-- **`id`** (string): `[a-z][a-z0-9_]*`, at most 40 characters, unique within your addon.
+- **`id`** (string): `[a-z][a-z0-9_]*`, at most 40 characters, unique within your addon. `addon` is taken by the `addon` key of an op's `when`.
 - **`type`** (string): `toggle`, `slider` or `choice`.
 - **`label`** (string, optional): shown to players. Defaults to `id`.
 - **`description`** (string, optional): shown under the label.
@@ -296,11 +298,14 @@ Careers that use its drivers won't load without it.
 - **`values`** (array): 1 to 16 values for a choice, each a string, or `{ "value", "label" }` to show a different name. Values are non-empty and each is listed once. A toggle and a slider take no `values`.
 - **`binds`** (string): where the value goes.
 - **`hidden`** (boolean, optional): `true` keeps the option off your addon's page in ADDON SETTINGS in game, such as a developer option or a per-career setting. The launcher's **Addons** page still lists it, and [`career_setup`](#career-setup) and [`hub_tab`](#hub-tab) may list it. Defaults to `false`. A launcher before 1.5.13 rejects the field.
+- **`needs`** (array, optional, toggles only): addons that must be on for the toggle to be on, each an addon id or `{ "id", "version" }`. While one is off, the **Addons** page shows the toggle off and locked and names the addon, the build reads it as off, and ADDON SETTINGS in game leaves it out. The profile keeps the player's value for when the addon is back on. [Content that needs another addon](./settings#content-that-needs-another-addon) has a full example. A launcher before 1.9.34 rejects the field.
 
 | `binds` | Read by | A change applies |
 |---|---|---|
 | `native` | the [engine plugin](./native-plugins#settings), while the game runs | at once |
 | `db` | the build, through <span v-pre>`{{id}}`</span> and `when` in op files | after a rebuild |
+
+An op's `when` can also name addons: `"when": { "addon": "track.istanbul_park" }` keeps the op only while that addon is on, and a `when` at the top of an op file applies to the whole file. See [Database operations](/reference/ops/database#settings).
 
 ### career_setup
 

@@ -2,11 +2,13 @@
 
 #include "main_menu.hpp"
 #include "main_menu_logic.hpp"
+#include "apply/moments.hpp"
 #include <safetyhook.hpp>
 #include "virtual_pad.hpp"
 #include "json.hpp"
 
 #include <swofty/game.hpp>
+#include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
 #include <algorithm>
@@ -32,8 +34,9 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 // site_FeHome_AfterCareerCall (swofty_core.cpp) runs right after the Career tile and calls add_tiles, which adds
 // Grand Prix and Time Trial as two copies of the F1 World item (their own id, title and description over the
 // stock populate), Split Screen as the stock Local Multiplayer item with its own title (its route opens the
-// game's Local Multiplayer list, the lone Splitscreen tile), the challenge tile when the game builds it and
-// Theatre; swofty_core then adds Addon Settings last. arm_patch overwrites the first instruction of the F1 World
+// game's Local Multiplayer list, the lone Splitscreen tile), the challenge tile when the game builds it, Theatre,
+// Showroom and Customisation (two copies of the Theatre item, each when the launcher's route for it is in the
+// build) and a divider; swofty_core then adds Addon Settings last. arm_patch overwrites the first instruction of the F1 World
 // block (lea r15d,[r12+1]) with a jmp to the block's final jmp, so F1 World, the divider, League Racing, Player Hub
 // and the stock Theatre are never added. The block is matched byte for byte first and the adders are the call
 // targets read from it; when anything does not match nothing is patched, no tile is added and the stock menu stays.
@@ -49,10 +52,17 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 // Grand Prix card raises: the game then raises grand_prix_resume and opens grand_prix_continue (the saved seasons and
 // New Grand Prix) through the front-end flow's enter_gp_resume, as F1 World > Play > Grand Prix does. The Back of the
 // container (f1_world / home), of the Showroom (back_1) and of that saves list (back) is swapped where the game fires
-// it for swofty_back_home (the container's home route behind the standard wipe) or swofty_home (the hub's back_1). Every Migrate the game runs is logged with its flow and entry
+// it for swofty_back_home (the container's home route behind the standard wipe) or swofty_home (the hub's back_1).
+// The Customisation card fires swofty_customisation (ui/home_customisation.flag says the build has it), a copy of
+// fe_home's own customisation route: close the home screen and its slices, then Migrate customisation_flow
+// enter_f1_life_customisation. After that press, the Customisation screen's Back (back, which leads nowhere when the
+// screen was opened from the main menu, back_1 to the F1 World hub, or back_2) is swapped for swofty_back_home in its
+// group, customisation_f1_life_entry; a Customisation screen reached
+// any other way keeps the game's Back. Every Migrate the game runs is logged with its flow and entry
 // (nav:), the last accepted flow is kept, and a screen that does not open in time is recovered. A session that
 // started from a card hands over (frontend_transition.ui, swofty_enter_return) to the bare activity container, where
-// the card's command is raised.
+// the card's command is raised; session_enter swaps the card's mode for the mode of the session that loaded, as the
+// container's tabs can start a Time Trial after a Grand Prix card press (or the other way round).
 //
 // SWOFTY_MAIN_MENU=0 turns the whole feature off. SWOFTY_MAIN_MENU_NAV=single|rows picks the navigation
 // layout; only single (one spawner, tile order) exists so far, and rows is logged as not built.
@@ -96,7 +106,8 @@ std::once_flag once;
 void *f1w_populate = nullptr, *f1w_action = nullptr;
 std::atomic<bool> tt_warned{false};
 constexpr uint64_t PANEL_DELAY_MS = 450, PANEL_FADE_MS = 250;
-std::atomic<int> rows_flag{-1}, menu_flag{-1};
+std::atomic<int> rows_flag{-1}, menu_flag{-1}, customisation_flag{-1};
+std::atomic<bool> customisation_armed{false};
 std::atomic<int> via{0};
 std::atomic<uint64_t> swap_at{0}, home_opened_at{0};
 std::atomic<void *> last_router{nullptr};
@@ -214,6 +225,17 @@ bool menu_on()
     return f == 1;
 }
 
+bool customisation_on()
+{
+    int f = customisation_flag.load();
+    if (f < 0) {
+        f = runtime::read_file(runtime::under_swofty("ui\\home_customisation.flag"), 16).empty() ? 0 : 1;
+        customisation_flag = f;
+        swofty::log("[main-menu] the launcher's Customisation routes %s", f ? "are in this build" : "are not in this build; no Customisation card");
+    }
+    return f == 1;
+}
+
 void style_item(HomeItem *item)
 {
     const char *tpl = logic::template_for(id_of(item), rows_on());
@@ -250,7 +272,8 @@ void wrap_item(HomeItem *item)
     if (!*logic::template_for(id, rows_on()))
         return;
     if (!std::strcmp(id, logic::ID_GRAND_PRIX) || !std::strcmp(id, logic::ID_TIME_TRIAL) ||
-        !std::strcmp(id, logic::ID_LOCAL) || !std::strcmp(id, logic::ID_SHOWROOM) || !std::strcmp(id, logic::ID_SETTINGS))
+        !std::strcmp(id, logic::ID_LOCAL) || !std::strcmp(id, logic::ID_SHOWROOM) || !std::strcmp(id, logic::ID_CUSTOMISATION) ||
+        !std::strcmp(id, logic::ID_SETTINGS))
         return;
     auto vt = reinterpret_cast<void **>(item->vtable);
     {
@@ -272,32 +295,56 @@ void style_list(TileList *list)
             wrap_item(e->tile->item);
 }
 
-void showroom_populate(HomeItem *item, void *node, uint32_t a7)
+void retitle(HomeItem *item, const char *title, const char *description)
 {
-    reinterpret_cast<Populate_t>(theatre_populate)(item, node, a7);
     auto vm_node = static_cast<uint8_t *>(item->button_node.node);
     if (!vm_node)
         return;
     void *reg = *g_Vm_Registry, *parent = vm_node + 8;
     uint8_t no = 0;
-    set_string(reg, parent, "title", "SHOWROOM");
+    set_string(reg, parent, "title", title);
     Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
-    set_string(reg, parent, "description", "Look over every car in the game");
+    set_string(reg, parent, "description", description);
     Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
     style_item(item);
 }
 
-Action *showroom_action(HomeItem *item, Action *out)
+Action *route_action(Action *out, const char *route)
 {
     out->type = 1;
     out->str = nullptr;
-    Ne_Make_StrFromCStr(&out->str, logic::SHOWROOM_ROUTE, 0, 0);
-    via = 2;
-    swofty::log("[main-menu] showroom card pressed (item %p): route %s", item, logic::SHOWROOM_ROUTE);
+    Ne_Make_StrFromCStr(&out->str, route, 0, 0);
     return out;
 }
 
-void add_showroom(TileList *list, uint8_t index)
+void showroom_populate(HomeItem *item, void *node, uint32_t a7)
+{
+    reinterpret_cast<Populate_t>(theatre_populate)(item, node, a7);
+    retitle(item, "SHOWROOM", "Look over every car in the game");
+}
+
+Action *showroom_action(HomeItem *item, Action *out)
+{
+    via = 2;
+    swofty::log("[main-menu] showroom card pressed (item %p): route %s", item, logic::SHOWROOM_ROUTE);
+    return route_action(out, logic::SHOWROOM_ROUTE);
+}
+
+void customisation_populate(HomeItem *item, void *node, uint32_t a7)
+{
+    reinterpret_cast<Populate_t>(theatre_populate)(item, node, a7);
+    retitle(item, logic::CUSTOMISATION_TITLE, logic::CUSTOMISATION_DESCRIPTION);
+}
+
+Action *customisation_action(HomeItem *item, Action *out)
+{
+    customisation_armed = true;
+    swofty::log("[main-menu] customisation card pressed (item %p): route %s; the Customisation screen's Back returns to the main menu",
+                item, logic::CUSTOMISATION_ROUTE);
+    return route_action(out, logic::CUSTOMISATION_ROUTE);
+}
+
+void add_theatre_copy(TileList *list, uint8_t index, const char *id, Populate_t populate, GetAction_t action)
 {
     block.theatre(list, index);
     HomeItem *item = last_item(list);
@@ -309,26 +356,17 @@ void add_showroom(TileList *list, uint8_t index)
         theatre_action = vt[5];
     }
     if (vt[4] != theatre_populate) {
-        swofty::log("[main-menu] showroom: the Theatre item's vtable changed; left as a Theatre tile");
+        swofty::log("[main-menu] %s: the Theatre item's vtable changed; left as a Theatre tile", id);
         return;
     }
-    swofty::subclass(item, {{4, reinterpret_cast<void *>(showroom_populate)}, {5, reinterpret_cast<void *>(showroom_action)}});
-    Ne_Make_StrFromCStr(&item->id, logic::ID_SHOWROOM, 0, 0);
+    swofty::subclass(item, {{4, reinterpret_cast<void *>(populate)}, {5, reinterpret_cast<void *>(action)}});
+    Ne_Make_StrFromCStr(&item->id, id, 0, 0);
 }
 
 void split_screen_populate(HomeItem *item, void *node, uint32_t a7)
 {
     reinterpret_cast<Populate_t>(local_mp_populate)(item, node, a7);
-    auto vm_node = static_cast<uint8_t *>(item->button_node.node);
-    if (!vm_node)
-        return;
-    void *reg = *g_Vm_Registry, *parent = vm_node + 8;
-    uint8_t no = 0;
-    set_string(reg, parent, "title", logic::SPLIT_SCREEN_TITLE);
-    Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
-    set_string(reg, parent, "description", logic::SPLIT_SCREEN_DESCRIPTION);
-    Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
-    style_item(item);
+    retitle(item, logic::SPLIT_SCREEN_TITLE, logic::SPLIT_SCREEN_DESCRIPTION);
 }
 
 // The stock Local Multiplayer item, titled Split Screen: its id and its action (the local_multiplayer route, which
@@ -454,14 +492,20 @@ bool fire_in_group(const char *group, const char *route, const char *why);
 std::atomic<uintptr_t> entry_point_addr{0};
 std::atomic<bool> entry_point_told{false};
 
-bool writable(const void *p, size_t n)
+// The entry point is a global in the game image, whose protection never changes: it is queried once per address.
+std::atomic<uintptr_t> entry_point_checked{0};
+std::atomic<bool> entry_point_rw{false};
+
+bool entry_point_writable(uintptr_t at)
 {
+    if (at && entry_point_checked.load() == at)
+        return entry_point_rw.load();
     MEMORY_BASIC_INFORMATION m{};
-    if (!p || !VirtualQuery(p, &m, sizeof m) || m.State != MEM_COMMIT || (m.Protect & (PAGE_NOACCESS | PAGE_GUARD)))
-        return false;
-    if (!(m.Protect & (PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY)))
-        return false;
-    return uintptr_t(p) + n <= uintptr_t(m.BaseAddress) + m.RegionSize;
+    bool ok = at && VirtualQuery(reinterpret_cast<const void *>(at), &m, sizeof m) == sizeof m &&
+              logic::region_writable(m.State == MEM_COMMIT, m.Protect, uintptr_t(m.BaseAddress), m.RegionSize, at, 4);
+    entry_point_rw = ok;
+    entry_point_checked = at;
+    return ok;
 }
 
 void clear_entry_point(const char *why)
@@ -472,7 +516,7 @@ void clear_entry_point(const char *why)
         entry_point_addr = at;
     }
     auto entry = reinterpret_cast<uint32_t *>(at);
-    switch (logic::entry_point_write(at, at && writable(entry, 4))) {
+    switch (logic::entry_point_write(at, at && entry_point_writable(at))) {
     case logic::EntryPointWrite::write:
         *entry = 0;
         return;
@@ -626,8 +670,9 @@ safetyhook::InlineHook h_migrate;
 NeStr **migrate_detour(void *cmd, NeStr **out, void *node)
 {
     NeStr **r = h_migrate.call<NeStr **>(cmd, out, node);
+    swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
     auto base = static_cast<uint8_t *>(cmd);
-    std::string flow, entry, result;
+    std::string flow, entry, result, before = get_flow();
     if (runtime::readable(base + 0xc8, 16)) {
         flow = ne_text(*reinterpret_cast<NeStr **>(base + 0xc8));
         entry = ne_text(*reinterpret_cast<NeStr **>(base + 0xd0));
@@ -637,6 +682,8 @@ NeStr **migrate_detour(void *cmd, NeStr **out, void *node)
     bool failed = logic::migrate_failed(result);
     if (!failed && !flow.empty())
         set_flow(flow);
+    if (!failed && logic::customisation_disarms(flow) && customisation_armed.exchange(false))
+        swofty::log("[main-menu] back: the %s was entered after the Customisation card press without its Back; the Customisation screen's Back is the game's again", flow.c_str());
     if (!failed && flow == logic::F1_WORLD_FLOW) {
         bool pending = false;
         {
@@ -655,8 +702,9 @@ NeStr **migrate_detour(void *cmd, NeStr **out, void *node)
         if (pending)
             cover_up("the container is about to open");
     }
-    swofty::log("[main-menu] nav: Migrate command: flow '%s' entry '%s' -> %s%s%s; the flow the game last accepted is now %s", flow.c_str(),
-                entry.empty() ? "(none)" : entry.c_str(), failed ? "FAILED: " : "accepted", failed ? result.c_str() : "", "", get_flow().c_str());
+    if (logic::migrate_logged(failed, flow, before))
+        swofty::log("[main-menu] nav: Migrate command: flow '%s' entry '%s' -> %s%s%s; the flow the game last accepted is now %s", flow.c_str(),
+                    entry.empty() ? "(none)" : entry.c_str(), failed ? "FAILED: " : "accepted", failed ? result.c_str() : "", "", get_flow().c_str());
     return r;
 }
 
@@ -685,7 +733,12 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
 {
     last_router = router;
     const char *text = name && *name ? reinterpret_cast<const char *>(*name) + NESTR_CHARS : "";
-    uint32_t gid = runtime::readable(static_cast<uint8_t *>(vm) + 0x250, 4) ? *reinterpret_cast<uint32_t *>(static_cast<uint8_t *>(vm) + 0x250) : 0;
+    uint32_t gid = 0;
+    {
+        swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
+        if (!vm || !swofty::mem::read(reinterpret_cast<uintptr_t>(vm) + 0x250, gid))
+            gid = 0;
+    }
     if (home_open.load() && gid == logic::djb2("fe_home") && logic::hides_panel(text)) {
         std::lock_guard<std::mutex> g(view_lock);
         home_view.left();
@@ -693,15 +746,25 @@ void fire_detour(void *router, void *vm, NeStr **name, uint64_t a4)
         swofty::log("[main-menu] panel hidden: route %s fired from the home screen", text);
     }
     if (patched.load()) {
-        if (gid == logic::djb2("f1_world_activity_container") || gid == logic::djb2("fe_showroom") || gid == logic::djb2("grand_prix_continue"))
+        if (gid == logic::djb2("f1_world_activity_container") || gid == logic::djb2("fe_showroom") || gid == logic::djb2("grand_prix_continue") ||
+            gid == logic::djb2(logic::CUSTOMISATION_GROUP))
             swofty::log("[main-menu] nav: route '%s' fired in group 0x%08x (%s)", text, gid,
-                        gid == logic::djb2("fe_showroom") ? "fe_showroom" : gid == logic::djb2("grand_prix_continue") ? "grand_prix_continue" : "f1_world_activity_container");
+                        gid == logic::djb2("fe_showroom")           ? "fe_showroom"
+                        : gid == logic::djb2("grand_prix_continue") ? "grand_prix_continue"
+                        : gid == logic::djb2(logic::CUSTOMISATION_GROUP) ? logic::CUSTOMISATION_GROUP
+                                                                    : "f1_world_activity_container");
         if (logic::saves_back_leaves_home(back_mode(), gid, text, logic::Mode(nav.mode.load()))) {
             saves_tabs_at = 0;
             saves_back_at = GetTickCount64();
             swofty::log("[main-menu] back: the saves list's Back (route back) migrates to the activity container as the game's own; the core leaves the container for the main menu once its tabs exist");
         }
-        if (const char *to = logic::back_replacement(back_mode(), gid, text)) {
+        const char *to = logic::back_replacement(back_mode(), gid, text);
+        if (!to && (to = logic::customisation_back(back_mode(), customisation_armed.load(), gid, text))) {
+            customisation_armed = false;
+            swofty::log("[main-menu] back: the Customisation screen was entered from the main menu card; its Back (route %s in %s) returns to the main menu",
+                        text, logic::CUSTOMISATION_GROUP);
+        }
+        if (to) {
             clear_entry_point("Back");
             {
                 std::lock_guard<std::mutex> g(swap_lock);
@@ -1169,15 +1232,18 @@ uint8_t add_tiles(void *list_, uint8_t career_index, const uint8_t *flags)
     block.theatre(list, ++index);
     bool showroom = menu_on();
     if (showroom)
-        add_showroom(list, ++index);
+        add_theatre_copy(list, ++index, logic::ID_SHOWROOM, showroom_populate, showroom_action);
+    bool customisation = customisation_on();
+    if (customisation)
+        add_theatre_copy(list, ++index, logic::ID_CUSTOMISATION, customisation_populate, customisation_action);
     block.divider(list, ++index);
     if (HomeItem *divider = last_item(list)) {
         Ne_Make_StrFromCStr(&divider->id, logic::ID_DIVIDER, 0, 0);
         swofty::log("[main-menu] divider tile added before Addon Settings (index %u)", unsigned(index));
     }
     style_list(list);
-    swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial, Split Screen%s, Theatre%s (last index %u)",
-                flags && (flags[8] & 1) ? ", challenge" : "", showroom ? ", Showroom" : "", unsigned(index));
+    swofty::log("[main-menu] tiles added after Career: Grand Prix, Time Trial, Split Screen%s, Theatre%s%s (last index %u)",
+                flags && (flags[8] & 1) ? ", challenge" : "", showroom ? ", Showroom" : "", customisation ? ", Customisation" : "", unsigned(index));
     return index;
 }
 
@@ -1360,6 +1426,25 @@ void tick()
     }
 }
 
+void session_enter()
+{
+    logic::Mode pressed = logic::Mode(nav.mode.load());
+    if (pressed == logic::Mode::none)
+        return;
+    std::string mode = swofty_core::apply::moments::session_mode_track().first;
+    logic::Mode driven = logic::driven_mode(pressed, mode);
+    if (driven == pressed)
+        return;
+    nav.mode = int(driven);
+    const char *card = pressed == logic::Mode::time_trial ? "Time Trial" : "Grand Prix";
+    if (driven == logic::Mode::none)
+        swofty::log("[main-menu] nav: the session that loaded (game mode %s) is not the %s the card opened, nor the other card's mode; the session-end hand-over raises no command",
+                    mode.c_str(), card);
+    else
+        swofty::log("[main-menu] nav: the session that loaded is a %s (game mode %s), not the %s the card opened; the session-end hand-over raises '%s'",
+                    driven == logic::Mode::time_trial ? "Time Trial" : "Grand Prix", mode.c_str(), card, logic::return_command(driven));
+}
+
 void screen(const char *name)
 {
     if (!name)
@@ -1435,6 +1520,8 @@ void screen(const char *name)
             home_opened_at = GetTickCount64();
         if (home && via.exchange(0))
             swofty::log("[main-menu] fe_home screen opened; back-to-menu disarmed (a screen-open event, not proof it is the visible screen)");
+        if (home && customisation_armed.exchange(false))
+            swofty::log("[main-menu] back: fe_home opened after the Customisation card press; the Customisation screen's Back is the game's again");
         strip_wanted = home ? 0 : 1;
         if (home) {
             read_state(true);
@@ -1692,7 +1779,8 @@ void paint(hud::Frame &f, uint64_t now)
     if (!std::exchange(told_drawn, true))
         swofty::log("[main-menu] panel: first draw on a %.0fx%.0f frame; video card %s, avatar %s", double(W), double(H),
                     p->video_slot >= 0 ? "yes" : "no", p->avatar_slot >= 0 ? "yes" : "no");
-    const float k = H / 1028.0f;
+    const float k = logic::panel_scale(W, H);
+    const float band_top = logic::ui_band(W, H).top;
     auto anchor = logic::scene_to_px(logic::CARD_RIGHT_X, logic::CARD_BOTTOM_Y, W, H);
     const float right = anchor.x;
     {
@@ -1707,7 +1795,7 @@ void paint(hud::Frame &f, uint64_t now)
         float block_h = name_style.px * 1.3f;
         float ph = avatar + 2 * pad;
         float pw = std::max(190 * k, pad + avatar + gap + 3 * k + 9 * k + nw + 20 * k);
-        float px = right - pw, py = 44 * k;
+        float px = right - pw, py = band_top + 44 * k;
         fade_panel(f, px - 110 * k, py, pw + 110 * k, ph, 0.45f, 0.04f, k);
         float ax = px + pad, ay = py + pad;
         if (p->avatar_slot >= 0) {

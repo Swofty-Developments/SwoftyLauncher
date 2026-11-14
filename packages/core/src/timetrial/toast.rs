@@ -1,6 +1,6 @@
 //! The lap-finish toast: when the server accepts an uploaded lap that is the player's new best on its
-//! board, the wrapper drops a message into `<game>/swofty/tt/toast/<id>.json` and the core shows it as a
-//! race HUD notification. See CONTRACT.md, addendum E.
+//! board, the wrapper drops a message into the data folder's `tt/toast/<id>.json` and the core shows it
+//! as a race HUD notification. See CONTRACT.md, addendum E.
 
 use std::path::{Path, PathBuf};
 
@@ -12,8 +12,8 @@ use super::boards::content_listed;
 use super::queue::{Folder, Queue};
 use super::swlap::Board;
 
-pub fn dir(game: &Path) -> PathBuf {
-    game.join(super::bridge::MAILBOX_DIR).join(MAILBOX_TOAST)
+pub fn dir(data: &Path) -> PathBuf {
+    data.join("tt").join(MAILBOX_TOAST)
 }
 
 /// The player's fastest accepted lap on `board` that was uploaded before the one named `id`.
@@ -74,8 +74,8 @@ pub fn message(
 }
 
 /// Write a message as `.tmp`, then rename. The id keeps a lap from showing twice.
-pub fn write(game: &Path, doc: &Value) -> std::io::Result<()> {
-    let dir = dir(game);
+pub fn write(data: &Path, doc: &Value) -> std::io::Result<()> {
+    let dir = dir(data);
     std::fs::create_dir_all(&dir)?;
     let id: String = doc["id"]
         .as_str()

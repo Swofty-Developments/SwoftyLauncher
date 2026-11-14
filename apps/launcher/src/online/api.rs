@@ -1,6 +1,6 @@
 use serde::Deserialize;
 use std::time::Duration;
-use swofty_core::timetrial::boards::content_listed;
+use swofty_core::timetrial::boards::{content_listed, track_addon};
 use swofty_i18n::trf;
 
 use super::model::*;
@@ -131,6 +131,8 @@ struct TrackDto {
     record: Option<RecordDto>,
     #[serde(default)]
     podium: Vec<PodiumDto>,
+    #[serde(default, alias = "track_addon")]
+    addon: Option<String>,
 }
 
 fn absolute(server: &str, url: Option<String>) -> Option<String> {
@@ -156,6 +158,7 @@ fn track_card(server: &str, content: &str, t: TrackDto, custom: bool) -> TrackCa
         Some(n) => n,
         None => track_title(&t.track),
     };
+    let addon = track_addon(&t.track, t.addon.as_deref()).map(str::to_owned);
     TrackCard {
         key: BoardKey {
             content,
@@ -180,6 +183,7 @@ fn track_card(server: &str, content: &str, t: TrackDto, custom: bool) -> TrackCa
         drivers: t.drivers,
         laps: t.laps,
         custom,
+        addon,
     }
 }
 
@@ -277,6 +281,8 @@ struct BoardDto {
     country: Option<String>,
     #[serde(default)]
     custom: bool,
+    #[serde(default)]
+    track_addon: Option<String>,
     #[serde(default)]
     layout: Option<String>,
     #[serde(default)]
@@ -676,6 +682,7 @@ impl BoardsApi for HttpBoards {
             drivers: dto.total,
             laps: dto.total,
             custom: dto.custom,
+            addon: track_addon(&dto.track, dto.track_addon.as_deref()).map(str::to_owned),
         };
         Ok(BoardPage {
             track,
@@ -851,6 +858,45 @@ mod tests {
                 .map(|b| b.lap_id.as_str())
                 .collect::<Vec<_>>(),
             ["d"]
+        );
+    }
+
+    #[test]
+    fn a_tracks_addon_is_read_and_a_stock_track_in_a_season_box_has_none() {
+        let custom: TrackDto = serde_json::from_str(
+            r#"{"track":"twilight.bahrain-reverse:sakhir_reverse","name":"Bahrain Reverse","addon":"twilight.bahrain-reverse","country":"bh","laps":3}"#,
+        )
+        .unwrap();
+        let card = track_card("https://s", "game/f1_2025", custom, true);
+        assert_eq!(card.addon.as_deref(), Some("twilight.bahrain-reverse"));
+        let listed: TrackDto = serde_json::from_str(
+            r#"{"track":"mod.lisgp:lisgp","name":"Portuguese Grand Prix","track_addon":"mod.lisgp"}"#,
+        )
+        .unwrap();
+        assert_eq!(
+            track_card("https://s", "", listed, true).addon.as_deref(),
+            Some("mod.lisgp")
+        );
+        let stock: TrackDto =
+            serde_json::from_str(r#"{"track":"bahrain","name":"Bahrain International Circuit"}"#).unwrap();
+        let season = track_card("https://s", "swofty.swofty-seasons-2015/sw_2015", stock, false);
+        assert_eq!(season.addon, None);
+        let board: BoardDto = serde_json::from_str(
+            r#"{"content":"swofty.swofty-seasons-2015/sw_2015","track":"mod.lemans:le_mans_2017","weather":"dry","name":"SWOFTY 2015","track_name":"Le Mans","custom":true,"track_addon":"mod.lemans"}"#,
+        )
+        .unwrap();
+        assert_eq!(board.track_addon.as_deref(), Some("mod.lemans"));
+        assert_eq!(
+            TrackCard::bare(
+                BoardKey {
+                    content: "swofty.swofty-seasons-2015/sw_2015".into(),
+                    track: "monaco".into(),
+                    weather: "dry".into(),
+                },
+                "Monaco".into(),
+            )
+            .addon,
+            None
         );
     }
 

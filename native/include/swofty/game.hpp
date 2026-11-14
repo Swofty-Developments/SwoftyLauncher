@@ -17,4 +17,5 @@
 #include <swofty/game/session.hpp>
 #include <swofty/game/teams.hpp>
 #include <swofty/game/tracks.hpp>
+#include <swofty/game/ui.hpp>
 #include <swofty/game/vm.hpp>

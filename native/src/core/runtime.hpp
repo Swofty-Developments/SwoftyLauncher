@@ -23,6 +23,10 @@ class Store;
 
 namespace runtime {
 
+namespace myteam_heal {
+struct Load;
+}
+
 enum Stage { STAGE_WINDOW = 1 };
 
 // How long a reader of the game's heaps trusts a big region's VirtualQuery answer (swofty::mem::Trust). A fresh
@@ -55,12 +59,18 @@ const std::string &config_source();
 const std::wstring &game_root();
 const std::wstring &swofty_root();
 const std::wstring &state_root();
+// Where the core writes the files the launcher collects (laps, the Time Trial mailbox, replay copies): the launcher's
+// data folder (state_root), or swofty\ when the core can't write there. The game can't create files in swofty\ of an
+// EA app copy under Program Files.
+const std::wstring &files_root();
 bool enabled(const char *feature, const char *what);
 std::string load_stage();
 bool same_build();
 // The builds whose struct layouts were checked against the signatures' functions (re/tools/sigverify.py): the Steam KB build and
 // the EA App link of the same version. Code that finds every address by signature gates on this instead of same_build().
 bool verified_build();
+// [g_Game_Manager]'s entrants system displacement on the running build (game_manager_layout.hpp): +0x290 on Steam, +0x260 on EA.
+uintptr_t manager_entrants_system();
 
 uintptr_t find(const Sig &s, const char *tag, const char *channel = "assets");
 bool readable(const void *p, size_t n);
@@ -117,6 +127,11 @@ void events_drop_module(void *module);
 size_t events_fire(const char *event, int64_t a, int64_t b, const void *data);
 void session_emit(const session_life::Emit &e);
 void session_flow(const char *known, int to);
+// The live session's session_life::Kind and a counter that moves on every change of it; both are atomic loads.
+int session_kind();
+uint64_t session_serial();
+// Arms or drops the Time Trial player name rename for the live session (player_name.cpp).
+void player_name_session();
 
 struct CoreMixins {
     const char *name;
@@ -250,6 +265,15 @@ std::vector<CoreMixins> standings_guard_mixins();
 void standings_guard_commit();
 std::vector<CoreMixins> fe_tile_guard_mixins();
 void fe_tile_guard_commit();
+std::vector<CoreMixins> myteam_vehicle_guard_mixins();
+void myteam_vehicle_guard_commit();
+std::vector<CoreMixins> myteam_vehicle_heal_mixins();
+void myteam_vehicle_heal_commit();
+void myteam_vehicle_heal_entrants(const myteam_heal::Load &load);
+std::vector<CoreMixins> myteam_vehicle_keep_mixins();
+void myteam_vehicle_keep_commit();
+bool myteam_keep_forced(const std::string &label);
+bool myteam_keep_substitute(SwoftyContext *c, uint32_t stat, const std::string &label);
 std::vector<CoreMixins> ai_corner_guard_mixins();
 void ai_corner_guard_commit();
 std::vector<CoreMixins> replay_grid_guard_mixins();
@@ -258,6 +282,7 @@ std::vector<CoreMixins> watchdog_grace_mixins();
 void watchdog_grace_commit();
 void watchdog_flow(uint32_t hash, uint32_t to, const char *name);
 void load_stall_flow(uint32_t hash, uint32_t to, const char *name);
+void session_job_probe_flow(uint32_t to, const char *name);
 void load_stall_screen(const char *name);
 void load_stall_signal(uint32_t trigger, uint64_t detail_ms);
 void load_stall_game_line(const char *line);
@@ -305,11 +330,17 @@ void leaderboard_guard_commit();
 std::vector<CoreMixins> thrustmaster_lcd_mixins();
 void thrustmaster_lcd_commit();
 std::vector<CoreMixins> estimate_laptime_mixins();
+std::vector<CoreMixins> gp_continue_mixins();
+void gp_continue_commit();
 void estimate_laptime_commit();
+std::vector<CoreMixins> track_list_guard_mixins();
+void track_list_guard_commit();
 std::vector<CoreMixins> garage_setup_mixins();
 void garage_setup_commit();
 std::vector<CoreMixins> theatre_list_mixins();
 void theatre_list_commit();
+std::vector<CoreMixins> tile_list_select_mixins();
+void tile_list_select_commit();
 std::vector<CoreMixins> session_enter_mixins();
 std::vector<CoreMixins> ai_line_set_mixins();
 void ai_line_set_commit();
@@ -337,6 +368,9 @@ void tt_bridge_lap_finished(int64_t lap_ms, int valid);
 void tt_bridge_lap_progress(double path_m, double elapsed_s);
 void tt_bridge_lap_started();
 std::string tt_bridge_last_board();
+std::string tt_bridge_session_board();
+bool tt_bridge_session_track(std::string &code);
+void tt_bridge_session_exit();
 void tt_bridge_session_enter();
 void tt_bridge_track_watch(bool session_live);
 void lap_rec_ghost(uintptr_t handler);

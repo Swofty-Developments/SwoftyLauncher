@@ -17,6 +17,7 @@ use swofty_core::recovery::Blocked;
 use swofty_core::session::{SessionRecord, UiMode};
 use swofty_core::store::Store;
 use swofty_core::view::View;
+use swofty_i18n::{tr, trf};
 
 mod barfit;
 mod config;
@@ -113,6 +114,8 @@ pub struct Shell {
     pub(crate) time_trial_boards: bool,
     /// `time_trial_ingame` from config.json: on unless turned off, shows the boards inside Time Trial.
     pub(crate) time_trial_ingame: bool,
+    /// `home_video` from config.json: on unless turned off, shows the latest video card on the F1 25 home screen.
+    pub(crate) home_video: bool,
     reload_generation: u64,
     slow_logged: bool,
     /// `updates.check` from config.json, read when the library loads.
@@ -167,7 +170,7 @@ impl Shell {
             Ok(v) => v,
             Err(e) => {
                 self.mp_toasts
-                    .push(Notification::error(format!("Sign-in failed: {e}")));
+                    .push(Notification::error(trf!("Sign-in failed: {e}", e = e)));
                 cx.notify();
                 return;
             }
@@ -184,12 +187,14 @@ impl Shell {
                 s.mp_busy = false;
                 match result {
                     Ok(session) => {
-                        s.mp_toasts
-                            .push(Notification::success(format!("Signed in as {}", session.name)));
+                        s.mp_toasts.push(Notification::success(trf!(
+                            "Signed in as {name}",
+                            name = session.name
+                        )));
                         if session.allowed {
-                            s.mp_toasts.push(Notification::success(
+                            s.mp_toasts.push(Notification::success(tr(
                                 "Your account has been granted access to: Multiplayer",
-                            ));
+                            )));
                         }
                         s.mp = Some(session);
                         s.sync_avatar(cx);
@@ -197,7 +202,7 @@ impl Shell {
                     Err(swofty_core::mpauth::SignInError::Banned(ban)) => s.ban = Some(ban),
                     Err(e) => s
                         .mp_toasts
-                        .push(Notification::error(format!("Sign-in failed: {e}"))),
+                        .push(Notification::error(trf!("Sign-in failed: {e}", e = e))),
                 }
                 cx.notify();
             })
@@ -225,7 +230,7 @@ impl Shell {
             .spawn(async move { swofty_core::mpauth::sign_out(&dir, &session) })
             .detach();
         self.mp_toasts
-            .push(Notification::info(format!("Signed out {name}")));
+            .push(Notification::info(trf!("Signed out {name}", name = name)));
         cx.notify();
     }
 
@@ -260,9 +265,9 @@ impl Shell {
                 self.mp = Some(session);
                 self.sync_avatar(cx);
                 if gained {
-                    self.mp_toasts.push(Notification::success(
+                    self.mp_toasts.push(Notification::success(tr(
                         "Your account has been granted access to: Multiplayer",
-                    ));
+                    )));
                 }
             }
             None => self.mp = None,

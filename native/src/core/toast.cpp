@@ -76,7 +76,9 @@ void tick()
     ULONGLONG now = GetTickCount64();
     if (now - last_poll >= POLL_MS) {
         last_poll = now;
-        take(under_swofty("tt\\toast"));
+        take(files_root() + L"tt\\toast");
+        if (files_root() != swofty_root())
+            take(swofty_root() + L"tt\\toast");
     }
     Snapshot s = machine.step(now, int64_t(std::time(nullptr)));
     if (s.started)

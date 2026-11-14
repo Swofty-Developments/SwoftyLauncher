@@ -17,6 +17,7 @@
 
 #include <atomic>
 #include <algorithm>
+#include <condition_variable>
 #include <cstring>
 #include <mutex>
 #include <string>
@@ -34,6 +35,14 @@ std::string hook_error(const safetyhook::InlineHook::Error &e);
 // launcher signed in (the same home_menu.json the main menu panel reads), the hook returns the account display name instead
 // of the stock persona name; outside Time Trial, signed out, or for a name the HUD font cannot draw it returns the stock
 // result untouched. Read-only: the name cache and every save are never written. SWOFTY_TT_PLAYER_NAME=0 turns it off.
+// The rename is armed for one session at a time (session load and enter, then the 3 s pin pass from the ghost tick); an
+// unarmed or other-mode lookup costs atomic loads only.
+//
+// The source swap (swap_sources) scans the game's writable memory for copies of the stock persona and rewrites them. It runs
+// on a thread started the first time it is needed, only in a Time Trial session on our content, and only when the pin pass
+// asks: once for that session, again when the stock or the shown name changes, and again when the pin pass still finds the
+// stock name on a screen 30 s or more after the last scan (two times a session at most). It stops when the session ends.
+// SWOFTY_TT_PLAYER_NAME_SWAP=0 turns it off.
 //
 // Unconfirmed in game: that the HUD's top-left name comes through this lookup (the log line below says whether the hook was
 // hit and what it replaced).
@@ -48,24 +57,39 @@ const runtime::Sig S_NAME{"Game_PresenceNameCache_Lookup",
 using LookupFn = const char *(*)(void *cache, void *id);
 
 safetyhook::InlineHook h_lookup;
-std::atomic<int> hits{0}, replaced{0}, busy{0};
-char shown[runtime::player_name::MAX_BYTES + 1] = {};
-std::string shown_for;
+std::atomic<int> replaced{0}, busy{0};
 std::atomic<bool> bridge_on{false};
 std::mutex account_lock;
 std::string account_cached;
 bool account_signed_in = false;
 
+namespace pn = runtime::player_name;
+namespace sl = runtime::session_life;
+
 // The launcher account is read from home_menu.json on a worker thread (the main menu's own state is not loaded when the game
-// starts through the chain entry); the lookup hook only copies the cached string.
+// starts through the chain entry); the file is read again only when its write time changes, and not during a session of
+// another mode. The lookup hook never reads it.
 void account_worker()
 {
+    const std::wstring path = runtime::swofty_root() + L"home_menu.json";
+    FILETIME stamp{};
+    bool read_once = false, had = false;
     for (;;) {
-        auto state = runtime::main_menu::parse_state(runtime::read_file(runtime::swofty_root() + L"home_menu.json", size_t(1) << 20));
-        {
-            std::lock_guard<std::mutex> g(account_lock);
-            account_signed_in = state.loaded && state.signed_in && !state.name.empty();
-            account_cached = account_signed_in ? state.name : std::string();
+        if (runtime::session_kind() != sl::OTHER) {
+            WIN32_FILE_ATTRIBUTE_DATA d{};
+            bool have = GetFileAttributesExW(path.c_str(), GetFileExInfoStandard, &d) != 0;
+            bool same = have && had && CompareFileTime(&d.ftLastWriteTime, &stamp) == 0;
+            if (pn::account_reread(read_once, had, have, same)) {
+                auto state = runtime::main_menu::parse_state(have ? runtime::read_file(path, size_t(1) << 20) : std::string());
+                {
+                    std::lock_guard<std::mutex> g(account_lock);
+                    account_signed_in = state.loaded && state.signed_in && !state.name.empty();
+                    account_cached = account_signed_in ? state.name : std::string();
+                }
+                read_once = true;
+                had = have;
+                stamp = have ? d.ftLastWriteTime : FILETIME{};
+            }
         }
         Sleep(2000);
     }
@@ -100,46 +124,80 @@ bool session_ours()
 
 std::mutex stock_lock;
 std::string stock_learned;
+std::atomic<uint64_t> stock_serial{~0ull};
 
+// What the lookup hook needs, published by arm_rename (at session load and enter, and by the 3 s pin pass): the local presence
+// id packed into two words, the session it is armed for, and the name to show in one of two buffers.
+std::mutex rename_lock;
+std::atomic<bool> rename_armed{false};
+std::atomic<uint64_t> rename_serial{0}, rename_value{0};
+std::atomic<uint32_t> rename_tag{0};
+char shown_buf[2][runtime::player_name::MAX_BYTES + 1] = {};
+std::atomic<int> shown_slot{0};
+std::atomic<const char *> shown_source{""};
+
+bool arm_rename(uint64_t serial)
+{
+    std::lock_guard<std::mutex> g(rename_lock);
+    std::string clean;
+    const char *source = "";
+    runtime::presence_id::Id me;
+    bool ok = bridge_on.load(std::memory_order_relaxed) && sl::time_trial_live(runtime::session_kind()) && runtime::tt_bridge_ours_session() &&
+              runtime::tt_bridge_presence_id(me) && wanted_name(clean, source);
+    if (!ok) {
+        rename_armed.store(false, std::memory_order_release);
+        return false;
+    }
+    int slot = shown_slot.load(std::memory_order_relaxed);
+    if (clean != shown_buf[slot]) {
+        slot ^= 1;
+        std::memcpy(shown_buf[slot], clean.c_str(), clean.size() + 1);
+        shown_slot.store(slot, std::memory_order_release);
+    }
+    shown_source.store(source, std::memory_order_relaxed);
+    rename_value.store(me.value[0], std::memory_order_relaxed);
+    rename_tag.store(pn::id_tag(me), std::memory_order_relaxed);
+    rename_serial.store(serial, std::memory_order_relaxed);
+    rename_armed.store(true, std::memory_order_release);
+    return true;
+}
+
+// Outside an armed Time Trial session, and for every id that is not the local presence's, the hook returns the game's own
+// result after atomic loads and one guarded copy of the key: no lock, no memory check, no string copy.
 const char *lookup_hook(void *cache, void *id)
 {
     const char *stock = h_lookup.call<const char *>(cache, id);
-    if (!bridge_on.load(std::memory_order_relaxed) || !stock || !id)
+    if (!stock || !id || !rename_armed.load(std::memory_order_acquire))
         return stock;
+    uint64_t serial = runtime::session_serial();
+    if (!pn::lookup_renames(sl::time_trial_live(runtime::session_kind()), true, rename_serial.load(std::memory_order_relaxed), serial))
+        return stock;
+    uint8_t key[0x50];
+    if (!swofty_core::hooks::guard::copy_memory(key, id, sizeof key))
+        return stock;
+    if (!pn::is_local_id(key, pn::id_of(rename_tag.load(std::memory_order_relaxed), rename_value.load(std::memory_order_relaxed))))
+        return stock;
+    const char *result = shown_buf[shown_slot.load(std::memory_order_acquire)];
     if (busy.exchange(1))
-        return stock;
-    const char *result = stock;
-    runtime::presence_id::Id me;
-    uint8_t key[0x50] = {};
-    bool ours = session_ours(), have_me = runtime::tt_bridge_presence_id(me), have_key = swofty_core::hooks::guard::copy_memory(key, id, sizeof key);
-    bool local = ours && have_me && have_key && runtime::player_name::is_local_id(key, me);
-    static std::atomic<int> traced{0};
-    if (traced.fetch_add(1) < 12)
-        swofty::log("[boards] player name: lookup %d: mode %s, our session %d, presence id %s, key %s, local player %d, stock \"%.40s\"", traced.load(),
-                    swofty_core::apply::moments::session_mode_track().first.c_str(), ours ? 1 : 0, have_me ? "known" : "unknown",
-                    have_key ? "read" : "unreadable", local ? 1 : 0, runtime::readable(stock, 4) ? stock : "?");
-    if (local) {
-        std::string clean;
-        const char *source = "";
+        return result;
+    int n = replaced.fetch_add(1) + 1;
+    bool learn = stock_serial.load(std::memory_order_relaxed) != serial;
+    if (learn || n <= 3 || n == 50) {
         char seen[runtime::player_name::MAX_BYTES + 1] = {};
-        if (runtime::readable(stock, 4)) {
-            strncpy(seen, stock, runtime::player_name::MAX_BYTES);
+        {
+            swofty::mem::Trust trust(runtime::HEAP_TRUST_MS);
+            if (swofty::mem::readable(stock, 4))
+                strncpy(seen, stock, runtime::player_name::MAX_BYTES);
+        }
+        if (learn && seen[0]) {
             std::lock_guard<std::mutex> g(stock_lock);
             stock_learned = seen;
+            stock_serial.store(serial, std::memory_order_relaxed);
         }
-        if (wanted_name(clean, source)) {
-            if (clean != shown_for) {
-                std::memcpy(shown, clean.c_str(), clean.size() + 1);
-                shown_for = clean;
-            }
-            result = shown;
-            int n = replaced.fetch_add(1) + 1;
-            if (n <= 3 || n == 50)
-                swofty::log("[boards] player name: showing \"%s\" (source %s) for the local player's id, replacing \"%.40s\" in the name cache "
-                            "lookup (call %d)",
-                            clean.c_str(), source, seen, n);
-        } else if (hits.fetch_add(1) == 0)
-            swofty::log("[boards] player name: no usable name to show (empty, off, or characters the HUD font lacks); the stock name stays");
+        if (n <= 3 || n == 50)
+            swofty::log("[boards] player name: showing \"%s\" (source %s) for the local player's id, replacing \"%.40s\" in the name cache "
+                        "lookup (call %d)",
+                        result, shown_source.load(std::memory_order_relaxed), seen[0] ? seen : "?", n);
     }
     busy = 0;
     return result;
@@ -380,7 +438,7 @@ std::string fit_name(const std::string &name, size_t max)
 
 struct SwapResult {
     size_t records = 0, strings = 0, scanned_mb = 0, skipped = 0;
-    bool limit = false;
+    bool limit = false, stopped = false;
 };
 
 // Rewrites, in place, every copy of the stock persona the game keeps as input: refcounted VM string records (length word at +6, characters
@@ -388,14 +446,15 @@ struct SwapResult {
 // The game's consumers (entrant names, the timing tower and HUD leaves, the leaderboard rows) are all built from such copies. Only strings
 // that read exactly the stock persona change; the new text is cut to the stock length (a record's or small string's storage is never
 // grown, so nothing is allocated or freed). Reads and writes go through ReadProcessMemory / WriteProcessMemory, which fail instead of faulting.
-SwapResult swap_sources(const std::string &stock, const std::string &name_in)
+// The scan stops the moment the session it was planned for ends.
+SwapResult swap_sources(const std::string &stock, const std::string &name_in, uint64_t serial)
 {
     namespace ms = runtime::mem_scan;
     SwapResult res;
     constexpr size_t CHUNK = size_t(1) << 20, OVERLAP = 256;
     const int64_t deadline = int64_t(GetTickCount64()) + 20000;
     std::string name = fit_name(name_in, std::min<size_t>(stock.size(), 15));
-    if (name.empty() || name == stock || stock.size() > 15)
+    if (name.empty() || name == stock || stock.size() > pn::SWAP_MAX_STOCK)
         return res;
     NT_TIB *tib = reinterpret_cast<NT_TIB *>(NtCurrentTeb());
     uint64_t stack_lo = uint64_t(tib->StackLimit), stack_hi = uint64_t(tib->StackBase);
@@ -405,6 +464,11 @@ SwapResult swap_sources(const std::string &stock, const std::string &name_in)
         for (uint64_t off = 0; off < r.size; off += CHUNK) {
             if (int64_t(GetTickCount64()) > deadline) {
                 res.limit = true;
+                res.scanned_mb = size_t(scanned >> 20);
+                return res;
+            }
+            if (!pn::swap_continues(sl::time_trial_live(runtime::session_kind()), serial, runtime::session_serial())) {
+                res.stopped = true;
                 res.scanned_mb = size_t(scanned >> 20);
                 return res;
             }
@@ -463,43 +527,82 @@ SwapResult swap_sources(const std::string &stock, const std::string &name_in)
     return res;
 }
 
-void source_worker()
+struct SwapJob {
+    uint64_t serial = 0;
+    std::string stock, name;
+    const char *source = "";
+    pn::SwapWhy why = pn::SwapWhy::none;
+};
+
+std::mutex swap_lock;
+std::condition_variable swap_cv;
+SwapJob swap_job;
+bool swap_queued = false;
+std::atomic<bool> swap_busy{false};
+pn::SwapPlan swap_plan;
+std::once_flag swap_thread_once;
+
+// Sleeps until the pin pass hands it a job; scans once per job and goes back to sleep. Nothing runs on a timer.
+void swap_worker()
 {
-    static int logged = 0;
+    SetThreadPriority(GetCurrentThread(), THREAD_PRIORITY_LOWEST);
     for (;;) {
-        Sleep(4000);
-        char sw[8] = {};
-        if (GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME_SWAP", sw, sizeof sw) && !strcmp(sw, "0"))
-            continue;
-        std::string clean, stock;
-        const char *source = "";
-        char env[96] = {};
-        GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME_STOCK", env, sizeof env);
+        SwapJob job;
         {
-            std::lock_guard<std::mutex> g(stock_lock);
-            stock = env[0] ? std::string(env) : stock_learned;
+            std::unique_lock<std::mutex> lk(swap_lock);
+            swap_cv.wait(lk, [] { return swap_queued; });
+            job = swap_job;
+            swap_queued = false;
         }
-        runtime::presence_id::Id me;
-        if (stock.empty() || !runtime::tt_bridge_presence_id(me) || !wanted_name(clean, source) || clean == stock)
-            continue;
-        int64_t t0 = int64_t(GetTickCount64());
-        SwapResult r = swap_sources(stock, clean);
-        int64_t ms = int64_t(GetTickCount64()) - t0;
-        if ((r.records || r.strings || logged == 0) && logged < 40) {
-            logged++;
-            swofty::log("[boards] player name source swap: rewrote %zu string record(s) and %zu std::string object(s) that read \"%s\" to \"%s\" (source %s; scanned %zu MB in "
-                        "%lld ms%s, %zu own copies skipped)",
-                        r.records, r.strings, stock.c_str(), clean.c_str(), source, r.scanned_mb, (long long)ms, r.limit ? ", stopped at the time limit" : "", r.skipped);
+        Sleep(DWORD(pn::SWAP_SETTLE_MS));
+        SwapResult r;
+        int64_t ms = 0;
+        bool live = pn::swap_continues(sl::time_trial_live(runtime::session_kind()), job.serial, runtime::session_serial());
+        if (live) {
+            int64_t t0 = int64_t(GetTickCount64());
+            r = swap_sources(job.stock, job.name, job.serial);
+            ms = int64_t(GetTickCount64()) - t0;
         }
-        Sleep(8000);
+        {
+            std::lock_guard<std::mutex> g(swap_lock);
+            swap_plan.done_at = GetTickCount64();
+        }
+        swap_busy = false;
+        if (!live)
+            swofty::log("[boards] player name source swap (%s): skipped, the session ended first", pn::swap_word(job.why));
+        else
+            swofty::log("[boards] player name source swap (%s): rewrote %zu string record(s) and %zu std::string object(s) that read \"%s\" to \"%s\" "
+                        "(source %s; scanned %zu MB in %lld ms%s, %zu own copies skipped)",
+                        pn::swap_word(job.why), r.records, r.strings, job.stock.c_str(), job.name.c_str(), job.source, r.scanned_mb, (long long)ms,
+                        r.limit ? ", stopped at the time limit" : r.stopped ? ", stopped as the session ended" : "", r.skipped);
     }
 }
 
-void pin_names(const std::string &name, const std::string &stock)
+void plan_swap(bool live_ours, const std::string &stock, const std::string &name, const char *source, bool visible)
+{
+    char sw[8] = {};
+    if (swap_busy.load() || (GetEnvironmentVariableA("SWOFTY_TT_PLAYER_NAME_SWAP", sw, sizeof sw) && !strcmp(sw, "0")))
+        return;
+    uint64_t serial = runtime::session_serial(), now = GetTickCount64();
+    {
+        std::lock_guard<std::mutex> g(swap_lock);
+        pn::SwapWhy why = pn::swap_due(swap_plan, live_ours, serial, stock, name, visible, now);
+        if (why == pn::SwapWhy::none)
+            return;
+        pn::swap_taken(swap_plan, why, serial, stock, name, now);
+        swap_job = SwapJob{serial, stock, name, source, why};
+        swap_queued = true;
+        swap_busy = true;
+    }
+    std::call_once(swap_thread_once, [] { std::thread(swap_worker).detach(); });
+    swap_cv.notify_one();
+}
+
+int pin_names(const std::string &name, const std::string &stock)
 {
     namespace ur = runtime::ui_registry;
     if (!swofty::game::g_Vm_Registry.address() || !swofty::game::Vm_Set_String.address() || !swofty::game::Ne_Make_StrFromCStr.address())
-        return;
+        return 0;
     uint64_t base = swofty::api->module_base(), reg = uint64_t(*swofty::game::g_Vm_Registry);
     ur::Layout lay{base + 0x5a70080, base + 0x5a6ff90, base + 0x565f200, base + 0x5660370};
     std::vector<ur::Hit> hits;
@@ -521,6 +624,7 @@ void pin_names(const std::string &name, const std::string &stock)
     if (written && logged.fetch_add(1) < 6)
         swofty::log("[boards] player name: set %d leaf(s) that read \"%s\" to \"%s\" (of %zu string leaves walked)", written, stock.c_str(), name.c_str(),
                     st.strings_read);
+    return written;
 }
 
 void setup()
@@ -543,7 +647,6 @@ void setup()
     h_lookup = std::move(*h);
     bridge_on = true;
     std::thread(account_worker).detach();
-    std::thread(source_worker).detach();
     swofty::log("[boards] player name: hook armed at base+0x%llx; in Time Trial the launcher account's name replaces the stock name",
                 (unsigned long long)(at - swofty::api->module_base()));
 }
@@ -627,6 +730,7 @@ void player_name_pin_tick()
     }
     if (why.empty() && stock == clean)
         why = "the stock name already equals the name to show";
+    arm_rename(runtime::session_serial());
     char decision[400];
     snprintf(decision, sizeof decision, "mode %s, our session %d, name %s (%s), presence id %s, stock \"%.40s\": %s", mode.c_str(), ours ? 1 : 0,
              name_ok ? clean.c_str() : "-", name_ok ? source : "none", have_me ? "known" : "unknown", stock.c_str(), why.empty() ? "renaming" : why.c_str());
@@ -639,7 +743,14 @@ void player_name_pin_tick()
     char diag[8] = {};
     if (GetEnvironmentVariableA("SWOFTY_TT_DIAG", diag, sizeof diag) && !strcmp(diag, "1") && !scan_started.exchange(true))
         std::thread([stock] { scan_copies(stock); }).detach();
-    pin_names(clean, stock);
+    bool visible = pin_names(clean, stock) > 0;
+    plan_swap(true, stock, clean, source, visible);
+}
+
+void player_name_session()
+{
+    if (bridge_on.load(std::memory_order_relaxed))
+        arm_rename(session_serial());
 }
 
 }

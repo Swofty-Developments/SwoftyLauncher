@@ -8,6 +8,7 @@ use swofty_core::baseline::Identity;
 use swofty_core::install::Game;
 use swofty_core::store::Store;
 use swofty_core::timetrial::api::{Api, Boards};
+use swofty_core::timetrial::barred::{self, Barred};
 use swofty_core::timetrial::integrity::{self, Module};
 use swofty_core::timetrial::queue::{Entry, Folder, Limits, Queue, unix_now};
 use swofty_core::timetrial::upload::{self, Watcher};
@@ -40,7 +41,7 @@ pub enum LapsCommand {
 
 pub fn command(store: &Store, profile: &str, cmd: LapsCommand) -> Result<ExitCode> {
     match cmd {
-        LapsCommand::List => list(store),
+        LapsCommand::List => list(store, profile),
         LapsCommand::Upload { file } => send(store, profile, file)?,
         LapsCommand::Open => println!("{}", timetrial::boards_url()),
         LapsCommand::BridgeTest { file } => bridge_test(store, &file)?,
@@ -50,12 +51,11 @@ pub fn command(store: &Store, profile: &str, cmd: LapsCommand) -> Result<ExitCod
 }
 
 fn toast_test(store: &Store, record: bool) -> Result<()> {
-    let game = crate::build::game(store, None)?;
     let doc = timetrial::toast::sample(unix_now(), record);
-    timetrial::toast::write(&game.dir, &doc)?;
+    timetrial::toast::write(&store.root, &doc)?;
     println!(
         "wrote {}; it shows within a second in a running Time Trial session",
-        timetrial::toast::dir(&game.dir).display()
+        timetrial::toast::dir(&store.root).display()
     );
     Ok(())
 }
@@ -122,7 +122,7 @@ fn describe(e: &Entry) -> String {
     format!("{track} {weather} {}{lap}  {state}", clock(ms))
 }
 
-fn list(store: &Store) {
+fn list(store: &Store, profile: &str) {
     let queue = Queue::new(&store.root);
     let mut any = false;
     for folder in [Folder::Outbox, Folder::Rejected, Folder::Sent] {
@@ -137,7 +137,8 @@ fn list(store: &Store) {
         println!("no Time Trial laps yet");
     }
     if let Ok(game) = crate::build::game(store, None) {
-        for pair in timetrial::game_replay::ready(&game.dir, unix_now()) {
+        let dirs = timetrial::game_replay::dirs(&store.root, &game.dir);
+        for pair in timetrial::game_replay::ready(&dirs, unix_now()) {
             println!("game replay of a {} lap  waiting", clock(pair.lap_ms));
         }
     }
@@ -145,6 +146,58 @@ fn list(store: &Store) {
         println!(
             "Time Trial boards uploads are off: sign in with Discord and leave Time Trial boards on in Settings"
         );
+    }
+    let listed = barred::current(&store.root, unix_now()).unwrap_or_default();
+    let enabled = barred::for_store(store, profile, &listed);
+    if let Some(line) = barred::warning(&enabled.iter().collect::<Vec<_>>()) {
+        println!("{line}");
+        for b in &enabled {
+            match b.reason.trim() {
+                "" => println!("  {} ({})", b.title(), b.id),
+                reason => println!("  {} ({}): {reason}", b.title(), b.id),
+            }
+        }
+    }
+}
+
+/// Hand the core the barred addons the profile has enabled, from the cached list, and ask the server for a
+/// newer list on a thread of its own when the cached one is old or missing. The launch never waits for it.
+fn barred_for_launch(store: &Store, profile: &str, game: &std::path::Path) {
+    let kept = barred::cached(&store.root);
+    let shown = kept
+        .as_ref()
+        .map(|c| barred::for_store(store, profile, &c.addons))
+        .unwrap_or_default();
+    hand_over(game, &shown);
+    if kept.is_some_and(|c| c.fresh(unix_now())) {
+        return;
+    }
+    let (s, p, g) = (store.clone(), profile.to_owned(), game.to_owned());
+    std::thread::spawn(move || {
+        let list = match barred::refresh(&s.root, &swofty_core::catalog::base_url(), unix_now()) {
+            Ok(list) => list,
+            Err(e) => {
+                say("laps", &format!("barred addons list: {e}"));
+                return;
+            }
+        };
+        let next = barred::for_store(&s, &p, &list);
+        if next != shown {
+            hand_over(&g, &next);
+        }
+    });
+}
+
+fn hand_over(game: &std::path::Path, addons: &[Barred]) {
+    if let Err(e) = barred::write_session(game, addons) {
+        say(
+            "laps",
+            &format!("barred addons: the session file is not writable: {e}"),
+        );
+        return;
+    }
+    if let Some(line) = barred::warning(&addons.iter().collect::<Vec<_>>()) {
+        say("laps", &line);
     }
 }
 
@@ -193,7 +246,8 @@ fn send(store: &Store, profile: &str, file: Option<PathBuf>) -> Result<()> {
                 report.uploaded, report.waiting, report.rejected
             );
             if let Ok(game) = crate::build::game(store, None) {
-                timetrial::game_replay::send(&queue, &game.dir, &api, unix_now(), &|| false, &mut |l| {
+                let dirs = timetrial::game_replay::dirs(&store.root, &game.dir);
+                timetrial::game_replay::send(&queue, &dirs, &api, unix_now(), &|| false, &mut |l| {
                     println!("{l}")
                 });
             }
@@ -208,6 +262,7 @@ pub fn begin(
     profile: &str,
     g: &Game,
 ) -> Option<Watcher> {
+    barred_for_launch(store, profile, &g.dir);
     let Some(_) = token(&store.root, config) else {
         timetrial::clear_session_keys(&g.dir);
         return None;
@@ -265,4 +320,5 @@ pub fn end(watcher: Option<Watcher>, game: &std::path::Path) {
         w.finish();
         timetrial::clear_session_keys(game);
     }
+    barred::write_session(game, &[]).ok();
 }

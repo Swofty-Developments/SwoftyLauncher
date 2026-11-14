@@ -282,7 +282,7 @@ fn evidence(session: &SessionRecord, game: Option<&Path>, store: &Store) -> Evid
     Evidence::read(session, game, names, Some(&store.root)).with_profile(store, &addons)
 }
 
-fn read_perf(dir: &Path) -> Option<String> {
+pub(crate) fn read_perf(dir: &Path) -> Option<String> {
     ["perf.log", "game-logs/perf.log"]
         .iter()
         .find_map(|rel| read_capped(&dir.join(rel)))
@@ -309,8 +309,6 @@ struct Fatal {
     module: Option<String>,
     /// The modules on the crashing thread's stack, nearest first, lower case.
     stack: Vec<String>,
-    /// Modules whose return addresses the crash report found on the stack.
-    returns: Vec<String>,
     /// The loader's record of the exception: registers, code and stack.
     record: Vec<String>,
     /// The crashing thread's stack frames as written, nearest first.
@@ -325,10 +323,6 @@ impl Fatal {
             .iter()
             .chain(self.stack.iter().take(NEAR_FRAMES))
             .map(String::as_str)
-    }
-
-    fn all(&self) -> impl Iterator<Item = &str> {
-        self.near().chain(self.returns.iter().map(String::as_str))
     }
 }
 
@@ -413,11 +407,6 @@ fn fatal(e: &Evidence) -> Fatal {
                 if line.trim_start().starts_with('#') {
                     frames.push(line.to_owned());
                 }
-            } else if section.starts_with("Return addresses")
-                && let Some(m) = line.split_whitespace().nth(2).and_then(module_at)
-                && !f.returns.contains(&m)
-            {
-                f.returns.push(m);
             }
         }
         if f.stack.is_empty() {
@@ -764,6 +753,14 @@ const ENTRANT_LIST_SEARCH: &str = "F1_25.exe+0x1738f30 ";
 const SETUP_TRACK: &str = "Sess_Loader_SetupTrackAssets";
 /// The fault in the career hub's set-up: the read of the first record of a calendar event that matched nothing.
 const SEQUENCER_RECORD: &str = "Game_CareerEventsSequencer_Initialise+0x1020";
+/// The fault in the career hub's set-up when a driver of the player's team is not in the game's driver list: the
+/// driver morph data read of the driver the lookup did not find.
+const MORPH_DRIVER: &str = "Game_CareerEventResourceManager_AddDriverMorphData+0x82";
+/// The frame that called the game's driver name fill for a race's retirement message: the return address of the call
+/// whose driver the lookup did not find.
+const RETIREMENT_NAME: &str = "Sess_InGameRace_Update+0x77e";
+/// What the driver name fill reads for a missing driver: the composed name pointer of a null driver's name holder.
+const RETIREMENT_READ: &str = "reading 0x1f0";
 /// The game function that reads a car's racing line, which a car with no line of its own faults in.
 const LINE_CACHE: &str = "Ai_LineCache_UpdateIfChanged+";
 /// What the core logs for a car that is the third of its team.
@@ -1248,7 +1245,7 @@ fn timeline_row(line: &str) -> Option<(f64, &str)> {
 
 /// How long the game had been on the start screen when perf.log was last
 /// written, when that is the last screen its timeline shows.
-fn perf_start_screen(perf: &str) -> Option<f64> {
+pub(crate) fn perf_start_screen(perf: &str) -> Option<f64> {
     let uptime: f64 = perf
         .lines()
         .find_map(|l| l.strip_prefix("uptime: "))?
@@ -1272,6 +1269,30 @@ fn perf_start_screen(perf: &str) -> Option<f64> {
     }
     let (at, screen) = last?;
     (screen == START_SCREEN).then_some(uptime - at)
+}
+
+/// The last screen the perf timeline names.
+pub(crate) fn last_screen(perf: &str) -> Option<&str> {
+    let mut timeline = false;
+    let mut last = None;
+    for line in perf.lines() {
+        if let Some(section) = line.strip_prefix("== ") {
+            timeline = section.starts_with("Timeline");
+            continue;
+        }
+        let Some((_, what)) = timeline.then(|| timeline_row(line)).flatten() else {
+            continue;
+        };
+        if let Some(screen) = what.split("; ").filter_map(|w| w.strip_prefix("screen ")).last() {
+            last = Some(screen.split(' ').next().unwrap_or(screen));
+        }
+    }
+    last
+}
+
+/// Whether an addon known to stall the boot explains the session's stall.
+pub(crate) fn addon_stall(session: &SessionRecord, store: &Store) -> bool {
+    boot_stall(&evidence(session, None, store)).is_some()
 }
 
 /// How long the game had been on the start screen when it ended: from the
@@ -1318,7 +1339,9 @@ fn minutes(secs: f64) -> String {
 /// The cause of a session that ended without a crash, from the first rule that
 /// recognises it.
 pub fn stalled(e: &Evidence) -> Option<Diagnosis> {
-    let (addon, secs) = boot_stall(e)?;
+    let Some((addon, secs)) = boot_stall(e) else {
+        return stalled_save(e);
+    };
     Some(Diagnosis {
         id: "boot_stall",
         title: format!("{addon} kept F1 25 on the loading screen"),
@@ -1330,6 +1353,37 @@ pub fn stalled(e: &Evidence) -> Option<Diagnosis> {
         steps: vec![format!(
             "Turn off {addon} in your profile, then press Play again."
         )],
+    })
+}
+
+/// What the core logs for each profile load.
+const PROFILE_LOAD: &str = "[saves] profile load ";
+
+/// A start-screen stall right after the game read the profile save, with no addon known to cause one.
+fn stalled_save(e: &Evidence) -> Option<Diagnosis> {
+    let secs = start_screen_secs(e).filter(|s| *s >= crate::save_stall::STALL_SECS)?;
+    if !e.loader.contains(PROFILE_LOAD) {
+        return None;
+    }
+    Some(Diagnosis {
+        id: "stalled_save",
+        title: "F1 25 stayed on the loading screen after reading your save".to_owned(),
+        what: format!(
+            "F1 25 read your profile save, then stayed on Loading... after Press any button for {} and never \
+             reached the main menu. A save last played with addon content that is off now (a career, livery or \
+             item from an addon) can do this, also from Steam or the EA app without the launcher. When the same \
+             save stalls again, the launcher moves it into the career vault before the next Play and puts back \
+             the newest version that isn't stuck.",
+            minutes(secs)
+        ),
+        steps: vec![
+            "Press Play again. If it stalls a second time, the launcher puts back an earlier version of your save; \
+             the stuck one stays on the Saves page."
+                .to_owned(),
+            "To get the stuck save back as it is, turn on the addons you last played it with, then restore it from \
+             the Saves page."
+                .to_owned(),
+        ],
     })
 }
 
@@ -1630,6 +1684,54 @@ fn calendar_event_missing(e: &Evidence) -> Diagnosis {
             "F1 25 crashed as your career's first session loaded, while it set up the career hub for that round. {cause}"
         ),
         steps: vec![off, "Press Play again.".to_owned()],
+    }
+}
+
+/// Whether F1 25 faulted reading the driver it passes to the career hub's driver morph data while a career session
+/// was entered: the nearest frame is [`MORPH_DRIVER`].
+fn morph_driver_crash(f: &Fatal) -> bool {
+    f.module.as_deref() == Some("f1_25.exe") && f.frames.first().is_some_and(|l| l.contains(MORPH_DRIVER))
+}
+
+/// Whether F1 25 faulted naming the driver of a car that retired from a race: the frame after the nearest is
+/// [`RETIREMENT_NAME`] and the fault read [`RETIREMENT_READ`].
+fn retirement_driver_crash(f: &Fatal) -> bool {
+    f.module.as_deref() == Some("f1_25.exe")
+        && f.frames.get(1).is_some_and(|l| l.contains(RETIREMENT_NAME))
+        && f.record.iter().any(|l| l.trim_end().ends_with(RETIREMENT_READ))
+}
+
+fn race_driver_missing() -> Diagnosis {
+    Diagnosis {
+        id: "race_driver_missing",
+        title: "A car in your race has a driver F1 25 can't find".to_owned(),
+        what: "F1 25 crashed as a car retired from the race, while it named that car's driver in the retirement \
+               message. That car's driver is not in the game's driver list, usually because an addon changed the \
+               career's drivers or line-ups."
+            .to_owned(),
+        steps: vec![
+            "Turn off the addon that changes your career's drivers or line-ups (a driver market, team and driver \
+             editor or DB Editor package)."
+                .to_owned(),
+            "Press Play again.".to_owned(),
+        ],
+    }
+}
+
+fn career_driver_missing() -> Diagnosis {
+    Diagnosis {
+        id: "career_driver_missing",
+        title: "Your career has a driver F1 25 can't find".to_owned(),
+        what: "F1 25 crashed as your career's session loaded, while it set up the driver models of your team for \
+               the career hub. A driver of your team in this career is not in the game's driver list, usually \
+               because an addon changed the career's drivers or line-ups."
+            .to_owned(),
+        steps: vec![
+            "Turn off the addon that changes your career's drivers or line-ups (a driver market, team and driver \
+             editor or DB Editor package)."
+                .to_owned(),
+            "Press Play again.".to_owned(),
+        ],
     }
 }
 
@@ -2073,6 +2175,12 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
     if sequencer_record_crash(&f) {
         return Some(calendar_event_missing(e));
     }
+    if morph_driver_crash(&f) {
+        return Some(career_driver_missing());
+    }
+    if retirement_driver_crash(&f) {
+        return Some(race_driver_missing());
+    }
     if third_car_line_crash(e, &f) {
         return Some(third_car_line(e));
     }
@@ -2163,7 +2271,7 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
         });
     }
     let started = crate::launch::LoaderSeen::scan(&e.loader).window;
-    if !mods.is_empty() && (!started || f.all().any(graphics)) {
+    if !mods.is_empty() && (!started || f.near().any(graphics)) {
         let when = if started {
             "in its graphics code"
         } else {
@@ -2460,6 +2568,107 @@ mod tests {
         );
     }
 
+    const REPLAY_LOADER: &str = "\
+2026-11-12 17:57:27.502 [ 5736] stage: window (USER32!RegisterClassExW from 00000001439f00a0 (.xtls)), addons were loaded at the early stage
+2026-11-12 18:23:14.352 [12208] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 12208, 1558 s after load, at F1_25.exe+0x1fbd2c .xtls fn base+0x1fbd00+0x2c
+2026-11-12 18:23:14.352 [12208] [crash]   reading 0xffffffffffffffff
+2026-11-12 18:23:14.352 [12208] [crash]   rax=40000003c3bc3180 rbx=0000000000000000 rcx=00000003c3bc31e8 rdx=00000000693af410
+2026-11-12 18:23:14.353 [12208] [crash]   stack:
+2026-11-12 18:23:14.353 [12208] [crash]   #0  F1_25.exe+0x1fbd2c .xtls fn base+0x1fbd00+0x2c
+2026-11-12 18:23:14.353 [12208] [crash]   #1  F1_25.exe+0x3b8250 .xtls Game_Garage_ClearOverlayAllModels+0xd0
+2026-11-12 18:23:14.353 [12208] [crash]   #2  F1_25.exe+0x3b80ac .xtls Car_PitStop_ApplyTyreAndWingVisuals+0x8ec
+2026-11-12 18:23:14.353 [12208] [crash]   #3  F1_25.exe+0x3b7579 .xtls Car_Tyres_ApplyStateToCarPair+0x69
+2026-11-12 18:23:14.353 [12208] [crash]   #4  F1_25.exe+0x7e3c9b4 .data1 fn base+0x7e3c870+0x144
+2026-11-12 18:23:14.353 [12208] [crash]   #5  F1_25.exe+0x45ceeee .xtls Ne_ReplayRecordable_ReadFrom+0x151e
+2026-11-12 18:23:14.353 [12208] [crash]   #6  F1_25.exe+0x45d3aee .xtls Game_ReplayStream_InterpolateBackwards+0x4ae
+2026-11-12 18:23:14.353 [12208] [crash]   #7  F1_25.exe+0x45d71e4 .xtls Game_ReplaySystem_TargetTime+0x504
+2026-11-12 18:23:14.353 [12208] [crash]   #8  F1_25.exe+0x45d6c56 .xtls Game_ReplaySystem_UpdateFromModule+0xc16
+2026-11-12 18:23:14.353 [12208] [crash]   #9  F1_25.exe+0x2a37f0 .xtls fn base+0x2a37e0+0x10
+2026-11-12 18:23:14.353 [12208] [crash]   #10 F1_25.exe+0x3ac0c33 .xtls Ne_JobQueue_TryAcquireJob+0x483
+2026-11-12 18:23:14.353 [12208] [crash]   #11 F1_25.exe+0x3ac4fb3 .xtls fn base+0x3ac4a50+0x563
+2026-11-12 18:23:14.353 [12208] [crash]   #12 F1_25.exe+0x391e16a .xtls fn base+0x391def0+0x27a
+2026-11-12 18:23:14.353 [12208] [crash]   #13 KERNEL32.DLL+0x17374
+2026-11-12 18:23:14.353 [12208] [crash]   #14 ntdll.dll+0x4cc91
+2026-11-12 18:23:14.353 [12208] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x1fbd2c .xtls fn base+0x1fbd00+0x2c reached the top-level filter; passing it to the game's filter
+";
+
+    const REPLAY_REPORT: &str = "\
+Swofty crash report
+
+reason       unhandled ACCESS_VIOLATION (0xc0000005) reading 0xffffffffffffffff at F1_25.exe+0x1fbd2c .xtls fn base+0x1fbd00+0x2c
+runtime      Windows
+
+== Exception
+  ACCESS_VIOLATION (0xc0000005), flags 0x0, at F1_25.exe+0x1fbd2c .xtls fn base+0x1fbd00+0x2c
+
+== Stack (unwound with the modules' exception data)
+  #0  00000001401fbd2c rsp=00000000693af350  F1_25.exe+0x1fbd2c .xtls fn base+0x1fbd00+0x2c
+  #1  00000001403b8250 rsp=00000000693af3e0  F1_25.exe+0x3b8250 .xtls Game_Garage_ClearOverlayAllModels+0xd0
+  #2  00000001403b80ac rsp=00000000693af460  F1_25.exe+0x3b80ac .xtls Car_PitStop_ApplyTyreAndWingVisuals+0x8ec
+  #3  00000001403b7579 rsp=00000000693af5f0  F1_25.exe+0x3b7579 .xtls Car_Tyres_ApplyStateToCarPair+0x69
+  #4  0000000147e3c9b4 rsp=00000000693af640  F1_25.exe+0x7e3c9b4 .data1 fn base+0x7e3c870+0x144
+  #5  00000001445ceeee rsp=00000000693af700  F1_25.exe+0x45ceeee .xtls Ne_ReplayRecordable_ReadFrom+0x151e
+  #6  00000001445d3aee rsp=00000000693af870  F1_25.exe+0x45d3aee .xtls Game_ReplayStream_InterpolateBackwards+0x4ae
+  #7  00000001445d71e4 rsp=00000000693af950  F1_25.exe+0x45d71e4 .xtls Game_ReplaySystem_TargetTime+0x504
+  #8  00000001445d6c56 rsp=00000000693afa80  F1_25.exe+0x45d6c56 .xtls Game_ReplaySystem_UpdateFromModule+0xc16
+
+== Return addresses found on the stack (rsp to +0x8000)
+  rsp+0x88    00000001403b8250  F1_25.exe+0x3b8250 .xtls Game_Garage_ClearOverlayAllModels+0xd0
+  rsp+0x3a8   00000001445ceeee  F1_25.exe+0x45ceeee .xtls Ne_ReplayRecordable_ReadFrom+0x151e
+  rsp+0x3b8   00007ff8d501b6ae  KERNELBASE.dll+0x1b6ae .text fn +0x1b620+0x8e
+  rsp+0x518   00000001445d3aee  F1_25.exe+0x45d3aee .xtls Game_ReplayStream_InterpolateBackwards+0x4ae
+  rsp+0x528   00007ff87ef46586  d3d12.dll+0x6586 .text fn +0x64f0+0x96
+  rsp+0x5f8   00000001445d71e4  F1_25.exe+0x45d71e4 .xtls Game_ReplaySystem_TargetTime+0x504
+";
+
+    #[test]
+    fn a_graphics_module_only_in_the_stack_scan_does_not_blame_graphics_mods() {
+        let mut e = ev(REPLAY_LOADER, &["F1_25.exe", "DINPUT8.dll"]);
+        e.report = Some(REPLAY_REPORT.to_owned());
+        assert!(diagnose(&e).is_none_or(|d| d.id != "graphics_mods"));
+        let mut through_d3d12 = ev(
+            &REPLAY_LOADER.replace(
+                "#3  F1_25.exe+0x3b7579 .xtls Car_Tyres_ApplyStateToCarPair+0x69",
+                "#3  d3d12.dll+0x6586",
+            ),
+            &["F1_25.exe", "DINPUT8.dll"],
+        );
+        through_d3d12.report = Some(REPLAY_REPORT.to_owned());
+        let d = diagnose(&through_d3d12).expect("d3d12.dll is among the near frames");
+        assert_eq!(d.id, "graphics_mods");
+        assert_eq!(d.title, "an ASI loader in your game folder crashed F1 25");
+    }
+
+    #[test]
+    fn a_stale_driver_return_does_not_blame_optiscaler_for_a_core_crash() {
+        let loader = "\
+2026-11-12 10:26:30.000 [11396] stage: window (USER32!RegisterClassExW from 00000001439f00a0 (.xtls)), addons were loaded at the early stage
+2026-11-12 10:27:57.733 [11396] [crash] unhandled exception (0xc0000028) at ntdll.dll+0x1d3df reached the top-level filter; passing it to the game's filter
+";
+        let report = "\
+== Exception
+  exception (0xc0000028), flags 0x81, at ntdll.dll+0x1d3df .text fn +0x1d390+0x4f
+
+== Stack (unwound with the modules' exception data)
+  #0  00007ffa1a2ed3df rsp=0000000067ffd1f0  ntdll.dll+0x1d3df .text fn +0x1d390+0x4f
+  #1  00007ffa1a2edaee rsp=0000000067ffd790  ntdll.dll+0x1daee .text fn +0x1da30+0xbe
+  #2  00007ffa17731da2 rsp=0000000067ffdec0  ucrtbase.dll+0xb1da2 .text fn +0xb1c80+0x122
+  #3  00007ffa1a43ab3f rsp=0000000067ffdf30  ntdll.dll+0x16ab3f .text fn +0x16ab30+0xf
+  #4  00007ffa1a396985 rsp=0000000067ffdf60  ntdll.dll+0xc6985 .text fn +0xc6390+0x5f5
+  #5  00007ffa1a43a47e rsp=0000000067ffe6c0  ntdll.dll+0x16a47e .text fn +0x16a450+0x2e
+  #6  00007ff92fecfda9 rsp=0000000067ffee78  swofty_core.dll+0x64fda9 .text
+  #7  3f80000000000007 rsp=0000000067ffee80  0x3f80000000000007 (no module)
+
+== Return addresses found on the stack (rsp to +0x8000)
+  rsp+0x8     00007ff9fed046d3  nvwgf2umx.dll+0x4846d3 .text fn +0x483ce0+0x9f3
+  rsp+0x30    00007ffa1a2ed3df  ntdll.dll+0x1d3df .text fn +0x1d390+0x4f
+  rsp+0x908   00007ff9a057f54b  D3D12Core.dll+0x3f54b .text fn +0x3f1f0+0x35b
+";
+        let mut e = ev(loader, &["F1_25.exe", "OptiScaler.ini", "nvngx.dll"]);
+        e.report = Some(report.to_owned());
+        assert!(diagnose(&e).is_none_or(|d| d.id != "graphics_mods"));
+    }
+
     #[test]
     fn a_crash_in_a_graphics_driver_names_the_vendor() {
         let d = diagnose(&ev(&crash_in("amdxc64.dll"), &["F1_25.exe"])).unwrap();
@@ -2708,6 +2917,37 @@ mod tests {
         assert_eq!(
             timeline_row("at          took ms   frames   slow   worst ms  swofty ms  what"),
             None
+        );
+    }
+
+    #[test]
+    fn a_stall_right_after_the_profile_load_points_at_the_save() {
+        let load = "2026-11-04 03:32:34.875 [ 5256] [saves] profile load 1: manager 5 slot 2: gm_my_team id=16 \
+                    key=66f051ee751e04d1 career=my_team:66f051ee751e04d1 flags=0x20 name=\"My Team Save 3\"\n";
+        let mut e = stuck(SPLASH, 408, &[]);
+        e.loader = load.into();
+        let d = stalled(&e).unwrap();
+        assert_eq!(d.id, "stalled_save");
+        assert_eq!(
+            d.title,
+            "F1 25 stayed on the loading screen after reading your save"
+        );
+        assert!(d.what.contains("for 5 minutes"), "{}", d.what);
+        assert_eq!(d.steps.len(), 2);
+        let mut quick = stuck(SPLASH, 120, &[]);
+        quick.loader = load.into();
+        assert_eq!(stalled(&quick), None, "30 s is a normal load");
+        assert_eq!(
+            stalled(&stuck(SPLASH, 408, &[])),
+            None,
+            "no profile load, no save to blame"
+        );
+        let mut addon = stuck(SPLASH, 408, &[LIVERY]);
+        addon.loader = load.into();
+        assert_eq!(
+            stalled(&addon).unwrap().id,
+            "boot_stall",
+            "the known addon comes first"
         );
     }
 
@@ -3305,6 +3545,99 @@ mod tests {
             diagnose(&ev(&other, &[])).map(|d| d.id),
             None,
             "another offset of the function"
+        );
+    }
+
+    const MORPH: &str = "\
+2026-11-12 19:34:23.598 [ 3048] [silly-season] session start: race session, weekend round 4
+2026-11-12 19:34:23.598 [ 3048] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 3048, 111 s after load, at F1_25.exe+0xc80962 .xtls Game_CareerEventResourceManager_AddDriverMorphData+0x82
+2026-11-12 19:34:23.598 [ 3048] [crash]   reading 0x8
+2026-11-12 19:34:23.599 [ 3048] [crash]   stack:
+2026-11-12 19:34:23.599 [ 3048] [crash]   #0  F1_25.exe+0xc80962 .xtls Game_CareerEventResourceManager_AddDriverMorphData+0x82
+2026-11-12 19:34:23.599 [ 3048] [crash]   #1  F1_25.exe+0xc72ebf .xtls Game_CareerEventsSequencer_Initialise+0x103f
+2026-11-12 19:34:23.599 [ 3048] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0xc80962 .xtls Game_CareerEventResourceManager_AddDriverMorphData+0x82 reached the top-level filter; passing it to the game's filter
+";
+
+    #[test]
+    fn a_crash_reading_a_missing_team_driver_names_no_addon() {
+        let mut e = with_names(
+            ev(MORPH, &[]),
+            &[
+                ("alexs.silly-season", "Silly Season"),
+                ("custom.team-names", "Team & Driver Editor"),
+                ("mildtdesign.more-driver-models", "More Driver Models"),
+            ],
+        );
+        e.enabled = vec![
+            "mildtdesign.more-driver-models".to_owned(),
+            "alexs.silly-season".to_owned(),
+            "custom.team-names".to_owned(),
+        ];
+        let d = diagnose(&e).unwrap();
+        assert_eq!(d.id, "career_driver_missing");
+        assert_eq!(d.title, "Your career has a driver F1 25 can't find");
+        for addon in ["Silly Season", "Team & Driver Editor", "More Driver Models"] {
+            assert!(!d.text().contains(addon), "{addon} is named: {}", d.text());
+        }
+
+        e.enabled = vec![];
+        assert_eq!(diagnose(&e).unwrap(), d, "the same diagnosis with no addon on");
+
+        let other = MORPH.replace("AddDriverMorphData+0x82", "AddDriverMorphData+0x44");
+        assert_eq!(
+            diagnose(&ev(&other, &[])).map(|d| d.id),
+            None,
+            "another offset of the function"
+        );
+    }
+
+    const RETIREMENT: &str = "\
+2026-11-12 20:54:48.502 [29072] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 29072, 612 s after load, at F1_25.exe+0xcb8a5e1 .data1 fn base+0xcb8a5d0+0x11
+2026-11-12 20:54:48.502 [29072] [crash]   reading 0x1f0
+2026-11-12 20:54:48.502 [29072] [crash]   rax=0000000000000000 rbx=0000000000000018 rcx=0000000000000018 rdx=0000000067dce2c0
+2026-11-12 20:54:48.502 [29072] [crash]   stack:
+2026-11-12 20:54:48.502 [29072] [crash]   #0  F1_25.exe+0xcb8a5e1 .data1 fn base+0xcb8a5d0+0x11
+2026-11-12 20:54:48.503 [29072] [crash]   #1  F1_25.exe+0x2d624ee .xtls Sess_InGameRace_Update+0x77e
+2026-11-12 20:54:48.503 [29072] [crash]   #2  F1_25.exe+0x2d56e08 .xtls Sess_InGame_UpdateBase+0x768
+2026-11-12 20:54:48.511 [29072] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0xcb8a5e1 .data1 fn base+0xcb8a5d0+0x11 reached the top-level filter; passing it to the game's filter
+";
+
+    #[test]
+    fn a_crash_naming_a_retired_car_without_a_driver_names_no_addon() {
+        let mut e = with_names(
+            ev(RETIREMENT, &[]),
+            &[
+                ("kizi.canned", "Canned DNFs"),
+                ("progressive.career", "Progressive Career"),
+                ("custom.team-names", "Team & Driver Editor"),
+            ],
+        );
+        e.enabled = vec![
+            "kizi.canned".to_owned(),
+            "progressive.career".to_owned(),
+            "custom.team-names".to_owned(),
+        ];
+        let d = diagnose(&e).unwrap();
+        assert_eq!(d.id, "race_driver_missing");
+        assert_eq!(d.title, "A car in your race has a driver F1 25 can't find");
+        for addon in ["Canned DNFs", "Progressive Career", "Team & Driver Editor"] {
+            assert!(!d.text().contains(addon), "{addon} is named: {}", d.text());
+        }
+
+        e.enabled = vec![];
+        assert_eq!(diagnose(&e).unwrap(), d, "the same diagnosis with no addon on");
+
+        let other = RETIREMENT.replace("Sess_InGameRace_Update+0x77e", "Sess_InGameRace_Update+0x6a1");
+        assert_eq!(
+            diagnose(&ev(&other, &[])).map(|d| d.id),
+            None,
+            "another call in the race update"
+        );
+        let read = RETIREMENT.replace("reading 0x1f0", "reading 0x8");
+        assert_eq!(
+            diagnose(&ev(&read, &[])).map(|d| d.id),
+            None,
+            "another read under the same call"
         );
     }
 

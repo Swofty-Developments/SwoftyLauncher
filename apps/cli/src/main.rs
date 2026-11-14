@@ -913,6 +913,7 @@ fn settings(store: &Store, profile: &str, cmd: SettingsCommand) -> Result<()> {
         SettingsCommand::List { id } => {
             let p = store.profile(profile)?;
             let pending = p.rebuild_pending(&addons);
+            let on = swofty_core::settings::OnAddons::of(&p, &addons);
             for m in addons
                 .values()
                 .filter(|m| id.as_deref().is_none_or(|i| i == m.id))
@@ -922,11 +923,11 @@ fn settings(store: &Store, profile: &str, cmd: SettingsCommand) -> Result<()> {
                 }
                 println!("{} ({})", m.name, m.id);
                 for o in &m.options {
-                    let v = p.option(m, o);
-                    let mark = if pending.contains(&format!("{}.{}", m.id, o.id)) {
-                        ", rebuild pending"
-                    } else {
-                        ""
+                    let v = on.value(&p, m, o);
+                    let mark = match on.missing(o) {
+                        Some(n) => format!(", off: needs {n} on"),
+                        None if pending.contains(&format!("{}.{}", m.id, o.id)) => ", rebuild pending".into(),
+                        None => String::new(),
                     };
                     let binds = match o.binds {
                         Binds::Native => "live",
@@ -1390,6 +1391,35 @@ mod tests {
             data_dir_arg(&os(&["swofty", "--data-dir=/e", "build"])),
             Some("/e".into())
         );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_profile_that_starts_with_a_dash_goes_through_as_one_value() {
+        use swofty_core::process::flag;
+        let root = std::env::temp_dir().join(format!("swofty-cli-dash-profile-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let store = store(&root);
+        let cmd = AddonCommands::load(&store).command();
+        let args = vec![
+            OsString::from("swofty"),
+            flag("data-dir", "/data/-swofty"),
+            flag("profile", "-swofty"),
+            "run".into(),
+            "--apply".into(),
+            flag("game", "/games/-F1 25"),
+        ];
+        let cli = Cli::from_arg_matches(&cmd.clone().try_get_matches_from(&args).unwrap()).unwrap();
+        assert_eq!(cli.profile.as_deref(), Some("-swofty"));
+        assert_eq!(cli.data_dir.as_deref(), Some(Path::new("/data/-swofty")));
+        assert!(matches!(cli.command, Command::Run(_)));
+        assert_eq!(command_at(&args), Some(3));
+        assert_eq!(data_dir_arg(&args), Some("/data/-swofty".into()));
+
+        let split = cmd
+            .try_get_matches_from(["swofty", "--profile", "-swofty", "run", "--apply"])
+            .unwrap_err();
+        assert_eq!(split.kind(), clap::error::ErrorKind::UnknownArgument);
         std::fs::remove_dir_all(&root).ok();
     }
 

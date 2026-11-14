@@ -4,13 +4,32 @@ namespace stall_walk {
 
 namespace {
 
+void keep(const CONTEXT *ctx, int frame, Kept *kept)
+{
+    if (!kept || kept->at.frame >= 0 || ctx->Rip < kept->lo || ctx->Rip >= kept->hi)
+        return;
+    runtime::stall_order::Kept &k = kept->at;
+    k.frame = frame;
+    k.rip = ctx->Rip;
+    k.rsp = ctx->Rsp;
+    k.rbx = ctx->Rbx;
+    k.rbp = ctx->Rbp;
+    k.rsi = ctx->Rsi;
+    k.rdi = ctx->Rdi;
+    k.r12 = ctx->R12;
+    k.r13 = ctx->R13;
+    k.r14 = ctx->R14;
+    k.r15 = ctx->R15;
+}
+
 int frames(CONTEXT *ctx, uintptr_t lo, uintptr_t hi, int max, Lookup lookup, Readable readable, uint64_t *rip,
-           uint64_t *rsp)
+           uint64_t *rsp, Kept *kept)
 {
     int n = 0;
     for (int i = 0; i < max && ctx->Rip; i++) {
         rip[n] = ctx->Rip;
         rsp[n] = ctx->Rsp;
+        keep(ctx, n, kept);
         n++;
         if (ctx->Rsp < lo || ctx->Rsp >= hi)
             break;
@@ -35,13 +54,15 @@ int frames(CONTEXT *ctx, uintptr_t lo, uintptr_t hi, int max, Lookup lookup, Rea
 }
 
 int walk(CONTEXT *ctx, uintptr_t lo, uintptr_t hi, int max, Lookup lookup, Readable readable, uint64_t *rip,
-         uint64_t *rsp, bool *faulted)
+         uint64_t *rsp, bool *faulted, Kept *kept)
 {
     *faulted = false;
+    if (kept)
+        kept->at = {};
     for (int i = 0; i < max; i++)
         rip[i] = rsp[i] = 0;
     __try {
-        return frames(ctx, lo, hi, max, lookup, readable, rip, rsp);
+        return frames(ctx, lo, hi, max, lookup, readable, rip, rsp, kept);
     } __except (EXCEPTION_EXECUTE_HANDLER) {
         *faulted = true;
     }

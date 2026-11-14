@@ -340,6 +340,17 @@ pub fn add_override(text: &str) -> Option<String> {
     Some(format!("{}{sep}{OVERRIDE_VALUE}\n{}", &text[..at], &text[at..]))
 }
 
+/// Whether `path` holds, byte for byte, the proxy this launcher ships. A
+/// proxy the launcher's records account for is gone before this is asked:
+/// the rollback and the sweep removed it.
+fn shipped_proxy(path: &Path) -> Result<bool> {
+    let Some(shipped) = crate::builtin::loader_dir().and_then(|d| sha256_opt(&d.join(PROXY)).ok().flatten())
+    else {
+        return Ok(false);
+    };
+    Ok(sha256_opt(path)?.is_some_and(|now| now == shipped))
+}
+
 /// user.reg without the version.dll override, and without F1_25.exe's
 /// section when nothing else is set in it; None when the section sets other
 /// DLLs but not version.dll.
@@ -1243,12 +1254,25 @@ impl<'a> Installer<'a> {
     }
 
     pub fn restore(&self) -> Result<Vec<Drift>> {
+        self.restore_setting_aside().map(|(report, _)| report)
+    }
+
+    /// [`restore`](Self::restore), and where in the set-aside folder it moved
+    /// a `version.dll` that is not the launcher's own: another tool's proxy,
+    /// such as an ASI loader or a renamed upscaler, is kept, never deleted.
+    pub fn restore_setting_aside(&self) -> Result<(Vec<Drift>, Option<PathBuf>)> {
         let mut report = self.recover()?;
         self.sweep()?;
         let proxy = self.path(PROXY);
         let baseline = self.baseline()?;
+        let mut set_aside = None;
         if proxy.is_file() && !baseline.files.contains_key(PROXY) {
-            with_retry(&proxy, || std::fs::remove_file(&proxy))?;
+            if shipped_proxy(&proxy)? {
+                with_retry(&proxy, || std::fs::remove_file(&proxy))?;
+            } else {
+                set_aside = Some(self.set_proxy_aside(&proxy)?);
+            }
+            report.retain(|d| !matches!(d, Drift::LeftInPlace(p) | Drift::Stranded(p) if p == PROXY));
         }
         let loader = self.path(LOADER_DIR);
         if loader.is_dir() {
@@ -1285,7 +1309,21 @@ impl<'a> Installer<'a> {
         }
         hashes.save();
         report.extend(self.verify()?);
-        Ok(report)
+        Ok((report, set_aside))
+    }
+
+    /// Move `proxy` to a folder of its own under the set-aside folder.
+    fn set_proxy_aside(&self, proxy: &Path) -> Result<PathBuf> {
+        let dir = crate::recovery::set_aside_dir(self.data);
+        let mut stamp = crate::update::now_secs();
+        while dir.join(stamp.to_string()).join(PROXY).exists() {
+            stamp += 1;
+        }
+        let to = dir.join(stamp.to_string()).join(PROXY);
+        let parent = to.parent().expect("has parent");
+        std::fs::create_dir_all(parent).map_err(io_err(parent))?;
+        crate::move_file(proxy, &to)?;
+        Ok(to)
     }
 
     pub fn verify(&self) -> Result<Vec<Drift>> {
@@ -1301,10 +1339,14 @@ impl<'a> Installer<'a> {
                 Some(_) => {}
             }
         }
-        for rel in [PROXY, LOADER_DIR] {
-            if self.path(rel).exists() && !baseline.files.contains_key(rel) {
-                out.push(Drift::Addition(rel.into()));
-            }
+        if self.path(PROXY).exists() && !baseline.files.contains_key(PROXY) {
+            out.push(Drift::Addition(PROXY.into()));
+        }
+        if self.path(LOADER_DIR).exists()
+            && !baseline.files.contains_key(LOADER_DIR)
+            && let Some(rel) = self.added_file(&baseline, LOADER_DIR)
+        {
+            out.push(Drift::Addition(rel));
         }
         for f in Placed::load(self.data)?.files.values() {
             if f.replaced
@@ -1336,6 +1378,24 @@ impl<'a> Installer<'a> {
             });
         }
         Ok(out)
+    }
+
+    /// The first file under the folder `rel` that the baseline has no original for, or `rel` itself
+    /// when it is not a folder that can be listed. A folder that holds only empty folders has none.
+    fn added_file(&self, baseline: &Baseline, rel: &str) -> Option<String> {
+        let Ok(rd) = std::fs::read_dir(self.path(rel)) else {
+            return Some(rel.to_owned());
+        };
+        let mut entries: Vec<std::fs::DirEntry> = rd.flatten().collect();
+        entries.sort_by_key(std::fs::DirEntry::file_name);
+        entries.into_iter().find_map(|e| {
+            let child = format!("{rel}/{}", e.file_name().to_string_lossy());
+            if e.file_type().is_ok_and(|t| t.is_dir()) {
+                self.added_file(baseline, &child)
+            } else {
+                (!baseline.files.contains_key(&child)).then_some(child)
+            }
+        })
     }
 }
 

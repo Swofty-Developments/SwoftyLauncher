@@ -844,3 +844,15 @@ mod windows {
 
 mod adopt;
 mod find;
+
+#[test]
+fn the_real_folder_is_where_the_default_path_links() {
+    let dir = temp("real-folder");
+    let (default, moved) = (dir.join("Swofty"), dir.join("E/Swofty"));
+    seed(&moved);
+    link::create(&moved, &default).unwrap();
+    assert_eq!(link::real_folder(&default), moved);
+    let plain = dir.join("Plain");
+    seed(&plain);
+    assert_eq!(link::real_folder(&plain), plain);
+}

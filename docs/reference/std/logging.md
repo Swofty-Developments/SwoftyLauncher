@@ -274,7 +274,7 @@ These environment variables change what swofty_core and the loader log. Set them
   ```
 
 - `SWOFTY_OVERLAY_KILL=<list>`: turns overlay parts off: `all`, `paint`, `capture` or `hdr`, comma-separated. `"overlay_kill"` in `swofty/assets.json` does the same.
-- `SWOFTY_OVERLAY_FG`: draws the overlay into the game's back buffer before frame generation, so generated frames carry it. On by default when frame generation is on in the game's settings at start. `SWOFTY_OVERLAY_FG=0` or `"overlay_fg": false` in `swofty/assets.json` turns it off; `=1` or `true` turns it on whatever the game's setting.
+- `SWOFTY_OVERLAY_FG`: draws the overlay into the game's back buffer before frame generation, so generated frames carry it. On by default when frame generation is on in the game's settings at start. `SWOFTY_OVERLAY_FG=0` or `"overlay_fg": false` in `swofty/assets.json` turns it off, and keeps the device hooks off for a swapchain that names no present queue; `=1` or `true` turns it on whatever the game's setting.
 - `SWOFTY_OVERLAY_NITS=<nits>`: the overlay's paper white on HDR10 and scRGB output, 80 to 1000. Default 350, the level of the game's own HUD white.
 - `SWOFTY_KEEP_FOCUS=1`: keeps the game running when its window loses focus. swofty_core drops `WM_KILLFOCUS`, `WM_ACTIVATE(WA_INACTIVE)` and `WM_ACTIVATEAPP(FALSE)` before the game's window procedure sees them, and hands a window that starts without focus one `WM_SETFOCUS`. A race in a parked or hidden window then runs instead of stopping at the pause menu. For test runs only.
 - `SWOFTY_POSTFX_CAPTURE=<folder>`: for developing [post-process passes](/reference/addons/postfx). Writes the picture just before and just after the passes to `<folder>\postfx-NN-before.ppm` and `postfx-NN-after.ppm`, at most six pairs, ten seconds apart, the first thirty seconds after the passes start. The pictures have no HUD. Under Proton, give a Windows path:
@@ -287,13 +287,21 @@ These environment variables change what swofty_core and the loader log. Set them
 
 ## Performance report
 
-swofty_core times every hook, site handler, event callback and storage call it runs, and writes the result to `swofty/perf.log` in the game folder every 15 seconds and when the game exits. Each timed call costs about 12 ns. After the game exits, `swofty run` keeps a copy in the session folder, and [Send Logs to Developers](/using/send-logs) sends it with the other logs. Every minute, a line such as this one goes to `loader.log`:
+swofty_core times every hook, site handler, event callback and storage call it runs, and writes the result to `swofty/perf.log` in the game folder every 15 seconds and when the game exits. Each timed call costs about 12 ns. After the game exits, `swofty run` keeps a copy in the session folder, and [Send Logs to Developers](/using/send-logs) sends it with the other logs. Every minute, three lines such as these go to `loader.log`:
 
 ```text
-[perf] last 60 s: 10029 frame(s) (178 fps, p99 11.9 ms, 0 over 50 ms); swofty 1.417 ms/s on game threads (core flow tick (events, career poll) 60.69 ms, core game log (Ne_Log_Thunk) 23.59 ms); worst call 0.32 ms (swofty.progressive api storage read)
+[perf] last 60 s: 10029 frame(s) (178 fps, p99 11.9 ms, 0 over 50 ms); swofty 1.417 ms/s on game threads (core flow tick (events, career poll) 1.012 ms/s 60.0 calls/s, core game log (Ne_Log_Thunk) 0.393 ms/s 841.4 calls/s, swofty.progressive api storage read 0.020 ms/s 1.0 calls/s); worst call 0.32 ms (swofty.progressive api storage read)
+[perf] last 60 s: VirtualQuery from swofty 18,402 calls 912.4 ms, worst 12.35 ms (game threads 12,000 calls 640.1 ms): core 15,000 calls 800.2 ms, progressive.dll 3,402 calls 112.2 ms; top sites core+0x1a2b3c 9,100 calls 500.3 ms, core+0x2200 4,000 calls 100.0 ms; game exe 120,334 calls 30.1 ms; memory checks: 52,301 page(s) from the working set, 3 from VirtualQuery
+[perf] last 60 s: process CPU user 1.42 kernel 0.61 cores; swofty threads 0.081 cores (user 0.061 kernel 0.020) in 7 thread(s): core+0x9a20 (tid 900, via _beginthreadex) 0.050, core+0x6000 (tid 4) 0.020, core+0x5150 (tid 812) 0.012
 ```
 
-Swofty time is the time spent in swofty_core and addon code, without the game code that a hook calls. Frames are counted from the frame index the game passes to NVIDIA Streamline, and from the flow-state ticks while the game does not update it, as on the pause screen.
+Swofty time is the time spent in swofty_core and addon code, without the game code that a hook calls. The busiest probes show their time and calls per second on the game's threads.
+
+The second line counts the `VirtualQuery` calls that swofty_core, the loader and every DLL under `swofty\` make, and the time they take, kernel time included. Game threads are the threads that swofty code did not start. A site is a return address as `module+0xRVA`. `game exe` counts the game's own calls, when its import table has one. `memory checks` counts the pages that the core's page table looked up in the past minute, for the core's checks of game memory and for the addons' checks through `SwoftyCoreMem`: from the process working set, which costs the same in any heap, or from `VirtualQuery` for pages that are not resident. Pages checked again within a quarter of a second are not counted. `SWOFTY_PERF_VQ=0` turns the counting off.
+
+The third line has the whole process's CPU use and the CPU use of the threads swofty code started, as cores (CPU seconds per second). A thread is named by its start address, or by the code that started it for threads made through `_beginthreadex`, `std::thread` among them.
+
+To name a core RVA, build the same commit with `native/build.sh` after removing `-s` from `STATIC`, then run `llvm-symbolizer --obj=swofty_core.dll 0x<0x180000000 + RVA>`. The code layout does not change without `-s`. Frames are counted from the frame index the game passes to NVIDIA Streamline, and from the flow-state ticks while the game does not update it, as on the pause screen.
 
 `swofty/perf.log` has six sections:
 

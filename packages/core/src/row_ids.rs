@@ -24,6 +24,12 @@ pub const FILE: &str = "row-ids.json";
 /// The table name of the track rows `track.add` adds; the game reads their `statId` in a byte, 0xff = none.
 const TRACK_TABLE: &str = "tracks.Track";
 pub const TRACK_STAT_MAX: i64 = 254;
+
+/// The `<table>.<row>/<label>` name of the track row `track.add` adds for the track `code`, as a build's added-row
+/// ids and [`Overrides::rows`] name it.
+pub fn track_row(code: &str) -> String {
+    format!("{TRACK_TABLE}/{code}")
+}
 const LOCK: &str = "row-ids.lock";
 const VERSION: u32 = 2;
 const ALIASES_VERSION: u32 = 1;
@@ -973,7 +979,7 @@ impl Store {
         top: i64,
         held: &dyn Fn(i64) -> bool,
     ) -> std::result::Result<(i64, String), String> {
-        let base = format!("{addon}/{TRACK_TABLE}/{code}");
+        let base = format!("{addon}/{}", track_row(code));
         let mut nth = 0;
         let key = loop {
             let key = match nth {
@@ -1454,6 +1460,63 @@ mod tests {
         assert_eq!(got["sokol"], 48);
         assert_ne!(got["other"], 48);
         assert!(got["other"] >= STOCK_TRACKS);
+    }
+
+    #[test]
+    fn a_lent_track_id_is_the_one_the_build_gives_even_where_a_turned_off_track_keeps_it() {
+        let mut store = Store::default();
+        let own = track_build(
+            &mut store,
+            &[
+                ("mod.lemans", "le_mans_2017"),
+                ("track.bahrain_outer", "bahrain_outer"),
+                ("mod.brhgp", "brhgp"),
+            ],
+            &[],
+        );
+        assert_eq!(own["le_mans_2017"], STOCK_TRACKS);
+        assert_eq!(own["brhgp"], STOCK_TRACKS + 2);
+        let host = Overrides {
+            rows: BTreeMap::from([
+                (
+                    "track.bahrain_outer".to_owned(),
+                    BTreeMap::from([(track_row("bahrain_outer"), STOCK_TRACKS)]),
+                ),
+                (
+                    "mod.brhgp".to_owned(),
+                    BTreeMap::from([(track_row("brhgp"), STOCK_TRACKS + 6)]),
+                ),
+            ]),
+            ..Overrides::default()
+        };
+        let on = [("track.bahrain_outer", "bahrain_outer"), ("mod.brhgp", "brhgp")];
+        let order: Vec<String> = on.iter().map(|(a, _)| (*a).to_owned()).collect();
+        assert_eq!(store.lend(&host, &order), Ok(2));
+        let lent = track_build(&mut store, &on, &[]);
+        assert_eq!(lent["bahrain_outer"], STOCK_TRACKS);
+        assert_eq!(lent["brhgp"], STOCK_TRACKS + 6);
+        assert_eq!(store.lent_missed(), None);
+        assert!(!store.unsaved(), "row-ids.json keeps the player's own ids");
+    }
+
+    #[test]
+    fn a_lent_track_id_a_track_of_the_build_keeps_is_refused_by_name() {
+        let mut store = Store::default();
+        let on = [
+            ("mod.lemans", "le_mans_2017"),
+            ("track.bahrain_outer", "bahrain_outer"),
+        ];
+        track_build(&mut store, &on, &[]);
+        let host = Overrides {
+            rows: BTreeMap::from([(
+                "track.bahrain_outer".to_owned(),
+                BTreeMap::from([(track_row("bahrain_outer"), STOCK_TRACKS)]),
+            )]),
+            ..Overrides::default()
+        };
+        let order: Vec<String> = on.iter().map(|(a, _)| (*a).to_owned()).collect();
+        let err = store.lend(&host, &order).unwrap_err();
+        assert!(err.contains("le_mans_2017"), "{err}");
     }
 
     #[test]

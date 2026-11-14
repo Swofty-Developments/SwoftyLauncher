@@ -17,9 +17,11 @@ description: Settings holds the launcher's own options in five categories, shows
 
 ## General
 
-**Language** is a drop-down listing each language by its own name: English, Español, Русский or 简体中文. It changes straight away. The sidebar, the **Play** bar, **Profiles**, **Settings** and the crash screen are translated so far, and everything else stays in English, including the causes the crash screen names. Addons and F1 25 keep their own language.
+**Language** is a drop-down listing each language by its own name: English, Deutsch, Español, 한국어, Русский or 简体中文. It changes straight away. The sidebar, the **Play** bar, **Profiles**, **Settings** and the crash screen are translated so far, and everything else stays in English, including the causes the crash screen names. Addons and F1 25 keep their own language.
 
 **Start Steam automatically** (or the EA app) starts your game's store when you press **Play**, as the same item in the **Play** menu does.
+
+**Home screen video** shows the latest Swofty video in the bottom right of the F1 25 home screen, with **RB** (**V** on a keyboard) to watch it. It is on by default. Turned off, the home screen has no video card from the next time you press **Play**, and the launcher no longer fetches the latest video.
 
 ## Display
 

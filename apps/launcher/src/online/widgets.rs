@@ -1,6 +1,6 @@
 use super::images::Art;
 use super::model::*;
-use super::{Online, Target};
+use super::{Load, Online, Target};
 use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::Palette;
@@ -358,6 +358,28 @@ impl Shell {
 
     pub(super) fn flag_chip(&self, code: &Option<String>, p: Palette) -> Option<Div> {
         code.as_ref().map(|c| chip(c.to_uppercase(), p))
+    }
+
+    /// The byline of each `shown` track, told apart from every custom track and loaded season track.
+    pub(super) fn online_bylines(&self, shown: &[&TrackCard]) -> Vec<Option<String>> {
+        let custom: &[TrackCard] = match &self.online.overview {
+            Load::Ready(o) => &o.custom,
+            _ => &[],
+        };
+        let seasons = self.online.seasons.values().flat_map(|s| match s {
+            Load::Ready(page) => page.tracks.as_slice(),
+            _ => &[],
+        });
+        let tracks: Vec<(&str, Option<&str>)> = shown
+            .iter()
+            .copied()
+            .chain(custom)
+            .chain(seasons)
+            .map(|t| (t.name.as_str(), t.addon.as_deref()))
+            .collect();
+        let mut out = self.track_bylines(&tracks);
+        out.truncate(shown.len());
+        out
     }
 
     pub(super) fn crumb_bar(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {

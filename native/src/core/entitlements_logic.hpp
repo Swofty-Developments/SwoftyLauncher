@@ -15,8 +15,11 @@ constexpr uint64_t ENTITIES_LISTS_BEGIN = 0x560;
 constexpr uint64_t ENTITIES_LISTS_END = 0x568;
 // The check collapses "locked" and "not loaded yet" into one 0: an item's state in the unlock system is 0
 // from registration until its unlock task completes, and no pending state or loaded flag was found. So
-// not_owned needs a long unbroken run of zeros (about a minute of flow ticks) once the context is wired.
-constexpr int NOT_OWNED_AFTER = 3600;
+// not_owned needs a long unbroken run of zeros (about a minute of front end reads) once the context is wired.
+// Ownership is a front end question: nothing is read while a session is live, an unknown state is read every
+// READ_EVERY_MS and a not owned one rechecked every RECHECK_EVERY_MS.
+constexpr uint64_t READ_EVERY_MS = 250, RECHECK_EVERY_MS = 2000;
+constexpr int NOT_OWNED_AFTER = 240;
 // An entrant whose unlock item isn't registered yet is skipped, and a list whose items are all skipped reads as
 // usable, so a read before the unlock items are in would latch owned. The game has registered them by the time
 // its front end state (StateFrontend) runs; reads start FRONTEND_SETTLE_MS after it first does.
@@ -26,6 +29,14 @@ constexpr uint64_t FRONTEND_SETTLE_MS = 5000;
 inline bool frontend_settled(uint64_t frontend_at, uint64_t now)
 {
     return frontend_at && now >= frontend_at && now - frontend_at >= FRONTEND_SETTLE_MS;
+}
+
+inline bool read_due(int state, bool session_live, uint64_t last_read, uint64_t now)
+{
+    if (state == OWNED || session_live)
+        return false;
+    uint64_t every = state == NOT_OWNED ? RECHECK_EVERY_MS : READ_EVERY_MS;
+    return !last_read || now < last_read || now - last_read >= every;
 }
 
 inline bool tracked(const char *name)

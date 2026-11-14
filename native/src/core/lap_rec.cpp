@@ -33,12 +33,17 @@
 
 // The lap recorder: in a Time Trial, while swofty\tt.json carries "tt_boards": true, the flow tick samples the
 // player's car and the line crossings of ers_newlap.cpp (session.lap) cut it into laps; each completed lap is written
-// to swofty\laps\<UTC stamp>-<n>.swlap (lap_file_logic.hpp). The state machine is lap_rec_logic.hpp. Crossings are
+// to swofty\laps\<UTC stamp>-<n>.swlap, or to laps\ in the launcher's data folder (runtime::files_root) when the game
+// folder refuses it, as an EA app copy under Program Files does (lap_file_logic.hpp). The game folder comes first:
+// integrity modules built before the server's de98156 find the session's tt.json three folders up from the lap's
+// path, so only a lap in the game folder carries the session nonce from them; later modules read it from the game
+// exe's folder wherever the lap is. The state machine is lap_rec_logic.hpp. Crossings are
 // queued and handled on the next flow tick, so the game reads stay on the flow thread. The flow tick runs once a
 // frame; the car is read only when the recorder is due a sample (60 Hz), under a Trust so the heap checks are
 // paid once per HEAP_TRUST_MS, and the inbox is drained only when a crossing, a game result or a blob is waiting.
 // The board (content, track) and the player's team label are read once per session, during the out-lap, never at
-// the line. At the line the flow thread builds the file header from state it already has and hands the samples to
+// the line. The board's dry/wet is the car read's track wetness; where that read is off (the EA build), it is the D/W of
+// the board key the game built for the session at the ghost storage's onSessionEnter (tt_bridge.cpp S_BOARD_KEY). At the line the flow thread builds the file header from state it already has and hands the samples to
 // one writer thread, which builds the file, runs laps.sealing (under a Trust, its time kept off the game threads in
 // perf) and writes it; the completions (the bridge's
 // lap_finished, laps.recorded) come back through an Outbox and fire from the flow tick in lap order.
@@ -123,8 +128,11 @@ bool have_session_board = false;
 std::string session_team;
 bool have_session_team = false;
 double next_board_try_s = 0;
+int board_tries = 0;
 bool last_has_wetness = false;
 float last_wetness = 0;
+bool weather_logged = false;
+lr::WeatherFrom weather_from = lr::WeatherFrom::none;
 std::string started_utc;
 lr::Sealer sealer;
 lr::Outbox outbox;
@@ -136,6 +144,7 @@ struct Job {
     std::vector<uint8_t> samples;
     uint32_t count = 0;
     std::vector<uint8_t> ghost;
+    std::vector<std::wstring> dirs;
     std::wstring path;
     std::string name, narrow_path;
     Board board;
@@ -303,7 +312,9 @@ Board session_snapshot()
     Board b;
     auto facts = swofty_core::hooks::core().current();
     b.content = facts && !facts->content.empty() ? facts->content : "game/f1_2025";
-    std::string code = runtime::direct_start::tt::session_track();
+    std::string code;
+    if (!runtime::tt_bridge_session_track(code))
+        code = runtime::direct_start::tt::session_track();
     runtime::tt_bridge::BoardTrack t = runtime::tt_bridge_board_track(runtime::lower(code),
                                                                       runtime::tt_bridge::parse_board(runtime::tt_bridge_last_board()).track);
     b.track = t.key;
@@ -314,14 +325,15 @@ Board session_snapshot()
 }
 
 // Reads the board and the team label once; a session whose track is not known yet is asked again later.
-void resolve_session(double now)
+void resolve_session(double now, bool forced = false)
 {
     if (have_session_board && have_session_team)
         return;
     if (now < next_board_try_s)
         return;
     next_board_try_s = now + 1.0;
-    if (!have_session_board) {
+    if (!have_session_board && lr::board_read_due(forced, board_tries)) {
+        ++board_tries;
         Board b = session_snapshot();
         std::lock_guard<std::mutex> g(lock);
         session_board = std::move(b);
@@ -340,10 +352,22 @@ Board board_now(bool force)
 {
     if (force) {
         next_board_try_s = 0;
-        resolve_session(now_seconds());
+        resolve_session(now_seconds(), true);
     }
     Board b = session_board;
-    b.weather = lr::weather_of(last_has_wetness, last_wetness);
+    std::string key = last_has_wetness ? std::string() : runtime::tt_bridge_session_board();
+    lr::Weather w = lr::weather_pick(last_has_wetness, last_wetness, runtime::tt_bridge::parse_board(key).weather);
+    b.weather = w.word;
+    if (!weather_logged || w.from != weather_from) {
+        weather_logged = true;
+        weather_from = w.from;
+        if (w.from == lr::WeatherFrom::wetness)
+            swofty::log("[laps] weather %s from %s (%.2f)", w.word.c_str(), lr::weather_from_name(w.from), last_wetness);
+        else if (w.from == lr::WeatherFrom::board)
+            swofty::log("[laps] weather %s from %s %s (the track wetness is not read on this build)", w.word.c_str(), lr::weather_from_name(w.from), key.c_str());
+        else
+            swofty::log("[laps] weather unknown: no track wetness on this build and no session board key from the game; the laps carry no dry or wet");
+    }
     return b;
 }
 
@@ -394,7 +418,22 @@ void write_job(Job &j)
     done.path = j.narrow_path;
     done.time_ms = j.time_ms;
     done.valid = j.valid;
-    done.ok = runtime::write_file(j.path, std::string(body.begin(), body.end()));
+    std::string bytes(body.begin(), body.end());
+    for (size_t i = 0; i < j.dirs.size() && !done.ok; i++) {
+        const std::wstring &dir = j.dirs[i];
+        std::wstring path = dir + runtime::wide(j.name);
+        CreateDirectoryW(dir.c_str(), nullptr);
+        done.ok = runtime::write_file(path, bytes);
+        if (done.ok) {
+            done.path = runtime::narrow(path);
+            if (i)
+                swofty::log("[laps] wrote %s to %s instead", j.name.c_str(), runtime::narrow(dir).c_str());
+        } else {
+            DWORD e = GetLastError();
+            swofty::log("[laps] writing %s to %s failed (error %lu)%s", j.name.c_str(), runtime::narrow(dir).c_str(), e,
+                        i + 1 < j.dirs.size() ? "; trying the next folder" : "");
+        }
+    }
     if (!done.ok)
         swofty::log("[laps] writing %s failed", j.name.c_str());
     else {
@@ -575,11 +614,10 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
 
     SYSTEMTIME st;
     utc_now(&st);
-    std::wstring dir = runtime::swofty_root() + L"laps\\";
-    CreateDirectoryW(dir.c_str(), nullptr);
     Job j;
+    j.dirs = lr::lap_dirs(runtime::files_root(), runtime::swofty_root());
     j.name = lr::file_name(st.wYear, st.wMonth, st.wDay, st.wHour, st.wMinute, st.wSecond, lap.index);
-    j.path = dir + runtime::wide(j.name);
+    j.path = (j.dirs.empty() ? std::wstring() : j.dirs.front()) + runtime::wide(j.name);
     j.narrow_path = runtime::narrow(j.path);
     j.header = std::move(h);
     j.layout = plan.layout;
@@ -815,7 +853,8 @@ bool lap_rec_current_board(std::string &content, std::string &track, std::string
         b = session_snapshot();
     content = b.content;
     track = b.track;
-    weather = lr::weather_of(c.has_wetness, c.wetness);
+    std::string key = c.has_wetness ? std::string() : runtime::tt_bridge_session_board();
+    weather = lr::weather_pick(c.has_wetness, c.wetness, runtime::tt_bridge::parse_board(key).weather).word;
     return true;
 }
 
@@ -896,7 +935,9 @@ void lap_rec_session_enter()
     session_board = Board{};
     session_team.clear();
     next_board_try_s = 0;
+    board_tries = 0;
     last_has_wetness = false;
+    weather_logged = false;
     gate = lr::gate_of(read_file(swofty_root() + L"tt.json", size_t(1) << 20));
     is_time_trial = swofty_core::apply::moments::session_mode_track().first == "time_trial";
     if (!gate.on || !is_time_trial || !enabled("lap_rec", nullptr)) {

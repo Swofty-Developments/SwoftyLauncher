@@ -691,6 +691,10 @@ fn mod_menu_route(groupings: &[Node]) -> Result<Node> {
 }
 
 pub const SHOWROOM_ROUTE: &str = "swofty_showroom";
+pub const CUSTOMISATION_ROUTE: &str = "swofty_customisation";
+pub const CUSTOMISATION_GROUP: &str = "customisation_f1_life_entry";
+const CUSTOMISATION_FLOW: &str = "customisation_flow";
+const CUSTOMISATION_ENTRY: &str = "enter_f1_life_customisation";
 pub const HOME_BACK_ROUTE: &str = "swofty_home";
 pub const BACK_HOME_FROM_CONTAINER: &str = "swofty_back_home";
 pub const TIME_TRIAL_ROUTE: &str = "swofty_time_trial";
@@ -708,6 +712,8 @@ const TINY_WIPE_CURVE: &str = "tran_wipe_tiny_right_dly_c";
 const STANDARD_WIPE: &str = "ui_wipes/ui_wipe_standard_out.bk2";
 const STANDARD_WIPE_CURVE: &str = "tran_wipe_stndrd_out_dly_c";
 const TRANSITION_ENTRY_NODE: &str = "migrate_to_f1_world";
+const F1_WORLD_HUB: &str = "fe_f1_world";
+const SHOWROOM_SCREEN: &str = "fe_showroom";
 
 /// routes_f1_world.uir with the routes that leave the pickers for the main menu without the F1 World hub:
 /// `swofty_back_home` in the activity container's group, a copy of the container's own `home` route (a wipe,
@@ -719,20 +725,8 @@ const TRANSITION_ENTRY_NODE: &str = "migrate_to_f1_world";
 pub fn f1_world_routes(data: &[u8]) -> Result<Vec<u8>> {
     edit(data, |p| {
         let gs = root_obj(p)?.at_mut("RouteGroupings")?.a_mut()?;
-        let route_of = |gs: &[Node], group: &str, route: &str| -> Result<Node> {
-            gs.iter()
-                .find(|g| id_of(g) == Some(group))
-                .ok_or_else(|| err(format!("the routes have no {group} grouping")))?
-                .o()?
-                .at("Routes")?
-                .a()?
-                .iter()
-                .find(|r| id_of(r) == Some(route))
-                .cloned()
-                .ok_or_else(|| err(format!("{group} has no {route} route")))
-        };
-        let back = route_of(gs, "fe_f1_world", "back_1")?;
-        let home = container_home_route(&route_of(gs, "f1_world_activity_container", "home")?)?;
+        let back = group_route(gs, F1_WORLD_HUB, "back_1")?;
+        let home = container_home_route(&group_route(gs, "f1_world_activity_container", "home")?)?;
         let mut added = vec![("f1_world_activity_container", home)];
         for group in ["fe_showroom", "grand_prix_continue"] {
             let mut r = back.clone();
@@ -820,39 +814,128 @@ fn container_home_route(stock: &Node) -> Result<Node> {
     Ok(r)
 }
 
-fn showroom_route(groupings: &[Node]) -> Result<Node> {
-    let home = groupings
-        .iter()
-        .find(|g| id_of(g) == Some("fe_home"))
-        .ok_or_else(|| err("the routes have no fe_home grouping"))?;
-    let mut r = home
-        .o()?
-        .at("Routes")?
-        .a()?
-        .iter()
-        .find(|r| id_of(r) == Some("theatre"))
-        .cloned()
-        .ok_or_else(|| err("fe_home has no theatre route"))?;
+/// The main menu's Showroom route: a copy of the F1 World hub's own `showroom` (routes_f1_world.uir) with the hub
+/// swapped for the home screen. It closes only the home screen, so `slice_bg_content_underlay` and the player card
+/// stay up for the series picks that close them, runs fe_showroom's view model callback before input, and closes the
+/// theming overlay itself.
+fn showroom_route(f1_world: &[Node]) -> Result<Node> {
+    let mut r = group_route(f1_world, F1_WORLD_HUB, "showroom")?;
     set_str(r.o_mut()?, "Id", SHOWROOM_ROUTE)?;
-    replace_strings(&mut r, &|v| match v {
-        "theatre_container" => Some("fe_showroom".into()),
-        _ => None,
-    });
+    replace_strings(&mut r, &|v| (v == F1_WORLD_HUB).then(|| "fe_home".to_owned()));
+    let cmds = r.o()?.at("Commands")?.a()?;
+    let has = |kind: &str, target: &str| {
+        cmds.iter()
+            .any(|c| cmd_type(c) == Some(kind) && attr_value(c, "Target").as_deref() == Some(target))
+    };
+    if !has("CloseScreen", "fe_home")
+        || !has("OpenScreen", SHOWROOM_SCREEN)
+        || !has("ViewModelCallback", SHOWROOM_SCREEN)
+    {
+        return Err(err(format!(
+            "{F1_WORLD_HUB}'s showroom route does not close the hub and open {SHOWROOM_SCREEN} with its view model callback"
+        )));
+    }
     Ok(r)
 }
 
-fn home_route(groupings: &[Node], id: &str) -> Result<Node> {
+fn group_route(groupings: &[Node], group: &str, id: &str) -> Result<Node> {
     groupings
         .iter()
-        .find(|g| id_of(g) == Some("fe_home"))
-        .ok_or_else(|| err("the routes have no fe_home grouping"))?
+        .find(|g| id_of(g) == Some(group))
+        .ok_or_else(|| err(format!("the routes have no {group} grouping")))?
         .o()?
         .at("Routes")?
         .a()?
         .iter()
         .find(|r| id_of(r) == Some(id))
         .cloned()
-        .ok_or_else(|| err(format!("fe_home has no {id} route")))
+        .ok_or_else(|| err(format!("{group} has no {id} route")))
+}
+
+/// The main menu's Customisation route: a copy of fe_home's own `customisation` (a wipe, close the home screen and
+/// its slices, then `Migrate customisation_flow enter_f1_life_customisation`). F1 World's own `customisation`
+/// closes the hub instead.
+fn customisation_route(groupings: &[Node]) -> Result<Node> {
+    let mut r = home_route(groupings, "customisation")?;
+    let cmds = r.o()?.at("Commands")?.a()?;
+    let enters = cmds.iter().any(|c| {
+        cmd_type(c) == Some("Migrate")
+            && attr_value(c, "Flow").as_deref() == Some(CUSTOMISATION_FLOW)
+            && attr_value(c, "Activator").as_deref() == Some(CUSTOMISATION_ENTRY)
+    });
+    let closes = cmds
+        .iter()
+        .any(|c| cmd_type(c) == Some("CloseScreen") && attr_value(c, "Target").as_deref() == Some("fe_home"));
+    if !enters || !closes {
+        return Err(err(format!(
+            "fe_home's customisation route does not close fe_home and enter {CUSTOMISATION_FLOW} at {CUSTOMISATION_ENTRY}"
+        )));
+    }
+    set_str(r.o_mut()?, "Id", CUSTOMISATION_ROUTE)?;
+    Ok(r)
+}
+
+/// routes_customisation_and_store.uir with `swofty_back_home` in the Customisation screen's group, the activity
+/// container's `home` route from `f1_world` (routes_f1_world.uir) as `f1_world_routes` adds it: a wipe, `Migrate
+/// frontend_flow enter_fe_home`, then fe_home with its slices and scene. The game's `back_1` there migrates to
+/// the F1 World hub; the core swaps it for this route after a Customisation card press.
+pub fn customisation_routes(data: &[u8], f1_world: &[u8]) -> Result<Vec<u8>> {
+    let stock = swofty_formats::pkg::Pkg::parse(f1_world)?;
+    let home = stock
+        .root
+        .o()?
+        .at("RouteGroupings")?
+        .a()?
+        .iter()
+        .find(|g| id_of(g) == Some("f1_world_activity_container"))
+        .ok_or_else(|| err("the routes have no f1_world_activity_container grouping"))?
+        .o()?
+        .at("Routes")?
+        .a()?
+        .iter()
+        .find(|r| id_of(r) == Some("home"))
+        .cloned()
+        .ok_or_else(|| err("f1_world_activity_container has no home route"))?;
+    let home = container_home_route(&home)?;
+    edit(data, |p| {
+        let routes = root_obj(p)?
+            .at_mut("RouteGroupings")?
+            .a_mut()?
+            .iter_mut()
+            .find(|g| id_of(g) == Some(CUSTOMISATION_GROUP))
+            .ok_or_else(|| err(format!("the routes have no {CUSTOMISATION_GROUP} grouping")))?
+            .o_mut()?
+            .at_mut("Routes")?
+            .a_mut()?;
+        if !routes.iter().any(|r| id_of(r) == Some("back_1")) {
+            return Err(err(format!("{CUSTOMISATION_GROUP} has no back_1 route")));
+        }
+        routes.retain(|r| id_of(r) != Some(BACK_HOME_FROM_CONTAINER));
+        routes.push(home);
+        Ok(())
+    })
+}
+
+pub fn has_route(data: &[u8], group: &str, id: &str) -> bool {
+    let Ok(p) = swofty_formats::pkg::Pkg::parse(data) else {
+        return false;
+    };
+    p.root
+        .o()
+        .and_then(|o| o.at("RouteGroupings"))
+        .and_then(|g| g.a())
+        .is_ok_and(|gs| {
+            gs.iter().filter(|g| id_of(g) == Some(group)).any(|g| {
+                g.o()
+                    .and_then(|o| o.at("Routes"))
+                    .and_then(|r| r.a())
+                    .is_ok_and(|rs| rs.iter().any(|r| id_of(r) == Some(id)))
+            })
+        })
+}
+
+fn home_route(groupings: &[Node], id: &str) -> Result<Node> {
+    group_route(groupings, "fe_home", id)
 }
 
 /// The main menu's Time Trial and Grand Prix routes: the game's own `home_to_activity` (wipe, close the home
@@ -890,12 +973,15 @@ fn nav_routes(groupings: &[Node]) -> Result<Vec<Node>> {
 }
 
 /// Adds ADDON SETTINGS' route groups, which must be new, and each of `optional` whose group the
-/// routes don't have yet.
-pub fn routes(data: &[u8], groups: Vec<Node>, optional: Vec<Node>) -> Result<Vec<u8>> {
+/// routes don't have yet. `f1_world` is the stock routes_f1_world.uir, the source of the main menu's Showroom route.
+pub fn routes(data: &[u8], groups: Vec<Node>, optional: Vec<Node>, f1_world: &[u8]) -> Result<Vec<u8>> {
+    let showroom = swofty_formats::pkg::Pkg::parse(f1_world)
+        .ok()
+        .and_then(|p| showroom_route(p.root.o().ok()?.at("RouteGroupings").ok()?.a().ok()?).ok());
     edit(data, |p| {
         let gs = root_obj(p)?.at_mut("RouteGroupings")?.a_mut()?;
         let replace = mod_menu_route(gs)?;
-        let showroom = showroom_route(gs).ok();
+        let customisation = customisation_route(gs).ok();
         let nav = nav_routes(gs).ok();
         for g in optional {
             if !gs.iter().any(|x| id_of(x) == id_of(&g)) {
@@ -923,7 +1009,7 @@ pub fn routes(data: &[u8], groups: Vec<Node>, optional: Vec<Node>) -> Result<Vec
             routes.retain(|r| id_of(r) != Some(SHOWROOM_ROUTE));
             routes.push(showroom);
         }
-        for r in nav.into_iter().flatten() {
+        for r in nav.into_iter().flatten().chain(customisation) {
             let id = id_of(&r).unwrap_or_default().to_owned();
             routes.retain(|x| id_of(x) != Some(&id));
             routes.push(r);
@@ -1787,6 +1873,185 @@ mod tests {
         route_cmd("Migrate", id, &[("Flow", flow), ("Activator", entry)], None)
     }
 
+    fn hub_showroom_route(callback: bool) -> Node {
+        let mut cmds = vec![
+            route_cmd("PlayerCard", 1, &[("PlayerCardMode", "0")], None),
+            route_cmd(
+                "TransitionScreen",
+                2,
+                &[("Direction", "out"), ("Target", F1_WORLD_HUB)],
+                None,
+            ),
+            route_cmd("CloseScreen", 3, &[("Target", F1_WORLD_HUB)], Some("2")),
+            route_cmd("OpenScreen", 4, &[("Target", SHOWROOM_SCREEN)], Some("3")),
+        ];
+        if callback {
+            cmds.push(route_cmd(
+                "ViewModelCallback",
+                5,
+                &[("Message", ""), ("Target", SHOWROOM_SCREEN)],
+                Some("4"),
+            ));
+        }
+        cmds.extend([
+            route_cmd("InputState", 6, &[], Some("5")),
+            route_cmd(
+                "TransitionScreen",
+                7,
+                &[("Direction", "in"), ("Target", SHOWROOM_SCREEN)],
+                Some("5"),
+            ),
+            route_cmd(
+                "TriggerSubRoute",
+                8,
+                &[("SubRoute", "close"), ("Target", THEMING_OVERLAY)],
+                None,
+            ),
+        ]);
+        route("showroom", cmds, "6,7,8", 1, Some(SHOWROOM_SCREEN))
+    }
+
+    fn f1_world_with(showroom: Node) -> Vec<u8> {
+        pkg_of(vec![
+            route_group(
+                F1_WORLD_HUB,
+                vec![route("back_1", vec![], "fe_home", 2, None), showroom],
+            ),
+            route_group(SHOWROOM_SCREEN, vec![route("back_1", vec![], "", 2, None)]),
+        ])
+    }
+
+    fn steps(r: &Node) -> Vec<String> {
+        r.o()
+            .unwrap()
+            .at("Commands")
+            .unwrap()
+            .a()
+            .unwrap()
+            .iter()
+            .map(|c| {
+                [
+                    cmd_type(c).map(str::to_owned),
+                    attr_value(c, "SubRoute"),
+                    attr_value(c, "Direction"),
+                    attr_value(c, "Target"),
+                    attr_value(c, "PlayerCardMode"),
+                    c.as_obj()
+                        .and_then(|o| o.str_at("Dependencies").ok())
+                        .map(str::to_owned),
+                ]
+                .into_iter()
+                .flatten()
+                .collect::<Vec<_>>()
+                .join(" ")
+            })
+            .collect()
+    }
+
+    fn home_with_theatre() -> Vec<u8> {
+        pkg_of(vec![
+            route_group(
+                "fe_home",
+                vec![
+                    route("options", vec![], "", 0, None),
+                    route(
+                        "theatre",
+                        vec![
+                            route_cmd(
+                                "TriggerSubRoute",
+                                5,
+                                &[
+                                    ("SubRoute", "close"),
+                                    ("Target", "fe_home"),
+                                    ("To", "theatre_container"),
+                                ],
+                                None,
+                            ),
+                            route_cmd(
+                                "TriggerSubRoute",
+                                6,
+                                &[("SubRoute", "open_no_input"), ("Target", "theatre_container")],
+                                Some("5"),
+                            ),
+                        ],
+                        "6",
+                        1,
+                        Some("theatre_container"),
+                    ),
+                ],
+            ),
+            route_group("settings_container", vec![]),
+        ])
+    }
+
+    #[test]
+    fn the_main_menu_showroom_route_is_the_hubs_own_showroom_route_from_the_home_screen() {
+        let out = routes(
+            &home_with_theatre(),
+            Vec::new(),
+            Vec::new(),
+            &f1_world_with(hub_showroom_route(true)),
+        )
+        .unwrap();
+        let p = Pkg::parse(&out).unwrap();
+        let ours = route_in(&p, "fe_home", SHOWROOM_ROUTE);
+        assert_eq!(
+            steps(ours),
+            [
+                "PlayerCard 0",
+                "TransitionScreen out fe_home",
+                "CloseScreen fe_home 2",
+                "OpenScreen fe_showroom 3",
+                "ViewModelCallback fe_showroom 4",
+                "InputState 5",
+                "TransitionScreen in fe_showroom 5",
+                "TriggerSubRoute close theming_overlay_frontend",
+            ],
+            "fe_home's slices stay open, fe_showroom gets its view model callback before input, and the theming overlay closes on its own"
+        );
+        let o = ours.o().unwrap();
+        assert_eq!(o.str_at("Dependencies").unwrap(), "6,7,8");
+        assert_eq!(o.at("Type").unwrap().as_val().unwrap().as_u32(), Some(1));
+        assert_eq!(attr_value(ours, "Destination").as_deref(), Some(SHOWROOM_SCREEN));
+        let text = format!("{ours:?}");
+        for gone in [
+            "theatre_container",
+            F1_WORLD_HUB,
+            "slice_bg_content_underlay",
+            "CloseSlices",
+            "open_no_input",
+        ] {
+            assert!(!text.contains(gone), "{gone} in {text}");
+        }
+        assert_eq!(
+            steps(route_in(&p, "fe_home", "theatre")),
+            [
+                "TriggerSubRoute close fe_home",
+                "TriggerSubRoute open_no_input theatre_container 5"
+            ],
+            "the game's own Theatre route stays"
+        );
+        let twice = routes(
+            &out,
+            Vec::new(),
+            Vec::new(),
+            &f1_world_with(hub_showroom_route(true)),
+        )
+        .unwrap();
+        let ids = route_ids_of(&Pkg::parse(&twice).unwrap(), "fe_home");
+        assert_eq!(ids.iter().filter(|i| *i == SHOWROOM_ROUTE).count(), 1);
+    }
+
+    #[test]
+    fn no_showroom_route_is_built_from_the_theatre_when_the_hubs_showroom_route_is_missing_or_changed() {
+        let without_hub = pkg_of(vec![route_group(SHOWROOM_SCREEN, vec![])]);
+        for f1_world in [Vec::new(), without_hub, f1_world_with(hub_showroom_route(false))] {
+            let out = routes(&home_with_theatre(), Vec::new(), Vec::new(), &f1_world).unwrap();
+            assert!(!has_route(&out, "fe_home", SHOWROOM_ROUTE));
+            assert!(has_route(&out, "fe_home", "theatre"));
+        }
+    }
+
     #[test]
     fn the_home_gets_showroom_time_trial_and_grand_prix_routes_copied_from_its_own() {
         let activity = route(
@@ -1807,7 +2072,13 @@ mod tests {
             ),
             route_group("settings_container", vec![]),
         ]);
-        let out = routes(&data, Vec::new(), Vec::new()).unwrap();
+        let out = routes(
+            &data,
+            Vec::new(),
+            Vec::new(),
+            &f1_world_with(hub_showroom_route(true)),
+        )
+        .unwrap();
         let p = Pkg::parse(&out).unwrap();
         let ids = route_ids_of(&p, "fe_home");
         for id in [
@@ -1915,6 +2186,160 @@ mod tests {
         );
     }
 
+    fn home_customisation_route(flow: &str) -> Node {
+        route(
+            "customisation",
+            vec![
+                route_cmd(
+                    "TransitionScreen",
+                    1,
+                    &[("Direction", "out"), ("Target", "fe_home")],
+                    None,
+                ),
+                route_cmd("CloseScreen", 2, &[("Target", "fe_home")], Some("1")),
+                migrate_cmd(3, flow, CUSTOMISATION_ENTRY),
+            ],
+            "2,3",
+            1,
+            Some(CUSTOMISATION_GROUP),
+        )
+    }
+
+    #[test]
+    fn the_home_gets_a_customisation_route_copied_from_its_own() {
+        let data = pkg_of(vec![
+            route_group(
+                "fe_home",
+                vec![
+                    route("options", vec![], "", 0, None),
+                    home_customisation_route(CUSTOMISATION_FLOW),
+                ],
+            ),
+            route_group("settings_container", vec![]),
+        ]);
+        let out = routes(&data, Vec::new(), Vec::new(), &[]).unwrap();
+        assert!(has_route(&out, "fe_home", CUSTOMISATION_ROUTE));
+        assert!(has_route(&out, "fe_home", "customisation"));
+        let p = Pkg::parse(&out).unwrap();
+        let ours = route_in(&p, "fe_home", CUSTOMISATION_ROUTE);
+        let cmds = ours.o().unwrap().at("Commands").unwrap().a().unwrap();
+        assert_eq!(attr_value(&cmds[1], "Target").as_deref(), Some("fe_home"));
+        assert_eq!(attr_value(&cmds[2], "Flow").as_deref(), Some(CUSTOMISATION_FLOW));
+        assert_eq!(
+            attr_value(&cmds[2], "Activator").as_deref(),
+            Some(CUSTOMISATION_ENTRY)
+        );
+        let twice = routes(&out, Vec::new(), Vec::new(), &[]).unwrap();
+        let ids = route_ids_of(&Pkg::parse(&twice).unwrap(), "fe_home");
+        assert_eq!(ids.iter().filter(|i| *i == CUSTOMISATION_ROUTE).count(), 1);
+    }
+
+    #[test]
+    fn a_home_customisation_route_into_another_flow_is_not_copied() {
+        for groups in [
+            vec![route_group(
+                "fe_home",
+                vec![route("options", vec![], "", 0, None)],
+            )],
+            vec![route_group(
+                "fe_home",
+                vec![
+                    route("options", vec![], "", 0, None),
+                    home_customisation_route("frontend_flow"),
+                ],
+            )],
+        ] {
+            let mut groups = groups;
+            groups.push(route_group("settings_container", vec![]));
+            let out = routes(&pkg_of(groups), Vec::new(), Vec::new(), &[]).unwrap();
+            assert!(!has_route(&out, "fe_home", CUSTOMISATION_ROUTE));
+        }
+    }
+
+    #[test]
+    fn the_customisation_screen_gets_the_containers_route_to_the_main_menu() {
+        let f1_world = pkg_of(vec![route_group(
+            "f1_world_activity_container",
+            vec![home_route_with(
+                "ui_wipes/ui_wipe_tiny_right.bk2",
+                "tran_wipe_tiny_right_dly_c",
+            )],
+        )]);
+        let back = migrate_cmd(1, "frontend_flow", "enter_fe_f1_world");
+        let data = pkg_of(vec![
+            route_group(
+                CUSTOMISATION_GROUP,
+                vec![
+                    route("back_1", vec![back], "1", 2, Some("fe_f1_world")),
+                    route("back_2", vec![], "", 2, Some("fe_news")),
+                ],
+            ),
+            route_group(
+                "customisation_driver_suit",
+                vec![route("back_1", vec![], "", 2, None)],
+            ),
+        ]);
+        let out = customisation_routes(&data, &f1_world).unwrap();
+        let p = Pkg::parse(&out).unwrap();
+        assert_eq!(
+            route_ids_of(&p, CUSTOMISATION_GROUP),
+            ["back_1", "back_2", BACK_HOME_FROM_CONTAINER]
+        );
+        assert_eq!(route_ids_of(&p, "customisation_driver_suit"), ["back_1"]);
+        assert!(has_route(&out, CUSTOMISATION_GROUP, BACK_HOME_FROM_CONTAINER));
+        let ours = route_in(&p, CUSTOMISATION_GROUP, BACK_HOME_FROM_CONTAINER);
+        let cmds = ours.o().unwrap().at("Commands").unwrap().a().unwrap();
+        assert_eq!(attr_value(&cmds[4], "Flow").as_deref(), Some("frontend_flow"));
+        assert_eq!(
+            attr_value(&cmds[4], "Activator").as_deref(),
+            Some("enter_fe_home")
+        );
+        assert_eq!(
+            cmds[3].o().unwrap().str_at("Dependencies").unwrap(),
+            "5",
+            "the overlay opens after the migration"
+        );
+        let stock_back = route_in(&p, CUSTOMISATION_GROUP, "back_1");
+        let stock_cmds = stock_back.o().unwrap().at("Commands").unwrap().a().unwrap();
+        assert_eq!(
+            attr_value(&stock_cmds[0], "Activator").as_deref(),
+            Some("enter_fe_f1_world"),
+            "the game's own Back stays"
+        );
+        let twice = customisation_routes(&out, &f1_world).unwrap();
+        let ids = route_ids_of(&Pkg::parse(&twice).unwrap(), CUSTOMISATION_GROUP);
+        assert_eq!(ids.iter().filter(|i| *i == BACK_HOME_FROM_CONTAINER).count(), 1);
+    }
+
+    #[test]
+    fn the_customisation_back_route_needs_the_stock_screen_and_container() {
+        let f1_world = pkg_of(vec![route_group(
+            "f1_world_activity_container",
+            vec![home_route_with(
+                "ui_wipes/ui_wipe_tiny_right.bk2",
+                "tran_wipe_tiny_right_dly_c",
+            )],
+        )]);
+        let no_back = pkg_of(vec![route_group(
+            CUSTOMISATION_GROUP,
+            vec![route("open", vec![], "", 0, None)],
+        )]);
+        assert!(customisation_routes(&no_back, &f1_world).is_err());
+        let no_group = pkg_of(vec![route_group(
+            "customisation_car",
+            vec![route("back_1", vec![], "", 2, None)],
+        )]);
+        assert!(customisation_routes(&no_group, &f1_world).is_err());
+        let no_home = pkg_of(vec![route_group("f1_world_activity_container", vec![])]);
+        let data = pkg_of(vec![route_group(
+            CUSTOMISATION_GROUP,
+            vec![route("back_1", vec![], "", 2, None)],
+        )]);
+        assert!(customisation_routes(&data, &no_home).is_err());
+        assert!(!has_route(&data, CUSTOMISATION_GROUP, BACK_HOME_FROM_CONTAINER));
+        assert!(!has_route(b"not a pkg", CUSTOMISATION_GROUP, "back_1"));
+    }
+
     fn group<'a>(p: &'a Pkg, id: &str) -> Option<&'a Node> {
         p.root
             .o()
@@ -1946,10 +2371,11 @@ mod tests {
             &routes_file(),
             route_groups(&[], &[]),
             screen_route_groups(&screens),
+            &[],
         )
         .unwrap();
         // a group already there is kept, not added twice
-        let d = routes(&d, Vec::new(), screen_route_groups(&screens)).unwrap();
+        let d = routes(&d, Vec::new(), screen_route_groups(&screens), &[]).unwrap();
         let opened = [
             (
                 "ai".to_owned(),

@@ -550,6 +550,9 @@
   "Car_Reset_LastFittedUpgrade": {
    "match": "0x3507f80"
   },
+  "Car_SuspensionDamage_OnCollision": {
+   "match": "0x464afa0"
+  },
   "Career_Add_SeasonWeekend": {
    "match": "0xae4ad0"
   },
@@ -767,6 +770,9 @@
   "Game_F1WorldActivityContainer_SelectEntrantList": {
    "match": "0x1a735f0"
   },
+  "Game_Fill_PerformanceComparison": {
+   "match": "0x188b3b0"
+  },
   "Game_PracticeTrackAcclimatisation_RefreshState": {
    "match": "0x2997720"
   },
@@ -796,6 +802,9 @@
   },
   "Game_SpeechSystem_PostLine": {
    "match": "0xa2f4d0"
+  },
+  "Game_Vfx_UpdateWheelTyreInstance": {
+   "match": "0x45a2d90"
   },
   "Gdb_Lookup_Key": {
    "match": "0x4598580"
@@ -1441,6 +1450,18 @@
   "site_Career_RnDUpgradeListDeptIcon": {
    "match": "0x1747fc5"
   },
+  "site_Career_ScheduleComponent_TrackListEntryDone": {
+   "match": "0x126ceb0"
+  },
+  "site_Career_ScheduleComponent_TrackListNextRow": {
+   "match": "0x126cf70"
+  },
+  "site_Career_ScheduleComponent_TrackListPush": {
+   "match": "0x126cf7d"
+  },
+  "site_Career_ScheduleComponent_TrackListSave": {
+   "match": "0x126c3a0"
+  },
   "site_Career_StandingsWeekendTrackDone": {
    "match": "0x1818a2c"
   },
@@ -1583,6 +1604,24 @@
   "site_Game_CareerContinue_DriverSlotTitle": {
    "match": "0x1a09c74"
   },
+  "site_Game_CareerEventsSequencerFirstRecord": {
+   "match": "0xc6d128"
+  },
+  "site_Game_CareerEventsSequencerPlayerDriver": {
+   "match": "0xc6d399"
+  },
+  "site_Game_CareerEventsSequencerPlayerDriverJoin": {
+   "match": "0xc6d3a1"
+  },
+  "site_Game_CareerEventsSequencerRecordsJoin": {
+   "match": "0xc6d16c"
+  },
+  "site_Game_CareerEventsSequencerTeamMateDriver": {
+   "match": "0xc6d13f"
+  },
+  "site_Game_CareerEventsSequencerTeamMateDriverJoin": {
+   "match": "0xc6d147"
+  },
   "site_Game_CareerWizardConfirm_NextRoute": {
    "match": "0x1a1e15d"
   },
@@ -1610,6 +1649,18 @@
   "site_Game_ErsNewLap_VehicleLookup": {
    "match": "0x2511450"
   },
+  "site_Game_GhostlapTrace_RivalLogBoard": {
+   "match": "0x147d386"
+  },
+  "site_Game_GhostlapTrace_RivalLogDone": {
+   "match": "0x147d3af"
+  },
+  "site_Game_GrandPrixContinueVm_F1wCarCheck": {
+   "match": "0x1bc8f5c"
+  },
+  "site_Game_GrandPrixContinueVm_F1wWarningCheck": {
+   "match": "0x1bc92d5"
+  },
   "site_Game_SaveData_ContainersChildren": {
    "match": "0x3641dd8"
   },
@@ -1633,6 +1684,18 @@
   },
   "site_Game_TimeTrialLeaderboard_BoardsDone": {
    "match": "0x2fc2d72"
+  },
+  "site_Game_TimeTrial_SetReferenceListBoard": {
+   "match": "0x1475fc2"
+  },
+  "site_Game_TimeTrial_SetReferenceLogBoard": {
+   "match": "0x147605f"
+  },
+  "site_Game_TimeTrial_SetReferenceLogDone": {
+   "match": "0x1476167"
+  },
+  "site_Game_TimeTrial_SetReferenceNoList": {
+   "match": "0x14762ae"
   },
   "site_Gdb_DeptCountStore": {
    "match": "0x4598b6f"
@@ -1811,6 +1874,42 @@
   },
   "vt_Sess_HumanController": {
    "match": "0x3883bc7"
+  },
+  "site_Game_MyTeamVehicleBases_AiConfigLoad": {
+   "match": "0x2501675"
+  },
+  "site_Game_MyTeamVehicleBases_NextBase": {
+   "match": "0x2502c4d"
+  },
+  "site_Sess_TimeTrialLeaderboard_BoundTabChild": {
+   "match": "0x2fc1146"
+  },
+  "site_Sess_TimeTrialLeaderboard_BoundTabDone": {
+   "match": "0x2fc1156"
+  },
+  "g_Ne_InlineStr128Vtable": {
+   "match": "0x2d56149"
+  },
+  "site_Sess_InGameRaceRetirementDriver": {
+   "match": "0x2d56210"
+  },
+  "site_Sess_InGameRaceRetirementDriverJoin": {
+   "match": "0x2d56224"
+  },
+  "site_Game_TheatreRows_RowOffset": {
+   "match": "0x1f04f42"
+  },
+  "site_Game_TheatreList_EntryStepAlt": {
+   "match": "0x2bf0d20"
+  },
+  "site_Game_TheatreList_NoSlotAlt": {
+   "match": "0x2bf0d20"
+  },
+  "site_Game_TileListSelect_ChildStep": {
+   "match": "0x38261f5"
+  },
+  "site_Game_TileListSelect_ChildNext": {
+   "match": "0x38261f5"
   }
  },
  "unresolvable": {}

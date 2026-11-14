@@ -364,6 +364,37 @@ When the save is also at least 24 KB smaller, the [Saves](/using/career-saves) p
 
 A save that got 24 KB smaller in a launcher session that left out an addon with `saves.affects` gets the same kind of notice. Size alone doesn't show that a career is gone: ordinary play moves the file by more than that, and the notice only says which version the vault kept.
 
+### A save that stalls at load
+
+A profile save last played with addon content that is off now (a career, livery or item from an addon the profile or Vanilla leaves out) can keep F1 25 on Loading... after Press any button: the spinner turns and team radio plays, and the main menu never comes. It does the same from Steam or the EA app without the launcher, through Verify and reinstalls, because the save is the cause.
+
+The save is encrypted, so the launcher learns such a save from its sessions. A session stalled on the save when the core logged a profile load and perf.log ends on `screen splash_transition` for 120 s or more (99 in 100 menu loads take under 82 s), with no addon known to stall the boot on. Two such sessions on the same save, or one of 15 minutes, make it a stalling save, keyed by the SHA-256 of `savegame@profile#NXDSMWW.BWW` from the session's `before-session` snapshot. A save that any session got past the boot screens with, or that the game wrote during the session, never counts. `$DATA/state/stalled-saves.json` keeps what was learned and moved:
+
+```json
+{
+  "saves": [
+    { "sha256": "9f1c…", "size": 932920, "sessions": ["20261104-023037", "20261104-023146"], "secs": 162, "profile": "colorgrading-testing", "found_at": 1793770000 }
+  ],
+  "moved": [
+    { "source": "launcher-colorgrading-testing", "sha256": "9f1c…", "kept": "20261104-023003-imported-profile", "restored": "20261101-123709-after-session", "at": 1793770000 }
+  ]
+}
+```
+
+At launcher start and before every Play, `save_stall::sweep` looks at every profile's launcher saves and the Steam or EA app save of the copy Play uses. A stalling save goes into the career vault pinned `stalled-at-load`, and the newest snapshot that isn't a stalling save goes back in its place: the folder's own vault first, then the Steam (or EA) vault for a launcher store. With no such snapshot, a launcher store or EA save is left empty, so F1 25 starts a new profile save; a Steam save stays, since Steam Cloud would download it again. A Steam save waits until Steam is closed, an EA save until the EA app is. Each move is one line:
+
+```text
+saves: the profile save in C:\Users\you\AppData\Local\Swofty\saves\colorgrading-testing\remote kept F1 25 on Loading... after Press any button; the career vault keeps it as snapshot 20261104-023003-imported-profile and the version from 2026-11-01 12:37 UTC (20261101-123709-after-session) is back in its place
+```
+
+A save moved out of a folder is not moved out of it again, so restoring it with `swofty saves restore <snapshot> --source <source>` once its addons are back sticks. Import, Copy careers to… and Export to Steam refuse a stalling save:
+
+```text
+swofty: the profile save in /home/you/.local/share/Steam/userdata/843502855/3059520/remote kept F1 25 on Loading... after Press any button, so the launcher does not copy it; the career vault keeps it to restore once the addons it was saved with are back
+```
+
+A session that read the profile save and then sat on the start screen for 120 s or more shows the known problem `stalled_save` (**F1 25 stayed on the loading screen after reading your save**) in the crash window.
+
 ### Back up and restore
 
 ```text
