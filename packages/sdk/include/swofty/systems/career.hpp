@@ -97,8 +97,8 @@ struct SeasonChange {
 SWOFTY_RECORD(SeasonChange, round, slot, seat, out, in, kind, until_round)
 
 struct Season {
-    static constexpr Version version{1, 0};
-    std::string data_group;
+    static constexpr Version version{1, 1};
+    std::string data_group;                    // empty in a year pack's season: a career mode makes it its own with a variant
     int year = 0;
     Ref<::swofty::content::Package> box;
     Ref<Calendar> calendar;

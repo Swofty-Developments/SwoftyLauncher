@@ -67,6 +67,8 @@ Database operations (`db/*.json`, `swofty::db`) are global: they write rows into
 - `career::calendars`: an event list (`career.calendar`);
 - `career::ratings`: a driver's ratings at the start of a season (`career.driver_ratings`).
 
+A year pack's season has no data group (`career.season` 1.1, launcher 1.9.50): no career races it as it is, and every career mode that covers the year makes it its own with a variant that sets its data group (see [Make a career mode](/make/career)). The core counts a season for a career only when its data group is the career's, so a pack's season never adds a year to a career by itself. A 1.0 core refuses a season with no data group.
+
 The rest: `characters`, `wizards`, `hub_tabs`, and the [R&D trees and the driver market](#r-d-trees-and-the-driver-market) (`rnd_trees`, `markets`).
 
 <template #example>
@@ -144,8 +146,8 @@ struct SeasonChange {
 SWOFTY_RECORD(SeasonChange, round, slot, seat, out, in, kind, until_round)
 
 struct Season {
-    static constexpr Version version{1, 0};
-    std::string data_group;
+    static constexpr Version version{1, 1};
+    std::string data_group;                    // empty in a year pack's season: a career mode makes it its own with a variant
     int year = 0;
     Ref<::swofty::content::Package> box;       // the box it races in: its cars, looks and rules; .or_else() names the fallback
     Ref<Calendar> calendar;                    // the season's real calendar; empty: the career's
