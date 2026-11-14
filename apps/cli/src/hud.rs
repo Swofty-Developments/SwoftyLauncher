@@ -73,7 +73,17 @@ pub fn command(store: &Store, cmd: HudCommand) -> Result<ExitCode> {
                     a.erps.len()
                 );
             }
-            let left = hud::check::uncovered(&stock, &built.archives)?;
+            let mut left = hud::check::uncovered(&stock, &built.archives)?;
+            left.extend(
+                hud::check::constant_rotations(&built.archives)?
+                    .into_iter()
+                    .map(|n| format!("{n} has a one-key rotation")),
+            );
+            left.extend(
+                hud::check::unpadded_clips(&built.archives)?
+                    .into_iter()
+                    .map(|n| format!("{n}: the syst is not a multiple of 16 bytes")),
+            );
             for l in &left {
                 println!("FAIL  {l}");
             }

@@ -34,7 +34,8 @@ testring.zip
     ],
     "track_overrides": [               // set path to value on the cloned Track row
       { "path": "allow_night_start", "value": "False" }
-    ]
+    ],
+    "sprint": ["f1_2026"]              // the data sets in which the track's weekend is a sprint weekend; none by default
   },
   "ers": { "HotLapDeployFactor": 0.7 }, // per-track ERS values written into every 2026 car handling file
   "copy_directories": [                // source folders in the package and their destination in the game
@@ -78,6 +79,12 @@ $DATA/addons/mod.testring/
 
 - `activation` needs `copy_from_track`, `copy_slot` or both, each naming a stock track. Without `copy_from_track`, `copy_slot` is the base track.
 - An override `path` is relative to the row. A segment of it can name a sub-row by number (`TyreData_0`), every sub-row (`TyreData_*`) or the one sub-row whose field matches (`Name[field=value]`, as in [Selecting rows](/reference/ops/database#selecting-rows)). A selector that matches more than one sub-row fails the build.
+- An added track runs normal weekends: its `weekend_format` is `default` in every data set, also when its base is a sprint weekend (Zandvoort in `f1_2026`). `sprint` lists the data sets in which it is a sprint weekend instead. The 2023 to 2025 seasons read the `f1` data set and 2026 reads `f1_2026`; a data set where the base track has no weekend format takes its parent's (`f1_2026` from `f1`), and the build warns when `sprint` names one:
+
+```text
+mytrack: sprint f1_2025: mytrack has no weekend format in that data set, so it takes its parent data set's
+```
+
 - An override `value` is a string, such as `"1.55"` or `"64,64,64"`. A JSON number is also accepted and written as its text: `1.55` sets `"1.55"`.
 - Keep every path in the package inside the package.
 

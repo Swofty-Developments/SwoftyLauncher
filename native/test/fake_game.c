@@ -892,7 +892,7 @@ uint8_t fake_tl_bag[0x20];
 
 enum { TL_ENTRY = 0x28, TL_SEASONS = 10, TL_IDS = 24, TL_CAP = 6000 };
 static uint8_t tl_rows[TL_SEASONS * TL_IDS + 1][TL_ENTRY];
-static uint8_t tl_component[0x300], tl_career[0x1000], tl_events[0x140], tl_list[0x18], tl_array[0x20];
+static uint8_t tl_component[0x440], tl_career[0x1000], tl_events[0x140], tl_list[0x18], tl_array[0x20];
 static uint8_t tl_calendar[TL_CAP * TL_ENTRY];
 static uint8_t tl_ids[65536];
 static int tl_full;

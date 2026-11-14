@@ -208,6 +208,7 @@ EOF
     if [[ $mode == state ]]; then
         once "stall: the watchdog is armed" '\[stall\] load-stall watchdog armed: a report of every thread.s stack'
         once "stall: the test report is written beside the crash reports" '\[stall\] load-stall report 1 of at most 1: .*thread\(s\) read in [0-9]+ ms; written to swofty\\stall-[0-9]{8}-[0-9]{6}\.txt'
+        once "stall: the report lists the threads not in a wait first" '\[stall\] == Threads not in a wait \([0-9]+; [0-9]+ with a frame in F1_25\.exe, listed first'
         once "stall: the report holds the thread table" '\[stall\] == Threads \([0-9]+; [1-9][0-9]* unwound'
         check "stall: a suspended thread's stack is unwound and named" '\[stall\]   #1  [0-9a-f]{16} rsp=[0-9a-f]{16}  [A-Za-z0-9_.]+\+0x[0-9a-f]+ '
         check "stall: a wait is named from the module's exports" '\[stall\] thread [0-9]+.*, waiting in [A-Za-z]+'

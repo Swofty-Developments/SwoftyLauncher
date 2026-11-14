@@ -3481,6 +3481,7 @@ pub type Game_F1WorldHub_HandleCommand_t =
 pub type Game_F1World_ApplySkipOnboarding_t = unsafe extern "C" fn(self_: *mut c_void);
 pub type Game_F1World_AssignDefaultFanzoneChoices_t = unsafe extern "C" fn(self_: *mut c_void);
 pub type Game_FEHomeViewModel_OnUpdate_t = unsafe extern "C" fn(vm: *mut FEHomeViewModel, dt: f32);
+pub type Game_Fill_PerformanceComparison_t = unsafe extern "C" fn(comparison: *mut c_void);
 pub type Game_FrontendTransitionVM_OnScreenActivated_t = unsafe extern "C" fn(vm: *mut c_void);
 pub type Game_FullRaceReplaySystem_Init_t = unsafe extern "C" fn(
     self_: *mut c_void,
@@ -3624,6 +3625,14 @@ pub type Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver_t =
     unsafe extern "C" fn(component: *mut c_void, preset: u32, local_player: c_int);
 pub type Game_UITrack_Apply_DevContractTrack_t = unsafe extern "C" fn(self_: *mut c_void, cfg: *mut c_void);
 pub type Game_UITrack_Select_DefaultTrack_t = unsafe extern "C" fn(self_: *mut c_void, cfg: *mut c_void);
+pub type Game_Vfx_UpdateWheelTyreInstance_t = unsafe extern "C" fn(
+    studio: *mut c_void,
+    vehicle_id: u8,
+    wheel: u32,
+    tyre_vis: *mut c_void,
+    tyre_asset: *mut c_void,
+    wheel_params: *const c_void,
+);
 pub type Game_VideoExportModule_Initialise_t = unsafe extern "C" fn(module: *mut c_void) -> c_int;
 pub type Gdb_HashMap_Rehash_t = unsafe extern "C" fn(map: *mut GdbValueMap, num_buckets: u64);
 pub type Gdb_Load_GameDatabase_t =
@@ -6298,6 +6307,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_Fill_PerformanceComparison: Binding = Binding {
+        id: "Game_Fill_PerformanceComparison",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_FlowState_EnterBootLogout: Binding = Binding {
         id: "Game_FlowState_EnterBootLogout",
         kind: "func",
@@ -8940,6 +8954,11 @@ pub mod bindings {
     };
     pub const Game_VfxManager_Initialise: Binding = Binding {
         id: "Game_VfxManager_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Vfx_UpdateWheelTyreInstance: Binding = Binding {
+        id: "Game_Vfx_UpdateWheelTyreInstance",
         kind: "func",
         status: Status::Experimental,
     };
@@ -16818,8 +16837,23 @@ pub mod bindings {
         kind: "site",
         status: Status::Experimental,
     };
+    pub const site_Game_TheatreList_EntryStepAlt: Binding = Binding {
+        id: "site_Game_TheatreList_EntryStepAlt",
+        kind: "site",
+        status: Status::Experimental,
+    };
     pub const site_Game_TheatreList_NoSlot: Binding = Binding {
         id: "site_Game_TheatreList_NoSlot",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TheatreList_NoSlotAlt: Binding = Binding {
+        id: "site_Game_TheatreList_NoSlotAlt",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TheatreRows_RowOffset: Binding = Binding {
+        id: "site_Game_TheatreRows_RowOffset",
         kind: "site",
         status: Status::Experimental,
     };
@@ -16830,6 +16864,16 @@ pub mod bindings {
     };
     pub const site_Game_ThrustmasterLcd_SectorTail: Binding = Binding {
         id: "site_Game_ThrustmasterLcd_SectorTail",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TileListSelect_ChildNext: Binding = Binding {
+        id: "site_Game_TileListSelect_ChildNext",
+        kind: "site",
+        status: Status::Experimental,
+    };
+    pub const site_Game_TileListSelect_ChildStep: Binding = Binding {
+        id: "site_Game_TileListSelect_ChildStep",
         kind: "site",
         status: Status::Experimental,
     };

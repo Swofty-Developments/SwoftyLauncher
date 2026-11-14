@@ -770,6 +770,9 @@
   "Game_F1WorldActivityContainer_SelectEntrantList": {
    "match": "0x1a735f0"
   },
+  "Game_Fill_PerformanceComparison": {
+   "match": "0x188b3b0"
+  },
   "Game_PracticeTrackAcclimatisation_RefreshState": {
    "match": "0x2997720"
   },
@@ -799,6 +802,9 @@
   },
   "Game_SpeechSystem_PostLine": {
    "match": "0xa2f4d0"
+  },
+  "Game_Vfx_UpdateWheelTyreInstance": {
+   "match": "0x45a2d90"
   },
   "Gdb_Lookup_Key": {
    "match": "0x4598580"
@@ -1889,6 +1895,21 @@
   },
   "site_Sess_InGameRaceRetirementDriverJoin": {
    "match": "0x2d56224"
+  },
+  "site_Game_TheatreRows_RowOffset": {
+   "match": "0x1f04f42"
+  },
+  "site_Game_TheatreList_EntryStepAlt": {
+   "match": "0x2bf0d20"
+  },
+  "site_Game_TheatreList_NoSlotAlt": {
+   "match": "0x2bf0d20"
+  },
+  "site_Game_TileListSelect_ChildStep": {
+   "match": "0x38261f5"
+  },
+  "site_Game_TileListSelect_ChildNext": {
+   "match": "0x38261f5"
   }
  },
  "unresolvable": {}

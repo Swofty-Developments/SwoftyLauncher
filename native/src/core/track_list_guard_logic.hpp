@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -16,11 +17,29 @@ constexpr uintptr_t SEASON_EVENTS = 0x2c8;
 constexpr size_t FALLBACK_LIMIT = 64;
 constexpr uint32_t SEASON_MAX = 255;
 
+constexpr uintptr_t SEASONS_BEGIN = 0x410;
+constexpr uintptr_t SEASONS_END = 0x418;
+constexpr uintptr_t SEASON_INDEX = 0x428;
+constexpr size_t SEASON_RECORD = 0x80;
+constexpr uintptr_t DRIVER_CALENDARS_BEGIN = 0x40;
+constexpr uintptr_t DRIVER_CALENDARS_END = 0x48;
+constexpr size_t DRIVER_CALENDAR = 0xc8;
+constexpr uintptr_t ACTIVITIES_BEGIN = 0x50;
+constexpr uintptr_t ACTIVITIES_END = 0x58;
+constexpr size_t ACTIVITY_SLOT = 0x10;
+constexpr uintptr_t SLOT_ACTIVITY = 0x8;
+constexpr uintptr_t ACTIVITY_DEF = 0x10;
+constexpr uintptr_t DEF_TYPE = 0x10;
+constexpr uint8_t RACE_WEEKEND = 0x0a;
+constexpr size_t MAX_SEASONS = 64;
+constexpr size_t MAX_CALENDARS = 256;
+constexpr size_t MAX_ACTIVITIES = 4096;
+
 struct Load {
     uintptr_t component = 0;
     uint64_t entry = UINT64_MAX;
     int prev_id = -1;
-    size_t stored = 0, season = 0, limit = 0;
+    size_t stored = 0, season = 0, weekends = 0, limit = 0;
     bool blown = false;
     size_t kept = 0, dropped = 0, reused = 0, extra = 0;
     std::unordered_set<uintptr_t> rows;
@@ -36,25 +55,64 @@ inline size_t season_events(uint32_t raw)
     return raw >= 1 && raw <= SEASON_MAX ? raw : 0;
 }
 
-inline size_t limit_for(size_t season)
+template <class Read> size_t race_weekends(uintptr_t component, Read &&read)
 {
-    return season ? season : FALLBACK_LIMIT;
+    uint64_t sb = 0, se = 0;
+    uint32_t index = 0;
+    if (!read(component + SEASONS_BEGIN, sb) || !read(component + SEASONS_END, se) || !read(component + SEASON_INDEX, index))
+        return 0;
+    if (!sb || se <= sb || (se - sb) % SEASON_RECORD || (se - sb) / SEASON_RECORD > MAX_SEASONS || index >= (se - sb) / SEASON_RECORD)
+        return 0;
+    uintptr_t season = uintptr_t(sb) + index * SEASON_RECORD;
+    uint64_t cb = 0, ce = 0;
+    if (!read(season + DRIVER_CALENDARS_BEGIN, cb) || !read(season + DRIVER_CALENDARS_END, ce))
+        return 0;
+    if (!cb || ce <= cb || (ce - cb) % DRIVER_CALENDAR || (ce - cb) / DRIVER_CALENDAR > MAX_CALENDARS)
+        return 0;
+    size_t best = 0;
+    for (uintptr_t calendar = uintptr_t(cb); calendar < ce; calendar += DRIVER_CALENDAR) {
+        uint64_t ab = 0, ae = 0;
+        if (!read(calendar + ACTIVITIES_BEGIN, ab) || !read(calendar + ACTIVITIES_END, ae))
+            continue;
+        if (!ab || ae <= ab || (ae - ab) % ACTIVITY_SLOT || (ae - ab) / ACTIVITY_SLOT > MAX_ACTIVITIES)
+            continue;
+        size_t count = 0;
+        for (uintptr_t slot = uintptr_t(ab); slot < ae; slot += ACTIVITY_SLOT) {
+            uint64_t activity = 0, def = 0;
+            uint8_t type = 0;
+            if (read(slot + SLOT_ACTIVITY, activity) && activity && read(uintptr_t(activity) + ACTIVITY_DEF, def) && def &&
+                read(uintptr_t(def) + DEF_TYPE, type) && type == RACE_WEEKEND)
+                ++count;
+        }
+        best = std::max(best, count);
+    }
+    return best <= FALLBACK_LIMIT ? best : 0;
 }
 
-inline void reset(Load &load, uintptr_t component, size_t stored, size_t season)
+inline size_t limit_for(size_t season, size_t weekends = 0)
+{
+    size_t limit = std::max(season, weekends);
+    return limit ? limit : FALLBACK_LIMIT;
+}
+
+inline void reset(Load &load, uintptr_t component, size_t stored, size_t season, size_t weekends = 0)
 {
     load = Load{};
     load.component = component;
     load.stored = stored;
     load.season = season;
-    load.limit = limit_for(season);
+    load.weekends = weekends;
+    load.limit = limit_for(season, weekends);
     load.blown = stored > load.limit;
 }
 
-inline bool enter(Load &load, uintptr_t component, size_t calendar, size_t stored, size_t season, uint64_t entry, uint8_t id)
+inline bool fresh(const Load &load, uintptr_t component, size_t calendar)
 {
-    if (calendar == 0 || component != load.component)
-        reset(load, component, stored, season);
+    return calendar == 0 || component != load.component;
+}
+
+inline bool enter(Load &load, uint64_t entry, uint8_t id)
+{
     if (entry == load.entry)
         return false;
     load.entry = entry;
@@ -107,11 +165,22 @@ inline std::string load_line(uintptr_t component, size_t stored, size_t loaded, 
     std::string s = buf;
     if (!guard)
         return s;
-    if (guard->season)
+    if (guard->season && guard->weekends)
+        snprintf(buf, sizeof buf, " (season event list %zu, %zu race weekend%s on the career calendar)", guard->season, guard->weekends,
+                 guard->weekends == 1 ? "" : "s");
+    else if (guard->season)
         snprintf(buf, sizeof buf, " (season event list %zu)", guard->season);
+    else if (guard->weekends)
+        snprintf(buf, sizeof buf, " (season event list unknown, %zu race weekend%s on the career calendar)", guard->weekends,
+                 guard->weekends == 1 ? "" : "s");
     else
         snprintf(buf, sizeof buf, " (season event list unknown, limit %zu)", guard->limit);
     s += buf;
+    if (!guard->blown && guard->season && guard->stored > guard->season) {
+        snprintf(buf, sizeof buf, "; more entries than the season event list, all kept: the career calendar races %zu weekend%s",
+                 guard->weekends, guard->weekends == 1 ? "" : "s");
+        s += buf;
+    }
     if (guard->extra) {
         snprintf(buf, sizeof buf, "; %zu more matching event%s the game would also have loaded skipped", guard->extra,
                  guard->extra == 1 ? "" : "s");

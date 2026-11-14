@@ -169,11 +169,11 @@ A texture array, such as `overrides.team_logos.f1_2026.texarray.image`, is a `Gf
 }
 ```
 
-- Each slice of `source` that differs from the game's stock slice replaces that slice of the array already in `erp`. That array is the stock one, or the one earlier addons in the load order wrote.
+- Each slice of `source` that differs from the game's stock slice replaces that slice of the array already in `erp`. That array is the stock one, or the one earlier addons in the load order wrote. It keeps its slice count, so the slices earlier addons added past the game's count stay.
 - The game's stock array is the one in `erp`. When `erp` has none, it is the one in the first archive, by name, directly in `2025_asset_groups/<package>/`, where `<package>` follows `eaid://` in `resource`. The merged array is then added to `erp`.
 - An array with fewer slices than the game's, in the same format and slice size, merges the slices it has. Slices past the game's count are left out with a warning.
-- An array of another format or slice size, a resource that is not a texture array, or a resource the game has no stock array for replaces the whole resource, with a warning.
-- When the array in `erp` has another layout from an earlier addon, the slices merge over the game's array instead, with a warning.
+- An array of another format or slice size, a resource that is not a texture array, or a resource the game has no stock array for replaces the whole resource, with a warning. When an earlier addon grew the array in `erp` past the game's count, the op is refused instead, with a warning, and the array stays as it was.
+- When the array in `erp`, as an earlier addon left it, has another format or slice size than the game's, or is not a texture array, the op is refused with a warning that names that addon, and the array stays as it was. When that array holds fewer slices than the game's, the changed slices past its count are left out with a warning.
 - A `merge-slices` that changes no slice leaves `erp` as it is.
 
 The build prints one line per op:

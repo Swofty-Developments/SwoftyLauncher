@@ -24,7 +24,7 @@ use crate::pages::{game_art, label};
 use crate::shell::Shell;
 use crate::theme::{Palette, palette};
 use crate::ui::Callout;
-use swofty_i18n::tr;
+use swofty_i18n::{tr, trf};
 
 pub(crate) const RISK: &str = "Because of how Swofty Launcher hooks the game's engine, which lets addons run \
                                their own engine code, it is highly risky to change the game with any outside \
@@ -133,7 +133,7 @@ impl SetupWizard {
                     }
                     Err(e) => {
                         crate::app_log::action("first play setup: put the game folder back").failed(&e);
-                        w.error = Some(format!("Swofty couldn't put the game folder back: {e}"))
+                        w.error = Some(trf!("Swofty couldn't put the game folder back: {e}", e = e))
                     }
                 }
                 cx.notify();
