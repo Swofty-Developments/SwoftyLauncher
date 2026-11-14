@@ -64,6 +64,23 @@ void publish_drs(Store &st, Expansion &x)
     drs_groups = std::move(groups);
 }
 
+std::mutex points_mu;
+std::map<std::string, PointsSystem> points_systems;
+
+void publish_points(Store &st, Expansion &x)
+{
+    std::map<std::string, PointsSystem> systems;
+    std::map<std::string, Value> keep;
+    Lookup lookup = store_lookup(st, keep);
+    for (auto &id : x.applied["session.points"]) {
+        const Value *rec = lookup("session.points", id);
+        if (auto s = rec ? points_system(id, *rec, nullptr) : std::nullopt)
+            systems[id] = *s;
+    }
+    std::lock_guard g(points_mu);
+    points_systems = std::move(systems);
+}
+
 struct Database {
     gvdb::File file;
     std::unordered_map<uint64_t, rows::Rec> edits;
@@ -709,6 +726,8 @@ public:
             apply_garages(x, report);
         if (std::string_view(registry_) == "rules.drs")
             publish_drs(st, x);
+        if (std::string_view(registry_) == "session.points")
+            publish_points(st, x);
         if (staged) {
             std::string records = std::to_string(staged) + " database record" + (staged == 1 ? "" : "s");
             report.summary = report.summary.empty() ? records : report.summary + "; " + records;
@@ -857,6 +876,32 @@ WarmersBox tyre_warmers_for_box(const std::string &entrant_list)
         packages.push_back({id, lookup("content.package", id)});
     WarmersPick pick = tyre_warmers_pick(entrant_list, packages);
     return {pick.warmers, pick.line};
+}
+
+PointsBox points_for_box(const std::string &entrant_list)
+{
+    Store &st = registry::store();
+    std::map<std::string, Value> keep;
+    Lookup lookup = store_lookup(st, keep);
+    std::vector<std::pair<std::string, const Value *>> packages;
+    for (auto &id : in_load_order(st, "content.package"))
+        packages.push_back({id, lookup("content.package", id)});
+    PointsPick pick;
+    {
+        std::lock_guard g(points_mu);
+        pick = points_pick(entrant_list, packages, points_systems);
+    }
+    PointsBox box;
+    box.line = pick.line;
+    if (pick.system) {
+        box.found = true;
+        box.label = pick.system->label;
+        box.full = pick.system->full;
+        box.reduced = pick.system->reduced;
+        box.bonus = pick.system->bonus;
+        box.rule = pick.system->rule;
+    }
+    return box;
 }
 
 void register_appliers()

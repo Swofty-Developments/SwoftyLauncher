@@ -123,6 +123,10 @@ const SCHEMAS: &[(&str, &str)] = &[
         "rules.drs",
         include_str!("../../../sdk/std/registries/rules.drs/1.0.json"),
     ),
+    (
+        "session.points",
+        include_str!("../../../sdk/std/registries/session.points/1.0.json"),
+    ),
     ("suit", include_str!("../../../sdk/std/registries/suit/1.0.json")),
     (
         "team.constructor",

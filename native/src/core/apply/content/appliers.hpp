@@ -1,7 +1,9 @@
 #pragma once
 
+#include <cstdint>
 #include <optional>
 #include <string>
+#include <vector>
 
 namespace swofty_core::apply::content {
 
@@ -22,5 +24,19 @@ struct WarmersBox {
     std::string line;
 };
 WarmersBox tyre_warmers_for_box(const std::string &entrant_list);
+
+// The points system the box with this entrant list runs: its content.package's rules.points system if the boot apply
+// added it (found false otherwise) as the game holds it (26 places, the 75 / 50 / 25 % levels, the fastest lap rule
+// and bonus), and the line to log.
+struct PointsBox {
+    bool found = false;
+    std::string label;
+    std::vector<int32_t> full;
+    std::vector<std::vector<int32_t>> reduced;
+    int32_t bonus = 0;
+    uint8_t rule = 0;
+    std::string line;
+};
+PointsBox points_for_box(const std::string &entrant_list);
 
 }

@@ -100,6 +100,104 @@ static void warmer_swap_tests()
            "GameSetupMode +0x1c8 has_tyre_warmers (re/db structs/GameSetupMode.h)");
 }
 
+// A parsed points level as the game holds it: rule byte, bonus, the points column (i32s at +0x08..+0x10).
+struct Column {
+    uint8_t mem[0x18] = {};
+    std::vector<int32_t> v;
+    explicit Column(std::vector<int32_t> p) : v(std::move(p)) { v.resize(26, 0); }
+    uint8_t *link()                                  // after the column sits in its final place
+    {
+        int32_t *b = v.data(), *e = v.data() + v.size();
+        std::memcpy(mem + era::COLUMN_BEGIN, &b, 8);
+        std::memcpy(mem + era::COLUMN_END, &e, 8);
+        return mem;
+    }
+};
+
+struct Preset {
+    std::vector<Column> cols;
+    std::vector<uint8_t> levels;
+    void fill(uint8_t *at, uint8_t rule, int32_t bonus)
+    {
+        levels.assign(cols.size() * era::LEVEL_SIZE, 0);
+        for (size_t i = 0; i < cols.size(); i++) {
+            uint8_t *l = levels.data() + i * era::LEVEL_SIZE;
+            l[era::LEVEL_RULE] = rule;
+            std::memcpy(l + era::LEVEL_BONUS, &bonus, 4);
+            uint8_t *c = cols[i].link();
+            std::memcpy(l + era::LEVEL_POINTS, &c, 8);
+        }
+        uint8_t *b = levels.data(), *e = levels.data() + levels.size();
+        std::memcpy(at + era::PRESET_LEVELS_BEGIN, &b, 8);
+        std::memcpy(at + era::PRESET_LEVELS_END, &e, 8);
+    }
+};
+
+static void points_tests()
+{
+    era::Readable ok = [](const void *p, size_t) { return p != nullptr; };
+    std::vector<uint8_t> presets(3 * era::PRESET_SIZE, 0);
+    Preset stock{{Column({25, 18, 15, 12, 10, 8, 6, 4, 2, 1}), Column({19, 14, 12}), Column({13, 10, 8}), Column({6, 5, 4})}};
+    Preset other{{Column({8, 6, 4, 3, 2}), Column({8, 6, 4, 3, 2}), Column({8, 6, 4, 3, 2}), Column({8, 6, 4, 3, 2})}};
+    Preset era1950{{Column({8, 6, 4, 3, 2}), Column({8, 6, 4, 3, 2}), Column({8, 6, 4, 3, 2}), Column({8, 6, 4, 3, 2})}};
+    stock.fill(presets.data(), 0, 0);
+    other.fill(presets.data() + era::PRESET_SIZE, 0, 0);                          // same points, no fastest lap point
+    era1950.fill(presets.data() + 2 * era::PRESET_SIZE, 1, 1);
+    std::vector<int32_t> full = {8, 6, 4, 3, 2};
+    full.resize(26, 0);
+    era::PointsWant want{full, {full, full, full}, 1, 1};
+    const uint8_t *found = era::find_points_preset(ok, presets.data(), presets.data() + presets.size(), want);
+    expect(found == presets.data() + 2 * era::PRESET_SIZE, "the box's preset is found by its points, fastest lap rule and bonus");
+    want.bonus = 2;
+    expect(!era::find_points_preset(ok, presets.data(), presets.data() + presets.size(), want), "another bonus: no preset");
+    want.bonus = 1;
+    want.reduced[2][0] = 4;
+    expect(!era::find_points_preset(ok, presets.data(), presets.data() + presets.size(), want), "other reduced points: no preset");
+    want.reduced[2][0] = 8;
+    expect(!era::find_points_preset(ok, presets.data(), presets.data() + presets.size() - 1, want) &&
+               !era::find_points_preset(ok, nullptr, nullptr, want),
+           "a preset vector that is not whole presets, or none: no preset");
+
+    // two weekend structures, the second a sprint weekend; sessions: practice, race, race_2 without a preset
+    std::vector<uint8_t> mode(0x200, 0), weekends(2 * era::WEEKEND_SIZE, 0), s0(3 * era::SESSION_SIZE, 0), s1(era::SESSION_SIZE, 0);
+    auto session = [](std::vector<uint8_t> &v, size_t i, uint64_t preset, uint32_t id) {
+        std::memcpy(v.data() + i * era::SESSION_SIZE, &preset, 8);
+        std::memcpy(v.data() + i * era::SESSION_SIZE + era::SESSION_ID, &id, 4);
+    };
+    uint64_t stock_ptr = reinterpret_cast<uint64_t>(presets.data());
+    session(s0, 0, stock_ptr, 1);
+    session(s0, 1, stock_ptr, 15);
+    session(s0, 2, 0, 16);
+    session(s1, 0, stock_ptr, 15);
+    auto span = [](uint8_t *at, size_t b, size_t e, std::vector<uint8_t> &v) {
+        uint8_t *p = v.data(), *q = v.data() + v.size();
+        std::memcpy(at + b, &p, 8);
+        std::memcpy(at + e, &q, 8);
+    };
+    span(weekends.data(), era::WEEKEND_SESSIONS_BEGIN, era::WEEKEND_SESSIONS_END, s0);
+    span(weekends.data() + era::WEEKEND_SIZE, era::WEEKEND_SESSIONS_BEGIN, era::WEEKEND_SESSIONS_END, s1);
+    weekends[era::WEEKEND_SIZE + era::WEEKEND_SPRINT] = 1;
+    span(mode.data(), era::MODE_WEEKENDS_BEGIN, era::MODE_WEEKENDS_END, weekends);
+    auto races = era::race_sessions(ok, mode.data());
+    expect(races.size() == 1 && races[0] == reinterpret_cast<uint64_t *>(s0.data() + era::SESSION_SIZE),
+           "only the race of the non-sprint weekend that holds a preset is swapped");
+
+    era::PointsSwaps swaps;
+    uint64_t ours = reinterpret_cast<uint64_t>(found);
+    for (uint64_t *s : races)
+        swaps.swap(s, ours);
+    expect(*races[0] == ours && swaps.active() == 1, "a press points the race at the box's preset");
+    swaps.swap(races[0], ours);
+    expect(swaps.put_back() == 1 && *races[0] == stock_ptr && swaps.active() == 0, "put back restores the game's preset once");
+    swaps.swap(races[0], ours);
+    *races[0] = 0x1234;                                                         // the game parsed the mode again
+    expect(swaps.put_back() == 0 && *races[0] == 0x1234, "put back leaves a pointer the game changed since the swap");
+    swaps.swap(races[0], ours);
+    expect(swaps.forget() == 1 && *races[0] == ours && swaps.put_back() == 0, "forget writes nothing");
+    expect(era::MODE_WEEKENDS_BEGIN == 0x198 && era::WEEKEND_SIZE == 0x88 && era::SESSION_RACE == 15,
+           "GameSetupMode +0x190 weekend structures (re/db structs/GameSetupMode.h, WeekendStructure.h)");
+}
+
 static void setup_guard_tests()
 {
     era::DrsSwaps swaps;
@@ -1045,6 +1143,7 @@ int main()
 
     drs_swap_tests();
     warmer_swap_tests();
+    points_tests();
     continue_tests();
     setup_guard_tests();
     grid_limit_tests();
