@@ -187,7 +187,13 @@ fn common_root<'a>(paths: impl Iterator<Item = &'a String>) -> String {
 /// Build the profile and install it. Files an unfinished session left in the
 /// way that are provably ours are cleared and the install is tried once
 /// more; anything else stops it untouched, with what a restore would do.
-pub fn install(store: &Store, profile: &str, g: &Game, session: bool, out: &dyn Fn(&str)) -> Result<()> {
+pub fn install(
+    store: &Store,
+    profile: &str,
+    g: &Game,
+    session: bool,
+    out: &dyn Fn(&str),
+) -> Result<integrity::State> {
     if swofty_core::compat::write_blocker(&g.dir).is_some() {
         bail!("{}", swofty_core::compat::write_blocked_text(&g.dir));
     }
@@ -218,6 +224,9 @@ pub fn install(store: &Store, profile: &str, g: &Game, session: bool, out: &dyn 
     if session {
         Busy::clear(&store.root);
         busy::clear_cancel(&store.root);
+    }
+    if let Some(line) = r.as_ref().ok().and_then(crate::laps::blocked_line) {
+        out(&line);
     }
     r
 }
@@ -387,7 +396,7 @@ fn install_checked(
     session: bool,
     out: &dyn Fn(&str),
     progress: &dyn Fn(usize, usize),
-) -> Result<()> {
+) -> Result<integrity::State> {
     crate::setup::gate(store)?;
     Blocked::clear(&store.root).ok();
     stock::Report::clear(&store.root).ok();
@@ -403,12 +412,14 @@ fn install_checked(
         progress,
         ..Installer::new(&store.root, g)
     };
-    let integrity = session.then(|| crate::laps::integrity(store, out)).flatten();
-    let built = build_profile(store, profile, g, integrity.as_ref())?;
+    let fetched = session.then(|| crate::laps::integrity(store, out)).flatten();
+    let module = fetched.as_ref().and_then(|f| f.as_ref().ok());
+    let built = build_profile(store, profile, g, module)?;
     report(profile, &built);
+    let state = integrity::State::of(fetched.as_ref(), !built.plan.loader.is_empty());
     let found = match inst.apply(&built.plan) {
         Err(swofty_core::Error::Leftovers(found)) => found,
-        r => return Ok(not_stock(store, g, r)?),
+        r => return Ok(not_stock(store, g, r).map(|()| state)?),
     };
     if found.iter().any(|c| !c.owned) {
         return Err(crate::recover::blocked(store, g, &found));
@@ -416,11 +427,12 @@ fn install_checked(
     let cleared = inst.clear(&found)?;
     crate::recover::announce(store, g, &cleared, out);
     crate::recover::record_cleared(store, &cleared);
-    let built = build_profile(store, profile, g, integrity.as_ref())?;
+    let built = build_profile(store, profile, g, module)?;
     report(profile, &built);
+    let state = integrity::State::of(fetched.as_ref(), !built.plan.loader.is_empty());
     match inst.apply(&built.plan) {
         Err(swofty_core::Error::Leftovers(found)) => Err(crate::recover::blocked(store, g, &found)),
-        r => Ok(not_stock(store, g, r)?),
+        r => Ok(not_stock(store, g, r).map(|()| state)?),
     }
 }
 
@@ -885,6 +897,7 @@ mod tests {
             install(&self.store, "default", &self.game, true, &|l| {
                 log.borrow_mut().push(l.to_owned())
             })
+            .map(|_| ())
         }
 
         fn mip(&self) -> String {
