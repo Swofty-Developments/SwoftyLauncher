@@ -494,8 +494,8 @@ pub fn settle_rows(
 }
 
 /// The Play stop for careers with ids above the stock rows and no owner [`settle_rows`] could name:
-/// their addon isn't installed or isn't one the install knows. Names the installed database addons
-/// that are off as the ones to try. `None` when every career names its owners.
+/// no addon the install has ids for provides the row. Names the installed database addons that are
+/// off as the ones to try. `None` when every career names its owners.
 pub fn unowned_line(
     list: &[Career],
     order: &[String],
@@ -538,13 +538,14 @@ pub fn unowned_line(
         )
     };
     Some(format!(
-        "{} in your save use rows from addons that aren't installed or on ({shown}{more}). \
-         The game can crash at the splash. Turn on the addons those careers were made with and press Play, \
-         or restore a save from before in Profiles > Saves.{try_on}",
+        "{} in your save {} a team, car or driver that no installed addon provides ({shown}{more}). \
+         Turn on the addons those careers were made with and press Play, or restore a save from before \
+         in Profiles > Saves.{try_on}",
         match careers.len() {
             1 => "1 career".to_owned(),
             n => format!("{n} careers"),
         },
+        if careers.len() == 1 { "uses" } else { "use" },
     ))
 }
 
@@ -1240,7 +1241,8 @@ mod tests {
         let line = unowned_line(&list, &[], &installed, &owners, &stock_max()).unwrap();
         assert!(
             line.contains(
-                "1 career in your save use rows from addons that aren't installed or on (driver_career:a)"
+                "1 career in your save uses a team, car or driver that no installed addon provides \
+                 (driver_career:a). Turn on"
             ),
             "{line}"
         );
@@ -1250,6 +1252,65 @@ mod tests {
             None
         );
         assert_eq!(unowned_line(&[], &[], &installed, &owners, &stock_max()), None);
+    }
+
+    #[test]
+    fn a_career_on_a_registry_team_or_car_names_its_season_and_is_never_unowned() {
+        let root = std::env::temp_dir().join(format!("swofty-careers-registry-ids-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let ids = crate::stdlib::reports::path(&root, crate::stdlib::reports::IDS);
+        std::fs::create_dir_all(ids.parent().unwrap()).unwrap();
+        std::fs::write(
+            &ids,
+            r#"{"version":1,"ids":{
+              "team.identity":{"x.season/sw15_redbull":{"id":536,"since":"2026-11-13"}},
+              "vehicle":{"x.season/redbull":{"id":545,"since":"2026-11-13"},
+                         "y.season/williams":{"id":528,"since":"2026-11-13"}}},"careers":{}}"#,
+        )
+        .unwrap();
+        let owners = crate::row_ids::id_owners(&root);
+        std::fs::remove_dir_all(&root).ok();
+        let stock_max: BTreeMap<String, i64> = [
+            ("entrants.teams.team".to_owned(), 499),
+            ("entrants.vehicles.vehicle".to_owned(), 508),
+            ("entrants.drivers.driver".to_owned(), 254),
+        ]
+        .into();
+        let installed = installed_of(&["x.season", "y.season"]);
+        let none = BTreeSet::new();
+        let on = ["x.season".to_owned(), "y.season".to_owned()];
+        let mut list = parse(
+            r#"[{"career":"driver_career:a","addons":[],"driver_raw":2,"team_raw":536,"vehicle_raw":545,"source":"slots","slot":"s","status":"present"},
+                {"career":"driver_career:b","addons":[],"driver_raw":62,"team_raw":479,"vehicle_raw":528,"source":"slots","slot":"s","status":"present"},
+                {"career":"driver_career:c","addons":[],"driver_raw":2,"team_raw":760,"vehicle_raw":700,"source":"slots","slot":"s","status":"present"}]"#,
+        );
+        assert!(settle_rows(&mut list, &owners, &stock_max, &installed));
+        assert_eq!(unowned_line(&list[..2], &on, &installed, &none, &stock_max), None);
+        assert_eq!(stop_line(&list, &on, &installed), None);
+        let stop = stop_line(&list, &on[1..], &installed).unwrap();
+        assert!(
+            stop.contains("N x.season (off)") && stop.contains("(driver_career:a)"),
+            "{stop}"
+        );
+        assert!(!stop.contains("y.season"), "{stop}");
+        assert_eq!(
+            unowned_line(&list[..2], &on[1..], &installed, &none, &stock_max),
+            None
+        );
+        let gone = stop_line(&list, &on, &installed_of(&["x.season"])).unwrap();
+        assert!(
+            gone.contains("y.season (not installed)") && gone.contains("(driver_career:b)"),
+            "{gone}"
+        );
+        let line = unowned_line(&list, &on, &installed, &none, &stock_max).unwrap();
+        assert!(
+            line.starts_with(
+                "1 career in your save uses a team, car or driver that no installed addon provides \
+                 (driver_career:c). Turn on"
+            ),
+            "{line}"
+        );
+        assert!(!line.contains("crash"), "{line}");
     }
 
     #[test]

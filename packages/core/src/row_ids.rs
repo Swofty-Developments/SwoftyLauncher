@@ -334,7 +334,8 @@ pub fn save_owners(data: &Path) -> BTreeSet<String> {
 }
 
 /// The addons that own each team, vehicle or driver id a save can hold, by table and id: the ids the
-/// store keeps for their rows, and the ids those rows had before.
+/// store keeps for their rows, the ids those rows had before, and the ids the core's `ids.json` gives
+/// their team, vehicle and driver records or keeps for a career.
 pub fn id_owners(data: &Path) -> BTreeMap<(String, i64), BTreeSet<String>> {
     let file: File = match crate::load_json(&path(data)) {
         Ok(Loaded::Found(f)) => f,
@@ -362,6 +363,18 @@ pub fn id_owners(data: &Path) -> BTreeMap<(String, i64), BTreeSet<String>> {
     for (key, ids) in file.aliases.iter().chain(profiles.flat_map(|p| p.aliases.iter())) {
         for id in ids {
             put(key, *id);
+        }
+    }
+    let ids = std::fs::read(reports::path(data, reports::IDS))
+        .ok()
+        .and_then(|b| serde_json::from_slice::<Value>(&b).ok());
+    for (table, id, record) in ids.iter().flat_map(registry_records) {
+        if let Some((addon, _)) = record.split_once('/')
+            && ALIAS_TABLES.iter().any(|(t, _)| *t == table)
+        {
+            out.entry((table.to_owned(), id))
+                .or_default()
+                .insert(addon.to_owned());
         }
     }
     out
@@ -1172,16 +1185,16 @@ fn career_ids(doc: &Value) -> HashMap<String, HashSet<i64>> {
     out
 }
 
-// The ids `ids.json` holds and its careers use, by the table whose rows they are ids of.
-fn registry_ids(doc: &Value) -> HashMap<String, HashMap<i64, String>> {
-    let mut out: HashMap<String, HashMap<i64, String>> = HashMap::new();
+// The ids `ids.json` holds and its careers use, as `(table, id, record)`: the table whose rows they are
+// ids of and the `<addon>/<label>` record each is the id of. A registry's own ids come before its careers'.
+fn registry_records(doc: &Value) -> Vec<(&'static str, i64, &str)> {
+    let mut out = Vec::new();
     for (registry, table) in REGISTRY_TABLES {
-        let ids = out.entry((*table).to_owned()).or_default();
         if let Some(records) = doc["ids"][*registry].as_object() {
-            ids.extend(records.iter().filter_map(|(record, e)| {
+            out.extend(records.iter().filter_map(|(record, e)| {
                 e.as_i64()
                     .or_else(|| e["id"].as_i64())
-                    .map(|id| (id, record.clone()))
+                    .map(|id| (*table, id, record.as_str()))
             }));
         }
         if let Some(careers) = doc["careers"]
@@ -1190,16 +1203,26 @@ fn registry_ids(doc: &Value) -> HashMap<String, HashMap<i64, String>> {
         {
             for career in careers.values() {
                 if let Some(records) = career[*registry].as_object() {
-                    ids.extend(
+                    out.extend(
                         records
                             .iter()
-                            .filter_map(|(record, e)| e.as_i64().map(|id| (id, record.clone()))),
+                            .filter_map(|(record, e)| e.as_i64().map(|id| (*table, id, record.as_str()))),
                     );
                 }
             }
         }
     }
-    out.retain(|_, ids| !ids.is_empty());
+    out
+}
+
+// The ids `ids.json` holds and its careers use, by the table whose rows they are ids of.
+fn registry_ids(doc: &Value) -> HashMap<String, HashMap<i64, String>> {
+    let mut out: HashMap<String, HashMap<i64, String>> = HashMap::new();
+    for (table, id, record) in registry_records(doc) {
+        out.entry(table.to_owned())
+            .or_default()
+            .insert(id, record.to_owned());
+    }
     out
 }
 
@@ -2785,6 +2808,42 @@ mod tests {
             Some(&BTreeSet::from(["b.cars".to_owned()]))
         );
         assert!(!label_owners(&data, "entrants.vehicles.vehicle").contains_key("t"));
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn id_owners_name_the_addon_of_a_registry_id_and_of_a_careers_pin() {
+        let data = data_dir("id-owners-registry");
+        put(
+            &path(&data),
+            r#"{"version":2,"rows":{"b.cars/entrants.vehicles.vehicle/v":{"id":545,"from":"next"}}}"#,
+        );
+        put(
+            &reports::path(&data, reports::IDS),
+            r#"{"version":1,"ids":{
+              "team.identity":{"x.season/t":{"id":536,"since":"2026-11-13"}},
+              "vehicle":{"x.season/v":{"id":545},"z.season/w":528},
+              "driver.identity":{"x.season/d":{"id":255}},
+              "driver.head":{"x.season/h":{"id":300}},
+              "vehicle.package":{"x.season/p":{"id":600}},
+              "helmet":{"x.season/k":{"id":537}}},
+              "careers":{"c":{"vehicle":{"y.season/w":528},"team.identity":{"y.season/u":700}}}}"#,
+        );
+        let owners = id_owners(&data);
+        let of = |table: &str, id: i64| -> Vec<String> {
+            owners
+                .get(&(table.to_owned(), id))
+                .into_iter()
+                .flatten()
+                .cloned()
+                .collect()
+        };
+        assert_eq!(of("entrants.teams.team", 536), ["x.season"]);
+        assert_eq!(of("entrants.teams.team", 700), ["y.season"]);
+        assert_eq!(of("entrants.vehicles.vehicle", 545), ["b.cars", "x.season"]);
+        assert_eq!(of("entrants.vehicles.vehicle", 528), ["y.season", "z.season"]);
+        assert_eq!(of("entrants.drivers.driver", 255), ["x.season"]);
+        assert_eq!(owners.len(), 5, "{owners:?}");
         std::fs::remove_dir_all(&data).ok();
     }
 
