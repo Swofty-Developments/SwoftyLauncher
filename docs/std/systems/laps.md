@@ -239,6 +239,42 @@ With the bridge on, the game's rival search (inside the ghost handler's update) 
 
 `SWOFTY_TT_DIAG=1` turns on a logging-only mode, with the bridge on or off: each gate with its values and caller (`[boards] diag: online-state gate of ...`), every request pushed to the game's request ring, the board file the game loaded, the account-state error handler with a short backtrace (the popup's trigger) and the ghost handler of the storage system. Nothing changes in that mode.
 
+## Barred addons
+
+The boards server rejects a lap recorded with a barred addon enabled. It lists them, without a sign-in:
+
+```
+GET /v1/tt/barred
+{ "addons": [
+  { "id": "kizikafuka.ai-drive", "name": "AI Drive", "reason": "the AI can drive your car" },
+  { "id": "swofty.rich-fuel-mix", "name": "Rich Fuel Mix", "reason": "...", "below": "1.0.3" }
+] }
+```
+
+An entry with `below` bars the installed versions lower than it. An entry without `below` bars every version. An installed version that is not a version is barred.
+
+The launcher keeps the list in `$DATA/cache/tt-barred.json` and asks for it again once it is five minutes old. A launch does not wait for the server: the wrapper writes the profile's enabled barred addons from that file into `swofty/tt.json`, then asks the server on a thread of its own and writes the key again when the answer differs. With nothing cached and the server unreachable, the key is left out.
+
+```json
+{ "tt_boards": true, "tt_barred": [ { "id": "kizikafuka.ai-drive", "name": "AI Drive" } ] }
+```
+
+While the game is in Time Trial, in the menus and on track, the core paints one red line at the top of the screen. The main menu and every other mode hide it. The core reads `tt.json` again every two seconds while in Time Trial. `SWOFTY_TT_BARRED=0` turns the line off.
+
+```
+[tt-barred] Not allowed in Time Trial, laps won't count: AI Drive
+[tt-barred] the present hook arms for the Time Trial barred addons warning
+[tt-barred] warning shown: the game is in Time Trial
+[tt-barred] warning hidden
+```
+
+The launcher's Time Trial page shows the same addons with the reason, and `swofty laps list` prints them:
+
+```
+Not allowed in Time Trial, laps won't count: AI Drive
+  AI Drive (kizikafuka.ai-drive): the AI can drive your car
+```
+
 ## Events
 
 `laps.recorded` fires on the flow thread once the file is in place. `laps.sealing` fires just before, on the core's writer thread, with the file as built so far; a handler reads the body it is given and does not read game memory.

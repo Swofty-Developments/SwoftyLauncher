@@ -10,6 +10,7 @@
 #include "hud_png.hpp"
 #include "perf.hpp"
 #include "room_cover.hpp"
+#include "tt_barred.hpp"
 #include "d3d12_hooks.hpp"
 
 #include <safetyhook.hpp>
@@ -1616,6 +1617,7 @@ hud::Frame &build_frame(const std::vector<hud::Paintsub> &subs, UINT width, UINT
         draw_cursor(frame);
         runtime::room_cover::paint(frame, now);
         runtime::main_menu::paint(frame, now);
+        runtime::tt_barred::paint(frame, now);
     }
     flush_stats(now);
     if (frame.dropped && !dropped_told) {
@@ -1677,13 +1679,14 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
     }
     bool cover = runtime::room_cover::active();
     bool menu = runtime::main_menu::drawing();
+    bool barred = runtime::tt_barred::drawing();
     if (menu) {
         static bool told = false;
         if (!std::exchange(told, true))
             swofty::log("[main-menu] the present hook passed its first frame with the main menu panel due (%zu paint callback(s))",
                         subs.size());
     }
-    if (subs.empty() && !cap.on && !cover && !menu) {
+    if (subs.empty() && !cap.on && !cover && !menu && !barred) {
         drop_pending();
         return;
     }
@@ -1749,7 +1752,7 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
         }
         fg_active.store(true);
         bool addons = !subs.empty() && !killed("paint");
-        if (addons || cover || menu) {
+        if (addons || cover || menu || barred) {
             hud::Frame &frame = build_frame(addons ? subs : std::vector<hud::Paintsub>(), desc.BufferDesc.Width,
                                             desc.BufferDesc.Height, now);
             keep_pending(sc, frame, desc, color_space, now);
@@ -1800,7 +1803,7 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
                     desc.BufferDesc.Height, int(desc.BufferDesc.Format), desc.BufferCount, c.by.c_str());
     }
     bool addons = !subs.empty() && !killed("paint");
-    if (addons || cover || menu)
+    if (addons || cover || menu || barred)
         paint_frame(sc, c.queue, addons ? subs : std::vector<hud::Paintsub>(), desc, now, color_space);
     if (cap.on && !killed("capture"))
         capture_step(sc, c.queue, desc, now);
@@ -2307,7 +2310,8 @@ void setup()
     bool on = gate_on();
     bool cover = runtime::room_cover::setup();
     bool menu = runtime::main_menu::wants_overlay();
-    hud::guard::ArmReasons reasons{on, cap.on, cover, menu};
+    bool barred = runtime::tt_barred::wants_overlay();
+    hud::guard::ArmReasons reasons{on, cap.on, cover, menu || barred};
     if (!reasons.any()) {
         swofty::log("[overlay] the overlay feature is experimental and off; the HUD present hook is not armed");
         return;
@@ -2324,12 +2328,14 @@ void setup()
     }
     if (menu)
         swofty::log("[main-menu] the present hook arms for the main menu panel and video card");
+    if (barred)
+        swofty::log("[tt-barred] the present hook arms for the Time Trial barred addons warning");
     if (cover)
         swofty::log("[cover] a direct start is requested; the present hook arms for its cover screen");
     if (!on && cap.on)
         swofty::log("[overlay] the overlay is off; the present hook arms for SWOFTY_FRAME_CAPTURE only");
     implemented = on;
-    if (on || cover || menu) {
+    if (on || cover || menu || barred) {
         renderer.font_tried = true;
         if (!hud::img::grey(hud::font::ATLAS_PNG, hud::font::ATLAS_PNG_SIZE, renderer.font_px))
             swofty::log("[overlay] decoding the built-in font atlas failed; text draws nothing");

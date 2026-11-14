@@ -29,6 +29,7 @@ impl Shell {
             .icon(IconName::ArrowRightLeft)
             .label(tr("Refresh"))
             .on_click(cx.listener(|this, _, _, cx| {
+                this.tt_load_barred(cx);
                 this.tt_load_integrity(cx);
                 this.tt_load_catalog(cx);
                 this.tt_reload(cx);
@@ -41,9 +42,11 @@ impl Shell {
                 refresh,
                 p,
             );
+            let barred = self.tt_barred_notice(p);
             return v_flex()
                 .size_full()
                 .child(header)
+                .children(barred)
                 .child(
                     EmptyState::new(IconName::Trophy, tr("Sign in to see the Time Trial boards"))
                         .body(tr("Sign in from Settings with Discord.")),
@@ -76,10 +79,12 @@ impl Shell {
             refresh,
             p,
         );
+        let barred = self.tt_barred_notice(p);
         v_flex()
             .size_full()
             .child(header)
             .children(blocked)
+            .children(barred)
             .children(tabs)
             .child(body)
             .into_any_element()
@@ -122,6 +127,63 @@ impl Shell {
                         .text_size(px(13.))
                         .child(tr("The integrity module could not be loaded, so Time Trial is blocked in game this session. Start the game again with a working connection, or turn off Time Trial boards in Settings to play it without the boards.")),
                 )
+                .into_any_element(),
+        )
+    }
+
+    /// The barred addons the active profile has enabled, by name and why, in red.
+    fn tt_barred_notice(&self, p: Palette) -> Option<AnyElement> {
+        let enabled = self.tt_barred_enabled();
+        if enabled.is_empty() {
+            return None;
+        }
+        let names: Vec<&str> = enabled.iter().map(|b| b.title()).collect();
+        let rows = enabled.iter().map(|b| {
+            h_flex()
+                .gap(px(6.))
+                .text_size(px(13.))
+                .child(
+                    div()
+                        .flex_shrink_0()
+                        .font_weight(FontWeight::SEMIBOLD)
+                        .child(b.title().to_owned()),
+                )
+                .when(!b.reason.trim().is_empty(), |d| {
+                    d.child(div().min_w_0().truncate().child(b.reason.trim().to_owned()))
+                })
+        });
+        Some(
+            v_flex()
+                .mx(px(GUTTER))
+                .mb(px(12.))
+                .px(px(14.))
+                .py(px(10.))
+                .gap(px(4.))
+                .rounded(px(6.))
+                .border_1()
+                .border_color(p.error.opacity(0.45))
+                .bg(p.error.opacity(0.14))
+                .text_color(p.error)
+                .child(
+                    h_flex()
+                        .gap(px(8.))
+                        .items_center()
+                        .child(
+                            Icon::new(IconName::TriangleAlert)
+                                .size(px(16.))
+                                .text_color(p.error),
+                        )
+                        .child(
+                            div()
+                                .text_size(px(14.))
+                                .font_weight(FontWeight::SEMIBOLD)
+                                .child(trf!(
+                                    "Not allowed in Time Trial, laps won't count: {names}",
+                                    names = names.join(", ")
+                                )),
+                        ),
+                )
+                .children(rows)
                 .into_any_element(),
         )
     }

@@ -1,6 +1,7 @@
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
 use swofty_core::timetrial::api::Api;
+use swofty_core::timetrial::barred::{self, Barred};
 use swofty_core::timetrial::boards::{Group, Row, Run, RunBoard};
 use swofty_i18n::{tr, trf};
 
@@ -57,6 +58,7 @@ pub(crate) struct TtPage {
     pub search: Option<Entity<InputState>>,
     sub: Option<Subscription>,
     generation: u64,
+    pub barred: Vec<Barred>,
     pub integrity_blocked: Option<String>,
     pub integrity_read: Option<std::time::Instant>,
 }
@@ -86,6 +88,7 @@ impl Default for TtPage {
             search: None,
             sub: None,
             generation: 0,
+            barred: Vec::new(),
             integrity_blocked: None,
             integrity_read: None,
         }
@@ -198,6 +201,7 @@ impl Shell {
     }
 
     pub(crate) fn tt_open(&mut self, cx: &mut Context<Self>) {
+        self.tt_load_barred(cx);
         self.tt_load_integrity(cx);
         if self.tt_admin() {
             self.tt_load_runs(cx);
@@ -227,6 +231,33 @@ impl Shell {
             .ok();
         })
         .detach();
+    }
+
+    /// The barred list, from the cache while it is fresh, else from the server.
+    pub(super) fn tt_load_barred(&mut self, cx: &mut Context<Self>) {
+        let data = self.store.root.clone();
+        cx.spawn(async move |this, cx| {
+            let got = cx
+                .background_executor()
+                .spawn(async move { barred::current(&data, swofty_core::timetrial::queue::unix_now()) })
+                .await;
+            this.update(cx, |s, cx| {
+                if let Some(list) = got {
+                    s.tt.barred = list;
+                    cx.notify();
+                }
+            })
+            .ok();
+        })
+        .detach();
+    }
+
+    /// The barred addons the active profile has enabled, at the versions installed.
+    pub(super) fn tt_barred_enabled(&self) -> Vec<&Barred> {
+        let registry = &self.library.registry;
+        barred::in_profile(&self.tt.barred, &self.library.profile, |id| {
+            registry.get(id).map(|e| e.addon.manifest().version.to_string())
+        })
     }
 
     pub(super) fn tt_load_catalog(&mut self, cx: &mut Context<Self>) {

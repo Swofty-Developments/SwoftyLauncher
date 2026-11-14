@@ -5,6 +5,7 @@
 //! the outbox and uploads them through [`api`]; [`upload`] is the loop the wrapper and the launcher run for it.
 
 pub mod api;
+pub mod barred;
 pub mod boards;
 pub mod bridge;
 pub mod fingerprint;
