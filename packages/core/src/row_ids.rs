@@ -367,6 +367,28 @@ pub fn id_owners(data: &Path) -> BTreeMap<(String, i64), BTreeSet<String>> {
     out
 }
 
+/// The addons the store in `data` keeps a row of `table` for, by the row's label.
+pub fn label_owners(data: &Path, table: &str) -> BTreeMap<String, BTreeSet<String>> {
+    let file: File = match crate::load_json(&path(data)) {
+        Ok(Loaded::Found(f)) => f,
+        _ => File::default(),
+    };
+    let mut out: BTreeMap<String, BTreeSet<String>> = BTreeMap::new();
+    for key in file
+        .rows
+        .keys()
+        .chain(file.profiles.values().flat_map(|p| p.rows.keys()))
+    {
+        let mut parts = key.splitn(3, '/');
+        if let (Some(addon), Some(t), Some(label)) = (parts.next(), parts.next(), parts.next())
+            && t == table
+        {
+            out.entry(label.to_owned()).or_default().insert(addon.to_owned());
+        }
+    }
+    out
+}
+
 /// The highest `stat_id` the stock database `db` gives a team, vehicle or driver row, by table
 /// (`entrants.teams.team`): an id above it in a save names a row an addon added. A table `db`
 /// holds no rows of is left out.
@@ -2671,6 +2693,11 @@ mod tests {
             BTreeSet::from(["b.cars".to_owned()])
         );
         assert!(of("tracks.Track", 9).is_empty());
+        assert_eq!(
+            label_owners(&data, "entrants.vehicles.vehicle").get("v"),
+            Some(&BTreeSet::from(["b.cars".to_owned()]))
+        );
+        assert!(!label_owners(&data, "entrants.vehicles.vehicle").contains_key("t"));
         std::fs::remove_dir_all(&data).ok();
     }
 
