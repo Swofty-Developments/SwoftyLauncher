@@ -57,6 +57,8 @@ pub(crate) struct TtPage {
     pub search: Option<Entity<InputState>>,
     sub: Option<Subscription>,
     generation: u64,
+    pub integrity_blocked: Option<String>,
+    pub integrity_read: Option<std::time::Instant>,
 }
 
 impl Default for TtPage {
@@ -84,6 +86,8 @@ impl Default for TtPage {
             search: None,
             sub: None,
             generation: 0,
+            integrity_blocked: None,
+            integrity_read: None,
         }
     }
 }
@@ -194,6 +198,7 @@ impl Shell {
     }
 
     pub(crate) fn tt_open(&mut self, cx: &mut Context<Self>) {
+        self.tt_load_integrity(cx);
         if self.tt_admin() {
             self.tt_load_runs(cx);
         } else {
@@ -202,6 +207,26 @@ impl Shell {
         if matches!(self.tt.catalog, Load::Idle | Load::Failed(_)) {
             self.tt_load_catalog(cx);
         }
+    }
+
+    /// Whether the running session blocks Time Trial, from the note the wrapper keeps while it does.
+    pub(super) fn tt_load_integrity(&mut self, cx: &mut Context<Self>) {
+        self.tt.integrity_read = Some(std::time::Instant::now());
+        let data = self.store.root.clone();
+        cx.spawn(async move |this, cx| {
+            let got = cx
+                .background_executor()
+                .spawn(async move { swofty_core::timetrial::integrity::noted(&data) })
+                .await;
+            this.update(cx, |s, cx| {
+                if s.tt.integrity_blocked != got {
+                    s.tt.integrity_blocked = got;
+                    cx.notify();
+                }
+            })
+            .ok();
+        })
+        .detach();
     }
 
     pub(super) fn tt_load_catalog(&mut self, cx: &mut Context<Self>) {
