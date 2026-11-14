@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include <optional>
+#include <vector>
 #include <swofty/events.hpp>
 #include <swofty/registry.hpp>
 #include <swofty/systems/cars.hpp>
@@ -13,6 +14,19 @@
 // crosses the line. The rest of the sessions system ships later.
 
 namespace swofty::sessions {
+
+// A points system (launcher 1.9.49): one game_setup.session_standings row the core adds at boot, a copy of the stock
+// standard_race preset with these points. A box names it in content.package rules.points; the era picker points the
+// race sessions of swofty_f1 at it when the box is pressed.
+struct Points {
+    static constexpr Version version{1, 0};
+    std::vector<int> points;                   // per finishing position, from P1; padded with 0 to 26 places
+    std::optional<int> fastest_lap;            // the fastest lap bonus (BestOfTop10); empty: none
+    std::vector<std::vector<int>> reduced;     // races stopped at 75, 50 and 25 % distance; a missing entry: the full points
+    json::Value extra;
+};
+SWOFTY_RECORD(Points, points, fastest_lap, reduced)
+inline Registry<Points> points{"session.points", {.applies = Applies::boot}};
 
 struct Rules {
     Ref<Mode> mode;

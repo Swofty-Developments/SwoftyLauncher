@@ -74,6 +74,8 @@ int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
 // group the core added at boot for the box's rules.drs (content.package rules.drs). A box without a rule, a stock
 // box press and a build that narrows to no addon list put the game's group back. The DRS system reads the current
 // mode's group at session load, at a full safety car end and at a red flag restart; every other mode keeps its own.
+// Points per box: the same narrowing points the race sessions of every swofty_f1 mode at the standings preset the
+// boot apply added for the box's rules.points (logic::PointsSwaps); the same put backs restore the game's presets.
 // Tyre warmers per box: the same narrowing writes the box's rules.tyre_warmers into every swofty_f1 mode's
 // has_tyre_warmers byte (+0x1c8) and the same put backs restore the game's value (logic::WarmerSwaps).
 //
@@ -188,6 +190,8 @@ logic::DrsSwaps drs;
 std::string last_drs_line;
 logic::WarmerSwaps warmers;
 std::string last_warmers_line;
+logic::PointsSwaps points;
+std::string last_points_line;
 
 template <class T> T at(const void *base, size_t off)
 {
@@ -305,12 +309,56 @@ void apply_warmers(void *mode, const char *list)
     log_warmers(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
 }
 
+void log_points(const std::string &line)
+{
+    if (line == last_points_line)
+        return;
+    last_points_line = line;
+    swofty::log("[points] %s", line.c_str());
+}
+
+// Points per box: the race sessions of every swofty_f1 mode point at the preset the boot apply added for the pressed
+// box's rules.points, found among the parsed presets by its points; a box without the rule puts the game's back.
+void apply_points(void *mode, const char *list)
+{
+    auto box = swofty_core::apply::content::points_for_box(list);
+    if (!box.found) {
+        points.put_back();
+        log_points(box.line);
+        return;
+    }
+    logic::Readable ok = [](const void *p, size_t n) { return mem::readable(p, n); };
+    uintptr_t slot = swofty::api ? swofty::api->resolve("g_Game_Scenarios") : 0;
+    const uint8_t *scenarios = nullptr, *begin = nullptr, *end = nullptr;
+    logic::peek(ok, reinterpret_cast<const void *>(slot), 0, scenarios);
+    logic::peek(ok, scenarios, logic::SCENARIOS_PRESETS_BEGIN, begin);
+    logic::peek(ok, scenarios, logic::SCENARIOS_PRESETS_END, end);
+    logic::PointsWant want{box.full, box.reduced, box.bonus, box.rule};
+    const uint8_t *preset = logic::find_points_preset(ok, begin, end, want);
+    if (!preset) {
+        points.put_back();
+        log_points(box.line + "; not applied (preset " + box.label + " not among the game's parsed presets)");
+        return;
+    }
+    size_t sessions = 0;
+    for_each_host_mode(mode, [&](uint8_t *m) {
+        for (uint64_t *s : logic::race_sessions(ok, m)) {
+            points.swap(s, reinterpret_cast<uint64_t>(preset));
+            sessions++;
+        }
+    });
+    log_points(sessions ? box.line + " on " + std::to_string(sessions) + " race session(s)"
+                        : box.line + "; not applied (no race session in a " + std::string(logic::HOST) + " mode)");
+}
+
 void put_back_drs()
 {
     if (size_t n = drs.put_back())
         log_drs(std::string(logic::HOST) + "'s DRS group put back on " + std::to_string(n) + " mode(s)");
     if (size_t n = warmers.put_back())
         log_warmers(std::string(logic::HOST) + "'s tyre warmer setting put back on " + std::to_string(n) + " mode(s)");
+    if (size_t n = points.put_back())
+        log_points(std::string(logic::HOST) + "'s points put back on " + std::to_string(n) + " race session(s)");
 }
 
 logic::ListCars list_cars(const void *list);
@@ -502,6 +550,7 @@ void narrow(void *mode, const char *list)
     });
     apply_drs(mode, list);
     apply_warmers(mode, list);
+    apply_points(mode, list);
 }
 
 bool time_trial(void *mode)
@@ -1525,8 +1574,10 @@ void drop_setup_pointers()
     }
     p.drs = drs.forget();
     warmers.forget();
+    points.forget();
     last_drs_line.clear();
     last_warmers_line.clear();
+    last_points_line.clear();
     std::string line = logic::availability_drop_line(p);
     if (!line.empty() && !logged_dropped.exchange(true))
         swofty::log("[era] %s", line.c_str());

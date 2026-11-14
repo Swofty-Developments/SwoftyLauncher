@@ -353,6 +353,15 @@ SWOFTY_REGISTER
          (points community.f1-2009/f1_2009, drs community.f1-2009/none, refuelling on)
 ```
 
+Points per box ship in 1.9.49 (`session.points` 1.0, experimental). Each record becomes one `game_setup.session_standings` preset at boot, a copy of the stock `standard_race` with the record's points (padded with 0 to 26 places), its fastest lap bonus (the game's `BestOfTop10` rule; `null` for none) and the points of a race stopped at 75, 50 and 25 % distance (`reduced`; a missing level gives the full points). Pressing a box whose `rules.points` names a record points the race sessions (race, race_2, race_3) of `swofty_f1`'s non-sprint weekends at that preset; a box without the rule, a stock box or a career load puts the game's presets back:
+
+```text
+[points] box f1_1950 (community.f1-1950/f1_1950): swofty_f1 race points 8-6-4-3-2, fastest lap +1 (rules.points
+         community.f1-1950/f1_1950, preset swofty_pts_f1_1950_1a2b3c4d) on 1 race session(s)
+```
+
+The game holds a session's preset as a pointer it resolves when it parses the mode, and its points recompute reads it on every refresh, so the swap takes effect from the next session. Sprint weekends keep the mode's own points.
+
 A career freezes each season's championship rules when that season starts. A fix to a year's points reaches a running career at its next season.
 
 ## Grid rules
