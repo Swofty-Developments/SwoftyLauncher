@@ -498,9 +498,11 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
         request_id: request.id.clone(),
         _lock: lock,
     };
+    let mut integrity = swofty_core::timetrial::integrity::State::Off;
+    swofty_core::timetrial::integrity::note(&store.root, &integrity);
     if apply {
         say("info", &format!("installing profile {profile}"));
-        crate::build::install(store, &profile, g, true, &info)?;
+        integrity = crate::build::install(store, &profile, g, true, &info)?;
     }
     let installed = apply.then(Instant::now);
     let _home_menu = swofty_core::home_menu::publish(
@@ -521,7 +523,15 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
         );
     }
     let before = crate::saves::before_session(store, &profile, g, &request.id, !request.steam_saves_once);
-    let result = run_loop(store, args, &config, &request, &profile, g, installed);
+    let result = run_loop(
+        store,
+        args,
+        &config,
+        &request,
+        &profile,
+        g,
+        (installed, integrity),
+    );
     let out = finish(session, result);
     crate::saves::after_session(before);
     out
@@ -669,7 +679,7 @@ fn run_loop(
     request: &LaunchRequest,
     profile: &str,
     g: &Game,
-    mut installed: Option<Instant>,
+    (mut installed, mut integrity): (Option<Instant>, swofty_core::timetrial::integrity::State),
 ) -> Result<ExitCode> {
     let profile = profile.to_owned();
     let game = g.dir.clone();
@@ -689,6 +699,7 @@ fn run_loop(
             Round {
                 profile: &profile,
                 restarted,
+                integrity: &integrity,
             },
         )?;
         let relaunch = match store.merge_requests(&profile, true) {
@@ -714,7 +725,7 @@ fn run_loop(
         restarted = true;
         if installed.is_some() {
             say("info", &format!("reinstalling profile {profile}"));
-            crate::build::install(store, &profile, g, true, &info)?;
+            integrity = crate::build::install(store, &profile, g, true, &info)?;
             installed = Some(Instant::now());
         }
     }
@@ -750,6 +761,7 @@ fn written_within(path: &Path, max: Duration) -> bool {
 struct Round<'a> {
     profile: &'a str,
     restarted: bool,
+    integrity: &'a swofty_core::timetrial::integrity::State,
 }
 
 fn play(
@@ -761,7 +773,11 @@ fn play(
     installed: Option<Instant>,
     round: Round,
 ) -> Result<i32> {
-    let Round { profile, restarted } = round;
+    let Round {
+        profile,
+        restarted,
+        integrity,
+    } = round;
     let game = g.dir.as_path();
     let placed_loader = check_loader(store, game, installed).map_err(Refused)?;
     // The profile build and the offline play download before the first
@@ -967,7 +983,7 @@ fn play(
         say("info", &format!("starting F1 25 in VR ({})", extra.join(" ")));
     }
     let usage = swofty_core::usage::Session::start(&store.root, game);
-    let laps = crate::laps::begin(store, config, profile, g);
+    let laps = crate::laps::begin(store, config, profile, g, integrity);
     let new_watch =
         || AttachWatch::new(loader.clone(), before.clone(), Instant::now()).with_fallback(fallback.clone());
     let mut watch = placed_loader.then(new_watch);
@@ -1049,7 +1065,7 @@ fn play(
         code,
         launched.elapsed().unwrap_or_default(),
     );
-    crate::laps::end(laps, game);
+    crate::laps::end(store, laps, game);
     keep_game_logs(&store.root, game, &fallback, &dir, before.as_ref(), launched);
     let loader = std::fs::read(dir.join("loader.log"))
         .ok()
@@ -2748,7 +2764,7 @@ mod tests {
             &request,
             "MODDED",
             &m.game,
-            written,
+            (written, Default::default()),
         );
         assert_eq!(
             finish(session, result).unwrap(),

@@ -52,9 +52,14 @@ pub fn token(data: &Path, config: &Config) -> Option<String> {
 
 const KEYS: [&str; 4] = ["tt_boards", "tt_nonce", "tt_bridge", "tt_ghost"];
 
+/// Held while [`SESSION_FILE`] is read and written again, so the nonce retries and the barred list refresh,
+/// each on a thread of its own, do not drop each other's keys.
+pub(crate) static SESSION_LOCK: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
 /// Tell the core, through [`SESSION_FILE`], that laps are to be recorded for the boards, which
 /// session nonce they carry and whether the in-game bridge is armed. Other keys in the file stay as they are.
 pub fn write_session_keys(game: &Path, nonce: Option<&str>, bridge: bool) -> std::io::Result<()> {
+    let _held = SESSION_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let path = game.join(SESSION_FILE);
     let mut doc = read_object(&path);
     doc.insert("tt_boards".into(), true.into());
@@ -77,6 +82,7 @@ pub fn write_session_keys(game: &Path, nonce: Option<&str>, bridge: bool) -> std
 
 /// Take [`write_session_keys`]'s keys back out; the file goes if nothing else is in it.
 pub fn clear_session_keys(game: &Path) {
+    let _held = SESSION_LOCK.lock().unwrap_or_else(|e| e.into_inner());
     let path = game.join(SESSION_FILE);
     let mut doc = read_object(&path);
     if KEYS.iter().all(|k| !doc.contains_key(*k)) {
@@ -90,6 +96,32 @@ pub fn clear_session_keys(game: &Path) {
     } else {
         std::fs::write(&path, serde_json::to_vec_pretty(&doc).unwrap_or_default()).ok();
     }
+}
+
+/// Change [`SESSION_FILE`]'s keys with `edit`, under [`SESSION_LOCK`]. The file goes when nothing is left in it,
+/// and is not written when `edit` changed nothing.
+pub(crate) fn edit_session(
+    game: &Path,
+    edit: impl FnOnce(&mut serde_json::Map<String, serde_json::Value>),
+) -> std::io::Result<()> {
+    let _held = SESSION_LOCK.lock().unwrap_or_else(|e| e.into_inner());
+    let path = game.join(SESSION_FILE);
+    let before = read_object(&path);
+    let mut doc = before.clone();
+    edit(&mut doc);
+    if doc == before {
+        return Ok(());
+    }
+    if doc.is_empty() {
+        return match std::fs::remove_file(&path) {
+            Err(e) if e.kind() != std::io::ErrorKind::NotFound => Err(e),
+            _ => Ok(()),
+        };
+    }
+    if let Some(dir) = path.parent() {
+        std::fs::create_dir_all(dir)?;
+    }
+    std::fs::write(path, serde_json::to_vec_pretty(&doc).unwrap_or_default())
 }
 
 fn read_object(path: &Path) -> serde_json::Map<String, serde_json::Value> {
