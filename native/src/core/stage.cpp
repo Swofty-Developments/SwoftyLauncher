@@ -266,6 +266,20 @@ std::string read_file(const std::wstring &path, size_t limit)
     return out;
 }
 
+uint32_t write_refusal(const std::wstring &dir)
+{
+    for (size_t i = dir.find_first_of(L"\\/", 3); i != std::wstring::npos; i = dir.find_first_of(L"\\/", i + 1))
+        CreateDirectoryW(dir.substr(0, i).c_str(), nullptr);
+    HANDLE h = CreateFileW((dir + L".swofty-write-test").c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS,
+                           FILE_ATTRIBUTE_TEMPORARY | FILE_ATTRIBUTE_HIDDEN | FILE_FLAG_DELETE_ON_CLOSE, nullptr);
+    if (h == INVALID_HANDLE_VALUE) {
+        DWORD e = GetLastError();
+        return e ? e : ERROR_ACCESS_DENIED;
+    }
+    CloseHandle(h);
+    return 0;
+}
+
 const std::wstring &files_root()
 {
     const std::wstring &state = state_root();

@@ -90,15 +90,7 @@ void make_dirs(const std::wstring &full, size_t from)
 
 DWORD game_refuses(const std::wstring &dir)
 {
-    make_dirs(dir, runtime::swofty_root().size());
-    HANDLE h = CreateFileW((dir + runtime::wide(sl::PROBE)).c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS,
-                           FILE_ATTRIBUTE_TEMPORARY | FILE_ATTRIBUTE_HIDDEN | FILE_FLAG_DELETE_ON_CLOSE, nullptr);
-    if (h == INVALID_HANDLE_VALUE) {
-        DWORD e = GetLastError();
-        return e ? e : ERROR_ACCESS_DENIED;
-    }
-    CloseHandle(h);
-    return 0;
+    return runtime::write_refusal(dir);
 }
 
 std::wstring data_folder()

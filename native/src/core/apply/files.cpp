@@ -32,7 +32,7 @@ Sink core_sink()
     s.route = [](const std::string &game_path, const Claim *winner, std::string &why) {
         if (!winner)
             return runtime::file_route(game_path, nullptr, {}, why);
-        return runtime::file_route(game_path, &winner->target, winner->registry + " " + winner->id, why);
+        return runtime::file_route(game_path, &winner->target, winner->registry + " " + winner->id, why, winner->away);
     };
     return s;
 }
@@ -48,12 +48,12 @@ Router &router()
 }
 
 Outcome redirect(const std::string &game_path, const std::string &addon, const std::string &file,
-                 const std::string &registry, const std::string &id, const std::string &scope)
+                 const std::string &registry, const std::string &id, const std::string &scope, const std::string *away)
 {
     std::lock_guard g(mu);
     Router &r = router();
     r.set_order(registry::store().order());
-    Outcome o = r.redirect(game_path, addon, file, registry, id, scope);
+    Outcome o = r.redirect(game_path, addon, file, registry, id, scope, away);
     swofty::log("[registry] file: %s", o.line.c_str());
     if (!o.conflict.empty())
         swofty::log("[registry] %s", o.conflict.c_str());
