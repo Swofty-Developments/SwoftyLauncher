@@ -812,8 +812,8 @@ impl Builder {
                 let mut holder = match (&e.motion, preview) {
                     (Some(m), false) => {
                         let hn = super::motion::holder_name(&name, m);
-                        let slides = m.track()? == super::motion::Track::Slide;
-                        let h = self.null(&hn, [0.0; 3], None, slides, false)?;
+                        let clip = m.track()? != super::motion::Track::Fade;
+                        let h = self.null(&hn, [0.0; 3], None, clip, false)?;
                         super::motion::plan(cx.plan, e, m, &hn)?;
                         Some(h)
                     }
