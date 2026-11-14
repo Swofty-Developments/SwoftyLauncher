@@ -994,12 +994,22 @@ fn play(
                 ),
             );
         }
+        let running = found.attached_text();
         say(
             "loader",
-            "version.dll did not attach to F1 25; what the session found:",
+            match running {
+                Some(_) => {
+                    "version.dll attached to F1 25, which the session's watch missed; what the session found:"
+                }
+                None => "version.dll did not attach to F1 25; what the session found:",
+            },
         );
         for line in found.lines(game) {
             say("loader", &format!("  {line}"));
+        }
+        if let Some(text) = running {
+            say("info", text);
+            return;
         }
         // The antivirus explanation is a Windows one; under Proton a loader
         // that does not attach is a prefix or override problem instead.
