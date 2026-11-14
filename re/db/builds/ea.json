@@ -1911,6 +1911,12 @@
   "site_Game_TileListSelect_ChildNext": {
    "match": "0x38261f5"
   },
+  "site_Team_RecognitionFirstRecord": {
+   "match": "0x20b4ec6"
+  },
+  "site_Team_RecognitionRecordsExit": {
+   "match": "0x20b59f7"
+  },
   "Sess_RaceStrategy_RedFlagRecompute": {
    "match": "0x368ca20"
   }
