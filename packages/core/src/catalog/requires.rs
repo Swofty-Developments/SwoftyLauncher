@@ -2,6 +2,7 @@
 //! its manifest `requires`, and theirs, at versions the catalog lists and this
 //! launcher can install. Nothing installs when one of them can't be met.
 
+use crate::conflicts::and_list;
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
@@ -164,14 +165,6 @@ fn wanted(needs: &[Need], label: &str) -> String {
         });
     }
     and_list(&parts)
-}
-
-fn and_list(parts: &[String]) -> String {
-    match parts {
-        [] => String::new(),
-        [one] => one.clone(),
-        [rest @ .., last] => format!("{} and {last}", rest.join(", ")),
-    }
 }
 
 impl fmt::Display for Problem {
