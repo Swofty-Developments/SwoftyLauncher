@@ -38,7 +38,7 @@ void publish(int state)
 {
     swofty::log("[entitlements] %s: %s", ent::F1_2026, ent::word(state));
     std::string body = ent::json(state);
-    if (!body.empty() && !runtime::write_file(runtime::swofty_root() + L"entitlements.json", body))
+    if (!body.empty() && !runtime::write_file(runtime::session_files_root() + L"entitlements.json", body))
         swofty::log("[entitlements] swofty\\entitlements.json not written");
 }
 

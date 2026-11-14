@@ -733,6 +733,37 @@ fn rebuild_if_needed(store: &Store, profile: &str, game: &Path) {
 
 const NETPLAY_REQUEST_LIFE: Duration = Duration::from_secs(600);
 
+/// The EA app starts the game of an EA app copy, so the game never has this session's environment: its
+/// one-session options go in a file the core reads once (`swofty_core::multiplayer::options`). Every
+/// session first removes a file an earlier one left unread.
+fn pass_session_options(
+    data: &Path,
+    id: &str,
+    via_ea: bool,
+    game_env: &std::collections::BTreeMap<String, String>,
+) -> Result<()> {
+    use swofty_core::multiplayer::options;
+    if !via_ea {
+        options::clear(data);
+        return Ok(());
+    }
+    let written = options::write(data, id, now_secs() as u64, |name| {
+        game_env.get(name).map(String::as_str)
+    })
+    .with_context(|| format!("could not write {}", data.join(options::FILE).display()))?;
+    if let Some(file) = written {
+        say(
+            "info",
+            &format!(
+                "session options: the EA app starts the game, so they are in {} for {} s",
+                file.display(),
+                options::LIFE.as_secs()
+            ),
+        );
+    }
+    Ok(())
+}
+
 /// A wrapper Steam starts later on its own must not inherit an earlier launch's one-session asks: its
 /// arming, the host's row ids or Steam's saves. `fresh` is whether the request was written just now.
 fn age_out(request: &mut LaunchRequest, fresh: bool) {
@@ -934,6 +965,7 @@ fn play(
     }
     let listed: String = game_env.iter().map(|(k, v)| format!("{k}={v}\n")).collect();
     std::fs::write(dir.join("env.txt"), listed)?;
+    pass_session_options(&store.root, &request.id, args.via_ea, &game_env)?;
     let spawn = |exe: &str, log: &str| -> Result<std::process::Child> {
         let out = std::fs::File::create(dir.join(log))?;
         let mut c = match &proton {
@@ -1018,7 +1050,10 @@ fn play(
         }
     };
     let ea = match args.via_ea {
-        true => Some(crate::ea::start(store, game, &extra, &dir, &copies_before)?),
+        true => Some(
+            crate::ea::start(store, game, &extra, &dir, &copies_before)
+                .inspect_err(|_| swofty_core::multiplayer::options::clear(&store.root))?,
+        ),
         false => None,
     };
     if ea.is_some() {
@@ -1051,6 +1086,7 @@ fn play(
             (status.code(), why_no_code(status))
         }
     };
+    swofty_core::multiplayer::options::clear(&store.root);
     if let Some(w) = watch.as_mut()
         && w.state() == Attach::Waiting
     {
@@ -2228,6 +2264,57 @@ mod tests {
             NETPLAY_REQUEST_LIFE
         ));
         std::fs::remove_file(&path).ok();
+    }
+
+    #[test]
+    fn only_a_game_the_ea_app_starts_gets_its_session_options_in_a_file() {
+        use swofty_core::multiplayer::options;
+        let data = std::env::temp_dir().join(format!("swofty-run-session-options-{}", std::process::id()));
+        std::fs::remove_dir_all(&data).ok();
+        std::fs::create_dir_all(&data).unwrap();
+        let file = data.join(options::FILE);
+        let mut env: std::collections::BTreeMap<String, String> = armed_env("armed;room")
+            .into_iter()
+            .map(|(k, v)| (k.to_owned(), v))
+            .collect();
+        env.insert("WINEDEBUG".into(), "-all".into());
+
+        pass_session_options(&data, "ab12", false, &env).unwrap();
+        assert!(
+            !file.exists(),
+            "a game the session starts itself has the environment"
+        );
+        assert!(!data.join(options::FILES_DIR).exists());
+
+        pass_session_options(&data, "ab12", true, &env).unwrap();
+        let doc: serde_json::Value = serde_json::from_slice(&std::fs::read(&file).unwrap()).unwrap();
+        assert_eq!(doc["id"], "ab12");
+        assert_eq!(doc["env"][NETPLAY_ENV], "armed;room");
+        assert_eq!(doc["env"].get("WINEDEBUG"), None);
+        let left = doc["expires"].as_u64().unwrap() - now_secs() as u64;
+        assert!((590..=600).contains(&left), "{left}");
+
+        env.remove(NETPLAY_ENV);
+        pass_session_options(&data, "cd34", true, &env).unwrap();
+        assert!(
+            !file.exists(),
+            "a later session that is not armed removes the file"
+        );
+
+        pass_session_options(
+            &data,
+            "ef56",
+            true,
+            &armed_env("armed")
+                .into_iter()
+                .map(|(k, v)| (k.to_owned(), v))
+                .collect(),
+        )
+        .unwrap();
+        assert!(file.exists());
+        pass_session_options(&data, "0a0a", false, &env).unwrap();
+        assert!(!file.exists(), "a later session on a Steam copy removes the file");
+        std::fs::remove_dir_all(&data).ok();
     }
 
     #[test]

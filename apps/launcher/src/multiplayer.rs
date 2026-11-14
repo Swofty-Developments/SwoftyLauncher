@@ -18,6 +18,7 @@ use swofty_core::catalog;
 use swofty_core::install::Game;
 use swofty_core::multiplayer::diag;
 use swofty_core::multiplayer::game::{self as mp_game, Command, GameStatus, Screen};
+use swofty_core::multiplayer::options as session_options;
 use swofty_core::multiplayer::progress::{self, MemberStage, Problem, Progress, Step};
 use swofty_core::multiplayer::rooms::{Api, RoomAddon, RoomSettings, RoomSummary};
 use swofty_core::multiplayer::session::{
@@ -493,7 +494,8 @@ impl Shell {
         }
         self.mp_page.closing = None;
         if let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) {
-            std::fs::remove_file(mp_game::mailbox(&dir).join("status.json")).ok();
+            let files = session_options::files_dir(&self.store.root, &dir);
+            std::fs::remove_file(mp_game::mailbox(&files).join("status.json")).ok();
         }
         let row_ids = match &ask.row_ids {
             Some(ids) => {
@@ -740,6 +742,7 @@ impl Shell {
             self.mp_page.game_at = Some(Instant::now());
             return;
         };
+        let dir = session_options::files_dir(&self.store.root, &dir);
         let running = !self.processes.is_empty();
         self.mp_page.game_polling = true;
         cx.spawn(async move |this, cx| {
@@ -848,7 +851,8 @@ impl Shell {
                     let local = read_local(&store, &profile, &dir).inspect_err(|e| {
                         diag::line(format!("session not started: couldn't read the addons: {e}"));
                     })?;
-                    let mut setup = Setup::new(Api::new(&token), &dir, local);
+                    let files = session_options::files_dir(&store.root, &dir);
+                    let mut setup = Setup::new(Api::new(&token), &files, local);
                     setup.room_launch = true;
                     let (refresh_store, refresh_profile, refresh_dir) =
                         (store.clone(), profile.clone(), dir.clone());

@@ -46,6 +46,9 @@ mkdir -p "$OUT"
     -o "$OUT/entitlements_test" entitlements_test.cpp
 "$OUT/entitlements_test"
 "${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../src/core \
+    -o "$OUT/session_options_test" session_options_test.cpp
+"$OUT/session_options_test"
+"${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../src/core \
     -o "$OUT/room_cover_test" room_cover_test.cpp
 "$OUT/room_cover_test"
 "${PIN[@]}" zig c++ -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -I../../packages/sdk/include \

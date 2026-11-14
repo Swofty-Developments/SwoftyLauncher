@@ -265,6 +265,7 @@ void ready()
             return;
         opened = false;
     }
+    session_options_setup();
     assets_setup();
     resources_setup();
     gamedb_setup();

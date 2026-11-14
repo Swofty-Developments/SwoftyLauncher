@@ -385,7 +385,8 @@ impl Bundle {
             c.file("game/careers/index.json".into(), &careers, None);
         }
         if let Some(game) = &report.game.dir {
-            let status = game.join(crate::multiplayer::bridge::STATUS_FILE);
+            let status = crate::multiplayer::options::files_dir(&store.root, game)
+                .join(crate::multiplayer::bridge::STATUS_FILE);
             if status.is_file() {
                 c.file("game/netplay.json".into(), &status, None);
             }

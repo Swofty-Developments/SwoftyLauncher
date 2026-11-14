@@ -4,8 +4,10 @@
 #include <swofty/mixin.hpp>
 
 #include "game_manager_layout.hpp"
+#include "session_options_logic.hpp"
 #include "state_logic.hpp"
 
+#include <ctime>
 #include <mutex>
 
 namespace runtime {
@@ -270,6 +272,62 @@ const std::wstring &files_root()
 {
     const std::wstring &state = state_root();
     return state.empty() ? swofty_root() : state;
+}
+
+namespace {
+
+std::wstring session_files_dir;
+
+}
+
+const std::wstring &session_files_root()
+{
+    return session_files_dir.empty() ? swofty_root() : session_files_dir;
+}
+
+std::wstring under_session_files(const std::string &rel)
+{
+    std::wstring p = wide(rel);
+    std::replace(p.begin(), p.end(), L'/', L'\\');
+    return session_files_root() + p;
+}
+
+void session_options_setup()
+{
+    namespace so = session_options;
+    char set[8] = {};
+    bool in_environment = GetEnvironmentVariableA(so::ARMING, set, sizeof set) != 0;
+    if (!so::from_file(in_environment))
+        return;
+    const std::wstring &state = state_root();
+    std::wstring path = state.empty() ? std::wstring() : state + so::FILE;
+    std::string text = path.empty() ? std::string() : read_file(path, size_t(1) << 16);
+    if (text.empty()) {
+        if (so::room_start(read_file(swofty_root() + L"direct_start.json", size_t(1) << 16)))
+            swofty::log("[netplay] a room start is requested but the game is not armed: SWOFTY_NETPLAY is not set and "
+                        "there are no session options in %s",
+                        path.empty() ? "the launcher's data folder (the core has none)" : narrow(path).c_str());
+        return;
+    }
+    if (!DeleteFileW(path.c_str()))
+        swofty::log("[netplay] the launcher's session options could not be deleted after the read (error %lu)",
+                    GetLastError());
+    so::Options o;
+    int64_t now = int64_t(time(nullptr));
+    so::Verdict v = so::parse(text, now, o);
+    if (v != so::Verdict::ok) {
+        swofty::log("[netplay] the launcher's session options are %s; the game is not armed", so::why(v));
+        return;
+    }
+    std::wstring files = state + so::FILES_DIR;
+    for (size_t i = files.find(L'\\', state.size()); i != std::wstring::npos; i = files.find(L'\\', i + 1))
+        CreateDirectoryW(files.substr(0, i).c_str(), nullptr);
+    for (auto &[name, value] : o.env)
+        SetEnvironmentVariableW(wide(name).c_str(), wide(value).c_str());
+    session_files_dir = files;
+    swofty::log("[netplay] armed from the launcher's session options (launch %s, %lld s left); the session's files are "
+                "in %s",
+                o.id.empty() ? "?" : o.id.c_str(), static_cast<long long>(o.expires - now), narrow(files).c_str());
 }
 
 bool write_file(const std::wstring &path, const std::string &data)
