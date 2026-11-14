@@ -438,6 +438,8 @@ inline constexpr address<"Ne_List_PushEntryOrFail"> Ne_List_PushEntryOrFail{}; /
 inline constexpr address<"Ne_ListenerHandle_Assign"> Ne_ListenerHandle_Assign{}; // L2 experimental
 inline constexpr address<"Ne_ListenerHandle_Unregister"> Ne_ListenerHandle_Unregister{}; // L2 experimental
 inline constexpr address<"Ne_Listener_DetachFromOwner"> Ne_Listener_DetachFromOwner{}; // L2 experimental
+using Ne_Load_SystemConfigXml_t = int(void *sys);
+inline constexpr fn<"Ne_Load_SystemConfigXml", Ne_Load_SystemConfigXml_t> Ne_Load_SystemConfigXml{}; // L2 experimental
 inline constexpr address<"Ne_Loader_RegisterRequest"> Ne_Loader_RegisterRequest{}; // L2 experimental
 using Ne_Log_Thunk_t = void(const char *channel, const char *fmt, ...);
 inline constexpr fn<"Ne_Log_Thunk", Ne_Log_Thunk_t> Ne_Log_Thunk{}; // L2 experimental

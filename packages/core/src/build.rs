@@ -1754,8 +1754,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             ));
         }
         if !left_codes.is_empty() {
-            let weekends = crate::tracks::restore_weekends(&mut db, &shipped_db, &left_codes);
+            let weekends = crate::tracks::restore_weekends(&mut db, &shipped_db, &left_codes)
+                .map_err(|stuck| Error::Resolve(stuck.join("; ")))?;
             built.warnings.extend(weekends);
+            built
+                .warnings
+                .extend(crate::tracks::drop_left_out_orders(&mut db, &left_codes));
         }
         let in_game: Vec<&str> = tracks
             .iter()
