@@ -73,7 +73,8 @@ pub struct Built {
     pub conflicts: Vec<Conflict>,
     pub waiting: Vec<Op>,
     pub report: Report,
-    /// Each addon's added rows with a stat id, as `<table>.<row>/<label>` to the id the build gave.
+    /// Each addon's added rows with a stat id, its `track.add` track rows among them, as `<table>.<row>/<label>` to
+    /// the id the build gave.
     pub row_ids: BTreeMap<String, BTreeMap<String, i64>>,
 }
 
@@ -1663,6 +1664,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             ));
         }
         let older = crate::tracks::read_older(&store.root, profile);
+        let mut track_ids: Vec<(String, String, i64)> = Vec::new();
         for (((_, pkg), slot), (_, _, origin)) in maps.iter().zip(&slots).zip(&tracks) {
             if recorded.contains(&origin.addon) {
                 built.lines.push(format!(
@@ -1687,10 +1689,16 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 .find(|o| o.addon == origin.addon && o.code == pkg.track_code)
                 .and_then(|o| o.stat_id)
                 .map(i64::from);
+            let mut given = None;
             let mut give = |top: i64, held: &dyn Fn(i64) -> bool| {
-                row_ids.track_stat_id(&origin.addon, &pkg.track_code, seed, top, held)
+                let id = row_ids.track_stat_id(&origin.addon, &pkg.track_code, seed, top, held);
+                given = id.as_ref().ok().map(|(id, _)| *id);
+                id
             };
             let report = activate_with(&mut db, pkg, &reg, Some(&route), &lists, Some(&mut give))?;
+            if let Some(id) = given {
+                track_ids.push((origin.addon.clone(), pkg.track_code.clone(), id));
+            }
             for l in report.lines {
                 built.lines.push(format!("{}: {l}", pkg.track_code));
             }
@@ -1826,6 +1834,13 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         }
         let row_adders = crate::stdlib::room::row_adders(copies.iter().map(|c| c.addon.as_str()), CORE_ID);
         built.row_ids = added_row_ids(&db, &copies);
+        for (addon, code, id) in &track_ids {
+            built
+                .row_ids
+                .entry(addon.clone())
+                .or_default()
+                .insert(crate::row_ids::track_row(code), *id);
+        }
         udp_ids = crate::udp_ids::build(&db, &copies);
         let addon_name = |id: &str| addons.get(id).map_or(id, |m| m.name.as_str()).to_owned();
         let side = crate::dbedit::deps::check(&db, &copies, &addon_name);
@@ -4851,8 +4866,11 @@ mod tests {
         std::fs::remove_dir_all(&root).ok();
     }
 
+    static LENDING: std::sync::Mutex<()> = std::sync::Mutex::new(());
+
     #[test]
     fn a_room_launch_build_uses_the_hosts_ids_under_its_own_cache_key_and_keeps_row_ids_json() {
+        let _lending = LENDING.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
         use swofty_formats::gvdb::Record;
         if loader_dir().is_some() {
             return;
@@ -6201,6 +6219,105 @@ mod tests {
             kept, written,
             "a reused build with the same inputs keeps the facts file"
         );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_track_rows_stat_id_is_an_added_row_id_and_a_lent_one_is_the_one_the_build_gives() {
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-tracklent-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let slot = dir.join(slot_file(SLOTS[0]));
+        std::fs::create_dir_all(slot.parent().unwrap()).unwrap();
+        std::fs::write(&slot, archive(&["eaid://ui_package/slot.uil"], 0)).unwrap();
+        let res = "tracks.track_resource.TrackResource_0";
+        let set = "track_data.game_setup.TrackDataSet_0";
+        let records = vec![
+            Record::new("tracks._Track_instancecount_", 0, "1"),
+            Record::new("tracks.Track_0._metadata_", 2, "melbourne"),
+            Record::new("tracks.Track_0.statId", 0, "5"),
+            Record::new("tracks.Track_0.track_resource", 2, "2019"),
+            Record::new("tracks.track_resource._TrackResource_instancecount_", 0, "1"),
+            Record::new(&format!("{res}._metadata_"), 2, "2019"),
+            Record::new(&format!("{res}.iblAssetGroupsRoot"), 2, "probes/"),
+            Record::new(&format!("{res}.iblKey"), 2, "key_2019.assetgroup"),
+            Record::new("track_data.game_setup._TrackDataSet_instancecount_", 0, "1"),
+            Record::new(&format!("{set}._metadata_"), 2, "f1"),
+            Record::new(&format!("{set}._TrackData_instancecount_"), 0, "1"),
+            Record::new(&format!("{set}.TrackData_0._metadata_"), 2, "melbourne"),
+            Record::new(&format!("{set}.TrackData_0.track"), 2, "melbourne"),
+        ];
+        std::fs::write(dir.join(GVDB), Gvdb { records }.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        let src = root.join("src").join("mod.testring");
+        std::fs::create_dir_all(src.join("track")).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            r#"{ "schema_version": 1, "id": "mod.testring", "name": "Test Ring", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" }, "operations": { "assets": ["ops.json"] } }"#,
+        )
+        .unwrap();
+        std::fs::write(
+            src.join("ops.json"),
+            r#"{ "schema_version": 1, "ops": [{"op":"track.add","source":"track"}] }"#,
+        )
+        .unwrap();
+        std::fs::write(
+            src.join("track/manifest.json"),
+            r#"{ "track_code": "testring", "track_name": "Test Ring", "erp": "testring.erp",
+                 "activation": { "copy_from_track": "melbourne", "copy_slot": "melbourne" } }"#,
+        )
+        .unwrap();
+        let world = "eaid://environment_package/tracks/testring/wep/testring_common.wep";
+        std::fs::write(src.join("track/testring.erp"), archive_of("WEP", &[world], 0)).unwrap();
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("default", |p| p.set_enabled("mod.testring", true))
+            .unwrap();
+        let stat_id = |b: &Built| {
+            let db = Gvdb::parse(&std::fs::read(&b.plan.data[GVDB]).unwrap()).unwrap();
+            db.get_text("tracks.Track_1.statId").unwrap()
+        };
+        let row = crate::row_ids::track_row("testring");
+
+        let own = build(&store, "default", &game).unwrap();
+        assert_eq!(stat_id(&own), "6");
+        assert_eq!(own.row_ids["mod.testring"][&row], 6, "{:?}", own.row_ids);
+        let outputs: BTreeMap<String, BTreeMap<String, fingerprint::Output>> =
+            crate::read_json(&store.root.join(fingerprint::OUTPUTS_FILE)).unwrap();
+        assert_eq!(outputs["default"]["mod.testring"].row_ids[&row], 6);
+        let kept = std::fs::read(crate::row_ids::path(&store.root)).unwrap();
+
+        let host = crate::row_ids::Overrides {
+            rows: BTreeMap::from([("mod.testring".to_owned(), BTreeMap::from([(row.clone(), 40)]))]),
+            ..Default::default()
+        };
+        let lending = LENDING.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
+        crate::row_ids::lend(Some(host));
+        let lent = build(&store, "default", &game);
+        crate::row_ids::lend(None);
+        drop(lending);
+        let lent = lent.unwrap();
+        assert_eq!(stat_id(&lent), "40");
+        assert_eq!(lent.row_ids["mod.testring"][&row], 40);
+        assert_eq!(
+            std::fs::read(crate::row_ids::path(&store.root)).unwrap(),
+            kept,
+            "row-ids.json keeps the player's own id"
+        );
+        let back = build(&store, "default", &game).unwrap();
+        assert_eq!(stat_id(&back), "6");
         std::fs::remove_dir_all(&root).ok();
     }
 
