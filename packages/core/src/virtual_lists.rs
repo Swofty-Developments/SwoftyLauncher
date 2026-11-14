@@ -7,7 +7,7 @@
 //! the list. Its label is taken out of the content sets' and entrant setup modes' list fields. The core reads the
 //! row when a box naming it is pressed (era_picker.cpp, `swofty_virtual_list`).
 
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 
 use swofty_formats::gvdb::{Gvdb, Record, instance_count_path};
 use swofty_formats::hash::fnv1a64;
@@ -109,46 +109,6 @@ fn host_setup_mode(db: &Gvdb) -> Option<String> {
         .find(|row| text(db, &format!("{row}._metadata_")).as_deref() == Some(HOST_MODE))
 }
 
-/// The career host: the list every career setup that names a virtual career list points at (era_picker.cpp,
-/// VIRTUAL_CAREER_HOST). The core reads the career's own list into it when that career is made.
-pub const CAREER_HOST: &str = "swofty_virtual_career";
-
-fn count_of(db: &Gvdb, table: &str, row: &str) -> usize {
-    text(db, &instance_count_path(table, row))
-        .and_then(|t| t.trim().parse().ok())
-        .unwrap_or(0)
-}
-
-/// Adds `host` as a copy of row `from` with the lowest free stat id up to 255; returns the line to log.
-fn add_host(db: &mut Gvdb, names: &Names, from: &str, host: &str, count: &mut usize) -> String {
-    let used: HashSet<i64> = (0..*count)
-        .filter_map(|i| text(db, &format!("{TABLE}.{ROW}_{i}.stat_id")))
-        .filter_map(|t| t.trim().parse().ok())
-        .collect();
-    // 0 is what the game's label lookup returns for a missing list (Sess_Get_EntrantListStatId_Thunk), so a host never takes it.
-    match (1..=255).find(|id| !used.contains(id)) {
-        Some(id) => {
-            let row = format!("{TABLE}.{ROW}_{count}");
-            copy_row(db, names, from, &row);
-            set_text(db, &format!("{row}._metadata_"), 4, host);
-            set_text(db, &format!("{row}.stat_id"), 0, &id.to_string());
-            *count += 1;
-            format!("virtual lists: host {host} added as {row} (stat id {id})")
-        }
-        None => {
-            format!("virtual lists: no stat id up to 255 is free for the host {host}; its lists stay unused")
-        }
-    }
-}
-
-fn offer(db: &mut Gvdb, path: &str, label: &str) {
-    let mut v = text(db, path).map(|t| items(&t)).unwrap_or_default();
-    if !v.iter().any(|l| l == label) {
-        v.push(label.into());
-        set_text(db, path, 13, &v.join(","));
-    }
-}
-
 /// Settles the lists the `virtual-list` op marked; returns the build's report lines.
 pub fn settle(db: &mut Gvdb, stock: &HashSet<u64>) -> Vec<String> {
     let mut lines = Vec::new();
@@ -170,15 +130,10 @@ pub fn settle(db: &mut Gvdb, stock: &HashSet<u64>) -> Vec<String> {
     while text(db, &format!("{TABLE}.{ROW}_{next}._metadata_")).is_some() {
         next += 1;
     }
-    // label -> (career host?, row it moved to)
-    let mut settled: BTreeMap<String, (bool, String)> = BTreeMap::new();
-    for entry in &marked {
-        let (label, career) = match entry.split_once('=') {
-            Some((l, h)) => (l.to_owned(), h == "career"),
-            None => (entry.clone(), false),
-        };
+    let mut settled = BTreeSet::new();
+    for label in &marked {
         let Some(i) = (0..count)
-            .find(|&i| text(db, &format!("{TABLE}.{ROW}_{i}._metadata_")).as_deref() == Some(label.as_str()))
+            .find(|&i| text(db, &format!("{TABLE}.{ROW}_{i}._metadata_")).as_deref() == Some(label))
         else {
             lines.push(format!(
                 "virtual list {label}: no row of {TABLE} has this label; nothing moved"
@@ -204,114 +159,93 @@ pub fn settle(db: &mut Gvdb, stock: &HashSet<u64>) -> Vec<String> {
         }
         count -= 1;
         next += 1;
+        settled.insert(label.clone());
         lines.push(format!(
             "virtual list {label}: {n} key(s) moved from {row} to {to}"
         ));
-        settled.insert(label, (career, to));
     }
     if settled.is_empty() {
         return lines;
     }
+    // The host the core swaps a pressed virtual list into: one ordinary list, offered under swofty_f1.
     let label_at = |db: &Gvdb, i: usize| text(db, &format!("{TABLE}.{ROW}_{i}._metadata_"));
-    let mut hosts = Vec::new();
-    for (host, career) in [(HOST, false), (CAREER_HOST, true)] {
-        let Some(first) = settled
-            .values()
-            .find(|(c, _)| *c == career)
-            .map(|(_, to)| to.clone())
-        else {
-            continue;
-        };
-        if !(0..count).any(|i| label_at(db, i).as_deref() == Some(host)) {
-            let line = add_host(db, &names, &first, host, &mut count);
-            lines.push(line);
-        }
-        if (0..count).any(|i| label_at(db, i).as_deref() == Some(host)) {
-            hosts.push((host, career));
+    if !(0..count).any(|i| label_at(db, i).as_deref() == Some(HOST)) {
+        let used: HashSet<i64> = (0..count)
+            .filter_map(|i| text(db, &format!("{TABLE}.{ROW}_{i}.stat_id")))
+            .filter_map(|t| t.trim().parse().ok())
+            .collect();
+        match (0..=255).find(|id| !used.contains(id)) {
+            Some(id) => {
+                let host = format!("{TABLE}.{ROW}_{count}");
+                copy_row(db, &names, &format!("{TABLE}.{ROW}_{BASE}"), &host);
+                set_text(db, &format!("{host}._metadata_"), 4, HOST);
+                set_text(db, &format!("{host}.stat_id"), 0, &id.to_string());
+                count += 1;
+                lines.push(format!(
+                    "virtual lists: host {HOST} added as {host} (stat id {id})"
+                ));
+            }
+            None => lines.push(format!(
+                "virtual lists: no stat id up to 255 is free for the host {HOST}; virtual boxes stay hidden"
+            )),
         }
     }
     for set in ["2025", "2026"] {
         if let Some(path) = content_set_lists(db, set) {
-            for (host, _) in &hosts {
-                offer(db, &path, host);
+            let mut v = text(db, &path).map(|t| items(&t)).unwrap_or_default();
+            if !v.iter().any(|l| l == HOST) {
+                v.push(HOST.into());
+                set_text(db, &path, 13, &v.join(","));
             }
         }
     }
-    if hosts.iter().any(|(_, career)| !career)
-        && let Some(esm) = host_setup_mode(db)
-    {
+    if let Some(esm) = host_setup_mode(db) {
         for field in ["entrant_lists", "selectable_entrant_lists"] {
-            offer(db, &format!("{esm}.{field}"), HOST);
+            let path = format!("{esm}.{field}");
+            let mut v = text(db, &path).map(|t| items(&t)).unwrap_or_default();
+            if !v.iter().any(|l| l == HOST) {
+                v.push(HOST.into());
+                set_text(db, &path, 13, &v.join(","));
+            }
         }
     }
     set_text(db, &count_path, 0, &count.to_string());
-    // The game resolves these fields' labels against the loaded lists; a virtual one is never loaded. A box list
-    // leaves them; a career list is replaced by the career host.
+    // The game resolves these fields' labels against the loaded lists; a virtual one is never loaded.
     let mut refs = Vec::new();
-    for i in 0..count_of(db, "content_sets", "content_set") {
-        let base = format!("content_sets.content_set_{i}");
-        for j in 0..count_of(db, &base, "available_entrant_lists") {
-            refs.push(format!("{base}.available_entrant_lists_{j}.entrant_lists"));
+    for (table, row, fields) in [
+        ("content_sets", "content_set", &["available_entrant_lists"][..]),
+        ("entrants.entrant_setup_modes", "entrant_setup_mode", &[][..]),
+    ] {
+        let n = text(db, &instance_count_path(table, row))
+            .and_then(|t| t.trim().parse::<usize>().ok())
+            .unwrap_or(0);
+        for i in 0..n {
+            let base = format!("{table}.{row}_{i}");
+            if fields.is_empty() {
+                refs.push(format!("{base}.entrant_lists"));
+                refs.push(format!("{base}.selectable_entrant_lists"));
+            }
+            for sub in fields {
+                let m = text(db, &instance_count_path(&base, sub))
+                    .and_then(|t| t.trim().parse::<usize>().ok())
+                    .unwrap_or(0);
+                for j in 0..m {
+                    refs.push(format!("{base}.{sub}_{j}.entrant_lists"));
+                }
+            }
         }
     }
-    for i in 0..count_of(db, "entrants.entrant_setup_modes", "entrant_setup_mode") {
-        let base = format!("entrants.entrant_setup_modes.entrant_setup_mode_{i}");
-        refs.push(format!("{base}.entrant_lists"));
-        refs.push(format!("{base}.selectable_entrant_lists"));
-    }
-    let career_host = hosts.iter().any(|(_, career)| *career);
     let mut stripped = 0;
     for path in refs {
         let Some(v) = text(db, &path) else { continue };
-        let mut kept: Vec<String> = Vec::new();
-        for l in items(&v) {
-            let l = match settled.get(&l) {
-                Some((false, _)) => continue,
-                Some((true, _)) if career_host => CAREER_HOST.to_owned(),
-                Some((true, _)) => continue,
-                None => l,
-            };
-            if !kept.contains(&l) {
-                kept.push(l);
-            }
-        }
-        if kept != items(&v) {
+        let kept: Vec<String> = items(&v).into_iter().filter(|l| !settled.contains(l)).collect();
+        if kept.len() != items(&v).len() {
             set_text(db, &path, 13, &kept.join(","));
             stripped += 1;
         }
     }
-    // A career list is named by the career setups of its mode and championship and by its content set's official
-    // entrant lists (F1CAREER_<yy>, ICONS_<yy>): those point at the career host.
-    let mut setups = Vec::new();
-    for (table, row) in [
-        ("championships", "Championship"),
-        ("game_modes", "ModeChampionship"),
-    ] {
-        for i in 0..count_of(db, table, row) {
-            let base = format!("{table}.{row}_{i}");
-            for k in 0..count_of(db, &base, "ComCareerSetup") {
-                setups.push(format!("{base}.ComCareerSetup_{k}.entrant_list"));
-            }
-        }
-    }
-    for i in 0..count_of(db, "content_sets", "content_set") {
-        let base = format!("content_sets.content_set_{i}");
-        for j in 0..count_of(db, &base, "official_entrant_list") {
-            setups.push(format!("{base}.official_entrant_list_{j}.entrant_list"));
-        }
-    }
-    let mut pointed = 0;
-    for path in setups {
-        if let Some(v) = text(db, &path)
-            && career_host
-            && matches!(settled.get(v.trim()), Some((true, _)))
-        {
-            set_text(db, &path, 4, CAREER_HOST);
-            pointed += 1;
-        }
-    }
     lines.push(format!(
-        "virtual lists: {} moved above the count ({count} lists left for the game), {stripped} list field(s) no longer name them, {pointed} career setup(s) point at {CAREER_HOST}",
+        "virtual lists: {} moved above the count ({count} lists left for the game), {stripped} list field(s) no longer name them",
         settled.len()
     ));
     lines
@@ -411,7 +345,7 @@ mod tests {
         );
         assert_eq!(
             get(&db, &format!("{TABLE}.{ROW}_3.stat_id")).as_deref(),
-            Some("1")
+            Some("0")
         );
         assert_eq!(get(&db, &format!("{TABLE}.{ROW}_4._metadata_")), None);
         assert_eq!(
@@ -422,95 +356,6 @@ mod tests {
             .as_deref(),
             Some("f1_2026,season_b,swofty_virtual_list")
         );
-    }
-
-    #[test]
-    fn a_virtual_career_list_moves_and_its_career_setups_point_at_the_career_host() {
-        let mut records = vec![
-            rec(&instance_count_path(TABLE, ROW), 0, "3"),
-            rec(VIRTUAL_LISTS, 4, "f1_career_1960=career"),
-            rec("championships._Championship_instancecount_", 0, "1"),
-            rec(
-                "championships.Championship_0._ComCareerSetup_instancecount_",
-                0,
-                "1",
-            ),
-            rec(
-                "championships.Championship_0.ComCareerSetup_0.entrant_list",
-                4,
-                "f1_career_1960",
-            ),
-            rec("content_sets._content_set_instancecount_", 0, "1"),
-            rec("content_sets.content_set_0._metadata_", 4, "2026"),
-            rec(
-                "content_sets.content_set_0._available_entrant_lists_instancecount_",
-                0,
-                "1",
-            ),
-            rec(
-                "content_sets.content_set_0.available_entrant_lists_0.entrant_lists",
-                13,
-                "f1_2026,f1_career_1960",
-            ),
-            rec(
-                "content_sets.content_set_0._official_entrant_list_instancecount_",
-                0,
-                "1",
-            ),
-            rec(
-                "content_sets.content_set_0.official_entrant_list_0.entrant_list",
-                4,
-                "f1_career_1960",
-            ),
-        ];
-        list(&mut records, 0, "f1_2026", &["a1"]);
-        list(&mut records, 1, "f1_career_1960", &["c1", "c2"]);
-        list(&mut records, 2, "season_b", &["t1"]);
-        let stock: HashSet<u64> = [0usize]
-            .iter()
-            .flat_map(|i| {
-                [
-                    fnv1a64(format!("{TABLE}.{ROW}_{i}._metadata_")),
-                    fnv1a64(format!("{TABLE}.{ROW}_{i}.stat_id")),
-                ]
-            })
-            .collect();
-        let mut db = Gvdb { records };
-        let lines = settle(&mut db, &stock);
-        assert!(lines.iter().any(|l| l.contains("2 career setup(s)")), "{lines:?}");
-        assert_eq!(
-            get(&db, &format!("{TABLE}.{ROW}_{BASE}._metadata_")).as_deref(),
-            Some("f1_career_1960")
-        );
-        assert_eq!(
-            get(&db, &format!("{TABLE}.{ROW}_2._metadata_")).as_deref(),
-            Some(CAREER_HOST)
-        );
-        assert_eq!(
-            get(&db, &format!("{TABLE}.{ROW}_2.entrant_1._metadata_")).as_deref(),
-            Some("c2")
-        );
-        assert_eq!(
-            get(&db, "championships.Championship_0.ComCareerSetup_0.entrant_list").as_deref(),
-            Some(CAREER_HOST)
-        );
-        assert_eq!(
-            get(
-                &db,
-                "content_sets.content_set_0.official_entrant_list_0.entrant_list"
-            )
-            .as_deref(),
-            Some(CAREER_HOST)
-        );
-        assert_eq!(
-            get(
-                &db,
-                "content_sets.content_set_0.available_entrant_lists_0.entrant_lists"
-            )
-            .as_deref(),
-            Some("f1_2026,swofty_virtual_career")
-        );
-        assert_eq!(get(&db, &format!("{TABLE}.{ROW}_3._metadata_")), None);
     }
 
     #[test]

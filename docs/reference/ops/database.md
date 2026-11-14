@@ -170,17 +170,6 @@ Marks an entrant list your addon adds as virtual. The game loads every row of `e
 - The build takes its label out of every content set's and entrant setup mode's list fields.
 - A box that names it shows when `swofty_virtual_list` is offered under `swofty_f1`. When the box is pressed, the core reads the virtual row into `swofty_virtual_list` and selects that list; the next press puts the host's own entrants back.
 
-`"host": "career"` makes it a career's list:
-
-```jsonc
-{ "op": "virtual-list", "list": "f1_career_1959", "host": "career" }
-```
-
-- The build adds the list `swofty_virtual_career`, offers it in the 2025 and 2026 content sets and points every career setup (`championships` and `game_modes` `ComCareerSetup_N.entrant_list`) and `official_entrant_list` that names the virtual list at it. A content set's or entrant setup mode's list field that names the virtual list names `swofty_virtual_career` instead.
-- When a new career of that list is made, the core reads the virtual row into `swofty_virtual_career` just before the game copies the list into the career. The save keeps that copy.
-- The list's label is the career's data group, so the career needs a `career.content` record with that data group.
-- Any other `host` value fails the build.
-
 The build prints one line per list and a summary:
 
 ```text
