@@ -63,6 +63,12 @@ const std::wstring &state_root();
 // data folder (state_root), or swofty\ when the core can't write there. The game can't create files in swofty\ of an
 // EA app copy under Program Files.
 const std::wstring &files_root();
+// Where the core and the launcher trade one session's files (the command mailbox, netplay.json, entitlements.json):
+// swofty\, or session\swofty\ in the launcher's data folder for a game that took the launcher's session options from
+// a file (session_options_logic.hpp).
+const std::wstring &session_files_root();
+std::wstring under_session_files(const std::string &rel);
+void session_options_setup();
 bool enabled(const char *feature, const char *what);
 std::string load_stage();
 bool same_build();

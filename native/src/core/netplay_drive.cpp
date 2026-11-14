@@ -347,7 +347,7 @@ uint64_t wall_ms()
 
 std::wstring dir(const char *sub)
 {
-    return runtime::under_swofty(std::string("netplay\\") + sub);
+    return runtime::under_session_files(std::string("netplay\\") + sub);
 }
 
 constexpr const char *LEAVE_BINDING = "Game_InviteManager_Cancel";
@@ -382,7 +382,7 @@ std::string job_ip;
 void watch()
 {
     std::wstring inbox = dir("inbox"), outbox = dir("outbox");
-    CreateDirectoryW(runtime::under_swofty("netplay").c_str(), nullptr);
+    CreateDirectoryW(runtime::under_session_files("netplay").c_str(), nullptr);
     CreateDirectoryW(inbox.c_str(), nullptr);
     CreateDirectoryW(outbox.c_str(), nullptr);
     std::set<uint64_t> seen;
@@ -427,7 +427,7 @@ void watch()
         if (status != last_status || now - last_written >= HEARTBEAT_MS) {
             std::string body = "{\"v\":1,\"pid\":" + std::to_string(GetCurrentProcessId()) +
                                ",\"written\":" + std::to_string(wall_ms()) + ",\"status\":" + status + "}";
-            if (runtime::write_file(runtime::under_swofty("netplay\\status.json"), body)) {
+            if (runtime::write_file(runtime::under_session_files("netplay\\status.json"), body)) {
                 if (status != last_status)
                     swofty::log("[netplay] status %s", status.c_str());
                 last_status = status;
@@ -505,7 +505,11 @@ void netplay_drive_setup()
     armed = n > 0 && n < sizeof v;
     if (!armed)
         return;
-    swofty::log("[netplay] launcher commands on (<game>/swofty/netplay); configure, host, join and leave accepted");
+    if (runtime::session_files_root() == runtime::swofty_root())
+        swofty::log("[netplay] launcher commands on (<game>/swofty/netplay); configure, host, join and leave accepted");
+    else
+        swofty::log("[netplay] launcher commands on (%s); configure, host, join and leave accepted",
+                    runtime::narrow(runtime::under_session_files("netplay")).c_str());
     probe_setup();
     runtime::netplay_room_setup();
     room_launched = drive::room_launch(v) || runtime::netplay_room_requested();

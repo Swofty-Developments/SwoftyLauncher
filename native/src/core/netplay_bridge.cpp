@@ -307,7 +307,7 @@ void setup()
                     too_long ? "(too long)" : v);
     if (given && runtime::netplay_session::configure(self, base))
         runtime::netplay_session::set_name(name);
-    swprintf(status_path, sizeof status_path / sizeof *status_path, L"%lsnetplay.json", runtime::swofty_root().c_str());
+    swprintf(status_path, sizeof status_path / sizeof *status_path, L"%lsnetplay.json", runtime::session_files_root().c_str());
     DeleteFileW(status_path);
     HMODULE ws = LoadLibraryW(L"ws2_32.dll"), ip = LoadLibraryW(L"iphlpapi.dll");
     hooks[F_SENDTO] = {"sendto", reinterpret_cast<void *>(&h_sendto), nullptr, nullptr, 0, {}};

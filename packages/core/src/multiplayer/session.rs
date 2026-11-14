@@ -82,7 +82,8 @@ pub trait GameControl: Send + Sync {
     fn cancel(&self) -> Result<GameStatus, game::Error>;
 }
 
-/// The running game's file mailbox (`<game>/swofty/netplay`).
+/// The running game's file mailbox: `swofty/netplay` in the game folder, or in the folder
+/// [`super::options::files_dir`] names for a copy the EA app starts.
 pub struct Mailbox {
     dir: PathBuf,
 }
@@ -281,7 +282,8 @@ pub struct Setup {
 pub type Refresh = Arc<dyn Fn() -> Option<Local> + Send + Sync>;
 
 impl Setup {
-    /// A TURN-relayed session driving the game in `game_dir` through its mailbox.
+    /// A TURN-relayed session driving the game through the mailbox in `game_dir`: the game folder, or
+    /// what [`super::options::files_dir`] names for it.
     pub fn new(api: Api, game_dir: &Path, local: Local) -> Self {
         Self {
             api,
