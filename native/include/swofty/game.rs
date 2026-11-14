@@ -2964,9 +2964,11 @@ pub struct TrackDataRecord {
     pub index: u8,
     _pad_0x2: [u8; 0xce],
     pub name: *mut c_char,
+    _pad_0xd8: [u8; 0xc30],
 }
 const _: () = assert!(core::mem::offset_of!(TrackDataRecord, index) == 0x1);
 const _: () = assert!(core::mem::offset_of!(TrackDataRecord, name) == 0xd0);
+const _: () = assert!(core::mem::size_of::<TrackDataRecord>() == 0xd08);
 
 #[repr(C)]
 pub struct TrackDataSet {
@@ -2977,28 +2979,47 @@ pub struct TrackDataSet {
     pub mode_mask: u32,
     pub season_mask: u32,
     pub format_mask: u32,
+    _pad_0x2c: [u8; 0x4],
 }
 const _: () = assert!(core::mem::offset_of!(TrackDataSet, tracks_begin) == 0x8);
 const _: () = assert!(core::mem::offset_of!(TrackDataSet, tracks_end) == 0x10);
 const _: () = assert!(core::mem::offset_of!(TrackDataSet, mode_mask) == 0x20);
 const _: () = assert!(core::mem::offset_of!(TrackDataSet, season_mask) == 0x24);
 const _: () = assert!(core::mem::offset_of!(TrackDataSet, format_mask) == 0x28);
+const _: () = assert!(core::mem::size_of::<TrackDataSet>() == 0x30);
 
 #[repr(C)]
 pub struct TrackDataSystem {
-    _pad_0x0: [u8; 0x68],
+    _pad_0x0: [u8; 0x10],
+    pub arena: *mut c_void,
+    _pad_0x18: [u8; 0x10],
+    pub records_begin: *mut c_void,
+    pub records_end: *mut c_void,
+    _pad_0x38: [u8; 0x30],
     pub sets_begin: *mut TrackDataSet,
     pub sets_end: *mut TrackDataSet,
 }
+const _: () = assert!(core::mem::offset_of!(TrackDataSystem, arena) == 0x10);
+const _: () = assert!(core::mem::offset_of!(TrackDataSystem, records_begin) == 0x28);
+const _: () = assert!(core::mem::offset_of!(TrackDataSystem, records_end) == 0x30);
 const _: () = assert!(core::mem::offset_of!(TrackDataSystem, sets_begin) == 0x68);
 const _: () = assert!(core::mem::offset_of!(TrackDataSystem, sets_end) == 0x70);
 
 #[repr(C)]
 pub struct TrackDataTrack {
     pub record: *mut TrackDataRecord,
-    _pad_0x8: [u8; 0xe8],
+    _pad_0x8: [u8; 0x58],
+    pub chance_of_using_softer_preset: f32,
+    pub chance_of_using_harder_preset: f32,
+    _pad_0x68: [u8; 0x70],
+    pub enforce_pitstops_in_wet_weather: u8,
+    _pad_0xd9: [u8; 0x7],
+    pub number_of_laps_slot: *mut c_void,
+    _pad_0xe8: [u8; 0x8],
     pub fuel_burn_per_lap: f32,
-    _pad_0xf4: [u8; 0xc],
+    _pad_0xf4: [u8; 0x9],
+    pub is_sprint_weekend: u8,
+    _pad_0xfe: [u8; 0x2],
     pub race_fuel: [u8; 156],
     _pad_0x19c: [u8; 0x4],
     pub race_fuel_count: u64,
@@ -3007,14 +3028,29 @@ pub struct TrackDataTrack {
     _pad_0x1b8: [u8; 0x4],
     pub qualifying_short: f32,
     pub qualifying_full: f32,
+    _pad_0x1c4: [u8; 0x34],
+    pub race_start_time: [i32; 2],
+    _pad_0x200: [u8; 0x1c],
+    pub pit_speed_limit: f32,
+    pub pit_stop_time_dry: f32,
+    _pad_0x224: [u8; 0x6c],
 }
 const _: () = assert!(core::mem::offset_of!(TrackDataTrack, record) == 0x0);
+const _: () = assert!(core::mem::offset_of!(TrackDataTrack, chance_of_using_softer_preset) == 0x60);
+const _: () = assert!(core::mem::offset_of!(TrackDataTrack, chance_of_using_harder_preset) == 0x64);
+const _: () = assert!(core::mem::offset_of!(TrackDataTrack, enforce_pitstops_in_wet_weather) == 0xd8);
+const _: () = assert!(core::mem::offset_of!(TrackDataTrack, number_of_laps_slot) == 0xe0);
 const _: () = assert!(core::mem::offset_of!(TrackDataTrack, fuel_burn_per_lap) == 0xf0);
+const _: () = assert!(core::mem::offset_of!(TrackDataTrack, is_sprint_weekend) == 0xfd);
 const _: () = assert!(core::mem::offset_of!(TrackDataTrack, race_fuel) == 0x100);
 const _: () = assert!(core::mem::offset_of!(TrackDataTrack, race_fuel_count) == 0x1a0);
 const _: () = assert!(core::mem::offset_of!(TrackDataTrack, qualifying_one_shot) == 0x1b4);
 const _: () = assert!(core::mem::offset_of!(TrackDataTrack, qualifying_short) == 0x1bc);
 const _: () = assert!(core::mem::offset_of!(TrackDataTrack, qualifying_full) == 0x1c0);
+const _: () = assert!(core::mem::offset_of!(TrackDataTrack, race_start_time) == 0x1f8);
+const _: () = assert!(core::mem::offset_of!(TrackDataTrack, pit_speed_limit) == 0x21c);
+const _: () = assert!(core::mem::offset_of!(TrackDataTrack, pit_stop_time_dry) == 0x220);
+const _: () = assert!(core::mem::size_of::<TrackDataTrack>() == 0x290);
 
 #[repr(C)]
 pub struct TyreSlot {
@@ -3300,6 +3336,8 @@ pub type Car_Create_DetachablePart_t = unsafe extern "C" fn(
 ) -> *mut c_void;
 pub type Car_DetachablePart_Update_t = unsafe extern "C" fn(part: *mut c_void, dt: f32) -> bool;
 pub type Car_FrontWing_Init_t = unsafe extern "C" fn(front_wing: *mut c_void, reset: c_char);
+pub type Car_PitStop_ApplyTyreAndWingVisuals_t =
+    unsafe extern "C" fn(car_visual: *mut c_void, a2: f32, a3: bool);
 pub type Car_Register_DetachablePart_Thunk_t = unsafe extern "C" fn(
     front_wing: *mut c_void,
     cb: *mut *mut c_void,
@@ -3851,12 +3889,37 @@ pub type Game_Game_HandleInterruptEvent_t =
 pub type Game_Game_SetCurrentGameMode_t =
     unsafe extern "C" fn(mode_context: *mut c_void, mode: *mut c_void) -> u64;
 pub type Game_Get_ModelNodeId_t = unsafe extern "C" fn(name: *const c_char) -> u32;
+pub type Game_GridRundown_ShouldPlay_t = unsafe extern "C" fn(
+    variant: u8,
+    a2: *mut c_void,
+    a3: *mut c_void,
+    settings_ctx: *mut c_void,
+    a5: *mut c_void,
+) -> bool;
+pub type Game_GridSlot_PlaceVehicle_t = unsafe extern "C" fn(
+    grid: *mut c_void,
+    slot: u32,
+    xform: *const f32,
+    a4: *mut c_void,
+    yaw: f32,
+    a6: *mut c_void,
+    a7: *mut c_void,
+    a8: *mut c_void,
+);
 pub type Game_Handle_GarageCrewEvent_Thunk_t =
     unsafe extern "C" fn(cars: *mut *mut c_void, event: *mut c_void) -> u64;
 pub type Game_Handle_SpecGarageCrewEvent_Thunk_t =
     unsafe extern "C" fn(self_: *mut c_void, event: *mut c_void) -> u64;
 pub type Game_HudVM_ResolveSystems_t =
     unsafe extern "C" fn(self_: *mut c_void, registry: *mut c_void, systemMap: *mut c_void) -> u32;
+pub type Game_InstantRace_SetupTrackList_t = unsafe extern "C" fn(comp: *mut c_void);
+pub type Game_Load_TrackDatabaseFull_t = unsafe extern "C" fn(
+    records_vec: *mut c_void,
+    db: *mut c_void,
+    a3: *mut c_void,
+    a4: *mut c_void,
+    a5: *mut c_void,
+);
 pub type Game_MusicOptions_CreateOption_t =
     unsafe extern "C" fn(mgr: *mut c_void, optionId: u64) -> *mut c_void;
 pub type Game_MyTeamAttributeSet_GetValue_t =
@@ -3917,7 +3980,10 @@ pub type Game_Predict_StrategyWetness_t =
     unsafe extern "C" fn(self_: *mut c_void, window3: *const f32) -> f32;
 pub type Game_RaceMarshalSystem_Update_t = unsafe extern "C" fn(system: *mut c_void, dt: *mut f64);
 pub type Game_RaceStrategyVm_Populate_t = unsafe extern "C" fn(vm: *mut c_void);
+pub type Game_Read_GridConfig_t = unsafe extern "C" fn(placement: *mut c_void);
+pub type Game_Read_QualifyingConfig_t = unsafe extern "C" fn(track_data_system: *mut c_void);
 pub type Game_Read_StoryForcedTitleUpdateValueSetting_t = unsafe extern "C" fn(ctx: *mut c_void) -> bool;
+pub type Game_Read_TrackInfoConfig_t = unsafe extern "C" fn(self_: *mut c_void);
 pub type Game_Read_UIMovieBuildSetting_t = unsafe extern "C" fn(self_: *mut c_void) -> u64;
 pub type Game_Refresh_PerformanceComparison_t = unsafe extern "C" fn(comparison: *mut c_void);
 pub type Game_RendererModule_Initialise_t = unsafe extern "C" fn(module: *mut c_void) -> c_int;
@@ -3989,10 +4055,16 @@ pub type Game_TimeManager_OnResetFixedTimeStep_t =
 pub type Game_TitleScreenVM_OnScreenActivated_t = unsafe extern "C" fn(vm: *mut c_void);
 pub type Game_TrackData_GetTrack_t =
     unsafe extern "C" fn(system: *mut c_void, track_ref: *const c_void, query: *const u8) -> *mut c_void;
+pub type Game_TrackSpline_FindSegmentAtDistance_t =
+    unsafe extern "C" fn(spline: *mut c_void, distance: f32) -> *mut c_void;
 pub type Game_TyreAllocationComponent_SetPresetChoiceForHumanDriver_t =
     unsafe extern "C" fn(component: *mut c_void, preset: u32, local_player: c_int);
 pub type Game_UITrack_Apply_DevContractTrack_t = unsafe extern "C" fn(self_: *mut c_void, cfg: *mut c_void);
+pub type Game_UITrack_FindTrackInfoWithFallback_t =
+    unsafe extern "C" fn(contract: *mut c_void, track_name: *const c_char);
 pub type Game_UITrack_Select_DefaultTrack_t = unsafe extern "C" fn(self_: *mut c_void, cfg: *mut c_void);
+pub type Game_VehiclePlacementSystem_Connect_t =
+    unsafe extern "C" fn(self_: *mut c_void, owner: *mut c_void, registry: *mut c_void) -> u32;
 pub type Game_Vfx_UpdateWheelTyreInstance_t = unsafe extern "C" fn(
     studio: *mut c_void,
     vehicle_id: u8,
@@ -4107,6 +4179,11 @@ pub type Sess_Build_SelectableDriverList_t = unsafe extern "C" fn(
 ) -> *mut NeVecU32;
 pub type Sess_ChampionshipWonDecision_Update_t =
     unsafe extern "C" fn(state: *mut c_void, route: *mut u32) -> *mut u32;
+pub type Sess_Collect_AvailableTracks_t = unsafe extern "C" fn(
+    track_data_system: *mut c_void,
+    stat_id_bytes: *const c_void,
+    out_ptr_vec: *mut c_void,
+);
 pub type Sess_Collect_GameModeSetupModes_t =
     unsafe extern "C" fn(out: *mut c_void, allocator: *mut c_void) -> *mut c_void;
 pub type Sess_Find_GroupRowPosition_t =
@@ -4208,8 +4285,12 @@ pub type Sess_WinnerSequence_Update_t =
 pub type Snd_Request_JobWorker_t = unsafe extern "C" fn(worker: *mut c_void, job_type: u32, count: u32);
 pub type Team_Insert_RecordByStatId_t =
     unsafe extern "C" fn(slots: *mut c_void, record: *const u32) -> *mut c_void;
+pub type Trk_CareerWizardTrackSelectVm_OnCommandRaised_t =
+    unsafe extern "C" fn(vm: *mut c_void, cmd: *mut *mut u32) -> *mut c_int;
 pub type Trk_GrandPrixTrackSelectVm_OnCommandRaised_t =
     unsafe extern "C" fn(vm: *mut c_void, cmd: *mut *mut u32) -> *mut *mut c_void;
+pub type Trk_SettingsSelectTrackTabVm_OnCommandRaised_t =
+    unsafe extern "C" fn(vm: *mut c_void, cmd: *mut *mut u32) -> *mut c_char;
 pub type Trk_TimeTrialTrackSelectVm_OnCommandRaised_t =
     unsafe extern "C" fn(vm: *mut c_void, cmd: *mut *mut u32) -> u64;
 pub type Ui_AssetHandleCache_FindOrCreate_t =
@@ -4368,8 +4449,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Ai_LineCache_UpdateIfChanged: Binding = Binding {
+        id: "Ai_LineCache_UpdateIfChanged",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Ai_Select_ErsDeployMode: Binding = Binding {
         id: "Ai_Select_ErsDeployMode",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Ai_SplineCursor_Ctor: Binding = Binding {
+        id: "Ai_SplineCursor_Ctor",
         kind: "func",
         status: Status::Experimental,
     };
@@ -4495,6 +4586,11 @@ pub mod bindings {
     };
     pub const Car_Physics_PostVehicleUpdate: Binding = Binding {
         id: "Car_Physics_PostVehicleUpdate",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_PitStop_ApplyTyreAndWingVisuals: Binding = Binding {
+        id: "Car_PitStop_ApplyTyreAndWingVisuals",
         kind: "func",
         status: Status::Experimental,
     };
@@ -7528,6 +7624,16 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_AutoResetToTrack_StartTimer: Binding = Binding {
+        id: "Game_AutoResetToTrack_StartTimer",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_AutoResetToTrack_Teleport: Binding = Binding {
+        id: "Game_AutoResetToTrack_Teleport",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_BenchmarkGameMode_BuildSessionSettings: Binding = Binding {
         id: "Game_BenchmarkGameMode_BuildSessionSettings",
         kind: "func",
@@ -9053,6 +9159,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_FeaturedEventModeComponent_SetupStartingGrid: Binding = Binding {
+        id: "Game_FeaturedEventModeComponent_SetupStartingGrid",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Fill_PerformanceComparison: Binding = Binding {
         id: "Game_Fill_PerformanceComparison",
         kind: "func",
@@ -9623,6 +9734,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_GarageCrewInstanceLogic_StateSendCarToTrack_P3: Binding = Binding {
+        id: "Game_GarageCrewInstanceLogic_StateSendCarToTrack_P3",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_GarageCrewInstance_PlayOverlaySequence: Binding = Binding {
         id: "Game_GarageCrewInstance_PlayOverlaySequence",
         kind: "func",
@@ -9670,6 +9786,11 @@ pub mod bindings {
     };
     pub const Game_Garage_OnFadedOutInRace: Binding = Binding {
         id: "Game_Garage_OnFadedOutInRace",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Garage_ReturnVehicleToPitLaneEntry: Binding = Binding {
+        id: "Game_Garage_ReturnVehicleToPitLaneEntry",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9808,6 +9929,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_GridRundown_ShouldPlay: Binding = Binding {
+        id: "Game_GridRundown_ShouldPlay",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_GridSafetyCarShotGscs_Initialise: Binding = Binding {
         id: "Game_GridSafetyCarShotGscs_Initialise",
         kind: "func",
@@ -9815,6 +9941,31 @@ pub mod bindings {
     };
     pub const Game_GridSafetyCarShot_Initialise: Binding = Binding {
         id: "Game_GridSafetyCarShot_Initialise",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GridSetup_DriverBasedGrid: Binding = Binding {
+        id: "Game_GridSetup_DriverBasedGrid",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GridSetup_FindQualiResult: Binding = Binding {
+        id: "Game_GridSetup_FindQualiResult",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GridSetup_FindQualiResult_2: Binding = Binding {
+        id: "Game_GridSetup_FindQualiResult_2",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GridSetup_SetupStartingGrid: Binding = Binding {
+        id: "Game_GridSetup_SetupStartingGrid",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_GridSlot_PlaceVehicle: Binding = Binding {
+        id: "Game_GridSlot_PlaceVehicle",
         kind: "func",
         status: Status::Experimental,
     };
@@ -9893,6 +10044,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_InstantRace_SetupTrackList: Binding = Binding {
+        id: "Game_InstantRace_SetupTrackList",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_InviteManager_Cancel: Binding = Binding {
         id: "Game_InviteManager_Cancel",
         kind: "func",
@@ -9955,6 +10111,11 @@ pub mod bindings {
     };
     pub const Game_Load_ShopAndCustomisationLayers: Binding = Binding {
         id: "Game_Load_ShopAndCustomisationLayers",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Load_TrackDatabaseFull: Binding = Binding {
+        id: "Game_Load_TrackDatabaseFull",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10338,6 +10499,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_Network_ApplyingCustomGrid: Binding = Binding {
+        id: "Game_Network_ApplyingCustomGrid",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Network_CategoryOptionUsing: Binding = Binding {
         id: "Game_Network_CategoryOptionUsing",
         kind: "func",
@@ -10350,6 +10516,11 @@ pub mod bindings {
     };
     pub const Game_Network_SetScenario: Binding = Binding {
         id: "Game_Network_SetScenario",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Network_TrackSetMatched: Binding = Binding {
+        id: "Game_Network_TrackSetMatched",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10593,8 +10764,58 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_PitLaneSystem_Multiplayer_handlePitLaneEventMessage: Binding = Binding {
+        id: "Game_PitLaneSystem_Multiplayer_handlePitLaneEventMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_EnterControlRelease: Binding = Binding {
+        id: "Game_PitLane_EnterControlRelease",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_EnterLimitZone: Binding = Binding {
+        id: "Game_PitLane_EnterLimitZone",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_ExitControlRelease: Binding = Binding {
+        id: "Game_PitLane_ExitControlRelease",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_ExitLimitZone: Binding = Binding {
+        id: "Game_PitLane_ExitLimitZone",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_HandleEnterPitBox: Binding = Binding {
+        id: "Game_PitLane_HandleEnterPitBox",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_HoldInGarage: Binding = Binding {
+        id: "Game_PitLane_HoldInGarage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_HoldInPitBox: Binding = Binding {
+        id: "Game_PitLane_HoldInPitBox",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_IllegalPitEntry: Binding = Binding {
+        id: "Game_PitLane_IllegalPitEntry",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_PitLane_MoveDownSpline: Binding = Binding {
         id: "Game_PitLane_MoveDownSpline",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_OnGarageCrewMessage: Binding = Binding {
+        id: "Game_PitLane_OnGarageCrewMessage",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10603,13 +10824,93 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_PitLane_ResetCarToTrack: Binding = Binding {
+        id: "Game_PitLane_ResetCarToTrack",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_SetCrewReady: Binding = Binding {
+        id: "Game_PitLane_SetCrewReady",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_SetDoPracticePitStop: Binding = Binding {
+        id: "Game_PitLane_SetDoPracticePitStop",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_SetDoPracticePitStop_2: Binding = Binding {
+        id: "Game_PitLane_SetDoPracticePitStop_2",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitLane_VehicleEntering: Binding = Binding {
+        id: "Game_PitLane_VehicleEntering",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_PitLane_VehicleEnteringInternal: Binding = Binding {
         id: "Game_PitLane_VehicleEnteringInternal",
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_PitLane_VehicleExiting: Binding = Binding {
+        id: "Game_PitLane_VehicleExiting",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitStopActionObserver_SetTransitionSequence: Binding = Binding {
+        id: "Game_PitStopActionObserver_SetTransitionSequence",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitStopInstance_PlaySequence: Binding = Binding {
+        id: "Game_PitStopInstance_PlaySequence",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitStopLogic_ChangeState: Binding = Binding {
+        id: "Game_PitStopLogic_ChangeState",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitStopLogic_NeSequenceClipTargetImpl: Binding = Binding {
+        id: "Game_PitStopLogic_NeSequenceClipTargetImpl",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitStopLogic_SetTransition: Binding = Binding {
+        id: "Game_PitStopLogic_SetTransition",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitStopLogic_StateInGarage: Binding = Binding {
+        id: "Game_PitStopLogic_StateInGarage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_PitStopLogic_StateJobComplete: Binding = Binding {
+        id: "Game_PitStopLogic_StateJobComplete",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Pitlane_Multiplayer_resetToTrack: Binding = Binding {
+        id: "Game_Pitlane_Multiplayer_resetToTrack",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Pitlane_Multiplayer_teleportToGarage: Binding = Binding {
         id: "Game_Pitlane_Multiplayer_teleportToGarage",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Pitlane_Multiplayer_triggerGarageDriveOut: Binding = Binding {
+        id: "Game_Pitlane_Multiplayer_triggerGarageDriveOut",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Pitlane_Multiplayer_vehicleEnteringPitLane: Binding = Binding {
+        id: "Game_Pitlane_Multiplayer_vehicleEnteringPitLane",
         kind: "func",
         status: Status::Experimental,
     };
@@ -10898,8 +11199,28 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_Read_GridConfig: Binding = Binding {
+        id: "Game_Read_GridConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Read_QualifyingConfig: Binding = Binding {
+        id: "Game_Read_QualifyingConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Read_RendererTrackInformationSystemConfig: Binding = Binding {
+        id: "Game_Read_RendererTrackInformationSystemConfig",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_Read_StoryForcedTitleUpdateValueSetting: Binding = Binding {
         id: "Game_Read_StoryForcedTitleUpdateValueSetting",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Read_TrackInfoConfig: Binding = Binding {
+        id: "Game_Read_TrackInfoConfig",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11683,6 +12004,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_TrackSpline_FindSegmentAtDistance: Binding = Binding {
+        id: "Game_TrackSpline_FindSegmentAtDistance",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_TrackSpline_ResolveRouteEnds: Binding = Binding {
         id: "Game_TrackSpline_ResolveRouteEnds",
         kind: "func",
@@ -11748,8 +12074,23 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_UITrack_FindTrackInfoWithFallback: Binding = Binding {
+        id: "Game_UITrack_FindTrackInfoWithFallback",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_UITrack_Select_DefaultTrack: Binding = Binding {
         id: "Game_UITrack_Select_DefaultTrack",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_UI_BroadcastGridRundownViewModel: Binding = Binding {
+        id: "Game_UI_BroadcastGridRundownViewModel",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_UI_BroadcastGridRundownViewModel_2: Binding = Binding {
+        id: "Game_UI_BroadcastGridRundownViewModel_2",
         kind: "func",
         status: Status::Experimental,
     };
@@ -11788,6 +12129,21 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Game_VehiclePitlaneManager_ApplyVehicleRemotePitStatusInternal: Binding = Binding {
+        id: "Game_VehiclePitlaneManager_ApplyVehicleRemotePitStatusInternal",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehiclePlacementSystem_Connect: Binding = Binding {
+        id: "Game_VehiclePlacementSystem_Connect",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehiclePlacementSystem_HandleEncodedGridMessage: Binding = Binding {
+        id: "Game_VehiclePlacementSystem_HandleEncodedGridMessage",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Game_VehicleProgressManager_AddVehicleSync: Binding = Binding {
         id: "Game_VehicleProgressManager_AddVehicleSync",
         kind: "func",
@@ -11810,6 +12166,11 @@ pub mod bindings {
     };
     pub const Game_VehicleProgressSystem_GetLapProgress: Binding = Binding {
         id: "Game_VehicleProgressSystem_GetLapProgress",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_VehicleProgressSystem_OnVehiclePlacedOnGrid: Binding = Binding {
+        id: "Game_VehicleProgressSystem_OnVehiclePlacedOnGrid",
         kind: "func",
         status: Status::Experimental,
     };
@@ -16203,6 +16564,11 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Sess_Collect_AvailableTracks: Binding = Binding {
+        id: "Sess_Collect_AvailableTracks",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Sess_Collect_CareerSetupEntrantLists: Binding = Binding {
         id: "Sess_Collect_CareerSetupEntrantLists",
         kind: "func",
@@ -18283,8 +18649,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Trk_CareerWizardTrackSelectVm_OnCommandRaised: Binding = Binding {
+        id: "Trk_CareerWizardTrackSelectVm_OnCommandRaised",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Trk_GrandPrixTrackSelectVm_OnCommandRaised: Binding = Binding {
         id: "Trk_GrandPrixTrackSelectVm_OnCommandRaised",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Trk_SettingsSelectTrackTabVm_OnCommandRaised: Binding = Binding {
+        id: "Trk_SettingsSelectTrackTabVm_OnCommandRaised",
         kind: "func",
         status: Status::Experimental,
     };

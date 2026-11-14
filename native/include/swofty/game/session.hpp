@@ -324,6 +324,8 @@ inline constexpr address<"Sess_ChallengeRuleset_UpdateLapDelta"> Sess_ChallengeR
 using Sess_ChampionshipWonDecision_Update_t = uint32_t *(void *state, uint32_t *route);
 inline constexpr fn<"Sess_ChampionshipWonDecision_Update", Sess_ChampionshipWonDecision_Update_t> Sess_ChampionshipWonDecision_Update{}; // L2 experimental, SessionStateChampionshipWonDecision.
 inline constexpr address<"Sess_Classification_CompareEntries"> Sess_Classification_CompareEntries{}; // L2 experimental
+using Sess_Collect_AvailableTracks_t = void(void *track_data_system, const void *stat_id_bytes, void *out_ptr_vec);
+inline constexpr fn<"Sess_Collect_AvailableTracks", Sess_Collect_AvailableTracks_t> Sess_Collect_AvailableTracks{}; // L2 experimental
 inline constexpr address<"Sess_Collect_CareerSetupEntrantLists"> Sess_Collect_CareerSetupEntrantLists{}; // L2 experimental
 inline constexpr address<"Sess_Collect_EntrantsForSetupMode"> Sess_Collect_EntrantsForSetupMode{}; // L2 experimental
 inline constexpr address<"Sess_Collect_FilteredEntrants"> Sess_Collect_FilteredEntrants{}; // L2 experimental
