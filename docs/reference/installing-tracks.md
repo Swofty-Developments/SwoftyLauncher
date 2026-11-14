@@ -92,8 +92,17 @@ mod.sokol: 1 added row(s) keep these stat ids
   tracks.Track/sokol   48  kept, seeded from a profile's last build or a game session from before 1.6.10
 ```
 
+The game reads a track's `statId` as one byte, so at most 255 tracks (stock ones included) are on at once. More can be installed. Telemetry does not depend on the `statId`: an added track reports its [Swofty track id](/reference/std/telemetry#added-tracks-the-swofty-track-packet), the same on every PC.
+
 - A track the file has no id for takes the id the profile's last build gave it (`older-tracks.json`), else the first free id above the table's highest, up to 254, the highest the game reads.
-- A track that is off keeps its id. No other track takes it, so a calendar that names it never lands on a different circuit.
+- A track that is off keeps its id while any id is free. No other track takes it, so a calendar that names it never lands on a different circuit.
+- When every id up to 254 is kept for some track, a new track takes the lowest id kept for a track whose addon is off. A track whose addon is on never gives its id up. The build line names the track that lost its id:
+
+  ```text
+  stat id 37 (every id is kept; this one was tracks.Track/sokol of mod.sokol, whose addon is off)
+  ```
+
+  A saved calendar that named the track that is off shows the new track from then on. The track that is off takes a free id, or another off track's id, when it is turned on again. When every id belongs to a track that is on, the build fails with `tracks have no free statId up to 254`.
 - A kept id that a row of the database now holds moves to the next free id.
 - A career whose calendar holds a track stat id with no row loads into a crash. The crash dialog then names the track addon to turn back on.
 

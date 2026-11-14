@@ -183,7 +183,7 @@ fn registry(
         let found = timings.time("careers", || {
             careers::sync(&store.root, Some(game), None).unwrap_or_default()
         });
-        let using = found.iter().filter(|c| !c.addons.is_empty()).count();
+        let using = found.iter().filter(|c| c.uses_addons()).count();
         notes.extend(vanilla_note(using));
         return Verdict::Go;
     }

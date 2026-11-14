@@ -413,6 +413,8 @@ void netplay_home_vm(void *vm);
 void netplay_tick();
 void net_trace_setup();
 void udp_ids_setup();
+// Notes an added track's statId for the Swofty Track telemetry packet (udp_ids.cpp).
+void udp_track(int64_t stat_id, const std::string &addon, const std::string &code);
 // The test agent (native/src/core/testagent/agent.cpp): armed only by `swofty test`'s run token.
 void testagent_setup();
 void direct_start_setup();

@@ -20,14 +20,40 @@ use crate::manifest::AddonManifest;
 pub const GAME_PATH: &str = "swofty/careers/index.json";
 pub const DATA_PATH: &str = "careers/index.json";
 
-/// The `why` of an addon recorded because its database rows were on when the career was saved.
+/// The `why` older launchers gave an addon whose database rows were on in a session that
+/// saved the career. It says the addon was on, never that the save holds its rows.
 pub const ROWS_WHY: &str = "database rows in the save";
 
-/// The `why` of an addon recorded because a session of the career's save loaded one of its tracks.
+/// The `why` older launchers gave an addon whose track any session loaded before the career
+/// was saved. It says the track was driven in some mode, never that the career races it.
 pub const TRACK_WHY: &str = "a track its sessions loaded";
 
-fn holds_rows(a: &CareerAddon) -> bool {
+/// The `why` of an addon that owns the team, car or driver row the career's save slot names.
+pub const OWN_WHY: &str = "the career's team, car or driver";
+
+/// The `why` of an addon that owns the vehicle row of the career's My Team car, which the core found
+/// missing when it loaded the save.
+pub const CAR_WHY: &str = "the career's My Team car";
+
+/// The save slot's vehicle id of a My Team career is this flag and the id of its custom vehicle.
+const CUSTOM_VEHICLE: i64 = 0x4000;
+
+const VEHICLES: &str = "entrants.vehicles.vehicle";
+
+fn is_guess(a: &CareerAddon) -> bool {
     matches!(a.why.as_deref(), Some(ROWS_WHY | TRACK_WHY))
+}
+
+fn is_proven(a: &CareerAddon) -> bool {
+    matches!(a.why.as_deref(), Some(OWN_WHY | CAR_WHY))
+}
+
+fn launcher_wrote(a: &CareerAddon) -> bool {
+    is_guess(a) || is_proven(a)
+}
+
+fn label_of(c: &Career) -> &str {
+    if c.label.is_empty() { &c.career } else { &c.label }
 }
 
 #[derive(Debug, Clone, Default, PartialEq, Serialize, Deserialize)]
@@ -140,7 +166,7 @@ pub fn sync(data: &Path, game: Option<&Path>, stamp: Option<&str>) -> crate::Res
         match kept.iter_mut().find(|k| k.career == c.career) {
             Some(k) => {
                 c.profile = c.profile.or_else(|| k.profile.clone());
-                for a in k.addons.iter().filter(|a| holds_rows(a)) {
+                for a in k.addons.iter().filter(|a| launcher_wrote(a)) {
                     if !c.addons.iter().any(|o| o.id == a.id) {
                         c.addons.push(a.clone());
                     }
@@ -222,10 +248,11 @@ pub fn keep(data: &Path, game: &Path) -> crate::Result<()> {
 }
 
 /// What a career needs that profile `order` doesn't have on: one line per addon, empty when it
-/// loads in that profile.
+/// loads in that profile. An addon recorded only because it was on ([`ROWS_WHY`], [`TRACK_WHY`]) is
+/// not a need.
 pub fn missing(c: &Career, order: &[String], installed: &BTreeMap<String, AddonManifest>) -> Vec<String> {
     let mut out = Vec::new();
-    for a in &c.addons {
+    for a in c.addons.iter().filter(|a| !is_guess(a)) {
         let name = installed
             .get(&a.id)
             .map_or(a.id.clone(), |m| format!("{} ({})", m.name, a.id));
@@ -246,11 +273,6 @@ pub fn missing(c: &Career, order: &[String], installed: &BTreeMap<String, AddonM
     out
 }
 
-fn saved_ms(c: &Career) -> Option<i64> {
-    let n = |name: &str| c.extra.get(name).and_then(Value::as_i64);
-    n("last_saved").or_else(|| n("last_played").map(|s| s * 1000))
-}
-
 /// The careers of `list` in the save `profile` boots: the ones made under a profile that boots the
 /// same save (its own launcher save, or the shared Steam save), and the ones with no profile yet.
 pub fn in_save_of<'a>(list: &'a [Career], data: &Path, profile: &str) -> Vec<&'a Career> {
@@ -269,98 +291,115 @@ pub fn in_save_of<'a>(list: &'a [Career], data: &Path, profile: &str) -> Vec<&'a
         .collect()
 }
 
-/// Records on every career in the save of `profile` saved at or after `since_ms` (or with no save time) each
-/// addon of `on` that owns vehicle, engine, team, driver or head rows, since the game reads those
-/// rows when it loads the save. Returns whether any career changed.
-pub fn record_rows(
-    list: &mut [Career],
-    in_save: &dyn Fn(&Career) -> bool,
-    since_ms: i64,
-    on: &[String],
-    owners: &BTreeSet<String>,
-    installed: &BTreeMap<String, AddonManifest>,
-) -> bool {
-    let ids: Vec<&String> = on.iter().filter(|id| owners.contains(*id)).collect();
-    record(list, in_save, since_ms, &ids, ROWS_WHY, installed)
-}
-
-/// The addons whose tracks a session loaded, from the `[apply] facts` lines of its loader.log
-/// (`track <addon>/<code>`; the game's own tracks name no addon).
-pub fn session_tracks(loader_log: &str) -> BTreeSet<String> {
+/// The My Team cars the core found without a vehicle row when it loaded the save, from the
+/// `[myteam]` lines of its loader.log, as `(custom vehicle id, vehicle label)`.
+pub fn lost_cars(loader_log: &str) -> BTreeSet<(i64, String)> {
+    let between = |l: &str, from: &str, to: &str| -> Option<String> {
+        let rest = l.split_once(from)?.1;
+        Some(rest.split_once(to)?.0.to_owned())
+    };
     loader_log
         .lines()
         .filter_map(|l| {
-            let rest = l.split("[apply] facts: ").nth(1)?;
-            let track = rest.rsplit_once(", track ")?.1.trim();
-            let (addon, _) = track.split_once('/')?;
-            (addon != "game" && !addon.is_empty()).then(|| addon.to_owned())
+            let (id, label) = if l.contains("[myteam] keep: My Team car (custom vehicle ") {
+                (between(l, "(custom vehicle ", ")")?, between(l, " on '", "'")?)
+            } else if l.contains("[myteam] save: My Team vehicle base ")
+                && l.contains("is not in the game data")
+            {
+                (between(l, "(stat id ", ")")?, between(l, "uses vehicle '", "'")?)
+            } else {
+                return None;
+            };
+            Some((id.trim().parse().ok()?, label))
         })
         .collect()
 }
 
-fn record(
+/// Records on each My Team career of `in_save` whose car is one of `lost` ([`lost_cars`]) the addons
+/// that own the car's vehicle row (`owners`, by label: `row_ids::label_owners`). Returns whether any
+/// career changed.
+pub fn record_cars(
     list: &mut [Career],
     in_save: &dyn Fn(&Career) -> bool,
-    since_ms: i64,
-    ids: &[&String],
-    why: &str,
+    lost: &BTreeSet<(i64, String)>,
+    owners: &BTreeMap<String, BTreeSet<String>>,
     installed: &BTreeMap<String, AddonManifest>,
 ) -> bool {
     let mut changed = false;
-    for c in list.iter_mut() {
-        if !in_save(c) || c.is_gone() || saved_ms(c).is_some_and(|t| t < since_ms) {
+    for c in list.iter_mut().filter(|c| !c.is_gone() && c.in_slots()) {
+        if !in_save(c) {
             continue;
         }
-        for id in ids {
-            if c.addons.iter().any(|a| &a.id == *id) {
+        let Some(vehicle) = c.extra.get("vehicle_raw").and_then(Value::as_i64) else {
+            continue;
+        };
+        for (id, label) in lost {
+            if vehicle != CUSTOM_VEHICLE | *id {
                 continue;
             }
-            c.addons.push(CareerAddon {
-                id: (*id).clone(),
-                version: installed.get(*id).map(|m| m.version.to_string()),
-                need: None,
-                why: Some(why.to_owned()),
-            });
-            changed = true;
+            for addon in owners.get(label).into_iter().flatten() {
+                changed |= prove(c, addon, CAR_WHY, installed);
+            }
         }
     }
     changed
 }
 
-/// After a session of `profile` that started at `since_ms`: records the database addons that were on
-/// ([`record_rows`]) and the addons whose tracks the session loaded ([`session_tracks`]) in the
-/// data folder's career index.
-pub fn record_session(data: &Path, profile: &str, since_ms: i64, loader_log: &str) -> crate::Result<()> {
+fn prove(c: &mut Career, addon: &str, why: &str, installed: &BTreeMap<String, AddonManifest>) -> bool {
+    match c.addons.iter_mut().find(|a| a.id == addon) {
+        Some(a) if is_guess(a) => {
+            a.why = Some(why.to_owned());
+            true
+        }
+        Some(_) => false,
+        None => {
+            c.addons.push(CareerAddon {
+                id: addon.to_owned(),
+                version: installed.get(addon).map(|m| m.version.to_string()),
+                need: None,
+                why: Some(why.to_owned()),
+            });
+            true
+        }
+    }
+}
+
+/// After a session of `profile`: records in the data folder's career index the addons that own the
+/// team, car or driver row of each career ([`settle_rows`], with the stock maximum ids `stock_max`
+/// gives) and the addons whose My Team cars the session's loader.log names as lost ([`record_cars`]).
+pub fn record_session(
+    data: &Path,
+    profile: &str,
+    loader_log: &str,
+    stock_max: impl FnOnce() -> BTreeMap<String, i64>,
+) -> crate::Result<()> {
     let mut list = read(&data_path(data));
     if list.is_empty() {
         return Ok(());
     }
-    let store = crate::store::Store::new(data);
-    let (Ok(p), Ok(installed)) = (store.profile(profile), store.addons()) else {
-        return Ok(());
-    };
-    let Ok(plan) = crate::resolver::resolve(&p, &installed) else {
-        return Ok(());
-    };
-    let owners = crate::row_ids::save_owners(data);
+    let installed = crate::store::Store::new(data).addons().unwrap_or_default();
     let ids: BTreeSet<String> = in_save_of(&list, data, profile)
         .into_iter()
         .map(|c| c.career.clone())
         .collect();
     let in_save = |c: &Career| ids.contains(&c.career);
-    let tracks: Vec<String> = session_tracks(loader_log)
-        .into_iter()
-        .filter(|id| installed.contains_key(id))
-        .collect();
-    let mut changed = record_rows(&mut list, &in_save, since_ms, &plan.order, &owners, &installed);
-    changed |= record(
+    let stock_max = stock_max_for(&list, stock_max);
+    let mut changed = settle_rows(
         &mut list,
-        &in_save,
-        since_ms,
-        &tracks.iter().collect::<Vec<_>>(),
-        TRACK_WHY,
+        &crate::row_ids::id_owners(data),
+        &stock_max,
         &installed,
     );
+    let lost = lost_cars(loader_log);
+    if !lost.is_empty() {
+        changed |= record_cars(
+            &mut list,
+            &in_save,
+            &lost,
+            &crate::row_ids::label_owners(data, VEHICLES),
+            &installed,
+        );
+    }
     if changed {
         crate::write_json_shared(
             &data_path(data),
@@ -394,12 +433,11 @@ fn added_ids(c: &Career, stock_max: &BTreeMap<String, i64>) -> Vec<(&'static str
 }
 
 fn records_rows(c: &Career) -> bool {
-    c.addons.iter().any(|a| a.why.as_deref() == Some(ROWS_WHY))
+    c.addons.iter().any(|a| a.why.as_deref() == Some(OWN_WHY))
 }
 
 /// The stock maximum ids `read` gives, read only when a career of `list` needs them: one that is not
-/// deleted, records no database-row addons and holds a team, vehicle or driver id that could be an
-/// addon's. Empty otherwise.
+/// deleted and holds a team, vehicle or driver id that could be an addon's. Empty otherwise.
 pub fn stock_max_for(list: &[Career], read: impl FnOnce() -> BTreeMap<String, i64>) -> BTreeMap<String, i64> {
     let could_be_added = |c: &Career| {
         SAVE_IDS
@@ -407,50 +445,55 @@ pub fn stock_max_for(list: &[Career], read: impl FnOnce() -> BTreeMap<String, i6
             .filter_map(|(field, _)| c.extra.get(*field).and_then(Value::as_i64))
             .any(|id| id <= PLACEHOLDER_IDS)
     };
-    if list
-        .iter()
-        .any(|c| !c.is_gone() && !records_rows(c) && could_be_added(c))
-    {
+    if list.iter().any(|c| !c.is_gone() && could_be_added(c)) {
         read()
     } else {
         BTreeMap::new()
     }
 }
 
-/// Careers last played before the launcher recorded database addons hold no owners. For each such
-/// career whose save entry holds team, vehicle or driver ids above the stock rows, records the
-/// addons the install's ids name as the owners of those rows. With no `stock_max` nothing counts
-/// as added, so nothing is recorded. Returns whether any career changed.
-pub fn backfill_rows(
+/// Gives each career the addons that own the team, vehicle or driver row its save slot names: an id
+/// above the stock rows (`stock_max`, see `row_ids::stock_max_ids`) that the install's ids give an
+/// addon (`owners`, see `row_ids::id_owners`). An addon recorded that way before and no longer the
+/// owner of one of the career's rows is taken off. With no `stock_max` nothing can be told apart from
+/// a stock row, so nothing changes. Returns whether any career changed.
+pub fn settle_rows(
     list: &mut [Career],
     owners: &BTreeMap<(String, i64), BTreeSet<String>>,
     stock_max: &BTreeMap<String, i64>,
     installed: &BTreeMap<String, AddonManifest>,
 ) -> bool {
+    if stock_max.is_empty() {
+        return false;
+    }
     let mut changed = false;
-    for c in list.iter_mut().filter(|c| !c.is_gone() && !records_rows(c)) {
-        for (table, id) in added_ids(c, stock_max) {
-            let Some(found) = owners.get(&(table.to_owned(), id)) else {
-                continue;
-            };
-            for addon in found {
-                if c.addons.iter().any(|a| &a.id == addon) {
-                    continue;
+    for c in list.iter_mut().filter(|c| !c.is_gone()) {
+        let found: BTreeSet<String> = added_ids(c, stock_max)
+            .into_iter()
+            .filter_map(|(table, id)| owners.get(&(table.to_owned(), id)))
+            .flatten()
+            .cloned()
+            .collect();
+        let before = c.addons.len();
+        c.addons
+            .retain(|a| a.why.as_deref() != Some(OWN_WHY) || found.contains(&a.id));
+        changed |= c.addons.len() != before;
+        for addon in &found {
+            match c.addons.iter_mut().find(|a| &a.id == addon) {
+                Some(a) if a.why.as_deref() == Some(OWN_WHY) => {}
+                Some(a) if is_guess(a) => {
+                    a.why = Some(OWN_WHY.to_owned());
+                    changed = true;
                 }
-                c.addons.push(CareerAddon {
-                    id: addon.clone(),
-                    version: installed.get(addon).map(|m| m.version.to_string()),
-                    need: None,
-                    why: Some(ROWS_WHY.to_owned()),
-                });
-                changed = true;
+                Some(_) => {}
+                None => changed |= prove(c, addon, OWN_WHY, installed),
             }
         }
     }
     changed
 }
 
-/// The Play stop for careers with ids above the stock rows and no owner [`backfill_rows`] could name:
+/// The Play stop for careers with ids above the stock rows and no owner [`settle_rows`] could name:
 /// their addon isn't installed or isn't one the install knows. Names the installed database addons
 /// that are off as the ones to try. `None` when every career names its owners.
 pub fn unowned_line(
@@ -505,9 +548,10 @@ pub fn unowned_line(
     ))
 }
 
-/// The Play stop for careers whose saved database rows come from an addon that is off or not
-/// installed in profile `order`: the game reads every career in the save when it starts, so it
-/// crashes whichever career is picked. `None` when no such addon is missing.
+/// The Play stop for careers whose own rows come from an addon that is off or not installed in
+/// profile `order`: the career's team, car or driver ([`OWN_WHY`]) or its My Team car ([`CAR_WHY`]).
+/// An addon recorded only because it was on, a career gone from the save and a record no save slot
+/// backs raise nothing. `None` when no such addon is missing.
 pub fn stop_line(
     list: &[Career],
     order: &[String],
@@ -515,11 +559,11 @@ pub fn stop_line(
 ) -> Option<String> {
     let mut addons: BTreeMap<&str, String> = BTreeMap::new();
     let mut careers: Vec<&str> = Vec::new();
-    for c in list.iter().filter(|c| !c.is_gone()) {
+    for c in list.iter().filter(|c| !c.is_gone() && c.in_slots()) {
         let gone: Vec<&CareerAddon> = c
             .addons
             .iter()
-            .filter(|a| holds_rows(a))
+            .filter(|a| is_proven(a))
             .filter(|a| !order.contains(&a.id) || !installed.contains_key(&a.id))
             .collect();
         if gone.is_empty() {
@@ -534,7 +578,7 @@ pub fn stop_line(
             };
             addons.insert(&a.id, format!("{name} ({state})"));
         }
-        careers.push(if c.label.is_empty() { &c.career } else { &c.label });
+        careers.push(label_of(c));
     }
     if addons.is_empty() {
         return None;
@@ -547,23 +591,30 @@ pub fn stop_line(
     } else {
         String::new()
     };
+    let it = if addons.len() == 1 { "it" } else { "them" };
     Some(format!(
-        "The game won't start with {names}: {} in your save use its database rows ({shown}{more}). \
-         Turn {} back on and press Play, or restore a save from before in Profiles > Saves.",
+        "{} in your save {} a team, car or driver from {names} ({shown}{more}). Without {it}, {} may not \
+         load, or may load with a stock car in its place. Turn {it} back on and press Play, or restore a \
+         save from before in Profiles > Saves.",
         match careers.len() {
             1 => "1 career".to_owned(),
             n => format!("{n} careers"),
         },
-        if addons.len() == 1 { "it" } else { "them" }
+        if careers.len() == 1 { "uses" } else { "use" },
+        if careers.len() == 1 {
+            "that career"
+        } else {
+            "those careers"
+        },
     ))
 }
 
-/// The careers in `list` that list `addon` among the addons they need and are still in the save:
-/// the careers turning `addon` off would stop from loading.
+/// The careers in `list` that need `addon` and are still in the save: the careers turning `addon` off
+/// would stop from loading as they were saved. An addon recorded only because it was on is not needed.
 pub fn needing<'a>(list: &'a [Career], addon: &str) -> Vec<&'a Career> {
     list.iter()
-        .filter(|c| !c.is_gone())
-        .filter(|c| c.addons.iter().any(|a| a.id == addon))
+        .filter(|c| !c.is_gone() && c.in_slots())
+        .filter(|c| c.addons.iter().any(|a| a.id == addon && !is_guess(a)))
         .collect()
 }
 
@@ -576,7 +627,7 @@ pub fn play_line(
 ) -> Option<String> {
     let short: Vec<(&Career, Vec<String>)> = list
         .iter()
-        .filter(|c| !c.is_gone())
+        .filter(|c| !c.is_gone() && c.in_slots())
         .map(|c| (c, missing(c, order, installed)))
         .filter(|(_, m)| !m.is_empty())
         .collect();
@@ -615,6 +666,18 @@ impl Career {
     /// Whether the career is gone from the save: missing from the last profile load or deleted in game.
     pub fn is_gone(&self) -> bool {
         matches!(self.status(), "missing" | "deleted")
+    }
+
+    /// Whether a save slot backs the record: the core found the career in the game's save slots.
+    /// A record with no slot is one an older core kept under another id, or a career never saved.
+    pub fn in_slots(&self) -> bool {
+        self.field("slot").is_some()
+    }
+
+    /// Whether the career is in the save and needs an addon: one recorded only because it was on
+    /// doesn't count.
+    pub fn uses_addons(&self) -> bool {
+        !self.is_gone() && self.in_slots() && self.addons.iter().any(|a| !is_guess(a))
     }
 
     /// `present` unless the core marked the career missing from the last profile load.
@@ -710,7 +773,7 @@ mod tests {
     fn says_which_careers_an_addon_would_drop_and_one_play_line() {
         let record = |id: &str, status: &str, addon: &str| {
             format!(
-                r#"{{"career":"{id}","label":"L {id}","status":"{status}","mode":"driver_career","addons":[{{"id":"{addon}"}}]}}"#
+                r#"{{"career":"{id}","label":"L {id}","status":"{status}","slot":"{id}","mode":"driver_career","addons":[{{"id":"{addon}"}}]}}"#
             )
         };
         let list = parse(&format!(
@@ -752,13 +815,14 @@ mod tests {
     fn careers_deleted_in_game_are_left_out_of_the_play_line_and_stop_line() {
         let record = |id: &str, status: &str| {
             format!(
-                r#"{{"career":"{id}","label":"L {id}","status":"{status}","addons":[{{"id":"x.one","why":"{ROWS_WHY}"}}]}}"#
+                r#"{{"career":"{id}","label":"L {id}","status":"{status}","slot":"{id}","addons":[{{"id":"x.one","why":"{OWN_WHY}"}}]}}"#
             )
         };
         let installed = installed_of(&["x.one"]);
         let list_of = |status: &str| parse(&format!("[{}]", record("a", status)));
 
         assert!(play_line(&list_of("present"), &[], &installed).is_some());
+        assert!(stop_line(&list_of("present"), &[], &installed).is_some());
         assert!(needing(&list_of("present"), "x.one").len() == 1);
 
         let deleted = list_of("deleted");
@@ -773,14 +837,18 @@ mod tests {
     }
 
     #[test]
-    fn deleted_careers_do_not_record_addons() {
+    fn a_record_no_save_slot_backs_raises_nothing() {
         let installed = installed_of(&["x.one"]);
-        let mut list =
-            parse(r#"[{"career":"a","profile":"p","status":"deleted","last_saved":2000,"addons":[]}]"#);
-        let ids = ["x.one".to_owned()];
-        let ids: Vec<&String> = ids.iter().collect();
-        assert!(!record(&mut list, &|_| true, 0, &ids, "why", &installed));
-        assert!(list[0].addons.is_empty());
+        let list = parse(&format!(
+            r#"[{{"career":"f1_career_2026","label":"f1_career_2026","status":"present","mode":"driver_career",
+                 "addons":[{{"id":"x.one","why":"{OWN_WHY}"}},{{"id":"x.two","why":"career content x"}}]}}]"#
+        ));
+        assert!(!list[0].in_slots());
+        assert!(!list[0].uses_addons());
+        assert_eq!(stop_line(&list, &[], &installed), None);
+        assert_eq!(play_line(&list, &[], &installed), None);
+        assert!(needing(&list, "x.one").is_empty());
+        assert!(needing(&list, "x.two").is_empty());
     }
 
     fn installed_of(ids: &[&str]) -> BTreeMap<String, AddonManifest> {
@@ -791,50 +859,62 @@ mod tests {
 
     fn my_team(saved: i64) -> Vec<Career> {
         parse(&format!(
-            r#"[{{"career":"mt-1","profile":"p","label":"My Team","mode":"my_team","last_saved":{saved},"addons":[]}},
-               {{"career":"mt-2","profile":"other","label":"Elsewhere","last_saved":{saved},"addons":[]}},
-               {{"career":"mt-3","profile":"p","label":"Old","status":"missing","last_saved":{saved},"addons":[]}}]"#
+            r#"[{{"career":"mt-1","profile":"p","label":"My Team","mode":"my_team","slot":"1","vehicle_raw":16387,"last_saved":{saved},"addons":[]}},
+               {{"career":"mt-2","profile":"other","label":"Elsewhere","mode":"my_team","slot":"2","vehicle_raw":16387,"last_saved":{saved},"addons":[]}},
+               {{"career":"mt-3","profile":"p","label":"Old","mode":"my_team","slot":"3","vehicle_raw":16387,"status":"missing","last_saved":{saved},"addons":[]}},
+               {{"career":"mt-4","profile":"p","label":"Stock engine","mode":"my_team","slot":"4","vehicle_raw":16388,"last_saved":{saved},"addons":[]}}]"#
         ))
     }
 
+    const LOST: &str = "[myteam] keep: My Team car (custom vehicle 3) on 'myteam_x_porsche' (engine 12, base car 3fff0000) has no vehicle row (its addon is off or gone); it loads as the stock 'myteam_mercedes'\n\
+                        [myteam] save: My Team vehicle base 0 (stat id 9) uses vehicle 'myteam_x_audi', which is not in the game data (no entrants.vehicles row)\n\
+                        [myteam] save: My Team vehicle base 1 (stat id 4) uses vehicle 'myteam_mercedes', whose row index reads as missing; it is not a known addon's vehicle\n\
+                        [myteam] vehicle keep armed\n";
+
+    fn car_owners() -> BTreeMap<String, BTreeSet<String>> {
+        [
+            (
+                "myteam_x_porsche".to_owned(),
+                BTreeSet::from(["x.engines".to_owned()]),
+            ),
+            (
+                "myteam_x_audi".to_owned(),
+                BTreeSet::from(["x.engines".to_owned()]),
+            ),
+        ]
+        .into()
+    }
+
     #[test]
-    fn records_the_row_owning_addons_that_were_on_when_a_career_was_saved() {
-        let installed = installed_of(&["x.engines", "x.skin", "x.liveries"]);
-        let owners: BTreeSet<String> = ["x.engines".to_owned(), "x.liveries".to_owned()].into();
-        let on: Vec<String> = vec!["x.engines".into(), "x.skin".into()];
+    fn records_the_addon_of_a_my_team_car_the_core_found_without_its_row() {
+        let lost = lost_cars(LOST);
+        assert_eq!(
+            lost.iter().cloned().collect::<Vec<_>>(),
+            [
+                (3, "myteam_x_porsche".to_owned()),
+                (9, "myteam_x_audi".to_owned())
+            ]
+        );
+        let installed = installed_of(&["x.engines"]);
         let mut list = my_team(2_000);
-        assert!(record_rows(
-            &mut list,
-            &|c| c.profile.as_deref() == Some("p"),
-            1_000,
-            &on,
-            &owners,
-            &installed
-        ));
+        let mine = |c: &Career| c.profile.as_deref() == Some("p");
+        assert!(record_cars(&mut list, &mine, &lost, &car_owners(), &installed));
         assert_eq!(list[0].addons.len(), 1);
         assert_eq!(list[0].addons[0].id, "x.engines");
         assert_eq!(list[0].addons[0].version.as_deref(), Some("1.0.0"));
-        assert_eq!(list[0].addons[0].why.as_deref(), Some(ROWS_WHY));
+        assert_eq!(list[0].addons[0].why.as_deref(), Some(CAR_WHY));
         assert!(list[1].addons.is_empty(), "another profile's career");
         assert!(list[2].addons.is_empty(), "a career gone from the save");
-        assert!(!record_rows(
-            &mut list,
-            &|c| c.profile.as_deref() == Some("p"),
-            1_000,
-            &on,
-            &owners,
+        assert!(list[3].addons.is_empty(), "a My Team career on another car");
+        assert!(!record_cars(&mut list, &mine, &lost, &car_owners(), &installed));
+        let mut unowned = my_team(2_000);
+        assert!(!record_cars(
+            &mut unowned,
+            &mine,
+            &lost,
+            &BTreeMap::new(),
             &installed
         ));
-        let mut older = my_team(500);
-        assert!(!record_rows(
-            &mut older,
-            &|c| c.profile.as_deref() == Some("p"),
-            1_000,
-            &on,
-            &owners,
-            &installed
-        ));
-        assert!(older[0].addons.is_empty());
     }
 
     #[test]
@@ -903,7 +983,7 @@ mod tests {
     fn classic_careers() -> Vec<Career> {
         parse(&format!(
             r#"[{{"career":"dc-2019","profile":"default","label":"Driver Career 2019","addons":[
-                   {{"id":"swofty.classic-seasons","version":"1.0.0","why":"{ROWS_WHY}"}}]}},
+                   {{"id":"swofty.classic-seasons","version":"1.0.0","why":"{OWN_WHY}"}}],"slot":"19"}},
                 {{"career":"dc-hi","profile":"hi","label":"Driver Career","addons":[]}}]"#
         ))
     }
@@ -954,27 +1034,27 @@ mod tests {
     }
 
     #[test]
-    fn stops_play_when_a_saved_rows_addon_is_off_or_gone_in_any_career() {
+    fn stops_play_when_the_addon_of_a_careers_my_team_car_is_off_or_gone() {
         let installed = installed_of(&["x.engines"]);
-        let owners: BTreeSet<String> = ["x.engines".to_owned()].into();
         let mut list = my_team(2_000);
         let on: Vec<String> = vec!["x.engines".into()];
-        record_rows(
+        record_cars(
             &mut list,
             &|c| c.profile.as_deref() == Some("p"),
-            0,
-            &on,
-            &owners,
+            &lost_cars(LOST),
+            &car_owners(),
             &installed,
         );
         assert_eq!(stop_line(&list, &on, &installed), None);
         let stop = stop_line(&list, &[], &installed).unwrap();
-        assert!(stop.contains("N x.engines (off)"), "{stop}");
-        assert!(
-            stop.contains("1 career in your save use its database rows (My Team)"),
-            "{stop}"
+        assert_eq!(
+            stop,
+            "1 career in your save uses a team, car or driver from N x.engines (off) (My Team). Without it, \
+             that career may not load, or may load with a stock car in its place. Turn it back on and press \
+             Play, or restore a save from before in Profiles > Saves."
         );
-        assert!(stop.contains("Turn it back on"), "{stop}");
+        assert!(!stop.contains("won't start"), "{stop}");
+        assert_eq!(needing(&list, "x.engines").len(), 1);
         let gone = stop_line(&list, &on, &BTreeMap::new()).unwrap();
         assert!(gone.contains("x.engines (not installed)"), "{gone}");
         list[0]
@@ -983,13 +1063,53 @@ mod tests {
         assert_eq!(stop_line(&list, &[], &installed), None);
     }
 
+    #[test]
+    fn an_addon_that_was_only_on_when_a_career_was_saved_raises_nothing() {
+        let installed = installed_of(&["x.engines", "track.nyc"]);
+        let list = parse(&format!(
+            r#"[{{"career":"driver_career:a","label":"Driver Career","slot":"a","status":"present",
+                 "driver_raw":3,"team_raw":7,"vehicle_raw":9,"addons":[
+                   {{"id":"x.engines","why":"{ROWS_WHY}"}},
+                   {{"id":"track.nyc","why":"{TRACK_WHY}"}},
+                   {{"id":"track.gone","why":"{TRACK_WHY}"}}]}}]"#
+        ));
+        assert_eq!(stop_line(&list, &[], &installed), None);
+        assert_eq!(play_line(&list, &[], &installed), None);
+        assert!(missing(&list[0], &[], &installed).is_empty());
+        assert!(!list[0].uses_addons());
+        for addon in ["x.engines", "track.nyc", "track.gone"] {
+            assert!(needing(&list, addon).is_empty(), "{addon}");
+        }
+    }
+
+    #[test]
+    fn a_track_in_a_careers_calendar_is_needed_and_one_it_never_races_is_not() {
+        let installed = installed_of(&["mod.sochi", "track.nyc"]);
+        let list = parse(&format!(
+            r#"[{{"career":"driver_career:a","label":"Progressive","slot":"a","status":"present","addons":[
+                   {{"id":"mod.sochi","why":"calendar round 4: track mod.sochi/sochi"}},
+                   {{"id":"track.nyc","why":"{TRACK_WHY}"}}]}}]"#
+        ));
+        let both: Vec<String> = vec!["mod.sochi".into(), "track.nyc".into()];
+        assert_eq!(play_line(&list, &both, &installed), None);
+        assert_eq!(play_line(&list, &both[..1], &installed), None);
+        assert!(needing(&list, "track.nyc").is_empty());
+        assert_eq!(
+            play_line(&list, &both[1..], &installed).as_deref(),
+            Some(
+                "1 career won't load in this profile: Progressive needs N mod.sochi (mod.sochi), which is off"
+            )
+        );
+        assert_eq!(needing(&list, "mod.sochi").len(), 1);
+    }
+
     fn old_careers() -> Vec<Career> {
         parse(
             r#"{"version":1,"careers":[
-              {"career":"driver_career:a","label":"","addons":[],"driver_raw":3,"team_raw":480,"vehicle_raw":217,"source":"slots","status":"present"},
-              {"career":"driver_career:b","label":"","addons":[],"driver_raw":16388,"team_raw":501,"vehicle_raw":510,"source":"slots","status":"present"},
-              {"career":"driver_career:c","label":"","addons":[],"driver_raw":102,"team_raw":155,"vehicle_raw":161,"source":"slots","status":"present"},
-              {"career":"my_team:d","label":"","addons":[],"driver_raw":3,"team_raw":16387,"vehicle_raw":16390,"source":"slots","status":"present"},
+              {"career":"driver_career:a","label":"","addons":[],"driver_raw":3,"team_raw":480,"vehicle_raw":217,"source":"slots","slot":"s","status":"present"},
+              {"career":"driver_career:b","label":"","addons":[],"driver_raw":16388,"team_raw":501,"vehicle_raw":510,"source":"slots","slot":"s","status":"present"},
+              {"career":"driver_career:c","label":"","addons":[],"driver_raw":102,"team_raw":155,"vehicle_raw":161,"source":"slots","slot":"s","status":"present"},
+              {"career":"my_team:d","label":"","addons":[],"driver_raw":3,"team_raw":16387,"vehicle_raw":16390,"source":"slots","slot":"s","status":"present"},
               {"career":"driver_career:e","label":"","addons":[],"driver_raw":3,"team_raw":501,"vehicle_raw":510,"source":"slots","status":"deleted"}]}"#,
         )
     }
@@ -1014,7 +1134,7 @@ mod tests {
         )]
         .into();
         let installed = installed_of(&["x.season"]);
-        assert!(!backfill_rows(&mut list, &owners, &stock_max(), &installed));
+        assert!(!settle_rows(&mut list, &owners, &stock_max(), &installed));
         assert!(list[0].addons.is_empty());
         let off: BTreeSet<String> = ["x.season".to_owned()].into();
         assert_eq!(unowned_line(&list, &[], &installed, &off, &stock_max()), None);
@@ -1035,16 +1155,16 @@ mod tests {
     }
 
     #[test]
-    fn backfills_the_owners_of_added_ids_in_careers_with_none_recorded() {
+    fn records_the_owners_of_the_added_ids_a_career_holds() {
         let installed = installed_of(&["x.season"]);
         let mut list = old_careers();
-        assert!(backfill_rows(&mut list, &id_owners(), &stock_max(), &installed));
+        assert!(settle_rows(&mut list, &id_owners(), &stock_max(), &installed));
         assert_eq!(list[1].addons.len(), 1);
         assert_eq!(list[1].addons[0].id, "x.season");
-        assert_eq!(list[1].addons[0].why.as_deref(), Some(ROWS_WHY));
+        assert_eq!(list[1].addons[0].why.as_deref(), Some(OWN_WHY));
         assert!(list[0].addons.is_empty() && list[2].addons.is_empty() && list[3].addons.is_empty());
         assert!(list[4].addons.is_empty());
-        assert!(!backfill_rows(&mut list, &id_owners(), &stock_max(), &installed));
+        assert!(!settle_rows(&mut list, &id_owners(), &stock_max(), &installed));
         let stop = stop_line(&list, &[], &installed).unwrap();
         assert!(stop.contains("x.season"), "{stop}");
         assert_eq!(stop_line(&list, &["x.season".to_owned()], &installed), None);
@@ -1057,21 +1177,10 @@ mod tests {
             reads.set(reads.get() + 1);
             stock_max()
         };
-        let mut list = old_careers();
-        for c in list.iter_mut() {
-            c.addons.push(CareerAddon {
-                id: "x.season".into(),
-                why: Some(ROWS_WHY.into()),
-                ..CareerAddon::default()
-            });
-        }
-        assert!(stock_max_for(&list, read).is_empty());
-        assert_eq!(reads.get(), 0);
         assert!(stock_max_for(&[], read).is_empty());
         let mut gone = old_careers();
         gone.retain(Career::is_gone);
         assert!(stock_max_for(&gone, read).is_empty());
-        assert_eq!(reads.get(), 0);
         let mut sentinel = parse(
             r#"[{"career":"my_team:s","addons":[],"driver_raw":16384,"team_raw":16387,"vehicle_raw":16390,"status":"present"}]"#,
         );
@@ -1083,20 +1192,43 @@ mod tests {
     }
 
     #[test]
-    fn a_career_with_recorded_rows_is_not_backfilled() {
+    fn an_addon_that_was_on_is_needed_only_when_it_owns_the_careers_rows() {
+        let installed = installed_of(&["x.season", "x.recorded"]);
         let mut list = old_careers();
-        list[1].addons.push(CareerAddon {
-            id: "x.recorded".into(),
-            why: Some(ROWS_WHY.into()),
-            ..CareerAddon::default()
-        });
-        assert!(!backfill_rows(
+        for c in list.iter_mut() {
+            for id in ["x.season", "x.recorded"] {
+                c.addons.push(CareerAddon {
+                    id: id.into(),
+                    why: Some(ROWS_WHY.into()),
+                    ..CareerAddon::default()
+                });
+            }
+        }
+        assert_eq!(stop_line(&list, &[], &installed), None);
+        assert!(!settle_rows(
             &mut list,
             &id_owners(),
-            &stock_max(),
-            &installed_of(&["x.season"])
+            &BTreeMap::new(),
+            &installed
         ));
-        assert_eq!(list[1].addons.len(), 1);
+        assert!(settle_rows(&mut list, &id_owners(), &stock_max(), &installed));
+        let why = |c: &Career, id: &str| c.addons.iter().find(|a| a.id == id).and_then(|a| a.why.clone());
+        assert_eq!(why(&list[1], "x.season").as_deref(), Some(OWN_WHY));
+        assert_eq!(why(&list[1], "x.recorded").as_deref(), Some(ROWS_WHY));
+        assert_eq!(why(&list[0], "x.season").as_deref(), Some(ROWS_WHY));
+        let stop = stop_line(&list, &[], &installed).unwrap();
+        assert!(
+            stop.contains("N x.season (off)") && !stop.contains("x.recorded"),
+            "{stop}"
+        );
+        assert!(stop.contains("(driver_career:b)"), "{stop}");
+        assert_eq!(needing(&list, "x.season").len(), 1);
+        assert!(needing(&list, "x.recorded").is_empty());
+        list[1].extra.insert("team_raw".into(), 7.into());
+        list[1].extra.insert("vehicle_raw".into(), 9.into());
+        assert!(settle_rows(&mut list, &id_owners(), &stock_max(), &installed));
+        assert_eq!(why(&list[1], "x.season"), None);
+        assert_eq!(stop_line(&list, &[], &installed), None);
     }
 
     #[test]
@@ -1104,7 +1236,7 @@ mod tests {
         let installed = installed_of(&["x.season"]);
         let owners: BTreeSet<String> = ["x.season".to_owned()].into();
         let mut list = old_careers();
-        backfill_rows(&mut list, &id_owners(), &stock_max(), &installed);
+        settle_rows(&mut list, &id_owners(), &stock_max(), &installed);
         let line = unowned_line(&list, &[], &installed, &owners, &stock_max()).unwrap();
         assert!(
             line.contains(
@@ -1118,42 +1250,6 @@ mod tests {
             None
         );
         assert_eq!(unowned_line(&[], &[], &installed, &owners, &stock_max()), None);
-    }
-
-    #[test]
-    fn a_career_records_only_the_track_addons_its_sessions_loaded() {
-        let log = "[apply] facts: mode grand_prix, session race, track track.mza26/mza26\n\
-                   [apply] facts: mode grand_prix, session race, track game/Bahrain\n\
-                   [apply] facts: mode unknown, session none, track none\n";
-        assert_eq!(
-            session_tracks(log).into_iter().collect::<Vec<_>>(),
-            ["track.mza26"]
-        );
-        let installed = installed_of(&["track.mza26", "track.other"]);
-        let mut list = parse(
-            r#"[{"career":"gp-1","profile":"p","label":"Grand Prix","mode":"grand_prix","last_saved":2000,"addons":[]}]"#,
-        );
-        let tracks: Vec<String> = session_tracks(log).into_iter().collect();
-        let ids: Vec<&String> = tracks.iter().collect();
-        assert!(record(
-            &mut list,
-            &|c| c.profile.as_deref() == Some("p"),
-            0,
-            &ids,
-            TRACK_WHY,
-            &installed
-        ));
-        assert_eq!(list[0].addons.len(), 1);
-        assert_eq!(list[0].addons[0].id, "track.mza26");
-        let on: Vec<String> = vec!["track.mza26".into()];
-        assert_eq!(stop_line(&list, &on, &installed), None);
-        let unrelated: Vec<String> = vec!["track.mza26".into(), "track.other".into()];
-        assert_eq!(stop_line(&list, &unrelated, &installed), None);
-        let off = stop_line(&list, &["track.other".into()], &installed).unwrap();
-        assert!(off.contains("N track.mza26 (off)"), "{off}");
-        assert!(off.contains("(Grand Prix)"), "{off}");
-        let gone = stop_line(&list, &on, &BTreeMap::new()).unwrap();
-        assert!(gone.contains("track.mza26 (not installed)"), "{gone}");
     }
 
     #[test]

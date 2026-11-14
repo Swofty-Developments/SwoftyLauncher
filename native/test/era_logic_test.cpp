@@ -70,6 +70,36 @@ static void drs_swap_tests()
            "GameSetupMode +0x1e0 DRS group and +0xd8 name holders, text at holder +0x10 (re/db structs/GameSetupMode.h)");
 }
 
+static void warmer_swap_tests()
+{
+    era::WarmerSwaps swaps;
+    Mode a("f1_2024"), b("f1_2024");
+    a.mem[era::MODE_TYRE_WARMERS] = 1;
+    b.mem[era::MODE_TYRE_WARMERS] = 1;
+    swaps.swap(a.mem, false);
+    swaps.swap(b.mem, false);
+    expect(a.mem[era::MODE_TYRE_WARMERS] == 0 && b.mem[era::MODE_TYRE_WARMERS] == 0 && swaps.active() == 2,
+           "a press writes the box's tyre warmer rule into every host mode");
+    swaps.swap(a.mem, true);
+    expect(a.mem[era::MODE_TYRE_WARMERS] == 1 && swaps.active() == 2, "a second press without a put back keeps the game's value once");
+    expect(swaps.put_back() == 2 && a.mem[era::MODE_TYRE_WARMERS] == 1 && b.mem[era::MODE_TYRE_WARMERS] == 1 && swaps.active() == 0,
+           "put back restores the game's value in every swapped mode");
+
+    a.mem[era::MODE_TYRE_WARMERS] = 0;
+    swaps.swap(a.mem, true);
+    a.mem[era::MODE_TYRE_WARMERS] = 0;                               // the game reloaded the mode since the press
+    expect(swaps.put_back() == 0 && a.mem[era::MODE_TYRE_WARMERS] == 0, "put back leaves a byte the game changed since the swap");
+
+    swaps.swap(a.mem, true);
+    a.mem[era::MODE_TYRE_WARMERS] = 7;
+    expect(swaps.forget() == 1 && swaps.active() == 0 && a.mem[era::MODE_TYRE_WARMERS] == 7 && swaps.put_back() == 0,
+           "forget drops the swaps and writes nothing into the modes");
+    swaps.swap(nullptr, true);
+    expect(swaps.active() == 0, "no mode: nothing is swapped");
+    expect(era::MODE_TYRE_WARMERS == 0x1c8 && era::MODE_TYRE_WARMERS < era::MODE_DRS_GROUP,
+           "GameSetupMode +0x1c8 has_tyre_warmers (re/db structs/GameSetupMode.h)");
+}
+
 static void setup_guard_tests()
 {
     era::DrsSwaps swaps;
@@ -1014,6 +1044,7 @@ int main()
            "djb2 of addon_select_pressed, select_pressed and addon_tiles");
 
     drs_swap_tests();
+    warmer_swap_tests();
     continue_tests();
     setup_guard_tests();
     grid_limit_tests();

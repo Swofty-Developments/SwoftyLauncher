@@ -137,11 +137,13 @@ pub struct StatIdCeiling {
     pub from: Option<i64>,
 }
 
-/// The record that lists the virtual entrant lists (comma-separated labels) for the build's settle step.
+/// The record that lists the virtual entrant lists for the build's settle step: comma-separated labels, each
+/// followed by `=<host>` when the list has a host other than the era box one (`career`).
 pub const VIRTUAL_LISTS: &str = "swofty.virtual_entrant_lists";
 const VIRTUAL_LISTS_TAG: u8 = 4;
 
-fn virtual_lists(db: &Db) -> Vec<String> {
+/// The marker's entries as written (`label` or `label=host`).
+fn virtual_entries(db: &Db) -> Vec<String> {
     db.text(fnv1a64(VIRTUAL_LISTS))
         .map(|t| {
             t.split(',')
@@ -151,6 +153,13 @@ fn virtual_lists(db: &Db) -> Vec<String> {
                 .collect()
         })
         .unwrap_or_default()
+}
+
+fn virtual_lists(db: &Db) -> Vec<String> {
+    virtual_entries(db)
+        .into_iter()
+        .map(|e| e.split_once('=').map_or(e.clone(), |(l, _)| l.to_owned()))
+        .collect()
 }
 
 const STAT_ID_CEILINGS: &[(&str, &str, StatIdCeiling)] = &[
@@ -354,9 +363,13 @@ pub enum DbOp {
     /// Marks the entrant list labelled `list` as virtual: the build moves its row above the table's count, so the
     /// game loads no list object for it and it takes no stat id and no entrant setup mode slot. The core reads it
     /// into `swofty_virtual_list` when a box naming it is pressed. Put it before the `add-row` that adds the list:
-    /// that row then passes the 255 ceiling of `entrants.entrant_lists`.
+    /// that row then passes the 255 ceiling of `entrants.entrant_lists`. `host: "career"` gives the list the
+    /// career host `swofty_virtual_career` instead: the build points every career setup and official entrant list
+    /// that names it at that host, and the core reads the list into it when a career of that data group is made.
     VirtualList {
         list: String,
+        #[serde(default, skip_serializing_if = "Option::is_none")]
+        host: Option<String>,
     },
 }
 
@@ -1491,13 +1504,21 @@ fn apply(db: &mut Db, op: &DbOp, names: &dyn FieldNames, cx: &mut Cx) -> Result<
             rewrote(cx, k, was.as_deref(), Some(&value));
             Ok(Some(k))
         }
-        DbOp::VirtualList { list } => {
-            let key = fnv1a64(VIRTUAL_LISTS);
-            let mut labels = virtual_lists(db);
-            if !labels.iter().any(|l| l == list) {
-                labels.push(list.clone());
+        DbOp::VirtualList { list, host } => {
+            if let Some(h) = host.as_deref().filter(|h| *h != "career") {
+                return Err(Error::Resolve(format!(
+                    "virtual-list {list}: host {h} is not one the build knows (career, or none for era boxes)"
+                )));
             }
-            let value = labels.join(",").into_bytes();
+            let key = fnv1a64(VIRTUAL_LISTS);
+            let mut entries = virtual_entries(db);
+            if !virtual_lists(db).iter().any(|l| l == list) {
+                entries.push(match host {
+                    Some(h) => format!("{list}={h}"),
+                    None => list.clone(),
+                });
+            }
+            let value = entries.join(",").into_bytes();
             match db.get_mut(key) {
                 Some(r) => r.value = value,
                 None => db.push(Record {
@@ -3244,6 +3265,7 @@ mod tests {
             0,
             DbOp::VirtualList {
                 list: "season_1960".into(),
+                host: None,
             },
         );
         apply_db_ops_report(&mut db, &ops, &stock, &mut DbReport::default()).unwrap();
