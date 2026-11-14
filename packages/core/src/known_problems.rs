@@ -1933,9 +1933,12 @@ fn pitlane(e: &Evidence) -> Diagnosis {
 
 const QUIT_SECS: f64 = 10.0;
 
-/// Whether the crash report's black box shows the game was already in its
-/// Exiting flow, with a first-chance access violation in the game's own code
-/// just before the process ended.
+/// The flow graph's root state, StateApp, as the black box prints it: by its name hash, or by name. It exits only
+/// when the game itself closes; every other state (a session, a screen's flow) exits while the game keeps running.
+const APP_FLOW: [&str; 2] = ["#e11edb87", "StateApp"];
+
+/// Whether the crash report's black box shows the game itself was closing: its root flow state had just exited,
+/// with a first-chance access violation in the game's own code just before the process ended.
 fn quit_fault(e: &Evidence) -> bool {
     let Some(report) = &e.report else {
         return false;
@@ -1945,8 +1948,12 @@ fn quit_fault(e: &Evidence) -> bool {
         rest.split(" s before").next()?.parse().ok()
     };
     let state = |key: &str| report.lines().find(|l| l.trim_start().starts_with(key));
-    let exiting = state("last flow")
-        .is_some_and(|l| l.contains(" Exiting ") && secs_before(l).is_some_and(|s| s <= QUIT_SECS));
+    let exiting = state("last flow").is_some_and(|l| {
+        let mut words = l.split_whitespace().skip(2);
+        words.next().is_some_and(|flow| APP_FLOW.contains(&flow))
+            && words.next() == Some("Exiting")
+            && secs_before(l).is_some_and(|s| s <= QUIT_SECS)
+    });
     let violation = state("last exception")
         .is_some_and(|l| l.contains("ACCESS_VIOLATION") && l.to_ascii_lowercase().contains(" at f1_25.exe+"));
     exiting && violation
@@ -3184,6 +3191,44 @@ runtime      Windows
         assert_eq!(diagnose(&e), None, "not exiting");
         e.report = Some(QUIT_REPORT.replace("F1_25.exe+", "other.dll+"));
         assert_eq!(diagnose(&e), None, "not in the game's code");
+        e.report = Some(QUIT_REPORT.replace("#e11edb87", "StateApp"));
+        assert_eq!(diagnose(&e).unwrap().id, "quit_fault", "the root state by name");
+    }
+
+    const SESSION_EXIT_REPORT: &str = "== Game state (from the black box)\n  \
+        last flow      StateSession Exiting (1.2 s before this report)\n  \
+        last screen    garage_monitor_container (0.1 s before this report)\n  \
+        last session   started (Game_GameModule_OnSessionEnter); frame 19364 (1.9 s before this report)\n  \
+        last race      none recorded\n  \
+        last career    hub left (117.5 s before this report)\n  \
+        last heap      none recorded\n  \
+        last exception first-chance ACCESS_VIOLATION at F1_25.exe+0x1f8a25c .xtls \
+        Game_Read_OverridesCarMonitorMaximisedConfig_2+0xe6c (0.0 s before this report)\n";
+
+    const SESSION_EXIT_LOADER: &str = "\
+2026-11-14 19:35:37.360 [ 9720] [career] flow \"StateSession\" Updating -> Exiting
+2026-11-14 19:35:37.362 [ 9720] [events] session.end (StateSession exited)
+2026-11-14 19:35:37.769 [ 5108] [events] career.saved (driver_career): 0 handlers
+2026-11-14 19:35:38.524 [17320] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 17320, 419 s after load, at F1_25.exe+0x1f8a25c .xtls Game_Read_OverridesCarMonitorMaximisedConfig_2+0xe6c
+2026-11-14 19:35:38.524 [17320] [crash]   reading 0x9c58
+2026-11-14 19:35:38.525 [17320] [crash]   stack:
+2026-11-14 19:35:38.525 [17320] [crash]   #0  F1_25.exe+0x1f8a25c .xtls Game_Read_OverridesCarMonitorMaximisedConfig_2+0xe6c
+2026-11-14 19:35:38.525 [17320] [crash]   #1  F1_25.exe+0x42c02eb .xtls Vm_Dispatch_BindingMessage+0x20b
+2026-11-14 19:35:38.525 [17320] [crash]   #2  F1_25.exe+0x398c32c .xtls Ne_EventQueue_DispatchPending+0xbc
+2026-11-14 19:35:38.526 [17320] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x1f8a25c .xtls Game_Read_OverridesCarMonitorMaximisedConfig_2+0xe6c reached the top-level filter; passing it to the game's filter
+";
+
+    #[test]
+    fn a_session_that_exits_while_the_game_runs_is_not_a_quit_fault() {
+        let mut e = ev(SESSION_EXIT_LOADER, &[]);
+        e.report = Some(SESSION_EXIT_REPORT.to_owned());
+        assert_eq!(diagnose(&e), None, "the session was exiting, not the game");
+        for flow in ["StateUnloadSession", "SessionStateCareerHubUpdate", "#04fc8ffa"] {
+            e.report = Some(SESSION_EXIT_REPORT.replace("StateSession", flow));
+            assert_eq!(diagnose(&e), None, "{flow}");
+        }
+        e.report = Some(SESSION_EXIT_REPORT.replace("StateSession", "#e11edb87"));
+        assert_eq!(diagnose(&e).unwrap().id, "quit_fault");
     }
 
     #[test]
