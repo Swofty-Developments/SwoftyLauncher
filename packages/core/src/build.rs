@@ -947,17 +947,23 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         let index = crate::stdlib::careers::data_path(&store.root);
         let mut careers = crate::stdlib::careers::read(&index);
         let stock_max = crate::stdlib::careers::stock_max_for(&careers, || stock_max_ids(&store.root, game));
+        let played: BTreeSet<String> = crate::stdlib::careers::in_save_of(&careers, &store.root, profile)
+            .into_iter()
+            .map(|c| c.career.clone())
+            .collect();
         if crate::stdlib::careers::settle_rows(
             &mut careers,
             &crate::row_ids::id_owners(&store.root),
             &stock_max,
             &addons,
+            Some((&played, &resolved.order)),
         ) && !checking
         {
             crate::write_json_shared(&index, &serde_json::json!({ "version": 1, "careers": careers })).ok();
         }
-        let scoped: Vec<_> = crate::stdlib::careers::in_save_of(&careers, &store.root, profile)
-            .into_iter()
+        let scoped: Vec<_> = careers
+            .iter()
+            .filter(|c| played.contains(&c.career))
             .cloned()
             .collect();
         if let Some(line) = crate::stdlib::careers::stop_line(&scoped, &resolved.order, &addons) {

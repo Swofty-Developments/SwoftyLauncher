@@ -196,10 +196,16 @@ fn registry(
     });
     let (saved, scoped) = timings.time("careers", || {
         let saved = careers::read(&careers::data_path(&store.root));
-        let scoped: Vec<_> = careers::in_save_of(&saved, &store.root, &profile.name)
+        let mut scoped: Vec<_> = careers::in_save_of(&saved, &store.root, &profile.name)
             .into_iter()
             .cloned()
             .collect();
+        careers::drop_former_owners(
+            &mut scoped,
+            &swofty_core::row_ids::id_owners(&store.root),
+            installed,
+            &plan.order,
+        );
         (saved, scoped)
     });
     let stop = careers::stop_line(&scoped, &plan.order, installed);
