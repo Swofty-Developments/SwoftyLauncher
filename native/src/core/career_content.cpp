@@ -69,9 +69,6 @@ namespace {
 
 namespace content = runtime::content;
 namespace mem = swofty::mem;
-
-// The career host list of virtual career lists (packages/core/src/virtual_lists.rs, CAREER_HOST).
-constexpr const char *VIRTUAL_CAREER_HOST = "swofty_virtual_career";
 using swofty::game::Action;
 using swofty::game::HomeItem;
 using swofty::game::NeAllocator;
@@ -972,20 +969,6 @@ int api_data_group(const void *career, char *out, size_t cap)
     content::GroupSeen seen = content::data_group(career, ACCESS);
     if (!seen.name)
         return SWOFTY_ASSET_INVALID;
-    if (!strcmp(seen.name, VIRTUAL_CAREER_HOST)) {
-        // Every career whose list is virtual names the host list (packages/core/src/virtual_lists.rs); the career
-        // content of the championship's mode holds its real data group.
-        auto *c = static_cast<const uint8_t *>(career);
-        if (mem::readable(c + content::CAREER_CHAMPS_END, 8)) {
-            auto *b = content::at<const uint8_t *>(c, content::CAREER_CHAMPS_BEGIN);
-            auto *e = content::at<const uint8_t *>(c, content::CAREER_CHAMPS_END);
-            for (; b && e > b && size_t(e - b) / content::CHAMP_STRIDE <= content::MAX_CHAMPS; b += content::CHAMP_STRIDE)
-                if (mem::readable(b, content::CHAMP_STRIDE))
-                    if (Slot *s = by_mode(content::at<void *>(b, content::CHAMP_AT)))
-                        return copy_out(s->desc.data_group, out, cap);
-        }
-        return SWOFTY_ASSET_INVALID;
-    }
     return copy_out(seen.name, out, cap);
 }
 

@@ -95,13 +95,6 @@ inline std::string loaded_group()
         if (!mem::read(b + 8, champ) || !mem::object_like(champ))
             continue;
         std::string g = group_of_championship(champ, desc);
-        if (g == "swofty_virtual_career") {
-            // a virtual career list: the career content of the career's mode names its data group
-            char real[128] = {};
-            const SwoftyCareerContent *t = career_content_table();
-            if (t && t->data_group && t->data_group(e, real, sizeof real) == SWOFTY_ASSET_OK)
-                g = real;
-        }
         if (!g.empty())
             return g;
     }
