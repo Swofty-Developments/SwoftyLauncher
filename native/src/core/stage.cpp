@@ -3,6 +3,7 @@
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
+#include "game_manager_layout.hpp"
 #include "state_logic.hpp"
 
 #include <mutex>
@@ -215,6 +216,11 @@ bool verified_build()
     return (stamp == 1789118616u && size > 0x6000000) || (stamp == 1789128892u && size == 0x155dc000);
 }
 
+uintptr_t manager_entrants_system()
+{
+    return game_manager::entrants_system(build_distribution());
+}
+
 uintptr_t find(const Sig &s, const char *tag, const char *channel)
 {
     uintptr_t at = 0, base = swofty::api->module_base();
@@ -260,6 +266,12 @@ std::string read_file(const std::wstring &path, size_t limit)
     return out;
 }
 
+const std::wstring &files_root()
+{
+    const std::wstring &state = state_root();
+    return state.empty() ? swofty_root() : state;
+}
+
 bool write_file(const std::wstring &path, const std::string &data)
 {
     std::wstring tmp = path + L".tmp";
@@ -275,7 +287,9 @@ bool write_file(const std::wstring &path, const std::string &data)
     }
     CloseHandle(f);
     if (!ok || !MoveFileExW(tmp.c_str(), path.c_str(), MOVEFILE_REPLACE_EXISTING)) {
+        DWORD e = GetLastError();
         DeleteFileW(tmp.c_str());
+        SetLastError(e);
         return false;
     }
     return true;

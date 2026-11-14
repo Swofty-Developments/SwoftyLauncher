@@ -23,6 +23,10 @@ class Store;
 
 namespace runtime {
 
+namespace myteam_heal {
+struct Load;
+}
+
 enum Stage { STAGE_WINDOW = 1 };
 
 // How long a reader of the game's heaps trusts a big region's VirtualQuery answer (swofty::mem::Trust). A fresh
@@ -55,12 +59,18 @@ const std::string &config_source();
 const std::wstring &game_root();
 const std::wstring &swofty_root();
 const std::wstring &state_root();
+// Where the core writes the files the launcher collects (laps, the Time Trial mailbox, replay copies): the launcher's
+// data folder (state_root), or swofty\ when the core can't write there. The game can't create files in swofty\ of an
+// EA app copy under Program Files.
+const std::wstring &files_root();
 bool enabled(const char *feature, const char *what);
 std::string load_stage();
 bool same_build();
 // The builds whose struct layouts were checked against the signatures' functions (re/tools/sigverify.py): the Steam KB build and
 // the EA App link of the same version. Code that finds every address by signature gates on this instead of same_build().
 bool verified_build();
+// [g_Game_Manager]'s entrants system displacement on the running build (game_manager_layout.hpp): +0x290 on Steam, +0x260 on EA.
+uintptr_t manager_entrants_system();
 
 uintptr_t find(const Sig &s, const char *tag, const char *channel = "assets");
 bool readable(const void *p, size_t n);
@@ -257,6 +267,13 @@ std::vector<CoreMixins> fe_tile_guard_mixins();
 void fe_tile_guard_commit();
 std::vector<CoreMixins> myteam_vehicle_guard_mixins();
 void myteam_vehicle_guard_commit();
+std::vector<CoreMixins> myteam_vehicle_heal_mixins();
+void myteam_vehicle_heal_commit();
+void myteam_vehicle_heal_entrants(const myteam_heal::Load &load);
+std::vector<CoreMixins> myteam_vehicle_keep_mixins();
+void myteam_vehicle_keep_commit();
+bool myteam_keep_forced(const std::string &label);
+bool myteam_keep_substitute(SwoftyContext *c, uint32_t stat, const std::string &label);
 std::vector<CoreMixins> ai_corner_guard_mixins();
 void ai_corner_guard_commit();
 std::vector<CoreMixins> replay_grid_guard_mixins();
@@ -265,6 +282,7 @@ std::vector<CoreMixins> watchdog_grace_mixins();
 void watchdog_grace_commit();
 void watchdog_flow(uint32_t hash, uint32_t to, const char *name);
 void load_stall_flow(uint32_t hash, uint32_t to, const char *name);
+void session_job_probe_flow(uint32_t to, const char *name);
 void load_stall_screen(const char *name);
 void load_stall_signal(uint32_t trigger, uint64_t detail_ms);
 void load_stall_game_line(const char *line);
@@ -321,6 +339,8 @@ std::vector<CoreMixins> garage_setup_mixins();
 void garage_setup_commit();
 std::vector<CoreMixins> theatre_list_mixins();
 void theatre_list_commit();
+std::vector<CoreMixins> tile_list_select_mixins();
+void tile_list_select_commit();
 std::vector<CoreMixins> session_enter_mixins();
 std::vector<CoreMixins> ai_line_set_mixins();
 void ai_line_set_commit();

@@ -243,7 +243,7 @@ void resolve(Slot &s, bool now, bool building = false)
         swofty::log("[career] content '%s': %s", s.desc.id.c_str(), r.warn.c_str());
     std::string slots_seen = !gm      ? "; loaded list slots not checked: g_Game_Manager does not resolve"
                              : l.known ? " of " + std::to_string(l.slots) + " loaded list slots"
-                                       : "; loaded list slots not checked: g_Game_Manager +0x290 +0x560 holds no list "
+                                       : "; loaded list slots not checked: the entrants system +0x560 holds no list "
                                          "slots on this build";
     swofty::log("[career] content '%s' ready%s: mode %s statId %lld, data group %s (entrant list stat_id %lld%s), suffix "
                 "%s (F1CAREER_%s%s%s)",
@@ -318,7 +318,7 @@ uintptr_t game_manager_slot()
 content::Loaded loaded_lists(uintptr_t slot, int64_t id)
 {
     uintptr_t gm = 0, entrants = 0;
-    if (!mem::read(slot, gm) || !gm || !mem::read(gm + content::GM_ENTRANTS, entrants) || !entrants)
+    if (!mem::read(slot, gm) || !gm || !mem::read(gm + runtime::manager_entrants_system(), entrants) || !entrants)
         return {};
     return content::loaded_list(reinterpret_cast<const void *>(entrants), id, ACCESS);
 }

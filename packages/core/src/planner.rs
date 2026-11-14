@@ -269,6 +269,8 @@ pub struct Planner<'a> {
     copies: Vec<Copy>,
     lenient: BTreeMap<String, String>,
     names: BTreeMap<String, String>,
+    // The tracks the build leaves out because the game's track lists are full, by code, each with its name.
+    left_out_tracks: BTreeMap<String, String>,
     // The records each origin's database ops changed, by the origin's rank.
     rewrites: Vec<(usize, Rewrite)>,
     core_rows: BTreeMap<String, BTreeSet<String>>,
@@ -374,6 +376,7 @@ impl<'a> Planner<'a> {
             copies: Vec::new(),
             lenient: BTreeMap::new(),
             names: BTreeMap::new(),
+            left_out_tracks: BTreeMap::new(),
             rewrites: Vec::new(),
             core_rows: BTreeMap::new(),
             touched: BTreeMap::new(),
@@ -424,6 +427,21 @@ impl<'a> Planner<'a> {
         self.lenient
             .entry(id.to_owned())
             .or_insert_with(|| name.to_owned());
+    }
+
+    /// Skips, with a warning, any addon's change whose row of track `code` is still missing after every addon's
+    /// changes: the build leaves that track, named `track`, out because the game's track lists are full.
+    pub fn leave_out_track(&mut self, code: &str, track: &str) {
+        self.left_out_tracks.insert(code.to_owned(), track.to_owned());
+    }
+
+    // The name of the left-out track whose row `e`'s selector matches no row of; `None` for any other failure.
+    fn left_out_track(&self, e: &swofty_addon::Error) -> Option<&str> {
+        if !no_row(e) {
+            return None;
+        }
+        let failing = no_row_selectors(e).pop()?;
+        self.left_out_tracks.get(failing.want.trim()).map(String::as_str)
     }
 
     /// Records that the core adds rows to `tables` at the game's start, from
@@ -923,6 +941,7 @@ impl<'a> Planner<'a> {
 
     // A lenient addon's failures are skipped with a warning; another's first fails the build.
     // An op on a row that only the core adds at the game's start cannot apply in the build: it is skipped with a warning.
+    // So is any addon's op on a row of a track the build leaves out because the game's track lists are full.
     // `last` is the database after every addon's ops, once nothing is left to wait for.
     fn settle(
         &mut self,
@@ -952,7 +971,19 @@ impl<'a> Planner<'a> {
                     "{origin}: change skipped: {e}; the core adds that row from {adders}'s records when the game starts, after the build"
                 ));
             }
-            errors = rest;
+            errors = Vec::new();
+            for e in rest {
+                let Some(track) = self.left_out_track(&e).map(str::to_owned) else {
+                    errors.push(e);
+                    continue;
+                };
+                let name = self.name(&origin.addon).to_owned();
+                self.skipped.push(format!(
+                    "{name}: change skipped: {e}; it changes track {track}, which is left out of this build because \
+                     the game has room for {} tracks. Turn some track addons off to make room for it",
+                    crate::tracks::TRACK_LIST_ROOM
+                ));
+            }
         }
         let lines: Vec<String> = errors
             .iter()
@@ -1892,6 +1923,70 @@ mod tests {
                  load. Turn SERPS Ineos Mercedes Concept off, or move it after Laguna Seca Grand Prix"
             ),
             "{e}"
+        );
+    }
+
+    const CAREER: &str = "career.classic-career";
+
+    #[test]
+    fn any_addons_change_to_a_track_left_out_for_room_is_skipped_with_a_warning() {
+        let features = Features::default();
+        let opt_in = BTreeSet::new();
+        let mut p = Planner::new(&features, &opt_in).names(named(&[(CAREER, "Classic Career")]));
+        p.leave_out_track("anderst", "Anderstorp");
+        p.push(op(
+            CAREER,
+            &set_round("TrackDataSet[_metadata_=f1_2026].TrackData[_metadata_=anderst]"),
+        ));
+        p.push(op(
+            CAREER,
+            &set_round("TrackDataSet[_metadata_=f1_2026].TrackData[_metadata_=bahrain]"),
+        ));
+        let mut db = track_sets();
+        p.apply_db(&mut db).unwrap();
+        assert_eq!(
+            db.get_text(&format!("{SETS}.TrackDataSet_0.TrackData_0.round"))
+                .as_deref(),
+            Some("9")
+        );
+        assert_eq!(
+            p.take_skipped(),
+            [
+                "Classic Career: change skipped: track_data.game_setup.TrackDataSet[_metadata_=f1_2026]\
+                 .TrackData[_metadata_=anderst]: no row matches in track_data.game_setup.TrackDataSet_0.TrackData; \
+                 it changes track Anderstorp, which is left out of this build because the game has room for 64 \
+                 tracks. Turn some track addons off to make room for it"
+            ]
+        );
+    }
+
+    #[test]
+    fn a_change_to_a_missing_track_that_is_not_left_out_still_fails_the_build() {
+        let features = Features::default();
+        let opt_in = BTreeSet::new();
+        let mut p = Planner::new(&features, &opt_in).names(named(&[(CAREER, "Classic Career")]));
+        p.leave_out_track("anderst", "Anderstorp");
+        p.push(op(
+            CAREER,
+            &set_round("TrackDataSet[_metadata_=f1_2026].TrackData[_metadata_=imola]"),
+        ));
+        assert_eq!(
+            p.apply_db(&mut track_sets()).unwrap_err().to_string(),
+            "applying career.classic-career: track_data.game_setup.TrackDataSet[_metadata_=f1_2026]\
+             .TrackData[_metadata_=imola]: no row matches in track_data.game_setup.TrackDataSet_0.TrackData, \
+             even after every addon's changes"
+        );
+
+        let mut p = Planner::new(&features, &opt_in).names(named(&[(CAREER, "Classic Career")]));
+        p.push(op(
+            CAREER,
+            &set_round("TrackDataSet[_metadata_=f1_2026].TrackData[_metadata_=anderst]"),
+        ));
+        assert_eq!(
+            p.apply_db(&mut track_sets()).unwrap_err().to_string(),
+            "applying career.classic-career: track_data.game_setup.TrackDataSet[_metadata_=f1_2026]\
+             .TrackData[_metadata_=anderst]: no row matches in track_data.game_setup.TrackDataSet_0.TrackData, \
+             even after every addon's changes"
         );
     }
 

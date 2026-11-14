@@ -657,6 +657,8 @@ inline constexpr address<"Sess_VehiclePlacement_HandleGridRequest"> Sess_Vehicle
 inline constexpr address<"Sess_VehiclePlacement_PlaceOnSlot"> Sess_VehiclePlacement_PlaceOnSlot{}; // L2 experimental
 inline constexpr address<"Sess_VehiclePlacement_ResolveTransform"> Sess_VehiclePlacement_ResolveTransform{}; // L2 experimental
 inline constexpr address<"Sess_VehicleProgress_IsPastLapFraction"> Sess_VehicleProgress_IsPastLapFraction{}; // L2 experimental
+using Sess_VehicleTable_EmplaceAt_t = void *(void *table, const void *record);
+inline constexpr fn<"Sess_VehicleTable_EmplaceAt", Sess_VehicleTable_EmplaceAt_t> Sess_VehicleTable_EmplaceAt{}; // L2 experimental
 inline constexpr address<"Sess_ViewReplay_EnterPhotoMode"> Sess_ViewReplay_EnterPhotoMode{}; // L2 experimental
 inline constexpr address<"Sess_VirtualLapsRuleset_FinaliseResults"> Sess_VirtualLapsRuleset_FinaliseResults{}; // L2 experimental
 inline constexpr address<"Sess_VirtualLapsRuleset_ForceFinishAll"> Sess_VirtualLapsRuleset_ForceFinishAll{}; // L2 experimental
@@ -697,6 +699,8 @@ inline constexpr call<"site_Sess_ControllerSystem_ApplyRecordCall"> site_Sess_Co
 inline constexpr site<"site_Sess_GarageSlots_Done"> site_Sess_GarageSlots_Done{}; // L2 experimental
 inline constexpr site<"site_Sess_GarageSlots_GarageLoad"> site_Sess_GarageSlots_GarageLoad{}; // L2 experimental
 inline constexpr call<"site_Sess_InGamePlayerFinishedAiCall"> site_Sess_InGamePlayerFinishedAiCall{}; // L2 experimental
+inline constexpr site<"site_Sess_InGameRaceRetirementDriver"> site_Sess_InGameRaceRetirementDriver{}; // L2 experimental
+inline constexpr site<"site_Sess_InGameRaceRetirementDriverJoin"> site_Sess_InGameRaceRetirementDriverJoin{}; // L2 experimental
 inline constexpr call<"site_Sess_InGameSessionCompleteAiCall"> site_Sess_InGameSessionCompleteAiCall{}; // L2 experimental
 inline constexpr site<"site_Sess_PitEvalListNext"> site_Sess_PitEvalListNext{}; // L2 experimental
 inline constexpr site<"site_Sess_PitEvalListSlot"> site_Sess_PitEvalListSlot{}; // L2 experimental
@@ -707,6 +711,7 @@ inline constexpr site<"site_Sess_PitRankListNext"> site_Sess_PitRankListNext{}; 
 inline constexpr site<"site_Sess_PitRankListSlot"> site_Sess_PitRankListSlot{}; // L2 experimental
 inline constexpr site<"site_Sess_PitRankOwnSlot"> site_Sess_PitRankOwnSlot{}; // L2 experimental
 inline constexpr site<"site_Sess_PuPanel_SlotHolder"> site_Sess_PuPanel_SlotHolder{}; // L2 experimental
+inline constexpr site<"site_Sess_SessionEnter_VehicleLookup"> site_Sess_SessionEnter_VehicleLookup{}; // L2 experimental
 inline constexpr site<"site_Sess_TimeTrialLeaderboard_BoundTabChild"> site_Sess_TimeTrialLeaderboard_BoundTabChild{}; // L2 experimental
 inline constexpr site<"site_Sess_TimeTrialLeaderboard_BoundTabDone"> site_Sess_TimeTrialLeaderboard_BoundTabDone{}; // L2 experimental
 inline constexpr site<"site_Sess_TimeTrialLeaderboard_TabChild"> site_Sess_TimeTrialLeaderboard_TabChild{}; // L2 experimental

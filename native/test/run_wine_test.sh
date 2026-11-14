@@ -208,6 +208,7 @@ EOF
     if [[ $mode == state ]]; then
         once "stall: the watchdog is armed" '\[stall\] load-stall watchdog armed: a report of every thread.s stack'
         once "stall: the test report is written beside the crash reports" '\[stall\] load-stall report 1 of at most 1: .*thread\(s\) read in [0-9]+ ms; written to swofty\\stall-[0-9]{8}-[0-9]{6}\.txt'
+        once "stall: the report lists the threads not in a wait first" '\[stall\] == Threads not in a wait \([0-9]+; [0-9]+ with a frame in F1_25\.exe, listed first'
         once "stall: the report holds the thread table" '\[stall\] == Threads \([0-9]+; [1-9][0-9]* unwound'
         check "stall: a suspended thread's stack is unwound and named" '\[stall\]   #1  [0-9a-f]{16} rsp=[0-9a-f]{16}  [A-Za-z0-9_.]+\+0x[0-9a-f]+ '
         check "stall: a wait is named from the module's exports" '\[stall\] thread [0-9]+.*, waiting in [A-Za-z]+'
@@ -1008,6 +1009,58 @@ for guard in on off; do
         grep -q 'myteam vehicle off: the load returned' "$OUT/myteam_vehicle.out" && { echo "FAIL: myteam_vehicle off: the load returned"; status=1; } ||
             echo "ok  : myteam_vehicle off: the load does not return"
         [[ $code != 0 ]] && echo "ok  : myteam_vehicle off: process ended with $code" || { echo "FAIL: myteam_vehicle off: process exited 0"; status=1; }
+    fi
+done
+for keep in on off; do
+    echo "==== myteam_keep ($keep)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_MYTEAM_VEHICLE_KEEP=$([[ $keep == off ]] && echo 0) SWOFTY_TEST_MYTEAM_KEEP_LABEL=myteam_mes_porsche_2026 \
+        SWOFTY_TEST_MYTEAM_KEEP_STOCK=myteam_mercedes_2026:0x02160000:2:412 \
+        timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" myteam_keep >"$OUT/myteam_keep.out" 2>&1 || code=$?
+    grep -E '\[myteam\] (keep|vehicle keep|save:)|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    grep -E 'myteam keep|FAIL' "$OUT/myteam_keep.out" || true
+    if [[ $keep == on ]]; then
+        once "myteam_keep on: the keep is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(my team vehicle keep\)': 2 mixin"
+        once "myteam_keep on: the keep is armed with the test car" '\[myteam\] vehicle keep armed: .*; test car myteam_mes_porsche_2026'
+        once "myteam_keep on: the first test car is kept as the stock placeholder" "\[myteam\] keep: My Team car \(custom vehicle 0\) on 'myteam_mes_porsche_2026' \(engine 22, base car 00a40001\) has no vehicle row .* loads as the stock 'myteam_mercedes_2026' \(engine 2, base car 02160000\)"
+        once "myteam_keep on: the second test car is kept too" "\[myteam\] keep: My Team car \(custom vehicle 5\) on 'myteam_mes_porsche_2026' \(engine 24, base car 00a40003\)"
+        once "myteam_keep on: the save writes the original car" "\[myteam\] keep: the save writes My Team car \(custom vehicle 0\) as its original 'myteam_mes_porsche_2026' \(engine 22, base car 00a40001\)"
+        count "myteam_keep on: no base is skipped" 0 '\[myteam\] save: .* the base is skipped'
+        grep -q 'FAIL' "$OUT/myteam_keep.out" && { echo "FAIL: myteam_keep on: a check failed"; status=1; } || echo "ok  : myteam_keep on: the fake game's checks pass"
+        grep -q "myteam keep on: base 1 live 'myteam_mercedes_2026' engine 2 base 02160000, saved as 'myteam_mes_porsche_2026' engine 22 base 00a40001" "$OUT/myteam_keep.out" &&
+            echo "ok  : myteam_keep on: the live car is the placeholder and the save keeps the original" || { echo "FAIL: myteam_keep on: placeholder or save wrong"; status=1; }
+        count "myteam_keep on: no unhandled fault" 0 '\[crash\] unhandled '
+        [[ $code == 0 ]] && echo "ok  : myteam_keep on: process exited 0" || { echo "FAIL: myteam_keep on: process ended with $code"; status=1; }
+    else
+        once "myteam_keep off: the keep is off" '\[myteam\] vehicle keep off \(SWOFTY_MYTEAM_VEHICLE_KEEP=0\)'
+        count "myteam_keep off: nothing is kept" 0 '\[myteam\] keep: '
+        check "myteam_keep off: the test car is left to the game, which faults" '\[crash\] unhandled ACCESS_VIOLATION .*Sess_Load_VehicleAiConfig\+0x'
+        [[ $code != 0 ]] && echo "ok  : myteam_keep off: process ended with $code" || { echo "FAIL: myteam_keep off: process exited 0"; status=1; }
+    fi
+done
+for heal in on off; do
+    echo "==== myteam_heal ($heal)"
+    code=0
+    rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
+    SWOFTY_MYTEAM_VEHICLE_HEAL=$([[ $heal == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" myteam_heal >"$OUT/myteam_heal.out" 2>&1 || code=$?
+    grep -E '\[myteam\] (heal|vehicle heal)|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    grep -E 'myteam heal|FAIL' "$OUT/myteam_heal.out" || true
+    if [[ $heal == on ]]; then
+        once "myteam_heal on: the heal is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(my team vehicle heal\)': 1 mixin"
+        once "myteam_heal on: the heal is armed" '\[myteam\] vehicle heal armed'
+        once "myteam_heal on: the rebuilt car is logged once, naming the stock car" "\[myteam\] heal: the player's My Team car \(custom vehicle 2\) was missing from the save .*rebuilt it from the stock My Team car 'myteam_mercedes_2026' \(2026 season\)"
+        grep -q 'FAIL' "$OUT/myteam_heal.out" && { echo "FAIL: myteam_heal on: a check failed"; status=1; } || echo "ok  : myteam_heal on: the fake game's checks pass"
+        grep -q "myteam heal on: the session entered, 4 classes, 4 entrants classified, 1 rebuilt, custom vehicle 2 is 'myteam_mercedes_2026'" "$OUT/myteam_heal.out" &&
+            echo "ok  : myteam_heal on: the session entered with the rebuilt car" || { echo "FAIL: myteam_heal on: the session did not enter"; status=1; }
+        count "myteam_heal on: no unhandled fault" 0 '\[crash\] unhandled '
+        [[ $code == 0 ]] && echo "ok  : myteam_heal on: process exited 0" || { echo "FAIL: myteam_heal on: process ended with $code"; status=1; }
+    else
+        once "myteam_heal off: the heal is off" '\[myteam\] vehicle heal off \(SWOFTY_MYTEAM_VEHICLE_HEAL=0\)'
+        check "myteam_heal off: the session start faults where the game does" '\[crash\]   reading 0xcea'
+        grep -q 'myteam heal off: the session entered' "$OUT/myteam_heal.out" && { echo "FAIL: myteam_heal off: the session entered"; status=1; } ||
+            echo "ok  : myteam_heal off: the session does not enter"
+        [[ $code != 0 ]] && echo "ok  : myteam_heal off: process ended with $code" || { echo "FAIL: myteam_heal off: process exited 0"; status=1; }
     fi
 done
 for guard in on off; do

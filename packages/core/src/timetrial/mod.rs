@@ -1,8 +1,8 @@
 //! Time Trial boards: the launcher's side of uploading laps the core records.
 //!
-//! The core writes one `.swlap` file per completed lap into `<game>/swofty/laps`. [`queue`] moves them
-//! into the launcher's data folder and uploads them through [`api`]; [`upload`] is the loop the wrapper
-//! and the launcher run for it.
+//! The core writes one `.swlap` file per completed lap into `<game>/swofty/laps`, or into the data folder's
+//! `laps` when it can't write the game folder (an EA app copy under Program Files). [`queue`] moves them into
+//! the outbox and uploads them through [`api`]; [`upload`] is the loop the wrapper and the launcher run for it.
 
 pub mod api;
 pub mod boards;
@@ -26,8 +26,10 @@ pub const LAPS_DIR: &str = "swofty/laps";
 /// treats that file's existence as a mixin manifest and refuses every mixin it does not declare.
 pub const SESSION_FILE: &str = "swofty/tt.json";
 
-pub fn laps_dir(game: &Path) -> PathBuf {
-    game.join(LAPS_DIR)
+/// Where the core writes laps: the game folder, where the integrity seal finds the session's `tt.json`, then the
+/// data folder when the game folder refuses them (an EA app copy under Program Files).
+pub fn laps_dirs(data: &Path, game: &Path) -> [PathBuf; 2] {
+    [data.join("laps"), game.join(LAPS_DIR)]
 }
 
 /// The page that shows the boards.

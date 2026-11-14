@@ -121,7 +121,7 @@ Each entry names the header, the `SwoftyApi` member and its API version, the fea
 
 - **Hooking the game**
   - **[Mixin API](./mixin)** (`swofty/mixin.hpp`): bindings, `SWOFTY_WRAP` and the other mixin macros, chains, init and per-object fields. `register_mixins` and `resolve`, API 2; `hook`; the game thread that reaches the hooked instruction.
-  - **[Memory](./memory)** (`swofty/mem.hpp`): guarded reads of game memory: `read`, `in_image`, `object_like`, `c_string`. Header only, no table, any API version; any thread.
+  - **[Memory](./memory)** (`swofty/mem.hpp`): guarded reads of game memory: `read`, `in_image`, `object_like`, `c_string`. Header only; the core export `SwoftyCoreMem` when the core has it, any API version; any thread.
 - **Your addon's own state**
   - **[Settings](./settings)** (`swofty/mixin.hpp`): read your manifest `options` and react when the player changes one. `setting` and `watch_setting`, API 3; `options`; the flow thread.
   - **[Logging](./logging)** (`swofty/mixin.hpp`): `swofty::log` writes to `swofty/loader.log`. `log`, API 1; `log`; any thread.
@@ -243,5 +243,5 @@ swofty/events.hpp, overlay.hpp, telemetry.hpp, db.hpp, storage.hpp   5
 swofty/career.hpp                                        6 (block and unblock: 7)
 swofty/popup.hpp                                         7
 swofty/lang.hpp                                          8
-swofty/mem.hpp                                           none: it needs no table
+swofty/mem.hpp                                           none: it needs no SwoftyApi table
 ```

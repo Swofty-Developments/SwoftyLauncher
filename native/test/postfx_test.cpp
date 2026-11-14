@@ -109,8 +109,159 @@ static unsigned rnd(unsigned f, unsigned k)
     return x;
 }
 
+// Where one frame's passes run when the picture's list ends inside the HUD-less step, the way postfx.cpp drives
+// BackPlace: the picture's list makes the back buffer a render target, the closing list records its step barrier
+// before or after the picture's list is submitted (split step when it binds the back buffer), the closing list and
+// the HUD's list are submitted in either order, then Present. The closing list draws the rest of the picture first
+// when it binds the back buffer, so passes placed right after the picture's list are painted over.
+enum Ran : uint8_t { RAN_SPLIT, RAN_AFTER_PICTURE, RAN_AFTER_CLOSE, RAN_PRESENT };
+
+struct SplitFrame {
+    bool closing_recorded_first = false, bound = true, closing = true, direct = true, hud_first = false,
+         reset = false, may_defer = true;
+};
+
+static std::vector<Ran> split_frame(BackPlace &p, unsigned now, const SplitFrame &s)
+{
+    std::vector<Ran> ran;
+    p.drawn(now);
+    bool in_closing = false;
+    auto record_closing = [&] {
+        if (s.closing && s.bound && s.direct && p.split_step(now)) {
+            p.place(now);
+            in_closing = true;
+            ran.push_back(RAN_SPLIT);
+        }
+    };
+    if (s.closing_recorded_first)
+        record_closing();
+    if (p.picture_submitted(now, true, s.may_defer) == END_BETWEEN)
+        ran.push_back(RAN_AFTER_PICTURE);
+    if (!s.closing_recorded_first)
+        record_closing();
+    bool submitted = s.closing && !s.reset;
+    if (in_closing && s.reset) {
+        p.unplace();
+        ran.pop_back();
+    }
+    if (s.hud_first)
+        p.moved(false);
+    if (submitted && p.step_closed(now, s.direct))
+        ran.push_back(RAN_AFTER_CLOSE);
+    if (!s.hud_first)
+        p.moved(false);
+    if (p.presented(now))
+        ran.push_back(RAN_PRESENT);
+    return ran;
+}
+
+static bool shows(const std::vector<Ran> &ran, const SplitFrame &s)
+{
+    return ran.size() == 1 && !(ran[0] == RAN_AFTER_PICTURE && s.closing && s.bound);
+}
+
 int main()
 {
+    {
+        // The split step wins the race: the closing list records its step barrier before the picture's list is
+        // submitted. Before the fix and after, the passes run in the closing list.
+        BackPlace p;
+        SplitFrame s;
+        s.closing_recorded_first = true;
+        auto ran = split_frame(p, 10, s);
+        CHECK(ran == std::vector<Ran>{RAN_SPLIT} && shows(ran, s));
+        s.may_defer = false;
+        ran = split_frame(p, 13, s);
+        CHECK(ran == std::vector<Ran>{RAN_SPLIT} && shows(ran, s));
+    }
+    {
+        // The race the split step lost (1.9.41): the picture's list is submitted first. Placing the passes right
+        // after it gets them painted over by the closing list; waiting for the closing list runs them in it.
+        BackPlace p;
+        SplitFrame s;
+        s.may_defer = false;
+        auto ran = split_frame(p, 10, s);
+        CHECK(ran == std::vector<Ran>{RAN_AFTER_PICTURE} && !shows(ran, s));
+        s.may_defer = true;
+        ran = split_frame(p, 13, s);
+        CHECK(ran == std::vector<Ran>{RAN_SPLIT} && shows(ran, s));
+        CHECK(!p.waits(13) && !p.presented(13));
+    }
+    {
+        // A closing list that does not bind the back buffer leaves it alone: the passes run right after it, in
+        // either order of record and submit.
+        for (bool first : {false, true}) {
+            BackPlace p;
+            SplitFrame s;
+            s.bound = false;
+            s.closing_recorded_first = first;
+            auto ran = split_frame(p, 20, s);
+            CHECK(ran == std::vector<Ran>{RAN_AFTER_CLOSE} && shows(ran, s));
+        }
+    }
+    {
+        // No list closes the step, or only a compute list does: the passes run at Present.
+        BackPlace p;
+        SplitFrame s;
+        s.closing = false;
+        auto ran = split_frame(p, 30, s);
+        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+        s = SplitFrame{};
+        s.direct = false;
+        ran = split_frame(p, 33, s);
+        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+    }
+    {
+        // The HUD's list moved the back buffer out of render target before the closing list was submitted: not
+        // after the closing list, at Present.
+        BackPlace p;
+        SplitFrame s;
+        s.bound = false;
+        s.hud_first = true;
+        auto ran = split_frame(p, 40, s);
+        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+    }
+    {
+        // The closing list the passes were recorded into is reset unsubmitted: they run at Present.
+        BackPlace p;
+        SplitFrame s;
+        s.reset = true;
+        auto ran = split_frame(p, 50, s);
+        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+    }
+    {
+        // A step that stayed open past its frame (no Present closed it) no longer waits, and a new use of the back
+        // buffer starts closed.
+        BackPlace p;
+        p.drawn(60);
+        CHECK(p.picture_submitted(60, true, true) == END_DEFER && p.waits(60) && p.waits(61) && !p.waits(62));
+        CHECK(!p.step_closed(62, true) && !p.presented(62));
+        p.drawn(63);
+        CHECK(p.fresh && !p.open && !p.waits(63));
+        CHECK(p.picture_submitted(63, false, true) == END_BETWEEN && !p.fresh && p.placed_at == 63);
+        CHECK(p.picture_submitted(63, true, true) == END_NONE);
+    }
+    {
+        // Every order of record and submit, with or without a closing list, over frames that rotate through
+        // three back buffers: once a frame, and shown whenever the closing list repaints the picture.
+        BackPlace backs[3];
+        unsigned off = 0, frames = 0;
+        for (unsigned f = 8; f < 8 + 3 * 64; f++) {
+            unsigned bits = (f / 3) % 64;
+            SplitFrame s;
+            s.closing_recorded_first = bits & 1;
+            s.bound = bits & 2;
+            s.closing = !(bits & 4);
+            s.direct = !(bits & 8);
+            s.hud_first = bits & 16;
+            s.reset = bits & 32;
+            auto ran = split_frame(backs[f % 3], f, s);
+            off += !shows(ran, s);
+            frames++;
+        }
+        CHECK(frames == 192 && off == 0);
+    }
+
     When any;
     CHECK(!ineligible(any, UNKNOWN, 0, false));
     CHECK(!ineligible(any, CHASE_FAR, PAUSED | REPLAY, true));
