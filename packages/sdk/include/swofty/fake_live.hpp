@@ -33,7 +33,8 @@ public:
         std::memset(cars_, 0, sizeof cars_);
         std::memset(present_, 0, sizeof present_);
         table_ = {SWOFTY_LIVE_VERSION, &Live::t_available, &Live::t_session, &Live::t_car, &Live::t_subject,
-                  &Live::t_turn,       &Live::t_track_turns, &Live::t_badge, &Live::t_seq};
+                  &Live::t_turn,       &Live::t_track_turns, &Live::t_badge, &Live::t_seq,
+                  &Live::t_driver_name};
     }
 
     ~Live() { uninstall(); }
@@ -107,6 +108,9 @@ public:
 
     void set_turns(const std::vector<SwoftyLiveTurn> &turns) { turns_ = turns; }
     void set_badge(uint32_t vehicle, const std::string &key) { badges_[vehicle] = key; }
+    void set_driver_name(uint32_t vehicle, const std::string &name) { names_[vehicle] = name; }
+    // Answer as a core with table version 1 (no driver_name member) does.
+    void set_table_version(uint32_t v) { table_.version = v; }
     void advance() { frame_++; }
 
 private:
@@ -189,6 +193,21 @@ private:
         return SWOFTY_ASSET_OK;
     }
 
+    static int t_driver_name(uint32_t vehicle, char *out, uint32_t cap)
+    {
+        if (!t_available())
+            return SWOFTY_ASSET_UNAVAILABLE;
+        if (!out || cap < 2 || vehicle >= SWOFTY_LIVE_MAX_CARS)
+            return SWOFTY_ASSET_INVALID;
+        auto it = current()->names_.find(vehicle);
+        if (it == current()->names_.end())
+            return SWOFTY_ASSET_UNAVAILABLE;
+        size_t n = it->second.size() < cap - 1 ? it->second.size() : cap - 1;
+        std::memcpy(out, it->second.data(), n);
+        out[n] = 0;
+        return SWOFTY_ASSET_OK;
+    }
+
     static int t_seq(uint64_t *frame)
     {
         if (!t_available())
@@ -204,6 +223,7 @@ private:
     bool present_[SWOFTY_LIVE_MAX_CARS];
     std::vector<SwoftyLiveTurn> turns_;
     std::map<uint32_t, std::string> badges_;
+    std::map<uint32_t, std::string> names_;
     SwoftyLive table_;
 };
 

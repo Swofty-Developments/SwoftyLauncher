@@ -662,6 +662,129 @@ static void test_badge()
     CHECK(!live.read_team_badge(1, out, sizeof out));
 }
 
+static void test_utf8_prefix()
+{
+    const char *ok = "S\xc3\xa9" "bastien Bourdais"; // 2-byte e acute
+    size_t n = std::strlen(ok);
+    CHECK(utf8_prefix(ok, n, 64) == n);
+    CHECK(utf8_prefix(ok, n, 2) == 1);
+    CHECK(utf8_prefix(ok, n, 3) == 3);
+    CHECK(utf8_prefix("\xe2\x82\xac", 3, 2) == 0 && utf8_prefix("\xe2\x82\xac", 3, 3) == 3);
+    CHECK(utf8_prefix("\xf0\x9f\x8f\x81", 4, 4) == 4);
+    CHECK(utf8_prefix("ab\x01", 3, 8) == ~size_t(0));
+    CHECK(utf8_prefix("a\xc3", 2, 8) == ~size_t(0));
+    CHECK(utf8_prefix("\xc0\xaf", 2, 8) == ~size_t(0));
+    CHECK(utf8_prefix("\xed\xa0\x80", 3, 8) == ~size_t(0));
+    CHECK(utf8_prefix("\x80", 1, 8) == ~size_t(0));
+}
+
+// Builds the chains Sess_Get_CarDriverName walks: VehicleHelperSystem participants -> CarPhysicsRecord -> CarLive
+// vehicle id, the human flag and player name, and the session entrant's driver ref into the EntrantsSystem driver tables.
+static void test_driver_name()
+{
+    namespace D = L::driver;
+    World w;
+    Live live(w.mem(), w.s, Gates::all());
+    live.update(0.0);
+    Arena &a = w.a;
+    auto str = [&](const char *s) {
+        uintptr_t p = a.alloc(std::strlen(s) + 1);
+        std::memcpy(&a.mem[p - BASE], s, std::strlen(s) + 1);
+        return p;
+    };
+    uintptr_t reg = a.get<uintptr_t>(a.get<uintptr_t>(w.s.game_manager) + L::registry::from_manager);
+    uintptr_t slots = a.get<uintptr_t>(reg + L::registry::slots), info = a.get<uintptr_t>(reg + L::registry::info);
+    auto reg_at = [&](int i, uintptr_t key, uintptr_t value) {
+        a.put<uintptr_t>(slots + 16 * i, key);
+        a.put<uintptr_t>(slots + 16 * i + 8, value);
+        a.put<uint8_t>(info + i, 1);
+    };
+
+    // VehicleHelperSystem: participants for vehicles 0..3 in reverse order after one null entry; vehicle 0 is a human.
+    uintptr_t vh = a.alloc(0x200), parts = a.alloc(8 * 5);
+    reg_at(13, w.s.key_session_component, vh);
+    a.put<uintptr_t>(vh + D::player_name, str("Marcel"));
+    a.put<uintptr_t>(vh + D::participants, parts);
+    a.put<uintptr_t>(vh + D::participants + 8, parts + 8 * 5);
+    for (int i = 0; i < 4; i++) {
+        uintptr_t p = a.alloc(0x40), phys = a.alloc(0x80);
+        a.put<uintptr_t>(p + D::participant_physics, phys);
+        a.put<uintptr_t>(phys + D::physics_car, w.cars[i]);
+        a.put<uint8_t>(p + D::participant_flags, i == 0 ? 0x80 : 0x40);
+        a.put<uintptr_t>(parts + 8 * (4 - i), p);
+    }
+
+    // Session entrants: vehicle 2 -> domain 0 id 3, vehicle 1 -> domain 2 id 1, vehicle 3 -> domain 3 (invalid).
+    uintptr_t mode = a.get<uintptr_t>(w.mode_ctx + L::badge::mode), game = a.alloc(0x400),
+              ents = a.alloc(L::badge::entrant_stride * 3);
+    a.put<uintptr_t>(mode + L::badge::game, game);
+    a.put<uintptr_t>(game + L::badge::entrants, ents);
+    a.put<uintptr_t>(game + L::badge::entrants + 8, ents + L::badge::entrant_stride * 3);
+    a.put<uint8_t>(ents + L::badge::entrant_vid, 2);
+    a.put<uint32_t>(ents + D::entrant_ref, (3u << 16) | 0);
+    a.put<uint8_t>(ents + L::badge::entrant_stride + L::badge::entrant_vid, 1);
+    a.put<uint32_t>(ents + L::badge::entrant_stride + D::entrant_ref, (1u << 16) | 2);
+    a.put<uint8_t>(ents + 2 * L::badge::entrant_stride + L::badge::entrant_vid, 3);
+    a.put<uint32_t>(ents + 2 * L::badge::entrant_stride + D::entrant_ref, (0u << 16) | 3);
+
+    // EntrantsSystem driver tables 0 and 2.
+    uintptr_t es = a.alloc(0x400);
+    reg_at(12, w.s.key_team_tables, es);
+    auto table = [&](unsigned domain, unsigned n) {
+        uintptr_t t = a.alloc(0x20), vec = a.alloc(16 * n);
+        a.put<uintptr_t>(es + D::sets + domain * D::set_stride, t);
+        a.put<uintptr_t>(t + D::table_vec, vec);
+        a.put<uintptr_t>(t + D::table_vec + 8, vec + 16 * n);
+        return vec;
+    };
+    auto record = [&](uintptr_t vec, unsigned id, const char *name) {
+        uintptr_t r = a.alloc(0x100);
+        a.put<uintptr_t>(r + D::record_name, str(name));
+        a.put<uintptr_t>(vec + 16 * id + D::slot_record, r);
+    };
+    record(table(0, 4), 3, "Nico H\xc3\xbclkenberg");
+    record(table(2, 2), 1, "Sergio P\xc3\xa9rez");
+
+    live.update(2.0);
+    char out[64];
+    CHECK(live.read_driver_name(0, out, sizeof out) && !std::strcmp(out, "Marcel"));
+    CHECK(live.read_driver_name(2, out, sizeof out) && !std::strcmp(out, "Nico H\xc3\xbclkenberg"));
+    CHECK(live.read_driver_name(1, out, sizeof out) && !std::strcmp(out, "Sergio P\xc3\xa9rez"));
+    CHECK(!live.read_driver_name(3, out, sizeof out)); // domain above 2
+    CHECK(!live.read_driver_name(9, out, sizeof out)); // no participant
+    CHECK(!live.read_driver_name(40, out, sizeof out));
+    CHECK(live.read_driver_name(1, out, 9) && !std::strcmp(out, "Sergio P")); // cut before the 2-byte character
+    CHECK(live.read_driver_name(1, out, 11) && !std::strcmp(out, "Sergio P\xc3\xa9"));
+    CHECK(live.read_driver_name(2, out, 2) && !std::strcmp(out, "N"));
+    CHECK(!live.read_driver_name(2, out, 1));
+
+    // Bit 7 of the participant flags on vehicle 2 takes the player name; bit 6 alone does not.
+    uintptr_t p2 = a.get<uintptr_t>(parts + 8 * 2);
+    a.put<uint8_t>(p2 + D::participant_flags, 0xc0);
+    CHECK(live.read_driver_name(2, out, sizeof out) && !std::strcmp(out, "Marcel"));
+    a.put<uint8_t>(p2 + D::participant_flags, 0x40);
+
+    // Past the end of the driver table, an empty slot, a control character: no name.
+    a.put<uint32_t>(ents + D::entrant_ref, (4u << 16) | 0);
+    CHECK(!live.read_driver_name(2, out, sizeof out));
+    a.put<uint32_t>(ents + D::entrant_ref, (2u << 16) | 0);
+    CHECK(!live.read_driver_name(2, out, sizeof out));
+    a.put<uint32_t>(ents + D::entrant_ref, (3u << 16) | 0);
+    CHECK(live.read_driver_name(2, out, sizeof out));
+    a.put<uintptr_t>(vh + D::player_name, str("bad\tname"));
+    CHECK(!live.read_driver_name(0, out, sizeof out));
+
+    // As in the game, a vehicle id at or past the participant vector's length has no name.
+    a.put<uintptr_t>(vh + D::participants + 8, parts + 8 * 2);
+    CHECK(!live.read_driver_name(2, out, sizeof out));
+
+    Gates off = Gates::all();
+    off.on[G_DRIVER_NAMES] = false;
+    Live gated(w.mem(), w.s, off);
+    gated.update(0.0);
+    CHECK(!gated.read_driver_name(1, out, sizeof out));
+}
+
 static void test_pit_lane()
 {
     World w;
@@ -903,7 +1026,7 @@ static void test_build_gate()
 
     CHECK(proof_for(1789118616u) == &KB_BUILD && proof_for(1789128892u) == &EA_BUILD && !proof_for(1234u) && !proof_for(0));
     CHECK(EA_BUILD.progress_from_manager == 0x2a0 && KB_BUILD.progress_from_manager == L::progress::from_manager);
-    CHECK(EA_BUILD.groups == ALL_GROUPS && KB_BUILD.groups == ALL_GROUPS);
+    CHECK(EA_BUILD.groups == (ALL_GROUPS & ~bit(G_DRIVER_NAMES)) && KB_BUILD.groups == ALL_GROUPS);
 
     World ea(EA_BUILD.progress_from_manager);
     Sites ea_sites = ea.s;
@@ -967,6 +1090,8 @@ int main()
     test_snapshot();
     test_telemetry_fill();
     test_badge();
+    test_utf8_prefix();
+    test_driver_name();
     test_pit_lane();
     test_sector_sites();
     test_bus_logic();

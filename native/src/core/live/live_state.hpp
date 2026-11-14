@@ -62,6 +62,35 @@ inline char checked_tyre_letter(uint8_t visual, int32_t compound)
     return a && a == b ? a : 0;
 }
 
+// Length of the longest prefix of s[0..n) that is whole, valid UTF-8 and no longer than max bytes; npos when s holds a
+// control character or an invalid sequence (the string is then not a name).
+inline size_t utf8_prefix(const char *s, size_t n, size_t max)
+{
+    size_t i = 0, keep = 0;
+    while (i < n) {
+        unsigned char c = static_cast<unsigned char>(s[i]);
+        size_t len = c < 0x80 ? 1 : (c & 0xe0) == 0xc0 ? 2 : (c & 0xf0) == 0xe0 ? 3 : (c & 0xf8) == 0xf0 ? 4 : 0;
+        if (!len || (len == 1 && (c < 0x20 || c == 0x7f)) || (len == 2 && c < 0xc2) || (len == 4 && c > 0xf4) || i + len > n)
+            return ~size_t(0);
+        for (size_t k = 1; k < len; k++)
+            if ((static_cast<unsigned char>(s[i + k]) & 0xc0) != 0x80)
+                return ~size_t(0);
+        if (len == 3) {
+            unsigned char d = static_cast<unsigned char>(s[i + 1]);
+            if ((c == 0xe0 && d < 0xa0) || (c == 0xed && d > 0x9f))
+                return ~size_t(0);
+        } else if (len == 4) {
+            unsigned char d = static_cast<unsigned char>(s[i + 1]);
+            if ((c == 0xf0 && d < 0x90) || (c == 0xf4 && d > 0x8f))
+                return ~size_t(0);
+        }
+        i += len;
+        if (i <= max)
+            keep = i;
+    }
+    return keep;
+}
+
 struct Event {
     enum Kind : uint8_t { retirement, overtake, collision } kind;
     int64_t a, b;
@@ -229,7 +258,91 @@ public:
         return false;
     }
 
+    // The driver name the game shows for a car (Sess_Get_CarDriverName): the player name for a human-driven car, else
+    // the display name of the driver record the car's session entrant points at. UTF-8, cut at a character boundary to
+    // fit cap - 1 bytes.
+    bool read_driver_name(uint32_t vehicle, char *out, size_t cap)
+    {
+        namespace D = L::driver;
+        if (!g_[G_DRIVER_NAMES] || !s_.key_game_mode || !s_.key_team_tables || !s_.key_session_component ||
+            vehicle >= MAX_CARS || cap < 2)
+            return false;
+        uintptr_t vh = find(c_s1_, s_.key_session_component), pv[2];
+        size_t pn = 0;
+        if (!vh || !m_.read(vh + D::participants, pv, sizeof pv) || !vec_ok(pv[0], pv[1], 8, D::max_participants, pn) ||
+            vehicle >= pn)
+            return false;
+        uintptr_t parts[D::max_participants], participant = 0;
+        if (!m_.read(pv[0], parts, pn * 8))
+            return false;
+        for (size_t i = 0; i < pn && !participant; i++) {
+            uintptr_t phys = 0, car = 0;
+            uint8_t vid = 0xff;
+            if (parts[i] && m_.get(parts[i] + D::participant_physics, phys) && phys &&
+                m_.get(phys + D::physics_car, car) && car && m_.get(car + L::car::vehicle_id, vid) && vid == vehicle)
+                participant = parts[i];
+        }
+        uint8_t flags = 0;
+        if (!participant || !m_.get(participant + D::participant_flags, flags))
+            return false;
+        uintptr_t name = 0;
+        if (flags & D::human_flag) {
+            if (!m_.get(vh + D::player_name, name))
+                return false;
+        } else {
+            uintptr_t gmc = find(c_mode_, s_.key_game_mode), mode = 0, game = 0, ev[2];
+            size_t n = 0;
+            if (!gmc || !m_.get(gmc + L::badge::mode, mode) || !mode || !m_.get(mode + L::badge::game, game) || !game ||
+                !m_.read(game + L::badge::entrants, ev, sizeof ev) || !vec_ok(ev[0], ev[1], L::badge::entrant_stride, 512, n))
+                return false;
+            uintptr_t entrant = 0;
+            for (size_t i = 0; i < n && !entrant; i++) {
+                uint8_t vid = 0xff;
+                if (m_.get(ev[0] + i * L::badge::entrant_stride + L::badge::entrant_vid, vid) && vid == vehicle)
+                    entrant = ev[0] + i * L::badge::entrant_stride;
+            }
+            uint32_t ref = 0;
+            if (!entrant || !m_.get(entrant + D::entrant_ref, ref) || (ref & 0xff) > D::max_domain)
+                return false;
+            uintptr_t es = find(c_teams_, s_.key_team_tables), table = 0, vec[2], rec = 0;
+            size_t count = 0, id = ref >> 16;
+            if (!es || !m_.get(es + D::sets + (ref & 0xff) * D::set_stride, table) || !table ||
+                !m_.read(table + D::table_vec, vec, sizeof vec) || !vec_ok(vec[0], vec[1], 16, 0x10000, count) ||
+                id >= count || !m_.get(vec[0] + id * 16 + D::slot_record, rec) || !rec || !m_.get(rec + D::record_name, name))
+                return false;
+        }
+        char buf[D::max_name];
+        size_t len = 0;
+        if (!name || !read_text(name, buf, sizeof buf, len) || !len)
+            return false;
+        size_t keep = utf8_prefix(buf, len, cap - 1);
+        if (keep == ~size_t(0) || !keep)
+            return false;
+        std::memcpy(out, buf, keep);
+        out[keep] = 0;
+        return true;
+    }
+
 private:
+    // Copies the NUL-terminated string at p into out (at most cap - 1 bytes before the NUL); false when it is unreadable or
+    // has no NUL within cap bytes.
+    bool read_text(uintptr_t p, char *out, size_t cap, size_t &len)
+    {
+        size_t n = 0;
+        while (n < cap) {
+            size_t chunk = std::min<size_t>(cap - n, 0x1000 - ((p + n) & 0xfff));
+            if (!m_.read(p + n, out + n, chunk))
+                return false;
+            for (size_t i = 0; i < chunk; i++)
+                if (!out[n + i]) {
+                    len = n + i;
+                    return true;
+                }
+            n += chunk;
+        }
+        return false;
+    }
+
     struct Slot {
         uintptr_t value = 0;
         size_t slot = ~size_t(0);

@@ -80,6 +80,15 @@ inline constexpr bool F_BADGES = LIVE_HAS(GameModeSystem, mode) && LIVE_HAS(Game
                                  LIVE_HAS(TeamSlots, begin) && LIVE_HAS(TeamSlots, end) && LIVE_HAS(TeamSlot, record) &&
                                  LIVE_HAS(TeamRecord, timing_tower_texture_path) &&
                                  LIVE_HAS(TeamRecord, show_custom_badge_in_ui);
+inline constexpr bool F_DRIVER_NAMES =
+    LIVE_HAS(GameModeSystem, mode) && LIVE_HAS(GameMode, entrants_manager) && LIVE_HAS(EntrantsManager, session_begin) &&
+    LIVE_HAS(EntrantsManager, session_end) && LIVE_HAS(SessionEntrantView, vehicle_id) &&
+    LIVE_HAS(SessionEntrantView, driver_ref) && LIVE_HAS(EntrantsSystem, driver_sets) && LIVE_HAS(DriverSetRef, slots) &&
+    LIVE_HAS(DriverSlots, begin) && LIVE_HAS(DriverSlots, end) && LIVE_HAS(DriverSlot, record) &&
+    LIVE_HAS(DriverRecord, display_name) && LIVE_HAS(VehicleHelperSystem, player_name) &&
+    LIVE_HAS(VehicleHelperSystem, participants_begin) && LIVE_HAS(VehicleHelperSystem, participants_end) &&
+    LIVE_HAS(VehicleHelperParticipant, physics) && LIVE_HAS(VehicleHelperParticipant, driver_kind) &&
+    LIVE_HAS(CarPhysicsRecord, car);
 inline constexpr bool F_TRACK_NAME =
     LIVE_HAS(RacingVehicles, owner) && LIVE_HAS(RacingOwner, track) && LIVE_HAS(RacingTrack, name);
 
@@ -106,6 +115,9 @@ inline constexpr Row ROWS[G_COUNT] = {
     {G_TRACK_NAME, F_TRACK_NAME, true, "RacingVehicles.owner, RacingOwner.track and RacingTrack.name"},
     {G_SPECTATE_GAP, F_SPECTATE_GAP && F_REGISTRY, true, "SpectatorDirectorGap.gap_mode"},
     {G_BUS_EVENTS, true, true, "g_Game_MessageBus and Ne_Subscribe_BusMessage; the message layouts are the agreed Live_Subscribe_* rows (no signature, not resolved)"},
+    {G_DRIVER_NAMES, F_DRIVER_NAMES && F_REGISTRY, true,
+     "the game mode entrant chain, SessionEntrantView.driver_ref, EntrantsSystem driver tables, DriverRecord.display_name, "
+     "VehicleHelperSystem participants and player name, VehicleHelperParticipant and CarPhysicsRecord.car"},
 };
 
 struct Needs {
@@ -136,6 +148,7 @@ inline constexpr Needs NEEDS[] = {
     {G_TRACK, {&Sites::track_length, &Sites::session_type}},
     {G_TRACK_NAME, {&Sites::track_world}},
     {G_BUS_EVENTS, {&Sites::bus_slot, &Sites::bus_subscribe}},
+    {G_DRIVER_NAMES, {&Sites::game_manager, &Sites::key_game_mode, &Sites::key_team_tables, &Sites::key_session_component}},
 };
 
 constexpr uint32_t bit(Group g)
@@ -157,7 +170,9 @@ inline constexpr uint32_t ALL_GROUPS = (1u << G_COUNT) - 1;
 
 inline constexpr BuildProof KB_BUILD = {1789118616u, "Steam", ALL_GROUPS, layout::progress::from_manager};
 
-inline constexpr uint32_t EA_GROUPS = ALL_GROUPS;
+// Driver names read the EntrantsSystem driver tables and VehicleHelperSystem participants, which have not been compared
+// against the EA build's layout yet.
+inline constexpr uint32_t EA_GROUPS = ALL_GROUPS & ~(1u << G_DRIVER_NAMES);
 
 inline constexpr BuildProof EA_BUILD = {1789128892u, "EA", EA_GROUPS,
                                          runtime::game_manager::tail_field(layout::progress::from_manager, "ea")};
