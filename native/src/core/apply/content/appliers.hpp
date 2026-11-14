@@ -23,4 +23,12 @@ struct WarmersBox {
 };
 WarmersBox tyre_warmers_for_box(const std::string &entrant_list);
 
+// The mandatory tyre change rule the box with this entrant list runs: its content.package's
+// rules.mandatory_tyre_change (none when the package has no rule), and the line to log.
+struct TyreChangeBox {
+    std::optional<bool> required;
+    std::string line;
+};
+TyreChangeBox tyre_change_for_box(const std::string &entrant_list);
+
 }

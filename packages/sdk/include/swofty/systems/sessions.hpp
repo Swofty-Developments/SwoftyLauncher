@@ -24,8 +24,10 @@ struct Rules {
     bool refuelling = false;
     std::optional<float> race_fuel_kg;
     std::optional<bool> tyre_warmers;   // content.package 1.4: the box's races with or without tyre warmers; empty = the mode's
+    std::optional<bool> mandatory_tyre_change;   // content.package 1.5: two dry compounds required or not; empty = the mode's
 };
-SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg, tyre_warmers)
+SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg, tyre_warmers,
+              mandatory_tyre_change)
 
 inline Result set_control(cars::live::Car car, Control mode)
 {
