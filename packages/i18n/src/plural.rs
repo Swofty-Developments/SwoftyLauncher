@@ -122,6 +122,16 @@ mod tests {
     }
 
     #[test]
+    fn brazilian_portuguese_counts_zero_and_one_as_one() {
+        assert_eq!(categories("pt-BR"), [One, Many, Other]);
+        assert_eq!(category("pt-BR", 0), One);
+        assert_eq!(category("pt-BR", 1), One);
+        assert_eq!(category("pt-BR", 2), Other);
+        assert_eq!(category("pt-BR", 1_000_000), Many);
+        assert_eq!(category("pt-BR", 1_000_001), Other);
+    }
+
+    #[test]
     fn czech_and_arabic_and_french() {
         assert_eq!(
             (category("cs", 1), category("cs", 3), category("cs", 5)),
@@ -146,7 +156,7 @@ mod tests {
 
     #[test]
     fn every_category_a_rule_returns_is_listed() {
-        for code in ["en", "fr", "ru", "pl", "cs", "ar", "zh", "ja", "ko"] {
+        for code in ["en", "fr", "ru", "pl", "cs", "ar", "zh", "ja", "ko", "pt-BR"] {
             for n in 0..1000 {
                 assert!(categories(code).contains(&category(code, n)), "{code} {n}");
             }

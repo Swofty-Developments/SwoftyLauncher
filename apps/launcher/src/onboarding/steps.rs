@@ -84,6 +84,7 @@ fn english_name(code: &str) -> Option<&'static str> {
         "en" => Some(tr("English")),
         "es" => Some(tr("Spanish")),
         "ko" => Some(tr("Korean")),
+        "pt-BR" => Some(tr("Portuguese (Brazil)")),
         "ru" => Some(tr("Russian")),
         "zh-CN" => Some(tr("Chinese (Simplified)")),
         _ => None,

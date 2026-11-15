@@ -307,6 +307,13 @@ mod tests {
         );
         assert!(
             all.contains(&Language {
+                code: "pt-BR",
+                name: "Português (Brasil)"
+            }),
+            "{all:?}"
+        );
+        assert!(
+            all.contains(&Language {
                 code: "ru",
                 name: "Русский"
             }),
