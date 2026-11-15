@@ -89,6 +89,7 @@ inline constexpr bool F_DRIVER_NAMES =
     LIVE_HAS(VehicleHelperSystem, participants_begin) && LIVE_HAS(VehicleHelperSystem, participants_end) &&
     LIVE_HAS(VehicleHelperParticipant, physics) && LIVE_HAS(VehicleHelperParticipant, driver_kind) &&
     LIVE_HAS(CarPhysicsRecord, car);
+inline constexpr bool F_BADGE_RENDER = F_BADGES && LIVE_HAS(SessionEntrantView, badge_stat_id);
 inline constexpr bool F_TRACK_NAME =
     LIVE_HAS(RacingVehicles, owner) && LIVE_HAS(RacingOwner, track) && LIVE_HAS(RacingTrack, name);
 
@@ -118,6 +119,7 @@ inline constexpr Row ROWS[G_COUNT] = {
     {G_DRIVER_NAMES, F_DRIVER_NAMES && F_REGISTRY, true,
      "the game mode entrant chain, SessionEntrantView.driver_ref, EntrantsSystem driver tables, DriverRecord.display_name, "
      "VehicleHelperSystem participants and player name, VehicleHelperParticipant and CarPhysicsRecord.car"},
+    {G_BADGE_RENDER, F_BADGE_RENDER && F_REGISTRY, true, "the badges rows and SessionEntrantView.badge_stat_id"},
 };
 
 struct Needs {
@@ -149,6 +151,7 @@ inline constexpr Needs NEEDS[] = {
     {G_TRACK_NAME, {&Sites::track_world}},
     {G_BUS_EVENTS, {&Sites::bus_slot, &Sites::bus_subscribe}},
     {G_DRIVER_NAMES, {&Sites::game_manager, &Sites::key_game_mode, &Sites::key_team_tables, &Sites::key_session_component}},
+    {G_BADGE_RENDER, {&Sites::game_manager, &Sites::key_game_mode, &Sites::key_team_tables}},
 };
 
 constexpr uint32_t bit(Group g)
@@ -174,8 +177,8 @@ inline constexpr uint32_t ALL_GROUPS = (1u << G_COUNT) - 1;
 inline constexpr BuildProof KB_BUILD = {1789118616u, "Steam", ALL_GROUPS, layout::progress::from_manager};
 
 // Driver names read the EntrantsSystem driver tables and VehicleHelperSystem participants, which have not been compared
-// against the EA build's layout yet.
-inline constexpr uint32_t EA_GROUPS = ALL_GROUPS & ~(1u << G_DRIVER_NAMES);
+// against the EA build's layout yet; the rendered badge path reads a SessionEntrantView field that has not been either.
+inline constexpr uint32_t EA_GROUPS = ALL_GROUPS & ~(bit(G_DRIVER_NAMES) | bit(G_BADGE_RENDER));
 
 inline constexpr BuildProof EA_BUILD = {1789128892u, "EA", EA_GROUPS,
                                          runtime::game_manager::tail_field(layout::progress::from_manager, "ea")};

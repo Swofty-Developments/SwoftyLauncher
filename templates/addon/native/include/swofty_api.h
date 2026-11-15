@@ -1074,8 +1074,8 @@ typedef struct SwoftyContentOps {
    zero, never another car's value. Calls answer SWOFTY_ASSET_UNAVAILABLE while no session is live, the build is
    not the one the offsets are from, or the group is off because a KB row it needs has no independent verify row
    yet (the core logs "live <group> off: needs <row>" once), and SWOFTY_ASSET_INVALID for a bad argument.
-   Table version 2; version 1 is the members up to seq and keeps its layout, so check version >= 2 before calling
-   driver_name.
+   Table version 3; version 2 adds driver_name and version 1 is the members up to seq; each keeps its layout, so
+   check version >= 3 before calling team_badge_texture and version >= 2 before calling driver_name.
    session: the session header. car: one car by vehicle id. subject: the watched car while the spectator HUD is
    up, else the player's. turn: the official turn at that car's lap_m (SWOFTY_ASSET_UNAVAILABLE for a track
    without a table). track_turns: the whole turn list of the loaded track; count is the turns in the list on
@@ -1084,8 +1084,13 @@ typedef struct SwoftyContentOps {
    changes on every refresh. driver_name (version 2): the driver name the game shows for that car, as UTF-8: the
    player's name for a car a human drives, else the display name of the driver record of the car's entrant; at most
    cap - 1 bytes, cut at a character boundary, then NUL. It reads the game's memory at the call (not the snapshot), so
-   a timing tower can fetch one name per visible row. */
-#define SWOFTY_LIVE_VERSION 2
+   a timing tower can fetch one name per visible row.
+   team_badge_texture (version 3): the texture path the race HUD timing pill binds for
+   that car, NUL-terminated within cap: "#overrides.osd.timing_tower.team_badges_hud.<key>" for a catalogue team,
+   "eaid://ui_package/art/textures/render_badge_<table> <index>" (or render_badge_default.tga) for a team record
+   with show_custom_badge_in_UI set; SWOFTY_ASSET_UNAVAILABLE for a user-defined (My Team) team and when the
+   path does not fit cap. */
+#define SWOFTY_LIVE_VERSION 3
 #define SWOFTY_LIVE_MAX_CARS 32
 #define SWOFTY_LIVE_NO_GAP INT32_MIN
 
@@ -1238,6 +1243,7 @@ typedef struct SwoftyLive {
     int (*team_badge)(uint32_t vehicle, char *key, uint32_t cap);
     int (*seq)(uint64_t *frame);
     int (*driver_name)(uint32_t vehicle, char *out, uint32_t cap);
+    int (*team_badge_texture)(uint32_t vehicle, char *path, uint32_t cap);
 } SwoftyLive;
 
 /* Live car operations (standard library 1.6, experimental), from the core export SwoftyCoreCarOps; not a SwoftyApi

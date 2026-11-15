@@ -63,8 +63,14 @@ int main()
         CHECK(live::track_turns().size() == 2);
         CHECK(live::team_badge(1) == std::string("ferrari_2026") && !live::team_badge(0));
         CHECK(live::driver_name(1) == std::string("Charles Leclerc") && !live::driver_name(0));
+        CHECK(live::team_badge_texture(1) == std::string("#overrides.osd.timing_tower.team_badges_hud.ferrari_2026"));
+        fake.set_badge_texture(2, "eaid://ui_package/art/textures/render_badge_ePreLoaded 7");
+        CHECK(live::team_badge_texture(2) == std::string("eaid://ui_package/art/textures/render_badge_ePreLoaded 7"));
+        CHECK(!live::team_badge(2) && !live::team_badge_texture(0));
+        fake.set_table_version(2);
+        CHECK(!live::team_badge_texture(1) && live::driver_name(1) && live::team_badge(1));
         fake.set_table_version(1);
-        CHECK(!live::driver_name(1) && live::team_badge(1));
+        CHECK(!live::driver_name(1) && !live::team_badge_texture(1) && live::team_badge(1));
         fake.set_table_version(SWOFTY_LIVE_VERSION);
         auto o = live::order();
         CHECK(o.ids.size() == 3 && o.player_rank == 1 && o.ahead(0) && o.ahead(0)->vehicle == 1);
