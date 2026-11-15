@@ -1,6 +1,7 @@
 use std::collections::BTreeMap;
 use std::path::PathBuf;
 
+use swofty_core::livery_kits;
 use swofty_core::manifest::AddonManifest;
 use swofty_core::ops::{DbOps, apply_db_ops};
 use swofty_core::owned;
@@ -76,6 +77,60 @@ fn added_se_livery_unlock_is_owned_against_the_real_database() {
     );
     let stock = std::collections::HashSet::from([owned::item_key("eSELivery", "toro_rosso_miami_26")]);
     assert_eq!(owned::stock_collisions(&pristine, &stock), stock);
+}
+
+#[test]
+fn a_special_livery_of_an_unknown_team_kit_is_emptied_against_the_real_database() {
+    let Some(dir) = std::env::var_os("F1_25_DIR").map(PathBuf::from) else {
+        eprintln!("F1_25_DIR is not set; skipping");
+        return;
+    };
+    let Ok(data) = std::fs::read(dir.join("game_package/gamedatabases/gamedatabases.2025.bin")) else {
+        eprintln!("no gamedatabases.2025.bin under F1_25_DIR; skipping");
+        return;
+    };
+    let mut db = Gvdb::parse(&data).unwrap();
+    assert!(livery_kits::kits(&db).contains("2026-renault"));
+    assert_eq!(livery_kits::keep_kits(&mut db), []);
+    assert_eq!(db.to_bytes(), data);
+    let ops: DbOps = serde_json::from_str(
+        r#"{"schema_version":1,
+        "fields":{
+          "customisation.custom_se_liveries.se_liveries.se_livery":["_metadata_","id","compatible_vehicle","wep_override","team_customisation","name_loc_tag","desc_loc_tag","ui_priority"]
+        },
+        "ops":[
+          {"op":"add-row","table":"customisation.custom_se_liveries.se_liveries",
+           "from":"customisation.custom_se_liveries.se_liveries.se_livery[_metadata_=mclaren_monaco_2026]",
+           "set":{"_metadata_":"lotus_lx02","id":"22","team_customisation":"2026-lotus","ui_priority":"22"}},
+          {"op":"add-row","table":"customisation.custom_se_liveries.se_liveries",
+           "from":"customisation.custom_se_liveries.se_liveries.se_livery[_metadata_=mclaren_monaco_2026]",
+           "set":{"_metadata_":"lotus_lx09","id":"23","team_customisation":"2026-renault","ui_priority":"23"}}
+        ]}"#,
+    )
+    .unwrap();
+    apply_db_ops(&mut db, &ops, &BTreeMap::<String, Vec<String>>::new()).unwrap();
+    let rows = "customisation.custom_se_liveries.se_liveries";
+    let found = livery_kits::keep_kits(&mut db);
+    assert_eq!(found.len(), 1, "{found:?}");
+    assert_eq!(
+        (found[0].row.as_str(), found[0].kit.as_str()),
+        ("lotus_lx02", "2026-lotus")
+    );
+    assert_eq!(
+        db.get_text(&format!("{rows}.se_livery_21.team_customisation"))
+            .as_deref(),
+        Some("")
+    );
+    assert_eq!(
+        db.get_text(&format!("{rows}.se_livery_22.team_customisation"))
+            .as_deref(),
+        Some("2026-renault")
+    );
+    assert_eq!(
+        db.get_text(&format!("{rows}.se_livery_13.team_customisation"))
+            .as_deref(),
+        Some("2026-mclaren")
+    );
 }
 
 #[test]

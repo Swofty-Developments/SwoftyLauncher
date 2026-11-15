@@ -1829,6 +1829,12 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
                 .map_or("database", |id| addons.get(id).map_or(id, |m| m.name.as_str()));
             built.warnings.push(u.line(by));
         }
+        for k in crate::livery_kits::keep_kits(&mut db) {
+            let by = planner
+                .record_writer(k.key)
+                .map_or("database", |id| addons.get(id).map_or(id, |m| m.name.as_str()));
+            built.warnings.push(k.line(by));
+        }
         stock_removals = planner.take_stock_removals();
         for (id, n) in &stock_removals {
             let name = addons.get(id).map_or(id.as_str(), |m| m.name.as_str());
@@ -5537,6 +5543,98 @@ mod tests {
         let out = Gvdb::parse(&std::fs::read(&built.plan.data[GVDB]).unwrap()).unwrap();
         assert_eq!(out.get_text(&count).as_deref(), Some("2"));
         assert_eq!(out.get_text(&second).as_deref(), Some("rw_bahrain"));
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_special_livery_with_an_unknown_team_kit_builds_with_an_empty_one() {
+        use crate::dbedit::Catalog;
+        use crate::dbedit::package::Package;
+        use crate::livery_kits::{KIT_YEARS, TABLE};
+        use swofty_formats::gvdb::Record;
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-kits-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let year = format!("{KIT_YEARS}.team_customisation_for_year_0");
+        let mut records = vec![
+            Record::new(
+                &format!("{KIT_YEARS}._team_customisation_for_year_instancecount_"),
+                0,
+                "1",
+            ),
+            Record::new(&format!("{year}._metadata_"), 2, "2026"),
+            Record::new(&format!("{year}._team_customisation_instancecount_"), 0, "2"),
+            Record::new(
+                &format!("{year}.team_customisation_0._metadata_"),
+                2,
+                "2026-mclaren",
+            ),
+            Record::new(
+                &format!("{year}.team_customisation_1._metadata_"),
+                2,
+                "2026-renault",
+            ),
+            Record::new(&format!("{TABLE}._se_livery_instancecount_"), 0, "2"),
+        ];
+        for (i, label) in ["mclaren_monaco_2026", "lotus_lx02"].iter().enumerate() {
+            let row = format!("{TABLE}.se_livery_{i}");
+            records.push(Record::new(&format!("{row}._metadata_"), 2, *label));
+            records.push(Record::new(
+                &format!("{row}.team_customisation"),
+                4,
+                "2026-mclaren",
+            ));
+        }
+        let stock = Gvdb { records }.to_bytes();
+        std::fs::write(dir.join(GVDB), &stock).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+
+        let built = build(&store, "default", &game).unwrap();
+        assert!(
+            !built.warnings.iter().any(|w| w.contains("team_customisation")),
+            "{:?}",
+            built.warnings
+        );
+
+        let cat = Catalog::load(&stock).unwrap();
+        let mut p = Package::create(&store, "More Liveries").unwrap();
+        let kit = format!("{TABLE}.se_livery_1.team_customisation");
+        p.edits
+            .set(&cat, swofty_formats::hash::fnv1a64(&kit), "2026-lotus")
+            .unwrap();
+        p.save(&store, &cat).unwrap();
+        store
+            .update_profile("default", |pr| pr.set_enabled(&p.id, true))
+            .unwrap();
+
+        let built = build(&store, "default", &game).unwrap();
+        assert!(
+            built.warnings.contains(
+                &"More Liveries: special livery lotus_lx02 has team_customisation 2026-lotus, and \
+                  entrants.team_customisation has no row with that label; the value is left empty (the game \
+                  crashes at start-up on a team kit it cannot find)"
+                    .to_owned()
+            ),
+            "{:?}",
+            built.warnings
+        );
+        let out = Gvdb::parse(&std::fs::read(&built.plan.data[GVDB]).unwrap()).unwrap();
+        assert_eq!(out.get_text(&kit).as_deref(), Some(""));
+        assert_eq!(
+            out.get_text(&format!("{TABLE}.se_livery_0.team_customisation"))
+                .as_deref(),
+            Some("2026-mclaren")
+        );
         std::fs::remove_dir_all(&root).ok();
     }
 

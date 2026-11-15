@@ -402,6 +402,21 @@ Every row of these tables holds the four keys `colour_1_default`, `colour_2_defa
 - A customisable suit design gives an AI driver's suit its colours from `colour_1_default` to `colour_3_default`. An AI driver in `tier01_livery76` wears its `#e5e5e5`, `#0e3858` and `#ffb43f` (`-1710619`, `-15845288`, `-19393`).
 - `add-row` copies the four keys of any of these rows, empty text included, and swofty_core applies a copied empty value as the game's 0. Launcher 1.4.0 and earlier copy them only from a `fields` list, and on the runtime route their swofty_core ignores the empty values: `edit … ignored: an int needs integer text (the game parses it with atoi), got ''`.
 
+### Team kit of a special livery
+
+Every row of `customisation.custom_se_liveries.se_liveries` holds a `team_customisation`: the label of a team kit row, `entrants.team_customisation.team_customisation_for_year_N.team_customisation_M`. The 21 stock rows name kits such as `2025-mclarensilverstone` and `2026-tororosso`.
+
+- A kit label is not the car's folder name. The 2026 kits of Alpine, Aston Martin, Racing Bulls and Cadillac are `2026-renault`, `2026-forceindia`, `2026-tororosso` and `2026-cadillac`; their car folders are `lotus`, `force_india`, `toro_rosso` and `gm_cadillac`.
+- At boot, `Sess_Apply_ContentAvailability` (`0x1413e4cf0`) reads each row's `team_customisation` and skips the row when it is empty (`0x1413e9764`). Otherwise it finds the kit row with that label, by `strcmp` over every year (`0x1424aca70`), and reads the kit's `official_driver_customisations` with no check for a kit it did not find (`0x1413e9785` to `0x1413e9797`). A row that names no kit crashes the game at boot with an access violation at `F1_25.exe+0x13e9797`.
+- `Game_Build_CustomisationCatalogue` (`0x1414059c0`) reads the same value and also skips an empty one (`0x1414173a0`).
+- The build checks every special livery row after all database operations. It empties a `team_customisation` that labels no kit row, and warns with the addon that wrote the value:
+
+```text
+More Liveries: special livery lotus_lx02 has team_customisation 2026-lotus, and entrants.team_customisation has no row with that label; the value is left empty (the game crashes at start-up on a team kit it cannot find)
+```
+
+Take the label from the kit row whose `linked_team` is the car's team.
+
 ### The side-data check
 
 After every addon's operations ran, the build checks each `add-row` whose copy has a new label, against the built database. A finding is one of three kinds:
