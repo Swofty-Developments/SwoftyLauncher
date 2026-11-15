@@ -337,6 +337,8 @@ void gp_continue_commit();
 void estimate_laptime_commit();
 std::vector<CoreMixins> red_flag_recompute_mixins();
 void red_flag_recompute_commit();
+std::vector<CoreMixins> box_grid_mixins();
+void box_grid_commit();
 std::vector<CoreMixins> track_list_guard_mixins();
 void track_list_guard_commit();
 std::vector<CoreMixins> garage_setup_mixins();

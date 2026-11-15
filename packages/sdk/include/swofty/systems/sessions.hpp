@@ -2,6 +2,7 @@
 #pragma once
 #include <optional>
 #include <string>
+#include <vector>
 #include <swofty/events.hpp>
 #include <swofty/registry.hpp>
 #include <swofty/systems/cars.hpp>
@@ -14,6 +15,20 @@
 // crosses the line. The rest of the sessions system ships later.
 
 namespace swofty::sessions {
+
+// content.package 1.5 rules.grid: how a box's race grid forms from qualifying. best_lap is the game's own order;
+// best_of ranks each driver's best lap over every qualifying-type session of the weekend; aggregate ranks the sum of
+// the best laps of the two fastest sessions. rule_107 moves a car slower than 107 % of pole to the back of the grid.
+// rows (cars per row, repeating from the front, e.g. {3, 2}) is design only in this version.
+enum class GridQualifying { best_lap, best_of, aggregate };
+SWOFTY_ENUM(GridQualifying, best_lap, best_of, aggregate)
+
+struct GridRules {
+    GridQualifying qualifying = GridQualifying::best_lap;
+    std::vector<int> rows;
+    bool rule_107 = false;
+};
+SWOFTY_RECORD(GridRules, qualifying, rows, rule_107)
 
 struct Rules {
     Ref<Mode> mode;
@@ -35,8 +50,9 @@ struct Rules {
     std::optional<bool> formation_lap;       // content.package 1.5: the game's formation lap option; empty = the player's
     std::optional<std::string> penalties;    // content.package 1.5: off, corner_cutting_only, esports or on; empty = the player's
     std::optional<std::string> corner_cutting;   // content.package 1.5: regular or strict; empty = the player's
+    std::optional<GridRules> grid;      // content.package 1.5: how the box's race grid forms; empty = the game's grid
 };
-SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg, tyre_warmers, refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali, race_tyre_change, race_time_limit_s, weekend_mode, safety_car, formation_lap, penalties, corner_cutting)
+SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg, tyre_warmers, refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali, race_tyre_change, race_time_limit_s, weekend_mode, safety_car, formation_lap, penalties, corner_cutting, grid)
 
 inline Result set_control(cars::live::Car car, Control mode)
 {

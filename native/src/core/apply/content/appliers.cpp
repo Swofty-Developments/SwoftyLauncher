@@ -8,6 +8,7 @@
 #include "../scheduler.hpp"
 #include "boot.hpp"
 #include "garage_build.hpp"
+#include "grid_rules.hpp"
 #include "gvdb.hpp"
 #include "logos.hpp"
 #include "race_fuel.hpp"
@@ -894,6 +895,29 @@ BoxOptionsPick box_options_for_box(const std::string &entrant_list)
     for (auto &id : in_load_order(st, "content.package"))
         packages.push_back({id, lookup("content.package", id)});
     return box_options_pick(entrant_list, packages);
+}
+
+GridBox grid_for_box(const std::string &entrant_list)
+{
+    Store &st = registry::store();
+    std::map<std::string, Value> keep;
+    Lookup lookup = store_lookup(st, keep);
+    std::vector<std::pair<std::string, const Value *>> packages;
+    for (auto &id : in_load_order(st, "content.package"))
+        packages.push_back({id, lookup("content.package", id)});
+    GridPick pick = grid_pick(entrant_list, packages);
+    return {pick.rule, pick.line};
+}
+
+bool any_grid_rule()
+{
+    Store &st = registry::store();
+    std::map<std::string, Value> keep;
+    Lookup lookup = store_lookup(st, keep);
+    for (auto &id : in_load_order(st, "content.package"))
+        if (const Value *rec = lookup("content.package", id); rec && (*rec)["rules"]["grid"].is_object())
+            return true;
+    return false;
 }
 
 void register_appliers()

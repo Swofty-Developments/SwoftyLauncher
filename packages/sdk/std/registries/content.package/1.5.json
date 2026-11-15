@@ -336,6 +336,44 @@
             "null"
           ],
           "x-ref": "car.profile"
+        },
+        "grid": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "description": "How the box's race grid forms from qualifying: the core re-ranks the weekend's qualifying classification (Sess_Build_GroupResult) in this box. Missing or null: the game's own grid.",
+          "properties": {
+            "qualifying": {
+              "enum": [
+                "best_lap",
+                "best_of",
+                "aggregate"
+              ],
+              "default": "best_lap",
+              "description": "best_lap: the game's own order. best_of: each driver's best lap over every qualifying-type session of the weekend (F1 1950-1995). aggregate: the sum of each driver's best laps of the two fastest qualifying-type sessions (F1 2005); a weekend with one qualifying session ranks like best_of."
+            },
+            "rows": {
+              "type": [
+                "array",
+                "null"
+              ],
+              "items": {
+                "type": "integer",
+                "minimum": 1,
+                "maximum": 5
+              },
+              "minItems": 1,
+              "maxItems": 8,
+              "description": "Cars per grid row, repeating from the front: [3,2] is the 1950s 3-2-3 grid, [4,3] the 4-3-4 grid. Null: the track's own 2-wide grid. Design only in this version: the core logs the pattern and keeps the track's slots."
+            },
+            "rule_107": {
+              "type": "boolean",
+              "default": false,
+              "description": "The 107 % rule (F1 1996-2002): a driver slower than 107 % of the pole time starts from the back of the grid, behind every driver inside the limit (the game has no non-qualifier, so the car still starts)."
+            }
+          },
+          "additionalProperties": false
         }
       },
       "additionalProperties": false

@@ -406,6 +406,29 @@ The core writes the FuelTank's `fuel_mass` (the live car field `fuel_mass`, neve
 
 Experimental: tested on the host only. Known limits: the AI does not plan a stop for fuel, so a race fuel too small for the distance can run an AI car dry; the MFD's fuel readout and the garage refuel between qualifying runs are the game's own.
 
+### Grid rules per box
+
+A box's `rules.grid` (`content.package` 1.5) sets how its race grid forms from qualifying. The core applies it when the box is pressed, like the box's DRS and tyre warmer rules; a box without it, or a stock box, keeps the game's grid.
+
+```json
+"rules": { "grid": { "qualifying": "best_of", "rows": [3, 2], "rule_107": false } }
+```
+
+- `qualifying`: `best_lap` (the game's own order, the default), `best_of` (each driver's best lap over every qualifying-type session of the weekend: F1 1950 to 1995) or `aggregate` (the sum of each driver's best laps of the two fastest qualifying-type sessions: F1 2005). A weekend with one qualifying session ranks `aggregate` by the best lap, so a box that wants a real aggregate also gives the weekend two qualifying sessions (`rules.weekend_mode`, a weekend helper mode like F1 1990's). A driver with only one session's time follows every complete aggregate.
+- `rule_107`: a driver slower than 107 % of the pole time starts from the back, behind every driver inside the limit, in the scoring's order; drivers without a time follow them. The game has no non-qualifier, and a car taken out at the start (a retirement or disqualification at the lights) would change how the race handles its entrants, so the back of the grid is the safe form.
+- `rows`: cars per grid row, repeating from the front (`[3, 2]` is the 3-2-3 grid of the 1950s, `[4, 3]` the 4-3-4). Pattern row r stands on the track's stock grid row r (its two slots' centre line, so bends and slope follow the track), a 2-car row keeps the stock offsets and a wider row spreads its cars over 1.6 stock spacings, pole on the pole side. A slot the track's grid can't place keeps its own position. See the notes below.
+
+How it works: the race grid ranks from the weekend's Qualifying group result (`Weekend+0x488`, a `std::map<u8 group, GroupResult>`; rows of 0x60 bytes at `+0x08..+0x10` with the group position at row `+0x50`, 0x1c unclassified; the latest session's per-driver best lap at `+0x28..+0x30`). The core wraps `Sess_Record_GroupTimes` (it keeps each qualifying-type session's times, which the next session replaces in the group result) and `Sess_Build_GroupResult`, and rewrites the Qualifying group's row positions through the game's own `Sess_Find_GroupRowPosition`. Sprint shootout times count only on a weekend without a sprint race. Practice sessions have no group times, so practice laps don't count. A save continued without pressing the box keeps the game's grid.
+
+```text
+[grid] box f1_1990 (mod.a/f1_1990): grid rule qualifying best_of, 107 % rule off
+[grid] grid rules per box armed: a box's rules.grid re-ranks the weekend's qualifying classification
+[grid] box f1_1990 (qualifying built): qualifying best_of, 107 % rule off over 2 session(s), 26 drivers; group positions rewritten
+[grid]   driver 1/12 times [78.512 78.904] score 78.512 (ranked): position 3 -> 1
+```
+
+Grid rows, how the placement works: the engine's grid shape comes from the track's grid markup, one transform per slot. `Sess_VehiclePlacement_PlaceOnSlot` (0x142f343d0, `(placement, vehicle id, type, slot, tolerance)`, type 5 = grid) takes the slot's request from `placement+0x38+type*0x100+slot*8`, refreshes it with `Sess_VehiclePlacement_ResolveTransform` (0x142f62580) and drops the car at the request's transform (`+0x20`, a 4x4 matrix; position at `+0x50`, `+0x54`, `+0x58`, y up, dropped from y + 3 m; request `+0x18` slot, `+0x1c` type). The engine also has a procedural grid (`Game_Read_GridConfig` 0x142f62120: `Grid.CarsInRow`, `Grid.StaggerOffset` 2.0, `Grid.RowOffset` 10.0, `Grid.PoleLR`), but it is read only with the `VTE.enabled` developer setting. With a row pattern the core wraps both: the `PlaceOnSlot` wrap resolves the track's stock grid slots (the call the game makes for each slot anyway), computes the slot's place with `runtime::box_grid::row_position` and arms an override for that one request; the `ResolveTransform` wrap writes the position after the game's resolve, and the request's own position is put back once the car is placed, so the track's slots never change. `SWOFTY_BOX_GRID=0` turns grid rules off.
+
 ## Grid rules
 
 `best_of` is a grid rule the core adds to `session.grid.build`. No addon has to write its own. For a rule the core doesn't have, replace the group result yourself:
@@ -544,6 +567,7 @@ sessions::issue_penalty(car, sessions::PenaltyKind::grid, 3.0f);
 - **Ready:** the entrant, grid, result and safety car handlers are L2, used by Custom Grid Size and F1 1990.
 - **Not in the headers yet:** `issue_penalty` and `PenaltyKind` above are the design. To retire or disqualify a car today, see [Failures, damage and retiring](/std/systems/failures), which also covers what **Restart Session** fires.
 - **Partial:** points and penalties. The data is ready, and the runtime code is L1. A box's points apply through the standings lookup, which still needs reverse engineering; until then they come from the setup mode.
+- **A box's grid rule (`rules.grid`): offline only.** Scoring and the 107 % rule re-rank the Qualifying group result (L2 bindings, the path F1 1990's best-of grid used); not yet run in game in this form. Row patterns move the grid slots through the placement pair below (L2 experimental bindings); not yet run in game.
 - **A box's DRS rule (`rules.drs`) applies from 1.6.4:** the box press points `swofty_f1`'s DRS group at the rule's group. See [DRS per box](./power-units#drs-per-box).
 - **Unknown:** flags and red flags, the knockout cut writer, red-flag restarts, penalty decision thresholds at run time, the difficulty preset selector.
 - **Who drives a car: implemented, waiting on verification.** `Game_Set_VehicleController` (the fourth argument is a flag index, not a free reason code) and the controller set (human controller at +0x20, AI controller at +0x28, flags at +0x30, mode = dword[+0x10] ^ dword[+0x18]) are L2. The core binds them after the independent verify, and until then `set_control` and `car.control()` report unavailable. Whether a flashback or Return to Garage rebuilds the sets is test T144; `car.controllers.rebuilt` fires after every build of the sets (`Sess_ControllerSystem_BuildSets`, L2), and needs the T144 in-game run.

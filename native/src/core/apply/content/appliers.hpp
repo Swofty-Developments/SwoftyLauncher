@@ -4,6 +4,8 @@
 #include "race_fuel.hpp"
 
 #include <cstdint>
+#include "../../box_grid_logic.hpp"
+
 #include <optional>
 #include <string>
 
@@ -42,5 +44,13 @@ WeekendBox weekend_for_box(const std::string &entrant_list);
 // rules.formation_lap, rules.penalties and rules.corner_cutting (none where the package has no rule), and the line to
 // log.
 BoxOptionsPick box_options_for_box(const std::string &entrant_list);
+// The grid rule the box with this entrant list runs: its content.package's rules.grid (none when the package has no
+// rule), and the line to log. any_grid_rule: whether any loaded content.package has a rules.grid.
+struct GridBox {
+    std::optional<runtime::box_grid::Rule> rule;
+    std::string line;
+};
+GridBox grid_for_box(const std::string &entrant_list);
+bool any_grid_rule();
 
 }

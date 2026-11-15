@@ -1,6 +1,7 @@
 #include "../../src/core/apply/content/boot.hpp"
 #include "../../src/core/apply/content/race_fuel.hpp"
 #include "../../src/core/apply/content/box_options.hpp"
+#include "../../src/core/apply/content/grid_rules.hpp"
 #include "../../src/core/apply/content/tyre_warmers.hpp"
 #include "../../src/core/apply/content/weekend.hpp"
 #include "../../src/core/apply/ids.hpp"
@@ -1935,6 +1936,27 @@ static void drs_tests(const std::string &regs)
     check(f.put_back(&o1, get, set) == 0 && opt[0] == 3, "a setting the player picks after the press stays");
     f.force(&o1, 0, get, set);
     check(f.put_back(&o2, get, set) == 0 && opt[0] == 0 && !f.active(), "a changed option object is left as it is");
+
+    Value g1990 = swofty::json::parse(R"({"entrant_list":"f1_1990","rules":{"grid":{"qualifying":"best_of","rows":null}}})");
+    Value g2000 = swofty::json::parse(R"({"entrant_list":"f1_2000","rules":{"grid":{"rule_107":true}}})");
+    Value g2005 = swofty::json::parse(R"({"entrant_list":"f1_2005","rules":{"grid":{"qualifying":"aggregate"}}})");
+    Value g1955 = swofty::json::parse(R"({"entrant_list":"f1_1955","rules":{"grid":{"qualifying":"best_of","rows":[3,2]}}})");
+    Value g2008 = swofty::json::parse(R"({"entrant_list":"f1_2008","rules":{"grid":null}})");
+    std::vector<std::pair<std::string, const Value *>> grids = {
+        {"mod.a/f1_1990", &g1990}, {"mod.a/f1_2000", &g2000}, {"mod.a/f1_2005", &g2005}, {"mod.a/f1_1955", &g1955}, {"mod.a/f1_2008", &g2008}};
+    auto gp = content::grid_pick("f1_1955", grids);
+    std::printf("      %s\n", gp.line.c_str());
+    check(gp.rule && gp.rule->qualifying == runtime::box_grid::Scoring::best_of && gp.rule->rows == std::vector<int>({3, 2}) &&
+              !gp.rule->rule_107,
+          "rules.grid best_of with a 3-2 row pattern");
+    auto g00 = content::grid_pick("f1_2000", grids);
+    check(g00.rule && g00.rule->qualifying == runtime::box_grid::Scoring::best_lap && g00.rule->rule_107 && g00.rule->reranks(),
+          "rule_107 alone keeps best_lap scoring and re-ranks");
+    check(content::grid_pick("f1_2005", grids).rule->qualifying == runtime::box_grid::Scoring::aggregate &&
+              content::grid_pick("f1_1990", grids).rule->rows.empty(),
+          "aggregate scoring; rows null is the track's own grid");
+    check(!content::grid_pick("f1_2008", grids).rule && !content::grid_pick("f1_2025", grids).rule,
+          "grid null or a stock box: the game's own grid");
 }
 
 static void race_fuel_tests()

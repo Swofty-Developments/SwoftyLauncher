@@ -15,12 +15,14 @@
 #include <iterator>
 #include <map>
 #include <mutex>
+#include <optional>
 #include <string>
 #include <vector>
 
 #include "apply/content/appliers.hpp"
 #include "apply/moments.hpp"
 #include "apply/scheduler.hpp"
+#include "box_grid_logic.hpp"
 #include "era_logic.hpp"
 #include "tt_loaded_logic.hpp"
 
@@ -30,6 +32,7 @@ namespace runtime {
 std::string box_option_apply(size_t rule, const std::string &setting);
 int box_option_put_back(size_t rule);
 void box_options_forget();
+void box_grid_set(const std::optional<box_grid::Rule> &rule, const std::string &box);
 }
 
 // Era picker addon row (swofty/era.hpp). The Grand Prix, Time Trial and split-screen category picker
@@ -90,6 +93,8 @@ void box_options_forget();
 // Game options per box: the same narrowing sets the options store's safety car, formation lap, rules and penalties and
 // corner cutting options to the box's rules.safety_car / formation_lap / penalties / corner_cutting (box_options.cpp)
 // and the same put backs give the player's index back where an option still holds the box's.
+// Grid rules per box: the same narrowing hands the box's rules.grid to box_grid.cpp, which re-ranks the weekend's
+// qualifying classification; the same put backs clear it (the game's own grid).
 //
 // The three hooks are one core mixin set, offered at the first mixin commit after a box was registered,
 // so a game without registered boxes runs none of them.
@@ -477,8 +482,27 @@ void put_back_box_options()
         log_box_options("the player's " + put + " setting put back");
 }
 
+std::string last_grid_line;
+
+void log_grid(const std::string &line)
+{
+    if (line == last_grid_line)
+        return;
+    last_grid_line = line;
+    swofty::log("[grid] %s", line.c_str());
+}
+
+// Grid rules per box: the pressed box's rules.grid goes to box_grid.cpp; a box without the rule clears it.
+void apply_grid(const char *list)
+{
+    auto box = swofty_core::apply::content::grid_for_box(list);
+    runtime::box_grid_set(box.rule, list);
+    log_grid(box.line);
+}
+
 void put_back_drs()
 {
+    runtime::box_grid_set(std::nullopt, std::string());
     if (size_t n = drs.put_back())
         log_drs(std::string(logic::HOST) + "'s DRS group put back on " + std::to_string(n) + " mode(s)");
     if (size_t n = warmers.put_back())
@@ -683,6 +707,7 @@ void narrow(void *mode, const char *list)
     apply_fuel(list);
     apply_weekend(mode, list);
     apply_box_options(list);
+    apply_grid(list);
 }
 
 bool time_trial(void *mode)
@@ -1788,6 +1813,7 @@ void drop_setup_pointers()
     last_weekend_line.clear();
     runtime::box_options_forget();
     last_box_options_line.clear();
+    last_grid_line.clear();
     std::string line = logic::availability_drop_line(p);
     if (!line.empty() && !logged_dropped.exchange(true))
         swofty::log("[era] %s", line.c_str());
