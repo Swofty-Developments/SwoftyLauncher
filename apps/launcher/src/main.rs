@@ -8,6 +8,7 @@ mod ban;
 mod blocks;
 mod browser;
 mod career_saves;
+mod chart_demo;
 mod colour;
 mod console;
 mod crash_modal;
@@ -57,6 +58,10 @@ use gpui_kit::component::{TitleBar, v_flex};
 use gpui_kit::*;
 
 fn main() {
+    if std::env::args().any(|a| a == "--chart-demo") {
+        chart_demo::run();
+        return;
+    }
     swofty_core::data_move::recover_at_start();
     app_log::start();
     app_log::step("starting the app runtime");

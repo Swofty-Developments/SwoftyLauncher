@@ -6,6 +6,7 @@ use swofty_core::view::{Block, Body, Form, Search, View};
 use crate::shell::Shell;
 
 mod cell;
+pub(crate) mod chart;
 mod colour_edit;
 mod form;
 mod layout;
@@ -135,6 +136,7 @@ impl Shell {
 
     pub(crate) fn sync_blocks(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let Some((addon, section, view, generation)) = self.current_view() else {
+            self.blocks.charts.clear();
             self.blocks.forms.clear();
             self.blocks.searches.clear();
             self.blocks.cell = None;
@@ -160,8 +162,18 @@ impl Shell {
                 .get(&format!("{prefix}table:{table}"))
                 .is_some_and(|o| o == row)
         };
+        let mut chart_keys = std::collections::HashSet::new();
         for b in view_blocks_open(&view, &open) {
             match b {
+                Block::Chart(c) => {
+                    let key = format!("{prefix}{}", c.id);
+                    chart_keys.insert(key.clone());
+                    if c.validate().is_ok()
+                        && self.blocks.charts.get(&key).is_none_or(|(g, _)| *g != generation)
+                    {
+                        self.blocks.charts.insert(key, (generation, chart::prepare(c)));
+                    }
+                }
                 Block::Form(f) => self.sync_form(&addon, &section, f, generation, window, cx),
                 Block::Table(t) => {
                     if let Some(s) = &t.search {
@@ -172,6 +184,10 @@ impl Shell {
                 _ => {}
             }
         }
+        // Retain only charts in the current view, never old sessions or tabs.
+        self.blocks
+            .charts
+            .retain(|k, (g, _)| chart_keys.contains(k) && *g == generation);
         self.blocks.forms.retain(|k, s| k.starts_with(&prefix) && s.seen);
         self.blocks
             .searches
