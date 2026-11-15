@@ -24,9 +24,11 @@ struct FuelRules {
     bool refuelling = false;
     std::optional<float> race_fuel_kg, refuel_stint_kg, quali_fuel_kg;
     bool start_from_quali = false;
+    bool race_tyre_change = true;   // 1.5 rules.race_tyre_change: false keeps a car's tyres through its race pit stops
     std::string line;
 
     bool any() const { return refuelling || start_from_quali || quali_fuel_kg.has_value(); }
+    bool tyres_kept() const { return !race_tyre_change; }
 };
 
 inline std::optional<float> fuel_kg(const Value &v)
@@ -66,8 +68,9 @@ inline FuelRules fuel_rules_pick(const std::string &entrant_list,
     r.refuel_stint_kg = fuel_kg(rules["refuel_stint_kg"]);
     r.quali_fuel_kg = fuel_kg(rules["quali_fuel_kg"]);
     r.start_from_quali = rules["race_start_fuel_from_quali"].is_bool() && rules["race_start_fuel_from_quali"].as_bool();
+    r.race_tyre_change = !(rules["race_tyre_change"].is_bool() && !rules["race_tyre_change"].as_bool());
     std::string head = "box " + entrant_list + " (" + r.package + "): ";
-    if (!r.any()) {
+    if (!r.any() && !r.tyres_kept()) {
         r.line = head + "no fuel rule; the game's own fuel";
         return r;
     }
@@ -83,8 +86,29 @@ inline FuelRules fuel_rules_pick(const std::string &entrant_list,
         std::optional<float> stint = r.refuel_stint_kg ? r.refuel_stint_kg : r.race_fuel_kg;
         add("a pit stop refuels to " + (stint ? kg_text(*stint) : std::string("a full tank")));
     }
+    if (r.tyres_kept())
+        add("race pit stops keep the tyres (a change only with tyre damage)");
     r.line = head + parts;
     return r;
+}
+
+// rules.race_tyre_change false (2005: one set for qualifying and race): the core wraps TyreComponent::changeToNextCompound
+// (Car_Tyre_ChangeToNextCompound 0x142e94040, log PITSTOP_TYRES 'PITLANE CHANGEOVER'). Its pit stop caller
+// Game_PitLane_ApplyPitstopTyres 0x1434bdd60 calls it with flag 1 and ignores its result (always 0); the garage actor
+// (Game_PitBoxCarActor_Update) calls it with flag 0. In a race session a flag-1 call is skipped, so the fitted compound,
+// its wear (the resets 0x142e83130 in the body) and temperatures stay; pitstopComplete still runs. A car whose tyre
+// records (TyreComponent +0x30 + i * 0xde0, count +0x98d0) carry a flag in dword +0x208 & 0x1f, which the body OR-s
+// into its per-wheel reset arguments, keeps the game's change (read as puncture/damage: HYPOTHESIS, logged per stop).
+constexpr uintptr_t TYRE_WHEELS = 0x30, TYRE_WHEEL_STRIDE = 0xde0, TYRE_WHEEL_FLAGS = 0x208, TYRE_WHEEL_COUNT = 0x98d0;
+constexpr uint32_t TYRE_DAMAGE_MASK = 0x1f;
+
+enum class TyreChange { game, kept, damage };
+
+inline TyreChange race_tyre_change_pick(bool kept_rule, uint32_t session_type, bool pit_stop_call, uint32_t damage_bits)
+{
+    if (!kept_rule || !pit_stop_call || !(session_type >= 15 && session_type <= 17))
+        return TyreChange::game;
+    return (damage_bits & TYRE_DAMAGE_MASK) ? TyreChange::damage : TyreChange::kept;
 }
 
 // One car as the fuel plan sees it in a frame. pit_stops_ok: the live snapshot read the car's pit stop counter.

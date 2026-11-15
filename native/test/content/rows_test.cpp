@@ -1914,6 +1914,28 @@ static void race_fuel_tests()
 
     FuelRules none;
     check(FuelPlan{}.tick(none, 15, 1, race, 3).empty(), "no rule: nothing written");
+
+    // 2005: one tyre set for qualifying and race (race_tyre_change false).
+    Value p2005 = swofty::json::parse(R"({"entrant_list":"f1_2005","rules":{"refuelling":true,"race_fuel_kg":75,"race_tyre_change":false}})");
+    Value pbadt = swofty::json::parse(R"({"entrant_list":"f1_badt","rules":{"race_tyre_change":"no"}})");
+    std::vector<std::pair<std::string, const Value *>> tb = {{"mod.a/f1_2005", &p2005}, {"mod.a/f1_badt", &pbadt}, {"mod.a/f1_1994", &p1994}};
+    FuelRules r05 = content::fuel_rules_pick("f1_2005", tb);
+    std::printf("      %s\n", r05.line.c_str());
+    check(r05.tyres_kept() && r05.any(), "race_tyre_change false: the box keeps its tyres at race stops (and refuels)");
+    check(!content::fuel_rules_pick("f1_badt", tb).tyres_kept() && !content::fuel_rules_pick("f1_1994", tb).tyres_kept(),
+          "race_tyre_change missing or malformed: the game's tyre change");
+    Value ponly = swofty::json::parse(R"({"entrant_list":"f1_t","rules":{"race_tyre_change":false}})");
+    std::vector<std::pair<std::string, const Value *>> to = {{"mod.a/f1_t", &ponly}};
+    FuelRules rt = content::fuel_rules_pick("f1_t", to);
+    check(rt.tyres_kept() && !rt.any() && rt.line.find("keep the tyres") != std::string::npos,
+          "a tyre rule alone is logged and handed over without a fuel rule");
+    using content::TyreChange;
+    check(content::race_tyre_change_pick(true, 15, true, 0) == TyreChange::kept, "race stop, no damage flag: tyres kept");
+    check(content::race_tyre_change_pick(true, 16, true, 0x4) == TyreChange::damage, "race stop with a damage flag: the game's change");
+    check(content::race_tyre_change_pick(true, 15, false, 0) == TyreChange::game, "the garage actor's call (flag 0): the game's");
+    check(content::race_tyre_change_pick(true, 8, true, 0) == TyreChange::game, "qualifying: the game's change");
+    check(content::race_tyre_change_pick(false, 15, true, 0) == TyreChange::game, "no rule: the game's change");
+    check(content::race_tyre_change_pick(true, 15, true, 0x20) == TyreChange::kept, "flags outside the damage mask: kept");
 }
 
 static void stock_career_rows(Db &db)

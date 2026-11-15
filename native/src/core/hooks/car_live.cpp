@@ -366,6 +366,8 @@ std::mutex g_fuel_lock;
 apply::content::FuelRules g_fuel_rules;
 bool g_fuel_new = false;
 apply::content::FuelPlan g_fuel_plan;
+std::atomic<bool> g_tyres_kept{false};
+std::atomic<uint32_t> g_session_type{0};   // the live session type, read each frame while a box rule needs it
 
 void fuel_tick()
 {
@@ -376,13 +378,18 @@ void fuel_tick()
             g_fuel_new = false;
             g_fuel_plan.reset();
         }
-        if (!g_fuel_rules.any())
+        if (!g_fuel_rules.any() && !g_fuel_rules.tyres_kept())
             return;
         rules = g_fuel_rules;
     }
     const SwoftyLive *live = SwoftyCoreLive();
     SwoftyLiveSession ses{};
-    if (!live || live->session(&ses) != SWOFTY_ASSET_OK || !(ses.have & SWOFTY_LIVE_SHAVE_TYPE))
+    if (!live || live->session(&ses) != SWOFTY_ASSET_OK || !(ses.have & SWOFTY_LIVE_SHAVE_TYPE)) {
+        g_session_type.store(0, std::memory_order_relaxed);
+        return;
+    }
+    g_session_type.store(ses.type, std::memory_order_relaxed);
+    if (!rules.any())
         return;
     if (!apply::content::fuel_quali_session(ses.type) && !apply::content::fuel_race_session(ses.type))
         return;
@@ -563,8 +570,40 @@ void race_fuel_rules(const apply::content::FuelRules &rules)
         return;
     g_fuel_rules = rules;
     g_fuel_new = true;
+    g_tyres_kept.store(rules.tyres_kept(), std::memory_order_relaxed);
     if (rules.any() || !rules.line.empty())
         swofty::log("[fuel] %s", rules.line.empty() ? "the game's own fuel" : rules.line.c_str());
+}
+
+// The pit stop tyre change wrap (pit_box.cpp) asks whether to skip the change for this tyre component and call flag.
+bool race_tyres_keep(uintptr_t tyre_component, bool pit_stop_call)
+{
+    bool rule = g_tyres_kept.load(std::memory_order_relaxed);
+    uint32_t type = g_session_type.load(std::memory_order_relaxed);
+    if (!rule || !pit_stop_call)
+        return false;
+    uint32_t damage = 0;
+    uint64_t count = 0;
+    if (swofty::mem::read(tyre_component + apply::content::TYRE_WHEEL_COUNT, count) && count <= 16)
+        for (uint64_t i = 0; i < count; i++) {
+            uint32_t f = 0;
+            if (swofty::mem::read(tyre_component + apply::content::TYRE_WHEELS + i * apply::content::TYRE_WHEEL_STRIDE +
+                                      apply::content::TYRE_WHEEL_FLAGS,
+                                  f))
+                damage |= f;
+        }
+    uintptr_t entity = 0, car = 0;
+    uint8_t vehicle = 0xff;
+    if (swofty::mem::read(tyre_component + 0x20, entity) && entity && swofty::mem::read(entity + 0x58, car) && car)
+        swofty::mem::read(car + car_live::CAR_VEHICLE_ID, vehicle);
+    auto pick = apply::content::race_tyre_change_pick(rule, type, pit_stop_call, damage);
+    if (pick == apply::content::TyreChange::game)
+        return false;
+    swofty::log("[tyres] vehicle %u pit stop in the race: %s (tyre record flags %#x)", unsigned(vehicle),
+                pick == apply::content::TyreChange::kept ? "tyres kept (box rule race_tyre_change false)"
+                                                         : "tyres changed (a tyre record carries a damage flag)",
+                damage);
+    return pick == apply::content::TyreChange::kept;
 }
 
 void declare_car_points(Table &t)

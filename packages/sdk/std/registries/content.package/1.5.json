@@ -261,6 +261,11 @@
           "default": false,
           "description": "Parc ferme (2003-2009): each car starts the race with the fuel it had left at the end of its qualifying session (quali_fuel_kg when it ran no qualifying)."
         },
+        "race_tyre_change": {
+          "type": "boolean",
+          "default": true,
+          "description": "false (2005): one tyre set for qualifying and race; a race pit stop keeps the car's tyres (compound, wear) unless a tyre is damaged. Pit stops still refuel."
+        },
         "car_profile": {
           "type": [
             "string",
