@@ -141,12 +141,14 @@ struct ArmReasons {
 };
 
 // Whether the present hook stays off for a rival overlay. RivaTuner's hook attaches to the probe window
-// arm_swapchain opens and patches Present over the core's hook, so the swapchain hooks are not armed when the
-// main menu panel and video card are the only reason to arm them: they draw nothing and the home tiles still
-// work. With an overlay addon, a capture or a cover the hook arms as before, rival or not.
-inline bool present_hook_yields(const ArmReasons &reasons, std::string_view rival)
+// arm_swapchain opens and patches the swapchain's entry points the core hooks; on some machines the game then
+// jumps to an address that is not code two seconds after it makes its swapchain. So the swapchain hooks are not
+// armed for what only draws: an overlay addon, a direct start's cover, the main menu panel and video card. They
+// draw nothing and the game and the addons' other work run. A frame capture is asked for by name and arms, and
+// SWOFTY_OVERLAY_RIVAL / "overlay_rival" arms the hook anyway (forced is -1 when unset).
+inline bool present_hook_yields(const ArmReasons &reasons, std::string_view rival, int forced = -1)
 {
-    return reasons.menu_only() && !rival.empty();
+    return reasons.any() && !reasons.capture && !rival.empty() && forced <= 0;
 }
 
 // Present layers that make the game's swapchain on a path the core's creation hooks miss, and the swapchain

@@ -168,6 +168,22 @@ int before_fg_forced()
     return forced;
 }
 
+int rival_forced()
+{
+    static const int forced = [] {
+        int f = -1;
+        char v[8] = {};
+        DWORD n = GetEnvironmentVariableA("SWOFTY_OVERLAY_RIVAL", v, sizeof v);
+        const json::Value &j = runtime::config()["overlay_rival"];
+        if (n && n < sizeof v)
+            f = v[0] != '0' && v[0] != '\0';
+        else if (j.type == json::Value::Bool)
+            f = j.b;
+        return f;
+    }();
+    return forced;
+}
+
 bool before_fg_wanted()
 {
     static const bool on = [] {
@@ -2316,16 +2332,27 @@ void setup()
         swofty::log("[overlay] the overlay feature is experimental and off; the HUD present hook is not armed");
         return;
     }
-    if (reasons.menu_only()) {
-        std::string rival = device_hook_rival();
-        if (hud::guard::present_hook_yields(reasons, rival)) {
+    std::string rival = device_hook_rival();
+    if (hud::guard::present_hook_yields(reasons, rival, rival_forced())) {
+        if (reasons.menu_only())
             swofty::log("[main-menu] %s hooks the game's Present, so the present hook is not armed for the main menu "
-                        "panel and video card alone: they do not draw while RivaTuner Statistics Server is running "
-                        "(the home tiles still work; an overlay addon that is on arms the hook as before)",
+                        "panel and video card: they do not draw while RivaTuner Statistics Server is running (the "
+                        "home tiles still work)",
                         rival.c_str());
-            return;
-        }
+        else
+            swofty::log("[overlay] off: %s hooks the game's Present, so the present hook is not armed and nothing "
+                        "draws over the game while RivaTuner Statistics Server is running:%s%s%s the game "
+                        "and the addons' other features run as before. Close RivaTuner Statistics Server and MSI "
+                        "Afterburner to draw again (SWOFTY_OVERLAY_RIVAL=1 / \"overlay_rival\": true arms the hook "
+                        "anyway)",
+                        rival.c_str(), on ? " overlay addons (on_paint is unavailable)," : "",
+                        cover ? " the direct start's cover," : "",
+                        menu || barred ? " the main menu panel, video card and Time Trial warning," : "");
+        return;
     }
+    if (!rival.empty())
+        swofty::log("[overlay] %s is in the process; the present hook arms anyway (%s)", rival.c_str(),
+                    cap.on ? "SWOFTY_FRAME_CAPTURE" : "SWOFTY_OVERLAY_RIVAL / \"overlay_rival\"");
     if (menu)
         swofty::log("[main-menu] the present hook arms for the main menu panel and video card");
     if (barred)
