@@ -309,10 +309,13 @@ static_assert(offsetof(SafetyCarLogicSystem, deployment) == 0x108);
 struct SessionEntrantView {
     uint8_t _pad_0x0[0x58];
     uint32_t team_stat_id; // L2 experimental
-    uint8_t _pad_0x5c[0x26];
+    uint8_t _pad_0x5c[0xc];
+    uint32_t badge_stat_id; // L2 experimental
+    uint8_t _pad_0x6c[0x16];
     uint8_t vehicle_id; // L2 experimental
 };
 static_assert(offsetof(SessionEntrantView, team_stat_id) == 0x58);
+static_assert(offsetof(SessionEntrantView, badge_stat_id) == 0x68);
 static_assert(offsetof(SessionEntrantView, vehicle_id) == 0x82);
 
 struct SessionSystem {

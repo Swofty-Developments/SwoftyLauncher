@@ -2587,10 +2587,13 @@ const _: () = assert!(core::mem::size_of::<Session>() == 0xa0);
 pub struct SessionEntrantView {
     _pad_0x0: [u8; 0x58],
     pub team_stat_id: u32,
-    _pad_0x5c: [u8; 0x26],
+    _pad_0x5c: [u8; 0xc],
+    pub badge_stat_id: u32,
+    _pad_0x6c: [u8; 0x16],
     pub vehicle_id: u8,
 }
 const _: () = assert!(core::mem::offset_of!(SessionEntrantView, team_stat_id) == 0x58);
+const _: () = assert!(core::mem::offset_of!(SessionEntrantView, badge_stat_id) == 0x68);
 const _: () = assert!(core::mem::offset_of!(SessionEntrantView, vehicle_id) == 0x82);
 
 #[repr(C)]
