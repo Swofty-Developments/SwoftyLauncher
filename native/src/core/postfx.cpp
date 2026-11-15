@@ -2566,6 +2566,7 @@ void install_plan(postfx::Plan next)
         Pass p;
         p.inst = pp.instance;
         const postfx::PlanInstance &pi = next.instances[size_t(pp.instance)];
+        p.addon_id = pi.decl->addon;
         p.effect = pi.effect;
         p.label = pi.label;
         p.name = pp.decl->name;
