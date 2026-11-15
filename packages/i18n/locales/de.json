@@ -1410,5 +1410,9 @@
   "{v} is available. Update addons from the play bar.": "{v} ist verfügbar. Aktualisiere Addons über die Spielleiste.",
   "{v} is not a number": "{v} ist keine Zahl",
   "{when}: {downloads}": "{when}: {downloads}",
-  "{wins} wins - {podiums} podiums": "{wins} Siege - {podiums} Podien"
+  "{wins} wins - {podiums} podiums": "{wins} Siege - {podiums} Podien",
+  "Too many tracks": "Zu viele Strecken",
+  "Left out: the game holds {room} tracks": "Ausgelassen: Das Spiel fasst {room} Strecken",
+  "{shown} and {more} more": "{shown} und {more} weitere",
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["Das Spiel fasst {room} Strecken, daher fällt {count} Strecke aus diesem Build heraus: {list}. Schalte einige Strecken-Addons aus, um sie zu fahren.", "Das Spiel fasst {room} Strecken, daher fallen {count} Strecken aus diesem Build heraus: {list}. Schalte einige Strecken-Addons aus, um sie zu fahren."]
 }

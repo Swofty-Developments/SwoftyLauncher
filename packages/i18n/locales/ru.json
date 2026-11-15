@@ -1321,5 +1321,9 @@
   "{v} is available. Update addons from the play bar.": "Доступна версия {v}. Обновите аддоны с панели запуска.",
   "{v} is not a number": "{v} — не число",
   "{when}: {downloads}": "{when}: {downloads}",
-  "{wins} wins - {podiums} podiums": "Победы: {wins} - подиумы: {podiums}"
+  "{wins} wins - {podiums} podiums": "Победы: {wins} - подиумы: {podiums}",
+  "Too many tracks": "Слишком много трасс",
+  "Left out: the game holds {room} tracks": "Исключено: в игре помещается {room} трасс",
+  "{shown} and {more} more": "{shown} и ещё {more}",
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["В игре помещается {room} трасс, поэтому {count} трасса не попадает в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на ней.", "В игре помещается {room} трасс, поэтому {count} трассы не попадают в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на них.", "В игре помещается {room} трасс, поэтому {count} трасс не попадают в эту сборку: {list}. Выключите часть аддонов трасс, чтобы играть на них."]
 }

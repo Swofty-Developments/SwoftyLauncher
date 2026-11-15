@@ -1410,5 +1410,9 @@
   "{v} is available. Update addons from the play bar.": "{v}을(를) 사용할 수 있습니다. 플레이 바에서 애드온을 업데이트하세요.",
   "{v} is not a number": "{v}: 숫자가 아닙니다",
   "{when}: {downloads}": "{when}: {downloads}",
-  "{wins} wins - {podiums} podiums": "우승 {wins}회 - 포디움 {podiums}회"
+  "{wins} wins - {podiums} podiums": "우승 {wins}회 - 포디움 {podiums}회",
+  "Too many tracks": "트랙이 너무 많습니다",
+  "Left out: the game holds {room} tracks": "제외됨: 게임은 트랙 {room}개를 담습니다",
+  "{shown} and {more} more": "{shown} 외 {more}개",
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["게임은 트랙 {room}개를 담으므로 트랙 {count}개가 이 빌드에서 제외됩니다: {list}. 트랙 애드온 일부를 끄면 플레이할 수 있습니다."]
 }

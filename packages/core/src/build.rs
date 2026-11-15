@@ -76,6 +76,8 @@ pub struct Built {
     /// Each addon's added rows with a stat id, its `track.add` track rows among them, as `<table>.<row>/<label>` to
     /// the id the build gave.
     pub row_ids: BTreeMap<String, BTreeMap<String, i64>>,
+    /// The track addons left out because the game's track lists are full.
+    pub track_limit: Option<crate::tracks::TrackLimit>,
 }
 
 /// The recorded originals of the last baseline read, by its path and when it
@@ -879,6 +881,18 @@ fn trackless_options(
 
 /// A `checking` build gives addon build hooks a host that lists addons but
 /// cannot install, remove, turn on or move them.
+/// The track addons `profile` would lose to the game's full track lists, found by planning the build
+/// without installing it; none when too few tracks are on to fill them.
+pub fn track_limit(store: &Store, profile: &str, game: &Game) -> Result<Option<crate::tracks::TrackLimit>> {
+    let addons = store.registry()?.manifests();
+    let p = store.profile(profile)?;
+    let order = resolve(&p, &addons)?.order;
+    if !crate::tracks::may_fill_track_lists(crate::tracks::added_count(store, &order, &addons)) {
+        return Ok(None);
+    }
+    Ok(build_as(store, profile, game, true)?.track_limit)
+}
+
 pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool) -> Result<Built> {
     let registry = store.registry()?;
     let addons = registry.manifests();
@@ -1466,6 +1480,13 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         built
             .warnings
             .extend(crate::tracks::track_lists_full_warning(&listed, &names));
+        built.track_limit = crate::tracks::TrackLimit::new(
+            &listed,
+            names.clone(),
+            full.iter()
+                .map(|((_, _, origin), _)| origin.addon.clone())
+                .collect(),
+        );
         left_out.extend(full.into_iter().map(|((_, _, origin), why)| (origin, why)));
     }
     crate::tracks::keep_track_folders(store, &tracks, &mut std16);

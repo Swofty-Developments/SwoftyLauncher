@@ -302,6 +302,13 @@ pub struct Library {
     unsaved_order: bool,
 }
 
+pub(crate) fn left_out_limit_line() -> String {
+    swofty_i18n::trf!(
+        "Left out: the game holds {room} tracks",
+        room = swofty_core::tracks::TRACK_LIST_ROOM
+    )
+}
+
 impl Library {
     pub fn load(store: &Store) -> Self {
         let mut library = Self::read(store);
@@ -322,6 +329,7 @@ impl Library {
         });
         let manifests = registry.manifests();
         let enabled: std::collections::HashSet<String> = profile.enabled().map(str::to_owned).collect();
+        let over_limit = swofty_core::tracks::recorded_track_limit(&store.root, &profile.name);
         let mut addons: Vec<AddonItem> = manifests
             .values()
             .map(|m| {
@@ -337,10 +345,16 @@ impl Library {
                     source,
                     left_out: match m.is_builtin() {
                         true => Vec::new(),
-                        false => swofty_core::tracks::unusable(store, &m.id, m)
-                            .iter()
-                            .map(|u| format!("{}.", crate::update::sentence(&u.text())))
-                            .collect(),
+                        false => {
+                            let mut lines: Vec<String> = swofty_core::tracks::unusable(store, &m.id, m)
+                                .iter()
+                                .map(|u| format!("{}.", crate::update::sentence(&u.text())))
+                                .collect();
+                            if enabled.contains(&m.id) && over_limit.contains(&m.id) {
+                                lines.push(left_out_limit_line());
+                            }
+                            lines
+                        }
                     },
                     manifest: m.clone(),
                 }

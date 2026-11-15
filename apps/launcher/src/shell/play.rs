@@ -97,6 +97,7 @@ impl Shell {
             store: self.store.clone(),
             profile: self.library.profile.name.clone(),
             game: install.dir.clone(),
+            build_id: install.build_id,
             anyway: std::mem::take(&mut self.play_anyway),
         };
         // This press's ask only: a dialog, a cancel or a stale result must not hand it to the next Play.

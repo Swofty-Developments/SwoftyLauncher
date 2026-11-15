@@ -1410,5 +1410,9 @@
   "{v} is available. Update addons from the play bar.": "{v} está disponível. Atualize os complementos pela barra de Jogar.",
   "{v} is not a number": "{v} não é um número",
   "{when}: {downloads}": "{when}: {downloads}",
-  "{wins} wins - {podiums} podiums": "{wins} vitórias - {podiums} pódios"
+  "{wins} wins - {podiums} podiums": "{wins} vitórias - {podiums} pódios",
+  "Too many tracks": "Pistas demais",
+  "Left out: the game holds {room} tracks": "Deixada de fora: o jogo comporta {room} pistas",
+  "{shown} and {more} more": "{shown} e mais {more}",
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["O jogo comporta {room} pistas, então {count} pista fica de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-la.", "O jogo comporta {room} pistas, então {count} pistas ficam de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-las.", "O jogo comporta {room} pistas, então {count} pistas ficam de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-las."]
 }

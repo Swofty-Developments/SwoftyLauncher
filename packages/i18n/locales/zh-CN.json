@@ -1321,5 +1321,9 @@
   "{v} is available. Update addons from the play bar.": "{v} 已推出。请在游戏栏中更新插件。",
   "{v} is not a number": "{v} 不是数字",
   "{when}: {downloads}": "{when}：{downloads}",
-  "{wins} wins - {podiums} podiums": "{wins} 胜 - {podiums} 次登上领奖台"
+  "{wins} wins - {podiums} podiums": "{wins} 胜 - {podiums} 次登上领奖台",
+  "Too many tracks": "赛道过多",
+  "Left out: the game holds {room} tracks": "已排除：游戏最多容纳 {room} 条赛道",
+  "{shown} and {more} more": "{shown} 等另外 {more} 条",
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["游戏最多容纳 {room} 条赛道，因此 {count} 条赛道被排除在此次构建之外：{list}。关闭一些赛道插件即可游玩。"]
 }

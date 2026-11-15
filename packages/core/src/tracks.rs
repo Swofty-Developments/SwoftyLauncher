@@ -635,6 +635,69 @@ pub fn track_lists_full_warning(listed: &ListedTracks, left_out: &[String]) -> O
     ))
 }
 
+/// The track addons a build leaves out because the game's track lists are full, for the launcher to show.
+#[derive(Debug, Clone, Default, PartialEq, Eq, Serialize, Deserialize)]
+pub struct TrackLimit {
+    pub room: usize,
+    pub stock: usize,
+    /// The display name of each track left out, in load order.
+    pub names: Vec<String>,
+    /// The addons that lose a track, each once.
+    pub addons: Vec<String>,
+}
+
+impl TrackLimit {
+    pub fn new(listed: &ListedTracks, names: Vec<String>, addons: Vec<String>) -> Option<Self> {
+        (!names.is_empty()).then(|| Self {
+            room: TRACK_LIST_ROOM,
+            stock: listed.stock(),
+            names,
+            addons: addons.into_iter().collect::<BTreeSet<_>>().into_iter().collect(),
+        })
+    }
+}
+
+const LIMIT_FILE: &str = "state/track-limit.json";
+
+#[derive(Debug, Default, Serialize, Deserialize)]
+struct LimitRecord {
+    profile: String,
+    addons: Vec<String>,
+}
+
+/// Remembers which addons the last check of `profile` found left out for the full track lists.
+pub fn record_track_limit(data: &Path, profile: &str, limit: Option<&TrackLimit>) -> Result<()> {
+    let path = data.join(LIMIT_FILE);
+    let addons = limit.map(|l| l.addons.clone()).unwrap_or_default();
+    if addons.is_empty() && !path.is_file() {
+        return Ok(());
+    }
+    crate::write_json(
+        &path,
+        &LimitRecord {
+            profile: profile.to_owned(),
+            addons,
+        },
+    )
+}
+
+/// The addons the last check of `profile` found left out for the full track lists.
+pub fn recorded_track_limit(data: &Path, profile: &str) -> BTreeSet<String> {
+    crate::read_json::<LimitRecord>(&data.join(LIMIT_FILE))
+        .ok()
+        .filter(|r| r.profile == profile)
+        .map(|r| r.addons.into_iter().collect())
+        .unwrap_or_default()
+}
+
+/// How many tracks the addons of `order` add with `track.add`, to tell whether a build can fill the lists.
+pub fn added_count(store: &Store, order: &[String], addons: &BTreeMap<String, AddonManifest>) -> usize {
+    order
+        .iter()
+        .filter_map(|id| addons.get(id).map(|m| added_dirs(store, id, m).len()))
+        .sum()
+}
+
 /// Writes `$DATA/registry/older-tracks.json` for the tracks `track.add` added for addons with no
 /// track record; `shipped` and `built` are the game's database and the build's.
 pub fn write_older(
@@ -1645,6 +1708,29 @@ mod tests {
             .collect();
         assert_eq!(gone, ["r27", "r28"]);
         assert_eq!(&codes(&kept)[27..], ["recorded_a", "recorded_b"]);
+    }
+
+    #[test]
+    fn the_track_limit_lists_each_addon_once_and_is_remembered_per_profile() {
+        let listed = ListedTracks::of(&stock_lists());
+        assert_eq!(TrackLimit::new(&listed, Vec::new(), Vec::new()), None);
+        let limit = TrackLimit::new(
+            &listed,
+            vec!["A".into(), "B".into(), "C".into()],
+            vec!["x.two".into(), "x.one".into(), "x.two".into()],
+        )
+        .unwrap();
+        assert_eq!((limit.room, limit.stock), (64, 35));
+        assert_eq!(limit.addons, ["x.one", "x.two"]);
+        let root = std::env::temp_dir().join(format!("swofty-track-limit-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        assert!(recorded_track_limit(&root, "p").is_empty());
+        record_track_limit(&root, "p", Some(&limit)).unwrap();
+        assert_eq!(recorded_track_limit(&root, "p").len(), 2);
+        assert!(recorded_track_limit(&root, "other").is_empty());
+        record_track_limit(&root, "p", None).unwrap();
+        assert!(recorded_track_limit(&root, "p").is_empty());
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[test]
