@@ -443,6 +443,70 @@ fn loaded_modules(loader: &str) -> Vec<String> {
     out
 }
 
+/// The loaded modules with the address they are loaded at, as in
+/// `[offline] module: RTSSHooks64.dll @ 0x180000000`.
+fn module_bases(loader: &str) -> Vec<(String, u64)> {
+    let mut out: Vec<(String, u64)> = Vec::new();
+    for line in loader.lines() {
+        let Some(rest) = ["[offline] module: ", "[loader] module: "]
+            .iter()
+            .find_map(|tag| Some(&line[line.find(tag)? + tag.len()..]))
+        else {
+            continue;
+        };
+        let Some((name, base)) = rest.split_once(" @ 0x") else {
+            continue;
+        };
+        let hex = base
+            .split(|c: char| !c.is_ascii_hexdigit())
+            .next()
+            .unwrap_or_default();
+        if let Ok(base) = u64::from_str_radix(hex, 16) {
+            out.push((name.trim().to_ascii_lowercase(), base));
+        }
+    }
+    out
+}
+
+/// The register values in the loader's record of the exception, as in
+/// `rsi=000000018024056d rdi=00007ffd675e7776` and `r8 =7ffffffffffffffc`.
+fn record_registers(record: &[String]) -> Vec<u64> {
+    record
+        .iter()
+        .filter(|l| !l.trim_start().starts_with('#'))
+        .flat_map(|l| l.split_whitespace())
+        .filter_map(|t| {
+            let (_, hex) = t.split_once('=')?;
+            (hex.len() == 16).then(|| u64::from_str_radix(hex, 16).ok())?
+        })
+        .collect()
+}
+
+/// How far past a module's load address a register still counts as pointing into it.
+const MODULE_REACH: u64 = 64 << 20;
+
+/// The hook a jump to an address outside every module came from: the game ran
+/// an address that is not code, and a register points into the hook's module.
+/// A hook that patches the game's graphics calls leaves the game on a dead
+/// trampoline this way, so no stack frame names it.
+fn stray_jump_hook(f: &Fatal, loader: &str) -> Option<(&'static Hook, String)> {
+    if f.module.is_some() || !f.record.iter().any(|l| l.contains("executing (DEP)")) {
+        return None;
+    }
+    let bases = module_bases(loader);
+    record_registers(&f.record).into_iter().find_map(|value| {
+        let (name, base) = bases
+            .iter()
+            .filter(|(_, base)| *base <= value)
+            .max_by_key(|(_, base)| *base)?;
+        if value - base >= MODULE_REACH {
+            return None;
+        }
+        let hook = HOOKS.iter().find(|h| !h.own_only && name.starts_with(h.prefix))?;
+        Some((hook, name.clone()))
+    })
+}
+
 /// Whether the crash's lines (and the crash report) hold any of `codes`, the
 /// HRESULTs the game hands its fatal abort, as in `rdi=00000000887a0005`.
 fn crash_holds(e: &Evidence, codes: &[&str]) -> bool {
@@ -2214,6 +2278,18 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
     if aggressive_ai_crash(e, &f) {
         return Some(aggressive_ai(e));
     }
+    if let Some((hook, module)) = stray_jump_hook(&f, &e.loader) {
+        return Some(Diagnosis {
+            id: "third_party_hook",
+            title: format!("F1 25 crashed inside {}", hook.product),
+            what: format!(
+                "F1 25 jumped to an address that is not code while {module} was at work, which belongs to {}. It \
+                 hooks into games while they run, and here it took F1 25 down with it.",
+                hook.product
+            ),
+            steps: vec![hook.step.to_owned(), "Press Play again.".to_owned()],
+        });
+    }
     let windows = !wine(e, &loaded);
     if let Some((code, message)) = heap_error(e) {
         if code == 0xc && message.contains("'GAME_DEFAULT'") {
@@ -3410,6 +3486,72 @@ runtime      Windows
 2026-10-27 17:37:40.100 [1] [crash]   #2  RTSSHooks64.dll+0x2a1b0
 2026-10-27 17:37:40.100 [1] [crash]   #3  RTSSHooks64.dll+0x2a0f0
 ";
+
+    const RTSS_STRAY_JUMP: &str = "\
+[offline] module: RTSSHooks64.dll @ 0x180000000
+[offline] module: dxgi.dll @ 0x7fffa3b20000
+2026-11-15 07:12:24.289 [ 1212] [d3d12] swapchain 000000006B9A5530 created through CreateSwapChainForHwnd on queue 00000000812DD3C0 (type 0, 1600x1024, format 28, 3 buffer(s)); created by sl.interposer.dll <- F1_25.exe <- KERNEL32.DLL <- ntdll.dll
+2026-11-15 07:12:26.735 [ 1212] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 1212, 20 s after load, at 0x7c3615b0 (no module)
+2026-11-15 07:12:26.735 [ 1212] [crash]   executing (DEP) 0x7c3615b0
+2026-11-15 07:12:26.735 [ 1212] [crash]   rax=0000000080070057 rbx=00000000865546b0 rcx=0000000000000000 rdx=0000000000010000
+2026-11-15 07:12:26.735 [ 1212] [crash]   rsi=000000018024056d rdi=00007fff2a76b566 rbp=0000000180073c51 rsp=000000000015c590
+2026-11-15 07:12:26.735 [ 1212] [crash]   r8 =7ffffffffffffffc r9 =0000000000000000 r10=00007fffa78fb000 r11=000000000015c320
+2026-11-15 07:12:26.735 [ 1212] [crash]   r12=0000000000000003 r13=000000006b9a5530 r14=0000000000000400 r15=0000000000000640
+2026-11-15 07:12:26.735 [ 1212] [crash]   code: FF 00 00 00 FF 00 00 00 B4 13 6E 46 FF 17 00 88
+2026-11-15 07:12:26.735 [ 1212] [crash]   stack:
+2026-11-15 07:12:26.735 [ 1212] [crash]   #0  0x7c3615b0 (no module)
+2026-11-15 07:12:26.735 [ 1212] [crash]   #1  0x64b82cb0 (no module)
+";
+
+    #[test]
+    fn a_jump_to_no_module_with_registers_in_a_hook_names_its_program() {
+        let mut e = ev(RTSS_STRAY_JUMP, &[]);
+        e.code = Some(0xc000_0005);
+        let d = diagnose(&e).unwrap();
+        assert_eq!(d.id, "third_party_hook");
+        assert!(d.title.contains("RivaTuner"), "{}", d.title);
+        assert!(d.what.contains("rtsshooks64.dll"), "{}", d.what);
+        assert!(d.steps[0].contains("MSI Afterburner"), "{}", d.steps[0]);
+        let reading = RTSS_STRAY_JUMP.replace("executing (DEP)", "reading");
+        e.loader = reading;
+        assert_eq!(
+            diagnose(&e),
+            None,
+            "only a jump to an address that is not code counts"
+        );
+        e.loader = RTSS_STRAY_JUMP.replace("RTSSHooks64.dll @ 0x180000000", "RTSSHooks64.dll @ 0x809f0000");
+        assert_eq!(diagnose(&e), None, "no register points into the hook's module");
+        e.loader = RTSS_STRAY_JUMP.replace("module: RTSSHooks64.dll", "module: sl.interposer.dll");
+        assert_eq!(
+            diagnose(&e),
+            None,
+            "the registers point into a module that is no hook"
+        );
+        e.loader = RTSS_STRAY_JUMP.replace("[offline] module: RTSSHooks64.dll @ 0x180000000\n", "");
+        assert_eq!(diagnose(&e), None, "the hook is not among the loaded modules");
+    }
+
+    #[test]
+    fn module_bases_and_record_registers_are_read() {
+        assert_eq!(
+            module_bases(RTSS_STRAY_JUMP),
+            [
+                ("rtsshooks64.dll".to_owned(), 0x1_8000_0000),
+                ("dxgi.dll".to_owned(), 0x7fff_a3b2_0000)
+            ]
+        );
+        let f = fatal(&Evidence {
+            code: Some(0xc000_0005),
+            ..ev(RTSS_STRAY_JUMP, &[])
+        });
+        assert_eq!(f.module, None);
+        let regs = record_registers(&f.record);
+        assert_eq!(regs.len(), 16, "{regs:x?}");
+        assert!(
+            regs.contains(&0x1_8024_056d) && regs.contains(&0x7fff_ffff_ffff_fffc),
+            "{regs:x?}"
+        );
+    }
 
     #[test]
     fn a_first_chance_crash_without_an_unhandled_line_still_counts() {
