@@ -783,6 +783,8 @@ const MORPH_DRIVER: &str = "Game_CareerEventResourceManager_AddDriverMorphData+0
 const RETIREMENT_NAME: &str = "Sess_InGameRace_Update+0x77e";
 /// What the driver name fill reads for a missing driver: the composed name pointer of a null driver's name holder.
 const RETIREMENT_READ: &str = "reading 0x1f0";
+/// The fault in the weekend list builder of the Team HQ screens: the read of the node of a round's track record.
+const WEEKENDS_TRACK_NODE: &str = "Career_Weekends_BuildResultNodes+0x4da";
 /// The game function that reads a car's racing line, which a car with no line of its own faults in.
 const LINE_CACHE: &str = "Ai_LineCache_UpdateIfChanged+";
 /// What the core logs for a car that is the third of its team.
@@ -1760,6 +1762,29 @@ fn retirement_driver_crash(f: &Fatal) -> bool {
         && f.record.iter().any(|l| l.trim_end().ends_with(RETIREMENT_READ))
 }
 
+/// Whether F1 25 faulted reading the track node of a round while Team HQ listed the season's weekends: the nearest
+/// frame is [`WEEKENDS_TRACK_NODE`].
+fn weekends_track_crash(f: &Fatal) -> bool {
+    f.module.as_deref() == Some("f1_25.exe")
+        && f.frames.first().is_some_and(|l| l.contains(WEEKENDS_TRACK_NODE))
+}
+
+fn weekends_track_record_bad_index() -> Diagnosis {
+    Diagnosis {
+        id: "weekends_track_record_bad_index",
+        title: "A round of your career has a track F1 25 can't find".to_owned(),
+        what: "F1 25 crashed as Team HQ listed the weekends of a season. A round of that season is held at a track \
+               that is not in the game's track list."
+            .to_owned(),
+        steps: vec![
+            "Turn on the track addons the career's earlier seasons use, or turn off the addon that changed the \
+             tracks of the calendar."
+                .to_owned(),
+            "Press Play again.".to_owned(),
+        ],
+    }
+}
+
 fn race_driver_missing() -> Diagnosis {
     Diagnosis {
         id: "race_driver_missing",
@@ -2249,6 +2274,9 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
     }
     if retirement_driver_crash(&f) {
         return Some(race_driver_missing());
+    }
+    if weekends_track_crash(&f) {
+        return Some(weekends_track_record_bad_index());
     }
     if third_car_line_crash(e, &f) {
         return Some(third_car_line(e));
@@ -4016,6 +4044,43 @@ runtime      Windows
             diagnose(&ev(&read, &[])).map(|d| d.id),
             None,
             "another read under the same call"
+        );
+    }
+
+    const WEEKENDS: &str = "\
+2026-11-15 16:15:41.332 [ 9736] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 9736, 5051 s after load, at F1_25.exe+0x181b87a .xtls Career_Weekends_BuildResultNodes+0x4da
+2026-11-15 16:15:41.332 [ 9736] [crash]   reading 0x1110000008
+2026-11-15 16:15:41.332 [ 9736] [crash]   rax=0000001110000000 rbx=0000000067cff500 rcx=0000001110000008 rdx=0000000000000005
+2026-11-15 16:15:41.332 [ 9736] [crash]   stack:
+2026-11-15 16:15:41.332 [ 9736] [crash]   #0  F1_25.exe+0x181b87a .xtls Career_Weekends_BuildResultNodes+0x4da
+2026-11-15 16:15:41.332 [ 9736] [crash]   #1  F1_25.exe+0x181b37b .xtls fn base+0x181b280+0xfb
+2026-11-15 16:15:41.341 [ 9736] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at F1_25.exe+0x181b87a .xtls Career_Weekends_BuildResultNodes+0x4da reached the top-level filter; passing it to the game's filter
+";
+
+    #[test]
+    fn a_crash_reading_a_round_s_track_node_names_no_addon() {
+        let mut e = with_names(ev(WEEKENDS, &[]), &[("progressive.career", "Progressive Career")]);
+        e.enabled = vec!["progressive.career".to_owned()];
+        let d = diagnose(&e).unwrap();
+        assert_eq!(d.id, "weekends_track_record_bad_index");
+        assert_eq!(d.title, "A round of your career has a track F1 25 can't find");
+        assert!(
+            !d.text().contains("Progressive Career"),
+            "an addon is named: {}",
+            d.text()
+        );
+
+        e.enabled = vec![];
+        assert_eq!(diagnose(&e).unwrap(), d, "the same diagnosis with no addon on");
+
+        let other = WEEKENDS.replace(
+            "Career_Weekends_BuildResultNodes+0x4da",
+            "Career_Weekends_BuildResultNodes+0x4c1",
+        );
+        assert_eq!(
+            diagnose(&ev(&other, &[])).map(|d| d.id),
+            None,
+            "another offset of the function"
         );
     }
 

@@ -1976,11 +1976,12 @@ __asm__(
 uint64_t fake_weekends_record(void *items, uint64_t track);
 
 static uint8_t weekends_record[0x2c8];
+static uint8_t weekends_node[0x10];
 static uint64_t weekends_items[8 * 2];
 
 static void weekends_setup(void)
 {
-    *(uint64_t *)(weekends_record + 0x2c0) = 0x2c0c0de;
+    *(uint64_t *)(weekends_record + 0x2c0) = (uint64_t)weekends_node;
     weekends_items[3 * 2 + 1] = (uint64_t)weekends_record;
 }
 
@@ -1988,7 +1989,7 @@ static void test_weekends(void)
 {
     weekends_setup();
     uint64_t r = fake_weekends_record(weekends_items, 3);
-    expect(r == 0x2c0c0de, "weekends: a round with track data reads its record as the game does");
+    expect(r == (uint64_t)weekends_node, "weekends: a round with track data reads its record as the game does");
     r = fake_weekends_record(weekends_items, 1);
     uint64_t again = fake_weekends_record(weekends_items, 1);
     expect(r == 0 && again == 0, "weekends: a round whose track has no record reads as empty");
