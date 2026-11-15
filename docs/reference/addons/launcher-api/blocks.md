@@ -7,7 +7,7 @@ description: The blocks a launcher plugin builds a page from - stats, facts, tex
 
 A block is one piece of a page; a `blocks` body, a row's `detail`, a `card` and a `grid` each hold a list of them.
 
-The **1.9.51-test native charts build** also supports a data-only [`chart`](./charts) block. This experimental block is not available in stock 1.9.51.
+From 1.9.55 a data-only [`chart`](./charts) block is also available. Check for the `view.chart` capability in `hello.params.capabilities` before using it.
 
 ## A dashboard in full
 
