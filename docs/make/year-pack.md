@@ -148,7 +148,7 @@ static void register_cars()
 
 The **package** is the season itself: its grid, its rules and its calendar. The **box** is the tile the player picks in Grand Prix and Time Trial, and it opens the package.
 
-The rules apply when a session loads: 2008 points, refuelling, and a tyre class of the pack's choosing. Every box shares the `swofty_f1` setup mode, so the pack needs no mode of its own.
+The rules apply when a session loads: 2008 points, refuelling, and a tyre class of the pack's choosing. Refuelling and the parc fermé fuel rule are played by the core: the race starts on the fuel left after qualifying, and every pit stop refuels to `refuel_stint_kg` (see [Fuel rules per box](/std/systems/sessions#fuel-rules-per-box)). Every box shares the `swofty_f1` setup mode, so the pack needs no mode of its own.
 
 The calendar names its tracks by venue. The box shows the 2008 calendar first, then every other track that fits under **More tracks**. A round whose venue nobody provides is left out.
 
@@ -190,7 +190,8 @@ static void register_box(Ref<teams::Identity> mclaren, Ref<teams::Identity> ferr
               .drivers = { { .driver = drivers::identities["game/kimi_raikkonen"], .number = 1 },
                            { .driver = massa, .number = 2 } } },
         },
-        .rules = { .points = points, .refuelling = true },
+        .rules = { .points = points, .refuelling = true, .refuel_stint_kg = 60, .quali_fuel_kg = 45,
+                   .race_start_fuel_from_quali = true },
     });
 
     content::era_boxes.add("f1_2008", { .package = season_2008, .image = "art/box_2008.png", .order = 2008 });
@@ -212,7 +213,8 @@ static void register_box(Ref<teams::Identity> mclaren, Ref<teams::Identity> ferr
           "drivers": [ { "driver": "game/lewis_hamilton", "number": 22 },
                        { "driver": "mod.season-2008/heikki_kovalainen", "number": 23 } ] }
       ],
-      "rules": { "points": "mod.season-2008/2008", "refuelling": true }
+      "rules": { "points": "mod.season-2008/2008", "refuelling": true, "refuel_stint_kg": 60,
+                 "quali_fuel_kg": 45, "race_start_fuel_from_quali": true }
     }
   },
   "era.box": { "f1_2008": { "package": "mod.season-2008/f1_2008", "image": "art/box_2008.png", "order": 2008 } }

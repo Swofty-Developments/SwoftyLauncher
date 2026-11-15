@@ -10,6 +10,7 @@
 #include "garage_build.hpp"
 #include "gvdb.hpp"
 #include "logos.hpp"
+#include "race_fuel.hpp"
 #include "teams.hpp"
 #include "tyre_warmers.hpp"
 #include "../tracks/boot.hpp"
@@ -857,6 +858,17 @@ WarmersBox tyre_warmers_for_box(const std::string &entrant_list)
         packages.push_back({id, lookup("content.package", id)});
     WarmersPick pick = tyre_warmers_pick(entrant_list, packages);
     return {pick.warmers, pick.line};
+}
+
+FuelRules fuel_rules_for_box(const std::string &entrant_list)
+{
+    Store &st = registry::store();
+    std::map<std::string, Value> keep;
+    Lookup lookup = store_lookup(st, keep);
+    std::vector<std::pair<std::string, const Value *>> packages;
+    for (auto &id : in_load_order(st, "content.package"))
+        packages.push_back({id, lookup("content.package", id)});
+    return fuel_rules_pick(entrant_list, packages);
 }
 
 void register_appliers()

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "race_fuel.hpp"
+
 #include <optional>
 #include <string>
 
@@ -14,6 +16,10 @@ struct DrsBox {
     std::string label, line;
 };
 DrsBox drs_for_box(const std::string &entrant_list);
+
+// The fuel rules of the box with this entrant list (race_fuel.hpp): its content.package's rules.refuelling,
+// race_fuel_kg, refuel_stint_kg, quali_fuel_kg and race_start_fuel_from_quali, and the line to log.
+FuelRules fuel_rules_for_box(const std::string &entrant_list);
 
 // The tyre warmer setting the box with this entrant list runs: its content.package's rules.tyre_warmers (none when the
 // package has no rule), and the line to log.

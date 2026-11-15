@@ -25,7 +25,7 @@
 namespace swofty_core::hooks::car_live {
 
 constexpr uintptr_t CAR_VEHICLE_ID = 0xe8, CAR_IS_AI = 0x124, CAR_LOADER = 0x4a0, SYSTEM_CAR = 0x08;
-constexpr uintptr_t FUEL_CAPACITY = 0x98;
+constexpr uintptr_t FUEL_CAPACITY = 0x98, FUEL_MASS = 0x100;
 constexpr uint32_t MAX_CARS = 32;
 
 constexpr uintptr_t ENGINE = 0x530, STEERING = 0x560, GEARBOX = 0x538,
@@ -689,6 +689,20 @@ template <class Tag> struct Ops {
         }
         (void)car;
         (void)index;
+        return SWOFTY_ASSET_OK;
+    }
+
+    // One car's fuel tank: the kg in it (+0x100) and its capacity (+0x98), for the box fuel rules (race_fuel.hpp).
+    static int fuel_of(uint32_t index, float &mass, float &capacity)
+    {
+        uintptr_t car = 0, sys = 0;
+        if (int r = car_at(index, nullptr, car); r != SWOFTY_ASSET_OK)
+            return r;
+        if (int r = system_at(car, FUEL_TANK, sys); r != SWOFTY_ASSET_OK)
+            return r;
+        if (!load(sys + FUEL_MASS, Kind::plain, mass) || !load(sys + FUEL_CAPACITY, Kind::obf, capacity) ||
+            !std::isfinite(mass) || !std::isfinite(capacity))
+            return SWOFTY_ASSET_LATE;
         return SWOFTY_ASSET_OK;
     }
 

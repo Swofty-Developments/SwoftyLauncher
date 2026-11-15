@@ -24,8 +24,12 @@ struct Rules {
     bool refuelling = false;
     std::optional<float> race_fuel_kg;
     std::optional<bool> tyre_warmers;   // content.package 1.4: the box's races with or without tyre warmers; empty = the mode's
+    std::optional<float> refuel_stint_kg;   // content.package 1.5: a pit stop fills to this; empty = race_fuel_kg, else a full tank
+    std::optional<float> quali_fuel_kg;     // content.package 1.5: the fuel each car starts qualifying with; empty = the game's
+    bool race_start_fuel_from_quali = false; // content.package 1.5: parc ferme, the race starts with the fuel left after qualifying
 };
-SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg, tyre_warmers)
+SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg, tyre_warmers,
+              refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali)
 
 inline Result set_control(cars::live::Car car, Control mode)
 {

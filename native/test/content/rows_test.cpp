@@ -1,4 +1,5 @@
 #include "../../src/core/apply/content/boot.hpp"
+#include "../../src/core/apply/content/race_fuel.hpp"
 #include "../../src/core/apply/content/tyre_warmers.hpp"
 #include "../../src/core/apply/ids.hpp"
 #include "../../src/core/apply/room.hpp"
@@ -325,7 +326,7 @@ static void leaderboard_tests(const std::string &regs)
     st.set_validator(&registry::schema_validator());
     const SwoftyRegistry *t = registry::table();
     for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
-        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.4.json" : "/1.0.json"));
+        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.5.json" : "/1.0.json"));
         t->declare(name, SwoftyText{schema.data(), schema.size()});
     }
     auto package = [](const char *list, const char *board) {
@@ -1825,6 +1826,96 @@ static void drs_tests(const std::string &regs)
     check(content::tyre_warmers_pick("f1_1959", boxes).warmers == true, "the last package with the box's entrant list decides");
 }
 
+static void race_fuel_tests()
+{
+    using content::FuelCar;
+    using content::FuelPlan;
+    using content::FuelRules;
+    Value p2008 = swofty::json::parse(R"({"entrant_list":"f1_2008","rules":{"refuelling":true,"race_fuel_kg":90,"refuel_stint_kg":60,"quali_fuel_kg":45,"race_start_fuel_from_quali":true}})");
+    Value p1994 = swofty::json::parse(R"({"entrant_list":"f1_1994","rules":{"refuelling":true,"race_fuel_kg":80}})");
+    Value p2017 = swofty::json::parse(R"({"entrant_list":"f1_2017","rules":{"refuelling":false,"race_fuel_kg":105}})");
+    Value pbad = swofty::json::parse(R"({"entrant_list":"f1_bad","rules":{"refuelling":"yes","quali_fuel_kg":-3,"race_start_fuel_from_quali":1}})");
+    std::vector<std::pair<std::string, const Value *>> boxes = {
+        {"mod.a/f1_2008", &p2008}, {"mod.a/f1_1994", &p1994}, {"mod.a/f1_2017", &p2017}, {"mod.a/f1_bad", &pbad}};
+    FuelRules r08 = content::fuel_rules_pick("f1_2008", boxes);
+    std::printf("      %s\n", r08.line.c_str());
+    check(r08.refuelling && r08.race_fuel_kg == 90.f && r08.refuel_stint_kg == 60.f && r08.quali_fuel_kg == 45.f && r08.start_from_quali,
+          "a box's content.package gives its refuelling, race, stint and qualifying fuel and parc ferme rule");
+    FuelRules r94 = content::fuel_rules_pick("f1_1994", boxes);
+    std::printf("      %s\n", r94.line.c_str());
+    check(r94.any() && !r94.start_from_quali && !r94.quali_fuel_kg, "refuelling without the 1.5 fields");
+    check(!content::fuel_rules_pick("f1_2017", boxes).any() && !content::fuel_rules_pick("f1_bad", boxes).any() &&
+              !content::fuel_rules_pick("f1_2025", boxes).any(),
+          "refuelling off, malformed values or a stock box: no fuel rule (the game's own fuel)");
+
+    auto car = [](float fuel, int lap, uint8_t stops) {
+        FuelCar c;
+        c.present = true;
+        c.pit_stops_ok = true;
+        c.pit_stops = stops;
+        c.lap = lap;
+        c.fuel = fuel;
+        c.capacity = 110;
+        return c;
+    };
+    // 1994: race start fuel, then a refill at each counted stop.
+    FuelPlan plan;
+    FuelCar cars[2] = {car(30, 1, 0), car(120, 1, 0)};
+    cars[1].capacity = 70;
+    auto w = plan.tick(r94, 15, 1, cars, 2);
+    check(w.size() == 2 && w[0].car == 0 && w[0].kg == 80.f && w[1].kg == 70.f, "race start: race_fuel_kg, capped at the tank");
+    cars[0] = car(80, 1, 0);
+    check(plan.tick(r94, 15, 1, cars, 1).empty(), "the start fuel held: nothing written again");
+    cars[0] = car(100, 1, 0);
+    w = plan.tick(r94, 15, 1, cars, 1);
+    check(w.size() == 1 && w[0].kg == 80.f, "the start sequence loaded its own fuel: the start fuel is written again");
+    cars[0] = car(79, 1, 0);
+    check(plan.tick(r94, 15, 1, cars, 1).empty(), "the car burns: the start fuel is done");
+    cars[0] = car(100, 1, 0);
+    check(plan.tick(r94, 15, 1, cars, 1).empty(), "after the start, a higher fuel is left alone");
+    cars[0] = car(12, 20, 1);
+    w = plan.tick(r94, 15, 1, cars, 1);
+    check(w.size() == 1 && w[0].kg == 80.f && std::string(w[0].why) == "pit stop refuel", "a counted pit stop refuels to the stint (race_fuel_kg)");
+    check(plan.tick(r94, 15, 1, cars, 1).empty(), "one refuel per stop");
+    plan.failed(0);
+    w = plan.tick(r94, 15, 1, cars, 1);
+    check(w.size() == 1 && w[0].kg == 80.f, "a refuel the core could not write is tried again");
+    cars[0] = car(95, 30, 2);
+    check(plan.tick(r94, 15, 1, cars, 1).empty(), "a stop never drains a car that holds more than the stint");
+    cars[0] = car(5, 1, 0);
+    cars[0].pit_stops_ok = false;
+    w = plan.tick(r94, 15, 2, cars, 1);
+    check(w.size() == 1 && w[0].kg == 80.f, "a restarted race (new generation) writes the start fuel again");
+    check(plan.tick(r94, 1, 3, cars, 1).empty(), "practice: nothing");
+
+    // 2008: qualifying fuel, parc ferme race start, stint refuels.
+    FuelPlan pf;
+    FuelCar q[2] = {car(100, 0, 0), car(100, 0, 0)};
+    w = pf.tick(r08, 8, 1, q, 2);
+    check(w.size() == 2 && w[0].kg == 45.f && w[1].kg == 45.f, "qualifying starts on quali_fuel_kg");
+    q[0] = car(45, 0, 0);
+    q[1] = car(45, 0, 0);
+    pf.tick(r08, 8, 1, q, 2);
+    q[0] = car(31.5f, 3, 0);
+    q[1].present = false;
+    pf.tick(r08, 8, 1, q, 2);
+    float left = 0;
+    check(pf.quali_known(0, left) && left == 31.5f, "the fuel left at the end of qualifying is kept per car");
+    FuelCar race[3] = {car(100, 1, 0), car(100, 1, 0), car(100, 1, 0)};
+    w = pf.tick(r08, 15, 2, race, 3);
+    check(w.size() == 3 && w[0].kg == 31.5f && w[1].kg == 45.f && w[2].kg == 45.f,
+          "parc ferme: the race starts on the fuel left after qualifying, quali_fuel_kg for a car without it");
+    std::printf("      car 0: %s; car 2: %s\n", w[0].why, w[2].why);
+    race[0] = car(10, 25, 1);
+    w = pf.tick(r08, 15, 2, race, 1);
+    check(w.size() == 1 && w[0].kg == 60.f, "a stop refuels to refuel_stint_kg");
+    pf.reset();
+    check(!pf.quali_known(0, left), "a box change forgets the qualifying fuel");
+
+    FuelRules none;
+    check(FuelPlan{}.tick(none, 15, 1, race, 3).empty(), "no rule: nothing written");
+}
+
 static void stock_career_rows(Db &db)
 {
     auto node = [&](const std::string &c, int i, const char *label, const char *type, const char *dept, const char *links) {
@@ -2269,7 +2360,7 @@ static void virtual_list_tests(const std::string &regs)
     st.set_validator(&registry::schema_validator());
     const SwoftyRegistry *t = registry::table();
     for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
-        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.4.json" : "/1.0.json"));
+        std::string schema = slurp(regs + "/" + name + (std::string_view(name) == "content.package" ? "/1.5.json" : "/1.0.json"));
         t->declare(name, SwoftyText{schema.data(), schema.size()});
     }
     auto package = [](const char *list, bool virt) {
@@ -2343,6 +2434,7 @@ int main(int argc, char **argv)
         twelve_slot_tests(argv[1]);
     if (argc > 1)
         drs_tests(argv[1]);
+    race_fuel_tests();
     if (argc > 1)
         career_registry_tests(argv[1]);
     if (argc > 1)

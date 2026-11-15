@@ -96,6 +96,10 @@ int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
 // Setup mode guard: Sess_Apply_ContentAvailability rebuilds the game setup modes (it frees the old objects), so a
 // set wrapping its entry drops the narrowing, DRS swaps and Time Trial hold the core keeps without writing them back.
 
+namespace swofty_core::hooks {
+void race_fuel_rules(const swofty_core::apply::content::FuelRules &rules);
+}
+
 namespace {
 
 namespace mem = swofty::mem;
@@ -305,6 +309,15 @@ void apply_warmers(void *mode, const char *list)
     log_warmers(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
 }
 
+// Fuel rules per box: the pressed box's refuelling, race and qualifying fuel and parc ferme rule go to the per-frame fuel
+// plan (hooks/car_live.cpp); a stock box press or leaving the boxes hands over no rules.
+void apply_fuel(const char *list)
+{
+    swofty_core::hooks::race_fuel_rules(swofty_core::apply::content::fuel_rules_for_box(list));
+}
+
+void clear_fuel() { swofty_core::hooks::race_fuel_rules({}); }
+
 void put_back_drs()
 {
     if (size_t n = drs.put_back())
@@ -502,6 +515,7 @@ void narrow(void *mode, const char *list)
     });
     apply_drs(mode, list);
     apply_warmers(mode, list);
+    apply_fuel(list);
 }
 
 bool time_trial(void *mode)
@@ -1087,8 +1101,10 @@ void select_entry(void *container, const char *entrant_list)
     bool ours = entrant_list && std::find(built.lists.begin(), built.lists.end(), entrant_list) != built.lists.end();
     if (mode && ours)
         narrow(mode, entrant_list);
-    else
+    else {
         restore();
+        clear_fuel();
+    }
     if (mode && !ours && time_trial(mode))
         keep_time_trial_lists(mode);
     last_press = entrant_list ? entrant_list : "";
@@ -1328,6 +1344,8 @@ void leave_front_end(uintptr_t ctx)
     logic::FrontEndLeave leave = logic::leaving_front_end(label, box);
     if (leave.restore)
         restore();
+    if (!box)
+        clear_fuel();
     if (leave.clear_selected)
         ref<uintptr_t>(reinterpret_cast<void *>(setup), SELECTED_LIST) = 0;
     if (leave.forget_pick)
