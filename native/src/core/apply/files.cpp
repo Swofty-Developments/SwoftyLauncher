@@ -71,6 +71,17 @@ std::vector<std::string> put_back(const std::string &scope)
     return lines;
 }
 
+std::vector<std::string> withdraw(const std::string &addon, const std::string &registry, const std::string &id)
+{
+    std::lock_guard g(mu);
+    Router &r = router();
+    r.set_order(registry::store().order());
+    auto lines = r.withdraw(addon, registry, id);
+    for (auto &l : lines)
+        swofty::log("[registry] file: %s", l.c_str());
+    return lines;
+}
+
 std::string winner(const std::string &game_path)
 {
     std::lock_guard g(mu);

@@ -173,6 +173,10 @@ def build_game():
                                (URI + ".image", [(b"head", head, erpw.STORED), (b"data", data, erpw.ZSTD)]),
                                (URI, [(b"view", view, erpw.ZSTD)])])
     write_erp(game / "flow_none.erp", [("eaid://ui_package/art/other.texture", [(b"data", b"q" * 100, erpw.STORED)])])
+    overlay = OUT / "game/swofty/assets/resources"
+    overlay.mkdir(parents=True, exist_ok=True)
+    head4, data4, _ = stock_array(64, 64, 4)
+    write_erp(overlay / "0.erp", [(URI + ".image", [(b"head", head4, erpw.STORED), (b"data", data4, erpw.ZSTD)])])
 
     shape = (OUT / "shape64.bc7").read_bytes()
     donor = data[64 * 64:2 * 64 * 64]

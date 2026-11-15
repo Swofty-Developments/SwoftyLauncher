@@ -168,6 +168,18 @@ void routing()
               !f.routes.count("audio/2025/bundles/only.bdl"),
           "put back with no other claim removes the route");
 
+    f.installed.insert("addons/mod.box/sounds/only.bdl");
+    f.installed.insert("addons/mod.box/sounds/other.bdl");
+    r.redirect("audio/2025/bundles/only.bdl", "mod.box", "sounds/only.bdl", "engine_sound", "mod.box/only", "boot");
+    r.redirect("audio/2025/bundles/other.bdl", "mod.box", "sounds/other.bdl", "engine_sound", "mod.box/other", "boot");
+    lines = r.withdraw("mod.box", "engine_sound", "mod.box/only");
+    check(lines.size() == 1 && lines[0] == "put back audio/2025/bundles/only.bdl: the game's own file again" &&
+              !f.routes.count("audio/2025/bundles/only.bdl") && f.routes.count("audio/2025/bundles/other.bdl") &&
+              f.routes.count("audio/2025/bundles/v10_screamer.bdl"),
+          "withdraw removes the claims of one addon, registry and id, and leaves the others in their scope");
+    check(r.withdraw("mod.box", "engine_sound", "mod.box/only").empty(), "a second withdraw changes nothing");
+    r.withdraw("mod.box", "engine_sound", "mod.box/other");
+
     r.set_order({"mod.esp"});
     f.installed.insert("addons/mod.unknown/sounds/v10_screamer.bdl");
     o = r.redirect("audio/2025/bundles/v10_screamer.bdl", "mod.unknown", "sounds/v10_screamer.bdl", "engine_sound",
