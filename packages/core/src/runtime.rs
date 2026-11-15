@@ -207,6 +207,53 @@ pub fn overlay_fits(
     Ok(Ok(overlay.erp.resources.len()))
 }
 
+fn same_copy(a: &Resource, b: &Resource) -> bool {
+    a.kind == b.kind
+        && a.unk == b.unk
+        && a.fragments.len() == b.fragments.len()
+        && a.fragments.iter().zip(&b.fragments).all(|(x, y)| {
+            x.name == y.name
+                && x.flags == y.flags
+                && x.size == y.size
+                && x.compression == y.compression
+                && x.raw == y.raw
+        })
+}
+
+type WrittenRes<'r> = (&'r str, &'r Resource, &'r Erp, &'r str);
+
+// The part of its origin's overlay each archive reads, by origin and archive. An
+// archive joins the first part where every resource the origin wrote in it is the
+// same copy the part already holds under that name, and starts a part otherwise:
+// an overlay archive holds one copy of a resource for all its targets.
+fn parts_of<'r>(written: &[WrittenRes<'r>]) -> HashMap<(&'r str, &'r str), usize> {
+    let mut groups: BTreeMap<(&str, &str), Vec<&Resource>> = BTreeMap::new();
+    for &(erp, res, _, origin) in written {
+        groups.entry((origin, erp)).or_default().push(res);
+    }
+    let mut held: HashMap<&str, Vec<HashMap<&str, &Resource>>> = HashMap::new();
+    let mut parts = HashMap::new();
+    for ((origin, erp), copies) in groups {
+        let bins = held.entry(origin).or_default();
+        let at = bins
+            .iter()
+            .position(|bin| {
+                copies
+                    .iter()
+                    .all(|r| bin.get(r.name.as_str()).is_none_or(|held| same_copy(held, r)))
+            })
+            .unwrap_or(bins.len());
+        if at == bins.len() {
+            bins.push(HashMap::new());
+        }
+        for r in copies {
+            bins[at].insert(r.name.as_str(), r);
+        }
+        parts.insert((origin, erp), at);
+    }
+    parts
+}
+
 #[derive(Debug, Default)]
 pub struct Runtime {
     pub assets: Assets,
@@ -506,7 +553,9 @@ impl Runtime {
     // One overlay archive for each origin and set of target archives, so that each
     // addon or mod has its own, beside the ready ones in `prebuilt`. The game reads a
     // group's overlays in the listed order and the first that has a resource wins, so
-    // they are listed from the last origin in `origins` to the first.
+    // they are listed from the last origin in `origins` to the first. An origin that
+    // leaves a resource differing between two archives gets an overlay archive for
+    // each, so every target reads the copy written for it.
     pub fn resources<'r>(
         &mut self,
         resources: impl IntoIterator<Item = (&'r str, &'r Resource, &'r Erp, &'r str)>,
@@ -520,38 +569,46 @@ impl Runtime {
         }
         let mut warnings = Vec::new();
         let rank = |origin: &str| origins.iter().position(|o| o == origin).unwrap_or(origins.len());
-        type Written<'w> = (&'w Resource, &'w Erp, BTreeSet<&'w str>);
-        let mut by_uri: BTreeMap<(usize, &str, &str), Written> = BTreeMap::new();
+        let mut written = Vec::new();
         for (erp, res, stock, origin) in resources {
             if let Some(why) = layout_change(res, stock) {
                 warnings.push(format!("runtime: {} in {erp} is left out: {why}", res.name));
                 continue;
             }
+            written.push((erp, res, stock, origin));
+        }
+        let parts = parts_of(&written);
+        type Written<'w> = (&'w Resource, &'w Erp, BTreeSet<&'w str>);
+        let mut by_uri: BTreeMap<(usize, &str, usize, &str), Written> = BTreeMap::new();
+        for (erp, res, stock, origin) in written {
             let e = by_uri
-                .entry((rank(origin), origin, &res.name))
+                .entry((rank(origin), origin, parts[&(origin, erp)], &res.name))
                 .or_insert((res, stock, BTreeSet::new()));
             e.0 = res;
             e.1 = stock;
             e.2.insert(erp);
         }
         // An origin's resources share one archive, which lists every target the
-        // origin writes; only a second archive version splits it. Resources
-        // without an origin keep one archive per set of targets.
+        // origin writes; only a second archive version or a differing copy of a
+        // resource splits it. Resources without an origin keep one archive per set
+        // of targets.
         type Set<'s> = (Vec<Resource>, &'s Erp, BTreeSet<&'s str>);
-        let mut sets: BTreeMap<(usize, &str, u32, Vec<&str>), Set> = BTreeMap::new();
-        for ((n, origin, _), (res, stock, erps)) in by_uri {
+        let mut sets: BTreeMap<(usize, &str, usize, u32, Vec<&str>), Set> = BTreeMap::new();
+        for ((n, origin, part, _), (res, stock, erps)) in by_uri {
             let split = match origin.is_empty() {
                 true => erps.iter().copied().collect(),
                 false => Vec::new(),
             };
-            let set =
-                sets.entry((n, origin, stock.version, split))
-                    .or_insert((Vec::new(), stock, BTreeSet::new()));
+            let set = sets.entry((n, origin, part, stock.version, split)).or_insert((
+                Vec::new(),
+                stock,
+                BTreeSet::new(),
+            ));
             set.0.push(res.clone());
             set.2.extend(erps);
         }
         let mut listed: Vec<(usize, ResErp)> = Vec::new();
-        for (n, ((rank, origin, _, _), (resources, stock, targets))) in sets.into_iter().enumerate() {
+        for (n, ((rank, origin, ..), (resources, stock, targets))) in sets.into_iter().enumerate() {
             let rel = format!("{RESOURCES_DIR}/{n}.erp");
             let path = out.join(SWOFTY).join(&rel);
             let dir = path.parent().expect("has parent");

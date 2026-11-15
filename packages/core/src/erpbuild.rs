@@ -3263,6 +3263,73 @@ mod tests {
         std::fs::remove_dir_all(&root).ok();
     }
 
+    // A team mod's array and view sit in the boot archive only, and an editor then
+    // changes one logo in every archive that carries the array.
+    #[test]
+    fn an_origin_whose_copies_differ_gets_an_overlay_for_each() {
+        const FLOW: &str = "2025_asset_groups/ui_package/flow_race.erp";
+        let root = texture_game("copies");
+        let (game, addon) = (root.join("game"), root.join("addon"));
+        std::fs::create_dir_all(&addon).unwrap();
+        let view = LOGOS.strip_suffix(".image").unwrap();
+        let stock = texture_erp(vec![array(2, &[[0; 4], [1; 4], [2; 4], [3; 4]]), view_res(4)]);
+        for rel in [UI, FLOW] {
+            std::fs::write(game.join(rel), &stock).unwrap();
+        }
+        std::fs::write(
+            addon.join("mod.erp"),
+            texture_erp(vec![array(2, &[[0; 4], [7; 4]])]),
+        )
+        .unwrap();
+        std::fs::write(addon.join("view.erp"), texture_erp(vec![view_res(2)])).unwrap();
+        std::fs::write(
+            addon.join("grid.erp"),
+            texture_erp(vec![array(2, &[[0; 4], [1; 4], [2; 4], [9; 4]])]),
+        )
+        .unwrap();
+        let original = |rel: &str| game.join(rel);
+        let resolve = |s: &Source| Ok(s.resolve(&addon)?);
+        let mut b = ErpBuild::new(&original);
+        b.apply_for(&merge_op(BOOT, "mod.erp"), "mod", &resolve).unwrap();
+        let put = ErpOp::PutResource {
+            erp: BOOT.into(),
+            resource: view.into(),
+            source: Source::addon("view.erp"),
+            rename: None,
+        };
+        b.apply_for(&put, "mod", &resolve).unwrap();
+        for rel in [UI, FLOW, BOOT] {
+            b.apply_for(&merge_op(rel, "grid.erp"), "grid", &resolve).unwrap();
+        }
+        assert_eq!(
+            b.cohere_arrays().unwrap(),
+            [format!(
+                "texture array {view}: view said 2 slices, image has 4; fixed"
+            )]
+        );
+        let mut rt = Runtime::new(Vec::new());
+        let out = root.join("overlay");
+        let notes = rt.resources(b.resources(), b.origins(), &[], &out).unwrap();
+        assert!(notes.is_empty(), "{notes:?}");
+        let mut seen = Vec::new();
+        for e in &rt.assets.resource_erps {
+            assert_eq!(e.origin, "grid");
+            let overlay = Erp::parse(&std::fs::read(out.join("swofty").join(&e.file)).unwrap()).unwrap();
+            let image = overlay.resources.iter().find(|r| r.name == LOGOS).unwrap();
+            let said = overlay.resources.iter().find(|r| r.name == view).map(view_count);
+            seen.push((e.erps.clone(), slices_in(image), said, overlay.resources.len()));
+        }
+        seen.sort();
+        assert_eq!(
+            seen,
+            [
+                (vec![UI.to_owned(), FLOW.to_owned()], vec![0, 1, 2, 9], None, 1),
+                (vec![BOOT.to_owned()], vec![0, 7, 2, 9], Some(4), 2),
+            ]
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
     #[test]
     fn kept_resources_stay_when_an_addon_replaces_them() {
         let root = std::env::temp_dir().join(format!("swofty-erpbuild-kept-{}", std::process::id()));

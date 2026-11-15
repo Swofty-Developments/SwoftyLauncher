@@ -251,7 +251,8 @@ The build's `swofty/assets.json` and its files are in the loader folder `swofty/
       "deps": [], "template": "", "origin": "example.livery" }
   ],
   "resource_erps": [                // erp: one overlay archive per origin, from the last origin in load order to the first,
-                                    // since a group reads them in that order and the first that holds a resource wins
+                                    // since a group reads them in that order and the first that holds a resource wins;
+                                    // an origin whose copies of a resource differ between archives has one for each
     { "file": "assets/resources/0.erp", "erps": ["2025_asset_groups/ui_package/flow_boot.erp"], "origin": "example.livery" }
                                     // assets/resources/p<n>.erp for erp.overlay archives
   ],
