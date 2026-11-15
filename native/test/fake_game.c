@@ -3496,13 +3496,20 @@ static void test_udp(int off)
     closesocket(lan);
 }
 
+// The fake game's hand-written stand-ins leave callee-saved registers as the game's own code does, so the mode is read
+// from memory after them, not from the register main would keep it in.
+static int main_argc;
+static char **main_argv;
+
 int main(int argc, char **argv)
 {
-    int fallback = argc > 1 && !strcmp(argv[1], "fallback"), vm = argc > 1 && !strcmp(argv[1], "vm");
-    int session = argc > 1 && !strcmp(argv[1], "session"), settings = argc > 1 && !strncmp(argv[1], "settings", 8);
-    int stages = argc > 1 && !strcmp(argv[1], "stages");
-    int registers = argc > 1 && !strcmp(argv[1], "register");
-    int nopool = argc > 1 && !strcmp(argv[1], "nopool");
+    main_argc = argc;
+    main_argv = argv;
+    int fallback = main_argc > 1 && !strcmp(main_argv[1], "fallback"), vm = main_argc > 1 && !strcmp(main_argv[1], "vm");
+    int session = main_argc > 1 && !strcmp(main_argv[1], "session"), settings = main_argc > 1 && !strncmp(main_argv[1], "settings", 8);
+    int stages = main_argc > 1 && !strcmp(main_argv[1], "stages");
+    int registers = main_argc > 1 && !strcmp(main_argv[1], "register");
+    int nopool = main_argc > 1 && !strcmp(main_argv[1], "nopool");
     setvbuf(stdout, NULL, _IONBF, 0);
     fake_log_gate.hashes[0x22222222 % 373] = 0xbeef;
     for (int i = 0; i < 40; i++)
@@ -3511,8 +3518,8 @@ int main(int argc, char **argv)
     CAREER_VT[5] = (void *)id_action;
     OTHER_VT[4] = (void *)fake_base_populate;
     OTHER_VT[5] = (void *)id_action;
-    if (argc > 1 && !strncmp(argv[1], "packed", 6))
-        return packed_main(argv[1]);
+    if (main_argc > 1 && !strncmp(main_argv[1], "packed", 6))
+        return packed_main(main_argv[1]);
 
     DWORD dummy, size = GetFileVersionInfoSizeW(L"C:\\windows\\system32\\kernel32.dll", &dummy);
     void *buf = malloc(size ? size : 1);
@@ -3538,7 +3545,7 @@ int main(int argc, char **argv)
         stage_early();
     if (registers)
         register_early();
-    if (nopool || (argc > 1 && !strcmp(argv[1], "nearfull")))
+    if (nopool || (main_argc > 1 && !strcmp(main_argv[1], "nearfull")))
         expect(exhaust_near(nopool) > 0, "the address space within 2 GB of the image is taken before the core loads");
     ATOM(WINAPI * rc)(const WNDCLASSEXW *) = fallback ? (void *)real_rc : (void *)__imp_RegisterClassExW;
     HWND(WINAPI * cw)(DWORD, LPCWSTR, LPCWSTR, DWORD, int, int, int, int, HWND, HMENU, HINSTANCE, LPVOID) =
@@ -3648,9 +3655,9 @@ int main(int argc, char **argv)
 
     test_settings(settings, chain);
     test_items(settings);
-    if (argc > 1 && (!strcmp(argv[1], "udp") || !strcmp(argv[1], "udp_off")))
-        test_udp(!strcmp(argv[1], "udp_off"));
-    if (argc > 1 && !strcmp(argv[1], "trigger")) {
+    if (main_argc > 1 && (!strcmp(main_argv[1], "udp") || !strcmp(main_argv[1], "udp_off")))
+        test_udp(!strcmp(main_argv[1], "udp_off"));
+    if (main_argc > 1 && !strcmp(main_argv[1], "trigger")) {
         test_ers_newlap();
         test_ers_mode();
         test_standings();
@@ -3674,7 +3681,7 @@ int main(int argc, char **argv)
     if (assets_late)
         assets_late();
 
-    if (argc > 1 && !strcmp(argv[1], "trigger")) {
+    if (main_argc > 1 && !strcmp(main_argv[1], "trigger")) {
         fake_flow();
         Sleep(40);
         fake_flow();
@@ -3686,78 +3693,78 @@ int main(int argc, char **argv)
                                "the setup armed it, not on the nested tick");
     }
 
-    if (argc > 1 && (!strcmp(argv[1], "trigger") || !strcmp(argv[1], "vm") || !strcmp(argv[1], "gamelog_off")))
-        test_gamelog(strcmp(argv[1], "gamelog_off") != 0);
-    if (argc > 1 && !strcmp(argv[1], "trigger"))
+    if (main_argc > 1 && (!strcmp(main_argv[1], "trigger") || !strcmp(main_argv[1], "vm") || !strcmp(main_argv[1], "gamelog_off")))
+        test_gamelog(strcmp(main_argv[1], "gamelog_off") != 0);
+    if (main_argc > 1 && !strcmp(main_argv[1], "trigger"))
         test_deadlock_warn();
     printf("%s (%d failure(s))\n", fails ? "FAILED" : "ALL PASSED", fails);
-    if (argc > 1 && !strcmp(argv[1], "crash")) {
+    if (main_argc > 1 && !strcmp(main_argv[1], "crash")) {
         SetErrorMode(SEM_NOGPFAULTERRORBOX);
         fake_crash((volatile int *)0x10);
     }
-    if (argc > 1 && !strcmp(argv[1], "exit"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "exit"))
         ExitProcess(255);
-    if (argc > 1 && !strcmp(argv[1], "acclim"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "acclim"))
         crash_track_acclim(0);
-    if (argc > 1 && !strcmp(argv[1], "acclim_penalty"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "acclim_penalty"))
         crash_track_acclim(1);
-    if (argc > 1 && !strcmp(argv[1], "ers_mode"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "ers_mode"))
         crash_ers_mode();
-    if (argc > 1 && !strcmp(argv[1], "standings"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "standings"))
         crash_standings();
-    if (argc > 1 && !strcmp(argv[1], "weekends"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "weekends"))
         crash_weekends();
-    if (argc > 1 && !strcmp(argv[1], "teamhq"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "teamhq"))
         crash_teamhq();
-    if (argc > 1 && !strcmp(argv[1], "activity"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "activity"))
         crash_activity();
-    if (argc > 1 && !strcmp(argv[1], "pairs"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "pairs"))
         crash_pairs();
-    if (argc > 1 && !strcmp(argv[1], "setup_vm"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "setup_vm"))
         crash_setup_vm();
-    if (argc > 1 && !strcmp(argv[1], "fe_scan"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "fe_scan"))
         crash_fe_scan();
-    if (argc > 1 && !strcmp(argv[1], "fe_row"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "fe_row"))
         crash_fe_row();
-    if (argc > 1 && !strcmp(argv[1], "ai_corner"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "ai_corner"))
         crash_ai_corner();
-    if (argc > 1 && !strcmp(argv[1], "replay_grid"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "replay_grid"))
         run_replay_grid();
-    if (argc > 1 && !strcmp(argv[1], "garage_crew")) {
+    if (main_argc > 1 && !strcmp(main_argv[1], "garage_crew")) {
         const char *off = getenv("SWOFTY_GARAGE_CREW_GUARD");
         test_garage_crew(!(off && *off));
         test_pit_crew(!(off && *off));
         test_garage_scene(!(off && *off));
     }
-    if (argc > 1 && !strcmp(argv[1], "pit_slots")) {
+    if (main_argc > 1 && !strcmp(main_argv[1], "pit_slots")) {
         const char *off = getenv("SWOFTY_PIT_SLOT_GUARD");
         test_pit_slots(!(off && *off));
     }
-    if (argc > 1 && !strcmp(argv[1], "myteam_keep")) {
+    if (main_argc > 1 && !strcmp(main_argv[1], "myteam_keep")) {
         const char *off = getenv("SWOFTY_MYTEAM_VEHICLE_KEEP");
         test_myteam_vehicle_keep(!(off && *off));
     }
-    if (argc > 1 && !strcmp(argv[1], "myteam_vehicle")) {
+    if (main_argc > 1 && !strcmp(main_argv[1], "myteam_vehicle")) {
         const char *off = getenv("SWOFTY_MYTEAM_VEHICLE_GUARD");
         test_myteam_vehicle_guard(!(off && *off));
     }
-    if (argc > 1 && !strcmp(argv[1], "myteam_heal")) {
+    if (main_argc > 1 && !strcmp(main_argv[1], "myteam_heal")) {
         const char *off = getenv("SWOFTY_MYTEAM_VEHICLE_HEAL");
         test_myteam_vehicle_heal(!(off && *off));
     }
-    if (argc > 1 && !strcmp(argv[1], "leaderboard"))
+    if (main_argc > 1 && !strcmp(main_argv[1], "leaderboard"))
         crash_leaderboard_guard();
-    if (argc > 1 && !strcmp(argv[1], "track_list")) {
+    if (main_argc > 1 && !strcmp(main_argv[1], "track_list")) {
         const char *off = getenv("SWOFTY_TRACK_LIST_GUARD");
         test_track_list_guard(!(off && *off));
     }
-    if (argc > 1 && !strcmp(argv[1], "heap")) {
+    if (main_argc > 1 && !strcmp(main_argv[1], "heap")) {
         SetErrorMode(SEM_NOGPFAULTERRORBOX);
         for (int i = 0; i < 3; i++)
             fake_log_site_a();
         heap_error();
     }
-    if (argc > 1 && !strcmp(argv[1], "abort")) {
+    if (main_argc > 1 && !strcmp(main_argv[1], "abort")) {
         SetErrorMode(SEM_NOGPFAULTERRORBOX);
         fake_fatal_abort();
     }
