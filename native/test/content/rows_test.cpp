@@ -1825,6 +1825,58 @@ static void drs_tests(const std::string &regs)
     check(content::tyre_warmers_pick("f1_1959", boxes).warmers == true, "the last package with the box's entrant list decides");
 }
 
+static void points_tests()
+{
+    std::printf("== session.points\n");
+    Value rec = swofty::json::parse(R"({"points":[8,6,4,3,2],"fastest_lap":1})");
+    content::Plan plan;
+    content::lower_session_points("mod.a/f1_1950", rec, plan);
+    for (auto &l : plan.lines)
+        std::printf("      %s\n", l.c_str());
+    std::string label = content::points_label("mod.a/f1_1950");
+    std::string row = std::string(content::POINTS_PRESETS) + "[_metadata_=" + label + "]";
+    bool full = false, levels = true;
+    size_t sets = 0;
+    for (std::size_t i = 0; i < plan.ops.size(); i++) {
+        const Value &op = plan.ops[i];
+        if (op["op"].as_string() == "add-row") {
+            full = op["table"].as_string() == std::string(content::POINTS_TABLE) &&
+                   op["set"]["points"].as_string() == "8,6,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" &&
+                   op["set"]["fastest_lap_bonus"].as_string() == "1" && op["set"]["fastest_lap_rule"].as_string() == "BestOfTop10";
+        } else if (op["op"].as_string() == "set") {
+            sets++;
+            levels = levels && op["select"].as_string().rfind(row + ".reduced_points_data[_metadata_=", 0) == 0;
+        }
+    }
+    check(plan.refused == 0 && full && sets == 9 && levels,
+          "a points system becomes one standing preset row (26 places, BestOfTop10) and its three reduced levels");
+
+    Value none = swofty::json::parse(R"({"points":[9,6,4,3,2,1],"fastest_lap":null,"reduced":[[4,3,2,1,1]]})");
+    auto s = content::points_system("mod.a/f1_1990", none, nullptr);
+    check(s && s->rule == 0 && s->bonus == 0 && s->reduced.size() == 3 && s->reduced[0][0] == 4 && s->reduced[1][0] == 9 &&
+              s->full.size() == content::POINTS_PLACES,
+          "no fastest lap: rule None; a missing reduced level gives the full points");
+    for (const char *bad : {R"({"points":"25,18"})", R"({"points":[]})", R"({"points":[1,-1]})",
+                            R"({"points":[1],"fastest_lap":"1"})", R"({"points":[1],"reduced":[[1],[1],[1],[1]]})"}) {
+        content::Plan p;
+        content::lower_session_points("mod.a/bad", swofty::json::parse(bad), p);
+        check(p.refused == 1 && p.ops.size() == 0, std::string("refused, nothing applied: ") + bad);
+    }
+
+    std::map<std::string, content::PointsSystem> systems = {{"mod.a/f1_1950", *content::points_system("mod.a/f1_1950", rec, nullptr)}};
+    Value b1950 = swofty::json::parse(R"({"entrant_list":"f1_1950","rules":{"points":"mod.a/f1_1950"}})");
+    Value b1951 = swofty::json::parse(R"({"entrant_list":"f1_1951","rules":{"points":"mod.a/missing"}})");
+    Value b1952 = swofty::json::parse(R"({"entrant_list":"f1_1952","rules":{}})");
+    std::vector<std::pair<std::string, const Value *>> boxes = {{"mod.a/f1_1950", &b1950}, {"mod.a/f1_1951", &b1951}, {"mod.a/f1_1952", &b1952}};
+    auto pick = content::points_pick("f1_1950", boxes, systems);
+    std::printf("      %s\n", pick.line.c_str());
+    check(pick.system && pick.system->label == label && pick.package == "mod.a/f1_1950",
+          "a box whose package names an applied points system runs it");
+    check(!content::points_pick("f1_1951", boxes, systems).system && !content::points_pick("f1_1952", boxes, systems).system &&
+              !content::points_pick("f1_2025", boxes, systems).system,
+          "a system not added at boot, no rule, or a stock box: the mode keeps its own points");
+}
+
 static void stock_career_rows(Db &db)
 {
     auto node = [&](const std::string &c, int i, const char *label, const char *type, const char *dept, const char *links) {
@@ -2329,6 +2381,7 @@ int main(int argc, char **argv)
     livery_tests();
     garage_tests();
     package_team_row_tests();
+    points_tests();
     if (argc > 1)
         variant_tests(argv[1]);
     if (argc > 1)
