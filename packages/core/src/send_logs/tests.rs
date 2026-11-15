@@ -1878,6 +1878,117 @@ fn summary_names_the_stub_an_antivirus_blocked() {
 }
 
 #[test]
+fn a_cut_loader_log_keeps_its_start_and_its_end() {
+    let dir = tmp("loader-cut");
+    let path = dir.join("loader.log");
+    let lines: Vec<String> = (0..400)
+        .map(|i| format!("line {i:04} of the loader log\n"))
+        .collect();
+    let log = lines.concat();
+    put(&path, &log);
+    let len = log.len() as u64;
+
+    assert_eq!(kept_head(&path, 5 << 20), LOADER_KEEP);
+    assert_eq!(kept_head(&path, 1024), 512);
+    assert_eq!(kept_head(&path, 256), 0);
+    assert_eq!(kept_head(&dir.join("loader.prev.log"), 1024), 512);
+    assert_eq!(kept_head(&dir.join("launcher-app.log"), 1024), 0);
+
+    for cap in [len, len + 1, 5 << 20] {
+        let (data, cut) = read_cut(&path, cap, kept_head(&path, cap)).unwrap();
+        assert_eq!(cut, Cut::None);
+        assert_eq!(data, log.as_bytes());
+    }
+
+    for cap in [1024, 2000, len - 1] {
+        let (data, cut) = read_cut(&path, cap, kept_head(&path, cap)).unwrap();
+        assert!(data.len() as u64 <= cap, "{} over {cap}", data.len());
+        let text = String::from_utf8(data).unwrap();
+        let got: Vec<&str> = text.split_inclusive('\n').collect();
+        let gap = got
+            .iter()
+            .position(|l| l.starts_with("[swofty: left out "))
+            .unwrap();
+        let (head, tail) = (&got[..gap], &got[gap + 1..]);
+        assert!(!head.is_empty() && !tail.is_empty());
+        assert_eq!(head, &lines[..head.len()]);
+        assert_eq!(tail, &lines[lines.len() - tail.len()..]);
+        let left: usize = lines[head.len()..lines.len() - tail.len()]
+            .iter()
+            .map(String::len)
+            .sum();
+        assert!(
+            got[gap].starts_with(&format!("[swofty: left out {left} bytes (")),
+            "{}",
+            got[gap]
+        );
+        assert!(got[gap].ends_with(&format!(" of {} here]\n", size(len))));
+        let (head_len, tail_len) = (head.concat().len() as u64, tail.concat().len() as u64);
+        assert_eq!(
+            cut,
+            Cut::Middle {
+                head: head_len,
+                tail: tail_len
+            }
+        );
+        assert!(head_len <= cap / 2 && head_len + 64 > cap / 2);
+    }
+
+    let (data, cut) = read_cut(&path, 1024, 0).unwrap();
+    assert_eq!(cut, Cut::Tail);
+    assert!(data.ends_with(b"line 0399 of the loader log\n") && data.len() <= 1024);
+}
+
+#[test]
+fn a_cut_loader_log_that_is_not_text_is_still_cut_to_its_cap() {
+    let dir = tmp("loader-cut-bytes");
+    let path = dir.join("loader.log");
+    let mut log = vec![0xff_u8; 3000];
+    log.extend_from_slice(b"\xfe\xfd tail \xc3\n");
+    put(&path, &log);
+    let (data, cut) = read_cut(&path, 1024, kept_head(&path, 1024)).unwrap();
+    assert!(matches!(cut, Cut::Middle { head: 513, .. }), "{cut:?}");
+    assert!(data.len() <= 1024);
+    assert!(data.starts_with(&[0xff; 512]) && data.ends_with(b" tail \xc3\n"));
+    assert!(String::from_utf8_lossy(&data).contains("\n[swofty: left out "));
+
+    put(&path, noise(4000, 7));
+    let (data, _) = read_cut(&path, 1024, kept_head(&path, 1024)).unwrap();
+    assert!(data.len() <= 1024);
+}
+
+#[test]
+fn bundles_the_start_of_a_long_session_loader_log() {
+    let root = tmp("loader-head");
+    let (store, game) = fake_data(&root);
+    let mut log = String::from("boot: swofty loader attached\n");
+    log.push_str(&"filler line of the session\n".repeat(400));
+    log.push_str("the last line before the crash\n");
+    put(&store.root.join("sessions/20261020-090000/loader.log"), &log);
+    let limits = Limits {
+        file: 1024,
+        total: 1 << 20,
+    };
+    let bundle = Bundle::collect_with(&store, &report(&game), limits, "x");
+    let entry = bundle
+        .entries
+        .iter()
+        .find(|e| e.path == "sessions/20261020-090000/loader.log")
+        .unwrap();
+    let text = String::from_utf8(entry.data.clone()).unwrap();
+    assert!(text.starts_with("boot: swofty loader attached\n"), "{text}");
+    assert!(text.ends_with("the last line before the crash\n"));
+    assert_eq!(text.matches("\n[swofty: left out ").count(), 1);
+    assert!(entry.data.len() <= 1024);
+    let note = entry.note.as_deref().unwrap();
+    assert!(
+        note.starts_with("first ") && note.contains(" and last "),
+        "{note}"
+    );
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
 fn reads_both_ends_of_a_log_bigger_than_the_cap() {
     let dir = tmp("read-ends");
     let path = dir.join("loader.log");

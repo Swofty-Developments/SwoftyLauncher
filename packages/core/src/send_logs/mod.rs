@@ -38,6 +38,10 @@ const PRINTS_SENT: usize = 3;
 const REDACTED: &str = "[redacted]";
 const SESSION_DEPTH: usize = 3;
 const MIN_TAIL: u64 = 64 << 10;
+/// A cut loader.log keeps this much of its start, the boot header: versions, loaded modules,
+/// hardware settings, bindings and the addon list. The rest of the file's cap goes to its end.
+const LOADER_KEEP: u64 = 2560 << 10;
+const GAP_NOTE: u64 = 128;
 const PERF_READ: u64 = 1 << 20;
 const DUMP_CAP: u64 = 24 << 20;
 const OVERLAY_READ: u64 = 32 << 20;
@@ -273,23 +277,34 @@ impl Collector {
                 size(self.limits.total)
             ));
         }
-        match read_tail(from, cap) {
+        let head = kept_head(from, cap);
+        match read_cut(from, cap, head) {
             Ok((data, cut)) => {
                 let redacted = redact
                     .map(|f| f(&String::from_utf8_lossy(&data)))
                     .filter(|r| r.as_bytes() != data.as_slice());
                 let changed = redacted.is_some();
                 let mut out = Vec::new();
-                if cut {
-                    out.extend_from_slice(
-                        format!("[swofty: kept the last {} of {}]\n", size(cap), size(len)).as_bytes(),
-                    );
-                }
-                let note = match (cut, changed) {
-                    (true, true) => Some(format!("last {} of {}, secrets redacted", size(cap), size(len))),
-                    (true, false) => Some(format!("last {} of {}", size(cap), size(len))),
-                    (false, true) => Some("secrets redacted".into()),
-                    (false, false) => None,
+                let kept = match cut {
+                    Cut::None => None,
+                    Cut::Tail => {
+                        out.extend_from_slice(
+                            format!("[swofty: kept the last {} of {}]\n", size(cap), size(len)).as_bytes(),
+                        );
+                        Some(format!("last {} of {}", size(cap), size(len)))
+                    }
+                    Cut::Middle { head, tail } => Some(format!(
+                        "first {} and last {} of {}",
+                        size(head),
+                        size(tail),
+                        size(len)
+                    )),
+                };
+                let note = match (kept, changed) {
+                    (Some(kept), true) => Some(format!("{kept}, secrets redacted")),
+                    (Some(kept), false) => Some(kept),
+                    (None, true) => Some("secrets redacted".into()),
+                    (None, false) => None,
                 };
                 out.extend_from_slice(redacted.as_ref().map_or(data.as_slice(), |r| r.as_bytes()));
                 self.push(path, out, note);
@@ -813,6 +828,55 @@ fn read_tail(path: &Path, cap: u64) -> std::io::Result<(Vec<u8>, bool)> {
         data.drain(..=nl);
     }
     Ok((data, true))
+}
+
+#[derive(Debug, Clone, Copy, PartialEq)]
+enum Cut {
+    None,
+    Tail,
+    Middle { head: u64, tail: u64 },
+}
+
+fn kept_head(path: &Path, cap: u64) -> u64 {
+    let name = file_name(path);
+    if name.starts_with("loader") && name.ends_with(".log") && cap >= GAP_NOTE * 4 {
+        LOADER_KEEP.min(cap / 2)
+    } else {
+        0
+    }
+}
+
+fn read_cut(path: &Path, cap: u64, head: u64) -> std::io::Result<(Vec<u8>, Cut)> {
+    let len = std::fs::metadata(path)?.len();
+    if len <= cap || head == 0 {
+        let (data, cut) = read_tail(path, cap)?;
+        return Ok((data, if cut { Cut::Tail } else { Cut::None }));
+    }
+    let mut data = read_head(path, head)?;
+    if let Some(nl) = data.iter().rposition(|&b| b == b'\n') {
+        data.truncate(nl + 1);
+    } else {
+        data.push(b'\n');
+    }
+    let head = data.len() as u64;
+    let (tail, _) = read_tail(path, cap.saturating_sub(head + GAP_NOTE))?;
+    let left = len.saturating_sub(head + tail.len() as u64);
+    data.extend_from_slice(
+        format!(
+            "[swofty: left out {left} bytes ({}) of {} here]\n",
+            size(left),
+            size(len)
+        )
+        .as_bytes(),
+    );
+    data.extend_from_slice(&tail);
+    Ok((
+        data,
+        Cut::Middle {
+            head,
+            tail: tail.len() as u64,
+        },
+    ))
 }
 
 fn read_head(path: &Path, cap: u64) -> std::io::Result<Vec<u8>> {
