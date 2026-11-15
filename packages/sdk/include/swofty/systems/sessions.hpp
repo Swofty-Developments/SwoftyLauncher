@@ -51,8 +51,9 @@ struct Rules {
     std::optional<std::string> penalties;    // content.package 1.5: off, corner_cutting_only, esports or on; empty = the player's
     std::optional<std::string> corner_cutting;   // content.package 1.5: regular or strict; empty = the player's
     std::optional<GridRules> grid;      // content.package 1.5: how the box's race grid forms; empty = the game's grid
+    std::vector<std::string> qualifying_tyres;   // content.package 1.5: "softer" / "medium" / "harder" used only in qualifying
 };
-SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg, tyre_warmers, refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali, race_tyre_change, race_time_limit_s, weekend_mode, safety_car, formation_lap, penalties, corner_cutting, grid)
+SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg, tyre_warmers, refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali, race_tyre_change, race_time_limit_s, weekend_mode, safety_car, formation_lap, penalties, corner_cutting, grid, qualifying_tyres)
 
 inline Result set_control(cars::live::Car car, Control mode)
 {

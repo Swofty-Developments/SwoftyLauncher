@@ -148,8 +148,9 @@ struct Rules {                                 // a box's session rules (content
     std::optional<bool> formation_lap;         // content.package 1.5: the formation lap option; nullopt: the player's
     std::optional<std::string> penalties;      // content.package 1.5: off, corner_cutting_only, esports, on; nullopt: the player's
     std::optional<std::string> corner_cutting; // content.package 1.5: regular, strict; nullopt: the player's
+    std::vector<std::string> qualifying_tyres; // content.package 1.5: dry options ("softer", "medium", "harder") only for qualifying
 };
-SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, refuelling, race_fuel_kg, tyre_warmers, refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali, race_tyre_change, race_time_limit_s, weekend_mode, safety_car, formation_lap, penalties, corner_cutting)
+SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, refuelling, race_fuel_kg, tyre_warmers, refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali, race_tyre_change, race_time_limit_s, weekend_mode, safety_car, formation_lap, penalties, corner_cutting, qualifying_tyres)
 
 enum class PenaltyKind { warning, time, drive_through, stop_go, grid, disqualification };
 

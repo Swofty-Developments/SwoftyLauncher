@@ -3392,6 +3392,8 @@ pub type Car_Register_DetachablePart_Thunk_t = unsafe extern "C" fn(
 pub type Car_Reset_LastFittedUpgrade_t = unsafe extern "C" fn(inst: *mut c_void);
 pub type Car_SuspensionDamage_OnCollision_t =
     unsafe extern "C" fn(susp_damage: *mut c_void, contact: *mut c_void);
+pub type Car_Tyre_CheckCompoundClassRule_t = unsafe extern "C" fn(set: *const c_void) -> bool;
+pub type Car_Tyre_IsCompoundAllowed_t = unsafe extern "C" fn(set: *const c_void) -> bool;
 pub type Car_Tyre_SetWearFactor_t =
     unsafe extern "C" fn(tyre_component: *mut c_void, apply_set: bool, force: u16);
 pub type Career_Add_SeasonWeekend_t = unsafe extern "C" fn(season: *mut c_void, weekend: *mut c_void) -> u64;
@@ -4729,8 +4731,18 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
+    pub const Car_Tyre_CheckCompoundClassRule: Binding = Binding {
+        id: "Car_Tyre_CheckCompoundClassRule",
+        kind: "func",
+        status: Status::Experimental,
+    };
     pub const Car_Tyre_GripScale: Binding = Binding {
         id: "Car_Tyre_GripScale",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Car_Tyre_IsCompoundAllowed: Binding = Binding {
+        id: "Car_Tyre_IsCompoundAllowed",
         kind: "func",
         status: Status::Experimental,
     };

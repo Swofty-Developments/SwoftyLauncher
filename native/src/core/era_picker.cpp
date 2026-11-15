@@ -95,6 +95,8 @@ void box_grid_set(const std::optional<box_grid::Rule> &rule, const std::string &
 // and the same put backs give the player's index back where an option still holds the box's.
 // Grid rules per box: the same narrowing hands the box's rules.grid to box_grid.cpp, which re-ranks the weekend's
 // qualifying classification; the same put backs clear it (the game's own grid).
+// Qualifying tyres per box: the same narrowing hands the box's rules.qualifying_tyres option mask to the qualifying
+// tyre hooks (quali_tyres_guard.cpp); the same put backs clear it.
 //
 // The three hooks are one core mixin set, offered at the first mixin commit after a box was registered,
 // so a game without registered boxes runs none of them.
@@ -500,9 +502,18 @@ void apply_grid(const char *list)
     log_grid(box.line);
 }
 
+// Qualifying tyres per box: the pressed box's rules.qualifying_tyres mask goes to the qualifying tyre hooks
+// (quali_tyres_guard.cpp), which refuse those options in race sessions; a box without the rule stores 0.
+void apply_quali_tyres(const char *list)
+{
+    auto box = swofty_core::apply::content::quali_tyres_for_box(list);
+    runtime::quali_tyres_box(box.mask, box.mask ? box.line : std::string());
+}
+
 void put_back_drs()
 {
     runtime::box_grid_set(std::nullopt, std::string());
+    runtime::quali_tyres_box(0, std::string());
     if (size_t n = drs.put_back())
         log_drs(std::string(logic::HOST) + "'s DRS group put back on " + std::to_string(n) + " mode(s)");
     if (size_t n = warmers.put_back())
@@ -708,6 +719,7 @@ void narrow(void *mode, const char *list)
     apply_weekend(mode, list);
     apply_box_options(list);
     apply_grid(list);
+    apply_quali_tyres(list);
 }
 
 bool time_trial(void *mode)

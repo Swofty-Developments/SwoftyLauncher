@@ -2,6 +2,7 @@
 #include "../../src/core/apply/content/race_fuel.hpp"
 #include "../../src/core/apply/content/box_options.hpp"
 #include "../../src/core/apply/content/grid_rules.hpp"
+#include "../../src/core/apply/content/quali_tyres.hpp"
 #include "../../src/core/apply/content/tyre_warmers.hpp"
 #include "../../src/core/apply/content/weekend.hpp"
 #include "../../src/core/apply/ids.hpp"
@@ -1957,6 +1958,38 @@ static void drs_tests(const std::string &regs)
           "aggregate scoring; rows null is the track's own grid");
     check(!content::grid_pick("f1_2008", grids).rule && !content::grid_pick("f1_2025", grids).rule,
           "grid null or a stock box: the game's own grid");
+
+    Value q1985 = swofty::json::parse(R"({"entrant_list":"f1_1985","rules":{"qualifying_tyres":["softer"]}})");
+    Value q1990 = swofty::json::parse(R"({"entrant_list":"f1_1990","rules":{"qualifying_tyres":["medium","softer","softer","wet"]}})");
+    Value q1991 = swofty::json::parse(R"({"entrant_list":"f1_1991","rules":{"qualifying_tyres":null}})");
+    Value q1992 = swofty::json::parse(R"({"entrant_list":"f1_1992","rules":{"qualifying_tyres":"softer"}})");
+    std::vector<std::pair<std::string, const Value *>> qboxes = {
+        {"mod.a/f1_1985", &q1985}, {"mod.a/f1_1990", &q1990}, {"mod.a/f1_1991", &q1991}, {"mod.a/f1_1992", &q1992}};
+    auto q = content::quali_tyres_pick("f1_1985", qboxes);
+    std::printf("      %s\n", q.line.c_str());
+    check(q.mask == 1 && q.package == "mod.a/f1_1985", "rules.qualifying_tyres [softer] masks class option 0");
+    check(content::quali_tyres_pick("f1_1990", qboxes).mask == 3, "names map to options 0..2, duplicates and wet are left out");
+    check(!content::quali_tyres_pick("f1_1991", qboxes).mask && !content::quali_tyres_pick("f1_1992", qboxes).mask &&
+              !content::quali_tyres_pick("f1_2025", qboxes).mask,
+          "null, a non-array or a stock box: no qualifying tyre rule");
+    Value q1985b = swofty::json::parse(R"({"entrant_list":"f1_1985","rules":{}})");
+    qboxes.push_back({"mod.b/f1_1985", &q1985b});
+    check(!content::quali_tyres_pick("f1_1985", qboxes).mask, "the last package with the box's entrant list decides (qualifying tyres)");
+    check(content::quali_refused(15, 0, 1) && content::quali_refused(16, 0, 1) && content::quali_refused(17, 0, 1),
+          "a masked option is refused in Race, Race2 and Race3");
+    check(!content::quali_refused(5, 0, 1) && !content::quali_refused(9, 0, 1) && !content::quali_refused(1, 0, 1) &&
+              !content::quali_refused(12, 0, 1) && !content::quali_refused(18, 0, 1),
+          "a masked option stays usable in practice, qualifying and the sprint shootout");
+    check(!content::quali_refused(15, 1, 1) && !content::quali_refused(15, 3, 7) && !content::quali_refused(15, 4, 0xff) &&
+              !content::quali_refused(15, 0, 0) && !content::quali_refused(15, 0xffffffffu, 0xff),
+          "other options, inter / wet, no mask and an unknown option are never refused");
+    uint32_t pref[5] = {0, 1, 2, 3, 4}, out[5] = {};
+    check(content::quali_filter_preference(15, 1, pref, out) == 1 && out[0] == content::QUALI_NO_SLOT && out[1] == 1 &&
+              out[2] == 2 && out[3] == 3 && out[4] == 4,
+          "in a race the set choice skips the qualifying option and keeps the order of the rest");
+    uint32_t pref2[5] = {2, 0, 1, 3, 4};
+    check(content::quali_filter_preference(5, 1, pref2, out) == 0 && !memcmp(out, pref2, sizeof out),
+          "in qualifying the preference list is unchanged");
 }
 
 static void race_fuel_tests()

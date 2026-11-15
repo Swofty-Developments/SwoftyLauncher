@@ -374,6 +374,22 @@
             }
           },
           "additionalProperties": false
+        },
+        "qualifying_tyres": {
+          "type": [
+            "array",
+            "null"
+          ],
+          "items": {
+            "enum": [
+              "softer",
+              "medium",
+              "harder"
+            ]
+          },
+          "uniqueItems": true,
+          "maxItems": 2,
+          "description": "Dry class options the box's cars may use only in qualifying (the qualifying tyres of the late 1970s to 1991): in race sessions the core refuses their sets for the garage, AI and pit stop choice. Hand them out only in Qualifying1..3 through the event's tyres.allocation_tyre_presets row. Missing, null or empty: every dry option may race."
         }
       },
       "additionalProperties": false

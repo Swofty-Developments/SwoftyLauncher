@@ -12,6 +12,7 @@
 #include "gvdb.hpp"
 #include "logos.hpp"
 #include "race_fuel.hpp"
+#include "quali_tyres.hpp"
 #include "teams.hpp"
 #include "box_options.hpp"
 #include "tyre_warmers.hpp"
@@ -917,6 +918,32 @@ bool any_grid_rule()
     for (auto &id : in_load_order(st, "content.package"))
         if (const Value *rec = lookup("content.package", id); rec && (*rec)["rules"]["grid"].is_object())
             return true;
+    return false;
+}
+
+QualiTyresBox quali_tyres_for_box(const std::string &entrant_list)
+{
+    Store &st = registry::store();
+    std::map<std::string, Value> keep;
+    Lookup lookup = store_lookup(st, keep);
+    std::vector<std::pair<std::string, const Value *>> packages;
+    for (auto &id : in_load_order(st, "content.package"))
+        packages.push_back({id, lookup("content.package", id)});
+    QualiTyresPick pick = quali_tyres_pick(entrant_list, packages);
+    return {pick.mask, pick.line};
+}
+
+bool any_quali_tyres()
+{
+    Store &st = registry::store();
+    std::map<std::string, Value> keep;
+    Lookup lookup = store_lookup(st, keep);
+    for (auto &id : in_load_order(st, "content.package")) {
+        const Value *rec = lookup("content.package", id);
+        if (rec && (*rec)["entrant_list"].is_string() &&
+            quali_tyres_pick(std::string((*rec)["entrant_list"].as_string()), {{id, rec}}).mask)
+            return true;
+    }
     return false;
 }
 

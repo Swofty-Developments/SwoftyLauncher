@@ -6,6 +6,7 @@
 #include <cstdint>
 #include "../../box_grid_logic.hpp"
 
+#include <cstdint>
 #include <optional>
 #include <string>
 
@@ -52,5 +53,14 @@ struct GridBox {
 };
 GridBox grid_for_box(const std::string &entrant_list);
 bool any_grid_rule();
+// The qualifying tyre rule the box with this entrant list runs: its content.package's rules.qualifying_tyres as a
+// class option mask (bit 0 softer, 1 medium, 2 harder; 0 = no rule), and the line to log.
+struct QualiTyresBox {
+    uint8_t mask = 0;
+    std::string line;
+};
+QualiTyresBox quali_tyres_for_box(const std::string &entrant_list);
+// Whether any registered content.package carries a qualifying tyre rule (the core offers its tyre hooks only then).
+bool any_quali_tyres();
 
 }
