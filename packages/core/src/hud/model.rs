@@ -1047,7 +1047,11 @@ fn substitute_element(e: &mut Element, vars: &[(char, u32)]) -> Result<()> {
     for b in [&mut e.visible, &mut e.tint, &mut e.value, &mut e.texture]
         .into_iter()
         .flatten()
-        .chain(e.motion.iter_mut().filter_map(|m| m.play_on.as_mut()))
+        .chain(
+            e.motion
+                .iter_mut()
+                .flat_map(|m| m.play_on.as_mut().into_iter().chain(m.play_to.as_mut())),
+        )
     {
         text(&mut b.view_model)?;
         text(&mut b.path)?;

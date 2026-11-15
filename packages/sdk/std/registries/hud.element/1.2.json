@@ -307,7 +307,7 @@
       "additionalProperties": false
     },
     "motion": {
-      "description": "On a group: a timed slide (position keys, HUD units, local space) or fade (two alpha keys) a stock curve times, started by the bool leaf play_on (event 1) and reversed when it falls (event 0).",
+      "description": "On a group: a timed slide (position keys, HUD units, local space) or fade (two alpha keys) a stock curve times, started by the bool leaf play_on (event 1) and reversed when it falls (event 0); or a turn (kind turn, keys [time, degrees] counter-clockwise about the group's at) moved by the int leaf play_to, value i playing the clip to i / (steps - 1).",
       "type": "object",
       "properties": {
         "id": { "type": "string", "pattern": "^[a-z][a-z0-9_]{0,15}$" },
@@ -318,13 +318,27 @@
             "type": "array",
             "minItems": 2,
             "maxItems": 2,
-            "items": { "oneOf": [ { "type": "number", "minimum": 0 }, { "$ref": "#/$defs/point" } ] }
+            "items": { "oneOf": [ { "type": "number" }, { "$ref": "#/$defs/point" } ] }
           }
         },
         "curve": { "type": "string", "minLength": 1 },
-        "play_on": { "$ref": "#/$defs/bind" }
+        "kind": {
+          "description": "slide, fade or turn. A slide and a fade are told by their keys; a turn is named.",
+          "enum": ["slide", "fade", "turn"]
+        },
+        "play_on": { "$ref": "#/$defs/bind" },
+        "play_to": {
+          "description": "A turn's view_model int leaf (ty i32 or left out), without not or default.",
+          "$ref": "#/$defs/bind"
+        },
+        "steps": {
+          "description": "A turn's places: the int leaf runs 0 to steps - 1.",
+          "type": "integer",
+          "minimum": 2,
+          "maximum": 64
+        }
       },
-      "required": ["id", "keys", "curve", "play_on"],
+      "required": ["id", "keys", "curve"],
       "additionalProperties": false
     },
     "element": {
