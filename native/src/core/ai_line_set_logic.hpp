@@ -12,6 +12,7 @@ constexpr size_t SLOT_COUNT = 6;
 constexpr uint64_t SLOTS[SLOT_COUNT] = {0x58, 0x60, 0x68, 0x70, 0x78, 0x80};
 constexpr uint64_t LINE_CACHE_SLOT = 0x58;
 constexpr uint64_t OPTIONAL_SLOT = 0x78;
+constexpr uint64_t BRAKE_SETTINGS_ID_AT = 0x8;
 constexpr uint64_t USER_BASE = 0x10000;
 constexpr uint64_t USER_END = 0x800000000000ull;
 constexpr uint64_t MAX_RECORDS = 64;
@@ -26,6 +27,7 @@ struct Repair {
     uint32_t filled = 0;
     uint32_t missing = 0;
     uint32_t backfilled = 0;
+    bool brake_settings = false;
 };
 
 inline bool user_pointer(uint64_t p)
@@ -38,11 +40,25 @@ inline bool word(Read read, void *user, uint64_t address, uint64_t *out)
     return read(address, out, sizeof *out, user);
 }
 
+inline bool borrow_brake_settings(Read read, Write write, void *user, uint64_t begin, uint64_t last, uint64_t target)
+{
+    for (uint64_t at = begin; at <= last; at += RECORD_SIZE) {
+        uint64_t line_cache = 0, id = 0;
+        if (at == target || !word(read, user, at + LINE_CACHE_SLOT, &line_cache) || !user_pointer(line_cache))
+            continue;
+        return word(read, user, at + BRAKE_SETTINGS_ID_AT, &id) && id != 0 &&
+               write(target + BRAKE_SETTINGS_ID_AT, &id, sizeof id, user);
+    }
+    return false;
+}
+
 inline void fill_record(Read read, Write write, void *user, uint64_t begin, uint64_t last, uint64_t target,
-                        uint32_t *filled, uint32_t *missing)
+                        uint32_t *filled, uint32_t *missing, bool *brake_settings)
 {
     uint64_t line_cache = 0;
     bool unlisted = word(read, user, target + LINE_CACHE_SLOT, &line_cache) && line_cache == 0;
+    if (unlisted)
+        *brake_settings = borrow_brake_settings(read, write, user, begin, last, target);
     for (uint64_t slot : SLOTS) {
         uint64_t value = 0;
         if (!word(read, user, target + slot, &value) || value != 0)
@@ -77,10 +93,12 @@ inline Repair repair(Read read, Write write, void *user, uint64_t builder)
     r.index = static_cast<uint32_t>((last - begin) / RECORD_SIZE);
     for (uint64_t at = begin; at <= last; at += RECORD_SIZE) {
         uint32_t filled = 0, missing = 0;
-        fill_record(read, write, user, begin, last, at, &filled, &missing);
+        bool brake_settings = false;
+        fill_record(read, write, user, begin, last, at, &filled, &missing, &brake_settings);
         if (at == last) {
             r.filled = filled;
             r.missing = missing;
+            r.brake_settings = brake_settings;
         } else if (filled) {
             r.backfilled++;
         }

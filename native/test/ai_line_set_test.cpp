@@ -45,14 +45,21 @@ static bool write(uint64_t address, const void *in, size_t n, void *user)
 constexpr uint64_t BUILDER = 0x200000;
 constexpr uint64_t RECORDS = 0x300000;
 
+static uint64_t brake_id(unsigned record)
+{
+    return 0x7963c8f708f50000ull + record;
+}
+
 static Memory build(unsigned records)
 {
     Memory m;
     m.words[BUILDER + al::RECORDS_BEGIN_AT] = RECORDS;
     m.words[BUILDER + al::RECORDS_END_AT] = RECORDS + records * al::RECORD_SIZE;
-    for (unsigned i = 0; i < records; i++)
+    for (unsigned i = 0; i < records; i++) {
+        m.words[RECORDS + i * al::RECORD_SIZE + al::BRAKE_SETTINGS_ID_AT] = brake_id(i);
         for (uint64_t slot : al::SLOTS)
             m.words[RECORDS + i * al::RECORD_SIZE + slot] = 0x1000000 + i * 0x1000 + slot;
+    }
     return m;
 }
 
@@ -78,6 +85,51 @@ int main()
         expect(slot(m, 20, 0x58) == slot(m, 0, 0x58), "it borrows the first car's line cache");
         expect(slot(m, 20, 0x80) == slot(m, 0, 0x80), "it borrows the first car's last table");
         expect(slot(m, 19, 0x58) != 0 && slot(m, 19, 0x58) != slot(m, 0, 0x58), "the other records are untouched");
+    }
+    {
+        Memory m = build(22);
+        for (unsigned i : {17u, 19u})
+            for (uint64_t s : al::SLOTS)
+                m.words[RECORDS + i * al::RECORD_SIZE + s] = 0;
+        m.words[BUILDER + al::RECORDS_END_AT] = RECORDS + 18 * al::RECORD_SIZE;
+        al::Repair r = al::repair(read, write, &m, BUILDER);
+        expect(r.index == 17 && r.filled == 6 && r.brake_settings, "an eleventh team's car borrows the tables and the brake line settings");
+        expect(slot(m, 17, al::BRAKE_SETTINGS_ID_AT) == brake_id(0), "its brake settings id is the one of the car whose tables it borrows");
+        expect(slot(m, 16, al::BRAKE_SETTINGS_ID_AT) == brake_id(16) && slot(m, 0, al::BRAKE_SETTINGS_ID_AT) == brake_id(0), "listed cars keep their own brake settings id");
+        m.words[BUILDER + al::RECORDS_END_AT] = RECORDS + 20 * al::RECORD_SIZE;
+        r = al::repair(read, write, &m, BUILDER);
+        expect(r.index == 19 && r.brake_settings && slot(m, 19, al::BRAKE_SETTINGS_ID_AT) == brake_id(0), "its team mate borrows the same brake settings id");
+        expect(slot(m, 17, al::BRAKE_SETTINGS_ID_AT) == brake_id(0) && slot(m, 18, al::BRAKE_SETTINGS_ID_AT) == brake_id(18), "a later push leaves the earlier records as they were");
+    }
+    {
+        Memory m = build(5);
+        m.words[RECORDS + 4 * al::RECORD_SIZE + 0x60] = 0;
+        al::Repair r = al::repair(read, write, &m, BUILDER);
+        expect(r.filled == 1 && !r.brake_settings && slot(m, 4, al::BRAKE_SETTINGS_ID_AT) == brake_id(4), "a listed car with one empty table keeps its brake settings id");
+    }
+    {
+        Memory m = build(6);
+        for (unsigned i = 0; i < 3; i++)
+            for (uint64_t s : al::SLOTS)
+                m.words[RECORDS + i * al::RECORD_SIZE + s] = 0;
+        al::repair(read, write, &m, BUILDER);
+        expect(slot(m, 0, al::BRAKE_SETTINGS_ID_AT) == brake_id(3) && slot(m, 2, al::BRAKE_SETTINGS_ID_AT) == brake_id(3), "backfilled first cars take the brake settings id of the donor");
+    }
+    {
+        Memory m = build(3);
+        for (unsigned i = 0; i < 3; i++)
+            for (uint64_t s : al::SLOTS)
+                m.words[RECORDS + i * al::RECORD_SIZE + s] = 0;
+        al::Repair r = al::repair(read, write, &m, BUILDER);
+        expect(!r.brake_settings && slot(m, 2, al::BRAKE_SETTINGS_ID_AT) == brake_id(2), "with no donor the brake settings id is kept");
+    }
+    {
+        Memory m = build(3);
+        for (uint64_t s : al::SLOTS)
+            m.words[RECORDS + 2 * al::RECORD_SIZE + s] = 0;
+        m.words[RECORDS + al::BRAKE_SETTINGS_ID_AT] = 0;
+        al::Repair r = al::repair(read, write, &m, BUILDER);
+        expect(r.filled == 6 && !r.brake_settings && slot(m, 2, al::BRAKE_SETTINGS_ID_AT) == brake_id(2), "a donor with no brake settings id lends none");
     }
     {
         Memory m = build(5);
