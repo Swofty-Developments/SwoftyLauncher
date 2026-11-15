@@ -555,6 +555,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               { text: "Views", link: "/reference/addons/launcher-api/views", icon: "file" },
               { text: "Events and effects", link: "/reference/addons/launcher-api/events", icon: "file" },
               { text: "Blocks", link: "/reference/addons/launcher-api/blocks", icon: "file" },
+              { text: "Native charts", link: "/reference/addons/launcher-api/charts", icon: "file" },
               { text: "Forms", link: "/reference/addons/launcher-api/forms", icon: "file" },
               { text: "Tables", link: "/reference/addons/launcher-api/tables", icon: "file" },
               { text: "Live pages", link: "/reference/addons/launcher-api/live-pages", icon: "file" },

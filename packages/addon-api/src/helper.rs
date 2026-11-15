@@ -11,6 +11,8 @@ use crate::view::Event;
 pub use crate::run_helper::{claim_word, run_helper};
 
 pub const API_VERSION: u32 = 1;
+/// Optional support for the data-only native Chart view block.
+pub const VIEW_CHART: &str = "view.chart";
 pub const RESTART: &str = "swofty.restart";
 // The host calls a launcher lists in hello's host_calls when it answers them.
 pub const ADDON_CALLS: [&str; 4] = ["addons", "install_addon", "set_addon_enabled", "remove_addon"];
@@ -71,6 +73,9 @@ pub struct Hello {
     pub launcher: Option<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub host_calls: Vec<String>,
+    /// Optional view/protocol features; absent on older hosts.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub capabilities: Vec<String>,
 }
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
@@ -182,6 +187,7 @@ mod tests {
                     profile: profile(),
                     launcher: Some("1.0.10".into()),
                     host_calls: Vec::new(),
+                    capabilities: Vec::new(),
                 }),
             },
             json!({"id": 0, "method": "hello", "params": {"api": 1, "addon": "example.addon",
@@ -194,6 +200,12 @@ mod tests {
             "host_calls": ADDON_CALLS}))
         .unwrap();
         assert_eq!(hello.host_calls, ADDON_CALLS);
+        assert!(hello.capabilities.is_empty());
+        let mut current = hello;
+        current.capabilities = vec![VIEW_CHART.into(), "future.feature".into()];
+        let json = serde_json::to_value(&current).unwrap();
+        assert_eq!(json["capabilities"], json!(["view.chart", "future.feature"]));
+        assert_eq!(serde_json::from_value::<Hello>(json).unwrap(), current);
         round(
             Request {
                 id: None,

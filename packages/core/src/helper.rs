@@ -7,9 +7,10 @@ use std::sync::mpsc::{Receiver, RecvTimeoutError, channel};
 use std::sync::{Arc, Mutex, MutexGuard, TryLockError};
 use std::time::Duration;
 
-use serde::Serialize;
 use serde::de::DeserializeOwned;
+use serde::{Deserialize, Serialize};
 use serde_json::Value;
+use serde_json::value::RawValue;
 use swofty_addon::asset::{AssetBatch, Op, Origin};
 use swofty_addon::helper::{
     ADDON_CALLS, API_VERSION, Built, Call, Hello, HostCall, Incoming, MOVE_ADDON, PROFILE_HEADS, RESTART,
@@ -106,6 +107,61 @@ struct Live {
     profile: ProfileInfo,
 }
 
+#[derive(Deserialize)]
+struct RawReply<'a> {
+    id: u64,
+    #[serde(borrow)]
+    result: &'a RawValue,
+}
+
+/// Keep a successful helper payload inside its original input line. Parsing an
+/// untagged Incoming/Reply into Value first creates a large temporary tree for
+/// chart samples. Only control messages need the existing dynamic decoder.
+struct JsonResult {
+    line: String,
+    range: std::ops::Range<usize>,
+}
+impl JsonResult {
+    fn get(&self) -> &str {
+        &self.line[self.range.clone()]
+    }
+}
+
+fn reply_range(line: &str) -> Option<(u64, std::ops::Range<usize>)> {
+    let reply: RawReply<'_> = serde_json::from_str(line).ok()?;
+    let start = reply.result.get().as_ptr() as usize - line.as_ptr() as usize;
+    Some((reply.id, start..start + reply.result.get().len()))
+}
+
+#[cfg(test)]
+mod raw_reply_tests {
+    use super::reply_range;
+
+    #[test]
+    fn reply_payload_borrows_original_bytes_in_any_field_order() {
+        let line = r#" {"before":"é", "result":{"points":[{"x":1,"y":2},null],"text":"日本語"}, "id":19} "#;
+        let (id, range) = reply_range(line).unwrap();
+        assert_eq!(id, 19);
+        assert_eq!(&line[range], r#"{"points":[{"x":1,"y":2},null],"text":"日本語"}"#);
+    }
+
+    #[test]
+    fn null_result_is_a_valid_reply_and_control_errors_stay_on_existing_decoder() {
+        let (id, range) = reply_range(r#"{"id":0,"result":null}"#).unwrap();
+        assert_eq!(id, 0);
+        assert_eq!(&r#"{"id":0,"result":null}"#[range], "null");
+        for message in [
+            r#"{"id":1,"error":"nope"}"#,
+            r#"{"id":3,"method":"get_state"}"#,
+            r#"{"method":"invalidate"}"#,
+            r#"{"id":1,"result":[]"#,
+            r#"{"id":1,"result":[]} trailing"#,
+        ] {
+            assert!(reply_range(message).is_none(), "{message}");
+        }
+    }
+}
+
 impl Drop for Live {
     fn drop(&mut self) {
         self.child.kill().ok();
@@ -194,7 +250,7 @@ impl HelperAddon {
             section: section.into(),
         };
         Some(
-            self.call_with::<Value>(run, cx, call, self.timeouts.quick, None)
+            self.call_with::<serde::de::IgnoredAny>(run, cx, call, self.timeouts.quick, None)
                 .map(drop),
         )
     }
@@ -255,7 +311,7 @@ impl HelperAddon {
         };
         let exchange = self.exchange(live, cx, call, wait, progress);
         match exchange {
-            Ok(Ok(value)) => serde_json::from_value(value)
+            Ok(Ok(value)) => serde_json::from_str(value.get())
                 .map_err(|e| self.fail(&mut run, format!("sent a bad result: {e}"))),
             Ok(Err(e)) => Err(swofty_addon::Error::Other(format!("{}: {e}", self.name()))),
             Err(e) => Err(self.fail(&mut run, e)),
@@ -379,12 +435,13 @@ impl HelperAddon {
             profile: cx.profile.clone(),
             launcher: Some(env!("CARGO_PKG_VERSION").into()),
             host_calls: host_calls(cx),
+            capabilities: vec![swofty_addon::helper::VIEW_CHART.into()],
         });
         let welcome = self
             .exchange(&mut live, cx, hello, self.timeouts.quick, None)?
             .map_err(|e| format!("refused hello: {e}"))?;
         let welcome: Welcome =
-            serde_json::from_value(welcome).map_err(|e| format!("sent a bad hello: {e}"))?;
+            serde_json::from_str(welcome.get()).map_err(|e| format!("sent a bad hello: {e}"))?;
         if welcome.api != API_VERSION {
             return Err(format!(
                 "speaks launcher API {}; this launcher speaks {API_VERSION}",
@@ -401,7 +458,7 @@ impl HelperAddon {
         call: Call,
         wait: Duration,
         progress: Option<&dyn Progress>,
-    ) -> std::result::Result<std::result::Result<Value, String>, String> {
+    ) -> std::result::Result<std::result::Result<JsonResult, String>, String> {
         if live.profile != *cx.profile && !matches!(call, Call::Hello(_)) {
             live.profile = cx.profile.clone();
             send(
@@ -432,10 +489,20 @@ impl HelperAddon {
             if line.trim().is_empty() {
                 continue;
             }
+            if let Some((got, range)) = reply_range(&line) {
+                if got != id {
+                    return Err("answered a request it was not sent".into());
+                }
+                return Ok(Ok(JsonResult { line, range }));
+            }
             let message: Incoming =
                 serde_json::from_str(&line).map_err(|e| format!("sent a bad message: {e}"))?;
             match message {
-                Incoming::Reply(Reply::Ok { id: got, result }) if got == id => return Ok(Ok(result)),
+                Incoming::Reply(Reply::Ok { id: got, result }) if got == id => {
+                    let line = result.to_string();
+                    let range = 0..line.len();
+                    return Ok(Ok(JsonResult { line, range }));
+                }
                 Incoming::Reply(Reply::Err { id: got, error }) if got == id => return Ok(Err(error)),
                 Incoming::Reply(_) => return Err("answered a request it was not sent".into()),
                 Incoming::Call(Request {

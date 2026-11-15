@@ -52,6 +52,8 @@ jobs:
               - installer/**
               - templates/**
               - addons/builtins/**
+              - vendor/gpui-pre-windows/**
+              - tools/native-charts/**
               - addons/swoftymod/**
               - re/db/functions.tsv
               - tools/gamedb/catalog/**
@@ -190,6 +192,19 @@ jobs:
       # without F1_25_DIR; CI has no game files. --no-fail-fast reports every failing test binary in one run.
       - name: Test
         run: cargo test --workspace --no-fail-fast
+
+      - name: Format vendored path renderer
+        if: runner.os == 'Linux'
+        run: rustfmt --edition 2024 --check vendor/gpui-pre-windows/src/directx_renderer.rs
+
+      - name: Windows compact path layout and packing
+        if: runner.os == 'Windows'
+        run: cargo test -p gpui-pre-windows --lib compact_path_tests
+
+      - name: Native chart helper protocol
+        run: |
+          cargo build -p swofty-addon --example native_charts
+          python tools/native-charts/protocol-smoke.py target/debug/examples/native_charts
 
   swofty-ui:
     name: Swofty UI (${{ matrix.os }})

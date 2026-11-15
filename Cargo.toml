@@ -1,5 +1,6 @@
 [workspace]
 resolver = "3"
+exclude = ["vendor/gpui-pre-windows"]
 members = ["addons/builtins", "apps/cli", "apps/launcher", "installer", "packages/addon-api", "packages/core", "packages/formats", "packages/i18n", "packages/preview", "packages/sdk", "packages/shaders", "templates/launcher-addon", "templates/std/whatif/launcher"]
 default-members = ["addons/builtins", "apps/cli", "packages/addon-api", "packages/core", "packages/formats", "packages/i18n", "packages/sdk", "packages/shaders", "templates/launcher-addon", "templates/std/whatif/launcher"]
 
@@ -32,7 +33,7 @@ ring = "0.17"
 rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
 semver = { version = "1", features = ["serde"] }
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+serde_json = { version = "1", features = ["raw_value"] }
 sha1 = "0.11"
 sha2 = "0.11"
 tar = { version = "0.4", default-features = false }
@@ -69,3 +70,6 @@ opt-level = 3
 
 [profile.dev.package.swofty-launcher]
 opt-level = 1
+
+[patch.crates-io]
+gpui-pre-windows = { path = "vendor/gpui-pre-windows" }

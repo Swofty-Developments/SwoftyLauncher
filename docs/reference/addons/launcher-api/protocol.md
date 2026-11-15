@@ -52,7 +52,7 @@ notification  {"method":"invalidate","params":{"section":"items"}}       method 
 ```text
 method      params                                     result
 hello       { api, addon, data_dir, cache_dir,         { "api": 1 }
-              profile, launcher, host_calls }
+              profile, launcher, host_calls, capabilities }
 profile     { name, vanilla, enabled }                 (a notification: no reply)
 view        { section }                                a View (Views)
 event       { section, event }                         an Effect (Events and effects)
@@ -85,6 +85,8 @@ Every session starts with `hello`. Reply `{"api":1}`: a plugin that answers with
   - From 1.5.12 `"profile_heads"` follows `"tasks"` when the launcher has found a game ([Profile heads](./host-calls#profile-heads)).
   - From 1.9.29 the list always ends with `"save_dir"` ([Folders](./host-calls#folders)).
   - An older launcher that answers none of these leaves `host_calls` out.
+
+- `capabilities` is an optional list of supported view/protocol features. Treat an absent list as empty and ignore unknown entries. `"view.chart"` permits [native chart blocks](./charts); helpers must return a supported fallback when this capability is absent. This is separate from the callable methods in `host_calls`.
 
 ### profile
 

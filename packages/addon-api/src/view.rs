@@ -2,6 +2,9 @@ use std::path::PathBuf;
 
 use serde::{Deserialize, Serialize};
 
+mod chart;
+pub use chart::*;
+
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub struct SectionSpec {
     pub id: String,
@@ -76,6 +79,7 @@ pub enum Block {
     Form(Form),
     Tabs(Tabs),
     Image(Image),
+    Chart(Chart),
     DropZone(DropZone),
 }
 

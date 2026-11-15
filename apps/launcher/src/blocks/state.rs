@@ -88,6 +88,7 @@ pub(crate) struct ColumnDrag {
 
 #[derive(Default)]
 pub(crate) struct Blocks {
+    pub(crate) charts: HashMap<String, (u64, std::sync::Arc<super::chart::Scene>)>,
     pub(crate) forms: HashMap<String, FormSlot>,
     pub(crate) searches: HashMap<String, SearchSlot>,
     pub(crate) sorts: HashMap<String, (String, bool)>,

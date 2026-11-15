@@ -199,6 +199,17 @@ impl Shell {
             Ok("settings") => shell.open_page(Page::Settings, cx),
             Ok("support") => shell.open_page(Page::Support, cx),
             Ok("moderation") => shell.open_page(Page::Moderation, cx),
+            Ok(page) if page.starts_with("section:") => {
+                let section = page.trim_start_matches("section:");
+                if let Some(i) = shell
+                    .library
+                    .sections
+                    .iter()
+                    .position(|s| format!("{}/{}", s.addon, s.spec.id) == section)
+                {
+                    shell.open_page(Page::Section(i), cx);
+                }
+            }
             _ => {}
         }
         if cfg!(debug_assertions) && std::env::var_os("SWOFTY_FAKE_NOTICES").is_some() {
