@@ -13,6 +13,7 @@
 #include "direct_start_tt.hpp"
 #include "direct_start_tt_logic.hpp"
 #include "era_logic.hpp"
+#include "tt_loaded_logic.hpp"
 
 // The direct start's Time Trial (a `session` request with "mode": "time_trial"): the Time Trial mode made
 // current, then its setup written where the front end's screens leave it, so StateFrontendWorld's 'session'
@@ -723,7 +724,50 @@ std::string player_list()
     return name ? name : "";
 }
 
+bool player_team(uint32_t &ref, std::string &name)
+{
+    name.clear();
+    if (!game().ok)
+        return false;
+    DirectStartContext ctx = runtime::direct_start_context();
+    if (!ctx.game_modes)
+        return false;
+    std::vector<std::string> names;
+    uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
+    uint8_t *e = mode && swofty::mem::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
+    int guard = *ptr<int>(game().player_guard);
+    if (!e || !swofty::mem::readable(e, ENTITY_TEAMS + 8) || guard == 0 || guard == -1)
+        return false;
+    auto *sel = ptr<uint8_t>(game().player_entrants) + size_t(player_index()) * PLAYER_STRIDE;
+    if (!swofty::mem::readable(sel, PLAYER_TEAM_SET + 1) || !sel[PLAYER_TEAM_SET])
+        return false;
+    ref = at<uint32_t>(sel, PLAYER_TEAM);
+    // The selection is the front end's. A session the game started without it (its own change of car from a results
+    // screen) loads a list the selected team may not be in; that selection names no car of this session.
+    std::vector<uint32_t> teams;
+    auto *list = at<uint8_t *>(e, ENTITY_LIST);
+    if (list && swofty::mem::readable(list, LIST_END + 8)) {
+        auto *begin = at<uint8_t *>(list, LIST_BEGIN), *end = at<uint8_t *>(list, LIST_END);
+        if (begin && end > begin && size_t(end - begin) % RECORD == 0 && size_t(end - begin) / RECORD <= 4096 &&
+            swofty::mem::readable(begin, size_t(end - begin)))
+            for (auto *r = begin; r < end; r += RECORD)
+                teams.push_back(at<uint32_t>(r, RECORD_TEAM));
+    }
+    if (!runtime::tt_loaded::selection_in_list(teams, ref))
+        return false;
+    name = team_name(e, ref);
+    return true;
+}
+
 std::string player_team()
+{
+    uint32_t ref = 0;
+    std::string name;
+    player_team(ref, name);
+    return name;
+}
+
+std::string team_of(uint32_t ref)
 {
     if (!game().ok)
         return {};
@@ -733,13 +777,9 @@ std::string player_team()
     std::vector<std::string> names;
     uint8_t *mode = mode_named(ctx.game_modes, MODE, names);
     uint8_t *e = mode && swofty::mem::readable(mode, MODE_ENTITY + 8) ? at<uint8_t *>(mode, MODE_ENTITY) : nullptr;
-    int guard = *ptr<int>(game().player_guard);
-    if (!e || !swofty::mem::readable(e, ENTITY_TEAMS + 8) || guard == 0 || guard == -1)
+    if (!e || !swofty::mem::readable(e, ENTITY_TEAMS + 8))
         return {};
-    auto *sel = ptr<uint8_t>(game().player_entrants) + size_t(player_index()) * PLAYER_STRIDE;
-    if (!swofty::mem::readable(sel, PLAYER_TEAM_SET + 1) || !sel[PLAYER_TEAM_SET])
-        return {};
-    return team_name(e, at<uint32_t>(sel, PLAYER_TEAM));
+    return team_name(e, ref);
 }
 
 }

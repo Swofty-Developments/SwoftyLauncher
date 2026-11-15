@@ -20,7 +20,9 @@
 
 #include "apply/content/appliers.hpp"
 #include "apply/moments.hpp"
+#include "apply/scheduler.hpp"
 #include "era_logic.hpp"
+#include "tt_loaded_logic.hpp"
 
 std::string settings_addon(const void *from, std::string &dll);
 int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
@@ -353,7 +355,7 @@ std::map<std::string, std::array<uint8_t, LIST_VECTOR_SIZE>> parsed_lists;
 struct Filled {
     void *host = nullptr;
     std::array<uint8_t, LIST_VECTOR_SIZE> own{};
-    std::string row;
+    std::string row, label;
 } filled;
 uint32_t logged_virtual;
 
@@ -483,6 +485,7 @@ void narrow(void *mode, const char *list)
                             ok ? "read into" : "could not be read into", VIRTUAL_HOST);
             if (!ok)
                 return;
+            filled.label = list;
         }
         Narrowed &n = narrowed[narrowed_count++];
         n.setup = setup;
@@ -1437,11 +1440,56 @@ void era_press(const char *entrant_list)
                 !ours ? "no box named" : host ? "the Time Trial mode is narrowed to it" : "the current mode is not Time Trial; nothing narrowed");
 }
 
-void era_session_load()
+namespace {
+
+// What a session load saw of a Time Trial: the list the session loads once the 24-car guard has chosen.
+struct LoadSeen {
+    bool time_trial = false;
+    uintptr_t ctx = 0;
+    std::string setup_mode, list, virtual_label, pressed;
+};
+
+std::mutex unlisted_lock;
+std::string unlisted_list;
+
+void set_unlisted(const std::string &list)
+{
+    std::lock_guard<std::mutex> g(unlisted_lock);
+    unlisted_list = list;
+}
+
+// Makes the box of the loaded list the active content when it is not: tt_loaded_logic.hpp. Runs without held_lock,
+// like a press, before the session load's own appliers read the content.
+void follow_loaded_list(const LoadSeen &seen)
+{
+    namespace tl = runtime::tt_loaded;
+    if (!seen.time_trial) {
+        set_unlisted({});
+        return;
+    }
+    std::vector<tl::BoxLists> lists;
+    {
+        std::lock_guard<std::mutex> g(lock);
+        for (const auto &box : boxes)
+            lists.push_back({box.entrant_list, box.time_trial});
+    }
+    tl::Loaded loaded = tl::loaded_box(lists, seen.list, seen.setup_mode, logic::HOST, VIRTUAL_HOST, seen.virtual_label);
+    auto &scheduler = swofty_core::apply::scheduler();
+    std::string package = loaded.kind == tl::Kind::box || loaded.kind == tl::Kind::stock ? scheduler.find_package(loaded.box)
+                                                                                         : std::string();
+    tl::Follow f = tl::follow(loaded, package, scheduler.active(), seen.pressed);
+    set_unlisted(f.action == tl::Action::no_board ? f.box : std::string());
+    if (f.action == tl::Action::keep)
+        return;
+    swofty::log("%s", f.line.c_str());
+    if (f.action == tl::Action::follow)
+        swofty_core::apply::moments::box_picked(f.box.c_str(), reinterpret_cast<const void *>(seen.ctx));
+}
+
+void session_load_held(LoadSeen &seen)
 {
     static uint32_t logged, swapped;
     static std::string last_seen;
-    std::lock_guard<std::mutex> g(held_lock);
     put_back();
     uintptr_t slot = swofty::api ? swofty::api->resolve("g_Game_Manager") : 0, mgr = 0, ctx = 0, setup = 0;
     if (!slot || !mem::read(slot, mgr) || !mgr || !mem::read(mgr + offsetof(swofty::game::GameManager, mode_context), ctx) ||
@@ -1452,6 +1500,10 @@ void era_session_load()
         grand_prix_load(ctx);
         return;
     }
+    seen.time_trial = true;
+    seen.ctx = ctx;
+    seen.pressed = last_press;
+    seen.virtual_label = filled.label;
     uintptr_t holder = 0, gsm = 0, gsm_holder = 0, gsm_name = 0, entrant_setup = 0, list = 0;
     if (!mem::read(ctx + MODE_SETUP, holder) || !holder || !mem::read(holder + SETUP_MODES, setup) || !setup)
         return;
@@ -1465,12 +1517,14 @@ void era_session_load()
     auto lists = lists_of(reinterpret_cast<const uint8_t *>(entrant_setup), ptrs);
     logic::ListCars selected = list ? list_cars(reinterpret_cast<void *>(list)) : logic::ListCars{};
     logic::ListCars first = lists.empty() ? logic::ListCars{} : lists[0];
-    std::string seen = setup_mode + "/" + selected.name + "/" + std::to_string(selected.cars);
-    if (seen != last_seen && logged++ < LOG_FIRST * 2)
+    std::string line = setup_mode + "/" + selected.name + "/" + std::to_string(selected.cars);
+    if (line != last_seen && logged++ < LOG_FIRST * 2)
         swofty::log("[era] Time Trial session loads list %s (%lld cars) of setup mode %s (box pressed: %s)",
                     selected.name.empty() ? "?" : selected.name.c_str(), (long long)selected.cars, setup_mode.c_str(),
                     last_press.empty() ? "none" : last_press.c_str());
-    last_seen = seen;
+    last_seen = line;
+    seen.setup_mode = setup_mode;
+    seen.list = selected.name;
     if (!logic::oversized(selected.cars) && !logic::oversized(first.cars)) {
         time_trial_budget(reinterpret_cast<void *>(ctx), setup);
         return;
@@ -1490,6 +1544,7 @@ void era_session_load()
     if (i >= 0) {
         void *fit = ptrs[size_t(i)];
         ref<void *>(reinterpret_cast<void *>(setup), SELECTED_LIST) = fit;
+        seen.list = lists[size_t(i)].name;
         if (logic::oversized(first.cars) && i > 0)
             logic::swap_into_first(held, esm, size_t(i));
     }
@@ -1504,6 +1559,25 @@ void era_session_load()
         swofty::log("[era] %s", logic::time_trial_swap(bad.name, bad.cars, setup_mode, i >= 0 ? lists[size_t(i)].name : "",
                                                        held.limit_was)
                                     .c_str());
+}
+
+}
+
+void era_session_load()
+{
+    LoadSeen seen;
+    {
+        std::lock_guard<std::mutex> g(held_lock);
+        session_load_held(seen);
+    }
+    follow_loaded_list(seen);
+}
+
+bool era_session_unlisted(std::string &list)
+{
+    std::lock_guard<std::mutex> g(unlisted_lock);
+    list = unlisted_list;
+    return !list.empty();
 }
 
 constexpr const char *AVAILABILITY_MIXIN = "swofty_core.dll (setup mode guard)";

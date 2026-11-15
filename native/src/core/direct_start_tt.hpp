@@ -25,6 +25,11 @@ int track_stat();
 void mode_objects(void *&mode, void *&entity);
 std::string player_list();
 
+// The team of the player's entrant selection: its label, and with `ref` its team reference. Empty or false when
+// nothing is selected or the selected team is not in the list the Time Trial mode holds now.
 std::string player_team();
+bool player_team(uint32_t &ref, std::string &name);
+// The label of a team reference (a participant's team stat id) in the Time Trial mode's teams.
+std::string team_of(uint32_t ref);
 
 }

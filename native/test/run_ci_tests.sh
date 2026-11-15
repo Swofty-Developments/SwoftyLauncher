@@ -87,6 +87,7 @@ t "Pit box guard unit test" native/test/run_pit_box_test.sh
 t "Garage slot guard unit test" native/test/run_garage_slots_test.sh
 t "Direct start unit test" native/test/run_direct_start_test.sh
 t "Direct start Time Trial unit test" native/test/run_direct_start_tt_test.sh
+t "Time Trial loaded list board and team label unit test" native/test/run_tt_loaded_test.sh
 t "Thrustmaster LCD guard unit test" native/test/run_thrustmaster_lcd_test.sh
 t "Estimate lap time guard unit test" native/test/run_estimate_laptime_test.sh
 t "Red flag recompute guard unit test" native/test/run_red_flag_recompute_test.sh

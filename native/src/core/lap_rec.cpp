@@ -16,6 +16,7 @@
 #include "live_car.hpp"
 #include "perf.hpp"
 #include "tt_bridge_logic.hpp"
+#include "tt_loaded_logic.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
@@ -71,6 +72,8 @@ constexpr size_t MAX_SEALED_SECTIONS = 4, MAX_SEALED_BYTES = size_t(1) << 20;
 
 struct Board {
     std::string content, track, weather, track_addon, track_name, track_kind;
+    // Set to the entrant list when the session loads one no box names: the laps are written without a board.
+    std::string unlisted;
 };
 
 struct Pending {
@@ -127,6 +130,12 @@ Board session_board;
 bool have_session_board = false;
 std::string session_team;
 bool have_session_team = false;
+uint32_t session_team_ref = 0;
+bool have_session_team_ref = false;
+// The label of the team the game's lap stats last named, kept per session so a lap pays the lookup once.
+uint32_t stats_team_ref = 0;
+bool have_stats_team = false;
+std::string stats_team;
 double next_board_try_s = 0;
 int board_tries = 0;
 bool last_has_wetness = false;
@@ -312,6 +321,7 @@ Board session_snapshot()
     Board b;
     auto facts = swofty_core::hooks::core().current();
     b.content = facts && !facts->content.empty() ? facts->content : "game/f1_2025";
+    runtime::era_session_unlisted(b.unlisted);
     std::string code;
     if (!runtime::tt_bridge_session_track(code))
         code = runtime::direct_start::tt::session_track();
@@ -341,10 +351,14 @@ void resolve_session(double now, bool forced = false)
     }
     if (!have_session_team) {
         mem::Trust trust(runtime::HEAP_TRUST_MS);
-        std::string team = runtime::direct_start::tt::player_team();
+        std::string team;
+        uint32_t ref = 0;
+        bool selected = runtime::direct_start::tt::player_team(ref, team);
         std::lock_guard<std::mutex> g(lock);
         session_team = std::move(team);
         have_session_team = !session_team.empty();
+        session_team_ref = ref;
+        have_session_team_ref = selected;
     }
 }
 
@@ -542,6 +556,11 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
     h.nonce = gate.nonce;
     h.content = b.content;
     h.track = b.track;
+    if (!b.unlisted.empty()) {
+        h.content.clear();
+        h.track.clear();
+        swofty::log("[boards] lap %u is not for a board: the session loaded the list %s that no box names", lap.index, b.unlisted.c_str());
+    }
     h.track_name = b.track_name;
     h.track_addon = b.track_addon;
     h.track_kind = b.track_kind;
@@ -574,9 +593,27 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
         h.driver = facts->player->driver;
     }
     if (h.team.empty()) {
-        h.team = session_team;
-        if (!h.team.empty())
+        bool stats_ok = sealed.game && sealed.game->usable && sealed.game->stats.ok;
+        uint32_t stats_ref = stats_ok ? sealed.game->stats.team : 0;
+        bool same = have_session_team_ref && stats_ok && runtime::tt_loaded::same_team(session_team_ref, stats_ref);
+        if (stats_ok && !same && (!have_stats_team || stats_team_ref != stats_ref)) {
+            mem::Trust trust(runtime::HEAP_TRUST_MS);
+            stats_team = runtime::direct_start::tt::team_of(stats_ref);
+            stats_team_ref = stats_ref;
+            have_stats_team = true;
+        }
+        runtime::tt_loaded::TeamPick pick = runtime::tt_loaded::team_pick(session_team, have_session_team_ref, session_team_ref, stats_ok,
+                                                                          stats_ref, stats_ok && !same ? stats_team : std::string());
+        h.team = pick.label;
+        if (pick.from == runtime::tt_loaded::TeamFrom::selection)
             swofty::log("[laps] lap %u: car team label %s from the player's entrant selection", lap.index, h.team.c_str());
+        else if (pick.from == runtime::tt_loaded::TeamFrom::stats)
+            swofty::log("[boards] lap %u: car team label %s from the team the session's car has (team stat %u)%s", lap.index, h.team.c_str(),
+                        stats_ref >> 16, pick.stale ? (", not the entrant selection's " + session_team).c_str() : "");
+        else if (pick.stale)
+            swofty::log("[boards] lap %u: no car team label: the session's car has team stat %u, which has no label, and the entrant selection's %s is "
+                        "another team",
+                        lap.index, stats_ref >> 16, session_team.c_str());
     }
     h.time_ms = r.time_ms;
     h.sectors_ms = r.sectors_ms;
@@ -711,6 +748,8 @@ void drain()
                         board.track.empty() ? "unknown" : board.track.c_str(),
                         board.weather.empty() ? "unknown" : board.weather.c_str(),
                         board.track_kind.empty() ? "" : (", custom track (" + board.track_kind + " from " + board.track_addon + ")").c_str());
+            if (!board.unlisted.empty())
+                swofty::log("[boards] this session's laps are not for a board: it loaded the list %s that no box names", board.unlisted.c_str());
         } else if (o.kind == lr::Outcome::discarded) {
             discarded++;
             swofty::log("[laps] lap discarded: %s", lr::discard_name(o.why));
@@ -934,6 +973,8 @@ void lap_rec_session_enter()
     have_session_board = have_session_team = false;
     session_board = Board{};
     session_team.clear();
+    have_session_team_ref = have_stats_team = false;
+    stats_team.clear();
     next_board_try_s = 0;
     board_tries = 0;
     last_has_wetness = false;

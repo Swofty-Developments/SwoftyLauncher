@@ -193,6 +193,8 @@ void era_commit();
 // session's car count follows the pressed box.
 void era_press(const char *entrant_list);
 void era_session_load();
+// Whether the Time Trial session being loaded holds a list no box names (its name in `list`): its laps get no board.
+bool era_session_unlisted(std::string &list);
 void era_session_trace(const char *state, int to);
 void era_session_unloaded(const char *state, int to);
 std::vector<CoreMixins> tt_guard_mixins();
