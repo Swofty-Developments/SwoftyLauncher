@@ -1,6 +1,7 @@
 #include "../../src/core/apply/content/boot.hpp"
 #include "../../src/core/apply/content/race_fuel.hpp"
 #include "../../src/core/apply/content/tyre_warmers.hpp"
+#include "../../src/core/apply/content/weekend.hpp"
 #include "../../src/core/apply/ids.hpp"
 #include "../../src/core/apply/room.hpp"
 #include "../../src/core/apply/scheduler.hpp"
@@ -1824,6 +1825,54 @@ static void drs_tests(const std::string &regs)
     Value w1959b = swofty::json::parse(R"({"entrant_list":"f1_1959","rules":{"tyre_warmers":true}})");
     boxes.push_back({"mod.b/f1_1959", &w1959b});
     check(content::tyre_warmers_pick("f1_1959", boxes).warmers == true, "the last package with the box's entrant list decides");
+
+    Value k1959 = swofty::json::parse(R"({"entrant_list":"f1_1959","rules":{"race_time_limit_s":10800,"weekend_mode":"swofty_f1_short_quali"}})");
+    Value k2004 = swofty::json::parse(R"({"entrant_list":"f1_2004","rules":{"weekend_mode":"swofty_f1_one_shot"}})");
+    Value k2009 = swofty::json::parse(R"({"entrant_list":"f1_2009","rules":{"race_time_limit_s":30,"weekend_mode":"Bad Name"}})");
+    Value k2010 = swofty::json::parse(R"({"entrant_list":"f1_2010","rules":{"race_time_limit_s":"3h","weekend_mode":"swofty_f1"}})");
+    std::vector<std::pair<std::string, const Value *>> weekends = {
+        {"mod.a/f1_1959", &k1959}, {"mod.a/f1_2004", &k2004}, {"mod.a/f1_2009", &k2009}, {"mod.a/f1_2010", &k2010}};
+    auto wk = content::weekend_pick("f1_1959", weekends);
+    std::printf("      %s\n", wk.line.c_str());
+    check(wk.time_limit_s == 10800u && wk.weekend_mode == "swofty_f1_short_quali" && wk.package == "mod.a/f1_1959",
+          "a box whose package sets rules.race_time_limit_s and rules.weekend_mode runs both");
+    auto wk04 = content::weekend_pick("f1_2004", weekends);
+    check(!wk04.time_limit_s && wk04.weekend_mode == "swofty_f1_one_shot", "the weekend rule alone keeps the mode's time limit");
+    auto wk09 = content::weekend_pick("f1_2009", weekends);
+    auto wk10 = content::weekend_pick("f1_2010", weekends);
+    check(!wk09.time_limit_s && wk09.weekend_mode.empty() && !wk10.time_limit_s && wk10.weekend_mode.empty(),
+          "a limit under 60 s or not a whole number, a malformed mode name or the host itself: the mode keeps its own");
+    auto wk25 = content::weekend_pick("f1_2025", weekends);
+    check(!wk25.time_limit_s && wk25.weekend_mode.empty(), "a stock box: the mode keeps its own time limit and weekend");
+    Value k1959b = swofty::json::parse(R"({"entrant_list":"f1_1959","rules":{"race_time_limit_s":7200}})");
+    weekends.push_back({"mod.b/f1_1959", &k1959b});
+    auto wkb = content::weekend_pick("f1_1959", weekends);
+    check(wkb.time_limit_s == 7200u && wkb.weekend_mode.empty(), "the last package with the box's entrant list decides");
+
+    // The helper row is made available at boot (the game parses only available rows into its setup mode store).
+    std::map<std::string, std::string> avail = {
+        {"game_setup.game_setup_modes.game_setup_mode[_metadata_=swofty_f1_short_quali].available", "False"},
+        {"game_setup.game_setup_modes.game_setup_mode[_metadata_=swofty_f1_one_shot].available", "True"}};
+    content::Read aread = [&](const std::string &p) -> std::optional<std::string> {
+        auto it = avail.find(p);
+        return it == avail.end() ? std::nullopt : std::optional<std::string>(it->second);
+    };
+    content::Plan wp;
+    content::lower_weekend_mode("mod.a/f1_1959", k1959, "swofty_f1", aread, wp);
+    check(wp.ops.size() == 1 && wp.ops[0]["op"].as_string() == "set" && wp.ops[0]["field"].as_string() == "available" &&
+              wp.ops[0]["value"].as_string() == "True" &&
+              wp.ops[0]["select"].as_string() == "game_setup.game_setup_modes.game_setup_mode[_metadata_=swofty_f1_short_quali]",
+          "a box's weekend mode row that ships available=False is set available");
+    content::Plan wp04, wp09, wp10, wpx;
+    content::lower_weekend_mode("mod.a/f1_2004", k2004, "swofty_f1", aread, wp04);
+    content::lower_weekend_mode("mod.a/f1_2009", k2009, "swofty_f1", aread, wp09);
+    content::lower_weekend_mode("mod.a/f1_2010", k2010, "swofty_f1", aread, wp10);
+    check(wp04.ops.size() == 0 && wp09.ops.size() == 0 && wp10.ops.size() == 0,
+          "an already available row, a malformed name or the host itself: nothing written");
+    Value kx = swofty::json::parse(R"({"entrant_list":"f1_1951","rules":{"weekend_mode":"f51_wk"}})");
+    content::lower_weekend_mode("mod.a/f1_1951", kx, "swofty_f1", aread, wpx);
+    check(wpx.ops.size() == 0 && wpx.lines.size() == 1 && wpx.lines[0].find("f51_wk") != std::string::npos,
+          "a missing row writes nothing (the package still applies) and says so");
 }
 
 static void race_fuel_tests()

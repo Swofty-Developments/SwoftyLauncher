@@ -163,7 +163,7 @@ The records and their ids:
 - **`track`:** stock rows are `game/<code>`. A dormant stock row (one without assets, such as `game/sochi`) is a record a `slot` can name, and is offered nowhere. A track made for 1.5 is `<addon id>/<code>`, listed by each build in `$DATA/registry/older-tracks.json`; it fills the stock row `game/<code>` when the game ships a row with its code (`mod.sochi` fills `game/sochi`).
 - **`track.venue`:** `venue/<key>` ids, seeded by the core. A track lists the venues it provides in `provides`; the venue's `track` is the last enabled provider in load order. A stock track provides its real circuit (`game/melbourne` provides `venue/albert_park`). Reverse layouts and dormant rows provide nothing.
 - **`track.data`:** `<track id>/<data set>`. The core seeds `game/<code>/<data set>` for every stock block. An added track's blocks are variants of its base's, so a layer on `game/austria/f1_2026` reaches `mod.hockenheim/hockenheim/f1_2026` until it sets that field itself.
-- **`track.per_package`:** `<package id>/<key>`, applied while that box is picked and put back when it's left.
+- **`track.per_package`:** `<package id>/<key>`, applied while that box is picked and put back when it's left. The core applies `fuel`, `pit.speed_limit` and `laps`; the other fields are stored.
 
 `track.data` applies at boot in 1.6.5: the core writes each block's registered values into the database before it loads. At session load it writes fuel again into the data set the session reads, only for a record whose `fuel.burn_per_lap` an addon set; a seeded value no addon changed leaves the live value alone, so another writer's fuel for the track stays. A layer added after boot on another field is logged as taking effect at the next start.
 
@@ -494,7 +494,7 @@ A box can also give a track its own data: laps, fuel, tyre class, pit lane, name
 - **A variant package** (F1 2017 V10) inherits its base package's track data.
 - **Any addon can give a box data.** A box's entries are the ids `<package id>/<key>` and every `per_package` record whose `package` names the box.
 - **It applies when the box is picked.** The core writes the box's data into the track data the game reads (`Game_TrackData_GetTrack`), and puts it back when the box is left. A Grand Prix box's fuel goes into every data set its setup mode reads when the box is picked, and the session's track again at session load.
-- **In 1.6.5 the core writes `fuel`.** `laps`, `pit`, `names`, `date` and `tyre_class` are stored, and apply once those fields of the game's track data are mapped (see [Readiness and limits](#readiness-and-limits)).
+- **The core writes `fuel`, `pit.speed_limit` and `laps`.** `names`, `date`, `tyre_class` and the pit stop times are stored, and apply once those fields of the game's track data are mapped (see [Readiness and limits](#readiness-and-limits)).
 - **`fuel.burn_per_lap` is the track's fuel-per-lap figure.** The game uses it for the MFD fuel delta, the fuel strategy and refuelling. The car's real burn comes from its power unit, and the race's starting fuel stays the same.
 
 <template #example>
@@ -721,6 +721,31 @@ tracks::set_data(tracks::tracks["game/monaco"], [](tracks::TrackData &d) { d.lap
 - **Calendars:** Classic Seasons 2016 to 2024 name their real calendars. Careers keep their own calendars in 1.6.5.
 - **Track data at boot:** `track.data` values are written into the database before it loads, so they hold from the first session. At session load the core writes fuel again into the data set the session reads.
 - **A box's own data: fuel.** `per_package` applies `fuel` when the box is picked and puts it back when it's left. The game reads `fuel_burn_per_lap` for the MFD fuel delta, the garage refuel, the virtual session's per-lap fuel and a fuel-for-laps set in the start sequence. The car's real burn comes from its power unit, and a race's starting fuel comes from the track's race fuel rows (`Game_CarSetup_SessionFuelLoad`); a burn per lap changes neither (see [What `burn_per_lap` changes](#what-burn-per-lap-changes)). The reader of the game's track data (`TrackDataTrack`, 0x290 bytes) is mapped at L1: laps at +0xe0 (a pointer to the database value), weekend month and day at +0xf4 and +0xf8, pit speed limit and stop times at +0x21c to +0x224. Fuel at +0xf0 is L2. The other fields apply once their readers are proven.
+- **A box's own data: pit speed limit.** `per_package` applies `pit.speed_limit` (km/h, above 0 and at most 400) like `fuel`: at the box press into every track data set the box's setup mode can read, at the session load into the sets the session's query picks, and put back when the box is left. It is `TrackDataTrack` +0x21c, which `Game_PitLane_GenerateSplines` (0x1434ca550) reads when the session builds its pit lane (km/h to m/s). The game's tracks hold 60 to 80. F1 has no pit lane limit before 1994: a box for those years writes a high value (for example 300), so the limiter and the pit lane speed check never bite. How the AI drives a pit lane at such a limit is not tested in game. `stop_time_dry` and `stop_time_wet` stay stored.
+
+```json
+{ "track.per_package": {
+    "f1_1960/monza": { "package": "mod.season-1960/f1_1960", "track": "game/monza", "pit": { "speed_limit": 300 } },
+    "f1_1994/monza": { "package": "mod.season-1994/f1_1994", "track": "game/monza", "pit": { "speed_limit": 80 } }
+} }
+```
+
+```text
+[tracks] box mod.season-1960/f1_1960: pit speed limit written: 6 write(s) in 6 set(s); put back when the box is left
+[tracks] box pit speed limit: 6 of 6 write(s) put back (the box was left)
+```
+- **A box's own data: race laps.** `per_package` applies `laps` (a whole number from 1 to 999: the race's laps at full race length) like `pit.speed_limit`, in a Grand Prix box: at the box press and at the session load, put back when the box is left. The race length option the player picks scales from it, as it does from the game's own laps (100 % runs `laps`, 25 % about a quarter). `TrackDataTrack` +0xe0 holds the database value slot of the row's `number_of_laps`, not the value (0x142e46e8c), and every reader takes the laps from that value at use (`laps = list[race]`, race 0, 1 or 2 by session type; 0x1417821c0, 0x143695ff0), then scales them by the race length option (0x140af68b0). So the core writes the box's laps into that value's int list (begin +0x10, end +0x18; the list parser 0x1445a4c80). Only sets of the default weekend format are written, since a sprint set's list holds the sprint's laps, and only the list entries that hold the race's laps (the game's lists are `57, 57, 57`). A set without its own `number_of_laps` shares its parent set's value, which is written once. Not tested in game.
+
+```json
+{ "track.per_package": {
+    "f1_1950/silverstone": { "package": "mod.season-1950/f1_1950", "track": "game/silverstone", "laps": 70 }
+} }
+```
+
+```text
+[tracks] box mod.season-1950/f1_1950: race laps written (full race length; the race length option scales them): 3 write(s) in 4 set(s) (silverstone 52 -> 70); put back when the box is left
+[tracks] box race laps: 3 of 3 write(s) put back (the box was left)
+```
 - **The box's track list: logged, not shown.** The core works out each box's list and writes it to the log and `catalog.json`. The track select screen still shows its own list, built from view-model nodes (`track_data.track_list`, `track_info.gm_track_list`). The list builder behind `ui.track_select.build` isn't found yet.
 - **The guard:** the Grand Prix confirm (`advance_pressed`) and the Time Trial confirm (`select_pressed`) are L2. Refusing the press before the game's handler runs leaves no state behind.
 - **Time Trial:** record tracks have `time_trial` false unless their record sets it. Tracks made for 1.5 run Time Trial unless their facts say `time_trial: false` (`time_trial_why`: none of their files holds a world the track layers load).

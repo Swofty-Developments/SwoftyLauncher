@@ -78,6 +78,10 @@ int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
 // mode's group at session load, at a full safety car end and at a red flag restart; every other mode keeps its own.
 // Tyre warmers per box: the same narrowing writes the box's rules.tyre_warmers into every swofty_f1 mode's
 // has_tyre_warmers byte (+0x1c8) and the same put backs restore the game's value (logic::WarmerSwaps).
+// Race time limit and weekend per box: the same narrowing writes the box's rules.race_time_limit_s into every swofty_f1
+// mode's race_time_limit_in_seconds (+0xb4, logic::TimeLimitSwaps) and exchanges the weekend options (+0x190..+0x1a8)
+// of the setup mode named by rules.weekend_mode with the first swofty_f1 mode (logic::WeekendSwaps); the same put
+// backs undo both.
 //
 // The three hooks are one core mixin set, offered at the first mixin commit after a box was registered,
 // so a game without registered boxes runs none of them.
@@ -194,6 +198,9 @@ logic::DrsSwaps drs;
 std::string last_drs_line;
 logic::WarmerSwaps warmers;
 std::string last_warmers_line;
+logic::TimeLimitSwaps time_limits;
+logic::WeekendSwaps weekends;
+std::string last_weekend_line;
 
 template <class T> T at(const void *base, size_t off)
 {
@@ -319,6 +326,110 @@ void apply_fuel(const char *list)
 }
 
 void clear_fuel() { swofty_core::hooks::race_fuel_rules({}); }
+void log_weekend(const std::string &line)
+{
+    if (line == last_weekend_line)
+        return;
+    last_weekend_line = line;
+    swofty::log("[weekend] %s", line.c_str());
+}
+
+uint8_t *find_mode(void *mode, const std::string &want)
+{
+    auto *modes = setup_owner(mode);
+    if (!modes || want.empty())
+        return nullptr;
+    auto get = reinterpret_cast<uint8_t *(*)(void *)>((*reinterpret_cast<void ***>(modes))[SETUP_MODES_VFUNC / 8]);
+    uint8_t *vec = get(modes);
+    if (!vec)
+        return nullptr;
+    for (auto **p = at<uint8_t **>(vec, 8), **e = at<uint8_t **>(vec, 0x10); p != e; ++p) {
+        const char *name = name_of(*p, SETUP_MODE_NAME);
+        if (name && want == name)
+            return *p;
+    }
+    return nullptr;
+}
+
+// A weekend helper mode is listed in no game mode, so it is not in the game mode's list above: look it up in the
+// store of every parsed setup mode (g_Game_Scenarios +0x40, logic::find_stored_mode). where says which list held it.
+uint8_t *find_helper_mode(void *mode, const std::string &want, std::string &where)
+{
+    if (uint8_t *m = find_mode(mode, want)) {
+        where = "the game mode's setup modes";
+        return m;
+    }
+    uintptr_t slot = swofty::api ? swofty::api->resolve("g_Game_Scenarios") : 0, registry = 0;
+    if (!slot || !mem::read(slot, registry) || !registry) {
+        where = "the game mode's setup modes (the setup mode store needs g_Game_Scenarios)";
+        return nullptr;
+    }
+    size_t seen = 0;
+    std::vector<std::string> labels;
+    uint8_t *m = logic::find_stored_mode(reinterpret_cast<const uint8_t *>(registry), want,
+                                         [](const void *p, size_t n) { return mem::readable(p, n); }, &seen, &labels);
+    if (m) {
+        where = "the store of " + std::to_string(seen) + " parsed setup mode(s)";
+        return m;
+    }
+    std::string all;
+    for (auto &l : labels)
+        all += (all.empty() ? "" : ", ") + l;
+    where = "the game mode's setup modes and the store of " + std::to_string(seen) + " parsed setup mode(s): " +
+            (all.empty() ? std::string("none") : all) +
+            "; the game parses only rows with available true (the core sets it on a content.package's weekend_mode row at boot)";
+    return m;
+}
+
+// Race time limit and weekend per box: rules.race_time_limit_s goes into every swofty_f1 mode's
+// race_time_limit_in_seconds; rules.weekend_mode's weekend options are exchanged with the first swofty_f1 mode's. A
+// box without a rule puts the game's value back.
+void apply_weekend(void *mode, const char *list)
+{
+    auto box = swofty_core::apply::content::weekend_for_box(list);
+    std::string line = box.line;
+    if (!box.time_limit_s) {
+        time_limits.put_back();
+    } else {
+        size_t modes = 0;
+        uint32_t now = 0;
+        for_each_host_mode(mode, [&](uint8_t *m) {
+            time_limits.swap(m, *box.time_limit_s);
+            if (!modes)
+                now = at<uint32_t>(m, logic::MODE_RACE_TIME_LIMIT);
+            modes++;
+        });
+        if (!modes)
+            line += "; time limit not applied (no " + std::string(logic::HOST) + " mode found)";
+        else
+            line += "; time limit written into " + std::to_string(modes) + " " + std::string(logic::HOST) +
+                    " mode(s) (race_time_limit_in_seconds now " + std::to_string(now) + " s)";
+    }
+    if (box.weekend_mode.empty()) {
+        weekends.put_back();
+    } else {
+        uint8_t *host = nullptr;
+        size_t hosts = 0;
+        for_each_host_mode(mode, [&](uint8_t *m) {
+            if (!host)
+                host = m;
+            hosts++;
+        });
+        std::string where;
+        uint8_t *helper = find_helper_mode(mode, box.weekend_mode, where);
+        if (!helper) {
+            weekends.put_back();
+            line += "; weekend not applied (no setup mode " + box.weekend_mode + " in " + where + ")";
+        } else if (!weekends.swap(host, helper)) {
+            line += "; weekend not applied (no " + std::string(logic::HOST) + " mode found)";
+        } else {
+            line += "; weekend applied (" + box.weekend_mode + " from " + where + ")";
+            if (hosts > 1)
+                line += "; weekend on the first of " + std::to_string(hosts) + " " + std::string(logic::HOST) + " modes";
+        }
+    }
+    log_weekend(line);
+}
 
 void put_back_drs()
 {
@@ -326,6 +437,10 @@ void put_back_drs()
         log_drs(std::string(logic::HOST) + "'s DRS group put back on " + std::to_string(n) + " mode(s)");
     if (size_t n = warmers.put_back())
         log_warmers(std::string(logic::HOST) + "'s tyre warmer setting put back on " + std::to_string(n) + " mode(s)");
+    if (size_t n = time_limits.put_back())
+        log_weekend(std::string(logic::HOST) + "'s race time limit put back on " + std::to_string(n) + " mode(s)");
+    if (weekends.put_back())
+        log_weekend(std::string(logic::HOST) + "'s own weekend put back");
 }
 
 logic::ListCars list_cars(const void *list);
@@ -519,6 +634,7 @@ void narrow(void *mode, const char *list)
     apply_drs(mode, list);
     apply_warmers(mode, list);
     apply_fuel(list);
+    apply_weekend(mode, list);
 }
 
 bool time_trial(void *mode)
@@ -1617,8 +1733,11 @@ void drop_setup_pointers()
     }
     p.drs = drs.forget();
     warmers.forget();
+    time_limits.forget();
+    weekends.forget();
     last_drs_line.clear();
     last_warmers_line.clear();
+    last_weekend_line.clear();
     std::string line = logic::availability_drop_line(p);
     if (!line.empty() && !logged_dropped.exchange(true))
         swofty::log("[era] %s", line.c_str());

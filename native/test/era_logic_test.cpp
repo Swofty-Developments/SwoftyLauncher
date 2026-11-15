@@ -100,6 +100,132 @@ static void warmer_swap_tests()
            "GameSetupMode +0x1c8 has_tyre_warmers (re/db structs/GameSetupMode.h)");
 }
 
+static void time_limit_swap_tests()
+{
+    era::TimeLimitSwaps swaps;
+    Mode a("swofty_f1"), b("swofty_f1");
+    auto lim = [](Mode &m) { return reinterpret_cast<uint32_t *>(m.mem + era::MODE_RACE_TIME_LIMIT); };
+    for (int i = 0; i < 3; ++i)
+        lim(a)[i] = lim(b)[i] = 7200;
+    lim(a)[3] = 3600;                                                 // the sprint limit right behind (+0xc0)
+    swaps.swap(a.mem, 10800);
+    swaps.swap(b.mem, 10800);
+    expect(lim(a)[0] == 10800 && lim(a)[1] == 10800 && lim(a)[2] == 10800 && lim(b)[2] == 10800 && lim(a)[3] == 3600 &&
+               swaps.active() == 2,
+           "a press writes the box's race time limit into the three values of every host mode, not the sprint limit");
+    swaps.swap(a.mem, 5400);
+    expect(lim(a)[0] == 5400 && swaps.active() == 2, "a second press without a put back keeps the game's values once");
+    expect(swaps.put_back() == 2 && lim(a)[0] == 7200 && lim(a)[2] == 7200 && lim(b)[1] == 7200 && swaps.active() == 0,
+           "put back restores the game's limits in every swapped mode");
+    swaps.swap(a.mem, 10800);
+    lim(a)[1] = 7200;                                                 // the game reloaded the mode since the press
+    expect(swaps.put_back() == 0 && lim(a)[0] == 10800, "put back leaves values the game changed since the swap");
+    swaps.swap(a.mem, 10800);
+    expect(swaps.forget() == 1 && swaps.put_back() == 0 && lim(a)[0] == 10800, "forget writes nothing into the modes");
+    swaps.swap(nullptr, 10800);
+    expect(swaps.active() == 0, "no mode: nothing is swapped");
+    expect(era::MODE_RACE_TIME_LIMIT == 0xb4 && era::MODE_RACE_TIME_LIMIT + 4 * era::RACE_TIME_LIMITS == 0xc0 &&
+               era::MODE_RACE_TIME_LIMIT + 12 <= era::MODE_NAME,
+           "GameSetupMode +0xb4 race_time_limit_in_seconds[3], sprint limits from +0xc0 (re/db structs/GameSetupMode.h)");
+}
+
+static void weekend_swap_tests()
+{
+    era::WeekendSwaps swaps;
+    Mode host("swofty_f1"), one("swofty_f1_one_practice"), two("swofty_f1_one_shot");
+    auto q = [](Mode &m) { return reinterpret_cast<uint64_t *>(m.mem + era::MODE_WEEKEND_OPTIONS); };
+    for (uint64_t i = 0; i < 4; ++i) {
+        q(host)[i] = 0x100 + i;
+        q(one)[i] = 0x200 + i;
+        q(two)[i] = 0x300 + i;
+    }
+    q(host)[4] = 0xaaaa;                                              // the field right behind (+0x1b0) stays put
+    expect(swaps.swap(host.mem, one.mem) && q(host)[0] == 0x200 && q(host)[3] == 0x203 && q(one)[0] == 0x100 &&
+               q(one)[3] == 0x103 && q(host)[4] == 0xaaaa && swaps.active() == 1,
+           "a press exchanges the four weekend option qwords of the host and the helper mode");
+    expect(swaps.swap(host.mem, one.mem) && q(host)[0] == 0x200 && q(one)[0] == 0x100,
+           "pressing the same box again keeps the exchange (no double swap)");
+    expect(swaps.swap(host.mem, two.mem) && q(host)[0] == 0x300 && q(two)[0] == 0x100 && q(one)[0] == 0x200 &&
+               swaps.helper() == two.mem,
+           "a box with another helper puts the first helper's container back before it exchanges");
+    expect(swaps.put_back() == 1 && q(host)[0] == 0x100 && q(host)[3] == 0x103 && q(two)[0] == 0x300 && swaps.active() == 0,
+           "put back gives every mode its own container again");
+    expect(swaps.put_back() == 0, "nothing held: put back writes nothing");
+
+    swaps.swap(host.mem, one.mem);
+    q(host)[2] = 0xdead;                                              // the game rebuilt the host's container
+    expect(swaps.put_back() == 0 && q(host)[2] == 0xdead && q(one)[0] == 0x100,
+           "put back leaves the modes alone when the game changed them since the swap");
+    for (uint64_t i = 0; i < 4; ++i) {
+        q(host)[i] = 0x100 + i;
+        q(one)[i] = 0x200 + i;
+    }
+
+    swaps.swap(host.mem, one.mem);
+    expect(swaps.forget() == 1 && swaps.put_back() == 0 && q(host)[0] == 0x200 && q(one)[0] == 0x100,
+           "forget drops the pair without writing (each container is still owned by exactly one mode)");
+    expect(!swaps.swap(host.mem, host.mem) && !swaps.swap(nullptr, one.mem) && !swaps.swap(host.mem, nullptr) &&
+               swaps.active() == 0,
+           "no host, no helper or the host itself: nothing is exchanged");
+    expect(era::MODE_WEEKEND_OPTIONS == 0x190 && era::MODE_WEEKEND_OPTIONS + 8 * era::WEEKEND_OPTION_QWORDS == 0x1b0 &&
+               era::MODE_WEEKEND_OPTIONS + 8 * era::WEEKEND_OPTION_QWORDS <= era::MODE_TYRE_WARMERS,
+           "GameSetupMode +0x190..+0x1a8 weekend options container (re/db structs/GameSetupMode.h)");
+}
+
+// The store of every parsed setup mode (g_Game_Scenarios +0x40): 16-byte entries {allocator, GameSetupMode *} by stat
+// id, null where no row has the id. A weekend helper listed in no game mode is found here.
+static void stored_mode_tests()
+{
+    struct Named {
+        alignas(8) uint8_t mem[0x200] = {};
+        era::DrsHolder label;
+        explicit Named(const char *name)
+        {
+            label.text = name;
+            *reinterpret_cast<void **>(mem + era::MODE_NAME) = &label;
+        }
+    };
+    Named f1("f1"), host("swofty_f1"), helper("f50_wk"), longer("f50_wk_2");
+    struct Entry {
+        void *allocator;
+        uint8_t *mode;
+    };
+    static_assert(sizeof(Entry) == era::STORE_SETUP_MODE_ENTRY && offsetof(Entry, mode) == era::STORE_SETUP_MODE_PTR);
+    Entry entries[22] = {};
+    entries[0].mode = f1.mem;
+    entries[20].mode = host.mem;
+    entries[21].mode = helper.mem;
+    entries[7].mode = longer.mem;
+    alignas(8) uint8_t registry[0x80] = {};
+    auto set_range = [&](Entry *b, Entry *e) {
+        *reinterpret_cast<Entry **>(registry + era::STORE_SETUP_MODES_BEGIN) = b;
+        *reinterpret_cast<Entry **>(registry + era::STORE_SETUP_MODES_END) = e;
+    };
+    set_range(entries, entries + 22);
+    auto all = [](const void *, size_t) { return true; };
+    size_t seen = 0;
+    expect(era::find_stored_mode(registry, "f50_wk", all, &seen) == helper.mem && seen == 4,
+           "the helper mode (stat id 21, listed in no game mode) is found in the store; null ids are skipped");
+    expect(era::find_stored_mode(registry, "swofty_f1", all) == host.mem, "the host mode is in the store too");
+    std::vector<std::string> labels;
+    expect(!era::find_stored_mode(registry, "f51_wk", all, &seen, &labels) && seen == 4 &&
+               labels == std::vector<std::string>{"f1", "f50_wk_2", "swofty_f1", "f50_wk"},
+           "a helper that is not stored: the labels of the stored modes are collected for the log");
+    expect(!era::find_stored_mode(registry, "f50", all) && !era::find_stored_mode(registry, "f50_wk_", all),
+           "a label must match whole, not as a prefix");
+    expect(!era::find_stored_mode(registry, "", all) && !era::find_stored_mode(nullptr, "f50_wk", all),
+           "no name or no registry: nothing found");
+    expect(!era::find_stored_mode(registry, "f50_wk", [](const void *, size_t) { return false; }),
+           "unreadable memory: nothing is read");
+    set_range(entries + 22, entries);
+    expect(!era::find_stored_mode(registry, "f50_wk", all), "a store whose end lies before its begin is not walked");
+    set_range(entries, reinterpret_cast<Entry *>(reinterpret_cast<uint8_t *>(entries) + 24));
+    expect(!era::find_stored_mode(registry, "f1", all), "a store that is not a whole number of entries is not walked");
+    set_range(entries, entries + 22);
+    expect(era::STORE_SETUP_MODES_BEGIN == 0x48 && era::STORE_SETUP_MODES_END == 0x50 && era::MODE_NAME == 0xd8,
+           "Sess_Load_GameSetupModes (0x142a148f0) store at g_Game_Scenarios +0x40: begin +0x48, end +0x50");
+}
+
 static void setup_guard_tests()
 {
     era::DrsSwaps swaps;
@@ -1045,6 +1171,9 @@ int main()
 
     drs_swap_tests();
     warmer_swap_tests();
+    time_limit_swap_tests();
+    weekend_swap_tests();
+    stored_mode_tests();
     continue_tests();
     setup_guard_tests();
     grid_limit_tests();

@@ -28,9 +28,10 @@ struct Rules {
     std::optional<float> quali_fuel_kg;     // content.package 1.5: the fuel each car starts qualifying with; empty = the game's
     bool race_start_fuel_from_quali = false; // content.package 1.5: parc ferme, the race starts with the fuel left after qualifying
     bool race_tyre_change = true;           // content.package 1.5: false keeps the tyres at race pit stops (damage excepted)
+    std::optional<int> race_time_limit_s;   // content.package 1.5: the race time limit in seconds (60..86400); empty = the mode's
+    std::string weekend_mode;           // content.package 1.5: a game_setup_modes row whose weekend the box runs; empty = the mode's
 };
-SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg, tyre_warmers,
-              refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali, race_tyre_change)
+SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg, tyre_warmers, refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali, race_tyre_change, race_time_limit_s, weekend_mode)
 
 inline Result set_control(cars::live::Car car, Control mode)
 {

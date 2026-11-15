@@ -5,8 +5,10 @@
 #include <cstring>
 #include <map>
 #include <memory>
+#include <optional>
 #include <string>
 #include <string_view>
+#include <utility>
 #include <vector>
 
 #include "apply/facts.hpp"
@@ -1156,9 +1158,202 @@ private:
     std::vector<Swap> swaps_;
 };
 
+// A box's race time limit (content.package rules.race_time_limit_s) applies through the host setup mode's
+// race_time_limit_in_seconds (+0xb4, three u32, re/db structs/GameSetupMode.h, copied by the mode loader 0x142a14f20
+// from the comma list; classic 7200,7200,7200). The swap writes the box's seconds into all three and remembers the
+// game's; put_back restores them wherever the three still hold the swap's value.
+constexpr size_t MODE_RACE_TIME_LIMIT = 0xb4;
+constexpr size_t RACE_TIME_LIMITS = 3;
+
+class TimeLimitSwaps {
+public:
+    void swap(uint8_t *mode, uint32_t seconds)
+    {
+        if (!mode)
+            return;
+        uint32_t *field = limits(mode);
+        Swap *s = find(mode);
+        if (!s) {
+            swaps_.push_back({mode, {field[0], field[1], field[2]}, seconds});
+            s = &swaps_.back();
+        }
+        s->written = seconds;
+        for (size_t i = 0; i < RACE_TIME_LIMITS; ++i)
+            field[i] = seconds;
+    }
+
+    size_t put_back()
+    {
+        size_t n = 0;
+        for (auto &s : swaps_) {
+            uint32_t *field = limits(s.mode);
+            bool ours = true;
+            for (size_t i = 0; i < RACE_TIME_LIMITS; ++i)
+                ours = ours && field[i] == s.written;
+            if (!ours)
+                continue;
+            for (size_t i = 0; i < RACE_TIME_LIMITS; ++i)
+                field[i] = s.original[i];
+            n++;
+        }
+        swaps_.clear();
+        return n;
+    }
+
+    // Drops the swaps without reading or writing the modes, which the game may have freed.
+    size_t forget()
+    {
+        size_t n = swaps_.size();
+        swaps_.clear();
+        return n;
+    }
+
+    size_t active() const { return swaps_.size(); }
+
+private:
+    struct Swap {
+        uint8_t *mode;
+        uint32_t original[RACE_TIME_LIMITS];
+        uint32_t written;
+    };
+    static uint32_t *limits(uint8_t *mode) { return reinterpret_cast<uint32_t *>(mode + MODE_RACE_TIME_LIMIT); }
+    Swap *find(const uint8_t *mode)
+    {
+        for (auto &s : swaps_)
+            if (s.mode == mode)
+                return &s;
+        return nullptr;
+    }
+    std::vector<Swap> swaps_;
+};
+
+// A box's weekend (content.package rules.weekend_mode) applies by exchanging the weekend options container of the host
+// setup mode with the one of a helper setup mode (+0x190..+0x1a8: four qwords the mode loader 0x142a14f20 fills from
+// weekend_options_0: the practice, qualifying and race groups and the length options they offer). It is an exchange,
+// not a copy: each container stays owned by exactly one mode object, so a game rebuild that frees every mode while a
+// swap is in place still frees each container once (forget). The swap is held for the whole weekend and undone by the
+// next press of another box, a stock box or a picker build without an addon list. Only one host mode takes the
+// helper's container: a second host mode keeps its own (one container cannot sit in two modes).
+constexpr size_t MODE_WEEKEND_OPTIONS = 0x190;
+constexpr size_t WEEKEND_OPTION_QWORDS = 4;
+
+class WeekendSwaps {
+public:
+    // Exchanges host's and helper's weekend options; a different held pair is put back first. False when host or
+    // helper is missing or the two are the same object.
+    bool swap(uint8_t *host, uint8_t *helper)
+    {
+        if (!host || !helper || host == helper)
+            return false;
+        if (held_ && held_->host == host && held_->helper == helper)
+            return true;
+        put_back();
+        exchange(host, helper);
+        Held h{host, helper, {}, {}};
+        for (size_t i = 0; i < WEEKEND_OPTION_QWORDS; ++i) {
+            h.host_now[i] = slots(host)[i];
+            h.helper_now[i] = slots(helper)[i];
+        }
+        held_ = h;
+        return true;
+    }
+
+    // Exchanges back when both modes still hold what the swap left in them; otherwise drops the pair without writing.
+    size_t put_back()
+    {
+        if (!held_)
+            return 0;
+        Held h = *held_;
+        held_.reset();
+        for (size_t i = 0; i < WEEKEND_OPTION_QWORDS; ++i)
+            if (slots(h.host)[i] != h.host_now[i] || slots(h.helper)[i] != h.helper_now[i])
+                return 0;
+        exchange(h.host, h.helper);
+        return 1;
+    }
+
+    // Drops the pair without reading or writing the modes, which the game may have freed.
+    size_t forget()
+    {
+        size_t n = held_ ? 1 : 0;
+        held_.reset();
+        return n;
+    }
+
+    size_t active() const { return held_ ? 1 : 0; }
+    const uint8_t *helper() const { return held_ ? held_->helper : nullptr; }
+
+private:
+    struct Held {
+        uint8_t *host, *helper;
+        uint64_t host_now[WEEKEND_OPTION_QWORDS], helper_now[WEEKEND_OPTION_QWORDS];
+    };
+    static uint64_t *slots(uint8_t *mode) { return reinterpret_cast<uint64_t *>(mode + MODE_WEEKEND_OPTIONS); }
+    static void exchange(uint8_t *a, uint8_t *b)
+    {
+        for (size_t i = 0; i < WEEKEND_OPTION_QWORDS; ++i)
+            std::swap(slots(a)[i], slots(b)[i]);
+    }
+    std::optional<Held> held_;
+};
+
 inline const char *holder_text(const void *holder)
 {
     return holder ? *reinterpret_cast<const char *const *>(static_cast<const uint8_t *>(holder) + HOLDER_TEXT) : nullptr;
+}
+
+// Every parsed game setup mode: Sess_Apply_ContentAvailability calls the thunk 0x142a223f0 (-> 0x14d83fa30) with
+// g_Game_Scenarios, which passes the registry's +0x40 to Sess_Load_GameSetupModes (0x142a148f0). That loader parses each
+// game_setup.game_setup_modes row with available=true and stores it by its stat id (the parsed byte +0x80) in a vector
+// {allocator +0x40, begin +0x48, end +0x50, capacity +0x58} of 16-byte entries {allocator, GameSetupMode *}; ids
+// without a row hold a null mode. A game mode's own setup mode list (the vfunc +0x1d0 list the era picker walks) holds
+// only the modes its game_setup_modes field names, so a weekend helper mode that no game mode lists (it must not: a
+// listed mode is offered by the picker) is only found here. Seen in game 2026-11-15: f50_wk (stat id 21) was not in
+// the Grand Prix mode's list.
+constexpr size_t STORE_SETUP_MODES_BEGIN = 0x48;
+constexpr size_t STORE_SETUP_MODES_END = 0x50;
+constexpr size_t STORE_SETUP_MODE_ENTRY = 0x10;
+constexpr size_t STORE_SETUP_MODE_PTR = 8;
+constexpr size_t STORE_SETUP_MODES_MAX = 256; // the stat id is a byte
+
+// Finds the stored setup mode labelled want. readable(p, n) guards every read (the game passes mem::readable). Counts
+// the stored modes in *seen and collects their labels (at most 63 characters each, "?" when unreadable) in *labels
+// when given, for the log line of a helper that is not there.
+template <class Readable>
+uint8_t *find_stored_mode(const uint8_t *registry, const std::string &want, Readable readable, size_t *seen = nullptr,
+                          std::vector<std::string> *labels = nullptr)
+{
+    if (seen)
+        *seen = 0;
+    if (labels)
+        labels->clear();
+    if (!registry || want.empty() || !readable(registry + STORE_SETUP_MODES_BEGIN, 16))
+        return nullptr;
+    auto *begin = *reinterpret_cast<const uint8_t *const *>(registry + STORE_SETUP_MODES_BEGIN);
+    auto *end = *reinterpret_cast<const uint8_t *const *>(registry + STORE_SETUP_MODES_END);
+    if (!begin || end < begin || size_t(end - begin) % STORE_SETUP_MODE_ENTRY ||
+        size_t(end - begin) / STORE_SETUP_MODE_ENTRY > STORE_SETUP_MODES_MAX || !readable(begin, size_t(end - begin)))
+        return nullptr;
+    for (auto *e = begin; e != end; e += STORE_SETUP_MODE_ENTRY) {
+        auto *mode = *reinterpret_cast<uint8_t *const *>(e + STORE_SETUP_MODE_PTR);
+        if (!mode || !readable(mode + MODE_NAME, 8))
+            continue;
+        if (seen)
+            ++*seen;
+        auto *holder = *reinterpret_cast<const uint8_t *const *>(mode + MODE_NAME);
+        const char *text = holder && readable(holder + HOLDER_TEXT, 8) ? holder_text(holder) : nullptr;
+        if (labels) {
+            std::string l;
+            for (size_t i = 0; text && i < 63 && readable(text + i, 1) && text[i]; i++)
+                l += text[i];
+            labels->push_back(l.empty() ? std::string("?") : l);
+        }
+        if (!text || !readable(text, want.size() + 1))
+            continue;
+        if (!strncmp(text, want.c_str(), want.size() + 1))
+            return mode;
+    }
+    return nullptr;
 }
 
 // Sess_Apply_ContentAvailability calls Sess_Load_GameSetupModes (through the thunk 0x142a223f0), which frees every

@@ -2,6 +2,7 @@
 
 #include "race_fuel.hpp"
 
+#include <cstdint>
 #include <optional>
 #include <string>
 
@@ -28,5 +29,13 @@ struct WarmersBox {
     std::string line;
 };
 WarmersBox tyre_warmers_for_box(const std::string &entrant_list);
+
+// The race time limit and weekend the box with this entrant list runs: its content.package's rules.race_time_limit_s
+// and rules.weekend_mode (a setup mode name; empty when the package has none), and the line to log.
+struct WeekendBox {
+    std::optional<uint32_t> time_limit_s;
+    std::string weekend_mode, line;
+};
+WeekendBox weekend_for_box(const std::string &entrant_list);
 
 }

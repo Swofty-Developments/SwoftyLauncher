@@ -4,3 +4,5 @@
 1.3: virtual_list keeps the entrant list out of the stat ids and setup mode slots; the core reads it into swofty_virtual_list when its box is pressed (launcher 1.9.10).
 1.4: rules.tyre_warmers turns tyre warmers on or off for the box's races; the era picker writes it into the swofty_f1 setup mode when the box is pressed.
 1.5: rules.refuel_stint_kg, rules.quali_fuel_kg and rules.race_start_fuel_from_quali; the core applies rules.refuelling and rules.race_fuel_kg in the box's races (start fuel, a refill at every pit stop) and the parc ferme fuel rule; rules.race_tyre_change (false: race pit stops keep the tyres, damage excepted).
+1.5: rules.race_time_limit_s and rules.weekend_mode set the box race time limit and its weekend (practice, qualifying, race groups) from a helper setup mode; the era picker swaps both into the swofty_f1 setup mode when the box is pressed.
+1.5, core change (no schema change): the core sets available to true on the game_setup_modes row rules.weekend_mode names at boot, so the game parses the helper into its setup mode store (it marks only modes a game mode lists).

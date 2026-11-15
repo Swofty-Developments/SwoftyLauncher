@@ -3,6 +3,7 @@
 #include <swofty/json.hpp>
 
 #include <algorithm>
+#include <cctype>
 #include <cstdint>
 #include <cstdio>
 #include <cstdlib>
@@ -11,6 +12,7 @@
 #include <optional>
 #include <set>
 #include <string>
+#include <string_view>
 #include <vector>
 
 // Turns the effective records of the content registries (content.package, era.box, vehicle,
@@ -596,6 +598,48 @@ inline std::string dropped_ref(const Value &rec, const Dropped *dropped)
     return {};
 }
 
+inline bool weekend_mode_name_ok(std::string_view s)
+{
+    if (s.empty() || s.size() > 63)
+        return false;
+    for (char c : s)
+        if (!((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') || c == '_'))
+            return false;
+    return true;
+}
+
+inline constexpr const char *SETUP_MODES_ROW = "game_setup.game_setup_modes.game_setup_mode";
+
+// rules.weekend_mode names a helper game_setup_modes row that no game mode lists. Sess_Apply_ContentAvailability marks
+// a setup mode available only when an available game mode's game_setup_modes field (or a content set's
+// game_setup_mode_override) names it and the content set's available_game_setup_modes lists it (0x1413e6995..
+// 0x1413e6e46); Sess_Load_GameSetupModes (0x142a148f0) parses only rows whose available is true (0x142a14a1c..
+// 0x142a14a2d) and nothing clears it. So the helper row gets available=True here and is parsed into the setup mode
+// store the era picker reads. A row that does not exist is left alone with a line: the package still applies.
+inline void lower_weekend_mode(const std::string &id, const Value &rec, const std::string &host, const Read &read,
+                               Plan &plan)
+{
+    const Value &w = rec["rules"]["weekend_mode"];
+    if (!w.is_string() || !weekend_mode_name_ok(w.as_string()) || w.as_string() == host)
+        return;
+    std::string name(w.as_string());
+    std::string row = std::string(SETUP_MODES_ROW) + "[_metadata_=" + name + "]";
+    std::optional<std::string> now = read ? read(row + ".available") : std::nullopt;
+    if (!now) {
+        plan.lines.push_back("content.package " + id + ": weekend mode " + name +
+                             " has no game_setup_modes row with an available field; the box keeps " + host + "'s weekend");
+        return;
+    }
+    std::string v = *now;
+    for (char &c : v)
+        c = char(std::tolower(static_cast<unsigned char>(c)));
+    if (v == "true")
+        return;
+    push_op(plan, set_op(row, "available", "True"));
+    plan.lines.push_back("content.package " + id + ": weekend mode " + name +
+                         " made available, so the game parses it into its setup mode store");
+}
+
 inline void lower_package(const std::string &id, const Value &rec, const Lookup &lookup, Plan &plan,
                           const StatIds &stat = {}, const PersonMap *wear = nullptr, const Read &read = {},
                           const ConstructorTeams *constructors = nullptr, const Dropped *dropped = nullptr)
@@ -777,6 +821,7 @@ inline void lower_package(const std::string &id, const Value &rec, const Lookup 
     for (auto &cs : sets)
         push_op(plan, append_op("content_sets.content_set[_metadata_=" + cs + "].available_entrant_lists_0",
                                 "entrant_lists", list));
+    lower_weekend_mode(id, rec, mode, read, plan);
     add_fields(plan, SCENARIOS, SCENARIO_FIELDS, std::size(SCENARIO_FIELDS));
     add_fields(plan, (std::string(CATEGORY) + ".value").c_str(), CATEGORY_FIELDS, std::size(CATEGORY_FIELDS));
     plan.lines.push_back("content.package " + id + ": entrant list " + list + ", " + std::to_string(seats) +

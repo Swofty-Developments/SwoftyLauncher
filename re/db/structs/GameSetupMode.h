@@ -7,7 +7,10 @@
 // vtable slot +0x1d0, native/src/core/era_picker.cpp) lists these objects; EntrantsManager +0x2b0 names
 // the current one, and the DRS system resolves the current mode's DRS group from +0x1e0 by label.
 struct GameSetupMode {
+    /* 0x0b4 */ uint32_t race_time_limit_in_seconds[3]; // L2 decomp:re/decomp/142a14f20.c;xref:0x142a17755 (lea "race_time_limit_in_seconds" 0x1457b924f) the comma list copied as u32 into +0xb4 (classic 7200,7200,7200); the era picker writes it per box (rules.race_time_limit_s); readers not traced
+    /* 0x0c0 */ uint32_t sprint_time_limit_in_seconds[3]; // L2 decomp:re/decomp/142a14f20.c;xref:0x142a178a1 (lea "sprint_time_limit_in_seconds" 0x1457b926a) copied the same way into +0xc0
     /* 0x0d8 */ void *name;               // L2 decomp:re/decomp/142a14f20.c;xref:0x142a152aa row label holder (+0x10 char*); the era picker reads it
+    /* 0x190 */ void *weekend_options[4];  // L2 decomp:re/decomp/142a14f20.c;xref:0x142a15a11 container zeroed with its allocator at +0x190 (from the parse context +0x20) and filled from the "weekend_options_0" sub-table (path built at 0x142a167f0, puVar27 = +0x190); the era picker exchanges the four qwords with a helper mode per box (rules.weekend_mode); element layout and readers (WeekendSetupComponent 0x140b00de0, WeekendOptionsComponent refresh 0x140be74b0) not traced
     /* 0x1c8 */ bool has_tyre_warmers;     // L1 decomp:re/decomp/142a14f20.c;xref:0x142a15cd9 (lea "has_tyre_warmers") value byte of the bool record (+8) != 0; the era picker writes it per box (rules.tyre_warmers); readers not traced
     /* 0x1c9 */ bool use_f2_trophy;        // L1 decomp:re/decomp/142a14f20.c next bool after has_tyre_warmers ("use_f2_trophy" at 0x1457b8fcf)
     /* 0x1e0 */ void *drs_allowed_lap_group; // L2 decomp:re/decomp/142a14f20.c;decomp:re/decomp/142bebd80.c;xref:0x142a16192,0x142bebf4f,0x142becd55,0x142bef907,0x142befa73 holder of the drs_allowed_lap_group label (+0x10 char*), read only through +0x10 by the four DRS readers

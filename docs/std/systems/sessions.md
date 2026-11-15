@@ -142,9 +142,10 @@ struct Rules {                                 // a box's session rules (content
     std::optional<float> quali_fuel_kg;        // content.package 1.5: qualifying start fuel; nullopt: the game's
     bool race_start_fuel_from_quali = false;   // content.package 1.5: parc ferme, race start fuel = fuel left after qualifying
     bool race_tyre_change = true;              // content.package 1.5: false keeps the tyres at race pit stops (damage excepted)
+    std::optional<int> race_time_limit_s;      // content.package 1.5: race time limit in seconds; nullopt: the mode's
+    std::string weekend_mode;                  // content.package 1.5: a setup mode whose weekend the box runs; empty: the mode's
 };
-SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, refuelling, race_fuel_kg, tyre_warmers,
-              refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali, race_tyre_change)
+SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, refuelling, race_fuel_kg, tyre_warmers, refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali, race_tyre_change, race_time_limit_s, weekend_mode)
 
 enum class PenaltyKind { warning, time, drive_through, stop_go, grid, disqualification };
 

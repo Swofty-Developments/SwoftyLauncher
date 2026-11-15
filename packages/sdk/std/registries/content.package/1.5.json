@@ -233,6 +233,23 @@
           ],
           "description": "Whether the box's races run with tyre warmers; the era picker writes it into swofty_f1's has_tyre_warmers when the box is pressed. Missing or null: the setup mode's own setting."
         },
+        "race_time_limit_s": {
+          "type": [
+            "integer",
+            "null"
+          ],
+          "minimum": 60,
+          "maximum": 86400,
+          "description": "The race time limit in seconds (the game's race_time_limit_in_seconds, classic 7200); the era picker writes it into swofty_f1 when the box is pressed. Missing or null: the setup mode's own limit."
+        },
+        "weekend_mode": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "pattern": "^[a-z0-9_]{1,63}$",
+          "description": "A game_setup_modes row whose weekend options (practice, qualifying and race groups and the length options they offer) the box's weekends use; the era picker swaps that row's weekend options into swofty_f1 when the box is pressed and back when another box is. The row must exist at boot (game data or an addon's database rows). Missing or null: swofty_f1's own weekend."
+        },
         "race_fuel_kg": {
           "type": [
             "number",

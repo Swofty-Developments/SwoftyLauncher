@@ -13,6 +13,7 @@
 #include "race_fuel.hpp"
 #include "teams.hpp"
 #include "tyre_warmers.hpp"
+#include "weekend.hpp"
 #include "../tracks/boot.hpp"
 #include "../tracks/box.hpp"
 #include "../../career_ops/teams_plan.hpp"
@@ -869,6 +870,18 @@ FuelRules fuel_rules_for_box(const std::string &entrant_list)
     for (auto &id : in_load_order(st, "content.package"))
         packages.push_back({id, lookup("content.package", id)});
     return fuel_rules_pick(entrant_list, packages);
+}
+
+WeekendBox weekend_for_box(const std::string &entrant_list)
+{
+    Store &st = registry::store();
+    std::map<std::string, Value> keep;
+    Lookup lookup = store_lookup(st, keep);
+    std::vector<std::pair<std::string, const Value *>> packages;
+    for (auto &id : in_load_order(st, "content.package"))
+        packages.push_back({id, lookup("content.package", id)});
+    WeekendPick pick = weekend_pick(entrant_list, packages);
+    return {pick.time_limit_s, pick.weekend_mode, pick.line};
 }
 
 void register_appliers()
