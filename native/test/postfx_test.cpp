@@ -113,12 +113,13 @@ static unsigned rnd(unsigned f, unsigned k)
 // BackPlace: the picture's list makes the back buffer a render target, the closing list records its step barrier
 // before or after the picture's list is submitted (split step when it binds the back buffer), the closing list and
 // the HUD's list are submitted in either order, then Present. The closing list draws the rest of the picture first
-// when it binds the back buffer, so passes placed right after the picture's list are painted over.
-enum Ran : uint8_t { RAN_SPLIT, RAN_AFTER_PICTURE, RAN_AFTER_CLOSE, RAN_PRESENT };
+// when it binds the back buffer, so passes placed right after the picture's list are painted over. The HUD's list
+// draws the HUD and ends with the back buffer out of render target; hud_seen is whether the core saw it submitted.
+enum Ran : uint8_t { RAN_SPLIT, RAN_AFTER_PICTURE, RAN_AFTER_CLOSE, RAN_BEFORE_HUD, RAN_PRESENT };
 
 struct SplitFrame {
     bool closing_recorded_first = false, bound = true, closing = true, direct = true, hud_first = false,
-         reset = false, may_defer = true;
+         reset = false, may_defer = true, hud_seen = true;
 };
 
 static std::vector<Ran> split_frame(BackPlace &p, unsigned now, const SplitFrame &s)
@@ -144,12 +145,19 @@ static std::vector<Ran> split_frame(BackPlace &p, unsigned now, const SplitFrame
         p.unplace();
         ran.pop_back();
     }
-    if (s.hud_first)
+    auto submit_hud = [&] {
+        if (!s.hud_seen)
+            return;
+        if (p.target_left(now, true))
+            ran.push_back(RAN_BEFORE_HUD);
         p.moved(false);
+    };
+    if (s.hud_first)
+        submit_hud();
     if (submitted && p.step_closed(now, s.direct))
         ran.push_back(RAN_AFTER_CLOSE);
     if (!s.hud_first)
-        p.moved(false);
+        submit_hud();
     if (p.presented(now))
         ran.push_back(RAN_PRESENT);
     return ran;
@@ -159,6 +167,56 @@ static bool shows(const std::vector<Ran> &ran, const SplitFrame &s)
 {
     return ran.size() == 1 && !(ran[0] == RAN_AFTER_PICTURE && s.closing && s.bound);
 }
+
+static bool over_the_hud(const std::vector<Ran> &ran)
+{
+    for (Ran r : ran)
+        if (r == RAN_PRESENT)
+            return true;
+    return false;
+}
+
+// Frames of one race through HudRead the way postfx.cpp's barrier hook drives it: reads(f) is whether the HUD's list
+// of frame f reads the finished picture, hud_first(f) whether that list is recorded before the list with the
+// HUD-less step. Per frame, how often the passes ran, and which frames ran them at the HUD's read.
+struct ReadSim {
+    bool (*reads)(unsigned f) = nullptr;
+    bool (*hud_first)(unsigned f) = nullptr;
+    unsigned frames = 400;
+    std::vector<unsigned> runs;
+    std::vector<bool> at_read;
+
+    void run()
+    {
+        HudRead latch;
+        runs.assign(frames, 0);
+        at_read.assign(frames, false);
+        for (unsigned f = 0; f < frames; f++) {
+            unsigned now = 100 + f, placed_at = LONG_AGO;
+            auto read = [&] {
+                if (!reads(f) || placed_lately(now, placed_at))
+                    return;
+                latch.read(now);
+                placed_at = now;
+                runs[f]++;
+                at_read[f] = true;
+            };
+            auto step = [&] {
+                if (latch.holds(now) || placed_lately(now, placed_at))
+                    return;
+                placed_at = now;
+                runs[f]++;
+            };
+            if (hud_first && hud_first(f)) {
+                read();
+                step();
+            } else {
+                step();
+                read();
+            }
+        }
+    }
+};
 
 int main()
 {
@@ -200,34 +258,117 @@ int main()
         }
     }
     {
-        // No list closes the step, or only a compute list does: the passes run at Present.
+        // No list closes the step, or only a compute list does: the passes run right before the HUD's list, under
+        // the HUD, where 1.9.52 ran them at Present, over it.
         BackPlace p;
         SplitFrame s;
         s.closing = false;
         auto ran = split_frame(p, 30, s);
-        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+        CHECK(ran == std::vector<Ran>{RAN_BEFORE_HUD} && shows(ran, s) && !over_the_hud(ran));
         s = SplitFrame{};
         s.direct = false;
         ran = split_frame(p, 33, s);
-        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+        CHECK(ran == std::vector<Ran>{RAN_BEFORE_HUD} && shows(ran, s) && !over_the_hud(ran));
     }
     {
-        // The HUD's list moved the back buffer out of render target before the closing list was submitted: not
-        // after the closing list, at Present.
+        // The HUD's list is submitted before the closing list: the passes run right before the HUD's list, and the
+        // closing list finds them placed.
         BackPlace p;
         SplitFrame s;
         s.bound = false;
         s.hud_first = true;
         auto ran = split_frame(p, 40, s);
-        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+        CHECK(ran == std::vector<Ran>{RAN_BEFORE_HUD} && shows(ran, s) && !over_the_hud(ran));
     }
     {
-        // The closing list the passes were recorded into is reset unsubmitted: they run at Present.
+        // The closing list the passes were recorded into is reset unsubmitted: they run right before the HUD's list.
         BackPlace p;
         SplitFrame s;
         s.reset = true;
         auto ran = split_frame(p, 50, s);
-        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && shows(ran, s));
+        CHECK(ran == std::vector<Ran>{RAN_BEFORE_HUD} && shows(ran, s) && !over_the_hud(ran));
+    }
+    {
+        // A frame whose HUD list the core never saw reaches Present with the passes waiting. They run there, over
+        // the HUD for that one frame, rather than not at all: skipping them changes the whole picture for a frame,
+        // running them changes only the HUD.
+        BackPlace p;
+        SplitFrame s;
+        s.closing = false;
+        s.hud_seen = false;
+        auto ran = split_frame(p, 53, s);
+        CHECK(ran == std::vector<Ran>{RAN_PRESENT} && over_the_hud(ran));
+    }
+    {
+        // The list that takes the back buffer out of render target is not asked twice, not after the passes ran in
+        // the closing list, not on a compute queue, and not once another list already took it out.
+        BackPlace p;
+        p.drawn(56);
+        CHECK(p.picture_submitted(56, true, true) == END_DEFER);
+        CHECK(!p.target_left(56, false) && p.waits(56));
+        CHECK(p.target_left(56, true) && !p.waits(56) && !p.target_left(56, true) && !p.presented(56));
+        p.drawn(59);
+        CHECK(p.picture_submitted(59, true, true) == END_DEFER);
+        p.moved(false);
+        CHECK(!p.target_left(59, true) && p.presented(59));
+        p.drawn(62);
+        p.place(62);
+        CHECK(p.picture_submitted(62, true, true) == END_NONE && !p.target_left(62, true));
+        BackPlace closed;
+        closed.drawn(65);
+        CHECK(closed.picture_submitted(65, false, true) == END_BETWEEN && !closed.target_left(65, true));
+    }
+    {
+        // After a pause the passes are back on the second frame. 1.9.52 held the HUD's read for 30 frames, so the
+        // picture went 30 frames without them after every pause, flashback and menu over the race.
+        ReadSim sim;
+        sim.reads = [](unsigned f) { return f >= 100 && f < 200; };
+        for (int order = 0; order < 3; order++) {
+            sim.hud_first = order == 0   ? nullptr
+                            : order == 1 ? +[](unsigned) { return true; }
+                                         : +[](unsigned f) { return rnd(f, 7) % 2 == 0; };
+            sim.run();
+            unsigned without = 0, doubled = 0, left_the_read = 0;
+            bool taken = false;
+            for (unsigned f = 0; f < sim.frames; f++) {
+                without += sim.runs[f] == 0;
+                doubled += sim.runs[f] > 1;
+                left_the_read += f < 200 && taken && !sim.at_read[f];
+                taken |= sim.at_read[f];
+            }
+            // the list with the HUD-less step recorded first every frame never leaves the passes to the read
+            CHECK(taken == (order != 0) && without == (taken ? 1u : 0u));
+            CHECK(sim.runs[200] == (taken ? 0u : 1u) && sim.runs[201] == 1);
+            CHECK(doubled == 0);
+            // once the read runs the passes it stays the one place they run while the HUD reads every frame
+            CHECK(left_the_read == 0);
+        }
+    }
+    {
+        // A screen whose HUD reads the picture every other frame, or every tenth: no frame runs the passes twice,
+        // and no more go without them than under the 30-frame hold (every frame without a read did).
+        for (unsigned every : {2u, 3u, 10u, 31u}) {
+            static unsigned period;
+            period = every;
+            ReadSim sim;
+            sim.reads = [](unsigned f) { return f % period == 0; };
+            for (bool first : {false, true}) {
+                sim.hud_first = first ? +[](unsigned) { return true; } : nullptr;
+                sim.run();
+                unsigned without = 0, doubled = 0, unread = 0;
+                for (unsigned f = 1; f < sim.frames; f++) {
+                    without += sim.runs[f] == 0;
+                    doubled += sim.runs[f] > 1;
+                    unread += f % period != 0 && f % period < 31;
+                }
+                CHECK(doubled == 0 && without <= unread);
+                CHECK(every < 3 || without < unread);
+            }
+        }
+        HudRead h;
+        CHECK(!h.holds(0) && !h.holds(5000));
+        h.read(0u - 1);
+        CHECK(h.holds(0u - 1) && h.holds(0) && !h.holds(1));
     }
     {
         // A step that stayed open past its frame (no Present closed it) no longer waits, and a new use of the back
@@ -245,7 +386,7 @@ int main()
         // Every order of record and submit, with or without a closing list, over frames that rotate through
         // three back buffers: once a frame, and shown whenever the closing list repaints the picture.
         BackPlace backs[3];
-        unsigned off = 0, frames = 0;
+        unsigned off = 0, over = 0, frames = 0;
         for (unsigned f = 8; f < 8 + 3 * 64; f++) {
             unsigned bits = (f / 3) % 64;
             SplitFrame s;
@@ -257,9 +398,11 @@ int main()
             s.reset = bits & 32;
             auto ran = split_frame(backs[f % 3], f, s);
             off += !shows(ran, s);
+            over += over_the_hud(ran);
             frames++;
         }
-        CHECK(frames == 192 && off == 0);
+        // never at Present, over the HUD, while the core sees the HUD's list
+        CHECK(frames == 192 && off == 0 && over == 0);
     }
 
     When any;

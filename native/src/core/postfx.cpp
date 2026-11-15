@@ -44,8 +44,9 @@ bool settings_state(const std::string &addon, const std::string &option, size_t 
 //   a list of the core's own submitted right after it.
 // - Where it ends inside that step, the list that closes the step can draw the rest of the picture into
 //   the back buffer first: the passes run in that list while it has the back buffer bound (the split
-//   step), else in a list of the core's own right after it, or at Present when no list closed the step
-//   (postfx::BackPlace).
+//   step), else in a list of the core's own right after it, or right before the list that takes the back
+//   buffer out of render target for the HUD and Present when none closed the step by then; at Present only
+//   when the core saw no such list (postfx::BackPlace).
 //
 // In the game's lists the core records its passes before the game's barrier and then puts back the
 // pipeline, descriptor heaps, compute bindings and graphics descriptor tables it changed
@@ -375,8 +376,8 @@ ViewAt back_views[32], recent_views[64];
 std::atomic<unsigned> recent_next;
 std::atomic<SIZE_T> views_lo{SIZE_T(-1)}, views_hi{0};
 void pin_view(SIZE_T at, ID3D12Resource *res);
-unsigned back_seen, hud_read_at;
-bool hud_read_seen;
+unsigned back_seen;
+postfx::HudRead hud_read;
 
 
 // Lets go of the held depth buffers other than keep: all of them when the picture changes, the old ones
@@ -438,7 +439,8 @@ constexpr const wchar_t *INTERESTING[] = {L"tonemap", L"output", L"final", L"hud
 std::vector<std::wstring> named_seen;
 
 struct Stats {
-    unsigned presented = 0, in_list = 0, split_step = 0, between = 0, after_close = 0, at_present = 0, without = 0,
+    unsigned presented = 0, in_list = 0, split_step = 0, between = 0, after_close = 0, before_hud = 0, at_present = 0,
+             without = 0,
              doubled = 0, ui_together = 0, unknown_state = 0, busy = 0, deferred = 0, dropped = 0;
     unsigned generated = 0, runs = 0, unplaced = 0;
 };
@@ -1862,11 +1864,12 @@ void on_setname(ID3D12Object *o, LPCWSTR name)
         watch(res, bits);
 }
 
-// While the game reads the finished picture for its HUD (on track), that read is the one place the
-// passes run; without such reads (menus) they run at the HUD-less step or between the game's lists.
+// While the game reads the finished picture for its HUD (paused, panels over the race), that read is the one
+// place the passes run; without such reads they run at the HUD-less step or between the game's lists
+// (postfx::HudRead).
 bool hud_reads()
 {
-    return hud_read_seen && frame_count - hud_read_at <= 30;
+    return hud_read.holds(frame_count);
 }
 
 // Batches that move only depth and UI images, most watched batches, are marked without the lock by
@@ -2131,8 +2134,7 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
         bool split_step = false;
         if (leaving && (!m || !m->left_rt) && !postfx::placed_lately(frame_count, back_use(leaving).place.placed_at)) {
             BackUse &u = back_use(leaving);
-            hud_read_seen = true;
-            hud_read_at = frame_count;
+            hud_read.read(frame_count);
             w.back = leaving;
             w.hudless = m ? m->hudless : nullptr;
             w.hudless_state = m ? m->hudless_state : D3D12_RESOURCE_STATE_COMMON;
@@ -2276,14 +2278,14 @@ BackUse *waiting_back()
 // that closed a HUD-less step the picture's list left open, and a fence signal after any list the passes were
 // recorded into, so their slot is known done. A list that draws into the game's next back buffer closes the
 // passes' frame while the game's own frames do (postfx::FrameClock).
-void on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, d3d12hooks::ExecPlan &plan)
+void on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d3d12hooks::ExecPlan &plan)
 {
     static const uint32_t probe = perf::probe("core", "postfx ExecuteCommandLists");
     if (!lists || !n || broken)
         return;
     perf::Scope p(probe);
     UINT split = n;
-    bool after_close = false;
+    bool after_close = false, before = false;
     ID3D12Resource *res = nullptr, *hudless = nullptr, *later_depth = nullptr;
     D3D12_RESOURCE_STATES state{}, hudless_state{}, later_depth_state{};
     int signal[FRAMES];
@@ -2308,6 +2310,16 @@ void on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, d3d1
             if (m.tonemap && !diag_done) {
                 log_diag(reinterpret_cast<ID3D12GraphicsCommandList *>(lists[i]), m);
                 diag_done = true;
+            }
+            // A list that ends with the back buffer out of render target while the passes still wait for the
+            // step's closing list draws the HUD and hands the frame to Present: they run right before it.
+            if (m.target && m.state != D3D12_RESOURCE_STATE_RENDER_TARGET && split == n && !killed_now() &&
+                !passes.empty() &&
+                back_use(m.target).place.target_left(frame_count, gl->GetType() == D3D12_COMMAND_LIST_TYPE_DIRECT)) {
+                split = i;
+                before = true;
+                res = m.target;
+                state = D3D12_RESOURCE_STATE_RENDER_TARGET;
             }
             if (m.target && !m.tonemap)
                 back_use(m.target).place.moved(m.state == D3D12_RESOURCE_STATE_RENDER_TARGET);
@@ -2347,7 +2359,7 @@ void on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, d3d1
                 }
             }
             if (m.depth) {
-                if (split == n || i <= split) {
+                if (split == n || i < split || (i == split && !before)) {
                     postfx::hold(depth_res, m.depth);
                     depth_state = m.depth_state;
                 } else {
@@ -2358,7 +2370,8 @@ void on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, d3d1
             if (order_left && m.target && !m.order.empty()) {
                 order_left--;
                 swofty::log("[postfx] order: list %p of %u in this submission%s:%s%s", static_cast<void *>(lists[i]), n,
-                            m.tonemap ? " (picture)" : "", m.order.c_str(), split == i ? " [BETWEEN after this list]" : "");
+                            m.tonemap ? " (picture)" : "", m.order.c_str(),
+                            split != i ? "" : before ? " [BETWEEN before this list]" : " [BETWEEN after this list]");
             }
             unmark(gl);
         }
@@ -2379,14 +2392,23 @@ void on_exec(ID3D12CommandQueue *, UINT n, ID3D12CommandList *const *lists, d3d1
         depth_state = later_depth_state;
     };
     if (split < n) {
-        plan.after(split, [res, state, hudless, hudless_state, after_close](ID3D12CommandQueue *queue) {
+        auto between = [res, state, hudless, hudless_state, after_close, before](ID3D12CommandQueue *queue) {
             std::lock_guard<std::recursive_mutex> g(lock);
             if (run_between(queue, res, state, hudless, hudless_state,
-                            after_close ? "between (after the list that closed the step)" : "between")) {
+                            before        ? "between (before the list that takes the back buffer to the HUD)"
+                            : after_close ? "between (after the list that closed the step)"
+                                          : "between")) {
                 stats.between++;
                 stats.after_close += after_close;
+                stats.before_hud += before;
             }
-        });
+        };
+        if (!before)
+            plan.after(split, between);
+        else if (split)
+            plan.after(split - 1, between);
+        else
+            between(q);
         plan.after(split, take_later_depth);
     } else {
         plan.at_end(take_later_depth);
@@ -3086,12 +3108,12 @@ void stat_line(ULONGLONG now)
     } else if (stat_at && ran_total) {
         told = true;
         swofty::log("[postfx] last 60 s: %u frame(s) presented; passes ran in the game's list on %u (%u in a split "
-                    "step's closing list), between its lists on %u (%u after a split step's closing list) and at "
-                    "Present on %u; %u picture list(s) left the HUD-less step to a later list; %u recorded into lists "
+                    "step's closing list), between its lists on %u (%u after a split step's closing list, %u before the "
+                    "list that takes the back buffer to the HUD) and at Present, over the HUD, on %u; %u picture list(s) left the HUD-less step to a later list; %u recorded into lists "
                     "the game reset unsubmitted; %u without passes (%u with the picture and the HUD in one list, %u "
                     "with list state from before the hooks, %u with the GPU behind); %u frame(s) ran them twice",
                     stats.presented, stats.in_list, stats.split_step, stats.between, stats.after_close,
-                    stats.at_present, stats.deferred, stats.dropped, stats.without, stats.ui_together,
+                    stats.before_hud, stats.at_present, stats.deferred, stats.dropped, stats.without, stats.ui_together,
                     stats.unknown_state, stats.busy, stats.doubled);
     }
     stat_lines += told;
@@ -3116,8 +3138,9 @@ std::string own_frames_by(const d3d12hooks::Swapchain *known, void *caller)
     return by;
 }
 
-// The passes of a frame whose HUD-less step no list closed before Present run on the presented back buffer, on the
-// swapchain's queue, so the frame never goes without them.
+// The passes of a frame that reached Present with its HUD-less step open and no list the core saw taking the back
+// buffer out of render target run on the presented back buffer, on the swapchain's queue: over the HUD for that
+// frame, so the picture never goes without them.
 void present_fallback(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known)
 {
     if (!waiting_back() || !known || !known->queue || killed_now() || passes.empty())

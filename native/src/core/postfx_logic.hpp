@@ -15,6 +15,7 @@
 #include <string>
 #include <string_view>
 #include <unordered_map>
+#include <utility>
 #include <vector>
 #include <type_traits>
 
@@ -260,6 +261,18 @@ inline bool placed_lately(unsigned now, unsigned at)
     return now - at < 2;
 }
 
+// The HUD's read of the finished picture, which the game makes while paused and under panels over the race: the
+// passes run at that read. A frame's lists are recorded in parallel, so the list with the HUD-less step cannot
+// tell whether the HUD's list of the same frame reads the picture; while the read holds, the step leaves the passes
+// to it. It holds for the frame of a read and the one after, so the first frame without a read is the only one
+// that goes without the passes when the reads stop.
+struct HudRead {
+    unsigned at = LONG_AGO;
+
+    void read(unsigned now) { at = now; }
+    bool holds(unsigned now) const { return now - at <= 1; }
+};
+
 // What the submission of a picture's list does with a fresh back buffer: nothing (the passes were placed), the
 // passes between the game's lists right after it, or wait for the list that closes the HUD-less step.
 enum PictureEnd : uint8_t { END_NONE, END_BETWEEN, END_DEFER };
@@ -268,9 +281,12 @@ enum PictureEnd : uint8_t { END_NONE, END_BETWEEN, END_DEFER };
 // the passes are placed on it. A picture's list can end inside the HUD-less step; the list that closes the step
 // then sometimes draws the rest of the picture into the back buffer, over anything placed after the picture's list.
 // So that submission only opens the step: the closing list runs the passes in it while the back buffer is bound
-// there (the split step); when it doesn't, the core's own list runs them right after the closing list, and when no
-// list closes the step before the back buffer is presented, at Present. `target` is whether the lists submitted
-// since the step opened left the back buffer a render target.
+// there (the split step); when it doesn't, the core's own list runs them right after the closing list. A list that
+// ends with the back buffer out of render target while they still wait is the one that draws the HUD and hands the
+// frame to Present: they run right before it. Only a frame whose lists the core never saw do that reaches Present
+// with them waiting, and they run there, over the HUD: the picture keeps its look and the HUD alone differs for
+// that frame, where skipping them would change the whole picture. `target` is whether the lists submitted since
+// the step opened left the back buffer a render target.
 struct BackPlace {
     bool fresh = false, open = false, target = false;
     unsigned placed_at = LONG_AGO, opened_at = LONG_AGO;
@@ -328,6 +344,16 @@ struct BackPlace {
 
     // A list that closed the step is submitted: true when the passes run between, right after it.
     bool step_closed(unsigned now, bool direct)
+    {
+        if (!direct || !target || !waits(now))
+            return false;
+        place(now);
+        return true;
+    }
+
+    // A list submitted after the picture's ends with the back buffer out of render target: true when the passes
+    // run between, right before it. Asked before moved().
+    bool target_left(unsigned now, bool direct)
     {
         if (!direct || !target || !waits(now))
             return false;

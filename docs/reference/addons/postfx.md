@@ -401,17 +401,18 @@ The passes run between the game's picture and its HUD. The HUD and the menus dra
 
 The passes run once a frame, at the first of these the frame reaches:
 
-- While the HUD reads the finished picture, as when paused: the first barrier of the HUD's list that reads the back buffer.
+- While the HUD reads the finished picture, as when paused: the first barrier of the HUD's list that reads the back buffer. The first frame after the reads stop, as on a resume, runs no passes.
 - Otherwise, inside the game's own command list, at the step where it keeps a copy of the picture without the HUD.
 - Where the game ends that list inside the step: in the list that closes the step, where it has the back buffer bound as its render target (`path=in-list (split step)` in the trace). That list can draw the rest of the picture first. The passes wait for it, also when the game submits the first list before it records the closing one.
 - Where the list that closes the step does not have the back buffer bound: in a list of the core's own, submitted right after the closing list (`path=between (after the list that closed the step)`).
-- Where no list closes the step before the game presents the frame: on the back buffer at `Present` (`path=at Present`). The HUD is in it by then, so the passes run over the HUD in that frame.
+- Where no list has closed the step by the time the game submits the list that takes the back buffer out of render target for the HUD and `Present`: in a list of the core's own, submitted right before that list (`path=between (before the list that takes the back buffer to the HUD)`).
+- Where the core saw no such list either: on the back buffer at `Present` (`path=at Present`). The HUD is in it by then, so the passes run over the HUD in that frame.
 - Where the game ends that list with the step done and no HUD: in a list of the core's own, submitted right after it (`path=between`).
 
 In the game's lists the core records the passes and then puts back the pipeline and bindings it changed. Every 60 s for the first 30 minutes, the log counts where they ran:
 
 ```text
-[postfx] last 60 s: 6427 frame(s) presented; passes ran in the game's list on 6134 (913 in a split step's closing list), between its lists on 0 (0 after a split step's closing list) and at Present on 0; 913 picture list(s) left the HUD-less step to a later list; 0 recorded into lists the game reset unsubmitted; 293 without passes (0 with the picture and the HUD in one list, 0 with list state from before the hooks, 0 with the GPU behind); 0 frame(s) ran them twice
+[postfx] last 60 s: 6427 frame(s) presented; passes ran in the game's list on 6134 (913 in a split step's closing list), between its lists on 0 (0 after a split step's closing list, 0 before the list that takes the back buffer to the HUD) and at Present, over the HUD, on 0; 913 picture list(s) left the HUD-less step to a later list; 0 recorded into lists the game reset unsubmitted; 293 without passes (0 with the picture and the HUD in one list, 0 with list state from before the hooks, 0 with the GPU behind); 0 frame(s) ran them twice
 ```
 
 The game records frames ahead, so a minute's runs and presents are counted in slightly different frames. Frames without passes are mostly loading screens and menus without a 3D picture. With Frame Generation on in the game's settings, the passes' result also goes into the game's HUD-less copy, which Frame Generation reads. Frame Generation still uses the game's own motion vectors, so a pass that moves pixels can smear in the generated frames.
