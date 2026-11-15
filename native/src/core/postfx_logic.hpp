@@ -371,6 +371,121 @@ struct BackPlace {
     }
 };
 
+// Why a presented frame went without the passes, most specific first.
+enum Idle : uint8_t {
+    IDLE_NONE,
+    IDLE_KILL,
+    IDLE_KEY,
+    IDLE_PASS_OFF,
+    IDLE_RULE,
+    IDLE_OPTION,
+    IDLE_ADDON_KEY,
+    IDLE_VIEW,
+    IDLE_PASSES,
+    IDLE_BUSY,
+    IDLE_LIST_STATE,
+    IDLE_UI_TOGETHER,
+    IDLE_HUD_READ,
+    IDLE_NO_PICTURE,
+    IDLE_UNPLACED,
+    IDLE_COUNT
+};
+
+// What a frame knows when it closes without the passes: the kill file, the shader toggle key, what stopped the
+// place that tried to run them (IDLE_NONE when none tried), whether the HUD's read held the other places off, and
+// whether the game submitted a picture list.
+struct IdleFacts {
+    bool killed = false, key_off = false, hud_read = false, picture = false;
+    Idle tried = IDLE_NONE;
+};
+
+inline Idle idle_reason(const IdleFacts &f)
+{
+    if (f.killed)
+        return IDLE_KILL;
+    if (f.key_off)
+        return IDLE_KEY;
+    if (f.tried != IDLE_NONE)
+        return f.tried;
+    if (f.hud_read)
+        return IDLE_HUD_READ;
+    return f.picture ? IDLE_UNPLACED : IDLE_NO_PICTURE;
+}
+
+// Why no pass of a frame is live, from the reasons its passes gave (one bit per Idle): the reason they share, or
+// IDLE_PASSES when they differ.
+inline Idle idle_of_passes(unsigned reasons)
+{
+    for (Idle one : {IDLE_PASS_OFF, IDLE_RULE, IDLE_OPTION, IDLE_ADDON_KEY, IDLE_VIEW})
+        if (reasons == 1u << one)
+            return one;
+    return IDLE_PASSES;
+}
+
+inline const char *idle_text(Idle why)
+{
+    switch (why) {
+    case IDLE_KILL:
+        return "swofty/postfx.off exists";
+    case IDLE_KEY:
+        return "the shader toggle key turned them off";
+    case IDLE_PASS_OFF:
+        return "every pass is off, over its GPU budget or without a pipeline";
+    case IDLE_RULE:
+        return "a rule turned every pass off";
+    case IDLE_OPTION:
+        return "an option turns every pass off";
+    case IDLE_ADDON_KEY:
+        return "an addon's shader key turned every pass off";
+    case IDLE_VIEW:
+        return "no pass is for this view";
+    case IDLE_PASSES:
+        return "every pass is off or not for this view";
+    case IDLE_BUSY:
+        return "every slot is in flight";
+    case IDLE_LIST_STATE:
+        return "the game's list has state from before the hooks";
+    case IDLE_UI_TOGETHER:
+        return "the picture and the HUD are in one list without a HUD-less step";
+    case IDLE_HUD_READ:
+        return "the HUD read the picture a frame before and not in this one (pause latch)";
+    case IDLE_NO_PICTURE:
+        return "the game submitted no picture list";
+    case IDLE_UNPLACED:
+        return "no list of the frame had a place for them";
+    default:
+        return "";
+    }
+}
+
+// The passes going off and on again, for one log line per change. The first time they run has its own line.
+struct OnOff {
+    enum Change : uint8_t { SAME, STOPPED, AGAIN };
+    bool on = false, ran_before = false;
+    unsigned off_at = 0;
+    Idle why = IDLE_NONE;
+
+    Change frame(bool ran, unsigned now, Idle reason)
+    {
+        if (ran == on)
+            return SAME;
+        on = ran;
+        if (!ran) {
+            off_at = now;
+            why = reason;
+            return STOPPED;
+        }
+        return std::exchange(ran_before, true) ? AGAIN : SAME;
+    }
+};
+
+// The count line's window: a minute for the first half hour, five minutes for the rest of the session.
+inline constexpr unsigned STAT_MINUTES = 30, ONOFF_LINES = 20;
+inline unsigned stat_window_ms(unsigned lines)
+{
+    return lines < STAT_MINUTES ? 60000 : 300000;
+}
+
 // A view a slot wrote into one entry of its descriptor tables: the resource and its format.
 template <class R, class F> struct Written {
     R *r = nullptr;

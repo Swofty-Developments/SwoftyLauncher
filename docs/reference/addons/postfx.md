@@ -409,24 +409,33 @@ The passes run once a frame, at the first of these the frame reaches:
 - Where the core saw no such list either: on the back buffer at `Present` (`path=at Present`). The HUD is in it by then, so the passes run over the HUD in that frame.
 - Where the game ends that list with the step done and no HUD: in a list of the core's own, submitted right after it (`path=between`).
 
-In the game's lists the core records the passes and then puts back the pipeline and bindings it changed. Every 60 s for the first 30 minutes, the log counts where they ran:
+In the game's lists the core records the passes and then puts back the pipeline and bindings it changed. Every 60 s for the first 30 minutes and every 5 minutes after that, the log counts where they ran, why frames went without them, and how many runs had no `previous` picture:
 
 ```text
-[postfx] last 60 s: 6427 frame(s) presented; passes ran in the game's list on 6134 (913 in a split step's closing list), between its lists on 0 (0 after a split step's closing list, 0 before the list that takes the back buffer to the HUD) and at Present, over the HUD, on 0; 913 picture list(s) left the HUD-less step to a later list; 0 recorded into lists the game reset unsubmitted; 293 without passes (0 with the picture and the HUD in one list, 0 with list state from before the hooks, 0 with the GPU behind); 0 frame(s) ran them twice
+[postfx] last 60 s: 6427 frame(s) presented; passes ran in the game's list on 6134 (212 at the HUD's read of the picture, 913 in a split step's closing list), between its lists on 0 (0 after a split step's closing list, 0 before the list that takes the back buffer to the HUD) and at Present, over the HUD, on 0; 913 picture list(s) left the HUD-less step to a later list; 0 recorded into lists the game reset unsubmitted; 293 without passes (0 toggle key, 0 swofty/postfx.off, 2 after the HUD's last read of the picture, 0 every pass off: 0 budget or pipeline, 0 rule, 0 option, 0 addon key, 0 view, 0 mixed; 0 with the picture and the HUD in one list, 0 with list state from before the hooks, 0 with the GPU behind, 291 with no picture list, 0 with no place in the frame's lists); 0 frame(s) ran them twice; 3 run(s) without the frame before's result (0 after a frame gap); 0 on/off line(s) left out
 ```
 
 The game records frames ahead, so a minute's runs and presents are counted in slightly different frames. Frames without passes are mostly loading screens and menus without a 3D picture. With Frame Generation on in the game's settings, the passes' result also goes into the game's HUD-less copy, which Frame Generation reads. Frame Generation still uses the game's own motion vectors, so a pass that moves pixels can smear in the generated frames.
 
+When the passes stop and when they run again, the log says so with the reason, at most 20 such lines per count line:
+
+```text
+[postfx] the passes stopped at frame 48211: the shader toggle key turned them off, key B (view tv_pod, flags -, serial 12)
+[postfx] the passes run again at frame 48440, in-list, after 229 frame(s) without them: the shader toggle key turned them off (view tv_pod, flags -, serial 12)
+[postfx] the passes stopped at frame 51873: the HUD read the picture a frame before and not in this one (pause latch) (view tv_pod, flags -, serial 12)
+[postfx] the passes run again at frame 51874, in-list, after 1 frame(s) without them: the HUD read the picture a frame before and not in this one (pause latch) (view tv_pod, flags -, serial 12)
+```
+
 XeSS frame generation (`libxess_fg.dll`) presents the game's frames and its own generated ones through `Present1`, on its own thread. Its swapchain is made even with frame generation off. On it, and while no `Present` reaches the core's hooks, a frame is one frame the game draws: it starts where the game submits the list that draws into its next back buffer. `swofty_frame` and `swofty_frametime` count those frames. The minute's line counts them too:
 
 ```text
-[postfx] xess fg: 2391 real frame(s), 2391 pass run(s), 0 skipped in the last 60 s (2391 in the game's list, 0 between its lists, 0 with the GPU behind); 4782 Present(s) from frame generation
+[postfx] xess fg: 2391 real frame(s), 2391 pass run(s), 0 skipped in the last 60 s (2391 in the game's list, 0 between its lists, 0 with the GPU behind); 4782 Present(s) from frame generation; 1 run(s) without the frame before's result (0 after a frame gap); 0 on/off line(s) left out
 ```
 
 A key from `postfx_toggle` logs and shows a toast:
 
 ```text
-[postfx] PolyphoniX Native's passes are off (its key)
+[postfx] PolyphoniX Native's passes are off (its key F8)
 ```
 
 A pass is turned off when its pipeline cannot be made, or when its average GPU time over 120 frames stays above `budget_ms` three times in a row. The core measures each pass's GPU time.

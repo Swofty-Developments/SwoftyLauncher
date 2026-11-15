@@ -405,6 +405,54 @@ int main()
         CHECK(frames == 192 && off == 0 && over == 0);
     }
 
+    {
+        // Why a frame went without the passes: the kill file, then the shader toggle key, then what stopped the
+        // place that tried, then the HUD's read holding the other places off, then whether there was a picture.
+        IdleFacts f;
+        CHECK(idle_reason(f) == IDLE_NO_PICTURE);
+        f.picture = true;
+        CHECK(idle_reason(f) == IDLE_UNPLACED);
+        f.hud_read = true;
+        CHECK(idle_reason(f) == IDLE_HUD_READ);
+        f.tried = IDLE_BUSY;
+        CHECK(idle_reason(f) == IDLE_BUSY);
+        f.tried = IDLE_VIEW;
+        CHECK(idle_reason(f) == IDLE_VIEW);
+        f.key_off = true;
+        CHECK(idle_reason(f) == IDLE_KEY);
+        f.killed = true;
+        CHECK(idle_reason(f) == IDLE_KILL);
+        CHECK(idle_of_passes(1u << IDLE_PASS_OFF) == IDLE_PASS_OFF && idle_of_passes(1u << IDLE_VIEW) == IDLE_VIEW);
+        CHECK(idle_of_passes(1u << IDLE_ADDON_KEY) == IDLE_ADDON_KEY && idle_of_passes(1u << IDLE_RULE) == IDLE_RULE);
+        CHECK(idle_of_passes(1u << IDLE_OPTION) == IDLE_OPTION && idle_of_passes(0) == IDLE_PASSES);
+        CHECK(idle_of_passes((1u << IDLE_PASS_OFF) | (1u << IDLE_VIEW)) == IDLE_PASSES);
+        for (unsigned i = IDLE_NONE + 1; i < IDLE_COUNT; i++)
+            CHECK(idle_text(Idle(i))[0] != 0);
+        CHECK(idle_text(IDLE_NONE)[0] == 0);
+    }
+    {
+        // One line when the passes stop and one when they run again, with the frames between and the reason they
+        // stopped for; nothing before their first run, which has its own line, and nothing while nothing changes.
+        OnOff o;
+        CHECK(o.frame(false, 1, IDLE_NO_PICTURE) == OnOff::SAME && o.frame(false, 2, IDLE_NO_PICTURE) == OnOff::SAME);
+        CHECK(o.frame(true, 3, IDLE_NONE) == OnOff::SAME && o.frame(true, 4, IDLE_NONE) == OnOff::SAME);
+        CHECK(o.frame(false, 5, IDLE_HUD_READ) == OnOff::STOPPED && o.off_at == 5 && o.why == IDLE_HUD_READ);
+        CHECK(o.frame(false, 6, IDLE_KEY) == OnOff::SAME && o.why == IDLE_HUD_READ);
+        CHECK(o.frame(true, 7, IDLE_NONE) == OnOff::AGAIN && 7 - o.off_at == 2);
+        CHECK(o.frame(true, 8, IDLE_NONE) == OnOff::SAME);
+        CHECK(o.frame(false, 9, IDLE_KEY) == OnOff::STOPPED && o.why == IDLE_KEY);
+    }
+    {
+        // The count line keeps coming for the whole session: every minute for the first half hour, then every
+        // five minutes, where 1.9.52 stopped after 30 lines.
+        CHECK(stat_window_ms(0) == 60000 && stat_window_ms(29) == 60000);
+        CHECK(stat_window_ms(30) == 300000 && stat_window_ms(5000) == 300000);
+        unsigned lines = 0;
+        for (uint64_t at = 0; at < 8ull * 3600 * 1000; at += stat_window_ms(lines))
+            lines++;
+        CHECK(lines == 30 + (8 * 60 - 30) / 5);
+    }
+
     When any;
     CHECK(!ineligible(any, UNKNOWN, 0, false));
     CHECK(!ineligible(any, CHASE_FAR, PAUSED | REPLAY, true));

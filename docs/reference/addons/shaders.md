@@ -606,8 +606,8 @@ A ref is `personal:<slug>` for a file in the launcher's `shaders/` folder, or `a
 The core logs each time the active config changes. `serial` counts the changes:
 
 ```text
-[shaders] config "Realistic" (serial 42): 5 effect(s), 11 pass(es)
-[shaders] config "Realistic" (serial 43): 4 effect(s), 9 pass(es)
+[shaders] config "Realistic" (serial 42): 5 effect(s), 11 pass(es), toggle key B
+[shaders] config "Realistic" (serial 43): 4 effect(s), 9 pass(es), toggle key B
 ```
 
 A parameter-only change updates the values and logs the new serial. The per-pass GPU time lines name the effect and its instance, like `ambient_light` or `glare.wide`. A pass whose average GPU time stays over its `budget_ms` is turned off, as in [post-process passes](./postfx#in-game).
