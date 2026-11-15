@@ -192,6 +192,10 @@ jobs:
       - name: Test
         run: cargo test --workspace --no-fail-fast
 
+      - uses: actions/setup-python@v7
+        with:
+          python-version: '3.14'
+
       - name: Native chart helper protocol
         run: |
           cargo build -p swofty-addon --example native_charts
