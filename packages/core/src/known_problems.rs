@@ -145,6 +145,8 @@ pub struct Evidence {
     pub game_files: Vec<String>,
     /// Addon names by id, for addons the rules name.
     pub names: BTreeMap<String, String>,
+    /// The installed version of each addon, by id.
+    pub versions: BTreeMap<String, String>,
     /// The profile's enabled addons in load order, from its last build.
     pub enabled: Vec<String>,
     /// The enabled addons that are tracks.
@@ -221,6 +223,10 @@ impl Evidence {
             .keys()
             .filter(|id| store.is_builtin(id) || crate::order::is_pinned(id))
             .cloned()
+            .collect();
+        self.versions = addons
+            .iter()
+            .map(|(id, m)| (id.clone(), m.version.to_string()))
             .collect();
         let profile = store.active_profile();
         if let Ok(p) = store.profile(&profile) {
@@ -746,6 +752,22 @@ const SEPANG: &str = "mod.bahrain24";
 /// game returns it to the garage.
 const PITLANE: &str = "kizi.pitlane";
 const PITLANE_CRASH: &str = "F1_25.exe+0x389a1d7 ";
+/// Aggressive AI (Alternate), and the version of it whose track files crash
+/// F1 25 as it loads a session.
+const AGGRESSIVE_AI: &str = "kizi.f1-25-more-aggresive-ai-2";
+const AGGRESSIVE_AI_BROKEN: &str = "3.0.0";
+/// The three game functions that load those track files, as a stack frame
+/// writes them: on the Steam build, then on the EA app's. The crash is a bad
+/// free in the game's `RACE` heap or an access violation, in or called from
+/// one of them.
+const AGGRESSIVE_AI_CRASH: [&str; 6] = [
+    " fn base+0x67b3f0+",
+    " fn base+0x67bf30+",
+    " fn base+0x67c680+",
+    " fn base+0x67be00+",
+    " fn base+0x67c940+",
+    " fn base+0x67d090+",
+];
 /// The entrant list search by name (fn 0x141738eb0) that runs off the end of the
 /// game's loaded lists when the name is missing.
 const ENTRANT_LIST_SEARCH: &str = "F1_25.exe+0x1738f30 ";
@@ -1551,6 +1573,43 @@ fn pitlane_crash(e: &Evidence, f: &Fatal) -> bool {
     garbage || (kept && at)
 }
 
+/// Whether F1 25 crashed loading the track files of the Aggressive AI
+/// (Alternate) version that ships broken ones: that version is on in the
+/// profile, and the unhandled exception's address or one of the crash's
+/// nearest frames is in [`AGGRESSIVE_AI_CRASH`].
+fn aggressive_ai_crash(e: &Evidence, f: &Fatal) -> bool {
+    let unhandled = crash_lines(&e.loader)
+        .into_iter()
+        .filter(|l| l.starts_with("unhandled ") && l.contains("reached the top-level filter"));
+    e.enabled.iter().any(|id| id == AGGRESSIVE_AI)
+        && e.versions.get(AGGRESSIVE_AI).map(String::as_str) == Some(AGGRESSIVE_AI_BROKEN)
+        && f.frames
+            .iter()
+            .take(NEAR_FRAMES)
+            .map(String::as_str)
+            .chain(unhandled)
+            .any(|l| l.contains("F1_25.exe+0x") && AGGRESSIVE_AI_CRASH.iter().any(|at| l.contains(at)))
+}
+
+fn aggressive_ai(e: &Evidence) -> Diagnosis {
+    let addon = name(e, AGGRESSIVE_AI);
+    Diagnosis {
+        id: "aggressive_ai_alternate",
+        title: format!("{addon} {AGGRESSIVE_AI_BROKEN} crashed F1 25 while a session loaded"),
+        what: format!(
+            "Version {AGGRESSIVE_AI_BROKEN} of the {addon} addon crashes F1 25 while it loads a session, on most \
+             tracks. That version has been taken down."
+        ),
+        steps: vec![
+            format!(
+                "Uninstall {addon} in the launcher, then install it again from the Addon Browser. That gives you \
+                 the version the Addon Browser has now, which doesn't have this crash."
+            ),
+            format!("Or turn off {addon} in your profile."),
+        ],
+    }
+}
+
 fn entrant_list_crash(e: &Evidence, f: &Fatal) -> bool {
     let at = |l: &str| l.contains("unhandled ") && l.contains(ENTRANT_LIST_SEARCH);
     f.module.as_deref() == Some("f1_25.exe")
@@ -2151,6 +2210,9 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
             ),
             steps: vec![hook.step.to_owned(), "Press Play again.".to_owned()],
         });
+    }
+    if aggressive_ai_crash(e, &f) {
+        return Some(aggressive_ai(e));
     }
     let windows = !wine(e, &loaded);
     if let Some((code, message)) = heap_error(e) {
@@ -3453,6 +3515,161 @@ runtime      Windows
         assert_eq!(diagnose(&ev(&log.replace("652/2048", "lots"), &[])), None);
     }
 
+    const AGGRESSIVE_AI_HEAP: [&str; 7] = [
+        "F1_25.exe+0x39182a4 .xtls Ne_FatalAbort+0x4",
+        "F1_25.exe+0x395fa23 .xtls Ne_ReportMemoryError+0x343",
+        "F1_25.exe+0x39658d8 .xtls fn base+0x39657d0+0x108",
+        "F1_25.exe+0x39640e3 .xtls Ne_Heap_DeallocateNonSmall+0x163",
+        "F1_25.exe+0x3963f5f .xtls Ne_Heap_Free+0xdf",
+        "F1_25.exe+0x67c1f2 .xtls fn base+0x67bf30+0x2c2",
+        "F1_25.exe+0x8303f43 .data1 fn base+0x8303f00+0x43",
+    ];
+    const AGGRESSIVE_AI_HEAP_EA: [&str; 7] = [
+        "F1_25.exe+0x3905334 .rdata fn base+0x3905330+0x4",
+        "F1_25.exe+0x394cab3 .rdata fn base+0x394c770+0x343",
+        "F1_25.exe+0x3952968 .rdata fn base+0x3952860+0x108",
+        "F1_25.exe+0x3951173 .rdata fn base+0x3951010+0x163",
+        "F1_25.exe+0x3950fef .rdata fn base+0x3950f10+0xdf",
+        "F1_25.exe+0x67cc02 .rdata fn base+0x67c940+0x2c2",
+        "F1_25.exe+0x80a5f03 .xcode fn base+0x80a5ec0+0x43",
+    ];
+
+    fn frames_log(frames: &[&str]) -> String {
+        let at = frames[0];
+        let mut log = format!(
+            "2026-11-15 13:13:10.664 [2668] [crash] #1 first-chance (the game may still handle it) ACCESS_VIOLATION (0xc0000005) on thread 2668, 2607 s after load, at {at}\n\
+             2026-11-15 13:13:10.664 [2668] [crash]   reading 0x8\n\
+             2026-11-15 13:13:10.666 [2668] [crash]   stack:\n"
+        );
+        for (i, frame) in frames.iter().enumerate() {
+            log.push_str(&format!(
+                "2026-11-15 13:13:10.666 [2668] [crash]   #{i:<2} {frame}\n"
+            ));
+        }
+        log.push_str(&format!(
+            "2026-11-15 13:13:10.667 [2668] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at {at} reached the top-level filter; passing it to the game's filter\n"
+        ));
+        log
+    }
+
+    fn aggressive_ai_on(loader: &str, version: &str) -> Evidence {
+        let mut e = with_names(
+            ev(loader, &[]),
+            &[(AGGRESSIVE_AI, "F1 25 + 26 Aggressive AI (Alternate)")],
+        );
+        e.versions.insert(AGGRESSIVE_AI.to_owned(), version.to_owned());
+        e
+    }
+
+    #[test]
+    fn a_session_load_crash_on_aggressive_ai_alternate_3_0_0_names_it() {
+        let faces: [&[&str]; 10] = [
+            &AGGRESSIVE_AI_HEAP,
+            &[
+                "F1_25.exe+0x67c959 .xtls fn base+0x67c680+0x2d9",
+                "F1_25.exe+0x8303f69 .data1 fn base+0x8303f00+0x69",
+            ],
+            &[
+                "F1_25.exe+0x67b49b .xtls fn base+0x67b3f0+0xab",
+                "F1_25.exe+0x8308ef7 .data1 fn base+0x8308d50+0x1a7",
+            ],
+            &[
+                "F1_25.exe+0x67b952 .xtls fn base+0x67b3f0+0x562",
+                "F1_25.exe+0x8014c5c .data1 fn base+0x8014a90+0x1cc",
+            ],
+            &[
+                "F1_25.exe+0x67b9aa .xtls fn base+0x67b3f0+0x5ba",
+                "F1_25.exe+0x8014c5c .data1 fn base+0x8014a90+0x1cc",
+            ],
+            &[
+                "0x1c4096c0 (no module)",
+                "F1_25.exe+0x67b4a1 .xtls fn base+0x67b3f0+0xb1",
+                "F1_25.exe+0x8014c5c .data1 fn base+0x8014a90+0x1cc",
+            ],
+            &AGGRESSIVE_AI_HEAP_EA,
+            &[
+                "F1_25.exe+0x67d369 .rdata fn base+0x67d090+0x2d9",
+                "F1_25.exe+0x80a5f29 .xcode fn base+0x80a5ec0+0x69",
+            ],
+            &[
+                "F1_25.exe+0x67beab .rdata fn base+0x67be00+0xab",
+                "F1_25.exe+0x7e84a49 .xcode fn base+0x7e84870+0x1d9",
+            ],
+            &[
+                "F1_25.exe+0x67c3ba .rdata fn base+0x67be00+0x5ba",
+                "F1_25.exe+0x7e84a49 .xcode fn base+0x7e84870+0x1d9",
+            ],
+        ];
+        for face in faces {
+            let d = diagnose(&aggressive_ai_on(&frames_log(face), "3.0.0"));
+            assert_eq!(d.map(|d| d.id), Some("aggressive_ai_alternate"), "{face:?}");
+        }
+        let split = frames_log(faces[4]).replace(
+            "2026-11-15 13:13:10.666 [2668] [crash]   stack:\n",
+            "2026-11-15 13:13:10.666 [9540] [crash] writing a crash report: unhandled ACCESS_VIOLATION (0xc0000005)\n",
+        );
+        let d = diagnose(&aggressive_ai_on(&split, "3.0.0"));
+        assert_eq!(d.map(|d| d.id), Some("aggressive_ai_alternate"));
+        let d = diagnose(&aggressive_ai_on(&frames_log(&AGGRESSIVE_AI_HEAP), "3.0.0")).unwrap();
+        assert_eq!(
+            d.title,
+            "F1 25 + 26 Aggressive AI (Alternate) 3.0.0 crashed F1 25 while a session loaded"
+        );
+        assert!(d.what.contains("has been taken down"), "{}", d.what);
+        assert!(
+            d.steps[0].contains("install it again from the Addon Browser"),
+            "{}",
+            d.steps[0]
+        );
+        assert_eq!(
+            d.steps[1],
+            "Or turn off F1 25 + 26 Aggressive AI (Alternate) in your profile."
+        );
+    }
+
+    #[test]
+    fn the_aggressive_ai_alternate_crash_is_read_from_the_crash_report() {
+        let mut e = aggressive_ai_on(
+            "2026-11-15 20:38:35.219 [9112] [crash] Ne heap error 0x16 (fatal) on thread 9112: Failed to find address 0000000399450C30 in the allocated list; heap 000000006CB5F0B0 'RACE', capacity 10485760, used 2440304\n",
+            "3.0.0",
+        );
+        e.report = Some(
+            "reason       fatal Ne heap error 0x16 in heap 'RACE': Failed to find address 0000000399450C30 in the allocated list\n\
+             == Stack (unwound with the modules' exception data)\n  \
+             #0  00007ffe3e9d6f94 rsp=000000006f2ff290  swofty_core.dll+0xd6f94 .text fn +0xd6990+0x604\n  \
+             #1  00007ffe3e9d68db rsp=000000006f2ff990  swofty_core.dll+0xd68db .text fn +0xd68b0+0x2b\n  \
+             #2  00000001439658d8 rsp=000000006f2ff9e0  F1_25.exe+0x39658d8 .xtls fn base+0x39657d0+0x108\n  \
+             #3  00000001439640e3 rsp=000000006f2ffad0  F1_25.exe+0x39640e3 .xtls Ne_Heap_DeallocateNonSmall+0x163\n  \
+             #4  0000000143963f5f rsp=000000006f2ffb70  F1_25.exe+0x3963f5f .xtls Ne_Heap_Free+0xdf\n  \
+             #5  000000014067c1f2 rsp=000000006f2ffbc0  F1_25.exe+0x67c1f2 .xtls fn base+0x67bf30+0x2c2\n  \
+             #6  0000000148303f43 rsp=000000006f2ffc60  F1_25.exe+0x8303f43 .data1 fn base+0x8303f00+0x43\n"
+                .to_owned(),
+        );
+        assert_eq!(diagnose(&e).map(|d| d.id), Some("aggressive_ai_alternate"));
+    }
+
+    #[test]
+    fn other_aggressive_ai_alternate_versions_and_crashes_are_not_named() {
+        let heap = frames_log(&AGGRESSIVE_AI_HEAP);
+        for version in ["2.0.1", "3.0.1", "3.1.0", "13.0.0"] {
+            assert_eq!(diagnose(&aggressive_ai_on(&heap, version)), None, "{version}");
+        }
+        let mut off = aggressive_ai_on(&heap, "3.0.0");
+        off.enabled.clear();
+        assert_eq!(diagnose(&off), None);
+        assert_eq!(diagnose(&ev(&heap, &[])), None);
+        let unrelated = frames_log(&[
+            "F1_25.exe+0x2e57efb .xtls fn base+0x2e57e90+0x6b",
+            "F1_25.exe+0x445b18c .xtls fn base+0x445aea0+0x2ec",
+        ]);
+        assert_eq!(diagnose(&aggressive_ai_on(&unrelated, "3.0.0")), None);
+        let deep: Vec<&str> =
+            std::iter::repeat_n("F1_25.exe+0x445b18c .xtls fn base+0x445aea0+0x2ec", NEAR_FRAMES)
+                .chain(["F1_25.exe+0x67c1f2 .xtls fn base+0x67bf30+0x2c2"])
+                .collect();
+        assert_eq!(diagnose(&aggressive_ai_on(&frames_log(&deep), "3.0.0")), None);
+    }
+
     fn pitlane_log(kept: &str, mode: &str, address: &str) -> String {
         format!(
             "2026-10-27 19:26:15.735 [30872] [pitlane] your car: flags 0 -> 0x1, mode 0 -> 1
@@ -3969,6 +4186,10 @@ runtime      Windows
                 .iter()
                 .filter_map(|a| Some((a["id"].as_str()?.to_owned(), a["name"].as_str()?.to_owned())))
                 .collect();
+            let versions: BTreeMap<String, String> = installed
+                .iter()
+                .filter_map(|a| Some((a["id"].as_str()?.to_owned(), a["version"].as_str()?.to_owned())))
+                .collect();
             let conflicts: crate::conflicts::Report =
                 serde_json::from_value(json(&logs.join("conflicts.json"))).unwrap_or_default();
             let tracks = conflicts
@@ -4020,6 +4241,7 @@ runtime      Windows
                     report,
                     game_files,
                     names: BTreeMap::clone(&names),
+                    versions: versions.clone(),
                     enabled: conflicts.order.clone(),
                     tracks: Vec::clone(&tracks),
                     off: off.clone(),
