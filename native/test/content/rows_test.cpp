@@ -1,5 +1,6 @@
 #include "../../src/core/apply/content/boot.hpp"
 #include "../../src/core/apply/content/race_fuel.hpp"
+#include "../../src/core/apply/content/box_options.hpp"
 #include "../../src/core/apply/content/tyre_warmers.hpp"
 #include "../../src/core/apply/content/weekend.hpp"
 #include "../../src/core/apply/ids.hpp"
@@ -1873,6 +1874,67 @@ static void drs_tests(const std::string &regs)
     content::lower_weekend_mode("mod.a/f1_1951", kx, "swofty_f1", aread, wpx);
     check(wpx.ops.size() == 0 && wpx.lines.size() == 1 && wpx.lines[0].find("f51_wk") != std::string::npos,
           "a missing row writes nothing (the package still applies) and says so");
+
+    Value s1959 = swofty::json::parse(
+        R"({"entrant_list":"f1_1959","rules":{"safety_car":"off","formation_lap":false,"penalties":"corner_cutting_only","corner_cutting":"regular"}})");
+    Value s1993 = swofty::json::parse(R"({"entrant_list":"f1_1993","rules":{"safety_car":"standard","formation_lap":true,"penalties":"on"}})");
+    Value s2000 = swofty::json::parse(R"({"entrant_list":"f1_2000","rules":{"safety_car":null,"formation_lap":null}})");
+    Value s2001 = swofty::json::parse(
+        R"({"entrant_list":"f1_2001","rules":{"safety_car":"none","formation_lap":"off","penalties":"reduced","corner_cutting":"lax"}})");
+    std::vector<std::pair<std::string, const Value *>> sc = {
+        {"mod.a/f1_1959", &s1959}, {"mod.a/f1_1993", &s1993}, {"mod.a/f1_2000", &s2000}, {"mod.a/f1_2001", &s2001}};
+    const size_t SC = size_t(content::box_option_index("safety_car")), FL = size_t(content::box_option_index("formation_lap")),
+                 PE = size_t(content::box_option_index("penalties")), CC = size_t(content::box_option_index("corner_cutting"));
+    check(content::box_option_index("refuelling") == -1 && SC != FL && PE != CC, "the four option rules have their own slots");
+    auto sc59 = content::box_options_pick("f1_1959", sc);
+    std::printf("      %s\n", sc59.line.c_str());
+    check(sc59.settings[SC] == std::optional<std::string>("off") && sc59.package == "mod.a/f1_1959" &&
+              content::box_options_pick("f1_1993", sc).settings[SC] == std::optional<std::string>("standard"),
+          "a box whose package sets rules.safety_car runs that setting");
+    check(sc59.settings[FL] == std::optional<std::string>("off") &&
+              content::box_options_pick("f1_1993", sc).settings[FL] == std::optional<std::string>("on"),
+          "rules.formation_lap false / true picks the option's off / on");
+    check(sc59.settings[PE] == std::optional<std::string>("corner_cutting_only") && sc59.settings[CC] == std::optional<std::string>("regular") &&
+              content::box_options_pick("f1_1993", sc).settings[PE] == std::optional<std::string>("on") &&
+              !content::box_options_pick("f1_1993", sc).settings[CC],
+          "rules.penalties and rules.corner_cutting pick their settings; a missing rule picks none");
+    auto sc01 = content::box_options_pick("f1_2001", sc);
+    check(!content::box_options_pick("f1_2000", sc).settings[SC] && !content::box_options_pick("f1_2000", sc).settings[FL] &&
+              !sc01.settings[SC] && !sc01.settings[FL] && !sc01.settings[PE] && !sc01.settings[CC] &&
+              !content::box_options_pick("f1_2025", sc).settings[SC],
+          "null, an unknown setting, a wrong type or a stock box: the player's settings stay");
+    std::vector<std::string> names = {"safety_car_standard", "Off", "reduced", "increased"};
+    check(content::box_option_value(names, "safety_car", "off") == 1 && content::box_option_value(names, "safety_car", "standard") == 0 &&
+              content::box_option_value({"low", "normal", "high", "none"}, "safety_car", "off") == 3 &&
+              content::box_option_value({"low", "normal"}, "safety_car", "off") == -1,
+          "a setting matches a value named after it, one ending in _<name>, or a known alias; none: -1");
+    // the stock value lists (options_system.options.game, gamedatabases.2025.bin)
+    check(content::box_option_value({"off", "reduced", "standard", "increased"}, "safety_car", "increased") == 3 &&
+              content::box_option_value({"off", "on"}, "formation_lap", "off") == 0 &&
+              content::box_option_value({"off", "on"}, "formation_lap", "on") == 1 &&
+              content::box_option_value({"off", "corner_cutting_only", "eSports", "on"}, "penalties", "esports") == 2 &&
+              content::box_option_value({"off", "corner_cutting_only", "eSports", "on"}, "penalties", "corner_cutting_only") == 1 &&
+              content::box_option_value({"off", "corner_cutting_only", "eSports", "on"}, "penalties", "on") == 3 &&
+              content::box_option_value({"regular", "strict"}, "corner_cutting", "strict") == 1,
+          "every setting finds its value in the stock option's value list");
+    check(std::string(content::BOX_OPTION_RULES[SC].options[0]) == "safety_car_frequency" &&
+              std::string(content::BOX_OPTION_RULES[FL].options[0]) == "formation_lap" &&
+              std::string(content::BOX_OPTION_RULES[PE].options[0]) == "rules_and_penalties_mode" &&
+              std::string(content::BOX_OPTION_RULES[CC].options[0]) == "corner_cutting_mode",
+          "each rule tries the stock database's option name first");
+    std::vector<int> opt = {2};
+    auto get = [&](const void *) { return opt[0]; };
+    auto set = [&](const void *, int i) { opt[0] = i; };
+    content::OptionForce f;
+    int o1 = 0, o2 = 0;
+    check(f.force(&o1, 0, get, set) && opt[0] == 0 && f.prior == 2, "a press sets the box's index and keeps the player's");
+    check(f.force(&o1, 0, get, set) && f.prior == 2, "a second press of the same box keeps the player's index");
+    check(f.put_back(&o1, get, set) == 1 && opt[0] == 2 && !f.active(), "another box gives the player's index back");
+    f.force(&o1, 0, get, set);
+    opt[0] = 3;   // the player picks another setting after the press
+    check(f.put_back(&o1, get, set) == 0 && opt[0] == 3, "a setting the player picks after the press stays");
+    f.force(&o1, 0, get, set);
+    check(f.put_back(&o2, get, set) == 0 && opt[0] == 0 && !f.active(), "a changed option object is left as it is");
 }
 
 static void race_fuel_tests()

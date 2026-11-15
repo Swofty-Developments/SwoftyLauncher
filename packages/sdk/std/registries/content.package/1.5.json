@@ -250,6 +250,53 @@
           "pattern": "^[a-z0-9_]{1,63}$",
           "description": "A game_setup_modes row whose weekend options (practice, qualifying and race groups and the length options they offer) the box's weekends use; the era picker swaps that row's weekend options into swofty_f1 when the box is pressed and back when another box is. The row must exist at boot (game data or an addon's database rows). Missing or null: swofty_f1's own weekend."
         },
+        "safety_car": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "off",
+            "reduced",
+            "standard",
+            "increased",
+            null
+          ],
+          "description": "The safety car setting the box's races run with (off for seasons before the safety car); the era picker sets the game's safety car option to it when the box is pressed and puts the player's value back when another box is pressed. Missing or null: the player's own setting."
+        },
+        "formation_lap": {
+          "type": [
+            "boolean",
+            "null"
+          ],
+          "description": "Whether the box's races start with a formation lap (false for seasons that started from the dummy grid); the era picker sets the game's formation lap option to it when the box is pressed and puts the player's value back when another box is pressed. Missing or null: the player's own setting."
+        },
+        "penalties": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "off",
+            "corner_cutting_only",
+            "esports",
+            "on",
+            null
+          ],
+          "description": "The game's rules and flags setting the box's races run with: off (no penalties), corner_cutting_only (track limits only, no collision penalties; the game's Corner_Cutting_Only rule profiles still allow drive-throughs), esports or on (full rules). The era picker sets the game's rules and penalties option to it when the box is pressed and puts the player's value back when another box is pressed. Missing or null: the player's own setting."
+        },
+        "corner_cutting": {
+          "type": [
+            "string",
+            "null"
+          ],
+          "enum": [
+            "regular",
+            "strict",
+            null
+          ],
+          "description": "The game's corner cutting stringency for the box's races; set and put back like rules.penalties. Missing or null: the player's own setting."
+        },
         "race_fuel_kg": {
           "type": [
             "number",

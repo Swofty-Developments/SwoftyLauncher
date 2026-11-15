@@ -26,6 +26,11 @@
 
 std::string settings_addon(const void *from, std::string &dll);
 int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
+namespace runtime {
+std::string box_option_apply(size_t rule, const std::string &setting);
+int box_option_put_back(size_t rule);
+void box_options_forget();
+}
 
 // Era picker addon row (swofty/era.hpp). The Grand Prix, Time Trial and split-screen category picker
 // (the DynamicEraSelectTabViewModel, VM dynamic_era_select) shows its stock boxes in the VM tiles list;
@@ -82,6 +87,9 @@ int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
 // mode's race_time_limit_in_seconds (+0xb4, logic::TimeLimitSwaps) and exchanges the weekend options (+0x190..+0x1a8)
 // of the setup mode named by rules.weekend_mode with the first swofty_f1 mode (logic::WeekendSwaps); the same put
 // backs undo both.
+// Game options per box: the same narrowing sets the options store's safety car, formation lap, rules and penalties and
+// corner cutting options to the box's rules.safety_car / formation_lap / penalties / corner_cutting (box_options.cpp)
+// and the same put backs give the player's index back where an option still holds the box's.
 //
 // The three hooks are one core mixin set, offered at the first mixin commit after a box was registered,
 // so a game without registered boxes runs none of them.
@@ -201,6 +209,7 @@ std::string last_warmers_line;
 logic::TimeLimitSwaps time_limits;
 logic::WeekendSwaps weekends;
 std::string last_weekend_line;
+std::string last_box_options_line;
 
 template <class T> T at(const void *base, size_t off)
 {
@@ -431,6 +440,43 @@ void apply_weekend(void *mode, const char *list)
     log_weekend(line);
 }
 
+void log_box_options(const std::string &line)
+{
+    if (line == last_box_options_line)
+        return;
+    last_box_options_line = line;
+    swofty::log("[box-rules] %s", line.c_str());
+}
+
+// Game options per box: each of the pressed box's option rules goes into its options store option; a rule the box
+// does not carry gives the player's index back.
+void apply_box_options(const char *list)
+{
+    namespace content = swofty_core::apply::content;
+    auto box = content::box_options_for_box(list);
+    std::string line = box.line, put;
+    for (size_t i = 0; i < content::BOX_OPTION_COUNT; ++i) {
+        if (box.settings[i])
+            line += "; " + std::string(content::BOX_OPTION_RULES[i].rule) + ": " + runtime::box_option_apply(i, *box.settings[i]);
+        else if (runtime::box_option_put_back(i))
+            put += (put.empty() ? "" : ", ") + std::string(content::BOX_OPTION_RULES[i].rule);
+    }
+    if (!put.empty())
+        line += "; the player's " + put + " setting put back";
+    log_box_options(line);
+}
+
+void put_back_box_options()
+{
+    namespace content = swofty_core::apply::content;
+    std::string put;
+    for (size_t i = 0; i < content::BOX_OPTION_COUNT; ++i)
+        if (runtime::box_option_put_back(i))
+            put += (put.empty() ? "" : ", ") + std::string(content::BOX_OPTION_RULES[i].rule);
+    if (!put.empty())
+        log_box_options("the player's " + put + " setting put back");
+}
+
 void put_back_drs()
 {
     if (size_t n = drs.put_back())
@@ -441,6 +487,7 @@ void put_back_drs()
         log_weekend(std::string(logic::HOST) + "'s race time limit put back on " + std::to_string(n) + " mode(s)");
     if (weekends.put_back())
         log_weekend(std::string(logic::HOST) + "'s own weekend put back");
+    put_back_box_options();
 }
 
 logic::ListCars list_cars(const void *list);
@@ -635,6 +682,7 @@ void narrow(void *mode, const char *list)
     apply_warmers(mode, list);
     apply_fuel(list);
     apply_weekend(mode, list);
+    apply_box_options(list);
 }
 
 bool time_trial(void *mode)
@@ -1738,6 +1786,8 @@ void drop_setup_pointers()
     last_drs_line.clear();
     last_warmers_line.clear();
     last_weekend_line.clear();
+    runtime::box_options_forget();
+    last_box_options_line.clear();
     std::string line = logic::availability_drop_line(p);
     if (!line.empty() && !logged_dropped.exchange(true))
         swofty::log("[era] %s", line.c_str());

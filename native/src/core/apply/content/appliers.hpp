@@ -1,5 +1,6 @@
 #pragma once
 
+#include "box_options.hpp"
 #include "race_fuel.hpp"
 
 #include <cstdint>
@@ -37,5 +38,9 @@ struct WeekendBox {
     std::string weekend_mode, line;
 };
 WeekendBox weekend_for_box(const std::string &entrant_list);
+// The option rules the box with this entrant list runs (box_options.hpp): its content.package's rules.safety_car,
+// rules.formation_lap, rules.penalties and rules.corner_cutting (none where the package has no rule), and the line to
+// log.
+BoxOptionsPick box_options_for_box(const std::string &entrant_list);
 
 }

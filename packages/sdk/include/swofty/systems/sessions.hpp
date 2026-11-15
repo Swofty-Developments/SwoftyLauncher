@@ -1,6 +1,7 @@
 // SPDX-License-Identifier: MIT
 #pragma once
 #include <optional>
+#include <string>
 #include <swofty/events.hpp>
 #include <swofty/registry.hpp>
 #include <swofty/systems/cars.hpp>
@@ -30,8 +31,12 @@ struct Rules {
     bool race_tyre_change = true;           // content.package 1.5: false keeps the tyres at race pit stops (damage excepted)
     std::optional<int> race_time_limit_s;   // content.package 1.5: the race time limit in seconds (60..86400); empty = the mode's
     std::string weekend_mode;           // content.package 1.5: a game_setup_modes row whose weekend the box runs; empty = the mode's
+    std::optional<std::string> safety_car;   // content.package 1.5: off, reduced, standard or increased; empty = the player's
+    std::optional<bool> formation_lap;       // content.package 1.5: the game's formation lap option; empty = the player's
+    std::optional<std::string> penalties;    // content.package 1.5: off, corner_cutting_only, esports or on; empty = the player's
+    std::optional<std::string> corner_cutting;   // content.package 1.5: regular or strict; empty = the player's
 };
-SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg, tyre_warmers, refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali, race_tyre_change, race_time_limit_s, weekend_mode)
+SWOFTY_RECORD(Rules, mode, points, drs, tyre_class, rules_profile, car_profile, refuelling, race_fuel_kg, tyre_warmers, refuel_stint_kg, quali_fuel_kg, race_start_fuel_from_quali, race_tyre_change, race_time_limit_s, weekend_mode, safety_car, formation_lap, penalties, corner_cutting)
 
 inline Result set_control(cars::live::Car car, Control mode)
 {

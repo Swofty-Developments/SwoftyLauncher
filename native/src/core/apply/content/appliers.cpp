@@ -12,6 +12,7 @@
 #include "logos.hpp"
 #include "race_fuel.hpp"
 #include "teams.hpp"
+#include "box_options.hpp"
 #include "tyre_warmers.hpp"
 #include "weekend.hpp"
 #include "../tracks/boot.hpp"
@@ -882,6 +883,17 @@ WeekendBox weekend_for_box(const std::string &entrant_list)
         packages.push_back({id, lookup("content.package", id)});
     WeekendPick pick = weekend_pick(entrant_list, packages);
     return {pick.time_limit_s, pick.weekend_mode, pick.line};
+}
+
+BoxOptionsPick box_options_for_box(const std::string &entrant_list)
+{
+    Store &st = registry::store();
+    std::map<std::string, Value> keep;
+    Lookup lookup = store_lookup(st, keep);
+    std::vector<std::pair<std::string, const Value *>> packages;
+    for (auto &id : in_load_order(st, "content.package"))
+        packages.push_back({id, lookup("content.package", id)});
+    return box_options_pick(entrant_list, packages);
 }
 
 void register_appliers()
