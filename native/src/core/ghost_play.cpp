@@ -1,4 +1,5 @@
 #include "ghost_arm_logic.hpp"
+#include "ghost_rearm_logic.hpp"
 #include "ghost_request_logic.hpp"
 #include "ghost_swlap_logic.hpp"
 #include "hooks/guard.hpp"
@@ -681,41 +682,46 @@ void pb_rearm_tick(uintptr_t comp)
     int64_t recorded = 0;
     {
         std::lock_guard<std::mutex> g(pb_lock);
-        if (!pb_pending || pb_comp != comp)
+        if (!pb_pending)
             return;
+        if (pb_comp != comp) {
+            static int seen = 0;
+            if (runtime::ghost_rearm::log_due(seen))
+                swofty::log("[ghost] new PB re-arm waits: queued for telemetry component 0x%llx, this tick is 0x%llx", (unsigned long long)pb_comp, (unsigned long long)comp);
+            return;
+        }
         key = pb_key;
         recorded = pb_recorded_at;
         if (pb_key == pb_done) {
+            static int seen = 0;
+            if (runtime::ghost_rearm::log_due(seen))
+                swofty::log("[ghost] new PB re-arm skipped: this lap is already armed in lap 3");
             pb_pending = false;
             return;
         }
         blob = pb_blob;
     }
+    namespace gr = runtime::ghost_rearm;
     uintptr_t tl3 = tlap_at(comp, 3), tl1 = tlap_at(comp, 1);
-    if (!pb_rearm_on || !reset_fn || !read_fn || !tl3 || !tl1) {
-        std::lock_guard<std::mutex> g(pb_lock);
-        pb_pending = false;
-        return;
-    }
-    if (swofty_core::apply::moments::session_mode_track().first != "time_trial" || !runtime::tt_bridge_ours_session()) {
-        std::lock_guard<std::mutex> g(pb_lock);
-        pb_pending = false;
-        return;
-    }
     int64_t waited = now - recorded;
-    LapState before = state_of(tl3);
-    // The game's own handler resets lap 3 a few milliseconds after the new PB (Game_GhostLapHandler_Reset on the commit path) and
-    // reloads it from the download; arming before that reset is wiped. Wait for the wipe (count 0) or 600 ms, then arm.
-    if (before.count > 0 && waited < 600)
+    LapState before = tl3 ? state_of(tl3) : LapState{};
+    gr::Facts facts;
+    facts.enabled = pb_rearm_on && reset_fn && read_fn;
+    facts.laps = tl3 && tl1;
+    facts.time_trial = swofty_core::apply::moments::session_mode_track().first == "time_trial";
+    facts.ours = runtime::tt_bridge_ours_session();
+    facts.lap3_bound = before.bound != 0;
+    facts.lap3_count = before.count;
+    facts.waited_ms = waited;
+    gr::Do what = gr::decide(facts);
+    if (what == gr::Do::wait)
         return;
-    if (waited > 30000) {
-        swofty::log("[ghost] new PB re-arm dropped: %.1f s since the lap, too late to start in sync", waited / 1000.0);
-        std::lock_guard<std::mutex> g(pb_lock);
-        pb_pending = false;
-        return;
-    }
-    if (before.bound == 0) {
-        swofty::log("[ghost] new PB re-arm skipped: lap 3 is not bound to a car");
+    if (what != gr::Do::arm) {
+        static int seen[8] = {};
+        if (gr::log_due(seen[int(what)]))
+            swofty::log("[ghost] new PB re-arm %s: %s (%.1f s since the lap, %s content, lap 3 count %u mode %u/%u bound 0x%llx)",
+                        what == gr::Do::late ? "dropped" : "skipped", gr::why(what), waited / 1000.0, facts.ours ? "our" : "stock", before.count, before.mode, before.want,
+                        (unsigned long long)before.bound);
         std::lock_guard<std::mutex> g(pb_lock);
         pb_pending = false;
         return;
@@ -750,6 +756,9 @@ void pb_rearm_tick(uintptr_t comp)
     swofty::log("[ghost] new PB armed in lap 3 for the running session %.2f s after the lap: read back %u records (%.3f s), then play mode %u/%u at time %.3f (the lap's own "
                 "elapsed time); before: count %u mode %u/%u; the ghost car stays bound to 0x%llx (a slot rewrite, no renderer reload)",
                 elapsed, read_back.count, read_back.lap, after.mode, after.want, after.time, before.count, before.mode, before.want, (unsigned long long)after.bound);
+    static int stock_seen = 0;
+    if (!facts.ours && runtime::ghost_rearm::log_due(stock_seen))
+        swofty::log("[ghost] new PB armed on the game's own board: the game left lap 3 empty after its reset (no usable entry to reload)");
 }
 
 uint64_t newlap_hook(void *comp, void *msg)

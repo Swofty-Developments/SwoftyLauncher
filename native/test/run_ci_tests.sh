@@ -104,6 +104,7 @@ t "Time Trial boards bridge unit test" native/test/run_tt_bridge_test.sh
 t "Lap recorder state machine, field plan and session gate unit test" native/test/run_lap_rec_test.sh
 t "Ghost trace codec and lap converter unit test" native/test/run_ghost_trace_test.sh
 t "Ghost arming state machine unit test" native/test/run_ghost_arm_test.sh
+t "Ghost personal best re-arm decision unit test" native/test/run_ghost_rearm_test.sh
 t "Lap setup capture unit test" native/test/run_lap_setup_test.sh
 t "Lap toast message and state machine unit test" native/test/run_toast_test.sh
 t "Time Trial barred addons warning unit test" native/test/run_tt_barred_test.sh
