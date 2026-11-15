@@ -586,6 +586,13 @@ pub struct Variant {
     /// This variant's root y (record units, `v` down from the dial centre), over the record's.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub root_y: Option<f64>,
+    /// This variant's stock mode, over the record's: with a `switch`, `hide` shows the variant
+    /// dial's stock parts while the switch is off and hides them while it is on.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub stock: Option<StockMode>,
+    /// The stock parts this variant's `stock` acts on, over the record's.
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub stock_parts: Vec<String>,
 }
 
 /// One `hud.element` record.
@@ -786,6 +793,12 @@ impl HudElement {
         }
         for name in self.variants.keys() {
             let what = |e: Error| err(format!("variant {name}: {e}"));
+            let v = &self.variants[name];
+            if v.stock == Some(StockMode::Park) && v.switch.is_some() {
+                return Err(err(format!(
+                    "variant {name}: stock park is not switched (it moves the dial's stock parts for good); a variant with a switch takes keep or hide"
+                )));
+            }
             for c in self.variants[name].add.iter().flat_map(|e| &e.children) {
                 no_placement(c).map_err(what)?;
             }
@@ -849,6 +862,12 @@ impl HudElement {
         out.decisions.extend(v.decisions.iter().cloned());
         if v.root_y.is_some() {
             out.root_y = v.root_y;
+        }
+        if v.stock.is_some() {
+            out.stock = v.stock;
+        }
+        if !v.stock_parts.is_empty() {
+            out.stock_parts = v.stock_parts.clone();
         }
         Ok(out)
     }
@@ -1167,6 +1186,47 @@ mod tests {
         let mut f2 = halo_like();
         f2["dial"] = "f2".into();
         assert_eq!(HudElement::parse(&f2).unwrap().effective_stock(), StockMode::Hide);
+    }
+
+    #[test]
+    fn a_variant_sets_its_own_stock_mode_and_parts() {
+        let mut v = halo_like();
+        v["stock"] = "keep".into();
+        v["variants"] = serde_json::json!({
+            "f2": { "dial": "f2", "stock": "hide", "stock_parts": ["holder_central"],
+                    "switch": { "view_model": "view_model_data.hud_x_on", "default": false } },
+            "f1_25": { "dial": "f1_25" }
+        });
+        let r = HudElement::parse(&v).unwrap();
+        assert_eq!(r.effective_stock(), StockMode::Keep);
+        assert!(r.stock_parts.is_empty());
+        let f2 = r.with_variant("f2").unwrap();
+        assert_eq!(f2.effective_stock(), StockMode::Hide);
+        assert_eq!(f2.stock_parts, ["holder_central"]);
+        let f125 = r.with_variant("f1_25").unwrap();
+        assert_eq!(
+            f125.effective_stock(),
+            StockMode::Keep,
+            "no stock in the variant: the record's"
+        );
+        assert!(f125.stock_parts.is_empty());
+        let back = serde_json::to_value(&r).unwrap();
+        assert_eq!(back["variants"]["f2"]["stock"], "hide");
+        assert!(back["variants"]["f1_25"].get("stock").is_none());
+
+        v["variants"]["f2"]["stock"] = "park".into();
+        let e = HudElement::parse(&v).unwrap_err().to_string();
+        assert!(e.contains("variant f2: stock park is not switched"), "{e}");
+        v["variants"]["f2"].as_object_mut().unwrap().remove("switch");
+        assert_eq!(
+            HudElement::parse(&v)
+                .unwrap()
+                .with_variant("f2")
+                .unwrap()
+                .effective_stock(),
+            StockMode::Park,
+            "park without a switch stays allowed"
+        );
     }
 
     #[test]

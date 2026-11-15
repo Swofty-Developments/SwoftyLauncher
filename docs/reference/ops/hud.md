@@ -232,6 +232,17 @@ A decision may also run `on` a path or leaf instead of a dial value, listing its
 }
 ```
 
+A variant may set its own `stock` (and `stock_parts`) over the record's (schema `1.2`). A record that keeps the 2026 dial's parts and hides the F2 dial's only while its leaf is on:
+
+```jsonc
+"stock": "keep",
+"variants": {
+  "f2": { "dial": "f2", "stock": "hide", "switch": { "view_model": "view_model_data.hud_x_on", "default": false } }
+}
+```
+
+The f2 dial template then binds `v_stock_holder_central` and the other parts to the leaf negated, so the stock gear, rev and speed readouts show while the leaf is off and give way to the record while it is on; the f1_26 dial keeps its parts. `park` moves a dial's parts for good, so the check refuses it on a variant with a `switch`; a variant without one may park. The variant's `stock_parts` must be parts of its own dial.
+
 A variant's `add` entries go last at the top level unless one names its place: `before` or `after` an element of the base, or `replace` for one it stands in for. An id the variant removes or replaces is free inside that variant, so a swapped part keeps its id and its spot in the draw order. A variant also carries `decisions` of its own, built for its dial only and after the record's; they may show the variant's own `add` elements, and each dial still needs exactly one stock `MVCD` on the value (`drs_pit_state` has one in the f1_25 and f2 dials). Here the 2025 dial swaps the energy group under the bars and adds a two-state pill the 2026 dial has no value for:
 
 ```jsonc
