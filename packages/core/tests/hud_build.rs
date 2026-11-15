@@ -8,7 +8,7 @@ use swofty_addon::asset::{AssetOp, Root};
 use swofty_addon::ops::ErpOp;
 use swofty_core::baseline::Identity;
 use swofty_core::build::{GVDB, build};
-use swofty_core::hud::{self, GameStock, dials};
+use swofty_core::hud::{self, GameStock, Stock, dials};
 use swofty_core::install::Game;
 use swofty_core::store::Store;
 use swofty_core::ui::node::{NodeExt, ObjExt, clone_node, edit, find_path, root_obj};
@@ -785,6 +785,105 @@ fn a_variants_decision_placed_adds_and_root_y_compose_for_its_dial_only() {
             swofty_core::ui::idf::id_problems(&p).unwrap().is_empty(),
             "{}",
             f.scene
+        );
+    }
+    std::fs::remove_dir_all(dir).ok();
+}
+
+/// A record that keeps the 2026 dial's stock parts and hides the f2 dial's behind its variant's
+/// switch: the f2 template binds every `v_stock_<part>` to NOT the switch, the f1_26 dial has no
+/// stock node and its parts sit where the stock scene has them.
+#[test]
+fn a_variants_own_stock_mode_hides_its_dials_parts_behind_the_switch_only() {
+    let Some(game) = real() else { return };
+    let stock = GameStock::with_baseline(&game, &Store::open_default().root).unwrap();
+    let dir = std::env::temp_dir().join(format!("swofty-hud-vstock-{}", std::process::id()));
+    std::fs::remove_dir_all(&dir).ok();
+    png(&dir.join("art/base.png"), 64, 28);
+    png(&dir.join("art/lit.png"), 16, 8);
+    let leaf = "view_model_data.hud_vs_on";
+    let mut rec = record();
+    rec["stock"] = "keep".into();
+    rec["variants"] = serde_json::json!({
+        "f2": { "dial": "f2", "stock": "hide", "switch": { "view_model": leaf, "default": false } }
+    });
+    let input = hud::Input {
+        addon: "one.vstock".into(),
+        key: "dial".into(),
+        dir: dir.clone(),
+        record: hud::model::HudElement::parse(&rec).unwrap(),
+    };
+    let out = hud::compose(&stock, &[input]).unwrap();
+    let pfx = "one_vstock_dial";
+    let archive =
+        |file: &str| Erp::parse(&out.archives.iter().find(|a| a.file == file).unwrap().bytes).unwrap();
+    let scene = archive("hud_scene.erp");
+    let tmpl = archive("hud_template.erp");
+    let t = Pkg::parse(&tmpl.find(dials::TEMPLATE).unwrap().fragments[0].data().unwrap()).unwrap();
+    let visible = |path: &str| {
+        let n = swofty_core::ui::node::node_at(&t.root, &find_path(&t.root, path).unwrap()).unwrap();
+        n.props().unwrap().get("visible").unwrap().clone()
+    };
+    let text =
+        |n: Option<&swofty_formats::pkg::Node>| n.and_then(|v| v.as_val()).map(|v| format!("{:?}", v.value));
+    let part_y = |dial: hud::model::Dial, stock_scene: bool, part: &str| {
+        let f = dials::facts(dial);
+        let bytes = if stock_scene {
+            stock.read(dials::STOCK_ERP, f.scene).unwrap().remove(0)
+        } else {
+            scene.find(f.scene).unwrap().fragments[0].data().unwrap()
+        };
+        let p = Pkg::parse(&bytes).unwrap();
+        let root = swofty_core::ui::idf::scenes(&p).unwrap()[0]
+            .o()
+            .unwrap()
+            .at("scene")
+            .unwrap();
+        swofty_core::ui::idf::position(swofty_core::ui::idf::find(root, part).unwrap())
+    };
+
+    let f2 = dials::facts(hud::model::Dial::F2);
+    let ctl = format!("{}.{pfx}_ctl", f2.race_parent);
+    let root = visible(&format!("{ctl}.v_{pfx}"));
+    let root = root.as_obj().unwrap();
+    assert!(
+        text(root.get("dbentry")).unwrap().contains("hud_vs_on"),
+        "{root:?}"
+    );
+    assert!(
+        root.get("dbentrynegate").is_none(),
+        "the root shows while the switch is on"
+    );
+    for part in dials::STOCK_KIDS {
+        let v = visible(&format!("{ctl}.v_stock_{part}"));
+        let v = v.as_obj().unwrap();
+        assert!(
+            text(v.get("dbentry")).unwrap().contains("hud_vs_on"),
+            "{part}: {v:?}"
+        );
+        assert!(
+            v.get("dbentrynegate").is_some(),
+            "{part}: shown while the switch is off"
+        );
+        assert_eq!(
+            part_y(hud::model::Dial::F2, false, part),
+            part_y(hud::model::Dial::F2, true, part),
+            "{part}: hidden, not parked"
+        );
+    }
+
+    let f126 = dials::facts(hud::model::Dial::F126);
+    let ctl = format!("{}.{pfx}_ctl", f126.race_parent);
+    assert!(find_path(&t.root, &ctl).is_ok(), "{ctl}");
+    for part in dials::STOCK_KIDS {
+        assert!(
+            find_path(&t.root, &format!("{ctl}.v_stock_{part}")).is_err(),
+            "{part}: the f1_26 base keeps its stock part"
+        );
+        assert_eq!(
+            part_y(hud::model::Dial::F126, false, part),
+            part_y(hud::model::Dial::F126, true, part),
+            "{part}: the f1_26 base does not park"
         );
     }
     std::fs::remove_dir_all(dir).ok();
