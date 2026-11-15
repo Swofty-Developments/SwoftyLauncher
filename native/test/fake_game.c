@@ -3588,10 +3588,19 @@ int main(int argc, char **argv)
                "mod=3, world=4)");
 
     ShowWindow(w, SW_SHOW);
-    for (DWORD t0 = GetTickCount(); GetTickCount() - t0 < 1500;) {
+    // The fallback watcher loads the addons on its own thread once the window is visible, which takes longer than
+    // the pump's 1.5 s on a loaded machine. The v1 plugin's init is the last step of that load, so the pump goes on
+    // until it has run.
+    DWORD loaded_at = 0;
+    for (DWORD t0 = GetTickCount();;) {
         MSG m;
         while (PeekMessageW(&m, NULL, 0, 0, PM_REMOVE))
             DispatchMessageW(&m);
+        DWORD now = GetTickCount();
+        if (fallback && !loaded_at && probe[2])
+            loaded_at = now;
+        if (now - t0 >= 1500 && (!fallback || now - t0 >= 60000 || (loaded_at && now - loaded_at >= 200)))
+            break;
         Sleep(20);
     }
 
