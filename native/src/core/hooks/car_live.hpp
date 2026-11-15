@@ -19,10 +19,23 @@
 // CarLive+0x530..+0x5e0. Every offset below is a KB field (re/db/structs/{CarLive,CarSteering,CarGearBox,
 // CarDifferential,CarTurbo,CarEngine,CarFuelTank,CarDamageFrontWing,CarDamageSuspension,CarObfFloat}.h, each
 // exported by bindgen: L2 with an agree verify row, or L3), and "obf" fields are CarObfFloat pairs: the float's
-// bits XOR the key 8 bytes on. The offsets are the KB build's, so car_live.cpp hands over no table on any
-// other exe. Ops<Tag> keeps the state per tag so the host test runs the same code on fake cars.
+// bits XOR the key 8 bytes on. The offsets are the KB build's. The EA App build's copies of the functions that read
+// them carry the same displacements (re/tools/layoutcmp.py against the EA dump, re/ea-car-live-layout.md),
+// so car_live.cpp hands that build the table read only: count, car, is_ai and get answer, and nothing writes, because
+// the calls a write re-runs and the game points that apply layers are not checked there. Every other exe gets no
+// table. Ops<Tag> keeps the state per tag so the host test runs the same code on fake cars.
 
 namespace swofty_core::hooks::car_live {
+
+enum class Access { off, read, full };
+
+constexpr Access access_of(bool same_build, bool verified_build)
+{
+    return same_build ? Access::full : verified_build ? Access::read : Access::off;
+}
+
+static_assert(access_of(true, true) == Access::full && access_of(false, true) == Access::read &&
+              access_of(false, false) == Access::off);
 
 constexpr uintptr_t CAR_VEHICLE_ID = 0xe8, CAR_IS_AI = 0x124, CAR_LOADER = 0x4a0, SYSTEM_CAR = 0x08;
 constexpr uintptr_t FUEL_CAPACITY = 0x98;
@@ -332,6 +345,8 @@ struct Env {
     // Whether the KB row a field needs has its independent agree verify row; null means every row is ready.
     std::function<bool(const char *row)> row_ready;
     uintptr_t table = 0, count = 0;
+    // Reads only: set, layers, the fuel mix calls and the tyre refit answer unavailable and nothing is written.
+    bool read_only = false;
 };
 
 constexpr float RPM_TO_RAD_S = 0.10471976f;
@@ -517,7 +532,7 @@ template <class Tag> struct Ops {
     {
         uint32_t bits = 0, key = 0;
         std::memcpy(&bits, &value, 4);
-        if (kind == Kind::obf && !rd(at + 8, key))
+        if (env.read_only || (kind == Kind::obf && !rd(at + 8, key)))
             return false;
         bits ^= key;
         return env.write && env.write(at, &bits, 4);
@@ -697,7 +712,7 @@ template <class Tag> struct Ops {
         const Field *f = field(id);
         if (!f || !std::isfinite(value) || value < f->lo || value > f->hi)
             return SWOFTY_ASSET_INVALID;
-        if (!ready(*f) || f->kind == Kind::cell)
+        if (env.read_only || !ready(*f) || f->kind == Kind::cell)
             return SWOFTY_ASSET_UNAVAILABLE;
         if (f->kind == Kind::virt) {
             if (index >= MAX_CARS)
@@ -774,7 +789,7 @@ template <class Tag> struct Ops {
     static void apply_car(uint32_t index)
     {
         uintptr_t car = 0;
-        if (car_at(index, nullptr, car) != SWOFTY_ASSET_OK)
+        if (env.read_only || car_at(index, nullptr, car) != SWOFTY_ASSET_OK)
             return;
         uintptr_t fuel_sys = 0;
         const std::vector<LayerRec> mine = layers_of(index);
@@ -852,7 +867,7 @@ template <class Tag> struct Ops {
         const Field *f = field(id);
         if (!f || op > SWOFTY_CAR_OP_ADD || !std::isfinite(value) || (index != SWOFTY_CAR_ALL && index >= MAX_CARS))
             return SWOFTY_ASSET_INVALID;
-        if (!ready(*f))
+        if (env.read_only || !ready(*f))
             return SWOFTY_ASSET_UNAVAILABLE;
         uint32_t t = 0;
         {
@@ -919,7 +934,7 @@ template <class Tag> struct Ops {
         for (const char *c = group; *c; c++)
             if (!((*c >= 'A' && *c <= 'Z') || (*c >= 'a' && *c <= 'z') || (*c >= '0' && *c <= '9') || *c == '_'))
                 return SWOFTY_ASSET_INVALID;
-        if (!env.tyre_component || !env.tyre_refit || (env.row_ready && !env.row_ready("CarChassis.tyre_physics_group")))
+        if (env.read_only || !env.tyre_component || !env.tyre_refit || (env.row_ready && !env.row_ready("CarChassis.tyre_physics_group")))
             return SWOFTY_ASSET_UNAVAILABLE;
         if (env.flow_thread && !env.flow_thread())
             return SWOFTY_ASSET_LATE;
@@ -1081,7 +1096,7 @@ template <class Tag> struct Ops {
     {
         if (!owner || !*owner || (mask & ~0xfu))
             return SWOFTY_ASSET_INVALID;
-        if (!env.mode_avail || !env.write || (env.row_ready && !env.row_ready("EngineModeAvail.fuel")))
+        if (env.read_only || !env.mode_avail || !env.write || (env.row_ready && !env.row_ready("EngineModeAvail.fuel")))
             return SWOFTY_ASSET_UNAVAILABLE;
         std::lock_guard<std::mutex> g(unlock_lock);
         for (auto &u : unlocks)
@@ -1108,7 +1123,7 @@ template <class Tag> struct Ops {
     static void unlock_tick()
     {
         uint32_t mask = unlocked_mask();
-        if (!mask || !env.mode_avail || !env.write)
+        if (!mask || env.read_only || !env.mode_avail || !env.write)
             return;
         uint32_t n = 0;
         if (cars(n) != SWOFTY_ASSET_OK)
@@ -1142,6 +1157,8 @@ template <class Tag> struct Ops {
         int32_t m = 0;
         if (!mode)
             return SWOFTY_ASSET_INVALID;
+        if (env.read_only)
+            return SWOFTY_ASSET_UNAVAILABLE;
         if (int r = car_at(index, nullptr, car); r != SWOFTY_ASSET_OK)
             return r;
         if (int r = system_at(car, FUEL_ECU, ecu); r != SWOFTY_ASSET_OK)
@@ -1156,7 +1173,7 @@ template <class Tag> struct Ops {
     {
         if (mode > 3)
             return SWOFTY_ASSET_INVALID;
-        if (!env.fuel_set_mode)
+        if (env.read_only || !env.fuel_set_mode)
             return SWOFTY_ASSET_UNAVAILABLE;
         if (env.flow_thread && !env.flow_thread())
             return SWOFTY_ASSET_LATE;

@@ -442,8 +442,19 @@ void setup()
     e.flow_thread = on_flow_thread;
     e.enabled = [] { return runtime::enabled("events", nullptr); };
     e.row_ready = row_ready;
-    if (!runtime::same_build()) {
-        swofty::log("[cars] live car operations off: the field offsets are the KB build's and this is not that build");
+    const car_live::Access access = car_live::access_of(runtime::same_build(), runtime::verified_build());
+    if (access == car_live::Access::off) {
+        swofty::log("[cars] live car operations off: the field offsets are not checked on this build");
+    } else if (access == car_live::Access::read) {
+        e.read_only = true;
+        e.table = swofty::api->resolve("g_Sess_VehicleTable");
+        e.count = swofty::api->resolve("g_Sess_VehicleCount");
+        if (!e.table || !e.count)
+            swofty::log("[cars] live car operations off: g_Sess_VehicleTable or g_Sess_VehicleCount does not resolve");
+        else
+            swofty::log("[cars] live car operations read only on this build: %zu fields read; set, layers, the fuel mix "
+                        "calls and the tyre refit are off until their calls are checked on it",
+                        sizeof car_live::FIELDS / sizeof car_live::FIELDS[0]);
     } else {
         e.table = swofty::api->resolve("g_Sess_VehicleTable");
         e.count = swofty::api->resolve("g_Sess_VehicleCount");

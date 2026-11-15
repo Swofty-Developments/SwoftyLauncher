@@ -821,9 +821,48 @@ static void player_facts_sync()
     count = CARS;
 }
 
+static void read_only_build()
+{
+    using cl::Access;
+    expect(cl::access_of(true, true) == Access::full && cl::access_of(false, true) == Access::read &&
+               cl::access_of(false, false) == Access::off,
+           "the KB build gets the whole table, a verified build reads only, any other exe gets nothing");
+    build_world();
+    cl::Env e = make_env();
+    e.read_only = true;
+    Ops::bind(std::move(e));
+    const int before = writes;
+    uint32_t n = 0, ai = 9, token = 0, mode = 0;
+    void *h = nullptr;
+    float v = 0, was = 0;
+    expect(Ops::op_available() && Ops::op_count(&n) == SWOFTY_ASSET_OK && n == CARS &&
+               Ops::op_car(0, &h, &ai) == SWOFTY_ASSET_OK && h && ai <= 1,
+           "a read-only table answers available, count, car and is_ai");
+    expect(Ops::op_get(0, nullptr, SWOFTY_CAR_STEERING_LOCK, &was) == SWOFTY_ASSET_OK &&
+               Ops::op_get(0, nullptr, SWOFTY_CAR_CLUTCH_TORQUE, &v) == SWOFTY_ASSET_OK,
+           "and reads plain and obfuscated fields");
+    expect(Ops::op_set(0, nullptr, SWOFTY_CAR_STEERING_LOCK, 0.4f) == SWOFTY_ASSET_UNAVAILABLE &&
+               Ops::op_set(0, nullptr, SWOFTY_CAR_ENGINE_POWER_SCALE, 1.2f) == SWOFTY_ASSET_UNAVAILABLE &&
+               Ops::op_layer("t", 0, SWOFTY_CAR_STEERING_LOCK, SWOFTY_CAR_OP_SET, 0.4f, 0, &token) == SWOFTY_ASSET_UNAVAILABLE &&
+               Ops::add_layer("t", SWOFTY_CAR_ALL, SWOFTY_CAR_AERO_DRAG_SCALE, SWOFTY_CAR_OP_SCALE, 0.9f, 0, nullptr) ==
+                   SWOFTY_ASSET_UNAVAILABLE,
+           "set and layers answer unavailable on a read-only table");
+    expect(Ops::op_refit_tyres(0, "Group") == SWOFTY_ASSET_UNAVAILABLE &&
+               Ops::op_unlock_fuel_mixes("t", 0xf) == SWOFTY_ASSET_UNAVAILABLE &&
+               Ops::op_fuel_mix(0, &mode) == SWOFTY_ASSET_UNAVAILABLE && Ops::op_set_fuel_mix(0, 2) == SWOFTY_ASSET_UNAVAILABLE,
+           "the tyre refit and the fuel mix calls answer unavailable on a read-only table");
+    Ops::apply_car(0);
+    Ops::unlock_tick();
+    Ops::flush();
+    expect(writes == before && Ops::op_get(0, nullptr, SWOFTY_CAR_STEERING_LOCK, &v) == SWOFTY_ASSET_OK && v == was,
+           "nothing is written through a read-only table");
+    Ops::bind(make_env());
+}
+
 int main()
 {
     core_ops();
+    read_only_build();
     sdk_side();
     pending_queue();
     engine_limiter();
