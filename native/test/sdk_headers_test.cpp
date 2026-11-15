@@ -473,7 +473,7 @@ static void schemas()
 {
     std::string s = career::seasons.schema();
     CHECK(s.find("\"x-registry\":\"career.season\"") != std::string::npos);
-    CHECK(s.find("\"x-version\":\"1.0\"") != std::string::npos);
+    CHECK(s.find("\"x-version\":\"1.1\"") != std::string::npos);
     CHECK(s.find("\"x-applies\":\"read\"") != std::string::npos);
     CHECK(s.find("\"x-snapshot\":true") != std::string::npos && s.find("\"x-snapshot-budget\":65536") != std::string::npos);
     CHECK(s.find("\"x-key\":[\"slot\"]") != std::string::npos);
