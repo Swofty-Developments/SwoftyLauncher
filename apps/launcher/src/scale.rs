@@ -90,35 +90,24 @@ pub fn apply(mode: UiMode, step: Option<u16>, window: &mut Window, cx: &mut App)
     });
     Theme::sync_base(cx);
     if mode.is_tv() {
-        widen_scrollbars(cx);
+        widen_scrollbars(scale / TV_SCALE, cx);
     }
     window.refresh();
 }
 
-fn widen_scrollbars(cx: &mut App) {
+fn widen_scrollbars(relative: f32, cx: &mut App) {
+    let w = |value: f32| gpui_kit::px(value * relative);
     let mut base = cx.global::<gpui_kit::base::Theme>().clone();
     let styles = base
         .scrollbar
         .styles()
         .clone()
-        .track(|s| s.width(gpui_kit::px(32.)))
-        .track_hover(|s| s.width(gpui_kit::px(32.)))
-        .track_active(|s| s.width(gpui_kit::px(32.)))
-        .thumb(|s| {
-            s.width(gpui_kit::px(14.))
-                .inset(gpui_kit::px(9.))
-                .min_length(gpui_kit::px(96.))
-        })
-        .thumb_hover(|s| {
-            s.width(gpui_kit::px(16.))
-                .inset(gpui_kit::px(8.))
-                .min_length(gpui_kit::px(96.))
-        })
-        .thumb_active(|s| {
-            s.width(gpui_kit::px(18.))
-                .inset(gpui_kit::px(7.))
-                .min_length(gpui_kit::px(96.))
-        });
+        .track(|s| s.width(w(32.)))
+        .track_hover(|s| s.width(w(32.)))
+        .track_active(|s| s.width(w(32.)))
+        .thumb(|s| s.width(w(14.)).inset(w(9.)).min_length(w(96.)))
+        .thumb_hover(|s| s.width(w(16.)).inset(w(8.)).min_length(w(96.)))
+        .thumb_active(|s| s.width(w(18.)).inset(w(7.)).min_length(w(96.)));
     base.scrollbar = base.scrollbar.with_styles(styles);
     cx.set_global(base);
 }
