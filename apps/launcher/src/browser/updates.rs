@@ -11,6 +11,7 @@ use swofty_core::catalog::{self, Addon, Update};
 use swofty_i18n::{fill, tr, trf, trn};
 
 use super::*;
+use crate::library::AddonItem;
 use crate::play_bar::link;
 use crate::scale::px;
 use crate::shell::{PlayState, Shell};
@@ -27,6 +28,11 @@ pub(super) fn due_updates<'a>(
         .filter(|u| on.contains(u.id.as_str()))
         .filter(|u| held.get(&u.id).is_none_or(|(v, _)| *v != u.to.version))
         .collect()
+}
+
+/// Whether the play bar updates `a`: it's on, or it's shader-only and so is in use without a switch.
+pub(super) fn takes_updates(a: &AddonItem) -> bool {
+    a.enabled || a.locked || a.manifest.is_shader_only()
 }
 
 /// Minimal identity for an update that disappeared from the current catalog.
@@ -63,7 +69,7 @@ pub(super) fn held_failure(error: &str) -> bool {
 
 impl Shell {
     /// The addon updates the play bar offers: every outdated registry addon that's on in the active
-    /// profile, except the ones that failed at this version.
+    /// profile or shader-only, except the ones that failed at this version.
     pub(crate) fn addon_updates(&self) -> Vec<&Update> {
         let on: HashSet<&str> = if self.vanilla() {
             HashSet::new()
@@ -71,7 +77,7 @@ impl Shell {
             self.library
                 .addons
                 .iter()
-                .filter(|a| a.enabled || a.locked)
+                .filter(|a| takes_updates(a))
                 .map(|a| a.manifest.id.as_str())
                 .collect()
         };

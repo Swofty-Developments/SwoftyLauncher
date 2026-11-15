@@ -1282,6 +1282,77 @@ mod tests {
         z.finish().unwrap().into_inner()
     }
 
+    fn zip_of(files: &[(&str, &[u8])]) -> Vec<u8> {
+        let mut z = zip::ZipWriter::new(std::io::Cursor::new(Vec::new()));
+        for (name, bytes) in files {
+            z.start_file(*name, zip::write::SimpleFileOptions::default())
+                .unwrap();
+            std::io::Write::write_all(&mut z, bytes).unwrap();
+        }
+        z.finish().unwrap().into_inner()
+    }
+
+    fn shader_only(v: &str, icon: Option<&str>) -> String {
+        let icon = icon.map_or(String::new(), |i| format!(r#""icon":"{i}","#));
+        format!(
+            r#"{{"schema_version":1,"id":"t.look","name":"Look","version":"{v}","author":"t",{icon}
+            "category":"shaders","compat":{{"game":"f1_25","launcher":">=1.0.0"}},
+            "shaders":[{{"config":"look.swfx"}}]}}"#
+        )
+    }
+
+    #[test]
+    fn updates_a_shader_only_addon_whose_download_nests_its_older_package() {
+        let root = std::env::temp_dir().join(format!("swofty-requires-shader-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let store = Store::new(&root);
+        let (old, new) = (
+            shader_only("1.0.0", None),
+            shader_only("1.1.0", Some("icons/look.png")),
+        );
+        let nested = zip_of(&[(MANIFEST_FILE, old.as_bytes()), ("look.swfx", b"look")]);
+        let old_zip = zip_of(&[
+            (MANIFEST_FILE, old.as_bytes()),
+            ("look.swfx", b"look"),
+            ("t.look.swoftyaddon", &nested),
+        ]);
+        let new_zip = zip_of(&[
+            ("t.look/icons/look.png", b"png"),
+            ("t.look/look.swfx", b"look"),
+            ("t.look/swofty.json", new.as_bytes()),
+            ("t.look/t.look.swoftyaddon", &nested),
+        ]);
+        let base = serve(vec![
+            ("/old.zip".into(), old_zip.clone()),
+            ("/new.zip".into(), new_zip.clone()),
+        ]);
+        let mut from = hosted(&base, "/old.zip", &old_zip, Some(&[]));
+        let mut to = hosted(&base, "/new.zip", &new_zip, Some(&[]));
+        from.version = semver::Version::new(1, 0, 0);
+        to.version = semver::Version::new(1, 1, 0);
+        let listed = addon("t.look", vec![to.clone(), from.clone()]);
+        let catalog = vec![listed.clone()];
+        store.save_profile(&crate::profile::Profile::new("p")).unwrap();
+
+        let done = install_in_profile(&store, &catalog, &listed, &from, "p", &|_| {}).unwrap();
+        assert!(done[0].is_shader_only());
+        let due = crate::catalog::store_updates(&store, &catalog, &crate::update::current_version()).unwrap();
+        assert_eq!(due.len(), 1);
+        assert_eq!(due[0].to.version, to.version);
+
+        let done = install_in_profile(&store, &catalog, &listed, &due[0].to, "p", &|_| {}).unwrap();
+        assert_eq!(done.last().unwrap().version, to.version);
+        let installed = &store.addons().unwrap()["t.look"];
+        assert_eq!(installed.version, to.version);
+        assert!(store.addons_dir().join("t.look/icons/look.png").is_file());
+        assert!(
+            crate::catalog::store_updates(&store, &catalog, &crate::update::current_version())
+                .unwrap()
+                .is_empty()
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
     /// Serves `files` from a thread per request. Each response ends with a
     /// write shutdown and a read to the end, so Windows closes the socket
     /// without a reset that drops the body.

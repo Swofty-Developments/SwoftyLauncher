@@ -7,8 +7,9 @@ use super::detail::shown_versions;
 use super::host;
 use super::jobs::{RetryAction, requested_version_available, retry_action};
 use super::model::{Job, Progress, Verb};
-use super::updates::{due_updates, held_failure};
+use super::updates::{due_updates, held_failure, takes_updates};
 use crate::format;
+use crate::library::{AddonItem, Source};
 
 fn versions(list: &[&str]) -> Vec<Version> {
     list.iter()
@@ -180,6 +181,41 @@ fn only_addons_that_are_on_hold_up_play() {
     let due = due_updates(&updates, &on, &BTreeMap::new());
     assert_eq!(due.iter().map(|u| u.id.as_str()).collect::<Vec<_>>(), ["on"]);
     assert!(due_updates(&updates, &HashSet::new(), &BTreeMap::new()).is_empty());
+}
+
+fn installed(manifest: &str, enabled: bool) -> AddonItem {
+    AddonItem {
+        manifest: swofty_core::manifest::AddonManifest::parse(manifest).unwrap(),
+        enabled,
+        locked: false,
+        icon: None,
+        track: false,
+        package: false,
+        source: Source::Installed,
+        left_out: Vec::new(),
+    }
+}
+
+#[test]
+fn a_shader_only_addon_takes_updates_without_a_switch() {
+    let shader = r#"{"schema_version":1,"id":"t.look","name":"Look","version":"1.0.0","author":"t",
+        "category":"shaders","compat":{"game":"f1_25"},"shaders":[{"config":"look.swfx"}]}"#;
+    let plain = r#"{"schema_version":1,"id":"t.plain","name":"Plain","version":"1.0.0","author":"t",
+        "compat":{"game":"f1_25"}}"#;
+    let addons = [
+        installed(shader, false),
+        installed(plain, false),
+        installed(plain, true),
+    ];
+    assert_eq!(addons.each_ref().map(takes_updates), [true, false, true]);
+    let on: HashSet<&str> = addons[..2]
+        .iter()
+        .filter(|a| takes_updates(a))
+        .map(|a| a.manifest.id.as_str())
+        .collect();
+    let updates = [update("t.look", "1.1.0"), update("t.plain", "1.1.0")];
+    let due = due_updates(&updates, &on, &BTreeMap::new());
+    assert_eq!(due.iter().map(|u| u.id.as_str()).collect::<Vec<_>>(), ["t.look"]);
 }
 
 #[test]
