@@ -261,8 +261,10 @@ pub fn begin(
     config: &swofty_core::session::Config,
     profile: &str,
     g: &Game,
+    integrity: &integrity::State,
 ) -> Option<Watcher> {
     barred_for_launch(store, profile, &g.dir);
+    hand_over_integrity(store, &g.dir, integrity);
     let Some(_) = token(&store.root, config) else {
         timetrial::clear_session_keys(&g.dir);
         return None;
@@ -292,9 +294,9 @@ pub fn begin(
     ))
 }
 
-/// The verified integrity module for a session when Time Trial boards is on and the player is signed in.
-/// Any trouble is one log line and the session goes on without it.
-pub fn integrity(store: &Store, out: &dyn Fn(&str)) -> Option<Module> {
+/// The verified integrity module for a session when Time Trial boards is on and the player is signed in: `None`
+/// when it is off or the player is not signed in, else the module or why there is none.
+pub fn integrity(store: &Store, out: &dyn Fn(&str)) -> Option<Result<Module, String>> {
     let token = token(&store.root, &store.config())?;
     let found = match integrity::local() {
         Some(local) => {
@@ -304,21 +306,38 @@ pub fn integrity(store: &Store, out: &dyn Fn(&str)) -> Option<Module> {
             ));
             local
         }
-        None => integrity::ensure(&store.root, &Api::new(&token)),
+        None => integrity::ensure(&store.root, &Api::new(&token), out),
     };
-    match found {
-        Ok(m) => Some(m),
-        Err(why) => {
-            out(&format!("integrity module: not loaded for this session: {why}"));
-            None
-        }
+    if let Err(why) = &found {
+        out(&format!("integrity module: not loaded for this session: {why}"));
     }
+    Some(found)
 }
 
-pub fn end(watcher: Option<Watcher>, game: &std::path::Path) {
+/// The line the launch prints when the session blocks Time Trial.
+pub fn blocked_line(state: &integrity::State) -> Option<String> {
+    state.blocked().map(|_| {
+        "integrity module: Time Trial is blocked in game this session, as its laps would not count; \
+         start the game again with a working connection, or turn off Time Trial boards to play it without the boards"
+            .to_owned()
+    })
+}
+
+fn hand_over_integrity(store: &Store, game: &std::path::Path, state: &integrity::State) {
+    if let Err(e) = integrity::write_session(game, state) {
+        say(
+            "laps",
+            &format!("integrity module: the session file is not writable: {e}"),
+        );
+    }
+    integrity::note(&store.root, state);
+}
+
+pub fn end(store: &Store, watcher: Option<Watcher>, game: &std::path::Path) {
     if let Some(w) = watcher {
         w.finish();
         timetrial::clear_session_keys(game);
     }
     barred::write_session(game, &[]).ok();
+    hand_over_integrity(store, game, &integrity::State::Off);
 }

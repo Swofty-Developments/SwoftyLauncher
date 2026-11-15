@@ -2,6 +2,7 @@
 
 #include "main_menu.hpp"
 #include "main_menu_logic.hpp"
+#include "tt_blocked.hpp"
 #include "apply/moments.hpp"
 #include <safetyhook.hpp>
 #include "virtual_pad.hpp"
@@ -551,6 +552,8 @@ void leave_picker_to_home(const char *why)
 
 uint64_t container_detour(void *container, NeStr **message, void *third)
 {
+    if (message && *message && runtime::tt_blocked::refuses_command(ne_text(*message)))
+        return 0;
     if (patched.load() && message && *message && back_mode() == logic::Back::route && !off("SWOFTY_MAIN_MENU_PICKERBACK")) {
         logic::Mode m = logic::Mode(nav.mode.load());
         if (m == logic::Mode::time_trial && ne_text(*message) == "entrant_goto_select" &&
@@ -867,6 +870,8 @@ void hook_gohome()
 
 void hook_container()
 {
+    static std::mutex hooking;
+    std::lock_guard<std::mutex> g(hooking);
     if (h_container)
         return;
     auto at = runtime::find(S_CONTAINER, "home", "core");
@@ -896,8 +901,9 @@ void card_populate(HomeItem *item, void *node, uint32_t a7)
     uint8_t no = 0;
     set_string(reg, parent, "title", gp ? "GRAND PRIX" : "TIME TRIAL");
     Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
+    const char *blocked = gp ? nullptr : runtime::tt_blocked::card_description();
     set_string(reg, parent, "description",
-               gp ? "Race a Grand Prix weekend" : "Set the fastest lap on any track");
+               gp ? "Race a Grand Prix weekend" : blocked ? blocked : "Set the fastest lap on any track");
     Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
     style_item(item);
 }
@@ -914,6 +920,11 @@ Action *card_action(HomeItem *item, Action *out)
         return out;
     }
     bool gp = !std::strcmp(id_of(item), logic::ID_GRAND_PRIX);
+    if (!gp && runtime::tt_blocked::refuse("the main menu's Time Trial card")) {
+        out->type = 0;
+        out->str = nullptr;
+        return out;
+    }
     const char *route = route_name();
     if (entry_by_route()) {
         if (gp)
@@ -1190,6 +1201,11 @@ bool wants_overlay()
     if (!std::strcmp(env("SWOFTY_MAIN_MENU"), "0") || !std::strcmp(env("SWOFTY_MAIN_MENU_PANEL"), "0"))
         return false;
     return !runtime::read_file(runtime::under_swofty("home_menu.json"), size_t(1) << 20).empty();
+}
+
+void arm_container()
+{
+    hook_container();
 }
 
 bool arm_patch()
@@ -1539,6 +1555,8 @@ void command(void *, uint32_t command_hash, uint32_t focused_hash)
     if (!tt && !gp)
         return;
     if (uint64_t at = home_opened_at.load(); at && GetTickCount64() - at < 700)
+        return;
+    if (tt && runtime::tt_blocked::active())
         return;
     if (!tt && !entry_by_route())
         start_chain(false);

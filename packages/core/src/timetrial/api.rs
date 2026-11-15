@@ -178,9 +178,10 @@ impl Api {
         self.send("POST", "/v1/tt/game/f1os", Some(body), GAME_TIMEOUT)
     }
 
-    /// What the server offers as the integrity module: its version, size, hash and signature.
-    pub fn integrity(&self) -> Result<Value, ApiError> {
-        let bytes = self.get("/v1/tt/integrity", CALL_TIMEOUT, 64 * 1024)?;
+    /// What the server offers as the integrity module: its version, size, hash and signature. `timeout` is
+    /// capped at the usual call timeout.
+    pub fn integrity(&self, timeout: Duration) -> Result<Value, ApiError> {
+        let bytes = self.get("/v1/tt/integrity", timeout.min(CALL_TIMEOUT), 64 * 1024)?;
         serde_json::from_slice(&bytes).map_err(|e| ApiError {
             status: 200,
             message: format!("the server's answer to GET /v1/tt/integrity is not valid: {e}"),

@@ -1407,5 +1407,6 @@
   "{v} is available. Update addons from the play bar.": "{v} ist verfügbar. Aktualisiere Addons über die Spielleiste.",
   "{v} is not a number": "{v} ist keine Zahl",
   "{when}: {downloads}": "{when}: {downloads}",
-  "{wins} wins - {podiums} podiums": "{wins} Siege - {podiums} Podien"
+  "{wins} wins - {podiums} podiums": "{wins} Siege - {podiums} Podien",
+  "The integrity module could not be loaded, so Time Trial is blocked in game this session. Start the game again with a working connection, or turn off Time Trial boards in Settings to play it without the boards.": "Das Integritätsmodul konnte nicht geladen werden, daher ist das Zeitfahren in dieser Sitzung im Spiel gesperrt. Starte das Spiel mit einer funktionierenden Verbindung neu oder schalte die Zeitfahren-Bestenlisten in den Einstellungen aus, um es ohne die Bestenlisten zu spielen."
 }

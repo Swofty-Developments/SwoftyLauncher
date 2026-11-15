@@ -1407,5 +1407,6 @@
   "{v} is available. Update addons from the play bar.": "{v} está disponível. Atualize os complementos pela barra de Jogar.",
   "{v} is not a number": "{v} não é um número",
   "{when}: {downloads}": "{when}: {downloads}",
-  "{wins} wins - {podiums} podiums": "{wins} vitórias - {podiums} pódios"
+  "{wins} wins - {podiums} podiums": "{wins} vitórias - {podiums} pódios",
+  "The integrity module could not be loaded, so Time Trial is blocked in game this session. Start the game again with a working connection, or turn off Time Trial boards in Settings to play it without the boards.": "Não foi possível carregar o módulo de integridade, então o Contrarrelógio está bloqueado no jogo nesta sessão. Inicie o jogo novamente com uma conexão funcionando ou desative as Classificações de Contrarrelógio nas Configurações para jogar sem as classificações."
 }
