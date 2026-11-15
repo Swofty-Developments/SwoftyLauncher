@@ -19,6 +19,7 @@ use swofty_i18n::{tr, trf};
 
 const TITLE: &str = "Your game files have been edited";
 const MISSING_TITLE: &str = "Some game files are missing";
+const OURS_TITLE: &str = "An earlier session was not put back";
 
 /// A blocked launch the player can fix: files that aren't Steam's copy, or
 /// files Swofty did not put in the game folder.
@@ -38,6 +39,11 @@ impl Edited {
 
     fn leftovers(&self) -> bool {
         matches!(self, Self::Leftovers(_))
+    }
+
+    /// Whether the files in the way are all in Swofty's own folder.
+    fn ours(&self) -> bool {
+        matches!(self, Self::Leftovers(b) if b.ours())
     }
 
     fn missing(&self) -> Option<stock::Fix> {
@@ -96,6 +102,12 @@ impl Edited {
                     repair.restores
                 )
             }
+            Self::Leftovers(_) if self.ours() => "An earlier Swofty session ended without putting the F1 25 \
+                                                  folder back, and Swofty no longer has a record of the \
+                                                  files it left in its own swofty folder there, so it stopped \
+                                                  before touching anything. Restore game folder below moves \
+                                                  them aside and puts the game's own files back."
+                .to_owned(),
             Self::Leftovers(_) => "Swofty keeps F1 25 fully restorable: it only changes files it owns and \
                                    undoes them when you quit. It found files in the F1 25 folder that it \
                                    didn't put there, so it stopped before touching anything. Files edited \
@@ -113,6 +125,7 @@ impl Edited {
     fn title(&self) -> &'static str {
         match self.missing() {
             Some(_) => MISSING_TITLE,
+            None if self.ours() => OURS_TITLE,
             None => TITLE,
         }
     }
@@ -344,6 +357,18 @@ fn steps(edited: &Edited, repair: &Repair, p: Palette) -> AnyElement {
             })
             .into_any_element();
     }
+    if edited.ours() {
+        return v_flex()
+            .gap(px(9.))
+            .child(label(tr("WHAT TO DO"), p))
+            .child(step(
+                1,
+                "Restore the game folder",
+                tr("Restore game folder below moves the files aside and puts the game's own files back."),
+                p,
+            ))
+            .into_any_element();
+    }
     let leftovers = edited.leftovers();
     let first = if leftovers { 2 } else { 1 };
     v_flex()
@@ -508,7 +533,7 @@ impl Shell {
                 .footer(footer(
                     shell,
                     edited.leftovers(),
-                    edited.missing().is_none(),
+                    edited.missing().is_none() && !edited.ours(),
                     edited.open(&repair),
                     p,
                 ))
@@ -518,7 +543,7 @@ impl Shell {
 
 #[cfg(test)]
 mod tests {
-    use super::{Edited, notice, repair};
+    use super::{Edited, OURS_TITLE, TITLE, notice, repair};
     use swofty_core::install::Source;
     use swofty_core::recovery::Blocked;
     use swofty_core::stock;
@@ -639,6 +664,39 @@ mod tests {
     #[test]
     fn a_folder_outside_steam_gets_no_button() {
         assert_eq!(repair(Source::Unknown).open, None);
+    }
+
+    #[test]
+    fn files_left_in_swoftys_own_folder_are_not_called_edited_game_files() {
+        let file = |path: &str, replaced| swofty_core::recovery::BlockedFile {
+            path: path.into(),
+            sha256: None,
+            replaced,
+        };
+        let blocked = |files| {
+            Edited::Leftovers(Blocked {
+                game: "/games/F1 25".into(),
+                files,
+            })
+        };
+        let r = repair(Source::Steam);
+        let ours = blocked(vec![
+            file("swofty/state.json", false),
+            file("swofty/addons/core/swofty_core.dll", false),
+        ]);
+        assert_eq!(ours.title(), OURS_TITLE);
+        assert!(
+            ours.why(&r).contains("Restore game folder below"),
+            "{}",
+            ours.why(&r)
+        );
+        assert!(!ours.why(&r).contains("didn't put there"));
+        let mixed = blocked(vec![file("swofty/state.json", false), file("version.dll", false)]);
+        assert_eq!(mixed.title(), TITLE);
+        assert!(mixed.why(&r).contains("didn't put there"));
+        let replaced = blocked(vec![file("swofty/state.json", true)]);
+        assert_eq!(replaced.title(), TITLE);
+        assert_eq!(leftovers().title(), TITLE);
     }
 
     #[test]

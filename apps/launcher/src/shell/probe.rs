@@ -184,6 +184,13 @@ impl Shell {
                             tr("an antivirus removed mod files, so F1 25 was not started").to_owned()
                         }
                         _ if not_stock.is_some() => not_stock.unwrap_or_default(),
+                        Some(b) if b.ours() => trn(
+                            b.files.len(),
+                            "a file an earlier Swofty session left in the game folder is in the way; Restore game \
+                             folder clears it",
+                            "{count} files an earlier Swofty session left in the game folder are in the way; \
+                             Restore game folder clears them",
+                        ),
                         Some(b) => trn(
                             b.files.len(),
                             "a file Swofty did not put in the game folder is in the way",

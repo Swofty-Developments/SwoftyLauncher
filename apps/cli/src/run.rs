@@ -618,9 +618,14 @@ struct Session<'a> {
 
 impl Drop for Session<'_> {
     fn drop(&mut self) {
-        match swofty_core::offline::restore_pending(&self.store.root) {
-            Ok(true) => info("offline play: the game folder is back to vanilla"),
-            Ok(false) => {}
+        match swofty_core::offline::restore_pending(&self.store.root, &self.game.dir) {
+            Ok(Some(notes)) => {
+                for note in notes {
+                    info(&format!("offline play: {note}"));
+                }
+                info("offline play: the game folder is back to vanilla");
+            }
+            Ok(None) => {}
             Err(e) => info(&format!(
                 "offline play restore failed{}, run swofty restore: {e:#}",
                 still_running(&self.game.dir)

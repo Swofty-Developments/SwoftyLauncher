@@ -267,7 +267,7 @@ fn a_session_rolled_back_when_the_game_exits_leaves_the_folder_byte_identical() 
     for _ in 0..2 {
         f.session(&game);
         f.play();
-        swofty_core::offline::restore_pending(&f.data).unwrap();
+        swofty_core::offline::restore_pending(&f.data, &f.game).unwrap();
         let inst = Installer::new(&f.data, &game);
         let done = inst.roll_back(false).unwrap();
         assert_eq!(done.len(), 1);
@@ -712,4 +712,55 @@ fn a_record_for_a_folder_that_is_gone_closes_on_a_copy_without_its_files() {
         "{:?}",
         r.problems
     );
+}
+
+/// A PC that stops mid-session can leave the offline play journal zero-filled.
+/// Play's recovery and Restore game folder both still put the folder back.
+#[test]
+fn a_zero_filled_offline_journal_never_stops_recovery_or_restore() {
+    for restore in [false, true] {
+        let f = Fixture::new(if restore {
+            "zeroed-restore"
+        } else {
+            "zeroed-recover"
+        });
+        let original = f.snapshot();
+        let game = f.game();
+        f.session(&game);
+        f.play();
+        let journal = swofty_core::offline::journal_path(&f.data);
+        let len = std::fs::metadata(&journal).unwrap().len() as usize;
+        std::fs::write(&journal, vec![0; len]).unwrap();
+
+        if restore {
+            let done = recovery::restore(&f.data, &game).unwrap();
+            assert!(done.left.is_empty(), "{:?}", done.left);
+            assert!(
+                done.notes
+                    .iter()
+                    .any(|n| n.starts_with("skipped 1 unfinished line(s)")),
+                "{:?}",
+                done.notes
+            );
+        } else {
+            let lock = SessionLock::try_acquire(&f.data).unwrap().unwrap();
+            let r = recovery::recover(&lock, &f.data, &game, Scope::Sessions).unwrap();
+            assert!(r.problems.is_empty(), "{:?}", r.problems);
+            assert!(r.offline);
+            assert!(
+                r.lines().iter().any(|l| l.starts_with("restored EAAntiCheat")),
+                "{:?}",
+                r.lines()
+            );
+        }
+        assert!(!journal.exists());
+        assert_eq!(
+            std::fs::read_to_string(f.game.join(LAUNCHER)).unwrap(),
+            "anticheat"
+        );
+        assert!(!f.game.join(format!("{LAUNCHER}.bak")).exists());
+        let now = f.snapshot();
+        assert_eq!(now.get(LAUNCHER), original.get(LAUNCHER));
+        assert_eq!(now.get(GVDB), original.get(GVDB));
+    }
 }
