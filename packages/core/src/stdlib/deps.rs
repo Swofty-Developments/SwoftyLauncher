@@ -39,7 +39,7 @@ pub const CORE_REGISTRIES: &[(&str, &str)] = &[
     ("career.market", "1.0"),
     ("career.mode", "1.0"),
     ("career.rnd.tree", "1.0"),
-    ("career.season", "1.0"),
+    ("career.season", "1.1"),
     ("career.wizard", "1.0"),
     ("content.package", "1.4"),
     ("driver.head", "1.0"),
@@ -912,7 +912,7 @@ mod tests {
         assert_eq!(
             lines(&w.check(&["a.x", "tails.whatif"]), Level::Stop),
             [
-                "X needs the career.season registry ^2, and this launcher has 1.0. Update Swofty Launcher, or turn X off.",
+                "X needs the career.season registry ^2, and this launcher has 1.1. Update Swofty Launcher, or turn X off.",
                 "X needs the track.layer registry, which no addon on in profile main provides. Install the addon that \
                  provides it, or update Swofty Launcher, or turn X off."
             ]

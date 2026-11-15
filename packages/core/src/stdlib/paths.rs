@@ -57,7 +57,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "career.season",
-        include_str!("../../../sdk/std/registries/career.season/1.0.json"),
+        include_str!("../../../sdk/std/registries/career.season/1.1.json"),
     ),
     (
         "career.wizard",

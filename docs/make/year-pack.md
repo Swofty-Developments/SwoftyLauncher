@@ -249,7 +249,7 @@ using namespace swofty;
 void register_career()
 {
     auto season = career::seasons.add("2008", {
-        .year = 2008,                                // no data group: career modes take it as a variant
+        .year = 2008,                                // data_group is left unset (see the note below)
         .box = content::packages["mod.season-2008/f1_2008"],
         .calendar = career::calendars["mod.season-2008/2008"],
         .teams = {
@@ -272,6 +272,8 @@ void register_career()
 </Example>
 </template>
 </Split>
+
+The C++ writer sends an unset `data_group` as an empty string, which `career.season` 1.1 refuses: the pattern `^[a-z0-9_]+$` needs at least one character, and the field is only valid when it is left out. Until the writer drops an empty `data_group`, register the season from a JSON record without the field.
 
 Call `register_career()` from `SWOFTY_REGISTER`. [Career](/std/systems/career) covers seasons, ratings and how career modes pick a box per year.
 
