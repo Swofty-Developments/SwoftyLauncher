@@ -742,4 +742,9 @@ std::string player_team()
     return team_name(e, at<uint32_t>(sel, PLAYER_TEAM));
 }
 
+std::string team_of_stat(uint16_t stat)
+{
+    return team_label(stat);
+}
+
 }

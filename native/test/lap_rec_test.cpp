@@ -327,6 +327,16 @@ static void tlap_and_stats()
     expect(lr::packed_stat(0x029B0000u) == 0x029B && lr::packed_stat(0x035D0000u) == 0x035D && lr::packed_stat(0x3fff0000u) == 0x3fff &&
                lr::packed_stat(0x00010002u) == ((2u << 14) | 1u),
            "a participant stat dword packs to the game's 16-bit leaderboard form");
+    expect(lr::stat_id(0x029B0000u) == 0x029B && lr::stat_id(0x00010002u) == 1, "a participant stat dword gives its stat id");
+    lr::CarTeam picked = lr::car_team("sw18_ferrari", "", "sw18_williams");
+    expect(picked.label == "sw18_ferrari" && picked.from == lr::TeamFrom::stat,
+           "the team of the lap result wins over an entrant selection left on another team");
+    picked = lr::car_team("", "", "sw18_williams");
+    expect(picked.label == "sw18_williams" && picked.from == lr::TeamFrom::selection,
+           "a lap with no team stat keeps the entrant selection");
+    picked = lr::car_team("", "sw18_haas", "sw18_williams");
+    expect(picked.label == "sw18_haas" && picked.from == lr::TeamFrom::facts, "the facts' team wins over the entrant selection");
+    expect(lr::car_team("", "", "").from == lr::TeamFrom::none, "no source gives no label");
     p.put<uint64_t>(LIST_OWNER + lr::PART_END, PARTS + 100);
     expect(!lr::find_stats(p, LIST_OWNER, 5).ok, "a list that is not a whole number of entries is refused");
 }

@@ -70,6 +70,31 @@ inline int64_t packed_stat(uint32_t raw)
     return int64_t(((raw & 3u) << 14) | ((raw >> 16) & 0x3fffu));
 }
 
+inline uint16_t stat_id(uint32_t raw)
+{
+    return uint16_t((raw >> 16) & 0x3fffu);
+}
+
+enum class TeamFrom { none, stat, facts, selection };
+
+struct CarTeam {
+    std::string label;
+    TeamFrom from = TeamFrom::none;
+};
+
+// The lap's team label: the team the game's lap result names wins over the player's entrant selection, which an
+// in-session car change leaves on the team picked in the menus.
+inline CarTeam car_team(const std::string &of_stat, const std::string &facts, const std::string &selection)
+{
+    if (!of_stat.empty())
+        return {of_stat, TeamFrom::stat};
+    if (!facts.empty())
+        return {facts, TeamFrom::facts};
+    if (!selection.empty())
+        return {selection, TeamFrom::selection};
+    return {};
+}
+
 struct GameLap {
     bool read = false, usable = false;
     uint8_t car = 0;

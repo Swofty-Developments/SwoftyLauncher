@@ -27,4 +27,7 @@ std::string player_list();
 
 std::string player_team();
 
+// The label of the team row with this stat id, or empty.
+std::string team_of_stat(uint16_t stat);
+
 }

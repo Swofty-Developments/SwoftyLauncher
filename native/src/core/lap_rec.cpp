@@ -568,16 +568,26 @@ void finish(lr::Sealed &sealed, const LapContext &ctx)
         } else
             swofty::log("[laps] lap %u: the game's presence id was never read (no board request passed the gate yet); the header has no presence", lap.index);
     }
+    std::string fact_team;
     if (auto facts = swofty_core::hooks::core().current(); facts && facts->player) {
-        h.team = facts->player->team;
+        fact_team = facts->player->team;
         h.vehicle = facts->player->vehicle;
         h.driver = facts->player->driver;
     }
-    if (h.team.empty()) {
-        h.team = session_team;
-        if (!h.team.empty())
-            swofty::log("[laps] lap %u: car team label %s from the player's entrant selection", lap.index, h.team.c_str());
-    }
+    std::string stat_team;
+    if (sealed.game && sealed.game->usable && sealed.game->stats.ok)
+        stat_team = runtime::direct_start::tt::team_of_stat(lr::stat_id(sealed.game->stats.team));
+    lr::CarTeam team = lr::car_team(stat_team, fact_team, session_team);
+    h.team = team.label;
+    if (team.from == lr::TeamFrom::stat && !session_team.empty() && session_team != team.label)
+        swofty::log("[laps] lap %u: car team label %s from the lap result's team stat id %u; the player's entrant selection "
+                    "still names %s",
+                    lap.index, h.team.c_str(), unsigned(lr::stat_id(sealed.game->stats.team)), session_team.c_str());
+    else if (team.from == lr::TeamFrom::stat)
+        swofty::log("[laps] lap %u: car team label %s from the lap result's team stat id %u", lap.index, h.team.c_str(),
+                    unsigned(lr::stat_id(sealed.game->stats.team)));
+    else if (team.from == lr::TeamFrom::selection)
+        swofty::log("[laps] lap %u: car team label %s from the player's entrant selection", lap.index, h.team.c_str());
     h.time_ms = r.time_ms;
     h.sectors_ms = r.sectors_ms;
     h.valid = r.valid;
