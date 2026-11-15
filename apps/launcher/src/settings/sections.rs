@@ -9,7 +9,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::data_usage::{self, KEEP_FOR, KEEP_SESSIONS};
 use swofty_core::install::Source;
-use swofty_core::session::UiMode;
+use swofty_core::session::{UI_SCALE_STEPS, UiMode};
 use swofty_core::update;
 use swofty_core::updater;
 use swofty_i18n::{tr, trf};
@@ -101,7 +101,22 @@ impl Shell {
                 shell.update(cx, |s, cx| s.set_ui_mode(mode, window, cx)).ok();
             })
         };
+        let current = self.ui_scale;
+        let steps = std::iter::once((tr("Auto").to_owned(), None))
+            .chain(UI_SCALE_STEPS.into_iter().map(|s| (format!("{s}%"), Some(s))))
+            .map(|(label, step)| {
+                let shell = shell.clone();
+                Choice::new(label, current == step, move |window, cx| {
+                    shell.update(cx, |s, cx| s.set_ui_scale(step, window, cx)).ok();
+                })
+            })
+            .collect();
         SettingsSection::new(tr("Interface"))
+            .row(
+                SettingRow::new(tr("Interface scale"))
+                    .description(tr("Makes the whole launcher larger or smaller, on top of the display mode. Auto keeps the size the display mode gives"))
+                    .control(select("settings-ui-scale", steps)),
+            )
             .row(
                 SettingRow::new(tr("Display mode"))
                     .description(tr("PC is the normal layout. TV mode scales the whole launcher up and widens the scrollbars, for handhelds and couch play"))

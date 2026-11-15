@@ -106,6 +106,7 @@ pub struct Shell {
     pub(crate) vr_profiles: BTreeSet<String>,
     pub(crate) start_store: bool,
     pub(crate) ui_mode: Option<UiMode>,
+    pub(crate) ui_scale: Option<u16>,
     pub(crate) onboarding: Option<crate::onboarding::Onboarding>,
     pub(crate) developer_mode: bool,
     /// `clear_old_session_logs` from config.json: opt-in, old session logs are cleared at start.

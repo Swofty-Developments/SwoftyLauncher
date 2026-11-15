@@ -65,6 +65,7 @@ impl Shell {
             seen,
         } = prepared;
         swofty_i18n::set_language(config.language.as_deref());
+        let ui_scale = config.ui_scale_step();
         let vr_profiles = config.vr_profiles;
         let start_store = config.launch.start_store;
         let ui_mode = config.ui_mode;
@@ -152,6 +153,7 @@ impl Shell {
             vr_profiles,
             start_store,
             ui_mode,
+            ui_scale,
             onboarding: None,
             developer_mode,
             clear_old_session_logs,
