@@ -829,6 +829,34 @@ int main()
     store.set(mine, nullptr, 0);
     CHECK(store.empty() && !store.find(mine));
 
+    {
+        // A frame generation swapchain: the HUD's list is submitted before the list that closes the step, so the
+        // passes wait for Present, and Present shows the swapchain's copy of the frame, never the game's back
+        // buffer. The passes run on the copy while it holds the waiting picture.
+        BackPlace p;
+        p.drawn(70);
+        CHECK(p.picture_submitted(70, true, true) == END_DEFER);
+        p.moved(false);
+        CHECK(!p.step_closed(70, true) && p.waits(70));
+        CHECK(shown_is_waiting(false, 0, 70, p.opened_at, true));
+        CHECK(p.presented(70) && !p.waits(70) && placed_lately(70, p.placed_at));
+        // frame generation on: a Present may show a generated frame or an older one
+        CHECK(!shown_is_waiting(true, 0, 70, 70, true));
+        // passes already recorded since the last Present: the shown frame may be the one that has them
+        CHECK(!shown_is_waiting(false, 1, 70, 70, true));
+        // the step opened in an earlier frame: its picture was shown by an earlier Present
+        CHECK(!shown_is_waiting(false, 0, 71, 70, true));
+        // a copy of another size or format would rebuild the passes' textures every frame
+        CHECK(!shown_is_waiting(false, 0, 70, 70, false));
+        // a core that saw the list taking the back buffer to the HUD runs the passes right before it, so nothing waits
+        // for Present and the copy is left alone
+        BackPlace q;
+        q.drawn(80);
+        CHECK(q.picture_submitted(80, true, true) == END_DEFER);
+        q.moved(true);
+        CHECK(q.target_left(80, true) && !q.waits(80) && !q.presented(80));
+    }
+
     if (failed)
         return 1;
     std::printf("postfx logic: all checks passed\n");

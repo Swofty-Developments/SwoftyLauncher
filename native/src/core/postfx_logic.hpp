@@ -371,6 +371,16 @@ struct BackPlace {
     }
 };
 
+// A frame generation swapchain (FidelityFX's, Streamline's) hands the game back buffers of its own and copies each
+// frame into its real back buffer inside Present, so the buffer a Present shows is never one the game drew into and
+// never matches the back buffer whose passes wait. The shown buffer still holds that picture when frame generation
+// is off (each Present shows the frame the game just drew), the step opened in the frame this Present closes, no
+// passes were recorded since the last Present, and the two buffers have the same size and format.
+inline bool shown_is_waiting(bool generating, unsigned runs, unsigned now, unsigned opened_at, bool same_shape)
+{
+    return !generating && !runs && now == opened_at && same_shape;
+}
+
 // Why a presented frame went without the passes, most specific first.
 enum Idle : uint8_t {
     IDLE_NONE,

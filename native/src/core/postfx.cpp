@@ -445,7 +445,7 @@ struct Stats {
              without = 0,
              doubled = 0, ui_together = 0, unknown_state = 0, busy = 0, deferred = 0, dropped = 0;
     unsigned generated = 0, runs = 0, unplaced = 0;
-    unsigned hud_read = 0, no_previous = 0, prev_gap = 0, onoff_untold = 0, idle[postfx::IDLE_COUNT] = {};
+    unsigned copied = 0, hud_read = 0, no_previous = 0, prev_gap = 0, onoff_untold = 0, idle[postfx::IDLE_COUNT] = {};
 };
 Stats stats;
 unsigned stat_lines, onoff_lines;
@@ -3171,7 +3171,8 @@ void stat_line(ULONGLONG now)
         swofty::log("[postfx] last %u s: %u frame(s) presented; passes ran in the game's list on %u (%u at the HUD's "
                     "read of the picture, %u in a split step's closing list), between its lists on %u (%u after a "
                     "split step's closing list, %u before the list that takes the back buffer to the HUD) and at "
-                    "Present, over the HUD, on %u; %u picture list(s) left the HUD-less step to a later list; %u "
+                    "Present, over the HUD, on %u (%u on a frame generation swapchain's copy of the frame); %u picture "
+                    "list(s) left the HUD-less step to a later list; %u "
                     "recorded into lists the game reset unsubmitted; %u without passes (%u toggle key, %u "
                     "swofty/postfx.off, %u after the HUD's last read of the picture, %u every pass off: %u budget or "
                     "pipeline, %u rule, %u option, %u addon key, %u view, %u mixed; %u with the picture and the HUD "
@@ -3179,7 +3180,8 @@ void stat_line(ULONGLONG now)
                     "picture list, %u with no place in the frame's lists); %u frame(s) ran them twice; %u run(s) "
                     "without the frame before's result (%u after a frame gap); %u on/off line(s) left out",
                     secs, stats.presented, stats.in_list, stats.hud_read, stats.split_step, stats.between,
-                    stats.after_close, stats.before_hud, stats.at_present, stats.deferred, stats.dropped, stats.without,
+                    stats.after_close, stats.before_hud, stats.at_present, stats.copied, stats.deferred, stats.dropped,
+                    stats.without,
                     idle[postfx::IDLE_KEY], idle[postfx::IDLE_KILL], idle[postfx::IDLE_HUD_READ],
                     idle[postfx::IDLE_PASS_OFF] + idle[postfx::IDLE_RULE] + idle[postfx::IDLE_OPTION] +
                         idle[postfx::IDLE_ADDON_KEY] + idle[postfx::IDLE_VIEW] + idle[postfx::IDLE_PASSES],
@@ -3215,22 +3217,50 @@ std::string own_frames_by(const d3d12hooks::Swapchain *known, void *caller)
 
 // The passes of a frame that reached Present with its HUD-less step open and no list the core saw taking the back
 // buffer out of render target run on the presented back buffer, on the swapchain's queue: over the HUD for that
-// frame, so the picture never goes without them.
+// frame, so the picture never goes without them. A frame generation swapchain shows a buffer of its own that it
+// copied the game's back buffer into: the passes run on that copy while it holds the waiting picture
+// (postfx::shown_is_waiting).
 void present_fallback(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known)
 {
-    if (!waiting_back() || !known || !known->queue || killed_now() || passes.empty())
+    BackUse *waiting = waiting_back();
+    if (!waiting || !known || !known->queue || killed_now() || passes.empty())
         return;
     ID3D12Resource *shown = nullptr;
     if (FAILED(sc->GetBuffer(sc->GetCurrentBackBufferIndex(), IID_PPV_ARGS(&shown))) || !shown)
         return;
+    bool direct = known->queue->GetDesc().Type == D3D12_COMMAND_LIST_TYPE_DIRECT;
+    BackUse *own = nullptr;
     for (auto &u : back_uses)
-        if (u.back == shown) {
-            if (known->queue->GetDesc().Type == D3D12_COMMAND_LIST_TYPE_DIRECT && u.place.presented(frame_count) &&
-                run_between(known->queue, shown, D3D12_RESOURCE_STATE_PRESENT, nullptr, D3D12_RESOURCE_STATE_COMMON,
-                            "at Present"))
-                stats.at_present++;
-            break;
+        if (u.back == shown)
+            own = &u;
+    if (own) {
+        if (direct && own->place.presented(frame_count) &&
+            run_between(known->queue, shown, D3D12_RESOURCE_STATE_PRESENT, nullptr, D3D12_RESOURCE_STATE_COMMON,
+                        "at Present"))
+            stats.at_present++;
+    } else {
+        D3D12_RESOURCE_DESC a = shown->GetDesc(), b = waiting->back->GetDesc();
+        bool same_shape = a.Width == b.Width && a.Height == b.Height && a.Format == b.Format;
+        bool generating = frame_gen_on();
+        static bool told;
+        if (!std::exchange(told, true))
+            swofty::log("[postfx] swapchain %p shows buffer %p, which is not the back buffer %p the game drew into "
+                        "(a frame generation swapchain copies the game's frames into its own); frame generation is "
+                        "%s in the game's settings, so passes that wait for Present %s",
+                        static_cast<void *>(sc), static_cast<void *>(shown), static_cast<void *>(waiting->back),
+                        generating ? "on" : "off",
+                        generating   ? "do not run on that copy"
+                        : same_shape ? "run on that copy"
+                                     : "do not run on that copy, which has another size or format");
+        if (direct &&
+            postfx::shown_is_waiting(generating, trace.runs, frame_count, waiting->place.opened_at, same_shape) &&
+            waiting->place.presented(frame_count) &&
+            run_between(known->queue, shown, D3D12_RESOURCE_STATE_PRESENT, nullptr, D3D12_RESOURCE_STATE_COMMON,
+                        "at Present (the swapchain's copy)")) {
+            stats.at_present++;
+            stats.copied++;
         }
+    }
     shown->Release();
 }
 
