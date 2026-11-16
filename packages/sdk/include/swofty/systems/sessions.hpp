@@ -30,7 +30,7 @@ struct GridRules {
 };
 SWOFTY_RECORD(GridRules, qualifying, rows, rule_107)
 
-// A points system (launcher 1.9.49): one game_setup.session_standings row the core adds at boot, a copy of the stock
+// A points system (launcher 1.9.60): one game_setup.session_standings row the core adds at boot, a copy of the stock
 // standard_race preset with these points. A box names it in content.package rules.points; the era picker points the
 // race sessions of swofty_f1 at it when the box is pressed.
 struct Points {
