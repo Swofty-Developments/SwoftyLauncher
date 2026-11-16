@@ -7,7 +7,7 @@
 #include <utility>
 #include <vector>
 
-// rules.mandatory_tyre_change (content.package 1.5): whether a box's races require two dry compounds. The game keeps
+// rules.mandatory_tyre_change (content.package 1.6): whether a box's races require two dry compounds. The game keeps
 // the rule as three 13-byte requirement arrays in the setup mode (GameSetupMode +0x8b race, +0x98 race_2, +0xa5
 // race_3, indexed by the race length) and reads the current mode's array when a race session starts
 // (Sess_RaceState_ResetTimingAndTowState 0x142f29820 -> rule query 0x14358d1e0 case 0x13, the TyreRegulations

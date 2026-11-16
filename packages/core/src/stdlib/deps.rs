@@ -41,7 +41,7 @@ pub const CORE_REGISTRIES: &[(&str, &str)] = &[
     ("career.rnd.tree", "1.0"),
     ("career.season", "1.1"),
     ("career.wizard", "1.0"),
-    ("content.package", "1.5"),
+    ("content.package", "1.6"),
     ("driver.head", "1.0"),
     ("driver.identity", "1.0"),
     ("driver.look", "1.0"),
