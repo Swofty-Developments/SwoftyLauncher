@@ -153,6 +153,20 @@ fn fit_to(s: String, max: usize) -> String {
     format!("{}…", s[..end].trim_end())
 }
 
+const RESTART_NOTE: &str = "Applies after a restart.";
+
+fn with_note(text: &str, note: &str) -> String {
+    let text = text.trim();
+    if note.is_empty() {
+        return fit(text.to_owned());
+    }
+    if text.is_empty() {
+        return fit(note.to_owned());
+    }
+    let room = 255usize.saturating_sub(note.len() + 1);
+    format!("{} {note}", fit_to(text.to_owned(), room))
+}
+
 pub fn home_screen(page: usize) -> String {
     match page {
         0 => HOME.to_owned(),
@@ -506,7 +520,7 @@ fn panel(src: &Sources, sname: &str, e: &Entry, first_title: &str, first_body: &
         .filter(|x| !x.is_empty())
         .collect::<Vec<_>>()
         .join("\n"));
-    let upper = e.upper();
+    let upper = fit(e.upper());
     let mut cat = instance(
         src.t("settings_edit_description_category")?,
         sname,
@@ -606,11 +620,7 @@ fn option_rows<'a>(e: &'a Entry<'a>) -> Vec<Row<'a>> {
         .iter()
         .map(|opt| {
             let o = opt.o;
-            let restart = if o.binds == Binds::Db {
-                " Applies after a restart."
-            } else {
-                ""
-            };
+            let restart = if o.binds == Binds::Db { RESTART_NOTE } else { "" };
             Row {
                 key: format!("row_{}", opt.k),
                 kind: if o.kind == OptionType::Slider {
@@ -618,9 +628,9 @@ fn option_rows<'a>(e: &'a Entry<'a>) -> Vec<Row<'a>> {
                 } else {
                     RowKind::Toggle(opt)
                 },
-                label: label_case(&o.label),
-                title: o.label.to_uppercase(),
-                body: format!("{}{restart}", o.description).trim().to_owned(),
+                label: fit(label_case(&o.label)),
+                title: fit(o.label.to_uppercase()),
+                body: with_note(&o.description, restart),
             }
         })
         .collect()
@@ -705,7 +715,7 @@ fn build_page(src: &Sources, e: &Entry, rows: &[Row], adjustable: bool) -> Resul
                     src.t("settings_edit_toggle")?,
                     sname,
                     key,
-                    &[("toggle.label", &r.label), ("toggle.value", value)],
+                    &[("toggle.label", &r.label), ("toggle.value", &fit(value.clone()))],
                     true,
                 )?;
                 let tg = t.child_mut("toggle")?;
@@ -724,7 +734,10 @@ fn build_page(src: &Sources, e: &Entry, rows: &[Row], adjustable: bool) -> Resul
                     src.t("settings_edit_slider")?,
                     sname,
                     key,
-                    &[("slider.label", &r.label), ("slider.value", &cur.text)],
+                    &[
+                        ("slider.label", &r.label),
+                        ("slider.value", &fit(cur.text.clone())),
+                    ],
                     true,
                 )?;
                 let vals = o
@@ -766,7 +779,10 @@ fn build_page(src: &Sources, e: &Entry, rows: &[Row], adjustable: bool) -> Resul
                     src.t("settings_edit_toggle")?,
                     sname,
                     key,
-                    &[("toggle.label", &r.label), ("toggle.value", &cur.text)],
+                    &[
+                        ("toggle.label", &r.label),
+                        ("toggle.value", &fit(cur.text.clone())),
+                    ],
                     true,
                 )?;
                 let tg = t.child_mut("toggle")?;
@@ -1675,6 +1691,45 @@ mod tests {
         assert!(cut.len() <= 255, "{}", cut.len());
         assert!(cut.ends_with('…'));
         assert_eq!(fit("short".into()), "short");
+    }
+
+    #[test]
+    fn a_restart_note_is_kept_when_the_description_is_long() {
+        let note = RESTART_NOTE;
+        let long = "x".repeat(248);
+        let body = with_note(&long, note);
+        assert!(body.len() <= 255, "{}", body.len());
+        assert!(body.ends_with(note));
+        assert!(body.contains('…'));
+    }
+
+    #[test]
+    fn a_description_that_exactly_fits_is_not_cut() {
+        let text = "y".repeat(255 - RESTART_NOTE.len() - 1);
+        let body = with_note(&text, RESTART_NOTE);
+        assert_eq!(body.len(), 255);
+        assert_eq!(body, format!("{text} {RESTART_NOTE}"));
+        assert_eq!(
+            with_note("Short.", RESTART_NOTE),
+            "Short. Applies after a restart."
+        );
+    }
+
+    #[test]
+    fn a_restart_note_survives_multibyte_text_at_the_boundary() {
+        for n in 100..140 {
+            let text = format!("{}{}", "a".repeat(n % 3), "é🏁".repeat(n));
+            let body = with_note(&text, RESTART_NOTE);
+            assert!(body.len() <= 255, "{n}: {}", body.len());
+            assert!(body.ends_with(RESTART_NOTE));
+        }
+    }
+
+    #[test]
+    fn an_empty_description_keeps_only_the_note() {
+        assert_eq!(with_note("", RESTART_NOTE), RESTART_NOTE);
+        assert_eq!(with_note("  ", ""), "");
+        assert!(with_note(&"z".repeat(400), "").len() <= 255);
     }
 
     #[test]
