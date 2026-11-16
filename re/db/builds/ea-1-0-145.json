@@ -16,36 +16,36 @@
  },
  "overrides": {
   "Car_Register_DetachablePart_Thunk": {
-   "pattern": "E9 ?? ?? ?? ?? E2 0F 83 16 25 89 FF 31",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? E9 55 43 33 00 98 1E 41 BA 8C CC",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Car_Systems_Reset_Thunk": {
-   "pattern": "E9 ?? ?? ?? ?? E9 4A 56 ?? ?? ?? ?? 84",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 0F 8B A5 8C 06 04 4A 46 52 96 20",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Career_GameValue_GetUpgradesFailedDuringTimeAdvance": {
    "pattern": "48 83 EC 28 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28",
-   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Career_Get_CareerLengthDays_Thunk": {
-   "pattern": "E9 ?? ?? ?? ?? EA 0F 89 46 26 C8 FD 13 E9",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 29 25 6B B8 66 B5 66 D0 67 E4 E9",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Career_Set_EntrantData_Thunk": {
-   "pattern": "E9 ?? ?? ?? ?? 4F 60 ?? ?? ?? ?? E9 BB ?? ?? ?? ?? 80 ?? ?? ?? ?? CC 7F",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? E9 95 90 E4 FF 7D 12 67 71 E5 AA",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "FeTile_CareerDlcItem_Populate": {
    "pattern": "03 8B 42 04 89 05 ?? ?? ?? ?? ?? ?? F2 E8 ?? ?? ?? ?? 48 89 F0 48 83 C4 20 5E C3 CC CC CC CC CC 56 57 53 48 83 EC 50",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
   "FeTile_ItemBase_Slot78_Thunk": {
-   "pattern": "E9 ?? ?? ?? ?? E9 E5 AF ?? ?? ?? ?? CC 07 24 0A",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 95 C2 F7 A4 B1 57 CC E9 BC EB D9",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Game_CheckPrivilegeTask_OnUpdate": {
-   "pattern": "E9 ?? ?? ?? ?? E9 05 1F 28 02 F7 33 57",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? E9 35 11 B6 FF 28 50 E9 73 20 F2",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Game_CreateSessionDlcSelectTab_BuildTiles": {
    "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? CC 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
@@ -88,24 +88,28 @@
    "note": "The function is at 0x321cfc0 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
   },
   "Game_SaveMgr_RequestProfileSave_Thunk": {
-   "pattern": "E9 ?? ?? ?? ?? 95 3F 47 6D CE D5 88",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 0F 81 9A 76 CE 01 E2 E9 5C 91 F3",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Game_SeasonLength_ApplyPreset": {
-   "pattern": "E9 ?? ?? ?? ?? 07 30 48 C9 0A E9 BA",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 89 39 38 CC 69 53 0F 80 E1 9F 38",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Game_SeasonLength_PushCalendarEntry": {
-   "pattern": "E9 ?? ?? ?? ?? E9 DD 91 5A 00 EA 2A",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 4D 0B 3D F8 37 08 2F 0A 0F 80 7D",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Game_Set_VehicleController_Thunk": {
-   "pattern": "E9 ?? ?? ?? ?? 0F 8B 25 77 0D 00 E9 3B D8",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? DF 32 E9 07 EE BD 00 E9 4C C0 56",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
+  },
+  "Game_Store_UnsubscribeMessages": {
+   "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 08 02 00 00 48 89 CE 48 8B 81 ?? ?? 00 00",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Game_TileList_PushChildSelection_Thunk": {
-   "pattern": "E9 ?? ?? ?? ?? 0F 88 D2 3B ?? ?? ?? ?? 5C DB 96 00 E9",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? C9 1D A9 0F 87 78 62 8D 01 3B 0F",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Ne_Container_AbortNoReturn_1435d82f0": {
    "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC E9",
@@ -117,15 +121,15 @@
   },
   "Ne_Crt_FastFailTerminate": {
    "pattern": "48 83 EC 28 B9 17 00 00 00 FF 15 ?? ?? ?? ?? 85 C0 74",
-   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Ne_Crt_FatalNoReturn": {
-   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 0F ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? E9 ?? ?? ?? 00",
+   "note": "The function is located through its callers, which map one to one from the Steam 1.0.145 build; the pattern is the Steam bytes with the ones that differ wildcarded."
   },
   "Ne_Crt_InvalidParameterAbortStub_140e0fd20": {
-   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? 08 0F",
+   "note": "The function is located through its callers, which map one to one from the Steam 1.0.145 build; the pattern is the Steam bytes with the ones that differ wildcarded."
   },
   "Ne_Crt_Memcpy": {
    "pattern": "48 8B C1 4C 8D 15 ?? ?? ?? ?? 49 83 F8 0F 0F 87 ?? ?? ?? ?? 66 66 66 66 0F 1F 84 00 00 00 00 00 47 8B 8C 82 ?? ?? ?? 05",
@@ -140,8 +144,8 @@
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
   "Ne_Detach_ChildNode": {
-   "pattern": "E9 ?? ?? ?? ?? E9 37 63 CB 02 E9 BA",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 5D AF F2 87 98 0F 0F 8B EB 48 9C",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Ne_FlatHashMap_FindSlotU64_A": {
    "pattern": "E8 ?? ?? ?? ?? 48 FF 86 ?? 3C 00 00 48 89 D9 E8",
@@ -178,6 +182,18 @@
   "Ne_HashMap_ThrowLengthError_Decals2": {
    "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC E9",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_Libpng_WriteITXt": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 04 00 00 4D 89 CC 4C 89 C0 89 D5 48",
+   "note": "The function is located through its callers, which map one to one from the Steam 1.0.145 build; the pattern is the Steam bytes with the ones that differ wildcarded."
+  },
+  "Ne_Make_RandomIdBlock": {
+   "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 CE C6 01 ?? C5 F8 57 C0 C5 F8 11 41",
+   "note": "The function is located through its callers, which map one to one from the Steam 1.0.145 build; the pattern is the Steam bytes with the ones that differ wildcarded."
+  },
+  "Ne_Map_LowerBoundPairIntInt": {
+   "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 4C 89 C3 48 89 D6 48 89 CF 4C 8B 79 08 4D 8B 4F 08 31 ED 41 80 79 19 00 0F 84 86 00 00 00 4D 89",
+   "note": "The function is located through its callers, which map one to one from the Steam 1.0.145 build; the pattern is the Steam bytes with the ones that differ wildcarded."
   },
   "Ne_NetTransport_MigrateConnections": {
    "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 ?? 8D 2D",
@@ -229,64 +245,68 @@
    "note": "The function is at 0x39c2800 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
   },
   "Sess_Flow_ParseXml": {
-   "pattern": "E9 ?? ?? ?? ?? E9 FB EE DB 00 C7 B8 26 7C 03 9A",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 01 06 E9 A0 04 DB 03 DE E9 7D 99",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Sess_FormationLapLogic_SubscribeSafetyCarDeployment": {
    "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8",
    "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Sess_GridRundown_Update": {
-   "pattern": "E9 ?? ?? ?? ?? 85 D2 E9 ?? ?? ?? ?? F6 E9",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 23 8A D8 AC 19 DA 17 0F 83 6C 42",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Sess_Invalidate_Lap_Thunk": {
-   "pattern": "E9 ?? ?? ?? ?? D0 CC 0F 8E 17 E5 7B",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? E9 C5 91 1E 03 E9 3B 54 B9 00 A1",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
+  },
+  "Sess_LapTimes_CheckPersonalBestSector": {
+   "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 81 B0 00 00 00 48 8B 48 30 48 8B 89",
+   "note": "The function is located through its callers, which map one to one from the Steam 1.0.145 build; the pattern is the Steam bytes with the ones that differ wildcarded."
   },
   "Sess_PreLights_Update": {
-   "pattern": "E9 ?? ?? ?? ?? C2 B1 66 D9 0F 8A 4E FE F1 01 7B",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 4C 10 0F 82 E7 5F D2 01 F5 E6 67",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Sess_PreRaceToRace_Update": {
    "pattern": "E9 ?? ?? ?? 0B E9 CC CC CC CC CC CC CC CC CC CC",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
   },
   "Sess_RaceRuleset_OnLapCompleted": {
-   "pattern": "E9 ?? ?? ?? ?? E9 ?? ?? ?? ?? DC AE 90 A8 A2 E3",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 0F 8D 15 74 C2 FD 0F 87 8B 5E 67",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Sess_RaceRuleset_SetTimeLimit": {
-   "pattern": "E9 ?? ?? ?? ?? E9 89 A0 4B 02 45 6D 0E B1 CC CC",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 20 8D 96 CC CC CC CC CC CC CC CC",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Sess_Recordable_Register": {
-   "pattern": "E9 ?? ?? ?? ?? E9 67 EA ?? ?? ?? ?? D5 73 B7",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 98 44 17 E9 C4 6F 1C 02 E9 7D CF",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Sess_RedFlagRaceStrategy_Update": {
    "pattern": "56 57 53 48 83 EC 30 48 89 D6 8B 05 ?? ?? ?? 03 89 81 90 0C 00 00 80 B9",
    "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Sess_RedFlagSystem_OnSessionBeginGameplay": {
-   "pattern": "E9 ?? ?? ?? ?? FE 0F 82 36 03 AE FF 37 3C 7E 1D",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? EE 7D DF 5E 4E AB 34 5F FA 8B 5E",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Sess_RedFlagSystem_OnStartLightsBegin": {
-   "pattern": "E9 ?? ?? ?? ?? 34 57 67 F9 DF E5 ?? ?? ?? ?? B3",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? C7 F3 1A 95 0F 8B 29 38 F6 FE 79",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Sess_SafetyCarTether_UpdateTarget": {
-   "pattern": "E9 ?? ?? ?? ?? 1C B2 E9 4A ?? ?? ?? ?? CC CC 2E",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 85 D4 0F 86 D7 56 EB 01 15 20 75",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Sess_SessionClock_SetTime": {
-   "pattern": "E9 ?? ?? ?? ?? 16 24 DE ?? ?? ?? ?? C7 4F",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? F5 D1 E9 87 55 F1 01 0F 80 E4 5A",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Sess_Tod_BuildSessionDataset_Thunk": {
-   "pattern": "E9 ?? ?? ?? ?? C8 49 FB E9 68 9B 21",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? D6 3C 78 AD 0F 86 A8 A3 4F 00 A0",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Trk_TimeTrialTrackSelectVm_OnCommandRaised": {
    "pattern": "56 57 53 48 83 EC 40 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D ?? 35 B0 02",
@@ -301,8 +321,8 @@
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
   "Vm_Set_TabEnabled": {
-   "pattern": "E9 ?? ?? ?? ?? 6D AA 5D F3 EE 61 88",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? ?? 0B DC 9D E9 28 DF 75 01 2B E9 48",
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "core.save_system2_win": {
    "pattern": "48 89 47 20 48 8D 05 ?? ?? ?? ?? 48 89 07 48 8D 47 48 48 C7 47 38 04 01 00 00",
@@ -700,11 +720,11 @@
   },
   "site_Sess_TimeTrialLeaderboard_TabChild": {
    "pattern": "48 8B 01 B2 01 FF 50 30 48 89 F1 E8 ?? ?? ?? ?? 90 48 83 C4 40 5E C3",
-   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "site_Sess_TyreVisSlotLookup": {
    "pattern": "4C 89 ?? E8 ?? ?? ?? ?? 49 8B 86 48 9C 00 00 49 8B 8E 98 9C 00 00",
-   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
+   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "site_Team_LoadInsertCall": {
    "pattern": "E8 ?? ?? ?? ?? 8B 7C 24 4C 4C 8D 74 24 68",
