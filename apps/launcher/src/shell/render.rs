@@ -118,6 +118,7 @@ impl Render for Shell {
             .children(self.popover_layer(p, cx))
             .children(self.popup_layer(p, cx))
             .children(self.update_bar(p))
+            .children(self.scale_rescue(p, cx))
             .child(self.play_bar(p, wide, cx))
             .children(self.task_dialog(p, window, cx))
             .children(self.crash_overlay(p, cx))

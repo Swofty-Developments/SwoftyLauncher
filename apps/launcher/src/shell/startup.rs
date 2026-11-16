@@ -2,10 +2,12 @@ use crate::game::{self};
 use crate::library::Library;
 use crate::notices::{Notification, Notify};
 use crate::play_checks;
+use gpui_kit::component::slider::{SliderEvent, SliderState};
 use gpui_kit::*;
 use std::collections::{HashMap, HashSet};
 use std::rc::Rc;
 use std::time::{Duration, Instant};
+use swofty_core::session::{UI_SCALE_MAX, UI_SCALE_MIN, clamp_ui_scale};
 use swofty_core::store::Store;
 
 use super::{Page, Seen, Shell};
@@ -65,7 +67,28 @@ impl Shell {
             seen,
         } = prepared;
         swofty_i18n::set_language(config.language.as_deref());
-        let ui_scale = config.ui_scale_step();
+        let ui_scale = config.ui_scale_percent();
+        let ui_scale_slider = cx.new(|_| {
+            SliderState::new()
+                .min(f32::from(UI_SCALE_MIN))
+                .max(f32::from(UI_SCALE_MAX))
+                .step(1.)
+                .default_value(f32::from(ui_scale.unwrap_or(100)))
+        });
+        let _ui_scale_changes = cx.subscribe_in(
+            &ui_scale_slider,
+            window,
+            |this, _, ev: &SliderEvent, window, cx| match ev {
+                SliderEvent::Change(v) => {
+                    this.ui_scale_drag = Some(clamp_ui_scale(v.start().round().max(0.) as u16));
+                    cx.notify();
+                }
+                SliderEvent::Release(v) => {
+                    this.ui_scale_drag = None;
+                    this.set_ui_scale(Some(clamp_ui_scale(v.start().round().max(0.) as u16)), window, cx);
+                }
+            },
+        );
         let vr_profiles = config.vr_profiles;
         let start_store = config.launch.start_store;
         let ui_mode = config.ui_mode;
@@ -154,6 +177,9 @@ impl Shell {
             start_store,
             ui_mode,
             ui_scale,
+            ui_scale_slider,
+            ui_scale_drag: None,
+            _ui_scale_changes,
             onboarding: None,
             developer_mode,
             clear_old_session_logs,

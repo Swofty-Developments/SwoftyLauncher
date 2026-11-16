@@ -107,6 +107,9 @@ pub struct Shell {
     pub(crate) start_store: bool,
     pub(crate) ui_mode: Option<UiMode>,
     pub(crate) ui_scale: Option<u16>,
+    pub(crate) ui_scale_slider: Entity<SliderState>,
+    pub(crate) ui_scale_drag: Option<u16>,
+    pub(crate) _ui_scale_changes: Subscription,
     pub(crate) onboarding: Option<crate::onboarding::Onboarding>,
     pub(crate) developer_mode: bool,
     /// `clear_old_session_logs` from config.json: opt-in, old session logs are cleared at start.

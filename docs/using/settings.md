@@ -27,7 +27,7 @@ description: Settings holds the launcher's own options in five categories, shows
 
 **Display mode** switches between **PC mode**, the normal layout, and **TV mode**, which scales the whole launcher up by 30% and widens the scrollbars, for handhelds and couch play. The welcome wizard asks for it, with your language, the first time the launcher opens and once after an update that changes the wizard. Each choice applies as you pick it, Esc or **Skip** closes the wizard, and you can change both here at any time.
 
-**Interface scale** makes the whole launcher larger or smaller on top of the display mode. **Auto** is the default and keeps the size the display mode gives. The other steps are 75%, 90%, 100%, 110%, 125% and 150%, and each multiplies the display mode's size: TV mode at 75% is about 98% of the PC layout. It is a drop-down, so a keyboard or controller opens it and moves through the steps. The change applies straight away, and the launcher keeps it for next time. On a Steam Deck in gaming mode, TV mode with **90%** or **75%** fits the 1280x800 screen with room to spare.
+**Interface scale** makes the whole launcher larger or smaller on top of the display mode. **Auto** is the default and keeps the size the display mode gives. The slider runs from 1% to 400% in steps of 1%, and the percentage multiplies the display mode's size: TV mode at 75% is about 98% of the PC layout. The change applies when you let go of the slider, and the launcher keeps it for next time. **Reset to automatic** returns to Auto. Below 60% a **Reset interface scale** button stays in the bottom right corner at a fixed size. On a Steam Deck in gaming mode, TV mode with **90%** or **75%** fits the 1280x800 screen with room to spare.
 
 ## Storage
 

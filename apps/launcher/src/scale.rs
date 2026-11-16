@@ -2,7 +2,7 @@ use std::sync::atomic::{AtomicBool, AtomicU32, Ordering};
 
 use gpui_kit::component::Theme;
 use gpui_kit::{App, Pixels, Window};
-use swofty_core::session::{UiMode, nearest_ui_scale_step};
+use swofty_core::session::{UiMode, clamp_ui_scale};
 
 pub const TV_SCALE: f32 = 1.3;
 const BASE_REM: f32 = 16.;
@@ -20,13 +20,13 @@ pub fn scale_for(mode: UiMode) -> f32 {
     }
 }
 
-/// The scale for a display mode and an interface scale step: Auto is the mode's own scale,
-/// a step multiplies it.
-pub fn scale_with(mode: UiMode, step: Option<u16>) -> f32 {
+/// The scale for a display mode and an interface scale percent: Auto is the mode's own scale,
+/// a percent multiplies it.
+pub fn scale_with(mode: UiMode, percent: Option<u16>) -> f32 {
     let base = scale_for(mode);
-    match step {
+    match percent {
         None => base,
-        Some(step) => base * f32::from(nearest_ui_scale_step(step)) / 100.,
+        Some(percent) => base * f32::from(clamp_ui_scale(percent)) / 100.,
     }
 }
 
@@ -79,8 +79,8 @@ pub fn content_width(viewport_px: f32, scale: f32) -> f32 {
     (viewport_px / scale - 2. * crate::ui::tokens::space::GUTTER).max(MIN_CONTENT)
 }
 
-pub fn apply(mode: UiMode, step: Option<u16>, window: &mut Window, cx: &mut App) {
-    let scale = scale_with(mode, step);
+pub fn apply(mode: UiMode, percent: Option<u16>, window: &mut Window, cx: &mut App) {
+    let scale = scale_with(mode, percent);
     SCALE.store(scale.to_bits(), Ordering::Relaxed);
     TV.store(mode.is_tv(), Ordering::Relaxed);
     window.set_rem_size(gpui_kit::px(BASE_REM * scale));
@@ -143,14 +143,16 @@ mod tests {
     }
 
     #[test]
-    fn auto_keeps_the_mode_scale_and_a_step_multiplies_it() {
+    fn auto_keeps_the_mode_scale_and_a_percent_multiplies_it() {
         assert_eq!(scale_with(UiMode::Pc, None), 1.);
         assert_eq!(scale_with(UiMode::Tv, None), TV_SCALE);
         assert_eq!(scale_with(UiMode::Pc, Some(100)), 1.);
         assert_eq!(scale_with(UiMode::Pc, Some(150)), 1.5);
         assert!((scale_with(UiMode::Tv, Some(75)) - TV_SCALE * 0.75).abs() < 1e-6);
-        assert_eq!(scale_with(UiMode::Pc, Some(9999)), 1.5);
-        assert_eq!(scale_with(UiMode::Pc, Some(1)), 0.75);
+        assert_eq!(scale_with(UiMode::Pc, Some(9999)), 4.);
+        assert_eq!(scale_with(UiMode::Pc, Some(0)), 0.01);
+        assert_eq!(scale_with(UiMode::Pc, Some(1)), 0.01);
+        assert_eq!(scale_with(UiMode::Pc, Some(237)), 2.37);
     }
 
     #[test]

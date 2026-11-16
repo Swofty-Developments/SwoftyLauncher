@@ -92,7 +92,7 @@ pub struct Config {
     /// The layout the player chose on first run; `None` until they choose.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ui_mode: Option<UiMode>,
-    /// The interface scale step in percent; `None` is Auto, the scale the display mode gives.
+    /// The interface scale in percent, 1 to 400; `None` is Auto, the scale the display mode gives.
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub ui_scale: Option<u16>,
     /// The code of the language the launcher shows; `None` is English.
@@ -167,15 +167,15 @@ impl UiMode {
     }
 }
 
-/// The interface scale steps in percent a player can pick besides Auto.
-pub const UI_SCALE_STEPS: [u16; 6] = [75, 90, 100, 110, 125, 150];
+/// The smallest interface scale in percent.
+pub const UI_SCALE_MIN: u16 = 1;
 
-/// The step nearest `percent`, so a hand-edited value still lands on one the launcher offers.
-pub fn nearest_ui_scale_step(percent: u16) -> u16 {
-    UI_SCALE_STEPS
-        .into_iter()
-        .min_by_key(|step| step.abs_diff(percent))
-        .unwrap_or(100)
+/// The largest interface scale in percent.
+pub const UI_SCALE_MAX: u16 = 400;
+
+/// `percent` held to the range the launcher supports, so a hand-edited value stays usable.
+pub fn clamp_ui_scale(percent: u16) -> u16 {
+    percent.clamp(UI_SCALE_MIN, UI_SCALE_MAX)
 }
 
 /// The version of the welcome wizard. Raise it to show the wizard once more to everyone.
@@ -187,9 +187,9 @@ impl Config {
         self.onboarding.is_none_or(|seen| seen < ONBOARDING_VERSION)
     }
 
-    /// The chosen interface scale step, snapped to an offered step; `None` is Auto.
-    pub fn ui_scale_step(&self) -> Option<u16> {
-        self.ui_scale.map(nearest_ui_scale_step)
+    /// The chosen interface scale in percent, held to 1 to 400; `None` is Auto.
+    pub fn ui_scale_percent(&self) -> Option<u16> {
+        self.ui_scale.map(clamp_ui_scale)
     }
 
     /// The layout in use: what the player chose, PC until they do.
@@ -993,29 +993,31 @@ mod tests {
     fn ui_scale_is_auto_until_chosen_and_round_trips() {
         let config = Config::default();
         assert_eq!(config.ui_scale, None);
-        assert_eq!(config.ui_scale_step(), None);
+        assert_eq!(config.ui_scale_percent(), None);
         assert!(!serde_json::to_string(&config).unwrap().contains("ui_scale"));
-        for step in UI_SCALE_STEPS {
+        for percent in [1, 75, 90, 100, 110, 125, 150, 237, 400] {
             let config = Config {
-                ui_scale: Some(step),
+                ui_scale: Some(percent),
                 ..Config::default()
             };
             let back: Config = serde_json::from_str(&serde_json::to_string(&config).unwrap()).unwrap();
-            assert_eq!(back.ui_scale_step(), Some(step));
+            assert_eq!(back.ui_scale_percent(), Some(percent));
         }
         let old: Config = serde_json::from_str(r#"{ "ui_mode": "tv" }"#).unwrap();
         assert_eq!(old.ui_scale, None);
     }
 
     #[test]
-    fn ui_scale_snaps_to_an_offered_step() {
-        assert_eq!(nearest_ui_scale_step(0), 75);
-        assert_eq!(nearest_ui_scale_step(60000), 150);
-        assert_eq!(nearest_ui_scale_step(100), 100);
-        assert_eq!(nearest_ui_scale_step(104), 100);
-        assert_eq!(nearest_ui_scale_step(106), 110);
-        let hand: Config = serde_json::from_str(r#"{ "ui_scale": 400 }"#).unwrap();
-        assert_eq!(hand.ui_scale_step(), Some(150));
+    fn ui_scale_is_held_to_one_through_four_hundred() {
+        assert_eq!(clamp_ui_scale(0), 1);
+        assert_eq!(clamp_ui_scale(1), 1);
+        assert_eq!(clamp_ui_scale(237), 237);
+        assert_eq!(clamp_ui_scale(400), 400);
+        assert_eq!(clamp_ui_scale(60000), 400);
+        let low: Config = serde_json::from_str(r#"{ "ui_scale": 0 }"#).unwrap();
+        assert_eq!(low.ui_scale_percent(), Some(1));
+        let high: Config = serde_json::from_str(r#"{ "ui_scale": 9000 }"#).unwrap();
+        assert_eq!(high.ui_scale_percent(), Some(400));
     }
 
     #[test]
