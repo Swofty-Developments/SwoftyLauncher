@@ -130,7 +130,7 @@ impl Shell {
         SettingsSection::new(tr("Interface"))
             .row(
                 SettingRow::new(tr("Interface scale"))
-                    .description(tr("Makes the whole launcher larger or smaller, from 1% to 400%, on top of the display mode. Auto keeps the size the display mode gives. The change applies when you let go of the slider"))
+                    .description(tr("Makes the whole launcher larger or smaller, on top of the display mode. Auto keeps the size the display mode gives"))
                     .control(scale),
             )
             .row(
