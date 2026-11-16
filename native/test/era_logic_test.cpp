@@ -140,15 +140,19 @@ static void weekend_swap_tests()
         q(two)[i] = 0x300 + i;
     }
     q(host)[4] = 0xaaaa;                                              // the field right behind (+0x1b0) stays put
+    auto tag = [](Mode &m) { return reinterpret_cast<uint64_t *>(m.mem + era::MODE_OPTIONS_TAG); };
+    *tag(host) = 0xf1, *tag(one) = 0xf50, *tag(two) = 0xf53;
     expect(swaps.swap(host.mem, one.mem) && q(host)[0] == 0x200 && q(host)[3] == 0x203 && q(one)[0] == 0x100 &&
                q(one)[3] == 0x103 && q(host)[4] == 0xaaaa && swaps.active() == 1,
            "a press exchanges the four weekend option qwords of the host and the helper mode");
+    expect(*tag(host) == 0xf50 && *tag(one) == 0xf1, "a press exchanges the options tag (+0x00) too: the menu offers the helper's values");
     expect(swaps.swap(host.mem, one.mem) && q(host)[0] == 0x200 && q(one)[0] == 0x100,
            "pressing the same box again keeps the exchange (no double swap)");
     expect(swaps.swap(host.mem, two.mem) && q(host)[0] == 0x300 && q(two)[0] == 0x100 && q(one)[0] == 0x200 &&
                swaps.helper() == two.mem,
            "a box with another helper puts the first helper's container back before it exchanges");
-    expect(swaps.put_back() == 1 && q(host)[0] == 0x100 && q(host)[3] == 0x103 && q(two)[0] == 0x300 && swaps.active() == 0,
+    expect(swaps.put_back() == 1 && q(host)[0] == 0x100 && q(host)[3] == 0x103 && q(two)[0] == 0x300 && *tag(host) == 0xf1 &&
+               *tag(two) == 0xf53 && *tag(one) == 0xf50 && swaps.active() == 0,
            "put back gives every mode its own container again");
     expect(swaps.put_back() == 0, "nothing held: put back writes nothing");
 
@@ -167,9 +171,9 @@ static void weekend_swap_tests()
     expect(!swaps.swap(host.mem, host.mem) && !swaps.swap(nullptr, one.mem) && !swaps.swap(host.mem, nullptr) &&
                swaps.active() == 0,
            "no host, no helper or the host itself: nothing is exchanged");
-    expect(era::MODE_WEEKEND_OPTIONS == 0x190 && era::MODE_WEEKEND_OPTIONS + 8 * era::WEEKEND_OPTION_QWORDS == 0x1b0 &&
-               era::MODE_WEEKEND_OPTIONS + 8 * era::WEEKEND_OPTION_QWORDS <= era::MODE_TYRE_WARMERS,
-           "GameSetupMode +0x190..+0x1a8 weekend options container (re/db structs/GameSetupMode.h)");
+    expect(era::MODE_WEEKEND_OPTIONS == 0x190 && era::WEEKEND_SWAP_OFFSETS[era::WEEKEND_OPTION_QWORDS - 1] == 0x1a8 &&
+               era::MODE_WEEKEND_OPTIONS + 0x20 <= era::MODE_TYRE_WARMERS && era::WEEKEND_SWAP_OFFSETS[0] == 0,
+           "GameSetupMode +0x00 options tag and +0x190..+0x1a8 weekend options container (re/db structs/GameSetupMode.h)");
 }
 
 // The store of every parsed setup mode (g_Game_Scenarios +0x40): 16-byte entries {allocator, GameSetupMode *} by stat

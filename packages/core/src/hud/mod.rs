@@ -1663,6 +1663,98 @@ mod tests {
     }
 
     #[test]
+    fn two_screen_records_hide_each_others_roots_in_their_hosts() {
+        let Some(stock) = game() else { return };
+        let dir = addon_dir("two-screens");
+        let mk = |addon: &str| {
+            let mut v = tower_record();
+            let o = v.as_object_mut().unwrap();
+            o.remove("stock_nodes");
+            o.remove("restyle");
+            Input {
+                addon: addon.into(),
+                key: "tower".into(),
+                dir: dir.clone(),
+                record: HudElement::parse(&v).unwrap(),
+            }
+        };
+        let out = compose(&stock, &[mk("one.season"), mk("two.season")]).unwrap();
+        let ins: Vec<String> = [("one.season", "tower"), ("two.season", "tower")]
+            .iter()
+            .map(|(a, k)| prefix_for(a, k, None).unwrap())
+            .collect();
+        let (a, b) = (&ins[0], &ins[1]);
+        let file = |name: &str| {
+            let built = out.archives.iter().find(|x| x.file == name).unwrap();
+            Erp::parse(&built.bytes).unwrap()
+        };
+        let checks = [
+            (
+                pkg_in(&file("hud_template.erp"), dials::TEMPLATE),
+                screens::STANDINGS_PARENT,
+            ),
+            (
+                pkg_in(&file("hud_spectator.erp"), dials::SPECTATOR),
+                screens::SPECT_PARENT,
+            ),
+            (
+                pkg_in(&file("hud_replay.erp"), screens::REPLAY_UI),
+                screens::REPLAY_ROOT,
+            ),
+        ];
+        for (t, parent) in &checks {
+            for (me, other) in [(a, b), (b, a)] {
+                for (node, el) in [
+                    (format!("o_{other}"), other.clone()),
+                    (format!("o_{other}_pv"), screen_build::preview_root(other)),
+                ] {
+                    let path = format!("{parent}.{me}_ctl.host_n.{node}");
+                    let at = crate::ui::node::find_path(&t.root, &path).unwrap_or_else(|_| panic!("{path}"));
+                    let n = crate::ui::node::node_at(&t.root, &at).unwrap();
+                    let layout: Vec<String> = n
+                        .slot(crate::ui::node::LAYOUT)
+                        .unwrap()
+                        .iter()
+                        .flat_map(|c| c.as_arr().unwrap().items.iter())
+                        .map(|o| o.as_obj().unwrap().str_at("debugName").unwrap().to_owned())
+                        .collect();
+                    assert_eq!(layout, std::slice::from_ref(&el), "{path}");
+                    let vis = n.props().unwrap().get("visible").unwrap().as_obj().unwrap();
+                    assert_eq!(
+                        vis.get("value")
+                            .and_then(swofty_formats::pkg::Node::as_val)
+                            .and_then(stock_edit::as_bool),
+                        Some(false),
+                        "{path}"
+                    );
+                }
+                assert!(
+                    crate::ui::node::find_path(&t.root, &format!("{parent}.{me}_ctl.host_n.o_{me}")).is_err(),
+                    "{me} does not hide its own root"
+                );
+            }
+        }
+        let scene = file("hud_screen_scene.erp");
+        let pre = swofty_formats::uipre::Uipre::parse(
+            &scene.find(screens::STACKED_UIPRE).unwrap().fragments[0]
+                .data()
+                .unwrap(),
+        )
+        .unwrap();
+        for (me, other) in [(a, b), (b, a)] {
+            let inside = pre.element_ids_in(&screens::standings().host_name(me));
+            for name in [other.clone(), screen_build::preview_root(other)] {
+                assert!(
+                    inside.contains(&swofty_formats::uipre::element_id(&name)),
+                    "{name} hidden in {me}'s host in the editor"
+                );
+            }
+        }
+        assert!(out.lines.iter().any(|l| l.contains("other screen records")));
+        std::fs::remove_dir_all(dir).ok();
+    }
+
+    #[test]
     fn two_addons_share_one_scene_and_one_template_pass() {
         let Some(stock) = game() else { return };
         let dir = addon_dir("two");

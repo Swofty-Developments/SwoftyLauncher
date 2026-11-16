@@ -1278,8 +1278,14 @@ private:
 // swap is in place still frees each container once (forget). The swap is held for the whole weekend and undone by the
 // next press of another box, a stock box or a picker build without an addon list. Only one host mode takes the
 // helper's container: a second host mode keeps its own (one container cannot sit in two modes).
+// The options tag (+0x00: the options_system game_setup_mode tag Sess_Parse_GameSetupMode resolves from the row's
+// options_tag through 0x142a1a740 and stores at 0x142a187e4) decides which values the weekend menu offers
+// (options_system.context tag restrictions); it is exchanged with the weekend options so the menu offers the helper's.
+constexpr size_t MODE_OPTIONS_TAG = 0x00;
 constexpr size_t MODE_WEEKEND_OPTIONS = 0x190;
-constexpr size_t WEEKEND_OPTION_QWORDS = 4;
+constexpr size_t WEEKEND_OPTION_QWORDS = 5;
+inline constexpr size_t WEEKEND_SWAP_OFFSETS[WEEKEND_OPTION_QWORDS] = {MODE_OPTIONS_TAG, MODE_WEEKEND_OPTIONS, MODE_WEEKEND_OPTIONS + 8,
+                                                                       MODE_WEEKEND_OPTIONS + 16, MODE_WEEKEND_OPTIONS + 24};
 
 class WeekendSwaps {
 public:
@@ -1332,7 +1338,11 @@ private:
         uint8_t *host, *helper;
         uint64_t host_now[WEEKEND_OPTION_QWORDS], helper_now[WEEKEND_OPTION_QWORDS];
     };
-    static uint64_t *slots(uint8_t *mode) { return reinterpret_cast<uint64_t *>(mode + MODE_WEEKEND_OPTIONS); }
+    struct Slots {
+        uint8_t *mode;
+        uint64_t &operator[](size_t i) const { return *reinterpret_cast<uint64_t *>(mode + WEEKEND_SWAP_OFFSETS[i]); }
+    };
+    static Slots slots(uint8_t *mode) { return {mode}; }
     static void exchange(uint8_t *a, uint8_t *b)
     {
         for (size_t i = 0; i < WEEKEND_OPTION_QWORDS; ++i)
