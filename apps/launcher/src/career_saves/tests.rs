@@ -475,7 +475,7 @@ fn copy_of(name: &str, ea: bool) -> PathBuf {
 
 #[cfg(not(windows))]
 #[test]
-fn an_ea_copy_profile_shows_the_one_save_every_profile_plays_on() {
+fn an_ea_copy_profile_shows_its_own_launcher_save() {
     let root = copy_of("ea", true);
     let store = swofty_core::store::Store::new(&root);
     for p in ["hi", "default"] {
@@ -483,11 +483,10 @@ fn an_ea_copy_profile_shows_the_one_save_every_profile_plays_on() {
         let loc = built.view.loc.as_ref().expect("the EA save");
         assert_eq!(
             (loc.source.as_str(), loc.layout),
-            ("ea-steamuser", vault::Layout::Ea),
+            (format!("launcher-ea.{p}").as_str(), vault::Layout::LauncherEa),
             "{p}"
         );
-        assert!(built.view.has_save, "{p}");
-        assert!(built.view.shared_by_every_profile(), "{p}");
+        assert!(!built.view.shared_by_every_profile(), "{p}");
     }
     std::fs::remove_dir_all(&root).ok();
 }
