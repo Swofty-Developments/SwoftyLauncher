@@ -711,6 +711,9 @@
   "Ai_Get_GeneralSettings": {
    "match": "0x6662bd"
   },
+  "Ai_Handle_PitStateChanged_Thunk": {
+   "match": "0x6b3150"
+  },
   "Ai_HashMap_FindIndexU64": {
    "match": "0x63f13e"
   },
