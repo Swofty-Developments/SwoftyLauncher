@@ -395,8 +395,8 @@ EOF
         once "fe tiles: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(front-end tile list guard\)': 3 mixin\(s\)"
         once "fe tiles: the guard is armed" '\[fe\] tiles guard armed'
         once "fe tiles: a list missing from the slot array is skipped and logged once" '\[fe\] tiles: entrant list f2_2026 is not in the game data; its tile is left without a list'
-        once "ai corner: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ai corner start guard\)': 1 mixin"
-        once "ai corner: the guard is armed" '\[ai\] corner start guard armed'
+        once "ai corner: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ai brake line guard\)': 1 mixin"
+        once "ai corner: the guard is armed" '\[ai\] brake line guard armed'
         once "ai corner: a car with no corner start line is skipped and logged once" '\[ai\] corner start: car 3 has no corner start ahead on this track'"'"'s AI line'
         once "replay grid: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(replay recorder grid guard\)': 1 mixin"
         once "replay grid: the guard is armed" '\[replay\] recorder grid guard armed'
@@ -915,7 +915,7 @@ for guard in on off; do
         compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: ai corner on: a crash report was written"; status=1; } ||
             echo "ok  : ai corner on: no crash report"
     else
-        once "ai corner off: the guard is off" '\[ai\] corner start guard off \(SWOFTY_AI_CORNER_GUARD=0\)'
+        once "ai corner off: the guard is off" '\[ai\] brake line guard off \(SWOFTY_AI_CORNER_GUARD=0\)'
         check "ai corner off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Ai_Job_UpdateCarsParallel\+0x10'
         [[ $code != 0 ]] && echo "ok  : ai corner off: process ended with $code" || { echo "FAIL: ai corner off: process exited 0"; status=1; }
     fi

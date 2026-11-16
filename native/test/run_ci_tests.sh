@@ -78,7 +78,7 @@ t "AI team curves guard unit test" native/test/run_ai_curves_test.sh
 t "Teammate pairs guard unit test" native/test/run_teammate_pairs_test.sh
 t "R&D supplier budget unit test" native/test/run_rnd_suppliers_test.sh
 t "Setup screen car guard unit test" native/test/run_setup_vm_test.sh
-t "AI corner start guard unit test" native/test/run_ai_corner_test.sh
+t "AI brake line guard unit test" native/test/run_ai_corner_test.sh
 t "Replay recorder grid guard unit test" native/test/run_replay_grid_test.sh
 t "placed record bound unit test" native/test/run_placed_record_test.sh
 t "Tyre slot guard unit test" native/test/run_tyre_slots_test.sh
