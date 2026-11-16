@@ -72,12 +72,14 @@
    "note": "The function is at 0x2386dc0 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
   },
   "Game_Handle_GarageCrewEvent_Thunk": {
-   "pattern": "E9 ?? ?? ?? 07 0F 89 43 6F 15 00 0D 8F 7E 92 0F 8D 48 DB 00 00 2E DD EF",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? 07 CC D1 FD CC B7 A3 F2 19 46 C7 B6",
+   "note": "A protector thunk; the pattern is its EA bytes and the match address is the hint, found from the unique string the real function uses at the same offset as on Steam.",
+   "section": ".arch"
   },
   "Game_Handle_SpecGarageCrewEvent_Thunk": {
-   "pattern": "E9 ?? ?? ?? 0C EC 84 E6 0B 00 E9 C2 1C 10 01 E9 FF 90 E2 FF 5A CC 7A 13",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+   "pattern": "E9 ?? ?? ?? 0B 23 2F E9 ?? ?? ?? ?? 5B 6E 58 FE",
+   "note": "A protector thunk; the pattern is its EA bytes and the match address is the hint, found from the unique string the real function uses at the same offset as on Steam.",
+   "section": ".arch"
   },
   "Game_Input_OnControlSchemeAdded": {
    "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4C 89 C6 48 89 D3 49 89 CD 49 8B 90",
@@ -640,9 +642,10 @@
    "expect": "E8 8F 4D DA FE"
   },
   "site_Game_CareerWizard_BackRoute": {
-   "pattern": "48 89 54 24 40 48 8D 15 ?? ?? ?? ?? 48 8D 7C 24 40 48 89 F9 45 31 C0 45 31 C9 E8",
-   "anchor": 12,
-   "note": "The base pattern fails on 1.0.145 because the zeroing store and the call before it changed. The lea of \"back\" and the rest of the sequence are the same."
+   "pattern": "48 C7 44 24 40 00 00 00 00 48 8D 15 ?? ?? ?? ?? 48 8D 7C 24 40 48 89 F9 45 31 C0 45 31 C9 E8 ?? ?? ?? ?? 48 8B 4E 28 48 89 F2 49 89 F8 45 31 C9 E8 ?? ?? ?? ?? EB 24 BA 05 15 00 00",
+   "anchor": 16,
+   "note": "The pattern is the EA 1.0.145 code at the Steam 1.0.145 site, found from a decrypted in-game dump.",
+   "expect": "48 8D 7C 24 40"
   },
   "site_Game_DriverSelectHeader_BuildTabs": {
    "pattern": "E8 ?? ?? ?? ?? C6 86 10 03 00 00 01 48 8B 86 C0 02 00 00",
@@ -693,24 +696,32 @@
    "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "site_Ne_HwBool_CrowdInShadows": {
-   "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D",
+   "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8",
    "anchor": 12,
-   "note": "The base pattern fails on 1.0.145 because the junk after the call changed. The pattern keeps the call and the following lea of the same reader (the attribute loop that loads 'crowdInShadows')."
+   "note": "The EA 1.0.145 code around the call is padded with junk instructions, so the pattern is the shared run before the call and the match address is the hint.",
+   "expect": "E8",
+   "section": ".xtls"
   },
   "site_Ne_HwBool_NightShadowCharCast": {
-   "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 0F 94 96 C1 05",
+   "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8",
    "anchor": 12,
-   "note": "The base pattern fails on 1.0.145 because the code around the call changed. Same call in the 'nightShadowCharacterCast' reader."
+   "note": "The EA 1.0.145 code around the call is padded with junk instructions, so the pattern is the shared run before the call and the match address is the hint.",
+   "expect": "E8",
+   "section": ".xtls"
   },
   "site_Ne_HwInt_NightShadowMapSize": {
-   "pattern": "49 8B 4C 24 50 31 D2 45 31 C0 E8 ?? ?? ?? ?? 32 0D",
-   "anchor": 10,
-   "note": "The base pattern fails on 1.0.145 because the junk after the call changed. Same call in the 'nightShadowMapSize' reader."
+   "pattern": "85 C0 75 D4 49 8B 4C 24 50 31 D2 45 31 C0 E8",
+   "anchor": 14,
+   "note": "The EA 1.0.145 code around the call is padded with junk instructions, so the pattern is the shared run before the call and the match address is the hint.",
+   "expect": "E8",
+   "section": ".xtls"
   },
   "site_Ne_HwInt_ShadowSampling": {
-   "pattern": "31 FF 31 D2 45 31 C0 E8 ?? ?? ?? ?? 85 C0 0F 4E C7",
-   "anchor": 7,
-   "note": "The base pattern fails on 1.0.145 because the junk after the call changed. Same call in the 'sampling' reader."
+   "pattern": "49 8B 4C 24 50 31 FF 31 D2 45 31 C0 E8",
+   "anchor": 12,
+   "note": "The EA 1.0.145 code around the call is padded with junk instructions, so the pattern is the shared run before the call and the match address is the hint.",
+   "expect": "E8",
+   "section": ".xtls"
   },
   "site_Sess_InGamePlayerFinishedAiCall": {
    "pattern": "E8 ?? ?? ?? ?? 49 81 C6 A8 00 00 00 4C 89 F1 E8",
@@ -736,12 +747,55 @@
    "expect": "E8 17 23 87 FE"
   },
   "vt_Sess_UnloadRewardSequence": {
-   "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 66 C7 86 80 0C 00",
-   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
-   "section": ".trace"
+   "pattern": "C7 86 78 0C 00 00 00 00 00 00 48 8D 05 ?? ?? ?? ?? 48 89 06 66 C7 86 80 0C 00 00",
+   "note": "The pattern is the EA 1.0.145 code at the Steam 1.0.145 site, found from a decrypted in-game dump.",
+   "section": ".xtls",
+   "anchor": 13,
+   "resolve": {
+    "kind": "riprel",
+    "insn": 10,
+    "len": 7
+   }
+  },
+  "Career_Select_DeluxeUpgradeBundleLabel": {
+   "pattern": "56 57 53 48 81 EC 60 01 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 81 38 87 D5 39 95",
+   "note": "The pattern is the EA 1.0.145 code at the Steam 1.0.145 site, found from a decrypted in-game dump."
+  },
+  "Ne_Load_SystemConfigXml": {
+   "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 48 8B 39 4C 8D 81 08 01 00 00",
+   "note": "The pattern is the EA 1.0.145 code at the Steam 1.0.145 site, found from a decrypted in-game dump."
+  },
+  "site_Ne_HwInt_TexStreamSizeInMiB": {
+   "pattern": "85 C0 75 D4 49 8B 4C 24 50 31 D2 45 31 C0 E8",
+   "anchor": 14,
+   "expect": "E8",
+   "section": ".xtls",
+   "note": "The EA 1.0.145 code around the call is padded with junk instructions, so the pattern is the shared run before the call and the match address is the hint."
   }
  },
- "hints": {},
+ "hints": {
+  "site_Ne_HwBool_CrowdInShadows": {
+   "match": "0x848254c"
+  },
+  "site_Ne_HwBool_NightShadowCharCast": {
+   "match": "0x73400bc"
+  },
+  "site_Ne_HwInt_NightShadowMapSize": {
+   "match": "0x10a3aea8"
+  },
+  "site_Ne_HwInt_ShadowSampling": {
+   "match": "0x10ae412c"
+  },
+  "site_Ne_HwInt_TexStreamSizeInMiB": {
+   "match": "0x72afde8"
+  },
+  "Game_Handle_GarageCrewEvent_Thunk": {
+   "match": "0x38d400"
+  },
+  "Game_Handle_SpecGarageCrewEvent_Thunk": {
+   "match": "0x2e0e030"
+  }
+ },
  "unresolvable": {
   "Ne_SaveSystem2Win_WriteInfoXml": "the EA save device has no corrupt-save upload: its vtable slot +0x58 is xor eax,eax; ret",
   "Ne_SaveError_NotDirectoryFmtSS": "the EA mount passes the format string to a generic error helper; the Steam function has no copy of its own"
