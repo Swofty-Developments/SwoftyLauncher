@@ -2745,18 +2745,18 @@ static void test_ai_corner(void)
     ai_corner_setup();
     ai_corner_result[1] = (uint64_t)ai_corner_line;
     uint64_t r = fake_ai_corner(ai_corner_result, 3, ai_corner_state);
-    expect(r == 0xc0de, "ai corner: a car with a corner start line reads its entry as the game does");
+    expect(r == 0xc0de, "ai corner: a car with a brake line reads its entry as the game does");
     ai_corner_result[1] = 0;
     r = fake_ai_corner(ai_corner_result, 3, ai_corner_state);
     uint64_t again = fake_ai_corner(ai_corner_result, 5, ai_corner_state);
-    expect(r == 0x9be && again == 0x9be, "ai corner: a car with no corner start line takes the game's no-corner-line path");
+    expect(r == 0x9be && again == 0x9be, "ai corner: a car with no brake line takes the game's no-corner-line path");
 }
 
 static void crash_ai_corner(void)
 {
     SetErrorMode(SEM_NOGPFAULTERRORBOX);
     ai_corner_setup();
-    printf("      ai corner: reading a car with no corner start line\n");
+    printf("      ai corner: reading a car with no brake line\n");
     fflush(stdout);
     uint64_t r = fake_ai_corner(ai_corner_result, 3, ai_corner_state);
     printf("      ai corner: the car returned 0x%llx\n", (unsigned long long)r);
