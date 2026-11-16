@@ -44,6 +44,9 @@ const LOADER_KEEP: u64 = 2560 << 10;
 const GAP_NOTE: u64 = 128;
 const PERF_READ: u64 = 1 << 20;
 const DUMP_CAP: u64 = 24 << 20;
+/// How many crash reports a bundle carries, newest first; only the newest keeps its minidump, the others
+/// are listed in `crash/dumps.txt`.
+pub const CRASHES_SENT: usize = 5;
 const OVERLAY_READ: u64 = 32 << 20;
 
 /// Where the logs go: `SWOFTY_LOGS_URL` at run time, else the address baked in
@@ -482,15 +485,22 @@ impl Bundle {
                 c.file(format!("sessions/{session}/{rel}"), &file, redact);
             }
         }
-        let crash = newest_crash(store, report.game.dir.as_deref(), &sessions);
+        let crashes = recent_crashes(store, report.game.dir.as_deref(), &sessions, CRASHES_SENT);
+        let crash = crashes.first().cloned();
         let mut crash_report = None;
-        if let Some(c0) = &crash {
+        for (i, c0) in crashes.iter().enumerate() {
             let name = file_name(&c0.report);
-            c.file(format!("crash/{name}"), &c0.report, None);
-            if let Some(dump) = &c0.dump {
-                c.binary(format!("crash/{}", file_name(dump)), dump, DUMP_CAP);
+            let dir = if i == 0 { "crash" } else { "crash/earlier" };
+            c.file(format!("{dir}/{name}"), &c0.report, None);
+            if i == 0 {
+                if let Some(dump) = &c0.dump {
+                    c.binary(format!("crash/{}", file_name(dump)), dump, DUMP_CAP);
+                }
+                crash_report = std::fs::read_to_string(&c0.report).ok();
             }
-            crash_report = std::fs::read_to_string(&c0.report).ok();
+        }
+        if let Some(listing) = dumps_listing(&crashes) {
+            c.push("crash/dumps.txt".into(), listing.into_bytes(), None);
         }
         let found = match (crash_report.as_deref(), crash.is_none()) {
             (Some(text), _) => CrashFound::Report(text),
@@ -641,6 +651,11 @@ impl Bundle {
             logs.push((format!("sessions/{}", file_name(&dir)), dir.join("loader.log")));
         }
         for l in overlay_lines(store, &logs) {
+            s.push_str(&l);
+            s.push('\n');
+        }
+        s.push_str("\nGraphics and memory\n");
+        for l in system_lines(&logs) {
             s.push_str(&l);
             s.push('\n');
         }
@@ -954,6 +969,52 @@ fn overlay_lines(store: &Store, logs: &[(String, PathBuf)]) -> Vec<String> {
 }
 
 const SAVES_LINES: usize = 60;
+const SYSTEM_LINES: usize = 12;
+const SYSTEM_TAIL: u64 = 256 << 10;
+
+/// The `[system]` lines core logs at boot (each GPU's name, driver and VRAM, RAM and commit), and the
+/// newest per-minute memory line from the end of the log.
+fn system_excerpt(head: &str, tail: &str, cap: usize) -> Vec<String> {
+    let mut out: Vec<String> = head
+        .lines()
+        .filter(|l| l.contains("[system] "))
+        .take(cap)
+        .map(|l| format!("  {}", l.trim_end()))
+        .collect();
+    if let Some(last) = tail
+        .lines()
+        .rev()
+        .find(|l| l.contains("[perf] ") && l.contains(" memory: "))
+    {
+        out.push(format!("  newest minute: {}", last.trim_end()));
+    }
+    out
+}
+
+fn system_lines(logs: &[(String, PathBuf)]) -> Vec<String> {
+    let mut out = Vec::new();
+    for (label, log) in logs {
+        let (Ok(head), Ok((tail, _))) = (read_head(log, OVERLAY_READ), read_tail(log, SYSTEM_TAIL)) else {
+            continue;
+        };
+        let lines = system_excerpt(
+            &String::from_utf8_lossy(&head),
+            &String::from_utf8_lossy(&tail),
+            SYSTEM_LINES,
+        );
+        out.push(label.clone());
+        if lines.is_empty() {
+            out.push(
+                "  no [system] lines (a core older than this launcher, or the game never booted)".to_owned(),
+            );
+        }
+        out.extend(lines);
+    }
+    if out.is_empty() {
+        out.push("  No loader log was found".to_owned());
+    }
+    out
+}
 
 /// The `[saves]` lines that say where the game's profile save came from and which career slots
 /// and containers it held, minus the per-call sandbox chatter.
@@ -1065,6 +1126,12 @@ pub struct Crash {
 /// The newest crash report across the running game's loader folder, the
 /// data folder's fallback and the kept sessions, with its minidump beside it when one exists.
 pub fn newest_crash(store: &Store, game: Option<&Path>, sessions: &[PathBuf]) -> Option<Crash> {
+    recent_crashes(store, game, sessions, 1).into_iter().next()
+}
+
+/// The `n` newest crash reports from the same folders, newest first, each with its minidump when one
+/// exists. A report copied into a kept session counts once.
+pub fn recent_crashes(store: &Store, game: Option<&Path>, sessions: &[PathBuf], n: usize) -> Vec<Crash> {
     let mut dirs: Vec<PathBuf> = Vec::new();
     if let Some(game) = game {
         dirs.push(game.join(LOADER_DIR));
@@ -1086,16 +1153,49 @@ pub fn newest_crash(store: &Store, game: Option<&Path>, sessions: &[PathBuf]) ->
     // The names carry a sortable UTC-ish stamp, so the last by name is the newest; modified time
     // breaks ties and covers a clock change.
     reports.sort_by(|a, b| {
-        modified(a)
-            .cmp(&modified(b))
-            .then_with(|| file_name(a).cmp(&file_name(b)))
+        modified(b)
+            .cmp(&modified(a))
+            .then_with(|| file_name(b).cmp(&file_name(a)))
     });
-    let report = reports.pop()?;
-    let dump = report.with_extension("dmp");
-    Some(Crash {
-        dump: dump.is_file().then_some(dump),
-        report,
-    })
+    let mut seen = std::collections::HashSet::new();
+    reports
+        .into_iter()
+        .filter(|p| seen.insert(file_name(p)))
+        .take(n)
+        .map(|report| {
+            let dump = report.with_extension("dmp");
+            Crash {
+                dump: dump.is_file().then_some(dump),
+                report,
+            }
+        })
+        .collect()
+}
+
+/// One line per crash report found: its name and size, its minidump and where in the bundle it went.
+fn dumps_listing(crashes: &[Crash]) -> Option<String> {
+    if crashes.is_empty() {
+        return None;
+    }
+    let mut out = String::from("Crash reports and minidumps found, newest first\n");
+    for (i, c) in crashes.iter().enumerate() {
+        let len = |p: &Path| std::fs::metadata(p).map_or_else(|_| "unreadable".into(), |m| size(m.len()));
+        let dump = match &c.dump {
+            Some(d) => format!("{} {}", file_name(d), len(d)),
+            None => "no minidump".into(),
+        };
+        let sent = if i == 0 {
+            "report and minidump in crash/"
+        } else {
+            "report in crash/earlier/"
+        };
+        out.push_str(&format!(
+            "  {} {}; {dump}; {sent}\n",
+            file_name(&c.report),
+            len(&c.report)
+        ));
+    }
+    Some(out)
 }
 
 /// A short summary of the crash report at `path`, for `swofty logs`.

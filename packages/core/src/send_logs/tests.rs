@@ -1005,8 +1005,8 @@ fn includes_the_newest_crash_report_and_minidump() {
         "{names:?}"
     );
     assert!(
-        !names.iter().any(|n| n.contains("crash-20261021-090000")),
-        "only the newest report: {names:?}"
+        names.contains(&"crash/earlier/crash-20261021-090000.txt".to_string()),
+        "the earlier report is kept apart: {names:?}"
     );
     let zip = bundle.zip().unwrap();
     assert_eq!(entry(&zip, "crash/crash-20261021-122616.txt"), CRASH);
@@ -1031,6 +1031,50 @@ fn includes_the_newest_crash_report_and_minidump() {
     assert!(summary.contains("Ne_Heap_DeallocateNonSmall"), "{summary}");
     assert!(summary.contains("last flow      race load"), "{summary}");
     assert!(summary.find("\nCrash\n") < summary.find("\nPerformance\n"));
+    std::fs::remove_dir_all(&root).ok();
+}
+
+#[test]
+fn keeps_the_last_five_crash_reports_and_lists_the_dumps() {
+    let root = tmp("crashmany");
+    let (store, game) = fake_data(&root);
+    let loader = game.join("swofty");
+    for d in 1..=7 {
+        put(
+            &loader.join(format!("crash-2026102{d}-090000.txt")),
+            format!("Swofty crash report\n\nreason number {d}\n"),
+        );
+        put(
+            &loader.join(format!("crash-2026102{d}-090000.dmp")),
+            noise(1000, d),
+        );
+    }
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "20261021-130000");
+    let names: Vec<_> = bundle.entries.iter().map(|e| e.path.clone()).collect();
+    assert!(
+        names.contains(&"crash/crash-20261027-090000.txt".to_string()),
+        "{names:?}"
+    );
+    assert!(
+        names.contains(&"crash/crash-20261027-090000.dmp".to_string()),
+        "{names:?}"
+    );
+    for d in 3..=6 {
+        let n = format!("crash/earlier/crash-2026102{d}-090000.txt");
+        assert!(names.contains(&n), "{n} missing: {names:?}");
+    }
+    assert!(!names.iter().any(|n| n.contains("crash-20261022")), "{names:?}");
+    assert!(!names.iter().any(|n| n.contains("crash-20261021")), "{names:?}");
+    assert!(
+        !names.contains(&"crash/earlier/crash-20261026-090000.dmp".to_string()),
+        "older dumps are listed, not sent"
+    );
+    let zip = bundle.zip().unwrap();
+    let listing = entry(&zip, "crash/dumps.txt");
+    assert!(listing.contains("crash-20261026-090000.dmp"), "{listing}");
+    assert!(listing.contains("report in crash/earlier/"), "{listing}");
+    assert!(listing.contains("report and minidump in crash/"), "{listing}");
+    assert_eq!(listing.lines().count(), 6, "{listing}");
     std::fs::remove_dir_all(&root).ok();
 }
 
@@ -2022,4 +2066,36 @@ fn bundles_the_stat_id_files_and_summarises_the_package_ids() {
     assert!(entry(&zip, "game/registry/ids.json").contains("gone.x/pkg_1"));
     assert!(entry(&zip, "game/registry/row-ids.json").contains("\"id\":3"));
     assert!(entry(&zip, "summary.txt").contains("3 of 254 used, highest 3, 3 held by addons not installed"));
+}
+
+#[test]
+fn system_excerpt_takes_the_boot_lines_and_the_newest_minute() {
+    let head =
+        "boot\n[system] gpu 0: Card A, driver 1.2, dedicated VRAM 8192 MiB\n[system] ram: 32768 MiB\nother\n";
+    let tail = "[perf] last 60 s: memory: old\nx\n[perf] last 60 s: memory: RAM 1/2 MiB; VRAM 3/4 MiB\nend\n";
+    let out = super::system_excerpt(head, tail, 12);
+    assert_eq!(out.len(), 3, "{out:?}");
+    assert!(out[0].contains("Card A") && out[1].contains("[system] ram"));
+    assert!(
+        out[2].starts_with("  newest minute: ") && out[2].contains("VRAM 3/4"),
+        "{out:?}"
+    );
+    assert!(super::system_excerpt("none\n", "none\n", 12).is_empty());
+    assert_eq!(super::system_excerpt(head, tail, 1).len(), 2);
+}
+
+#[test]
+fn summary_has_a_graphics_section_from_the_loader_log() {
+    let root = tmp("gfx");
+    let (store, game) = fake_data(&root);
+    put(
+        &game.join("swofty/loader.log"),
+        "[system] gpu 0: Card A, driver 1.2, dedicated VRAM 8192 MiB\n[perf] last 60 s: memory: RAM 1/2 MiB\n",
+    );
+    let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "20261021-130000");
+    let summary = summary_of(&bundle);
+    assert!(summary.contains("\nGraphics and memory\n"), "{summary}");
+    assert!(summary.contains("Card A, driver 1.2"), "{summary}");
+    assert!(summary.find("\nGraphics and memory\n") < summary.find("\nCrash\n"));
+    std::fs::remove_dir_all(&root).ok();
 }
