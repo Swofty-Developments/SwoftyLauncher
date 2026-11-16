@@ -65,6 +65,54 @@ pub fn store_for(data: &Path, profile: &str, game_save: &Location) -> Option<Loc
     }
 }
 
+/// Why a Play uses the game copy's own save instead of the profile's launcher save.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Why {
+    UnsupportedBuild(String),
+    Vanilla,
+    LauncherSavesOff,
+    EaCopy,
+    SteamOnce,
+}
+
+/// The save a Play runs on.
+#[derive(Debug, Clone, PartialEq, Eq)]
+pub enum Area {
+    Launcher,
+    Own(Why),
+}
+
+/// What decides the save area of one Play.
+#[derive(Debug, Clone, Copy)]
+pub struct Choice<'a> {
+    pub build_blocked: Option<&'a str>,
+    pub vanilla: bool,
+    pub profile_uses_launcher_saves: bool,
+    pub steam_saves_once: bool,
+    pub layout: Layout,
+}
+
+/// The one decision between the profile's launcher save and the copy's own save. `swofty run` acts on
+/// it and the launcher's play bar shows it.
+pub fn area(c: Choice<'_>) -> Area {
+    if let Some(version) = c.build_blocked {
+        return Area::Own(Why::UnsupportedBuild(version.to_owned()));
+    }
+    if c.vanilla {
+        return Area::Own(Why::Vanilla);
+    }
+    if !c.profile_uses_launcher_saves {
+        return Area::Own(Why::LauncherSavesOff);
+    }
+    if !supported(c.layout) {
+        return Area::Own(Why::EaCopy);
+    }
+    if c.steam_saves_once {
+        return Area::Own(Why::SteamOnce);
+    }
+    Area::Launcher
+}
+
 /// Whether launcher saves can be used with a copy whose save is `layout`.
 pub fn supported(layout: Layout) -> bool {
     match layout {

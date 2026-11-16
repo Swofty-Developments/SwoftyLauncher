@@ -525,3 +525,77 @@ fn the_steam_save_is_pending_until_an_import_found_it() {
     );
     assert!(!steam_save_pending(&data, "default"));
 }
+
+fn choice() -> Choice<'static> {
+    Choice {
+        build_blocked: None,
+        vanilla: false,
+        profile_uses_launcher_saves: true,
+        steam_saves_once: false,
+        layout: Layout::Steam,
+    }
+}
+
+#[test]
+fn a_profile_with_launcher_saves_on_a_steam_copy_plays_on_the_launcher_save() {
+    assert_eq!(area(choice()), Area::Launcher);
+    assert_eq!(
+        area(Choice {
+            layout: Layout::Launcher,
+            ..choice()
+        }),
+        Area::Launcher
+    );
+}
+
+#[test]
+fn each_reason_for_the_copys_own_save_is_named() {
+    let own = |c| area(c);
+    assert_eq!(
+        own(Choice {
+            vanilla: true,
+            ..choice()
+        }),
+        Area::Own(Why::Vanilla)
+    );
+    assert_eq!(
+        own(Choice {
+            profile_uses_launcher_saves: false,
+            ..choice()
+        }),
+        Area::Own(Why::LauncherSavesOff)
+    );
+    assert_eq!(
+        own(Choice {
+            steam_saves_once: true,
+            ..choice()
+        }),
+        Area::Own(Why::SteamOnce)
+    );
+    assert_eq!(
+        own(Choice {
+            layout: Layout::Ea,
+            ..choice()
+        }),
+        Area::Own(Why::EaCopy)
+    );
+    assert_eq!(
+        own(Choice {
+            build_blocked: Some("1.0.145.2472"),
+            ..choice()
+        }),
+        Area::Own(Why::UnsupportedBuild("1.0.145.2472".into()))
+    );
+}
+
+#[test]
+fn an_unsupported_build_outranks_every_other_reason() {
+    let all = Choice {
+        build_blocked: Some("1.0.145.2472"),
+        vanilla: true,
+        profile_uses_launcher_saves: false,
+        steam_saves_once: true,
+        layout: Layout::Ea,
+    };
+    assert_eq!(area(all), Area::Own(Why::UnsupportedBuild("1.0.145.2472".into())));
+}

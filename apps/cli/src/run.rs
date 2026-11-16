@@ -472,12 +472,9 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
         }
     }
     let profile = request.profile.clone().unwrap_or_else(|| profile.to_owned());
-    let stock = swofty_core::build_support::blocked(&g.dir.join(GAME_EXE)).is_some();
-    let (profile, request) = gate_unsupported_build(
-        swofty_core::build_support::blocked(&g.dir.join(GAME_EXE)),
-        profile,
-        request,
-    );
+    let build_blocked = swofty_core::build_support::blocked(&g.dir.join(GAME_EXE));
+    let stock = build_blocked.is_some();
+    let (profile, request) = gate_unsupported_build(build_blocked.clone(), profile, request);
     if let (Ok(p), Ok(installed)) = (store.profile(&profile), store.addons()) {
         let catalog = swofty_core::catalog::cached(&store.root).unwrap_or_default();
         for (base, family) in swofty_core::resolver::lonely_bases(&p, &installed, &catalog) {
@@ -531,7 +528,14 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
              with EA AntiCheat",
         );
     }
-    let before = crate::saves::before_session(store, &profile, g, &request.id, !request.steam_saves_once);
+    let before = crate::saves::before_session(
+        store,
+        &profile,
+        g,
+        &request.id,
+        build_blocked.as_deref(),
+        request.steam_saves_once,
+    );
     let result = run_loop(store, args, &config, &request, &profile, g, installed);
     let out = finish(session, result);
     crate::saves::after_session(before);

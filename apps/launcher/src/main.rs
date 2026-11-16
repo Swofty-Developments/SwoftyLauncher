@@ -38,6 +38,7 @@ mod play_checks;
 mod profile_panel;
 mod profiles;
 mod reveal;
+mod save_area;
 mod scale;
 mod scroll;
 mod sections;

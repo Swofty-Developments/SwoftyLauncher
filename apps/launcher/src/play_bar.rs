@@ -534,6 +534,39 @@ impl Shell {
         }
     }
 
+    fn save_area(&self, state: &PlayState, p: Palette) -> Option<AnyElement> {
+        if !matches!(
+            state,
+            PlayState::Ready | PlayState::Crashed(_) | PlayState::Preparing
+        ) {
+            return None;
+        }
+        let install = self.install.as_ref()?;
+        let blocked = swofty_core::build_support::blocked(&install.dir.join(swofty_core::GAME_EXE));
+        let line = crate::save_area::line(
+            &self.library.profile,
+            install.source,
+            blocked.as_deref(),
+            self.steam_saves_once,
+        );
+        let colour = if line.warn { p.warning } else { p.text_muted };
+        Some(
+            v_flex()
+                .id("save-area")
+                .flex_shrink_0()
+                .max_w(px(330.))
+                .min_w_0()
+                .gap(px(1.))
+                .text_size(px(12.))
+                .text_color(colour)
+                .child(div().min_w_0().truncate().child(line.headline))
+                .when_some(line.reason, |d, reason| {
+                    d.child(div().min_w_0().truncate().text_color(p.text_muted).child(reason))
+                })
+                .into_any_element(),
+        )
+    }
+
     fn saves_await_import(&self) -> bool {
         self.saves
             .view
@@ -889,6 +922,7 @@ impl Shell {
                     .gap(px(20.))
                     .child(self.game_info(p, wide, cx))
                     .child(self.status(&state, p, cx))
+                    .children(self.save_area(&state, p))
                     .children(room)
                     .child(self.footer_links(p, cx))
                     .when(!lobby_only, |d| d.child(self.big_button(&state, p, cx))),

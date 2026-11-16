@@ -78,7 +78,7 @@ An addon that fails to update keeps its installed version. Retry it from **Downl
 
 When F1 25 updates to a version Swofty Launcher doesn't have yet, the line next to **Play** reads "This game version (1.0.145.2472) isn't supported by Swofty Launcher yet. Add-ons are off until a launcher update, so the game runs without them."
 
-The launcher identifies the game by the size and build time of `F1_25.exe`. For an exe it doesn't know, **Play** still works and starts F1 25 as the Vanilla profile does: no add-ons are loaded or applied, Launcher saves aren't used, and your Steam saves aren't touched. This is the same for every profile.
+The launcher identifies the game by the size and build time of `F1_25.exe`. For an exe it doesn't know, **Play** still works and starts F1 25 as the Vanilla profile does: no add-ons are loaded or applied, Launcher saves aren't used, and your Steam saves aren't touched. This is the same for every profile. The play bar's `Saves:` line reads `Steam's own save` with `this game version is not supported yet` under it; your launcher careers are not used on that run and are untouched. See [Which save Play will use](/using/career-saves#which-save-play-will-use).
 
 The line goes away by itself when you update the launcher to a release that supports the version. Don't verify or repair the game files: the update is correct.
 

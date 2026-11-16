@@ -129,14 +129,16 @@ pub fn before_session(
     profile: &str,
     g: &Game,
     session: &str,
-    launcher_saves_allowed: bool,
+    build_blocked: Option<&str>,
+    steam_saves_once: bool,
 ) -> Option<Before> {
     before_session_at(
         store,
         profile,
         g,
         session,
-        launcher_saves_allowed,
+        build_blocked,
+        steam_saves_once,
         Location::for_game(g),
     )
 }
@@ -146,7 +148,8 @@ fn before_session_at(
     profile: &str,
     g: &Game,
     session: &str,
-    launcher_saves_allowed: bool,
+    build_blocked: Option<&str>,
+    steam_saves_once: bool,
     game_loc: Option<Location>,
 ) -> Option<Before> {
     match migrate::migrate(&store.root) {
@@ -160,18 +163,23 @@ fn before_session_at(
         say("warning", &line);
     }
     let p = store.profile(profile);
-    let launcher = match (&game_loc, &p) {
-        (Some(l), Ok(p)) if !p.is_vanilla() && p.launcher_saves => {
-            match launcher_saves::supported(l.layout) {
-                true => launcher_saves::store_for(&store.root, profile, l).filter(|_| launcher_saves_allowed),
-                false => {
-                    say("info", &format!("saves: {}", launcher_saves::EA_NOTE));
-                    None
-                }
+    let launcher = game_loc.as_ref().and_then(|l| {
+        let area = launcher_saves::area(launcher_saves::Choice {
+            build_blocked,
+            vanilla: p.as_ref().map_or(true, |p| p.is_vanilla()),
+            profile_uses_launcher_saves: p.as_ref().is_ok_and(|p| p.launcher_saves),
+            steam_saves_once,
+            layout: l.layout,
+        });
+        match area {
+            launcher_saves::Area::Launcher => launcher_saves::store_for(&store.root, profile, l),
+            launcher_saves::Area::Own(launcher_saves::Why::EaCopy) => {
+                say("info", &format!("saves: {}", launcher_saves::EA_NOTE));
+                None
             }
+            launcher_saves::Area::Own(_) => None,
         }
-        _ => None,
-    };
+    });
     if let (Some(store_loc), Some(from)) = (&launcher, &game_loc) {
         seed_if_empty(store, profile, from, store_loc);
     }
@@ -836,7 +844,16 @@ mod tests {
     #[test]
     fn the_first_play_copies_the_steam_save_into_an_empty_store_and_plays_on_it() {
         let f = fixture("first");
-        let b = before_session_at(&f.store, "default", &f.game, "s1", true, Some(f.steam.clone())).unwrap();
+        let b = before_session_at(
+            &f.store,
+            "default",
+            &f.game,
+            "s1",
+            None,
+            false,
+            Some(f.steam.clone()),
+        )
+        .unwrap();
         let store = launcher_saves::remote_dir(&f.store.root, "default");
         assert_eq!(b.loc.layout, vault::Layout::Launcher);
         assert_eq!(b.loc.dir, store);
@@ -862,7 +879,16 @@ mod tests {
         let store = launcher_saves::remote_dir(&f.store.root, "default");
         std::fs::create_dir_all(&store).unwrap();
         std::fs::write(store.join(DATA), b"launcher career").unwrap();
-        let b = before_session_at(&f.store, "default", &f.game, "s1", true, Some(f.steam.clone())).unwrap();
+        let b = before_session_at(
+            &f.store,
+            "default",
+            &f.game,
+            "s1",
+            None,
+            false,
+            Some(f.steam.clone()),
+        )
+        .unwrap();
         assert_eq!(b.loc.layout, vault::Layout::Launcher);
         assert_eq!(names(&store), [DATA]);
         assert_eq!(std::fs::read(store.join(DATA)).unwrap(), b"launcher career");
@@ -872,7 +898,16 @@ mod tests {
     #[test]
     fn one_session_on_steam_saves_and_a_profile_with_the_setting_off_use_steam() {
         let f = fixture("steam");
-        let b = before_session_at(&f.store, "default", &f.game, "s1", false, Some(f.steam.clone())).unwrap();
+        let b = before_session_at(
+            &f.store,
+            "default",
+            &f.game,
+            "s1",
+            None,
+            true,
+            Some(f.steam.clone()),
+        )
+        .unwrap();
         assert_eq!(b.loc.layout, vault::Layout::Steam);
         assert!(!launcher_saves::remote_dir(&f.store.root, "default").exists());
         f.store
@@ -881,7 +916,16 @@ mod tests {
                 Ok(())
             })
             .unwrap();
-        let b = before_session_at(&f.store, "default", &f.game, "s2", true, Some(f.steam.clone())).unwrap();
+        let b = before_session_at(
+            &f.store,
+            "default",
+            &f.game,
+            "s2",
+            None,
+            false,
+            Some(f.steam.clone()),
+        )
+        .unwrap();
         assert_eq!(b.loc.layout, vault::Layout::Steam);
         assert!(!launcher_saves::remote_dir(&f.store.root, "default").exists());
         std::fs::remove_dir_all(&f.root).ok();
@@ -896,7 +940,16 @@ mod tests {
                 Ok(())
             })
             .unwrap();
-        let b = before_session_at(&f.store, "default", &f.game, "s1", true, Some(f.steam.clone())).unwrap();
+        let b = before_session_at(
+            &f.store,
+            "default",
+            &f.game,
+            "s1",
+            None,
+            false,
+            Some(f.steam.clone()),
+        )
+        .unwrap();
         std::fs::write(f.steam.dir.join(DATA), [9u8; 1200]).unwrap();
         after_session(Some(b));
         let snaps = Vault::of(&f.store.root, &f.steam).unwrap().list().unwrap();
@@ -909,7 +962,16 @@ mod tests {
     #[test]
     fn the_vanilla_profile_always_plays_on_steam_saves() {
         let f = fixture("vanilla");
-        let b = before_session_at(&f.store, "vanilla", &f.game, "s1", true, Some(f.steam.clone())).unwrap();
+        let b = before_session_at(
+            &f.store,
+            "vanilla",
+            &f.game,
+            "s1",
+            None,
+            false,
+            Some(f.steam.clone()),
+        )
+        .unwrap();
         assert_eq!(b.loc.layout, vault::Layout::Steam);
         assert!(!launcher_saves::root(&f.store.root).exists());
         std::fs::remove_dir_all(&f.root).ok();
@@ -924,7 +986,7 @@ mod tests {
         std::fs::create_dir_all(&ea_dir).unwrap();
         std::fs::write(ea_dir.join("NXDSMWW.BWW"), [3u8; 64]).unwrap();
         let ea = Location::ea(&ea_dir, "steamuser");
-        let b = before_session_at(&f.store, "default", &f.game, "s1", true, Some(ea)).unwrap();
+        let b = before_session_at(&f.store, "default", &f.game, "s1", None, false, Some(ea)).unwrap();
         assert_eq!(b.loc.layout, vault::Layout::Ea);
         assert!(!launcher_saves::root(&f.store.root).exists());
         std::fs::remove_dir_all(&f.root).ok();
