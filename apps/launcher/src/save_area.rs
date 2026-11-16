@@ -111,17 +111,11 @@ mod tests {
     }
 
     #[test]
-    fn the_ea_app_copy_uses_its_own_save() {
+    fn the_ea_app_copy_uses_the_launcher_save_of_its_profile() {
         let l = line(&profile("grid"), Source::EaApp, None, false);
-        assert_eq!(
-            l.headline,
-            "Saves: the EA app's own save (your launcher careers are not used on this run)"
-        );
-        assert_eq!(
-            l.reason,
-            Some("launcher saves are not available on the EA app copy")
-        );
-        assert!(l.warn);
+        assert_eq!(l.headline, "Saves: grid launcher save");
+        assert_eq!(l.reason, None);
+        assert!(!l.warn);
     }
 
     #[test]
