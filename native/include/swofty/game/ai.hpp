@@ -151,6 +151,8 @@ inline constexpr address<"Ai_BehaviourTestRetire_Update"> Ai_BehaviourTestRetire
 inline constexpr address<"Ai_Calc_GripLimitScaleA"> Ai_Calc_GripLimitScaleA{}; // L2 experimental
 inline constexpr address<"Ai_Calc_GripLimitScaleB"> Ai_Calc_GripLimitScaleB{}; // L2 experimental
 inline constexpr address<"Ai_DriverVariationInRaceSystem_Setup"> Ai_DriverVariationInRaceSystem_Setup{}; // L2 experimental
+using Ai_Handle_PitStateChanged_Thunk_t = uint64_t(void *ai, void *msg);
+inline constexpr fn<"Ai_Handle_PitStateChanged_Thunk", Ai_Handle_PitStateChanged_Thunk_t> Ai_Handle_PitStateChanged_Thunk{}; // L2 experimental
 inline constexpr address<"Ai_Job_UpdateCarsParallel"> Ai_Job_UpdateCarsParallel{}; // L2 experimental
 inline constexpr address<"Ai_LineCache_UpdateIfChanged"> Ai_LineCache_UpdateIfChanged{}; // L2 experimental
 inline constexpr address<"Ai_Select_ErsDeployMode"> Ai_Select_ErsDeployMode{}; // L2 experimental

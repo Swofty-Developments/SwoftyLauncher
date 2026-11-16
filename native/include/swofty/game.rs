@@ -3415,6 +3415,7 @@ const _: () = assert!(core::mem::offset_of!(Weekend, current_session) == 0x238);
 const _: () = assert!(core::mem::offset_of!(Weekend, progress_state) == 0x23c);
 const _: () = assert!(core::mem::offset_of!(Weekend, track_stat_id) == 0x278);
 const _: () = assert!(core::mem::size_of::<Weekend>() == 0x4f0);
+pub type Ai_Handle_PitStateChanged_Thunk_t = unsafe extern "C" fn(ai: *mut c_void, msg: *mut c_void) -> u64;
 
 pub type Car_Create_DetachablePart_t = unsafe extern "C" fn(
     part_manager: *mut c_void,
@@ -4535,6 +4536,7 @@ pub type Vm_WizardTitleSlice_DestroyRange_t = unsafe extern "C" fn(begin: *mut c
 
 pub mod bindings {
     use super::{Binding, Status};
+    pub const Ai_Handle_PitStateChanged_Thunk: Binding = Binding { id: "Ai_Handle_PitStateChanged_Thunk", kind: "func", status: Status::Experimental };
     pub const Ai_BehaviourTestRetire_Update: Binding = Binding {
         id: "Ai_BehaviourTestRetire_Update",
         kind: "func",
