@@ -1504,8 +1504,10 @@ bool has_overwrite(const std::vector<Handler> &hs)
 
 bool chains_onto(const Group &g, const Held &h)
 {
-    return (g.kind == SWOFTY_MIXIN_WRAP || g.kind == SWOFTY_MIXIN_SITE) && g.kind == h.kind && g.addr == h.addr &&
-           !has_overwrite(g.handlers) && !has_overwrite(h.handlers);
+    if (!((g.kind == SWOFTY_MIXIN_WRAP || g.kind == SWOFTY_MIXIN_SITE) && g.kind == h.kind && g.addr == h.addr &&
+          !has_overwrite(g.handlers) && !has_overwrite(h.handlers)))
+        return false;
+    return g.kind != SWOFTY_MIXIN_SITE || (h.site < MAX_SITES && h.handlers.size() + g.handlers.size() <= site_chains[h.site].capacity());
 }
 
 Held *held_for(const Group &g)
