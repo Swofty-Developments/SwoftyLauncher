@@ -1338,6 +1338,26 @@ const _: () = assert!(core::mem::offset_of!(DriveThroughObject, records_begin) =
 const _: () = assert!(core::mem::offset_of!(DriveThroughObject, records_end) == 0x70);
 
 #[repr(C)]
+pub struct DriverAcademiesComponent {
+    _pad_0x0: [u8; 0x298],
+    pub academies_begin: *mut c_void,
+    pub academies_end: *mut c_void,
+    _pad_0x2a8: [u8; 0x20],
+    pub driver_academy_entries: *mut c_void,
+}
+const _: () = assert!(core::mem::offset_of!(DriverAcademiesComponent, academies_begin) == 0x298);
+const _: () = assert!(core::mem::offset_of!(DriverAcademiesComponent, academies_end) == 0x2a0);
+const _: () = assert!(core::mem::offset_of!(DriverAcademiesComponent, driver_academy_entries) == 0x2c8);
+
+#[repr(C)]
+pub struct DriverAcademyMapSlot {
+    pub index: u64,
+    pub status: u32,
+}
+const _: () = assert!(core::mem::offset_of!(DriverAcademyMapSlot, index) == 0x0);
+const _: () = assert!(core::mem::offset_of!(DriverAcademyMapSlot, status) == 0x8);
+
+#[repr(C)]
 pub struct DriverCalendar {
     _pad_0x0: [u8; 0x50],
     pub activities_begin: *mut c_void,
@@ -1385,6 +1405,13 @@ const _: () =
     assert!(core::mem::offset_of!(DriverCareerContractsManagerComponent, secret_meetings_begin) == 0x3a8);
 const _: () =
     assert!(core::mem::offset_of!(DriverCareerContractsManagerComponent, secret_meetings_end) == 0x3b0);
+
+#[repr(C)]
+pub struct DriverCareerTeamSelectViewModel {
+    _pad_0x0: [u8; 0xf20],
+    pub selected_team_key: u32,
+}
+const _: () = assert!(core::mem::offset_of!(DriverCareerTeamSelectViewModel, selected_team_key) == 0xf20);
 
 #[repr(C)]
 pub struct DriverContract {
@@ -2387,6 +2414,24 @@ const _: () = assert!(core::mem::offset_of!(ResourcePointsComponent, wallet_enti
 const _: () = assert!(core::mem::offset_of!(ResourcePointsComponent, wallet_mode) == 0x4b0);
 const _: () = assert!(core::mem::offset_of!(ResourcePointsComponent, driver_wallets) == 0x4b8);
 const _: () = assert!(core::mem::offset_of!(ResourcePointsComponent, team_wallets) == 0x528);
+
+#[repr(C)]
+pub struct RivalManager {
+    _pad_0x0: [u8; 0x18],
+    pub current_rivalries_begin: *mut c_void,
+    pub current_rivalries_end: *mut c_void,
+}
+const _: () = assert!(core::mem::offset_of!(RivalManager, current_rivalries_begin) == 0x18);
+const _: () = assert!(core::mem::offset_of!(RivalManager, current_rivalries_end) == 0x20);
+
+#[repr(C)]
+pub struct RivalManagerComponent {
+    _pad_0x0: [u8; 0xbd8],
+    pub managers_begin: *mut c_void,
+    pub managers_end: *mut c_void,
+}
+const _: () = assert!(core::mem::offset_of!(RivalManagerComponent, managers_begin) == 0xbd8);
+const _: () = assert!(core::mem::offset_of!(RivalManagerComponent, managers_end) == 0xbe0);
 
 #[repr(C)]
 pub struct SafetyCarLogicSystem {
@@ -3543,6 +3588,8 @@ pub type Career_DeptEvent_SimulateOutcomeInsert_t =
 pub type Career_Deserialise_ClaimedFlag_t =
     unsafe extern "C" fn(obj: *mut c_void, json_value: *mut c_void) -> u32;
 pub type Career_Despawn_UpgradeList_A_t = unsafe extern "C" fn(self_: *mut c_void);
+pub type Career_DriverAcademies_MapFindOrAdd_t =
+    unsafe extern "C" fn(map: *mut c_void, slot: *mut DriverAcademyMapSlot, key: *const u16);
 pub type Career_DriverContractEvent_Destroy_t = unsafe extern "C" fn(ev: *mut *mut c_void);
 pub type Career_DriverNumbers_CheckExisting_t = unsafe extern "C" fn(car_numbers: *mut c_void, driver: u32);
 pub type Career_Eval_Curve_t = unsafe extern "C" fn(curve: *mut c_void, x: f32) -> f32;
@@ -3878,6 +3925,8 @@ pub type Game_Currency_ShowReceivedPopup_t =
 pub type Game_DRLSystem_ResolveDependencies_t =
     unsafe extern "C" fn(self_: *mut c_void, registry: *mut c_void, systemMap: *mut c_void) -> u32;
 pub type Game_DRS_OnSessionLoad_t = unsafe extern "C" fn(drs: *mut c_void);
+pub type Game_DriverCareerTeamSelect_OnMessage_t =
+    unsafe extern "C" fn(vm: *mut c_void, name: *mut *const u32);
 pub type Game_DriverContractsMyTeamComponent_OpenContractWindow_t =
     unsafe extern "C" fn(comp: *mut c_void) -> u64;
 pub type Game_DriverContractsMyTeamComponent_ProgressDay_t = unsafe extern "C" fn(comp: *mut c_void);
@@ -5543,6 +5592,11 @@ pub mod bindings {
     };
     pub const Career_DevelopmentPerksVM_BuildAcclaim: Binding = Binding {
         id: "Career_DevelopmentPerksVM_BuildAcclaim",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Career_DriverAcademies_MapFindOrAdd: Binding = Binding {
+        id: "Career_DriverAcademies_MapFindOrAdd",
         kind: "func",
         status: Status::Experimental,
     };
@@ -8428,6 +8482,11 @@ pub mod bindings {
     };
     pub const Game_DeptEventViewModel_Update: Binding = Binding {
         id: "Game_DeptEventViewModel_Update",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_DriverCareerTeamSelect_OnMessage: Binding = Binding {
+        id: "Game_DriverCareerTeamSelect_OnMessage",
         kind: "func",
         status: Status::Experimental,
     };
@@ -20111,6 +20170,11 @@ pub mod bindings {
         kind: "data",
         status: Status::Experimental,
     };
+    pub const k_Career_DriverAcademiesComponentDesc: Binding = Binding {
+        id: "k_Career_DriverAcademiesComponentDesc",
+        kind: "data",
+        status: Status::Experimental,
+    };
     pub const k_Career_DriverCareerContractsManagerComponentDesc: Binding = Binding {
         id: "k_Career_DriverCareerContractsManagerComponentDesc",
         kind: "data",
@@ -20168,6 +20232,11 @@ pub mod bindings {
     };
     pub const k_Career_ResourcePointsComponentDesc: Binding = Binding {
         id: "k_Career_ResourcePointsComponentDesc",
+        kind: "data",
+        status: Status::Experimental,
+    };
+    pub const k_Career_RivalManagerComponentDesc: Binding = Binding {
+        id: "k_Career_RivalManagerComponentDesc",
         kind: "data",
         status: Status::Experimental,
     };

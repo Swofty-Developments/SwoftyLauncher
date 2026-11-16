@@ -39,6 +39,12 @@ static_assert(offsetof(DriverCalendar, activities_end) == 0x58);
 static_assert(offsetof(DriverCalendar, driver) == 0xc0);
 static_assert(sizeof(DriverCalendar) == 0xc8);
 
+struct DriverCareerTeamSelectViewModel {
+    uint8_t _pad_0x0[0xf20];
+    uint32_t selected_team_key; // L2 experimental
+};
+static_assert(offsetof(DriverCareerTeamSelectViewModel, selected_team_key) == 0xf20);
+
 struct DriverSecretMeetings {
     uint8_t _pad_0x0[0x10];
     void *current_allocator; // L2 experimental
@@ -450,6 +456,8 @@ inline constexpr address<"Game_DecalGeneration_CacheMaterialHandle"> Game_DecalG
 inline constexpr address<"Game_DecalGeneration_ReadBackCompressed"> Game_DecalGeneration_ReadBackCompressed{}; // L2 experimental
 inline constexpr address<"Game_DecalGeneration_SetDecalComponent"> Game_DecalGeneration_SetDecalComponent{}; // L2 experimental
 inline constexpr address<"Game_DeptEventViewModel_Update"> Game_DeptEventViewModel_Update{}; // L2 experimental
+using Game_DriverCareerTeamSelect_OnMessage_t = void(void *vm, const uint32_t *const *name);
+inline constexpr fn<"Game_DriverCareerTeamSelect_OnMessage", Game_DriverCareerTeamSelect_OnMessage_t> Game_DriverCareerTeamSelect_OnMessage{}; // L2 experimental
 inline constexpr address<"Game_DriverCareer_SpawnDriverPair"> Game_DriverCareer_SpawnDriverPair{}; // L2 experimental
 inline constexpr address<"Game_DriverCareer_TeamMateSelectSpawn"> Game_DriverCareer_TeamMateSelectSpawn{}; // L2 experimental
 using Game_DriverContractsMyTeamComponent_OpenContractWindow_t = uint64_t(void *comp);

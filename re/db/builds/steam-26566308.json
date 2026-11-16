@@ -1460,6 +1460,9 @@
   "Career_DevelopmentPerksVM_BuildAcclaim": {
    "match": "0x22da800"
   },
+  "Career_DriverAcademies_MapFindOrAdd": {
+   "match": "0xd6f9af"
+  },
   "Career_DriverContractEvent_Destroy": {
    "match": "0xe05870"
   },
@@ -3199,6 +3202,9 @@
   },
   "Game_DeptEventViewModel_Update": {
    "match": "0x22ebdf0"
+  },
+  "Game_DriverCareerTeamSelect_OnMessage": {
+   "match": "0x1a6b230"
   },
   "Game_DriverCareer_SpawnDriverPair": {
    "match": "0x18689b0"
@@ -10208,6 +10214,9 @@
   "k_Career_CostCapComponentDesc": {
    "match": "0xa8fc6f"
   },
+  "k_Career_DriverAcademiesComponentDesc": {
+   "match": "0x1a7328d"
+  },
   "k_Career_DriverCareerContractsManagerComponentDesc": {
    "match": "0x26135b"
   },
@@ -10243,6 +10252,9 @@
   },
   "k_Career_ResourcePointsComponentDesc": {
    "match": "0xd6d3c6"
+  },
+  "k_Career_RivalManagerComponentDesc": {
+   "match": "0x15cd07c"
   },
   "k_Career_RnDCardColourTable": {
    "match": "0x1818cb6"

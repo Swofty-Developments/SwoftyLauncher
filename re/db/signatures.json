@@ -50830,7 +50830,7 @@
    "target": "0x141a69a50",
    "kind": "func_start",
    "names": [
-    "Game_Build_DriverCareerTeamSelect"
+    "Game_DriverCareerTeamSelect_OnMessage"
    ],
    "verified": [
     {
@@ -187160,6 +187160,83 @@
    "used_by": [
     "addons/career-editor/native/src/weekend_trace.cpp"
    ]
+  },
+  {
+   "id": "career.driver_academies_component_desc",
+   "section": ".xtls",
+   "pattern": "49 89 BC 24 90 02 00 00 48 8B 87 30 10 00 00 48 81 C7 30 10 00 00 48 8D 15",
+   "match": "0x141a71aad",
+   "anchor": "0x19",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x16",
+    "len": 7
+   },
+   "target": "0x14605c0b8",
+   "kind": "data",
+   "names": [
+    "k_Career_DriverAcademiesComponentDesc"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-17",
+     "by": "bind552",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.rival_manager_component_desc",
+   "section": ".xtls",
+   "pattern": "48 8D 15 ?? ?? ?? ?? 41 B8 01 00 00 00 FF 50 10 48 85 C0 0F 84 ?? ?? ?? ?? 4C 8B B0 D8 0B 00 00",
+   "match": "0x1415cba8c",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "riprel",
+    "insn": "0x0",
+    "len": 7
+   },
+   "target": "0x1460631a0",
+   "kind": "data",
+   "names": [
+    "k_Career_RivalManagerComponentDesc"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-17",
+     "by": "bind552",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "career.driver_academies_map_find_or_add",
+   "section": ".xtls",
+   "pattern": "48 8D 54 24 28 4C 8D 44 24 26 E8 ?? ?? ?? ?? 8B 44 24 30 85 C0 74 2E",
+   "match": "0x140d6ee2f",
+   "anchor": "0xb",
+   "resolve": {
+    "kind": "rel32",
+    "insn": "0xa"
+   },
+   "target": "0x140e091e0",
+   "kind": "func_start",
+   "names": [
+    "Career_DriverAcademies_MapFindOrAdd"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-17",
+     "by": "bind552",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
