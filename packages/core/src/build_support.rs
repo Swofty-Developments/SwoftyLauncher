@@ -16,6 +16,7 @@ const SUPPORTED: &[(u64, u32)] = &[
     (408_063_872, 1_789_118_616),
     (342_936_448, 1_789_128_892),
     BUILD_1_0_145,
+    (355_003_776, 1_794_315_435),
 ];
 
 pub fn identity(exe: &Path) -> Option<(u64, u32)> {
@@ -98,7 +99,7 @@ mod tests {
         assert!(is_supported(408_063_872, 1_789_118_616));
         assert!(is_supported(342_936_448, 1_789_128_892));
         assert!(is_supported(391_613_312, 1_794_312_636));
-        assert!(!is_supported(355_003_776, 1_794_315_435));
+        assert!(is_supported(355_003_776, 1_794_315_435));
     }
 
     #[test]
