@@ -36,7 +36,7 @@
 // Ne_SaveSystem2Win_Mount, which every save load and save passes before any file is read, quits the
 // game if the sandbox has not armed by then.
 //
-// The EA copy (EA_BACKEND, off until its rows are verified) has no Steam storage: its save device opens
+// The EA copy has no Steam storage: its save device opens
 // <title folder>\<save>\<file> in place, and the title folder is a wide string held inline in the save system
 // (device+0x18, buffer size at +0x68, string at +0x78). The core wraps Start, checks the vtable, the slot and that
 // layout, then overwrites that string with saves/<profile>/ea, whose profile folder holds the save. Mount quits
@@ -56,6 +56,7 @@ constexpr const char *MIXIN = "swofty_core.dll (test save sandbox)";
 constexpr const char *START = "Ne_SaveSystem2Win_Start";
 constexpr const char *MOUNT = "Ne_SaveSystem2Win_Mount";
 constexpr const char *UPLOAD = "Ne_SaveSystem2Win_WriteInfoXml";
+constexpr const char *EA_VTABLE_ID = "vt_Ne_SaveSystem2Win";
 constexpr size_t DEVICE_HELPER = 0x30;
 constexpr size_t DEVICE_STORE_IN_CLOUD = 0x3e8;
 constexpr size_t HELPER_USER_DATA = 0x00;
@@ -65,7 +66,7 @@ constexpr UINT EXIT_SANDBOX = ss::EXIT_TEST;
 enum class Mode { off, on };
 enum class Backend { steam_remote, ea_local };
 
-constexpr bool EA_BACKEND = false;
+constexpr bool EA_BACKEND = true;
 
 Mode mode = Mode::off;
 Backend backend = Backend::steam_remote;
@@ -79,7 +80,7 @@ uint32_t file_reads = 0;
 std::unique_ptr<ss::RemoteDir> remote;
 std::atomic<bool> armed{false};
 std::atomic<uint32_t> calls[ss::SLOTS];
-uintptr_t start_addr = 0;
+uintptr_t start_addr = 0, ea_vtable_addr = 0;
 
 using Start_t = uint64_t (*)(void *device);
 using Mount_t = uint32_t (*)(void *device, void *op, void *save, uint8_t for_saving, uint8_t a5, uint8_t *created);
@@ -443,7 +444,7 @@ ss::EaDevice read_ea_device(void *device)
 void arm_ea_local(void *device)
 {
     ss::EaDevice d = read_ea_device(device);
-    std::string why = ss::check_ea_device(d, mem::detail::image().lo + (ss::EA_VTABLE - 0x140000000));
+    std::string why = ss::check_ea_device(d, ea_vtable_addr);
     if (!why.empty())
         fail_closed(why);
     std::string title_a = ss::ea_title_dir(remote_a_unix, run_id);
@@ -655,6 +656,11 @@ std::vector<CoreMixins> save_sandbox_mixins()
         if (!(ea && id == UPLOAD) && !swofty::api->resolve(id))
             fail_closed(std::string(id) + " does not resolve on this build (no verified binding for it in bindings.json)");
     start_addr = swofty::api->resolve(START);
+    if (ea) {
+        ea_vtable_addr = swofty::api->resolve(EA_VTABLE_ID);
+        if (!ea_vtable_addr)
+            fail_closed(std::string(EA_VTABLE_ID) + " does not resolve on this build (no verified binding for it in bindings.json)");
+    }
     CoreMixins m{MIXIN,
                  {{START, SWOFTY_MIXIN_WRAP, 1000, (void *)&start_entry, (void **)&start_orig},
                   {MOUNT, SWOFTY_MIXIN_WRAP, 1000, (void *)&mount_entry, (void **)&mount_orig}}};
