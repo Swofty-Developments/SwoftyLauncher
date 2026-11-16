@@ -10,7 +10,12 @@ use std::time::SystemTime;
 
 pub const ALLOW_ENV: &str = "SWOFTY_ALLOW_UNSUPPORTED_BUILD";
 
-const SUPPORTED: &[(u64, u32)] = &[(408_063_872, 1_789_118_616), (342_936_448, 1_789_128_892)];
+const SUPPORTED: &[(u64, u32)] = &[
+    (408_063_872, 1_789_118_616),
+    (342_936_448, 1_789_128_892),
+    (391_613_312, 1_794_312_636),
+    (355_003_776, 1_794_315_435),
+];
 
 pub fn is_supported(size: u64, pe_timestamp: u32) -> bool {
     SUPPORTED.contains(&(size, pe_timestamp))
@@ -85,13 +90,15 @@ mod tests {
     fn the_steam_and_ea_builds_are_supported() {
         assert!(is_supported(408_063_872, 1_789_118_616));
         assert!(is_supported(342_936_448, 1_789_128_892));
+        assert!(is_supported(391_613_312, 1_794_312_636));
+        assert!(is_supported(355_003_776, 1_794_315_435));
     }
 
     #[test]
     fn a_new_build_is_not_supported_and_neither_is_half_a_match() {
-        assert!(!is_supported(391_613_312, 1_794_312_636));
-        assert!(!is_supported(408_063_872, 1_794_312_636));
-        assert!(!is_supported(391_613_312, 1_789_118_616));
+        assert!(!is_supported(400_000_000, 1_800_000_000));
+        assert!(!is_supported(408_063_872, 1_800_000_000));
+        assert!(!is_supported(400_000_000, 1_789_118_616));
     }
 
     #[test]
@@ -99,7 +106,7 @@ mod tests {
         let dir = std::env::temp_dir().join(format!("swofty-build-support-{}", std::process::id()));
         std::fs::create_dir_all(&dir).unwrap();
         let path = dir.join("F1_25.exe");
-        std::fs::write(&path, exe(1_794_312_636)).unwrap();
+        std::fs::write(&path, exe(1_800_000_000)).unwrap();
         assert!(matches!(check(&path), Support::Unsupported { .. }));
         assert_eq!(check(&dir.join("none.exe")), Support::Unreadable);
         std::fs::remove_dir_all(&dir).ok();
