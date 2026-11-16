@@ -539,6 +539,45 @@
    "pattern": "E8 ?? ?? ?? ?? 8B 7C 24 4C 4C 8D 74 24 68",
    "expect": "E8 07 14 87 FE",
    "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Ne_HwBool_CrowdInShadows": {
+   "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D",
+   "anchor": 12,
+   "note": "The base pattern fails on 1.0.145 because the junk after the call changed. The pattern keeps the call and the following lea of the same reader (the attribute loop that loads 'crowdInShadows')."
+  },
+  "site_Ne_HwInt_NightShadowMapSize": {
+   "pattern": "49 8B 4C 24 50 31 D2 45 31 C0 E8 ?? ?? ?? ?? 32 0D",
+   "anchor": 10,
+   "note": "The base pattern fails on 1.0.145 because the junk after the call changed. Same call in the 'nightShadowMapSize' reader."
+  },
+  "site_Ne_HwInt_ShadowSampling": {
+   "pattern": "31 FF 31 D2 45 31 C0 E8 ?? ?? ?? ?? 85 C0 0F 4E C7",
+   "anchor": 7,
+   "note": "The base pattern fails on 1.0.145 because the junk after the call changed. Same call in the 'sampling' reader."
+  },
+  "site_Ne_HwBool_NightShadowCharCast": {
+   "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 0F 94 96 C1 05",
+   "anchor": 12,
+   "note": "The base pattern fails on 1.0.145 because the code around the call changed. Same call in the 'nightShadowCharacterCast' reader."
+  },
+  "site_Game_CareerWizard_BackRoute": {
+   "pattern": "48 89 54 24 40 48 8D 15 ?? ?? ?? ?? 48 8D 7C 24 40 48 89 F9 45 31 C0 45 31 C9 E8",
+   "anchor": 12,
+   "note": "The base pattern fails on 1.0.145 because the zeroing store and the call before it changed. The lea of \"back\" and the rest of the sequence are the same."
+  },
+  "vt_Sess_UnloadRewardSequence": {
+   "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 66 C7 86 80 0C 00",
+   "section": ".trace",
+   "note": "The constructor moved from the code section into the packed section on 1.0.145; the pattern is unchanged and the vtable it stores has the same entries."
+  },
+  "Ne_StdMap_At_141107280": {
+   "pattern": "48 89 F9 E8 ?? ?? ?? ?? 48 85 C0 74 60 48 8D 5C 24 28",
+   "anchor": 4,
+   "note": "The call site of the KB build was rewritten. This caller of the same lookup function (4 callers there, 3 here) resolves to it through the call.",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 3
+   }
   }
  },
  "hints": {
@@ -582,13 +621,5 @@
    "match": "0x36178c8"
   }
  },
- "unresolvable": {
-  "vt_Sess_UnloadRewardSequence": "the constructor that stores this vtable was rewritten on 1.0.145 (field offsets after 0xc80 moved); needs RE",
-  "Ne_StdMap_At_141107280": "the call site in the surrounding function was rewritten on 1.0.145; needs RE",
-  "site_Game_CareerWizard_BackRoute": "the site body in the packed code changed on 1.0.145; its pattern matches nowhere; needs RE",
-  "site_Ne_HwBool_CrowdInShadows": "the hardware settings code in the packed section changed on 1.0.145; needs RE",
-  "site_Ne_HwInt_NightShadowMapSize": "the hardware settings code in the packed section changed on 1.0.145; needs RE",
-  "site_Ne_HwInt_ShadowSampling": "the hardware settings code in the packed section changed on 1.0.145; needs RE",
-  "site_Ne_HwBool_NightShadowCharCast": "the hardware settings code in the packed section changed on 1.0.145; needs RE"
- }
+ "unresolvable": {}
 }

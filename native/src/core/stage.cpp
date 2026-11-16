@@ -213,7 +213,8 @@ bool verified_build()
     auto b = reinterpret_cast<const uint8_t *>(swofty::api->module_base());
     auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(b + reinterpret_cast<const IMAGE_DOS_HEADER *>(b)->e_lfanew);
     uint32_t stamp = nt->FileHeader.TimeDateStamp, size = nt->OptionalHeader.SizeOfImage;
-    return (stamp == 1789118616u && size > 0x6000000) || (stamp == 1789128892u && size == 0x155dc000);
+    return (stamp == 1789118616u && size > 0x6000000) || (stamp == 1789128892u && size == 0x155dc000) ||
+           (stamp == 1794312636u && size == 0x18434000);
 }
 
 uintptr_t manager_entrants_system()
