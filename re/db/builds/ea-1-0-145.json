@@ -25,7 +25,7 @@
   },
   "Career_GameValue_GetUpgradesFailedDuringTimeAdvance": {
    "pattern": "48 83 EC 28 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Career_Get_CareerLengthDays_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? EA 0F 89 46 26 C8 FD 13 E9",
@@ -54,6 +54,10 @@
   "Game_CreateSessionDlcSelectTab_FillTile": {
    "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? CC 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Game_F1osTasksystem_CreateTask_FinalisePackagePTask": {
+   "pattern": "E8 ?? ?? ?? ?? 48 83 7C 24 20 00 74 47 48 8B 56 38 48 3B 56 40 74 2C C5 F8 57 C0 C5 F8 11 02 48 83 7C 24 28 00 74 15 48 8B 44 24 20 48 89 02 48 8B 44 24 28 48 89 42 08 F0 FF 40 0C 48 83 46 38 10 EB 11 48 83 C6 28 4C 8D 44 24 20 48 89 F1 E8 ?? ?? ?? ?? 48 8B 74 24 28 48 85 F6 74 ?? F0 FF",
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Game_F1os_F1CGTask_Update": {
    "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 03 00 00 C5 F8 29 B4 24 30 03 00 00 48 89 CE 48 81 C1 98 00 00 00 4C 8B",
@@ -111,6 +115,10 @@
    "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
+  "Ne_Crt_FastFailTerminate": {
+   "pattern": "48 83 EC 28 B9 17 00 00 00 FF 15 ?? ?? ?? ?? 85 C0 74",
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
+  },
   "Ne_Crt_FatalNoReturn": {
    "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
@@ -120,8 +128,8 @@
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
   "Ne_Crt_Memcpy": {
-   "pattern": "48 8B C1 4C 8D 15 ?? ?? ?? ?? 49 83 F8 0F 0F 87 ?? ?? ?? ?? 66 66 66 66 0F 1F 84 00 00 00 00 00 47 8B 8C 82 ?? ?? D2 05",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+   "pattern": "48 8B C1 4C 8D 15 ?? ?? ?? ?? 49 83 F8 0F 0F 87 ?? ?? ?? ?? 66 66 66 66 0F 1F 84 00 00 00 00 00 47 8B 8C 82 ?? ?? ?? 05",
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Ne_Crt_ThrowOverflow_B": {
    "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9",
@@ -148,12 +156,12 @@
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
   "Ne_Format_HresultUnknownFacility": {
-   "pattern": "48 89 5C 24 20 55 56 57 41 56 41 57 48 8D 6C 24 C9 48 81 EC C0 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 27 66 0F 6F 0D ?? ?? A5 00",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+   "pattern": "48 89 5C 24 20 55 56 57 41 56 41 57 48 8D 6C 24 C9 48 81 EC C0 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 27 66 0F 6F 0D ?? ?? ?? 00",
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Ne_Gfx2Renderer_PostEvent_AllocateResource": {
    "pattern": "E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Ne_HashMap_FatalStub_GroundCover": {
    "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 0F",
@@ -170,6 +178,14 @@
   "Ne_HashMap_ThrowLengthError_Decals2": {
    "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC E9",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_NetTransport_MigrateConnections": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 ?? 8D 2D",
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
+  },
+  "Ne_SaveError_Win32FmtSSU": {
+   "pattern": "56 57 48 81 EC 48 08 00 00 48 89 C8 48 8D 4C 24 48 48 C7 44 24 38 00 08 00 00 48 89 4C 24 40 C6 44 24 48 00 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 41 8B 09",
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Ne_SaveSystem2Win_Mount": {
    "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 18 13 00 00 E8 ?? ?? ?? ?? 48 29 C4 44 89 CD 4C 89 C3 48 89",
@@ -199,6 +215,15 @@
    "pattern": "56 48 83 EC 20 48 8B 71 08 48 85 F6 74 23 F0 FF 4E 08 75 1D 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 0F 48 8B 06 48 89 F1 48 83 C4 20 5E 48 FF 60 08 90 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC E9",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
+  "Ne_StdMap_At_141107280": {
+   "pattern": "48 89 F9 E8 ?? ?? ?? ?? 48 85 C0 74 60 48 8D 5C 24 28",
+   "anchor": 4,
+   "note": "The call site of the KB build was rewritten. This caller of the same lookup function (4 callers there, 3 here) resolves to it through the call.",
+   "resolve": {
+    "kind": "rel32",
+    "insn": 3
+   }
+  },
   "Render_Gfx2Buffer_Construct": {
    "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 4C",
    "note": "The function is at 0x39c2800 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
@@ -209,7 +234,7 @@
   },
   "Sess_FormationLapLogic_SubscribeSafetyCarDeployment": {
    "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Sess_GridRundown_Update": {
    "pattern": "E9 ?? ?? ?? ?? 85 D2 E9 ?? ?? ?? ?? F6 E9",
@@ -240,8 +265,8 @@
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
   },
   "Sess_RedFlagRaceStrategy_Update": {
-   "pattern": "56 57 53 48 83 EC 30 48 89 D6 8B 05 ?? ?? EB 03 89 81 90 0C 00 00 80 B9",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+   "pattern": "56 57 53 48 83 EC 30 48 89 D6 8B 05 ?? ?? ?? 03 89 81 90 0C 00 00 80 B9",
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Sess_RedFlagSystem_OnSessionBeginGameplay": {
    "pattern": "E9 ?? ?? ?? ?? FE 0F 82 36 03 AE FF 37 3C 7E 1D",
@@ -262,6 +287,10 @@
   "Sess_Tod_BuildSessionDataset_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? C8 49 FB E9 68 9B 21",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Trk_TimeTrialTrackSelectVm_OnCommandRaised": {
+   "pattern": "56 57 53 48 83 EC 40 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D ?? 35 B0 02",
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Vm_List_AppendChild": {
    "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? CC 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
@@ -289,23 +318,23 @@
   },
   "site_Car_VehicleTableRemove": {
    "pattern": "74 07 41 88 89 E8 00 00 00 FE C8 88 05",
-   "expect": "88 05 D3 AB 5A 02",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "88 05 83 B3 6E 02"
   },
   "site_Career_ApplyUpgradeBlockNameDefault": {
    "pattern": "41 80 7A 19 00 74 F3 EB A1 48 8D 15",
-   "expect": "48 8D 15 EA 68 07 F6",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement, and the pattern matches once in the section map's target section."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 15 AA DB 1B F7"
   },
   "site_Career_ApplyUpgradeKeyCall": {
    "pattern": "0F B6 53 20 8D 42 F5 3C 06 77 08 48 89 F1 E8",
-   "expect": "48 89 F1 E8 F5 18 9D F3",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement, and the pattern matches once in the section map's target section."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 89 F1 E8 95 9E 9F F4"
   },
   "site_Career_DeserialiseUpgradesEnd": {
    "pattern": "85 C0 74 B6 E9 ?? ?? ?? ?? 48 8D 15",
-   "expect": "48 8D 15 1B 10 31 02",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 15 3B 31 43 02"
   },
   "site_Career_LoadUpgradeRows_DeptPath": {
    "pattern": "48 8D 8C 24 98 06 00 00 48 8D 15 ?? ?? 12 02",
@@ -313,108 +342,108 @@
   },
   "site_Career_RnDBoxGridNameIndex": {
    "pattern": "48 0F BE C0 48 8D 0D ?? ?? ?? ?? 48 8B 14 C1 48 C7 44 24 50 00 00 00 00",
-   "expect": "48 0F BE C0 48 8D 0D F1 F6 AC 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 0F BE C0 48 8D 0D 11 80 BE 03"
   },
   "site_Career_RnDCardArtImage0": {
    "pattern": "4C 8B 40 10 4C 89 7C 24 20 48 8D 15 ?? ?? ?? ?? 4C 8D 0D",
-   "expect": "4C 8D 0D CE 10 F0 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D FE 99 01 04"
   },
   "site_Career_RnDCardArtImage1": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? 48 89 E9 E8 ?? ?? ?? ?? 48 8B 44 24 50 48 8D 50 09 48 85 C0 48 0F 44 D7",
-   "expect": "4C 8D 0D 20 BD EF 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D 50 46 01 04"
   },
   "site_Career_RnDCardArtImage2": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 84 24 C0 00 00 00 48 8D 50 09 48 85 C0 48 0F 44 D5 4C 8D 05 ?? ?? ?? ?? 4C 89 F1 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8E 40 02 00 00 48 89 C2",
-   "expect": "4C 8D 0D 94 8D EF 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D C4 16 01 04"
   },
   "site_Career_RnDCardArtMask0": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 44 24 28 48 8D 50 09 48 85 C0 49 0F 44 D5 4C 8D 05 ?? ?? ?? ?? 4C 89 F1 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8F 28 01 00 00",
-   "expect": "4C 8D 0D 69 0E F0 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D 99 97 01 04"
   },
   "site_Career_RnDCardArtMask1": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? 48 89 E9 E8 ?? ?? ?? ?? 48 8B 44 24 50 48 8D 50 09 48 85 C0 48 8D 05 ?? ?? ?? ?? 48 0F 44 D0 4C 8D 05 ?? ?? ?? ?? 4C 89 E9 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8E A0 02 00 00",
-   "expect": "4C 8D 0D 7C BC EF 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D AC 45 01 04"
   },
   "site_Career_RnDCardArtMask2": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 84 24 C0 00 00 00 48 8D 50 09 48 85 C0 48 0F 44 D5 4C 8D 05 ?? ?? ?? ?? 4C 89 F1 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8E A0 02 00 00",
-   "expect": "4C 8D 0D DD 8C EF 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D 0D 16 01 04"
   },
   "site_Career_RnDCardDeptIcon0": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 44 24 28 48 8D 50 09 48 85 C0 49 0F 44 D5 4C 8D 05 ?? ?? ?? ?? 4C 89 F1 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8F C8 01 00 00",
-   "expect": "4C 8D 0D CB C1 EF 03",
+   "expect": "4C 8D 0D FB 4A 01 04",
    "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
   },
   "site_Career_RnDCardDeptIcon1": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? 48 89 E9 E8 ?? ?? ?? ?? 48 8B 44 24 50 48 8D 50 09 48 85 C0 48 8D 05 ?? ?? ?? ?? 48 0F 44 D0 4C 8D 05 ?? ?? ?? ?? 4C 89 E9 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8E 40 04 00 00",
-   "expect": "4C 8D 0D DD 6F EF 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D 0D F9 00 04"
   },
   "site_Career_RnDCardDeptIcon2": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 84 24 C0 00 00 00 48 8D 50 09 48 85 C0 48 0F 44 D5 4C 8D 05 ?? ?? ?? ?? 4C 89 F1 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8E 40 04 00 00",
-   "expect": "4C 8D 0D 32 40 EF 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D 62 C9 00 04"
   },
   "site_Career_RnDDeptRowCategoryIcon": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F1 E8 ?? ?? ?? ?? 48 8B 44 24 60 48 8D 50 09",
-   "expect": "4C 8D 0D 20 69 A9 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D E0 F3 BA 03"
   },
   "site_Career_RnDDeptRowTypeIcon": {
    "pattern": "48 8B 8C 24 B0 00 00 00 48 63 0C 88 48 01 C1 4C 8D 0D ?? ?? ?? ?? FF E1 4C 8D 0D ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 0D",
-   "expect": "4C 8D 0D 07 AE BF 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D 77 2C D1 03"
   },
   "site_Career_RnDDeptRowTypeLabel": {
    "pattern": "4A 63 0C 88 48 01 C1 FF E1 4C 8D 05 ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 05",
-   "expect": "4C 8D 05 42 BE BF 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 05 B2 3C D1 03"
   },
   "site_Career_RnDDeptRowTypeLabelJoin": {
    "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 8C 24 90 00 00 00 E8 ?? ?? ?? ?? 49 8B 5C 24 08",
-   "expect": "48 8D 15 37 BF BF 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 15 A7 3D D1 03"
   },
   "site_Career_RnDInProgressPartIcon": {
    "pattern": "4C 89 74 24 20 48 89 D9 48 8D 15 ?? ?? ?? ?? 4C 8D 0D",
-   "expect": "4C 8D 0D 17 C8 7D 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D 17 64 8F 03"
   },
   "site_Career_RnDInProgressStrip": {
    "pattern": "4C 89 F9 48 8D 15 ?? ?? ?? ?? 4C 8D 0D",
-   "expect": "4C 8D 0D D5 0B 82 03",
+   "expect": "4C 8D 0D 35 A6 93 03",
    "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
   },
   "site_Career_RnDInProgressTypeIcon": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? EB 50 4C 8D 0D",
-   "expect": "4C 8D 0D 98 0B 94 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D 48 9B A5 03"
   },
   "site_Career_RnDInProgressTypeIconJoin": {
    "pattern": "48 89 DE 4C 8D 05 ?? ?? ?? ?? 3C 03",
-   "expect": "48 89 DE 4C 8D 05 B3 0C 94 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 89 DE 4C 8D 05 63 9C A5 03"
   },
   "site_Career_RnDInProgressTypeLabel": {
    "pattern": "4C 8D 05 ?? ?? ?? ?? EB 4B 4C 8D 05",
-   "expect": "4C 8D 05 73 13 94 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 05 23 A3 A5 03"
   },
   "site_Career_RnDInProgressTypeLabelJoin": {
    "pattern": "0F 1F 44 00 00 4C 89 F1 48 8D 15 ?? ?? ?? ?? E8",
-   "expect": "4C 89 F1 48 8D 15 CF 14 94 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 89 F1 48 8D 15 7F A4 A5 03"
   },
   "site_Career_RnDListRowDeptIcon": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 84 24 A0 0C 00 00",
-   "expect": "4C 8D 0D FE D7 FB 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D AE 62 0D 04"
   },
   "site_Career_RnDPerfViewModelSlotDtor": {
    "pattern": "48 8B 9E 68 06 00 00 48 85 DB 0F 84 ?? ?? ?? ?? 4C 8D B7 80 00 00 00 48 8D 8F E0 06 00 00 E8 ?? ?? ?? ?? 48 8D 8F C0 04 00 00",
@@ -423,8 +452,8 @@
   },
   "site_Career_RnDPerksTitleDeptIcon": {
    "pattern": "4C 89 64 24 20 48 8D 15 ?? ?? ?? ?? 4C 8D 0D",
-   "expect": "4C 8D 0D B4 3A A8 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D 74 C5 B9 03"
   },
   "site_Career_RnDPieMoveAssignSlotDtor": {
    "pattern": "4C 8B 36 4D 85 F6 0F 84 ?? ?? ?? ?? 4C 8D BB 80 00 00 00 48 8D 8B E0 06 00 00 E8 ?? ?? ?? ?? 48 8D 8B C0 04 00 00",
@@ -433,98 +462,98 @@
   },
   "site_Career_RnDPiePopulateNextCode": {
    "pattern": "EB 1B 0F 1F 84 00 00 00 00 00 48 8D 05",
-   "expect": "48 8D 05 8F E0 7E 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 05 3F 7C 90 03"
   },
   "site_Career_RnDPieSliceDescFormat": {
    "pattern": "E8 ?? ?? ?? ?? B8 FF FF FF FF 48 8D B4 24 B0 01 00 00",
-   "expect": "E8 10 B5 21 02",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "E8 80 64 21 02"
   },
   "site_Career_RnDPieSliceIconArgs": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 84 24 60 01 00 00",
-   "expect": "4C 8D 0D 65 5D 81 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D C5 F7 92 03"
   },
   "site_Career_RnDPopupCategoryIcon": {
    "pattern": "4C 89 74 24 20 48 8D 15 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9",
-   "expect": "4C 8D 0D 60 B0 D5 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D F0 39 E7 03"
   },
   "site_Career_RnDPurchasePanelTypeLabelJoin": {
    "pattern": "4C 8D 05 ?? ?? ?? ?? EB 07 4C 8D 05 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 58",
-   "expect": "48 8D 15 B2 FC BE 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 15 22 7B D0 03"
   },
   "site_Career_RnDPurchaseScreenTypeLabelJoin": {
    "pattern": "4C 8D 05 ?? ?? ?? ?? EB 07 4C 8D 05 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 48 8D 8C 24 C0 00 00 00",
-   "expect": "48 8D 15 27 D1 C2 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 15 97 4F D4 03"
   },
   "site_Career_RnDResearchRowCategoryIcon": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F1 E8 ?? ?? ?? ?? 48 8B 44 24 50 48 8D 50 09",
-   "expect": "4C 8D 0D 28 22 AA 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D E8 AC BB 03"
   },
   "site_Career_RnDResearchRowTypeIcon": {
    "pattern": "48 8B 8C 24 08 01 00 00 48 63 0C 88 48 01 C1 4C 8D 0D ?? ?? ?? ?? FF E1 4C 8D 0D ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 0D",
-   "expect": "4C 8D 0D 00 67 C0 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D 70 E5 D1 03"
   },
   "site_Career_RnDResearchRowTypeLabel": {
    "pattern": "48 63 0C 90 48 01 C1 FF E1 4C 8D 05 ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 05",
-   "expect": "4C 8D 05 49 77 C0 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 05 B9 F5 D1 03"
   },
   "site_Career_RnDResearchRowTypeLabelJoin": {
    "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 8C 24 88 00 00 00 E8 ?? ?? ?? ?? 49 8B 75 08",
-   "expect": "48 8D 15 3E 78 C0 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 15 AE F6 D1 03"
   },
   "site_Career_RnDResultTypeIcon": {
    "pattern": "4D 89 E0 E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 0D",
-   "expect": "4C 8D 0D E6 DB FC 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D C6 58 0E 04"
   },
   "site_Career_RnDResultTypeIconJoin": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? 66 90 4C 8D 05",
-   "expect": "4C 8D 05 A6 DC FC 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 05 86 59 0E 04"
   },
   "site_Career_RnDResultTypeLabel": {
    "pattern": "45 84 C9 75 E4 E9 ?? ?? ?? ?? 4C 8D 05",
-   "expect": "4C 8D 05 07 DE FC 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 05 E7 5A 0E 04"
   },
   "site_Career_RnDTodoTypeLabelJoin": {
    "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 48 E8 ?? ?? ?? ?? 48 8B 9F 38 03 00 00",
-   "expect": "48 8D 15 E7 D9 BF 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 15 57 58 D1 03"
   },
   "site_Career_RnDUpgradeInfoTypeLabelJoin": {
    "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 48 E8 ?? ?? ?? ?? 48 8B 86 50 03 00 00 48 8B B8 F8 00 00 00",
-   "expect": "48 8D 15 71 E5 C0 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 15 E1 63 D2 03"
   },
   "site_Career_RnDUpgradeListDeptIcon": {
    "pattern": "48 89 7C 24 20 48 89 E9 48 8D 15 ?? ?? ?? ?? 4C 8D 0D",
-   "expect": "4C 8D 0D 9F EA FB 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D 4F 75 0D 04"
   },
   "site_Career_TeamHqIsMyTeamResult": {
    "pattern": "75 20 48 89 F9 E8 ?? ?? ?? ?? 89 C3 E8",
-   "expect": "89 C3 E8 0C 86 CC FD",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "89 C3 E8 AC 26 CD FD"
   },
   "site_Career_TeamHqRnDPopupTypeIcon": {
    "pattern": "48 01 D1 FF E1 4C 8D 0D ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 0D",
-   "expect": "4C 8D 0D 6A F4 EB 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D AA 71 FD 03"
   },
   "site_Career_TeamHqRnDPopupTypeIconJoin": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? 3C 03 77 0D 48 8D 0D",
-   "expect": "3C 03 77 0D 48 8D 0D 0A 79 D7 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "3C 03 77 0D 48 8D 0D 4A 02 E9 03"
   },
   "site_Career_TeleFailedTypeNameJoin": {
    "pattern": "0F B6 40 70 48 8B 54 C5 00 48 89 D9 E8",
@@ -533,8 +562,8 @@
   },
   "site_Career_TeleRecordTypeName": {
    "pattern": "0F B6 43 70 48 8D 15 ?? ?? ?? ?? 48 8B 14 C2",
-   "expect": "48 8D 15 8A 41 ED 04",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 15 0A 66 FE 04"
   },
   "site_Career_TeleRecordTypeNameCall": {
    "pattern": "E8 ?? ?? ?? ?? 48 8B 0E 0F B6 43 72",
@@ -543,8 +572,8 @@
   },
   "site_Career_TeleResearchTypeName": {
    "pattern": "0F B6 40 70 48 8D 0D ?? ?? ?? ?? 48 8B 14 C1",
-   "expect": "48 8D 0D 8F D9 F2 04",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 0D AF 01 04 05"
   },
   "site_Career_TeleResearchTypeNameCall": {
    "pattern": "E8 ?? ?? ?? ?? 48 8B 47 10 0F B6 40 72",
@@ -553,53 +582,58 @@
   },
   "site_Career_Unk141814320TypeLabelJoin": {
    "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 40 E8 ?? ?? ?? ?? 48 8B 9E A8 00 00 00",
-   "expect": "48 8D 15 B3 A3 06 04",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 15 93 20 18 04"
   },
   "site_Career_Unk1418169f0TypeLabelJoin": {
    "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 40 E8 ?? ?? ?? ?? 4C 8B A6 A8 00 00 00",
-   "expect": "48 8D 15 FC 7B 06 04",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 15 DC F8 17 04"
   },
   "site_Career_UpgradeCardDeptIcon": {
    "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 44 24 58",
-   "expect": "4C 8D 0D 94 3E F1 03",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 0D C4 C7 02 04"
   },
   "site_Career_UpgradeCardTypeLabel": {
    "pattern": "4A 63 0C B0 48 01 C1 FF E1 4C 8D 05 ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 05",
-   "expect": "4C 8D 05 FB 65 08 04",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "4C 8D 05 DB E2 19 04"
   },
   "site_Career_UpgradeCardTypeLabelJoin": {
    "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 68 E8 ?? ?? ?? ?? C6 44 24 45 00",
-   "expect": "48 8D 15 F0 66 08 04",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 15 D0 E3 19 04"
   },
   "site_Career_UpgradeInitNormal": {
    "pattern": "48 83 86 C8 00 00 00 10 E9 ?? ?? ?? ?? 8B 15",
-   "expect": "8B 15 CE 3E BE 02",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "8B 15 4E A9 D2 02"
   },
   "site_Game_CareerContinue_DriverSlotTitle": {
    "pattern": "4C 69 EE 40 05 00 00 F6 82 71 01 00 00 20 4A 8D 8C 29 B8 03 00 00 44 88 44 24 37 0F 85 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? C6 84 24 08 04 00 00 01",
-   "expect": "E8 6F 01 DA FE",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "E8 8F 4D DA FE"
+  },
+  "site_Game_CareerWizard_BackRoute": {
+   "pattern": "48 89 54 24 40 48 8D 15 ?? ?? ?? ?? 48 8D 7C 24 40 48 89 F9 45 31 C0 45 31 C9 E8",
+   "anchor": 12,
+   "note": "The base pattern fails on 1.0.145 because the zeroing store and the call before it changed. The lea of \"back\" and the rest of the sequence are the same."
   },
   "site_Game_DriverSelectHeader_BuildTabs": {
    "pattern": "E8 ?? ?? ?? ?? C6 86 10 03 00 00 01 48 8B 86 C0 02 00 00",
-   "expect": "E8 39 9B 7F 02",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "E8 F9 36 7F 02"
   },
   "site_Game_DriverSelect_BadgeFormat": {
    "pattern": "E8 ?? ?? ?? ?? 48 8D 8E 58 FF FF FF",
-   "expect": "E8 AB E8 AB 02",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "E8 CB 86 AB 02"
   },
   "site_Game_DriverSelect_TeamLogoFormat": {
    "pattern": "48 8D 4C 24 60 E8 ?? ?? ?? ?? 48 8B 97 B0 00 00 00",
-   "expect": "E8 DD 05 AC 02",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "E8 FD A3 AB 02"
   },
   "site_Game_GarageSetups_EntryStep": {
    "pattern": "4E 8B 0C C2 4A 8D 14 C2 4D 8B 41 38 4D 8B 80 60 02 00 00 41 39 80",
@@ -613,30 +647,46 @@
   },
   "site_Game_SaveData_ContainersChildren": {
    "pattern": "41 89 04 24 85 C0 0F 85 ?? ?? ?? ?? 48 8D 2D",
-   "expect": "48 8D 2D DD 78 AD 02",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "48 8D 2D 4D E3 C1 02"
   },
   "site_Game_SaveData_ContainersDone": {
    "pattern": "80 3D ?? ?? ?? ?? 01 4C 8B 4C 24 30",
-   "expect": "80 3D 71 98 9F 02 01",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "80 3D B1 03 B4 02 01"
   },
   "site_Game_TeamSelect_TeamLogoFormat": {
    "pattern": "E8 ?? ?? ?? ?? 48 8D 8F 58 FF FF FF",
-   "expect": "E8 36 A6 8E 02",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "E8 D6 42 8E 02"
+  },
+  "site_Game_TheatreList_EntryStep": {
+   "pattern": "48 8B B9 A8 02 00 00 48 8B 49 40 48 69 DA A0 01 00 00 8B 44 1F 08",
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
+  },
+  "site_Game_TheatreList_EntryStepAlt": {
+   "pattern": "48 8B B9 C8 02 00 00 48 8B 49 40 48 69 DA A0 01 00 00 8B 44 1F 08",
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "site_Ne_HwBool_CrowdInShadows": {
-   "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 40 0F 94 D7",
-   "note": "The base pattern ends on Steam .data1 protector filler (66). EA's .xcode copy has the real test/sete there instead (found through its crowdInShadows string xref)."
+   "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 0D",
+   "anchor": 12,
+   "note": "The base pattern fails on 1.0.145 because the junk after the call changed. The pattern keeps the call and the following lea of the same reader (the attribute loop that loads 'crowdInShadows')."
   },
   "site_Ne_HwBool_NightShadowCharCast": {
-   "pattern": "E8 ?? ?? ?? ?? 85 C0 0F 94 96 C1 05 00 00 4C 8B B6 18 06 00 00 4C 2B B6 10 06 00 00",
-   "note": "The base pattern ends on Steam .data1 protector filler (40 8A 3D, 31 3D). On EA it still matches once, but at a call to __security_check_cookie. EA's real site calls Ne_Compare_StringNoCase like Steam's and is followed by the same sete [rsi+0x5c1] and this+0x610 list loads."
+   "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 85 C0 0F 94 96 C1 05",
+   "anchor": 12,
+   "note": "The base pattern fails on 1.0.145 because the code around the call changed. Same call in the 'nightShadowCharacterCast' reader."
   },
   "site_Ne_HwInt_NightShadowMapSize": {
-   "pattern": "49 8B 4C 24 50 31 D2 45 31 C0 E8 ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? ?? 89 86 A8 05 00 00",
-   "note": "The base pattern ends on Steam .data1 protector filler (66). EA's .xcode copy has 10 other filler bytes after the call. They are wildcarded up to the mov [rsi+0x5a8], eax that both builds share (found through its nightShadowMapSize string xref)."
+   "pattern": "49 8B 4C 24 50 31 D2 45 31 C0 E8 ?? ?? ?? ?? 32 0D",
+   "anchor": 10,
+   "note": "The base pattern fails on 1.0.145 because the junk after the call changed. Same call in the 'nightShadowMapSize' reader."
+  },
+  "site_Ne_HwInt_ShadowSampling": {
+   "pattern": "31 FF 31 D2 45 31 C0 E8 ?? ?? ?? ?? 85 C0 0F 4E C7",
+   "anchor": 7,
+   "note": "The base pattern fails on 1.0.145 because the junk after the call changed. Same call in the 'sampling' reader."
   },
   "site_Sess_InGamePlayerFinishedAiCall": {
    "pattern": "E8 ?? ?? ?? ?? 49 81 C6 A8 00 00 00 4C 89 F1 E8",
@@ -648,10 +698,23 @@
    "expect": "E8 96 F9 B3 00",
    "note": "The pattern matches EA once at the Steam offset. The expected site bytes carry a rip-relative or call displacement that differs on EA; they are the EA dump's bytes."
   },
+  "site_Sess_TimeTrialLeaderboard_TabChild": {
+   "pattern": "48 8B 01 B2 01 FF 50 30 48 89 F1 E8 ?? ?? ?? ?? 90 48 83 C4 40 5E C3",
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
+  },
+  "site_Sess_TyreVisSlotLookup": {
+   "pattern": "4C 89 ?? E8 ?? ?? ?? ?? 49 8B 86 48 9C 00 00 49 8B 8E 98 9C 00 00",
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
+  },
   "site_Team_LoadInsertCall": {
    "pattern": "E8 ?? ?? ?? ?? 8B 7C 24 4C 4C 8D 74 24 68",
-   "expect": "E8 07 14 87 FE",
-   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "expect": "E8 17 23 87 FE"
+  },
+  "vt_Sess_UnloadRewardSequence": {
+   "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 66 C7 86 80 0C 00",
+   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image.",
+   "section": ".trace"
   }
  },
  "hints": {},
