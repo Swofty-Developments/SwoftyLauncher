@@ -27,7 +27,7 @@ pub const CACHE_DIR: &str = "cache/registry";
 pub const CATALOG_FILE: &str = "catalog.json";
 pub const LOG_FILE: &str = "state/registry.log";
 pub const TIMEOUT: Duration = Duration::from_secs(10);
-pub const DOWNLOAD_LIMIT: u64 = 4 * 1024 * 1024 * 1024;
+pub const DOWNLOAD_LIMIT: u64 = 6 * 1024 * 1024 * 1024;
 const CATALOG_LIMIT: u64 = 16 * 1024 * 1024;
 /// The least time the catalog's body gets.
 const CATALOG_FLOOR: Duration = Duration::from_secs(60);
@@ -1230,7 +1230,7 @@ mod tests {
         assert_eq!(body_timeout(0), DOWNLOAD_FLOOR);
         assert_eq!(body_timeout(200 * 1024 * 1024), DOWNLOAD_FLOOR);
         assert_eq!(body_timeout(1024 * 1024 * 1024), Duration::from_secs(8192));
-        assert_eq!(body_timeout(DOWNLOAD_LIMIT), Duration::from_secs(32768));
+        assert_eq!(body_timeout(DOWNLOAD_LIMIT), Duration::from_secs(49152));
     }
 
     #[test]
