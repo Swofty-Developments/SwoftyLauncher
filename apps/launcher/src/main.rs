@@ -20,6 +20,7 @@ mod discord;
 mod download_dock;
 mod download_queue;
 mod ea_app;
+mod fallback_fonts;
 mod format;
 mod found_data;
 mod game;
@@ -70,6 +71,7 @@ fn main() {
     app_log::step("app runtime ready, entering the event loop");
     app.run(move |cx| {
         app_log::step("event loop running");
+        fallback_fonts::install(cx);
         gpui_kit::init(cx);
         app_log::step("ui kit ready");
         theme::init(cx);
