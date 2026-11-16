@@ -163,6 +163,8 @@ pub struct Evidence {
     pub code: Option<u32>,
     /// The game exe's version, when it can be read.
     pub game_version: Option<String>,
+    /// The game exe's size and PE link timestamp, the pair that identifies a build.
+    pub game_build: Option<(u64, u32)>,
 }
 
 impl Evidence {
@@ -205,6 +207,7 @@ impl Evidence {
             .and_then(|e| e.crash_code.or(e.exit_code.map(|c| c as u32)))
             .or(session.exit_code.map(|c| c as u32));
         let game_version = game.and_then(|g| crate::exe_version::read(&g.join(crate::GAME_EXE)));
+        let game_build = game.and_then(|g| crate::build_support::identity(&g.join(crate::GAME_EXE)));
         Self {
             loader,
             report,
@@ -213,6 +216,7 @@ impl Evidence {
             names,
             code,
             game_version,
+            game_build,
             ..Default::default()
         }
     }
@@ -832,6 +836,12 @@ const AGGRESSIVE_AI_CRASH: [&str; 6] = [
     " fn base+0x67c940+",
     " fn base+0x67d090+",
 ];
+/// Skip Cutscenes, whose versions up to [`SKIP_CUTSCENES_LAST_BROKEN`] fail to
+/// find a vtable on F1 25 1.0.145 and crash within a minute of the core loading.
+const SKIP_CUTSCENES: &str = "dromodf.skip-cutscenes";
+const SKIP_CUTSCENES_LAST_BROKEN: &str = "1.9.4";
+const SKIP_CUTSCENES_MODULE: &str = "skip_cutscenes.dll";
+const SKIP_CUTSCENES_VTABLE: &str = "vtable not found";
 /// The entrant list search by name (fn 0x141738eb0) that runs off the end of the
 /// game's loaded lists when the name is missing.
 const ENTRANT_LIST_SEARCH: &str = "F1_25.exe+0x1738f30 ";
@@ -1657,6 +1667,34 @@ fn aggressive_ai_crash(e: &Evidence, f: &Fatal) -> bool {
             .any(|l| l.contains("F1_25.exe+0x") && AGGRESSIVE_AI_CRASH.iter().any(|at| l.contains(at)))
 }
 
+/// Whether F1 25 1.0.145 crashed with a Skip Cutscenes version up to
+/// [`SKIP_CUTSCENES_LAST_BROKEN`] on in the profile, in its own module or after
+/// it logged that it could not find its vtable.
+fn skip_cutscenes_crash(e: &Evidence, f: &Fatal) -> bool {
+    let broken = e
+        .versions
+        .get(SKIP_CUTSCENES)
+        .is_some_and(|v| semver::Version::parse(v.trim()).is_ok_and(|v| v <= semver::Version::new(1, 9, 4)));
+    e.game_build == Some(crate::build_support::BUILD_1_0_145)
+        && e.enabled.iter().any(|id| id == SKIP_CUTSCENES)
+        && broken
+        && (f.module.as_deref() == Some(SKIP_CUTSCENES_MODULE)
+            || e.loader.lines().any(|l| l.contains(SKIP_CUTSCENES_VTABLE)))
+}
+
+fn skip_cutscenes(e: &Evidence) -> Diagnosis {
+    let addon = name(e, SKIP_CUTSCENES);
+    Diagnosis {
+        id: "skip_cutscenes_1_0_145",
+        title: format!("{addon} (up to {SKIP_CUTSCENES_LAST_BROKEN}) crashed F1 25 version 1.0.145"),
+        what: format!(
+            "{addon} (up to {SKIP_CUTSCENES_LAST_BROKEN}) crashes the game on F1 25 version 1.0.145 within a \
+             minute of loading."
+        ),
+        steps: vec!["Turn it off on the Addons page until its author releases an update.".to_owned()],
+    }
+}
+
 fn aggressive_ai(e: &Evidence) -> Diagnosis {
     let addon = name(e, AGGRESSIVE_AI);
     Diagnosis {
@@ -2302,6 +2340,9 @@ fn matched(e: &Evidence) -> Option<Diagnosis> {
     }
     if aggressive_ai_crash(e, &f) {
         return Some(aggressive_ai(e));
+    }
+    if skip_cutscenes_crash(e, &f) {
+        return Some(skip_cutscenes(e));
     }
     if let Some((hook, module)) = stray_jump_hook(&f, &e.loader) {
         return Some(Diagnosis {
@@ -3816,6 +3857,57 @@ runtime      Windows
                 .to_owned(),
         );
         assert_eq!(diagnose(&e).map(|d| d.id), Some("aggressive_ai_alternate"));
+    }
+
+    fn skip_cutscenes_on(loader: &str, version: &str, build: (u64, u32)) -> Evidence {
+        let mut e = with_names(ev(loader, &[]), &[(SKIP_CUTSCENES, "Skip Cutscenes")]);
+        e.versions.insert(SKIP_CUTSCENES.to_owned(), version.to_owned());
+        e.enabled = vec![SKIP_CUTSCENES.to_owned()];
+        e.game_build = Some(build);
+        e
+    }
+
+    #[test]
+    fn skip_cutscenes_up_to_1_9_4_on_1_0_145_is_named() {
+        let log = "2026-11-15 13:13:00.000 [1] [loader] vtable not found (Sess_SessionStateIntroCameras_OnEnter 142D6DE80)\n\
+                   2026-11-15 13:13:40.000 [2] [crash] unhandled ACCESS_VIOLATION (0xc0000005) at skip_cutscenes.dll+0x23f4 reached the top-level filter; passing it to the game's filter\n";
+        for version in ["1.9.4", "1.0.0", "1.9.3"] {
+            let d = diagnose(&skip_cutscenes_on(
+                log,
+                version,
+                crate::build_support::BUILD_1_0_145,
+            ))
+            .unwrap();
+            assert_eq!(d.id, "skip_cutscenes_1_0_145", "{version}");
+        }
+        let d = diagnose(&skip_cutscenes_on(
+            log,
+            "1.9.4",
+            crate::build_support::BUILD_1_0_145,
+        ))
+        .unwrap();
+        assert_eq!(
+            d.what,
+            "Skip Cutscenes (up to 1.9.4) crashes the game on F1 25 version 1.0.145 within a minute of loading."
+        );
+        assert_eq!(
+            d.steps,
+            ["Turn it off on the Addons page until its author releases an update."]
+        );
+    }
+
+    #[test]
+    fn skip_cutscenes_is_not_named_on_other_versions_builds_or_when_off() {
+        let log = "2026-11-15 13:13:00.000 [1] [loader] vtable not found (Sess_SessionStateIntroCameras_OnEnter 142D6DE80)\n";
+        let on = crate::build_support::BUILD_1_0_145;
+        assert_eq!(diagnose(&skip_cutscenes_on(log, "1.9.5", on)), None);
+        assert_eq!(
+            diagnose(&skip_cutscenes_on(log, "1.9.4", (408_063_872, 1_789_118_616))),
+            None
+        );
+        let mut off = skip_cutscenes_on(log, "1.9.4", on);
+        off.enabled.clear();
+        assert_eq!(diagnose(&off), None);
     }
 
     #[test]

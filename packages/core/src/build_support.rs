@@ -10,11 +10,19 @@ use std::time::SystemTime;
 
 pub const ALLOW_ENV: &str = "SWOFTY_ALLOW_UNSUPPORTED_BUILD";
 
+pub const BUILD_1_0_145: (u64, u32) = (391_613_312, 1_794_312_636);
+
 const SUPPORTED: &[(u64, u32)] = &[
     (408_063_872, 1_789_118_616),
     (342_936_448, 1_789_128_892),
-    (391_613_312, 1_794_312_636),
+    BUILD_1_0_145,
 ];
+
+pub fn identity(exe: &Path) -> Option<(u64, u32)> {
+    let size = std::fs::metadata(exe).ok()?.len();
+    let stamp = swofty_formats::pe::timestamp(&mut BufReader::new(std::fs::File::open(exe).ok()?)).ok()?;
+    Some((size, stamp))
+}
 
 pub fn is_supported(size: u64, pe_timestamp: u32) -> bool {
     SUPPORTED.contains(&(size, pe_timestamp))
