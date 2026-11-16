@@ -25,15 +25,23 @@
   },
   "Career_GameValue_GetUpgradesFailedDuringTimeAdvance": {
    "pattern": "48 83 EC 28 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28",
-   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
+   "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
   },
   "Career_Get_CareerLengthDays_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? 29 25 6B B8 66 B5 66 D0 67 E4 E9",
    "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
+  "Career_MyTeamSetupVM_RefreshSelection": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 13 00 00 E8 ?? ?? ?? 02 48 29 C4",
+   "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
+  },
   "Career_Set_EntrantData_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? E9 95 90 E4 FF 7D 12 67 71 E5 AA",
    "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
+  },
+  "Career_SetupBanks_Write": {
+   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC ?? 48 89 D6 48 8B 3A",
+   "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
   },
   "FeTile_CareerDlcItem_Populate": {
    "pattern": "03 8B 42 04 89 05 ?? ?? ?? ?? ?? ?? F2 E8 ?? ?? ?? ?? 48 89 F0 48 83 C4 20 5E C3 CC CC CC CC CC 56 57 53 48 83 EC 50",
@@ -48,16 +56,12 @@
    "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Game_CreateSessionDlcSelectTab_BuildTiles": {
-   "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? CC 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+   "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? ?? 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00 48 8B 46 10 48 8D 50 08 48 85 C0 49 0F 44 D6 48 8B 0D ?? ?? ?? 05 C7 44 24 20 01 00 00 00 4C 8D 05 ?? ?? ?? 03 4C 8D 4C 24 30 E8 ?? ?? F3 FE 48",
+   "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
   },
   "Game_CreateSessionDlcSelectTab_FillTile": {
-   "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? CC 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
-  },
-  "Game_F1osTasksystem_CreateTask_FinalisePackagePTask": {
-   "pattern": "E8 ?? ?? ?? ?? 48 83 7C 24 20 00 74 47 48 8B 56 38 48 3B 56 40 74 2C C5 F8 57 C0 C5 F8 11 02 48 83 7C 24 28 00 74 15 48 8B 44 24 20 48 89 02 48 8B 44 24 28 48 89 42 08 F0 FF 40 0C 48 83 46 38 10 EB 11 48 83 C6 28 4C 8D 44 24 20 48 89 F1 E8 ?? ?? ?? ?? 48 8B 74 24 28 48 85 F6 74 ?? F0 FF",
-   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
+   "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? ?? 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00 48 8B 46 10 48 8D 50 08 48 85 C0 49 0F 44 D6 48 8B 0D ?? ?? ?? 05 C7 44 24 20 01 00 00 00 4C 8D 05 ?? ?? ?? 03 4C 8D 4C 24 30 E8 ?? ?? F3 FE 48",
+   "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
   },
   "Game_F1os_F1CGTask_Update": {
    "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 03 00 00 C5 F8 29 B4 24 30 03 00 00 48 89 CE 48 81 C1 98 00 00 00 4C 8B",
@@ -165,7 +169,7 @@
   },
   "Ne_Gfx2Renderer_PostEvent_AllocateResource": {
    "pattern": "E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05",
-   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
+   "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
   },
   "Ne_HashMap_FatalStub_GroundCover": {
    "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 0F",
@@ -199,10 +203,6 @@
    "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 ?? 8D 2D",
    "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
-  "Ne_SaveError_Win32FmtSSU": {
-   "pattern": "56 57 48 81 EC 48 08 00 00 48 89 C8 48 8D 4C 24 48 48 C7 44 24 38 00 08 00 00 48 89 4C 24 40 C6 44 24 48 00 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 41 8B 09",
-   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
-  },
   "Ne_SaveSystem2Win_Mount": {
    "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 18 13 00 00 E8 ?? ?? ?? ?? 48 29 C4 44 89 CD 4C 89 C3 48 89",
    "note": "The function is at 0x4146f80 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
@@ -219,6 +219,10 @@
    "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 04 00 00 4C 89 CB",
    "note": "The function is at 0x413fee0 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
   },
+  "Ne_SaveSystem_InitDevice": {
+   "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 80 B9 DC 02 00 00 00 0F 84 ?? ?? ?? ?? 8B 05",
+   "note": "The EA device init at 0x413e9d0; the pattern matches once in the EA image."
+  },
   "Ne_SaveSystem_SelectAndDelete": {
    "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC A0 04 00 00 4C 89 CB",
    "note": "The function is at 0x4144940 in the EA dump. The base pattern differs there in rip-relative displacements and frame constants; the pattern is the EA body, extended until it matches once."
@@ -228,8 +232,8 @@
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
   },
   "Ne_SharedPtr_ReleaseB": {
-   "pattern": "56 48 83 EC 20 48 8B 71 08 48 85 F6 74 23 F0 FF 4E 08 75 1D 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 0F 48 8B 06 48 89 F1 48 83 C4 20 5E 48 FF 60 08 90 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC E9",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+   "pattern": "56 48 83 EC 20 48 8B 71 08 48 85 F6 74 23 F0 FF 4E 08 75 1D 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 0F 48 8B 06 48 89 F1 48 83 C4 20 5E 48 FF 60 08 90 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC E9 BB",
+   "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
   },
   "Ne_StdMap_At_141107280": {
    "pattern": "48 89 F9 E8 ?? ?? ?? ?? 48 85 C0 74 60 48 8D 5C 24 28",
@@ -250,7 +254,7 @@
   },
   "Sess_FormationLapLogic_SubscribeSafetyCarDeployment": {
    "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8",
-   "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
+   "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
   },
   "Sess_GridRundown_Update": {
    "pattern": "E9 ?? ?? ?? ?? 23 8A D8 AC 19 DA 17 0F 83 6C 42",
@@ -313,12 +317,12 @@
    "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Vm_List_AppendChild": {
-   "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? CC 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+   "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? ?? 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00 48 8B 46 10 48 8D 50 08 48 85 C0 49 0F 44 D6 48 8B 0D ?? ?? ?? 05 C7 44 24 20 01 00 00 00 4C 8D 05 ?? ?? ?? 03 4C 8D 4C 24 30 E8 ?? ?? F3 FE 48",
+   "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
   },
   "Vm_Release_Node": {
-   "pattern": "48 89 CF 48 8D 71 08 48 89 F2 E8 28 ?? 6A 02 48 8D 1D ?? ?? ?? ?? 48 89 9F 20 01 00 00 48 8B 87 28 01 00 00 48 85 C0 74 57 48 8B 8F 30 01 00 00 48 8B 97 38 01 00 00 48 85 D2 74 04 48 89 4A 08 4C 8D B7 28 01 00 00 4C 8D 87 30 01 00 00 48 85 C9 74 04 48 89 51 10 C5 F8 57 C0 C4 C1 78 11 00 4C 39 70 28 75 04 48 89 48 28 48 8B 0D ?? ?? ?? ?? 49 8B 16 E8 ?? ?? ?? ?? 49 C7 06 00 00 00 00",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+   "pattern": "48 89 CF 48 8D 71 08 48 89 F2 E8 ?? ?? ?? 02 48 8D 1D ?? ?? ?? ?? 48 89 9F 20 01 00 00 48 8B 87 28 01 00 00 48 85 C0 74 57 48 8B 8F 30 01 00 00 48 8B 97 38 01 00 00 48 85 D2 74 04 48 89 4A 08 4C 8D B7 28 01 00 00 4C 8D 87 30 01 00 00 48 85 C9 74 04 48 89 51 10 C5 F8 57 C0 C4 C1 78 11 00 4C 39 70 28 75 04 48 89 48 28 48 8B 0D ?? ?? ?? ?? 49 8B 16 E8 ?? ?? ?? ?? 49 C7 06 00 00 00 00 48 89 9F 00 01 00 00 48 8B 87 08 01 00 00 48 85 C0 74 57 48 8B 8F 10 01 00 00 48 8B 97 18 01 00 00 48 85 D2 74 04 48 89 4A 08 4C 8D B7 08 01 00 00 4C 8D 87 10 01 00 00 48 85 C9 74 04 48 89 51 10 C5 F8 57 C0 C4 C1 78 11 00 4C 39 70 28 75 04 48 89 48 28 48 8B 0D ?? ?? ?? 05 49 8B 16 E8 64",
+   "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
   },
   "Vm_Set_TabEnabled": {
    "pattern": "E9 ?? ?? ?? ?? 0B DC 9D E9 28 DF 75 01 2B E9 48",
@@ -357,8 +361,8 @@
    "expect": "48 8D 15 3B 31 43 02"
   },
   "site_Career_LoadUpgradeRows_DeptPath": {
-   "pattern": "48 8D 8C 24 98 06 00 00 48 8D 15 ?? ?? 12 02",
-   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+   "pattern": "48 8D 8C 24 98 06 00 00 48 8D 15 ?? ?? ?? 02 E8 C8 27 00 00 48 8B 8C",
+   "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
   },
   "site_Career_RnDBoxGridNameIndex": {
    "pattern": "48 0F BE C0 48 8D 0D ?? ?? ?? ?? 48 8B 14 C1 48 C7 44 24 50 00 00 00 00",
@@ -738,5 +742,8 @@
   }
  },
  "hints": {},
- "unresolvable": {}
+ "unresolvable": {
+  "Ne_SaveSystem2Win_WriteInfoXml": "the EA save device has no corrupt-save upload: its vtable slot +0x58 is xor eax,eax; ret",
+  "Ne_SaveError_NotDirectoryFmtSS": "the EA mount passes the format string to a generic error helper; the Steam function has no copy of its own"
+ }
 }
