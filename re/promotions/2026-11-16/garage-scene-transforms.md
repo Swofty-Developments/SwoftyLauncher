@@ -3,7 +3,7 @@
 Proposed for review by the game lane owner, `re-career-teams`. The published
 row at `0x1401e7aa0` has level L1 and an empty prototype. V7975 reviewed
 that earlier claim. The new L2 prototype has independent static agreement
-V10724 on the two Steam executables. [Independent findings](reviewer/garage-scene-batch.md)
+V10726 on the two Steam executables. [Independent findings](reviewer/garage-scene-batch.md)
 
 ```c
 void Game_Scene_UpdateInstanceTransformsBatch(void *scene, uint8_t actor_update_flag);

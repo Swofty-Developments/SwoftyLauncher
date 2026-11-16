@@ -5039,6 +5039,9 @@
   "Game_SceneManager_DestroyScene": {
    "match": "0x18a550"
   },
+  "Game_Scene_UpdateInstanceTransformsBatch": {
+   "match": "0x1e7aa0"
+  },
   "Game_ScoreBreakdownVM_OnActivate": {
    "match": "0x1f62710"
   },
