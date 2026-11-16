@@ -30,8 +30,10 @@
 //     ersStoreEnergy f32 37.
 //   Car Damage (10), 1041 bytes: 22 x 46 bytes: tyresWear f32[4] at 0.
 //   2026 Car Telemetry (6), 1448 bytes: 24 x 59 bytes, then three u8; engineTemperature is a u8 (u16 before), so
-//     the fields read above keep their offsets. 2026 Car Status (7), 1445 bytes: 24 x 59 bytes, the 2025 entry
-//     plus u8 networkPaused at 58 after ersDeployedThisLap; the fields read above keep their offsets.
+//     the fields read above keep their offsets. Never replayed on a recording; it rests on the published
+//     f1-packets 2026.1.0 spec.
+//   2026 Car Status (7), 1445 bytes: 24 x 59 bytes; the fields read above sit at offsets 5..37 of the entry and
+//     the extra bytes are not catalogued.
 // The 2026 Session and Car Damage packets have other sizes whose field offsets are not catalogued, so they are
 // left alone.
 
