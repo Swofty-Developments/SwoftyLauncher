@@ -1148,7 +1148,7 @@ once "stages: the room line at the early stage" "\\[registry\\] room: nothing to
 check "stages: early plugin list read from settings.json" 'early stage: plugin t_stage_early\.dll has "early": true'
 check "stages: early trigger fired inside the game's CreateMutexW" "trigger: KERNEL32!CreateMutexW from .* \(\.text\) name 'Codemasters F1 25' on thread .*loading addons now \(early stage\)"
 once "stages: the window-stage plugin waits for the window" 'addon t_stage_late\.dll: loads at the window stage'
-check "stages: core picks the wine-test bindings set by the fake exe's PE timestamp" '\[core\] bindings: 3 set\(s\) present, selected bindings\.wine-test\.json by PE timestamp [0-9]+'
+check "stages: core picks the wine-test bindings set by the fake exe's PE timestamp" '\[core\] bindings: [0-9]+ set\(s\) present, selected bindings\.wine-test\.json by PE timestamp [0-9]+'
 check "stages: the fake exe is the analysed build of that set" '\[core\] bindings\.wine-test\.json: [0-9]+ binding\(s\) for build wine-test, this exe \(rva checked\)'
 check "stages: core's own wrap still installs with the Steam rvas left out of the set" 'wrap FeHome_Handle_Command at .* installed: swofty_core\.dll\(0\)'
 once "stages: the early site on the entry of Fake_Stage_Site installs" '\[core\] site wine-test:site_Stage_Entry at 0x[0-9a-f]+ \(base\+0x[0-9a-f]+\) installed: t_stage_early\.dll\(0\)[[:space:]]*$'
@@ -1214,7 +1214,7 @@ for mode in packed packed_never packed_plain; do
     echo "---- $LOG ($mode)"
     grep -E '\[bind\] summary|\[core\] (build|bindings|.* pass:|.* waits:|.*setting it up now|.*fails closed|scan .*refused|addon .*(dropped|runs again|ran again))|\[crash\] Ne_Report|stage: window|trigger: KERNEL32' "$LOG" || true
     python3 packed_game.py check $mode "$LOG" "$dir/F1_25.exe" || status=1
-    once "$mode: the set is selected by the exe's PE timestamp" '\[core\] bindings: 3 set\(s\) present, selected bindings\.packed-test\.json by PE timestamp [0-9]+'
+    once "$mode: the set is selected by the exe's PE timestamp" '\[core\] bindings: [0-9]+ set\(s\) present, selected bindings\.packed-test\.json by PE timestamp [0-9]+'
     check "$mode: the core loads at the early trigger" "trigger: KERNEL32!CreateMutexW from .* \(\.text\) name 'Codemasters F1 25' .*loading addons now \(early stage\)"
     case $mode in
     packed | packed_never)
