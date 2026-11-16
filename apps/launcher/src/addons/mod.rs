@@ -1,6 +1,7 @@
 //! The Addons page: install cards, filters, the list in load order and the
 //! selected addon's details and conflicts.
 
+mod bulk;
 mod conflicts;
 mod detail;
 mod drag;
@@ -13,6 +14,7 @@ mod options;
 mod page;
 mod problems;
 mod row;
+mod select;
 mod sync;
 
 use std::time::Duration;

@@ -86,6 +86,7 @@ pub(super) enum AddonListItem {
     },
     Addon {
         index: usize,
+        id: String,
         position: Option<usize>,
         at: usize,
         nested: Option<(Key, usize)>,
@@ -94,6 +95,28 @@ pub(super) enum AddonListItem {
     End,
     BrokenHeading,
     Broken(usize),
+}
+
+impl AddonListItem {
+    fn key(&self) -> String {
+        match self {
+            Self::Heading => "heading".to_owned(),
+            Self::Folder { key, .. } => format!("folder:{key:?}"),
+            Self::Addon { id, .. } => format!("addon:{id}"),
+            Self::Detail(id) => format!("detail:{id}"),
+            Self::End => "end".to_owned(),
+            Self::BrokenHeading => "broken-heading".to_owned(),
+            Self::Broken(i) => format!("broken:{i}"),
+        }
+    }
+}
+
+pub(super) fn anchor(old: &[AddonListItem], new: &[AddonListItem], top: usize) -> Option<(usize, bool)> {
+    let at: HashMap<String, usize> = new.iter().enumerate().map(|(i, item)| (item.key(), i)).collect();
+    old.get(top..)?
+        .iter()
+        .enumerate()
+        .find_map(|(n, item)| at.get(&item.key()).map(|&ix| (ix, n == 0)))
 }
 
 pub(crate) struct AddonsPage {
@@ -115,6 +138,8 @@ pub(crate) struct AddonsPage {
     pub(super) advanced: bool,
     pub(super) changes: HashMap<String, Changes>,
     pub(super) drop: Option<DropAt>,
+    pub(super) selection: super::select::Selection,
+    pub(super) ctrl: bool,
     /// From the core's reports of the last session: each addon's status lines, and the registry
     /// conflicts with the addons each is about.
     pub(super) status: std::collections::BTreeMap<String, Vec<String>>,
@@ -156,6 +181,8 @@ impl AddonsPage {
             advanced: false,
             changes: HashMap::new(),
             drop: None,
+            selection: Default::default(),
+            ctrl: false,
             status: Default::default(),
             registry_conflicts: Vec::new(),
             diagnosis: order::Diagnosis::empty(),
@@ -163,6 +190,16 @@ impl AddonsPage {
             careers: Vec::new(),
             _search: changed,
         }
+    }
+
+    pub(crate) fn clear_selection(&mut self) -> bool {
+        let had = !self.selection.is_empty();
+        self.selection.clear();
+        had
+    }
+
+    pub(super) fn ticking(&self) -> bool {
+        self.ctrl || !self.selection.is_empty()
     }
 
     pub(super) fn clear_search(&self, cx: &mut App) {
@@ -174,5 +211,49 @@ impl AddonsPage {
                 })
                 .ok();
         });
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::{AddonListItem, anchor};
+
+    fn addon(id: &str, index: usize) -> AddonListItem {
+        AddonListItem::Addon {
+            index,
+            id: id.to_owned(),
+            position: None,
+            at: index,
+            nested: None,
+        }
+    }
+
+    #[test]
+    fn anchor_follows_an_addon_whose_index_changed() {
+        let old = [
+            AddonListItem::Heading,
+            addon("a", 0),
+            addon("b", 1),
+            addon("c", 2),
+        ];
+        let new = [AddonListItem::Heading, addon("a", 0), addon("c", 1)];
+        assert_eq!(anchor(&old, &new, 3), Some((2, true)));
+    }
+
+    #[test]
+    fn anchor_moves_to_the_next_row_when_the_top_row_is_gone() {
+        let old = [
+            AddonListItem::Heading,
+            addon("a", 0),
+            addon("b", 1),
+            addon("c", 2),
+        ];
+        let new = [AddonListItem::Heading, addon("a", 0), addon("c", 1)];
+        assert_eq!(anchor(&old, &new, 2), Some((2, false)));
+    }
+
+    #[test]
+    fn anchor_is_none_without_old_rows() {
+        assert_eq!(anchor(&[], &[AddonListItem::Heading], 0), None);
     }
 }

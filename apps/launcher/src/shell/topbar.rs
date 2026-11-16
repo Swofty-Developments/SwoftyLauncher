@@ -184,6 +184,11 @@ impl Shell {
     pub(crate) fn nav_key(&mut self, ev: &KeyDownEvent, window: &mut Window, cx: &mut Context<Self>) {
         let key = ev.keystroke.key.as_str();
         let plain = !ev.keystroke.modifiers.control && !ev.keystroke.modifiers.platform;
+        if key == "escape" && self.page == Page::Addons && self.addons.clear_selection() {
+            cx.stop_propagation();
+            cx.notify();
+            return;
+        }
         if key == "escape" && self.popover.is_some() {
             self.popover = None;
             cx.notify();

@@ -193,6 +193,13 @@ impl Shell {
         if selected.is_none() {
             self.open_addon = None;
         }
+        if self.vanilla() {
+            self.addons.selection.clear();
+        } else {
+            let listed: std::collections::HashSet<&str> =
+                self.library.listed().map(|a| a.manifest.id.as_str()).collect();
+            self.addons.selection.retain(|id| listed.contains(id));
+        }
         let list = self.addon_list(&query, highlight.as_ref(), split, p, cx);
         let detail = selected
             .filter(|_| split)

@@ -1,5 +1,5 @@
 use super::drag::{Dragged, drop_mark};
-use super::model::AddonListItem;
+use super::model::{AddonListItem, anchor};
 use crate::library::AddonItem;
 use crate::pages::{badge, label};
 use crate::scale::{Hit, px};
@@ -39,6 +39,7 @@ impl Shell {
             });
         }
         let header = self.list_header(matched, total, p, cx);
+        let bulk = self.bulk_bar(p, cx);
         let body = if matched == 0 {
             no_matches(p, cx)
         } else {
@@ -50,6 +51,7 @@ impl Shell {
             .h_full()
             .gap(px(6.))
             .child(header)
+            .children(bulk)
             .child(body)
             .into_any_element()
     }
@@ -162,6 +164,7 @@ impl Shell {
                 }
                 children.push(AddonListItem::Addon {
                     index,
+                    id: id.to_owned(),
                     position: positions.get(id).copied(),
                     at,
                     nested,
@@ -231,6 +234,8 @@ impl Shell {
             }
         } else {
             let old = &self.addons.list_items;
+            let top = self.addons.scroll.logical_scroll_top();
+            let kept = anchor(old, &children, top.item_ix);
             let prefix = old.iter().zip(&children).take_while(|(a, b)| a == b).count();
             let suffix = old[prefix..]
                 .iter()
@@ -242,6 +247,14 @@ impl Shell {
                 .scroll
                 .splice(prefix..old.len() - suffix, children.len() - prefix - suffix);
             self.addons.list_items = children;
+            if let Some((item_ix, exact)) = kept
+                && (item_ix != top.item_ix || !exact)
+            {
+                self.addons.scroll.scroll_to(ListOffset {
+                    item_ix,
+                    offset_in_item: if exact { top.offset_in_item } else { px(0.) },
+                });
+            }
             self.addons.drop = None;
         }
     }
@@ -295,6 +308,13 @@ impl Shell {
             .border_1()
             .border_color(p.border)
             .overflow_hidden()
+            .on_modifiers_changed(cx.listener(|this, e: &ModifiersChangedEvent, _, cx| {
+                let held = e.modifiers.secondary(cx);
+                if this.addons.ctrl != held {
+                    this.addons.ctrl = held;
+                    cx.notify();
+                }
+            }))
             .on_drag_move(cx.listener(|this, e: &DragMoveEvent<Dragged>, _, cx| {
                 if !e.bounds.contains(&e.event.position) && this.addons.drop.take().is_some() {
                     cx.notify();

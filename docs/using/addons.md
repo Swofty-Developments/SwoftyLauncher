@@ -43,6 +43,15 @@ Some addons, such as Driver Manager, change what your careers store. Turning one
 
 In the `vanilla` profile the list is read-only and shows every installed addon. Switch to a modded profile to turn addons on.
 
+## Turn on, turn off or uninstall several addons
+
+Hold **Ctrl** (**Cmd** on macOS) to show a tick box on every row. Ctrl-click a row, or click its tick box, to tick or untick it. A plain click on a row opens its panel. While at least one addon is ticked, a bar above the list shows how many and has **Turn on**, **Turn off**, **Uninstall** and **Clear**. **Escape** also clears the ticks. The ticks clear after an action.
+
+- **Turn on** and **Turn off** change the active [profile](/using/profiles) the way a row's switch does. Always-on addons and shader-only addons are skipped, and a message says how many. **Turn off** leaves on the addons whose turning off warns about your saves, and a message names them.
+- **Uninstall** asks once for all the ticked addons, then removes them as **Uninstall** in a panel does. Built-in addons are skipped, and a message says how many.
+
+The list keeps its scroll position after an uninstall. Ticks are not available in the `vanilla` profile.
+
 ## Add an addon to a profile
 
 Each modded profile lists only its own addons and the built-in ones. To use an addon you installed from another profile, select **Add addons** above the list, tick the ones you want and confirm, or select **Add to** with the profile's name on its card in the Addon Browser. It joins the profile turned off, at the end of the list.

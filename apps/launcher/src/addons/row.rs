@@ -4,6 +4,7 @@ use crate::pages::{addon_icon, badge, logo, track_badge};
 use crate::scale::{Hit, px};
 use crate::shell::Shell;
 use crate::theme::Palette;
+use crate::ui::facet::checkbox;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::tooltip::Tooltip;
@@ -95,13 +96,31 @@ impl Shell {
             Some(icon) => addon_icon(icon, 28., p),
             None => fallback_icon(m, 28., p),
         };
-        let grip = div().w(px(14.)).flex_shrink_0().when(draggable, |d| {
-            d.child(
-                Icon::new(IconName::GripVertical)
-                    .size(px(14.))
-                    .text_color(p.text_placeholder),
-            )
-        });
+        let ticking = self.addons.ticking() && !self.vanilla();
+        let ticked = self.addons.selection.contains(&id);
+        let grip = div()
+            .w(px(14.))
+            .flex_shrink_0()
+            .when(draggable && !ticking, |d| {
+                d.child(
+                    Icon::new(IconName::GripVertical)
+                        .size(px(14.))
+                        .text_color(p.text_placeholder),
+                )
+            })
+            .when(ticking, |d| {
+                let id = id.clone();
+                d.child(
+                    div()
+                        .id(SharedString::from(format!("tick-{id}")))
+                        .child(checkbox(ticked, p))
+                        .on_click(cx.listener(move |this, _, _, cx| {
+                            cx.stop_propagation();
+                            this.addons.selection.toggle(&id);
+                            cx.notify();
+                        })),
+                )
+            });
         let row = h_flex()
             .id(SharedString::from(format!("addon-{id}")))
             .relative()
@@ -113,7 +132,7 @@ impl Shell {
             .border_t_1()
             .border_color(p.border_variant)
             .cursor_pointer()
-            .map(|d| match (fade, selected) {
+            .map(|d| match (fade, selected || ticked) {
                 (Some(k), _) => d.bg(p.warning.opacity(0.06 + 0.3 * k)),
                 (None, true) => d.bg(p.selected),
                 (None, false) => d.hover(move |s| s.bg(p.hover)),
@@ -149,7 +168,12 @@ impl Shell {
             )
             .on_click(cx.listener({
                 let id = id.clone();
-                move |this, _, _, cx| {
+                move |this, ev: &ClickEvent, _, cx| {
+                    if !this.vanilla() && ev.modifiers().secondary(cx) {
+                        this.addons.selection.toggle(&id);
+                        cx.notify();
+                        return;
+                    }
                     this.open_addon = (this.open_addon.as_ref() != Some(&id)).then(|| id.clone());
                     cx.notify();
                 }
