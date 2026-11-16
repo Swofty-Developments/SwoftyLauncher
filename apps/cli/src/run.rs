@@ -145,7 +145,7 @@ pub fn run(store: &Store, profile: &str, args: RunArgs) -> Result<ExitCode> {
     match crate::ea::store_start(Source::detect(&game)) {
         crate::ea::StoreStart::EaApp => {
             crate::ea::check_recorded(&game)?;
-            if args.apply {
+            if args.apply && swofty_core::build_support::blocked(&game.join(GAME_EXE)).is_none() {
                 crate::ea::dll_setting(store, &g, args.no_start_store)?;
             }
             crate::ea::ensure(store, args.no_start_store)?
@@ -472,6 +472,12 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
         }
     }
     let profile = request.profile.clone().unwrap_or_else(|| profile.to_owned());
+    let stock = swofty_core::build_support::blocked(&g.dir.join(GAME_EXE)).is_some();
+    let (profile, request) = gate_unsupported_build(
+        swofty_core::build_support::blocked(&g.dir.join(GAME_EXE)),
+        profile,
+        request,
+    );
     if let (Ok(p), Ok(installed)) = (store.profile(&profile), store.addons()) {
         let catalog = swofty_core::catalog::cached(&store.root).unwrap_or_default();
         for (base, family) in swofty_core::resolver::lonely_bases(&p, &installed, &catalog) {
@@ -494,7 +500,7 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
         set_affinity(&cpus);
     }
     let game = g.dir.clone();
-    let apply = request.apply || args.apply;
+    let apply = (request.apply || args.apply) && !stock;
     quarantine::Report::clear(&store.root).ok();
     launch::Failure::clear(&store.root).ok();
     let session = Session {
@@ -530,6 +536,39 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
     let out = finish(session, result);
     crate::saves::after_session(before);
     out
+}
+
+const UNSUPPORTED_LAUNCH: &str = "launching it stock";
+
+/// A game build the launcher has no table entry for launches stock: the vanilla profile, nothing applied,
+/// no launcher saves, no add-on core.
+fn gate_unsupported_build(
+    blocked: Option<String>,
+    profile: String,
+    request: LaunchRequest,
+) -> (String, LaunchRequest) {
+    match blocked {
+        Some(version) => {
+            say(
+                "warning",
+                &format!(
+                    "this game version ({version}) isn't supported by Swofty Launcher yet; add-ons are off until a \
+                     launcher update, so F1 25 runs without them ({UNSUPPORTED_LAUNCH}; set {} to override)",
+                    swofty_core::build_support::ALLOW_ENV
+                ),
+            );
+            (
+                swofty_core::profile::VANILLA.to_owned(),
+                LaunchRequest {
+                    apply: false,
+                    row_ids: None,
+                    steam_saves_once: false,
+                    ..request
+                },
+            )
+        }
+        None => (profile, request),
+    }
 }
 
 fn stage_offline(store: &Store, game: &Path) -> Result<()> {
@@ -2228,6 +2267,32 @@ fn link(_: &Path, _: &Path) {}
 
 #[cfg(all(test, unix))]
 mod tests {
+    #[test]
+    fn an_unsupported_build_launches_stock_with_nothing_applied() {
+        let request = LaunchRequest {
+            id: "x".into(),
+            apply: true,
+            steam_saves_once: true,
+            row_ids: Some(PathBuf::from("ids.json")),
+            ..LaunchRequest::default()
+        };
+        let (profile, out) = gate_unsupported_build(Some("1.0.145.2472".into()), "grid".into(), request);
+        assert_eq!(profile, swofty_core::profile::VANILLA);
+        assert!(!out.apply && out.row_ids.is_none() && !out.steam_saves_once);
+        assert_eq!(out.id, "x");
+    }
+
+    #[test]
+    fn a_supported_build_keeps_its_profile_and_request() {
+        let request = LaunchRequest {
+            apply: true,
+            ..LaunchRequest::default()
+        };
+        let (profile, out) = gate_unsupported_build(None, "grid".into(), request.clone());
+        assert_eq!(profile, "grid");
+        assert_eq!(out, request);
+    }
+
     use super::*;
 
     #[test]

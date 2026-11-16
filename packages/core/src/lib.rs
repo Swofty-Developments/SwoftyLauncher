@@ -5,6 +5,7 @@ pub mod addon_storage;
 pub mod app_control;
 pub mod baseline;
 pub mod build;
+pub mod build_support;
 pub mod builtin;
 pub mod busy;
 pub mod cache;

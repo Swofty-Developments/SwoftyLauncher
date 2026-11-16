@@ -74,6 +74,16 @@ An addon that fails to update keeps its installed version. Retry it from **Downl
 | An addon you installed from a file | [Install](/using/addons#install-an-addon) the new version. It replaces the addon with the same id and keeps its switch and settings in every profile. |
 | A mod or track | [Import](/using/mods#import-a-mod-or-track) the new version. It keeps its place and switch in every profile. |
 
+## After a game update
+
+When F1 25 updates to a version Swofty Launcher doesn't have yet, the line next to **Play** reads "This game version (1.0.145.2472) isn't supported by Swofty Launcher yet. Add-ons are off until a launcher update, so the game runs without them."
+
+The launcher identifies the game by the size and build time of `F1_25.exe`. For an exe it doesn't know, **Play** still works and starts F1 25 as the Vanilla profile does: no add-ons are loaded or applied, Launcher saves aren't used, and your Steam saves aren't touched. This is the same for every profile.
+
+The line goes away by itself when you update the launcher to a release that supports the version. Don't verify or repair the game files: the update is correct.
+
+Developers porting the launcher to a new game build set `SWOFTY_ALLOW_UNSUPPORTED_BUILD=1` in the environment of `swofty run` to load add-ons into it anyway. The setting isn't in the launcher's settings. `swofty test shell` sets it for the sessions it starts.
+
 ## Next
 
 - [Release notes](/releases/1.0.7): what changed in the latest release.

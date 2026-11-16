@@ -439,6 +439,28 @@ impl Shell {
             PlayState::Checking => row.text_color(p.text_muted).child(tr("Checking conflicts…")),
             PlayState::Preparing => row.child(dot(p.warning)).child(tr("Checking addons…")),
             PlayState::Ready => {
+                if let Some(n) = self
+                    .install
+                    .as_ref()
+                    .and_then(|i| crate::unsupported_build::notice(&i.dir.join(swofty_core::GAME_EXE)))
+                {
+                    return row
+                        .items_start()
+                        .child(div().mt(px(6.)).child(dot(p.warning)))
+                        .child(
+                            v_flex()
+                                .min_w_0()
+                                .gap(px(2.))
+                                .child(div().min_w_0().truncate().child(n.headline))
+                                .child(
+                                    div()
+                                        .text_size(px(12.))
+                                        .text_color(p.text_muted)
+                                        .truncate()
+                                        .child(n.detail),
+                                ),
+                        );
+                }
                 if rebuild {
                     let changes = trn(
                         self.library.rebuild.len(),

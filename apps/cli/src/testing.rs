@@ -785,6 +785,7 @@ impl Launcher for SwoftyRun {
             c.arg(format!("--game-arg={a}"));
         }
         c.env("SWOFTY_KEEP_FOCUS", "1")
+            .env(swofty_core::build_support::ALLOW_ENV, "1")
             .envs(env.iter().map(|(k, v)| (k, v)))
             .stdin(Stdio::null())
             .stdout(log.try_clone()?)

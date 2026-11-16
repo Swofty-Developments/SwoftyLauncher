@@ -53,6 +53,7 @@ mod time_trial;
 mod tools;
 mod ui;
 mod ui_mode;
+mod unsupported_build;
 mod update;
 
 use gpui_kit::component::{TitleBar, v_flex};
