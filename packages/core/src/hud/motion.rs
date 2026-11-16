@@ -1,6 +1,7 @@
 //! Timed motion on a group: a slide (position keys played as a clip by a `UIXA` node) or a fade
 //! (an alpha override by a pair of `UIMO` nodes), started and reversed by an `MVCD` node on a bool
-//! leaf of the addon's view model.
+//! leaf of the addon's view model; or a turn (rotation keys played as a clip by a `UIXA` node),
+//! moved to one of `steps` places by an `MVCD` node on an int leaf of the addon's view model.
 //!
 //! The group keeps its own null; its children move into a holder null the motion targets, so a
 //! slide moves them in the group's local space and HUD customisation's move, resize and opacity
@@ -20,7 +21,7 @@ use swofty_formats::hash::djb2;
 use swofty_formats::pkg::Node;
 
 use super::geom;
-use super::model::{Bind, Element, Kind};
+use super::model::{Bind, Element, Kind, Ty};
 use super::scene::Plan;
 use super::template::{self, Usage};
 use crate::ui::node::{self, Attr, NodeExt};
@@ -101,11 +102,27 @@ pub enum KeyValue {
     Offset([f64; 2]),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
 pub enum Track {
     Slide,
     Fade,
+    /// Rotation about the group's own place, keys `[time, degrees]` counter-clockwise, moved to
+    /// one of `steps` places by an int leaf (a needle).
+    Turn,
 }
+
+/// The most places a turn's int leaf can name: one `MVCD` event each. The stock UI templates
+/// name numbered events up to `30` (0 to 20 in a row); every event is one signal, no node.
+pub const MAX_STEPS: u32 = 64;
+
+/// The widest turn between two keys of a clip. A wider span is split into equal keys, so the
+/// game's interpolation between neighbouring quaternions never has a way round to choose.
+pub const MAX_KEY_TURN: f64 = 90.0;
+
+/// The kinds a turning group may hold: what is drawn by a quad or a text and follows its
+/// parent's rotation. Masked and windowed kinds and units are laid out unrotated.
+const TURNS_WITH: &[Kind] = &[Kind::Sprite, Kind::Text, Kind::Group, Kind::Stack, Kind::Centre];
 
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 #[serde(deny_unknown_fields)]
@@ -113,12 +130,30 @@ pub struct Motion {
     pub id: String,
     pub keys: Vec<(f64, KeyValue)>,
     pub curve: String,
+    /// `slide`, `fade` or `turn`; slide and fade are also told by their keys, a turn is named.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub kind: Option<Track>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub play_on: Option<Bind>,
+    /// A turn's int leaf: value `i` (0 to `steps - 1`) turns the group to `i / (steps - 1)` of
+    /// its keys.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub play_to: Option<Bind>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub steps: Option<u32>,
 }
 
 impl Motion {
     pub fn track(&self) -> Result<Track> {
+        if self.kind == Some(Track::Turn) {
+            if self.keys.iter().any(|(_, k)| matches!(k, KeyValue::Offset(_))) {
+                return Err(err(format!(
+                    "motion {}: a turn's keys are [time, degrees], not position offsets",
+                    self.id
+                )));
+            }
+            return Ok(Track::Turn);
+        }
         let mut track = None;
         for (_, k) in &self.keys {
             let t = match k {
@@ -133,7 +168,16 @@ impl Motion {
             }
             track = Some(t);
         }
-        track.ok_or_else(|| err(format!("motion {}: no keys", self.id)))
+        let track = track.ok_or_else(|| err(format!("motion {}: no keys", self.id)))?;
+        if let Some(k) = self.kind
+            && k != track
+        {
+            return Err(err(format!(
+                "motion {}: kind {k:?} but its keys make a {track:?}",
+                self.id
+            )));
+        }
+        Ok(track)
     }
 
     pub fn check(&self, what: &str) -> Result<()> {
@@ -163,7 +207,8 @@ impl Motion {
                 )));
             }
         }
-        if self.track()? == Track::Fade {
+        let track = self.track()?;
+        if track == Track::Fade {
             if self.keys.len() != 2 {
                 return Err(err(format!(
                     "{what}: motion {} fades alpha, which takes exactly two keys (from, to); the curve times it",
@@ -189,6 +234,16 @@ impl Motion {
                 STOCK_CURVES.join(", ")
             )));
         }
+        if track == Track::Turn {
+            return self.check_turn(what);
+        }
+        if self.play_to.is_some() || self.steps.is_some() {
+            return Err(err(format!(
+                "{what}: motion {}: play_to and steps go with a turn; a {} is started by play_on",
+                self.id,
+                if track == Track::Fade { "fade" } else { "slide" }
+            )));
+        }
         let on = self.play_on.as_ref().ok_or_else(|| {
             err(format!(
                 "{what}: motion {} needs play_on, the bool leaf that starts it",
@@ -203,6 +258,77 @@ impl Motion {
             )));
         }
         Ok(())
+    }
+
+    fn check_turn(&self, what: &str) -> Result<()> {
+        if self.play_on.is_some() {
+            return Err(err(format!(
+                "{what}: motion {}: a turn is moved by play_to, an int leaf, not started by play_on",
+                self.id
+            )));
+        }
+        let steps = self.steps.ok_or_else(|| {
+            err(format!(
+                "{what}: motion {} needs steps, the number of places its int leaf names",
+                self.id
+            ))
+        })?;
+        if !(2..=MAX_STEPS).contains(&steps) {
+            return Err(err(format!(
+                "{what}: motion {}: steps is 2 to {MAX_STEPS}, not {steps}",
+                self.id
+            )));
+        }
+        let to = self.play_to.as_ref().ok_or_else(|| {
+            err(format!(
+                "{what}: motion {} needs play_to, the int leaf that moves it",
+                self.id
+            ))
+        })?;
+        to.check()?;
+        if to.view_model.is_none() || to.negate || to.default.is_some() {
+            return Err(err(format!(
+                "{what}: motion {}: play_to names a view_model int leaf, without not or default",
+                self.id
+            )));
+        }
+        if !matches!(to.ty, None | Some(Ty::I32 | Ty::Si32)) {
+            return Err(err(format!(
+                "{what}: motion {}: play_to is an int leaf (ty i32), not {:?}",
+                self.id, to.ty
+            )));
+        }
+        Ok(())
+    }
+
+    /// A turn's int leaf as the template binds it: declared i32, so it resolves to si32, the tag
+    /// the core's int leaves are bound with.
+    pub fn play_to_bind(&self) -> Option<Bind> {
+        self.play_to.clone().map(|mut b| {
+            b.ty = Some(Ty::I32);
+            b
+        })
+    }
+
+    /// The turn's keys as `(time, degrees)`, a span wider than [`MAX_KEY_TURN`] split into equal
+    /// keys.
+    pub fn turn_keys(&self) -> Vec<(f64, f64)> {
+        let mut out: Vec<(f64, f64)> = Vec::new();
+        for (t, k) in &self.keys {
+            let d = match k {
+                KeyValue::Alpha(d) => *d,
+                KeyValue::Offset(_) => 0.0,
+            };
+            if let Some(&(t0, d0)) = out.last() {
+                let parts = ((d - d0).abs() / MAX_KEY_TURN).ceil().max(1.0) as usize;
+                for j in 1..parts {
+                    let f = j as f64 / parts as f64;
+                    out.push((t0 + (t - t0) * f, d0 + (d - d0) * f));
+                }
+            }
+            out.push((*t, d));
+        }
+        out
     }
 
     /// The fade's alpha from and to.
@@ -221,7 +347,29 @@ impl Motion {
     /// game evaluates a quaternion channel with aligned 16-byte loads straight from the clip's
     /// `syst` buffer, which it does not always place on 16 bytes, so a clip carries no rotation it
     /// does not need (the stock loading spinners are position-only clips too).
+    ///
+    /// A turn's clip is its rotation keys only, two or more (a one-key rotation is the load the
+    /// game faulted on): the holder sits at the group's place with no scale, so it needs no
+    /// position or scale channel. Each quaternion is [`geom::quat_z`] of its angle, signed to the
+    /// same side as the key before it, so the turn between two keys is the short one whichever way
+    /// the game interpolates.
     pub fn channels(&self) -> Vec<Channel> {
+        if self.kind == Some(Track::Turn) {
+            let keys = self.turn_keys();
+            let times: Vec<f32> = keys.iter().map(|(t, _)| *t as f32).collect();
+            let mut quats: Vec<[f64; 4]> = Vec::with_capacity(keys.len());
+            for (_, d) in &keys {
+                let mut q = geom::quat_z(*d);
+                if let Some(p) = quats.last()
+                    && p.iter().zip(&q).map(|(a, b)| a * b).sum::<f64>() < 0.0
+                {
+                    q = q.map(|x| -x);
+                }
+                quats.push(q);
+            }
+            let quats = quats.iter().map(|q| q.map(|v| v as f32)).collect();
+            return vec![Channel::rotation(times, quats)];
+        }
         let times: Vec<f32> = self.keys.iter().map(|(t, _)| *t as f32).collect();
         let keys: Vec<[f32; 3]> = self
             .keys
@@ -256,8 +404,26 @@ pub fn check_elements(list: &[Element], parent: Option<Kind>) -> Result<()> {
                 )));
             }
             m.check(&what)?;
+            if m.track()? == Track::Turn {
+                turning_kinds(&e.children, &what)?;
+            }
         }
         check_elements(&e.children, e.kind)?;
+    }
+    Ok(())
+}
+
+fn turning_kinds(list: &[Element], what: &str) -> Result<()> {
+    for c in list {
+        if let Some(k) = c.kind
+            && !TURNS_WITH.contains(&k)
+        {
+            return Err(err(format!(
+                "{what}: a turning group holds sprites, texts and groups; {} is a {k:?}, which is laid out unrotated",
+                c.id
+            )));
+        }
+        turning_kinds(&c.children, what)?;
     }
     Ok(())
 }
@@ -279,6 +445,8 @@ pub struct MotionItem {
     pub from: f64,
     pub to: f64,
     pub db: String,
+    /// A turn's places (events `0` to `steps - 1`); 0 for a slide or fade.
+    pub steps: u32,
 }
 
 impl MotionItem {
@@ -295,13 +463,21 @@ impl MotionItem {
 /// nodes come from, and the leaf's type.
 pub fn plan(plan: &mut Plan, e: &Element, m: &Motion, holder: &str) -> Result<()> {
     let track = m.track()?;
-    let on = m
-        .play_on
-        .as_ref()
-        .ok_or_else(|| err(format!("motion {}: no play_on", m.id)))?;
-    let r = template::resolve(on, Usage::Visible, &format!("element {} motion {}", e.id, m.id))?;
+    let what = format!("element {} motion {}", e.id, m.id);
+    let r = if track == Track::Turn {
+        let to = m
+            .play_to_bind()
+            .ok_or_else(|| err(format!("motion {}: no play_to", m.id)))?;
+        template::resolve(&to, Usage::Text, &what)?
+    } else {
+        let on = m
+            .play_on
+            .as_ref()
+            .ok_or_else(|| err(format!("motion {}: no play_on", m.id)))?;
+        template::resolve(on, Usage::Visible, &what)?
+    };
     plan.known.push((r.db.clone(), r.tag));
-    if track == Track::Slide {
+    if track != Track::Fade {
         plan.clips.push(super::scene::ClipSpec {
             node: holder.to_owned(),
             channels: m.channels(),
@@ -317,6 +493,11 @@ pub fn plan(plan: &mut Plan, e: &Element, m: &Motion, holder: &str) -> Result<()
         from,
         to,
         db: r.db,
+        steps: if track == Track::Turn {
+            m.steps.unwrap_or(0)
+        } else {
+            0
+        },
     });
     Ok(())
 }
@@ -346,7 +527,7 @@ pub fn player_nodes(plan: &Plan) -> Vec<Node> {
     for m in &plan.motions {
         let name = m.player();
         match m.track {
-            Track::Slide => out.push(node::node(
+            Track::Slide | Track::Turn => out.push(node::node(
                 &name,
                 "UIXA",
                 vec![],
@@ -376,29 +557,34 @@ pub fn player_nodes(plan: &Plan) -> Vec<Node> {
 }
 
 /// The trigger nodes of a plan's motions: an `MVCD` on the leaf whose event `1` starts the motion
-/// and `0` reverses it; `base` is the path of the node the players sit under.
+/// and `0` reverses it, or for a turn one event per place `i` playing to `i / (steps - 1)`; `base`
+/// is the path of the node the players sit under.
 pub fn trigger_nodes(plan: &Plan, base: &str) -> Vec<Node> {
     let mut out = Vec::new();
     for m in &plan.motions {
         let player = format!("{base}.{}", m.player());
+        let to = |ev: &str, value: f32| {
+            node::event(
+                ev,
+                vec![node::sig_with(
+                    &player,
+                    "playToFraction",
+                    ev,
+                    &[
+                        ("curveName", Attr::U32(djb2(&m.curve))),
+                        ("value", Attr::F32(value)),
+                    ],
+                )],
+            )
+        };
         let events = match m.track {
-            Track::Slide => {
-                let to = |ev: &str, value: f32| {
-                    node::event(
-                        ev,
-                        vec![node::sig_with(
-                            &player,
-                            "playToFraction",
-                            ev,
-                            &[
-                                ("curveName", Attr::U32(djb2(&m.curve))),
-                                ("value", Attr::F32(value)),
-                            ],
-                        )],
-                    )
-                };
-                vec![to("1", 1.0), to("0", 0.0)]
+            Track::Turn => {
+                let last = m.steps.saturating_sub(1).max(1);
+                (0..m.steps)
+                    .map(|i| to(&i.to_string(), i as f32 / last as f32))
+                    .collect()
             }
+            Track::Slide => vec![to("1", 1.0), to("0", 0.0)],
             Track::Fade => {
                 let act = |ev: &str, which: &str| {
                     node::event(
@@ -422,7 +608,7 @@ pub fn trigger_nodes(plan: &Plan, base: &str) -> Vec<Node> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use swofty_formats::animclip::{Target, build_clip, read_clip};
+    use swofty_formats::animclip::{SYST_ALIGN, Target, build_clip, has_constant_rotation, read_clip};
 
     fn clip_template() -> Vec<u8> {
         use swofty_formats::pkg::{Arr, Obj, Pkg, Val};
@@ -571,6 +757,7 @@ mod tests {
             from: 1.0,
             to: 1.0,
             db: "#view_model_data.hud_t_swap".into(),
+            steps: 0,
         });
         p.motions.push(MotionItem {
             id: "up".into(),
@@ -581,6 +768,7 @@ mod tests {
             from: 0.0,
             to: 1.0,
             db: "#view_model_data.hud_t_arrow".into(),
+            steps: 0,
         });
         let players = player_nodes(&p);
         let types: Vec<(String, String)> = players
@@ -619,5 +807,224 @@ mod tests {
         let f = node::canonical(&triggers[1]);
         assert!(f.contains("hud.x_ctl.m_up_in_on") && f.contains("hud.x_ctl.m_up_in_off"));
         assert!(f.contains("activateOverride"));
+    }
+    fn turn() -> Motion {
+        motion(serde_json::json!({
+            "id": "rpm", "kind": "turn", "keys": [[0, 135], [0.5, -135]], "curve": "default_curve_1",
+            "play_to": { "view_model": "view_model_data.hud_t_rpm" }, "steps": 5
+        }))
+    }
+
+    fn turn_quats(c: &Channel) -> Vec<[f32; 4]> {
+        c.keys.chunks(4).map(|q| [q[0], q[1], q[2], q[3]]).collect()
+    }
+
+    #[test]
+    fn a_turn_is_named_and_checked() {
+        let t = turn();
+        assert_eq!(t.track().unwrap(), Track::Turn);
+        t.check("t").unwrap();
+        assert_eq!(t.play_to_bind().unwrap().ty, Some(Ty::I32));
+        let r = template::resolve(&t.play_to_bind().unwrap(), Usage::Text, "t").unwrap();
+        assert_eq!((r.db.as_str(), r.tag), ("#view_model_data.hud_t_rpm", *b"si32"));
+    }
+
+    #[test]
+    fn a_turn_splits_wide_spans_and_keeps_its_quaternions_on_one_side() {
+        let keys = turn().turn_keys();
+        assert_eq!(keys.len(), 4, "270 degrees in three keys of 90: {keys:?}");
+        assert_eq!(keys[0], (0.0, 135.0));
+        assert_eq!(keys[3], (0.5, -135.0));
+        assert!(
+            keys.windows(2)
+                .all(|w| (w[1].1 - w[0].1).abs() <= MAX_KEY_TURN + 1e-9)
+        );
+        assert!(keys.windows(2).all(|w| w[1].0 > w[0].0));
+        let channels = turn().channels();
+        assert_eq!(channels.len(), 1);
+        let c = &channels[0];
+        assert_eq!(c.target, Target::Rotation);
+        assert_eq!(c.times.len(), 4);
+        assert_eq!(c.max_time, 0.5);
+        let q = turn_quats(c);
+        for w in q.windows(2) {
+            let dot: f32 = w[0].iter().zip(&w[1]).map(|(a, b)| a * b).sum();
+            assert!(dot > 0.0, "neighbouring keys on one side: {q:?}");
+        }
+        assert!(q[0][3] <= 0.0, "the first key keeps w <= 0 like the stock files");
+        for (k, (_, d)) in q.iter().zip(&keys) {
+            let want = geom::quat_z(*d);
+            let same = k.iter().zip(&want).all(|(a, b)| (f64::from(*a) - b).abs() < 1e-6);
+            let flipped = k.iter().zip(&want).all(|(a, b)| (f64::from(*a) + b).abs() < 1e-6);
+            assert!(same || flipped, "{d} degrees: {k:?}");
+        }
+    }
+
+    #[test]
+    fn a_turn_clip_has_no_one_key_rotation_and_a_padded_syst() {
+        let template = clip_template();
+        for keys in [
+            serde_json::json!([[0, 0], [1, 30]]),
+            serde_json::json!([[0, 120], [0.2, 90], [0.6, -30], [1, -150]]),
+            serde_json::json!([[0, 0], [1, -300]]),
+        ] {
+            let mut m = turn();
+            m.keys = serde_json::from_value(keys).unwrap();
+            m.check("t").unwrap();
+            let channels = m.channels();
+            assert!(channels.iter().all(|c| c.times.len() >= 2));
+            let (temp, syst) = build_clip(&template, "zh_t_dial_rpm", 9, "tbl", &channels).unwrap();
+            assert!(syst.len().is_multiple_of(SYST_ALIGN), "{} bytes", syst.len());
+            assert!(!has_constant_rotation(&temp, &syst).unwrap());
+            assert_eq!(read_clip(&temp, &syst).unwrap().channels, channels);
+        }
+    }
+
+    #[test]
+    fn a_turn_plans_a_clip_and_an_int_leaf() {
+        let e: Element = serde_json::from_value(serde_json::json!({
+            "id": "dial", "kind": "group", "motion": serde_json::to_value(turn()).unwrap(), "children": []
+        }))
+        .unwrap();
+        let mut p = Plan::default();
+        plan(&mut p, &e, e.motion.as_ref().unwrap(), "zh_t_dial_rpm").unwrap();
+        assert_eq!(p.clips.len(), 1);
+        assert_eq!(p.clips[0].node, "zh_t_dial_rpm");
+        assert_eq!(p.known, [("#view_model_data.hud_t_rpm".to_owned(), *b"si32")]);
+        assert_eq!(p.motions[0].track, Track::Turn);
+        assert_eq!(p.motions[0].steps, 5);
+    }
+
+    #[test]
+    fn a_turn_is_played_to_one_place_per_value() {
+        let mut p = Plan::default();
+        p.motions.push(MotionItem {
+            id: "dial".into(),
+            mid: "rpm".into(),
+            element: "zh_t_dial_rpm".into(),
+            track: Track::Turn,
+            curve: "default_curve_1".into(),
+            from: 1.0,
+            to: 1.0,
+            db: "#view_model_data.hud_t_rpm".into(),
+            steps: 5,
+        });
+        let players = player_nodes(&p);
+        assert_eq!(players.len(), 1);
+        assert_eq!(
+            (players[0].name(), players[0].type_code().as_str()),
+            ("m_dial_rpm", "UIXA")
+        );
+        let triggers = trigger_nodes(&p, "hud.x_ctl");
+        assert_eq!(triggers.len(), 1);
+        assert_eq!(triggers[0].type_code(), "MVCD");
+        let events = triggers[0].slot(node::EVENTS).unwrap();
+        let read: Vec<(String, f32, u32, String)> = events
+            .iter()
+            .map(|e| {
+                let o = e.as_obj().unwrap();
+                let name = o
+                    .get("eventName")
+                    .and_then(Node::as_val)
+                    .and_then(|v| v.as_str())
+                    .unwrap();
+                let sg = o
+                    .get("signals")
+                    .and_then(Node::as_arr)
+                    .and_then(|a| a.items.first())
+                    .and_then(Node::as_obj)
+                    .unwrap();
+                let at = sg.get("attributes").and_then(Node::as_obj).unwrap();
+                let val = |k: &str| {
+                    at.get(k)
+                        .and_then(Node::as_obj)
+                        .and_then(|c| c.get("value"))
+                        .and_then(Node::as_val)
+                };
+                (
+                    name.to_owned(),
+                    val("value").and_then(|v| v.as_u32()).map(f32::from_bits).unwrap(),
+                    val("curveName").and_then(|v| v.as_u32()).unwrap(),
+                    node::canonical(&Node::Obj(sg.clone())),
+                )
+            })
+            .collect();
+        let names: Vec<&str> = read.iter().map(|r| r.0.as_str()).collect();
+        assert_eq!(names, ["0", "1", "2", "3", "4"]);
+        let values: Vec<f32> = read.iter().map(|r| r.1).collect();
+        assert_eq!(values, [0.0, 0.25, 0.5, 0.75, 1.0]);
+        assert!(read.iter().all(|r| r.2 == djb2("default_curve_1")));
+        assert!(
+            read.iter()
+                .all(|r| r.3.contains("hud.x_ctl.m_dial_rpm") && r.3.contains("playToFraction"))
+        );
+        assert!(node::canonical(&triggers[0]).contains("#view_model_data.hud_t_rpm"));
+    }
+
+    #[test]
+    fn turn_refusals() {
+        let bad = |f: fn(&mut serde_json::Value)| {
+            let mut v = serde_json::to_value(turn()).unwrap();
+            f(&mut v);
+            let m: Motion = serde_json::from_value(v).unwrap();
+            m.check("t").unwrap_err().to_string()
+        };
+        assert!(bad(|v| v["steps"] = 1.into()).contains("steps is 2 to 64"));
+        assert!(bad(|v| v["steps"] = 65.into()).contains("steps is 2 to 64"));
+        assert!(
+            bad(|v| v.as_object_mut().unwrap().remove("steps").map(|_| ()).unwrap()).contains("needs steps")
+        );
+        assert!(
+            bad(|v| v.as_object_mut().unwrap().remove("play_to").map(|_| ()).unwrap())
+                .contains("needs play_to")
+        );
+        assert!(
+            bad(|v| v["play_on"] = serde_json::json!({ "view_model": "view_model_data.hud_t_x" }))
+                .contains("not started by play_on")
+        );
+        assert!(bad(|v| v["play_to"]["ty"] = "text".into()).contains("int leaf"));
+        assert!(bad(|v| v["play_to"]["not"] = true.into()).contains("without not"));
+        assert!(
+            bad(|v| v["play_to"] = serde_json::json!({ "game": "revs" })).contains("view_model int leaf")
+        );
+        assert!(bad(|v| v["keys"] = serde_json::json!([[0, 10]])).contains("two keys"));
+        assert!(bad(|v| v["keys"] = serde_json::json!([[0, 10], [0, 20]])).contains("go up"));
+        assert!(
+            bad(|v| v["keys"] = serde_json::json!([[0, [0, 0]], [1, [0, 4]]])).contains("[time, degrees]")
+        );
+        assert!(bad(|v| v["curve"] = "needle_swing".into()).contains("not a curve"));
+        let slide_with_steps = |f: fn(&mut serde_json::Value)| {
+            let mut v = serde_json::to_value(slide()).unwrap();
+            f(&mut v);
+            serde_json::from_value::<Motion>(v)
+                .unwrap()
+                .check("t")
+                .unwrap_err()
+                .to_string()
+        };
+        assert!(slide_with_steps(|v| v["steps"] = 4.into()).contains("go with a turn"));
+        assert!(slide_with_steps(|v| v["kind"] = "fade".into()).contains("kind Fade"));
+    }
+
+    #[test]
+    fn a_turning_group_holds_quads_and_texts_only() {
+        let parse = |v: serde_json::Value| -> Vec<Element> { serde_json::from_value(v).unwrap() };
+        let m = serde_json::to_value(turn()).unwrap();
+        let ok = parse(
+            serde_json::json!([{ "id": "g", "kind": "group", "motion": m, "children": [
+            { "id": "n", "kind": "sprite", "sprite": "needle" },
+            { "id": "h", "kind": "group", "children": [ { "id": "t", "kind": "text", "literal": "x" } ] } ] }]),
+        );
+        check_elements(&ok, None).unwrap();
+        let swept = parse(
+            serde_json::json!([{ "id": "g", "kind": "group", "motion": m, "children": [
+            { "id": "h", "kind": "group", "children": [ { "id": "s", "kind": "sweep" } ] } ] }]),
+        );
+        assert!(
+            check_elements(&swept, None)
+                .unwrap_err()
+                .to_string()
+                .contains("laid out unrotated")
+        );
     }
 }

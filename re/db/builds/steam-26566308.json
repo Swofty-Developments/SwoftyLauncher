@@ -8117,6 +8117,9 @@
   "Sess_Build_SelectableDriverList": {
    "match": "0x245bcd0"
   },
+  "Sess_Build_VehicleTyreInfo": {
+   "match": "0xbcd400"
+  },
   "Sess_ChallengeRuleset_UpdateLapDelta": {
    "match": "0x2d3f8d0"
   },

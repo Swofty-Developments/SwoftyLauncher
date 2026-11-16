@@ -4274,6 +4274,14 @@ pub type Sess_Build_SelectableDriverList_t = unsafe extern "C" fn(
     alloc: *mut c_void,
     flag: u8,
 ) -> *mut NeVecU32;
+pub type Sess_Build_VehicleTyreInfo_t = unsafe extern "C" fn(
+    out: *mut c_void,
+    system: *mut c_void,
+    vehicle: u8,
+    flags: u32,
+    ctx: *const c_void,
+    scale: f32,
+) -> *mut c_void;
 pub type Sess_ChampionshipWonDecision_Update_t =
     unsafe extern "C" fn(state: *mut c_void, route: *mut u32) -> *mut u32;
 pub type Sess_Collect_AvailableTracks_t = unsafe extern "C" fn(
@@ -16672,6 +16680,11 @@ pub mod bindings {
     };
     pub const Sess_Build_SelectableDriverList: Binding = Binding {
         id: "Sess_Build_SelectableDriverList",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Sess_Build_VehicleTyreInfo: Binding = Binding {
+        id: "Sess_Build_VehicleTyreInfo",
         kind: "func",
         status: Status::Experimental,
     };
