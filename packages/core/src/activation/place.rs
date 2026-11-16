@@ -127,6 +127,7 @@ pub const TRACK_LAYERS: &str = "track_data.track_layers";
 pub struct LayerWorld {
     pub group: String,
     pub eri: String,
+    pub cars: u32,
 }
 
 impl LayerWorld {
@@ -139,6 +140,7 @@ impl LayerWorld {
         (group_ok && eri_ok && !stock && group.contains(FILENAME) && eri.contains(FILENAME)).then(|| Self {
             group: group.to_owned(),
             eri: eri.to_owned(),
+            cars: 0,
         })
     }
 
@@ -161,15 +163,70 @@ impl LayerWorld {
     }
 }
 
+const GAME_SETUP_MODES: &str = "game_setup.game_setup_modes";
+const ENTRANT_SETUP_MODES: &str = "entrants.entrant_setup_modes";
+
+fn rows_by_label(db: &Gvdb, table: &str, row: &str) -> BTreeMap<String, String> {
+    let n = db.instance_count(table, row).unwrap_or(0);
+    (0..n)
+        .filter_map(|i| {
+            let at = format!("{table}.{row}_{i}");
+            Some((db.get_text(&format!("{at}._metadata_"))?, at))
+        })
+        .collect()
+}
+
+fn list_items(value: &str) -> impl Iterator<Item = &str> {
+    value.split(',').map(str::trim).filter(|v| !v.is_empty())
+}
+
+fn setup_mode_cars(db: &Gvdb) -> BTreeMap<String, u32> {
+    let entrant = rows_by_label(db, ENTRANT_SETUP_MODES, "entrant_setup_mode");
+    rows_by_label(db, GAME_SETUP_MODES, "game_setup_mode")
+        .into_iter()
+        .map(|(label, at)| {
+            let modes = db
+                .get_text(&format!("{at}.entrant_setup_modes"))
+                .unwrap_or_default();
+            let cars = list_items(&modes)
+                .filter_map(|m| db.get_text(&format!("{}.max_entrants", entrant.get(m)?)))
+                .filter_map(|v| v.trim().parse::<i64>().ok())
+                .filter(|n| *n > 0)
+                .max()
+                .map_or(0, |n| n.min(u32::MAX as i64) as u32);
+            (label, cars)
+        })
+        .collect()
+}
+
 pub fn layer_worlds(db: &Gvdb) -> Vec<LayerWorld> {
     let n = db.instance_count(TRACK_LAYERS, "TrackLayer").unwrap_or(0);
-    let worlds: BTreeSet<LayerWorld> = (0..n)
-        .filter_map(|i| {
-            let text = |f: &str| db.get_text(&format!("{TRACK_LAYERS}.TrackLayer_{i}.{f}"));
-            LayerWorld::new(&text("worldAssetGroup")?, &text("worldEri")?)
-        })
-        .collect();
-    worlds.into_iter().collect()
+    let mode_cars = setup_mode_cars(db);
+    let mut worlds: BTreeMap<(String, String), u32> = BTreeMap::new();
+    for i in 0..n {
+        let text = |f: &str| db.get_text(&format!("{TRACK_LAYERS}.TrackLayer_{i}.{f}"));
+        let Some(world) = text("worldAssetGroup")
+            .zip(text("worldEri"))
+            .and_then(|(group, eri)| LayerWorld::new(&group, &eri))
+        else {
+            continue;
+        };
+        let modes = text("game_setup_modes").unwrap_or_default();
+        let cars = list_items(&modes)
+            .filter_map(|m| mode_cars.get(m).copied())
+            .max()
+            .unwrap_or(0);
+        let most = worlds.entry((world.group, world.eri)).or_default();
+        *most = (*most).max(cars);
+    }
+    worlds
+        .into_iter()
+        .map(|((group, eri), cars)| LayerWorld { group, eri, cars })
+        .collect()
+}
+
+pub fn room_for(worlds: &[LayerWorld], grid: u32) -> u32 {
+    worlds.iter().map(|w| w.cars).fold(grid, u32::max)
 }
 
 pub fn missing_worlds(worlds: &[LayerWorld], code: &str, provided: impl Fn(&str) -> bool) -> Vec<LayerWorld> {
@@ -995,5 +1052,80 @@ mod tests {
         assert!(missing_worlds(&worlds, "monaco", |g| g == registered).is_empty());
         assert_eq!(missing_worlds(&worlds, "testring", |g| g == registered), worlds);
         assert_eq!(LayerWorld::new("asset_groups/fixed.assetgroup", MOD_ERI), None);
+    }
+
+    #[test]
+    fn layer_worlds_carry_the_most_cars_a_setup_mode_of_their_rows_fields() {
+        use swofty_formats::gvdb::Record;
+        let mut records = Vec::new();
+        let mut table = |table: &str, row: &str, rows: &[Vec<(&str, String)>]| {
+            records.push(Record::new(
+                &format!("{table}._{row}_instancecount_"),
+                0,
+                rows.len().to_string(),
+            ));
+            for (i, fields) in rows.iter().enumerate() {
+                for (key, value) in fields {
+                    records.push(Record::new(
+                        &format!("{table}.{row}_{i}.{key}"),
+                        4,
+                        value.as_str(),
+                    ));
+                }
+            }
+        };
+        let entrant =
+            |label: &str, max: &str| vec![("_metadata_", label.to_owned()), ("max_entrants", max.to_owned())];
+        table(
+            ENTRANT_SETUP_MODES,
+            "entrant_setup_mode",
+            &[
+                entrant("a", "26"),
+                entrant("b", "-1"),
+                entrant("c", "30"),
+                entrant("d", "0"),
+            ],
+        );
+        let setup = |label: &str, modes: &str| {
+            vec![
+                ("_metadata_", label.to_owned()),
+                ("entrant_setup_modes", modes.to_owned()),
+            ]
+        };
+        table(
+            GAME_SETUP_MODES,
+            "game_setup_mode",
+            &[setup("m_a", "a"), setup("m_b", "b,d"), setup("m_c", "a, c")],
+        );
+        let layer = |label: &str, modes: &str| {
+            vec![
+                ("_metadata_", label.to_owned()),
+                ("game_setup_modes", modes.to_owned()),
+                ("worldAssetGroup", MOD_GROUP.to_owned()),
+                ("worldEri", MOD_ERI.to_owned()),
+            ]
+        };
+        table(
+            TRACK_LAYERS,
+            "TrackLayer",
+            &[layer("x", "m_a"), layer("y", "m_b"), layer("z", "m_a,missing")],
+        );
+        let worlds = layer_worlds(&Gvdb {
+            records: records.clone(),
+        });
+        assert_eq!(worlds.len(), 1);
+        assert_eq!(worlds[0].cars, 26);
+        assert_eq!(room_for(&worlds, 22), 26);
+        assert_eq!(room_for(&worlds, 28), 28);
+        assert_eq!(room_for(&[], 22), 22);
+        let mut db = Gvdb { records };
+        db.set(
+            &format!("{TRACK_LAYERS}.TrackLayer_1.game_setup_modes"),
+            "m_c",
+            None,
+        )
+        .unwrap();
+        let worlds = layer_worlds(&db);
+        assert_eq!(worlds[0].cars, 30);
     }
 }
