@@ -370,6 +370,22 @@ static void continue_tests()
     p = era::continue_list(lists, {era::NO_TEAM, 0}, "", "f1");
     expect(p.index < 0, "unresolved team ids match no list");
 
+    std::vector<std::string> names{"f1_2025", "cs_f1_2016", "f1_career_progressive"};
+    era::CareerListPick c = era::career_list(names, "f1_career_progressive", {}, "f1_26");
+    expect(c.index == 2 && c.line.find("named like the career's data group") != std::string::npos,
+           "a Driver Career with an empty list loads the list named like its data group: " + c.line);
+    c = era::career_list(names, "other_group", {"cs_f1_2016"}, "f1_26");
+    expect(c.index == 1 && c.line.find("content the career runs") != std::string::npos,
+           "without a list for the data group, the list of the career's content is loaded: " + c.line);
+    c = era::career_list(names, "", {"nothing"}, "f1_26");
+    expect(c.index < 0 && c.line.find("(none)") != std::string::npos, "no data group and no matching content picks nothing");
+    c = era::career_list({}, "f1_career_progressive", {}, "");
+    expect(c.index < 0 && c.line.find("offers 0 lists") != std::string::npos && c.line.find("setup mode ?") != std::string::npos,
+           "a setup mode without lists picks nothing: " + c.line);
+    expect(era::career_stop(c).find("Driver Career load stopped: ") == 0 &&
+               era::career_stop(c).find("instead of crashing") != std::string::npos,
+           "no list stops the load with the reason");
+
     era::IdAliases aliases;
     std::string doc = R"({"version":1,"tables":{"teams":{"646":510,"652":511,"559":512,"3":9,"0":4,"99999":5},"vehicles":{"700":701}}})";
     expect(era::parse_aliases(doc, aliases), "the alias file parses");

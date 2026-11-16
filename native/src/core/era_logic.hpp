@@ -943,6 +943,50 @@ inline std::string track_missing(const swofty_core::apply::tracks::Base &base, c
     return why;
 }
 
+struct CareerListPick {
+    int64_t index = -1;
+    std::string line;
+};
+
+inline CareerListPick career_list(const std::vector<std::string> &lists, const std::string &data_group,
+                                  const std::vector<std::string> &content, const std::string &setup_mode)
+{
+    CareerListPick p;
+    std::string head = "the game left the entrants manager's list empty in a Driver Career (setup mode " +
+                       (setup_mode.empty() ? std::string("?") : setup_mode) + " offers " + std::to_string(lists.size()) +
+                       " lists); ";
+    auto find = [&](const std::string &name) -> int64_t {
+        if (name.empty())
+            return -1;
+        for (size_t i = 0; i < lists.size(); ++i)
+            if (lists[i] == name)
+                return int64_t(i);
+        return -1;
+    };
+    p.index = find(data_group);
+    if (p.index >= 0) {
+        p.line = head + "loading " + lists[size_t(p.index)] + ", the list named like the career's data group";
+        return p;
+    }
+    for (const std::string &c : content) {
+        p.index = find(c);
+        if (p.index >= 0) {
+            p.line = head + "loading " + lists[size_t(p.index)] + ", the list of the content the career runs";
+            return p;
+        }
+    }
+    p.line = head + "no list is named like the career's data group (" + (data_group.empty() ? std::string("none") : data_group) +
+             ") or its content";
+    return p;
+}
+
+inline std::string career_stop(const CareerListPick &pick)
+{
+    return "Driver Career load stopped: " + pick.line +
+           ". F1 25 closes now instead of crashing on it; start a new Driver Career, or turn the addons back on that the "
+           "career was made with";
+}
+
 inline std::string continue_stop(const std::string &track_why, const ContinuePick &pick, bool list_missing)
 {
     std::vector<std::string> why;

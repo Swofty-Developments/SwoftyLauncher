@@ -1559,11 +1559,40 @@ void leave_front_end(uintptr_t ctx)
                     leave.clear_selected ? ("; the box list " + selected + " no longer selected").c_str() : "");
 }
 
+void driver_career_load(uintptr_t ctx)
+{
+    static uint32_t logged;
+    uintptr_t holder = 0, setup = 0, entrant_setup = 0, list = 0, gsm = 0, gsm_holder = 0, gsm_name = 0;
+    if (!mem::read(ctx + MODE_SETUP, holder) || !holder || !mem::read(holder + SETUP_MODES, setup) || !setup ||
+        !mem::read(setup + SELECTED_LIST, list) || list)
+        return;
+    std::string setup_mode;
+    if (mem::read(setup + SETUP_GAME_SETUP_MODE, gsm) && gsm && mem::read(gsm + SETUP_MODE_NAME, gsm_holder) && gsm_holder &&
+        mem::read(gsm_holder + 0x10, gsm_name))
+        mem::c_string(gsm_name, setup_mode, 64);
+    std::vector<void *> ptrs;
+    std::vector<std::string> names;
+    if (mem::read(setup + SETUP_ENTRANT_SETUP, entrant_setup) && entrant_setup)
+        for (const auto &l : lists_of(reinterpret_cast<const uint8_t *>(entrant_setup), ptrs))
+            names.push_back(l.name);
+    auto career = swofty_core::apply::scheduler().context();
+    logic::CareerListPick pick = logic::career_list(names, career.data_group, career.content, setup_mode);
+    if (pick.index < 0)
+        stop_session_load(logic::career_stop(pick));
+    ref<void *>(reinterpret_cast<void *>(setup), SELECTED_LIST) = ptrs[size_t(pick.index)];
+    if (logged++ < LOG_FIRST)
+        swofty::log("[era] Driver Career load: %s", pick.line.c_str());
+}
+
 void grand_prix_load(uintptr_t ctx)
 {
     static uint32_t logged;
     swofty_core::apply::moments::grand_prix_track_check();
     auto [mode, track] = swofty_core::apply::moments::session_mode_track();
+    if (mode == "driver_career") {
+        driver_career_load(ctx);
+        return;
+    }
     if (mode != "grand_prix")
         return;
     std::string track_why = logic::track_missing(swofty_core::apply::tracks::base(), track);
