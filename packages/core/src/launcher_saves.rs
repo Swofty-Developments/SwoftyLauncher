@@ -179,9 +179,12 @@ fn stage_copy(from: &Path, to: &Path) -> Result<()> {
             true => Ok(()),
             false => Err(Error::Other(format!("{} did not copy cleanly", tmp.display()))),
         })
+        .and_then(|()| crate::sync_file(&tmp))
         .and_then(|()| std::fs::rename(&tmp, to).map_err(io_err(to)));
     if done.is_err() {
         std::fs::remove_file(&tmp).ok();
+    } else {
+        crate::sync_dir(to.parent());
     }
     done
 }

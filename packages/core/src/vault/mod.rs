@@ -768,8 +768,15 @@ impl Vault {
             std::fs::remove_file(&tmp).ok();
             return Err(changed_during(src));
         }
+        if let Err(e) = crate::sync_file(&tmp) {
+            std::fs::remove_file(&tmp).ok();
+            return Err(e);
+        }
         match std::fs::rename(&tmp, &blob) {
-            Ok(()) => Ok(()),
+            Ok(()) => {
+                crate::sync_dir(Some(&dir));
+                Ok(())
+            }
             Err(_) if blob.is_file() => {
                 std::fs::remove_file(&tmp).ok();
                 Ok(())

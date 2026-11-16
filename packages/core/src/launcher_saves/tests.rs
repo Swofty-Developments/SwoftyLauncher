@@ -599,3 +599,14 @@ fn an_unsupported_build_outranks_every_other_reason() {
     };
     assert_eq!(area(all), Area::Own(Why::UnsupportedBuild("1.0.145.2472".into())));
 }
+
+#[test]
+fn a_staged_copy_keeps_its_contents_and_leaves_no_temp_file() {
+    let r = root("stage-copy");
+    let from = r.join("from.bin");
+    std::fs::write(&from, [9u8; 4096]).unwrap();
+    let to = r.join("to.bin");
+    stage_copy(&from, &to).unwrap();
+    assert_eq!(std::fs::read(&to).unwrap(), [9u8; 4096]);
+    assert_eq!(names(&r), ["from.bin", "to.bin"]);
+}

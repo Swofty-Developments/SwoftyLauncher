@@ -106,6 +106,23 @@ fn refuses_a_file_that_changes_while_it_is_copied() {
 }
 
 #[test]
+fn a_stored_blob_keeps_its_contents_and_leaves_no_temp_file() {
+    let root = tmp("blob-flush");
+    let loc = steam(&root, "1", b"data");
+    let v = vault(&root, &loc);
+    let src = loc.dir.join(DATA);
+    let sha = crate::baseline::sha256_file(&src).unwrap();
+    v.store_blob(&src, &sha).unwrap();
+    assert_eq!(std::fs::read(v.blob(&sha)).unwrap(), std::fs::read(&src).unwrap());
+    let left: Vec<_> = std::fs::read_dir(v.dir.join("blobs"))
+        .unwrap()
+        .flatten()
+        .filter(|e| e.file_name().to_string_lossy().starts_with('.'))
+        .collect();
+    assert!(left.is_empty(), "{left:?}");
+}
+
+#[test]
 fn keeps_accounts_apart() {
     let root = tmp("accounts");
     let a = steam(&root, "11", b"a");

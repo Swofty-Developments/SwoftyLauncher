@@ -1061,7 +1061,9 @@ impl Journal {
                 f.sync_all()
             })
             .map_err(io_err(&tmp))?;
-        with_retry(journal, || std::fs::rename(&tmp, journal))
+        with_retry(journal, || std::fs::rename(&tmp, journal))?;
+        crate::sync_dir(journal.parent());
+        Ok(())
     }
 }
 

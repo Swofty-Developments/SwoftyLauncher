@@ -197,7 +197,8 @@ pub(crate) fn restore_held(
                 true => Ok(()),
                 false => Err(Error::Other(format!("{} did not copy cleanly", tmp.display()))),
             })
-            .and_then(|()| touch(&tmp, now));
+            .and_then(|()| touch(&tmp, now))
+            .and_then(|()| crate::sync_file(&tmp));
         if let Err(e) = ok {
             for (tmp, _, _) in &staged {
                 std::fs::remove_file(tmp).ok();
@@ -217,6 +218,9 @@ pub(crate) fn restore_held(
                     true => Ok(()),
                     false => Err(Error::Other(format!("{} did not restore cleanly", to.display()))),
                 });
+        if done.is_ok() {
+            crate::sync_dir(to.parent());
+        }
         if let Err(e) = done {
             for (tmp, _, _) in &staged[n..] {
                 std::fs::remove_file(tmp).ok();
