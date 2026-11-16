@@ -6,7 +6,7 @@
 namespace swofty_core::live {
 
 // A group reads on its own when every site it needs resolves (bindgen exports a site only after its KB row has an
-// independent agree), every struct field it reads is declared by the generated game headers (the same gate), and its
+// independent agree), every field has a generated declaration or an explicit proof for this exact build, and its
 // reads are all backed by KB rows. `mapped` is false for a group that still reads a chain the KB has no row for; that
 // group stays off until SWOFTY_LIVE_FORCE=1 or until the row lands and the entry is flipped.
 struct Row {
@@ -158,12 +158,15 @@ constexpr uint32_t bit(Group g)
 
 // A build other than the KB build reads a group only when the group is listed here for that build's PE timestamp: the
 // layouts the group reads were compared against the KB build's (re/tools/layoutcmp.py, research/ea-layouts.md) and the
-// sites it needs resolve in that build's bindings set. `progress_from_manager` is the one displacement that differs.
+// sites it needs resolve in that build's bindings set. Displacements that differ are selected per build below.
 struct BuildProof {
     uint32_t pe_timestamp;
     const char *name;
     uint32_t groups;
     uintptr_t progress_from_manager;
+    uintptr_t ers_mode = layout::ers::mode;
+    // Field layouts independently checked for this build when the baseline KB headers omit a field.
+    uint32_t field_proofs = 0;
 };
 
 inline constexpr uint32_t ALL_GROUPS = (1u << G_COUNT) - 1;
@@ -177,7 +180,14 @@ inline constexpr uint32_t EA_GROUPS = ALL_GROUPS & ~(1u << G_DRIVER_NAMES);
 inline constexpr BuildProof EA_BUILD = {1789128892u, "EA", EA_GROUPS,
                                          runtime::game_manager::tail_field(layout::progress::from_manager, "ea")};
 
-inline constexpr const BuildProof *PROVEN_BUILDS[] = {&KB_BUILD, &EA_BUILD};
+// Steam 26566308 (1.0.145.2472): existing Live State layouts checked against this executable.
+// See re/research/live-steam-26566308.md for the build identity and instruction evidence.
+// Resolving a binding alone does not prove the object layout behind it; the current ERS mode moved by four bytes.
+inline constexpr uint32_t STEAM_26566308_GROUPS = ALL_GROUPS;
+inline constexpr BuildProof STEAM_26566308_BUILD = {
+    1794312636u, "Steam 26566308", STEAM_26566308_GROUPS, layout::progress::from_manager, 0x1a6c, bit(G_DRIVER_NAMES)};
+
+inline constexpr const BuildProof *PROVEN_BUILDS[] = {&KB_BUILD, &EA_BUILD, &STEAM_26566308_BUILD};
 
 inline const BuildProof *proof_for(uint32_t pe_timestamp)
 {
@@ -210,7 +220,8 @@ inline Decision decide(const Sites &s, const BuildProof &b, bool force, const Ro
         for (auto slot : n.sites)
             if (slot && !(s.*slot) && !v.missing)
                 v.missing = slot;
-        bool rows = row.fields && row.mapped, proven = (b.groups & bit(n.group)) != 0;
+        bool rows = (row.fields || (b.field_proofs & bit(n.group))) && row.mapped;
+        bool proven = (b.groups & bit(n.group)) != 0;
         v.why = v.missing ? Why::site : !rows ? Why::row : !proven ? Why::build : Why::on;
         d.gates.on[n.group] = !v.missing && ((rows && proven) || force);
         if (d.gates.on[n.group])

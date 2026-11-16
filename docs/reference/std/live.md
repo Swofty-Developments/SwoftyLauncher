@@ -85,8 +85,10 @@ A call answers empty while no session is live, on a core without the live state,
 [live] tyres off: VehicleTyreComponent, TyreSystem, TyreSlot, VisualCompound and PhysicalCompound fields (SWOFTY_LIVE_FORCE=1 reads it unverified)
 [live] timing off on the EA build: k_Live_RelativeGapHelperKey does not resolve in this build's bindings
 [live] pit lane off on the EA build: its layout is not proven there (SWOFTY_LIVE_FORCE=1 reads it anyway)
-[live] off: build 1234567890 has no proven live layouts (Steam 1789118616, EA 1789128892)
+[live] off: build 1234567890 has no proven live layouts
 ```
+
+Steam build **26566308** (F1 25 1.0.145.2472, executable PE timestamp `1794312636`) has a separate build descriptor for all existing Live State groups. Its ERS mode displacement is selected independently of the older Steam/EA layouts. Normal binding, ownership and validity checks still apply; values may be unavailable during loading or when game objects are absent. This preserves Live table v2 and the existing SDK/API. See `re/research/live-steam-26566308.md` for evidence and pending runtime validation.
 
 ## car
 

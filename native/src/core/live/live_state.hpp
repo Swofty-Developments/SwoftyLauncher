@@ -225,7 +225,7 @@ public:
 
     bool read_team_badge(uint32_t vehicle, char *key, size_t cap)
     {
-        if (!g_[G_BADGES] || !s_.key_game_mode || !s_.key_team_tables || vehicle >= MAX_CARS || cap < 2)
+        if (!active() || !g_[G_BADGES] || !s_.key_game_mode || !s_.key_team_tables || vehicle >= MAX_CARS || cap < 2)
             return false;
         uintptr_t gmc = find(c_mode_, s_.key_game_mode);
         uintptr_t mode = 0, game = 0, ev[2];
@@ -264,7 +264,7 @@ public:
     bool read_driver_name(uint32_t vehicle, char *out, size_t cap)
     {
         namespace D = L::driver;
-        if (!g_[G_DRIVER_NAMES] || !s_.key_game_mode || !s_.key_team_tables || !s_.key_session_component ||
+        if (!active() || !g_[G_DRIVER_NAMES] || !s_.key_game_mode || !s_.key_team_tables || !s_.key_session_component ||
             vehicle >= MAX_CARS || cap < 2)
             return false;
         uintptr_t vh = find(c_s1_, s_.key_session_component), pv[2];
@@ -1218,7 +1218,11 @@ private:
                   hh = field<float>(b, L::ers::live_lo, L::ers::harvest_h), dp = field<float>(b, L::ers::live_lo, L::ers::deploy),
                   hl = field<float>(b, L::ers::live_lo, L::ers::harvest_lap), dl = field<float>(b, L::ers::live_lo, L::ers::deploy_lap),
                   ll = field<float>(b, L::ers::live_lo, L::ers::lap_limit);
-            int32_t mode = field<int32_t>(b, L::ers::live_lo, L::ers::mode);
+            int32_t mode = -1;
+            if (s_.ers_mode && s_.ers_mode != L::ers::mode)
+                m_.get(c.es + s_.ers_mode, mode);
+            else
+                mode = field<int32_t>(b, L::ers::live_lo, L::ers::mode);
             if (within(energy, -1.0e5f, 2.0e7f)) {
                 e.store = std::max(0.f, energy);
                 e.have |= SWOFTY_LIVE_HAVE_ERS_STORE;
