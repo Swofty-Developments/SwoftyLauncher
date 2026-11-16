@@ -24,7 +24,7 @@
    "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Career_GameValue_GetUpgradesFailedDuringTimeAdvance": {
-   "pattern": "48 83 EC 28 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28",
+   "pattern": "48 83 EC 28 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28 48 8D 15 ?? ?? ?? 04 E8 E0 DC 03 00 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28 48 8D 15 ?? ?? ?? 04 E8 C0 DC 03 00 89 C0 C4 E1",
    "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
   },
   "Career_Get_CareerLengthDays_Thunk": {
@@ -168,7 +168,7 @@
    "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Ne_Gfx2Renderer_PostEvent_AllocateResource": {
-   "pattern": "E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05",
+   "pattern": "E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05 B9 1A 00 00 48 89 F9 48 89 F2 E8 CE 17 00 00 4C 8D 05 E7 1D 00 00 48 89 F9 48 89 F2 E8 FC 1A 00 00 4C 8D 05 45 23 00 00 48 89 F9 48 89 F2 E8 5A",
    "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
   },
   "Ne_HashMap_FatalStub_GroundCover": {
@@ -253,7 +253,7 @@
    "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Sess_FormationLapLogic_SubscribeSafetyCarDeployment": {
-   "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8",
+   "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8 ?? BC 06 00 48 8B 05 ?? ?? ?? 02 48 8B 48 08 48 8D 05 99 01 00 00 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8 ?? ?? 06 00",
    "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."
   },
   "Sess_GridRundown_Update": {
@@ -313,7 +313,7 @@
    "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "Trk_TimeTrialTrackSelectVm_OnCommandRaised": {
-   "pattern": "56 57 53 48 83 EC 40 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D ?? 35 B0 02",
+   "pattern": "56 57 53 48 83 EC 40 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D ?? 35 B0 02 7E 7D 3D 2B E9 3F 49 0F 84 94 00 00 00 3D 27 06 EA 2D 0F 84 59 01 00 00 3D 7A 35 B0 02 0F 85 4A 03 00 00 48 8B 86 C0 02 00 00 F7 80 30 01 00 00",
    "note": "The pattern is the Steam 1.0.145 match with the bytes that differ in the EA image wildcarded; it matches once in the EA image."
   },
   "Vm_List_AppendChild": {
@@ -723,11 +723,11 @@
    "note": "The pattern matches EA once at the Steam offset. The expected site bytes carry a rip-relative or call displacement that differs on EA; they are the EA dump's bytes."
   },
   "site_Sess_TimeTrialLeaderboard_TabChild": {
-   "pattern": "48 8B 01 B2 01 FF 50 30 48 89 F1 E8 ?? ?? ?? ?? 90 48 83 C4 40 5E C3",
+   "pattern": "48 8B 01 B2 01 FF 50 30 48 89 F1 E8 ?? ?? ?? ?? 90 48 83 C4 40 5E C3 56 48 83 EC 40 F6 81 28 06 00 00 02 0F 84 8C 00 00 00 48 89 CE C7 44 24 28 04 00 00 00 C7 44 24 30 00 00 00 00 48 C7 44 24 38 00 00 00 00 48 8D",
    "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "site_Sess_TyreVisSlotLookup": {
-   "pattern": "4C 89 ?? E8 ?? ?? ?? ?? 49 8B 86 48 9C 00 00 49 8B 8E 98 9C 00 00",
+   "pattern": "4C 89 ?? E8 ?? ?? ?? ?? 49 8B 86 48 9C 00 00 49 8B 8E 98 9C 00 00 8B 51 94 48 8D 0C C5 00 00 00 00 4C 8D 04 49 49 F7 D8 B9 D0 9B 00 00 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 41 39 14 0E 74 2C 4D 8D 0C 08",
    "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
   "site_Team_LoadInsertCall": {
