@@ -95,6 +95,7 @@ impl Shell {
         let developer_mode = config.developer;
         let clear_old_session_logs = config.clear_old_session_logs;
         let time_trial_boards = config.time_trial_boards;
+        let use_profiles = config.use_profiles;
         let time_trial_ingame = config.time_trial_ingame;
         let home_video = config.home_video;
         let update_check = config.updates.check;
@@ -184,6 +185,7 @@ impl Shell {
             developer_mode,
             clear_old_session_logs,
             time_trial_boards,
+            use_profiles,
             time_trial_ingame,
             home_video,
             reload_generation: 0,

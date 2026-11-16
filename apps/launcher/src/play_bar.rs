@@ -346,6 +346,10 @@ impl Shell {
                     "{} {}",
                     match self.launch.as_ref().and_then(|l| l.stage.as_deref()) {
                         Some(stage) => stage.to_owned(),
+                        None if !self.use_profiles && self.launch_mode().is_vr() => {
+                            tr("Starting in VR…").to_owned()
+                        }
+                        None if !self.use_profiles => tr("Starting…").to_owned(),
                         None if self.launch_mode().is_vr() => trf!(
                             "Starting with profile {name} in VR…",
                             name = self.library.profile.name
@@ -436,17 +440,23 @@ impl Shell {
             PlayState::Preparing => row.child(dot(p.warning)).child(tr("Checking addons…")),
             PlayState::Ready => {
                 if rebuild {
-                    return row.text_color(p.text_muted).child(dot(p.warning)).child(
-                        div().min_w_0().truncate().child(trf!(
+                    let changes = trn(
+                        self.library.rebuild.len(),
+                        "{count} changed setting",
+                        "{count} changed settings",
+                    );
+                    let text = match self.use_profiles {
+                        true => trf!(
                             "Ready · rebuilds {profile} for {changes} on launch",
                             profile = self.library.profile.name,
-                            changes = trn(
-                                self.library.rebuild.len(),
-                                "{count} changed setting",
-                                "{count} changed settings"
-                            )
-                        )),
-                    );
+                            changes = changes
+                        ),
+                        false => trf!("Ready · rebuilds for {changes} on launch", changes = changes),
+                    };
+                    return row
+                        .text_color(p.text_muted)
+                        .child(dot(p.warning))
+                        .child(div().min_w_0().truncate().child(text));
                 }
                 if let Some(refused) = self.saves_refused() {
                     let dir = refused.dir.clone();

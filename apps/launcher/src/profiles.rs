@@ -1,3 +1,4 @@
+use crate::library::ProfileItem;
 use crate::notices::{Notification, Notify};
 use crate::scale::px;
 use crate::shell::{Prompt, Shell};
@@ -8,8 +9,20 @@ use gpui_kit::component::{Icon, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::rc::Rc;
+use swofty_core::profile::VANILLA;
 use swofty_core::store::ProfileDeletion;
 use swofty_i18n::{tr, trf};
+
+pub(crate) fn implicit_profile(profiles: &[ProfileItem], active: &str) -> Option<String> {
+    if active != VANILLA {
+        return None;
+    }
+    let modded = || profiles.iter().filter(|i| !i.vanilla());
+    modded()
+        .find(|i| i.name == "default")
+        .or_else(|| modded().next())
+        .map(|i| i.name.clone())
+}
 
 fn deletion_summary(plan: &ProfileDeletion, p: Palette) -> impl IntoElement {
     let name = &plan.name;
@@ -189,7 +202,7 @@ impl Shell {
 
 #[cfg(test)]
 mod tests {
-    use super::copy_name;
+    use super::{ProfileItem, copy_name, implicit_profile};
     use swofty_core::profile::valid_new_name;
 
     #[test]
@@ -200,5 +213,27 @@ mod tests {
         for from in ["grid", "-swofty", "--default", "-"] {
             assert!(valid_new_name(&copy_name(from)), "{from}");
         }
+    }
+
+    fn item(name: &str) -> ProfileItem {
+        ProfileItem {
+            name: name.to_owned(),
+            addons: Vec::new(),
+        }
+    }
+
+    #[test]
+    fn a_modded_active_profile_stays() {
+        let all = [item("vanilla"), item("default"), item("race")];
+        assert_eq!(implicit_profile(&all, "race"), None);
+    }
+
+    #[test]
+    fn vanilla_falls_back_to_default_then_the_first_modded_profile() {
+        let all = [item("vanilla"), item("race"), item("default")];
+        assert_eq!(implicit_profile(&all, "vanilla").as_deref(), Some("default"));
+        let all = [item("vanilla"), item("race"), item("zeta")];
+        assert_eq!(implicit_profile(&all, "vanilla").as_deref(), Some("race"));
+        assert_eq!(implicit_profile(&[item("vanilla")], "vanilla"), None);
     }
 }

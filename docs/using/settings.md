@@ -21,6 +21,8 @@ description: Settings holds the launcher's own options in five categories, shows
 
 **Start Steam automatically** (or the EA app) starts your game's store when you press **Play**, as the same item in the **Play** menu does.
 
+**Use profiles** is on by default. Turned off, the launcher hides the profile sidebar, profile names in the **Play** bar, the **Addons** heading and the **Saves** page, and the **Copy careers to** action, and you can no longer switch profiles. It keeps working on the profile that is active when you turn it off, or on `default` (else your first modded profile) if that was `vanilla`. Turning it on again brings the full interface back, and your profiles are never deleted.
+
 **Home screen video** shows the latest Swofty video in the bottom right of the F1 25 home screen, with **RB** (**V** on a keyboard) to watch it. It is on by default. Turned off, the home screen has no video card from the next time you press **Play**, and the launcher no longer fetches the latest video.
 
 ## Display

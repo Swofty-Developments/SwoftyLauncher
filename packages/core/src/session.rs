@@ -135,6 +135,8 @@ pub struct Config {
     /// Show the latest Swofty video card on the F1 25 home screen; on unless turned off.
     #[serde(default = "on", skip_serializing_if = "is_on")]
     pub home_video: bool,
+    #[serde(default = "on", skip_serializing_if = "is_on")]
+    pub use_profiles: bool,
 }
 
 fn on() -> bool {
@@ -1037,6 +1039,24 @@ mod tests {
         config.console = true;
         let json = serde_json::to_string(&config).unwrap();
         assert!(serde_json::from_str::<Config>(&json).unwrap().console);
+    }
+
+    #[test]
+    fn profiles_are_on_unless_turned_off() {
+        assert!(Config::default().use_profiles);
+        assert!(serde_json::from_str::<Config>("{}").unwrap().use_profiles);
+        let json = serde_json::to_string(&Config {
+            use_profiles: false,
+            ..Config::default()
+        })
+        .unwrap();
+        assert!(json.contains(r#""use_profiles":false"#));
+        assert!(!serde_json::from_str::<Config>(&json).unwrap().use_profiles);
+        assert!(
+            !serde_json::to_string(&Config::default())
+                .unwrap()
+                .contains("use_profiles")
+        );
     }
 
     #[test]

@@ -43,6 +43,7 @@ impl Shell {
         self.developer_mode = config.developer;
         self.clear_old_session_logs = config.clear_old_session_logs;
         self.time_trial_boards = config.time_trial_boards;
+        self.use_profiles = config.use_profiles;
         self.time_trial_ingame = config.time_trial_ingame;
         self.home_video = config.home_video;
         self.vr_profiles = config.vr_profiles;

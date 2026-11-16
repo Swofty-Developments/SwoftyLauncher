@@ -3,6 +3,7 @@ use crate::theme::palette;
 use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::*;
+use swofty_core::profile::VANILLA;
 use swofty_core::saves::SavesWarning;
 use swofty_i18n::{tr, trf};
 
@@ -155,6 +156,9 @@ impl Shell {
     }
 
     pub(crate) fn switch_profile(&mut self, name: &str, window: &mut Window, cx: &mut Context<Self>) {
+        if !self.use_profiles && name != self.library.profile.name && self.library.profile.name != VANILLA {
+            return;
+        }
         self.play_pending.cancel();
         if let Err(e) = self.store.set_active_profile(name) {
             crate::app_log::action("switch profile").failed(&e);

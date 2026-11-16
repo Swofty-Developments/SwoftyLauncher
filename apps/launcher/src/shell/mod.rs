@@ -116,6 +116,7 @@ pub struct Shell {
     pub(crate) clear_old_session_logs: bool,
     /// `time_trial_boards` from config.json: on unless turned off, uploads completed Time Trial laps.
     pub(crate) time_trial_boards: bool,
+    pub(crate) use_profiles: bool,
     /// `time_trial_ingame` from config.json: on unless turned off, shows the boards inside Time Trial.
     pub(crate) time_trial_ingame: bool,
     /// `home_video` from config.json: on unless turned off, shows the latest video card on the F1 25 home screen.

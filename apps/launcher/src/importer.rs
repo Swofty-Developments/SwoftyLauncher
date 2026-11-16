@@ -94,15 +94,18 @@ impl Shell {
             .find(|p| !p.vanilla())
             .map(|p| p.name.clone());
         let button = match modded {
-            Some(name) => Button::new("importer-use-profile")
+            Some(name) if self.use_profiles => Button::new("importer-use-profile")
                 .primary()
                 .icon(IconName::Layers)
                 .label(trf!("Use {name}", name = name))
                 .on_click(cx.listener(move |this, _, window, cx| this.switch_profile(&name, window, cx))),
-            None => Button::new("importer-profiles")
+            _ => Button::new("importer-profiles")
                 .outline()
                 .icon(IconName::Layers)
-                .label(tr("Profiles"))
+                .label(match self.use_profiles {
+                    true => tr("Profiles"),
+                    false => tr("Addons"),
+                })
                 .on_click(cx.listener(|this, _, _, cx| this.go(Page::Addons, cx))),
         };
         let action = v_flex().items_center().gap(px(12.)).child(button).child(

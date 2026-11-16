@@ -61,6 +61,23 @@ impl Shell {
         cx.notify();
     }
 
+    pub(crate) fn set_use_profiles(&mut self, on: bool, window: &mut Window, cx: &mut Context<Self>) {
+        let mut config = self.store.config();
+        config.use_profiles = on;
+        if let Err(e) = self.store.save_config(&config) {
+            crate::app_log::action("save settings").failed(&e);
+            window.notify(Notification::error(e.to_string()), cx);
+        }
+        self.use_profiles = config.use_profiles;
+        if !on {
+            let active = self.library.profile.name.clone();
+            if let Some(name) = crate::profiles::implicit_profile(&self.library.profiles, &active) {
+                self.switch_profile(&name, window, cx);
+            }
+        }
+        cx.notify();
+    }
+
     pub(crate) fn set_time_trial_boards(&mut self, on: bool, window: &mut Window, cx: &mut Context<Self>) {
         let mut config = self.store.config();
         config.time_trial_boards = on;

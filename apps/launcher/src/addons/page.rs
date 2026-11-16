@@ -247,6 +247,7 @@ impl Shell {
     pub(super) fn list_heading(&self, p: Palette) -> AnyElement {
         let title = match self.vanilla() {
             true => tr("INSTALLED").to_owned(),
+            false if !self.use_profiles => tr("LOAD ORDER").to_owned(),
             false => trf!(
                 "LOAD ORDER IN {name}",
                 name = self.library.profile.name.to_uppercase()
@@ -276,12 +277,15 @@ impl Shell {
             )
         } else {
             let on = self.library.listed().filter(|m| self.addon_on(m)).count();
-            let line = trf!(
-                "{installed} · {on} on in {name}",
-                installed = installed,
-                on = on,
-                name = self.library.profile.name
-            );
+            let line = match self.use_profiles {
+                true => trf!(
+                    "{installed} · {on} on in {name}",
+                    installed = installed,
+                    on = on,
+                    name = self.library.profile.name
+                ),
+                false => trf!("{installed} · {on} on", installed = installed, on = on),
+            };
             match self.attention() {
                 0 => line,
                 n => trf!(

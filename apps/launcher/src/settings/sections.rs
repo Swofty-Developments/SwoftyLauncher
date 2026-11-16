@@ -64,6 +64,9 @@ impl Shell {
         let home_video = Switch::new("settings-home-video")
             .checked(self.home_video)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_home_video(*on, window, cx)));
+        let use_profiles = Switch::new("settings-use-profiles")
+            .checked(self.use_profiles)
+            .on_click(cx.listener(|this, on: &bool, window, cx| this.set_use_profiles(*on, window, cx)));
         SettingsSection::new(tr("General"))
             .row(
                 SettingRow::new(tr("Language"))
@@ -74,6 +77,11 @@ impl Shell {
                 SettingRow::new(start_label)
                     .description(tr("When you press Play"))
                     .control(start),
+            )
+            .row(
+                SettingRow::new(tr("Use profiles"))
+                    .description(tr("Turned off, the launcher hides every profile and works on the one that is active now, or on your first modded profile if that is vanilla. Your other profiles are kept untouched and come back when you turn this on."))
+                    .control(use_profiles),
             )
             .row(
                 SettingRow::new(tr("Time Trial boards"))
