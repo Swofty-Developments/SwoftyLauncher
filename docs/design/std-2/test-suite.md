@@ -42,7 +42,7 @@ It has two halves:
 ```sh
 swofty test fixture capture gp-base --from <a copy of userdata/<id>/3059520/remote> --store ~/fixtures
 swofty --profile default test session grand_prix cs_f1_2020 silverstone session=race laps=3 team=ferrari driver=vettel \
-    --fixture ~/fixtures/gp-base --lock /mnt/work/.f1-game.lock.d
+    --fixture ~/fixtures/gp-base --lock /mnt/work/F1/f1-game.lock.d
 ```
 
 In game on 2026-11-01 (Steam build, release CLI, profile `default` with Classic Seasons, a fixture made from a copy of the player's save):
@@ -93,7 +93,7 @@ The flow is logged as `[direct] ...` lines: the weekend before and after (`weeke
 
 ```sh
 swofty --profile f1-1990 test session time_trial f1_1990_gp silverstone team=ferrari \
-    --fixture ~/fixtures/gp-base --lock /mnt/work/.f1-game.lock.d
+    --fixture ~/fixtures/gp-base --lock /mnt/work/F1/f1-game.lock.d
 ```
 
 ```text
@@ -168,7 +168,7 @@ The sandbox is a core feature at the save device's start (`Ne_SaveSystem2Win_Sta
 ## Rules
 
 - The test agent and test DLLs load only when `swofty test` builds the profile and passes a token for that run. Normal Play never loads them.
-- One game per machine. Tests queue on the existing game lock (`/mnt/work/.f1-game.lock.d` here), and `--take-over` closes a running game first.
+- One game per machine. Tests queue on the existing game lock (`/mnt/work/F1/f1-game.lock.d` here), and `--take-over` closes a running game first.
 - The CLI never accepts the offline play terms for the player: a run without them fails with exit code 2.
 - Artefacts have size caps. Frames are optional.
 
