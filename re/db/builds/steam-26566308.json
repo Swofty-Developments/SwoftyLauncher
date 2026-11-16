@@ -1,0 +1,594 @@
+{
+ "schema": 1,
+ "build": {
+  "exe": "F1_25.exe",
+  "sha256": "46009bd31f49d93a92d73cbd0b66131d2b37964a92da7293168d3c3a872d9389",
+  "size": 391613312,
+  "pe_timestamp": 1794312636,
+  "image_base": "0x140000000",
+  "distribution": "Steam",
+  "packed": false
+ },
+ "note": "Steam build 26566308 (F1 25 1.0.145.2472). The PE section names are shuffled against the KB build while order and sizes match one to one.",
+ "sections": {
+  ".xtls": ".tls$",
+  ".data1": ".trace"
+ },
+ "overrides": {
+  "Car_Register_DetachablePart_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? E2 0F 83 16 25 89 FF 31",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Car_Systems_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? E9 4A 56 ?? ?? ?? ?? 84",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Career_GameValue_GetUpgradesFailedDuringTimeAdvance": {
+   "pattern": "48 83 EC 28 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 48 83 EC 28",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Career_Get_CareerLengthDays_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? EA 0F 89 46 26 C8 FD 13 E9",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Career_Set_EntrantData_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 4F 60 ?? ?? ?? ?? E9 BB ?? ?? ?? ?? 80 ?? ?? ?? ?? CC 7F",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "FeTile_CareerDlcItem_Populate": {
+   "pattern": "03 8B 42 04 89 05 ?? ?? ?? ?? ?? ?? F2 E8 ?? ?? ?? ?? 48 89 F0 48 83 C4 20 5E C3 CC CC CC CC CC 56 57 53 48 83 EC 50",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "FeTile_ItemBase_Slot78_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? E9 E5 AF ?? ?? ?? ?? CC 07 24 0A",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Game_CheckPrivilegeTask_OnUpdate": {
+   "pattern": "E9 ?? ?? ?? ?? E9 05 1F 28 02 F7 33 57",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Game_CreateSessionDlcSelectTab_BuildTiles": {
+   "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? CC 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Game_CreateSessionDlcSelectTab_FillTile": {
+   "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? CC 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Game_Handle_GarageCrewEvent_Thunk": {
+   "pattern": "E9 ?? ?? ?? 07 0F 89 43 6F 15 00 0D 8F 7E 92 0F 8D 48 DB 00 00 2E DD EF",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Game_Handle_SpecGarageCrewEvent_Thunk": {
+   "pattern": "E9 ?? ?? ?? 0C EC 84 E6 0B 00 E9 C2 1C 10 01 E9 FF 90 E2 FF 5A CC 7A 13",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Game_SaveMgr_RequestProfileSave_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 95 3F 47 6D CE D5 88",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Game_SeasonLength_ApplyPreset": {
+   "pattern": "E9 ?? ?? ?? ?? 07 30 48 C9 0A E9 BA",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Game_SeasonLength_PushCalendarEntry": {
+   "pattern": "E9 ?? ?? ?? ?? E9 DD 91 5A 00 EA 2A",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Game_Set_VehicleController_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 0F 8B 25 77 0D 00 E9 3B D8",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Game_TileList_PushChildSelection_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 0F 88 D2 3B ?? ?? ?? ?? 5C DB 96 00 E9",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Ne_Container_AbortNoReturn_1435d82f0": {
+   "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC E9",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_Crt_AbortNoReturn_B": {
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_Crt_FatalNoReturn": {
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_Crt_InvalidParameterAbortStub_140e0fd20": {
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_Crt_Memcpy": {
+   "pattern": "48 8B C1 4C 8D 15 ?? ?? ?? ?? 49 83 F8 0F 0F 87 ?? ?? ?? ?? 66 66 66 66 0F 1F 84 00 00 00 00 00 47 8B 8C 82 ?? ?? D2 05",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_Crt_ThrowOverflow_B": {
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_Crt_ThrowOverflow_C": {
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_Detach_ChildNode": {
+   "pattern": "E9 ?? ?? ?? ?? E9 37 63 CB 02 E9 BA",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Ne_FlatHashMap_FindSlotU64_A": {
+   "pattern": "E8 ?? ?? ?? ?? 48 FF 86 ?? 3C 00 00 48 89 D9 E8",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_FlatHashMap_FindSlotU64_B": {
+   "pattern": "E8 ?? ?? ?? ?? 48 FF 86 ?? 41 00 00 48 89 D9 E8",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_FlatHashMap_FindSlotU64_C": {
+   "pattern": "E8 ?? ?? ?? ?? 48 FF 86 ?? 4A 00 00 48 89 D9 E8",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_Format_HresultUnknownFacility": {
+   "pattern": "48 89 5C 24 20 55 56 57 41 56 41 57 48 8D 6C 24 C9 48 81 EC C0 00 00 00 48 8B 05 ?? ?? ?? ?? 48 33 C4 48 89 45 27 66 0F 6F 0D ?? ?? A5 00",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_Gfx2Renderer_PostEvent_AllocateResource": {
+   "pattern": "E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 48 89 F9 48 89 F2 E8 ?? ?? ?? ?? 4C 8D 05",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_HashMap_FatalStub_GroundCover": {
+   "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 0F",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_HashMap_FatalStub_Particles": {
+   "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_HashMap_Grow_Gfx2ResourceObject": {
+   "pattern": "E8 ?? ?? ?? ?? FF C5 81 FD 00 01 00 00 0F 84 ?? ?? ?? ?? 4C 8B 9E ?? 41",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_HashMap_ThrowLengthError_Decals2": {
+   "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC E9",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_SharedPtr_Release": {
+   "pattern": "56 48 83 EC 20 48 8B 71 08 48 85 F6 74 23 F0 FF 4E 08 75 1D 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 0F 48 8B 06 48 89 F1 48 83 C4 20 5E 48 FF 60 08 90 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC E9",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Ne_SharedPtr_ReleaseB": {
+   "pattern": "56 48 83 EC 20 48 8B 71 08 48 85 F6 74 23 F0 FF 4E 08 75 1D 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 0F 48 8B 06 48 89 F1 48 83 C4 20 5E 48 FF 60 08 90 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC E9",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Sess_Flow_ParseXml": {
+   "pattern": "E9 ?? ?? ?? ?? E9 FB EE DB 00 C7 B8 26 7C 03 9A",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_FormationLapLogic_SubscribeSafetyCarDeployment": {
+   "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 48 8D 05 ?? ?? ?? ?? 48 89 44 24 38 C7 44 24 40 00 00 00 00 4C 8D 44 24 38 48 89 F2 E8",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Sess_GridRundown_Update": {
+   "pattern": "E9 ?? ?? ?? ?? 85 D2 E9 ?? ?? ?? ?? F6 E9",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_Invalidate_Lap_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? D0 CC 0F 8E 17 E5 7B",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_PreLights_Update": {
+   "pattern": "E9 ?? ?? ?? ?? C2 B1 66 D9 0F 8A 4E FE F1 01 7B",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_PreRaceToRace_Update": {
+   "pattern": "E9 ?? ?? ?? 0B E9 CC CC CC CC CC CC CC CC CC CC",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_RaceRuleset_OnLapCompleted": {
+   "pattern": "E9 ?? ?? ?? ?? E9 ?? ?? ?? ?? DC AE 90 A8 A2 E3",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_RaceRuleset_SetTimeLimit": {
+   "pattern": "E9 ?? ?? ?? ?? E9 89 A0 4B 02 45 6D 0E B1 CC CC",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_Recordable_Register": {
+   "pattern": "E9 ?? ?? ?? ?? E9 67 EA ?? ?? ?? ?? D5 73 B7",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_RedFlagRaceStrategy_Update": {
+   "pattern": "56 57 53 48 83 EC 30 48 89 D6 8B 05 ?? ?? EB 03 89 81 90 0C 00 00 80 B9",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Sess_RedFlagSystem_OnSessionBeginGameplay": {
+   "pattern": "E9 ?? ?? ?? ?? FE 0F 82 36 03 AE FF 37 3C 7E 1D",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_RedFlagSystem_OnStartLightsBegin": {
+   "pattern": "E9 ?? ?? ?? ?? 34 57 67 F9 DF E5 ?? ?? ?? ?? B3",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_SafetyCarTether_UpdateTarget": {
+   "pattern": "E9 ?? ?? ?? ?? 1C B2 E9 4A ?? ?? ?? ?? CC CC 2E",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_SessionClock_SetTime": {
+   "pattern": "E9 ?? ?? ?? ?? 16 24 DE ?? ?? ?? ?? C7 4F",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Sess_Tod_BuildSessionDataset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? C8 49 FB E9 68 9B 21",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "Vm_List_AppendChild": {
+   "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? CC 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Vm_Release_Node": {
+   "pattern": "48 89 CF 48 8D 71 08 48 89 F2 E8 28 ?? 6A 02 48 8D 1D ?? ?? ?? ?? 48 89 9F 20 01 00 00 48 8B 87 28 01 00 00 48 85 C0 74 57 48 8B 8F 30 01 00 00 48 8B 97 38 01 00 00 48 85 D2 74 04 48 89 4A 08 4C 8D B7 28 01 00 00 4C 8D 87 30 01 00 00 48 85 C9 74 04 48 89 51 10 C5 F8 57 C0 C4 C1 78 11 00 4C 39 70 28 75 04 48 89 48 28 48 8B 0D ?? ?? ?? ?? 49 8B 16 E8 ?? ?? ?? ?? 49 C7 06 00 00 00 00",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "Vm_Set_TabEnabled": {
+   "pattern": "E9 ?? ?? ?? ?? 6D AA 5D F3 EE 61 88",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
+  "site_Car_VehicleTableRemove": {
+   "pattern": "74 07 41 88 89 E8 00 00 00 FE C8 88 05",
+   "expect": "88 05 D3 AB 5A 02",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_ApplyUpgradeBlockNameDefault": {
+   "pattern": "41 80 7A 19 00 74 F3 EB A1 48 8D 15",
+   "expect": "48 8D 15 EA 68 07 F6",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement, and the pattern matches once in the section map's target section."
+  },
+  "site_Career_ApplyUpgradeKeyCall": {
+   "pattern": "0F B6 53 20 8D 42 F5 3C 06 77 08 48 89 F1 E8",
+   "expect": "48 89 F1 E8 F5 18 9D F3",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement, and the pattern matches once in the section map's target section."
+  },
+  "site_Career_DeserialiseUpgradesEnd": {
+   "pattern": "85 C0 74 B6 E9 ?? ?? ?? ?? 48 8D 15",
+   "expect": "48 8D 15 1B 10 31 02",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_LoadUpgradeRows_DeptPath": {
+   "pattern": "48 8D 8C 24 98 06 00 00 48 8D 15 ?? ?? 12 02",
+   "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
+  },
+  "site_Career_RnDBoxGridNameIndex": {
+   "pattern": "48 0F BE C0 48 8D 0D ?? ?? ?? ?? 48 8B 14 C1 48 C7 44 24 50 00 00 00 00",
+   "expect": "48 0F BE C0 48 8D 0D F1 F6 AC 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDCardArtImage0": {
+   "pattern": "4C 8B 40 10 4C 89 7C 24 20 48 8D 15 ?? ?? ?? ?? 4C 8D 0D",
+   "expect": "4C 8D 0D CE 10 F0 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDCardArtImage1": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? 48 89 E9 E8 ?? ?? ?? ?? 48 8B 44 24 50 48 8D 50 09 48 85 C0 48 0F 44 D7",
+   "expect": "4C 8D 0D 20 BD EF 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDCardArtImage2": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 84 24 C0 00 00 00 48 8D 50 09 48 85 C0 48 0F 44 D5 4C 8D 05 ?? ?? ?? ?? 4C 89 F1 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8E 40 02 00 00 48 89 C2",
+   "expect": "4C 8D 0D 94 8D EF 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDCardArtMask0": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 44 24 28 48 8D 50 09 48 85 C0 49 0F 44 D5 4C 8D 05 ?? ?? ?? ?? 4C 89 F1 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8F 28 01 00 00",
+   "expect": "4C 8D 0D 69 0E F0 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDCardArtMask1": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? 48 89 E9 E8 ?? ?? ?? ?? 48 8B 44 24 50 48 8D 50 09 48 85 C0 48 8D 05 ?? ?? ?? ?? 48 0F 44 D0 4C 8D 05 ?? ?? ?? ?? 4C 89 E9 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8E A0 02 00 00",
+   "expect": "4C 8D 0D 7C BC EF 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDCardArtMask2": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 84 24 C0 00 00 00 48 8D 50 09 48 85 C0 48 0F 44 D5 4C 8D 05 ?? ?? ?? ?? 4C 89 F1 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8E A0 02 00 00",
+   "expect": "4C 8D 0D DD 8C EF 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDCardDeptIcon0": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 44 24 28 48 8D 50 09 48 85 C0 49 0F 44 D5 4C 8D 05 ?? ?? ?? ?? 4C 89 F1 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8F C8 01 00 00",
+   "expect": "4C 8D 0D CB C1 EF 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDCardDeptIcon1": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? 48 89 E9 E8 ?? ?? ?? ?? 48 8B 44 24 50 48 8D 50 09 48 85 C0 48 8D 05 ?? ?? ?? ?? 48 0F 44 D0 4C 8D 05 ?? ?? ?? ?? 4C 89 E9 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8E 40 04 00 00",
+   "expect": "4C 8D 0D DD 6F EF 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDCardDeptIcon2": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 84 24 C0 00 00 00 48 8D 50 09 48 85 C0 48 0F 44 D5 4C 8D 05 ?? ?? ?? ?? 4C 89 F1 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8E 40 04 00 00",
+   "expect": "4C 8D 0D 32 40 EF 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDDeptRowCategoryIcon": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F1 E8 ?? ?? ?? ?? 48 8B 44 24 60 48 8D 50 09",
+   "expect": "4C 8D 0D 20 69 A9 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDDeptRowTypeIcon": {
+   "pattern": "48 8B 8C 24 B0 00 00 00 48 63 0C 88 48 01 C1 4C 8D 0D ?? ?? ?? ?? FF E1 4C 8D 0D ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 0D",
+   "expect": "4C 8D 0D 07 AE BF 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDDeptRowTypeLabel": {
+   "pattern": "4A 63 0C 88 48 01 C1 FF E1 4C 8D 05 ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 05",
+   "expect": "4C 8D 05 42 BE BF 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDDeptRowTypeLabelJoin": {
+   "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 8C 24 90 00 00 00 E8 ?? ?? ?? ?? 49 8B 5C 24 08",
+   "expect": "48 8D 15 37 BF BF 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDInProgressPartIcon": {
+   "pattern": "4C 89 74 24 20 48 89 D9 48 8D 15 ?? ?? ?? ?? 4C 8D 0D",
+   "expect": "4C 8D 0D 17 C8 7D 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDInProgressStrip": {
+   "pattern": "4C 89 F9 48 8D 15 ?? ?? ?? ?? 4C 8D 0D",
+   "expect": "4C 8D 0D D5 0B 82 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDInProgressTypeIcon": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? EB 50 4C 8D 0D",
+   "expect": "4C 8D 0D 98 0B 94 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDInProgressTypeIconJoin": {
+   "pattern": "48 89 DE 4C 8D 05 ?? ?? ?? ?? 3C 03",
+   "expect": "48 89 DE 4C 8D 05 B3 0C 94 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDInProgressTypeLabel": {
+   "pattern": "4C 8D 05 ?? ?? ?? ?? EB 4B 4C 8D 05",
+   "expect": "4C 8D 05 73 13 94 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDInProgressTypeLabelJoin": {
+   "pattern": "0F 1F 44 00 00 4C 89 F1 48 8D 15 ?? ?? ?? ?? E8",
+   "expect": "4C 89 F1 48 8D 15 CF 14 94 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDListRowDeptIcon": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 84 24 A0 0C 00 00",
+   "expect": "4C 8D 0D FE D7 FB 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDPerksTitleDeptIcon": {
+   "pattern": "4C 89 64 24 20 48 8D 15 ?? ?? ?? ?? 4C 8D 0D",
+   "expect": "4C 8D 0D B4 3A A8 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDPiePopulateNextCode": {
+   "pattern": "EB 1B 0F 1F 84 00 00 00 00 00 48 8D 05",
+   "expect": "48 8D 05 8F E0 7E 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDPieSliceDescFormat": {
+   "pattern": "E8 ?? ?? ?? ?? B8 FF FF FF FF 48 8D B4 24 B0 01 00 00",
+   "expect": "E8 10 B5 21 02",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDPieSliceIconArgs": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 84 24 60 01 00 00",
+   "expect": "4C 8D 0D 65 5D 81 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDPopupCategoryIcon": {
+   "pattern": "4C 89 74 24 20 48 8D 15 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9",
+   "expect": "4C 8D 0D 60 B0 D5 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDPurchasePanelTypeLabelJoin": {
+   "pattern": "4C 8D 05 ?? ?? ?? ?? EB 07 4C 8D 05 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 58",
+   "expect": "48 8D 15 B2 FC BE 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDPurchaseScreenTypeLabelJoin": {
+   "pattern": "4C 8D 05 ?? ?? ?? ?? EB 07 4C 8D 05 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 48 8D 8C 24 C0 00 00 00",
+   "expect": "48 8D 15 27 D1 C2 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDResearchRowCategoryIcon": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F1 E8 ?? ?? ?? ?? 48 8B 44 24 50 48 8D 50 09",
+   "expect": "4C 8D 0D 28 22 AA 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDResearchRowTypeIcon": {
+   "pattern": "48 8B 8C 24 08 01 00 00 48 63 0C 88 48 01 C1 4C 8D 0D ?? ?? ?? ?? FF E1 4C 8D 0D ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 0D",
+   "expect": "4C 8D 0D 00 67 C0 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDResearchRowTypeLabel": {
+   "pattern": "48 63 0C 90 48 01 C1 FF E1 4C 8D 05 ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 05",
+   "expect": "4C 8D 05 49 77 C0 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDResearchRowTypeLabelJoin": {
+   "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 8C 24 88 00 00 00 E8 ?? ?? ?? ?? 49 8B 75 08",
+   "expect": "48 8D 15 3E 78 C0 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDResultTypeIcon": {
+   "pattern": "4D 89 E0 E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 0D",
+   "expect": "4C 8D 0D E6 DB FC 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDResultTypeIconJoin": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? 66 90 4C 8D 05",
+   "expect": "4C 8D 05 A6 DC FC 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDResultTypeLabel": {
+   "pattern": "45 84 C9 75 E4 E9 ?? ?? ?? ?? 4C 8D 05",
+   "expect": "4C 8D 05 07 DE FC 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDTodoTypeLabelJoin": {
+   "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 48 E8 ?? ?? ?? ?? 48 8B 9F 38 03 00 00",
+   "expect": "48 8D 15 E7 D9 BF 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDUpgradeInfoTypeLabelJoin": {
+   "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 48 E8 ?? ?? ?? ?? 48 8B 86 50 03 00 00 48 8B B8 F8 00 00 00",
+   "expect": "48 8D 15 71 E5 C0 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_RnDUpgradeListDeptIcon": {
+   "pattern": "48 89 7C 24 20 48 89 E9 48 8D 15 ?? ?? ?? ?? 4C 8D 0D",
+   "expect": "4C 8D 0D 9F EA FB 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_TeamHqIsMyTeamResult": {
+   "pattern": "75 20 48 89 F9 E8 ?? ?? ?? ?? 89 C3 E8",
+   "expect": "89 C3 E8 0C 86 CC FD",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_TeamHqRnDPopupTypeIcon": {
+   "pattern": "48 01 D1 FF E1 4C 8D 0D ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 0D",
+   "expect": "4C 8D 0D 6A F4 EB 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_TeamHqRnDPopupTypeIconJoin": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? 3C 03 77 0D 48 8D 0D",
+   "expect": "3C 03 77 0D 48 8D 0D 0A 79 D7 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_TeleRecordTypeName": {
+   "pattern": "0F B6 43 70 48 8D 15 ?? ?? ?? ?? 48 8B 14 C2",
+   "expect": "48 8D 15 8A 41 ED 04",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_TeleResearchTypeName": {
+   "pattern": "0F B6 40 70 48 8D 0D ?? ?? ?? ?? 48 8B 14 C1",
+   "expect": "48 8D 0D 8F D9 F2 04",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_Unk141814320TypeLabelJoin": {
+   "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 40 E8 ?? ?? ?? ?? 48 8B 9E A8 00 00 00",
+   "expect": "48 8D 15 B3 A3 06 04",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_Unk1418169f0TypeLabelJoin": {
+   "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 40 E8 ?? ?? ?? ?? 4C 8B A6 A8 00 00 00",
+   "expect": "48 8D 15 FC 7B 06 04",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_UpgradeCardDeptIcon": {
+   "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 44 24 58",
+   "expect": "4C 8D 0D 94 3E F1 03",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_UpgradeCardTypeLabel": {
+   "pattern": "4A 63 0C B0 48 01 C1 FF E1 4C 8D 05 ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 05",
+   "expect": "4C 8D 05 FB 65 08 04",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_UpgradeCardTypeLabelJoin": {
+   "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 68 E8 ?? ?? ?? ?? C6 44 24 45 00",
+   "expect": "48 8D 15 F0 66 08 04",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Career_UpgradeInitNormal": {
+   "pattern": "48 83 86 C8 00 00 00 10 E9 ?? ?? ?? ?? 8B 15",
+   "expect": "8B 15 CE 3E BE 02",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Game_CareerContinue_DriverSlotTitle": {
+   "pattern": "4C 69 EE 40 05 00 00 F6 82 71 01 00 00 20 4A 8D 8C 29 B8 03 00 00 44 88 44 24 37 0F 85 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? C6 84 24 08 04 00 00 01",
+   "expect": "E8 6F 01 DA FE",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Game_DriverSelectHeader_BuildTabs": {
+   "pattern": "E8 ?? ?? ?? ?? C6 86 10 03 00 00 01 48 8B 86 C0 02 00 00",
+   "expect": "E8 39 9B 7F 02",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Game_DriverSelect_BadgeFormat": {
+   "pattern": "E8 ?? ?? ?? ?? 48 8D 8E 58 FF FF FF",
+   "expect": "E8 AB E8 AB 02",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Game_DriverSelect_TeamLogoFormat": {
+   "pattern": "48 8D 4C 24 60 E8 ?? ?? ?? ?? 48 8B 97 B0 00 00 00",
+   "expect": "E8 DD 05 AC 02",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Game_SaveData_ContainersChildren": {
+   "pattern": "41 89 04 24 85 C0 0F 85 ?? ?? ?? ?? 48 8D 2D",
+   "expect": "48 8D 2D DD 78 AD 02",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Game_SaveData_ContainersDone": {
+   "pattern": "80 3D ?? ?? ?? ?? 01 4C 8B 4C 24 30",
+   "expect": "80 3D 71 98 9F 02 01",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Game_TeamSelect_TeamLogoFormat": {
+   "pattern": "E8 ?? ?? ?? ?? 48 8D 8F 58 FF FF FF",
+   "expect": "E8 36 A6 8E 02",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  },
+  "site_Team_LoadInsertCall": {
+   "pattern": "E8 ?? ?? ?? ?? 8B 7C 24 4C 4C 8D 74 24 68",
+   "expect": "E8 07 14 87 FE",
+   "note": "expect holds a Steam rel32/disp32. It is the same instruction on 1.0.145 with its displacement (the target string or callee matches the KB build's)."
+  }
+ },
+ "hints": {
+  "Career_GameValue_GetUpgradesFailedDuringTimeAdvance": {
+   "match": "0xa78ab0"
+  },
+  "Ne_Container_AbortNoReturn_1435d82f0": {
+   "match": "0x34f5fc7"
+  },
+  "Ne_Crt_AbortNoReturn_B": {
+   "match": "0x2a00c40"
+  },
+  "Ne_Crt_FatalNoReturn": {
+   "match": "0x12a1830"
+  },
+  "Ne_Crt_InvalidParameterAbortStub_140e0fd20": {
+   "match": "0xe108a0"
+  },
+  "Ne_Crt_ThrowOverflow_B": {
+   "match": "0x4385690"
+  },
+  "Ne_Crt_ThrowOverflow_C": {
+   "match": "0x476e150"
+  },
+  "Ne_Gfx2Renderer_PostEvent_AllocateResource": {
+   "match": "0x3a70857"
+  },
+  "Ne_HashMap_FatalStub_Particles": {
+   "match": "0x3ee5200"
+  },
+  "Ne_HashMap_ThrowLengthError_Decals2": {
+   "match": "0x146c510"
+  },
+  "Ne_SharedPtr_Release": {
+   "match": "0x2d50750"
+  },
+  "Ne_SharedPtr_ReleaseB": {
+   "match": "0x2d82b10"
+  },
+  "Sess_FormationLapLogic_SubscribeSafetyCarDeployment": {
+   "match": "0x36178c8"
+  }
+ },
+ "unresolvable": {
+  "vt_Sess_UnloadRewardSequence": "the constructor that stores this vtable was rewritten on 1.0.145 (field offsets after 0xc80 moved); needs RE",
+  "Ne_StdMap_At_141107280": "the call site in the surrounding function was rewritten on 1.0.145; needs RE",
+  "site_Game_CareerWizard_BackRoute": "the site body in the packed code changed on 1.0.145; its pattern matches nowhere; needs RE",
+  "site_Ne_HwBool_CrowdInShadows": "the hardware settings code in the packed section changed on 1.0.145; needs RE",
+  "site_Ne_HwInt_NightShadowMapSize": "the hardware settings code in the packed section changed on 1.0.145; needs RE",
+  "site_Ne_HwInt_ShadowSampling": "the hardware settings code in the packed section changed on 1.0.145; needs RE",
+  "site_Ne_HwBool_NightShadowCharCast": "the hardware settings code in the packed section changed on 1.0.145; needs RE"
+ }
+}
