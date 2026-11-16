@@ -372,7 +372,7 @@ fn layouts_exchange_only_where_the_names_match() {
 }
 
 #[test]
-fn the_ea_store_follows_the_ea_layout_and_stays_off() {
+fn the_ea_store_follows_the_ea_layout() {
     let r = root("ea");
     let profile = r.join("pfx/drive_c/users/steamuser/AppData/Local/F1 25/savegame/ea/profile");
     std::fs::create_dir_all(&profile).unwrap();
@@ -384,16 +384,14 @@ fn the_ea_store_follows_the_ea_layout_and_stays_off() {
     assert_eq!(to.layout, Layout::LauncherEa);
     assert_eq!(to.source, "launcher-ea.default");
     assert_eq!(to.dir, data.join("saves/default/ea/profile"));
-    assert!(!supported(Layout::Ea) && supported(Layout::Steam));
+    assert!(supported(Layout::Ea) && supported(Layout::Steam));
     let Seeded::Copied { files, .. } = seed(&data, "default", &ea, Reason::Imported, NOW).unwrap() else {
         panic!()
     };
     assert_eq!(files, 2);
     assert_eq!(names(&to.dir), ["NXDSMWW.BWW", "QKRHMYXE"]);
-    let e = import(&data, "default", &ea, Reason::Imported, closed(), NOW).unwrap_err();
-    assert!(e.to_string().contains("not available on the EA copy yet"), "{e}");
-    let e = export(&data, "default", &ea, closed(), NOW).unwrap_err();
-    assert!(e.to_string().contains("not available on the EA copy yet"), "{e}");
+    let (files, _, _) = import(&data, "default", &ea, Reason::Imported, closed(), NOW).unwrap();
+    assert_eq!(files, 2);
 }
 
 #[test]

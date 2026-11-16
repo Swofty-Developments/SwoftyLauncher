@@ -32,9 +32,8 @@ pub const OFF_ENV: &str = "SWOFTY_LAUNCHER_SAVES";
 pub const EA_NOTE: &str =
     "launcher saves are not available on the EA copy yet; this session uses the EA copy's own saves";
 pub const EA_DIR: &str = "ea/profile";
-/// The EA copy's launcher store, import and export are written and tested, and stay off until the
-/// core's EA storage backend lands.
-pub const EA_ENABLED: bool = false;
+/// The EA copy's launcher store, import and export; the core serves the EA save device from it.
+pub const EA_ENABLED: bool = true;
 
 pub fn root(data: &Path) -> PathBuf {
     data.join(DIR)

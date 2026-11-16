@@ -126,13 +126,13 @@ The session sets `SWOFTY_LAUNCHER_SAVES=off` for the game. To stay on Steam's sa
 
 ### The EA app copy
 
-The core's launcher saves serve Steam's remote storage only. The EA app copy keeps its own saves, and the loader log says so:
+The EA app copy's save device reads and writes plain files under `<title folder>\<save>\<file>`. With **Use launcher saves** on, the core points that device at `$DATA/saves/<profile>/ea`, so the profile save is `$DATA/saves/<profile>/ea/profile/`, and the copy's own `%LOCALAPPDATA%\F1 25\savegame\ea` folder is not opened. The first session copies the copy's profile save into an empty store.
 
 ```text
-[saves] launcher saves are off for profile main: the game reads Steam's saves natively (launcher saves are not available on the EA copy yet; this session uses the EA copy's own saves)
+[saves] launcher saves armed (profile main): the EA save device's title folder C:\users\steamuser\AppData\Local\F1 25\savegame\ea is replaced by Z:\...\saves\main\ea; saves are read and written there; the EA copy's own savegame folder is not opened
 ```
 
-The launcher's store keeps a second layout for the EA app copy, `$DATA/saves/<profile>/ea/profile/`, that stays off until the core can serve it.
+If the save device is not the expected one, the session ends with exit code 93 before the game loads a save, as on Steam.
 
 ## Save diagnostics
 

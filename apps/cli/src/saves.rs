@@ -978,7 +978,7 @@ mod tests {
     }
 
     #[test]
-    fn the_ea_copy_keeps_its_own_saves() {
+    fn the_ea_copy_plays_on_the_launcher_saves_of_its_profile() {
         let f = fixture("ea");
         let ea_dir = f
             .root
@@ -987,8 +987,9 @@ mod tests {
         std::fs::write(ea_dir.join("NXDSMWW.BWW"), [3u8; 64]).unwrap();
         let ea = Location::ea(&ea_dir, "steamuser");
         let b = before_session_at(&f.store, "default", &f.game, "s1", None, false, Some(ea)).unwrap();
-        assert_eq!(b.loc.layout, vault::Layout::Ea);
-        assert!(!launcher_saves::root(&f.store.root).exists());
+        assert_eq!(b.loc.layout, vault::Layout::LauncherEa);
+        let stored = launcher_saves::ea_dir(&f.store.root, "default");
+        assert_eq!(std::fs::read(stored.join("NXDSMWW.BWW")).unwrap(), [3u8; 64]);
         std::fs::remove_dir_all(&f.root).ok();
     }
 }

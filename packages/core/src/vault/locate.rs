@@ -425,16 +425,15 @@ mod tests {
     }
 
     #[test]
-    fn every_profile_boots_the_one_save_of_an_ea_copy() {
+    fn every_profile_boots_its_own_save_of_an_ea_copy() {
         let d = tmp("choose-shared");
         let pfx = tmp("choose-shared-ea");
         std::fs::create_dir_all(pfx.join("drive_c/users/steamuser/AppData/Local/F1 25/savegame/ea/profile"))
             .unwrap();
         let ea = Location::ea_in_prefix(&pfx).unwrap();
-        for launcher in [true, false] {
-            let at = Location::choose(&d, "hi", launcher, Some(Source::EaApp), || Some(ea.clone())).unwrap();
-            assert_eq!(at, ea, "launcher saves {launcher}");
-        }
-        assert!(Location::choose(&d, "hi", true, Some(Source::EaApp), || None).is_none());
+        let off = Location::choose(&d, "hi", false, Some(Source::EaApp), || Some(ea.clone())).unwrap();
+        assert_eq!(off, ea);
+        let on = Location::choose(&d, "hi", true, Some(Source::EaApp), || None).unwrap();
+        assert_eq!(on, Location::launcher_ea(&d, "hi"));
     }
 }

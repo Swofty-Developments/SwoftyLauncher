@@ -687,7 +687,7 @@ mod tests {
     }
 
     #[test]
-    fn the_save_dir_of_an_ea_copy_is_its_own_save_for_every_profile() {
+    fn the_save_dir_of_an_ea_copy_is_its_own_save_per_launcher_profile() {
         if cfg!(windows) {
             return;
         }
@@ -695,9 +695,14 @@ mod tests {
         let game = copy(&root, true);
         std::fs::create_dir_all(crate::launcher_saves::ea_dir(&root, "hi")).unwrap();
         let ea = root.join("pfx/drive_c/users/steamuser/AppData/Local/F1 25/savegame/ea/profile");
-        for p in ["hi", crate::profile::VANILLA] {
-            assert_eq!(game.save_dir(p).as_deref(), Some(ea.as_path()), "{p}");
-        }
+        assert_eq!(
+            game.save_dir("hi").as_deref(),
+            Some(crate::launcher_saves::ea_dir(&root, "hi").as_path())
+        );
+        assert_eq!(
+            game.save_dir(crate::profile::VANILLA).as_deref(),
+            Some(ea.as_path())
+        );
         std::fs::remove_dir_all(&root).ok();
     }
 }

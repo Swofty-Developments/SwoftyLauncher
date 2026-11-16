@@ -1054,28 +1054,22 @@ mod tests {
     }
 
     #[test]
-    fn an_ea_copy_profile_switch_warns_about_the_careers_of_the_shared_save() {
+    fn an_ea_copy_profile_switch_keeps_each_profiles_own_save() {
         let root = copy_switch("ea-switch", true);
         let list = classic_careers();
         let installed = installed_of(&["swofty.classic-seasons"]);
         let scoped: Vec<Career> = in_save_of(&list, &root, "hi").into_iter().cloned().collect();
         let ids: Vec<&str> = scoped.iter().map(|c| c.career.as_str()).collect();
-        assert_eq!(ids, ["dc-2019", "dc-hi"]);
-        let stop = stop_line(&scoped, &[], &installed).expect("the careers of default share the save");
-        assert!(stop.contains("N swofty.classic-seasons (off)"), "{stop}");
-        assert!(stop.contains("Driver Career 2019"), "{stop}");
-        assert_eq!(
-            stop_line(&scoped, &["swofty.classic-seasons".to_owned()], &installed),
-            None
-        );
+        assert_eq!(ids, ["dc-hi"]);
+        assert_eq!(stop_line(&scoped, &[], &installed), None);
         if !cfg!(windows) {
-            for p in ["hi", "default", crate::profile::VANILLA] {
+            for (p, source, layout) in [
+                ("hi", "launcher-ea.hi", crate::vault::Layout::LauncherEa),
+                ("default", "launcher-ea.default", crate::vault::Layout::LauncherEa),
+                (crate::profile::VANILLA, "ea-steamuser", crate::vault::Layout::Ea),
+            ] {
                 let at = crate::vault::Location::of_profile(&root, p).expect("the EA save");
-                assert_eq!(
-                    (at.source.as_str(), at.layout),
-                    ("ea-steamuser", crate::vault::Layout::Ea),
-                    "{p}"
-                );
+                assert_eq!((at.source.as_str(), at.layout), (source, layout), "{p}");
             }
         }
         std::fs::remove_dir_all(&root).ok();
