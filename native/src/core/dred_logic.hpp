@@ -32,7 +32,7 @@ inline Decision decide(const char *env, bool prior_removed)
         return {false, "SWOFTY_DRED=0"};
     if (prior_removed)
         return {true, "the previous session ended with a removed GPU device"};
-    return {false, "the previous session did not end with a removed GPU device"};
+    return {true, "on by default, so the first GPU hang already has breadcrumbs"};
 }
 
 inline bool is_removal_hresult(uint64_t v)

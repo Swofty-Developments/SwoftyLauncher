@@ -7,6 +7,7 @@
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
+#include <dxgi1_4.h>
 #include <psapi.h>
 #include <tlhelp32.h>
 
@@ -1137,6 +1138,95 @@ logic::CpuMinute cpu(Cpu &st, double secs)
 
 }
 
+namespace sysmem {
+
+IDXGIFactory1 *factory = nullptr;
+std::vector<IDXGIAdapter3 *> adapters;
+bool probed = false;
+
+std::string narrow(const wchar_t *w)
+{
+    std::string out;
+    for (; *w && out.size() < 128; w++)
+        out += *w < 0x80 ? char(*w) : '?';
+    return out;
+}
+
+void probe()
+{
+    if (probed)
+        return;
+    probed = true;
+    HMODULE dxgi = LoadLibraryW(L"dxgi.dll");
+    using CreateFn = HRESULT(WINAPI *)(REFIID, void **);
+    auto create = dxgi ? reinterpret_cast<CreateFn>(reinterpret_cast<void *>(GetProcAddress(dxgi, "CreateDXGIFactory1"))) : nullptr;
+    if (!create || FAILED(create(__uuidof(IDXGIFactory1), reinterpret_cast<void **>(&factory))) || !factory) {
+        swofty::log("[system] gpu: dxgi.dll gave no factory; per-minute VRAM is unavailable");
+        factory = nullptr;
+        return;
+    }
+    MEMORYSTATUSEX ms{};
+    ms.dwLength = sizeof ms;
+    if (GlobalMemoryStatusEx(&ms))
+        swofty::log("%s", logic::ram_boot_line(ms.ullTotalPhys, ms.ullTotalPageFile).c_str());
+    IDXGIAdapter1 *a = nullptr;
+    for (UINT i = 0; i < 8 && factory->EnumAdapters1(i, &a) != DXGI_ERROR_NOT_FOUND; i++) {
+        DXGI_ADAPTER_DESC1 d{};
+        if (!a || FAILED(a->GetDesc1(&d))) {
+            if (a)
+                a->Release();
+            continue;
+        }
+        LARGE_INTEGER ver{};
+        std::string driver;
+        if (SUCCEEDED(a->CheckInterfaceSupport(__uuidof(IDXGIDevice), &ver)))
+            driver = logic::driver_text(uint64_t(ver.QuadPart));
+        bool software = (d.Flags & DXGI_ADAPTER_FLAG_SOFTWARE) != 0;
+        swofty::log("%s", logic::gpu_boot_line(i, narrow(d.Description), d.VendorId, d.DeviceId, driver, d.DedicatedVideoMemory,
+                                               d.DedicatedSystemMemory, d.SharedSystemMemory, software)
+                              .c_str());
+        IDXGIAdapter3 *a3 = nullptr;
+        if (!software && SUCCEEDED(a->QueryInterface(__uuidof(IDXGIAdapter3), reinterpret_cast<void **>(&a3))) && a3)
+            adapters.push_back(a3);
+        a->Release();
+        a = nullptr;
+    }
+}
+
+logic::MemoryMinute sample(double secs)
+{
+    probe();
+    logic::MemoryMinute m;
+    m.secs = secs;
+    MEMORYSTATUSEX ms{};
+    ms.dwLength = sizeof ms;
+    if (GlobalMemoryStatusEx(&ms)) {
+        m.system_known = true;
+        m.ram_total = ms.ullTotalPhys, m.ram_free = ms.ullAvailPhys;
+        m.commit_limit = ms.ullTotalPageFile, m.commit_free = ms.ullAvailPageFile;
+    }
+    PROCESS_MEMORY_COUNTERS_EX pm{};
+    pm.cb = sizeof pm;
+    if (GetProcessMemoryInfo(GetCurrentProcess(), reinterpret_cast<PROCESS_MEMORY_COUNTERS *>(&pm), sizeof pm)) {
+        m.process_known = true;
+        m.working_set = pm.WorkingSetSize, m.private_bytes = pm.PrivateUsage;
+    }
+    for (IDXGIAdapter3 *a : adapters) {
+        logic::GpuMinute g;
+        DXGI_QUERY_VIDEO_MEMORY_INFO local{}, non_local{};
+        if (SUCCEEDED(a->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_LOCAL, &local)) &&
+            SUCCEEDED(a->QueryVideoMemoryInfo(0, DXGI_MEMORY_SEGMENT_GROUP_NON_LOCAL, &non_local))) {
+            g.known = true;
+            g.local_used = local.CurrentUsage, g.local_budget = local.Budget;
+            g.non_local_used = non_local.CurrentUsage, g.non_local_budget = non_local.Budget;
+        }
+        m.gpus.push_back(g);
+    }
+    return m;
+}
+
+}
+
 struct Minute {
     uint64_t top = 0, frames = 0;
     std::vector<uint64_t> ticks, calls;
@@ -1195,6 +1285,7 @@ void minute_line(Minute &last)
         swofty::log("%s", logic::vq_line(vq::minute(*last.vq, secs)).c_str());
     }
     swofty::log("%s", logic::cpu_line(vq::cpu(last.cpu, secs)).c_str());
+    swofty::log("%s", logic::memory_line(sysmem::sample(secs)).c_str());
     last.top = top, last.frames = f, last.ticks = std::move(ticks), last.calls = std::move(calls), last.at = now;
     hitch_lines.store(0, rlx);
 }
@@ -1202,6 +1293,7 @@ void minute_line(Minute &last)
 DWORD WINAPI writer(LPVOID)
 {
     Minute last;
+    sysmem::probe();
     vq::scan();
     last.vq = new (std::nothrow) vq::Last();
     if (last.vq)

@@ -439,7 +439,7 @@ void arm(const std::wstring &swofty_dir, void (*log)(const char *, ...), HMODULE
     Decision d = decide(env, prior_session_removed(&how_prior));
     bool want_debug = debug_requested(denv);
     if (!d.on && !want_debug) {
-        log("[dred] off: %s (SWOFTY_DRED=1 turns it on)", d.why);
+        log("[dred] off: %s (SWOFTY_DRED=1 turns it on; it is on by default)", d.why);
         return;
     }
     bool loaded = GetModuleHandleW(L"d3d12.dll") != nullptr;
@@ -552,7 +552,7 @@ static std::string dred_section(bool registers_show_removal)
     if (armed)
         return head + "  a register holds a DXGI device-removed HRESULT, but no device the game created reports removal\n";
     return head + "  a register holds a DXGI device-removed HRESULT. DRED was off this session, so there is no breadcrumb data.\n"
-                  "  The next session turns it on by itself; SWOFTY_DRED=1 forces it on, SWOFTY_DRED=0 off.\n";
+                  "  DRED is on by default; SWOFTY_DRED=0 turned it off, or this GPU or Windows lacks the interface.\n";
 }
 
 }

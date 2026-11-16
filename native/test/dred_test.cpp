@@ -22,16 +22,17 @@ static int g_fail;
 
 int main()
 {
-    CHECK(!dr::decide(nullptr, false).on);
-    CHECK(!dr::decide("", false).on);
+    CHECK(dr::decide(nullptr, false).on);
+    CHECK(dr::decide("", false).on);
     CHECK(dr::decide(nullptr, true).on);
     CHECK(dr::decide("", true).on);
     CHECK(dr::decide("1", false).on);
     CHECK(dr::decide("1", true).on);
     CHECK(!dr::decide("0", true).on);
     CHECK(!dr::decide("0", false).on);
-    CHECK(!dr::decide("10", false).on);
+    CHECK(dr::decide("10", false).on);
     CHECK(std::string(dr::decide("0", true).why) == "SWOFTY_DRED=0");
+    CHECK(std::string(dr::decide(nullptr, false).why).find("on by default") != std::string::npos);
 
     CHECK(dr::is_removal_hresult(0x887a0001));
     CHECK(dr::is_removal_hresult(0x887a0005));

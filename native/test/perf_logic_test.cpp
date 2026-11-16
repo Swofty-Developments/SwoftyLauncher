@@ -91,6 +91,49 @@ static void ranked()
     CHECK(r[1].what == "b");
 }
 
+static void memory_line()
+{
+    lg::MemoryMinute m;
+    m.secs = 60;
+    m.system_known = m.process_known = true;
+    m.ram_total = 32768ull << 20;
+    m.ram_free = 14000ull << 20;
+    m.commit_limit = 40000ull << 20;
+    m.commit_free = 18000ull << 20;
+    m.working_set = 6500ull << 20;
+    m.private_bytes = 7200ull << 20;
+    lg::GpuMinute g;
+    g.known = true;
+    g.local_used = 5100ull << 20;
+    g.local_budget = 11000ull << 20;
+    g.non_local_used = 120ull << 20;
+    g.non_local_budget = 7000ull << 20;
+    m.gpus = {g, lg::GpuMinute{}};
+    CHECK_EQ(lg::memory_line(m), "[perf] last 60 s: memory: RAM 18768/32768 MiB used, commit 22000/40000 MiB used; game working set "
+                                 "6500 MiB, private 7200 MiB; VRAM gpu 0 5100/11000 MiB local used/budget, 120/7000 MiB shared; "
+                                 "VRAM gpu 1 unavailable");
+    lg::MemoryMinute none;
+    none.secs = 60;
+    CHECK_EQ(lg::memory_line(none), "[perf] last 60 s: memory: system RAM unavailable; VRAM unavailable");
+    lg::MemoryMinute odd;
+    odd.secs = 60;
+    odd.system_known = true;
+    odd.ram_total = 1ull << 30;
+    odd.ram_free = 2ull << 30;
+    CHECK(lg::memory_line(odd).find("RAM 0/1024 MiB used") != std::string::npos);
+}
+
+static void boot_lines()
+{
+    CHECK_EQ(lg::driver_text((31ull << 48) | (0ull << 32) | (15ull << 16) | 4601), "31.0.15.4601");
+    CHECK_EQ(lg::gpu_boot_line(0, "NVIDIA GeForce RTX 3060", 0x10de, 0x2504, "31.0.15.4601", 12ull << 30, 0, 16ull << 30, false),
+             "[system] gpu 0: NVIDIA GeForce RTX 3060 (vendor 0x10de device 0x2504), driver 31.0.15.4601, dedicated VRAM 12288 MiB, "
+             "dedicated system 0 MiB, shared system 16384 MiB");
+    CHECK(lg::gpu_boot_line(1, "Basic Render", 0x1414, 0x8c, "", 0, 0, 0, true).find("driver unknown") != std::string::npos);
+    CHECK_EQ(lg::ram_boot_line(32768ull << 20, 40000ull << 20),
+             "[system] ram: 32768 MiB physical, 40000 MiB commit limit (RAM plus page file)");
+}
+
 static void cpu_line()
 {
     lg::CpuMinute c;
@@ -145,6 +188,8 @@ int main()
     vq_line();
     ranked();
     cpu_line();
+    memory_line();
+    boot_lines();
     busiest();
     slots();
     if (g_fail) {

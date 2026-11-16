@@ -137,6 +137,70 @@ inline std::string cpu_line(const CpuMinute &c)
     return out;
 }
 
+struct GpuMinute {
+    std::string name;
+    uint64_t local_used = 0, local_budget = 0, non_local_used = 0, non_local_budget = 0;
+    bool known = false;
+};
+
+struct MemoryMinute {
+    double secs = 0;
+    uint64_t ram_total = 0, ram_free = 0, commit_limit = 0, commit_free = 0, working_set = 0, private_bytes = 0;
+    bool system_known = false, process_known = false;
+    std::vector<GpuMinute> gpus;
+};
+
+inline std::string mib(uint64_t bytes)
+{
+    return std::to_string(bytes >> 20);
+}
+
+inline std::string memory_line(const MemoryMinute &m)
+{
+    std::string out = "[perf] last " + fmt("%.0f", m.secs) + " s: memory:";
+    if (m.system_known)
+        out += " RAM " + mib(m.ram_total - std::min(m.ram_free, m.ram_total)) + "/" + mib(m.ram_total) + " MiB used, commit " +
+               mib(m.commit_limit - std::min(m.commit_free, m.commit_limit)) + "/" + mib(m.commit_limit) + " MiB used;";
+    else
+        out += " system RAM unavailable;";
+    if (m.process_known)
+        out += " game working set " + mib(m.working_set) + " MiB, private " + mib(m.private_bytes) + " MiB;";
+    if (m.gpus.empty())
+        out += " VRAM unavailable";
+    for (size_t i = 0; i < m.gpus.size(); i++) {
+        const GpuMinute &g = m.gpus[i];
+        out += (i ? "; " : " ") + std::string("VRAM gpu ") + std::to_string(i);
+        if (!g.known) {
+            out += " unavailable";
+            continue;
+        }
+        out += " " + mib(g.local_used) + "/" + mib(g.local_budget) + " MiB local used/budget, " + mib(g.non_local_used) + "/" +
+               mib(g.non_local_budget) + " MiB shared";
+    }
+    return out;
+}
+
+inline std::string gpu_boot_line(unsigned index, const std::string &name, uint32_t vendor, uint32_t device, const std::string &driver,
+                                 uint64_t dedicated_video, uint64_t dedicated_system, uint64_t shared_system, bool software)
+{
+    char b[96];
+    std::snprintf(b, sizeof b, "vendor 0x%04x device 0x%04x", vendor, device);
+    return "[system] gpu " + std::to_string(index) + ": " + name + " (" + b + "), driver " + (driver.empty() ? "unknown" : driver) +
+           ", dedicated VRAM " + mib(dedicated_video) + " MiB, dedicated system " + mib(dedicated_system) + " MiB, shared system " +
+           mib(shared_system) + " MiB" + (software ? ", software adapter" : "");
+}
+
+inline std::string ram_boot_line(uint64_t ram_total, uint64_t commit_limit)
+{
+    return "[system] ram: " + mib(ram_total) + " MiB physical, " + mib(commit_limit) + " MiB commit limit (RAM plus page file)";
+}
+
+inline std::string driver_text(uint64_t version)
+{
+    return std::to_string(version >> 48) + "." + std::to_string((version >> 32) & 0xffff) + "." +
+           std::to_string((version >> 16) & 0xffff) + "." + std::to_string(version & 0xffff);
+}
+
 inline std::string busiest(std::vector<Busy> v, double secs, size_t n)
 {
     std::stable_sort(v.begin(), v.end(), [](const Busy &a, const Busy &b) { return a.ms > b.ms; });
