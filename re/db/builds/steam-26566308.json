@@ -15,6 +15,10 @@
   ".data1": ".trace"
  },
  "overrides": {
+  "Ai_Handle_PitStateChanged_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 33 0F 88 46 73 F5 FB 0F",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
   "Car_Register_DetachablePart_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? E2 0F 83 16 25 89 FF 31",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
