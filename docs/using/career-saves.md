@@ -57,7 +57,7 @@ The arrow beside **Play** opens a menu. **Use launcher saves** (ticked by defaul
 $ swofty run --steam-saves-once
 ```
 
-If the core can't use launcher saves it closes F1 25 before the title screen, and the play bar says `Launcher saves could not be used, so F1 25 closed before loading a save`, with the same **Play once with your Steam saves**, **Open logs** and **Dismiss**. Nothing was read or written. The EA app copy keeps its own saves, so launcher saves don't apply to it.
+If the core can't use launcher saves it closes F1 25 before the title screen, and the play bar says `Launcher saves could not be used, so F1 25 closed before loading a save`, with the same **Play once with your Steam saves**, **Open logs** and **Dismiss**. Nothing was read or written. The launcher has a save backend for the EA app copy of F1 25. EA app copies of 1.0.145 still run without add-ons.
 
 ## Which save Play will use
 
