@@ -575,7 +575,7 @@ fn each_reason_for_the_copys_own_save_is_named() {
             layout: Layout::Ea,
             ..choice()
         }),
-        Area::Own(Why::EaCopy)
+        Area::Launcher
     );
     assert_eq!(
         own(Choice {
