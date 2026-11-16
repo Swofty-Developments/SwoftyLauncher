@@ -315,6 +315,8 @@ Without `swofty/session.json`, mixins are not checked:
 [core] no session.json; mixins are not checked against a manifest
 ```
 
+A wrap or site on the very address of one that is already installed (a core mixin set, or an addon that installed earlier) is not a conflict, whichever pass installs it: it chains behind the earlier handlers and the log prints `chained onto the one installed earlier`. Only a hook whose patched bytes overlap another's without sharing its address, or an overwrite, conflicts.
+
 A conflict drops every addon involved, so you lose all of their mixins, not just the conflicting ones. In a conflict in one mixin commit between an addon and one of swofty_core's own hook sets (`swofty_core.dll (...)` in the log), only the core's set is dropped:
 
 ```text
