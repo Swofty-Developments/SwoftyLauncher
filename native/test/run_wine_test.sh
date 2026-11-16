@@ -1290,6 +1290,26 @@ once "filled: RegisterClassExW is found in the filled table" 'trigger armed: gam
 once "filled: CreateWindowExW is found in the filled table" 'trigger armed: game IAT slot USER32!CreateWindowExW at [0-9A-Fa-f]+ \(was [0-9A-Fa-f]+\), in the import table the exe filled at load'
 once "filled: the window stage runs at RegisterClassExW" 'stage: window \(USER32!RegisterClassExW from [0-9A-Fa-f]+ \(\.text\)\), addons were loaded at the early stage'
 count "filled: the fallback watcher leaves the window stage to the armed slots" 0 'waiting for a visible main window for the window stage'
+echo "==== gated"
+GT=$OUT/gated
+rm -rf "$GT"
+cp -r "$OUT/filled" "$GT"
+rm -f "$GT/swofty/loader.log"
+truncate -s 72M "$GT/F1_25.exe"
+LOG=$GT/swofty/loader.log
+env -u SWOFTY_ALLOW_UNSUPPORTED_BUILD SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$GT/F1_25.exe" || status=1
+echo "---- $LOG (gated)"
+grep -v '  section ' "$LOG"
+once "gated: a large exe the table does not list is refused" 'exe: size [0-9]+, PE timestamp [0-9]+ is not a build this launcher supports; the core and the addons are NOT loaded'
+check "gated: the trigger fires and loads nothing" 'addons NOT loaded, this exe is not a supported build'
+count "gated: no addon is loaded" 0 'loading addons now'
+count "gated: the core never attaches" 0 'provides the mixin API'
+rm -f "$LOG"
+SWOFTY_ALLOW_UNSUPPORTED_BUILD=1 SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$GT/F1_25.exe" || status=1
+echo "---- $LOG (gated, override)"
+grep -v '  section ' "$LOG"
+count "gated: the override leaves the exe unrefused" 0 'is not a build this launcher supports'
+once "gated: the override loads the addons" "trigger: KERNEL32!CreateMutexW from [0-9A-Fa-f]+ \\(\\.text\\) name 'Codemasters F1 25' on thread .*loading addons now \\(early stage\\)"
 echo "==== register"
 SR=$OUT/register/game
 rm -rf "$SR"

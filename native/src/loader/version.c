@@ -12,6 +12,8 @@
 #include "pe_exports.h"
 #include "data_folder.h"
 #include "alog.h"
+#include "supported_builds.h"
+#include "build_gate.h"
 
 #define HOST_EXE L"F1_25.exe"
 #define EXPECTED_SIZE 408063872ULL
@@ -78,6 +80,7 @@ static int early_count, plugin_count;
 
 static HANDLE diag_file = INVALID_HANDLE_VALUE;
 static int ea_diag;
+static int build_blocked;
 static LPTOP_LEVEL_EXCEPTION_FILTER prev_filter;
 static volatile LONG diag_crash_reports, activation_logged;
 
@@ -1185,6 +1188,14 @@ static void load_addons_once(const char *why, LPCWSTR detail, int stage)
     if (detail && !((uintptr_t)detail >> 16))
         detail = NULL;
     loaded_early = stage == STAGE_EARLY;
+    if (build_blocked) {
+        slog("trigger: %s; addons NOT loaded, this exe is not a supported build", why);
+        unhook_iat(0);
+        InterlockedExchange(&load_state, 2);
+        if (loaded_event)
+            SetEvent(loaded_event);
+        return;
+    }
     slog("trigger: %s%s%ls%s on thread %lu, %lu ms after attach; loading addons now%s", why,
          detail ? (loaded_early ? " name '" : " class '") : "", detail ? detail : L"", detail ? "'" : "",
          GetCurrentThreadId(), GetTickCount() - attach_tick, loaded_early ? " (early stage)" : "");
@@ -1211,6 +1222,8 @@ static void load_addons_once(const char *why, LPCWSTR detail, int stage)
 
 static void load_rest(void)
 {
+    if (build_blocked)
+        return;
     int first = deferred_count;
     slog("addons: loading the addons without \"early\": true at the window stage");
     load_plugins(PICK_REST);
@@ -1663,6 +1676,13 @@ static void log_build(void)
     /* Engage the build-mismatch diagnostics only for a real, large game build that is not the analysed
        one (the EA App exe is ~327 MiB); never for a small host such as the test harness's fake exe. */
     ea_diag = !ok && size >= ((unsigned long long)64 << 20);
+    char bypass[16] = {0};
+    GetEnvironmentVariableA("SWOFTY_ALLOW_UNSUPPORTED_BUILD", bypass, sizeof bypass);
+    build_blocked = swofty_build_blocked(size, stamp, bypass);
+    if (build_blocked)
+        slog("exe: size %llu, PE timestamp %lu is not a build this launcher supports; the core and the addons are NOT "
+             "loaded (SWOFTY_ALLOW_UNSUPPORTED_BUILD=1 overrides)",
+             size, stamp);
     slog("exe: size %llu (analysed %llu), PE timestamp %lu (analysed %lu) -> %s", size, EXPECTED_SIZE, stamp,
          EXPECTED_STAMP, ok ? "MATCHES the analysed build" : "DIFFERS from the analysed build, signatures may fail");
     slog("exe: image base %p, %d sections", (void *)image_base, section_count);
@@ -1810,7 +1830,7 @@ BOOL WINAPI DllMain(HINSTANCE self, DWORD reason, LPVOID reserved)
         early_enabled = 1;
         slog("early stage: on for %d early plugin(s); SwoftyMod loads with them", early_count);
     }
-    if (!early_enabled && !early_env) {
+    if (!early_enabled && !early_env && !build_blocked) {
         int registering = registering_dlls();
         if (registering) {
             early_enabled = 1;

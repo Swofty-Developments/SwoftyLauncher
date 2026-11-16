@@ -33,6 +33,7 @@ STATIC=(-s)
 mkdir -p build "$OUT"
 rm -rf "$DIST"
 mkdir -p "$DIST/swofty/addons/core"
+python3 tools/supported_builds.py ../packages/core/src/build_support.rs "$OUT/supported_builds.h"
 # bindgen writes bindings.json for the KB build and bindings.<build>.json for every other overlay in
 # re/db/builds; core picks the set whose build.pe_timestamp matches the running exe.
 python3 ../re/tools/bindgen.py --json "$DIST/swofty/addons/core/bindings.json" --symbols "$DIST/swofty/addons/core/symbols.tsv"
@@ -51,7 +52,7 @@ features = {name: 'stable' if stable == 'true' else 'experimental' for name, sta
 json.dump({'schema': 1, 'features': features}, open(sys.argv[2], 'w'))
 EOF
 
-"${PIN[@]}" "${CC[@]}" -O2 -Wall -Wextra -I$SDK -Iinclude -D__USE_MINGW_ANSI_STDIO=1 -shared \
+"${PIN[@]}" "${CC[@]}" -O2 -Wall -Wextra -I$SDK -Iinclude -I"$OUT" -D__USE_MINGW_ANSI_STDIO=1 -shared \
     -o "$OUT/version.dll" src/loader/version.c src/loader/version.def "${STATIC[@]}" &
 
 [[ build/Zydis.o -nt $SH/Zydis.c ]] || "${PIN[@]}" "${CC[@]}" -O2 -I$SH -c $SH/Zydis.c -o build/Zydis.o &

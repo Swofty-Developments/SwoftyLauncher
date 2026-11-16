@@ -33,6 +33,7 @@ t "Content registries (row engine, Classic Seasons lowering, variants, stat-id p
 t "Binding resolver Wine test" native/test/run_bind_test.sh
 t "Career operations planner and SDK calls host test" native/test/run_career_ops_test.sh
 t "swofty::json unit test" native/test/run_json_test.sh
+t "Loader build gate unit test" native/test/run_build_gate_test.sh
 t "Live apply paths (scheduler, put-back, context, budgets, sizing, stat ids, reports)" native/test/run_apply_test.sh
 t "Track registries (seeds, record lowering, parity with the launcher's track activation)" native/test/run_tracks_test.sh
 t "Save sandbox host and Wine test" native/test/run_save_sandbox_test.sh
