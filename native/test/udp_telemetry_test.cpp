@@ -181,6 +181,47 @@ static void car_status_and_telemetry()
     CHECK(f->cars[5].tyre_wear[2] == 31.5f);
 }
 
+// 2026 format: 24 cars of 59 bytes; values as an F1 25 2026 Season Pack session sends them (1950 car: maxRPM 7815,
+// idle 2864, fuel capacity 166.5 between fuel 5 and fuel laps 13, soft compound 16 at 25 / 26).
+static void car_status_and_telemetry_2026()
+{
+    Bytes p = packet(2026, 7, 1445, 3);
+    size_t e = 29 + 59 * 23;
+    putf(p, e + 5, 44.92f);
+    putf(p, e + 9, 166.5f);
+    putf(p, e + 13, 3.13f);
+    put16(p, e + 17, 7815);
+    put16(p, e + 19, 2864);
+    p[e + 21] = 6;
+    p[e + 25] = 16;
+    p[e + 26] = 16;
+    p[e + 27] = 1;
+    putf(p, e + 37, 1000000.0f);
+    p[e + 58] = 0;
+    SwoftyTelemetryFeed *f = fresh();
+    CHECK(tel::decode(p.data(), p.size(), *f, nullptr));
+    const SwoftyCarState &c = f->cars[23];
+    CHECK(c.fuel == 44.92f && c.fuel_laps == 3.13f && c.max_rpm == 7815.0f);
+    CHECK(c.tyre_compound == 16 && c.tyre_visual == 16 && c.tyre_age_laps == 1 && c.ers_store == 1000000.0f);
+    CHECK(c.flags & SWOFTY_CAR_FLAG_STATUS && !(c.flags & SWOFTY_CAR_FLAG_DRS_ALLOWED));
+    CHECK(f->session.udp_format == 2026 && f->session.player_index == 3);
+
+    Bytes t = packet(2026, 6, 1448);
+    size_t k = 29 + 59 * 23;
+    put16(t, k, 206);
+    putf(t, k + 2, 1.0f);
+    t[k + 15] = 4;
+    put16(t, k + 16, 6900);
+    put16(t, k + 22 + 2, 410);
+    t[k + 30 + 1] = 88;
+    t[k + 38] = 101;
+    CHECK(tel::decode(t.data(), t.size(), *f, nullptr));
+    CHECK(f->cars[23].throttle == 1.0f && f->cars[23].gear == 4 && f->cars[23].rpm == 6900.0f);
+    CHECK(f->cars[23].brake_temp[1] == 410.0f && f->cars[23].tyre_temp[1] == 88.0f);
+    CHECK(f->cars[23].rpm / f->cars[23].max_rpm > 0.88f);
+    CHECK(f->session.packets_seen & (1u << 6) && f->session.packets_seen & (1u << 7));
+}
+
 static void session_packet()
 {
     Bytes p = packet(2025, 1, 753);
@@ -284,7 +325,7 @@ static void rejects()
     CHECK(!tel::decode(p.data(), p.size(), *f, nullptr));
     Bytes q = packet(2023, 2, 1285);
     CHECK(!tel::decode(q.data(), q.size(), *f, nullptr));
-    Bytes r = packet(2026, 7, 1445);
+    Bytes r = packet(2026, 7, 1444);
     CHECK(!tel::decode(r.data(), r.size(), *f, nullptr));
     CHECK(!tel::decode(nullptr, 0, *f, nullptr));
     CHECK(f->session.udp_format == 0);
@@ -307,6 +348,7 @@ int main()
     lap_data_2025();
     lap_data_2024_and_2026();
     car_status_and_telemetry();
+    car_status_and_telemetry_2026();
     session_packet();
     participants_packet();
     event_packets();
