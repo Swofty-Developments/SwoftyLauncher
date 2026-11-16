@@ -89,6 +89,7 @@ typedef struct SwoftyAssets {
    available() returns non-zero only when its feature is on and the core implements it. */
 
 #define SWOFTY_EVENT_SESSION_START "session.start"
+#define SWOFTY_EVENT_GARAGE_PARKED_CAR "garage.parked_car.evaluated"
 #define SWOFTY_EVENT_SESSION_END "session.end"
 #define SWOFTY_EVENT_SESSION_UNLOAD "session.unload"
 #define SWOFTY_EVENT_RACE_START "race.start"
