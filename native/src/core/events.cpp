@@ -413,6 +413,7 @@ uint64_t session_serial()
 void session_emit(const session_life::Emit &e)
 {
     if (e.end || e.unload) {
+        garage_placement_reset();
         set_kind(session_life::NONE);
         tyre_models_drop();
     }
@@ -452,6 +453,8 @@ void session_flow(const char *known, int to)
         swofty::mem::invalidate();
     session_emit(e);
 }
+
+bool garage_placement_listening() { return disp.garage_listened(); }
 
 size_t events_fire(const char *event, int64_t a, int64_t b, const void *data)
 {

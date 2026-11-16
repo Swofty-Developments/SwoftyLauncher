@@ -4124,6 +4124,8 @@ pub type Game_SceneManagerSpawn_SpawnScene_t = unsafe extern "C" fn(
     ov_b: *mut c_void,
     p7: u64,
 ) -> *mut c_void;
+pub type Game_Scene_UpdateInstanceTransformsBatch_t =
+    unsafe extern "C" fn(scene: *mut c_void, actor_update_flag: u8);
 pub type Game_SeasonLength_ApplyPreset_t = unsafe extern "C" fn(component: *mut c_void, preset: u8);
 pub type Game_SeasonLength_PushCalendarEntry_t =
     unsafe extern "C" fn(calendar: *mut c_void, entry: *const c_void) -> u64;
@@ -11550,6 +11552,11 @@ pub mod bindings {
     };
     pub const Game_SceneManager_DestroyScene: Binding = Binding {
         id: "Game_SceneManager_DestroyScene",
+        kind: "func",
+        status: Status::Experimental,
+    };
+    pub const Game_Scene_UpdateInstanceTransformsBatch: Binding = Binding {
+        id: "Game_Scene_UpdateInstanceTransformsBatch",
         kind: "func",
         status: Status::Experimental,
     };

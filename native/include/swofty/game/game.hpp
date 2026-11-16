@@ -1144,6 +1144,8 @@ inline constexpr address<"Game_SceneManagerSpawn_MergeScene"> Game_SceneManagerS
 using Game_SceneManagerSpawn_SpawnScene_t = void *(void *mgr, const uint8_t *opts, void *scene, const float *mtx44, void *ov_a, void *ov_b, uint64_t p7);
 inline constexpr fn<"Game_SceneManagerSpawn_SpawnScene", Game_SceneManagerSpawn_SpawnScene_t> Game_SceneManagerSpawn_SpawnScene{}; // L2 experimental
 inline constexpr address<"Game_SceneManager_DestroyScene"> Game_SceneManager_DestroyScene{}; // L2 experimental
+using Game_Scene_UpdateInstanceTransformsBatch_t = void(void *scene, uint8_t actor_update_flag);
+inline constexpr fn<"Game_Scene_UpdateInstanceTransformsBatch", Game_Scene_UpdateInstanceTransformsBatch_t> Game_Scene_UpdateInstanceTransformsBatch{}; // L2 experimental
 inline constexpr address<"Game_ScoreBreakdownVM_OnActivate"> Game_ScoreBreakdownVM_OnActivate{}; // L2 experimental
 inline constexpr address<"Game_ScoreBreakdownVM_OnDeactivate"> Game_ScoreBreakdownVM_OnDeactivate{}; // L2 experimental
 inline constexpr address<"Game_SeasonDocument_CloseDocument"> Game_SeasonDocument_CloseDocument{}; // L2 experimental
