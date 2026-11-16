@@ -109015,7 +109015,7 @@
    "target": "0x14060d830",
    "kind": "func_start",
    "names": [
-    "Ai_Get_SpeedLimitAtDistance"
+    "Ai_Get_TurnRadiusAtDistance"
    ],
    "verified": [
     {
@@ -109039,7 +109039,7 @@
    "target": "0x14060dab0",
    "kind": "func_start",
    "names": [
-    "Ai_Get_SegmentSpeedLimit"
+    "Ai_Get_SegmentTurnRadius"
    ],
    "verified": [
     {
@@ -120164,7 +120164,7 @@
    "target": "0x14066df70",
    "kind": "func_start",
    "names": [
-    "Ai_TrackLine_FindCornerEndAndRetire"
+    "Ai_TrackLine_FindCornerEndAndStart"
    ],
    "verified": [
     {
@@ -120188,7 +120188,7 @@
    "target": "0x14066e4e0",
    "kind": "func_start",
    "names": [
-    "Ai_TrackLine_FindNextBrakeLine"
+    "Ai_TrackLine_FindNextSideMarker"
    ],
    "verified": [
     {
@@ -120236,7 +120236,7 @@
    "target": "0x14066eec0",
    "kind": "func_start",
    "names": [
-    "Ai_TrackLine_FindPass3"
+    "Ai_TrackLine_FindSideMarkerInCorner"
    ],
    "verified": [
     {
