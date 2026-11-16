@@ -97,6 +97,8 @@ hud_track_position.osd_visibility_option.track_position
     host_n        <prefix>_host     visible <- show, default false
       v_cap       pill_rotation_anim   visible = false  (the cap's own graphics)
       v_pv        <prefix>_pv          visible = false  (the editor copy)
+      o_<other>   <other>              visible = false  (each other screen record's root)
+      o_<other>_pv  <other>_pv         visible = false  (and its editor copy)
       root_n      <prefix>            visible = true   (replay: <- show_drivers_list; spectator: <- show_left_side)
       h_trial     <prefix>_trial       visible = false  (also.<screen>.hide, this screen only)
       v_r00       <prefix>_r00         visible <- hud_tt_r00_on
@@ -114,6 +116,14 @@ hud_track_position.osd_visibility_option.track_position
 
 `isHidden` on a scene element does not hide it in game, so every static hide here is a template node:
 `hidden: true` on an element, `also.<screen>.hide`, the cap's graphics and the editor copy.
+
+All screen records grow the one cap scene, so every `<prefix>_host` instance holds every record's
+root and editor copy. With two or more screen records (from one addon or several), each record's
+`host_n` gets an `o_<other>` and an `o_<other>_pv` node per other record, so one record's elements
+never draw inside another's host; the `.uipre` hides the same two elements inside each host for the
+HUD editor. These are childless template nodes: `2 x (records - 1)` per record and screen, one walk
+slot each, plus one child-list slot on `host_n` for every eight more children. The host scene itself
+does not grow. The build lists the count per record and screen.
 
 Masks on the other screens are layout chains into the stock instances: replay `driver_table > Scene
 Root` and `session_timer > Scene Root`; spectator `spectator_mode_2 > driver_position_table >
@@ -301,8 +311,8 @@ The HUD customisation menu draws the standings table with no template running, s
 root never shows there. The composer builds a second copy of the elements, `<prefix>_pv`, from
 `editor.preview` (keyed by the substituted leaf names, as for a dial) with a top-level `repeat` cut to
 `editor.rows` copies, and writes the table's `.uipre` with nested setters under the host instance:
-`mask` hidden at the top level; inside `<prefix>_host` the cap's `pill_rotation_anim` and `<prefix>`
-hidden, `<prefix>_pv` shown and each copy's text filled. In game `host_n` holds a static `v_pv` node
+`mask` hidden at the top level; inside `<prefix>_host` the cap's `pill_rotation_anim`, `<prefix>` and
+every other screen record's root and copy hidden, `<prefix>_pv` shown and each copy's text filled. In game `host_n` holds a static `v_pv` node
 and the stock cap instance's `bottom_cap` template node gets static hides of both roots, so the copy
 never draws outside the editor. `unit` elements and `tint` bindings are left out of the copy.
 

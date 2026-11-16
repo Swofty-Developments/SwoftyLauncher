@@ -340,9 +340,10 @@ fn path_decision(d: &Decision, plan: &Plan, base: &str) -> Result<Node> {
 
 /// The `<prefix>_ctl` group of one record on one screen: the masks (visible <- NOT show, default
 /// true), the host switch `host_n` (visible <- show, default false) holding the cap's own graphics
-/// and the editor copy hidden, the root shown (or following the screen's own switch) and every bound
-/// node of the plan, then the screen's extra hide on the instance and the session clock's formatter
-/// when a text reads it. Bound nodes keep their own layout paths: a node's chain continues its
+/// and the editor copy hidden, the roots of the `others` (every other screen record in the shared
+/// host scene) and their editor copies hidden, the root shown (or following the screen's own switch)
+/// and every bound node of the plan, then the screen's extra hide on the instance and the session
+/// clock's formatter when a text reads it. Bound nodes keep their own layout paths: a node's chain continues its
 /// parent's, so under `host_n` they address elements inside the instance. `hud_root` is the stock
 /// HUD template, where the texture tags and the clock formatter come from.
 pub fn control_group(
@@ -351,6 +352,7 @@ pub fn control_group(
     hide: &[String],
     plan: &Plan,
     pfx: &str,
+    others: &[String],
     hud_root: &Node,
 ) -> Result<(Node, Known)> {
     let sw = template::resolve(show, Usage::Visible, "show")?;
@@ -373,6 +375,12 @@ pub fn control_group(
         node::hidden("v_cap", &[screens::CAP_ANIM]),
         node::hidden("v_pv", &[&pv]),
     ];
+    // every record's root sits in the one host scene, so each host instance holds the others' roots
+    // too; `isHidden` does not hold in game, so they get static hides here
+    for o in others.iter().filter(|o| o.as_str() != pfx) {
+        inner.push(node::hidden(&format!("o_{o}"), &[o]));
+        inner.push(node::hidden(&format!("o_{o}_pv"), &[&preview_root(o)]));
+    }
     inner.push(match &facts.root_switch {
         Some(db) => {
             known.push((db.clone(), *b"bool"));
@@ -493,6 +501,7 @@ pub fn attach(
     hide: &[String],
     plan: &Plan,
     pfx: &str,
+    others: &[String],
     hud_root: &Node,
 ) -> Result<usize> {
     let parent = facts.parent_ui.as_str();
@@ -504,7 +513,7 @@ pub fn attach(
             "{parent}: the node's id is not the hash of its path"
         )));
     }
-    let (mut grp, known) = control_group(facts, show, hide, plan, pfx, hud_root)?;
+    let (mut grp, known) = control_group(facts, show, hide, plan, pfx, others, hud_root)?;
     if target
         .slot(node::CHILDREN)?
         .iter()
@@ -646,6 +655,7 @@ pub fn compose_screens(
             e.1.push(ri);
         }
     }
+    let all_pfx: Vec<String> = recs.iter().map(|r| r.pfx.clone()).collect();
     let mut replay: Option<(Pkg, Pkg)> = None;
     let mut standings = false;
     for (key, (facts, members)) in &by_screen {
@@ -670,6 +680,7 @@ pub fn compose_screens(
             let target = r.targets.iter().find(|t| t.facts.key == *key).expect("a member");
             let show = &target.show;
             let hide = &target.hide;
+            let others: Vec<String> = all_pfx.iter().filter(|p| **p != r.pfx).cloned().collect();
             let checked = match template_of_path(&facts.parent_ui) {
                 "spectator" => {
                     let tags = StockTags::spectator(
@@ -688,6 +699,7 @@ pub fn compose_screens(
                         hide,
                         &plans[ri],
                         &r.pfx,
+                        &others,
                         &race_stock.root,
                     )?
                 }
@@ -712,6 +724,7 @@ pub fn compose_screens(
                         hide,
                         &plans[ri],
                         &r.pfx,
+                        &others,
                         &race_stock.root,
                     )?
                 }
@@ -723,10 +736,19 @@ pub fn compose_screens(
                     hide,
                     &plans[ri],
                     &r.pfx,
+                    &others,
                     &race_stock.root,
                 )?,
             };
             let plan = &plans[ri];
+            if !others.is_empty() {
+                out.lines.push(format!(
+                    "{}: screen {key}: host_n hides the roots of {} other screen records ({} static template nodes)",
+                    r.pfx,
+                    others.len(),
+                    2 * others.len()
+                ));
+            }
             out.lines.push(format!(
                 "{}: screen {key} in {}: {} bound nodes, {} masks, {checked} bindings checked",
                 r.pfx,
@@ -756,7 +778,15 @@ pub fn compose_screens(
             let pv = &previews[ri];
             instances.push(editor::Instanced {
                 host: screens::standings().host_name(&r.pfx),
-                hide: vec![screens::CAP_ANIM.to_owned(), r.pfx.clone()],
+                hide: [screens::CAP_ANIM.to_owned(), r.pfx.clone()]
+                    .into_iter()
+                    .chain(
+                        all_pfx
+                            .iter()
+                            .filter(|p| **p != r.pfx)
+                            .flat_map(|p| [p.clone(), preview_root(p)]),
+                    )
+                    .collect(),
                 show: vec![pv.root.clone()],
                 texts: pv.pv_texts.clone(),
                 loc: Vec::new(),
@@ -1043,6 +1073,7 @@ mod tests {
             &[],
             &plan("tt"),
             "tt",
+            &[],
             &fake_template(),
         )
         .unwrap();
@@ -1089,6 +1120,7 @@ mod tests {
             &[],
             &plan("tt"),
             "tt",
+            &[],
             &fake_template(),
         )
         .unwrap();
@@ -1110,6 +1142,7 @@ mod tests {
             &[],
             &plan("tt"),
             "tt",
+            &[],
             &fake_template(),
         )
         .unwrap();
@@ -1122,6 +1155,47 @@ mod tests {
                     .to_vec()
             ]
         );
+    }
+
+    #[test]
+    fn the_host_hides_the_other_records_roots() {
+        let show = Bind::leaf("view_model_data.hud_tt_show");
+        let others = ["tt".to_owned(), "uu".to_owned(), "vv".to_owned()];
+        let (grp, _) = control_group(
+            &screens::standings(),
+            &show,
+            &[],
+            &plan("tt"),
+            "tt",
+            &others,
+            &fake_template(),
+        )
+        .unwrap();
+        let host = &grp.slot(node::CHILDREN).unwrap()[1];
+        let inner: Vec<&Node> = host.slot(node::CHILDREN).unwrap().iter().collect();
+        let names: Vec<&str> = inner.iter().map(|k| k.name()).collect();
+        assert_eq!(
+            names,
+            [
+                "v_cap", "v_pv", "o_uu", "o_uu_pv", "o_vv", "o_vv_pv", "root_n", "v_tt_r00"
+            ]
+        );
+        for (n, el) in [(2, "uu"), (3, "uu_pv"), (4, "vv"), (5, "vv_pv")] {
+            assert_eq!(layout_of(inner[n]), vec![vec![el.to_owned()]]);
+            assert_eq!(
+                inner[n]
+                    .props()
+                    .unwrap()
+                    .get("visible")
+                    .unwrap()
+                    .as_obj()
+                    .unwrap()
+                    .get("value")
+                    .and_then(Node::as_val)
+                    .and_then(stock_edit::as_bool),
+                Some(false)
+            );
+        }
     }
 
     #[test]
@@ -1138,6 +1212,7 @@ mod tests {
             &[],
             &plan("tt"),
             "tt",
+            &[],
             &fake_template(),
         )
         .unwrap();
@@ -1171,6 +1246,7 @@ mod tests {
             &[],
             &plan("tt"),
             "tt",
+            &[],
             &fake_template(),
         )
         .unwrap_err();
