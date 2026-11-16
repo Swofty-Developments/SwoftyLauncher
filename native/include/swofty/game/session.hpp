@@ -320,6 +320,8 @@ inline constexpr fn<"Sess_Build_GroupResult", Sess_Build_GroupResult_t> Sess_Bui
 inline constexpr address<"Sess_Build_SafetyCarLogicGraph"> Sess_Build_SafetyCarLogicGraph{}; // L2 experimental
 using Sess_Build_SelectableDriverList_t = NeVecU32 *(NeVecU32 *out, void *ctx, void *entrants, const void *filter, void *alloc, uint8_t flag);
 inline constexpr fn<"Sess_Build_SelectableDriverList", Sess_Build_SelectableDriverList_t> Sess_Build_SelectableDriverList{}; // L2 experimental
+using Sess_Build_VehicleTyreInfo_t = void *(void *out, void *system, uint8_t vehicle, uint32_t flags, const void *ctx, float scale);
+inline constexpr fn<"Sess_Build_VehicleTyreInfo", Sess_Build_VehicleTyreInfo_t> Sess_Build_VehicleTyreInfo{}; // L2 experimental
 inline constexpr address<"Sess_ChallengeRuleset_UpdateLapDelta"> Sess_ChallengeRuleset_UpdateLapDelta{}; // L2 experimental
 using Sess_ChampionshipWonDecision_Update_t = uint32_t *(void *state, uint32_t *route);
 inline constexpr fn<"Sess_ChampionshipWonDecision_Update", Sess_ChampionshipWonDecision_Update_t> Sess_ChampionshipWonDecision_Update{}; // L2 experimental, SessionStateChampionshipWonDecision.

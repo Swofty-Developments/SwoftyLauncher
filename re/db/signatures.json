@@ -187237,6 +187237,181 @@
     }
    ],
    "used_by": []
+  },
+  {
+   "id": "car.tyre_ai_min_grip_clamp",
+   "section": ".xtls",
+   "pattern": "83 BB 24 01 00 00 01 C5 FA 10 51 24",
+   "match": "0x1446b7979",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1446b7979",
+   "kind": "mid",
+   "expect": "83 BB 24 01",
+   "names": [
+    "site_Car_TyreAiMinGripClamp"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-17",
+     "by": "rr-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.track_info_puddle_level_store",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? C4 C1 7A 11 86 54 0A 3F 00",
+   "match": "0x14479613c",
+   "anchor": "0x5",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x144796141",
+   "kind": "mid",
+   "expect": "C4 C1 7A 11",
+   "names": [
+    "site_Game_TrackInfoPuddleLevelStore"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-17",
+     "by": "rr-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "render.main_view_params_call",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 42 83 BC BE F4 0A 00 00 00",
+   "match": "0x1401583d0",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1401583d0",
+   "kind": "mid",
+   "expect": "E8",
+   "names": [
+    "site_Render_MainViewParamsCall"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-17",
+     "by": "rr-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.pit_box_tyre_component_path",
+   "section": ".xtls",
+   "pattern": "80 BE 84 06 00 00 00 0F 84 ?? ?? ?? ?? 48 8B 05",
+   "match": "0x1403c8d93",
+   "anchor": "0xd",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1403c8da0",
+   "kind": "mid",
+   "expect": "48 8B 05",
+   "names": [
+    "site_Game_PitBoxTyreComponentPath"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-17",
+     "by": "rr-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.cut_scene_driver_lookup_call",
+   "section": ".xtls",
+   "pattern": "E8 ?? ?? ?? ?? 49 89 C7 80 3D ?? ?? ?? ?? 01 75 4E",
+   "match": "0x14022da92",
+   "anchor": "0x0",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14022da92",
+   "kind": "mid",
+   "expect": "E8",
+   "names": [
+    "site_Game_CutSceneDriverLookupCall"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-17",
+     "by": "rr-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "game.cutscene_entrant_list_read",
+   "section": ".xtls",
+   "pattern": "81 FD FF 3F 00 00 0F 84 ?? ?? ?? ?? 48 8B 05",
+   "match": "0x14022d481",
+   "anchor": "0xc",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x14022d48d",
+   "kind": "mid",
+   "expect": "48 8B 05",
+   "names": [
+    "site_Game_CutsceneEntrantListRead"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-17",
+     "by": "rr-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
+  },
+  {
+   "id": "session.stint_tyre_check_predict_call",
+   "section": ".xtls",
+   "pattern": "48 89 DA E8 ?? ?? ?? ?? C5 FA 5C FE",
+   "match": "0x1436a3b80",
+   "anchor": "0x3",
+   "resolve": {
+    "kind": "addr"
+   },
+   "target": "0x1436a3b83",
+   "kind": "mid",
+   "expect": "E8",
+   "names": [
+    "site_Sess_StintTyreCheckPredictCall"
+   ],
+   "verified": [
+    {
+     "build": "d873a1c8d2044cef",
+     "date": "2026-11-17",
+     "by": "rr-bindings",
+     "how": "static"
+    }
+   ],
+   "used_by": []
   }
  ]
 }
