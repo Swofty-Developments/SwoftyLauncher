@@ -11,6 +11,7 @@
 #include "blackbox.hpp"
 #include "crash_dir.hpp"
 #include "crash_heap.hpp"
+#include "d3d12_hooks.hpp"
 #include "../loader/data_folder.h"
 #include "dred.hpp"
 #include "dred_logic.hpp"
@@ -1828,8 +1829,16 @@ void step_dred(Request &r)
     if (r.has_prior)
         look(r.prior.ctx);
     std::string text = runtime::dred::section(seen);
-    if (!text.empty())
-        out.put("%s", text.c_str());
+    if (text.empty())
+        return;
+    out.put("%s", text.c_str());
+    std::string builds = d3d12hooks::rtas_recent_text();
+    for (size_t at = 0; at < builds.size();) {
+        size_t end = builds.find('\n', at);
+        end = end == std::string::npos ? builds.size() : end + 1;
+        out.put("%.*s", int(end - at), builds.data() + at);
+        at = end;
+    }
 }
 
 void step_close(Request &)

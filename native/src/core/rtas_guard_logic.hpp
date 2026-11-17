@@ -1,6 +1,9 @@
 #pragma once
 
+#include <array>
 #include <cstdint>
+#include <cstdio>
+#include <string>
 #include <unordered_map>
 #include <unordered_set>
 #include <vector>
@@ -133,15 +136,14 @@ struct Shape {
     }
 };
 
-// The bottom-level builds the build log names: each structure (by destination address) once for each shape, so a
-// structure refitted or rebuilt every frame is named once, and nothing once the cap is reached.
+// The shapes the build log has named, each once, up to the cap.
 class Trace {
 public:
     explicit Trace(uint32_t cap) : cap_(cap) {}
 
-    bool want(uint64_t dest, uint64_t shape)
+    bool want(uint64_t shape)
     {
-        if (named_ >= cap_ || !seen_.insert(dest * 0x9e3779b97f4a7c15ull ^ shape).second)
+        if (named_ >= cap_ || !seen_.insert(shape).second)
             return false;
         named_++;
         return true;
@@ -154,6 +156,128 @@ private:
     uint32_t cap_, named_ = 0;
     std::unordered_set<uint64_t> seen_;
 };
+
+constexpr int kBriefGeos = 12;
+constexpr uint32_t kPerformUpdate = 0x20;
+
+struct Brief {
+    int type = kTriangles;
+    uint32_t vertices = 0, indices = 0, aabbs = 0, stride = 0, flags = 0;
+    int vertex_format = 0, index_format = 0;
+    bool transform = false;
+};
+
+struct Entry {
+    uint64_t seq = 0, frame = 0, list = 0, dest = 0;
+    uint32_t flags = 0, count = 0;
+    bool top = false;
+    Brief geo[kBriefGeos];
+};
+
+inline bool same_format(const Brief &a, const Brief &b)
+{
+    return a.vertex_format == b.vertex_format && a.stride == b.stride && a.index_format == b.index_format &&
+           a.flags == b.flags && a.transform == b.transform;
+}
+
+// The geometries of a build: each one's counts, and its formats wherever they differ from the first triangle geometry's.
+inline std::string geometry_text(const Entry &e)
+{
+    std::string s;
+    char b[96];
+    const Brief *first = nullptr;
+    uint32_t shown = e.count < uint32_t(kBriefGeos) ? e.count : uint32_t(kBriefGeos);
+    for (uint32_t i = 0; i < shown; i++) {
+        const Brief &g = e.geo[i];
+        if (g.type != kTriangles) {
+            std::snprintf(b, sizeof b, " aabb%u", g.aabbs);
+            s += b;
+            continue;
+        }
+        std::snprintf(b, sizeof b, " v%u/i%u", g.vertices, g.indices);
+        s += b;
+        if (!first || !same_format(*first, g)) {
+            std::snprintf(b, sizeof b, "(vf%d s%u if%d fl%u%s)", g.vertex_format, g.stride, g.index_format, g.flags,
+                          g.transform ? " t" : "");
+            s += b;
+        }
+        if (!first)
+            first = &g;
+    }
+    if (shown < e.count) {
+        std::snprintf(b, sizeof b, " +%u more", e.count - shown);
+        s += b;
+    }
+    return s;
+}
+
+// The newest builds, kept so a crash report can show what the GPU was building when the device was removed.
+template <size_t N> class Recent {
+public:
+    void push(const Entry &e)
+    {
+        ring_[pushed_ % N] = e;
+        pushed_++;
+    }
+
+    uint64_t pushed() const { return pushed_; }
+
+    std::vector<Entry> oldest_first() const
+    {
+        std::vector<Entry> v;
+        for (uint64_t i = pushed_ > N ? pushed_ - N : 0; i < pushed_; i++)
+            v.push_back(ring_[i % N]);
+        return v;
+    }
+
+private:
+    std::array<Entry, N> ring_{};
+    uint64_t pushed_ = 0;
+};
+
+// Each build's place among the builds on its command list in its frame, counted from 1.
+inline std::vector<uint32_t> list_ordinals(const std::vector<Entry> &v)
+{
+    std::vector<uint32_t> out(v.size(), 1);
+    std::unordered_map<uint64_t, std::pair<uint64_t, uint32_t>> at;
+    for (size_t i = 0; i < v.size(); i++) {
+        auto &a = at[v[i].list];
+        if (a.second && a.first == v[i].frame)
+            a.second++;
+        else
+            a = {v[i].frame, 1};
+        out[i] = a.second;
+    }
+    return out;
+}
+
+inline std::string recent_section(const std::vector<Entry> &v, uint64_t pushed)
+{
+    if (v.empty())
+        return {};
+    std::string s;
+    char b[200];
+    std::snprintf(b, sizeof b,
+                  "\n  ray tracing builds before the crash: the newest %zu of %llu, oldest first; #n is the build's place on "
+                  "its command list in that frame\n",
+                  v.size(), (unsigned long long)pushed);
+    s += b;
+    bool cut = pushed > v.size();
+    std::vector<uint32_t> nth = list_ordinals(v);
+    for (size_t i = 0; i < v.size(); i++) {
+        const Entry &e = v[i];
+        bool unsure = cut && e.frame == v.front().frame;
+        std::snprintf(b, sizeof b, "    build %llu frame %llu list 0x%llx #%u%s %s%s into 0x%llx (flags 0x%x), %u %s:",
+                      (unsigned long long)e.seq, (unsigned long long)e.frame, (unsigned long long)e.list, nth[i],
+                      unsure ? "+" : "", e.top ? "top-level" : "bottom-level", (e.flags & kPerformUpdate) ? " update" : "",
+                      (unsigned long long)e.dest, e.flags, e.count, e.top ? "instances" : "geometries");
+        s += b;
+        if (!e.top)
+            s += geometry_text(e);
+        s += "\n";
+    }
+    return s;
+}
 
 struct Call {
     int level = kBottom;

@@ -46,6 +46,9 @@ void on_exec(ExecFn fn);
 void on_barrier(BarrierFn fn);
 void on_setname(SetNameFn fn);
 void on_reset(ResetFn fn);
+
+// The newest ray tracing builds, for a crash report; empty before the game builds any.
+std::string rtas_recent_text();
 void on_render_targets(RenderTargetsFn fn);
 void on_create_rtv(RtvFn fn);
 void on_unread_queue(UnreadQueueFn fn);
