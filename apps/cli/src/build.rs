@@ -117,8 +117,6 @@ fn build_profile(
     Ok(built)
 }
 
-/// The in-game plugins the server publishes for a signed-in session, verified. A plugin that is not
-/// there is one log line with the reason and the session goes on without it.
 static SESSION_ENV: AtomicBool = AtomicBool::new(false);
 
 /// Whether the game this process starts gets the session module's environment; its in-game plugin is
@@ -127,6 +125,8 @@ pub fn with_session_env(on: bool) {
     SESSION_ENV.store(on, Ordering::Relaxed);
 }
 
+/// The in-game plugins the server publishes for a signed-in session, verified. A plugin that is not
+/// there is one log line with the reason and the session goes on without it.
 fn server_plugins(store: &Store, out: &dyn Fn(&str)) -> Vec<(Plugin, modules::Module)> {
     let Some(session) = swofty_core::mpauth::load(&store.root) else {
         return Vec::new();

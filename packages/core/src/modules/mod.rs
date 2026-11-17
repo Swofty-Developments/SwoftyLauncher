@@ -153,8 +153,12 @@ pub fn local_env(name: &str) -> String {
 }
 
 /// The file [`local_env`] names, when it is set: `None` when it is unset or empty, else that file as a module
-/// with the version `local`, or why it cannot be used. No server is asked and no signature is checked.
+/// with the version `local`, or why it cannot be used. No server is asked and no signature is checked. Only
+/// debug builds read the variable; a release build always takes the server's signed module.
 pub fn local(name: &str) -> Option<Result<Module, Unavailable>> {
+    if !cfg!(debug_assertions) {
+        return None;
+    }
     let path = std::env::var_os(local_env(name)).filter(|p| !p.is_empty())?;
     Some(local_at(name, Path::new(&path)))
 }
