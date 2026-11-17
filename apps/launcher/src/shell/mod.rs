@@ -1,11 +1,8 @@
-use crate::dialogs::crash::CrashView;
 use crate::services::library::Library;
 use gpui_kit::component::slider::SliderState;
 use gpui_kit::*;
 use std::collections::HashMap;
-use std::path::PathBuf;
 use std::time::{Instant, SystemTime};
-use swofty_core::crash::StartFailure;
 use swofty_core::store::Store;
 
 mod account;
@@ -54,11 +51,6 @@ pub struct Shell {
     pub(crate) library: Library,
     pub(crate) open_addon: Option<String>,
     pub(crate) mp_page: crate::features::multiplayer::Multiplayer,
-    pub(crate) crash: Option<(PathBuf, Result<String, StartFailure>)>,
-    /// The newest crash's diagnosis, and whether its modal is open.
-    pub(crate) crash_view: Option<CrashView>,
-    pub(crate) crash_open: bool,
-    pub(crate) dismissed: Option<PathBuf>,
     pub(crate) seen: Seen,
     pub(crate) sliders: HashMap<String, SliderSlot>,
     pub(crate) requests: Option<SystemTime>,
@@ -109,6 +101,7 @@ pub struct Shell {
     pub(crate) prefs: crate::shell::config::Prefs,
     pub(crate) addon_views: crate::features::sections::AddonViews,
     pub(crate) scaling: crate::shell::ui_mode::Scaling,
+    pub(crate) crashes: crate::dialogs::crash::Crashes,
 }
 
 pub struct SliderSlot {

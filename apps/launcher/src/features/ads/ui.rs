@@ -46,7 +46,7 @@ impl Shell {
     pub(crate) fn ads_covered(&self, window: &mut Window, cx: &mut App) -> bool {
         self.popover.is_some()
             || self.tasks.is_some()
-            || (self.crash_open && self.crash_view.is_some())
+            || self.crashes.shown().is_some()
             || self.account.ban.is_some()
             || self.moving.is_some()
             || self.found_data.is_some()

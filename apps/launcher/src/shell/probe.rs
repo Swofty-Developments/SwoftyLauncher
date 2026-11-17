@@ -260,14 +260,14 @@ impl Shell {
 
     fn watch_session(&mut self, session: Option<&SessionRecord>, cx: &mut Context<Self>) {
         if let Some(s) = session.filter(|s| s.crashed() || s.end.is_some())
-            && self.crash.as_ref().is_none_or(|(d, _)| *d != s.dir)
+            && self.crashes.latest.as_ref().is_none_or(|(d, _)| *d != s.dir)
         {
             let session = s.clone();
             let crashed = s.crashed();
             let game_dir = self.game.install.as_ref().map(|i| i.dir.clone());
             let store = self.store.clone();
             let fresh = s.ended.is_some_and(|e| game::now_secs() - e < crash::FRESH_SECS);
-            self.crash = Some((s.dir.clone(), Ok(String::new())));
+            self.crashes.latest = Some((s.dir.clone(), Ok(String::new())));
             cx.spawn(async move |this, cx| {
                 let dir = session.dir.clone();
                 let (summary, diagnosis) = cx
@@ -295,15 +295,15 @@ impl Shell {
                     if let Ok(text) = &summary
                         && (crashed || diagnosis.is_some())
                     {
-                        s.crash_view = Some(CrashView {
+                        s.crashes.view = Some(CrashView {
                             dir: dir.clone(),
                             diagnosis,
                             crashed,
                             summary: text.clone(),
                         });
-                        s.crash_open |= fresh;
+                        s.crashes.open |= fresh;
                     }
-                    s.crash = Some((dir, summary));
+                    s.crashes.latest = Some((dir, summary));
                     cx.notify();
                 })
                 .ok();

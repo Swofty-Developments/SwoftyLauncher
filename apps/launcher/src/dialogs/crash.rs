@@ -6,6 +6,7 @@ use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
+use swofty_core::crash::StartFailure;
 use swofty_core::known_problems::Diagnosis;
 use swofty_i18n::{tr, trf};
 
@@ -36,6 +37,21 @@ impl CrashView {
             Some(d) => d.title.clone(),
             None => self.summary.clone(),
         }
+    }
+}
+
+#[derive(Default)]
+pub(crate) struct Crashes {
+    pub(crate) latest: Option<(PathBuf, Result<String, StartFailure>)>,
+    /// The newest crash's diagnosis, and whether its modal is open.
+    pub(crate) view: Option<CrashView>,
+    pub(crate) open: bool,
+    pub(crate) dismissed: Option<PathBuf>,
+}
+
+impl Crashes {
+    pub(crate) fn shown(&self) -> Option<&CrashView> {
+        self.view.as_ref().filter(|_| self.open)
     }
 }
 
@@ -89,7 +105,7 @@ fn step(n: usize, text: String, p: Palette) -> Div {
 impl Shell {
     /// The full-window crash modal, while it is open for the newest crash.
     pub(crate) fn crash_overlay(&self, p: Palette, cx: &mut Context<Self>) -> Option<impl IntoElement> {
-        let view = self.crash_view.as_ref().filter(|_| self.crash_open)?;
+        let view = self.crashes.shown()?;
         let known = view.diagnosis.is_some();
         let (title, what, steps) = match &view.diagnosis {
             Some(d) => (d.title.clone(), d.what.clone(), d.steps.clone()),
@@ -106,7 +122,7 @@ impl Shell {
             ),
         };
         let close = cx.listener(|this, _, _, cx| {
-            this.crash_open = false;
+            this.crashes.open = false;
             cx.notify();
         });
         let send = cx.listener(|this, _, window, cx| this.send_logs(window, cx));

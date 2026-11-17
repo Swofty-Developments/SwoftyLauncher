@@ -366,23 +366,24 @@ impl Shell {
             PlayState::Crashed(session) => {
                 let dir = session.dir.clone();
                 let ending = self
-                    .crash
+                    .crashes
+                    .latest
                     .as_ref()
                     .filter(|(d, _)| *d == session.dir)
                     .map(|(_, e)| e);
                 let open =
                     link("crash-log", tr("Open logs"), p).on_click(move |_, _, cx| cx.open_with_system(&dir));
                 let dismiss = link("dismiss", tr("Dismiss"), p).on_click(cx.listener(|this, _, _, cx| {
-                    this.dismissed = this.game.session.as_ref().map(|s| s.dir.clone());
+                    this.crashes.dismissed = this.game.session.as_ref().map(|s| s.dir.clone());
                     cx.notify();
                 }));
                 if let Some(Err(failure)) = ending {
                     return launch_failed(row, failure, p).child(open).child(dismiss);
                 }
-                let view = self.crash_view.as_ref().filter(|v| v.dir == session.dir);
+                let view = self.crashes.view.as_ref().filter(|v| v.dir == session.dir);
                 let details = view.map(|_| {
                     link("crash-details", tr("What happened"), p).on_click(cx.listener(|this, _, _, cx| {
-                        this.crash_open = true;
+                        this.crashes.open = true;
                         cx.notify();
                     }))
                 });
@@ -493,7 +494,7 @@ impl Shell {
                         )
                         .child(link("saves-dismiss", tr("Dismiss"), p).on_click(cx.listener(
                             |this, _, _, cx| {
-                                this.dismissed = this.game.session.as_ref().map(|s| s.dir.clone());
+                                this.crashes.dismissed = this.game.session.as_ref().map(|s| s.dir.clone());
                                 cx.notify();
                             },
                         )));

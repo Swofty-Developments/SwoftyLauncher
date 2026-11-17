@@ -63,7 +63,7 @@ impl Shell {
         match &self.game.session {
             Some(s)
                 if s.crashed()
-                    && self.dismissed.as_ref() != Some(&s.dir)
+                    && self.crashes.dismissed.as_ref() != Some(&s.dir)
                     && s.ended.is_some_and(|e| game::now_secs() - e < 1800.0) =>
             {
                 PlayState::Crashed(s.clone())
@@ -178,7 +178,7 @@ impl Shell {
         self.launching.game_edited = None;
         Blocked::clear(&self.store.root).ok();
         self.seen.blocked = game::blocked_at(&self.store.root).unwrap_or(0.0);
-        self.dismissed = self.game.session.as_ref().map(|s| s.dir.clone());
+        self.crashes.dismissed = self.game.session.as_ref().map(|s| s.dir.clone());
         for note in &checked.notes {
             window.notify(note_notification(note), cx);
         }
@@ -242,7 +242,7 @@ impl Shell {
     pub(crate) fn saves_refused(&self) -> Option<&SessionRecord> {
         self.game.session.as_ref().filter(|s| {
             s.exit_code == Some(swofty_core::launcher_saves::EXIT)
-                && self.dismissed.as_ref() != Some(&s.dir)
+                && self.crashes.dismissed.as_ref() != Some(&s.dir)
                 && s.ended.is_some_and(|e| game::now_secs() - e < 1800.0)
         })
     }

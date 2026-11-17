@@ -98,10 +98,6 @@ impl Shell {
             online: crate::features::online::Online::new(&root),
             open_addon: None,
             mp_page: crate::features::multiplayer::Multiplayer::new(window, cx),
-            crash: None,
-            crash_view: None,
-            crash_open: false,
-            dismissed: None,
             seen,
             sliders: HashMap::new(),
             requests: None,
@@ -169,6 +165,7 @@ impl Shell {
             prefs,
             addon_views: crate::features::sections::AddonViews::default(),
             scaling,
+            crashes: crate::dialogs::crash::Crashes::default(),
         };
         shell.refresh_views(cx);
         match std::env::var("SWOFTY_LAUNCHER_OPEN_PAGE").as_deref() {
