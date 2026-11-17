@@ -358,9 +358,27 @@ pub struct Local {
     pub categories: BTreeMap<String, String>,
     /// The Addon Browser's cached listing.
     pub catalog: Vec<Addon>,
+    /// Each built addon's read paths, by id, in its detail's read order. The fingerprint leaves them out;
+    /// the module puts them back to name a file that differs.
+    pub read_paths: BTreeMap<String, Vec<String>>,
 }
 
 impl Local {
+    pub fn new(fingerprint: Fingerprint, categories: BTreeMap<String, String>, catalog: Vec<Addon>) -> Self {
+        let read_paths = fingerprint
+            .addons
+            .iter()
+            .filter_map(|a| Some((a.id.clone(), a.detail.as_ref()?.paths.clone())))
+            .filter(|(_, paths)| !paths.is_empty())
+            .collect();
+        Self {
+            fingerprint,
+            categories,
+            catalog,
+            read_paths,
+        }
+    }
+
     /// The fingerprint of `profile` on the game `game`, with the cached Addon Browser listing.
     pub fn read(store: &Store, profile: &Profile, game: &Identity) -> crate::Result<Local> {
         let fingerprint = fingerprint::fingerprint(store, profile, game)?;
@@ -375,11 +393,7 @@ impl Local {
             })
             .collect();
         let catalog = catalog::cached(&store.root).unwrap_or_default();
-        Ok(Local {
-            fingerprint,
-            categories,
-            catalog,
-        })
+        Ok(Local::new(fingerprint, categories, catalog))
     }
 
     pub fn digest(&self) -> String {
@@ -542,6 +556,39 @@ impl Drop for Session {
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn the_local_document_carries_the_read_paths_the_fingerprint_leaves_out() {
+        use super::fingerprint::{AddonPrint, Detail, Source};
+        let print = |id: &str, paths: &[&str]| AddonPrint {
+            id: id.into(),
+            name: id.into(),
+            version: semver::Version::new(1, 0, 0),
+            source: Source::Built("a".repeat(64)),
+            registry: None,
+            inputs: None,
+            order: Some(0),
+            detail: Some(Detail {
+                read_count: paths.len(),
+                paths: paths.iter().map(|p| (*p).into()).collect(),
+                ..Detail::default()
+            }),
+            stat_ids: BTreeMap::new(),
+        };
+        let game = Identity {
+            build_id: "25251167".into(),
+            exe_sha256: "a".repeat(64),
+        };
+        let f = Fingerprint::new(
+            game,
+            vec![print("t.cars", &["a.erp", "t.other:b.erp"]), print("t.none", &[])],
+            BTreeMap::new(),
+            None,
+        );
+        let doc = serde_json::to_value(Local::new(f, BTreeMap::new(), Vec::new())).unwrap();
+        assert_eq!(doc["read_paths"], json!({ "t.cars": ["a.erp", "t.other:b.erp"] }));
+        assert!(doc.pointer("/fingerprint/addons/0/detail/paths").is_none());
+    }
 
     #[test]
     fn a_game_started_without_the_module_gets_the_last_environment_or_the_first_launch_one() {
