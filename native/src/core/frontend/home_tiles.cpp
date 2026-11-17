@@ -4,6 +4,7 @@
 #include "core/frontend/hidden_tiles.hpp"
 #include "core/frontend/main_menu.hpp"
 #include "core/frontend/main_menu_logic.hpp"
+#include "core/frontend/tile_list.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/runtime/runtime.hpp"
 
@@ -38,14 +39,6 @@ constexpr const char *DESCRIPTION = "Configure the addons installed by Swofty La
 unsigned hook_calls, populate_calls, action_calls;
 void **mod_vt;
 
-void set_string(void *reg, void *parent, const char *name, const char *text)
-{
-    NeStr *s = nullptr;
-    Ne_Make_StrFromCStr(&s, text, 0, 0);
-    Vm_Set_String(reg, parent, name, &s, 1);
-    Ne_Make_StrFromCStr(&s, nullptr, 0, 0);
-}
-
 void mod_populate(HomeItem *item, void *node, uint32_t a7)
 {
     unsigned call = ++populate_calls;
@@ -57,9 +50,9 @@ void mod_populate(HomeItem *item, void *node, uint32_t a7)
     }
     void *reg = *g_Vm_Registry, *parent = vm_node + 8;
     uint8_t no = 0;
-    set_string(reg, parent, "title", TITLE);
+    tile_list::set_string(reg, parent, "title", TITLE);
     Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
-    set_string(reg, parent, "description", DESCRIPTION);
+    tile_list::set_string(reg, parent, "description", DESCRIPTION);
     Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
     swofty::log("[core] populate #%u item=%p node=%p a7=%u vm=%p: title='%s' description set, localised=false", call,
                 item, node, a7, vm_node, TITLE);
@@ -68,21 +61,9 @@ void mod_populate(HomeItem *item, void *node, uint32_t a7)
 
 Action *mod_get_action(HomeItem *item, Action *out)
 {
-    out->type = 1;
-    out->str = nullptr;
-    Ne_Make_StrFromCStr(&out->str, ROUTE, 0, 0);
+    tile_list::route_action(out, ROUTE);
     swofty::log("[core] getAction #%u item=%p -> {type 1, route '%s'}", ++action_calls, item, ROUTE);
     return out;
-}
-
-HomeItem *last_item(TileList *list, size_t *count)
-{
-    auto begin = reinterpret_cast<uintptr_t>(list->items_begin), end = reinterpret_cast<uintptr_t>(list->items_end);
-    if (!begin || end <= begin || (end - begin) % sizeof(TileEntry))
-        return nullptr;
-    *count = list->items_end - list->items_begin;
-    Tile *tile = list->items_end[-1].tile;
-    return tile ? tile->item : nullptr;
 }
 
 #endif
@@ -127,17 +108,17 @@ SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
                 (unsigned long long)c.r14, (unsigned long long)c.r12, (unsigned long long)c.r15,
                 (unsigned long long)c.rsi, (unsigned long long)c.rip);
     size_t before = 0, after = 0;
-    HomeItem *career = last_item(list, &before);
+    HomeItem *career = tile_list::last_item(list, &before);
     if (!career) {
         swofty::log("[core] hook #%u: items vector does not end with a tile, nothing added", call);
         return;
     }
     auto career_vt = reinterpret_cast<void **>(career->vtable);
     uint8_t last = runtime::main_menu::add_tiles(list, uint8_t(c.r12), reinterpret_cast<const uint8_t *>(c.rsi));
-    last_item(list, &before);
+    tile_list::last_item(list, &before);
     uint8_t index = uint8_t(last + 1);
     FeHome_Add_CareerTile(list, index);
-    HomeItem *item = last_item(list, &after);
+    HomeItem *item = tile_list::last_item(list, &after);
     c.r12 = index;
     c.r15 = index;
     if (!item || after != before + 1 || reinterpret_cast<void **>(item->vtable) != career_vt) {

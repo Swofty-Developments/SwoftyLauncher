@@ -3,6 +3,7 @@
 #include "core/frontend/main_menu.hpp"
 #include "core/frontend/main_menu/context.hpp"
 #include "core/frontend/main_menu_logic.hpp"
+#include "core/frontend/tile_list.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
@@ -34,30 +35,9 @@ Add_t target(const uint8_t *at, size_t off)
     return reinterpret_cast<Add_t>(const_cast<uint8_t *>(at) + off + 5 + rel);
 }
 
-HomeItem *last_item(TileList *list)
-{
-    auto begin = reinterpret_cast<uintptr_t>(list->items_begin), end = reinterpret_cast<uintptr_t>(list->items_end);
-    if (!begin || end <= begin || (end - begin) % sizeof(TileEntry))
-        return nullptr;
-    Tile *tile = list->items_end[-1].tile;
-    return tile ? tile->item : nullptr;
-}
-
-void set_string(void *reg, void *parent, const char *name, const char *text)
-{
-    NeStr *s = nullptr;
-    Ne_Make_StrFromCStr(&s, text, 0, 0);
-    Vm_Set_String(reg, parent, name, &s, 1);
-    Ne_Make_StrFromCStr(&s, nullptr, 0, 0);
-}
-
-Action *route_action(Action *out, const char *route)
-{
-    out->type = 1;
-    out->str = nullptr;
-    Ne_Make_StrFromCStr(&out->str, route, 0, 0);
-    return out;
-}
+using tile_list::last_item;
+using tile_list::route_action;
+using tile_list::set_string;
 
 void typed_populate(HomeItem *item, void *node, uint32_t a7) { menu.tiles.populate_typed(item, node, a7); }
 
