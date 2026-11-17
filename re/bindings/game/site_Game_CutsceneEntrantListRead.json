@@ -1,0 +1,41 @@
+{
+ "schema": 1,
+ "name": "site_Game_CutsceneEntrantListRead",
+ "table": "globals",
+ "author": "jonnoAUS",
+ "row": {
+  "addr": "0x14022d48d",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:own capstone disasm 0x14022d400-0x14022d665;xref:0x14022d48d,0x14022d494,0x14022d49b,0x14022d4ab,0x14022d4c0;doc:re/research/weather_strategy_bindings.md#sites",
+  "notes": "mov rax,[rip+g_Game_Manager] starting the entrant list [[[g_Game_Manager]+0xc0]+0x88]+0x260 -> +0x2e0/+0x2e8 (0x88-byte entrant records). Proposed L2 (game inbox)."
+ },
+ "signature": {
+  "id": "game.cutscene_entrant_list_read",
+  "section": ".xtls",
+  "pattern": "81 FD FF 3F 00 00 0F 84 ?? ?? ?? ?? 48 8B 05",
+  "match": "0x14022d481",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14022d48d",
+  "kind": "mid",
+  "expect": "48 8B 05",
+  "names": [
+   "site_Game_CutsceneEntrantListRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-17",
+    "by": "rr-bindings",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}
