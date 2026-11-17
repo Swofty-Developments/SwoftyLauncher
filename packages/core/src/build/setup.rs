@@ -66,7 +66,7 @@ impl<'a> Setup<'a> {
             }),
             mipmap_names: Box::new(move |origin: &Origin, src: &Source| -> Vec<String> {
                 src.resolve(&source_dir(store, &origin.addon, src.root))
-                    .map(|p| crate::erpbuild::mipmap_names(&p))
+                    .map(|p| crate::erp::mipmap_names(&p))
                     .unwrap_or_default()
             }),
         })

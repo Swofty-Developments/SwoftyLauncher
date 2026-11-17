@@ -510,7 +510,7 @@ impl<'a> Planner<'a> {
         let placed: Vec<String> = match (&op.op, self.mipmaps) {
             (AssetOp::Erp(ErpOp::AddMipmaps { source, target }), Some(names)) => names(&op.origin, source)
                 .iter()
-                .map(|rel| crate::erpbuild::mipmap_path(target, rel))
+                .map(|rel| crate::erp::mipmap_path(target, rel))
                 .collect(),
             _ => Vec::new(),
         };

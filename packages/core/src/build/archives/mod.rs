@@ -21,7 +21,7 @@ use crate::activation::ers::{self, ErsMap};
 use crate::activation::ui::Kept;
 use crate::asset::{AssetOp, Op, Origin, Source};
 use crate::content::runtime_assets::{Prebuilt, overlay_fits};
-use crate::erpbuild::{ErpBuild, Held, reads, writes};
+use crate::erp::{ErpBuild, Held, reads, writes};
 use crate::manifest::relative_inside;
 use crate::planner::{Kind, Route};
 use crate::{Error, Result};
@@ -168,7 +168,7 @@ impl Pipeline<'_, '_> {
                 erps.load(rel)?;
             }
             let contested =
-                crate::erpbuild::contested_ui(&erp_ops, &|op, s| source_dir(store, &op.origin.addon, s.root));
+                crate::erp::contested_ui(&erp_ops, &|op, s| source_dir(store, &op.origin.addon, s.root));
             for (erp, resource) in menu_kept.keys() {
                 erps.keep(erp, resource);
             }
@@ -193,7 +193,7 @@ impl Pipeline<'_, '_> {
                     }) if runtime_route => {
                         let path = resolve(source)?;
                         let file = swofty_formats::erp::ErpFile::open(&path)?;
-                        let stale = crate::erpbuild::stale_stats_in(&file)?.len();
+                        let stale = crate::erp::stale_stats_in(&file)?.len();
                         let menus = file
                             .erp
                             .resources
@@ -202,7 +202,7 @@ impl Pipeline<'_, '_> {
                         let fits = match merged_later(&slices, at, targets, &path)? {
                             Some(why) => Err(why),
                             None if menus => Err("it carries the track menu pictures".to_owned()),
-                            None if targets.iter().any(|t| !crate::erpbuild::served_at_runtime(t)) => {
+                            None if targets.iter().any(|t| !crate::erp::served_at_runtime(t)) => {
                                 Err("the in-game loader patches only archives under 2025_asset_groups"
                                     .to_owned())
                             }
@@ -331,14 +331,12 @@ impl Pipeline<'_, '_> {
             if let Some((origin, files)) = by_origin(&stats.broken).first() {
                 let who = name(origin);
                 let fix = format!("Turn {who} off in this profile.");
-                return Err(Error::Other(crate::erpbuild::unrepairable_message(
-                    &who, files, &fix,
-                )));
+                return Err(Error::Other(crate::erp::unrepairable_message(&who, files, &fix)));
             }
             for (origin, files) in by_origin(&stats.repaired) {
                 built.lines.push(format!(
                     "erp: {}",
-                    crate::erpbuild::repaired_note(&name(&origin), &files)
+                    crate::erp::repaired_note(&name(&origin), &files)
                 ));
             }
             mipmaps = erps.take_mipmaps();

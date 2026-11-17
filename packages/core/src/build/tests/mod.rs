@@ -27,7 +27,7 @@ use crate::asset::{FileKind, GroupOp, OpFile};
 use crate::asset::{FileOp, Root, Source};
 use crate::content::runtime_assets::db_edits;
 use crate::dbedit::driver_manager;
-use crate::erpbuild::Resized;
+use crate::erp::Resized;
 use crate::game_folder::baseline::Identity;
 use crate::game_folder::baseline::{Baseline, Objects, hex};
 use crate::launcher::BuildCx;
