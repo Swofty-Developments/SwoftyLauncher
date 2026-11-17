@@ -356,7 +356,7 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
 
             def unfold(root, names):
                 with contextlib.redirect_stdout(io.StringIO()):
-                        binding.cmd_unfold(argparse.Namespace(names=names, author='kb-import'),
+                    binding.cmd_unfold(argparse.Namespace(names=names, author='kb-import', skip_unfit=True),
                                        db=os.path.join(root, 're', 'db'), root=os.path.join(root, 're', 'bindings'))
 
             def fold(root, names):
@@ -390,12 +390,15 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
                 pick = to_fold if b['id'] in records else to_unfold
                 if sum(1 for k in pick.values() if k == b['kind']) < self.PER_KIND:
                     pick[b['id']] = b['kind']
-            self.assertEqual(set(to_fold.values()) | set(to_unfold.values()), {'func', 'site', 'call', 'vtable', 'data'})
-
+            subsystem = {r['name']: r['subsystem'] for t in ('functions', 'globals') for r in kb.read_table(t)[0]}
             fold(outputs, list(to_fold))
             if to_unfold:
                 unfold(outputs, list(to_unfold))
             second = gen(outputs, os.path.join(tmp, 'after'))
+            moved = {n for n in to_unfold if os.path.exists(os.path.join(
+                outputs, 're', 'bindings', br.relpath_for(subsystem[n], n)))}
+            self.assertEqual({to_fold[n] for n in to_fold} | {to_unfold[n] for n in moved},
+                             {'func', 'site', 'call', 'vtable', 'data'})
 
             fold(again, list(to_fold))
             if to_fold:

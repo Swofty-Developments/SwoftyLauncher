@@ -90,6 +90,17 @@ class Knowledge:
                 if sha:
                     self.builds.setdefault(sha, f[:-5])
 
+    @classmethod
+    def alone(cls):
+        """Only the subsystems and builds: checks a record's own rules, with no knowledge-base conflicts."""
+        k = cls.__new__(cls)
+        k.subsystems = kb.subsystems()
+        k.build = kb.load_signatures()['build']
+        k.signatures, k.patterns, k.targets, k.names, k.verified = {}, {}, {}, {}, {}
+        k.addrs = {'functions': {}, 'globals': {}}
+        k.builds = {k.build['sha256']: 'KB build'}
+        return k
+
     def without(self, record):
         """Forget the record's own entries, so a record is never its own conflict. The views cost nothing to make."""
         if record is None:

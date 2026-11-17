@@ -9,8 +9,9 @@
                                   second contributor: your own proof plus an agree row (makes it experimental)
   binding.py check [FILE...]      the static checks CI runs (every record when no file is given)
   binding.py status               every record, its level, proofs, verifiers and what it still needs
-  binding.py unfold NAME... --author LOGIN
-                                  maintainer: move bindings from the shared tables into records
+  binding.py unfold [NAME...] [--table functions|globals] [--skip-unfit] --author LOGIN
+                                  maintainer: move bindings from the shared tables into records; rows that would
+                                  fail the record rules stay (named ones are an error unless --skip-unfit)
   binding.py ci --files FILES.json --head DIR --author LOGIN --out RESULT.json
                                   the pull request check (.github/workflows/bindings.yml)
 """
@@ -252,6 +253,12 @@ def cmd_unfold(a, db=None, root=None):
         sigdoc = json.load(f)
     sigs = {s['id']: s for s in sigdoc['signatures']}
     wanted = set(a.names)
+    whole = set()
+    for t in getattr(a, 'table', None) or ():
+        whole |= {r['name'] for r in tsv[t] if sigs.get(r['sig'], {}).get('names') == [r['name']]} - wanted
+    wanted |= whole
+    alone = bc.Knowledge.alone()
+    kept = []
     verify_at = {}
     for i, v in enumerate(tsv['verify']):
         verify_at.setdefault((v['kind'], v['item']), []).append(i)
@@ -271,6 +278,11 @@ def cmd_unfold(a, db=None, root=None):
             rec = br.Record.create(r['name'], t, a.author or s['verified'][0]['by'], r, s)
             rows = sorted(i for k in keys for i in verify_at.get(k, ()))
             rec.doc['verify'] = [{c: tsv['verify'][i][c] for c in cols['verify']} for i in rows]
+            bad = bc.check_record(rec, alone)
+            if bad:
+                (kept.append((r['name'], bad[0])) if r['name'] in whole or getattr(a, 'skip_unfit', False) else
+                 errs.extend(f'{r["name"]}: {e}' for e in bad))
+                continue
             records.append(rec)
             moved[t].add(r['addr'])
             verify_keys |= keys
@@ -288,6 +300,8 @@ def cmd_unfold(a, db=None, root=None):
         f.write(json.dumps(sigdoc, indent=1) + '\n')
     br.Store.forget()
     print(f'binding.py unfold: {sum(len(m) for m in moved.values())} binding(s) moved into {os.path.relpath(root)}')
+    for name, why in kept:
+        print(f'kept {name} in the tables: {why}')
 
 
 def read_tsv_at(db, table):
@@ -392,7 +406,10 @@ def main(argv=None):
     p.add_argument('files', nargs='*')
     sp.add_parser('status')
     p = sp.add_parser('unfold')
-    p.add_argument('names', nargs='+')
+    p.add_argument('names', nargs='*')
+    p.add_argument('--table', action='append', choices=['functions', 'globals'],
+                   help='also move every row of this table that has a signature of its own')
+    p.add_argument('--skip-unfit', action='store_true', help='keep named rows that fail the record rules in the tables')
     p.add_argument('--author')
     p = sp.add_parser('ci')
     p.add_argument('--files', required=True)
