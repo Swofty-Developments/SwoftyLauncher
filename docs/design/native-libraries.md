@@ -104,7 +104,7 @@ the texture is multiplied by a tint (`0xffffffff` for none).
 You can call `on_paint`, `remove` and `load_image` at any time. Draw calls, though, are valid only
 inside a paint callback, using that callback's `paint` handle.
 
-The core's D3D12 and DXGI hooks live in one layer, `native/src/core/d3d12_hooks.{hpp,cpp}`. Features
+The core's D3D12 and DXGI hooks live in one layer, `native/src/core/render/d3d12_hooks.hpp` and `native/src/core/render/d3d12/`. Features
 subscribe to it instead of hooking the same entry points:
 
 | Call | Does |
@@ -118,7 +118,7 @@ subscribe to it instead of hooking the same entry points:
 | `on_barrier(fn)` | Observer in subscription order. One that returns `true` has made the call itself through `barrier_original`, and the rest are skipped |
 | `on_setname(fn)` | `fn(object, name)` before the original `SetName` |
 
-The overlay (`hud.cpp`) and shader packs (`grade.cpp`) subscribe to it.
+The overlay (`hud.cpp` and `hud/overlay/`) and shader packs (`grade.cpp`) subscribe to it.
 
 The overlay records each swapchain's creation queue and the modules on the creation call stack, and draws only on
 swapchains it saw created, on their creation queue. A swapchain a frame generation module created or presents, or whose
