@@ -164,8 +164,8 @@ fn career_holds_247(data: &Path) {
     put(
         &reports::path(data, reports::IDS),
         r#"{"version":1,"ids":{"driver.identity":{"sw.2022/sw22_vettel":{"id":247,"since":"2026-11-12"}},
-        "vehicle.package":{"sw.2022/sw_2022":{"id":247,"since":"2026-11-12"}}},
-        "careers":{"dc-1":{"driver.identity":{"sw.2022/sw22_vettel":247}}}}"#,
+            "vehicle.package":{"sw.2022/sw_2022":{"id":247,"since":"2026-11-12"}}},
+            "careers":{"dc-1":{"driver.identity":{"sw.2022/sw22_vettel":247}}}}"#,
     );
 }
 

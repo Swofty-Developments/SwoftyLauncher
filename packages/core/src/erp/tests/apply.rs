@@ -17,12 +17,12 @@ fn patches_layers_and_writes_only_changed_archives() {
     .unwrap();
     let ops = erp_ops(
         r#"{"schema_version":1,"ops":[
-        {"op":"patch-pkg","erp":"tracks/t/wep/t_world.erp","resource":"eaid://t-a.layer","edits":[
-          {"op":"clone-entry","at":"instances","src":"[name=a$PitBox12]","as":"a$PitBox13","set":{"id":13}},
-          {"op":"clone-entry","at":"instances","from":{"erp":"tracks/t/wep/t_common.erp","resource":"eaid://t-c.layer"},
-           "src":"[name=c$GridSlot23]","as":"a$GridSlot25","set":{"id":25}}]},
-        {"op":"patch-pkg","erp":"tracks/t/wep/t_common.erp","resource":"eaid://t-c.layer","edits":[]},
-        {"op":"warn","message":"room for 26 cars"}]}"#,
+            {"op":"patch-pkg","erp":"tracks/t/wep/t_world.erp","resource":"eaid://t-a.layer","edits":[
+              {"op":"clone-entry","at":"instances","src":"[name=a$PitBox12]","as":"a$PitBox13","set":{"id":13}},
+              {"op":"clone-entry","at":"instances","from":{"erp":"tracks/t/wep/t_common.erp","resource":"eaid://t-c.layer"},
+               "src":"[name=c$GridSlot23]","as":"a$GridSlot25","set":{"id":25}}]},
+            {"op":"patch-pkg","erp":"tracks/t/wep/t_common.erp","resource":"eaid://t-c.layer","edits":[]},
+            {"op":"warn","message":"room for 26 cars"}]}"#,
     );
     let original = |rel: &str| game.join(rel);
     let mut b = ErpBuild::new(&original);
@@ -76,13 +76,13 @@ fn patches_layers_and_writes_only_changed_archives() {
     let mut bad = ErpBuild::new(&original);
     let text = erp_ops(
         r#"{"schema_version":1,"ops":[{"op":"patch-pkg","erp":"x.erp","resource":"r","edits":[
-        {"op":"set-text","node":"n","value":"v"}]}]}"#,
+            {"op":"set-text","node":"n","value":"v"}]}]}"#,
     );
     assert_eq!(unsupported(&text[0]), Some("set-text"));
     assert!(apply(&mut bad, &text, &game).is_err());
     let escape = erp_ops(
         r#"{"schema_version":1,"ops":[{"op":"patch-pkg","erp":"../x.erp","resource":"r","edits":[
-        {"op":"set-value","path":"a","value":1}]}]}"#,
+            {"op":"set-value","path":"a","value":1}]}]}"#,
     );
     assert!(apply(&mut bad, &escape, &game).is_err());
     std::fs::remove_dir_all(&game).ok();
@@ -112,11 +112,11 @@ fn copies_resources_from_game_and_mod_archives() {
     std::fs::write(addon_dir.join("erp/src.erp"), &src).unwrap();
     let ops = erp_ops(
         r#"{"schema_version":1,"ops":[
-        {"op":"copy-resource","source":"erp/src.erp","erp":"cars/slot.erp","resource":"eaid://car.wep","as":"eaid://car_alt.wep"},
-        {"op":"copy-resource","source":"erp/src.erp","erp":"cars/slot.erp","resource":"eaid://car-model.layer"},
-        {"op":"copy-resource","from_erp":"cars/stock.erp","erp":"cars/slot.erp","resource":"eaid://stock-b.layer"},
-        {"op":"patch-pkg","erp":"cars/slot.erp","resource":"eaid://car_alt.wep","edits":[
-          {"op":"set-value","path":"instances[0].name","value":"w_alt"}]}]}"#,
+            {"op":"copy-resource","source":"erp/src.erp","erp":"cars/slot.erp","resource":"eaid://car.wep","as":"eaid://car_alt.wep"},
+            {"op":"copy-resource","source":"erp/src.erp","erp":"cars/slot.erp","resource":"eaid://car-model.layer"},
+            {"op":"copy-resource","from_erp":"cars/stock.erp","erp":"cars/slot.erp","resource":"eaid://stock-b.layer"},
+            {"op":"patch-pkg","erp":"cars/slot.erp","resource":"eaid://car_alt.wep","edits":[
+              {"op":"set-value","path":"instances[0].name","value":"w_alt"}]}]}"#,
     );
     assert!(ops.iter().all(|op| unsupported(op).is_none()));
     let named: Vec<String> = ops
@@ -177,24 +177,24 @@ fn copies_resources_from_game_and_mod_archives() {
     assert_eq!(name, "w_alt");
     let twice = erp_ops(
         r#"{"schema_version":1,"ops":[
-        {"op":"copy-resource","source":"erp/src.erp","erp":"cars/slot.erp","resource":"eaid://car.wep"},
-        {"op":"copy-resource","source":"erp/src.erp","erp":"cars/slot.erp","resource":"eaid://car.wep"}]}"#,
+            {"op":"copy-resource","source":"erp/src.erp","erp":"cars/slot.erp","resource":"eaid://car.wep"},
+            {"op":"copy-resource","source":"erp/src.erp","erp":"cars/slot.erp","resource":"eaid://car.wep"}]}"#,
     );
     assert!(apply(&mut ErpBuild::new(&original), &twice, &addon_dir).is_err());
     let both = erp_ops(
         r#"{"schema_version":1,"ops":[
-        {"op":"copy-resource","source":"erp/src.erp","from_erp":"cars/stock.erp","erp":"cars/slot.erp","resource":"eaid://car.wep"}]}"#,
+            {"op":"copy-resource","source":"erp/src.erp","from_erp":"cars/stock.erp","erp":"cars/slot.erp","resource":"eaid://car.wep"}]}"#,
     );
     assert!(apply(&mut ErpBuild::new(&original), &both, &addon_dir).is_err());
     let escape = erp_ops(
         r#"{"schema_version":1,"ops":[
-        {"op":"copy-resource","source":"../game/cars/stock.erp","erp":"cars/slot.erp","resource":"eaid://stock-b.layer"}]}"#,
+            {"op":"copy-resource","source":"../game/cars/stock.erp","erp":"cars/slot.erp","resource":"eaid://stock-b.layer"}]}"#,
     );
     assert!(apply(&mut ErpBuild::new(&original), &escape, &addon_dir).is_err());
     let put = erp_ops(
         r#"{"schema_version":1,"ops":[
-        {"op":"put-resource","source":"erp/src.erp","erp":"cars/slot.erp","resource":"eaid://car.wep","as":"eaid://slot-a.layer"},
-        {"op":"put-resource","source":"erp/src.erp","erp":"cars/slot.erp","resource":"eaid://car-model.layer"}]}"#,
+            {"op":"put-resource","source":"erp/src.erp","erp":"cars/slot.erp","resource":"eaid://car.wep","as":"eaid://slot-a.layer"},
+            {"op":"put-resource","source":"erp/src.erp","erp":"cars/slot.erp","resource":"eaid://car-model.layer"}]}"#,
     );
     let mut b = ErpBuild::new(&original);
     apply(&mut b, &put, &addon_dir).unwrap();
@@ -238,12 +238,12 @@ fn replaces_adds_and_removes_resources_with_the_same_bytes_on_both_routes() {
     std::fs::write(addon.join("raw/head.bin"), b"HEADER-Z").unwrap();
     std::fs::write(addon.join("raw/z.bin"), b"NEW PIXELS").unwrap();
     let replace_add = r#"
-        {"op":"replace-resource","erp":"ui/a.erp","resource":"eaid://ui_package/x.tif.image","fragment":1,"source":"raw/pixels.bin"},
-        {"op":"add-resource","erp":"ui/a.erp","resource":"eaid://ui_package/z.tif.image","type":"GfxSurfaceRes",
-         "sources":["raw/head.bin","raw/z.bin"]}"#;
+            {"op":"replace-resource","erp":"ui/a.erp","resource":"eaid://ui_package/x.tif.image","fragment":1,"source":"raw/pixels.bin"},
+            {"op":"add-resource","erp":"ui/a.erp","resource":"eaid://ui_package/z.tif.image","type":"GfxSurfaceRes",
+             "sources":["raw/head.bin","raw/z.bin"]}"#;
     let ops = erp_ops(&format!(
         r#"{{"schema_version":1,"ops":[{replace_add},
-        {{"op":"remove-resource","erp":"ui/a.erp","resource":"eaid://ui_package/y.tif.image"}}]}}"#
+            {{"op":"remove-resource","erp":"ui/a.erp","resource":"eaid://ui_package/y.tif.image"}}]}}"#
     ));
     assert!(ops.iter().all(|op| unsupported(op).is_none()));
     let original = |rel: &str| game.join(rel);
@@ -475,8 +475,8 @@ fn removing_a_resource_twice_is_idempotent() {
     .unwrap();
     let ops = erp_ops(
         r#"{"schema_version":1,"ops":[
-        {"op":"remove-resource","erp":"ui/a.erp","resource":"eaid://two"},
-        {"op":"remove-resource","erp":"ui/a.erp","resource":"eaid://two"}]}"#,
+            {"op":"remove-resource","erp":"ui/a.erp","resource":"eaid://two"},
+            {"op":"remove-resource","erp":"ui/a.erp","resource":"eaid://two"}]}"#,
     );
     let original = |rel: &str| game.join(rel);
     let mut b = ErpBuild::new(&original);
@@ -501,8 +501,8 @@ fn add_mipmaps_places_files_and_folders_at_game_paths() {
     std::fs::write(addon.join("one.tif.mipmaps"), b"1").unwrap();
     let ops = erp_ops(
         r#"{"schema_version":1,"ops":[
-        {"op":"add-mipmaps","source":"mips/","target":"livery_package/textures/"},
-        {"op":"add-mipmaps","source":"one.tif.mipmaps","target":"livery_package/one.tif.mipmaps"}]}"#,
+            {"op":"add-mipmaps","source":"mips/","target":"livery_package/textures/"},
+            {"op":"add-mipmaps","source":"one.tif.mipmaps","target":"livery_package/one.tif.mipmaps"}]}"#,
     );
     assert!(ops.iter().all(|op| unsupported(op).is_none()));
     let original = |rel: &str| root.join("game").join(rel);

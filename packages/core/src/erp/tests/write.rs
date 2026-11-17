@@ -54,7 +54,7 @@ fn an_unchanged_archive_is_linked_from_the_cache() {
         std::fs::write(addon.join("raw/pixels.bin"), bytes).unwrap();
         erp_ops(
             r#"{"schema_version":1,"ops":[{"op":"replace-resource","erp":"ui/a.erp",
-            "resource":"eaid://ui_package/x.tif.image","fragment":1,"source":"raw/pixels.bin"}]}"#,
+                "resource":"eaid://ui_package/x.tif.image","fragment":1,"source":"raw/pixels.bin"}]}"#,
         )
     };
     let original = |rel: &str| game.join(rel);

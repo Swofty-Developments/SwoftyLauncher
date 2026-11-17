@@ -6,11 +6,11 @@ fn save_owners_are_the_addons_with_vehicle_team_engine_or_head_rows() {
     put(
         &path(&data),
         r#"{"version":2,"rows":{
-          "a.engines/entrants.vehicles.vehicle/v1":{"id":1,"from":"next"},
-          "b.heads/entrants.animation.driver_heads.driver_head/h":{"id":2,"from":"next"},
-          "c.tracks/tracks.Track/t":{"id":3,"from":"next"},
-          "d.lists/entrants.entrant_lists.entrant_list/l":{"id":4,"from":"next"}},
-          "profiles":{"p":{"rows":{"e.teams/entrants.teams.team/t":{"id":5,"from":"next"}}}}}"#,
+              "a.engines/entrants.vehicles.vehicle/v1":{"id":1,"from":"next"},
+              "b.heads/entrants.animation.driver_heads.driver_head/h":{"id":2,"from":"next"},
+              "c.tracks/tracks.Track/t":{"id":3,"from":"next"},
+              "d.lists/entrants.entrant_lists.entrant_list/l":{"id":4,"from":"next"}},
+              "profiles":{"p":{"rows":{"e.teams/entrants.teams.team/t":{"id":5,"from":"next"}}}}}"#,
     );
     let owners: Vec<String> = save_owners(&data).into_iter().collect();
     assert_eq!(owners, ["a.engines", "b.heads", "e.teams"]);
@@ -24,10 +24,10 @@ fn id_owners_name_the_addon_of_a_kept_id_and_of_an_older_one() {
     put(
         &path(&data),
         r#"{"version":2,"rows":{
-          "a.season/entrants.teams.team/t":{"id":501,"from":"next"},
-          "a.season/tracks.Track/x":{"id":9,"from":"next"}},
-          "aliases":{"a.season/entrants.teams.team/t":[480]},
-          "profiles":{"p":{"rows":{"b.cars/entrants.vehicles.vehicle/v":{"id":510,"from":"next"}}}}}"#,
+              "a.season/entrants.teams.team/t":{"id":501,"from":"next"},
+              "a.season/tracks.Track/x":{"id":9,"from":"next"}},
+              "aliases":{"a.season/entrants.teams.team/t":[480]},
+              "profiles":{"p":{"rows":{"b.cars/entrants.vehicles.vehicle/v":{"id":510,"from":"next"}}}}}"#,
     );
     let owners = id_owners(&data);
     let of = |table: &str, id: i64| owners.of("c", table, id).cloned().unwrap_or_default();
@@ -62,13 +62,13 @@ fn id_owners_name_the_addon_of_a_registry_id_and_of_a_careers_pin() {
     put(
         &reports::path(&data, reports::IDS),
         r#"{"version":1,"ids":{
-          "team.identity":{"x.season/t":{"id":536,"since":"2026-11-13"}},
-          "vehicle":{"x.season/v":{"id":545},"z.season/w":528,"old.season/o":{"id":825,"pin":529}},
-          "driver.identity":{"x.season/d":{"id":255}},
-          "driver.head":{"x.season/h":{"id":300}},
-          "vehicle.package":{"x.season/p":{"id":600}},
-          "helmet":{"x.season/k":{"id":537}}},
-          "careers":{"c":{"vehicle":{"y.season/w":528},"team.identity":{"y.season/u":700}}}}"#,
+              "team.identity":{"x.season/t":{"id":536,"since":"2026-11-13"}},
+              "vehicle":{"x.season/v":{"id":545},"z.season/w":528,"old.season/o":{"id":825,"pin":529}},
+              "driver.identity":{"x.season/d":{"id":255}},
+              "driver.head":{"x.season/h":{"id":300}},
+              "vehicle.package":{"x.season/p":{"id":600}},
+              "helmet":{"x.season/k":{"id":537}}},
+              "careers":{"c":{"vehicle":{"y.season/w":528},"team.identity":{"y.season/u":700}}}}"#,
     );
     let owners = id_owners(&data);
     let of = |career: &str, table: &str, id: i64| -> Vec<String> {

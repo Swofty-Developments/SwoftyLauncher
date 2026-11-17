@@ -55,7 +55,7 @@ fn ids_the_core_registry_holds_are_passed_over() {
         &reports::path(&data, reports::IDS),
         &format!(
             r#"{{"version":1,"ids":{{"vehicle":{{"mod.x/car":{{"id":{slot},"since":"2026-10-29"}},"mod.x/old":12}}}},
-            "careers":{{"dc-1":{{"vehicle":{{"mod.y/car":13}}}}}}}}"#
+                "careers":{{"dc-1":{{"vehicle":{{"mod.y/car":13}}}}}}}}"#
         ),
     );
     let (store, _) = Store::load(&data, None, "p", None);
@@ -89,7 +89,7 @@ fn a_full_table_takes_an_id_ids_json_holds_for_an_addon_the_build_leaves_out_eve
         &reports::path(&data, reports::IDS),
         &format!(
             r#"{{"version":1,"ids":{{"vehicle.package":{{{}}}}},
-            "careers":{{"dc-1":{{"vehicle.package":{{"gone.x/pkg_1":1}}}}}}}}"#,
+                "careers":{{"dc-1":{{"vehicle.package":{{"gone.x/pkg_1":1}}}}}}}}"#,
             records.join(",")
         ),
     );
@@ -137,7 +137,7 @@ fn package_ids_a_career_held_return_when_an_addon_provides_fewer_records() {
         &reports::path(&data, reports::IDS),
         &format!(
             r#"{{"version":1,"ids":{{}},
-            "careers":{{"f1_career_progressive.driver_career:new1":{{"vehicle.package":{{{}}}}}}}}}"#,
+                "careers":{{"f1_career_progressive.driver_career:new1":{{"vehicle.package":{{{}}}}}}}}}"#,
             held.join(",")
         ),
     );
