@@ -1,13 +1,18 @@
 use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 
-use super::{ADDONS_DIR, Built};
-use crate::builtin::{CORE_ID, loader_files};
+use super::database::DbEdits;
+use super::inputs::Inputs;
+use super::{ADDONS_DIR, Built, Pipeline};
+use crate::asset::{AssetOp, LangOp, Op, Origin};
+use crate::builtin::{CORE_ID, LOADER_ENV, loader_dir, loader_files};
 use crate::install::LOADER_DIR;
 use crate::manifest::AddonManifest;
+use crate::planner::{Kind, Route, Target};
 use crate::settings::{SessionSettings, SessionUi, screen_file, screens};
+use crate::stdlib::deps::Std;
 use crate::store::Store;
-use crate::{Error, Result};
+use crate::{Error, Result, io_err};
 
 // Page screens have no file: the ui build generates them.
 pub fn screen_files(order: &[&AddonManifest], addons_dir: &Path) -> Result<BTreeMap<String, PathBuf>> {
@@ -140,4 +145,168 @@ pub fn build_menus(
     ui.screens.retain(|s| s.page.is_none());
     ui.screens.splice(0..0, menus.session);
     Ok(menus.strings)
+}
+
+impl Pipeline<'_, '_> {
+    /// Places the in-game loader's files and what the build hands it: the launcher's menus, addon screens
+    /// and plugins, the telemetry and row id maps and the registry index.
+    pub(super) fn loader_files(
+        &mut self,
+        inputs: &Inputs,
+        edits: &DbEdits,
+        std16: &BTreeMap<String, Std>,
+    ) -> Result<()> {
+        let run = self.run;
+        let store = run.store;
+        let Self {
+            planner,
+            built,
+            session,
+            ..
+        } = self;
+        let (udp_ids, id_aliases) = (&edits.udp_ids, &edits.id_aliases);
+        let (lent_ids, std_index, menus) = (&inputs.lent_ids, &inputs.std_index, inputs.menus);
+        let order = run.manifests();
+        let resolve = |rel: &str| run.original(rel);
+        let name = |origin: &str| run.origin_name(origin);
+        match loader_dir() {
+            Some(dir) => {
+                built.plan.loader = loader_files(&dir)?;
+                built.plan.registry_override = true;
+                built.lines.push(format!(
+                    "loader: {} file(s) from {}",
+                    built.plan.loader.len(),
+                    dir.display()
+                ));
+                if menus {
+                    let lang = planner.route(Kind::Lang) == Route::Runtime;
+                    let writer = |erp: &str, res: &str| {
+                        let targets = [
+                            Target::Resource {
+                                erp: erp.to_owned(),
+                                uri: res.to_owned(),
+                            },
+                            Target::File(erp.to_owned()),
+                        ];
+                        planner.last_writer(&targets).map(|o| name(&o.to_string()))
+                    };
+                    for (key, value) in build_menus(built, session, &resolve, &writer, lang)? {
+                        planner.push(Op {
+                            op: AssetOp::Lang(LangOp::Set {
+                                language: "*".into(),
+                                key,
+                                value,
+                            }),
+                            origin: Origin {
+                                addon: CORE_ID.into(),
+                                item: None,
+                            },
+                        });
+                    }
+                }
+                let files = screen_files(&order, &store.addons_dir())?;
+                if !files.is_empty() {
+                    built.lines.push(format!("ui: {} screen(s) under {LOADER_DIR}/ui", files.len()));
+                }
+                for (rel, src) in files {
+                    built.place_loader(rel, src)?;
+                }
+                let core = format!("{LOADER_DIR}/{ADDONS_DIR}/core/");
+                let taken: Vec<String> = built
+                    .plan
+                    .loader
+                    .keys()
+                    .filter_map(|rel| rel.strip_prefix(&core))
+                    .filter(|n| n.ends_with(".dll") && !n.contains('/'))
+                    .map(str::to_owned)
+                    .collect();
+                let plugins = plugin_files(store, order.iter().copied(), taken)?;
+                if !plugins.dlls.is_empty() {
+                    built.lines.push(format!(
+                        "native: {} plugin(s), {} file(s) under {LOADER_DIR}/{ADDONS_DIR}",
+                        plugins.dlls.len(),
+                        plugins.files.len()
+                    ));
+                }
+                for (rel, src) in plugins.files {
+                    built.place_loader(rel, src)?;
+                }
+                session.plugins = plugins.dlls;
+                if !udp_ids.is_empty() {
+                    let rel = format!("{LOADER_DIR}/{}", crate::udp_ids::FILE);
+                    let src = built.overlay.join(crate::udp_ids::FILE);
+                    std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
+                    crate::write_json(&src, &udp_ids)?;
+                    built.plan.loader.insert(rel, src);
+                    built.lines.push(format!(
+                        "udp: telemetry reports {} added team id(s) and {} added driver id(s) under stock ids, {} track(s) by Swofty track id",
+                        udp_ids.teams.len(),
+                        udp_ids.drivers.len(),
+                        udp_ids.track_ids.len()
+                    ));
+                }
+                if !id_aliases.is_empty() {
+                    let rel = format!("{LOADER_DIR}/{}", crate::row_ids::ALIASES_FILE);
+                    let src = built.overlay.join(crate::row_ids::ALIASES_FILE);
+                    std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
+                    id_aliases.write(&src)?;
+                    built.plan.loader.insert(rel, src);
+                    let n: usize = id_aliases.tables.values().map(|t| t.len()).sum();
+                    built.lines.push(format!(
+                        "database: {LOADER_DIR}/{} maps {n} earlier row id(s) to the ids the rows have now, so saves made under the earlier ids load",
+                        crate::row_ids::ALIASES_FILE
+                    ));
+                }
+                if let Some(ids) = lent_ids
+                    .as_ref()
+                    .and_then(|l| l.room_stat_ids(run.order))
+                {
+                    let rel = format!("{LOADER_DIR}/{}", crate::row_ids::ROOM_STAT_IDS_FILE);
+                    let src = built.overlay.join(crate::row_ids::ROOM_STAT_IDS_FILE);
+                    std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
+                    crate::write_json(&src, &ids)?;
+                    built.plan.loader.insert(rel, src);
+                    built.lines.push(format!(
+                        "registry: {LOADER_DIR}/{} lends the host's stat ids for this session",
+                        crate::row_ids::ROOM_STAT_IDS_FILE
+                    ));
+                }
+                if let Some(placed) = &std_index {
+                    let index = built.overlay.join("registry-index.json");
+                    std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
+                    std::fs::write(&index, placed.index.to_json()).map_err(io_err(&index))?;
+                    for (rel, src) in placed
+                        .files
+                        .iter()
+                        .map(|(r, s)| (r.clone(), s.clone()))
+                        .chain([(crate::stdlib::index::PATH.to_owned(), index)])
+                    {
+                        match built.plan.loader.insert(rel.clone(), src.clone()) {
+                            Some(before) if before != src => {
+                                return Err(Error::Other(format!("{rel} is placed twice")));
+                            }
+                            _ => {}
+                        }
+                    }
+                    let data: usize = placed.index.addons.iter().map(|a| a.data.len()).sum();
+                    let named: usize = placed
+                        .index
+                        .addons
+                        .iter()
+                        .filter_map(|a| std16.get(&a.id))
+                        .map(|s| s.files.files.len())
+                        .sum();
+                    built.lines.push(format!(
+                        "registry: index for {} addon(s) with {data} data file(s) and {named} file(s) they name, under \
+                         {LOADER_DIR}/registry and {LOADER_DIR}/{ADDONS_DIR}",
+                        placed.index.addons.len()
+                    ));
+                }
+            }
+            None => built.warnings.push(format!(
+                "{CORE_ID}: the in-game loader was not found (native/dist, loader/ beside the swofty command, or {LOADER_ENV}); the game starts without it"
+            )),
+        }
+        Ok(())
+    }
 }

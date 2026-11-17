@@ -7,17 +7,34 @@ use super::failure::{game_refused_text, loader_missing};
 use super::registry::{added_tables, early_stage_line, registering_addons};
 use super::saved::built_files;
 use super::*;
+use std::collections::{BTreeMap, BTreeSet};
+use std::path::{Path, PathBuf};
+
+use swofty_formats::gvdb::Gvdb;
+
+use super::archives::{
+    carries_handling, merged_later, missing_archives, slice_merges, stock_holders, stray_asset_group_line,
+};
+use super::buildhash::BuildHash;
+use super::loader::loader_line;
+use super::registry::replaced_operations;
 use crate::activation::place::{SLOTS, slot_file};
+use crate::asset::AssetOp;
 use crate::asset::{AssetBatch, Op, Origin};
 use crate::asset::{FileKind, GroupOp, OpFile};
 use crate::asset::{FileOp, Root, Source};
 use crate::baseline::Identity;
 use crate::baseline::{Baseline, Objects, hex};
+use crate::builtin::{CORE_ID, loader_dir, loader_files};
+use crate::dbedit::driver_manager;
 use crate::erpbuild::Resized;
 use crate::launcher::BuildCx;
 use crate::launcher::{Addon, Builtin};
 use crate::manifest::AddonManifest;
+use crate::multiplayer::fingerprint;
 use crate::profile::Profile;
+use crate::runtime::db_edits;
+use crate::settings::OnAddons;
 
 mod addons;
 mod archives;
