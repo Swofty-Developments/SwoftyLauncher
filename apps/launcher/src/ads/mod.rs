@@ -13,6 +13,11 @@ use std::cell::RefCell;
 use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
+use std::time::{Duration, Instant};
+
+/// How long the game runs before the slots close. A game that stops sooner,
+/// such as one that crashes as it starts, leaves them as they were.
+pub(crate) const RELEASE_AFTER: Duration = Duration::from_secs(30);
 
 #[cfg(target_os = "linux")]
 mod linux;
@@ -112,6 +117,7 @@ pub(crate) struct Host {
     frame: u64,
     covered: bool,
     paused: bool,
+    game_since: Option<Instant>,
 }
 
 impl Host {
@@ -216,6 +222,7 @@ impl Ads {
             frame: 0,
             covered: false,
             paused: false,
+            game_since: None,
         }));
         Self { host: Some(host) }
     }
@@ -225,17 +232,38 @@ impl Ads {
         self.host.as_ref().is_some_and(|h| !h.borrow().paused)
     }
 
-    /// While the game runs every slot's webview is closed, freeing its memory,
-    /// and no slot shows. They open again once it has stopped.
-    pub(crate) fn pause(&self, paused: bool) {
-        let Some(host) = &self.host else { return };
-        let Ok(mut host) = host.try_borrow_mut() else {
-            return;
-        };
-        if paused && !host.slots.is_empty() {
-            host.release();
+    /// Whether the game is running. Returns true as it starts, when the shell
+    /// should call [`Ads::release_for_game`] after [`RELEASE_AFTER`]. The
+    /// slots open again once it has stopped.
+    pub(crate) fn game(&self, running: bool) -> bool {
+        let Some(host) = &self.host else { return false };
+        let host = &mut *host.borrow_mut();
+        match (running, host.game_since) {
+            (true, None) => {
+                host.game_since = Some(Instant::now());
+                true
+            }
+            (false, Some(_)) => {
+                host.game_since = None;
+                host.paused = false;
+                false
+            }
+            _ => false,
         }
-        host.paused = paused;
+    }
+
+    /// Closes every slot's webview, freeing its memory, once the game has run
+    /// for [`RELEASE_AFTER`]. Returns whether it did.
+    pub(crate) fn release_for_game(&self) -> bool {
+        let Some(host) = &self.host else { return false };
+        let host = &mut *host.borrow_mut();
+        let long = host.game_since.is_some_and(|t| t.elapsed() >= RELEASE_AFTER);
+        if !long || host.paused {
+            return false;
+        }
+        host.release();
+        host.paused = true;
+        true
     }
 
     /// At the start of the shell's render: whether an overlay could be over a slot.

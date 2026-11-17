@@ -18,8 +18,21 @@ impl Render for Shell {
             return wizard;
         }
         let state = self.play_state();
-        self.ads
-            .pause(matches!(state, PlayState::Running | PlayState::Elsewhere(_)));
+        if self
+            .ads
+            .game(matches!(state, PlayState::Running | PlayState::Elsewhere(_)))
+        {
+            cx.spawn(async move |this, cx| {
+                cx.background_executor().timer(crate::ads::RELEASE_AFTER).await;
+                this.update(cx, |this, cx| {
+                    if this.ads.release_for_game() {
+                        cx.notify();
+                    }
+                })
+                .ok();
+            })
+            .detach();
+        }
         let covered = self.ads_covered(window, cx);
         self.ads.begin(covered);
         let ad_video = self.ad_video(&state, p, cx);
