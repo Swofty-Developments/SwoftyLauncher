@@ -96,9 +96,11 @@ site_Sess_PitEntryDecision   L2     not exported       1  -                 an a
 
 | record | exported as |
 |---|---|
-| L1, or L2 without an agree row | not exported |
-| L2 with an agree row from someone other than the author | `experimental` |
+| L1, or L2 whose newest verify row is not `agree` | not exported |
+| L2 whose newest verify row is an `agree` from someone other than the author | `experimental` |
 | L3 with a passed trace test (maintainer) | `stable` |
+
+The newest row is the latest by date over the binding's name and its address together, so a later `partial` or `disagree` takes an exported binding out of the next build until someone verifies it again. A binding the core's own code needs can stay exported through `re/db/export_exceptions.json`, which names the row it overrides and the reason; that file always needs review.
 
 A second contributor re-derives the binding from the code alone (PROTOCOL.md §5), proves it on their own exe and adds the agree row:
 

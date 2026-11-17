@@ -297,10 +297,10 @@ def check_record(record, knowledge, relpath=None):
     return errs
 
 
-def referenced_in_code(name, root):
+def referenced_in_code(name, root, dirs=CODE_DIRS):
     """In-repo code that already names the binding would start using it the moment it is exported."""
     pat = re.compile(rb'(?<![A-Za-z0-9_])' + re.escape(name.encode()) + rb'(?![A-Za-z0-9_])')
-    for d in CODE_DIRS:
+    for d in dirs:
         for dirpath, dirnames, filenames in os.walk(os.path.join(root, d)):
             dirnames[:] = [x for x in dirnames if x not in ('node_modules', 'target', 'dist', 'build', '.git')]
             for f in filenames:

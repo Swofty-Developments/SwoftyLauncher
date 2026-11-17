@@ -304,9 +304,8 @@ class EngineBoundaries(Base):
 
     def test_an_agree_about_the_signature_does_not_export_the_binding(self):
         import bindgen
-        gate = bindgen.Gate.__new__(bindgen.Gate)
-        gate.verdicts = {('sig', self.doc['signature']['id']): ('agree', 'V1')}
-        gate.passed = set()
+        gate = bindgen.Gate(rows=[{'date': '2026-11-17', 'kind': 'sig', 'item': self.doc['signature']['id'],
+                                   'verdict': 'agree', 'notes': 'V1 text'}], exceptions={})
         row = self.doc['row']
         status, _ = gate('L2', row['evidence'], [('global', self.doc['name']), ('global', row['addr'])])
         self.assertIsNone(status)
