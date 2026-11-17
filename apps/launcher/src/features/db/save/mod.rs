@@ -15,6 +15,7 @@ use swofty_core::store::Store;
 use swofty_i18n::{tr, trf, trn};
 
 use super::{Then, guarded, text};
+use crate::features::db::Db;
 use crate::shell::Shell;
 use crate::ui::Field;
 use crate::ui::theme::palette;
@@ -281,12 +282,12 @@ impl Shell {
     fn db_after_save(&mut self, id: String, then: Option<Then>, cx: &mut Context<Self>) {
         self.db.addon_error = None;
         self.db.seen = None;
-        self.db_persist(cx);
+        Db::persist(self, cx);
         self.reload(cx);
         match then {
             Some(t) => self.db_then(t, cx),
             None => {
-                self.db_changed(None, false, cx);
+                Db::changed(self, None, false, cx);
                 self.show_addon(&id, cx);
             }
         }
