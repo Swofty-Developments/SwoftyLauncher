@@ -3,7 +3,6 @@
 #include "core/diagnostics/steps.hpp"
 #include "core/hud/hud_font_atlas.hpp"
 #include "core/hud/overlay/overlay.hpp"
-#include "core/runtime/loader/host_api.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -18,7 +17,7 @@ void decode_font(hud::img::Pixels &px)
     perf::Stopwatch font;
     if (!hud::img::grey(hud::font::ATLAS_PNG, hud::font::ATLAS_PNG_SIZE, px))
         swofty::log("[overlay] decoding the built-in font atlas failed; text draws nothing");
-    runtime::loader::api->log(perf::STEP_LINE, font.total_ms(), "overlay font atlas decode");
+    swofty::log(perf::STEP_LINE, font.total_ms(), "overlay font atlas decode");
 }
 
 }

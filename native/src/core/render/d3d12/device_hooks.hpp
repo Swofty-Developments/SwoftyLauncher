@@ -1,5 +1,5 @@
 #pragma once
-#include "core/hud/hud_guard.hpp"
+#include "core/hud/arm_policy.hpp"
 #include "core/render/d3d12_hooks.hpp"
 
 #include <atomic>

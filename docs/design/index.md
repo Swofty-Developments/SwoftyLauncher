@@ -40,6 +40,8 @@ The proposed 1.6 standard library, where addons register records, layers, events
 
 The proposed sponsor registry, one record per sponsor with ids and textures handled by the core, is at [Sponsor registry](/design/sponsor-registry).
 
+How the core's overlay arms, how a post-process pass is recorded, the shared D3D12 probe device and how to add a screen are at [Native render and front end](/design/native-render).
+
 ## Profiles and saves
 
 Your profile holds your addons, tracks and options. The design also calls for separate saves under `$DATA/saves/<profile>/` for each profile, keeping them away from vanilla saves and Steam Cloud.

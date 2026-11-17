@@ -45,6 +45,7 @@ struct Overlay {
     std::string drawn_by;
     Stats stats;
     FgWatch fg_watch;
+    OutputMode output;
     FrameCapture capture;
     Input input;
     BeforeFrameGen before_fg;

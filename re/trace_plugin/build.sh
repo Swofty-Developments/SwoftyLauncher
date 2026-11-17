@@ -11,7 +11,7 @@ export ZIG_GLOBAL_CACHE_DIR=$PWD/build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/build/
 
 NATIVE=../../native
 SH=$NATIVE/third_party/safetyhook
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
+. $NATIVE/tools/pin.sh
 CC=(zig cc -target x86_64-windows-gnu)
 CXX=(zig c++ -target x86_64-windows-gnu -std=c++23)
 
