@@ -1,4 +1,5 @@
 #include "core/guards/guard.hpp"
+#include "core/guards/memory.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -52,25 +53,9 @@ namespace guards = swofty_core::guards;
 
 guards::LogFirst<al::LOG_FIRST> logged{"fixes"};
 
-bool read_memory(uint64_t address, void *out, size_t n, void *)
-{
-    if (!address || address + n < address || !runtime::readable(reinterpret_cast<const void *>(address), n))
-        return false;
-    memcpy(out, reinterpret_cast<const void *>(address), n);
-    return true;
-}
-
-bool write_memory(uint64_t address, const void *in, size_t n, void *)
-{
-    if (!address || address + n < address || !runtime::readable(reinterpret_cast<const void *>(address), n))
-        return false;
-    memcpy(reinterpret_cast<void *>(address), in, n);
-    return true;
-}
-
 void record_pushed(SwoftyContext *c)
 {
-    al::Repair r = al::repair(read_memory, write_memory, nullptr, c->rbx);
+    al::Repair r = al::repair(guards::read_if_readable, guards::write_if_readable, nullptr, c->rbx);
     if (!r.ran || (r.filled == 0 && r.missing == 0 && r.backfilled == 0))
         return;
     auto line = logged.note();

@@ -1,9 +1,9 @@
 #include "core/guards/guard.hpp"
+#include "core/guards/memory.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
-#include "core/hooks/guard.hpp"
 #include "core/guards/session/session_enter_logic.hpp"
 
 #include <swofty/mixin.hpp>
@@ -43,18 +43,11 @@ se::Memo memo;
 constexpr uint64_t SLOW_US = 5000;
 guards::LogFirst<se::LOG_FIRST> slow_logged;
 
-bool read_memory(uint64_t address, void *out, size_t n, void *)
-{
-    if (!address || address + n < address)
-        return false;
-    return swofty_core::hooks::guard::copy_memory(out, reinterpret_cast<const void *>(address), n);
-}
-
 void name_hash(SwoftyContext *c)
 {
     LARGE_INTEGER t0, t1, hz;
     QueryPerformanceCounter(&t0);
-    se::Fix f = memo.decide(c->rcx, c->rsp, c->r13, GetTickCount64(), read_memory, nullptr);
+    se::Fix f = memo.decide(c->rcx, c->rsp, c->r13, GetTickCount64(), guards::read_catching_faults, nullptr);
     QueryPerformanceCounter(&t1);
     QueryPerformanceFrequency(&hz);
     uint64_t us = static_cast<uint64_t>(t1.QuadPart - t0.QuadPart) * 1000000 / static_cast<uint64_t>(hz.QuadPart);
