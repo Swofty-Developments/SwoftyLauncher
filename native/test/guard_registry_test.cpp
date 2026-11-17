@@ -14,33 +14,104 @@ namespace guards = swofty_core::guards;
 // The core mixin sets in the order offer_core_sets and settle_core_sets in runtime/manager.cpp listed them before the
 // registry took them over.
 const std::vector<std::string> OFFERED = {
-    "save_sandbox",      "career_content",     "characters",          "wizard",
-    "tile_route",        "era",                "tt_guard",            "career_alias",
-    "car_category",      "save_splice",        "ers_newlap",          "ers_mode",
-    "car_levers",        "garage_crew",        "garage_placement",    "pit_slots",
-    "pit_box",           "garage_slots",       "chassis_registry",    "standings_guard",
-    "ai_corner_guard",   "replay_grid_guard",  "fe_tile_guard",       "myteam_vehicle_guard",
-    "myteam_vehicle_heal", "myteam_vehicle_keep", "tyre_slots",       "tyre_models",
-    "track_acclim",      "audio_queue",        "heap_sizes",          "team_slots",
-    "track_select",      "leaderboard_guard",  "lap_host",            "thrustmaster_lcd",
-    "estimate_laptime",  "red_flag_recompute", "quali_tyres",         "box_grid",
-    "gp_continue",       "track_list_guard",   "watchdog_grace",      "garage_setup",
-    "theatre_list",      "tile_list_select",   "session_enter",       "ai_line_set",
+    "save_sandbox",
+    "career_content",
+    "characters",
+    "wizard",
+    "tile_route",
+    "era",
+    "tt_guard",
+    "career_alias",
+    "car_category",
+    "save_splice",
+    "ers_newlap",
+    "ers_mode",
+    "car_levers",
+    "garage_crew",
+    "garage_placement",
+    "pit_slots",
+    "pit_box",
+    "garage_slots",
+    "chassis_registry",
+    "standings_guard",
+    "ai_corner_guard",
+    "replay_grid_guard",
+    "fe_tile_guard",
+    "myteam_vehicle_guard",
+    "myteam_vehicle_heal",
+    "myteam_vehicle_keep",
+    "tyre_slots",
+    "tyre_models",
+    "track_acclim",
+    "audio_queue",
+    "heap_sizes",
+    "team_slots",
+    "track_select",
+    "leaderboard_guard",
+    "lap_host",
+    "thrustmaster_lcd",
+    "estimate_laptime",
+    "red_flag_recompute",
+    "quali_tyres",
+    "box_grid",
+    "gp_continue",
+    "track_list_guard",
+    "watchdog_grace",
+    "garage_setup",
+    "theatre_list",
+    "tile_list_select",
+    "session_enter",
+    "ai_line_set",
 };
 
 const std::vector<std::string> SETTLED = {
-    "save_sandbox",      "tile_route",         "career_content",      "characters",
-    "wizard",            "era",                "tt_guard",            "career_alias",
-    "car_category",      "save_splice",        "ers_newlap",          "lap_host",
-    "ers_mode",          "car_levers",         "standings_guard",     "fe_tile_guard",
-    "myteam_vehicle_guard", "myteam_vehicle_heal", "myteam_vehicle_keep", "ai_corner_guard",
-    "replay_grid_guard", "watchdog_grace",     "tyre_slots",          "tyre_models",
-    "garage_crew",       "pit_slots",          "pit_box",             "garage_slots",
-    "chassis_registry",  "track_acclim",       "audio_queue",         "heap_sizes",
-    "team_slots",        "track_select",       "leaderboard_guard",   "thrustmaster_lcd",
-    "estimate_laptime",  "red_flag_recompute", "box_grid",            "quali_tyres",
-    "gp_continue",       "track_list_guard",   "garage_setup",        "theatre_list",
-    "tile_list_select",  "session_enter",      "ai_line_set",
+    "save_sandbox",
+    "tile_route",
+    "career_content",
+    "characters",
+    "wizard",
+    "era",
+    "tt_guard",
+    "career_alias",
+    "car_category",
+    "save_splice",
+    "ers_newlap",
+    "lap_host",
+    "ers_mode",
+    "car_levers",
+    "standings_guard",
+    "fe_tile_guard",
+    "myteam_vehicle_guard",
+    "myteam_vehicle_heal",
+    "myteam_vehicle_keep",
+    "ai_corner_guard",
+    "replay_grid_guard",
+    "watchdog_grace",
+    "tyre_slots",
+    "tyre_models",
+    "garage_crew",
+    "pit_slots",
+    "pit_box",
+    "garage_slots",
+    "chassis_registry",
+    "track_acclim",
+    "audio_queue",
+    "heap_sizes",
+    "team_slots",
+    "track_select",
+    "leaderboard_guard",
+    "thrustmaster_lcd",
+    "estimate_laptime",
+    "red_flag_recompute",
+    "box_grid",
+    "quali_tyres",
+    "gp_continue",
+    "track_list_guard",
+    "garage_setup",
+    "theatre_list",
+    "tile_list_select",
+    "session_enter",
+    "ai_line_set",
 };
 
 int failures = 0;
@@ -65,8 +136,8 @@ size_t count(const std::string &text, const std::string &needle)
 {
     size_t n = 0;
     for (size_t at = text.find(needle); at != std::string::npos; at = text.find(needle, at + needle.size()))
-        if (at + needle.size() >= text.size() || !(std::isalnum((unsigned char)text[at + needle.size()]) ||
-                                                    text[at + needle.size()] == '_'))
+        if (at + needle.size() >= text.size() ||
+            !(std::isalnum((unsigned char)text[at + needle.size()]) || text[at + needle.size()] == '_'))
             n++;
     return n;
 }
@@ -101,12 +172,10 @@ int main(int argc, char **argv)
         }
     }
     for (auto &name : OFFERED)
-        expect(registrations[name] == 1,
-               name + " registers once (found " + std::to_string(registrations[name]) + ")");
+        expect(registrations[name] == 1, name + " registers once (found " + std::to_string(registrations[name]) + ")");
 
     if (failures)
         return 1;
-    std::printf("guard registry: %zu core sets in the starting offer and commit order, each registered once\n",
-                OFFERED.size());
+    std::printf("guard registry: %zu core sets in the starting offer and commit order, each registered once\n", OFFERED.size());
     return 0;
 }

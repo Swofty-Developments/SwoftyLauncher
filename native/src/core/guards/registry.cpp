@@ -31,10 +31,7 @@ std::string needs_text(const std::vector<const char *> &needs)
 
 }
 
-CoreSet::CoreSet(CoreSetId id) : id_(id)
-{
-    registered()[size_t(id)] = this;
-}
+CoreSet::CoreSet(CoreSetId id) : id_(id) { registered()[size_t(id)] = this; }
 
 FunctionSet::FunctionSet(CoreSetId id, Offer offer, Commit commit) : CoreSet(id), offer_(offer), commit_(commit) {}
 
@@ -88,10 +85,7 @@ std::vector<runtime::CoreMixins> SiteGuard::offer()
     return out;
 }
 
-bool SiteGuard::active() const
-{
-    return runtime::core_mixins_active(spec_.set);
-}
+bool SiteGuard::active() const { return runtime::core_mixins_active(spec_.set); }
 
 void SiteGuard::commit()
 {
@@ -121,7 +115,6 @@ FunctionSet function_sets[] = {
     {CoreSetId::car_levers, runtime::car_levers_mixins, runtime::car_levers_commit},
     {CoreSetId::garage_crew, runtime::garage_crew_mixins, runtime::garage_crew_commit},
     {CoreSetId::garage_placement, runtime::garage_placement_mixins},
-    {CoreSetId::pit_slots, runtime::pit_slots_mixins, runtime::pit_slots_commit},
     {CoreSetId::pit_box, runtime::pit_box_mixins, runtime::pit_box_commit},
     {CoreSetId::standings_guard, runtime::standings_guard_mixins, runtime::standings_guard_commit},
     {CoreSetId::replay_grid_guard, runtime::replay_grid_guard_mixins, runtime::replay_grid_guard_commit},
@@ -131,7 +124,6 @@ FunctionSet function_sets[] = {
     {CoreSetId::myteam_vehicle_keep, runtime::myteam_vehicle_keep_mixins, runtime::myteam_vehicle_keep_commit},
     {CoreSetId::tyre_models, runtime::tyre_models_mixins, runtime::tyre_models_commit},
     {CoreSetId::track_acclim, runtime::track_acclim_mixins, runtime::track_acclim_commit},
-    {CoreSetId::audio_queue, runtime::audio_queue_mixins, runtime::audio_queue_commit},
     {CoreSetId::heap_sizes, runtime::heap_sizes_mixins, runtime::heap_sizes_commit},
     {CoreSetId::team_slots, runtime::team_slots_mixins, runtime::team_slots_commit},
     {CoreSetId::track_select, runtime::track_select_mixins, runtime::track_select_commit},
@@ -144,7 +136,6 @@ FunctionSet function_sets[] = {
     {CoreSetId::watchdog_grace, runtime::watchdog_grace_mixins, runtime::watchdog_grace_commit},
     {CoreSetId::theatre_list, runtime::theatre_list_mixins, runtime::theatre_list_commit},
     {CoreSetId::tile_list_select, runtime::tile_list_select_mixins, runtime::tile_list_select_commit},
-    {CoreSetId::session_enter, runtime::session_enter_mixins, runtime::session_enter_commit},
 };
 
 }

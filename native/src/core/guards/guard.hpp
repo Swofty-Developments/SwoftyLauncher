@@ -69,7 +69,7 @@ struct SiteGuardSpec {
     // The environment variable whose 0 or off turns the guard off.
     const char *env;
     // Resolved first, each into its address; the guard is off when one does not resolve.
-    std::vector<Keep> keeps;
+    std::vector<Keep> keeps = {};
     // Every binding the guard needs, in the order its off line names them. Those that are not keeps are resolved
     // after the keeps, in this order, until one fails.
     std::vector<const char *> needs;
