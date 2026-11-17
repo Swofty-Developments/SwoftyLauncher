@@ -20,11 +20,11 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::baseline::sha256_file;
+use crate::game_folder::baseline::sha256_file;
+use crate::saves::vault::restore::{Running, blocker, restore_held};
+use crate::saves::vault::{EventKind, Layout, Location, Meta, Reason, Snapshot, Taken, Vault};
 use crate::session::SessionRecord;
 use crate::store::Store;
-use crate::vault::restore::{Running, blocker, restore_held};
-use crate::vault::{EventKind, Layout, Location, Meta, Reason, Snapshot, Taken, Vault};
 use crate::{Error, Result};
 
 pub const FILE: &str = "state/stalled-saves.json";
@@ -150,7 +150,7 @@ pub enum Outcome {
 }
 
 /// The data file of a snapshot: `profile/NXDSMWW.BWW`, else the largest file.
-pub fn data_entry(s: &Snapshot) -> Option<&crate::vault::FileEntry> {
+pub fn data_entry(s: &Snapshot) -> Option<&crate::saves::vault::FileEntry> {
     s.files
         .iter()
         .find(|f| f.name.ends_with(DATA_FILE))
@@ -192,22 +192,22 @@ fn loaded_profile(dir: &Path) -> bool {
 /// How the session in `dir` went past the profile load. A start-screen stall that ended in a crash (the game's
 /// hang watchdog closes a frozen game) or that an addon known to cause one explains is not the save's.
 pub fn outcome(dir: &Path, store: &Store) -> Outcome {
-    let Some(perf) = crate::known_problems::read_perf(dir) else {
+    let Some(perf) = crate::diagnostics::known_problems::read_perf(dir) else {
         return Outcome::Unknown;
     };
-    match crate::known_problems::perf_start_screen(&perf) {
+    match crate::diagnostics::known_problems::perf_start_screen(&perf) {
         Some(secs) if secs >= STALL_SECS => {
             let record = SessionRecord::read(dir);
             match !record.crashed()
                 && loaded_profile(dir)
-                && !crate::known_problems::addon_stall(&record, store)
+                && !crate::diagnostics::known_problems::addon_stall(&record, store)
             {
                 true => Outcome::Stalled(secs),
                 false => Outcome::Unknown,
             }
         }
         Some(_) => Outcome::Unknown,
-        None => match crate::known_problems::last_screen(&perf) {
+        None => match crate::diagnostics::known_problems::last_screen(&perf) {
             Some(screen) if !BOOT_SCREENS.contains(&screen) => Outcome::Passed,
             Some(_) | None => Outcome::Unknown,
         },
@@ -451,7 +451,7 @@ fn repair(data: &Path, loc: &Location, ledger: &mut Ledger, running: Running, no
                     format!(
                         "{what}; the career vault keeps it as snapshot {} and the version from {} ({}) is back in its place",
                         kept.as_deref().unwrap_or("?"),
-                        crate::vault::human(good.at),
+                        crate::saves::vault::human(good.at),
                         good.id
                     )
                 }
@@ -517,11 +517,11 @@ fn locations(store: &Store, game: Option<&Location>) -> Vec<Location> {
     let data = &store.root;
     let mut out: Vec<Location> = Vec::new();
     for p in store.profile_names().unwrap_or_default() {
-        out.push(crate::launcher_saves::location(data, &p));
-        out.push(crate::launcher_saves::location_ea(data, &p));
+        out.push(crate::saves::launcher::location(data, &p));
+        out.push(crate::saves::launcher::location_ea(data, &p));
     }
     out.extend(game.cloned());
-    out.retain(crate::launcher_saves::has_files);
+    out.retain(crate::saves::launcher::has_files);
     out.dedup_by(|a, b| a.source == b.source);
     out
 }

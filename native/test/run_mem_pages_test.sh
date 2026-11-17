@@ -9,9 +9,9 @@ case "$(uname -s)" in
 MINGW* | MSYS* | CYGWIN*) NATIVE=1 ;;
 *) NATIVE=0 ;;
 esac
-if [[ $NATIVE == 0 ]] && { ! command -v wine >/dev/null || ! command -v zig >/dev/null; }; then
-    exec nix shell nixpkgs#zig nixpkgs#wineWow64Packages.stable -c "$SELF" "$@"
-fi
+NEEDS=zig
+[[ $NATIVE == 0 ]] && NEEDS="zig wine"
+. "$(dirname "$SELF")/lib/env.sh"
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
 OUT=${1:-$PWD/../build/mem-pages-test}
 SDK=../../packages/sdk/include
@@ -27,8 +27,8 @@ fi
 CXX=(zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -Wall -Wextra -I$SDK)
 "${PIN[@]}" "${CXX[@]}" -I../src -DSWOFTY_MEM_SHARED -o "$OUT/mem_pages_test.exe" mem_pages_test.cpp ../src/core/runtime/mem_pages.cpp || exit 1
 "${PIN[@]}" "${CXX[@]}" -I../src -DSWOFTY_MEM_SHARED -shared -o "$OUT/core/swofty_core.dll" mem_addon_core.cpp ../src/core/runtime/mem_pages.cpp || exit 1
-"${PIN[@]}" "${CXX[@]}" -I../src -DMEM_ADDON_FAKE_CORE -shared -o "$OUT/fake/swofty_core.dll" mem_addon_core.cpp || exit 1
-"${PIN[@]}" "${CXX[@]}" -I../src -Werror -o "$OUT/mem_addon_test.exe" mem_addon_test.cpp || exit 1
+"${PIN[@]}" "${CXX[@]}" -DMEM_ADDON_FAKE_CORE -shared -o "$OUT/fake/swofty_core.dll" mem_addon_core.cpp || exit 1
+"${PIN[@]}" "${CXX[@]}" -Werror -o "$OUT/mem_addon_test.exe" mem_addon_test.cpp || exit 1
 [[ $NATIVE == 1 ]] || timeout 300 wineboot -i >/dev/null 2>&1
 timeout 300 "${PIN[@]}" "${RUN[@]}" "$OUT/mem_pages_test.exe" 2>/dev/null
 r=$?

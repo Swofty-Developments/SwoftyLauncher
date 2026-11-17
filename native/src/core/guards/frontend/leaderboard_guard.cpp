@@ -1,4 +1,5 @@
 #include "core/guards/frontend/leaderboard_guard_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -75,7 +76,6 @@ constexpr uintptr_t PRESENTER_CONTEXT = 0x20, PRESENTER_TRACK = 0x3c, CONTEXT_MO
                     LIST_BEGIN = 0x10, LIST_END = 0x18, ENTRANT_RECORD = 0x88;
 
 uintptr_t boards_done = 0, tab_done = 0, bound_tab_done = 0, reference_done = 0, rival_done = 0, list_done = 0;
-bool offered = false, settled = false;
 std::atomic<int> skipped{0}, tab_skipped{0}, reference_skipped{0}, list_skipped{0};
 
 bool env_off(const char *name, const char *label)
@@ -207,110 +207,108 @@ void reference_list_board(SwoftyContext *c)
     reference_list_skipped(c->rsi, c->rdx);
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
+class LeaderboardGuard final : public guards::Guard {
+public:
+    LeaderboardGuard() : Guard(guards::CoreSetId::leaderboard_guard) {}
 
-std::vector<CoreMixins> leaderboard_guard_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    if (!env_off("SWOFTY_LEADERBOARD_GUARD", "time trial leaderboard guard")) {
-        boards_done = swofty::api->resolve("site_Game_TimeTrialLeaderboard_BoardsDone");
-        if (!boards_done || !swofty::api->resolve("site_Game_TimeTrialLeaderboard_BoardRead")) {
-            boards_done = 0;
-            swofty::log("[leaderboard] time trial leaderboard guard off: needs site_Game_TimeTrialLeaderboard_BoardRead "
-                        "and site_Game_TimeTrialLeaderboard_BoardsDone, which this build does not resolve");
-        } else {
-            out.push_back({MIXIN,
-                           {{"site_Game_TimeTrialLeaderboard_BoardRead", SWOFTY_MIXIN_SITE, 100, (void *)&board_read, nullptr}}});
+private:
+    void build(std::vector<runtime::CoreMixins> &out) override
+    {
+        if (!env_off("SWOFTY_LEADERBOARD_GUARD", "time trial leaderboard guard")) {
+            boards_done = swofty::api->resolve("site_Game_TimeTrialLeaderboard_BoardsDone");
+            if (!boards_done || !swofty::api->resolve("site_Game_TimeTrialLeaderboard_BoardRead")) {
+                boards_done = 0;
+                swofty::log("[leaderboard] time trial leaderboard guard off: needs site_Game_TimeTrialLeaderboard_BoardRead "
+                            "and site_Game_TimeTrialLeaderboard_BoardsDone, which this build does not resolve");
+            } else {
+                out.push_back({MIXIN,
+                               {{"site_Game_TimeTrialLeaderboard_BoardRead", SWOFTY_MIXIN_SITE, 100, (void *)&board_read, nullptr}}});
+            }
+        }
+        if (!env_off("SWOFTY_LEADERBOARD_TAB_GUARD", "time trial leaderboard tab guard")) {
+            tab_done = swofty::api->resolve("site_Sess_TimeTrialLeaderboard_TabDone");
+            bound_tab_done = swofty::api->resolve("site_Sess_TimeTrialLeaderboard_BoundTabDone");
+            if (!tab_done || !swofty::api->resolve("site_Sess_TimeTrialLeaderboard_TabChild"))
+                tab_done = 0;
+            if (!bound_tab_done || !swofty::api->resolve("site_Sess_TimeTrialLeaderboard_BoundTabChild"))
+                bound_tab_done = 0;
+            std::vector<SwoftyMixin> sites;
+            if (tab_done)
+                sites.push_back({"site_Sess_TimeTrialLeaderboard_TabChild", SWOFTY_MIXIN_SITE, 100, (void *)&tab_child_read, nullptr});
+            if (bound_tab_done)
+                sites.push_back({"site_Sess_TimeTrialLeaderboard_BoundTabChild", SWOFTY_MIXIN_SITE, 100, (void *)&bound_tab_child_read,
+                                 nullptr});
+            if (sites.empty())
+                swofty::log("[leaderboard] time trial leaderboard tab guard off: needs site_Sess_TimeTrialLeaderboard_TabChild "
+                            "and site_Sess_TimeTrialLeaderboard_TabDone, which this build does not resolve");
+            else
+                out.push_back({TAB_MIXIN, std::move(sites)});
+        }
+        if (!env_off("SWOFTY_TT_REFERENCE_LOG_GUARD", "time trial reference log guard")) {
+            reference_done = swofty::api->resolve("site_Game_TimeTrial_SetReferenceLogDone");
+            rival_done = swofty::api->resolve("site_Game_GhostlapTrace_RivalLogDone");
+            if (!reference_done || !swofty::api->resolve("site_Game_TimeTrial_SetReferenceLogBoard"))
+                reference_done = 0;
+            if (!rival_done || !swofty::api->resolve("site_Game_GhostlapTrace_RivalLogBoard"))
+                rival_done = 0;
+            std::vector<SwoftyMixin> sites;
+            if (reference_done)
+                sites.push_back({"site_Game_TimeTrial_SetReferenceLogBoard", SWOFTY_MIXIN_SITE, 100, (void *)&reference_log_board, nullptr});
+            if (rival_done)
+                sites.push_back({"site_Game_GhostlapTrace_RivalLogBoard", SWOFTY_MIXIN_SITE, 100, (void *)&rival_log_board, nullptr});
+            if (sites.empty())
+                swofty::log("[leaderboard] time trial reference log guard off: needs site_Game_TimeTrial_SetReferenceLogBoard "
+                            "and site_Game_TimeTrial_SetReferenceLogDone, which this build does not resolve");
+            else
+                out.push_back({REFERENCE_MIXIN, std::move(sites)});
+        }
+        if (!env_off("SWOFTY_TT_REFERENCE_LIST_GUARD", "time trial reference list guard")) {
+            list_done = swofty::api->resolve("site_Game_TimeTrial_SetReferenceNoList");
+            if (!list_done || !swofty::api->resolve("site_Game_TimeTrial_SetReferenceListBoard")) {
+                list_done = 0;
+                swofty::log("[leaderboard] time trial reference list guard off: needs site_Game_TimeTrial_SetReferenceListBoard "
+                            "and site_Game_TimeTrial_SetReferenceNoList, which this build does not resolve");
+            } else {
+                out.push_back({LIST_MIXIN,
+                               {{"site_Game_TimeTrial_SetReferenceListBoard", SWOFTY_MIXIN_SITE, 100, (void *)&reference_list_board,
+                                 nullptr}}});
+            }
         }
     }
-    if (!env_off("SWOFTY_LEADERBOARD_TAB_GUARD", "time trial leaderboard tab guard")) {
-        tab_done = swofty::api->resolve("site_Sess_TimeTrialLeaderboard_TabDone");
-        bound_tab_done = swofty::api->resolve("site_Sess_TimeTrialLeaderboard_BoundTabDone");
-        if (!tab_done || !swofty::api->resolve("site_Sess_TimeTrialLeaderboard_TabChild"))
-            tab_done = 0;
-        if (!bound_tab_done || !swofty::api->resolve("site_Sess_TimeTrialLeaderboard_BoundTabChild"))
-            bound_tab_done = 0;
-        std::vector<SwoftyMixin> sites;
-        if (tab_done)
-            sites.push_back({"site_Sess_TimeTrialLeaderboard_TabChild", SWOFTY_MIXIN_SITE, 100, (void *)&tab_child_read, nullptr});
-        if (bound_tab_done)
-            sites.push_back({"site_Sess_TimeTrialLeaderboard_BoundTabChild", SWOFTY_MIXIN_SITE, 100, (void *)&bound_tab_child_read,
-                             nullptr});
-        if (sites.empty())
-            swofty::log("[leaderboard] time trial leaderboard tab guard off: needs site_Sess_TimeTrialLeaderboard_TabChild "
-                        "and site_Sess_TimeTrialLeaderboard_TabDone, which this build does not resolve");
-        else
-            out.push_back({TAB_MIXIN, std::move(sites)});
-    }
-    if (!env_off("SWOFTY_TT_REFERENCE_LOG_GUARD", "time trial reference log guard")) {
-        reference_done = swofty::api->resolve("site_Game_TimeTrial_SetReferenceLogDone");
-        rival_done = swofty::api->resolve("site_Game_GhostlapTrace_RivalLogDone");
-        if (!reference_done || !swofty::api->resolve("site_Game_TimeTrial_SetReferenceLogBoard"))
-            reference_done = 0;
-        if (!rival_done || !swofty::api->resolve("site_Game_GhostlapTrace_RivalLogBoard"))
-            rival_done = 0;
-        std::vector<SwoftyMixin> sites;
-        if (reference_done)
-            sites.push_back({"site_Game_TimeTrial_SetReferenceLogBoard", SWOFTY_MIXIN_SITE, 100, (void *)&reference_log_board, nullptr});
-        if (rival_done)
-            sites.push_back({"site_Game_GhostlapTrace_RivalLogBoard", SWOFTY_MIXIN_SITE, 100, (void *)&rival_log_board, nullptr});
-        if (sites.empty())
-            swofty::log("[leaderboard] time trial reference log guard off: needs site_Game_TimeTrial_SetReferenceLogBoard "
-                        "and site_Game_TimeTrial_SetReferenceLogDone, which this build does not resolve");
-        else
-            out.push_back({REFERENCE_MIXIN, std::move(sites)});
-    }
-    if (!env_off("SWOFTY_TT_REFERENCE_LIST_GUARD", "time trial reference list guard")) {
-        list_done = swofty::api->resolve("site_Game_TimeTrial_SetReferenceNoList");
-        if (!list_done || !swofty::api->resolve("site_Game_TimeTrial_SetReferenceListBoard")) {
-            list_done = 0;
-            swofty::log("[leaderboard] time trial reference list guard off: needs site_Game_TimeTrial_SetReferenceListBoard "
-                        "and site_Game_TimeTrial_SetReferenceNoList, which this build does not resolve");
-        } else {
-            out.push_back({LIST_MIXIN,
-                           {{"site_Game_TimeTrial_SetReferenceListBoard", SWOFTY_MIXIN_SITE, 100, (void *)&reference_list_board,
-                             nullptr}}});
-        }
-    }
-    return out;
-}
 
-void leaderboard_guard_commit()
-{
-    if (!offered || settled)
-        return;
-    settled = true;
-    if (boards_done)
-        swofty::log("[leaderboard] time trial leaderboard guard %s",
-                    core_mixins_active(MIXIN)
-                        ? "armed: View Leaderboards at a track without a board returns instead of faulting"
-                        : "did not install (see the [core] lines)");
-    if (tab_done || bound_tab_done)
-        swofty::log("[leaderboard] time trial leaderboard tab guard %s",
-                    core_mixins_active(TAB_MIXIN)
-                        ? (tab_done && bound_tab_done
-                               ? "armed: activating the leaderboard tab without a child list model returns instead of faulting"
-                               : "armed on one of its two tab activations (see the [core] lines)")
-                        : "did not install (see the [core] lines)");
-    if (reference_done || rival_done)
-        swofty::log("[leaderboard] time trial reference log guard %s",
-                    core_mixins_active(REFERENCE_MIXIN)
-                        ? (rival_done && reference_done
-                               ? "armed: the game's GAME and GHOSTLAP-TRACE lines for a reference with no board are "
-                                 "skipped instead of faulting"
-                               : "armed on one of its two log lines (see the [core] lines)")
-                        : "did not install (see the [core] lines)");
-    if (list_done)
-        swofty::log("[leaderboard] time trial reference list guard %s",
-                    core_mixins_active(LIST_MIXIN)
-                        ? "armed: a Time Trial reference for a selected list without a leaderboard is left unset instead of "
-                          "throwing"
-                        : "did not install (see the [core] lines)");
-}
+    void settle() override
+    {
+        if (boards_done)
+            swofty::log("[leaderboard] time trial leaderboard guard %s",
+                        runtime::core_mixins_active(MIXIN)
+                            ? "armed: View Leaderboards at a track without a board returns instead of faulting"
+                            : "did not install (see the [core] lines)");
+        if (tab_done || bound_tab_done)
+            swofty::log("[leaderboard] time trial leaderboard tab guard %s",
+                        runtime::core_mixins_active(TAB_MIXIN)
+                            ? (tab_done && bound_tab_done
+                                   ? "armed: activating the leaderboard tab without a child list model returns instead of faulting"
+                                   : "armed on one of its two tab activations (see the [core] lines)")
+                            : "did not install (see the [core] lines)");
+        if (reference_done || rival_done)
+            swofty::log("[leaderboard] time trial reference log guard %s",
+                        runtime::core_mixins_active(REFERENCE_MIXIN)
+                            ? (rival_done && reference_done
+                                   ? "armed: the game's GAME and GHOSTLAP-TRACE lines for a reference with no board are "
+                                     "skipped instead of faulting"
+                                   : "armed on one of its two log lines (see the [core] lines)")
+                            : "did not install (see the [core] lines)");
+        if (list_done)
+            swofty::log("[leaderboard] time trial reference list guard %s",
+                        runtime::core_mixins_active(LIST_MIXIN)
+                            ? "armed: a Time Trial reference for a selected list without a leaderboard is left unset instead of "
+                              "throwing"
+                            : "did not install (see the [core] lines)");
+    }
+};
+
+LeaderboardGuard guard;
 
 }

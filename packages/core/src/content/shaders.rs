@@ -12,7 +12,7 @@ use sha2::{Digest, Sha256};
 pub use swofty_shaders::{Active, ActiveInstance, Catalog, CompiledEffect, Effect, Target};
 use swofty_shaders::{Origin, Severity};
 
-use crate::builtin::CORE_ID;
+use crate::addons::builtin::CORE_ID;
 use crate::profile::Profile;
 use crate::store::Store;
 use crate::{Error, Result, io_err};
@@ -700,7 +700,7 @@ fn extract_library(store: &Store) -> Result<PathBuf> {
         h.update((bytes.len() as u64).to_le_bytes());
         h.update(bytes);
     }
-    let key = crate::baseline::hex(&h.finalize());
+    let key = crate::game_folder::baseline::hex(&h.finalize());
     let root = store.shaders_cache_dir().join("library");
     let dir = root.join(&key[..16]);
     if dir.join(".done").is_file() {
@@ -729,7 +729,7 @@ fn extract_library(store: &Store) -> Result<PathBuf> {
 }
 
 fn decode_image(png: &[u8]) -> std::result::Result<(u32, u32, Vec<u8>), String> {
-    let tex = crate::postfx::png_to_tex(png)?;
+    let tex = crate::content::postfx::png_to_tex(png)?;
     let word = |at: usize| u32::from_le_bytes(tex[at..at + 4].try_into().expect("four bytes"));
     Ok((word(4), word(8), tex[16..].to_vec()))
 }
@@ -752,7 +752,7 @@ pub fn compile_all(store: &Store, target: Target) -> (Vec<CompiledEffect>, Vec<S
 
 fn compile_loaded(store: &Store, loaded: &Loaded, target: Target) -> (Vec<CompiledEffect>, Vec<String>) {
     let mut warnings = loaded.warnings.clone();
-    let Some(dxc) = crate::postfx::dxc() else {
+    let Some(dxc) = crate::content::postfx::dxc() else {
         warnings.push("dxc was not found (set SWOFTY_DXC, or put dxc on PATH)".into());
         return (Vec::new(), warnings);
     };
@@ -790,23 +790,25 @@ fn compile_loaded(store: &Store, loaded: &Loaded, target: Target) -> (Vec<Compil
                 continue;
             }
         };
-        let blobs = match swofty_shaders::compile(effect, &dir, target, &dxc, crate::postfx::HEADER, &cache) {
-            Ok(b) => b,
-            Err(e) if target == Target::Spirv && e.contains("SPIR-V CodeGen not available") => {
-                // Every effect fails the same way: say it once.
-                warnings.clear();
-                warnings.push(
+        let blobs =
+            match swofty_shaders::compile(effect, &dir, target, &dxc, crate::content::postfx::HEADER, &cache)
+            {
+                Ok(b) => b,
+                Err(e) if target == Target::Spirv && e.contains("SPIR-V CodeGen not available") => {
+                    // Every effect fails the same way: say it once.
+                    warnings.clear();
+                    warnings.push(
                     "This launcher's shader compiler can't build effects for the preview (it has no SPIR-V). \
                      Shaders still work in game; updating Swofty Launcher brings a compiler that can."
                         .to_owned(),
                 );
-                return (Vec::new(), warnings);
-            }
-            Err(e) => {
-                warnings.push(format!("the effect {} did not compile: {e}", effect.id));
-                continue;
-            }
-        };
+                    return (Vec::new(), warnings);
+                }
+                Err(e) => {
+                    warnings.push(format!("the effect {} did not compile: {e}", effect.id));
+                    continue;
+                }
+            };
         let mut images = Vec::new();
         let mut failed = None;
         for t in &effect.textures {
@@ -970,7 +972,7 @@ pub fn build_files(store: &Store, profile: &Profile) -> BuildFiles {
     active.serial = 0;
     h.update(serde_json::to_vec(&active).expect("serialisable"));
     active.serial = serial;
-    out.digest = crate::baseline::hex(&h.finalize());
+    out.digest = crate::game_folder::baseline::hex(&h.finalize());
     let passes: usize = active
         .instances
         .iter()
@@ -1369,7 +1371,7 @@ pub(crate) mod tests {
 
     #[test]
     fn the_catalog_effects_compile_to_dxil_when_dxc_is_at_hand() {
-        if crate::postfx::dxc().is_none() {
+        if crate::content::postfx::dxc().is_none() {
             return;
         }
         let root = temp("compile");

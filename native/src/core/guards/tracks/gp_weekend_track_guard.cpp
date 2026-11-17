@@ -1,5 +1,6 @@
 #include "core/apply/moments.hpp"
 #include "core/guards/tracks/gp_weekend_track_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -150,7 +151,4 @@ void setup()
 
 }
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("grand prix weekend track guard", setup);
-}
+SWOFTY_HOOK_GUARD(gp_weekend_track, "grand prix weekend track guard", setup)

@@ -126,7 +126,8 @@ impl Names {
             None => crate::dbedit::stock_database(store, game).ok()?,
         };
         let edits = built.and_then(|b| b.edits);
-        let english = crate::baseline::original_lang(&store.root, &game.dir, &game.identity, "eng").ok();
+        let english =
+            crate::game_folder::baseline::original_lang(&store.root, &game.dir, &game.identity, "eng").ok();
         let key: Vec<FileKey> = [Some(&path), edits.as_ref(), english.as_ref()]
             .into_iter()
             .map(|p| p.map(|p| file_key(p)))

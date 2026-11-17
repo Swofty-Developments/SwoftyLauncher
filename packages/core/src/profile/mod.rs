@@ -7,7 +7,7 @@ use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};
 
-use crate::builtin::CORE_ID;
+use crate::addons::builtin::CORE_ID;
 use crate::manifest::{AddonManifest, AddonOption, Binds};
 
 pub const VANILLA: &str = "vanilla";

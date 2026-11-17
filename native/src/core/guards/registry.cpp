@@ -1,5 +1,6 @@
 #include "core/guards/guard.hpp"
 #include "core/guards/install.hpp"
+#include "core/guards/lines.hpp"
 #include "core/services/lap_host.hpp"
 
 #include <windows.h>
@@ -18,15 +19,10 @@ std::array<CoreSet *, CORE_SET_COUNT> &registered()
     return sets;
 }
 
-std::string needs_text(const std::vector<const char *> &needs)
+std::array<const HookGuard *, HOOK_GUARD_COUNT> &hook_guards()
 {
-    std::string out;
-    for (size_t i = 0; i < needs.size(); i++) {
-        if (i)
-            out += i + 1 == needs.size() ? " and " : ", ";
-        out += needs[i];
-    }
-    return out;
+    static std::array<const HookGuard *, HOOK_GUARD_COUNT> guards{};
+    return guards;
 }
 
 }
@@ -35,67 +31,82 @@ CoreSet::CoreSet(CoreSetId id) : id_(id) { registered()[size_t(id)] = this; }
 
 FunctionSet::FunctionSet(CoreSetId id, Offer offer, Commit commit) : CoreSet(id), offer_(offer), commit_(commit) {}
 
-bool env_off(const char *name, char (&value)[16])
+bool env_off(const char *name, char (&value)[16], bool (*off_value)(const char *))
 {
     value[0] = 0;
     DWORD n = GetEnvironmentVariableA(name, value, sizeof value);
-    return n && n < sizeof value && (!strcmp(value, "0") || !strcmp(value, "off"));
+    if (!n || n >= sizeof value)
+        return false;
+    return off_value ? off_value(value) : !strcmp(value, "0") || !strcmp(value, "off");
 }
 
-SiteGuard::SiteGuard(CoreSetId id, SiteGuardSpec spec) : CoreSet(id), spec_(std::move(spec)) {}
-
-bool SiteGuard::resolve()
+std::vector<runtime::CoreMixins> Guard::offer()
 {
-    bool kept = true;
-    for (auto &k : spec_.keeps)
-        kept &= (*k.address = swofty::api->resolve(k.binding)) != 0;
-    bool found = kept;
-    for (const char *need : spec_.needs) {
+    std::vector<runtime::CoreMixins> out;
+    if (offered_ || !runtime::code_ready() || !ready())
+        return out;
+    offered_ = true;
+    build(out);
+    return out;
+}
+
+void Guard::commit()
+{
+    if (!offered_ || settled_)
+        return;
+    settled_ = true;
+    settle();
+}
+
+bool resolve(const std::vector<Keep> &keeps, const std::vector<const char *> &needs)
+{
+    bool found = true;
+    for (auto &k : keeps)
+        found &= (*k.address = swofty::api->resolve(k.binding)) != 0;
+    for (const char *need : needs) {
         if (!found)
             break;
         bool keep = false;
-        for (auto &k : spec_.keeps)
+        for (auto &k : keeps)
             keep |= !strcmp(k.binding, need);
         if (!keep)
             found = swofty::api->resolve(need) != 0;
     }
-    if (found)
-        return true;
-    for (auto &k : spec_.keeps)
-        *k.address = 0;
-    swofty::log("%s off: needs %s, which this build does not resolve", spec_.name, needs_text(spec_.needs).c_str());
-    return false;
+    if (!found)
+        for (auto &k : keeps)
+            *k.address = 0;
+    return found;
 }
 
-std::vector<runtime::CoreMixins> SiteGuard::offer()
+SiteGuard::SiteGuard(CoreSetId id, SiteGuardSpec spec) : Guard(id), spec_(std::move(spec)) {}
+
+void SiteGuard::build(std::vector<runtime::CoreMixins> &out)
 {
-    std::vector<runtime::CoreMixins> out;
-    if (offered_ || !runtime::code_ready())
-        return out;
-    offered_ = true;
     char value[16];
     if (env_off(spec_.env, value)) {
-        swofty::log("%s off (%s=%s)", spec_.name, spec_.env, value);
-        return out;
+        swofty::log("%s", lines::off(spec_.name, spec_.env, value).c_str());
+        return;
     }
-    if (!resolve() || !admit())
-        return out;
+    if (!resolve(spec_.keeps, spec_.needs)) {
+        swofty::log("%s", lines::unresolved(spec_.name, spec_.needs).c_str());
+        return;
+    }
+    if (!admit())
+        return;
     wanted_ = true;
-    out.push_back({spec_.set, spec_.mixins});
-    return out;
+    runtime::CoreMixins set{spec_.set, spec_.mixins};
+    extend(set);
+    out.push_back(std::move(set));
 }
 
-bool SiteGuard::active() const { return runtime::core_mixins_active(spec_.set); }
-
-void SiteGuard::commit()
+void SiteGuard::settle()
 {
-    if (!offered_ || settled_ || (!wanted_ && !spec_.settles_when_off))
+    if (!wanted_ && !spec_.settles_when_off)
         return;
-    settled_ = true;
-    if (active())
-        swofty::log("%s armed: %s", spec_.name, spec_.armed);
+    if (runtime::core_mixins_active(spec_.set))
+        swofty::log("%s", lines::armed(spec_.name, spec_.armed).c_str());
     else
-        swofty::log("%s did not install (see the [core] lines)", spec_.name);
+        swofty::log("%s", lines::not_installed(spec_.name).c_str());
 }
 
 namespace {
@@ -113,32 +124,30 @@ FunctionSet function_sets[] = {
     {CoreSetId::car_category, runtime::car_category_mixins, runtime::car_category_commit},
     {CoreSetId::save_splice, runtime::save_splice_mixins, runtime::save_splice_commit},
     {CoreSetId::car_levers, runtime::car_levers_mixins, runtime::car_levers_commit},
-    {CoreSetId::garage_crew, runtime::garage_crew_mixins, runtime::garage_crew_commit},
     {CoreSetId::garage_placement, runtime::garage_placement_mixins},
-    {CoreSetId::pit_box, runtime::pit_box_mixins, runtime::pit_box_commit},
-    {CoreSetId::standings_guard, runtime::standings_guard_mixins, runtime::standings_guard_commit},
-    {CoreSetId::replay_grid_guard, runtime::replay_grid_guard_mixins, runtime::replay_grid_guard_commit},
-    {CoreSetId::fe_tile_guard, runtime::fe_tile_guard_mixins, runtime::fe_tile_guard_commit},
-    {CoreSetId::myteam_vehicle_guard, runtime::myteam_vehicle_guard_mixins, runtime::myteam_vehicle_guard_commit},
-    {CoreSetId::myteam_vehicle_heal, runtime::myteam_vehicle_heal_mixins, runtime::myteam_vehicle_heal_commit},
-    {CoreSetId::myteam_vehicle_keep, runtime::myteam_vehicle_keep_mixins, runtime::myteam_vehicle_keep_commit},
     {CoreSetId::tyre_models, runtime::tyre_models_mixins, runtime::tyre_models_commit},
-    {CoreSetId::track_acclim, runtime::track_acclim_mixins, runtime::track_acclim_commit},
     {CoreSetId::loading, runtime::loading_mixins, runtime::loading_commit},
-    {CoreSetId::heap_sizes, runtime::heap_sizes_mixins, runtime::heap_sizes_commit},
-    {CoreSetId::team_slots, runtime::team_slots_mixins, runtime::team_slots_commit},
-    {CoreSetId::track_select, runtime::track_select_mixins, runtime::track_select_commit},
-    {CoreSetId::leaderboard_guard, runtime::leaderboard_guard_mixins, runtime::leaderboard_guard_commit},
     {CoreSetId::lap_host, runtime::lap_host_mixins, runtime::lap_host_commit},
-    {CoreSetId::quali_tyres, runtime::quali_tyres_mixins, runtime::quali_tyres_commit},
     {CoreSetId::box_grid, runtime::box_grid_mixins, runtime::box_grid_commit},
-    {CoreSetId::gp_continue, runtime::gp_continue_mixins, runtime::gp_continue_commit},
-    {CoreSetId::track_list_guard, runtime::track_list_guard_mixins, runtime::track_list_guard_commit},
-    {CoreSetId::watchdog_grace, runtime::watchdog_grace_mixins, runtime::watchdog_grace_commit},
-    {CoreSetId::theatre_list, runtime::theatre_list_mixins, runtime::theatre_list_commit},
-    {CoreSetId::tile_list_select, runtime::tile_list_select_mixins, runtime::tile_list_select_commit},
 };
 
+}
+
+HookGuard::HookGuard(HookGuardId id, const char *what, void (*setup)()) : id_(id), what_(what), setup_(setup)
+{
+    hook_guards()[size_t(id)] = this;
+}
+
+void HookGuard::arm() const { runtime::when_code_ready(what_, setup_); }
+
+void arm_next_hook_guard()
+{
+    static size_t next = 0;
+    while (next < HOOK_GUARD_COUNT)
+        if (const HookGuard *guard = hook_guards()[next++]) {
+            guard->arm();
+            return;
+        }
 }
 
 void offer_core_sets(void (*add)(std::vector<runtime::CoreMixins>))

@@ -135,12 +135,12 @@ impl GameInfo {
     /// The copy the launcher plays: the one picked in its game switcher,
     /// else Steam's.
     pub fn detect(store: &Store) -> Self {
-        let Some(copy) = crate::copies::find_active(&store.config()) else {
+        let Some(copy) = crate::game_folder::copies::find_active(&store.config()) else {
             return Self::default();
         };
         let (dir, build_id) = (copy.dir.clone(), copy.build_id());
         Self {
-            version: crate::exe_version::read(&dir.join(GAME_EXE)),
+            version: crate::game_folder::exe_version::read(&dir.join(GAME_EXE)),
             dir: Some(dir),
             build_id,
         }
@@ -253,11 +253,19 @@ impl Collector {
             return;
         }
         let mut taken = Vec::new();
-        for log in crate::ea_diag::newest_logs(&crate::ea_diag::log_dirs(), crate::ea_diag::LOG_FILES) {
-            let name = crate::ea_diag::log_entry_name(&log, &mut taken);
-            self.file_capped(format!("ea-app/{name}"), &log, None, crate::ea_diag::LOG_TAIL);
+        for log in crate::diagnostics::ea_launch::newest_logs(
+            &crate::diagnostics::ea_launch::log_dirs(),
+            crate::diagnostics::ea_launch::LOG_FILES,
+        ) {
+            let name = crate::diagnostics::ea_launch::log_entry_name(&log, &mut taken);
+            self.file_capped(
+                format!("ea-app/{name}"),
+                &log,
+                None,
+                crate::diagnostics::ea_launch::LOG_TAIL,
+            );
         }
-        match crate::ea_diag::application_events() {
+        match crate::diagnostics::ea_launch::application_events() {
             Ok(text) => self.push("windows/application-events.txt".into(), text.into_bytes(), None),
             Err(e) => self.skipped.push(format!("windows/application-events.txt: {e}")),
         }
@@ -329,7 +337,7 @@ impl Bundle {
             entries: Vec::new(),
             skipped: Vec::new(),
         };
-        if let Some(account) = crate::mpauth::load(&store.root) {
+        if let Some(account) = crate::server::sign_in::load(&store.root) {
             crate::multiplayer::client::know_secret(&account.token);
         }
         match std::fs::read(store.config_path()) {
@@ -352,7 +360,7 @@ impl Bundle {
         }
         let addons = serde_json::to_string_pretty(&addons_summary(store)).unwrap_or_default();
         c.push("addons.json".into(), addons.into_bytes(), None);
-        let conflicts = crate::conflicts::path(store, &store.active_profile());
+        let conflicts = crate::profile::conflicts::path(store, &store.active_profile());
         if conflicts.is_file() {
             c.file("conflicts.json".into(), &conflicts, None);
         }
@@ -418,7 +426,10 @@ impl Bundle {
                 c.file(format!("game/{}", file_name(&stall)), &stall, None);
             }
         }
-        for stall in newest_stalls(&crate::crash_report::fallback_dir(&store.root), STALLS_SENT) {
+        for stall in newest_stalls(
+            &crate::diagnostics::crash_report::fallback_dir(&store.root),
+            STALLS_SENT,
+        ) {
             c.file(format!("state/{}", file_name(&stall)), &stall, None);
         }
         if let Some(room) = &report.room {
@@ -436,7 +447,11 @@ impl Bundle {
             loader.extend(loader_line(LOADER_FALLBACK, &fallback));
         }
         for (id, log) in helper_logs(store) {
-            c.file(format!("addons/{id}/{}", crate::helper::LOG_FILE), &log, None);
+            c.file(
+                format!("addons/{id}/{}", crate::addons::helper::LOG_FILE),
+                &log,
+                None,
+            );
         }
         for (id, log) in addon_logs(store) {
             c.file(format!("addons/{id}/logs/{}", file_name(&log)), &log, None);
@@ -445,7 +460,7 @@ impl Bundle {
             .game
             .dir
             .as_ref()
-            .and_then(|d| crate::addon_storage::newest(&store.root, d, CAREER_EDITOR, "snapshot.json"))
+            .and_then(|d| crate::addons::storage::newest(&store.root, d, CAREER_EDITOR, "snapshot.json"))
         {
             c.file("game/career-editor/snapshot.json".into(), &snapshot, None);
         }
@@ -511,7 +526,7 @@ impl Bundle {
                 || {
                     let lines = sessions
                         .first()
-                        .map(|d| crate::fast_fail::session_lines(d))
+                        .map(|d| crate::diagnostics::fast_fail::session_lines(d))
                         .unwrap_or_default();
                     if lines.is_empty() {
                         CrashFound::None
@@ -528,7 +543,7 @@ impl Bundle {
             stem: format!("swofty-logs-{}-{stamp}", file_safe(&report.name)),
             name: report.name.clone(),
             message: report.message.clone(),
-            launcher: crate::update::current_version().to_string(),
+            launcher: crate::updates::release::current_version().to_string(),
             os,
             game: report.game.describe(),
             entries: c.entries,
@@ -551,7 +566,7 @@ impl Bundle {
         let logs: Vec<String> = self
             .entries
             .iter()
-            .filter(|e| e.path.ends_with(crate::ea_diag::PROXY_LOG))
+            .filter(|e| e.path.ends_with(crate::diagnostics::ea_launch::PROXY_LOG))
             .map(|e| String::from_utf8_lossy(&e.data).into_owned())
             .collect();
         let block = crate::offline::stub_blocked(game.unwrap_or(Path::new("")), &logs, 0, None)?;
@@ -582,7 +597,11 @@ impl Bundle {
         if cfg!(windows) {
             line(
                 "Administrator",
-                if crate::compat::elevated() { "yes" } else { "no" },
+                if crate::platform::run_as_admin::elevated() {
+                    "yes"
+                } else {
+                    "no"
+                },
             );
         }
         line("F1 25", &self.game);
@@ -602,7 +621,7 @@ impl Bundle {
         } else {
             &self.message
         });
-        if let Some(ids) = crate::known_problems::PackageIds::read(&store.root) {
+        if let Some(ids) = crate::diagnostics::known_problems::PackageIds::read(&store.root) {
             let installed = store
                 .addons()
                 .map(|a| a.into_keys().collect())
@@ -613,7 +632,7 @@ impl Bundle {
             }
         }
         s.push_str("\n\nMod loader\n");
-        if let Some(r) = crate::quarantine::Report::read(&store.root) {
+        if let Some(r) = crate::diagnostics::quarantine::Report::read(&store.root) {
             s.push_str(&format!(
                 "  last launch: {} ({})\n",
                 r.title(),
@@ -626,9 +645,9 @@ impl Bundle {
                 ));
             }
         }
-        if let Some(f) = crate::launch::Failure::read(&store.root) {
+        if let Some(f) = crate::diagnostics::launch::Failure::read(&store.root) {
             s.push_str(&format!("  last launch: {} ({})\n", f.title(), f.headline()));
-            if let crate::launch::Cause::Blocked(b) = &f.cause {
+            if let crate::diagnostics::launch::Cause::Blocked(b) = &f.cause {
                 s.push_str(&format!(
                     "  blocked: {} (os error {})\n",
                     b.program.display(),
@@ -932,14 +951,15 @@ fn loader_line(label: &str, log: &Path) -> Vec<String> {
         return Vec::new();
     };
     let head = String::from_utf8_lossy(&head);
-    let state = match crate::quarantine::attached(&head) {
+    let state = match crate::diagnostics::quarantine::attached(&head) {
         Some(true) => "mod loader attached",
         Some(false) => "mod loader never attached (version.dll not loaded)",
         None => return Vec::new(),
     };
     let mut out = vec![format!("  {label:40} {state}")];
     out.extend(
-        crate::quarantine::refused(&head).map(|why| format!("  {:40} logged in the data folder: {why}", "")),
+        crate::diagnostics::quarantine::refused(&head)
+            .map(|why| format!("  {:40} logged in the data folder: {why}", "")),
     );
     out
 }
@@ -947,7 +967,7 @@ fn loader_line(label: &str, log: &Path) -> Vec<String> {
 /// Which addons draw over the game, and what each session's `[overlay]` lines say.
 fn overlay_lines(store: &Store, logs: &[(String, PathBuf)]) -> Vec<String> {
     let mut out = Vec::new();
-    let painters = crate::overlay_guard::painters(store, &store.active_profile());
+    let painters = crate::diagnostics::overlay_guard::painters(store, &store.active_profile());
     let names: Vec<String> = painters
         .iter()
         .map(|(id, name)| format!("{name} ({id})"))
@@ -964,7 +984,7 @@ fn overlay_lines(store: &Store, logs: &[(String, PathBuf)]) -> Vec<String> {
         let Ok(text) = read_ends(log, OVERLAY_READ, OVERLAY_READ) else {
             continue;
         };
-        let state = crate::overlay_guard::SessionOverlay::scan(&String::from_utf8_lossy(&text))
+        let state = crate::diagnostics::overlay_guard::SessionOverlay::scan(&String::from_utf8_lossy(&text))
             .map_or_else(|| "no [overlay] lines".to_owned(), |o| o.describe());
         out.push(format!("  {label:40} {state}"));
     }
@@ -1083,7 +1103,7 @@ fn newest_stalls(dir: &Path, n: usize) -> Vec<PathBuf> {
         .flatten()
         .flatten()
         .map(|e| e.path())
-        .filter(|p| crate::crash_report::is_stall_name(&file_name(p)) && p.is_file())
+        .filter(|p| crate::diagnostics::crash_report::is_stall_name(&file_name(p)) && p.is_file())
         .collect();
     found.sort_by_key(|p| std::cmp::Reverse(file_name(p)));
     found.truncate(n);
@@ -1093,7 +1113,7 @@ fn newest_stalls(dir: &Path, n: usize) -> Vec<PathBuf> {
 /// A crash report the core wrote (`crash-<time>.txt`) or its minidump
 /// (`crash-<time>.dmp`).
 fn is_crash_file(path: &Path) -> bool {
-    crate::crash_report::is_crash_name(&file_name(path))
+    crate::diagnostics::crash_report::is_crash_name(&file_name(path))
 }
 
 enum CrashFound<'a> {
@@ -1116,7 +1136,7 @@ fn logged_report(store: &Store, sessions: &[PathBuf]) -> Option<String> {
     logs.push(store.root.join(LOADER_FALLBACK));
     logs.iter().find_map(|log| {
         let (tail, _) = read_tail(log, LOGGED_READ).ok()?;
-        crate::crash_report::logged_path(&String::from_utf8_lossy(&tail))
+        crate::diagnostics::crash_report::logged_path(&String::from_utf8_lossy(&tail))
     })
 }
 
@@ -1143,14 +1163,14 @@ pub fn recent_crashes(store: &Store, game: Option<&Path>, sessions: &[PathBuf], 
         dirs.push(s.clone());
         dirs.push(s.join("game-logs"));
     }
-    dirs.push(crate::crash_report::fallback_dir(&store.root));
+    dirs.push(crate::diagnostics::crash_report::fallback_dir(&store.root));
     let mut reports: Vec<PathBuf> = dirs
         .iter()
         .flat_map(|d| std::fs::read_dir(d).into_iter().flatten().flatten())
         .map(|e| e.path())
         .filter(|p| {
             let n = file_name(p);
-            crate::crash_report::is_crash_name(&n) && n.ends_with(".txt") && p.is_file()
+            crate::diagnostics::crash_report::is_crash_name(&n) && n.ends_with(".txt") && p.is_file()
         })
         .collect();
     // The names carry a sortable UTC-ish stamp, so the last by name is the newest; modified time
@@ -1256,7 +1276,7 @@ fn crash_excerpt(text: &str) -> Vec<String> {
 /// rewrote.
 fn game_files_section(store: &Store, game: Option<&Path>) -> String {
     let mut s = String::new();
-    match crate::stock::Report::read(&store.root) {
+    match crate::game_folder::stock::Report::read(&store.root) {
         Some(r) if !r.detail.is_empty() => {
             s.push_str(&format!("  last launch stopped: {}\n", r.title()));
             for f in &r.detail {
@@ -1285,7 +1305,7 @@ fn game_files_section(store: &Store, game: Option<&Path>) -> String {
         s.push_str(&format!("  {line}\n"));
     }
     if let Some(line) = game
-        .and_then(crate::compat::virtual_store)
+        .and_then(crate::platform::run_as_admin::virtual_store)
         .and_then(|v| virtualised(&v))
     {
         s.push_str(&format!("  {line}\n"));
@@ -1408,7 +1428,7 @@ fn helper_logs(store: &Store) -> Vec<(String, PathBuf)> {
         .map(|e| {
             (
                 e.file_name().to_string_lossy().into_owned(),
-                e.path().join(crate::helper::LOG_FILE),
+                e.path().join(crate::addons::helper::LOG_FILE),
             )
         })
         .filter(|(_, log)| log.is_file())
@@ -1511,13 +1531,13 @@ fn addons_summary(store: &Store) -> Value {
 /// Where an addon came from, as the Addons page tags it.
 fn addon_source(store: &Store, m: &AddonManifest) -> String {
     let tool = m.origin.as_ref().map(|o| o.tool.as_str());
-    if store.is_builtin(&m.id) || m.id == crate::managed::ID {
+    if store.is_builtin(&m.id) || m.id == crate::updates::managed::ID {
         "built in".into()
     } else if tool == Some(crate::dbedit::package::ORIGIN_TOOL)
         || crate::dbedit::package::is_package(store, &m.id)
     {
         "DB Editor".into()
-    } else if tool == Some(crate::managed::ID) {
+    } else if tool == Some(crate::updates::managed::ID) {
         match m.origin.as_ref().and_then(|o| o.file.as_deref()) {
             Some(file) => format!("imported from {file}"),
             None => "imported".into(),
@@ -1793,13 +1813,13 @@ pub fn os_description() -> String {
 }
 
 fn windows_version() -> String {
-    let ver = crate::compat::windows_tool("cmd", &["/C", "ver"]).unwrap_or_default();
+    let ver = crate::platform::run_as_admin::windows_tool("cmd", &["/C", "ver"]).unwrap_or_default();
     let number = ver
         .split_once("Version ")
         .map(|(_, v)| v.trim().trim_end_matches(']').trim().to_owned())
         .unwrap_or_default();
     let build: u32 = number.split('.').nth(2).and_then(|b| b.parse().ok()).unwrap_or(0);
-    let display = crate::compat::windows_tool(
+    let display = crate::platform::run_as_admin::windows_tool(
         "reg",
         &[
             "query",

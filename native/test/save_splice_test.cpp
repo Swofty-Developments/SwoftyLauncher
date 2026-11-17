@@ -2,7 +2,7 @@
 // format (re/db/subsystems/game.md#save-splice: header 1, entry count, then key length byte, key,
 // u32 type id and value per entry) stands in for Game_SaveData_WriteBag and the reader 0x143934620.
 // It checks that a profile save's containers block with the kept entries spliced in after a bumped
-// count reads back as the registered children plus the kept bags, unchanged. run_events_test.sh
+// count reads back as the registered children plus the kept bags, unchanged. native/test/run_tests.sh save_splice
 // builds and runs it.
 #include "core/career/save_splice_logic.hpp"
 

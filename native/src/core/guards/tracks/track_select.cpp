@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
@@ -41,7 +42,7 @@ using Handler = void *(void *vm, uint32_t **cmd);
 Handler *gp_orig, *tt_orig;
 std::atomic<uintptr_t> last_record{0};
 std::atomic<uint64_t> counter{0}, record_seq{0}, select_seq{0};
-std::atomic<bool> offered, wanted, settled, live;
+std::atomic<bool> wanted, live;
 std::atomic<uint32_t> logged{0};
 std::mutex confirmed_lock;
 std::string confirmed_time_trial;
@@ -116,46 +117,50 @@ void *tt_entry(void *vm, uint32_t **cmd)
     return handle(tt_orig, vm, cmd, SELECT_PRESSED, true);
 }
 
+namespace guards = swofty_core::guards;
+
+class TrackSelectGuard final : public guards::Guard {
+public:
+    TrackSelectGuard() : Guard(guards::CoreSetId::track_select) {}
+
+private:
+    void build(std::vector<runtime::CoreMixins> &out) override
+    {
+        char v[16] = {};
+        DWORD n = GetEnvironmentVariableA("SWOFTY_TRACK_GUARD", v, sizeof v);
+        if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+            swofty::log("[tracks] track select guard off (SWOFTY_TRACK_GUARD=%s)", v);
+            return;
+        }
+        for (const char *id : {GP, TT, SITE})
+            if (!swofty::api->resolve(id)) {
+                swofty::log("[tracks] track select guard off: needs %s, which this build does not resolve", id);
+                return;
+            }
+        wanted = true;
+        out.push_back({MIXIN,
+                       {{GP, SWOFTY_MIXIN_WRAP, 100, (void *)&gp_entry, (void **)&gp_orig},
+                        {TT, SWOFTY_MIXIN_WRAP, 100, (void *)&tt_entry, (void **)&tt_orig},
+                        {SITE, SWOFTY_MIXIN_SITE, 100, (void *)&site_matched, nullptr}}});
+    }
+
+    void settle() override
+    {
+        if (!wanted)
+            return;
+        live = runtime::core_mixins_active(MIXIN);
+        swofty::log("[tracks] track select guard %s",
+                    live ? "armed: a Grand Prix or Time Trial confirm of a track the box can't run shows why and stays on the "
+                           "screen"
+                         : "did not install (see the [core] lines)");
+    }
+};
+
+TrackSelectGuard guard;
+
 }
 
 namespace runtime {
-
-std::vector<CoreMixins> track_select_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_TRACK_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[tracks] track select guard off (SWOFTY_TRACK_GUARD=%s)", v);
-        return out;
-    }
-    for (const char *id : {GP, TT, SITE})
-        if (!swofty::api->resolve(id)) {
-            swofty::log("[tracks] track select guard off: needs %s, which this build does not resolve", id);
-            return out;
-        }
-    wanted = true;
-    out.push_back({MIXIN,
-                   {{GP, SWOFTY_MIXIN_WRAP, 100, (void *)&gp_entry, (void **)&gp_orig},
-                    {TT, SWOFTY_MIXIN_WRAP, 100, (void *)&tt_entry, (void **)&tt_orig},
-                    {SITE, SWOFTY_MIXIN_SITE, 100, (void *)&site_matched, nullptr}}});
-    return out;
-}
-
-void track_select_commit()
-{
-    if (!wanted || settled)
-        return;
-    settled = true;
-    live = core_mixins_active(MIXIN);
-    swofty::log("[tracks] track select guard %s",
-                live ? "armed: a Grand Prix or Time Trial confirm of a track the box can't run shows why and stays on the "
-                       "screen"
-                     : "did not install (see the [core] lines)");
-}
 
 std::string track_select_time_trial()
 {

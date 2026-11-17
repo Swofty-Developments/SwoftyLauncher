@@ -1,6 +1,6 @@
 // Host unit test for the grid rules per box (box_grid_logic.hpp): qualifying scoring (best_lap, best_of, aggregate),
 // the 107 % rule, the position base, drivers without a time, and the row pattern layout (design only).
-// run_events_test.sh builds and runs it.
+// native/test/run_tests.sh box_grid builds and runs it.
 #include <cmath>
 #include "core/boxes/box_grid_logic.hpp"
 

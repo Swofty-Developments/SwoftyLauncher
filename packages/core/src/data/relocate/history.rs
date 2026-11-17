@@ -43,7 +43,7 @@ pub fn record(default: &Path, place: &Path, why: &str) {
     };
     history
         .locations
-        .retain(|e| !crate::process::same_path(&e.path, place));
+        .retain(|e| !crate::platform::process::same_path(&e.path, place));
     history.locations.push(Entry {
         path: place.to_path_buf(),
         at,

@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/tracks/track_record_logic.hpp"
 
@@ -50,6 +51,9 @@ namespace {
 namespace mem = swofty::mem;
 
 constexpr const char *MIXIN = "swofty_core.dll (standings track guard)";
+constexpr const char *TRACK_LOAD = "site_Career_StandingsWeekendTrackLoad";
+constexpr const char *TRACK_DONE = "site_Career_StandingsWeekendTrackDone";
+constexpr const char *RECORD_LOAD = "site_Career_WeekendsTrackRecordLoad";
 constexpr size_t FRAME_WEEKEND = 0xa0;
 constexpr size_t WEEKEND_TRACK = 0x278;
 constexpr size_t LOG_ROUNDS = 64;
@@ -65,7 +69,6 @@ constexpr size_t NODE_FIRST_WORD = 0x8;
 
 uintptr_t track_done = 0, record_next = 0;
 runtime::track_record::Seen record_seen;
-bool offered = false, settled = false;
 std::mutex logged_lock;
 std::vector<uint32_t> logged;
 
@@ -139,50 +142,36 @@ void record_load(SwoftyContext *c)
                     (unsigned long long)r.node, (unsigned long long)r.table_count);
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> standings_guard_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_STANDINGS_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[career] standings guard off (SWOFTY_STANDINGS_GUARD=%s)", v);
-        return out;
+class StandingsGuard final : public guards::SiteGuard {
+public:
+    StandingsGuard()
+        : SiteGuard(guards::CoreSetId::standings_guard,
+                    {
+                        .set = MIXIN,
+                        .name = "[career] standings guard",
+                        .env = "SWOFTY_STANDINGS_GUARD",
+                        .keeps = {{TRACK_DONE, &track_done}},
+                        .needs = {TRACK_LOAD, TRACK_DONE},
+                        .mixins = {{TRACK_LOAD, SWOFTY_MIXIN_SITE, 100, (void *)&track_load, nullptr}},
+                        .armed = "a standings round whose track has no track data is skipped instead of faulting",
+                    })
+    {
     }
-    track_done = swofty::api->resolve("site_Career_StandingsWeekendTrackDone");
-    if (!track_done || !swofty::api->resolve("site_Career_StandingsWeekendTrackLoad")) {
-        track_done = 0;
-        swofty::log("[career] standings guard off: needs site_Career_StandingsWeekendTrackLoad and "
-                    "site_Career_StandingsWeekendTrackDone, which this build does not resolve");
-        return out;
-    }
-    std::vector<SwoftyMixin> sites = {
-        {"site_Career_StandingsWeekendTrackLoad", SWOFTY_MIXIN_SITE, 100, (void *)&track_load, nullptr}};
-    uintptr_t record_load_site = swofty::api->resolve("site_Career_WeekendsTrackRecordLoad");
-    if (record_load_site) {
-        record_next = record_load_site + RECORD_LOAD_LEN;
-        sites.push_back({"site_Career_WeekendsTrackRecordLoad", SWOFTY_MIXIN_SITE, 100, (void *)&record_load, nullptr});
-    } else
-        swofty::log("[career] weekends track guard off: site_Career_WeekendsTrackRecordLoad is not resolved in this build");
-    out.push_back({MIXIN, sites});
-    return out;
-}
 
-void standings_guard_commit()
-{
-    if (!offered || settled || !track_done)
-        return;
-    settled = true;
-    swofty::log("[career] standings guard %s",
-                core_mixins_active(MIXIN)
-                    ? "armed: a standings round whose track has no track data is skipped instead of faulting"
-                    : "did not install (see the [core] lines)");
-}
+private:
+    void extend(runtime::CoreMixins &set) override
+    {
+        uintptr_t record_load_site = swofty::api->resolve(RECORD_LOAD);
+        if (record_load_site) {
+            record_next = record_load_site + RECORD_LOAD_LEN;
+            set.mixins.push_back({RECORD_LOAD, SWOFTY_MIXIN_SITE, 100, (void *)&record_load, nullptr});
+        } else
+            swofty::log("[career] weekends track guard off: site_Career_WeekendsTrackRecordLoad is not resolved in this build");
+    }
+};
+
+StandingsGuard guard;
 
 }

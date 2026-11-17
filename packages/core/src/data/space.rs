@@ -63,8 +63,8 @@ impl Room {
     pub fn now(root: &Path) -> Self {
         let real = std::fs::canonicalize(root).unwrap_or_else(|_| root.to_path_buf());
         Room {
-            game: game_drive().and_then(|d| crate::disk::free_space(&d)),
-            data: crate::disk::free_space(&real),
+            game: game_drive().and_then(|d| crate::platform::disk::free_space(&d)),
+            data: crate::platform::disk::free_space(&real),
         }
     }
 
@@ -121,7 +121,7 @@ fn game_drive() -> Option<PathBuf> {
     if cfg!(windows) {
         return std::env::var_os("LOCALAPPDATA").map(PathBuf::from);
     }
-    crate::steam::find_game().map(|g| g.compatdata.filter(|c| c.is_dir()).unwrap_or(g.library))
+    crate::platform::steam::find_game().map(|g| g.compatdata.filter(|c| c.is_dir()).unwrap_or(g.library))
 }
 
 /// The bytes of every file under `path`; links (junctions, symlinks) are not followed.

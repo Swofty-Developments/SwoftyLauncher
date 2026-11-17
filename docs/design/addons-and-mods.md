@@ -474,7 +474,7 @@ pub enum Target {
 | `lang` | none: the game reads `.lng` only from its packed archive | `overlay.cpp`: partial string tables added after the stock table | Stable (T016) | Runtime |
 | `file` | journaled copy into the game folder | `overlay.cpp`: file system overlay from `swofty/overlay/` | Experimental: not run in game | Runtime when turned on, otherwise Build |
 
-`RUNTIME_DELIVERIES` in `planner.rs` lists all five kinds. `packages/core/src/runtime.rs` writes `swofty/assets.json` and its files. A `db` build whose ops remove records, or write a record of tag 10, 15 or 16 or one that is not text, falls back to the build route with a warning.
+`RUNTIME_DELIVERIES` in `planner.rs` lists all five kinds. `packages/core/src/content/runtime_assets.rs` writes `swofty/assets.json` and its files. A `db` build whose ops remove records, or write a record of tag 10, 15 or 16 or one that is not text, falls back to the build route with a warning.
 
 The planner chooses a route for each kind:
 
@@ -563,7 +563,7 @@ Result overlay_file(std::string_view game_path, std::string_view file);
 
 ### 4.1 The addon
 
-- The crate `addons/simplified` (`swofty-addon-simplified`) is Rust and AGPL-3.0-or-later, like the rest of the repository. Its `mod.serps` reader, package root, content root and entry path checks are ported from the Simplified Launcher (GPL-3.0, used with Team Simplified's permission) and carry the Simplified Suite notice. `THIRD_PARTY.md` credits Team Simplified for the `.serps` format and the Simplified Suite, and the Mods section shows the credit.
+- The crate `addons/simplified` (`swofty-addon-simplified`) is Rust and PolyForm-Noncommercial-1.0.0, like the rest of the repository. Its `mod.serps` reader, package root, content root and entry path checks are ported from the Simplified Launcher (GPL-3.0, used with Team Simplified's permission) and carry the Simplified Suite notice. `THIRD_PARTY.md` credits Team Simplified for the `.serps` format and the Simplified Suite, and the Mods section shows the credit.
 - You can already use import, the library, profile state, the section and `swofty mods` (work item 13), diffs (work item 14), and merge and conflicts (work item 15).
 - Manifest: id `teamsimplified.mods`, name `Team Simplified`, author `Team Simplified`. No options and no native plugin.
 - It's built in and on by default in new profiles. Turn it off for a profile to hide its section.

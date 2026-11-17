@@ -104,6 +104,22 @@ pub(super) const HOOKS: &[Hook] = &[
     },
 ];
 
+impl Hook {
+    /// The diagnosis for a crash this hook caused, after `happened` says where.
+    fn crashed(&self, happened: String) -> Diagnosis {
+        Diagnosis {
+            id: "third_party_hook",
+            title: format!("F1 25 crashed inside {}", self.product),
+            what: format!(
+                "{happened}, which belongs to {}. It hooks into games while they run, and here it took F1 25 \
+                 down with it.",
+                self.product
+            ),
+            steps: vec![self.step.to_owned(), "Press Play again.".to_owned()],
+        }
+    }
+}
+
 pub(super) fn crash_in_hook(c: &Crash) -> Option<Diagnosis> {
     let f = &c.fatal;
     let hook = HOOKS.iter().find(|hook| {
@@ -116,28 +132,12 @@ pub(super) fn crash_in_hook(c: &Crash) -> Option<Diagnosis> {
         .find(|m| m.starts_with(hook.prefix))
         .unwrap_or(hook.prefix)
         .to_owned();
-    Some(Diagnosis {
-        id: "third_party_hook",
-        title: format!("F1 25 crashed inside {}", hook.product),
-        what: format!(
-            "The crash happened in {module}, which belongs to {}. It hooks into games while they run, and here \
-             it took F1 25 down with it.",
-            hook.product
-        ),
-        steps: vec![hook.step.to_owned(), "Press Play again.".to_owned()],
-    })
+    Some(hook.crashed(format!("The crash happened in {module}")))
 }
 
 pub(super) fn stray_jump(c: &Crash) -> Option<Diagnosis> {
     let (hook, module) = stray_jump_hook(&c.fatal, &c.evidence.loader)?;
-    Some(Diagnosis {
-        id: "third_party_hook",
-        title: format!("F1 25 crashed inside {}", hook.product),
-        what: format!(
-            "F1 25 jumped to an address that is not code while {module} was at work, which belongs to {}. It \
-             hooks into games while they run, and here it took F1 25 down with it.",
-            hook.product
-        ),
-        steps: vec![hook.step.to_owned(), "Press Play again.".to_owned()],
-    })
+    Some(hook.crashed(format!(
+        "F1 25 jumped to an address that is not code while {module} was at work"
+    )))
 }

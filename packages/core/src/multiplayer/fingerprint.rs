@@ -10,10 +10,10 @@ use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use sha2::{Digest, Sha256};
 
+use crate::addons::builtin::{CORE_DB, CORE_DLL, CORE_ID, CORE_MANIFEST, loader_dir, loader_files};
 use crate::asset::Source as OpSource;
-use crate::baseline::{Hashes, Identity, hex, sha256_bytes};
-use crate::builtin::{CORE_DB, CORE_DLL, CORE_ID, CORE_MANIFEST, loader_dir, loader_files};
 use crate::catalog;
+use crate::game_folder::baseline::{Hashes, Identity, hex, sha256_bytes};
 use crate::manifest::{AddonManifest, Kind, Multiplayer};
 use crate::profile::Profile;
 use crate::store::Store;
@@ -212,7 +212,7 @@ pub fn fingerprint(store: &Store, profile: &Profile, game_build: &Identity) -> R
         .and_then(|b| serde_json::from_slice::<Value>(&b).ok())
         .unwrap_or(Value::Null);
     let installed = store.addons()?;
-    let load = crate::resolver::resolve(profile, &installed)?.order;
+    let load = crate::profile::resolver::resolve(profile, &installed)?.order;
     let mut hashes = Hashes::open(store.root.join(HASHES_FILE));
     let mut outputs: BTreeMap<String, BTreeMap<String, Output>> =
         read_json(&store.root.join(OUTPUTS_FILE)).unwrap_or_default();
@@ -951,7 +951,7 @@ mod tests {
         let mut h = Sha256::new();
         h.update(format!("launcher {}\0", env!("CARGO_PKG_VERSION")));
         let dll = loader_dir().map(|d| d.join(CORE_DLL)).filter(|p| p.is_file());
-        let dll = dll.map(|p| crate::baseline::sha256_file(&p).unwrap());
+        let dll = dll.map(|p| crate::game_folder::baseline::sha256_file(&p).unwrap());
         h.update(format!("dll {}\0", dll.as_deref().unwrap_or("none")));
         h.update(CORE_MANIFEST);
         h.update(CORE_DB);

@@ -4,8 +4,9 @@ use semver::{Version, VersionReq};
 
 use crate::launcher::Progress;
 use crate::store::Store;
-use crate::update::{self, Failure, Install, Release};
-use crate::{Error, Result, managed};
+use crate::updates::managed;
+use crate::updates::release::{self, Failure, Install, Release};
+use crate::{Error, Result};
 
 pub const CHECK_INTERVAL: Duration = Duration::from_secs(60);
 pub const RELEASE_RECHECK: Duration = Duration::from_secs(5 * 60);
@@ -36,14 +37,14 @@ impl Part {
     pub fn releases_url(self) -> &'static str {
         match self {
             Self::Addon => managed::RELEASES_URL,
-            Self::Launcher => update::RELEASES_URL,
+            Self::Launcher => release::RELEASES_URL,
         }
     }
 
     pub fn api_url(self) -> &'static str {
         match self {
             Self::Addon => managed::LATEST_URL,
-            Self::Launcher => update::LATEST_URL,
+            Self::Launcher => release::LATEST_URL,
         }
     }
 
@@ -52,7 +53,7 @@ impl Part {
             Self::Addon => managed::ready(release),
             Self::Launcher => release
                 .platform_asset()
-                .is_ok_and(|a| update::verifiable(release, a)),
+                .is_ok_and(|a| release::verifiable(release, a)),
         }
     }
 }
@@ -106,7 +107,7 @@ pub fn read_probe(url: &str, status: u16, location: Option<&str>) -> Probe {
 
 pub fn probe(part: Part, timeout: Duration) -> Probe {
     let url = format!("{}/latest", part.releases_url());
-    match update::request(&url, true, Some(timeout)) {
+    match release::request(&url, true, Some(timeout)) {
         Ok(r) => read_probe(
             &url,
             r.status().as_u16(),
@@ -131,7 +132,7 @@ impl Track {
     }
 
     pub fn version(&self) -> Option<Version> {
-        update::parse_version(self.tag.as_deref()?)
+        release::parse_version(self.tag.as_deref()?)
     }
 
     pub fn newer_than(&self, installed: Option<&Version>) -> bool {
@@ -199,16 +200,16 @@ impl Track {
 
 pub fn check(part: Part, track: &mut Track, installed: Option<&Version>, fetch: bool, now: u64) {
     if part == Part::Launcher
-        && let Ok(release) = update::fetch_manifest(update::MANIFEST_URL, update::CHECK_TIMEOUT)
+        && let Ok(release) = release::fetch_manifest(release::MANIFEST_URL, release::CHECK_TIMEOUT)
     {
         track.on_manifest(part, release, now);
         return;
     }
-    track.on_probe(probe(part, update::CHECK_TIMEOUT), now);
+    track.on_probe(probe(part, release::CHECK_TIMEOUT), now);
     if fetch && track.fetch_due(installed, now) {
         track.on_fetch(
             part,
-            update::fetch_release(part.api_url(), update::CHECK_TIMEOUT),
+            release::fetch_release(part.api_url(), release::CHECK_TIMEOUT),
             now,
         );
     }
@@ -374,9 +375,9 @@ pub fn check_importer(
 ) {
     catalog
         .latest
-        .on_probe(probe(Part::Addon, update::CHECK_TIMEOUT), now);
+        .on_probe(probe(Part::Addon, release::CHECK_TIMEOUT), now);
     if catalog.list_due(now) {
-        catalog.on_list(managed::fetch_releases(update::CHECK_TIMEOUT), now);
+        catalog.on_list(managed::fetch_releases(release::CHECK_TIMEOUT), now);
     }
     catalog.learn(installed, launcher, now, |r| managed::requirement(store, r));
     if !catalog.releases.is_empty() {
@@ -609,7 +610,7 @@ pub fn install(
     launcher: &Version,
     progress: &dyn Progress,
 ) -> Result<Version> {
-    if crate::process::game_running() {
+    if crate::platform::process::game_running() {
         return Err(Error::Other("close F1 25 before updating".into()));
     }
     match part {
@@ -621,7 +622,7 @@ pub fn install(
 }
 
 pub fn did_not_take(expected: Option<&str>, current: &Version) -> Option<String> {
-    let wanted = update::parse_version(expected?)?;
+    let wanted = release::parse_version(expected?)?;
     (wanted > *current).then(|| {
         format!("Swofty Launcher {wanted} was installed, but the restarted launcher is still {current}")
     })
@@ -632,7 +633,7 @@ mod tests {
     use std::sync::Mutex;
 
     use super::*;
-    use crate::update::{Asset, SUMS_FILE};
+    use crate::updates::release::{Asset, SUMS_FILE};
 
     fn v(s: &str) -> Version {
         Version::parse(s).unwrap()
@@ -649,7 +650,7 @@ mod tests {
 
     fn launcher_release(tag: &str) -> Release {
         let (os, arch) = (std::env::consts::OS, std::env::consts::ARCH);
-        let platform = update::asset_name(tag, os, arch).unwrap_or_else(|| "none".into());
+        let platform = release::asset_name(tag, os, arch).unwrap_or_else(|| "none".into());
         Release {
             tag_name: tag.into(),
             assets: vec![asset(&platform), asset(SUMS_FILE)],

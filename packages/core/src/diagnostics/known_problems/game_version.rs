@@ -84,7 +84,7 @@ pub fn outdated_exe(version: Option<&str>) -> Option<Diagnosis> {
         steps: vec![format!(
             "Update F1 25 in Steam or the EA app. If Steam says it is up to date, verify the game files \
              ({}), then press Play again.",
-            crate::stock::STEAM_VERIFY_URL
+            crate::game_folder::stock::STEAM_VERIFY_URL
         )],
     })
 }

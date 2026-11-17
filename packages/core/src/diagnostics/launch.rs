@@ -12,8 +12,8 @@ use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 use serde::{Deserialize, Serialize};
 
-use crate::app_control::Block;
-use crate::quarantine::ATTACHED;
+use crate::diagnostics::quarantine::ATTACHED;
+use crate::platform::app_control::Block;
 use crate::{Result, io_err, read_json, write_json};
 
 /// A clean exit this soon after the start, before the window, is a launch

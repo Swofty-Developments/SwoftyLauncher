@@ -1,6 +1,6 @@
 // Host-native unit test for the core's garage crew guard (native/src/core/guards/garage/garage_crew_logic.hpp): which entries of a
 // garage's spawn vector are kept, against a fake session with team tables.
-// Built and run by native/test/run_garage_crew_test.sh.
+// Built and run by native/test/run_tests.sh garage_crew.
 
 #include "core/guards/garage/garage_crew_logic.hpp"
 

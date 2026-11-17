@@ -1,6 +1,6 @@
 // Host-native test for the HUD runtime headers: hud_leaves (typed leaves, groups, v1 fallback, rebuild),
 // hud_format, ease, hud_frame, log_csv's front end, settings_struct and timing (tower model and leaves),
-// all against the fakes in swofty/fake_hud.hpp. Built and run by native/test/run_hud_osd_test.sh.
+// all against the fakes in swofty/fake_hud.hpp. Built and run by native/test/run_tests.sh hud_osd.
 
 #include <cassert>
 #include <cmath>

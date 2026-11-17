@@ -1,5 +1,5 @@
 use super::*;
-use crate::data_move::find::{Found, Kind as Source, candidates_on, looks_like_data};
+use crate::data::relocate::find::{Found, Kind as Source, candidates_on, looks_like_data};
 
 fn data_with(at: &Path, addons: &[&str]) {
     for id in addons {
