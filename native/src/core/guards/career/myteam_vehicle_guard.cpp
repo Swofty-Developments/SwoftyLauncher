@@ -8,7 +8,6 @@
 #include <swofty/mixin.hpp>
 
 #include <cstdint>
-#include <mutex>
 #include <string>
 #include <vector>
 
@@ -35,6 +34,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace mv = runtime::myteam_vehicle;
 
@@ -43,9 +43,8 @@ constexpr const char *LOAD = "site_Game_MyTeamVehicleBases_AiConfigLoad";
 constexpr const char *NEXT = "site_Game_MyTeamVehicleBases_NextBase";
 
 uintptr_t next_base = 0;
-std::mutex logged_lock;
-mv::Labels logged;
-mv::Labels left_logged;
+guards::FirstKeys<std::string, mv::LOG_LABELS> logged{"vehicles"};
+guards::FirstKeys<std::string, mv::LOG_LABELS> left_logged;
 
 struct Game {
     bool u64(uint64_t a, uint64_t &out)
@@ -90,15 +89,10 @@ struct Game {
 
 void say(const mv::Skip &skip)
 {
-    bool first, last;
-    {
-        std::lock_guard<std::mutex> hold(logged_lock);
-        first = logged.first(skip.label);
-        last = logged.last();
-    }
-    if (!first)
+    auto line = logged.note(skip.label);
+    if (!line)
         return;
-    const char *more = last ? " (further vehicles are not logged)" : "";
+    const char *more = line.tail;
     if (const mv::KnownAddon *addon = mv::addon_for(skip.label))
         swofty::log("[myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s' from %s (%s), which is not in "
                     "the game data (no entrants.vehicles row; the addon is off or gone); the base is skipped and the rest of the "
@@ -114,12 +108,7 @@ void say(const mv::Skip &skip)
 
 void say_left(const mv::Skip &skip)
 {
-    bool first;
-    {
-        std::lock_guard<std::mutex> hold(logged_lock);
-        first = left_logged.first(skip.label);
-    }
-    if (first)
+    if (left_logged.note(skip.label))
         swofty::log("[myteam] save: My Team vehicle base %llu (stat id %u) uses vehicle '%s', whose row index reads as missing; "
                     "it is not a known addon's vehicle or its entrants.vehicles row is in the game data, so the game's own "
                     "load runs for it",
@@ -142,8 +131,6 @@ void ai_config_load(SwoftyContext *c)
     c->rip = next_base;
     say(skip);
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::myteam_vehicle_guard,
                         {

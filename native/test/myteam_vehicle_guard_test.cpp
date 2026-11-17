@@ -2,6 +2,7 @@
 // Built and run by native/test/run_tests.sh myteam_vehicle_guard.
 
 #include "core/guards/career/myteam_vehicle_guard_logic.hpp"
+#include "core/guards/skips.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -166,14 +167,16 @@ int main()
     expect(!mv::addon_for("myteam_ferrari") && !mv::addon_for("mes_porsche") && !mv::addon_for(""),
            "other vehicles name no addon");
 
-    mv::Labels labels;
-    expect(labels.first("myteam_mes_porsche_2026"), "the first skip of a vehicle is logged");
-    expect(!labels.first("myteam_mes_porsche_2026"), "a second skip of the same vehicle is not");
-    expect(labels.first("myteam_mes_bmw_2026"), "another missing vehicle is logged");
-    for (size_t i = labels.seen.size(); i < mv::LOG_LABELS; i++)
-        labels.first("vehicle_" + std::to_string(i));
-    expect(labels.last(), "the 32nd vehicle is the last logged");
-    expect(!labels.first("vehicle_extra"), "vehicles past 32 are not logged");
+    swofty_core::guards::FirstKeys<std::string, mv::LOG_LABELS> labels{"vehicles"};
+    expect(bool(labels.note("myteam_mes_porsche_2026")), "the first skip of a vehicle is logged");
+    expect(!labels.note("myteam_mes_porsche_2026"), "a second skip of the same vehicle is not");
+    expect(bool(labels.note("myteam_mes_bmw_2026")), "another missing vehicle is logged");
+    swofty_core::guards::Line last{0, nullptr};
+    for (size_t i = labels.size(); i < mv::LOG_LABELS; i++)
+        last = labels.note("vehicle_" + std::to_string(i));
+    expect(last && last.n == 32 && !std::strcmp(last.tail, " (further vehicles are not logged)"),
+           "the 32nd vehicle is the last logged");
+    expect(!labels.note("vehicle_extra"), "vehicles past 32 are not logged");
 
     expect(mv::switch_off("0") && mv::switch_off("off") && !mv::switch_off("1") && !mv::switch_off(nullptr), "the switch reads 0 or off");
 

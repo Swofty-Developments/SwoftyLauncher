@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <vector>
 
 namespace runtime::myteam_vehicle {
 
@@ -80,25 +79,5 @@ template <class Mem> bool skip_base(Mem &mem, uint64_t rsp, uint64_t row, Skip &
     }
     return true;
 }
-
-struct Labels {
-    std::vector<std::string> seen;
-
-    bool first(const std::string &label)
-    {
-        for (const std::string &s : seen)
-            if (s == label)
-                return false;
-        if (seen.size() >= LOG_LABELS)
-            return false;
-        seen.push_back(label);
-        return true;
-    }
-
-    bool last() const
-    {
-        return seen.size() == LOG_LABELS;
-    }
-};
 
 }

@@ -5,7 +5,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <vector>
 
 namespace runtime::fe_tile {
 
@@ -44,25 +43,5 @@ template <class Mem> bool list_present(Mem &mem, uint64_t first_slot, uint64_t e
     }
     return false;
 }
-
-struct Labels {
-    std::vector<std::string> seen;
-
-    bool first(const std::string &label)
-    {
-        for (const std::string &s : seen)
-            if (s == label)
-                return false;
-        if (seen.size() >= LOG_LABELS)
-            return false;
-        seen.push_back(label);
-        return true;
-    }
-
-    bool last() const
-    {
-        return seen.size() == LOG_LABELS;
-    }
-};
 
 }
