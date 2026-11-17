@@ -637,7 +637,7 @@ impl Shell {
     }
 
     pub(crate) fn launcher_notices(&self) -> Vec<String> {
-        if !self.update_check || !self.updates.runs_from_release() {
+        if !self.prefs.update_check || !self.updates.runs_from_release() {
             return Vec::new();
         }
         match self.updates.blocked_notice() {
@@ -647,7 +647,7 @@ impl Shell {
     }
 
     pub(crate) fn update_bar(&self, p: Palette) -> Option<impl IntoElement> {
-        if !self.update_check || !self.updates.runs_from_release() {
+        if !self.prefs.update_check || !self.updates.runs_from_release() {
             return None;
         }
         let bar = h_flex()

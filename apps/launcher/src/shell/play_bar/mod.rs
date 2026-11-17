@@ -342,10 +342,10 @@ impl Shell {
                     "{} {}",
                     match self.launching.launch.as_ref().and_then(|l| l.stage.as_deref()) {
                         Some(stage) => stage.to_owned(),
-                        None if !self.use_profiles && self.launch_mode().is_vr() => {
+                        None if !self.prefs.use_profiles && self.launch_mode().is_vr() => {
                             tr("Starting in VR…").to_owned()
                         }
-                        None if !self.use_profiles => tr("Starting…").to_owned(),
+                        None if !self.prefs.use_profiles => tr("Starting…").to_owned(),
                         None if self.launch_mode().is_vr() => trf!(
                             "Starting with profile {name} in VR…",
                             name = self.library.profile.name
@@ -462,7 +462,7 @@ impl Shell {
                         "{count} changed setting",
                         "{count} changed settings",
                     );
-                    let text = match self.use_profiles {
+                    let text = match self.prefs.use_profiles {
                         true => trf!(
                             "Ready · rebuilds {profile} for {changes} on launch",
                             profile = self.library.profile.name,
@@ -582,7 +582,7 @@ impl Shell {
     fn play_caret(&self, cx: &mut Context<Self>) -> impl IntoElement {
         let shell = cx.entity().downgrade();
         let vr = self.launch_mode().is_vr();
-        let start_store = self.start_store;
+        let start_store = self.prefs.start_store;
         let start_label = match self.game.install.as_ref().map(|i| i.source) {
             Some(Source::EaApp) => tr("Start the EA app automatically"),
             _ => tr("Start Steam automatically"),

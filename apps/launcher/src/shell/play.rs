@@ -254,7 +254,7 @@ impl Shell {
     }
 
     pub(crate) fn launch_mode(&self) -> LaunchMode {
-        if self.vr_profiles.contains(&self.library.profile.name) {
+        if self.prefs.vr_profiles.contains(&self.library.profile.name) {
             LaunchMode::Vr
         } else {
             LaunchMode::Normal

@@ -2,7 +2,7 @@ use crate::dialogs::crash::CrashView;
 use crate::services::library::Library;
 use gpui_kit::component::slider::SliderState;
 use gpui_kit::*;
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Instant, SystemTime};
@@ -78,28 +78,14 @@ pub struct Shell {
     pub(crate) moving: Option<crate::dialogs::data_move::Moving>,
     pub(crate) found_data: Option<crate::dialogs::found_data::FoundPrompt>,
     pub(crate) dropping: bool,
-    pub(crate) vr_profiles: BTreeSet<String>,
-    pub(crate) start_store: bool,
     pub(crate) ui_mode: Option<UiMode>,
     pub(crate) ui_scale: Option<u16>,
     pub(crate) ui_scale_slider: Entity<SliderState>,
     pub(crate) ui_scale_drag: Option<u16>,
     pub(crate) _ui_scale_changes: Subscription,
     pub(crate) onboarding: Option<crate::features::onboarding::Onboarding>,
-    pub(crate) developer_mode: bool,
-    /// `clear_old_session_logs` from config.json: opt-in, old session logs are cleared at start.
-    pub(crate) clear_old_session_logs: bool,
-    /// `time_trial_boards` from config.json: on unless turned off, uploads completed Time Trial laps.
-    pub(crate) time_trial_boards: bool,
-    pub(crate) use_profiles: bool,
-    /// `time_trial_ingame` from config.json: on unless turned off, shows the boards inside Time Trial.
-    pub(crate) time_trial_ingame: bool,
-    /// `home_video` from config.json: on unless turned off, shows the latest video card on the F1 25 home screen.
-    pub(crate) home_video: bool,
     reload_generation: u64,
     slow_logged: bool,
-    /// `updates.check` from config.json, read when the library loads.
-    pub(crate) update_check: bool,
     pub(crate) updates: crate::features::update::Updates,
     pub(crate) blocks: crate::blocks::Blocks,
     pub(crate) content_width: f32,
@@ -134,6 +120,7 @@ pub struct Shell {
     pub(crate) game: crate::shell::probe::GameWatch,
     pub(crate) launching: crate::shell::play::Launching,
     pub(crate) account: crate::shell::account::Account,
+    pub(crate) prefs: crate::shell::config::Prefs,
 }
 
 pub struct SliderSlot {

@@ -40,15 +40,15 @@ impl Shell {
     pub(super) fn install_library(&mut self, library: Library, cx: &mut Context<Self>) {
         self.library = library;
         let config = self.store.config();
-        self.developer_mode = config.developer;
-        self.clear_old_session_logs = config.clear_old_session_logs;
-        self.time_trial_boards = config.time_trial_boards;
-        self.use_profiles = config.use_profiles;
-        self.time_trial_ingame = config.time_trial_ingame;
-        self.home_video = config.home_video;
-        self.vr_profiles = config.vr_profiles;
-        self.start_store = config.launch.start_store;
-        self.update_check = config.updates.check;
+        self.prefs.developer_mode = config.developer;
+        self.prefs.clear_old_session_logs = config.clear_old_session_logs;
+        self.prefs.time_trial_boards = config.time_trial_boards;
+        self.prefs.use_profiles = config.use_profiles;
+        self.prefs.time_trial_ingame = config.time_trial_ingame;
+        self.prefs.home_video = config.home_video;
+        self.prefs.vr_profiles = config.vr_profiles;
+        self.prefs.start_store = config.launch.start_store;
+        self.prefs.update_check = config.updates.check;
         if matches!(self.page, Page::Section(i) if i >= self.library.sections.len()) {
             self.page = Page::Addons;
         }

@@ -82,7 +82,7 @@ impl Shell {
                 let n = links.len();
                 (links, n)
             }
-            None if self.developer_mode => (
+            None if self.prefs.developer_mode => (
                 vec![Link::new(Page::Settings, None), Link::new(Page::Tools, None)],
                 2,
             ),

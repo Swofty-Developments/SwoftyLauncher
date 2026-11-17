@@ -53,19 +53,19 @@ impl Shell {
             _ => tr("Start Steam automatically"),
         };
         let start = Switch::new("settings-start-store")
-            .checked(self.start_store)
+            .checked(self.prefs.start_store)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_start_store(*on, window, cx)));
         let time_trial = Switch::new("settings-time-trial-boards")
-            .checked(self.time_trial_boards)
+            .checked(self.prefs.time_trial_boards)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_time_trial_boards(*on, window, cx)));
         let time_trial_ingame = Switch::new("settings-time-trial-ingame")
-            .checked(self.time_trial_ingame)
+            .checked(self.prefs.time_trial_ingame)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_time_trial_ingame(*on, window, cx)));
         let home_video = Switch::new("settings-home-video")
-            .checked(self.home_video)
+            .checked(self.prefs.home_video)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_home_video(*on, window, cx)));
         let use_profiles = Switch::new("settings-use-profiles")
-            .checked(self.use_profiles)
+            .checked(self.prefs.use_profiles)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_use_profiles(*on, window, cx)));
         SettingsSection::new(tr("General"))
             .row(
@@ -308,10 +308,10 @@ impl Shell {
 
     pub(super) fn settings_advanced(&self, cx: &mut Context<Self>) -> AnyElement {
         let developer = Switch::new("settings-developer")
-            .checked(self.developer_mode)
+            .checked(self.prefs.developer_mode)
             .on_click(cx.listener(|this, on: &bool, window, cx| this.set_developer(*on, window, cx)));
         let auto_clear = Switch::new("settings-auto-clear-logs")
-            .checked(self.clear_old_session_logs)
+            .checked(self.prefs.clear_old_session_logs)
             .on_click(
                 cx.listener(|this, on: &bool, window, cx| this.set_clear_old_session_logs(*on, window, cx)),
             );

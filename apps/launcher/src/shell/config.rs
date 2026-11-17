@@ -1,9 +1,43 @@
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
-use swofty_core::session::LaunchMode;
+use std::collections::BTreeSet;
+use swofty_core::session::{Config, LaunchMode};
 
 use super::Shell;
 use swofty_i18n::trf;
+
+pub(crate) struct Prefs {
+    pub(crate) developer_mode: bool,
+    /// `clear_old_session_logs` from config.json: opt-in, old session logs are cleared at start.
+    pub(crate) clear_old_session_logs: bool,
+    /// `time_trial_boards` from config.json: on unless turned off, uploads completed Time Trial laps.
+    pub(crate) time_trial_boards: bool,
+    pub(crate) use_profiles: bool,
+    /// `time_trial_ingame` from config.json: on unless turned off, shows the boards inside Time Trial.
+    pub(crate) time_trial_ingame: bool,
+    /// `home_video` from config.json: on unless turned off, shows the latest video card on the F1 25 home screen.
+    pub(crate) home_video: bool,
+    /// `updates.check` from config.json, read when the library loads.
+    pub(crate) update_check: bool,
+    pub(crate) start_store: bool,
+    pub(crate) vr_profiles: BTreeSet<String>,
+}
+
+impl Prefs {
+    pub(crate) fn from_config(config: &Config) -> Self {
+        Self {
+            developer_mode: config.developer,
+            clear_old_session_logs: config.clear_old_session_logs,
+            time_trial_boards: config.time_trial_boards,
+            use_profiles: config.use_profiles,
+            time_trial_ingame: config.time_trial_ingame,
+            home_video: config.home_video,
+            update_check: config.updates.check,
+            start_store: config.launch.start_store,
+            vr_profiles: config.vr_profiles.clone(),
+        }
+    }
+}
 
 impl Shell {
     pub(crate) fn set_launcher_saves(&mut self, on: bool, window: &mut Window, cx: &mut Context<Self>) {
@@ -41,7 +75,7 @@ impl Shell {
             crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
-        self.start_store = config.launch.start_store;
+        self.prefs.start_store = config.launch.start_store;
         cx.notify();
     }
 
@@ -57,7 +91,7 @@ impl Shell {
             crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
-        self.clear_old_session_logs = config.clear_old_session_logs;
+        self.prefs.clear_old_session_logs = config.clear_old_session_logs;
         cx.notify();
     }
 
@@ -68,7 +102,7 @@ impl Shell {
             crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
-        self.use_profiles = config.use_profiles;
+        self.prefs.use_profiles = config.use_profiles;
         if !on {
             let active = self.library.profile.name.clone();
             if let Some(name) = crate::dialogs::profiles::implicit_profile(&self.library.profiles, &active) {
@@ -85,7 +119,7 @@ impl Shell {
             crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
-        self.time_trial_boards = config.time_trial_boards;
+        self.prefs.time_trial_boards = config.time_trial_boards;
         cx.notify();
     }
 
@@ -96,7 +130,7 @@ impl Shell {
             crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
-        self.time_trial_ingame = config.time_trial_ingame;
+        self.prefs.time_trial_ingame = config.time_trial_ingame;
         cx.notify();
     }
 
@@ -107,7 +141,7 @@ impl Shell {
             crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
-        self.home_video = config.home_video;
+        self.prefs.home_video = config.home_video;
         cx.notify();
     }
 
@@ -118,7 +152,7 @@ impl Shell {
             crate::app::app_log::action("save settings").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);
         }
-        self.vr_profiles = config.vr_profiles;
+        self.prefs.vr_profiles = config.vr_profiles;
         cx.notify();
     }
 }

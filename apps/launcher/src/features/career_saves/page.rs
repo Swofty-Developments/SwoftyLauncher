@@ -41,12 +41,12 @@ impl Shell {
                 .child(empty)
                 .into_any_element();
         };
-        let title = match (view.vanilla(), self.use_profiles) {
+        let title = match (view.vanilla(), self.prefs.use_profiles) {
             (true, _) => tr("Vanilla saves").to_owned(),
             (false, true) => trf!("{profile} saves", profile = view.profile),
             (false, false) => tr("Saves").to_owned(),
         };
-        let subtitle = match (view.vanilla(), self.use_profiles) {
+        let subtitle = match (view.vanilla(), self.prefs.use_profiles) {
             (true, _) => tr("Plays on your Steam save").to_owned(),
             (false, true) => tr("This profile's own save").to_owned(),
             (false, false) => tr("Launcher saves").to_owned(),
@@ -255,7 +255,7 @@ impl Shell {
         h_flex()
             .gap(px(8.))
             .flex_shrink_0()
-            .when(self.use_profiles, |row| row.child(copy))
+            .when(self.prefs.use_profiles, |row| row.child(copy))
             .child(import)
             .child(export)
     }

@@ -156,7 +156,10 @@ impl Shell {
     }
 
     pub(crate) fn switch_profile(&mut self, name: &str, window: &mut Window, cx: &mut Context<Self>) {
-        if !self.use_profiles && name != self.library.profile.name && self.library.profile.name != VANILLA {
+        if !self.prefs.use_profiles
+            && name != self.library.profile.name
+            && self.library.profile.name != VANILLA
+        {
             return;
         }
         self.launching.play_pending.cancel();

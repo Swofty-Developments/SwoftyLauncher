@@ -88,18 +88,10 @@ impl Shell {
                 }
             },
         );
-        let vr_profiles = config.vr_profiles;
-        let start_store = config.launch.start_store;
         let ui_mode = config.ui_mode;
-        let developer_mode = config.developer;
-        let clear_old_session_logs = config.clear_old_session_logs;
-        let time_trial_boards = config.time_trial_boards;
-        let use_profiles = config.use_profiles;
-        let time_trial_ingame = config.time_trial_ingame;
-        let home_video = config.home_video;
-        let update_check = config.updates.check;
+        let prefs = crate::shell::config::Prefs::from_config(&config);
         Self::guard_close(window, cx);
-        Self::recover_in_background(&store, clear_old_session_logs, cx);
+        Self::recover_in_background(&store, prefs.clear_old_session_logs, cx);
         let poll = Self::poll_game(window, cx);
         Self::rediscover_periodically(cx);
         let live = Self::poll_live(cx);
@@ -151,23 +143,14 @@ impl Shell {
             moving: None,
             found_data: None,
             dropping: false,
-            vr_profiles,
-            start_store,
             ui_mode,
             ui_scale,
             ui_scale_slider,
             ui_scale_drag: None,
             _ui_scale_changes,
             onboarding: None,
-            developer_mode,
-            clear_old_session_logs,
-            time_trial_boards,
-            use_profiles,
-            time_trial_ingame,
-            home_video,
             reload_generation: 0,
             slow_logged: false,
-            update_check,
             updates: crate::features::update::Updates::new(),
             blocks: crate::blocks::Blocks::default(),
             content_width: 900.,
@@ -228,6 +211,7 @@ impl Shell {
                 avatar: crate::services::avatar::load(&root),
                 avatar_link: None,
             },
+            prefs,
         };
         shell.refresh_views(cx);
         match std::env::var("SWOFTY_LAUNCHER_OPEN_PAGE").as_deref() {

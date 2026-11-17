@@ -254,7 +254,7 @@ impl Shell {
     pub(super) fn list_heading(&self, p: Palette) -> AnyElement {
         let title = match self.vanilla() {
             true => tr("INSTALLED").to_owned(),
-            false if !self.use_profiles => tr("LOAD ORDER").to_owned(),
+            false if !self.prefs.use_profiles => tr("LOAD ORDER").to_owned(),
             false => trf!(
                 "LOAD ORDER IN {name}",
                 name = self.library.profile.name.to_uppercase()
@@ -284,7 +284,7 @@ impl Shell {
             )
         } else {
             let on = self.library.listed().filter(|m| self.addon_on(m)).count();
-            let line = match self.use_profiles {
+            let line = match self.prefs.use_profiles {
                 true => trf!(
                     "{installed} · {on} on in {name}",
                     installed = installed,

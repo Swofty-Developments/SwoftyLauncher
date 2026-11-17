@@ -94,7 +94,7 @@ impl Shell {
             .find(|p| !p.vanilla())
             .map(|p| p.name.clone());
         let button = match modded {
-            Some(name) if self.use_profiles => Button::new("importer-use-profile")
+            Some(name) if self.prefs.use_profiles => Button::new("importer-use-profile")
                 .primary()
                 .icon(IconName::Layers)
                 .label(trf!("Use {name}", name = name))
@@ -102,7 +102,7 @@ impl Shell {
             _ => Button::new("importer-profiles")
                 .outline()
                 .icon(IconName::Layers)
-                .label(match self.use_profiles {
+                .label(match self.prefs.use_profiles {
                     true => tr("Profiles"),
                     false => tr("Addons"),
                 })
