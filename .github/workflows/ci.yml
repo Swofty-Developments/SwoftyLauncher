@@ -263,13 +263,6 @@ jobs:
         shell: bash
         run: echo "CACHE_ON_FAILURE=true" >> "$GITHUB_ENV"
 
-      # A hosted Windows runner has 4 cores, and most of its test time is spent waiting on files and processes
-      # (the summed test time is 1433 s against 225 s on Linux), so it runs twice as many tests at once.
-      - name: More tests at once on a hosted Windows runner
-        if: runner.os == 'Windows' && runner.environment == 'github-hosted'
-        shell: bash
-        run: echo "NEXTEST_TEST_THREADS=8" >> "$GITHUB_ENV"
-
       # Every test of every binary in one pool (.config/nextest.toml), with the slow ones listed at the end.
       # The real-file round trips skip without F1_25_DIR; CI has no game files.
       - name: Test
@@ -535,8 +528,12 @@ jobs:
           command -v wineserver
 
       # Every host and Wine test, the templates build and the Any Team Transfers build, side by side; each
-      # test's output is in its own group in the log, and the step fails on any failing test.
+      # test's output is in its own group in the log, and the step fails on any failing test. On a hosted
+      # runner's 4 cores run_tests.sh would run 2 Wine tests at a time, and 930 s of Wine tests then made up
+      # the whole 479 s step; before the Wine pool, 4 at a time ran 1173 s of them in about 330 s.
       - name: Native tests
+        env:
+          NATIVE_WINE_JOBS: ${{ runner.environment == 'github-hosted' && '4' || '' }}
         run: |
           df -h / "$RUNNER_TEMP"
           trap 'df -h / "$RUNNER_TEMP"' EXIT
