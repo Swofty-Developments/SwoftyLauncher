@@ -7,12 +7,9 @@
 #include <string>
 #include <vector>
 
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/json.hpp"
 #include "core/frontend/ui/screen_loader.hpp"
-
-namespace runtime {
-std::string hook_error(const safetyhook::MidHook::Error &e);
-}
 
 bool ui_vm_init(uintptr_t module_base, const std::wstring &swofty_dir);
 

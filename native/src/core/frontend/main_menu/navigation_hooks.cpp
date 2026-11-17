@@ -1,3 +1,4 @@
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include "core/frontend/main_menu/context.hpp"
@@ -10,10 +11,6 @@
 #include <cstring>
 #include <mutex>
 #include <string>
-
-namespace runtime {
-std::string hook_error(const safetyhook::InlineHook::Error &e);
-}
 
 namespace runtime::main_menu {
 

@@ -3,6 +3,7 @@
 #include "core/frontend/player_name/copies.hpp"
 #include "core/frontend/player_name_logic.hpp"
 #include "core/frontend/ui_registry_walk.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/services/lap_host.hpp"
 
@@ -23,10 +24,6 @@
 #include <string>
 #include <thread>
 #include <vector>
-
-namespace runtime {
-std::string hook_error(const safetyhook::InlineHook::Error &e);
-}
 
 // The player's own name in Time Trial. Every presence name the game shows (HUD, session cars, results) goes through the name
 // cache lookup FUN_140816b10 (cache +0x30 keys, +0x5030 names, 0x81-byte slots; 256 entries, most recently used first; the
