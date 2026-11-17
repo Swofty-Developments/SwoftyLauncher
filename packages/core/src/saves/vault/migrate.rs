@@ -9,8 +9,8 @@ use serde::{Deserialize, Serialize};
 
 use super::{Location, Notice, NoticeKind, Vault};
 use crate::Result;
-use crate::baseline::sha256_file;
-use crate::save_backup;
+use crate::game_folder::baseline::sha256_file;
+use crate::saves::backup;
 
 const MARKER: &str = "migrated.json";
 
@@ -42,7 +42,7 @@ pub fn marker(data: &Path) -> Option<Marker> {
 
 /// Import every backup not imported yet; returns what it did, one line each.
 pub fn migrate(data: &Path) -> Result<Vec<String>> {
-    let old = save_backup::backups_dir(data);
+    let old = backup::backups_dir(data);
     if !old.is_dir() {
         return Ok(Vec::new());
     }
@@ -52,7 +52,7 @@ pub fn migrate(data: &Path) -> Result<Vec<String>> {
         return Ok(Vec::new());
     }
     let mut notes = Vec::new();
-    for b in save_backup::list(data)? {
+    for b in backup::list(data)? {
         if m.backups.contains_key(&b.name) {
             continue;
         }
@@ -79,7 +79,7 @@ pub fn migrate(data: &Path) -> Result<Vec<String>> {
         }
     }
     crate::write_json(&marker_path(data), &m)?;
-    let old_notice = data.join(save_backup::NOTICE);
+    let old_notice = data.join(backup::NOTICE);
     if let Some(n) = std::fs::read(&old_notice)
         .ok()
         .and_then(|d| serde_json::from_slice::<OldNotice>(&d).ok())
@@ -118,7 +118,7 @@ pub fn retire(data: &Path) {
     if m.retired {
         return;
     }
-    let old = save_backup::backups_dir(data);
+    let old = backup::backups_dir(data);
     for (name, target) in &m.backups {
         let dir = old.join(name);
         if dir.is_dir() && !in_vault(data, target) {
@@ -135,7 +135,7 @@ pub fn retire(data: &Path) {
     if !old.exists() {
         m.retired = true;
         crate::write_json(&marker_path(data), &m).ok();
-        std::fs::remove_file(data.join(save_backup::NOTICE)).ok();
+        std::fs::remove_file(data.join(backup::NOTICE)).ok();
     }
 }
 

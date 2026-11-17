@@ -7,7 +7,7 @@ use std::path::{Path, PathBuf};
 use std::time::SystemTime;
 
 use super::{Location, history, within};
-use crate::process::{same_folder, same_path};
+use crate::platform::process::{same_folder, same_path};
 
 const ADDONS: [&str; 2] = ["addons", "mods"];
 const MANIFEST: &str = "swofty.json";

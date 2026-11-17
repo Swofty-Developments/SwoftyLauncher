@@ -8,7 +8,7 @@ use sha2::{Digest, Sha256};
 use crate::launcher::Progress;
 use crate::manifest::{AddonManifest, MANIFEST_FILE};
 use crate::store::Store;
-use crate::update::{self, Asset, Failure, Release};
+use crate::updates::release::{self, Asset, Failure, Release};
 use crate::{Error, Result, io_err};
 
 pub const ID: &str = "teamsimplified.mods";
@@ -36,11 +36,11 @@ pub fn installed(store: &Store) -> Option<Version> {
 }
 
 pub fn fetch_latest(timeout: Duration) -> std::result::Result<Release, Failure> {
-    update::fetch_release(LATEST_URL, timeout)
+    release::fetch_release(LATEST_URL, timeout)
 }
 
 pub fn fetch_releases(timeout: Duration) -> std::result::Result<Vec<Release>, Failure> {
-    update::fetch_json(LIST_URL, timeout)
+    release::fetch_json(LIST_URL, timeout)
 }
 
 pub fn package_asset(release: &Release) -> Result<&Asset> {
@@ -52,7 +52,7 @@ pub fn package_asset(release: &Release) -> Result<&Asset> {
 }
 
 pub fn ready(release: &Release) -> bool {
-    package_asset(release).is_ok_and(|a| update::verifiable(release, a))
+    package_asset(release).is_ok_and(|a| release::verifiable(release, a))
 }
 
 fn cache_name(tag: &str) -> String {
@@ -85,14 +85,14 @@ static PARTS: AtomicUsize = AtomicUsize::new(0);
 
 pub fn fetch_package(store: &Store, release: &Release, progress: &dyn Progress) -> Result<PathBuf> {
     let asset = package_asset(release)?;
-    if !update::verifiable(release, asset) {
+    if !release::verifiable(release, asset) {
         return Err(Error::Other(format!(
             "release {} has no SHA-256 for {ASSET}",
             release.tag_name
         )));
     }
     let sums = match release.sums() {
-        Some(s) => Some(update::parse_sums(&update::get_text(
+        Some(s) => Some(release::parse_sums(&release::get_text(
             &s.browser_download_url,
             SUMS_TIMEOUT,
         )?)),
@@ -100,7 +100,7 @@ pub fn fetch_package(store: &Store, release: &Release, progress: &dyn Progress) 
     };
     let file = cached(store, release);
     if hash_file(&file)
-        .is_some_and(|(len, sha)| update::check_download(asset, len, &sha, sums.as_ref()).is_ok())
+        .is_some_and(|(len, sha)| release::check_download(asset, len, &sha, sums.as_ref()).is_ok())
     {
         return Ok(file);
     }
@@ -113,8 +113,8 @@ pub fn fetch_package(store: &Store, release: &Release, progress: &dyn Progress) 
     ));
     let total = asset.size.max(1) as f32;
     let text = format!("Downloading {}", release.tag_name);
-    let fetched = update::download(asset, &part, &|n| progress.report(0.9 * n as f32 / total, &text))
-        .and_then(|(len, sha256)| update::check_download(asset, len, &sha256, sums.as_ref()))
+    let fetched = release::download(asset, &part, &|n| progress.report(0.9 * n as f32 / total, &text))
+        .and_then(|(len, sha256)| release::check_download(asset, len, &sha256, sums.as_ref()))
         .and_then(|()| std::fs::rename(&part, &file).map_err(io_err(&file)));
     std::fs::remove_file(&part).ok();
     fetched.map(|()| file)
@@ -141,12 +141,12 @@ pub fn requirement(store: &Store, release: &Release) -> Result<VersionReq> {
         .assets
         .iter()
         .find(|a| a.name == MANIFEST_ASSET)
-        .and_then(|a| update::get_text(&a.browser_download_url, update::CHECK_TIMEOUT).ok())
+        .and_then(|a| release::get_text(&a.browser_download_url, release::CHECK_TIMEOUT).ok())
         .and_then(|text| AddonManifest::parse(&text).ok())
         .and_then(|m| launcher_needs(&m).ok());
     match published {
         Some(needs) => Ok(needs),
-        None => launcher_needs(&crate::package::manifest(&fetch_package(
+        None => launcher_needs(&crate::addons::package::manifest(&fetch_package(
             store, release, &Quiet,
         )?)?),
     }
@@ -222,7 +222,7 @@ pub fn repair(store: &Store, release: &Release) -> Result<Version> {
 // launcher requirement when it loads it: installing first would replace a
 // working copy with one the launcher then refuses to load.
 fn compatible(package: &Path, release: &Release, launcher: &Version) -> Result<()> {
-    let needs = launcher_needs(&crate::package::manifest(package)?)?;
+    let needs = launcher_needs(&crate::addons::package::manifest(package)?)?;
     match needs.matches(launcher) {
         true => Ok(()),
         false => Err(Error::Other(format!(
@@ -306,7 +306,7 @@ mod tests {
     use std::collections::BTreeMap;
 
     use super::*;
-    use crate::update::SUMS_FILE;
+    use crate::updates::release::SUMS_FILE;
     use testing::Helper;
 
     fn v(s: &str) -> Version {
@@ -355,9 +355,9 @@ mod tests {
         let good = "a".repeat(64);
         let bad = "b".repeat(64);
         let sums = BTreeMap::from([(ASSET.to_owned(), good.clone())]);
-        assert!(update::check_download(picked, 10, &good, Some(&sums)).is_ok());
-        assert!(update::check_download(picked, 10, &bad, Some(&sums)).is_err());
-        assert!(update::check_download(picked, 9, &good, Some(&sums)).is_err());
+        assert!(release::check_download(picked, 10, &good, Some(&sums)).is_ok());
+        assert!(release::check_download(picked, 10, &bad, Some(&sums)).is_err());
+        assert!(release::check_download(picked, 9, &good, Some(&sums)).is_err());
         let empty = Release {
             assets: vec![asset(SUMS_FILE, 98)],
             ..release("v0.5.0")

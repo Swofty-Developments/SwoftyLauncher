@@ -87,7 +87,7 @@ pub struct Recovered {
     pub problems: Vec<String>,
     pub logs: usize,
     /// The build the last session was running when its process ended.
-    pub interrupted: Option<crate::busy::Busy>,
+    pub interrupted: Option<crate::game_folder::busy::Busy>,
 }
 
 impl Recovered {
@@ -161,9 +161,9 @@ pub fn recover(lock: &SessionLock, data: &Path, game: &Game, scope: Scope) -> Re
     r.journals = inst.roll_back(scope == Scope::Sessions)?;
     r.swept = inst.sweep()?;
     r.logs = inst.tidy(&data.join("sessions/orphaned-logs"))?;
-    r.interrupted = crate::busy::Busy::read(data);
-    crate::busy::Busy::clear(data);
-    crate::busy::clear_cancel(data);
+    r.interrupted = crate::game_folder::busy::Busy::read(data);
+    crate::game_folder::busy::Busy::clear(data);
+    crate::game_folder::busy::clear_cancel(data);
     if r.recovered() {
         Notice::record(data, &r.lines())?;
     }
@@ -358,7 +358,7 @@ pub fn relocate_offline(data: &Path, game: &Path) -> Result<Option<String>> {
         let Some(here) = moved(&to) else {
             continue;
         };
-        let Some(have) = crate::baseline::sha256_opt(&here)? else {
+        let Some(have) = crate::game_folder::baseline::sha256_opt(&here)? else {
             continue;
         };
         match op.as_str() {

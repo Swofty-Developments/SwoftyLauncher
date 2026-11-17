@@ -8,9 +8,9 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
+use crate::game_folder::journal::Journal;
+use crate::game_folder::recovery::{Restored, SESSION_HELD, SessionLock};
 use crate::install::{Game, Source};
-use crate::journal::Journal;
-use crate::recovery::{Restored, SESSION_HELD, SessionLock};
 use crate::{Error, Result, read_json, with_retry, write_json};
 
 /// Raised to have every player go through the setup again, which starts each
@@ -35,7 +35,7 @@ pub fn backups_missing(files: &[String]) -> String {
         "Swofty's {backups} of the original {} {are} missing from its data folder. Run the one-time setup again: \
          open Swofty Launcher and press Play, or run `swofty setup reset`, repair the game in the EA app or verify \
          the game files in Steam, then run `swofty setup done`",
-        crate::stock::names(files)
+        crate::game_folder::stock::names(files)
     )
 }
 
@@ -85,7 +85,7 @@ pub fn reset(data: &Path, game: &Game, other_mods: bool) -> Result<Reset> {
     let Some(lock) = SessionLock::try_acquire(data)? else {
         return Err(Error::Other(SESSION_HELD.into()));
     };
-    let first = match crate::recovery::restore_locked(&lock, data, game) {
+    let first = match crate::game_folder::recovery::restore_locked(&lock, data, game) {
         Err(e) if Source::detect(&game.dir) == Source::Unknown => return Err(e),
         r => r,
     };
@@ -110,7 +110,7 @@ pub fn reset(data: &Path, game: &Game, other_mods: bool) -> Result<Reset> {
                 with_retry(&journals, || std::fs::rename(&journals, &to))?;
             }
             Reset {
-                restored: crate::recovery::restore_locked(&lock, data, game)?,
+                restored: crate::game_folder::recovery::restore_locked(&lock, data, game)?,
                 unrestored: Some(e.to_string()),
             }
         }
@@ -124,7 +124,7 @@ pub fn reset(data: &Path, game: &Game, other_mods: bool) -> Result<Reset> {
         &Setup {
             version: VERSION,
             other_mods,
-            reset_at: crate::update::now_secs(),
+            reset_at: crate::updates::release::now_secs(),
             done_at: None,
             noticed: false,
         },
@@ -137,9 +137,9 @@ pub fn reset(data: &Path, game: &Game, other_mods: bool) -> Result<Reset> {
 /// list: a Steam copy whose depot manifests can be read. Such a copy skips
 /// the verify when the player says no other mods are in the folder.
 pub fn store_checks(game_dir: &Path) -> bool {
-    crate::steam::find_game()
-        .filter(|i| crate::copies::same_dir(&i.dir, game_dir))
-        .is_some_and(|i| crate::stock::Depots::load(&i).is_ok())
+    crate::platform::steam::find_game()
+        .filter(|i| crate::game_folder::copies::same_dir(&i.dir, game_dir))
+        .is_some_and(|i| crate::game_folder::stock::Depots::load(&i).is_ok())
 }
 
 /// The first launch after the setup builds every addon again and backs up the
@@ -172,7 +172,7 @@ pub fn finish(data: &Path) -> Result<Setup> {
     let mut setup = read(data)
         .filter(|s| s.version >= VERSION)
         .ok_or_else(|| Error::Other("the setup hasn't put the game folder back yet; reset first".into()))?;
-    setup.done_at = Some(crate::update::now_secs());
+    setup.done_at = Some(crate::updates::release::now_secs());
     write_json(&path(data), &setup)?;
     let retired = data.join(RETIRED);
     if retired.is_dir() {
@@ -184,7 +184,7 @@ pub fn finish(data: &Path) -> Result<Setup> {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::baseline::Identity;
+    use crate::game_folder::baseline::Identity;
 
     fn temp(name: &str) -> PathBuf {
         let d = std::env::temp_dir().join(format!("swofty-setup-{name}-{}", std::process::id()));
@@ -211,7 +211,9 @@ mod tests {
         let root = temp("reset");
         let data = root.join("data");
         let g = game(&root);
-        crate::baseline::Baseline::new(&g.identity).save(&data).unwrap();
+        crate::game_folder::baseline::Baseline::new(&g.identity)
+            .save(&data)
+            .unwrap();
         std::fs::create_dir_all(data.join("cache/overlay/default/abc")).unwrap();
         assert!(!done(&data));
 
@@ -269,13 +271,13 @@ mod tests {
     }
 
     fn broken_record(data: &Path, g: &Game) {
-        let mut b = crate::baseline::Baseline::new(&g.identity);
+        let mut b = crate::game_folder::baseline::Baseline::new(&g.identity);
         b.files.insert(
             "game.erp".into(),
-            crate::baseline::FileRecord {
+            crate::game_folder::baseline::FileRecord {
                 size: 4,
                 sha256: "f".repeat(64),
-                source: crate::baseline::Source::FirstSight,
+                source: crate::game_folder::baseline::Source::FirstSight,
             },
         );
         b.save(data).unwrap();

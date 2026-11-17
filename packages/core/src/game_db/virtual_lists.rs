@@ -12,8 +12,8 @@ use std::collections::{BTreeMap, BTreeSet, HashSet};
 use swofty_formats::gvdb::{Gvdb, Record, instance_count_path};
 use swofty_formats::hash::fnv1a64;
 
+use crate::game_db::row_keys::{Names, RowKeys};
 use crate::ops::{VIRTUAL_LISTS, row_keys};
-use crate::rowkeys::{Names, RowKeys};
 
 const TABLE: &str = "entrants.entrant_lists";
 const ROW: &str = "entrant_list";

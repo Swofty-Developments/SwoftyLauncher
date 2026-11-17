@@ -6,8 +6,8 @@
 use std::path::{Path, PathBuf};
 
 use super::{Event, EventKind, Layout, Location, Meta, Notice, Reason, Taken, Vault};
-use crate::baseline::sha256_file;
-use crate::recovery::SessionLock;
+use crate::game_folder::baseline::sha256_file;
+use crate::game_folder::recovery::SessionLock;
 use crate::{Error, Result, io_err};
 
 const SESSION_GRACE: std::time::Duration = std::time::Duration::from_secs(2);
@@ -40,9 +40,10 @@ impl Running {
             };
         }
         Self {
-            game: crate::process::game_running(),
-            steam: crate::steam_client::status().state != crate::steam_client::State::Stopped,
-            ea_app: crate::ea_app::running(),
+            game: crate::platform::process::game_running(),
+            steam: crate::platform::steam_client::status().state
+                != crate::platform::steam_client::State::Stopped,
+            ea_app: crate::platform::ea_app::running(),
         }
     }
 }

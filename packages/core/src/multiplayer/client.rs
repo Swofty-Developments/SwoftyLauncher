@@ -12,8 +12,8 @@ use serde_json::{Value, json};
 
 use super::fingerprint::{self, Fingerprint};
 use super::types::{FixStep, GameStatus, RoomSettings, RoomSummary, SessionState};
-use crate::baseline::Identity;
 use crate::catalog::{self, Addon};
+use crate::game_folder::baseline::Identity;
 use crate::modules::library::{Hooks, Library};
 use crate::modules::{self, Unavailable};
 use crate::profile::Profile;
@@ -135,7 +135,7 @@ fn open(data: &Path, token: Option<&str>) -> Result<Library, Unavailable> {
     let config = json!({
         "data": data,
         "server": api.server(),
-        "launcher": crate::update::current_version().to_string(),
+        "launcher": crate::updates::release::current_version().to_string(),
     });
     let hooks = Hooks {
         call: Box::new(answer),
@@ -318,7 +318,7 @@ pub fn scrub(text: &str) -> String {
 pub fn scrub_json(text: &str) -> String {
     match serde_json::from_str::<Value>(text) {
         Ok(mut doc) => {
-            crate::send_logs::redact_json(&mut doc);
+            crate::diagnostics::send_logs::redact_json(&mut doc);
             scrub(&serde_json::to_string_pretty(&doc).unwrap_or_default())
         }
         Err(_) => scrub(text),
@@ -330,7 +330,7 @@ pub fn snapshot() -> Option<Value> {
     let mut doc = call("session.snapshot", Value::Null)
         .ok()
         .filter(|v| !v.is_null())?;
-    crate::send_logs::redact_json(&mut doc);
+    crate::diagnostics::send_logs::redact_json(&mut doc);
     Some(doc)
 }
 

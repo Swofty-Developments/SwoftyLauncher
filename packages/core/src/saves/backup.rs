@@ -6,7 +6,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::baseline::sha256_file;
+use crate::game_folder::baseline::sha256_file;
 use crate::{Error, Result, io_err};
 
 pub const DIR: &str = "save-backups";

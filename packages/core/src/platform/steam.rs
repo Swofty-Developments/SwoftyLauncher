@@ -1,6 +1,6 @@
 use std::path::{Path, PathBuf};
 
-use crate::vdf::{self, Vdf};
+use crate::platform::vdf::{self, Vdf};
 use crate::{GAME_EXE, STEAM_APP_ID};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -72,7 +72,7 @@ const REGISTERED_KEYS: [(&str, &str); 4] = [
 
 /// The Steam folders Windows records: the per-user `SteamPath` and `SteamExe`, and the machine-wide
 /// `InstallPath`. Steam registers where it is installed, not where the game library is.
-pub fn registered_roots(reg: &dyn crate::steam_client::Registry) -> Vec<PathBuf> {
+pub fn registered_roots(reg: &dyn crate::platform::steam_client::Registry) -> Vec<PathBuf> {
     let mut out: Vec<PathBuf> = Vec::new();
     let mut last_key = "";
     let mut values: Vec<(String, String)> = Vec::new();
@@ -80,7 +80,7 @@ pub fn registered_roots(reg: &dyn crate::steam_client::Registry) -> Vec<PathBuf>
         if key != last_key {
             values = reg
                 .query(key)
-                .map(|l| crate::compat::parse_reg_query(&l))
+                .map(|l| crate::platform::run_as_admin::parse_reg_query(&l))
                 .unwrap_or_default();
             last_key = key;
         }
@@ -111,9 +111,9 @@ fn registered_roots_cached() -> Vec<PathBuf> {
     {
         return roots.clone();
     }
-    let mut roots = registered_roots(&crate::steam_client::RegExe);
+    let mut roots = registered_roots(&crate::platform::steam_client::RegExe);
     roots.extend(
-        crate::process::named_paths("steam.exe")
+        crate::platform::process::named_paths("steam.exe")
             .iter()
             .filter_map(|p| p.parent().map(Path::to_path_buf)),
     );
@@ -219,7 +219,8 @@ const CHANGING: u64 = 0x100
 /// while it verifies, so a running Steam's content log, which records every
 /// state change, is read first.
 pub fn busy(install: &GameInstall) -> Option<&'static str> {
-    let running = crate::steam_client::status().state != crate::steam_client::State::Stopped;
+    let running =
+        crate::platform::steam_client::status().state != crate::platform::steam_client::State::Stopped;
     running
         .then(|| log_busy(&install.steam_root.join("logs/content_log.txt")))
         .flatten()
@@ -658,9 +659,10 @@ pub fn search_save_in(
 
 #[cfg(windows)]
 pub fn active_user() -> Option<u32> {
-    use crate::steam_client::Registry;
-    let out = crate::steam_client::RegExe.query(crate::steam_client::ACTIVE_PROCESS_KEY)?;
-    crate::compat::reg_dword(&out, "ActiveUser").filter(|u| *u != 0)
+    use crate::platform::steam_client::Registry;
+    let out =
+        crate::platform::steam_client::RegExe.query(crate::platform::steam_client::ACTIVE_PROCESS_KEY)?;
+    crate::platform::run_as_admin::reg_dword(&out, "ActiveUser").filter(|u| *u != 0)
 }
 
 #[cfg(not(windows))]
@@ -985,7 +987,7 @@ mod tests {
 
     struct FakeReg(Vec<(&'static str, String)>);
 
-    impl crate::steam_client::Registry for FakeReg {
+    impl crate::platform::steam_client::Registry for FakeReg {
         fn query(&self, key: &str) -> Option<String> {
             self.0.iter().find(|(k, _)| *k == key).map(|(_, v)| v.clone())
         }

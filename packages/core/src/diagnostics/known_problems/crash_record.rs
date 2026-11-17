@@ -4,7 +4,7 @@ use super::evidence::Evidence;
 pub(super) const NEAR_FRAMES: usize = 8;
 
 pub(super) fn report_name(loader: &str) -> Option<String> {
-    crate::crash_report::logged_name(loader)
+    crate::diagnostics::crash_report::logged_name(loader)
 }
 
 /// The fatal exception as the loader log and the crash report describe it.

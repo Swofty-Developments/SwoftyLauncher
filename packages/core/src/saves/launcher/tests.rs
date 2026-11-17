@@ -1,7 +1,7 @@
 use std::path::PathBuf;
 
 use super::*;
-use crate::vault::EventKind;
+use crate::saves::vault::EventKind;
 
 const DATA: &str = "savegame@profile#NXDSMWW.BWW";
 const INDEX: &str = "savegame@profile#QKRHMYXE";
@@ -354,13 +354,13 @@ fn a_launcher_snapshot_restores_into_the_launcher_store() {
         panic!()
     };
     std::fs::write(to.dir.join(DATA), b"career two, longer").unwrap();
-    crate::vault::restore::restore(&v, &s.id, &to, closed(), NOW + 9).unwrap();
+    crate::saves::vault::restore::restore(&v, &s.id, &to, closed(), NOW + 9).unwrap();
     assert_eq!(std::fs::read(to.dir.join(DATA)).unwrap(), b"career one");
     let steam_only = Running {
         steam: true,
         ..Running::default()
     };
-    crate::vault::restore::restore(&v, &s.id, &to, steam_only, NOW + 10).unwrap();
+    crate::saves::vault::restore::restore(&v, &s.id, &to, steam_only, NOW + 10).unwrap();
 }
 
 #[test]

@@ -5,8 +5,8 @@ use swofty_formats::pkg::{Node, Pkg, Val, Value};
 use super::node::*;
 use super::rows;
 use crate::Result;
+use crate::addons::settings::{SessionAddon, SessionMap, SessionMod, SessionOption};
 use crate::manifest::{Binds, CareerSetup, OptionType};
-use crate::settings::{SessionAddon, SessionMap, SessionMod, SessionOption};
 
 pub const HOME: &str = "swofty_settings";
 pub const STATE: &str = "#ui_menu_data.swofty";
@@ -678,7 +678,7 @@ fn mod_rows<'a>(e: &Entry) -> Vec<Row<'a>> {
     ]
 }
 
-fn state_value(o: &SessionOption) -> Result<&crate::settings::SessionState> {
+fn state_value(o: &SessionOption) -> Result<&crate::addons::settings::SessionState> {
     o.states
         .get(o.current)
         .ok_or_else(|| err(format!("option {} has no state {}", o.id, o.current)))

@@ -6,9 +6,9 @@ use swofty_addon::launcher::{
     Addon, AddonInfo, AddonStore, CommandSpec, Cx, GameFiles, GameStatus, ProfileInfo, StateStore,
 };
 
-use crate::baseline::{Baseline, FileRecord, Objects};
-use crate::builtin::CORE_ID;
-use crate::helper::HelperAddon;
+use crate::addons::builtin::CORE_ID;
+use crate::addons::helper::HelperAddon;
+use crate::game_folder::baseline::{Baseline, FileRecord, Objects};
 use crate::install::Game;
 use crate::manifest::AddonManifest;
 use crate::profile::Profile;
@@ -59,7 +59,7 @@ impl Registry {
             .addons()?
             .into_values()
             .map(|m| {
-                let managed = crate::managed::is_managed(&m.id);
+                let managed = crate::updates::managed::is_managed(&m.id);
                 match store.builtins().iter().find(|b| b.addon.manifest().id == m.id) {
                     Some(b) => Entry {
                         addon: b.addon.clone(),
@@ -194,7 +194,7 @@ impl AddonStore for ProfileState {
     fn list(&self) -> swofty_addon::Result<Vec<AddonInfo>> {
         let p = self.store.profile(&self.profile).map_err(other)?;
         let mut addons = self.store.addons().map_err(other)?;
-        let order = crate::resolver::resolve(&p, &addons)
+        let order = crate::profile::resolver::resolve(&p, &addons)
             .map(|plan| plan.order)
             .unwrap_or_else(|_| p.enabled().map(str::to_owned).collect());
         let mut out: Vec<AddonInfo> = order
@@ -289,7 +289,7 @@ impl GameFiles for GameDir {
     }
 
     fn exe_version(&self) -> Option<String> {
-        crate::exe_version::read(&self.game.dir.join(crate::GAME_EXE))
+        crate::game_folder::exe_version::read(&self.game.dir.join(crate::GAME_EXE))
     }
 
     fn is_stock(&self, rel: &str) -> bool {
@@ -311,7 +311,8 @@ impl GameFiles for GameDir {
     }
 
     fn original_lang(&self, code: &str) -> swofty_addon::Result<PathBuf> {
-        crate::baseline::original_lang(&self.data, &self.game.dir, &self.game.identity, code).map_err(other)
+        crate::game_folder::baseline::original_lang(&self.data, &self.game.dir, &self.game.identity, code)
+            .map_err(other)
     }
 
     fn dir(&self) -> Option<PathBuf> {
@@ -319,19 +320,19 @@ impl GameFiles for GameDir {
     }
 
     fn addon_dir(&self, id: &str) -> Option<PathBuf> {
-        Some(crate::addon_storage::live_dir(&self.data, &self.game.dir, id))
+        Some(crate::addons::storage::live_dir(&self.data, &self.game.dir, id))
     }
 
     fn status(&self) -> GameStatus {
-        crate::process::game_status(Some(&self.data))
+        crate::platform::process::game_status(Some(&self.data))
     }
 
     fn steam_save_dir(&self) -> Option<PathBuf> {
-        crate::steam::find_save_dir()
+        crate::platform::steam::find_save_dir()
     }
 
     fn save_dir(&self, profile: &str) -> Option<PathBuf> {
-        crate::vault::Location::of_profile(&self.data, profile)
+        crate::saves::vault::Location::of_profile(&self.data, profile)
             .map(|l| l.dir)
             .filter(|d| d.is_dir())
     }
@@ -349,7 +350,7 @@ impl GameFiles for GameDir {
         &self,
         profile: &str,
     ) -> swofty_addon::Result<Option<swofty_addon::launcher::ProfileHeads>> {
-        crate::heads::for_profile(&Store::new(self.data.clone()), &self.game, profile)
+        crate::game_db::heads::for_profile(&Store::new(self.data.clone()), &self.game, profile)
             .map(Some)
             .map_err(other)
     }
@@ -663,7 +664,7 @@ mod tests {
         let game = Game {
             dir,
             user_reg: None,
-            identity: crate::baseline::Identity {
+            identity: crate::game_folder::baseline::Identity {
                 build_id: "1".into(),
                 exe_sha256: "0".repeat(64),
             },
@@ -680,7 +681,7 @@ mod tests {
             None,
             "the store isn't made until the first Play"
         );
-        let store = crate::launcher_saves::remote_dir(&root, "hi");
+        let store = crate::saves::launcher::remote_dir(&root, "hi");
         std::fs::create_dir_all(&store).unwrap();
         assert_eq!(game.save_dir("hi"), Some(store));
         std::fs::remove_dir_all(&root).ok();
@@ -693,11 +694,11 @@ mod tests {
         }
         let root = tmp("save-dir-ea");
         let game = copy(&root, true);
-        std::fs::create_dir_all(crate::launcher_saves::ea_dir(&root, "hi")).unwrap();
+        std::fs::create_dir_all(crate::saves::launcher::ea_dir(&root, "hi")).unwrap();
         let ea = root.join("pfx/drive_c/users/steamuser/AppData/Local/F1 25/savegame/ea/profile");
         assert_eq!(
             game.save_dir("hi").as_deref(),
-            Some(crate::launcher_saves::ea_dir(&root, "hi").as_path())
+            Some(crate::saves::launcher::ea_dir(&root, "hi").as_path())
         );
         assert_eq!(
             game.save_dir(crate::profile::VANILLA).as_deref(),

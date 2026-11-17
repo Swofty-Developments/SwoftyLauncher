@@ -8,7 +8,7 @@ use std::path::{Path, PathBuf};
 
 use serde::{Deserialize, Serialize};
 
-use crate::quarantine::is_virus_code;
+use crate::diagnostics::quarantine::is_virus_code;
 
 pub const ERROR_ACCESS_DENIED: i32 = 5;
 pub const ERROR_INVALID_IMAGE_HASH: i32 = 577;
