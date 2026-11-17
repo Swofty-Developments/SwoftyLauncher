@@ -518,13 +518,21 @@ jobs:
       - name: Build version.dll and swofty_core.dll
         run: native/build.sh
 
+      # Ubuntu installs wineserver beside Wine's libraries rather than on PATH, where the Wine test looks for it.
       - name: Disk space, Wine and Xvfb
         timeout-minutes: 10
         run: |
           while [ ! -f "$RUNNER_TEMP/wine-install.status" ]; do sleep 2; done
           cat "$RUNNER_TEMP/wine-install.log"
           df -h /
-          exit "$(cat "$RUNNER_TEMP/wine-install.status")"
+          status=$(cat "$RUNNER_TEMP/wine-install.status")
+          [ "$status" = 0 ] || exit "$status"
+          if ! command -v wineserver >/dev/null; then
+            for server in /usr/lib/x86_64-linux-gnu/wine/wineserver /usr/lib/wine/wineserver64 /usr/lib/wine/wineserver; do
+              if [ -x "$server" ]; then ln -sf "$server" "$RUNNER_TEMP/bin/wineserver"; break; fi
+            done
+          fi
+          command -v wineserver
 
       # Every host and Wine test, the templates build and the Any Team Transfers build, side by side; each
       # test's output is in its own group in the log, and the step fails on any failing test.
