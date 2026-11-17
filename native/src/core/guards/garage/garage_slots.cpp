@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -36,7 +37,6 @@ constexpr const char *LOAD = "site_Sess_GarageSlots_GarageLoad";
 constexpr const char *DONE = "site_Sess_GarageSlots_Done";
 
 uintptr_t done = 0;
-bool offered = false, settled = false, wanted = false;
 gs::Seen seen;
 
 void garage_load(SwoftyContext *c)
@@ -56,42 +56,17 @@ void garage_load(SwoftyContext *c)
     c->rip = done;
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> garage_slots_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_GARAGE_SLOT_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[garage] slot guard off (SWOFTY_GARAGE_SLOT_GUARD=%s)", v);
-        return out;
-    }
-    done = swofty::api->resolve(DONE);
-    if (!done || !swofty::api->resolve(LOAD)) {
-        done = 0;
-        swofty::log("[garage] slot guard off: needs %s and %s, which this build does not resolve", LOAD, DONE);
-        return out;
-    }
-    wanted = true;
-    out.push_back({MIXIN, {{LOAD, SWOFTY_MIXIN_SITE, 100, (void *)&garage_load, nullptr}}});
-    return out;
-}
-
-void garage_slots_commit()
-{
-    if (!offered || settled || !wanted)
-        return;
-    settled = true;
-    swofty::log("[garage] slot guard %s",
-                core_mixins_active(MIXIN)
-                    ? "armed: a team past the world's garage count gets no garage slot"
-                    : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::garage_slots,
+                        {
+                            .set = MIXIN,
+                            .name = "[garage] slot guard",
+                            .env = "SWOFTY_GARAGE_SLOT_GUARD",
+                            .keeps = {{DONE, &done}},
+                            .needs = {LOAD, DONE},
+                            .mixins = {{LOAD, SWOFTY_MIXIN_SITE, 100, (void *)&garage_load, nullptr}},
+                            .armed = "a team past the world's garage count gets no garage slot",
+                        }};
 
 }

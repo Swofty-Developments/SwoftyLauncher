@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -40,7 +41,6 @@ constexpr const char *NOT_FOUND = "site_Game_GarageSetups_NotFound";
 namespace gs = runtime::garage_setup;
 
 uintptr_t not_found = 0;
-bool offered = false, settled = false;
 std::atomic<int> skipped{0};
 
 bool read_memory(uint64_t address, void *out, size_t n, void *)
@@ -68,40 +68,17 @@ void entry_step(SwoftyContext *c)
                 n == gs::LOG_FIRST ? " (further skips are not logged)" : "");
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> garage_setup_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_GARAGE_SETUP_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[garage] setup guard off (SWOFTY_GARAGE_SETUP_GUARD=%s)", v);
-        return out;
-    }
-    not_found = swofty::api->resolve(NOT_FOUND);
-    if (!not_found || !swofty::api->resolve(STEP)) {
-        not_found = 0;
-        swofty::log("[garage] setup guard off: needs %s and %s, which this build does not resolve", STEP, NOT_FOUND);
-        return out;
-    }
-    out.push_back({MIXIN, {{STEP, SWOFTY_MIXIN_SITE, 100, (void *)&entry_step, nullptr}}});
-    return out;
-}
-
-void garage_setup_commit()
-{
-    if (!offered || settled || !not_found)
-        return;
-    settled = true;
-    swofty::log("[garage] setup guard %s",
-                core_mixins_active(MIXIN) ? "armed: a setup whose owner is gone gets an empty owner name"
-                                          : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::garage_setup,
+                        {
+                            .set = MIXIN,
+                            .name = "[garage] setup guard",
+                            .env = "SWOFTY_GARAGE_SETUP_GUARD",
+                            .keeps = {{NOT_FOUND, &not_found}},
+                            .needs = {STEP, NOT_FOUND},
+                            .mixins = {{STEP, SWOFTY_MIXIN_SITE, 100, (void *)&entry_step, nullptr}},
+                            .armed = "a setup whose owner is gone gets an empty owner name",
+                        }};
 
 }

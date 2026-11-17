@@ -58,7 +58,7 @@ bool SiteGuard::resolve()
             break;
         bool keep = false;
         for (auto &k : spec_.keeps)
-            keep |= k.binding == need;
+            keep |= !strcmp(k.binding, need);
         if (!keep)
             found = swofty::api->resolve(need) != 0;
     }
@@ -118,23 +118,17 @@ FunctionSet function_sets[] = {
     {CoreSetId::career_alias, runtime::career_alias_mixins, runtime::career_alias_commit},
     {CoreSetId::car_category, runtime::car_category_mixins, runtime::car_category_commit},
     {CoreSetId::save_splice, runtime::save_splice_mixins, runtime::save_splice_commit},
-    {CoreSetId::ers_newlap, runtime::ers_newlap_mixins, runtime::ers_newlap_commit},
-    {CoreSetId::ers_mode, runtime::ers_mode_mixins, runtime::ers_mode_commit},
     {CoreSetId::car_levers, runtime::car_levers_mixins, runtime::car_levers_commit},
     {CoreSetId::garage_crew, runtime::garage_crew_mixins, runtime::garage_crew_commit},
     {CoreSetId::garage_placement, runtime::garage_placement_mixins},
     {CoreSetId::pit_slots, runtime::pit_slots_mixins, runtime::pit_slots_commit},
     {CoreSetId::pit_box, runtime::pit_box_mixins, runtime::pit_box_commit},
-    {CoreSetId::garage_slots, runtime::garage_slots_mixins, runtime::garage_slots_commit},
-    {CoreSetId::chassis_registry, runtime::chassis_registry_mixins, runtime::chassis_registry_commit},
     {CoreSetId::standings_guard, runtime::standings_guard_mixins, runtime::standings_guard_commit},
-    {CoreSetId::ai_corner_guard, runtime::ai_corner_guard_mixins, runtime::ai_corner_guard_commit},
     {CoreSetId::replay_grid_guard, runtime::replay_grid_guard_mixins, runtime::replay_grid_guard_commit},
     {CoreSetId::fe_tile_guard, runtime::fe_tile_guard_mixins, runtime::fe_tile_guard_commit},
     {CoreSetId::myteam_vehicle_guard, runtime::myteam_vehicle_guard_mixins, runtime::myteam_vehicle_guard_commit},
     {CoreSetId::myteam_vehicle_heal, runtime::myteam_vehicle_heal_mixins, runtime::myteam_vehicle_heal_commit},
     {CoreSetId::myteam_vehicle_keep, runtime::myteam_vehicle_keep_mixins, runtime::myteam_vehicle_keep_commit},
-    {CoreSetId::tyre_slots, runtime::tyre_slots_mixins, runtime::tyre_slots_commit},
     {CoreSetId::tyre_models, runtime::tyre_models_mixins, runtime::tyre_models_commit},
     {CoreSetId::track_acclim, runtime::track_acclim_mixins, runtime::track_acclim_commit},
     {CoreSetId::audio_queue, runtime::audio_queue_mixins, runtime::audio_queue_commit},
@@ -143,19 +137,14 @@ FunctionSet function_sets[] = {
     {CoreSetId::track_select, runtime::track_select_mixins, runtime::track_select_commit},
     {CoreSetId::leaderboard_guard, runtime::leaderboard_guard_mixins, runtime::leaderboard_guard_commit},
     {CoreSetId::lap_host, runtime::lap_host_mixins, runtime::lap_host_commit},
-    {CoreSetId::thrustmaster_lcd, runtime::thrustmaster_lcd_mixins, runtime::thrustmaster_lcd_commit},
-    {CoreSetId::estimate_laptime, runtime::estimate_laptime_mixins, runtime::estimate_laptime_commit},
-    {CoreSetId::red_flag_recompute, runtime::red_flag_recompute_mixins, runtime::red_flag_recompute_commit},
     {CoreSetId::quali_tyres, runtime::quali_tyres_mixins, runtime::quali_tyres_commit},
     {CoreSetId::box_grid, runtime::box_grid_mixins, runtime::box_grid_commit},
     {CoreSetId::gp_continue, runtime::gp_continue_mixins, runtime::gp_continue_commit},
     {CoreSetId::track_list_guard, runtime::track_list_guard_mixins, runtime::track_list_guard_commit},
     {CoreSetId::watchdog_grace, runtime::watchdog_grace_mixins, runtime::watchdog_grace_commit},
-    {CoreSetId::garage_setup, runtime::garage_setup_mixins, runtime::garage_setup_commit},
     {CoreSetId::theatre_list, runtime::theatre_list_mixins, runtime::theatre_list_commit},
     {CoreSetId::tile_list_select, runtime::tile_list_select_mixins, runtime::tile_list_select_commit},
     {CoreSetId::session_enter, runtime::session_enter_mixins, runtime::session_enter_commit},
-    {CoreSetId::ai_line_set, runtime::ai_line_set_mixins, runtime::ai_line_set_commit},
 };
 
 }
