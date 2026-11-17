@@ -278,7 +278,9 @@ impl Drop for Session<'_> {
             )),
         }
         let inst = Installer::new(&self.store.root, self.game);
-        match inst.roll_back(false) {
+        let rolled_back = swofty_core::phases::time("rollback.total", || inst.roll_back(false));
+        crate::build::print_phases();
+        match rolled_back {
             Ok(done) => {
                 if !done.is_empty() {
                     info("rolled the profile's game files back");

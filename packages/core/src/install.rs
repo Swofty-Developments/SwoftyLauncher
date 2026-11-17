@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use crate::baseline::{
     Baseline, DepotHashes, FileRecord, Hashes, Identity, Objects, sha256_bytes, sha256_file, sha256_opt,
 };
+use crate::diagnostics::phases;
 use crate::journal::{Journal, Op, State};
 use crate::placed::{self, Placed};
 use crate::profile::VANILLA;
@@ -409,9 +410,9 @@ impl<'a> Installer<'a> {
     /// Roll back every open journal, or only the ones a `swofty run` session
     /// opened, oldest first.
     pub fn roll_back(&self, sessions_only: bool) -> Result<Vec<RolledBack>> {
-        let mut hashes = Hashes::load(self.data);
+        let mut hashes = phases::time("rollback.hashes_load", || Hashes::load(self.data));
         let out = self.roll_back_with(sessions_only, &mut hashes);
-        hashes.save();
+        phases::time("rollback.hashes_save", || hashes.save());
         out
     }
 
@@ -448,19 +449,24 @@ impl<'a> Installer<'a> {
 
     fn rollback(&self, j: Journal, hashes: &mut Hashes) -> Result<(Vec<Drift>, Vec<String>)> {
         let ids = addon_storage::ids(j.entries.iter().map(|e| e.path.as_str()));
+        let started = std::time::Instant::now();
         let kept = self.keep_storage(&ids, std::slice::from_ref(&j))?;
         for id in &ids {
             addon_storage::save_current(self.data, id)?;
         }
-        crate::stdlib::careers::sync(self.data, Some(&self.game.dir), Some(&j.profile)).ok();
-        if j.session {
-            let log =
-                std::fs::read_to_string(self.game.dir.join(crate::session::LOADER_LOG)).unwrap_or_default();
-            crate::stdlib::careers::record_session(self.data, &j.profile, &log, || {
-                crate::build::stock_max_ids(self.data, self.game)
-            })
-            .ok();
-        }
+        phases::record("rollback.storage", started.elapsed());
+        phases::time("rollback.careers", || {
+            crate::stdlib::careers::sync(self.data, Some(&self.game.dir), Some(&j.profile)).ok();
+            if j.session {
+                let log = std::fs::read_to_string(self.game.dir.join(crate::session::LOADER_LOG))
+                    .unwrap_or_default();
+                crate::stdlib::careers::record_session(self.data, &j.profile, &log, || {
+                    crate::build::stock_max_ids(self.data, self.game)
+                })
+                .ok();
+            }
+        });
+        let started = std::time::Instant::now();
         let mut report = Vec::new();
         let stranded = self.stranded(&j);
         let same_build = j.build_id == self.game.identity.build_id;
@@ -518,6 +524,8 @@ impl<'a> Installer<'a> {
                 }
             }
         }
+        phases::record("rollback.files", started.elapsed());
+        let started = std::time::Instant::now();
         let mut placed = Placed::load(self.data)?;
         for e in &j.entries {
             match e.op {
@@ -528,6 +536,7 @@ impl<'a> Installer<'a> {
         }
         placed.save(self.data)?;
         j.close()?;
+        phases::record("rollback.state", started.elapsed());
         Ok((report, kept))
     }
 
@@ -746,9 +755,10 @@ impl<'a> Installer<'a> {
     }
 
     pub fn apply(&self, plan: &Plan) -> Result<()> {
-        let mut hashes = Hashes::load(self.data);
+        let mut hashes = phases::time("install.hashes_load", || Hashes::load(self.data));
         let out = self.apply_with(plan, &mut hashes);
-        hashes.save();
+        phases::end_step();
+        phases::time("install.hashes_save", || hashes.save());
         out
     }
 
@@ -782,8 +792,10 @@ impl<'a> Installer<'a> {
                 .insert(crate::stdlib::state::FILE.to_owned(), file);
             &with_state
         };
+        let started = std::time::Instant::now();
         let loaded = self.baseline()?;
         let space = self.space(plan, &loaded);
+        phases::record("install.baseline", started.elapsed());
         for (dir, v, need) in &space {
             if let Some(free) = (self.free_space)(dir).filter(|free| need > free) {
                 return Err(Error::NoSpace {

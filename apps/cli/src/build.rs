@@ -46,8 +46,9 @@ fn game_dir(store: &Store, explicit: Option<PathBuf>) -> Result<PathBuf> {
 
 pub fn build(store: &Store, profile: &str, game: Option<PathBuf>, side_data: bool) -> Result<ExitCode> {
     let g = self::game(store, game)?;
-    let built = build_profile(store, profile, &g, None, &[])?;
+    let built = timed_build(store, profile, &g, None, &[])?;
     report(profile, &built);
+    print_phases();
     if side_data {
         println!(
             "side data of add-row copies ({} finding(s)):",
@@ -58,6 +59,27 @@ pub fn build(store: &Store, profile: &str, game: Option<PathBuf>, side_data: boo
         }
     }
     Ok(ExitCode::SUCCESS)
+}
+
+/// Prints the Play path's phase timings and findings recorded since the last call.
+pub fn print_phases() {
+    for line in swofty_core::phases::take() {
+        crate::output::say(swofty_core::phases::TAG, &line);
+    }
+}
+
+fn timed_build(
+    store: &Store,
+    profile: &str,
+    g: &Game,
+    integrity: Option<&Module>,
+    plugins: &[(Plugin, modules::Module)],
+) -> Result<swofty_core::build::Built> {
+    swofty_core::phases::time("play.build", || {
+        let built = build_profile(store, profile, g, integrity, plugins);
+        swofty_core::phases::end_step();
+        built
+    })
 }
 
 fn build_profile(
@@ -270,6 +292,7 @@ pub fn install(store: &Store, profile: &str, g: &Game, session: bool, out: &dyn 
         done.store(true, Ordering::Relaxed);
         r
     });
+    print_phases();
     if session {
         Busy::clear(&store.root);
         busy::clear_cancel(&store.root);
@@ -450,7 +473,7 @@ fn install_checked(
     if !session {
         check_entitled(store, g)?;
     }
-    let depots = check_stock(store, g, out)?;
+    let depots = swofty_core::phases::time("play.stock_check", || check_stock(store, g, out))?;
     let inst = Installer {
         session,
         depot: depots.as_ref().map_or(&() as &dyn DepotHashes, |d| d),
@@ -458,15 +481,17 @@ fn install_checked(
         progress,
         ..Installer::new(&store.root, g)
     };
-    let integrity = session.then(|| crate::laps::integrity(store, out)).flatten();
+    let integrity = session
+        .then(|| swofty_core::phases::time("play.fetch.integrity", || crate::laps::integrity(store, out)))
+        .flatten();
     let plugins = if session {
-        server_plugins(store, out)
+        swofty_core::phases::time("play.fetch.modules", || server_plugins(store, out))
     } else {
         Vec::new()
     };
-    let built = build_profile(store, profile, g, integrity.as_ref(), &plugins)?;
+    let built = timed_build(store, profile, g, integrity.as_ref(), &plugins)?;
     report(profile, &built);
-    let found = match inst.apply(&built.plan) {
+    let found = match swofty_core::phases::time("play.install", || inst.apply(&built.plan)) {
         Err(swofty_core::Error::Leftovers(found)) => found,
         r => return Ok(not_stock(store, g, r)?),
     };
@@ -476,9 +501,9 @@ fn install_checked(
     let cleared = inst.clear(&found)?;
     crate::recover::announce(store, g, &cleared, out);
     crate::recover::record_cleared(store, &cleared);
-    let built = build_profile(store, profile, g, integrity.as_ref(), &plugins)?;
+    let built = timed_build(store, profile, g, integrity.as_ref(), &plugins)?;
     report(profile, &built);
-    match inst.apply(&built.plan) {
+    match swofty_core::phases::time("play.install", || inst.apply(&built.plan)) {
         Err(swofty_core::Error::Leftovers(found)) => Err(crate::recover::blocked(store, g, &found)),
         r => Ok(not_stock(store, g, r)?),
     }
