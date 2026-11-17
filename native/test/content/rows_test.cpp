@@ -771,6 +771,78 @@ static void twelve_team_tests(const std::string &regs)
     }
 }
 
+static void short_list_tests(const std::string &regs)
+{
+    registry::reset_store();
+    auto &st = registry::store();
+    st.set_order({"swofty.swofty-seasons-2012"});
+    st.set_validator(&registry::schema_validator());
+    const SwoftyRegistry *t = registry::table();
+    for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
+        std::string schema = slurp(regs + "/" + name + "/1.0.json");
+        t->declare(name, SwoftyText{schema.data(), schema.size()});
+    }
+    static const char *keys[] = {"redbull", "mclaren", "ferrari", "mercedes", "lotus", "forceindia",
+                                 "sauber", "tororosso", "williams", "caterham", "hrt", "marussia"};
+    std::string teams;
+    for (int i = 0; i < 12; i++) {
+        std::string k = keys[i];
+        teams += std::string(i ? "," : "") + R"({ "key": ")" + k + R"(", "vehicle": "game/)" + k + R"(_2012", "drivers": [ )" +
+                 R"({ "driver": "game/)" + k + R"(_a", "number": )" + std::to_string(i + 1) + R"(, "look": null } ] })";
+    }
+    std::string tt = R"({ "content.package": { "f1_2012_tt": { "title": "lng_f2012", "entrant_list": "f2012_tt", "season": 2012,
+        "teams": [ )" + teams + R"( ], "database": { "entrant_list": "f2012_tt", "entrant_prefix": "f12-", "standings": "f2012_tt_teams",
+        "entrant_list_from": "f1_2026", "content_sets": ["2025"] } },
+        "f1_2012_one": { "title": "lng_f2012", "entrant_list": "f2012_one", "season": 2012,
+        "teams": [ { "key": "redbull", "vehicle": "game/redbull_2012", "drivers": [ { "driver": "game/redbull_a", "number": 1, "look": null } ] } ],
+        "database": { "entrant_list": "f2012_one", "entrant_prefix": "f12o-", "standings": "f2012_one_teams", "content_sets": ["2025"] } } } })";
+    int r = registry::load_data_file("swofty.swofty-seasons-2012", "registry/content.json", tt);
+    st.end_register();
+    check(r == SWOFTY_ASSET_OK, "a one-car-per-team package registers");
+    Db db;
+    stock_wide_rows(db);
+    content::Expansion x(db.base());
+    content::expand(st, x, {});
+    int refused = 0;
+    for (auto &[k, n] : x.refused)
+        refused += n;
+    for (auto &l : x.lines["content.package"])
+        std::printf("      %s\n", l.c_str());
+    auto text = [&](const std::string &path) -> std::optional<std::string> {
+        if (auto w = written(x.engine, path))
+            return w;
+        auto rec = db.base()(content::gvdb::fnv64(path));
+        return rec ? std::optional<std::string>(rec->text) : std::nullopt;
+    };
+    auto row_of = [&](const char *table, const char *row, const std::string &label) {
+        for (int i = 0; i < 8; i++) {
+            std::string p = std::string(table) + "." + row + "_" + std::to_string(i);
+            if (written(x.engine, p + "._metadata_") == label)
+                return p;
+        }
+        return std::string();
+    };
+    std::string list = row_of("entrants.entrant_lists", "entrant_list", "f2012_tt");
+    std::string one = row_of("entrants.entrant_lists", "entrant_list", "f2012_one");
+    std::string one_teams = row_of("entrants.standings", "standings", "f2012_one_teams");
+    bool line = false;
+    for (auto &l : x.lines["content.package"])
+        line |= l.find("entrant list f2012_tt has 12 entrants; f1_2026 holds 22, the rest are left out") != std::string::npos;
+    check(refused == 0 && x.records["content.package"] == 2, "both short packages apply");
+    check(!list.empty() && text(list + "._entrant_instancecount_") == "12" &&
+              text(list + ".entrant_11.team") == "marussia_2012",
+          "a 12-car list copied from a 22-car one holds 12 entrants, not the source's last 10");
+    check(text("entrants.entrant_lists.entrant_list_1._entrant_instancecount_") == "22",
+          "the stock f1_2026 list keeps its 22 entrants");
+    check(line, "the boot log says the rest of the source list is left out");
+    check(!one.empty() && text(one + "._entrant_instancecount_") == "1", "a one-car list holds one entrant");
+    check(!one_teams.empty() && text(one_teams + "._team_reference_instancecount_") == "1" &&
+              text(one_teams + ".team_reference_0.team") == "redbull_2012",
+          "a one-team package's standings hold one team");
+    check(text("entrants.standings.standings_0._team_reference_instancecount_") == "2",
+          "the stock f1_teams_2024 row keeps its 2 teams");
+}
+
 // The team and car rows a package's teams are checked against: three team rows inside the table's count and one
 // past it, two cars.
 static void package_team_row_tests()
@@ -2680,6 +2752,8 @@ int main(int argc, char **argv)
         team_tests(argv[1]);
     if (argc > 1)
         twelve_team_tests(argv[1]);
+    if (argc > 1)
+        short_list_tests(argv[1]);
     if (argc > 1)
         stock_only_tests(argv[1]);
     if (argc > 1)
