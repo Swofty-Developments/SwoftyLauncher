@@ -13,7 +13,7 @@ pub const LABEL: &str = "Join the Discord";
 pub(crate) const BANNER_CARD_ID: &str = "discord-banner";
 
 const BODY: &str = "Get help from the developers and hear about new releases and addons first.";
-pub(crate) const LOGO: &[u8] = include_bytes!("../assets/discord.svg");
+pub(crate) const LOGO: &[u8] = include_bytes!("../../assets/discord.svg");
 pub(crate) const BLURPLE: u32 = 0x5865f2;
 pub(crate) const BLURPLE_HOVER: u32 = 0x4752c4;
 
@@ -21,7 +21,7 @@ fn server_icon(size: f32) -> Div {
     static ICON: LazyLock<Arc<Image>> = LazyLock::new(|| {
         Arc::new(Image::from_bytes(
             ImageFormat::Png,
-            include_bytes!("../assets/discord-server.png").to_vec(),
+            include_bytes!("../../assets/discord-server.png").to_vec(),
         ))
     });
     div()

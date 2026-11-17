@@ -2,8 +2,8 @@ use std::borrow::Cow;
 
 use gpui_kit::App;
 
-const REGULAR: &[u8] = include_bytes!("../assets/fonts/DejaVuSans.ttf");
-const BOLD: &[u8] = include_bytes!("../assets/fonts/DejaVuSans-Bold.ttf");
+const REGULAR: &[u8] = include_bytes!("../../assets/fonts/DejaVuSans.ttf");
+const BOLD: &[u8] = include_bytes!("../../assets/fonts/DejaVuSans-Bold.ttf");
 
 pub fn install(cx: &mut App) {
     let fonts = vec![Cow::Borrowed(REGULAR), Cow::Borrowed(BOLD)];

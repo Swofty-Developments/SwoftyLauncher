@@ -23,7 +23,7 @@ use swofty_core::vault;
 use swofty_core::{GAME_EXE, steam, steam_client};
 use swofty_i18n::{fill, tr, trf, trn};
 
-const KB: &str = include_str!("../../../re/db/functions.tsv");
+const KB: &str = include_str!("../../../../re/db/functions.tsv");
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Install {

@@ -49,7 +49,7 @@ const CARD_W: f32 = 300.;
 const GAP: f32 = 14.;
 const SIDE_W: f32 = 340.;
 const AUTHORS_SHOWN: usize = 8;
-const HELMET: &[u8] = include_bytes!("../../assets/helmet.svg");
+const HELMET: &[u8] = include_bytes!("../../../assets/helmet.svg");
 const VERIFYING: u8 = 1;
 const INSTALLING: u8 = 2;
 

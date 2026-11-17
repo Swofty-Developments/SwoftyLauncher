@@ -130,7 +130,7 @@ impl ShadersView {
         }
     }
 
-    pub(in crate::shaders) fn preview_open(&mut self, cx: &mut Context<Self>) {
+    pub(in crate::features::shaders) fn preview_open(&mut self, cx: &mut Context<Self>) {
         if !self.preview.scanned {
             self.preview.scanned = true;
             let root = self.store.root.clone();
@@ -148,7 +148,7 @@ impl ShadersView {
         self.preview_compile(cx);
     }
 
-    pub(in crate::shaders) fn preview_pause(&mut self, _cx: &mut Context<Self>) {
+    pub(in crate::features::shaders) fn preview_pause(&mut self, _cx: &mut Context<Self>) {
         self.preview.tick = None;
     }
 
@@ -260,7 +260,7 @@ impl ShadersView {
         .detach();
     }
 
-    pub(in crate::shaders) fn preview_catalog_changed(&mut self, cx: &mut Context<Self>) {
+    pub(in crate::features::shaders) fn preview_catalog_changed(&mut self, cx: &mut Context<Self>) {
         if self.preview.effects == Effects::Compiling {
             self.preview.recompile = true;
             return;
@@ -307,7 +307,7 @@ impl ShadersView {
         .detach();
     }
 
-    pub(in crate::shaders) fn preview_instances(
+    pub(in crate::features::shaders) fn preview_instances(
         &mut self,
         instances: Vec<ActiveInstance>,
         rules: Vec<Rule>,
@@ -335,7 +335,7 @@ impl ShadersView {
         self.send(Job::Instances(instances), cx);
     }
 
-    pub(in crate::shaders) fn preview_send_triggers(&mut self, cx: &mut Context<Self>) {
+    pub(in crate::features::shaders) fn preview_send_triggers(&mut self, cx: &mut Context<Self>) {
         if self.preview.worker.is_none() {
             return;
         }
@@ -343,7 +343,12 @@ impl ShadersView {
         self.send(Job::Triggers(signals), cx);
     }
 
-    pub(in crate::shaders) fn preview_fire(&mut self, id: &str, magnitude: f64, cx: &mut Context<Self>) {
+    pub(in crate::features::shaders) fn preview_fire(
+        &mut self,
+        id: &str,
+        magnitude: f64,
+        cx: &mut Context<Self>,
+    ) {
         if self.preview.worker.is_some() {
             self.send(Job::Fire(id.to_owned(), magnitude), cx);
         }
@@ -364,7 +369,7 @@ impl ShadersView {
         );
     }
 
-    pub(in crate::shaders) fn preview_render_settle(&mut self, cx: &mut Context<Self>) {
+    pub(in crate::features::shaders) fn preview_render_settle(&mut self, cx: &mut Context<Self>) {
         if self.preview.info.is_none() || self.preview.status != Status::Ready {
             return;
         }
@@ -421,7 +426,7 @@ impl ShadersView {
         }));
     }
 
-    pub(in crate::shaders) fn sync_slider(&mut self, window: &mut Window, cx: &mut Context<Self>) {
+    pub(in crate::features::shaders) fn sync_slider(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let at = self.preview.frame as f32;
         let slider = self.preview.slider.clone();
         if (slider.read(cx).value().start() - at).abs() > 0.5 {

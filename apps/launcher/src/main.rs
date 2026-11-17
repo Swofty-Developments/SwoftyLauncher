@@ -1,62 +1,33 @@
 #![cfg_attr(all(windows, not(debug_assertions)), windows_subsystem = "windows")]
 
-mod addons;
-mod admin_needed;
-mod ads;
-mod app_log;
-mod avatar;
-mod ban;
+mod app;
 mod blocks;
-mod browser;
-mod career_saves;
-mod chart_demo;
-mod colour;
-mod console;
-mod crash_modal;
-mod data_move;
-mod db;
-mod developer;
-mod dialog_keys;
-mod discord;
-mod download_dock;
-mod download_queue;
-mod ea_app;
-mod fallback_fonts;
-mod format;
-mod found_data;
-mod game;
-mod game_edited;
-mod importer;
-mod library;
-mod multiplayer;
-mod news;
-mod notices;
-mod onboarding;
-mod online;
-mod pages;
-mod play_bar;
-mod play_checks;
-mod profile_panel;
-mod profiles;
-mod reveal;
-mod save_area;
-mod scale;
-mod scroll;
-mod sections;
-mod send_logs;
-mod settings;
-mod setup;
-mod shaders;
+mod dialogs;
+mod features;
+mod services;
 mod shell;
-mod support;
-mod tasks;
-mod theme;
-mod time_trial;
-mod tools;
 mod ui;
-mod ui_mode;
-mod unsupported_build;
-mod update;
+
+#[allow(unused_imports)]
+use app::{app_log, chart_demo, dialog_keys, fonts as fallback_fonts};
+#[allow(unused_imports)]
+use dialogs::{
+    admin_needed, ban, crash as crash_modal, data_move, ea_app, found_data, game_edited, profiles, send_logs,
+    setup, tasks,
+};
+#[allow(unused_imports)]
+use features::{
+    addons, ads, browser, career_saves, console, db, developer, importer, multiplayer, news, onboarding,
+    online, sections, settings, shaders, support, time_trial, tools, update,
+};
+#[allow(unused_imports)]
+use services::{avatar, download_queue, game, library, play_checks, reveal};
+#[allow(unused_imports)]
+use shell::play_bar::{save_area, unsupported_build};
+#[allow(unused_imports)]
+use shell::{download_dock, notices, pages, play_bar, profile_panel, ui_mode};
+#[allow(unused_imports)]
+use ui::{colour_picker as colour, discord, format, scale, scroll, theme};
 
 use gpui_kit::component::{TitleBar, v_flex};
 use gpui_kit::*;

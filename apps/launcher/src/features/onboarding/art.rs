@@ -13,8 +13,10 @@ fn image(bytes: &'static [u8]) -> Arc<Image> {
 }
 
 fn illustration(mode: UiMode) -> Arc<Image> {
-    static PC: LazyLock<Arc<Image>> = LazyLock::new(|| image(include_bytes!("../../assets/display-pc.svg")));
-    static TV: LazyLock<Arc<Image>> = LazyLock::new(|| image(include_bytes!("../../assets/display-tv.svg")));
+    static PC: LazyLock<Arc<Image>> =
+        LazyLock::new(|| image(include_bytes!("../../../assets/display-pc.svg")));
+    static TV: LazyLock<Arc<Image>> =
+        LazyLock::new(|| image(include_bytes!("../../../assets/display-tv.svg")));
     match mode {
         UiMode::Pc => PC.clone(),
         UiMode::Tv => TV.clone(),
@@ -27,6 +29,6 @@ pub(super) fn display(mode: UiMode) -> Img {
 
 pub(super) fn globe() -> Img {
     static GLOBE: LazyLock<Arc<Image>> =
-        LazyLock::new(|| image(include_bytes!("../../assets/language-globe.svg")));
+        LazyLock::new(|| image(include_bytes!("../../../assets/language-globe.svg")));
     img(GLOBE.clone()).w(px(WIDTH * 0.6)).h(px(HEIGHT * 0.6))
 }

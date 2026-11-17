@@ -1,3 +1,6 @@
+pub(crate) mod save_area;
+pub(crate) mod unsupported_build;
+
 use crate::scale::px;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};

@@ -63,7 +63,7 @@ struct List {
 
 pub fn tools() -> &'static [Tool] {
     static TOOLS: LazyLock<Vec<Tool>> = LazyLock::new(|| {
-        serde_json::from_str::<List>(include_str!("../assets/tools.json"))
+        serde_json::from_str::<List>(include_str!("../../assets/tools.json"))
             .map(|l| l.tools)
             .unwrap_or_default()
     });

@@ -18,7 +18,11 @@ use super::control::clock;
 use super::{Effects, Status};
 
 impl ShadersView {
-    pub(in crate::shaders) fn preview_pane(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
+    pub(in crate::features::shaders) fn preview_pane(
+        &mut self,
+        p: Palette,
+        cx: &mut Context<Self>,
+    ) -> AnyElement {
         let status = self.preview.status.clone();
         let body = match &status {
             Status::Idle | Status::Opening => {
