@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use swofty_formats::gvdb::{Gvdb, instance_count_path};
 use swofty_formats::hash::fnv1a64;
 
-use crate::settings::djb2;
+use crate::addons::settings::djb2;
 
 pub const TYPE_NAMES: [&str; 28] = [
     "eLivery",

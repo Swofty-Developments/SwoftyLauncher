@@ -121,7 +121,7 @@ impl Report {
         Report {
             schema: SCHEMA,
             run: run.to_owned(),
-            launcher: crate::update::current_version().to_string(),
+            launcher: crate::updates::release::current_version().to_string(),
             game_build: None,
             out: out.to_owned(),
             ms: 0,

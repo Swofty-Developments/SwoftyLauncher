@@ -12,7 +12,7 @@ use std::sync::atomic::AtomicBool;
 use super::{
     Error, Journal, Kind, Location, Ops, Recovered, Spot, copy, exists, history, link, spot, within,
 };
-use crate::process::same_path;
+use crate::platform::process::same_path;
 
 /// What [`adopt`] set up, for the player to read before the restart.
 #[derive(Debug, Clone, PartialEq)]
@@ -45,7 +45,7 @@ pub fn adopt(
     }
     let linked = link::target(&loc.default);
     let current = loc.current();
-    if same_path(found, &current) || crate::copies::same_dir(found, &current) {
+    if same_path(found, &current) || crate::game_folder::copies::same_dir(found, &current) {
         return Err(Error::AlreadyThere(current));
     }
     if within(&loc.default, found) && !same_path(found, &loc.default) {
@@ -103,7 +103,7 @@ pub(super) fn fresh_name(default: &Path) -> PathBuf {
     let secs = std::time::SystemTime::now()
         .duration_since(std::time::UNIX_EPOCH)
         .map_or(0, |d| d.as_secs() as i64);
-    let stamp = crate::send_logs::utc_stamp(secs);
+    let stamp = crate::diagnostics::send_logs::utc_stamp(secs);
     let base = format!("{name}.fresh-{}", &stamp[..13]);
     std::iter::once(default.with_file_name(&base))
         .chain((2..).map(|i| default.with_file_name(format!("{base}-{i}"))))

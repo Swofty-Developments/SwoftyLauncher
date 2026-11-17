@@ -1,7 +1,7 @@
 use std::path::{Path, PathBuf};
 
 use super::*;
-use crate::vault::restore::Running;
+use crate::saves::vault::restore::Running;
 
 const DATA: &str = "savegame@profile#NXDSMWW.BWW";
 const INDEX: &str = "savegame@profile#QKRHMYXE";
@@ -203,7 +203,7 @@ fn a_save_that_ever_loaded_is_never_learned_and_is_forgotten() {
 fn the_sweep_moves_a_stalled_store_save_aside_and_puts_back_the_last_good_one() {
     let root = tmp("sweep");
     let s = store(&root, &["colorgrading-testing"]);
-    let loc = crate::launcher_saves::location(&s.root, "colorgrading-testing");
+    let loc = crate::saves::launcher::location(&s.root, "colorgrading-testing");
     let good = [3u8; 715_128 / 100];
     let bad = [9u8; 932_920 / 100];
     put(&loc, &good);
@@ -259,7 +259,7 @@ fn the_same_bytes_in_the_steam_save_go_too_once_steam_is_closed() {
         .snapshot(&steam, Meta::new(Reason::LauncherStart), T0)
         .unwrap();
     put(&steam, &bad);
-    let loc = crate::launcher_saves::location(&s.root, "colorgrading-testing");
+    let loc = crate::saves::launcher::location(&s.root, "colorgrading-testing");
     put(&loc, &bad);
     session(&s, &loc, "20261104-023037", STALLED_PERF, T0 + 100);
     session(&s, &loc, "20261104-023146", STALLED_PERF, T0 + 400);
@@ -292,7 +292,7 @@ fn with_no_other_version_a_store_is_emptied_and_a_steam_save_stays() {
     let root = tmp("empty");
     let s = store(&root, &["colorgrading-testing"]);
     let bad = [9u8; 9_329];
-    let loc = crate::launcher_saves::location(&s.root, "colorgrading-testing");
+    let loc = crate::saves::launcher::location(&s.root, "colorgrading-testing");
     put(&loc, &bad);
     let steam = steam(&root, &bad);
     session(&s, &loc, "20261104-023037", STALLED_PERF, T0 + 100);
@@ -310,7 +310,7 @@ fn with_no_other_version_a_store_is_emptied_and_a_steam_save_stays() {
         "{}",
         lines[1]
     );
-    assert!(!crate::launcher_saves::has_files(&loc));
+    assert!(!crate::saves::launcher::has_files(&loc));
     assert!(
         lines[2].contains("Steam Cloud would bring it back, so it stays"),
         "{}",
@@ -338,25 +338,25 @@ fn the_launcher_never_copies_a_stalled_save() {
     ledger.saves[0].size = bad.len() as u64;
     ledger.write(&s.root).unwrap();
 
-    let e = crate::launcher_saves::seed(&s.root, "default", &steam, Reason::Imported, T0).unwrap_err();
+    let e = crate::saves::launcher::seed(&s.root, "default", &steam, Reason::Imported, T0).unwrap_err();
     assert!(e.to_string().contains("does not copy it"), "{e}");
-    assert!(!crate::launcher_saves::has_files(
-        &crate::launcher_saves::location(&s.root, "default")
+    assert!(!crate::saves::launcher::has_files(
+        &crate::saves::launcher::location(&s.root, "default")
     ));
 
-    let e = crate::launcher_saves::copy_to(&s.root, &steam, "default", Running::default(), T0).unwrap_err();
+    let e = crate::saves::launcher::copy_to(&s.root, &steam, "default", Running::default(), T0).unwrap_err();
     assert!(e.to_string().contains("does not copy it"), "{e}");
 
-    let from = crate::launcher_saves::location(&s.root, "colorgrading-testing");
+    let from = crate::saves::launcher::location(&s.root, "colorgrading-testing");
     put(&from, &bad);
-    let e = crate::launcher_saves::copy_to(&s.root, &from, "default", Running::default(), T0).unwrap_err();
+    let e = crate::saves::launcher::copy_to(&s.root, &from, "default", Running::default(), T0).unwrap_err();
     assert!(e.to_string().contains("does not copy it"), "{e}");
-    let e = crate::launcher_saves::export(&s.root, "colorgrading-testing", &steam, Running::default(), T0)
+    let e = crate::saves::launcher::export(&s.root, "colorgrading-testing", &steam, Running::default(), T0)
         .unwrap_err();
     assert!(e.to_string().contains("does not copy it"), "{e}");
 
     put(&steam, &[3u8; 7_151]);
-    assert!(crate::launcher_saves::seed(&s.root, "default", &steam, Reason::Imported, T0).is_ok());
+    assert!(crate::saves::launcher::seed(&s.root, "default", &steam, Reason::Imported, T0).is_ok());
 }
 
 #[test]

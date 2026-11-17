@@ -156,7 +156,7 @@ pub(super) const PROFILE_LOAD: &str = "[saves] profile load ";
 
 /// A start-screen stall right after the game read the profile save, with no addon known to cause one.
 pub(super) fn stalled_save(e: &Evidence) -> Option<Diagnosis> {
-    let secs = start_screen_secs(e).filter(|s| *s >= crate::save_stall::STALL_SECS)?;
+    let secs = start_screen_secs(e).filter(|s| *s >= crate::saves::stall::STALL_SECS)?;
     if !e.loader.contains(PROFILE_LOAD) {
         return None;
     }
