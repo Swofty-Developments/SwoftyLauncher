@@ -1222,11 +1222,17 @@ impl<'a> Installer<'a> {
         sources: &BTreeMap<&str, &PathBuf>,
     ) -> LinkCache {
         let apart = crate::link_cache::apart((self.volume)(built), (self.volume)(&self.game.dir));
-        let srcs: Vec<(&str, &Path)> = entries
+        let srcs: Vec<crate::link_cache::Wanted> = entries
             .iter()
             .filter(|e| matches!(e.op, Op::ReplaceFile | Op::CreateFile))
-            .map(|e| (e.path.as_str(), sources[e.path.as_str()].as_path()))
-            .filter(|(_, s)| apart == Some(true) || !s.starts_with(built))
+            .map(|e| {
+                (
+                    e.path.as_str(),
+                    sources[e.path.as_str()].as_path(),
+                    e.after.as_deref(),
+                )
+            })
+            .filter(|(_, s, _)| apart == Some(true) || !s.starts_with(built))
             .collect();
         if srcs.is_empty() {
             if crate::link_cache::dir(&self.game.dir).exists() {
