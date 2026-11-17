@@ -1,5 +1,6 @@
 #pragma once
 
+#include <algorithm>
 #include <array>
 #include <cstdint>
 #include <cstdio>
@@ -251,30 +252,88 @@ inline std::vector<uint32_t> list_ordinals(const std::vector<Entry> &v)
     return out;
 }
 
-inline std::string recent_section(const std::vector<Entry> &v, uint64_t pushed)
+// The newest builds of each command list, so a list the game records rarely keeps its builds however many builds
+// the busy lists record. Past the list cap, the list with the oldest newest build is dropped.
+template <size_t PerList, size_t Lists> class ByList {
+public:
+    struct Kept {
+        uint64_t list = 0, total = 0;
+        std::vector<Entry> builds;
+    };
+
+    void push(const Entry &e)
+    {
+        auto it = lists_.find(e.list);
+        if (it == lists_.end()) {
+            if (lists_.size() >= Lists) {
+                auto old = lists_.begin();
+                for (auto i = lists_.begin(); i != lists_.end(); ++i)
+                    if (i->second.last < old->second.last)
+                        old = i;
+                lists_.erase(old);
+            }
+            it = lists_.try_emplace(e.list).first;
+        }
+        it->second.ring.push(e);
+        it->second.last = e.seq;
+        pushed_++;
+    }
+
+    uint64_t pushed() const { return pushed_; }
+
+    std::vector<Kept> newest_lists_first() const
+    {
+        std::vector<std::pair<uint64_t, uint64_t>> order;
+        for (const auto &[list, slot] : lists_)
+            order.push_back({slot.last, list});
+        std::sort(order.rbegin(), order.rend());
+        std::vector<Kept> out;
+        for (const auto &o : order) {
+            const Slot &slot = lists_.at(o.second);
+            out.push_back({o.second, slot.ring.pushed(), slot.ring.oldest_first()});
+        }
+        return out;
+    }
+
+private:
+    struct Slot {
+        Recent<PerList> ring;
+        uint64_t last = 0;
+    };
+    std::unordered_map<uint64_t, Slot> lists_;
+    uint64_t pushed_ = 0;
+};
+
+template <typename KeptList> std::string recent_section(const KeptList &lists, uint64_t pushed)
 {
-    if (v.empty())
+    if (lists.empty())
         return {};
     std::string s;
     char b[200];
     std::snprintf(b, sizeof b,
-                  "\n  ray tracing builds before the crash: the newest %zu of %llu, oldest first; #n is the build's place on "
-                  "its command list in that frame\n",
-                  v.size(), (unsigned long long)pushed);
+                  "\n  ray tracing builds before the crash, %zu command list(s), the list with the newest build first; "
+                  "%llu build(s) in all\n",
+                  lists.size(), (unsigned long long)pushed);
     s += b;
-    bool cut = pushed > v.size();
-    std::vector<uint32_t> nth = list_ordinals(v);
-    for (size_t i = 0; i < v.size(); i++) {
-        const Entry &e = v[i];
-        bool unsure = cut && e.frame == v.front().frame;
-        std::snprintf(b, sizeof b, "    build %llu frame %llu list 0x%llx #%u%s %s%s into 0x%llx (flags 0x%x), %u %s:",
-                      (unsigned long long)e.seq, (unsigned long long)e.frame, (unsigned long long)e.list, nth[i],
-                      unsure ? "+" : "", e.top ? "top-level" : "bottom-level", (e.flags & kPerformUpdate) ? " update" : "",
-                      (unsigned long long)e.dest, e.flags, e.count, e.top ? "instances" : "geometries");
+    s += "  each list shows its newest builds, oldest first; #n is the build's place on its list in that frame\n";
+    for (const auto &k : lists) {
+        std::snprintf(b, sizeof b, "    list 0x%llx: the newest %zu of %llu build(s)\n", (unsigned long long)k.list,
+                      k.builds.size(), (unsigned long long)k.total);
         s += b;
-        if (!e.top)
-            s += geometry_text(e);
-        s += "\n";
+        bool cut = k.total > k.builds.size();
+        std::vector<uint32_t> nth = list_ordinals(k.builds);
+        for (size_t i = 0; i < k.builds.size(); i++) {
+            const Entry &e = k.builds[i];
+            bool unsure = cut && e.frame == k.builds.front().frame;
+            std::snprintf(b, sizeof b, "      build %llu frame %llu #%u%s %s%s into 0x%llx (flags 0x%x), %u %s:",
+                          (unsigned long long)e.seq, (unsigned long long)e.frame, nth[i], unsure ? "+" : "",
+                          e.top ? "top-level" : "bottom-level", (e.flags & kPerformUpdate) ? " update" : "",
+                          (unsigned long long)e.dest, e.flags, e.count, e.top ? "instances" : "geometries");
+            s += b;
+            if (!e.top)
+                s += geometry_text(e);
+            s += "\n";
+        }
     }
     return s;
 }

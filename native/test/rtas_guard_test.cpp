@@ -126,30 +126,68 @@ int main()
     expect(rg::geometry_text(many).find(" +3 more") != std::string::npos, "geometries past the brief are counted");
 
     rg::Recent<4> ring;
-    expect(ring.oldest_first().empty() && rg::recent_section({}, 0).empty(), "no builds give no section");
+    expect(ring.oldest_first().empty(), "an empty ring keeps nothing");
     for (uint64_t i = 0; i < 6; i++) {
         rg::Entry e = car;
         e.seq = i;
-        e.frame = i < 4 ? 10 : 11;
-        e.list = i == 4 ? 0x1111 : 0x78ee;
         ring.push(e);
     }
     std::vector<rg::Entry> kept = ring.oldest_first();
     expect(kept.size() == 4 && kept.front().seq == 2 && kept.back().seq == 5 && ring.pushed() == 6,
            "the ring keeps the newest builds, oldest first");
-    expect(rg::list_ordinals(kept) == std::vector<uint32_t>({1, 2, 1, 1}),
+
+    std::vector<rg::Entry> frames(4, car);
+    frames[0].frame = frames[1].frame = 10;
+    frames[2].frame = frames[3].frame = 11;
+    frames[1].list = 0x1111;
+    expect(rg::list_ordinals(frames) == std::vector<uint32_t>({1, 1, 1, 2}),
            "a build's place counts the builds on its list in its frame");
-    std::string section = rg::recent_section(kept, ring.pushed());
-    expect(section.find("the newest 4 of 6") != std::string::npos, "the section says how many builds it shows");
-    expect(section.find("build 2 frame 10 list 0x78ee #1+ bottom-level into 0x92c4") != std::string::npos,
-           "a place in the oldest frame of a full ring may miss earlier builds");
-    expect(section.find("build 5 frame 11 list 0x78ee #1 bottom-level") != std::string::npos,
-           "a new frame starts the count again");
+
+    rg::ByList<3, 2> lists;
+    expect(lists.newest_lists_first().empty() && rg::recent_section(lists.newest_lists_first(), 0).empty(),
+           "no builds give no section");
+    uint64_t seq = 0;
+    auto build = [&](uint64_t list, uint64_t frame) {
+        rg::Entry e = car;
+        e.seq = seq++;
+        e.list = list;
+        e.frame = frame;
+        lists.push(e);
+    };
+    build(0xa, 1);
+    for (int i = 0; i < 5; i++)
+        build(0xb, 1);
+    build(0xa, 2);
+    auto newest = lists.newest_lists_first();
+    expect(newest.size() == 2 && newest[0].list == 0xa && newest[1].list == 0xb,
+           "the list with the newest build comes first");
+    expect(newest[0].builds.size() == 2 && newest[0].builds.front().seq == 0,
+           "a quiet list keeps its builds however many a busy list records");
+    expect(newest[1].builds.size() == 3 && newest[1].total == 5, "each list keeps its own newest builds");
+    build(0xc, 2);
+    newest = lists.newest_lists_first();
+    expect(newest.size() == 2 && newest[0].list == 0xc && newest[1].list == 0xa,
+           "past the list cap the list with the oldest newest build is dropped");
+    std::string section = rg::recent_section(newest, lists.pushed());
+    expect(section.find("2 command list(s)") != std::string::npos && section.find("8 build(s) in all") != std::string::npos,
+           "the section counts lists and builds");
+    expect(section.find("    list 0xa: the newest 2 of 2 build(s)\n      build 0 frame 1 #1 bottom-level into 0x92c4") !=
+               std::string::npos,
+           "each list shows its builds under it");
+    build(0xc, 2);
+    build(0xc, 2);
+    build(0xc, 2);
+    section = rg::recent_section(lists.newest_lists_first(), lists.pushed());
+    expect(section.find("build 8 frame 2 #1+ bottom-level") != std::string::npos && section.find("build 10 frame 2 #3+ bottom-level") != std::string::npos,
+           "a place in a list's oldest kept frame may miss builds it no longer keeps");
+
     rg::Entry top;
     top.top = true;
     top.count = 40;
     top.flags = rg::kPerformUpdate;
-    std::string top_line = rg::recent_section({top}, 1);
+    rg::ByList<3, 2> tops;
+    tops.push(top);
+    std::string top_line = rg::recent_section(tops.newest_lists_first(), tops.pushed());
     expect(top_line.find("top-level update into 0x0 (flags 0x20), 40 instances:\n") != std::string::npos,
            "a top-level build shows its instance count and no geometries");
 

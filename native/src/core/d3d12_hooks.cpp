@@ -1387,7 +1387,7 @@ uint64_t rtas_trace;
 constexpr uint32_t RTAS_NAMED = 800;
 rg::Trace rtas_named{RTAS_NAMED};
 std::atomic<bool> rtas_named_full{false};
-rg::Recent<128> rtas_recent;
+rg::ByList<64, 32> rtas_recent;
 std::atomic<uint64_t> rtas_all{0};
 
 using RtasDesc = D3D12_BUILD_RAYTRACING_ACCELERATION_STRUCTURE_DESC;
@@ -1708,14 +1708,14 @@ bool arm_rtas_guard()
 
 std::string rtas_recent_text()
 {
-    std::vector<rg::Entry> v;
+    std::vector<rg::ByList<64, 32>::Kept> lists;
     uint64_t pushed;
     {
         std::unique_lock<std::mutex> g(rtas_lock, std::try_to_lock);
-        v = rtas_recent.oldest_first();
+        lists = rtas_recent.newest_lists_first();
         pushed = rtas_recent.pushed();
     }
-    return rg::recent_section(v, pushed);
+    return rg::recent_section(lists, pushed);
 }
 
 }
