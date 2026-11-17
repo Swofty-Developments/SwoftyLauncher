@@ -14,9 +14,9 @@
 #include "core/runtime/loader/resolve_locks.hpp"
 #include "core/runtime/loader/scanner.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/stage.hpp"
 
 namespace runtime {
-void stage_catch_up();
 bool close_asset_registrations();
 }
 
