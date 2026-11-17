@@ -1,4 +1,6 @@
 {
+  "Also update the addons that are off in your profile when Play updates addons. Turned off, only the addons that are on are updated.": "Actualiza también los complementos desactivados en tu perfil cuando Jugar actualiza complementos. Desactivado, solo se actualizan los complementos activados.",
+  "Update turned-off addons": "Actualizar complementos desactivados",
   "{count} addon": ["{count} complemento", "{count} complementos"],
   "{count} changed setting": ["{count} ajuste cambiado", "{count} ajustes cambiados"],
   "{count} minute ago": ["hace {count} minuto", "hace {count} minutos"],

@@ -7,7 +7,7 @@ use super::detail::shown_versions;
 use super::host;
 use super::jobs::{RetryAction, requested_version_available, retry_action};
 use super::model::{Job, Progress, Verb};
-use super::updates::{due_updates, held_failure, takes_updates};
+use super::updates::{due_updates, held_failure, takes_updates, updated_addons};
 use crate::format;
 use crate::library::{AddonItem, Source};
 
@@ -216,6 +216,43 @@ fn a_shader_only_addon_takes_updates_without_a_switch() {
     let updates = [update("t.look", "1.1.0"), update("t.plain", "1.1.0")];
     let due = due_updates(&updates, &on, &BTreeMap::new());
     assert_eq!(due.iter().map(|u| u.id.as_str()).collect::<Vec<_>>(), ["t.look"]);
+}
+
+fn due_ids(addons: &[AddonItem], vanilla: bool, off_too: bool) -> Vec<String> {
+    let updates = [update("t.on", "1.1.0"), update("t.off", "1.1.0")];
+    let on = updated_addons(addons, vanilla, off_too);
+    due_updates(&updates, &on, &BTreeMap::new())
+        .iter()
+        .map(|u| u.id.clone())
+        .collect()
+}
+
+fn on_and_off() -> [AddonItem; 2] {
+    [
+        installed(
+            r#"{"schema_version":1,"id":"t.on","name":"On","version":"1.0.0","author":"t","compat":{"game":"f1_25"}}"#,
+            true,
+        ),
+        installed(
+            r#"{"schema_version":1,"id":"t.off","name":"Off","version":"1.0.0","author":"t","compat":{"game":"f1_25"}}"#,
+            false,
+        ),
+    ]
+}
+
+#[test]
+fn by_default_only_addons_that_are_on_are_updated() {
+    let addons = on_and_off();
+    let off_too = swofty_core::session::Config::default().update_off_addons;
+    assert_eq!(due_ids(&addons, false, off_too), ["t.on"]);
+    assert!(due_ids(&addons, true, off_too).is_empty());
+}
+
+#[test]
+fn updating_turned_off_addons_offers_every_installed_addon() {
+    let addons = on_and_off();
+    assert_eq!(due_ids(&addons, false, true), ["t.on", "t.off"]);
+    assert_eq!(due_ids(&addons, true, true), ["t.on", "t.off"]);
 }
 
 #[test]

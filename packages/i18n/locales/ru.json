@@ -1,4 +1,6 @@
 {
+  "Also update the addons that are off in your profile when Play updates addons. Turned off, only the addons that are on are updated.": "Обновлять и аддоны, выключенные в профиле, когда «Играть» обновляет аддоны. Если выключено, обновляются только включённые аддоны.",
+  "Update turned-off addons": "Обновлять выключенные аддоны",
   "{count} addon": ["{count} аддон", "{count} аддона", "{count} аддонов"],
   "{count} changed setting": ["{count} изменённая настройка", "{count} изменённые настройки", "{count} изменённых настроек"],
   "{count} minute ago": ["{count} минуту назад", "{count} минуты назад", "{count} минут назад"],

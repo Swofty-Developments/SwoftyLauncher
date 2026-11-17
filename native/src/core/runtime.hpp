@@ -355,6 +355,7 @@ void hud_fatal();
 void grade_setup();
 void srv_clamp_setup();
 void rtas_guard_setup();
+std::wstring hardware_settings_file();
 void postfx_setup();
 void telemetry_setup();
 void telemetry_tick();

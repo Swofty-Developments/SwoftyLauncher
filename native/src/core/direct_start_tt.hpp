@@ -1,5 +1,6 @@
 #pragma once
 
+#include <cstdint>
 #include <string>
 
 #include "direct_start_logic.hpp"
@@ -24,6 +25,11 @@ int track_stat();
 // The Time Trial game mode object and its entity, or nulls.
 void mode_objects(void *&mode, void *&entity);
 std::string player_list();
+
+// [g_Game_Root]'s address and Entity_SetSetupMode's, as the Time Trial setup finds them; 0 on a build where they
+// don't resolve.
+uintptr_t game_root();
+uintptr_t set_setup_mode();
 
 // The team of the player's entrant selection: its label, and with `ref` its team reference. Empty or false when
 // nothing is selected or the selected team is not in the list the Time Trial mode holds now.

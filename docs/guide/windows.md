@@ -97,7 +97,7 @@ If Smart App Control is already off, a policy set by whoever manages the PC bloc
 
 ## If your game files aren't the ones Steam installed
 
-Before a modded session builds anything, the launcher checks the game against Steam's record of the files it installed. If a file was changed outside the launcher, for example by another mod tool or a manual install, F1 25 is not started and a **Your game files have been edited** modal says how many files changed, names the first six, and lists the fix.
+Before a modded session builds anything, the launcher checks the game against Steam's record of the files it installed. If a file was changed outside the launcher, for example by another mod tool or a manual install, F1 25 is not started and a **Your game files have been edited** modal says how many files changed, names the first six, and lists the fix. A DLL other than `steam_api64.dll` that differs from Steam's copy, such as an FSR 4, DLSS or VR runtime drop-in, doesn't stop the launch; a missing one does.
 
 To fix it:
 
