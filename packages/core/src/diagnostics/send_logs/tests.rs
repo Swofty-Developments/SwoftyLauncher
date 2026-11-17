@@ -5,8 +5,15 @@ use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
 use std::time::{Duration, Instant};
 
+use serde_json::json;
+
+use super::files::*;
+use super::redact::*;
+use super::summary::*;
+use super::system::*;
 use super::upload::{SendError, Stage, multipart, payload};
 use super::*;
+use crate::session::{LOADER_FALLBACK, LOADER_LOG, PERF_LOG};
 
 fn tmp(name: &str) -> PathBuf {
     let d = std::env::temp_dir().join(format!("swofty-sendlogs-{name}-{}", std::process::id()));
@@ -1902,11 +1909,11 @@ fn saves_excerpt_keeps_the_save_source_and_slot_lines() {
         2 [saves] launcher saves are off for profile main: the game reads Steam's saves natively\n\
         3 [saves] sandbox: FileRead profile (call 1)\n\
         4 [saves] profile load 1: manager 0 slot 0: gm_driver_career id=3 key=0000000000abcdef career=dc-000b0000\n";
-    let lines = super::saves_excerpt(text, 10);
+    let lines = super::summary::saves_excerpt(text, 10);
     assert_eq!(lines.len(), 2);
     assert!(lines[0].contains("reads Steam's saves natively"));
     assert!(lines[1].contains("career=dc-000b0000"));
-    assert_eq!(super::saves_excerpt(text, 1).len(), 1);
+    assert_eq!(super::summary::saves_excerpt(text, 1).len(), 1);
 }
 
 #[test]
@@ -2092,15 +2099,15 @@ fn system_excerpt_takes_the_boot_lines_and_the_newest_minute() {
     let head =
         "boot\n[system] gpu 0: Card A, driver 1.2, dedicated VRAM 8192 MiB\n[system] ram: 32768 MiB\nother\n";
     let tail = "[perf] last 60 s: memory: old\nx\n[perf] last 60 s: memory: RAM 1/2 MiB; VRAM 3/4 MiB\nend\n";
-    let out = super::system_excerpt(head, tail, 12);
+    let out = super::system::system_excerpt(head, tail, 12);
     assert_eq!(out.len(), 3, "{out:?}");
     assert!(out[0].contains("Card A") && out[1].contains("[system] ram"));
     assert!(
         out[2].starts_with("  newest minute: ") && out[2].contains("VRAM 3/4"),
         "{out:?}"
     );
-    assert!(super::system_excerpt("none\n", "none\n", 12).is_empty());
-    assert_eq!(super::system_excerpt(head, tail, 1).len(), 2);
+    assert!(super::system::system_excerpt("none\n", "none\n", 12).is_empty());
+    assert_eq!(super::system::system_excerpt(head, tail, 1).len(), 2);
 }
 
 #[test]
