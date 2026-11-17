@@ -201,7 +201,7 @@ DWORD fault_code;
 uintptr_t fault_ip;
 Request req;
 Snapshot last_fatal;
-HeapError heap_error;
+constinit HeapError heap_error{};
 Out out;
 Mod mods[512];
 int nmods;
