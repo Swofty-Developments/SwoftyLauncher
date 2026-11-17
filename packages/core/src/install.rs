@@ -4,6 +4,7 @@ use std::path::{Path, PathBuf};
 use crate::baseline::{
     Baseline, DepotHashes, FileRecord, Hashes, Identity, Objects, sha256_bytes, sha256_file, sha256_opt,
 };
+use crate::diagnostics::phases;
 use crate::journal::{Journal, Op, State};
 use crate::placed::{self, Placed};
 use crate::profile::VANILLA;
@@ -235,6 +236,17 @@ fn link_replacing(src: &Path, path: &Path) -> std::io::Result<()> {
     renamed
 }
 
+/// Deletes the temporary files a write of `path` that a crash cut short left beside it.
+fn drop_partial(path: &Path) {
+    let name = path.file_name().unwrap_or_default().to_string_lossy();
+    for kind in ["swofty-link", "swofty-copy", "swofty-restore"] {
+        let tmp = path.with_file_name(format!(".{name}.{kind}"));
+        if tmp.is_file() {
+            std::fs::remove_file(&tmp).ok();
+        }
+    }
+}
+
 pub(crate) fn copy_replacing(src: &Path, path: &Path) -> std::io::Result<()> {
     let tmp = path.with_file_name(format!(
         ".{}.swofty-copy",
@@ -409,9 +421,9 @@ impl<'a> Installer<'a> {
     /// Roll back every open journal, or only the ones a `swofty run` session
     /// opened, oldest first.
     pub fn roll_back(&self, sessions_only: bool) -> Result<Vec<RolledBack>> {
-        let mut hashes = Hashes::load(self.data);
+        let mut hashes = phases::time("rollback.hashes_load", || Hashes::load(self.data));
         let out = self.roll_back_with(sessions_only, &mut hashes);
-        hashes.save();
+        phases::time("rollback.hashes_save", || hashes.save());
         out
     }
 
@@ -448,19 +460,24 @@ impl<'a> Installer<'a> {
 
     fn rollback(&self, j: Journal, hashes: &mut Hashes) -> Result<(Vec<Drift>, Vec<String>)> {
         let ids = addon_storage::ids(j.entries.iter().map(|e| e.path.as_str()));
+        let started = std::time::Instant::now();
         let kept = self.keep_storage(&ids, std::slice::from_ref(&j))?;
         for id in &ids {
             addon_storage::save_current(self.data, id)?;
         }
-        crate::stdlib::careers::sync(self.data, Some(&self.game.dir), Some(&j.profile)).ok();
-        if j.session {
-            let log =
-                std::fs::read_to_string(self.game.dir.join(crate::session::LOADER_LOG)).unwrap_or_default();
-            crate::stdlib::careers::record_session(self.data, &j.profile, &log, || {
-                crate::build::stock_max_ids(self.data, self.game)
-            })
-            .ok();
-        }
+        phases::record("rollback.storage", started.elapsed());
+        phases::time("rollback.careers", || {
+            crate::stdlib::careers::sync(self.data, Some(&self.game.dir), Some(&j.profile)).ok();
+            if j.session {
+                let log = std::fs::read_to_string(self.game.dir.join(crate::session::LOADER_LOG))
+                    .unwrap_or_default();
+                crate::stdlib::careers::record_session(self.data, &j.profile, &log, || {
+                    crate::build::stock_max_ids(self.data, self.game)
+                })
+                .ok();
+            }
+        });
+        let started = std::time::Instant::now();
         let mut report = Vec::new();
         let stranded = self.stranded(&j);
         let same_build = j.build_id == self.game.identity.build_id;
@@ -475,21 +492,24 @@ impl<'a> Installer<'a> {
             match e.op {
                 Op::ReplaceFile => {
                     let path = self.path(&e.path);
+                    drop_partial(&path);
                     let now = hashes.sha256_opt(&path)?;
                     let before = e.before.as_deref().expect("replace-file has before");
                     if now.as_deref() == Some(before) {
                         continue;
                     }
-                    let ours = now == e.after || (!stranded && e.state == State::Pending);
+                    // A game file that is gone was moved aside by the install and its replacement never took
+                    // its name, as after a power cut; nothing of the player's is lost by putting it back.
+                    let ours = now == e.after || (!stranded && (e.state == State::Pending || now.is_none()));
                     if ours && same_build {
-                        self.restore_original(before, &path)?;
-                        hashes.wrote(&path, before);
+                        self.put_original(before, &path, hashes)?;
                     } else {
                         report.push(left(&e.path));
                     }
                 }
                 Op::CreateFile => {
                     let path = self.path(&e.path);
+                    drop_partial(&path);
                     match hashes.sha256_opt(&path)? {
                         None => {}
                         Some(now)
@@ -518,6 +538,14 @@ impl<'a> Installer<'a> {
                 }
             }
         }
+        self.drop_originals(
+            j.entries
+                .iter()
+                .filter(|e| e.op == Op::ReplaceFile)
+                .filter_map(|e| e.before.as_deref()),
+        );
+        phases::record("rollback.files", started.elapsed());
+        let started = std::time::Instant::now();
         let mut placed = Placed::load(self.data)?;
         for e in &j.entries {
             match e.op {
@@ -528,6 +556,7 @@ impl<'a> Installer<'a> {
         }
         placed.save(self.data)?;
         j.close()?;
+        phases::record("rollback.state", started.elapsed());
         Ok((report, kept))
     }
 
@@ -564,6 +593,74 @@ impl<'a> Installer<'a> {
                 }
                 r => return r,
             }
+        }
+    }
+
+    /// Where an install keeps the game file holding `sha` that it replaced, on the game's drive.
+    fn stashed(&self, sha: &str) -> PathBuf {
+        crate::link_cache::originals(&self.game.dir).join(sha)
+    }
+
+    /// Moves the game file at `path`, which holds `sha`, into the originals folder, so the rollback can
+    /// rename it back. False when it stays where it is, as on a game folder that spans drives; the install
+    /// then replaces it, and the rollback copies it back from the backup.
+    fn stash(&self, path: &Path, sha: &str, hashes: &mut Hashes) -> bool {
+        let at = self.stashed(sha);
+        let moved = at
+            .parent()
+            .map_or(Ok(()), std::fs::create_dir_all)
+            .and_then(|()| std::fs::rename(path, &at));
+        if moved.is_ok() {
+            hashes.wrote(&at, sha);
+        }
+        moved.is_ok()
+    }
+
+    /// Renames the original holding `sha` from the originals folder over `path`, once its bytes are proven
+    /// to be that original. False when it is not there or no longer holds them.
+    fn unstash(&self, sha: &str, path: &Path, hashes: &mut Hashes) -> bool {
+        let at = self.stashed(sha);
+        if !hashes
+            .sha256_opt(&at)
+            .is_ok_and(|now| now.as_deref() == Some(sha))
+        {
+            return false;
+        }
+        let renamed = match std::fs::rename(&at, path) {
+            Err(e) if e.kind() == std::io::ErrorKind::PermissionDenied && crate::clear_readonly(path) => {
+                std::fs::rename(&at, path)
+            }
+            r => r,
+        };
+        if renamed.is_err() {
+            return false;
+        }
+        crate::sync_dir(path.parent());
+        true
+    }
+
+    /// Puts the original holding `sha` back at `path`: renamed back from the originals folder when the
+    /// install moved it there and it is unchanged, else copied from the backup. A backup is never linked
+    /// into the game folder, where a write through the link would change it.
+    fn put_original(&self, sha: &str, path: &Path, hashes: &mut Hashes) -> Result<()> {
+        if !self.unstash(sha, path, hashes) {
+            self.restore_original(sha, path)?;
+        }
+        hashes.wrote(path, sha);
+        Ok(())
+    }
+
+    /// Deletes what is left in the originals folder of `shas`, then the folder and the cache folder once
+    /// they are empty. What is left there is a copy of a backup, so this only ever costs speed.
+    fn drop_originals<'s>(&self, shas: impl IntoIterator<Item = &'s str>) {
+        for sha in shas {
+            let at = self.stashed(sha);
+            if at.is_file() {
+                std::fs::remove_file(&at).ok();
+            }
+        }
+        if std::fs::remove_dir(crate::link_cache::originals(&self.game.dir)).is_ok() {
+            std::fs::remove_dir(crate::link_cache::dir(&self.game.dir)).ok();
         }
     }
 
@@ -609,10 +706,15 @@ impl<'a> Installer<'a> {
 
     fn sweep_with(&self, hashes: &mut Hashes) -> Result<Vec<String>> {
         let mut placed = Placed::load(self.data)?;
+        let open = Journal::open(self.data)?;
+        let originals = crate::link_cache::originals(&self.game.dir);
+        if open.is_empty() && originals.is_dir() {
+            std::fs::remove_dir_all(&originals).ok();
+            std::fs::remove_dir(crate::link_cache::dir(&self.game.dir)).ok();
+        }
         if placed.files.is_empty() && placed.registry.is_none() {
             return Ok(Vec::new());
         }
-        let open = Journal::open(self.data)?;
         let journaled: BTreeSet<String> = open
             .iter()
             .flat_map(|j| j.entries.iter().map(|e| placed::key(&e.path)))
@@ -643,8 +745,7 @@ impl<'a> Installer<'a> {
                 if f.replaced {
                     match baseline.files.get(&f.path) {
                         Some(rec) if self.objects().has(&rec.sha256) => {
-                            self.restore_original(&rec.sha256, &path)?;
-                            hashes.wrote(&path, &rec.sha256);
+                            self.put_original(&rec.sha256, &path, hashes)?;
                             notes.push(format!("put the original {} back", f.path));
                         }
                         _ => {
@@ -746,9 +847,10 @@ impl<'a> Installer<'a> {
     }
 
     pub fn apply(&self, plan: &Plan) -> Result<()> {
-        let mut hashes = Hashes::load(self.data);
+        let mut hashes = phases::time("install.hashes_load", || Hashes::load(self.data));
         let out = self.apply_with(plan, &mut hashes);
-        hashes.save();
+        phases::end_step();
+        phases::time("install.hashes_save", || hashes.save());
         out
     }
 
@@ -782,8 +884,10 @@ impl<'a> Installer<'a> {
                 .insert(crate::stdlib::state::FILE.to_owned(), file);
             &with_state
         };
+        let started = std::time::Instant::now();
         let loaded = self.baseline()?;
         let space = self.space(plan, &loaded);
+        phases::record("install.baseline", started.elapsed());
         for (dir, v, need) in &space {
             if let Some(free) = (self.free_space)(dir).filter(|free| need > free) {
                 return Err(Error::NoSpace {
@@ -793,7 +897,26 @@ impl<'a> Installer<'a> {
                 });
             }
         }
-        self.place(plan, hashes, loaded).map_err(|e| self.full(e, &space))
+        let stash = self.room_for_originals(plan, &space);
+        self.place(plan, hashes, loaded, stash)
+            .map_err(|e| self.full(e, &space))
+    }
+
+    /// Whether the game's drive has room to keep the game files `plan` replaces until the rollback, beside
+    /// everything the install writes and the link cache's spare room. Without it each replaced file is
+    /// deleted, as its backup holds it.
+    fn room_for_originals(&self, plan: &Plan, space: &[(PathBuf, crate::disk::Volume, u64)]) -> bool {
+        let kept: u64 = plan
+            .data
+            .keys()
+            .map(|rel| std::fs::metadata(self.path(rel)).map_or(0, |m| m.len()))
+            .sum();
+        let need: u64 = space.iter().map(|(_, _, need)| need).sum();
+        (self.free_space)(&self.game.dir).is_some_and(|free| {
+            free >= need
+                .saturating_add(kept)
+                .saturating_add(crate::link_cache::MARGIN)
+        })
     }
 
     /// The bytes an install of `plan` writes on each volume: its copies, less
@@ -833,7 +956,7 @@ impl<'a> Installer<'a> {
         }
     }
 
-    fn place(&self, plan: &Plan, hashes: &mut Hashes, loaded: Baseline) -> Result<()> {
+    fn place(&self, plan: &Plan, hashes: &mut Hashes, loaded: Baseline, stash: bool) -> Result<()> {
         crate::now_doing("checking the game files");
         if let Some(rel) = plan
             .data
@@ -1099,12 +1222,17 @@ impl<'a> Installer<'a> {
             match e.op {
                 Op::ReplaceFile => {
                     let src = sources[e.path.as_str()];
+                    let before = e.before.as_deref().expect("replace-file has before");
+                    let stashed = stash && self.stash(&path, before, hashes);
                     if link(src, true) {
                         linked += 1;
                         hashes.wrote(src, e.after.as_deref().expect("a placed file has after"));
+                    } else if let Err(err) = copy_replacing(src, &path) {
+                        if stashed {
+                            self.unstash(before, &path, hashes);
+                        }
+                        return Err(crate::quarantine::copy_error(&e.path, &path, err));
                     } else {
-                        copy_replacing(src, &path)
-                            .map_err(|err| crate::quarantine::copy_error(&e.path, &path, err))?;
                         crate::clear_readonly(&path);
                     }
                 }
@@ -1210,11 +1338,17 @@ impl<'a> Installer<'a> {
         sources: &BTreeMap<&str, &PathBuf>,
     ) -> LinkCache {
         let apart = crate::link_cache::apart((self.volume)(built), (self.volume)(&self.game.dir));
-        let srcs: Vec<(&str, &Path)> = entries
+        let srcs: Vec<crate::link_cache::Wanted> = entries
             .iter()
             .filter(|e| matches!(e.op, Op::ReplaceFile | Op::CreateFile))
-            .map(|e| (e.path.as_str(), sources[e.path.as_str()].as_path()))
-            .filter(|(_, s)| apart == Some(true) || !s.starts_with(built))
+            .map(|e| {
+                (
+                    e.path.as_str(),
+                    sources[e.path.as_str()].as_path(),
+                    e.after.as_deref(),
+                )
+            })
+            .filter(|(_, s, _)| apart == Some(true) || !s.starts_with(built))
             .collect();
         if srcs.is_empty() {
             if crate::link_cache::dir(&self.game.dir).exists() {

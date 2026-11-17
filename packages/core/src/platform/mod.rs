@@ -9,6 +9,12 @@ pub mod run_as_admin;
 pub mod steam;
 
 use std::path::{Path, PathBuf};
+#[cfg(any(windows, test))]
+use std::{
+    collections::BTreeMap,
+    sync::Mutex,
+    time::{Duration, Instant},
+};
 
 use crate::install::Source;
 
@@ -49,9 +55,55 @@ pub fn installed_by(dir: &Path) -> Option<&'static dyn LaunchPlatform> {
     PLATFORMS.into_iter().find(|p| p.installed(dir))
 }
 
+/// How long a record read with a Windows tool is kept. Steam and the EA app change their install records
+/// only when they install, move or remove something, one Play reads them several times, and each read
+/// starts a `reg query` process.
+#[cfg(windows)]
+pub(crate) const KEEP_RECORDS: Duration = Duration::from_secs(30);
+
+/// Answers kept by key for a while, so lookups close together start a Windows tool once.
+#[cfg(any(windows, test))]
+pub(crate) struct Kept<K, V>(Mutex<BTreeMap<K, (Instant, V)>>);
+
+#[cfg(any(windows, test))]
+impl<K: Ord, V: Clone> Kept<K, V> {
+    pub(crate) const fn new() -> Self {
+        Self(Mutex::new(BTreeMap::new()))
+    }
+
+    /// The answer kept for `key` while it is younger than `keep`, else `find`'s, which is then kept.
+    pub(crate) fn get(&self, key: K, keep: Duration, find: impl FnOnce() -> V) -> V {
+        let mut kept = self.0.lock().unwrap_or_else(|e| e.into_inner());
+        if let Some((at, answer)) = kept.get(&key)
+            && at.elapsed() < keep
+        {
+            return answer.clone();
+        }
+        let answer = find();
+        kept.insert(key, (Instant::now(), answer.clone()));
+        answer
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
+
+    #[test]
+    fn a_kept_answer_is_reused_per_key_until_it_is_too_old() {
+        let kept = Kept::new();
+        let runs = std::cell::Cell::new(0);
+        let find = || {
+            runs.set(runs.get() + 1);
+            runs.get()
+        };
+        let minute = Duration::from_secs(60);
+        assert_eq!(kept.get("a", minute, find), 1);
+        assert_eq!(kept.get("a", minute, find), 1);
+        assert_eq!(kept.get("b", minute, find), 2);
+        assert_eq!(kept.get("a", Duration::ZERO, find), 3);
+        assert_eq!(kept.get("a", minute, find), 3);
+    }
 
     fn tmp(name: &str) -> PathBuf {
         let dir = std::env::temp_dir().join(format!("swofty-platform-{name}-{}", std::process::id()));
