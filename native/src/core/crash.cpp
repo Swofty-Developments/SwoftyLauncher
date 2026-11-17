@@ -1832,7 +1832,7 @@ void step_dred(Request &r)
     if (text.empty())
         return;
     out.put("%s", text.c_str());
-    std::string builds = d3d12hooks::rtas_recent_text();
+    std::string builds = d3d12hooks::rtas_recent_text(runtime::dred::build_stops());
     for (size_t at = 0; at < builds.size();) {
         size_t end = builds.find('\n', at);
         end = end == std::string::npos ? builds.size() : end + 1;

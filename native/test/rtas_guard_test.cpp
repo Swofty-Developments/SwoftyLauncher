@@ -184,6 +184,45 @@ int main()
     expect(rg::recent_section(lists.newest_lists_first(), lists.pushed(), 1).find("1 more command list(s) not shown") !=
                std::string::npos,
            "lists past the shown cap are counted");
+    struct Stop {
+        uint64_t list;
+        uint32_t nth, of;
+    };
+    rg::ByList<64, 4> hung;
+    seq = 100;
+    auto on = [&](auto &l, uint64_t list, uint64_t frame, uint32_t vertices) {
+        rg::Entry e = car;
+        e.seq = seq++;
+        e.list = list;
+        e.frame = frame;
+        e.geo[0].vertices = vertices;
+        l.push(e);
+    };
+    on(hung, 0xd, 7, 1);
+    for (uint32_t v : {13409u, 12322u, 11237u, 10062u})
+        on(hung, 0xd, 8, v);
+    on(hung, 0xe, 9, 5);
+    auto hung_lists = hung.newest_lists_first();
+    std::string stopped = rg::stopped_lines(hung_lists, std::vector<Stop>{{0xd, 4, 4}});
+    expect(stopped.find("  the GPU stopped on list 0xd's build #4 of 4: build 104 frame 8 bottom-level into 0x92c4") == 0 &&
+               stopped.find("v10062/") != std::string::npos,
+           "the stopped build is the list's newest frame's build at the DRED's place");
+    expect(rg::stopped_lines(hung_lists, std::vector<Stop>{{0xd, 4, 8}}).find("newest kept frame 8 has 4 build(s), so which build that is is not known") !=
+               std::string::npos,
+           "a newest frame with another build count than the DRED names no build");
+    expect(rg::stopped_lines(hung_lists, std::vector<Stop>{{0xf, 1, 1}}).find("no build of that list was kept") != std::string::npos,
+           "a list with no kept builds names no build");
+    rg::ByList<3, 2> few;
+    for (int i = 0; i < 5; i++)
+        on(few, 0xd, 8, 7);
+    expect(rg::stopped_lines(few.newest_lists_first(), std::vector<Stop>{{0xd, 3, 3}}).find("has 3+ build(s)") != std::string::npos,
+           "a frame cut by the ring names no build");
+    std::string led = rg::recent_section(hung_lists, hung.pushed(), 12, stopped);
+    expect(led.find("in that frame\n  the GPU stopped on list 0xd's build #4 of 4:") != std::string::npos &&
+               led.find("the GPU stopped") < led.find("    list 0xe"),
+           "the stopped build leads the section");
+    expect(rg::recent_section(decltype(hung_lists){}, 0, 12, stopped) == "\n" + stopped, "the stopped line stays without kept lists");
+
     rg::Entry top;
     top.top = true;
     top.count = 40;

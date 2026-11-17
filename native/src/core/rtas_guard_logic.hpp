@@ -304,10 +304,55 @@ private:
     uint64_t pushed_ = 0;
 };
 
-template <typename KeptList> std::string recent_section(const KeptList &lists, uint64_t pushed, size_t max_lists = 12)
+// The build the GPU stopped on, for each command list DRED shows unfinished. Its build #nth of `of` is #nth of the
+// list's newest kept frame when that frame keeps exactly `of` builds; otherwise the build is not known.
+template <typename KeptList, typename Stops> std::string stopped_lines(const KeptList &lists, const Stops &stops)
+{
+    std::string s;
+    char b[240];
+    for (const auto &st : stops) {
+        const typename KeptList::value_type *kept = nullptr;
+        for (const auto &k : lists)
+            if (k.list == st.list)
+                kept = &k;
+        if (!kept || kept->builds.empty()) {
+            std::snprintf(b, sizeof b, "  the GPU stopped on list 0x%llx's build #%u of %u; no build of that list was kept\n",
+                          (unsigned long long)st.list, st.nth, st.of);
+            s += b;
+            continue;
+        }
+        uint64_t frame = kept->builds.back().frame;
+        size_t first = kept->builds.size();
+        while (first && kept->builds[first - 1].frame == frame)
+            first--;
+        size_t in_frame = kept->builds.size() - first;
+        bool whole = !(first == 0 && kept->total > kept->builds.size());
+        if (!whole || in_frame != st.of || !st.nth || st.nth > st.of) {
+            std::snprintf(b, sizeof b,
+                          "  the GPU stopped on list 0x%llx's build #%u of %u; its newest kept frame %llu has %zu%s build(s), "
+                          "so which build that is is not known\n",
+                          (unsigned long long)st.list, st.nth, st.of, (unsigned long long)frame, in_frame, whole ? "" : "+");
+            s += b;
+            continue;
+        }
+        const Entry &e = kept->builds[first + st.nth - 1];
+        std::snprintf(b, sizeof b, "  the GPU stopped on list 0x%llx's build #%u of %u: build %llu frame %llu %s%s into 0x%llx (flags 0x%x), %u %s:",
+                      (unsigned long long)st.list, st.nth, st.of, (unsigned long long)e.seq, (unsigned long long)e.frame,
+                      e.top ? "top-level" : "bottom-level", (e.flags & kPerformUpdate) ? " update" : "", (unsigned long long)e.dest,
+                      e.flags, e.count, e.top ? "instances" : "geometries");
+        s += b;
+        if (!e.top)
+            s += geometry_text(e);
+        s += "\n";
+    }
+    return s;
+}
+
+template <typename KeptList>
+std::string recent_section(const KeptList &lists, uint64_t pushed, size_t max_lists = 12, const std::string &stopped = {})
 {
     if (lists.empty())
-        return {};
+        return stopped.empty() ? std::string() : "\n" + stopped;
     std::string s;
     char b[200];
     std::snprintf(b, sizeof b,
@@ -316,6 +361,7 @@ template <typename KeptList> std::string recent_section(const KeptList &lists, u
                   lists.size(), (unsigned long long)pushed);
     s += b;
     s += "  each list shows its newest builds, oldest first; #n is the build's place on its list in that frame\n";
+    s += stopped;
     size_t shown_lists = 0;
     for (const auto &k : lists) {
         if (shown_lists++ == max_lists) {

@@ -134,6 +134,15 @@ int main()
     CHECK(dr::write_first(dirs, [&](const std::wstring &d) { return d == dirs[1]; }) == 1);
     CHECK(dr::write_first(dirs, [](const std::wstring &) { return false; }) == -1);
 
+    const uint32_t ops[] = {15, 8, 15, 31, 15, 31, 15, 31, 15, 31, 15, 15};
+    auto st = dr::build_stop(ops, 12, 9, 0x83e897e0);
+    CHECK(st.list == 0x83e897e0 && st.nth == 4 && st.of == 4);
+    st = dr::build_stop(ops, 12, 3, 0xa);
+    CHECK(st.nth == 1 && st.of == 4);
+    CHECK(dr::build_stop(ops, 12, 8, 0xa).nth == 0);
+    CHECK(dr::build_stop(ops, 12, 12, 0xa).nth == 0);
+    CHECK(dr::build_stop<uint32_t>(nullptr, 12, 3, 0xa).nth == 0);
+
     if (!g_fail)
         std::printf("dred test passed\n");
     return g_fail ? 1 : 0;

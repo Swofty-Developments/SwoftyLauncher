@@ -1709,7 +1709,7 @@ bool arm_rtas_guard()
     return ok;
 }
 
-std::string rtas_recent_text()
+std::string rtas_recent_text(const std::vector<runtime::dred::BuildStop> &stops)
 {
     std::vector<rg::ByList<64, 32>::Kept> lists;
     uint64_t pushed;
@@ -1718,7 +1718,7 @@ std::string rtas_recent_text()
         lists = rtas_recent.newest_lists_first();
         pushed = rtas_recent.pushed();
     }
-    return rg::recent_section(lists, pushed);
+    return rg::recent_section(lists, pushed, 12, rg::stopped_lines(lists, stops));
 }
 
 }
