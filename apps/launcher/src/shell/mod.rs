@@ -10,7 +10,7 @@ mod barfit;
 mod config;
 mod console_window;
 pub(crate) mod download_dock;
-mod host;
+pub(crate) mod host;
 mod launch_alerts;
 mod nav;
 pub(crate) mod notices;
