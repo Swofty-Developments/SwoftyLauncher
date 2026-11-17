@@ -130,6 +130,24 @@ struct GrandPrix {
 } gp;
 uintptr_t root_global = 0, despawn_main_scene = 0;
 
+// What the driver's struct offsets were checked on: the KB build and Steam 26566308 (sigport.py --witness, each
+// function cited beside the offsets it backs).
+namespace bp = runtime::build_proof;
+constexpr uint32_t KB_AND_1_0_145 = bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145);
+constexpr bp::Proof SESSION_DRIVER{"the session driver's layout (the Grand Prix entity +0x1030, +0xf08, +0xf58, +0xe18, "
+                                   "+0x2e0, +0x2b0, +0x2d8, +0x2f8; entrants 0x88 with +0x48, +0x4b; the weekend chain "
+                                   "+0x88, +0x260, +0x1058, +0x548, +0x560, +0x288, +0x2a0, +0x220, +0x238, +0x278; "
+                                   "StateLoadSession +0xcd0; the fade owner +0xa0, +0x7b8, +0x7bc; the front end scene "
+                                   "+0xd20, +0x40, +0x1048)",
+                                   KB_AND_1_0_145};
+constexpr bp::Gate DIRECT_START{"the direct start", &SESSION_DRIVER};
+constexpr bp::Proof FTUE_QUEUE{"StateFTUE's interrupt queue (+0xbf8, its front +0x30, the kind at +0x10)", KB_AND_1_0_145};
+constexpr bp::Gate FTUE_EXIT{"the direct start's StateFTUE exit", &FTUE_QUEUE};
+constexpr bp::Proof FLOW_STATES{"the flow states' layout (+0xb0, +0xb8, +0xc0, +0xaf0, +0xb30, +0xbd8, +0xc10) and the "
+                                "link's stack slot (+0x40)",
+                                KB_AND_1_0_145};
+constexpr bp::Gate FLOW_LINK{"the direct start's flow link", &FLOW_STATES};
+
 constexpr uintptr_t MANAGER_MODES = 0xc0, ENTITY_REGISTRY = 0x1030, ENTITY_MODE = 0xf08;
 
 using ModeByPredicate_t = uint8_t *(void *modes, void *const *predicate);
@@ -148,7 +166,7 @@ using SetMode_t = void(void *modes, void *mode);
 // A session request without a box or track gets the stock 2025 grid at Albert Park; it never continues a saved Grand
 // Prix, whose weekend may be one the session load can't take.
 constexpr const char *DEFAULT_BOX = "f1_2025", *DEFAULT_TRACK = "melbourne", *HOST_SETUP_MODE = "swofty_f1";
-constexpr uintptr_t MANAGER_ENTRANTS = 0x290, ES_LISTS = 0x560, ENTITY_TRACKS = 0xf58,
+constexpr uintptr_t ES_LISTS = 0x560, ENTITY_TRACKS = 0xf58,
                     ENTITY_LIST = 0xe18, ENTITY_ENTRANTS = 0x2e0, ENTRANT_SIZE = 0x88;
 
 struct Game {
@@ -1077,7 +1095,7 @@ ds::Setup new_grand_prix(std::string &why)
     std::string requested_mode = request["setup_mode"].str(), list_name = request["box"].str(DEFAULT_BOX),
                 track_name = request["track"].str(DEFAULT_TRACK);
     // 1. The entrant list by name: EntrantsSystem +0x560, 16-byte entries, the list at +8.
-    uint8_t *es = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(mgr) + MANAGER_ENTRANTS);
+    uint8_t *es = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(mgr) + runtime::manager_entrants_system());
     uint8_t id = code<uint8_t(const char *)>(gp.list_stat_id)(list_name.c_str());
     auto *lists = *reinterpret_cast<uint8_t **>(es + ES_LISTS), *lists_end = *reinterpret_cast<uint8_t **>(es + ES_LISTS + 8);
     if (!lists || size_t(lists_end - lists) / 16 <= id) {
@@ -1288,8 +1306,8 @@ void direct_start_setup()
         swofty::log("[direct] off: the title can't pass by itself (%s)", runtime::title::why().c_str());
         return;
     }
-    if (!runtime::same_build() && !runtime::steam_1_0_145()) {
-        swofty::log("[direct] off: the session driver's struct offsets were checked on the KB build and Steam 1.0.145 only");
+    if (!runtime::holds(DIRECT_START)) {
+        swofty::log("[direct] off: the session driver's layout is not proven on this build");
         return;
     }
     root_global = runtime::find(SIG_GAME_ROOT, "game root", "direct");
@@ -1313,7 +1331,7 @@ void direct_start_setup()
     // StateFTUE's exit: on Steam 26566308 the same 178 instructions, with the interrupt queue +0xbf8 and its front +0x30
     // in the same places (the pattern holds the queue's +0x18 / +0x20 and the front's kind at +0x10).
     if (ftue_interrupt_on) {
-        uintptr_t at = runtime::find(SIG_FTUE_EXIT, "StateFTUE exit", "direct");
+        uintptr_t at = runtime::holds(FTUE_EXIT) ? runtime::find(SIG_FTUE_EXIT, "StateFTUE exit", "direct") : 0;
         bool hooked = false;
         if (at) {
             auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(ftue_exit_detour));
@@ -1331,9 +1349,9 @@ void direct_start_setup()
     // +0xc0, +0xaf0, +0xb30 and +0xbd8 in the same places (+0xc10, the parent, the same in 0x141d5ee30), and the pattern
     // holds the hook point and the link's stack slot.
     if (t.exit_state || t.from_state) {
-        uintptr_t at = runtime::find(SIG_FLOW_LINK, "flow link", "direct");
+        uintptr_t at = runtime::holds(FLOW_LINK) ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;
         if (!at) {
-            swofty::log("[direct] off: the flow link site did not resolve on this build");
+            swofty::log("[direct] off: the flow link site is not proven or did not resolve on this build");
             return;
         }
         auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), link_mid);
