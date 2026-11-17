@@ -590,20 +590,26 @@ impl ErpFile {
         );
         std::io::Write::write_all(&mut out, &head)?;
         let mut buf = vec![0; 1 << 20];
+        let mut run: Option<(u64, u64)> = None;
         let frags = erp.resources.iter().flat_map(|r| &r.fragments);
         for (f, span) in frags.zip(spans) {
-            match span {
-                None => std::io::Write::write_all(&mut out, &f.raw)?,
-                Some((at, mut left)) => {
-                    src.seek(SeekFrom::Start(at)).map_err(crate::io_at(&self.path))?;
-                    while left > 0 {
-                        let n = left.min(buf.len() as u64) as usize;
-                        src.read_exact(&mut buf[..n]).map_err(crate::io_at(&self.path))?;
-                        std::io::Write::write_all(&mut out, &buf[..n])?;
-                        left -= n as u64;
+            match (span, run.as_mut()) {
+                (Some((at, len)), Some((start, run_len))) if *start + *run_len == at => *run_len += len,
+                (Some(span), _) => {
+                    if let Some(done) = run.replace(span) {
+                        self.copy_span(&mut src, done, &mut buf, &mut out)?;
                     }
                 }
+                (None, _) => {
+                    if let Some(done) = run.take() {
+                        self.copy_span(&mut src, done, &mut buf, &mut out)?;
+                    }
+                    std::io::Write::write_all(&mut out, &f.raw)?;
+                }
             }
+        }
+        if let Some(done) = run {
+            self.copy_span(&mut src, done, &mut buf, &mut out)?;
         }
         std::io::Write::flush(&mut out)?;
         drop(out);
@@ -613,6 +619,25 @@ impl ErpFile {
             return Err(crate::io_at(dst)(e));
         }
         worked();
+        Ok(())
+    }
+
+    /// Copies `len` stock bytes at `at` of this archive to `out`. Adjacent stock fragments arrive as one span,
+    /// so a run of untouched resources costs one seek and reads as large as `buf`.
+    fn copy_span(
+        &self,
+        src: &mut std::fs::File,
+        (at, mut left): (u64, u64),
+        buf: &mut [u8],
+        out: &mut impl std::io::Write,
+    ) -> Result<()> {
+        src.seek(SeekFrom::Start(at)).map_err(crate::io_at(&self.path))?;
+        while left > 0 {
+            let n = left.min(buf.len() as u64) as usize;
+            src.read_exact(&mut buf[..n]).map_err(crate::io_at(&self.path))?;
+            out.write_all(&buf[..n])?;
+            left -= n as u64;
+        }
         Ok(())
     }
 }
@@ -1100,6 +1125,60 @@ mod tests {
             b"!pkg sample payload"
         );
         assert_eq!(back.resources[1].fragments[1].data().unwrap(), b"abc");
+        std::fs::remove_dir_all(&dir).ok();
+    }
+
+    #[test]
+    fn copies_of_reordered_and_interleaved_stock_resources_match_the_in_memory_archive() {
+        let dir = std::env::temp_dir().join(format!("swofty-erp-spans-{}", std::process::id()));
+        std::fs::create_dir_all(&dir).unwrap();
+        let mut erp = sample();
+        let template = erp.resources[0].clone();
+        for i in 0..6 {
+            let mut res = template.clone();
+            res.name = format!("eaid://ui_package/screens/s{i}.ui");
+            res.set_fragment(0, format!("payload {i} {}", "x".repeat(i * 7000)).as_bytes())
+                .unwrap();
+            res.set_fragment(1, &vec![i as u8; i * 3]).unwrap();
+            erp.resources.push(res);
+        }
+        let src = dir.join("src.erp");
+        std::fs::write(&src, erp.to_bytes()).unwrap();
+        let file = ErpFile::open(&src).unwrap();
+        let r = &file.erp.resources;
+        let mut owned = file.load(&r[3]).unwrap();
+        owned.name = "eaid://ui_package/screens/owned.ui".into();
+        owned.set_fragment(0, b"owned payload").unwrap();
+        let order = [
+            Some(1),
+            Some(2),
+            None,
+            Some(0),
+            Some(4),
+            Some(5),
+            Some(6),
+            Some(3),
+        ];
+        let entries = order
+            .iter()
+            .map(|i| match i {
+                Some(i) => Entry::Copy(&r[*i]),
+                None => Entry::Owned(owned.clone()),
+            })
+            .collect();
+        file.write(entries, &dir.join("out.erp")).unwrap();
+        let mut expected = Erp {
+            header: file.erp.header,
+            version: file.erp.version,
+            resources: order
+                .iter()
+                .map(|i| match i {
+                    Some(i) => file.load(&r[*i]).unwrap(),
+                    None => owned.clone(),
+                })
+                .collect(),
+        };
+        assert_eq!(std::fs::read(dir.join("out.erp")).unwrap(), expected.to_bytes());
         std::fs::remove_dir_all(&dir).ok();
     }
 

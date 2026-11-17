@@ -362,7 +362,7 @@ pub struct Baseline {
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub rebuild: Option<Rebuild>,
     /// Every file Steam installed had its size when this build was last
-    /// checked against Steam's manifests (see [`crate::stock`]).
+    /// checked against Steam's manifests (see [`crate::game_folder::stock`]).
     #[serde(default, skip_serializing_if = "std::ops::Not::not")]
     pub stock_checked: bool,
 }

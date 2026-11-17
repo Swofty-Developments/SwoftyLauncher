@@ -167,7 +167,7 @@ fn sum(path: &Path) -> Result<FileSum, String> {
     let size = std::fs::metadata(path)
         .map_err(|e| format!("{}: {e}", path.display()))?
         .len();
-    let sha256 = crate::baseline::sha256_file(path).map_err(|e| e.to_string())?;
+    let sha256 = crate::game_folder::baseline::sha256_file(path).map_err(|e| e.to_string())?;
     Ok(FileSum { size, sha256 })
 }
 

@@ -1,9 +1,9 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::builtin::CORE_ID;
-use crate::folders::Key;
+use crate::addons::builtin::CORE_ID;
 use crate::manifest::AddonManifest;
 use crate::profile::Profile;
+use crate::profile::folders::Key;
 use crate::{Error, Result};
 
 #[derive(Debug, Clone, PartialEq, Eq)]
@@ -83,7 +83,7 @@ fn glob_match(pattern: &str, id: &str) -> bool {
 }
 
 pub fn is_pinned(id: &str) -> bool {
-    id == CORE_ID || crate::managed::is_managed(id)
+    id == CORE_ID || crate::updates::managed::is_managed(id)
 }
 
 fn enabled_ids(profile: &Profile) -> Vec<&str> {
@@ -119,7 +119,7 @@ pub fn problems(
                 (None, Some(_)) => push(&r.id, Kind::Off),
                 (None, None) => push(&r.id, Kind::Missing),
                 (Some(_), None) => push(&r.id, Kind::Missing),
-                (Some(_), Some(dep)) if !crate::version::satisfies(&r.version, &dep.version) => push(
+                (Some(_), Some(dep)) if !crate::addons::version::satisfies(&r.version, &dep.version) => push(
                     &r.id,
                     Kind::Version {
                         wanted: r.version.to_string(),
@@ -149,7 +149,7 @@ pub fn problems(
 
 pub fn from_report(
     profile: &Profile,
-    report: &crate::conflicts::Report,
+    report: &crate::profile::conflicts::Report,
     pinned: &dyn Fn(&str) -> bool,
 ) -> Vec<Problem> {
     let at: BTreeMap<&str, usize> = profile.enabled().enumerate().map(|(i, id)| (id, i)).collect();
@@ -161,7 +161,7 @@ pub fn from_report(
 
 fn learned_waits(
     profile: &Profile,
-    report: &crate::conflicts::Report,
+    report: &crate::profile::conflicts::Report,
     pinned: &dyn Fn(&str) -> bool,
 ) -> Vec<Problem> {
     if profile.is_vanilla() || !report.is_current(profile) {
@@ -424,7 +424,10 @@ pub fn plan_fix(
             true => None,
             false => place(id),
         };
-        let regrouped = crate::folders::flatten(&crate::folders::group(candidate.iter().cloned(), placed));
+        let regrouped = crate::profile::folders::flatten(&crate::profile::folders::group(
+            candidate.iter().cloned(),
+            placed,
+        ));
         let at: BTreeMap<&str, usize> = regrouped
             .iter()
             .enumerate()
@@ -485,7 +488,7 @@ impl Diagnosis {
 pub fn diagnose(
     profile: &Profile,
     installed: &BTreeMap<String, AddonManifest>,
-    report: Option<&crate::conflicts::Report>,
+    report: Option<&crate::profile::conflicts::Report>,
     careers_list: &[crate::stdlib::careers::Career],
     is_track: &dyn Fn(&str) -> bool,
     pinned: &dyn Fn(&str) -> bool,
@@ -504,7 +507,7 @@ pub fn diagnose(
         Err(e) => FixState::Blocked(e),
         Ok(plan) => {
             let mut after = profile.clone();
-            crate::folders::reorder(&mut after, &plan.order, &|_| false);
+            crate::profile::folders::reorder(&mut after, &plan.order, &|_| false);
             let still = problems(&after, installed, pinned);
             let unhonoured: Vec<Problem> = learned
                 .iter()
@@ -677,14 +680,14 @@ mod tests {
     fn a_built_in_addon_that_loads_after_others_is_not_asked_to_move() {
         let mut all = installed();
         all.extend([m(
-            crate::managed::ID,
+            crate::updates::managed::ID,
             r#","load_after":["cs.*","track.*"],"requires":[{"id":"cs.base"}]"#,
         )]);
-        let p = profile(&[crate::managed::ID, "cs.base", "cs.2016", "track.a"]);
-        let report = crate::conflicts::Report {
+        let p = profile(&[crate::updates::managed::ID, "cs.base", "cs.2016", "track.a"]);
+        let report = crate::profile::conflicts::Report {
             order: p.enabled().map(str::to_owned).collect(),
-            waits: vec![crate::conflicts::Wait {
-                addon: crate::managed::ID.into(),
+            waits: vec![crate::profile::conflicts::Wait {
+                addon: crate::updates::managed::ID.into(),
                 on: "track.a".into(),
             }],
             ..Default::default()
@@ -696,9 +699,12 @@ mod tests {
         let plan = plan_fix(&p, &all, &found, &is_pinned, &no_place).unwrap();
         assert_eq!(plan.moved, 0);
         assert_eq!(plan.order.join(","), before);
-        let plan = crate::resolver::resolve(&p, &all).unwrap();
+        let plan = crate::profile::resolver::resolve(&p, &all).unwrap();
         let at = |id: &str| plan.order.iter().position(|x| x == id).unwrap();
-        assert!(at("cs.2016") < at(crate::managed::ID) && at("track.a") < at(crate::managed::ID));
+        assert!(
+            at("cs.2016") < at(crate::updates::managed::ID)
+                && at("track.a") < at(crate::updates::managed::ID)
+        );
         assert!(
             plan.warnings.iter().all(|w| !w.contains("above it")),
             "{:?}",
@@ -789,7 +795,7 @@ mod tests {
     }
 
     fn apply(p: &mut Profile, plan: &FixPlan) {
-        crate::folders::reorder(p, &plan.order, &|_| false);
+        crate::profile::folders::reorder(p, &plan.order, &|_| false);
     }
 
     fn folder_of(members: &'static [&'static str]) -> impl Fn(&str) -> Option<Key> {
@@ -854,7 +860,7 @@ mod tests {
     fn move_above_refuses_pinned_anchor() {
         let mut p = profile(&["cs.2016", "track.a"]);
         assert!(move_above(&mut p, "track.a", CORE_ID).is_err());
-        assert!(move_above(&mut p, "track.a", crate::managed::ID).is_err());
+        assert!(move_above(&mut p, "track.a", crate::updates::managed::ID).is_err());
         assert!(move_above(&mut p, CORE_ID, "cs.2016").is_err());
         assert!(move_above(&mut p, "track.a", "cs.2016").is_ok());
     }
@@ -879,7 +885,7 @@ mod tests {
         assert_eq!(plan.ejected, [("f.c".to_owned(), Key::Own("f".into()))]);
         apply(&mut p, &plan);
         let after = |id: &str| (id != "f.c").then(|| place(id)).flatten();
-        crate::folders::arrange(&mut p, after);
+        crate::profile::folders::arrange(&mut p, after);
         assert!(
             problems(&p, &all, &is_pinned)
                 .iter()
@@ -902,7 +908,7 @@ mod tests {
         ]);
         let place = folder_of(&["f.a", "f.c"]);
         let mut p = profile(&["f.a", "f.b", "f.c"]);
-        crate::folders::arrange(&mut p, &place);
+        crate::profile::folders::arrange(&mut p, &place);
         assert!(
             problems(&p, &all, &is_pinned)
                 .iter()
@@ -910,14 +916,14 @@ mod tests {
         );
     }
 
-    fn pinned_report(p: &Profile, waiter: &str, on: &str) -> crate::conflicts::Report {
-        crate::conflicts::Report {
+    fn pinned_report(p: &Profile, waiter: &str, on: &str) -> crate::profile::conflicts::Report {
+        crate::profile::conflicts::Report {
             order: p.enabled().map(str::to_owned).collect(),
-            waits: vec![crate::conflicts::Wait {
+            waits: vec![crate::profile::conflicts::Wait {
                 addon: waiter.into(),
                 on: on.into(),
             }],
-            pairs: vec![crate::conflicts::Pair {
+            pairs: vec![crate::profile::conflicts::Pair {
                 winner: waiter.into(),
                 loser: on.into(),
                 database: 204,
@@ -930,9 +936,9 @@ mod tests {
     #[test]
     fn a_pinned_winner_is_not_a_problem() {
         let mut all = installed();
-        all.extend([m(crate::managed::ID, "")]);
-        let p = profile(&[crate::managed::ID, "track.a"]);
-        let report = pinned_report(&p, crate::managed::ID, "track.a");
+        all.extend([m(crate::updates::managed::ID, "")]);
+        let p = profile(&[crate::updates::managed::ID, "track.a"]);
+        let report = pinned_report(&p, crate::updates::managed::ID, "track.a");
         let d = diagnose(&p, &all, Some(&report), &[], &|_| false, &is_pinned, &no_place);
         assert!(d.problems.is_empty(), "{:?}", d.problems);
         assert_eq!(d.fix, FixState::Nothing);
@@ -958,7 +964,7 @@ mod tests {
 
     #[test]
     fn renumbered_stat_ids_are_not_real_items() {
-        let pair = crate::conflicts::Pair {
+        let pair = crate::profile::conflicts::Pair {
             database: 3,
             items: vec!["a.stat_id".into(), "b.stat_id".into(), "t.laps".into()],
             ..Default::default()
@@ -986,7 +992,7 @@ mod tests {
         apply(&mut p, &plan);
         let at = |id: &str| ids(&p).iter().position(|x| *x == id).unwrap();
         assert!(at("cs.base") < at("c.grid"));
-        let stale = crate::conflicts::Report {
+        let stale = crate::profile::conflicts::Report {
             order: vec![],
             ..report
         };
@@ -1132,13 +1138,13 @@ mod tests {
         }
         let builtins = rng.below(3);
         let mut pinned: BTreeSet<String> =
-            BTreeSet::from([CORE_ID.to_owned(), crate::managed::ID.to_owned()]);
+            BTreeSet::from([CORE_ID.to_owned(), crate::updates::managed::ID.to_owned()]);
         installed.extend([m(
-            crate::managed::ID,
+            crate::updates::managed::ID,
             &format!(r#","requires":[{{"id":"{}"}}]"#, names[0]),
         )]);
         let mut all: Vec<String> = names.clone();
-        all.push(crate::managed::ID.to_owned());
+        all.push(crate::updates::managed::ID.to_owned());
         for i in 0..builtins {
             let id = format!("b.{i}");
             installed.extend([m(&id, "")]);
@@ -1179,7 +1185,7 @@ mod tests {
             .collect();
         let cyclic = cyclic && !acyclic(&live, &edges, &names);
         let place = |id: &str| places.get(id).cloned().flatten();
-        crate::folders::arrange(&mut profile, place);
+        crate::profile::folders::arrange(&mut profile, place);
         World {
             installed,
             profile,
@@ -1190,19 +1196,19 @@ mod tests {
         }
     }
 
-    fn waits(profile: &Profile, rng: &mut Rng) -> crate::conflicts::Report {
+    fn waits(profile: &Profile, rng: &mut Rng) -> crate::profile::conflicts::Report {
         let on: Vec<String> = profile.enabled().map(str::to_owned).collect();
         let mut waits = Vec::new();
         for _ in 0..rng.below(4) {
             let (a, b) = (rng.below(on.len()), rng.below(on.len()));
             if a != b {
-                waits.push(crate::conflicts::Wait {
+                waits.push(crate::profile::conflicts::Wait {
                     addon: on[a].clone(),
                     on: on[b].clone(),
                 });
             }
         }
-        crate::conflicts::Report {
+        crate::profile::conflicts::Report {
             order: on,
             waits,
             ..Default::default()
@@ -1260,10 +1266,10 @@ mod tests {
                 false => place(id),
             };
             assert!(
-                !crate::folders::arrange(&mut w.profile, after),
+                !crate::profile::folders::arrange(&mut w.profile, after),
                 "seed {seed}: arrange moved the fixed order"
             );
-            let report = crate::conflicts::Report {
+            let report = crate::profile::conflicts::Report {
                 order: w.profile.enabled().map(str::to_owned).collect(),
                 waits: report.waits.clone(),
                 ..Default::default()

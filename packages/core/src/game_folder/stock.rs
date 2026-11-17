@@ -16,11 +16,11 @@ use serde::{Deserialize, Serialize};
 use sha1::{Digest, Sha1};
 
 use crate::STEAM_APP_ID;
-use crate::baseline::{Baseline, DepotHashes, Objects, Source, sha256_file};
+use crate::game_folder::baseline::{Baseline, DepotHashes, Objects, Source, sha256_file};
+use crate::game_folder::placed::Placed;
 use crate::install::Game;
-use crate::placed::Placed;
-use crate::steam::GameInstall;
-use crate::vdf::Vdf;
+use crate::platform::steam::GameInstall;
+use crate::platform::vdf::Vdf;
 use crate::{Result, io_err, read_json, write_json};
 
 const PAYLOAD: u32 = 0x71F6_17D0;
@@ -126,7 +126,8 @@ impl Depots {
             .join("steamapps")
             .join(format!("appmanifest_{STEAM_APP_ID}.acf"));
         let text = std::fs::read_to_string(&acf).map_err(|e| format!("{}: {e}", acf.display()))?;
-        let doc = crate::vdf::parse(&text).ok_or_else(|| format!("{} does not parse", acf.display()))?;
+        let doc =
+            crate::platform::vdf::parse(&text).ok_or_else(|| format!("{} does not parse", acf.display()))?;
         let depots = doc
             .path(&["AppState", "InstalledDepots"])
             .ok_or_else(|| format!("{} lists no installed depots", acf.display()))?;
@@ -587,9 +588,12 @@ pub enum Fix {
 }
 
 pub fn fix_for(version: Option<&str>) -> Fix {
-    match version
-        .and_then(|v| crate::known_problems::older_game(v, crate::known_problems::LATEST_GAME_VERSION))
-    {
+    match version.and_then(|v| {
+        crate::diagnostics::known_problems::older_game(
+            v,
+            crate::diagnostics::known_problems::LATEST_GAME_VERSION,
+        )
+    }) {
         Some(true) => Fix::Update,
         Some(false) => Fix::Verify,
         None => Fix::Both,
@@ -644,7 +648,7 @@ pub fn missing_fix(n: usize, version: Option<&str>) -> String {
         "verify the game files in Steam (open {STEAM_VERIFY_URL}, or F1 25 > Properties > Installed Files > \
          Verify integrity of game files) or repair the game in the EA app"
     );
-    let latest = crate::known_problems::LATEST_GAME_VERSION;
+    let latest = crate::diagnostics::known_problems::LATEST_GAME_VERSION;
     match (fix_for(version), version) {
         (Fix::Update, Some(v)) => {
             format!(
@@ -685,7 +689,7 @@ mod upscaler_tests {
     fn the_protected_files_are_never_drop_ins() {
         for name in [
             crate::GAME_EXE,
-            crate::entitlement::STEAM_API,
+            crate::game_folder::entitlement::STEAM_API,
             crate::install::PROXY,
         ] {
             assert!(!is_upscaler_drop_in(name), "{name}");

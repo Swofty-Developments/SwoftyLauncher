@@ -111,7 +111,7 @@ fn a_stored_blob_keeps_its_contents_and_leaves_no_temp_file() {
     let loc = steam(&root, "1", b"data");
     let v = vault(&root, &loc);
     let src = loc.dir.join(DATA);
-    let sha = crate::baseline::sha256_file(&src).unwrap();
+    let sha = crate::game_folder::baseline::sha256_file(&src).unwrap();
     v.store_blob(&src, &sha).unwrap();
     assert_eq!(std::fs::read(v.blob(&sha)).unwrap(), std::fs::read(&src).unwrap());
     let left: Vec<_> = std::fs::read_dir(v.dir.join("blobs"))
@@ -429,7 +429,7 @@ fn migrates_save_backups_and_retires_them_at_the_first_prune() {
     let root = tmp("migrate");
     let data = root.join("data");
     let loc = steam(&root, "843502855", &[1u8; 900]);
-    let old = crate::save_backup::take(
+    let old = crate::saves::backup::take(
         &data,
         &loc.dir,
         "default",
@@ -441,7 +441,7 @@ fn migrates_save_backups_and_retires_them_at_the_first_prune() {
     .unwrap();
     std::fs::create_dir_all(data.join("state")).unwrap();
     std::fs::write(
-        data.join(crate::save_backup::NOTICE),
+        data.join(crate::saves::backup::NOTICE),
         format!(
             r#"{{"backup":"{}","profile":"default","absent":["swofty.progressive"],"before":90000,"after":20000}}"#,
             old.name
@@ -455,14 +455,17 @@ fn migrates_save_backups_and_retires_them_at_the_first_prune() {
     let v = vault(&root, &loc);
     let s = v.find("20261027-010203-migrated").unwrap();
     assert_eq!(s.reason, Reason::Migrated);
-    assert_eq!(s.at, crate::save_backup::parse_stamp("20261027-010203").unwrap());
+    assert_eq!(
+        s.at,
+        crate::saves::backup::parse_stamp("20261027-010203").unwrap()
+    );
     assert_eq!(s.profile.as_deref(), Some("default"));
     assert_eq!(s.absent_addons, ["swofty.progressive"]);
     assert_eq!(s.files[0].sha256, old.manifest.files[0].sha256);
     assert_eq!(s.files[0].name, "profile/NXDSMWW.BWW");
     let n = Notice::read(&data).unwrap();
     assert_eq!((n.kind, n.snapshot.as_str()), (NoticeKind::Shrank, s.id.as_str()));
-    assert!(!data.join(crate::save_backup::NOTICE).exists());
+    assert!(!data.join(crate::saves::backup::NOTICE).exists());
     assert!(data.join("save-backups").is_dir(), "kept until the first prune");
 
     let unchanged = v.check(&loc, Meta::new(Reason::LauncherStart), T0).unwrap();
@@ -489,7 +492,7 @@ fn migrated(name: &str) -> (PathBuf, PathBuf, Location, Vault, String) {
     let root = tmp(name);
     let data = root.join("data");
     let loc = steam(&root, "843502855", &[1u8; 900]);
-    crate::save_backup::take(&data, &loc.dir, "default", &[], "20261027-010203", "session")
+    crate::saves::backup::take(&data, &loc.dir, "default", &[], "20261027-010203", "session")
         .unwrap()
         .unwrap();
     migrate::migrate(&data).unwrap();
@@ -604,7 +607,7 @@ fn restore_waits_while_a_session_holds_the_lock() {
     let v = vault(&root, &loc);
     let good = new(v.snapshot(&loc, Meta::new(Reason::AfterSession), T0).unwrap());
     std::fs::write(loc.dir.join(DATA), [2u8; 900]).unwrap();
-    let held = crate::recovery::SessionLock::try_acquire(&root.join("data"))
+    let held = crate::game_folder::recovery::SessionLock::try_acquire(&root.join("data"))
         .unwrap()
         .unwrap();
     let err = restore(&v, &good.id, &loc, Running::default(), T0 + 60).unwrap_err();

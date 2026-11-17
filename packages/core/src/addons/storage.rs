@@ -16,8 +16,9 @@ use std::collections::BTreeSet;
 use std::path::{Path, PathBuf};
 
 use crate::build::ADDONS_DIR;
+use crate::game_folder::placed;
 use crate::install::LOADER_DIR;
-use crate::{Result, io_err, placed, with_retry};
+use crate::{Result, io_err, with_retry};
 
 pub const DIR: &str = "addon-storage";
 
@@ -570,7 +571,8 @@ fn stored(data: &Path) -> BTreeSet<String> {
 }
 
 fn session_of(data: &Path, profile: &str) -> bool {
-    crate::journal::Journal::open(data).is_ok_and(|open| open.iter().any(|j| j.profile == profile))
+    crate::game_folder::journal::Journal::open(data)
+        .is_ok_and(|open| open.iter().any(|j| j.profile == profile))
 }
 
 /// A new profile: a copy of `from`'s storage, or empty storage of its own. While `from`'s session

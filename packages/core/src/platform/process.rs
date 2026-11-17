@@ -86,7 +86,7 @@ fn host_path(windows: &str, prefix: Option<&Path>) -> Option<PathBuf> {
 /// Whether two game folders are the same: Windows paths match whatever their
 /// case and slashes, and links are followed.
 pub fn same_folder(a: &Path, b: &Path) -> bool {
-    folder_key(a) == folder_key(b) || crate::copies::same_dir(a, b)
+    folder_key(a) == folder_key(b) || crate::game_folder::copies::same_dir(a, b)
 }
 
 pub fn same_path(a: &Path, b: &Path) -> bool {

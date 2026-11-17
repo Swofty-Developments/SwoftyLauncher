@@ -1,8 +1,8 @@
 use std::collections::{BTreeMap, BTreeSet};
 
-use crate::conflicts::Pair;
-use crate::launch::LOW_DISK;
+use crate::diagnostics::launch::LOW_DISK;
 use crate::manifest::AddonManifest;
+use crate::profile::conflicts::Pair;
 
 use super::broken_addons::*;
 use super::career::*;
@@ -1941,7 +1941,7 @@ fn diagnoses_real_bundles() {
             .iter()
             .filter_map(|a| Some((a["id"].as_str()?.to_owned(), a["version"].as_str()?.to_owned())))
             .collect();
-        let conflicts: crate::conflicts::Report =
+        let conflicts: crate::profile::conflicts::Report =
             serde_json::from_value(json(&logs.join("conflicts.json"))).unwrap_or_default();
         let tracks = conflicts
             .order

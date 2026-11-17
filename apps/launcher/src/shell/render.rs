@@ -1,6 +1,6 @@
-use crate::notices::Notify;
-use crate::scale::px;
-use crate::theme::palette;
+use crate::shell::notices::Notify;
+use crate::ui::scale::px;
+use crate::ui::theme::palette;
 use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
@@ -23,7 +23,9 @@ impl Render for Shell {
             .game(matches!(state, PlayState::Running | PlayState::Elsewhere(_)))
         {
             cx.spawn(async move |this, cx| {
-                cx.background_executor().timer(crate::ads::RELEASE_AFTER).await;
+                cx.background_executor()
+                    .timer(crate::features::ads::RELEASE_AFTER)
+                    .await;
                 this.update(cx, |this, cx| {
                     if this.ads.release_for_game() {
                         cx.notify();
@@ -40,8 +42,10 @@ impl Render for Shell {
         let short = window.viewport_size().height < px(760.);
         self.short = short;
         let layout_width = f32::from(window.viewport_size().width);
-        self.content_width =
-            crate::scale::content_width(f32::from(window.viewport_size().width), crate::scale::current());
+        self.content_width = crate::ui::scale::content_width(
+            f32::from(window.viewport_size().width),
+            crate::ui::scale::current(),
+        );
         self.layout_width = layout_width;
         let side = self.profiles_sidebar(p, cx);
         if side.is_some() {
@@ -69,7 +73,7 @@ impl Render for Shell {
                 Some(dev) => v_flex()
                     .size_full()
                     .child(div().flex_1().min_h_0().child(self.tools_page(p, window, cx)))
-                    .child(div().px(px(crate::pages::GUTTER)).pb(px(16.)).child(dev))
+                    .child(div().px(px(crate::shell::pages::GUTTER)).pb(px(16.)).child(dev))
                     .into_any_element(),
                 None => self.tools_page(p, window, cx),
             },
@@ -124,7 +128,7 @@ impl Render for Shell {
                                 .flex_1()
                                 .h_full()
                                 .min_w_0()
-                                .pt(crate::scale::fixed(if has_sub {
+                                .pt(crate::ui::scale::fixed(if has_sub {
                                     super::topbar::SUB_HEIGHT - 20.
                                 } else {
                                     0.

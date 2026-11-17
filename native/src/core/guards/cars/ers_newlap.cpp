@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/services/lap_host.hpp"
 
@@ -40,13 +41,14 @@ namespace {
 namespace mem = swofty::mem;
 
 constexpr const char *MIXIN = "swofty_core.dll (ers new lap guard)";
+constexpr const char *LOOKUP = "site_Game_ErsNewLap_VehicleLookup";
+constexpr const char *NEXT = "site_Game_ErsNewLap_NextVehicle";
 constexpr size_t SELF_BEGIN = 0x30;
 constexpr size_t ENTRY_VEHICLE = 0x28;
 constexpr size_t VEHICLE_ID = 0xe8;
 constexpr int LOG_FIRST = 8;
 
 uintptr_t next_vehicle = 0;
-bool offered = false, settled = false;
 std::atomic<int> skipped{0};
 
 void lookup_entry(SwoftyContext *c)
@@ -79,43 +81,17 @@ void lookup_entry(SwoftyContext *c)
                 n == LOG_FIRST ? " (further skips are not logged)" : "");
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> ers_newlap_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_ERS_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[ers] new-lap guard off (SWOFTY_ERS_GUARD=%s)", v);
-        return out;
-    }
-    next_vehicle = swofty::api->resolve("site_Game_ErsNewLap_NextVehicle");
-    if (!next_vehicle || !swofty::api->resolve("site_Game_ErsNewLap_VehicleLookup")) {
-        next_vehicle = 0;
-        swofty::log("[ers] new-lap guard off: needs site_Game_ErsNewLap_VehicleLookup and "
-                    "site_Game_ErsNewLap_NextVehicle, which this build does not resolve");
-        return out;
-    }
-    out.push_back(
-        {MIXIN, {{"site_Game_ErsNewLap_VehicleLookup", SWOFTY_MIXIN_SITE, 100, (void *)&lookup_entry, nullptr}}});
-    return out;
-}
-
-void ers_newlap_commit()
-{
-    if (!offered || settled || !next_vehicle)
-        return;
-    settled = true;
-    swofty::log("[ers] new-lap guard %s",
-                core_mixins_active(MIXIN)
-                    ? "armed: a vehicle_newlap reaching a participant without a vehicle skips it instead of faulting"
-                    : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::ers_newlap,
+                        {
+                            .set = MIXIN,
+                            .name = "[ers] new-lap guard",
+                            .env = "SWOFTY_ERS_GUARD",
+                            .keeps = {{NEXT, &next_vehicle}},
+                            .needs = {LOOKUP, NEXT},
+                            .mixins = {{LOOKUP, SWOFTY_MIXIN_SITE, 100, (void *)&lookup_entry, nullptr}},
+                            .armed = "a vehicle_newlap reaching a participant without a vehicle skips it instead of faulting",
+                        }};
 
 }

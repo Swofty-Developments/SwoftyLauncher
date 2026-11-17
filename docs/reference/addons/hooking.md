@@ -148,7 +148,7 @@ A site binding names an address inside a function. `SWOFTY_MIXIN_SITE` runs your
 
 swofty_core adds the ADDON SETTINGS home tile this way at `site_FeHome_AfterCareerCall`, the instruction right after the game adds the Career tile. `r14` holds the `TileList *`, and `r12` and `r15` are the builder's counters, which it moves past the new tile ([Add a home tile](./in-game-ui#add-a-home-tile)):
 
-```cpp [native/src/core/frontend/swofty_core.cpp]
+```cpp [native/src/core/frontend/home_tiles.cpp]
 SWOFTY_SITE(site_FeHome_AfterCareerCall, swofty::Context &c)
 {
     auto list = reinterpret_cast<TileList *>(c.r14);   // read a register

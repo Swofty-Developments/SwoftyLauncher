@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -38,7 +39,6 @@ constexpr const char *TAIL = "site_Sess_VirtualSession_EstimateTail";
 namespace el = runtime::estimate_laptime;
 
 uintptr_t estimate_tail = 0;
-bool offered = false, settled = false;
 std::atomic<int> skipped{0};
 el::Skips skips;
 
@@ -54,40 +54,17 @@ void tyre_query(SwoftyContext *c)
                 (unsigned)(c->rbx & 0xff), skips.last(n) ? " (further skips are not logged)" : "");
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> estimate_laptime_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_ESTIMATE_LAPTIME_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[session] estimate lap time guard off (SWOFTY_ESTIMATE_LAPTIME_GUARD=%s)", v);
-        return out;
-    }
-    estimate_tail = swofty::api->resolve(TAIL);
-    if (!estimate_tail || !swofty::api->resolve(QUERY)) {
-        estimate_tail = 0;
-        swofty::log("[session] estimate lap time guard off: needs %s and %s, which this build does not resolve", QUERY, TAIL);
-        return out;
-    }
-    out.push_back({MIXIN, {{QUERY, SWOFTY_MIXIN_SITE, 100, (void *)&tyre_query, nullptr}}});
-    return out;
-}
-
-void estimate_laptime_commit()
-{
-    if (!offered || settled || !estimate_tail)
-        return;
-    settled = true;
-    swofty::log("[session] estimate lap time guard %s",
-                core_mixins_active(MIXIN) ? "armed: a lap estimate without a tyre object returns the lap time unchanged"
-                                          : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::estimate_laptime,
+                        {
+                            .set = MIXIN,
+                            .name = "[session] estimate lap time guard",
+                            .env = "SWOFTY_ESTIMATE_LAPTIME_GUARD",
+                            .keeps = {{TAIL, &estimate_tail}},
+                            .needs = {QUERY, TAIL},
+                            .mixins = {{QUERY, SWOFTY_MIXIN_SITE, 100, (void *)&tyre_query, nullptr}},
+                            .armed = "a lap estimate without a tyre object returns the lap time unchanged",
+                        }};
 
 }

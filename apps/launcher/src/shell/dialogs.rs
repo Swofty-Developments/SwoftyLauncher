@@ -1,7 +1,7 @@
-use crate::notices::Notification;
-use crate::play_checks;
-use crate::scale::px;
-use crate::theme::Palette;
+use crate::services::play_checks;
+use crate::shell::notices::Notification;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
 use gpui_kit::component::dialog::{AlertDialog, DialogFooter};
@@ -80,12 +80,12 @@ pub(super) fn show_mods_blocked(
                     Button::new("blocked-discord")
                         .outline()
                         .label(tr("Join the support Discord"))
-                        .on_click(|_, _, cx| cx.open_url(crate::discord::INVITE)),
+                        .on_click(|_, _, cx| cx.open_url(crate::ui::discord::INVITE)),
                 )
                 .child(
                     Button::new("blocked-send-logs")
                         .primary()
-                        .label(crate::send_logs::label())
+                        .label(crate::dialogs::send_logs::label())
                         .on_click(move |_, window, cx| {
                             window.close_dialog(cx);
                             shell.update(cx, |s, cx| s.send_logs(window, cx)).ok();

@@ -3,11 +3,11 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
+use crate::content::track_package::TrackPackage;
+use crate::game_db::owned::OwnedItem;
 use crate::manifest::{
     AddonManifest, AddonNeed, AddonOption, Binds, CareerSetup, HubTab, OptionType, ScreenOp,
 };
-use crate::map::TrackPackage;
-use crate::owned::OwnedItem;
 use crate::profile::Profile;
 use crate::{Error, Result};
 
@@ -50,7 +50,7 @@ impl OnAddons {
     pub fn has(&self, need: &AddonNeed) -> bool {
         self.on
             .get(&need.id)
-            .is_some_and(|v| crate::version::satisfies(&need.version, v))
+            .is_some_and(|v| crate::addons::version::satisfies(&need.version, v))
     }
 
     /// The first addon the option needs that is off, or on at a version out of its range.
@@ -322,7 +322,7 @@ impl SessionSettings {
                 author: m.author.clone(),
                 description: m.description.clone().unwrap_or_default(),
                 enabled: enabled.contains(&m.id.as_str()),
-                locked: m.is_builtin() || crate::managed::is_managed(&m.id),
+                locked: m.is_builtin() || crate::updates::managed::is_managed(&m.id),
                 track: m.category == Some(crate::manifest::Category::Tracks),
                 folder: None,
                 dlls: m
@@ -586,8 +586,8 @@ mod tests {
 
     fn installed() -> BTreeMap<String, AddonManifest> {
         let mut m = BTreeMap::from([(
-            crate::builtin::CORE_ID.to_owned(),
-            crate::builtin::core_manifest(),
+            crate::addons::builtin::CORE_ID.to_owned(),
+            crate::addons::builtin::core_manifest(),
         )]);
         m.insert("a.grid".into(), manifest());
         m
@@ -711,7 +711,7 @@ mod tests {
         let m = manifest();
         p.set_option(&m, "livery", serde_json::json!("replica")).unwrap();
         let s = SessionSettings::build(&p, &installed(), Some("Z:\\r.json".into())).unwrap();
-        assert_eq!(s.addons[0].id, crate::builtin::CORE_ID);
+        assert_eq!(s.addons[0].id, crate::addons::builtin::CORE_ID);
         assert!(s.addons[0].locked && s.addons[0].enabled);
         let grid = &s.addons[1];
         assert!(!grid.enabled && !grid.locked);

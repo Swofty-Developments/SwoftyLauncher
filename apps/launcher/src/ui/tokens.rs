@@ -1,7 +1,7 @@
 use gpui_kit::{Hsla, Pixels};
 
-use crate::scale::px;
-use crate::theme::Palette;
+use crate::ui::scale::px;
+use crate::ui::theme::Palette;
 
 /// Font sizes, unscaled. Use the matching function for a scaled [`Pixels`].
 pub mod text {
