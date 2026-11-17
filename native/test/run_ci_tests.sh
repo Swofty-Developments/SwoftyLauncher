@@ -102,7 +102,6 @@ t "Garage placement and crew poses" "bash native/test/run_garage_placement_test.
 t "Garage crew guard sites export test" native/test/run_garage_crew_sites_test.sh
 t "Grand Prix continue guard unit test" native/test/run_gp_continue_test.sh
 t "Lap toast message and state machine unit test" native/test/run_toast_test.sh
-t "Time Trial barred addons warning unit test" native/test/run_tt_barred_test.sh
 t "Player name sanitising unit test" native/test/run_player_name_test.sh
 t "UI registry walk unit test" native/test/run_ui_registry_walk_test.sh
 t "Leaderboard guard unit test" native/test/run_leaderboard_guard_test.sh

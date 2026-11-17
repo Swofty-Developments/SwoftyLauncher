@@ -280,7 +280,7 @@ PY
         fi
         check "career: swofty_core itself still initialises" 'addon swofty_core\.dll: SwoftyAddonInit returned 1 \(ok\)'
         check "addons: a plugin exporting only SwoftyModInit loads" 'addon t_v1\.dll: loaded at .*, API v1 plugin, SwoftyModInit runs after the mixin commit'
-        check "addons: every dll in both folders loads" 'addons: done, 14 addon\(s\) loaded'
+        check "addons: every dll in both folders loads" 'addons: done, 15 addon\(s\) loaded'
         check "career content: a content registered at init is queued for the commit" '\[career\] content .wine-test. from t_content\.dll registered \(tile 1 after the stock ones, 2026 model, data group f1_career_wine, suffix wt, mode driver_career_wine\): queued for the next mixin commit'
         check "career content: a duplicate data group is refused" '\[career\] content .wine-test-2. from t_content\.dll refused: another content already has data group f1_career_wine'
         check "career content: a stock data group is refused" '\[career\] content .wine-stock. from t_content\.dll refused: data_group f1_career_2026 is a stock career'
@@ -413,6 +413,10 @@ EOF
         once "leaderboard: the time trial leaderboard guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(time trial leaderboard guard\)': 1 mixin"
         once "leaderboard: the time trial leaderboard guard is armed" '\[leaderboard\] time trial leaderboard guard armed'
         count "leaderboard: each view without a board is skipped and logged" 2 '\[leaderboard\] Time Trial leaderboard view 0x[0-9a-f]+ has no board for this track'
+        once "lap host: an addon finds the table and attaches" '\[t_laphost\] lap host version 1, size ok, swofty root set, files root set, build bits [0-3], attach 1'
+        once "lap host: the core takes the module's hook set while it collects sets" '\[t_laphost\] offer: add_hooks answered 1'
+        once "lap host: the module's hook set is a core mixin set of its own" "core mixin set 't_laphost\.dll \(lap host set\)': 1 mixin"
+        once "lap host: the module hears its hook set is in place" '\[t_laphost\] settle: the hook set is active'
         once "acclim: the track acclimatisation guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(track acclimatisation guard\)': 1 mixin"
         once "acclim: the track acclimatisation guard is armed" '\[acclim\] track acclimatisation guard armed'
         once "acclim: the programme without targets is skipped and logged" '\[acclim\] Track Acclimatisation programme 0x[0-9a-f]+ has no targets at this track \(targets 0x0\); refresh skipped'

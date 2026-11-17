@@ -1512,7 +1512,10 @@ typedef SwoftyAddonInitFn SwoftyModInitFn;
    session_unlisted: the session's list no box names. track: the track base's entry at index (0 past the end;
    kind 0 stock, 1 record, 2 older). content_ids: the stat ids of a content id registry. car, motion: the
    player's car this frame. sealing, recorded: fire laps.sealing and laps.recorded for a lap file the module
-   wrote. copy: a guarded memory write. */
+   wrote. copy: a guarded memory write. notice: one line of text the core paints at the top of the overlay frame
+   (NULL or empty: none); the core asks the client notice_wanted once, at overlay setup, whether to arm the
+   overlay for it, and gives screen every UI screen that opens. name_tick: the core's player name display step, run
+   from the module's in-session tick (probe 1: its probe step). */
 typedef struct SwoftyLapClient {
     uint32_t size, version;
     void (*offer)(void);
@@ -1525,6 +1528,8 @@ typedef struct SwoftyLapClient {
     int (*recording)(void);
     int (*board_session)(void);
     int (*player_id)(void *out, uint32_t size);
+    void (*screen)(const char *name);
+    int (*notice_wanted)(void);
 } SwoftyLapClient;
 
 typedef struct SwoftyLapTrack {
@@ -1589,6 +1594,8 @@ typedef struct SwoftyLapHost {
                    void *user);
     int (*recorded)(const char *path, int32_t time_ms, int32_t valid);
     int (*copy)(void *to, const void *from, size_t n);
+    void (*notice)(const char *text);
+    void (*name_tick)(int probe);
 } SwoftyLapHost;
 
 #define SWOFTY_LAP_HOST_VERSION 1

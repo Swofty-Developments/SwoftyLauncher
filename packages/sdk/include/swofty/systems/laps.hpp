@@ -4,8 +4,8 @@
 #include <string_view>
 #include <swofty/events.hpp>
 
-// Laps: the core's lap recorder writes one .swlap file per completed Time Trial lap while the launcher has Time
-// Trial boards on. laps.sealing runs just before the file is renamed into place and lets a handler append a
+// Laps: the lap recorder (a lap module, swofty_api.h SwoftyLapHost) writes one .swlap file per completed Time Trial
+// lap while the launcher has Time Trial boards on. laps.sealing runs just before the file is renamed into place and lets a handler append a
 // section; laps.recorded fires once the file is in place.
 
 namespace swofty::laps::events {

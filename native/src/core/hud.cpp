@@ -10,7 +10,7 @@
 #include "hud_png.hpp"
 #include "perf.hpp"
 #include "room_cover.hpp"
-#include "tt_barred.hpp"
+#include "services/lap_host.hpp"
 #include "d3d12_hooks.hpp"
 
 #include <safetyhook.hpp>
@@ -1633,7 +1633,7 @@ hud::Frame &build_frame(const std::vector<hud::Paintsub> &subs, UINT width, UINT
         draw_cursor(frame);
         runtime::room_cover::paint(frame, now);
         runtime::main_menu::paint(frame, now);
-        runtime::tt_barred::paint(frame, now);
+        runtime::lap_host::notice_paint(frame, now);
     }
     flush_stats(now);
     if (frame.dropped && !dropped_told) {
@@ -1695,7 +1695,7 @@ void draw_frame(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *)
     }
     bool cover = runtime::room_cover::active();
     bool menu = runtime::main_menu::drawing();
-    bool barred = runtime::tt_barred::drawing();
+    bool barred = runtime::lap_host::notice_drawing();
     if (menu) {
         static bool told = false;
         if (!std::exchange(told, true))
@@ -2326,7 +2326,7 @@ void setup()
     bool on = gate_on();
     bool cover = runtime::room_cover::setup();
     bool menu = runtime::main_menu::wants_overlay();
-    bool barred = runtime::tt_barred::wants_overlay();
+    bool barred = runtime::lap_host::notice_wanted();
     hud::guard::ArmReasons reasons{on, cap.on, cover, menu || barred};
     if (!reasons.any()) {
         swofty::log("[overlay] the overlay feature is experimental and off; the HUD present hook is not armed");

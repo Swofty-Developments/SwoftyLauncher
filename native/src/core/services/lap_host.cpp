@@ -25,6 +25,8 @@
 namespace runtime {
 
 std::vector<era::Box> era_boxes();
+void player_name_probe_tick();
+void player_name_pin_tick();
 
 namespace lap_host {
 namespace {
@@ -78,8 +80,7 @@ int add_hooks(const char *name, const SwoftyMixin *mixins, size_t count)
     s.name = name;
     for (size_t i = 0; i < count; i++) {
         SwoftyMixin m = mixins[i];
-        if (m.target)
-            m.target = s.targets.emplace_back(m.target).c_str();
+        m.target = s.targets.emplace_back(m.target ? m.target : "").c_str();
         s.mixins.push_back(m);
     }
     return 1;
@@ -364,12 +365,34 @@ int copy(void *to, const void *from, size_t n)
     return swofty_core::hooks::guard::copy_memory(to, from, n);
 }
 
+std::mutex notice_lock;
+std::string notice_text;
+std::atomic<bool> notice_on{false};
+
+void notice(const char *text)
+{
+    std::string next = text ? text : "";
+    std::lock_guard<std::mutex> g(notice_lock);
+    if (next == notice_text)
+        return;
+    notice_text = std::move(next);
+    notice_on.store(!notice_text.empty(), std::memory_order_relaxed);
+}
+
+void name_tick(int probe)
+{
+    if (probe)
+        player_name_probe_tick();
+    else
+        player_name_pin_tick();
+}
+
 const SwoftyLapHost table = {sizeof(SwoftyLapHost), SWOFTY_LAP_HOST_VERSION, attach, add_hooks, hooks_active, host_when_code_ready, host_code_ready,
                              build, build_sha, feature, host_swofty_root, host_files_root, host_session_kind, mode_kind, session_mode,
                              session_content, content_title, player_label, view_flags, game_manager, host_flow_link_listen, time_trial_track,
                              time_trial_list, time_trial_team, time_trial_team_of, time_trial_track_stat, time_trial_setup,
                              time_trial_setup_reset, press_list, session_unlisted, track, content_ids, car, motion, car_state, player_car,
-                             sealing, recorded, copy};
+                             sealing, recorded, copy, notice, name_tick};
 
 const SwoftyLapClient *live()
 {
@@ -428,6 +451,56 @@ bool player_id(presence_id::Id &out)
         return false;
     out = id;
     return true;
+}
+
+void screen(const char *name)
+{
+    if (auto c = live(); c && c->screen && name)
+        c->screen(name);
+}
+
+bool notice_wanted()
+{
+    auto c = live();
+    return c && c->notice_wanted && c->notice_wanted();
+}
+
+bool notice_drawing()
+{
+    return notice_on.load(std::memory_order_relaxed);
+}
+
+void notice_paint(hud::Frame &f, uint64_t)
+{
+    if (!notice_on.load(std::memory_order_relaxed))
+        return;
+    std::string text;
+    {
+        std::lock_guard<std::mutex> g(notice_lock);
+        text = notice_text;
+    }
+    if (text.empty() || f.width <= 0 || f.height <= 0)
+        return;
+    hud::reset_state(f);
+    const float W = f.width, H = f.height, k = H / 1080.0f;
+    hud::TextStyle s;
+    s.px = 26 * k;
+    s.rgba = 0xff3b30ffu;
+    s.outline_rgba = 0x000000e0u;
+    s.outline_px = 2 * k;
+    float w = 0, h = 0;
+    hud::measure(s, text, &w, &h);
+    const float room = W * 0.92f;
+    if (w > room && w > 0) {
+        s.px *= room / w;
+        s.outline_px *= room / w;
+        hud::measure(s, text, &w, &h);
+    }
+    const float pad_x = 18 * k, pad_y = 10 * k, top = 16 * k;
+    const float x = (W - w) * 0.5f;
+    hud::rect_rounded(f, x - pad_x, top, w + 2 * pad_x, h + 2 * pad_y, 8 * k, 0x0b0b0fd0u);
+    hud::rect_rounded_outline(f, x - pad_x, top, w + 2 * pad_x, h + 2 * pad_y, 8 * k, 2 * k, 0xff3b30c0u);
+    hud::text(f, x, top + pad_y, s, text);
 }
 
 }
