@@ -197,35 +197,44 @@ struct Built {
 
 using Narrowed = logic::ListCut;
 
-std::mutex lock;
-std::vector<logic::Box> boxes;
-std::vector<std::string> skipped;
-std::atomic<bool> offered, settled, live, off;
-std::string off_why;
-Set set;
-Built built;
-Narrowed narrowed[16];
-size_t narrowed_count;
-std::string last_pick, last_press;
-uint32_t logged_renarrow;
-FeTile_Press_EraTile_t *press_orig;
-Game_F1WorldActivityContainer_SelectEntrantList_t *select_orig;
-uint32_t logged_builds, logged_narrow, logged_refused, logged_detached;
+struct Picker {
+    std::mutex lock;
+    std::vector<logic::Box> boxes;
+    std::vector<std::string> skipped;
+    std::atomic<bool> offered{}, settled{}, live{}, off{};
+    std::string off_why;
+    Set set{};
+    Built built;
+    Narrowed narrowed[16];
+    size_t narrowed_count = 0;
+    std::string last_pick, last_press;
+    uint32_t logged_renarrow = 0;
+    FeTile_Press_EraTile_t *press_orig = nullptr;
+    Game_F1WorldActivityContainer_SelectEntrantList_t *select_orig = nullptr;
+    uint32_t logged_builds = 0, logged_narrow = 0, logged_refused = 0, logged_detached = 0;
+};
+
+constinit Picker picker;
 constexpr size_t BOX_TIME_TRIAL = offsetof(SwoftyEraBox, time_trial_entrant_list);
 constexpr size_t BOX_ONLY = offsetof(SwoftyEraBox, only);
 static_assert(BOX_TIME_TRIAL == 0x28 && BOX_ONLY == 0x30);
-logic::DrsSwaps drs;
-constinit runtime::LogChanged drs_log{"[drs] %s"};
-logic::WarmerSwaps warmers;
-constinit runtime::LogChanged warmers_log{"[tyres] %s"};
-logic::PointsSwaps points;
-constinit runtime::LogChanged points_log{"[points] %s"};
-logic::TyreChangeSwaps tyre_change;
-constinit runtime::LogChanged tyre_change_log{"[tyres] %s"};
-logic::TimeLimitSwaps time_limits;
-logic::WeekendSwaps weekends;
-constinit runtime::LogChanged weekend_log{"[weekend] %s"};
-constinit runtime::LogChanged box_options_log{"[box-rules] %s"};
+struct BoxRules {
+    logic::DrsSwaps drs;
+    runtime::LogChanged drs_log{"[drs] %s"};
+    logic::WarmerSwaps warmers;
+    runtime::LogChanged warmers_log{"[tyres] %s"};
+    logic::PointsSwaps points;
+    runtime::LogChanged points_log{"[points] %s"};
+    logic::TyreChangeSwaps tyre_change;
+    runtime::LogChanged tyre_change_log{"[tyres] %s"};
+    logic::TimeLimitSwaps time_limits;
+    logic::WeekendSwaps weekends;
+    runtime::LogChanged weekend_log{"[weekend] %s"};
+    runtime::LogChanged box_options_log{"[box-rules] %s"};
+    runtime::LogChanged grid_log{"[grid] %s"};
+};
+
+BoxRules box_rules;
 
 template <class T> T at(const void *base, size_t off)
 {
@@ -302,7 +311,7 @@ void apply_drs(void *mode, const char *list)
 {
     auto box = swofty_core::apply::content::drs_for_box(list);
     if (box.label.empty()) {
-        drs.put_back();
+        box_rules.drs.put_back();
         std::string own;
         for_each_host_mode(mode, [&](uint8_t *m) {
             auto *holder = at<uint8_t *>(m, logic::MODE_DRS_GROUP);
@@ -310,16 +319,16 @@ void apply_drs(void *mode, const char *list)
             if (own.empty() && text && mem::readable(text, 1))
                 own = std::string(text, strnlen(text, logic::DRS_LABEL_MAX));
         });
-        drs_log.say(box.line + (own.empty() ? std::string() : " (" + own + ")"));
+        box_rules.drs_log.say(box.line + (own.empty() ? std::string() : " (" + own + ")"));
         return;
     }
-    logic::DrsHolder *holder = drs.holder(box.label);
+    logic::DrsHolder *holder = box_rules.drs.holder(box.label);
     size_t modes = 0;
     for_each_host_mode(mode, [&](uint8_t *m) {
-        drs.swap(m, holder);
+        box_rules.drs.swap(m, holder);
         modes++;
     });
-    drs_log.say(holder && modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
+    box_rules.drs_log.say(holder && modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
 }
 
 // Tyre warmers per box: the pressed box's rules.tyre_warmers goes into every swofty_f1 mode's has_tyre_warmers byte;
@@ -328,16 +337,16 @@ void apply_warmers(void *mode, const char *list)
 {
     auto box = swofty_core::apply::content::tyre_warmers_for_box(list);
     if (!box.warmers) {
-        warmers.put_back();
-        warmers_log.say(box.line);
+        box_rules.warmers.put_back();
+        box_rules.warmers_log.say(box.line);
         return;
     }
     size_t modes = 0;
     for_each_host_mode(mode, [&](uint8_t *m) {
-        warmers.swap(m, *box.warmers);
+        box_rules.warmers.swap(m, *box.warmers);
         modes++;
     });
-    warmers_log.say(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
+    box_rules.warmers_log.say(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
 }
 
 // Fuel rules per box: the pressed box's refuelling, race and qualifying fuel and parc ferme rule go to the per-frame fuel
@@ -401,12 +410,12 @@ void apply_weekend(void *mode, const char *list)
     auto box = swofty_core::apply::content::weekend_for_box(list);
     std::string line = box.line;
     if (!box.time_limit_s) {
-        time_limits.put_back();
+        box_rules.time_limits.put_back();
     } else {
         size_t modes = 0;
         uint32_t now = 0;
         for_each_host_mode(mode, [&](uint8_t *m) {
-            time_limits.swap(m, *box.time_limit_s);
+            box_rules.time_limits.swap(m, *box.time_limit_s);
             if (!modes)
                 now = at<uint32_t>(m, logic::MODE_RACE_TIME_LIMIT);
             modes++;
@@ -418,7 +427,7 @@ void apply_weekend(void *mode, const char *list)
                     " mode(s) (race_time_limit_in_seconds now " + std::to_string(now) + " s)";
     }
     if (box.weekend_mode.empty()) {
-        weekends.put_back();
+        box_rules.weekends.put_back();
     } else {
         uint8_t *host = nullptr;
         size_t hosts = 0;
@@ -430,9 +439,9 @@ void apply_weekend(void *mode, const char *list)
         std::string where;
         uint8_t *helper = find_helper_mode(mode, box.weekend_mode, where);
         if (!helper) {
-            weekends.put_back();
+            box_rules.weekends.put_back();
             line += "; weekend not applied (no setup mode " + box.weekend_mode + " in " + where + ")";
-        } else if (!weekends.swap(host, helper)) {
+        } else if (!box_rules.weekends.swap(host, helper)) {
             line += "; weekend not applied (no " + std::string(logic::HOST) + " mode found)";
         } else {
             line += "; weekend applied (" + box.weekend_mode + " from " + where + ")";
@@ -440,7 +449,7 @@ void apply_weekend(void *mode, const char *list)
                 line += "; weekend on the first of " + std::to_string(hosts) + " " + std::string(logic::HOST) + " modes";
         }
     }
-    weekend_log.say(line);
+    box_rules.weekend_log.say(line);
 }
 
 // Game options per box: each of the pressed box's option rules goes into its options store option; a rule the box
@@ -458,7 +467,7 @@ void apply_box_options(const char *list)
     }
     if (!put.empty())
         line += "; the player's " + put + " setting put back";
-    box_options_log.say(line);
+    box_rules.box_options_log.say(line);
 }
 
 void put_back_box_options()
@@ -469,17 +478,15 @@ void put_back_box_options()
         if (runtime::box_option_put_back(i))
             put += (put.empty() ? "" : ", ") + std::string(content::BOX_OPTION_RULES[i].rule);
     if (!put.empty())
-        box_options_log.say("the player's " + put + " setting put back");
+        box_rules.box_options_log.say("the player's " + put + " setting put back");
 }
-
-constinit runtime::LogChanged grid_log{"[grid] %s"};
 
 // Grid rules per box: the pressed box's rules.grid goes to box_grid.cpp; a box without the rule clears it.
 void apply_grid(const char *list)
 {
     auto box = swofty_core::apply::content::grid_for_box(list);
     runtime::box_grid_set(box.rule, list);
-    grid_log.say(box.line);
+    box_rules.grid_log.say(box.line);
 }
 
 // Qualifying tyres per box: the pressed box's rules.qualifying_tyres mask goes to the qualifying tyre hooks
@@ -496,8 +503,8 @@ void apply_points(void *mode, const char *list)
 {
     auto box = swofty_core::apply::content::points_for_box(list);
     if (!box.found) {
-        points.put_back();
-        points_log.say(box.line);
+        box_rules.points.put_back();
+        box_rules.points_log.say(box.line);
         return;
     }
     logic::Readable ok = [](const void *p, size_t n) { return mem::readable(p, n); };
@@ -509,18 +516,18 @@ void apply_points(void *mode, const char *list)
     logic::PointsWant want{box.full, box.reduced, box.bonus, box.rule};
     const uint8_t *preset = logic::find_points_preset(ok, begin, end, want);
     if (!preset) {
-        points.put_back();
-        points_log.say(box.line + "; not applied (preset " + box.label + " not among the game's parsed presets)");
+        box_rules.points.put_back();
+        box_rules.points_log.say(box.line + "; not applied (preset " + box.label + " not among the game's parsed presets)");
         return;
     }
     size_t sessions = 0;
     for_each_host_mode(mode, [&](uint8_t *m) {
         for (uint64_t *s : logic::race_sessions(ok, m)) {
-            points.swap(s, reinterpret_cast<uint64_t>(preset));
+            box_rules.points.swap(s, reinterpret_cast<uint64_t>(preset));
             sessions++;
         }
     });
-    points_log.say(sessions ? box.line + " on " + std::to_string(sessions) + " race session(s)"
+    box_rules.points_log.say(sessions ? box.line + " on " + std::to_string(sessions) + " race session(s)"
                         : box.line + "; not applied (no race session in a " + std::string(logic::HOST) + " mode)");
 }
 
@@ -530,34 +537,34 @@ void apply_tyre_change(void *mode, const char *list)
 {
     auto box = swofty_core::apply::content::tyre_change_for_box(list);
     if (!box.required) {
-        tyre_change.put_back();
-        tyre_change_log.say(box.line);
+        box_rules.tyre_change.put_back();
+        box_rules.tyre_change_log.say(box.line);
         return;
     }
     size_t modes = 0;
     for_each_host_mode(mode, [&](uint8_t *m) {
-        tyre_change.swap(m, *box.required);
+        box_rules.tyre_change.swap(m, *box.required);
         modes++;
     });
-    tyre_change_log.say(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
+    box_rules.tyre_change_log.say(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
 }
 
 void put_back_drs()
 {
     runtime::box_grid_set(std::nullopt, std::string());
     runtime::quali_tyres_box(0, std::string());
-    if (size_t n = drs.put_back())
-        drs_log.say(std::string(logic::HOST) + "'s DRS group put back on " + std::to_string(n) + " mode(s)");
-    if (size_t n = warmers.put_back())
-        warmers_log.say(std::string(logic::HOST) + "'s tyre warmer setting put back on " + std::to_string(n) + " mode(s)");
-    if (size_t n = tyre_change.put_back())
-        tyre_change_log.say(std::string(logic::HOST) + "'s tyre regulations put back on " + std::to_string(n) + " mode(s)");
-    if (size_t n = time_limits.put_back())
-        weekend_log.say(std::string(logic::HOST) + "'s race time limit put back on " + std::to_string(n) + " mode(s)");
-    if (weekends.put_back())
-        weekend_log.say(std::string(logic::HOST) + "'s own weekend put back");
-    if (size_t n = points.put_back())
-        points_log.say(std::string(logic::HOST) + "'s points put back on " + std::to_string(n) + " race session(s)");
+    if (size_t n = box_rules.drs.put_back())
+        box_rules.drs_log.say(std::string(logic::HOST) + "'s DRS group put back on " + std::to_string(n) + " mode(s)");
+    if (size_t n = box_rules.warmers.put_back())
+        box_rules.warmers_log.say(std::string(logic::HOST) + "'s tyre warmer setting put back on " + std::to_string(n) + " mode(s)");
+    if (size_t n = box_rules.tyre_change.put_back())
+        box_rules.tyre_change_log.say(std::string(logic::HOST) + "'s tyre regulations put back on " + std::to_string(n) + " mode(s)");
+    if (size_t n = box_rules.time_limits.put_back())
+        box_rules.weekend_log.say(std::string(logic::HOST) + "'s race time limit put back on " + std::to_string(n) + " mode(s)");
+    if (box_rules.weekends.put_back())
+        box_rules.weekend_log.say(std::string(logic::HOST) + "'s own weekend put back");
+    if (size_t n = box_rules.points.put_back())
+        box_rules.points_log.say(std::string(logic::HOST) + "'s points put back on " + std::to_string(n) + " race session(s)");
     put_back_box_options();
 }
 
@@ -594,22 +601,26 @@ constexpr const char *PARSE_LIST_MIXIN = "swofty_core.dll (virtual entrant lists
 constexpr size_t LIST_VECTOR = 0x08, LIST_VECTOR_SIZE = 0x20;
 constexpr size_t KEY_ROW = 0x100, KEY_COUNT = 0x200, KEY_SIZE = 0x210;
 using ParseList_t = void(int *ordinal, const void *row_key, void *list, void *driver_registry);
-ParseList_t *parse_list_orig;
-std::atomic<void *> boot_registry;
-std::atomic<bool> parse_list_bound;
-std::map<std::string, std::array<uint8_t, LIST_VECTOR_SIZE>> parsed_lists;
+struct VirtualLists {
+    ParseList_t *parse_list_orig = nullptr;
+    std::atomic<void *> boot_registry{};
+    std::atomic<bool> parse_list_bound{};
+    std::map<std::string, std::array<uint8_t, LIST_VECTOR_SIZE>> parsed_lists;
+    uint32_t logged_virtual = 0;
+};
+
+VirtualLists virtual_lists;
 struct Filled {
     void *host = nullptr;
     std::array<uint8_t, LIST_VECTOR_SIZE> own{};
     std::string row, label;
 } filled;
-uint32_t logged_virtual;
 
 void parse_list_entry(int *ordinal, const void *row_key, void *list, void *registry)
 {
     if (registry)
-        boot_registry = registry;
-    parse_list_orig(ordinal, row_key, list, registry);
+        virtual_lists.boot_registry = registry;
+    virtual_lists.parse_list_orig(ordinal, row_key, list, registry);
 }
 
 // The row of entrants.entrant_lists labelled `label` that the game did not load: the build's virtual-list step puts
@@ -642,10 +653,10 @@ void unfill_virtual()
 // Parses `row` (once) and swaps its entrants into `host`; false leaves the host as it was.
 bool fill_virtual(void *host, const std::string &row)
 {
-    if (!host || !parse_list_orig)
+    if (!host || !virtual_lists.parse_list_orig)
         return false;
-    auto it = parsed_lists.find(row);
-    if (it == parsed_lists.end()) {
+    auto it = virtual_lists.parsed_lists.find(row);
+    if (it == virtual_lists.parsed_lists.end()) {
         uintptr_t slot = swofty::api->resolve("g_Ne_DefaultAllocator"), heap = 0;
         if (!slot || !mem::read(slot, heap) || !heap)
             return false;
@@ -663,8 +674,8 @@ bool fill_virtual(void *host, const std::string &row)
         memcpy(key + KEY_COUNT, &uncounted, sizeof uncounted);
         key[KEY_COUNT + 4] = 1;
         int ordinal = 1;
-        void *registry = boot_registry.load();
-        parse_list_orig(&ordinal, key, list, registry ? registry : no_registry);
+        void *registry = virtual_lists.boot_registry.load();
+        virtual_lists.parse_list_orig(&ordinal, key, list, registry ? registry : no_registry);
         uintptr_t begin = 0, end = 0;
         memcpy(&begin, list + LIST_VECTOR + 8, 8);
         memcpy(&end, list + LIST_VECTOR + 16, 8);
@@ -672,7 +683,7 @@ bool fill_virtual(void *host, const std::string &row)
             return false;
         std::array<uint8_t, LIST_VECTOR_SIZE> v{};
         memcpy(v.data(), list + LIST_VECTOR, LIST_VECTOR_SIZE);
-        it = parsed_lists.emplace(row, v).first;
+        it = virtual_lists.parsed_lists.emplace(row, v).first;
     }
     unfill_virtual();
     filled.host = host;
@@ -687,7 +698,7 @@ std::string pressed_list(const char *label)
 {
     if (!label)
         return {};
-    if (!parse_list_bound || virtual_row(label).empty())
+    if (!virtual_lists.parse_list_bound || virtual_row(label).empty())
         return label;
     return VIRTUAL_HOST;
 }
@@ -695,7 +706,7 @@ std::string pressed_list(const char *label)
 void restore_lists()
 {
     unfill_virtual();
-    logic::put_back_cuts(narrowed, narrowed_count, false, put_back_failed);
+    logic::put_back_cuts(picker.narrowed, picker.narrowed_count, false, put_back_failed);
 }
 
 void restore()
@@ -709,11 +720,11 @@ logic::GridLimit continue_grid;
 void narrow(void *mode, const char *list)
 {
     restore_lists();
-    std::string row = parse_list_bound ? virtual_row(list) : std::string();
+    std::string row = virtual_lists.parse_list_bound ? virtual_row(list) : std::string();
     const char *want = row.empty() ? list : VIRTUAL_HOST;
     for_each_host_setup(mode, [&](uint8_t *setup) {
         int64_t count = at<int64_t>(setup, LIST_COUNT);
-        if (count <= 1 || count > int64_t(LIST_SLOTS) || narrowed_count == std::size(narrowed))
+        if (count <= 1 || count > int64_t(LIST_SLOTS) || picker.narrowed_count == std::size(picker.narrowed))
             return;
         auto **lists = reinterpret_cast<void **>(setup + LISTS);
         void *hit = nullptr;
@@ -726,14 +737,14 @@ void narrow(void *mode, const char *list)
             return;
         if (!row.empty() && filled.host != hit) {
             bool ok = fill_virtual(hit, row);
-            if (logged_virtual++ < LOG_FIRST)
+            if (virtual_lists.logged_virtual++ < LOG_FIRST)
                 swofty::log("[era] %s pressed: virtual list %s %s %s", list, row.c_str(),
                             ok ? "read into" : "could not be read into", VIRTUAL_HOST);
             if (!ok)
                 return;
             filled.label = list;
         }
-        Narrowed &n = narrowed[narrowed_count++];
+        Narrowed &n = picker.narrowed[picker.narrowed_count++];
         n.setup = setup;
         n.count = count;
         n.kept = 1;
@@ -746,7 +757,7 @@ void narrow(void *mode, const char *list)
         memcpy(n.lists, lists, size_t(count) * sizeof(void *));
         lists[0] = hit;
         ref<int64_t>(setup, LIST_COUNT) = 1;
-        if (logged_narrow++ < LOG_FIRST)
+        if (picker.logged_narrow++ < LOG_FIRST)
             swofty::log("[era] %s offers only %s (of %lld lists)", logic::HOST, list, (long long)count);
     });
     apply_drs(mode, list);
@@ -820,16 +831,20 @@ std::vector<logic::ListCars> lists_of(const uint8_t *entrant_setup, std::vector<
     return out;
 }
 
-std::mutex held_lock;
-logic::TtHold held;
-bool holding;
+struct Hold {
+    std::mutex lock;
+    logic::TtHold held;
+    bool holding = false;
+};
+
+constinit Hold hold;
 
 // Ends the Time Trial hold, putting the Time Trial cuts back before the swap (logic::end_hold); `cuts` puts them back
 // even without a swap held.
 logic::CutsPutBack put_back(bool cuts = false)
 {
     continue_grid.restore();
-    return logic::end_hold(narrowed, narrowed_count, held, holding, cuts, put_back_failed);
+    return logic::end_hold(picker.narrowed, picker.narrowed_count, hold.held, hold.holding, cuts, put_back_failed);
 }
 
 constexpr const char *VEHICLE_MIXIN = "swofty_core.dll (session vehicle guard)";
@@ -838,9 +853,13 @@ constexpr size_t MODULE_VEHICLES_BEGIN = 0x28;
 constexpr size_t MODULE_VEHICLES_END = 0x30;
 constexpr size_t MODULE_MODE_CONTEXT = 0x80;
 using SetupVehicles_t = void(void *module);
-SetupVehicles_t *vehicles_orig;
-std::atomic<bool> vehicles_offered, vehicles_settled, vehicles_bound;
-uint32_t logged_vehicles;
+struct VehicleGuard {
+    SetupVehicles_t *orig = nullptr;
+    std::atomic<bool> offered{}, settled{}, bound{};
+    uint32_t logged = 0;
+};
+
+constinit VehicleGuard vehicle_guard;
 
 std::string session_list(uintptr_t ctx)
 {
@@ -857,8 +876,14 @@ std::string session_list(uintptr_t ctx)
            " cars) of setup mode " + mode;
 }
 
-uint32_t trace_lines;
-std::atomic<int64_t> tt_budget{-1};
+struct TimeTrialGuard {
+    uint32_t trace_lines = 0;
+    std::atomic<int64_t> budget{-1};
+    std::vector<std::string> kept_out;
+    uint32_t logged_kept = 0;
+};
+
+constinit TimeTrialGuard time_trial_guard;
 
 int64_t descriptor_participants(uintptr_t holder, size_t off)
 {
@@ -871,7 +896,7 @@ int64_t descriptor_participants(uintptr_t holder, size_t off)
 
 void session_trace(const std::string &where, int64_t vehicles)
 {
-    if (trace_lines >= logic::TRACE_LINES)
+    if (time_trial_guard.trace_lines >= logic::TRACE_LINES)
         return;
     uintptr_t slot = swofty::api ? swofty::api->resolve("g_Game_Manager") : 0, gm = 0, ctx = 0, holder = 0, setup = 0;
     if (!slot || !mem::read(slot, gm) || !gm)
@@ -904,7 +929,7 @@ void session_trace(const std::string &where, int64_t vehicles)
                 mem::c_string(gsm_name, t.setup_mode, 64);
         }
     }
-    t.budget = tt_budget.load();
+    t.budget = time_trial_guard.budget.load();
     static int64_t last_participants = -1;
     t.previous = last_participants;
     t.gm_session = descriptor_participants(gm, logic::GM_SESSION);
@@ -912,7 +937,7 @@ void session_trace(const std::string &where, int64_t vehicles)
         t.module_session = descriptor_participants(module, logic::MODULE_SESSION);
         t.module_next = descriptor_participants(module, logic::MODULE_SESSION_NEXT);
     }
-    trace_lines++;
+    time_trial_guard.trace_lines++;
     swofty::log("[era] %s", logic::session_trace_line(t).c_str());
     last_participants = t.gm_session;
     std::string mismatch = logic::budget_mismatch(t);
@@ -928,20 +953,17 @@ void vehicles_entry(void *module)
     runtime::replay_grid::session_vehicles.store(int64_t(logic::session_vehicles(begin, end)));
     uintptr_t within = logic::vehicles_end_within_table(begin, end);
     if (within == end)
-        return vehicles_orig(module);
-    if (logged_vehicles++ < LOG_FIRST)
+        return vehicle_guard.orig(module);
+    if (vehicle_guard.logged++ < LOG_FIRST)
         swofty::log("[era] the session holds %zu vehicles and its vehicle table %zu; setting up the first %zu (the "
                     "session's %s)",
                     logic::session_vehicles(begin, end), logic::TT_TABLE, logic::TT_TABLE,
                     session_list(at<uintptr_t>(m, MODULE_MODE_CONTEXT)).c_str());
     ref<uintptr_t>(m, MODULE_VEHICLES_END) = within;
-    vehicles_orig(module);
+    vehicle_guard.orig(module);
     if (at<uintptr_t>(m, MODULE_VEHICLES_END) == within)
         ref<uintptr_t>(m, MODULE_VEHICLES_END) = end;
 }
-
-std::vector<std::string> kept_out;
-uint32_t logged_kept;
 
 bool keep_time_trial_lists(void *mode)
 {
@@ -950,9 +972,9 @@ bool keep_time_trial_lists(void *mode)
         std::vector<void *> ptrs;
         auto info = lists_of(setup, ptrs);
         auto keep = logic::time_trial_keep(info);
-        if (!logic::time_trial_narrows(info, keep) || narrowed_count == std::size(narrowed))
+        if (!logic::time_trial_narrows(info, keep) || picker.narrowed_count == std::size(picker.narrowed))
             return;
-        Narrowed &n = narrowed[narrowed_count++];
+        Narrowed &n = picker.narrowed[picker.narrowed_count++];
         n.setup = setup;
         n.count = int64_t(info.size());
         n.kept = int64_t(keep.size());
@@ -966,10 +988,10 @@ bool keep_time_trial_lists(void *mode)
         any = true;
         for (size_t i = 0; i < info.size(); ++i) {
             if (!logic::oversized(info[i].cars) ||
-                std::find(kept_out.begin(), kept_out.end(), info[i].name) != kept_out.end())
+                std::find(time_trial_guard.kept_out.begin(), time_trial_guard.kept_out.end(), info[i].name) != time_trial_guard.kept_out.end())
                 continue;
-            kept_out.push_back(info[i].name);
-            if (logged_kept++ < LOG_FIRST * 4)
+            time_trial_guard.kept_out.push_back(info[i].name);
+            if (time_trial_guard.logged_kept++ < LOG_FIRST * 4)
                 swofty::log("[era] %s keeps %s out of Time Trial while a stock box is picked: it holds %lld cars; Time "
                             "Trial holds at most %zu (the game adds %zu cars of its own to a table of %zu)%s",
                             logic::HOST, info[i].name.c_str(), (long long)info[i].cars, logic::TT_MAX_CARS,
@@ -1016,8 +1038,8 @@ std::vector<uint32_t> vehicle_refs(const void *list)
 
 bool box_list(const std::string &name)
 {
-    std::lock_guard<std::mutex> g(lock);
-    for (const auto &box : boxes)
+    std::lock_guard<std::mutex> g(picker.lock);
+    for (const auto &box : picker.boxes)
         if (box.entrant_list == name || box.time_trial == name)
             return true;
     return false;
@@ -1137,29 +1159,29 @@ void time_trial_budget(void *mode, uintptr_t setup)
     size_t unrecorded = 0;
     for (size_t d : budget.dropped)
         for (const auto &slot : found[d].slots)
-            if (!logic::cut_list(narrowed, narrowed_count, std::size(narrowed), slot.setup, found[d].list))
+            if (!logic::cut_list(picker.narrowed, picker.narrowed_count, std::size(picker.narrowed), slot.setup, found[d].list))
                 unrecorded++;
     if (unrecorded)
         swofty::log("[era] Time Trial cut skipped in %zu entrant setup mode(s): the core's restore stack of %zu is full, "
                     "so those lists stay offered",
-                    unrecorded, std::size(narrowed));
-    tt_budget = int64_t(budget.cars + logic::TT_OWN_ENTRIES);
+                    unrecorded, std::size(picker.narrowed));
+    time_trial_guard.budget = int64_t(budget.cars + logic::TT_OWN_ENTRIES);
     if (logged++ < LOG_FIRST * 3)
         swofty::log("[era] %s", logic::time_trial_budget_line(lists, budget, board).c_str());
 }
 
 bool skip_once(const std::string &key)
 {
-    std::lock_guard<std::mutex> g(lock);
-    if (std::find(skipped.begin(), skipped.end(), key) != skipped.end())
+    std::lock_guard<std::mutex> g(picker.lock);
+    if (std::find(picker.skipped.begin(), picker.skipped.end(), key) != picker.skipped.end())
         return false;
-    skipped.push_back(key);
+    picker.skipped.push_back(key);
     return true;
 }
 
 bool is_ours(const char *list)
 {
-    return list && std::find(built.lists.begin(), built.lists.end(), list) != built.lists.end();
+    return list && std::find(picker.built.lists.begin(), picker.built.lists.end(), list) != picker.built.lists.end();
 }
 
 bool renarrow(void *mode)
@@ -1168,11 +1190,11 @@ bool renarrow(void *mode)
     if (!modes)
         return false;
     const char *selected = name_of(at<void *>(modes, SELECTED_LIST), LIST_NAME);
-    std::string list = is_ours(selected) ? selected : selected ? std::string() : last_pick;
+    std::string list = is_ours(selected) ? selected : selected ? std::string() : picker.last_pick;
     if (list.empty() || !is_ours(list.c_str()))
         return false;
     narrow(mode, list.c_str());
-    if (logged_renarrow++ < LOG_FIRST)
+    if (picker.logged_renarrow++ < LOG_FIRST)
         swofty::log("[era] picker built with %s still selected (%s): %s narrowed to it again", list.c_str(),
                     selected ? "the setup's selected list" : "the last addon box pressed", logic::HOST);
     return true;
@@ -1205,21 +1227,21 @@ uint8_t *addon_selection(uint8_t *vm)
 
 bool reset_set(uint8_t *vm, uint8_t *list)
 {
-    if ((set.list.node || set.selected.node) && (set.list.node != list || built.vm != vm) && logged_detached++ < LOG_FIRST)
+    if ((picker.set.list.node || picker.set.selected.node) && (picker.set.list.node != list || picker.built.vm != vm) && picker.logged_detached++ < LOG_FIRST)
         swofty::log("[era] detached the addon row from a previous view model (its boxes there cleared, its two nodes "
                     "unlinked and released)");
-    logic::relink(set, list, [](Set &s) { reinterpret_cast<FeTile_Clear_EraTileSet_Thunk_t *>(b.clear)(&s); });
+    logic::relink(picker.set, list, [](Set &s) { reinterpret_cast<FeTile_Clear_EraTileSet_Thunk_t *>(b.clear)(&s); });
     uint8_t *selected = addon_selection(vm);
     if (!selected)
         return false;
-    logic::link(set.selected, selected);
+    logic::link(picker.set.selected, selected);
     return true;
 }
 
 void site_entry(SwoftyContext *c)
 {
     auto *vm = reinterpret_cast<uint8_t *>(c->rsi);
-    if (!vm || !live || off)
+    if (!vm || !picker.live || picker.off)
         return;
     restore_lists();
     void *mode = at<void *>(vm, VM_MODE);
@@ -1230,23 +1252,23 @@ void site_entry(SwoftyContext *c)
     uint8_t *list = addon_list(vm);
     if (!list || !reset_set(vm, list)) {
         put_back_drs();
-        built = {};
+        picker.built = {};
         swofty::log("[era] the view model's addon_tiles or selected_addon_tile node could not be made; no addon row");
         return;
     }
     std::vector<logic::Box> order;
     {
-        std::lock_guard<std::mutex> g(lock);
-        order = logic::ordered(boxes);
+        std::lock_guard<std::mutex> g(picker.lock);
+        order = logic::ordered(picker.boxes);
     }
     auto available = reinterpret_cast<FeTile_Is_EraScenarioAvailable_Thunk_t *>(b.available);
     auto add = reinterpret_cast<FeTile_Add_EraTile_t *>(b.add);
     uint8_t *tiles_node = at<uint8_t *>(vm, VM_TILES_NODE);
     bool tt = time_trial(mode);
-    built = {vm, stock, 0, {}};
+    picker.built = {vm, stock, 0, {}};
     ref<uint8_t *>(vm, VM_TILES_NODE) = list;
     for (const auto &box : order) {
-        if (built.boxes >= logic::MAX_BOXES)
+        if (picker.built.boxes >= logic::MAX_BOXES)
             break;
         if (!logic::shown(box, tt))
             continue;
@@ -1279,12 +1301,12 @@ void site_entry(SwoftyContext *c)
                             box.entrant_list.c_str(), box.owner.c_str(), list.c_str());
         }
         char node[0x20];
-        snprintf(node, sizeof node, "select_tile_%zu", built.boxes);
+        snprintf(node, sizeof node, "select_tile_%zu", picker.built.boxes);
         std::string image = logic::image_of(box);
-        add(vm + VM_TILES, alloc, uint8_t(built.boxes), node, box.entrant_list.c_str(), 1, box.title.c_str(),
+        add(vm + VM_TILES, alloc, uint8_t(picker.built.boxes), node, box.entrant_list.c_str(), 1, box.title.c_str(),
             list.c_str(), image.c_str(), 0);
-        built.lists.push_back(list);
-        built.boxes++;
+        picker.built.lists.push_back(list);
+        picker.built.boxes++;
     }
     ref<uint8_t *>(vm, VM_TILES_NODE) = tiles_node;
     if (!renarrow(mode)) {
@@ -1293,37 +1315,37 @@ void site_entry(SwoftyContext *c)
             keep_time_trial_lists(mode);
     }
     if (auto *root = at<uint8_t *>(vm, VM_ROOT)) {
-        uint8_t visible = built.boxes > 0;
+        uint8_t visible = picker.built.boxes > 0;
         reinterpret_cast<Vm_Set_Bool_t *>(b.set_bool)(registry(), root + 8, logic::ADDON_TILES_VISIBLE, &visible, 1);
     }
-    if (logged_builds++ < LOG_FIRST)
+    if (picker.logged_builds++ < LOG_FIRST)
         swofty::log("[era] era select%s: %zu stock box(es), %zu addon box(es) of %zu registered",
-                    tt ? " (Time Trial)" : "", stock, built.boxes, order.size());
+                    tt ? " (Time Trial)" : "", stock, picker.built.boxes, order.size());
 }
 
 char *press_entry(void *vm, void *command)
 {
     auto *cmd = command ? *static_cast<const uint32_t **>(command) : nullptr;
     if (!cmd || !mem::readable(cmd, 4) || *cmd != logic::ADDON_PRESS)
-        return press_orig(vm, command);
+        return picker.press_orig(vm, command);
     auto *v = static_cast<uint8_t *>(vm);
     auto *begin = at<uint8_t *>(v, VM_TILE_BEGIN);
     auto *end = at<uint8_t *>(v, VM_TILE_END);
     size_t count = end > begin ? size_t(end - begin) / TILE_ENTRY : 0;
-    std::string why = logic::press_refusal(v == built.vm, set.list.node && set.selected.node, count, built.stock,
-                                           built.boxes);
+    std::string why = logic::press_refusal(v == picker.built.vm, picker.set.list.node && picker.set.selected.node, count, picker.built.stock,
+                                           picker.built.boxes);
     if (!why.empty()) {
-        if (logged_refused++ < LOG_FIRST)
+        if (picker.logged_refused++ < LOG_FIRST)
             swofty::log("[era] addon box press refused: %s", why.c_str());
         return nullptr;
     }
     uint8_t *tiles_node = at<uint8_t *>(v, VM_TILES_NODE), *selected_node = at<uint8_t *>(v, VM_SELECTED_NODE);
-    ref<uint8_t *>(v, VM_TILES_NODE) = set.list.node;
-    ref<uint8_t *>(v, VM_SELECTED_NODE) = set.selected.node;
-    ref<uint8_t *>(v, VM_TILE_BEGIN) = begin + built.stock * TILE_ENTRY;
+    ref<uint8_t *>(v, VM_TILES_NODE) = picker.set.list.node;
+    ref<uint8_t *>(v, VM_SELECTED_NODE) = picker.set.selected.node;
+    ref<uint8_t *>(v, VM_TILE_BEGIN) = begin + picker.built.stock * TILE_ENTRY;
     uint32_t select = logic::SELECT_PRESS;
     const void *fake[4] = {&select, nullptr, nullptr, nullptr};
-    char *r = press_orig(vm, fake);
+    char *r = picker.press_orig(vm, fake);
     ref<uint8_t *>(v, VM_TILES_NODE) = tiles_node;
     ref<uint8_t *>(v, VM_SELECTED_NODE) = selected_node;
     ref<uint8_t *>(v, VM_TILE_BEGIN) = begin;
@@ -1333,11 +1355,11 @@ char *press_entry(void *vm, void *command)
 void select_entry(void *container, const char *entrant_list)
 {
     {
-        std::lock_guard<std::mutex> g(held_lock);
+        std::lock_guard<std::mutex> g(hold.lock);
         put_back();
     }
     void *mode = container ? at<void *>(container, CONTAINER_MODE) : nullptr;
-    bool ours = entrant_list && std::find(built.lists.begin(), built.lists.end(), entrant_list) != built.lists.end();
+    bool ours = entrant_list && std::find(picker.built.lists.begin(), picker.built.lists.end(), entrant_list) != picker.built.lists.end();
     if (mode && ours)
         narrow(mode, entrant_list);
     else {
@@ -1346,15 +1368,15 @@ void select_entry(void *container, const char *entrant_list)
     }
     if (mode && !ours && time_trial(mode))
         keep_time_trial_lists(mode);
-    last_press = entrant_list ? entrant_list : "";
-    if (ours && !mode && logged_narrow++ < LOG_FIRST)
+    picker.last_press = entrant_list ? entrant_list : "";
+    if (ours && !mode && picker.logged_narrow++ < LOG_FIRST)
         swofty::log("[era] %s pressed but the container has no mode; %s is not narrowed", entrant_list, logic::HOST);
-    last_pick = ours ? entrant_list : "";
+    picker.last_pick = ours ? entrant_list : "";
     swofty_core::apply::moments::box_picked(entrant_list, mode);
     if (auto *modes = setup_owner(mode))
         ref<void *>(modes, SELECTED_LIST) = nullptr;
     std::string selected = ours ? pressed_list(entrant_list) : std::string(entrant_list ? entrant_list : "");
-    select_orig(container, entrant_list ? selected.c_str() : entrant_list);
+    picker.select_orig(container, entrant_list ? selected.c_str() : entrant_list);
 }
 
 uintptr_t need(const char *id, std::string &missing)
@@ -1405,13 +1427,13 @@ bool split_off()
         if (settings_get(SPLIT_OPTION, SWOFTY_SETTING_TOGGLE, &v))
             split = v.toggle ? 1 : 0;
     }
-    if (split != 0 || off)
-        return off;
-    std::lock_guard<std::mutex> g(lock);
-    if (!off) {
-        off_why = "SwoftyMod's Split the season picker is off, so the picker keeps the game's single row";
-        off = true;
-        swofty::log("[era] addon row off: %s", off_why.c_str());
+    if (split != 0 || picker.off)
+        return picker.off;
+    std::lock_guard<std::mutex> g(picker.lock);
+    if (!picker.off) {
+        picker.off_why = "SwoftyMod's Split the season picker is off, so the picker keeps the game's single row";
+        picker.off = true;
+        swofty::log("[era] addon row off: %s", picker.off_why.c_str());
     }
     return true;
 }
@@ -1419,7 +1441,7 @@ bool split_off()
 int api_available()
 {
     split_off();
-    return !off.load();
+    return !picker.off.load();
 }
 
 int api_add_box(const SwoftyEraBox *desc)
@@ -1436,15 +1458,15 @@ int api_add_box(const SwoftyEraBox *desc)
         box.time_trial = text(desc->time_trial_entrant_list);
     if (desc->size >= BOX_ONLY + sizeof(desc->only))
         box.only = desc->only;
-    std::lock_guard<std::mutex> g(lock);
-    std::string why = logic::check(box, boxes);
+    std::lock_guard<std::mutex> g(picker.lock);
+    std::string why = logic::check(box, picker.boxes);
     if (!why.empty()) {
         swofty::log("[era] box %s from %s refused: %s", box.entrant_list.c_str(), who.c_str(), why.c_str());
         return SWOFTY_ASSET_INVALID;
     }
-    box.seq = boxes.size();
-    boxes.push_back(box);
-    std::string state = off ? "off: " + off_why : live ? "live from the next build of the picker" : "queued for the next mixin commit";
+    box.seq = picker.boxes.size();
+    picker.boxes.push_back(box);
+    std::string state = picker.off ? "off: " + picker.off_why : picker.live ? "live from the next build of the picker" : "queued for the next mixin commit";
     std::string tt = box.time_trial.empty() ? std::string() : ", Time Trial list " + box.time_trial;
     if (box.only == logic::ONLY_GRAND_PRIX)
         tt += ", Grand Prix only";
@@ -1452,13 +1474,13 @@ int api_add_box(const SwoftyEraBox *desc)
         tt += ", Time Trial only";
     swofty::log("[era] box %s from %s registered (title %s, image %s, order %d%s): %s", box.entrant_list.c_str(),
                 who.c_str(), box.title.c_str(), logic::image_of(box).c_str(), box.order, tt.c_str(), state.c_str());
-    return off ? SWOFTY_ASSET_UNAVAILABLE : SWOFTY_ASSET_OK;
+    return picker.off ? SWOFTY_ASSET_UNAVAILABLE : SWOFTY_ASSET_OK;
 }
 
 int api_count()
 {
-    std::lock_guard<std::mutex> g(lock);
-    return int(boxes.size());
+    std::lock_guard<std::mutex> g(picker.lock);
+    return int(picker.boxes.size());
 }
 
 const SwoftyEra table = {api_available, api_add_box, api_count};
@@ -1527,13 +1549,17 @@ constexpr const char *CAREER_ALIAS_FN = "Ent_Deserialise_EntrantVector";
 constexpr const char *CAREER_ALIAS_MIXIN = "swofty_core.dll (career id aliases)";
 constexpr size_t VECTOR_BEGIN = 0x8;
 constexpr size_t VECTOR_END = 0x10;
-int (*entrant_vector_orig)(void *, void *);
-std::atomic<bool> career_alias_offered, career_alias_settled, career_alias_bound;
+struct AliasGuard {
+    int (*orig)(void *, void *) = nullptr;
+    std::atomic<bool> offered{}, settled{}, bound{};
+};
+
+constinit AliasGuard alias_guard;
 
 int entrant_vector_entry(void *vector, void *bag)
 {
     static uint32_t logged;
-    int result = entrant_vector_orig(vector, bag);
+    int result = alias_guard.orig(vector, bag);
     const logic::IdAliases &aliases = id_aliases();
     if (result != 0 || !vector || !aliases.any())
         return result;
@@ -1588,7 +1614,7 @@ void leave_front_end(uintptr_t ctx)
     if (leave.clear_selected)
         ref<uintptr_t>(reinterpret_cast<void *>(setup), SELECTED_LIST) = 0;
     if (leave.forget_pick)
-        last_pick.clear();
+        picker.last_pick.clear();
     if ((leave.restore || leave.clear_selected) && logged++ < LOG_FIRST)
         swofty::log("[era] %s session loads: %s's narrowed lists and DRS group are back%s", label.c_str(), logic::HOST,
                     leave.clear_selected ? ("; the box list " + selected + " no longer selected").c_str() : "");
@@ -1658,7 +1684,7 @@ void grand_prix_load(uintptr_t ctx)
                 l.teams = teams_of(lb, le);
             lists.push_back(std::move(l));
         }
-        logic::AliasedPick aliased = logic::continue_list_aliased(lists, saved, last_press, setup_mode, id_aliases());
+        logic::AliasedPick aliased = logic::continue_list_aliased(lists, saved, picker.last_press, setup_mode, id_aliases());
         pick = aliased.pick;
         if (aliased.remapped && track_why.empty()) {
             uint32_t n = remap_entrants(begin, end, id_aliases());
@@ -1696,8 +1722,8 @@ const SwoftyEra *era_table()
 
 std::vector<era::Box> era_boxes()
 {
-    std::lock_guard<std::mutex> g(lock);
-    return logic::ordered(boxes);
+    std::lock_guard<std::mutex> g(picker.lock);
+    return logic::ordered(picker.boxes);
 }
 
 void era_press(const char *entrant_list)
@@ -1712,14 +1738,14 @@ void era_press(const char *entrant_list)
     // the list by name in the mode's setups and does nothing when it is not there.
     bool ours = entrant_list && *entrant_list;
     {
-        std::lock_guard<std::mutex> g(held_lock);
+        std::lock_guard<std::mutex> g(hold.lock);
         put_back();
     }
     if (host && ours)
         ::narrow(host, entrant_list);
-    last_press = entrant_list ? entrant_list : "";
-    last_pick = ours ? last_press : "";
-    swofty::log("[era] box %s counts as pressed (a replay names it): %s", last_press.empty() ? "none" : last_press.c_str(),
+    picker.last_press = entrant_list ? entrant_list : "";
+    picker.last_pick = ours ? picker.last_press : "";
+    swofty::log("[era] box %s counts as pressed (a replay names it): %s", picker.last_press.empty() ? "none" : picker.last_press.c_str(),
                 !ours ? "no box named" : host ? "the Time Trial mode is narrowed to it" : "the current mode is not Time Trial; nothing narrowed");
 }
 
@@ -1732,13 +1758,17 @@ struct LoadSeen {
     std::string setup_mode, list, virtual_label, pressed;
 };
 
-std::mutex unlisted_lock;
-std::string unlisted_list;
+struct Unlisted {
+    std::mutex lock;
+    std::string list;
+};
+
+constinit Unlisted unlisted;
 
 void set_unlisted(const std::string &list)
 {
-    std::lock_guard<std::mutex> g(unlisted_lock);
-    unlisted_list = list;
+    std::lock_guard<std::mutex> g(unlisted.lock);
+    unlisted.list = list;
 }
 
 // Makes the box of the loaded list the active content when it is not: tt_loaded_logic.hpp. Runs without held_lock,
@@ -1752,8 +1782,8 @@ void follow_loaded_list(const LoadSeen &seen)
     }
     std::vector<tl::BoxLists> lists;
     {
-        std::lock_guard<std::mutex> g(lock);
-        for (const auto &box : boxes)
+        std::lock_guard<std::mutex> g(picker.lock);
+        for (const auto &box : picker.boxes)
             lists.push_back({box.entrant_list, box.time_trial});
     }
     tl::Loaded loaded = tl::loaded_box(lists, seen.list, seen.setup_mode, logic::HOST, VIRTUAL_HOST, seen.virtual_label);
@@ -1785,7 +1815,7 @@ void session_load_held(LoadSeen &seen)
     }
     seen.time_trial = true;
     seen.ctx = ctx;
-    seen.pressed = last_press;
+    seen.pressed = picker.last_press;
     seen.virtual_label = filled.label;
     uintptr_t holder = 0, gsm = 0, gsm_holder = 0, gsm_name = 0, entrant_setup = 0, list = 0;
     if (!mem::read(ctx + MODE_SETUP, holder) || !holder || !mem::read(holder + SETUP_MODES, setup) || !setup)
@@ -1804,7 +1834,7 @@ void session_load_held(LoadSeen &seen)
     if (line != last_seen && logged++ < LOG_FIRST * 2)
         swofty::log("[era] Time Trial session loads list %s (%lld cars) of setup mode %s (box pressed: %s)",
                     selected.name.empty() ? "?" : selected.name.c_str(), (long long)selected.cars, setup_mode.c_str(),
-                    last_press.empty() ? "none" : last_press.c_str());
+                    picker.last_press.empty() ? "none" : picker.last_press.c_str());
     last_seen = line;
     seen.setup_mode = setup_mode;
     seen.list = selected.name;
@@ -1813,34 +1843,34 @@ void session_load_held(LoadSeen &seen)
         return;
     }
     logic::ListCars bad = logic::oversized(selected.cars) ? selected : first;
-    std::vector<std::string> prefer{last_press};
+    std::vector<std::string> prefer{picker.last_press};
     {
-        std::lock_guard<std::mutex> b(lock);
-        for (const auto &box : boxes)
-            if (box.entrant_list == last_press)
+        std::lock_guard<std::mutex> b(picker.lock);
+        for (const auto &box : picker.boxes)
+            if (box.entrant_list == picker.last_press)
                 prefer.push_back(logic::list_for(box, true));
     }
     int64_t i = logic::time_trial_loaded(selected, first, lists, prefer);
     auto *esm = reinterpret_cast<uint8_t *>(entrant_setup);
-    held = {};
-    held.esm = esm;
+    hold.held = {};
+    hold.held.esm = esm;
     if (i >= 0) {
         void *fit = ptrs[size_t(i)];
         ref<void *>(reinterpret_cast<void *>(setup), SELECTED_LIST) = fit;
         seen.list = lists[size_t(i)].name;
         if (logic::oversized(first.cars) && i > 0)
-            logic::swap_into_first(held, esm, size_t(i));
+            logic::swap_into_first(hold.held, esm, size_t(i));
     }
     int32_t limit = 0;
     if (mem::read(entrant_setup + ENTRANT_SETUP_MAX_ENTRANTS, limit) && logic::time_trial_limit(limit) != limit) {
-        held.limit_was = limit;
+        hold.held.limit_was = limit;
         ref<int32_t>(esm, ENTRANT_SETUP_MAX_ENTRANTS) = logic::time_trial_limit(limit);
     }
-    holding = held.first || held.limit_was;
+    hold.holding = hold.held.first || hold.held.limit_was;
     time_trial_budget(reinterpret_cast<void *>(ctx), setup);
     if (swapped++ < LOG_FIRST * 2)
         swofty::log("[era] %s", logic::time_trial_swap(bad.name, bad.cars, setup_mode, i >= 0 ? lists[size_t(i)].name : "",
-                                                       held.limit_was)
+                                                       hold.held.limit_was)
                                     .c_str());
 }
 
@@ -1850,7 +1880,7 @@ void era_session_load()
 {
     LoadSeen seen;
     {
-        std::lock_guard<std::mutex> g(held_lock);
+        std::lock_guard<std::mutex> g(hold.lock);
         session_load_held(seen);
     }
     follow_loaded_list(seen);
@@ -1858,51 +1888,55 @@ void era_session_load()
 
 bool era_session_unlisted(std::string &list)
 {
-    std::lock_guard<std::mutex> g(unlisted_lock);
-    list = unlisted_list;
+    std::lock_guard<std::mutex> g(unlisted.lock);
+    list = unlisted.list;
     return !list.empty();
 }
 
 constexpr const char *AVAILABILITY_MIXIN = "swofty_core.dll (setup mode guard)";
 constexpr const char *AVAILABILITY_FN = "Sess_Apply_ContentAvailability";
 using ContentAvailability_t = void(void *self, void *availability);
-ContentAvailability_t *availability_orig;
-std::atomic<bool> availability_bound, logged_dropped;
+struct AvailabilityGuard {
+    ContentAvailability_t *orig = nullptr;
+    std::atomic<bool> bound{}, logged_dropped{};
+};
+
+constinit AvailabilityGuard availability_guard;
 
 void drop_setup_pointers()
 {
     logic::SetupPointers p;
     {
-        std::lock_guard<std::mutex> g(held_lock);
-        p.held = holding;
-        holding = false;
-        held = {};
-        p.narrowed = narrowed_count;
-        narrowed_count = 0;
+        std::lock_guard<std::mutex> g(hold.lock);
+        p.held = hold.holding;
+        hold.holding = false;
+        hold.held = {};
+        p.narrowed = picker.narrowed_count;
+        picker.narrowed_count = 0;
     }
-    p.drs = drs.forget();
-    warmers.forget();
-    tyre_change.forget();
-    time_limits.forget();
-    weekends.forget();
-    points.forget();
-    drs_log.forget();
-    warmers_log.forget();
-    points_log.forget();
-    tyre_change_log.forget();
-    weekend_log.forget();
+    p.drs = box_rules.drs.forget();
+    box_rules.warmers.forget();
+    box_rules.tyre_change.forget();
+    box_rules.time_limits.forget();
+    box_rules.weekends.forget();
+    box_rules.points.forget();
+    box_rules.drs_log.forget();
+    box_rules.warmers_log.forget();
+    box_rules.points_log.forget();
+    box_rules.tyre_change_log.forget();
+    box_rules.weekend_log.forget();
     runtime::box_options_forget();
-    box_options_log.forget();
-    grid_log.forget();
+    box_rules.box_options_log.forget();
+    box_rules.grid_log.forget();
     std::string line = logic::availability_drop_line(p);
-    if (!line.empty() && !logged_dropped.exchange(true))
+    if (!line.empty() && !availability_guard.logged_dropped.exchange(true))
         swofty::log("[era] %s", line.c_str());
 }
 
 void availability_entry(void *self, void *availability)
 {
     drop_setup_pointers();
-    availability_orig(self, availability);
+    availability_guard.orig(self, availability);
 }
 
 // An era tile press (0x1424b3640 -> 0x1424b2c90) collects the game mode's setup modes into a pointer vector
@@ -1913,9 +1947,13 @@ void availability_entry(void *self, void *availability)
 constexpr const char *SETUP_LIST_MIXIN = "swofty_core.dll (era press setup mode list)";
 constexpr const char *SETUP_LIST_FN = "Sess_Collect_GameModeSetupModes";
 using CollectSetupModes_t = void *(void *out, void *allocator);
-CollectSetupModes_t *setup_list_orig;
-std::atomic<bool> setup_list_bound;
-std::atomic<uint32_t> setup_list_swaps;
+struct SetupListGuard {
+    CollectSetupModes_t *orig = nullptr;
+    std::atomic<bool> bound{};
+    std::atomic<uint32_t> swaps{};
+};
+
+constinit SetupListGuard setup_list_guard;
 
 bool on_this_stack(const void *p)
 {
@@ -1928,51 +1966,51 @@ void *setup_list_entry(void *out, void *allocator)
 {
     uintptr_t slot = swofty::api->resolve("g_Ne_DefaultAllocator"), heap = 0;
     if (allocator && on_this_stack(allocator) && slot && mem::read(slot, heap) && heap) {
-        if (setup_list_swaps++ < LOG_FIRST)
+        if (setup_list_guard.swaps++ < LOG_FIRST)
             swofty::log("[era] era press: the game mode's setup mode list grows on the heap, not in the 256-byte "
                         "stack arena that holds 9");
-        return setup_list_orig(out, reinterpret_cast<void *>(heap));
+        return setup_list_guard.orig(out, reinterpret_cast<void *>(heap));
     }
-    return setup_list_orig(out, allocator);
+    return setup_list_guard.orig(out, allocator);
 }
 
 std::vector<CoreMixins> tt_guard_mixins()
 {
     std::vector<CoreMixins> out;
-    if (vehicles_offered || !code_ready())
+    if (vehicle_guard.offered || !code_ready())
         return out;
-    vehicles_offered = true;
+    vehicle_guard.offered = true;
     if (!swofty::api->resolve(VEHICLE_FN)) {
         swofty::log("[era] session vehicle guard off: needs %s, which this build does not resolve", VEHICLE_FN);
     } else {
-        vehicles_bound = true;
+        vehicle_guard.bound = true;
         out.push_back(
-            {VEHICLE_MIXIN, {{VEHICLE_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&vehicles_entry, (void **)&vehicles_orig}}});
+            {VEHICLE_MIXIN, {{VEHICLE_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&vehicles_entry, (void **)&vehicle_guard.orig}}});
     }
     if (!swofty::api->resolve(AVAILABILITY_FN)) {
         swofty::log("[era] setup mode guard off: needs %s, which this build does not resolve", AVAILABILITY_FN);
     } else {
-        availability_bound = true;
+        availability_guard.bound = true;
         out.push_back({AVAILABILITY_MIXIN,
-                       {{AVAILABILITY_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&availability_entry, (void **)&availability_orig}}});
+                       {{AVAILABILITY_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&availability_entry, (void **)&availability_guard.orig}}});
     }
     if (!swofty::api->resolve(SETUP_LIST_FN) || !swofty::api->resolve("g_Ne_DefaultAllocator")) {
         swofty::log("[era] era press setup mode list off: needs %s and g_Ne_DefaultAllocator, which this build does "
                     "not resolve",
                     SETUP_LIST_FN);
     } else {
-        setup_list_bound = true;
+        setup_list_guard.bound = true;
         out.push_back({SETUP_LIST_MIXIN,
-                       {{SETUP_LIST_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&setup_list_entry, (void **)&setup_list_orig}}});
+                       {{SETUP_LIST_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&setup_list_entry, (void **)&setup_list_guard.orig}}});
     }
     if (!swofty::api->resolve(PARSE_LIST_FN) || !swofty::api->resolve("g_Ne_DefaultAllocator")) {
         swofty::log("[era] virtual entrant lists off: needs %s and g_Ne_DefaultAllocator, which this build does not "
                     "resolve",
                     PARSE_LIST_FN);
     } else {
-        parse_list_bound = true;
+        virtual_lists.parse_list_bound = true;
         out.push_back({PARSE_LIST_MIXIN,
-                       {{PARSE_LIST_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&parse_list_entry, (void **)&parse_list_orig}}});
+                       {{PARSE_LIST_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&parse_list_entry, (void **)&virtual_lists.parse_list_orig}}});
     }
     return out;
 }
@@ -1980,28 +2018,28 @@ std::vector<CoreMixins> tt_guard_mixins()
 std::vector<CoreMixins> career_alias_mixins()
 {
     std::vector<CoreMixins> out;
-    if (career_alias_offered || !code_ready())
+    if (alias_guard.offered || !code_ready())
         return out;
-    career_alias_offered = true;
+    alias_guard.offered = true;
     if (!swofty::api->resolve(CAREER_ALIAS_FN)) {
         swofty::log("[era] career id aliases off: needs %s, which this build does not resolve (a verify agree row on its "
                     "saved record layout is missing)",
                     CAREER_ALIAS_FN);
         return out;
     }
-    career_alias_bound = true;
+    alias_guard.bound = true;
     out.push_back({CAREER_ALIAS_MIXIN,
                    {{CAREER_ALIAS_FN, SWOFTY_MIXIN_WRAP, 100, (void *)&entrant_vector_entry,
-                     (void **)&entrant_vector_orig}}});
+                     (void **)&alias_guard.orig}}});
     return out;
 }
 
 void career_alias_commit()
 {
-    if (!career_alias_offered || career_alias_settled)
+    if (!alias_guard.offered || alias_guard.settled)
         return;
-    career_alias_settled = true;
-    if (career_alias_bound)
+    alias_guard.settled = true;
+    if (alias_guard.bound)
         swofty::log("[era] career id aliases %s",
                     core_mixins_active(CAREER_ALIAS_MIXIN)
                         ? "armed: a career saved with earlier row ids has its entrants mapped to the current ids as it loads"
@@ -2010,25 +2048,25 @@ void career_alias_commit()
 
 void tt_guard_commit()
 {
-    if (!vehicles_offered || vehicles_settled)
+    if (!vehicle_guard.offered || vehicle_guard.settled)
         return;
-    vehicles_settled = true;
-    if (vehicles_bound)
+    vehicle_guard.settled = true;
+    if (vehicle_guard.bound)
         swofty::log("[era] session vehicle guard %s",
                     core_mixins_active(VEHICLE_MIXIN)
                         ? "armed: a session with more vehicles than its table of 26 sets up the first 26 instead of writing past it"
                         : "did not install (see the [core] lines)");
-    if (availability_bound)
+    if (availability_guard.bound)
         swofty::log("[era] setup mode guard %s",
                     core_mixins_active(AVAILABILITY_MIXIN)
                         ? "armed: when the game rebuilds its setup modes the core drops the pointers it keeps into them"
                         : "did not install (see the [core] lines)");
-    if (setup_list_bound)
+    if (setup_list_guard.bound)
         swofty::log("[era] era press setup mode list %s",
                     core_mixins_active(SETUP_LIST_MIXIN)
                         ? "armed: a game mode with more than 9 setup modes no longer crashes an era tile press"
                         : "did not install (see the [core] lines)");
-    if (parse_list_bound)
+    if (virtual_lists.parse_list_bound)
         swofty::log("[era] virtual entrant lists %s", core_mixins_active(PARSE_LIST_MIXIN)
                                                           ? "armed: a box whose list lies above the table's count "
                                                             "is read into swofty_virtual_list when it is pressed"
@@ -2048,8 +2086,8 @@ void era_session_unloaded(const char *state, int to)
     static uint32_t logged;
     if (!state || !logic::time_trial_cut_off(state, to))
         return;
-    tt_budget = -1;
-    std::lock_guard<std::mutex> g(held_lock);
+    time_trial_guard.budget = -1;
+    std::lock_guard<std::mutex> g(hold.lock);
     logic::CutsPutBack r = put_back(true);
     if ((r.put || r.failed) && logged++ < LOG_FIRST)
         swofty::log("[era] StateUnloadSession Exiting: the lists the Time Trial guards left out are back in %zu entrant "
@@ -2060,43 +2098,43 @@ void era_session_unloaded(const char *state, int to)
 std::vector<CoreMixins> era_mixins()
 {
     std::vector<CoreMixins> out;
-    if (offered || split_off() || off || !code_ready())
+    if (picker.offered || split_off() || picker.off || !code_ready())
         return out;
     {
-        std::lock_guard<std::mutex> g(lock);
-        if (boxes.empty())
+        std::lock_guard<std::mutex> g(picker.lock);
+        if (picker.boxes.empty())
             return out;
     }
-    offered = true;
+    picker.offered = true;
     std::string why;
     if (!bind_all(why)) {
-        off_why = why;
-        off = true;
+        picker.off_why = why;
+        picker.off = true;
         swofty::log("[era] addon row off: %s", why.c_str());
         return out;
     }
     out.push_back({MIXIN,
                    {{"site_FeTile_EraTilesBuilt", SWOFTY_MIXIN_SITE, 100, (void *)&site_entry, nullptr},
-                    {"FeTile_Press_EraTile", SWOFTY_MIXIN_WRAP, 100, (void *)&press_entry, (void **)&press_orig},
+                    {"FeTile_Press_EraTile", SWOFTY_MIXIN_WRAP, 100, (void *)&press_entry, (void **)&picker.press_orig},
                     {"Game_F1WorldActivityContainer_SelectEntrantList", SWOFTY_MIXIN_WRAP, 100, (void *)&select_entry,
-                     (void **)&select_orig}}});
+                     (void **)&picker.select_orig}}});
     swofty::log("[era] %d box(es) registered; offering the era picker hooks", api_count());
     return out;
 }
 
 void era_commit()
 {
-    if (!offered || settled || off)
+    if (!picker.offered || picker.settled || picker.off)
         return;
-    settled = true;
+    picker.settled = true;
     if (core_mixins_active(MIXIN)) {
-        live = true;
+        picker.live = true;
         swofty::log("[era] era picker hooks installed; addon boxes show from the next build of the picker");
         return;
     }
-    off_why = "the era picker hooks did not install (see the [core] lines for " + std::string(MIXIN) + ")";
-    off = true;
-    swofty::log("[era] addon row off: %s", off_why.c_str());
+    picker.off_why = "the era picker hooks did not install (see the [core] lines for " + std::string(MIXIN) + ")";
+    picker.off = true;
+    swofty::log("[era] addon row off: %s", picker.off_why.c_str());
 }
 
 }
