@@ -1,13 +1,25 @@
 use std::cell::RefCell;
 use std::collections::BTreeMap;
+use std::path::Path;
 use std::sync::Arc;
+use std::sync::atomic::Ordering;
+use std::time::{Duration, Instant};
 
+use swofty_core::GAME_EXE;
 use swofty_core::asset::{AssetBatch, AssetOp, FileOp, Op, Origin, Root, Source};
 use swofty_core::baseline::Identity;
+use swofty_core::build::GVDB;
 use swofty_core::builtin::loader_dir;
+use swofty_core::busy::{Busy, Step};
+use swofty_core::install::Installer;
 use swofty_core::launcher::{Addon, BuildCx, Builtin};
 use swofty_core::manifest::AddonManifest;
+use swofty_formats::gvdb::Gvdb;
 
+use super::conflicts::conflicts_text;
+use super::heartbeat::{Beat, Copied, track};
+use super::install::{denied, outdated_with};
+use super::profile::build_profile;
 use super::*;
 
 #[test]
