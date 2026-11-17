@@ -17,9 +17,8 @@
 #include "core/runtime/loader/resolve_locks.hpp"
 #include "core/runtime/loader/scanner.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 #include "core/diagnostics/steps.hpp"
-
-std::string settings_addon(const void *from, std::string &dll);
 
 namespace runtime::loader {
 

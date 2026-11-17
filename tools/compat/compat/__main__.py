@@ -494,7 +494,7 @@ def parser():
                    help="like --keep, but each kept data dir keeps only the files its plan.json lists (for `harness`)")
     r.add_argument("--slim-cap-mb", type=int, default=harness.DEFAULT_CAP >> 20,
                    help="--slim drops listed game files larger than this, loader files excepted (default %(default)s)")
-    r.add_argument("--no-pin", action="store_true", help="do not run the CLIs under taskset and nice")
+    r.add_argument("--no-pin", action="store_true", help="do not run the CLIs under the prefix native/tools/pin.sh sets")
     r.add_argument("--allow", action="append", choices=compare.CATEGORIES,
                    help="report this category of difference without failing (repeatable)")
     r.set_defaults(func=cmd_run)

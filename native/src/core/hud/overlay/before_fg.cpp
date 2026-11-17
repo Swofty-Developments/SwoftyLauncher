@@ -1,7 +1,7 @@
 #include "core/hud/overlay/before_fg.hpp"
 
 #include "core/diagnostics/perf.hpp"
-#include "core/hud/hud_guard.hpp"
+#include "core/hud/arm_policy.hpp"
 #include "core/hud/overlay/overlay.hpp"
 
 #include <swofty/mixin.hpp>

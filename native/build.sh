@@ -53,9 +53,11 @@ EOF
 # GAME_INCLUDE points the core at other generated game headers (bindgen --dev output) ahead of the
 # shipped ones in include/. The career library and the gamedb string decode compile out, and report
 # unavailable at runtime, when the headers lack the KB structs they read (src/core/runtime/layout.hpp).
+ORDER=()
+[ -n "$VARIANT" ] || ORDER=(--order-snapshot tools/core_init_order.txt)
 python3 tools/build_graph.py --builddir "$OUT" --out "$OUT/build.ninja" --sdk "$SDK" \
     --cc "zig cc -target x86_64-windows-gnu" --cxx "zig c++ -target x86_64-windows-gnu -std=c++23" \
-    "${DEFS[@]/#/--define=}" --game-include "${GAME_INCLUDE:-}"
+    "${DEFS[@]/#/--define=}" --game-include "${GAME_INCLUDE:-}" "${ORDER[@]}"
 "${PIN[@]}" ninja -f "$OUT/build.ninja" -j "${NINJA_JOBS:-$SWOFTY_JOBS}"
 
 cp "$OUT/version.dll" "$DIST/version.dll"

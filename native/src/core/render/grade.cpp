@@ -33,29 +33,46 @@ struct Tonemap {
     D3D12_RESOURCE_DESC desc;
 };
 
-std::recursive_mutex lock;
-std::vector<Tonemap> tonemaps;
-grade::Lut look;
-float strength = 1;
-std::string addon;
-std::wstring settings_path;
-
-// The graded copy, a copy source for good. Copies it replaced stay alive, as lists the GPU has not
-// run yet may still read them.
-ID3D12Resource *ours;
-std::vector<ID3D12Resource *> retired;
-std::vector<uint8_t> source;
-ID3D12Resource *readback;
-D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint;
-UINT rows;
-ULONGLONG read_at, next_read;
-bool hdr, failed;
-unsigned copies;
-
 using com::release;
 
+class Grader {
+public:
+    void setup();
+    void on_setname(ID3D12Object *o, LPCWSTR name);
+    bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers);
+
+private:
+    bool hdr_on();
+    bool make_readback(ID3D12GraphicsCommandList *list, const D3D12_RESOURCE_DESC &desc);
+    void take_readback(ID3D12GraphicsCommandList *list, const Tonemap &t);
+    Tonemap *tonemap_of(ID3D12Resource *res);
+    void forget(ID3D12Resource *res);
+
+    std::recursive_mutex lock;
+    std::vector<Tonemap> tonemaps;
+    grade::Lut look;
+    float strength = 1;
+    std::string addon;
+    std::wstring settings_path;
+
+    // The graded copy, a copy source for good. Copies it replaced stay alive, as lists the GPU has not
+    // run yet may still read them.
+    ID3D12Resource *ours = nullptr;
+    std::vector<ID3D12Resource *> retired;
+    std::vector<uint8_t> source;
+    ID3D12Resource *readback = nullptr;
+    D3D12_PLACED_SUBRESOURCE_FOOTPRINT footprint{};
+    UINT rows = 0;
+    ULONGLONG read_at = 0, next_read = 0;
+    bool hdr = false, failed = false;
+    unsigned copies = 0;
+};
+
+// Not constinit: std::recursive_mutex's constructor is not constexpr.
+Grader grader;
+
 // The game's HDR switch, `<hdr mode="0">` in its hardware settings; off when the file is missing.
-bool hdr_on()
+bool Grader::hdr_on()
 {
     std::string xml = runtime::read_file(settings_path, size_t(1) << 20);
     size_t at = xml.find("<hdr mode=\"");
@@ -151,7 +168,7 @@ ID3D12Resource *upload(ID3D12Device *dev, D3D12_RESOURCE_DESC desc, const std::v
     return ok ? tex : nullptr;
 }
 
-bool make_readback(ID3D12GraphicsCommandList *list, const D3D12_RESOURCE_DESC &desc)
+bool Grader::make_readback(ID3D12GraphicsCommandList *list, const D3D12_RESOURCE_DESC &desc)
 {
     ID3D12Device *dev = nullptr;
     if (FAILED(list->GetDevice(IID_PPV_ARGS(&dev))))
@@ -176,7 +193,7 @@ bool make_readback(ID3D12GraphicsCommandList *list, const D3D12_RESOURCE_DESC &d
 
 // Once the last readback has had time to land, grades the game's LUT when it differs from the one
 // the graded copy came from.
-void take_readback(ID3D12GraphicsCommandList *list, const Tonemap &t)
+void Grader::take_readback(ID3D12GraphicsCommandList *list, const Tonemap &t)
 {
     const size_t tight = size_t(t.desc.Width) * 8;
     std::vector<uint8_t> fresh(tight * t.desc.Height * t.desc.DepthOrArraySize);
@@ -226,7 +243,7 @@ void take_readback(ID3D12GraphicsCommandList *list, const Tonemap &t)
                 double(peak), addon.c_str());
 }
 
-Tonemap *tonemap_of(ID3D12Resource *res)
+Tonemap *Grader::tonemap_of(ID3D12Resource *res)
 {
     for (auto &t : tonemaps)
         if (t.res == res)
@@ -234,7 +251,7 @@ Tonemap *tonemap_of(ID3D12Resource *res)
     return nullptr;
 }
 
-void forget(ID3D12Resource *res)
+void Grader::forget(ID3D12Resource *res)
 {
     for (size_t i = 0; i < tonemaps.size(); i++)
         if (tonemaps[i].res == res) {
@@ -250,7 +267,7 @@ bool same_shape(const D3D12_RESOURCE_DESC &a, const D3D12_RESOURCE_DESC &b)
 }
 
 // The game frees resources and reuses their addresses, so any SetName drops the old entry first.
-void on_setname(ID3D12Object *o, LPCWSTR name)
+void Grader::on_setname(ID3D12Object *o, LPCWSTR name)
 {
     if (name) {
         auto *res = reinterpret_cast<ID3D12Resource *>(o);
@@ -275,7 +292,7 @@ bool written_to_read(const D3D12_RESOURCE_BARRIER &b)
             (D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE));
 }
 
-bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers)
+bool Grader::on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers)
 {
     std::vector<D3D12_RESOURCE_BARRIER> changed;
     {
@@ -348,23 +365,18 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
     return true;
 }
 
-
-}
-
-namespace runtime {
-
-void grade_setup()
+void Grader::setup()
 {
-    if (!enabled("shaders", nullptr))
+    if (!runtime::enabled("shaders", nullptr))
         return;
-    const json::Value &s = config()["shader"];
+    const json::Value &s = runtime::config()["shader"];
     std::string rel = s["lut"].str();
     if (rel.empty()) {
         swofty::log("[shaders] the shaders feature is on, but assets.json names no look; the game's colours stay");
         return;
     }
     std::string why;
-    if (!grade::unpack(read_file(under_swofty(rel)), look, why)) {
+    if (!grade::unpack(runtime::read_file(runtime::under_swofty(rel)), look, why)) {
         swofty::log("[shaders] %s is unusable: %s; the game's colours stay", rel.c_str(), why.c_str());
         return;
     }
@@ -372,8 +384,10 @@ void grade_setup()
     strength = st.type == json::Value::Num ? std::clamp(float(st.n), 0.0f, 1.0f) : 1.0f;
     addon = s["addon"].str("an addon");
     settings_path = hardware_settings::path();
-    d3d12hooks::on_setname(on_setname);
-    d3d12hooks::on_barrier(on_barrier);
+    d3d12hooks::on_setname([](ID3D12Object *o, LPCWSTR name) { grader.on_setname(o, name); });
+    d3d12hooks::on_barrier([](ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers) {
+        return grader.on_barrier(list, n, barriers);
+    });
     bool hooked = d3d12hooks::arm_device();
     if (!hooked)
         swofty::log("[shaders] the core's D3D12 device hooks did not arm; the game's colours stay");
@@ -381,6 +395,15 @@ void grade_setup()
         swofty::log("[shaders] grading the picture with %s's look (%ux%ux%u) at %.0f%%; HDR setting read from %ls",
                     addon.c_str(), look.size, look.size, look.size, double(strength) * 100,
                     settings_path.empty() ? L"(no Documents folder)" : settings_path.c_str());
+}
+
+}
+
+namespace runtime {
+
+void grade_setup()
+{
+    grader.setup();
 }
 
 }

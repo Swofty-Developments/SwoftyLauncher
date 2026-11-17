@@ -100,11 +100,12 @@ def resolve(img, section, s):
     return hits, out, at
 
 
-def norm(img, rva, n):
-    """Instructions of [rva, rva+n) with rip displacements and branch/call targets masked."""
+def norm(img, rva, n, to_ret=False):
+    """Instructions of [rva, rva+n) with rip displacements and branch/call targets masked; with to_ret, up to the first
+    ret (a short function's padding and the unrelated function after it are left out)."""
     out, code = [], img.read(rva, n + 16) or b''
     for i in md.disasm(code, rva):
-        if i.address - rva >= n:
+        if i.address - rva >= n or (to_ret and out and out[-1] == 'c3'):
             break
         b = bytearray(i.bytes)
         if i.disp_size and any(o.type == X86_OP_MEM and o.mem.base == X86_REG_RIP for o in i.operands):
@@ -151,7 +152,7 @@ def same(ref, port, rt, pt, kind):
             b = struct.unpack_from('<Q', port.mem, pt + 8 * k)[0] - port.image_base
             if not (0 < a < ref.size and ref.in_exec(a)) or not (0 < b < port.size and port.in_exec(b)):
                 break
-            sims.append(ratio(norm(ref, follow(ref, a), 0x40), norm(port, follow(port, b), 0x40)))
+            sims.append(ratio(norm(ref, follow(ref, a), 0x40, True), norm(port, follow(port, b), 0x40, True)))
         ok = len(sims) >= 2 and sum(x >= 0.7 for x in sims) >= len(sims) - 1
         return ('same' if ok else 'DIFFERENT'), f'vtable, {len(sims)} slot(s) alike ' + ' '.join(f'{x:.2f}' for x in sims)
     if kind in ('func', 'site') and ref.mem[rt] == 0xE9 and port.mem[pt] == 0xE9 and not ref.section_named(follow(ref, rt), ref.section_of(rt).name):

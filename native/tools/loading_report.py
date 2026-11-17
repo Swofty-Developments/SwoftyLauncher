@@ -95,6 +95,7 @@ FEATURE_SETTINGS = {
     'loading_skip_minimum_time': 'Game.IgnoreMinimumLoadingTime',
     'loading_skip_session_intro_video': 'Game.SkipIntroVideo',
     'loading_skip_grid_rundown': 'Game.SkipGridRundown',
+    'loading_skip_talking_points': 'Game.SkipTalkingPoints',
 }
 REGRESSIONS = [
     ('crash', re.compile(r'^\[crash\] #\d+ (?!first-chance)')),

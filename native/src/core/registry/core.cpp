@@ -1,6 +1,7 @@
 #include <swofty/mixin.hpp>
 
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 #include "declare_all.hpp"
 #include "older.hpp"
 #include "table.hpp"
@@ -9,7 +10,6 @@
 
 #include <mutex>
 
-std::string settings_addon(const void *from, std::string &dll);
 bool settings_state(const std::string &addon, const std::string &option, size_t &current, std::vector<std::string> *texts,
                     std::vector<std::string> *commands, std::vector<std::string> *values);
 

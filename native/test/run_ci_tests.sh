@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 # CI's native test step: every host and Wine test in native/test/manifest.py through run_tests.sh, NATIVE_TEST_JOBS
-# at a time (default: one per CPU the step may run on; tools/pin.sh pins nothing under CI). A line reports each test as it ends; then each test's output follows in a log
+# compiles and host tests at a time (default: one per CPU the step may run on; tools/pin.sh pins nothing under CI)
+# and NATIVE_WINE_JOBS Wine tests beside them. A line reports each test as it ends; then each test's output follows in a log
 # group, and the step fails if any test failed. The Wine tests need Wine and an xvfb-run that gives every call its
 # own display, as ci.yml sets up.
 set -uo pipefail

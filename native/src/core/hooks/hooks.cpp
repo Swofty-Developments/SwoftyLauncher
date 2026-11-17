@@ -1,4 +1,5 @@
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -11,8 +12,6 @@
 #include <mutex>
 #include <string>
 #include <vector>
-
-std::string settings_addon(const void *from, std::string &dll);
 
 namespace runtime {
 void crash_blame(const char *text);

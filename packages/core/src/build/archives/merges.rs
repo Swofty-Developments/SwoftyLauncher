@@ -4,7 +4,7 @@ use std::path::Path;
 use crate::Result;
 use crate::asset::{AssetOp, Op, Origin};
 use crate::build::Built;
-use crate::erpbuild::{Held, SliceMerge};
+use crate::erp::{Held, SliceMerge};
 use crate::planner::{Planner, Target};
 
 pub(in crate::build) fn contested_in(
@@ -15,7 +15,7 @@ pub(in crate::build) fn contested_in(
     if contested.is_empty() {
         return Ok(None);
     }
-    let names = crate::erpbuild::overlay_names(path)?;
+    let names = crate::erp::overlay_names(path)?;
     Ok(names.into_iter().find(|n| {
         targets
             .iter()
@@ -26,7 +26,7 @@ pub(in crate::build) fn contested_in(
 pub(in crate::build) fn ui_merge_notes(
     built: &mut Built,
     planner: &mut Planner,
-    merges: Vec<crate::erpbuild::UiMerge>,
+    merges: Vec<crate::erp::UiMerge>,
     name: &dyn Fn(&str) -> String,
 ) {
     for m in merges {
@@ -90,7 +90,7 @@ pub(in crate::build) fn merged_later(
     if later.is_empty() {
         return Ok(None);
     }
-    let names = crate::erpbuild::overlay_names(path)?;
+    let names = crate::erp::overlay_names(path)?;
     Ok(later
         .iter()
         .find(|(_, _, uri)| names.iter().any(|n| n == uri))

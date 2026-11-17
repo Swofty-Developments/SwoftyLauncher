@@ -10,8 +10,8 @@ use std::path::{Path, PathBuf};
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use super::api::{ApiError, Boards, Meta, Uploaded};
 use super::swlap::{self, Board, Header};
+use crate::online::server::api::{ApiError, Boards, Meta, Uploaded};
 
 pub const EXT: &str = "swlap";
 pub const SENT_KEEP: usize = 200;

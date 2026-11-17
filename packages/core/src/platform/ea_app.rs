@@ -6,8 +6,9 @@ use std::process::Command;
 
 use crate::GAME_EXE;
 use crate::install::Source;
-use crate::platform::LaunchPlatform;
+use crate::platform::ensure::EaClient;
 use crate::platform::run_as_admin::parse_reg_query;
+use crate::platform::{ClientNote, ClientReady, ClientStart, LaunchPlatform};
 use crate::session::COMPAT_LAYER;
 
 pub const MARKER: &str = "__Installer/installerdata.xml";
@@ -59,6 +60,17 @@ impl LaunchPlatform for EaApp {
 
     fn move_hint(&self) -> &'static str {
         " with EA app > F1 25 > Manage > Move, not File Explorer"
+    }
+
+    fn ensure_client(
+        &self,
+        start: ClientStart<'_>,
+        note: &mut dyn FnMut(ClientNote),
+    ) -> Result<ClientReady, String> {
+        if !self.installed(start.game) {
+            return Ok(ClientReady::NotNeeded);
+        }
+        EaClient::for_launch(start).ensure(start.allowed, note)
     }
 }
 
@@ -230,11 +242,17 @@ pub fn moved(dir: &Path, recorded: &[PathBuf], is_install: impl Fn(&Path) -> boo
     })
 }
 
+/// `reg query` of an install record or the link handler, kept for [`crate::platform::KEEP_RECORDS`]: the
+/// game's copies are looked for several times in one Play, and the uninstall lists are long.
 #[cfg(windows)]
 fn reg_exe(args: &[&str]) -> Option<String> {
+    static KEPT: crate::platform::Kept<Vec<String>, Option<String>> = crate::platform::Kept::new();
     let mut all = vec!["query"];
     all.extend_from_slice(args);
-    crate::platform::run_as_admin::windows_tool("reg", &all).filter(|o| !o.trim().is_empty())
+    let key = all.iter().map(|a| (*a).to_owned()).collect();
+    KEPT.get(key, crate::platform::KEEP_RECORDS, || {
+        crate::platform::run_as_admin::windows_tool("reg", &all).filter(|o| !o.trim().is_empty())
+    })
 }
 
 #[cfg(windows)]

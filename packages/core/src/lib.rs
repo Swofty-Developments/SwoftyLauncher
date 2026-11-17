@@ -10,7 +10,7 @@ pub mod content;
 pub mod data;
 pub mod dbedit;
 pub mod diagnostics;
-pub mod erpbuild;
+pub mod erp;
 pub mod game_db;
 pub mod game_folder;
 pub mod hud;
@@ -31,6 +31,7 @@ pub mod tracks;
 pub mod ui;
 pub mod updates;
 
+pub use self::erp as erpbuild;
 pub use addons::{builtin, helper, import, package, registry, settings, storage as addon_storage, version};
 pub use cache::link as link_cache;
 pub use content::{
@@ -39,8 +40,8 @@ pub use content::{
 };
 pub use data::{paths, relocate as data_move, space as data_usage};
 pub use diagnostics::{
-    crash, crash_report, ea_launch as ea_diag, fast_fail, known_problems, launch, overlay_guard, quarantine,
-    send_logs,
+    crash, crash_report, ea_launch as ea_diag, fast_fail, known_problems, launch, overlay_guard, phases,
+    quarantine, send_logs,
 };
 pub use game_db::{
     entrant_lists, heads, livery_kits, owned, rnd_budget, row_keys as rowkeys, udp_ids, virtual_lists,
@@ -168,7 +169,9 @@ pub fn doing() -> String {
 }
 
 pub(crate) fn now_doing(step: impl Into<String>) {
-    *DOING.lock().unwrap_or_else(|e| e.into_inner()) = step.into();
+    let step = step.into();
+    diagnostics::phases::step(&step);
+    *DOING.lock().unwrap_or_else(|e| e.into_inner()) = step;
 }
 
 pub(crate) fn io_err(path: impl Into<std::path::PathBuf>) -> impl FnOnce(std::io::Error) -> Error {

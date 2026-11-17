@@ -16,6 +16,7 @@
 
 #include "core/runtime/json.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/runtime/pages.hpp"
 #include "core/runtime/runtime.hpp"
 
 namespace {
@@ -122,10 +123,7 @@ bool ends(const std::string &s, const char *p)
 
 bool readable(const void *p, size_t n)
 {
-    MEMORY_BASIC_INFORMATION m{};
-    if (!p || !VirtualQuery(p, &m, sizeof m) || m.State != MEM_COMMIT || (m.Protect & (PAGE_NOACCESS | PAGE_GUARD)))
-        return false;
-    return uintptr_t(p) + n <= uintptr_t(m.BaseAddress) + m.RegionSize;
+    return p && runtime::pages::readable_in_region(uintptr_t(p), n);
 }
 
 bool spans(const void *p, size_t n)

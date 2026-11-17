@@ -1,3 +1,5 @@
+#include "core/boxes/box_grid.hpp"
+
 #include "core/boxes/box_grid_logic.hpp"
 #include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
@@ -354,7 +356,6 @@ void place_entry(void *placement, uint8_t vehicle, uint8_t type, uint32_t slot, 
 
 namespace runtime {
 
-// The pressed box's grid rule (none: a stock box, a box without a rule, or no box). Called by the era picker.
 void box_grid_set(const std::optional<box_grid::Rule> &rule, const std::string &box)
 {
     std::lock_guard<std::mutex> g(lock);

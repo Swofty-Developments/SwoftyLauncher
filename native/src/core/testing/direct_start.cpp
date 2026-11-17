@@ -65,6 +65,89 @@ const runtime::Sig SIG_FTUE_EXIT{"game.state_ftue_on_state_exit",
 const runtime::Sig SIG_BUILD_SETTINGS{"game.championship_game_mode_build_session_settings",
                                       "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 68 00", 0x7b7b90};
 
+// The session driver's game addresses, each a pattern that matches once on the KB build and on Steam 26566308
+// (re/tools/sigport.py). Thunk entries and functions with no unique entry are found from a call to them, globals and
+// vtables from a load of them. The struct offsets the driver uses were checked on both builds in the game functions
+// cited beside them (sigport.py --witness: each function the same instructions on both, the offset used in the same
+// places).
+const runtime::Sig SIG_SET_SETUP_MODE{"game.entity_set_setup_mode_thunk_14079f300",
+                                      "E8 ?? ?? ?? ?? 48 8D 84 24 20 03 00 00 48 C7 84 24 10 03 00 00 80 00 00 00", 0x79f300,
+                                      runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig SIG_LIST_STAT_ID{"game.list_stat_id",
+                                    "E8 ?? ?? ?? ?? 0F B6 C0 48 8B 8F 60 05 00 00 48 8B 97 68 05 00 00 48 29 CA 48 C1 FA 04 48 39 "
+                                    "C2 0F 86 ?? ?? ?? ?? 48 C1 E0 04 48 8B 44 01 08 48 85 C0 0F 84 ?? ?? ?? ?? 4C 8B 60 10 4C 8B "
+                                    "68 18 4D 39 EC 0F 84 ?? ?? ?? ?? 48 8D 9E 88 00 00 00 4C 8D 74 24 2C 4C 8D 7C 24 30 41 8B 6C "
+                                    "24 5C",
+                                    0x24286e0, runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig SIG_ROUNDS_CLEAR{"game.rounds_clear",
+                                    "E8 ?? ?? ?? ?? 48 8B 8E 70 02 00 00 48 8B 01 FF 90 88 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 "
+                                    "89 C3",
+                                    0x420cd60, runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig SIG_ADD_TRACK{"game.add_track", "E8 ?? ?? ?? ?? 48 83 C6 08 48 39 DE 75 EC 48 8B BC 24 70 01 00 00",
+                                 0xb99450, runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig SIG_BUILD_SEASON{"game.build_season", "56 48 83 EC 20 48 89 CE BA 98 02 00 00", 0x1207290};
+const runtime::Sig SIG_FILL_ENTRANTS{"game.fill_entrants",
+                                     "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 4D 89 CE 4C 89 C7", 0x2460230};
+const runtime::Sig SIG_ROUNDS_COMPONENT{"game.rounds_component", "48 8D 15 ?? ?? ?? ?? FF 50 10 48 89 83 50 05 00 00",
+                                        0x605ad40, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_WEEKEND_STRUCTURE{"game.weekend_structure",
+                                         "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 CD 45 89 C6", 0xb025f0};
+const runtime::Sig SIG_WEEKEND_SERVICE{"game.weekend_service",
+                                       "48 8D 15 ?? ?? ?? ?? 41 B8 01 00 00 00 FF 50 10 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 8E 90 02 "
+                                       "00 00",
+                                       0x605ada0, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_MESSAGE_BUS{"game.message_bus", "41 FF 51 08 48 8B 05 ?? ?? ?? ?? 48 8B 78 08", 0x618b3b8,
+                                   runtime::Sig::riprel, 4, 7, 7};
+const runtime::Sig SIG_POST_BEGIN{"game.post_begin", "E8 ?? ?? ?? ?? C6 86 F8 02 00 00 01 4C 89 F1", 0x24e2b90,
+                                  runtime::Sig::rel32, 0, 1, 5};
+const runtime::Sig SIG_POST_END{"game.post_end", "E8 ?? ?? ?? ?? C6 86 F8 02 00 00 00 85 FF", 0x24e2f00, runtime::Sig::rel32,
+                                0, 1, 5};
+const runtime::Sig SIG_VT_MSG_BEGIN{"game.vt_msg_begin",
+                                    "48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 48 8B 48 08 48 8D 54 24 20 E8 ?? ?? ?? ?? C6 86 F8 02 00 "
+                                    "00 01",
+                                    0x578d4e8, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_VT_MSG_END{"game.vt_msg_end",
+                                  "48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 89 74 24 30 48 8B 48 08 48 8D 54 24 20 E8 ?? ?? ?? ?? "
+                                  "C6 86 F8 02 00 00 00",
+                                  0x578d510, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_GAME_ROOT{"game.root_14601db08",
+                                 "48 8B 05 ?? ?? ?? ?? 48 8B 40 60 48 8B 88 D0 09 00 00 FF 15 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 "
+                                 "8B 40 60",
+                                 0x601db08, runtime::Sig::riprel, 0, 3, 7};
+const runtime::Sig SIG_DESPAWN_MAIN_SCENE{"game.despawn_main_scene",
+                                          "56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 BD 00 00 00", 0x28d9a90};
+
+struct GrandPrix {
+    uintptr_t set_setup_mode = 0, list_stat_id = 0, rounds_clear = 0, add_track = 0, build_season = 0, fill_entrants = 0,
+              rounds_component = 0, weekend_structure = 0, weekend_service = 0, message_bus = 0, post_begin = 0,
+              post_end = 0, vt_msg_begin = 0, vt_msg_end = 0;
+    bool resolved() const
+    {
+        return set_setup_mode && list_stat_id && rounds_clear && add_track && build_season && fill_entrants &&
+               rounds_component && weekend_structure && weekend_service && message_bus && post_begin && post_end &&
+               vt_msg_begin && vt_msg_end;
+    }
+} gp;
+uintptr_t root_global = 0, despawn_main_scene = 0;
+
+// What the driver's struct offsets were checked on: the KB build and Steam 26566308 (sigport.py --witness, each
+// function cited beside the offsets it backs).
+namespace bp = runtime::build_proof;
+constexpr uint32_t KB_AND_1_0_145 = bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145);
+constexpr bp::Proof SESSION_DRIVER{"the session driver's layout (the Grand Prix entity +0x1030, +0xf08, +0xf58, +0xe18, "
+                                   "+0x2e0, +0x2b0, +0x2d8, +0x2f8; entrants 0x88 with +0x48, +0x4b; the weekend chain "
+                                   "+0x88, +0x260, +0x1058, +0x548, +0x560, +0x288, +0x2a0, +0x220, +0x238, +0x278; "
+                                   "StateLoadSession +0xcd0; the fade owner +0xa0, +0x7b8, +0x7bc; the front end scene "
+                                   "+0xd20, +0x40, +0x1048)",
+                                   KB_AND_1_0_145};
+constexpr bp::Gate DIRECT_START{"the direct start", &SESSION_DRIVER};
+constexpr bp::Proof FTUE_QUEUE{"StateFTUE's interrupt queue (+0xbf8, its front +0x30, the kind at +0x10)", KB_AND_1_0_145};
+constexpr bp::Gate FTUE_EXIT{"the direct start's StateFTUE exit", &FTUE_QUEUE};
+constexpr bp::Proof FLOW_STATES{"the flow states' layout (+0xb0, +0xb8, +0xc0, +0xaf0, +0xb30, +0xbd8, +0xc10) and the "
+                                "link's stack slot (+0x40)",
+                                KB_AND_1_0_145};
+constexpr bp::Gate FLOW_LINK{"the direct start's flow link", &FLOW_STATES};
+
 constexpr uintptr_t MANAGER_MODES = 0xc0, ENTITY_REGISTRY = 0x1030, ENTITY_MODE = 0xf08;
 
 using ModeByPredicate_t = uint8_t *(void *modes, void *const *predicate);
@@ -74,13 +157,16 @@ using SetMode_t = void(void *modes, void *mode);
 // (KB build: re/db/subsystems/session.md, re/new-gp): the game setup mode from E's list (vt+0x1d0) by name, the
 // setter 0x14079f300, the entrant list by name (EntrantsSystem [game manager+0x290] +0x560), one round at a
 // track found by name in E's track system (+0xf58), the season built by 0x141207290 on a stub, E's components
-// attached (vt+0xe8) and the entrants filled from the list (0x142460230).
-constexpr uintptr_t RVA_SET_SETUP_MODE = 0x79f300, RVA_LIST_STAT_ID = 0x24286e0, RVA_ROUNDS_CLEAR = 0x420cd60,
-                    RVA_ADD_TRACK = 0xb99450, RVA_BUILD_SEASON = 0x1207290, RVA_FILL_ENTRANTS = 0x2460230;
+// attached (vt+0xe8) and the entrants filled from the list (0x142460230). On Steam 26566308 Apply is the same 1641
+// instructions with E's +0x1030, +0xf08, +0xf58, +0xe18, +0x2e0, +0x2b0, vt+0x1d0, the setup modes' +0xd8, +0x70,
+// +0x130, +0x230, the tracks' +0x28, +0x30, +0x78, the rounds' +0x298, the stub's +0x270 and the allocator +0x210 in
+// the same places; [game manager+0x290] is the same in its reader 0x14022d920 (1886 instructions), vt+0xe8 in the
+// track select confirm 0x141c06dc0 (1315), the stub's +0x290 / +0x298 in the season build (14) and E's +0x2d8 / +0x2f8
+// in the fill (109).
 // A session request without a box or track gets the stock 2025 grid at Albert Park; it never continues a saved Grand
 // Prix, whose weekend may be one the session load can't take.
 constexpr const char *DEFAULT_BOX = "f1_2025", *DEFAULT_TRACK = "melbourne", *HOST_SETUP_MODE = "swofty_f1";
-constexpr uintptr_t MANAGER_ENTRANTS = 0x290, ES_LISTS = 0x560, ENTITY_TRACKS = 0xf58,
+constexpr uintptr_t ES_LISTS = 0x560, ENTITY_TRACKS = 0xf58,
                     ENTITY_LIST = 0xe18, ENTITY_ENTRANTS = 0x2e0, ENTRANT_SIZE = 0x88;
 
 struct Game {
@@ -142,8 +228,9 @@ template <class T> bool rd(const void *p, size_t off, T &out);
 // The loading screen's activation (Game_LoadingScreenVM_OnScreenActivated 0x141ca43e0) releases the fade reason
 // FrontEnd (bit 1) on the fade owner [[g_Game_Root]+0xa0]: mask +0x7b8, and with no reason left the fade in (state
 // +0x7bc = 3, +0x7cc = 0, curve +0x7c4). A direct start never shows that screen, so the session would stay black
-// under its HUD: once StateSession updates, the core releases FrontEnd itself.
-constexpr uintptr_t RVA_GAME_ROOT = 0x601db08;
+// under its HUD: once StateSession updates, the core releases FrontEnd itself. On Steam 26566308 the activation is the
+// same 2851 instructions with +0x7b8, +0x7bc, +0x7c4 and +0x7cc in the same places, and [[g_Game_Root]+0xa0] is read
+// the same way by 0x1402669f0 (406 instructions), which goes on to the owner's +0x7b8 and +0x7bc.
 constexpr uint32_t FADE_FRONTEND = 1u << 1;
 bool fade_released = false;
 constexpr uint32_t FADE_EXIT_REQUEST = 1u << 0;
@@ -151,7 +238,7 @@ std::atomic<bool> ftue_interrupt_raised{false};
 
 void release_frontend_fade()
 {
-    auto *root = *reinterpret_cast<uint8_t **>(swofty::api->module_base() + RVA_GAME_ROOT);
+    auto *root = root_global ? *reinterpret_cast<uint8_t **>(root_global) : nullptr;
     uint8_t *owner = nullptr;
     if (!root || !rd(root, 0xa0, owner) || !owner || !runtime::readable(owner + 0x7b8, 0x18))
         return;
@@ -182,7 +269,7 @@ void note_fade()
 {
     static uint32_t last_mask = ~0u, last_state = ~0u;
     static int told = 0;
-    auto *root = *reinterpret_cast<uint8_t **>(swofty::api->module_base() + RVA_GAME_ROOT);
+    auto *root = root_global ? *reinterpret_cast<uint8_t **>(root_global) : nullptr;
     uint8_t *owner = nullptr;
     if (told >= 40 || !root || !rd(root, 0xa0, owner) || !owner || !runtime::readable(owner + 0x7b8, 8))
         return;
@@ -207,9 +294,10 @@ uint64_t load_exiting_at = 0;
 // [state+0xd20] when [[state+0xd20]+0x40]+0x1048 or +0x1049 is set). A direct start never enters StateFrontend, so
 // the backdrop stays under the session: a Time Trial's garage shows it instead of the 3D view, and a Grand Prix's
 // broadcast intro cards sit on it. The node exists in the flow graph all the same (FrontendWorld's child
-// 0x957880c6, its +0xd20 set by its init), so the core despawns the scene through its manager, once.
+// 0x957880c6, its +0xd20 set by its init), so the core despawns the scene through its manager, once. On Steam 26566308
+// that exit is the same 790 instructions with +0xd20, +0x40, +0x1048 and +0x1049 in the same places.
 constexpr uint32_t STATE_FRONTEND = 0x957880c6;
-constexpr uintptr_t FRONTEND_SCENES = 0xd20, SCENES_MAIN = 0x40, MAIN_SPAWNED = 0x1048, RVA_DESPAWN_MAIN_SCENE = 0x28d9a90;
+constexpr uintptr_t FRONTEND_SCENES = 0xd20, SCENES_MAIN = 0x40, MAIN_SPAWNED = 0x1048;
 std::atomic<bool> frontend_scene_despawned{false};
 
 uint8_t *flow_node(uint32_t want)
@@ -245,6 +333,10 @@ void despawn_frontend_scene(const char *when)
 {
     if (frontend_scene_despawned.load())
         return;
+    if (!despawn_main_scene) {
+        swofty::log("[direct] the front end's main scene is not despawned %s: its despawn did not resolve", when);
+        return;
+    }
     uint8_t *mgr = nullptr;
     bool spawned = frontend_main_scene(mgr);
     if (!mgr) {
@@ -256,7 +348,7 @@ void despawn_frontend_scene(const char *when)
         return;
     }
     frontend_scene_despawned = true;
-    reinterpret_cast<void (*)(void *)>(swofty::api->module_base() + RVA_DESPAWN_MAIN_SCENE)(mgr);
+    reinterpret_cast<void (*)(void *)>(despawn_main_scene)(mgr);
     swofty::log("[direct] despawned the front end's main scene %s (manager %p)", when, mgr);
 }
 
@@ -267,6 +359,7 @@ bool env_flag(const char *name)
     return n > 0 && n < sizeof v && v[0] != '0';
 }
 
+// The terrain count (a diagnostic) is read on the KB build only: no code on Steam 26566308 loads it from the code section.
 constexpr uintptr_t RVA_TERRAIN_COUNT = 0x6cb5d50, FTUE_EXIT_GATE = 0xc18, FTUE_INTERRUPT_SEEN = 0xc90,
                     INTERRUPT_QUEUE = 0xbf8, INTERRUPT_EMPTY_FRONT = 0x30;
 constexpr uint32_t INTERRUPT_EXIT = 0xe;
@@ -278,7 +371,8 @@ uint8_t *ftue_interrupt_queue = nullptr;
 uint32_t terrain_count()
 {
     uint32_t v = 0xffffffffu;
-    rd(reinterpret_cast<const void *>(swofty::api->module_base() + RVA_TERRAIN_COUNT), 0, v);
+    if (runtime::same_build())
+        rd(reinterpret_cast<const void *>(swofty::api->module_base() + RVA_TERRAIN_COUNT), 0, v);
     return v;
 }
 
@@ -406,7 +500,9 @@ int load_sync_tries = 0;
 
 // StateLoadSession's exit (0x1436e0e40) waits for its sync point (+0xcd0) once the load is done: the loading
 // screen's UI sets it as it hands over to the session. A direct start never opened that screen, so once the
-// state has been exiting for LOAD_EXIT_WAIT_MS the core sets both nodes itself.
+// state has been exiting for LOAD_EXIT_WAIT_MS the core sets both nodes itself. On Steam 26566308 the state's
+// constructor sets its vtable and builds the sync point at +0xcd0 with the same instructions (one match on each build),
+// and the exit's body calls the sync point check on +0xcd0 at the same place in the same sequence of calls.
 void load_exit(uint8_t *state)
 {
     if (*reinterpret_cast<uint8_t *>(state + STATE_STATUS) != 3) {
@@ -608,7 +704,12 @@ constinit void (*time_trial_screen)(const char *name) = nullptr;
 
 // The race's laps: Game_ChampionshipGameMode_BuildSessionSettings (0x1407b7b90, the championship modes' slot) fills
 // the session's SessionSettings (sessionId +4) and stores the laps at +0xdf0 XOR +0xdf8; for a race session the core
-// writes the requested laps over it after the game's own value.
+// writes the requested laps over it after the game's own value. On Steam 26566308 the function is the same 1358
+// instructions with the laps at the same +0xdf0 / +0xdf8 (re/tools/sigport.py --compare, sigverify.py --disp).
+constexpr runtime::build_proof::Proof SESSION_LAPS{"the session settings' laps layout (+0xdf0, +0xdf8)",
+                                                   runtime::build_proof::bit(runtime::build_proof::Build::kb) |
+                                                       runtime::build_proof::bit(runtime::build_proof::Build::steam_1_0_145)};
+constexpr runtime::build_proof::Gate RACE_LAPS{"the direct start's race laps", &SESSION_LAPS};
 safetyhook::InlineHook h_settings;
 
 uint64_t settings_detour(void *mode, uint8_t *settings)
@@ -642,9 +743,9 @@ void fill_context()
     context.game_modes = modes;
 }
 
-template <class F> F *at_rva(uintptr_t rva)
+template <class F> F *code(uintptr_t address)
 {
-    return reinterpret_cast<F *>(swofty::api->module_base() + rva);
+    return reinterpret_cast<F *>(address);
 }
 
 uint8_t *grand_prix_entity(void *modes)
@@ -656,7 +757,11 @@ uint8_t *grand_prix_entity(void *modes)
 
 // The weekend the session load reads: the current mode's championship holder ([modes+0x88]) > its entity (+0x260)
 // > the current championship (+0x1058) > seasons[season_index] (+0x548, +0x560, 16-byte entries, season at +8) >
-// weekends[current_weekend] (+0x288, +0x2a0) (apply/moments.cpp reads the same chain for the session facts).
+// weekends[current_weekend] (+0x288, +0x2a0) (apply/moments.cpp reads the same chain for the session facts). On Steam
+// 26566308 the same instructions use them in the same places: +0x88, +0x260, +0x1058, +0x288, +0x2a0 and the
+// weekend's +0x220, +0x238, +0x278 in the session settings build 0x1407b7b90 (1358 instructions), the championship's
+// +0x548, +0x550, +0x560 in 0x1417d38e0 (3164), and the season's +0x288..+0x2a0 with the weekend's +0x220..+0x238 and
+// its 0xa0-byte sessions in 0x1407b56a0 (246).
 constexpr size_t WK_SESSIONS = 0x220, WK_CURRENT = 0x238, WK_TRACK = 0x278, SESSION_STRIDE = 0xa0, SESSION_ID = 0x8;
 
 template <class T> bool rd(const void *p, size_t off, T &out)
@@ -757,8 +862,9 @@ void choose_session(void *modes, const char *when)
 // The weekend's sessions as the dev session's Apply (0x141125e80) builds them: Sess_Build_DevWeekendStructure
 // (0x140b025f0) on a 0x38-byte list {+8, +0x10 the allocator, +0x18..+0x20 16-byte entries} with the game setup mode
 // ([E+0x2b0]) and a (practice, qualifying, race) triple from the session name, handed to the weekend service
-// (registry component 0x14605ada0) slot 0x268; then the entries are released and the list freed.
-constexpr uintptr_t RVA_WEEKEND_STRUCTURE = 0xb025f0, RVA_WEEKEND_SERVICE = 0x605ada0;
+// (registry component 0x14605ada0) slot 0x268; then the entries are released and the list freed. On Steam 26566308
+// the structure build is the same 558 instructions with the list's +0x18 / +0x20 in the same places, and Apply calls
+// slot 0x268 at the same place.
 
 struct Triple {
     uint64_t practice, qualifying, race;
@@ -799,7 +905,7 @@ void weekend_structure(uint8_t *e, uint8_t *component)
         return;
     }
     void *alloc = *reinterpret_cast<void **>(component + 0x210), *gsm = *reinterpret_cast<void **>(e + 0x2b0);
-    void *svc = registry_call(e, 0x10, reinterpret_cast<void *>(swofty::api->module_base() + RVA_WEEKEND_SERVICE), 1);
+    void *svc = registry_call(e, 0x10, reinterpret_cast<void *>(gp.weekend_service), 1);
     if (!alloc || !gsm || !svc) {
         swofty::log("[direct] Grand Prix: the weekend structure is not set (allocator %p, setup mode %p, service %p)",
                     alloc, gsm, svc);
@@ -808,8 +914,8 @@ void weekend_structure(uint8_t *e, uint8_t *component)
     alignas(16) uint8_t list[0x38] = {};
     *reinterpret_cast<void **>(list + 8) = alloc;
     *reinterpret_cast<void **>(list + 0x10) = alloc;
-    at_rva<void(void *, void *, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t)>(
-        RVA_WEEKEND_STRUCTURE)(list, gsm, t.practice, t.qualifying, t.race, 0, 1, 0, 0);
+    code<void(void *, void *, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t, uint64_t)>(
+        gp.weekend_structure)(list, gsm, t.practice, t.qualifying, t.race, 0, 1, 0, 0);
     auto **svt = *reinterpret_cast<void ***>(svc);
     reinterpret_cast<void (*)(void *, void *, int)>(svt[0x268 / 8])(svc, list, 1);
     auto *b = *reinterpret_cast<uint8_t **>(list + 0x18), *end = *reinterpret_cast<uint8_t **>(list + 0x20);
@@ -834,9 +940,9 @@ void weekend_structure(uint8_t *e, uint8_t *component)
 
 // The player's seat, as Apply's drivers config (0x141129850) sets it: the first entrant of the requested team (and
 // driver) that is not human gets the player's identity block (the profile [[[game manager+0x140]+0x1c0]+0x1c0]
-// slot 0x38, 0x40 bytes to +8) and the human flag (+0x48 = 0x10000000), between the entrants-changing messages.
-constexpr uintptr_t RVA_MESSAGE_BUS = 0x618b3b8, RVA_POST_BEGIN = 0x24e2b90, RVA_POST_END = 0x24e2f00,
-                    VT_MSG_BEGIN = 0x578d4e8, VT_MSG_END = 0x578d510;
+// slot 0x38, 0x40 bytes to +8) and the human flag (+0x48 = 0x10000000), between the entrants-changing messages. On
+// Steam 26566308 the drivers config is the same 414 instructions with +0x140, +0x1c0, slot 0x38, the entrants' 0x88
+// stride, +0x48 = 0x10000000, +0x4b and the team and driver ids (+0x50, +0x52, +0x58, +0x5a) in the same places.
 
 std::map<uint32_t, std::string> labels_of(const char *table, const char *stem)
 {
@@ -926,12 +1032,11 @@ void seat_player(uint8_t *e, void *mgr)
         return;
     }
     reinterpret_cast<void (*)(void *, void *)>((*reinterpret_cast<void ***>(prof))[0x38 / 8])(prof, id);
-    uintptr_t base = swofty::api->module_base();
-    void *bus = *reinterpret_cast<void **>(base + RVA_MESSAGE_BUS);
+    void *bus = *reinterpret_cast<void **>(gp.message_bus);
     void *mb = bus && runtime::readable(bus, 0x10) ? *reinterpret_cast<void **>(static_cast<uint8_t *>(bus) + 8) : nullptr;
-    alignas(16) void *msg[3] = {reinterpret_cast<void *>(base + VT_MSG_BEGIN), nullptr, nullptr};
+    alignas(16) void *msg[3] = {reinterpret_cast<void *>(gp.vt_msg_begin), nullptr, nullptr};
     if (mb)
-        at_rva<void(void *, void *)>(RVA_POST_BEGIN)(mb, msg);
+        code<void(void *, void *)>(gp.post_begin)(mb, msg);
     e[0x2f8] = 1;
     for (size_t i = 0; i < n; i++) {
         uint8_t *r = begin[0] + i * ENTRANT_SIZE;
@@ -942,11 +1047,11 @@ void seat_player(uint8_t *e, void *mgr)
     }
     std::memcpy(seat + 8, id, 0x40);
     *reinterpret_cast<uint32_t *>(seat + 0x48) = 0x10000000;
-    msg[0] = reinterpret_cast<void *>(base + VT_MSG_END);
+    msg[0] = reinterpret_cast<void *>(gp.vt_msg_end);
     msg[1] = nullptr;
     msg[2] = e + 0x2d8;
     if (mb)
-        at_rva<void(void *, void *)>(RVA_POST_END)(mb, msg);
+        code<void(void *, void *)>(gp.post_end)(mb, msg);
     e[0x2f8] = 0;
     swofty::log("[direct] Grand Prix: the player drives for %s as %s (seat %zu)", team_of(seat).c_str(),
                 driver_of(seat).c_str(), size_t(seat - begin[0]) / ENTRANT_SIZE);
@@ -956,6 +1061,10 @@ ds::Setup new_grand_prix(std::string &why)
 {
     if (!game.manager || !game.set_mode || !game.by_predicate || !game.gp_predicate) {
         why = "the game manager, SetCurrentGameMode or the Grand Prix mode lookup did not resolve";
+        return ds::Setup::failed;
+    }
+    if (!gp.resolved()) {
+        why = "the Grand Prix setup's game addresses did not all resolve on this build";
         return ds::Setup::failed;
     }
     void *mgr = *reinterpret_cast<void **>(game.manager);
@@ -974,7 +1083,7 @@ ds::Setup new_grand_prix(std::string &why)
         swofty::log("[direct] Grand Prix: the Grand Prix mode is current (entity %p); waiting for its components", e);
         return ds::Setup::pending;
     }
-    void *rounds_seen = registry_call(e, 0x10, reinterpret_cast<void *>(swofty::api->module_base() + 0x605ad40), 0);
+    void *rounds_seen = registry_call(e, 0x10, reinterpret_cast<void *>(gp.rounds_component), 0);
     if (!rounds_seen) {
         if (GetTickCount64() - mode_set_at < 15000)
             return ds::Setup::pending;
@@ -986,8 +1095,8 @@ ds::Setup new_grand_prix(std::string &why)
     std::string requested_mode = request["setup_mode"].str(), list_name = request["box"].str(DEFAULT_BOX),
                 track_name = request["track"].str(DEFAULT_TRACK);
     // 1. The entrant list by name: EntrantsSystem +0x560, 16-byte entries, the list at +8.
-    uint8_t *es = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(mgr) + MANAGER_ENTRANTS);
-    uint8_t id = at_rva<uint8_t(const char *)>(RVA_LIST_STAT_ID)(list_name.c_str());
+    uint8_t *es = *reinterpret_cast<uint8_t **>(static_cast<uint8_t *>(mgr) + runtime::manager_entrants_system());
+    uint8_t id = code<uint8_t(const char *)>(gp.list_stat_id)(list_name.c_str());
     auto *lists = *reinterpret_cast<uint8_t **>(es + ES_LISTS), *lists_end = *reinterpret_cast<uint8_t **>(es + ES_LISTS + 8);
     if (!lists || size_t(lists_end - lists) / 16 <= id) {
         why = "no entrant list '" + list_name + "' (stat id " + std::to_string(id) + ")";
@@ -1047,7 +1156,7 @@ ds::Setup new_grand_prix(std::string &why)
                 setup_name.c_str(), list_name.c_str(),
                 !requested_mode.empty() ? "requested" : offers[pick].offers ? "it offers the list" : "none offers the list",
                 offering.empty() ? "none" : offering.c_str());
-    at_rva<void(void *, void *, int)>(RVA_SET_SETUP_MODE)(e, gsm, 0);
+    code<void(void *, void *, int)>(gp.set_setup_mode)(e, gsm, 0);
     swofty::log("[direct] Grand Prix: setup mode %s (%p) set on %p", setup_name.c_str(), gsm, e);
     *reinterpret_cast<void **>(e + ENTITY_LIST) = list;
     swofty::log("[direct] Grand Prix: entrant list %s (stat id %u) is %p", list_name.c_str(), unsigned(id), list);
@@ -1070,15 +1179,15 @@ ds::Setup new_grand_prix(std::string &why)
     }
     // 4. One round at that track, then the season built from the rounds (0x141207290 on a stub that holds the
     // registry at +0x270, the rounds at +0x290 and the track at [+0x298]+0x18).
-    void *rounds = registry_call(e, 0x10, reinterpret_cast<void *>(swofty::api->module_base() + 0x605ad40), 0);
+    void *rounds = registry_call(e, 0x10, reinterpret_cast<void *>(gp.rounds_component), 0);
     if (!rounds) {
         why = "the Grand Prix mode has no rounds component";
         return ds::Setup::failed;
     }
     // The clear (0x14420cd60, a jump to runtime-decrypted code) reads its list holder from the second argument:
     // it starts mov rcx,[rdx], and the track select calls it with rdx = rounds+0x298.
-    at_rva<void(void *, void *)>(RVA_ROUNDS_CLEAR)(nullptr, static_cast<uint8_t *>(rounds) + 0x298);
-    at_rva<void(void *, void *)>(RVA_ADD_TRACK)(rounds, track);
+    code<void(void *, void *)>(gp.rounds_clear)(nullptr, static_cast<uint8_t *>(rounds) + 0x298);
+    code<void(void *, void *)>(gp.add_track)(rounds, track);
     alignas(16) static uint8_t stub[0x400], holder[0x40];
     std::memset(stub, 0, sizeof stub);
     std::memset(holder, 0, sizeof holder);
@@ -1086,7 +1195,7 @@ ds::Setup new_grand_prix(std::string &why)
     *reinterpret_cast<void **>(stub + 0x290) = rounds;
     *reinterpret_cast<void **>(holder + 0x18) = track;
     *reinterpret_cast<void **>(stub + 0x298) = holder;
-    at_rva<void(void *)>(RVA_BUILD_SEASON)(stub);
+    code<void(void *)>(gp.build_season)(stub);
     set_weekend_track(modes, track[1], track_name.c_str(), "after the season build");
     // 5. E's components attached again, as the track select confirm does after its rounds, then the sessions.
     reinterpret_cast<void (*)(void *)>(evt[0xe8 / 8])(e);
@@ -1098,7 +1207,7 @@ ds::Setup new_grand_prix(std::string &why)
         alignas(16) static uint8_t blk[0x190];
         std::memset(blk, 0, sizeof blk);
         *reinterpret_cast<uint64_t *>(blk + 0x180) = 1;
-        at_rva<void(void *, void *, void *, int)>(RVA_FILL_ENTRANTS)(es, e, blk, 0);
+        code<void(void *, void *, void *, int)>(gp.fill_entrants)(es, e, blk, 0);
     }
     size_t entrants = size_t(begin[1] - begin[0]) / ENTRANT_SIZE;
     swofty::log("[direct] Grand Prix: entrants %zu before the fill, %zu after", before, entrants);
@@ -1180,7 +1289,7 @@ void direct_start_setup()
             h_set_mode = std::move(*h);
     }
     if (target == "session" && request["laps"].num(0) > 0) {
-        uintptr_t at = runtime::same_build() ? runtime::find(SIG_BUILD_SETTINGS, "session settings", "direct") : 0;
+        uintptr_t at = runtime::holds(RACE_LAPS) ? runtime::find(SIG_BUILD_SETTINGS, "session settings", "direct") : 0;
         bool hooked = false;
         if (at) {
             auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(settings_detour));
@@ -1197,8 +1306,32 @@ void direct_start_setup()
         swofty::log("[direct] off: the title can't pass by itself (%s)", runtime::title::why().c_str());
         return;
     }
+    if (!runtime::holds(DIRECT_START)) {
+        swofty::log("[direct] off: the session driver's layout is not proven on this build");
+        return;
+    }
+    root_global = runtime::find(SIG_GAME_ROOT, "game root", "direct");
+    despawn_main_scene = runtime::find(SIG_DESPAWN_MAIN_SCENE, "front end scene despawn", "direct");
+    if (target == "session") {
+        gp.set_setup_mode = runtime::find(SIG_SET_SETUP_MODE, "Grand Prix setup", "direct");
+        gp.list_stat_id = runtime::find(SIG_LIST_STAT_ID, "Grand Prix setup", "direct");
+        gp.rounds_clear = runtime::find(SIG_ROUNDS_CLEAR, "Grand Prix setup", "direct");
+        gp.add_track = runtime::find(SIG_ADD_TRACK, "Grand Prix setup", "direct");
+        gp.build_season = runtime::find(SIG_BUILD_SEASON, "Grand Prix setup", "direct");
+        gp.fill_entrants = runtime::find(SIG_FILL_ENTRANTS, "Grand Prix setup", "direct");
+        gp.rounds_component = runtime::find(SIG_ROUNDS_COMPONENT, "Grand Prix setup", "direct");
+        gp.weekend_structure = runtime::find(SIG_WEEKEND_STRUCTURE, "Grand Prix setup", "direct");
+        gp.weekend_service = runtime::find(SIG_WEEKEND_SERVICE, "Grand Prix setup", "direct");
+        gp.message_bus = runtime::find(SIG_MESSAGE_BUS, "Grand Prix setup", "direct");
+        gp.post_begin = runtime::find(SIG_POST_BEGIN, "Grand Prix setup", "direct");
+        gp.post_end = runtime::find(SIG_POST_END, "Grand Prix setup", "direct");
+        gp.vt_msg_begin = runtime::find(SIG_VT_MSG_BEGIN, "Grand Prix setup", "direct");
+        gp.vt_msg_end = runtime::find(SIG_VT_MSG_END, "Grand Prix setup", "direct");
+    }
+    // StateFTUE's exit: on Steam 26566308 the same 178 instructions, with the interrupt queue +0xbf8 and its front +0x30
+    // in the same places (the pattern holds the queue's +0x18 / +0x20 and the front's kind at +0x10).
     if (ftue_interrupt_on) {
-        uintptr_t at = runtime::same_build() ? runtime::find(SIG_FTUE_EXIT, "StateFTUE exit", "direct") : 0;
+        uintptr_t at = runtime::holds(FTUE_EXIT) ? runtime::find(SIG_FTUE_EXIT, "StateFTUE exit", "direct") : 0;
         bool hooked = false;
         if (at) {
             auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(at), reinterpret_cast<void *>(ftue_exit_detour));
@@ -1212,10 +1345,13 @@ void direct_start_setup()
             swofty::log("[direct] FTUE interrupt off: StateFTUE::onStateExit did not hook; leaving by the link");
         }
     }
+    // The flow link: on Steam 26566308 the flow machine is the same 2045 instructions with the states' +0xb0, +0xb8,
+    // +0xc0, +0xaf0, +0xb30 and +0xbd8 in the same places (+0xc10, the parent, the same in 0x141d5ee30), and the pattern
+    // holds the hook point and the link's stack slot.
     if (t.exit_state || t.from_state) {
-        uintptr_t at = runtime::same_build() ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;
+        uintptr_t at = runtime::holds(FLOW_LINK) ? runtime::find(SIG_FLOW_LINK, "flow link", "direct") : 0;
         if (!at) {
-            swofty::log("[direct] off: the flow link site is the KB build's and did not resolve on this build");
+            swofty::log("[direct] off: the flow link site is not proven or did not resolve on this build");
             return;
         }
         auto h = safetyhook::MidHook::create(reinterpret_cast<void *>(at), link_mid);

@@ -276,17 +276,19 @@ pub fn missing(c: &Career, order: &[String], installed: &BTreeMap<String, AddonM
 
 /// The careers of `list` in the save `profile` boots: the ones made under a profile that boots the
 /// same save (its own launcher save, or the shared Steam save), and the ones with no profile yet.
+/// Finding a profile's save looks for the game's copies, which on Windows runs `reg query` several
+/// times, so it is done only for the careers of other profiles.
 pub fn in_save_of<'a>(list: &'a [Career], data: &Path, profile: &str) -> Vec<&'a Career> {
+    let source = |p: &str| crate::saves::vault::Location::source_of_profile(data, p);
+    let mut mine: Option<Option<String>> = None;
     let mut sources: BTreeMap<&str, Option<String>> = BTreeMap::new();
-    let mine = crate::saves::vault::Location::source_of_profile(data, profile);
     list.iter()
         .filter(|c| match c.profile.as_deref() {
             None => true,
+            Some(p) if p == profile => true,
             Some(p) => {
-                *sources
-                    .entry(p)
-                    .or_insert_with(|| crate::saves::vault::Location::source_of_profile(data, p))
-                    == mine
+                let mine = mine.get_or_insert_with(|| source(profile));
+                *sources.entry(p).or_insert_with(|| source(p)) == *mine
             }
         })
         .collect()
@@ -1008,6 +1010,27 @@ mod tests {
         assert_eq!(ids("a"), ["1", "3"]);
         assert_eq!(ids("b"), ["2", "3"]);
         std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn only_the_careers_of_other_profiles_look_for_the_game_copies() {
+        let root = std::env::temp_dir().join(format!("swofty-careers-looks-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let looks = || crate::game_folder::copies::LOOKS.with(std::cell::Cell::get);
+        let before = looks();
+        let own = parse(r#"[{"career":"1","profile":"a"},{"career":"3"}]"#);
+        assert_eq!(in_save_of(&own, &root, "a").len(), 2);
+        assert!(in_save_of(&[], &root, "a").is_empty());
+        assert_eq!(looks(), before, "careers of this profile and of none");
+        let others = parse(
+            r#"[{"career":"1","profile":"a"},{"career":"2","profile":"b"},{"career":"4","profile":"b"}]"#,
+        );
+        in_save_of(&others, &root, "a");
+        assert_eq!(
+            looks(),
+            before + 2,
+            "this profile's save and b's, each found once"
+        );
     }
 
     fn copy_switch(name: &str, ea: bool) -> std::path::PathBuf {

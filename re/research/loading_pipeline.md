@@ -1,6 +1,6 @@
 # F1 25 loading pipeline and what a hook can shorten (build d873a1c8)
 
-Lane `load-game` (v1.10.0), 2026-11-17, rounds 1 to 3. **Static reading only**: no game run, no debugger, no trace made for
+Lane `load-game` (v1.10.0), 2026-11-17, rounds 1 to 4. **Static reading only**: no game run, no debugger, no trace made for
 this note. Every address is a VA on the KB build (`F1_25.exe` sha256 `d873a1c8…`, image base `0x140000000`). Decompiles were
 made with `re/tools/decomp` from the `f1-modding` Ghidra pool; the KB rows cited carry their own `decomp:` paths, and "own
 decomp" means a decompile made for this note. Levels follow `re/PROTOCOL.md` §1. Nothing here is L3: no claim about seconds
@@ -9,14 +9,14 @@ saved is measured, and §6 lists the measurements that would make it so.
 **Two builds.** The KB build is `d873a1c8…` (PE timestamp 1789118616, 408,063,872 bytes). The game updated on the night of
 16 to 17 November to `46009bd3…` (timestamp 1794312636, 391,613,312 bytes), which the core lists as verified but not as the
 KB build: `runtime::same_build()` (`native/src/core/runtime/stage.cpp:206`) is false on it, and the core's title helper and
-direct start, both gated on it, do not run there (§6). Each timing below names its build.
+direct start, both gated on it, do not run there (§7 lists everything gated that way). Each timing below names its build.
 
 Round 3 adds three kinds of evidence that need no game run:
 
 - **Retail config.** `system/config.xml`, `config_platform.xml` and `config_sku.xml` read out of the installed `game.dat` (NeFS,
   header inside `F1_25.exe`) with `packages/formats` (`nefs::Archive::open_exe`, `read`), as plain files. The values are the
-  installed build's (`46009bd3…`). They are in `engine_settings.tsv` (columns `retail` and `retail_file`): 363 of the 602
-  named call sites (329 of 525 names) have a value there; the rest run on the code default.
+  installed build's (`46009bd3…`). They are in `engine_settings.tsv` (columns `retail` and `retail_file`): 400 of the 683
+  named call sites (352 of 577 names) have a value there; the rest run on the code default.
 - **Flow data.** `system/state_machine.xml` and the seven `game/flow_*.xml` from the same archive.
 - **Existing logs.** `loader.log` of earlier sessions on this machine (`~/.local/share/swofty/sessions/`) and of player bundles
   (`/mnt/work/F1/f1logs`). The core logs every flow state it knows by name and every other state once per process, at its first
@@ -96,6 +96,7 @@ out of scope.
 | stage | driver | what ends it | level |
 |---|---|---|---|
 | request | `Sess_Loader_RequestSessionLoad` 0x142d470c0 ("Session load requested for %s"); flow state `StateLoadSession` | — | L2 |
+| load session state | `StateLoadSession`'s update (`vt_Sess_LoadSession` slot 9, thunk 0x1436e0b00 → `.data1` body 0x150f50eb0, own decomp): holds until **3.0 s** after its QPC stamp (state+0xe00) unless `Game.IgnoreMinimumLoadingTime`, and forever while `Game.LoadForever` (code default 0, no retail value) | **timer**, then a ready flag (state+0xdf4) | L1 (no record) |
 | front-end assets, cars, drivers | `Sess_Loader_StartFrontendAssetLoad` 0x142d47210 → `Ne_AssetLoader_RequestGroupHandles` 0x1409a7510, `Sess_Loader_CollectVehicleAssetGroups` 0x140612a80, `Game_VehicleAssetManager_ChangeResidentAssets` 0x140818e30 | real work, asynchronous | L2 |
 | loader state machine | `Sess_Loader_Update` 0x142d4a480 (per frame), `Game_StreamingAssetLoadTask_Update` 0x142d4b6a0 | real work, polled once per frame | L2 |
 | track | `Sess_Loader_SetupTrackAssets` 0x142d48b70, `Sess_Loader_BuildTrackRegionList` 0x142d49050 | real work | L2 |
@@ -105,7 +106,7 @@ out of scope.
 | cutscene prep | `Game_CutsceneManager_IsPreparingScenes` 0x140211e40, `Game_CutsceneManager_WaitTextureStreaming` 0x140212210 (gives up after 30.0 s) | streaming, 30 s cap | L2 |
 | session transition | `Sess_SessionTransition_OnStateUpdate` 0x1436f9890: **pure timer**, 3.0 s since state+0xd98 | **timer** | L2 (V9348) |
 | intro video | flow node `IntroVideo` (`SessionStateIntroVideo`, `videoType="FullSwipe"`); `Sess_IntroVideo_OnStateEnter` 0x142d6cfc0 / `Sess_IntroVideo_CanFinish` 0x142d6d3b0; `Game.SkipIntroVideo` (state+0xdc6 from `Sess_IntroVideo_ParseParams` 0x142d6cc30) | the video | L2 |
-| talking points | flow node `TalkingPoints` (`SessionStateTalkingPoints`) after `IntroCameras` in race and practice flows, not in Time Trial; links `next`, `snapshot`, `skipped`, `loop` | the broadcast sequence, or the player's skip | L2 for the node (flow data), L1 for the rest (§1.8) |
+| talking points | flow node `TalkingPoints` (`SessionStateTalkingPoints`) after `IntroCameras` in race and practice flows, not in Time Trial; links `next`, `snapshot`, `skipped`, `loop` | the broadcast sequence and its fade to black, the player's Menu Accept, or `Game.SkipTalkingPoints` | L2 for the node (flow data) and the setting reader, L1 for the update (§1.8) |
 | grid rundown | flow nodes `GridRundownType`, `GridRunDown`, then `F1Swipe` (a short sting) and `PreRace` | the sequence | L2 (flow data), §1.5 |
 | story hub | `Sess_StoryHub_OnStateEnter` 0x1436fb5e0: same 3.0 s minimum from state+0xe20 | **timer** and the scene | L2 (V9363) |
 | end of race | `PTS` (`SessionStatePurgeTextureStreaming`), `Game_SessionState_PurgeTexturesAndWait` 0x142dab950 | real work | L1 |
@@ -314,13 +315,77 @@ L1 and changes nothing the content route cannot.
 `flow_practice.xml` (with `releaseCutscenesOnExit="true"`) its `skipped` link goes straight to `PostLoadReadyMonitor`; in
 `flow_race.xml` both `next` and `skipped` go to `GridRundownType`, so in a race the skip saves only the talking points
 themselves. In the slow direct-start practice log it took 14.3 s; across player bundles the median from its first entry to the
-next state is 4.65 s (the player can skip it, so this is a lower bound for an unskipped sequence). The string
-`Game.SkipTalkingPoints` sits in the exe beside the state's own strings but nothing references it: no rip-relative load and no
-absolute pointer. The same holds for `Game.SkipIntroCameras` and its log line "Skipped SessionStateIntroCameras as
-Game.SkipIntroCameras is true" (the one xref hit, 0x14434280f, falls inside other instructions). The skip code looks
-compiled out of the retail build, so no setting gates these states (L1).
-A flag would need a hook that takes the state's `skipped` link: a behaviour hook on a state nobody has recorded yet. Ranked
-below; not started.
+next state is 4.65 s (the player can skip it, so this is a lower bound for an unskipped sequence).
+
+**The game's own switch.** `Game.SkipTalkingPoints` is read, from `.data1`. An earlier round of this note said nothing
+references it, because `re/tools/xref.py` and the first settings sweep only scanned `.xtls`. The state's slot 7 (parse
+params, vtable 0x1457e2cc0, pointer 0x1457e2cf8) is a 5-byte jmp at 0x142d94e20 into the body 0x14eb3abf0, which:
+
+1. reads `Game.SkipTalkingPoints` through `Ne_Get_SettingBool` 0x143a43b90 (call 0x14eb3ac2a, code default 0, retail
+   `config.xml` **false**) and `Game.ecaEnabled` (call 0x14eb3ac49, default 1, retail true);
+2. stores byte state+0xea1 = 1 when the first is true or the second false (0x14eb3ac62, the only writer of +0xea1 for this
+   class).
+
+`Game_SessionStateTalkingPoints_OnStateEnter` 0x142d94f30 then stores +0xea0 (0x142d952ae): 1 when the game mode has no
+talking points (the mode is the class at 0x146129ca0, or lacks component 0x14605b108), otherwise the OR of three mode and
+feature checks and +0xea1. With +0xea0 set, the state generates no broadcast sequence, and its update returns `skipped` on the
+first frame.
+
+Record: `re/bindings/game/Game_SessionStateTalkingPoints_ParseParams_Thunk.json` (L2 claimed by this lane, its own proof on
+the KB exe, evidence `decomp:` of the body, the enter and the update, `xref:` of the slot, the name load, the +0xea1 store and
+the +0xea0 store). It needs a second contributor's `binding.py agree` before anything depends on it.
+
+The installed build `46009bd3` has the same reader: one rip-relative load of the string at 0x14e6cc9db in its `.trace`
+section (that build's name for `.data1`), 31 bytes before its `Game.ecaEnabled` load, which is the KB body's layout. A static
+scan, L1.
+
+`Game.SkipIntroCameras` still has no reader in either section, and its log line's one hit (0x14434280f) falls inside other
+instructions.
+
+**What ends the state.** From this lane's decompiles of the update `Game_SessionStateTalkingPoints_OnStateUpdate` 0x142d95b90
+(record L1; this lane added a proof), the enter, and the fade delegates 0x14eb46c90 (fade-out complete) and 0x142d96e30
+(`fadeOutCompleteDelegateForNextPhase`). Link names are the djb2 of the ids the update writes; all four match.
+
+| exit | link | when |
+|---|---|---|
+| the switch, or no sequence | `skipped` (0x996c4495) | first update while +0xea0 is set (above), or when the generated sequence is empty or has length ≤ 0 |
+| end of sequence | `next` (0x7c9b1ec4) | the sequence at +0xe88 reaches status 4 (+0x2c) after the fade to black it requested (+0xea8), and the fade-out delegate has set +0xea6. When the delegate did not fire, the update forces a fade out (0x142d95870) and stays |
+| either of the above, in one mode | `snapshot` (0x9b3bfc35) | instead of `next` or `skipped`, when the mode has component 0x146062fc0 and byte [[[0x146075a78]+0x20]+0xd8]+6 is 0 |
+| restart | `restart` (0x3f29fc8a) | byte +0xcc9 bit 1 (a restart request) |
+
+- **Length.** The length is the sequence itself: generation waits for the commentary to load (the enter logs "Broadcast
+  generation took more than %fs, it maybe waiting for Audio/VO" past 10 s), then camera shots play with commentary lines. The
+  countdown at +0xeac (0.2 s at enter, 0.3 s after each phase) only delays a fade request.
+- **Player's skip.** "Menu Accept" (`Ne_Input_IsActionDownAnyDevice` behind 0x1436af750) steps to the next item that allows a
+  skip (+0x96 of a 0x48-byte item). Past the last one it ends the sequence, which then fades and takes `next`, and the
+  update sends the `CutsceneSkipped` event with `PreSessionTalkingPoints` or `PostSessionTalkingPoints`. The update checks
+  input only while byte +0xea7 is set, and no store in this class's functions sets it: the 16-bit stores at +0xea6 write 0.
+  How the player's skip is armed is open (L1).
+- **Unused link.** `loop` is in the flow data, but the update never returns it.
+
+**The clean path** is the game's own: force `Game.SkipTalkingPoints` true with one `OVERRIDES` row on the bool getter, which
+§3 already wraps (L2, V0021 agree). That needs no new hook and no hook on this state. The state then takes its own `skipped`
+link, as it does in every mode without talking points:
+
+- in a race, `skipped` and `next` both lead to `GridRundownType`;
+- in practice, `skipped` leads to `PostLoadReadyMonitor`.
+
+Added in round 6 as the experimental feature `loading_skip_talking_points` (off by default), one `OVERRIDES` row. The
+reader record still has its author's proof only: it needs a second contributor's `binding.py agree` before the feature is
+offered beyond measurement runs.
+
+**The other two sequence switches** (static, L1; no flags for them):
+
+- `Game.SkipCamSequence` is read by `SessionStateCameraSequence`'s parse params (slot 7 of vtable 0x1457ddac0, a jmp at
+  0x142d4f9c0 to the body 0x14e88f420; the getter call at 0x14e88f4e4). With it on, the body logs "Skipped
+  SessionStateCameraSequence as Game.SkipCamSequence is true" and stores +0xdd1 = 1; the enter (body 0x14e8907a0) then
+  clears its active byte +0xdd0 and jumps past the sequence's setup, so the camera sequence never plays. Which flow nodes
+  use this class is not read here (no flow data in this lane); `IntroCameras`, between the intro video and the talking
+  points, is the likely one, which would put it on the path from the load to the player's control. Retail false.
+- `Game.SkipWinnerSequence` is read by the parse params shared by `WinnerSequence` (vtable 0x1457e3fe0, slots 8 and 9 are
+  `Sess_WinnerSequence_Enter` / `_Update`, L2) and a second class (vtable 0x1457ea6e0): a jmp at 0x142da9f10 to the body
+  0x14ebd43b0, getter call at 0x14ebd449e. The winner sequence plays `outro_finishline_seq` after the race (40 s cap): it
+  is after the finish, not on a loading path. No retail value.
 
 ## 2. Ranked candidates
 
@@ -328,10 +393,10 @@ Ranked by likely seconds saved per load, then by safety. "Saved" is an upper bou
 
 | # | candidate | saves (inferred) | safety | evidence | status |
 |---|---|---|---|---|---|
-| 1 | `Game.IgnoreMinimumLoadingTime` | up to 3.0 s per session transition (always), per track load and story hub entry when the real load is shorter | high: the game's developer switch, three readers, not set in retail config | L2 ×3 + getter agree V0021 | **shipped**, `loading_skip_minimum_time` |
+| 1 | `Game.IgnoreMinimumLoadingTime` | up to 3.0 s per session transition (always), per session load, track load and story hub entry when the real load is shorter | high: the game's developer switch, four readers, not set in retail config | L2 ×3 + getter agree V0021; the fourth reader (`StateLoadSession`, §1.2) L1 | **shipped**, `loading_skip_minimum_time` |
 | 2 | `Game.SkipGridRundown` | the grid render of up to 32 driver thumbnails (the thumbnail system is on in retail; capped at 7.5 s / 20 s) and the rundown sequence | medium: removes a presentation sequence the player may want | L2 predicate and waits; L1 which ids; retail false | **shipped**, `loading_skip_grid_rundown` |
 | 3 | `Game.SkipIntroVideo` | the intro video before a session: 1.6–1.9 s (log) | medium: the video may cover streaming | L2; retail false | **shipped**, `loading_skip_session_intro_video` |
-| 4 | talking points (`skipped` link) | about 4.7 s median, up to 14 s, per race or practice session | medium: removes a broadcast sequence; needs a new hook | L2 node (flow data), L1 state; no setting reader | record the state's update, then a hook (§1.8) |
+| 4 | `Game.SkipTalkingPoints` | about 4.7 s median, up to 14 s, per race or practice session | medium: the game's developer switch; removes a broadcast sequence; no new hook | reader L2 (record, author's proof only), getter agree V0021, update L1; retail false | **experimental**, `loading_skip_talking_points` (off; the reader needs an agree row, §1.8) |
 | 5 | the boot sting | done by the core's 6.0 s intro (stock 11.8 s); a 0.5 s clip saves up to 5.5 s more if the sting holds the title | high as content | header read; L1 whether it holds the title | content (§1.7); measure with `boot_with_the_stock_intro` |
 | 6 | `Renderer.Gfx.maxPsoCreationThreads` | boot time spent creating PSOs, if the effective value is low | medium | L1; retail unset, code default an uninitialised stack slot | M0 first (log the effective value) |
 | 7 | `ErpLoader.forceSequentialReads` false | unknown; parallel section reads on fast drives | medium: PC config sets it on deliberately; no allocation change | L1 | M4 arm with a temporary `OVERRIDES` row |
@@ -357,6 +422,7 @@ Code: `native/src/core/loading/game_settings.cpp` and `game_settings_logic.hpp`,
   | `loading_skip_minimum_time` | `Game.IgnoreMinimumLoadingTime` | bool | 1 |
   | `loading_skip_session_intro_video` | `Game.SkipIntroVideo` | bool | 1 |
   | `loading_skip_grid_rundown` | `Game.SkipGridRundown` | bool | 1 |
+  | `loading_skip_talking_points` | `Game.SkipTalkingPoints` | bool | 1 |
 
 - One `SWOFTY_MIXIN_WRAP` (priority 100) per getter type that has an armed row: `Ne_Get_SettingBool` 0x143a43b90 (L2, V0021
   agree), `Ne_Get_SettingU32` 0x143a43240 (L2, V0031 agree), `Ne_Map_FindOrDefaultWithErrorContext` 0x143a42f10 (i32, L2, V7824
@@ -381,18 +447,22 @@ intro video state has flags for online sessions).
 
 ## 4. Loading-related engine settings
 
-From the full sweep, `re/research/engine_settings.tsv` (653 getter call sites, 602 with a literal name; L1 per row). "Code" is
+From the full sweep, `re/research/engine_settings.tsv` (741 getter call sites in `.xtls` and `.data1`, 683 with a literal
+name; L1 per row; round 4 added the 88 `.data1` sites). "Code" is
 the default at the call; "retail" is the value the installed build's config files give (the later of `config.xml`,
 `config_platform.xml`, `config_sku.xml`); "—" means no file sets it and the code default applies.
 
 | setting | type | code | retail | reader | gates |
 |---|---|---|---|---|---|
-| `Game.IgnoreMinimumLoadingTime` | bool | 0 | — | 0x142da791c (+2 readers) | the 3 s minima (§1.2) — shipped |
+| `Game.IgnoreMinimumLoadingTime` | bool | 0 | — | 0x142da791c (+3 readers, one in `.data1`) | the 3 s minima (§1.2) — shipped |
+| `Game.LoadForever` | bool | 0 | — | 0x150f50ee2 | holds `StateLoadSession` forever when true (debug) |
 | `Game.SkipIntroVideo` | bool | 0 | false | 0x142d6cfad | the session intro video — shipped |
 | `Game.SkipGridRundown` | bool | 0 | false | 0x140ac6b5c | grid thumbnails and rundown (§1.5) — shipped |
 | `Game.SkipPreRace` | bool | 0 | false | 0x142d78cc5, 0x142d817ef | a pre-race sequence; not read |
 | `Game.SkipRewardSequence` | bool | 0 | false | 0x142c7484d | the reward sequence after an event; not read |
-| `Game.SkipTalkingPoints`, `Game.SkipIntroCameras` | — | — | — | none | strings with no reader (§1.8) |
+| `Game.SkipTalkingPoints` | bool | 0 | false | 0x14eb3ac2a (`.data1`) | talking points take `skipped` (§1.8) — experimental |
+| `Game.SkipCamSequence`, `Game.SkipWinnerSequence` | bool | 0 | false / — | 0x14e88f4e4 / 0x14ebd449e (`.data1`) | the camera sequence never plays (likely `IntroCameras`) / the winner sequence after the race (§1.8); no flags |
+| `Game.SkipIntroCameras` | — | — | — | none | a string with no reader in either section (§1.8) |
 | `Game.ForceTrackReload` | bool | 0 | — | 0x142d48106 | forces a track reload (slower; debug) |
 | `Game.EnableLoading` | bool | 1 | true | 0x14365acb3 | the loading screen itself; not read |
 | `Game.Thumbnails.enableThumbnailGeneration` | bool | 0 | **true** | 0x142e22ebd | thumbnail system on |
@@ -420,8 +490,9 @@ the default at the call; "retail" is the value the installed build's config file
 1. Run M0 (§6) once: it names the effective values of every setting the game reads (including `maxPsoCreationThreads`) and the
    boot phase times, and decides items 6 to 9 of §2.
 2. Run the A/B of §6 for the three shipped flags; ship as player options only on the pass rule.
-3. Record `SessionStateTalkingPoints`' update (its `onStateUpdate` name string is loaded in 0x142d95b90, the likely update) and
-   decide whether its `skipped` link can be taken without breaking the cutscene release (`releaseCutscenesOnExit`).
+3. A second contributor's `agree` on `Game_SessionStateTalkingPoints_ParseParams_Thunk` (§1.8), the second proof the
+   experimental `loading_skip_talking_points` waits for. In the race arm, check that cutscenes are released
+   (`releaseCutscenesOnExit` is parsed by the same body), and that the grid and the formation lap still run.
 4. `FeFlow_StateIntro_OnUpdate`: L2 from its subsystem owner, then the experimental part 2 of §1.3.1.
 5. Get a second contributor's agree row for `Ne_Get_SettingDouble`; then add it as a fifth getter type.
 6. Read the caller of `ResourceMessageHandler` slot 0x143a719c0 (item 9) and what `assignAllJobsToCurrentThread` does on PC.
@@ -463,8 +534,12 @@ game start (`fresh`) with no addons beyond the core:
 
 A Grand Prix race (intro video, talking points, grid rundown) needs a direct start, `swofty test session grand_prix`, which
 works only on the KB build: `direct_start.cpp` looks up its hooks only when `runtime::same_build()` holds, and on another build
-the core logs `[direct] … start failed: …; the menu opens as usual`. On the installed build `46009bd3` the race arm cannot run
-until the core's direct start supports that build (core lane), so M3 waits for it.
+the core logs `[direct] off: the title can't pass by itself (…)` and the menu opens as usual. On the installed build `46009bd3`
+the race arm cannot run until the core's direct start and title helper support that build (§7), so M3 waits for it.
+
+**Run file.** `/mnt/work/F1/scratch/v110/load-game/run_measurements.sh` runs everything below top to bottom. It reads the
+installed exe's PE timestamp, runs the arms of the installed build, and runs the race arms only on the KB build; on any
+other build it says they were skipped.
 
 **Setup (once, from the checkout to measure).**
 
@@ -575,3 +650,54 @@ passes (from 3 s in on the KB build, at once on `46009bd3`), so the press time i
 
 Pass rule for shipping any flag as a player option: every run of both arms completes, the report shows no regression, and the
 on arm is faster by at least one second on the median of its target field.
+
+## 7. Two builds: what the core does on `46009bd3`
+
+Read from the tree at the merge of v1.10.0 into this lane (c5d42a015); no code was changed for this section.
+
+**Already in place for the installed build** (F1 25 1.0.145, Steam build 26566308, PE timestamp 1794312636, 391,613,312
+bytes):
+
+- The launcher lists it as supported: `BUILD_1_0_145` in `packages/core/src/build_support.rs:13`, in the supported list at
+  line 18.
+- The loader's build gate loads it (`native/test/build_gate_test.c:22`, "the 1.0.145 Steam build loads").
+- `runtime::verified_build()` is true on it (`native/src/core/runtime/stage.cpp:213-219`: the stamp and SizeOfImage
+  0x18434000), so code that finds every address by signature runs.
+- It has its own binding set, `native/dist/swofty/addons/core/bindings.steam-26566308.json` (3698 bindings, sha256
+  `46009bd3…`). Session `20261117-083906` logs it selected by PE timestamp, "3662 binding(s) for build 46009bd31f49d93a,
+  this exe (rva checked)", with `.xtls` scans sent to `.tls$` and `.data1` scans to `.trace`. The four getters of §3 are in
+  it, so the game setting overrides and `loading_log_settings` run on this build.
+- The live API has a per-build proof for it (`native/src/core/live/live_rows.hpp:191`).
+- A known problem matches the crash of the skip-cutscenes addon up to 1.9.4 on it
+  (`packages/core/src/diagnostics/known_problems/broken_addons.rs:106`).
+
+**KB build only.** `runtime::same_build()` (`stage.cpp:206`) is true only for the KB exe's PE timestamp, so everything gated
+on it is off on `46009bd3`:
+
+| what | gate | on `46009bd3` |
+|---|---|---|
+| the title helper | `native/src/core/testing/title_skip.cpp:214` | **ported in round 5** (4d13ceb4e): the gate is `same_build() \|\| steam_1_0_145()`. The update is 213 of 213 instructions equal, its StateIntro fields at the same places, and `Vm_NodeSet_Bool` 171 of 171. The sync point is found from the update's call to it, because its thunk's filler differs per build (`re/tools/sigport.py`, `sigverify.py --disp`) |
+| direct start, as a whole | `native/src/core/testing/direct_start.cpp`, after the title check | **ported in round 6** (36e44a739): the gate is `same_build() || steam_1_0_145()`. Every game address is a Sig that resolves once on both builds (23 of 23 with `sigverify.py`); the Grand Prix setup fails cleanly ("the menu opens as usual") when one does not resolve. Each struct offset is used at the same place in a game function that is the same instructions on both builds (`sigport.py --witness`, cited beside each constant). The terrain count, a diagnostic, stays KB-only |
+| direct start's race laps, StateFTUE exit, flow link | `direct_start.cpp` | **ported**: race laps in round 5, StateFTUE exit (178 of 178 instructions) and the flow link (the flow machine 2045 of 2045, the hook point identical) in round 6 |
+| agent car reads (`car`, `ai_drives_player`) | `native/src/core/testing/agent/agent.cpp:395`, used at `:458` and `:724` | unavailable |
+| agent `career_tile`, resume a career, Team HQ advance, `save_now`, `tile_select` | `agent.cpp:967`, `:1051`, `:1154`, `:1265`, `:1352` | unavailable |
+| game database edits after the database was built | `native/src/core/assets/gamedb.cpp:438` | no edit applied (logged) |
+| Time Trial player name bridge | `native/src/core/frontend/player_name.cpp:204` | off |
+| live car operations, car points, car levers | `native/src/core/hooks/car_live.cpp:508`, `:637`, `:691` | off |
+| live car wetness, surface, orientation, angular velocity, wheels | `native/src/core/live/live_car.cpp:46`, `live_car_logic.hpp:22-27` | off; the table and DRS stay (verified build) |
+| crash symbol names | `native/src/core/diagnostics/crash/crash.cpp:136` (`KB_STAMP`, `constants.hpp:31`) | crash reports carry no KB symbols |
+
+Not losses:
+
+- `assets/dbread.cpp:83` and `:105` take the probe path instead of the KB vtables.
+- `assets/overlay.cpp:654` and `assets/gamedb.cpp:267` gate log text only.
+- `live/live_state.cpp:398` picks the per-build proof.
+- `services/lap_host.cpp:116` reports both bits.
+- `same_build_` in `runtime/loader/bindings.cpp` means "the set's own exe" (RVA checks instead of scans), and it is true for
+  the Steam set on `46009bd3`.
+
+**For this lane's measurements** that means:
+
+- On `46009bd3`, the Time Trial, benchmark, M0 and boot sting arms run (route, virtual pad, getters).
+- The Grand Prix race arm is the only arm with talking points and the grid rundown.
+- Since round 6 the title helper and direct start run on `46009bd3` too, so the Grand Prix race arm (M3 and the talking points flag) can be measured there once an in-game run confirms the port.
