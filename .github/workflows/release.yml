@@ -147,7 +147,7 @@ jobs:
         run: |
           out="swofty-launcher-$TAG-linux-x86_64"
           mkdir -p "$out/bin" "$out/loader" "$out/share/applications" "$out/share/icons/hicolor/256x256/apps" "$out/share/icons/hicolor/512x512/apps" "$out/share/icons/hicolor/scalable/apps"
-          cp target/release/swofty target/release/swofty-launcher dist/swofty-ui/swofty-ui "$out/bin/"
+          cp target/release/swofty target/release/swofty-launcher target/release/swofty-ads dist/swofty-ui/swofty-ui "$out/bin/"
           cp -r native/dist/. "$out/loader/"
           if [ -d dxc ]; then cp -r dxc "$out/dxc"; fi
           cp apps/launcher/assets/net.swofty.ModLauncher.desktop tools/swofty-ui/res/net.swofty.SwoftyUI.desktop "$out/share/applications/"
