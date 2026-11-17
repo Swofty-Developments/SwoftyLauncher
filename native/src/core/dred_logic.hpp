@@ -118,12 +118,15 @@ inline std::string op_line(uint32_t index, uint32_t completed, uint32_t op)
     return b;
 }
 
-inline std::string node_header(unsigned n, const char *list, const char *queue, uint32_t count, uint32_t completed)
+inline std::string node_header(unsigned n, const char *list, const char *queue, uint32_t count, uint32_t completed,
+                               uint64_t object = 0)
 {
-    char b[400];
-    std::snprintf(b, sizeof b, "    node %u: command list %s on queue %s, %u of %u op(s) completed%s\n", n,
-                  list && *list ? list : "(unnamed)", queue && *queue ? queue : "(unnamed)", completed > count ? count : completed,
-                  count, node_incomplete(count, completed) ? ", NOT FINISHED" : "");
+    char b[440], at[40] = "";
+    if (object)
+        std::snprintf(at, sizeof at, " (0x%llx)", (unsigned long long)object);
+    std::snprintf(b, sizeof b, "    node %u: command list %s%s on queue %s, %u of %u op(s) completed%s\n", n,
+                  list && *list ? list : "(unnamed)", at, queue && *queue ? queue : "(unnamed)",
+                  completed > count ? count : completed, count, node_incomplete(count, completed) ? ", NOT FINISHED" : "");
     return b;
 }
 

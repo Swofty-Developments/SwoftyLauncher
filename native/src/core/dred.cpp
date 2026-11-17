@@ -321,7 +321,8 @@ template <typename Node> std::string breadcrumbs(const Node *head)
             uint32_t count = n->BreadcrumbCount;
             uint32_t done = n->pLastBreadcrumbValue && readable(n->pLastBreadcrumbValue, 4) ? *n->pLastBreadcrumbValue : 0;
             s += node_header(shown++, pick(n->pCommandListDebugNameA, n->pCommandListDebugNameW).c_str(),
-                             pick(n->pCommandQueueDebugNameA, n->pCommandQueueDebugNameW).c_str(), count, done);
+                             pick(n->pCommandQueueDebugNameA, n->pCommandQueueDebugNameW).c_str(), count, done,
+                             reinterpret_cast<uint64_t>(n->pCommandList));
             Window w = op_window(count, done);
             if (w.from)
                 s += "      ... " + std::to_string(w.from) + " earlier op(s) not shown\n";
