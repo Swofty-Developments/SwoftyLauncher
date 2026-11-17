@@ -11,7 +11,7 @@ use std::time::{Duration, SystemTime};
 
 use serde_json::{Value, json};
 
-use super::api::{Api, ApiError};
+use crate::online::server::api::{Api, ApiError};
 
 pub const MAILBOX_DIR: &str = "swofty/tt";
 const POLL_EVERY: Duration = Duration::from_millis(100);

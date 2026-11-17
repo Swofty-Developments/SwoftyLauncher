@@ -4,6 +4,7 @@
 pub mod app_control;
 pub mod disk;
 pub mod ea_app;
+pub mod ensure;
 pub mod process;
 pub mod run_as_admin;
 pub mod steam;
@@ -19,6 +20,7 @@ use std::{
 use crate::install::Source;
 
 pub use ea_app::EaApp;
+pub use ensure::{ClientNote, ClientReady, ClientStart};
 pub use steam::Steam;
 pub use steam::{client as steam_client, vdf};
 
@@ -40,6 +42,14 @@ pub trait LaunchPlatform: Sync {
 
     /// How the player moves the copy to another folder, after "move it".
     fn move_hint(&self) -> &'static str;
+
+    /// Brings the store's client up for a launch of `start.game`, telling `note` what it sees on the
+    /// way. An `Err` is one sentence for the player, and the launch stops.
+    fn ensure_client(
+        &self,
+        start: ClientStart<'_>,
+        note: &mut dyn FnMut(ClientNote),
+    ) -> Result<ClientReady, String>;
 }
 
 /// Every store, in the order a folder is checked against them.
