@@ -2,7 +2,7 @@
 // the game's custom_track_list load loop is replayed with and without the guard over event rows that share ids, a
 // track twice in one season, duplicate event rows, clean saves over several save and load cycles, a save the game
 // already blew up, a season longer than the default event list, and the race weekends read from the career calendar.
-// Built and run by native/test/run_track_list_guard_test.sh.
+// Built and run by native/test/run_tests.sh track_list_guard.
 
 #include "core/guards/tracks/track_list_guard_logic.hpp"
 

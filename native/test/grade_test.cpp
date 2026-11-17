@@ -1,7 +1,7 @@
 // Host-native unit test for the colour maths of shader looks (native/src/core/render/grade_math.hpp).
 // The D3D12 hooks that read back and replace the game's tonemap LUT only run in game; this covers
 // the packed LUT reader, the sRGB round trip, the trilinear lookup and the per-texel grade.
-// Built and run by native/test/run_grade_test.sh.
+// Built and run by native/test/run_tests.sh grade.
 
 #include "core/render/grade_math.hpp"
 

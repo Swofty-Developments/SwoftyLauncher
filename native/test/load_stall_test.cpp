@@ -3,7 +3,7 @@
 // Time Trial stall (session 20261112-013117), of the 1.9.x first-session hangs the game ends itself with its
 // deadlock WARN (cptovius, session 20261112-044919), of the 1.9.15 boot an addon held on splash_transition (ArS3nic,
 // session 20261112-121623) and of working loads. Built and run by
-// native/test/run_load_stall_test.sh.
+// native/test/run_tests.sh load_stall.
 
 #include "core/diagnostics/load_stall_logic.hpp"
 

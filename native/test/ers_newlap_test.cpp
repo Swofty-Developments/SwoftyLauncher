@@ -1,6 +1,6 @@
 // Host-native unit test for the participant step of the core's ERS new-lap site (native/src/core/guards/cars/ers_newlap_logic.hpp):
 // which entries the guard skips, and the one entry per vehicle_newlap message where session.lap fires.
-// Built and run by native/test/run_ers_newlap_test.sh.
+// Built and run by native/test/run_tests.sh ers_newlap.
 
 #include "core/guards/cars/ers_newlap_logic.hpp"
 

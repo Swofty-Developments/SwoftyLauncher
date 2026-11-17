@@ -1,4 +1,4 @@
-// Host unit test for the hardware settings probe logic (hw_settings_logic.hpp). run_events_test.sh builds and runs it.
+// Host unit test for the hardware settings probe logic (hw_settings_logic.hpp). native/test/run_tests.sh hw_settings builds and runs it.
 #include <cstdio>
 #include <string>
 
