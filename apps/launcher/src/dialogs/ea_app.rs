@@ -10,7 +10,7 @@ use swofty_core::install::EA_APP_SEEN;
 
 use crate::shell::Shell;
 use crate::shell::pages::{game_art, logo};
-use crate::ui::discord::{BLURPLE, BLURPLE_HOVER, INVITE, LOGO};
+use crate::ui::discord::invite_button;
 use crate::ui::theme::{Palette, palette};
 use swofty_i18n::{tr, trf};
 
@@ -161,26 +161,6 @@ fn body(p: Palette) -> impl IntoElement {
         )
 }
 
-fn discord_button() -> Stateful<Div> {
-    let white = hsla(0., 0., 1., 1.);
-    h_flex()
-        .id("ea-app-discord")
-        .h(px(36.))
-        .px(px(14.))
-        .gap(px(8.))
-        .items_center()
-        .rounded(px(8.))
-        .cursor_pointer()
-        .bg(rgb(BLURPLE))
-        .hover(|s| s.bg(rgb(BLURPLE_HOVER)))
-        .text_size(px(14.))
-        .font_weight(FontWeight::SEMIBOLD)
-        .text_color(white)
-        .child(svg().data(LOGO).size(px(16.)).text_color(white))
-        .child(tr("Report a bug on Discord"))
-        .on_click(|_, _, cx| cx.open_url(INVITE))
-}
-
 impl Shell {
     /// Whether the EA app warning still needs showing before play.
     pub(crate) fn ea_app_warn_pending(&self) -> bool {
@@ -211,7 +191,12 @@ impl Shell {
                     DialogFooter::new()
                         .justify_center()
                         .pt(px(4.))
-                        .child(discord_button())
+                        .child(invite_button(
+                            "ea-app-discord",
+                            tr("Report a bug on Discord"),
+                            36.,
+                            14.,
+                        ))
                         .child(
                             Button::new("ea-app-play")
                                 .primary()

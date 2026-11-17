@@ -12,7 +12,7 @@ use swofty_i18n::{tr, trf};
 use crate::dialogs::send_logs;
 use crate::shell::Shell;
 use crate::ui::Overlay;
-use crate::ui::discord::{BLURPLE, BLURPLE_HOVER, INVITE, LOGO};
+use crate::ui::discord::invite_button;
 use crate::ui::theme::Palette;
 
 /// A crash newer than this opens the modal by itself; an older one only shows
@@ -86,26 +86,6 @@ fn step(n: usize, text: String, p: Palette) -> Div {
         )
 }
 
-fn discord_button() -> Stateful<Div> {
-    let white = hsla(0., 0., 1., 1.);
-    h_flex()
-        .id("crash-discord")
-        .h(px(38.))
-        .px(px(16.))
-        .gap(px(8.))
-        .items_center()
-        .rounded(px(8.))
-        .cursor_pointer()
-        .bg(rgb(BLURPLE))
-        .hover(|s| s.bg(rgb(BLURPLE_HOVER)))
-        .text_size(px(14.))
-        .font_weight(FontWeight::SEMIBOLD)
-        .text_color(white)
-        .child(svg().data(LOGO).size(px(16.)).text_color(white))
-        .child(tr("Join the support Discord"))
-        .on_click(|_, _, cx| cx.open_url(INVITE))
-}
-
 impl Shell {
     /// The full-window crash modal, while it is open for the newest crash.
     pub(crate) fn crash_overlay(&self, p: Palette, cx: &mut Context<Self>) -> Option<impl IntoElement> {
@@ -160,7 +140,12 @@ impl Shell {
                             .label(send_logs::label())
                             .on_click(send),
                     )
-                    .child(discord_button())
+                    .child(invite_button(
+                        "crash-discord",
+                        tr("Join the support Discord"),
+                        38.,
+                        16.,
+                    ))
                     .child(
                         Button::new("crash-close")
                             .ghost()

@@ -32,6 +32,32 @@ fn server_icon(size: f32) -> Div {
         .child(img(ICON.clone()).size_full())
 }
 
+/// A button in Discord's colour that opens the invite.
+pub(crate) fn invite_button(
+    id: &'static str,
+    label: impl Into<SharedString>,
+    height: f32,
+    padding: f32,
+) -> Stateful<Div> {
+    let white = hsla(0., 0., 1., 1.);
+    h_flex()
+        .id(id)
+        .h(px(height))
+        .px(px(padding))
+        .gap(px(8.))
+        .items_center()
+        .rounded(px(8.))
+        .cursor_pointer()
+        .bg(rgb(BLURPLE))
+        .hover(|s| s.bg(rgb(BLURPLE_HOVER)))
+        .text_size(px(14.))
+        .font_weight(FontWeight::SEMIBOLD)
+        .text_color(white)
+        .child(svg().data(LOGO).size(px(16.)).text_color(white))
+        .child(label.into())
+        .on_click(|_, _, cx| cx.open_url(INVITE))
+}
+
 /// The Discord invite at the top of the News page, shorter in `compact` windows.
 pub(crate) fn banner(
     compact: bool,
