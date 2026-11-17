@@ -10,7 +10,7 @@
 #include "core/render/postfx/resource_watch.hpp"
 #include "core/render/postfx/rules.hpp"
 #include "core/render/postfx/shader_config.hpp"
-#include "core/render/postfx_logic.hpp"
+#include "core/render/postfx/frame_logic.hpp"
 
 #include <windows.h>
 
