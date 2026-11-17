@@ -93,6 +93,7 @@ UNITS = [
     Unit('pit_box', 'Pit box guard unit test'),
     Unit('pit_slots', 'Pit slot guard unit test'),
     Unit('placed_record', 'placed record bound unit test'),
+    Unit('guard_lines', 'Site guard log lines test', args=['../src/core/guards', 'guard_lines/expected.txt']),
     Unit('guard_registry', 'Core mixin-set registry order test', args=['../src/core']),
     Unit('protection_spans', 'Binding pass protection spans unit test'),
     Unit('loading_settings', 'Loading setting overrides unit test'),

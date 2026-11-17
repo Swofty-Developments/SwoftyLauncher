@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -45,7 +46,7 @@ constexpr int LOG_FIRST = 4;
 using Refresh = void(void *);
 Refresh *orig_refresh = nullptr;
 uintptr_t penalty_return = 0;
-bool offered = false, settled = false, wanted = false;
+bool wanted = false;
 std::atomic<int> skipped{0}, penalty_skipped{0};
 
 void refresh(void *self)
@@ -81,55 +82,53 @@ void penalty_entry(SwoftyContext *c)
                 n == LOG_FIRST ? " (further skips are not logged)" : "");
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
+class AcclimGuard final : public guards::Guard {
+public:
+    AcclimGuard() : Guard(guards::CoreSetId::track_acclim) {}
 
-std::vector<CoreMixins> track_acclim_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_ACCLIM_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[acclim] track acclimatisation guard off (SWOFTY_ACCLIM_GUARD=%s)", v);
-        return out;
+private:
+    void build(std::vector<runtime::CoreMixins> &out) override
+    {
+        char v[16] = {};
+        DWORD n = GetEnvironmentVariableA("SWOFTY_ACCLIM_GUARD", v, sizeof v);
+        if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+            swofty::log("[acclim] track acclimatisation guard off (SWOFTY_ACCLIM_GUARD=%s)", v);
+            return;
+        }
+        if (swofty::api->resolve(TARGET)) {
+            wanted = true;
+            out.push_back({MIXIN, {{TARGET, SWOFTY_MIXIN_WRAP, 100, (void *)&refresh, (void **)&orig_refresh}}});
+        } else {
+            swofty::log("[acclim] track acclimatisation guard off: needs %s, which this build does not resolve", TARGET);
+        }
+        penalty_return = swofty::api->resolve(PENALTY_RETURN);
+        if (penalty_return && swofty::api->resolve(PENALTY_ENTRY)) {
+            out.push_back({PENALTY_MIXIN, {{PENALTY_ENTRY, SWOFTY_MIXIN_SITE, 100, (void *)&penalty_entry, nullptr}}});
+        } else {
+            penalty_return = 0;
+            swofty::log("[acclim] track acclimatisation penalty guard off: needs %s and %s, which this build does not "
+                        "resolve",
+                        PENALTY_ENTRY, PENALTY_RETURN);
+        }
     }
-    if (swofty::api->resolve(TARGET)) {
-        wanted = true;
-        out.push_back({MIXIN, {{TARGET, SWOFTY_MIXIN_WRAP, 100, (void *)&refresh, (void **)&orig_refresh}}});
-    } else {
-        swofty::log("[acclim] track acclimatisation guard off: needs %s, which this build does not resolve", TARGET);
-    }
-    penalty_return = swofty::api->resolve(PENALTY_RETURN);
-    if (penalty_return && swofty::api->resolve(PENALTY_ENTRY)) {
-        out.push_back({PENALTY_MIXIN, {{PENALTY_ENTRY, SWOFTY_MIXIN_SITE, 100, (void *)&penalty_entry, nullptr}}});
-    } else {
-        penalty_return = 0;
-        swofty::log("[acclim] track acclimatisation penalty guard off: needs %s and %s, which this build does not "
-                    "resolve",
-                    PENALTY_ENTRY, PENALTY_RETURN);
-    }
-    return out;
-}
 
-void track_acclim_commit()
-{
-    if (!offered || settled)
-        return;
-    settled = true;
-    if (wanted)
-        swofty::log("[acclim] track acclimatisation guard %s",
-                    core_mixins_active(MIXIN)
-                        ? "armed: a practice programme refresh with no targets returns instead of faulting"
-                        : "did not install (see the [core] lines)");
-    if (penalty_return)
-        swofty::log("[acclim] track acclimatisation penalty guard %s",
-                    core_mixins_active(PENALTY_MIXIN)
-                        ? "armed: a practice programme penalty flag with no targets returns instead of faulting"
-                        : "did not install (see the [core] lines)");
-}
+    void settle() override
+    {
+        if (wanted)
+            swofty::log("[acclim] track acclimatisation guard %s",
+                        runtime::core_mixins_active(MIXIN)
+                            ? "armed: a practice programme refresh with no targets returns instead of faulting"
+                            : "did not install (see the [core] lines)");
+        if (penalty_return)
+            swofty::log("[acclim] track acclimatisation penalty guard %s",
+                        runtime::core_mixins_active(PENALTY_MIXIN)
+                            ? "armed: a practice programme penalty flag with no targets returns instead of faulting"
+                            : "did not install (see the [core] lines)");
+    }
+};
+
+AcclimGuard guard;
 
 }

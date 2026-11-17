@@ -1,5 +1,6 @@
 #include "core/guards/order.hpp"
 
+#include <algorithm>
 #include <cctype>
 #include <cstdio>
 #include <filesystem>
@@ -116,6 +117,21 @@ const std::vector<std::string> SETTLED = {
     "ai_line_set",
 };
 
+// The guards that armed themselves from their own SWOFTY_ON_LOAD entries before the registry, in the order the
+// SDK listed those entries: the link order of their sources in tools/core_link_order.txt on v1.10.0 (f5c9b97f7).
+const std::vector<std::string> HOOKED = {
+    "activity_resume",
+    "sequencer_records",
+    "race_retirement",
+    "teammate_pairs",
+    "setup_vm",
+    "teamhq_track",
+    "ai_curves",
+    "replay_read",
+    "rnd_suppliers",
+    "gp_weekend_track",
+};
+
 int failures = 0;
 
 void expect(bool ok, const std::string &what)
@@ -124,6 +140,32 @@ void expect(bool ok, const std::string &what)
         std::printf("FAIL %s\n", what.c_str());
         failures++;
     }
+}
+
+// The core's sources in link order, as native/tools/build_graph.py links them: those tools/core_link_order.txt lists,
+// in its order, then every other source under src/core, sorted by path.
+std::vector<std::filesystem::path> link_order(const std::filesystem::path &core)
+{
+    std::filesystem::path native = core.parent_path().parent_path();
+    std::vector<std::string> listed;
+    std::ifstream in(native / "tools/core_link_order.txt");
+    for (std::string line; std::getline(in, line);)
+        if (!line.empty() && line[0] != '#' && line.rfind("src/core/", 0) == 0)
+            listed.push_back(line);
+    std::vector<std::string> rest;
+    for (auto &entry : std::filesystem::recursive_directory_iterator(core)) {
+        if (entry.path().extension() != ".cpp")
+            continue;
+        std::string rel = "src/core/" + std::filesystem::relative(entry.path(), core).generic_string();
+        if (std::find(listed.begin(), listed.end(), rel) == listed.end())
+            rest.push_back(rel);
+    }
+    std::sort(rest.begin(), rest.end());
+    std::vector<std::filesystem::path> out;
+    for (auto *names : {&listed, &rest})
+        for (auto &rel : *names)
+            out.push_back(native / rel);
+    return out;
 }
 
 std::string read(const std::filesystem::path &p)
@@ -176,8 +218,29 @@ int main(int argc, char **argv)
     for (auto &name : OFFERED)
         expect(registrations[name] == 1, name + " registers once (found " + std::to_string(registrations[name]) + ")");
 
+    // Every hook guard registers once, and their sources link in HookGuardId order: the k-th on-load entry the SDK runs
+    // from a hook guard's source arms the k-th hook guard, which is the guard that source declares.
+    expect(guards::HOOK_GUARD_COUNT == HOOKED.size(), "the registry holds " + std::to_string(HOOKED.size()) + " hook guards");
+    for (size_t i = 0; i < HOOKED.size() && i < guards::HOOK_GUARD_COUNT; i++)
+        expect(guards::hook_guard_name(guards::HookGuardId(i)) == HOOKED[i],
+               "hook guard slot " + std::to_string(i) + " is " + HOOKED[i]);
+    std::vector<std::string> linked;
+    for (auto &path : link_order(core)) {
+        std::string text = read(path);
+        expect(!text.empty(), path.string() + " is readable");
+        for (auto &name : HOOKED) {
+            size_t n = count(text, "SWOFTY_HOOK_GUARD(" + name);
+            if (n)
+                linked.push_back(name);
+            expect(n <= 1, name + " registers once in " + path.string());
+        }
+    }
+    expect(linked == HOOKED, "the hook guards' sources link in HookGuardId order, each once");
+
     if (failures)
         return 1;
-    std::printf("guard registry: %zu core sets in the starting offer and commit order, each registered once\n", OFFERED.size());
+    std::printf("guard registry: %zu core sets in the starting offer and commit order and %zu hook guards in their arming "
+                "order, each registered once\n",
+                OFFERED.size(), HOOKED.size());
     return 0;
 }

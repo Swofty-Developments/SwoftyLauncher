@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/career/sequencer_records_logic.hpp"
 
@@ -220,7 +221,4 @@ void setup()
 
 }
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("events sequencer record guard", setup);
-}
+SWOFTY_HOOK_GUARD(sequencer_records, "events sequencer record guard", setup)

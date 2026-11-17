@@ -1,4 +1,5 @@
 #include "core/guards/career/myteam_vehicle_guard_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -42,7 +43,6 @@ constexpr const char *LOAD = "site_Game_MyTeamVehicleBases_AiConfigLoad";
 constexpr const char *NEXT = "site_Game_MyTeamVehicleBases_NextBase";
 
 uintptr_t next_base = 0;
-bool offered = false, settled = false;
 std::mutex logged_lock;
 mv::Labels logged;
 mv::Labels left_logged;
@@ -143,40 +143,17 @@ void ai_config_load(SwoftyContext *c)
     say(skip);
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> myteam_vehicle_guard_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_MYTEAM_VEHICLE_GUARD", v, sizeof v);
-    if (n && n < sizeof v && mv::switch_off(v)) {
-        swofty::log("[myteam] vehicle base guard off (SWOFTY_MYTEAM_VEHICLE_GUARD=%s)", v);
-        return out;
-    }
-    next_base = swofty::api->resolve(NEXT);
-    if (!next_base || !swofty::api->resolve(LOAD)) {
-        next_base = 0;
-        swofty::log("[myteam] vehicle base guard off: needs %s and %s, which this build does not resolve", LOAD, NEXT);
-        return out;
-    }
-    out.push_back({MIXIN, {{LOAD, SWOFTY_MIXIN_SITE, 100, (void *)&ai_config_load, nullptr}}});
-    return out;
-}
-
-void myteam_vehicle_guard_commit()
-{
-    if (!offered || settled || !next_base)
-        return;
-    settled = true;
-    swofty::log("[myteam] vehicle base guard %s",
-                core_mixins_active(MIXIN) ? "armed: a saved My Team vehicle base whose vehicle row is gone is skipped instead of faulting"
-                                          : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::myteam_vehicle_guard,
+                        {
+                            .set = MIXIN,
+                            .name = "[myteam] vehicle base guard",
+                            .env = "SWOFTY_MYTEAM_VEHICLE_GUARD",
+                            .keeps = {{NEXT, &next_base}},
+                            .needs = {LOAD, NEXT},
+                            .mixins = {{LOAD, SWOFTY_MIXIN_SITE, 100, (void *)&ai_config_load, nullptr}},
+                            .armed = "a saved My Team vehicle base whose vehicle row is gone is skipped instead of faulting",
+                        }};
 
 }
