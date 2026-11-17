@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Init_RnDUpgradeRewardPanel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417ff570",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "longlong f(longlong panel, longlong def)",
+  "evidence": "decomp:re/decomp/1417ff570.c;xref:0x1415d2e79;xref:0x141bc7eff",
+  "notes": "myteam-g1: Constructor of an R&D panel: resource_points and upgrade_reward_stats widget slots (large struct up to +0x7800)."
+ },
+ "signature": {
+  "id": "career.init_rn_dupgrade_reward_panel",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 C5 F8 29 74 24 50 48 89 CE 48 8B 42 08",
+  "match": "0x1417ff570",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417ff570",
+  "kind": "func_start",
+  "names": [
+   "Career_Init_RnDUpgradeRewardPanel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1417ff570",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417ff570.c;xref:0x1415d2e79;xref:0x141bc7eff",
+   "notes": "V9791 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

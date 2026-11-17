@@ -4,9 +4,12 @@ description: >
   libraries GPUI and the ads helper link against. Every Rust job in ci.yml and release-binaries.yml starts here.
 
 inputs:
+  # Only the test builds are cached: the rest are off the critical path or, on EC2, build as quickly as they
+  # restore, and the repository's 10 GB of cache space holds main's test and Zig caches with room for pull
+  # requests (.github/runners/README.md, Cache budget).
   cache:
-    description: The cache's shared key; jobs that build the same profile and packages share one
-    required: true
+    description: The cache's shared key, or empty for no Rust cache
+    default: ''
   # A cache restored under its exact key is never saved again, so a pull request that changes no dependency
   # uses main's cache and saves nothing. One that changes them, or runs before main has a cache under the
   # current key, saves its own, which only that pull request's later runs can read.
@@ -48,20 +51,21 @@ runs:
 
     # rust-cache 2.9.3 hashes the members' manifests but not the workspace root's, so a change to its
     # [profile] or [patch] sections would restore the old builds under an exact match, rebuild them in every
-    # run and never save the result. Their hash goes into the key instead (the release after 2.9.3 hashes
-    # them itself). Only those sections, without comments: the root's version bump in every release would
-    # empty the cache.
+    # run and never save the result. Their hash goes into the shared key instead, since rust-cache ignores its
+    # `key` input when `shared-key` is set. Only those sections, without comments: the root's version bump in
+    # every release would empty the cache.
     - name: Workspace profile hash
+      if: inputs.cache != ''
       id: profiles
       shell: bash
       run: echo "hash=$(awk '/^\[/ { on = ($0 ~ /^\[(profile|patch)[.\]]/) } on && !/^[[:space:]]*(#|$)/' Cargo.toml | sha256sum | cut -c1-8)" >> "$GITHUB_OUTPUT"
 
     # The key ends in a hash of the external crates in Cargo.lock, so a dependency change saves a new cache
     # and restores the newest older one meanwhile; a release's version bump of the workspace crates does not.
-    - uses: Swatinem/rust-cache@v2
+    - if: inputs.cache != ''
+      uses: Swatinem/rust-cache@v2
       with:
-        shared-key: ${{ inputs.cache }}
-        key: profiles-${{ steps.profiles.outputs.hash }}
+        shared-key: ${{ inputs.cache }}-${{ steps.profiles.outputs.hash }}
         save-if: ${{ inputs.save }}
 
     - name: System libraries

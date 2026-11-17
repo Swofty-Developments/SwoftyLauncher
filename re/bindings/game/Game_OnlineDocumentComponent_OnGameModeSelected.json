@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineDocumentComponent_OnGameModeSelected",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bb3a60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=OnlineDocumentComponent::onGameModeSelected; log channel GAME: 'OnlineDocumentComponent::onGameModeSelected().'"
+ },
+ "signature": {
+  "id": "game.online_document_component_on_game_mode_selected",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6D B8 5F 01 00 00",
+  "match": "0x140bb3a60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bb3a60",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineDocumentComponent_OnGameModeSelected"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bb3a60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bb3a60.c",
+   "notes": "V4455 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

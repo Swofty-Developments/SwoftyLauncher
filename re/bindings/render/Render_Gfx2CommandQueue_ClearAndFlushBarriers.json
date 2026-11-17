@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2CommandQueue_ClearAndFlushBarriers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a07b70",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a07b70.c;xref:0x143c3eae7",
+  "notes": "Logs NeGfx2CommandQueue::clear and ::flushResourceBarriers around 1439dc660 and the immediate command list (offsets 0x140/0x150/0x20150). Callers Game_Rtt_CreateCmaa2Buffers."
+ },
+ "signature": {
+  "id": "render.gfx2_command_queue_clear_and_flush_barriers",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 F8 29 B4 24 B0 00 00 00 C5 F8 29 B4 24 A0 00 00 00 C5 F8 29 B4 24 C0 00 00 00 C6 84 24 D0 00 00 00 00 48 89 5C 24",
+  "match": "0x143c3eae7",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143a07b70",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2CommandQueue_ClearAndFlushBarriers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143a07b70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a07b70.c;xref:0x143c3eae7",
+   "notes": "V8247 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

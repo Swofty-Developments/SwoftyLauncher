@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Sess_RuleManager_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435676a0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint32_t Sess_RuleManager_Initialise(void *self, void *systems, void *components)",
+  "evidence": "decomp:re/decomp/1435676a0.c;xref:0x1458493e0",
+  "notes": "RuleManager component init (vtable slot ptr 0x1458493e0; name kept for signatures.json - per verify-b the code shows a system init, not a session-enter event; it runs when the session's systems are created). Resolves dependencies from the service locator param_2 (vcall +0x28 with type ids 0x146cb8278, 0x146ce8b20, 0x1460799e8, 0x146054530, 0x14604ec98 -> self+0x1c00..+0x1c20) and from the component registry param_3 (FUN_14030ffd0: 0x14604ed28 -> +0x1c38, 0x146096ac8 -> +0x1c30 participants, 0x14607f1a0 -> +0x1c68, 0x146106b08 -> +0x1c28 vehicle controller manager, 0x146047ab8 -> +0x1c40 results, then +0x1c70/+0x1c48/+0x1c50/+0x1c78/+0x1c80/+0x1c58/+0x1c88/+0x1c90/+0x1c98). Subscribes event 0x4b (RuleManagerMessageQueue / MisconductMessage, 0x143567ff0/0x143567f90) on [+0x1c58]+0x3d0, caches 7 ruleset values [+0x1c30]+0x428..+0x608 into +0x1ca0..+0x1cd0, inits the rules sub-object (0x143568260). Returns 0, or 0x16 (EINVAL) when a lookup fails. (used by vmknolle race-start, recovery, red-flag-pit, sc-unlapping to capture the rule manager pointer) | System Initialise(systems, components): vtable 0x1458493d0 slot 2 (slot ptr 0x1458493e0); name kept for signatures.json (sig id says on_session_enter; nothing in the code is session-enter specific). Resolves systems via param_2 vcall +0x28 with type ids 0x146cb8278, 0x146ce8b20, 0x1460799e8, 0x146054530 (not null-checked), 0x14604ec98 -> self+0x1c00..+0x1c20, and components from registry param_3 (FUN_14030ffd0) 0x14604ed28 -> +0x1c38, 0x146096ac8 -> +0x1c30, 0x14607f1a0 -> +0x1c68, 0x146106b08 -> +0x1c28, 0x146047ab8 -> +0x1c40, then getters -> +0x1c70/+0x1c48/+0x1c50/+0x1c78/+0x1c80/+0x1c58/+0x1c88/+0x1c90/+0x1c98. Calls 0x140997d80([+0x1c58]+0x110, self+0x28); subscribes event 0x4b on [+0x1c58]+0x3d0 (stored at +0x1c60) with handlers 0x143567ff0 (Game_Network_ReceivedRuleMessage) / 0x143567f90; caches 7 values [+0x1c30]+0x428/0x438/0x468/0x558/0x568/0x578/0x608 into +0x1ca0..+0x1cd0; inits sub-object self+0x40 via 0x143568260(self+0x40, systems, components); sets +0x1be8 = [+0x1c30]+0x660 and calls FUN_14398a2b0 on it with 'RuleManagerMessageQueue' / 'MisconductMessage'. Returns 0, or 0x16 (EINVAL) when a lookup fails. (used by vmknolle race-start, recovery, red-flag-pit, sc-unlapping to capture the rule manager pointer)"
+ },
+ "signature": {
+  "id": "session.rule_manager_on_session_enter",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 4C 89 C7 48 89 D3 48 89 CE 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 D9 FF 50 28 48 89 86 00 1C 00 00",
+  "match": "0x1435676a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435676a0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RuleManager_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-b",
+   "kind": "func",
+   "item": "0x1435676a0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_b/decomp/1435676a0.c;xref:0x1458493e0",
+   "notes": "V1030 role/proto ok as RuleManager (registers RuleManagerMessageQueue/MisconductMessage queue) slot-2 init: fetches ~5 systems by type from param_2 vtbl+0x28 and ~9 components from param_3, caches them at +0x1c58..+0x1cd0, subscribes handler id 0x4b, returns 0 or 0x16 on missing dependency; nothing in code ties it to a session-enter event - looks like a generic system Initialise(systems,components) slot"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-d",
+   "kind": "func",
+   "item": "0x1435676a0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_d/decomp/1435676a0.c;decomp:work/verify_d/decomp2/1435692d0.c;xref:0x1458493e0",
+   "notes": "V1068 vtable slot 2 of the RuleManager system (slot1 returns type id, slot3 subscribes player_dropped_in/session_complete): resolves systems via param_2->vt+0x28 and components via param_3 lookups into +0x1c00..+0x1c98, registers RuleManagerMessageQueue/MisconductMessage, returns 0 or 0x16 -> it is the system initialise/bind step; 'OnSessionEnter' not shown by code; 3-arg proto ok"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-e",
+   "kind": "func",
+   "item": "0x1435676a0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_e/decomp/1435676a0.c;xref:0x1458493e0",
+   "notes": "V1079 slot 2 of vtable 0x1458493d0 (ctor refs 0x143566c22/0x143567239); binds systems via param_2->vt+0x28 and components via param_3 into +0x1c00..+0x1c98, returns 0 or 0x16, inits RuleManagerMessageQueue/MisconductMessage -> RuleManager Initialise(systems,components) agrees; differs: proto carries a different function name (Sess_RuleManager_OnSessionEnter) than the KB name; nothing session-enter specific in code"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "bind6-verify",
+   "kind": "func",
+   "item": "Sess_RuleManager_Initialise",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435676a0.c;xref:0x1458493e0",
+   "notes": "V1771 blind re-check of corrected notes"
+  }
+ ],
+ "proofs": []
+}

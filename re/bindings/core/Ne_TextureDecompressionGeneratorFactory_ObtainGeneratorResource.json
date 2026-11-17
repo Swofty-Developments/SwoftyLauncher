@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_TextureDecompressionGeneratorFactory_ObtainGeneratorResource",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143df2a90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143df2a90.c;xref:0x1459b8770",
+  "notes": "cxx=NeTextureDecompressionGeneratorFactory::obtainGeneratorResource; log channel HBCN: 'NeTextureDecompressionGeneratorFactory::obtainGeneratorResource'"
+ },
+ "signature": {
+  "id": "core.texture_decompression_generator_factory_obtain_generator_resource",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x143df2a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143df2a90",
+  "kind": "func_start",
+  "names": [
+   "Ne_TextureDecompressionGeneratorFactory_ObtainGeneratorResource"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_TextureDecompressionGeneratorFactory_ObtainGeneratorResource",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143df2a90.c;xref:0x1459b8770",
+   "notes": "V2061 log HBCN channel plus init/deinit generator logs; vtable slot"
+  }
+ ],
+ "proofs": []
+}

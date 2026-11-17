@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqMyTeam_BuildTabs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142339490",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm, int mode)",
+  "evidence": "decomp:re/decomp/142339490.c;xref:0x142338fd0;xref:0x14233900a;xref:0x14233903d",
+  "notes": "myteam-g1: Creates the My Team Team HQ tab list: lng_standings, season results, trophies, research overview, R&D in progress/history, driver communications/market, finances (lng_cost_cap, lng_finances, lng_finances_history, lng_rf_renown strings)."
+ },
+ "signature": {
+  "id": "vm.team_hq_my_team_build_tabs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 BC 24 50 01 00 00 C5 F8 29 B4 24 40 01 00 00 41 89 D5",
+  "match": "0x142339490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142339490",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqMyTeam_BuildTabs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142339490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142339490.c",
+   "notes": "V10145 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

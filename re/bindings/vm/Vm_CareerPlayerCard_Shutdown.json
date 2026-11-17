@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_CareerPlayerCard_Shutdown",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414c45b0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/1414c45b0.c;xref:0x1456e9b08",
+  "notes": "myteam-g1: Unsubscribes the 8 player card message handlers (counterpart of Vm_CareerPlayerCard_Init)."
+ },
+ "signature": {
+  "id": "vm.career_player_card_shutdown",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 89 80 02 00 00 48 8D 96 68 02 00 00 E8 ?? ?? ?? ?? 48 8D 8E 20 05 00 00",
+  "match": "0x1414c45b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414c45b0",
+  "kind": "func_start",
+  "names": [
+   "Vm_CareerPlayerCard_Shutdown"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1414c45b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414c45b0.c;xref:0x1456e9b08",
+   "notes": "V9716 Callbacks registered through 0x143988350 which is the unsubscribe counterpart of Ne_Subscribe_BusMessage; 8 message names."
+  }
+ ],
+ "proofs": []
+}

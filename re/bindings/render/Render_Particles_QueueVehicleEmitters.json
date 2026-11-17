@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_QueueVehicleEmitters",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144704b30",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144704b30.c;xref:0x14462daf9",
+  "notes": "For each of up to 8 emitter slots at param_3+0x80 pushes {emitter, slot ptr, param_2*0x100, 0} into a per-frame job array (+0x83f7f0, 0x18 stride, max 0x400, frame buffer index +0x87b650, 0x6000 stride). Caller Render_Particles_UpdateVehicleEffects (8+ sites)."
+ },
+ "signature": {
+  "id": "render.particles_queue_vehicle_emitters",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 89 D0 C1 E0 08 45",
+  "match": "0x144704b30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144704b30",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_QueueVehicleEmitters"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144704b30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144704b30.c;xref:0x14462daf9",
+   "notes": "V7694 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

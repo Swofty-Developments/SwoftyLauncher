@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_DRS_CollectZoneMarkup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142befb40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_DRS_CollectZoneMarkup(void *drs_system)",
+  "evidence": "decomp:re/decomp/142befb40.c;xref:0x142bebdba,0x142bebe06;doc:re/db/subsystems/game.md",
+  "notes": "Copies the per-type markup lists of the TrackSpace at [rdx+8] + type*0x20 + 8 for drs_det 0x1f (+0x3e8), drs_act 0x20 (+0x408) and x_mode 0x30 (+0x608) into 0x20-byte entries {drs, markup, 0, 0, -1} at [rcx+0x28..+0x38]. Callers: Game_DRS_OnSessionLoad 0x142bebd80 (0x142bebdba, rcx = drs+0x60; 0x142bebe06). The type table 0x145bf2ae0, IDs 1..12 (Game_TrackMarkup_ParseZoneIdType 0x1445f8530), x_mode Full = 1 / Partial = 2 and the 'DRS/X-Mode will not work' log live in the caller / Game_DRS_UpdateZoneTracker, not in this body (per V5038/V10490). ers_over_det/ers_over_act types do not exist in the exe (agent aero, static) | findings from PR #477 by vogtmarcel07-cloud L2 2026-11-14 (engine-re round 2): decomp read; 2 reference(s) (0x142bebdba, 0x142bebe06). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.d_r_s_collect_zone_markup",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 48 8B 42 08 48",
+  "match": "0x142befb40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142befb40",
+  "kind": "func_start",
+  "names": [
+   "Game_DRS_CollectZoneMarkup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142befb40",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142befb40.c;xref:0x142bebdba",
+   "notes": "V5038 copies elements of three markup vectors (offsets 0x3e8/0x408/0x608 = types 0x1f/0x20/0x30) into 32-byte entries; IDs 1..12, x_mode Full/Partial, ParseZoneIdType and no-TrackSpace message are NOT in this body (caller/UpdateZoneTracker)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142befb40",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142befb40-0x142befee5;xref:0x142bebdba,0x142bebe06",
+   "notes": "V10490 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 2 callers in Game_DRS_OnSessionLoad (0x142bebdba rcx = drs+0x60, 0x142bebe06). Body reads per-type markup lists of the TrackSpace at [rdx+8] + type*0x20 + 8: 0x3e8 (0x1f), 0x408 (0x20), 0x608 (0x30) and pushes 0x20-byte entries {drs, markup, 0, 0, -1} into [rcx+0x28..+0x38]. Note: type table 0x145bf2ae0, ID parser 0x1445f8530, x_mode Full/Partial and the will-not-work log are not in this body (log is in caller 0x142bebd80)."
+  }
+ ],
+ "proofs": []
+}

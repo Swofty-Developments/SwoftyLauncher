@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ScoreBreakdownVM_OnDeactivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f63bb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f63bb0.c;xref:0x14575fe08",
+  "notes": "Slot 15 of vt 0x14575fd90: clears ThumbnailSystem reason 0. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3224)"
+ },
+ "signature": {
+  "id": "game.score_breakdown_v_m_on_deactivate",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 CE C6 44 24",
+  "match": "0x141f63bb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f63bb0",
+  "kind": "func_start",
+  "names": [
+   "Game_ScoreBreakdownVM_OnDeactivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_ScoreBreakdownVM_OnDeactivate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/41f63bb0.c;xref:None",
+   "notes": "V3224 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_OnTrack_SetMessageHandlers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d61070",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d61070.c;xref:0x142d55b80,0x142d5eb80",
+  "notes": "(state, char remove): registers (0) or removes (1) the on-track handlers on the message bus g 0x14618b3b8+8 for 'MessagePitStateChanged', 'vehicle_status_changed' and 'MessageBroadcastScreenToggleVisibility' (hash-map bookkeeping, errno 0x58). Callers: Sess_State_EnterOnTrackCommon, Sess_Session_ResetForRestart, Sess_InGameRace_OnStateExit, Sess_Start_VehiclesInGarages. Addon: message names to subscribe to."
+ },
+ "signature": {
+  "id": "session.on_track_set_message_handlers",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 81 A0 0C 00 00 48 8B 80 88 00 00 00 48 8B 80 60",
+  "match": "0x142d61070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d61070",
+  "kind": "func_start",
+  "names": [
+   "Sess_OnTrack_SetMessageHandlers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d61070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d61070.c;xref:0x142d5652d,0x142d5f10d,0x142d5f567,0x142d6940d",
+   "notes": "V3614 strings MessagePitStateChanged, vehicle_status_changed, MessageBroadcastScreenToggleVisibility; param_2 0 registers / 1 removes on bus [0x14618b3b8]+8; 4 named callers confirmed (+1 in data1)"
+  }
+ ],
+ "proofs": []
+}

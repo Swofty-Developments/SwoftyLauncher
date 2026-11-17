@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsControlsScreenViewModel_WorkoutControlsAction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141da5de0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_SettingsControlsScreenViewModel_WorkoutControlsAction;xref:0x141da5f75,0x141da6403,0x141da6ef8,0x141da6ff9",
+  "notes": "cxx=game::SettingsControlsScreenViewModel::workoutControlsAction; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.settings_controls_screen_view_model_workout_controls_action",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 BC 24 A0 00 00 00 C5 F8 29 B4 24 90 00 00 00 49 89 CE 48 8B 81 B8",
+  "match": "0x141da5de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141da5de0",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsControlsScreenViewModel_WorkoutControlsAction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141da5de0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141da5de0.c;xref:0x141da4308",
+   "notes": "V5218 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

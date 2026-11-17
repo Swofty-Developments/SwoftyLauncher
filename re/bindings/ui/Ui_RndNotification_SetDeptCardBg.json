@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_RndNotification_SetDeptCardBg",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14180e910",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/14180e910.c;xref:0x14180d033;xref:0x14180d8c1;xref:0x14180d93e",
+  "notes": "myteam-g1: UI binding code; department, lng_rnd_dept_%s, rnd_card_bg. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_notification_set_dept_card_bg",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 4C 89 CB 4D 89 C6 48 89 D6 48 89 CF 48 8B 42 28",
+  "match": "0x14180e910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14180e910",
+  "kind": "func_start",
+  "names": [
+   "Ui_RndNotification_SetDeptCardBg"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14180e910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14180e910.c;xref:0x14180d033",
+   "notes": "V9801 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

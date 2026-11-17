@@ -1,19 +1,20 @@
-use crate::dialogs::crash::{self, CrashView};
+use crate::dialogs::crash::{CrashNeeds, Crashes};
 use crate::dialogs::game_edited::Edited;
 use crate::services::game::{self, Copies, Install, Owner, Probe};
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
+use std::convert::Infallible;
 use std::path::PathBuf;
 use std::time::{Duration, Instant};
-use swofty_core::diagnostics::quarantine;
 use swofty_core::game_folder::busy::Busy;
 use swofty_core::game_folder::recovery::{self, Blocked};
 use swofty_core::platform::process::GameProcess;
 use swofty_core::session::SessionRecord;
 
+use super::host::Host;
 use super::launch_alerts::{show_launch_failed, show_mods_blocked};
 use super::{Page, Shell};
-use swofty_i18n::{tr, trf, trn};
+use swofty_i18n::{tr, trf};
 
 pub(crate) struct GameWatch {
     pub(crate) install: Option<Install>,
@@ -29,6 +30,42 @@ pub(crate) struct GameWatch {
 }
 
 impl GameWatch {
+    pub(crate) fn new() -> Self {
+        Self {
+            install: None,
+            copies: Vec::new(),
+            missing_copies: Vec::new(),
+            detected: false,
+            rediscover: true,
+            processes: Vec::new(),
+            owners: Vec::new(),
+            session: None,
+            build: None,
+            blocked: None,
+        }
+    }
+
+    /// Takes the copies a probe found. True when Play's copy or the list of copies changed.
+    pub(crate) fn take_copies(&mut self, found: Copies) -> bool {
+        let changed = !self.detected || self.install != found.active || self.copies != found.all;
+        self.install = found.active;
+        crate::app::app_log::set_game(self.install.as_ref().map(|i| i.dir.as_path()));
+        self.copies = found.all;
+        self.missing_copies = found.missing;
+        self.detected = true;
+        changed
+    }
+
+    pub(crate) fn take_processes(&mut self, build: Option<Busy>, processes: Vec<GameProcess>) {
+        self.build = build;
+        self.processes = processes;
+    }
+
+    /// Whether the next probe should look for copies again, clearing the request.
+    pub(crate) fn take_rediscover(&mut self) -> bool {
+        std::mem::take(&mut self.rediscover)
+    }
+
     /// The copy addon panels work with: the one a running game belongs to,
     /// else the one Play uses.
     pub(crate) fn panel_install(&self) -> Option<Install> {
@@ -61,7 +98,7 @@ impl Shell {
     }
 
     pub(super) fn page_name(&self) -> &'static str {
-        match self.page {
+        match self.navigation.page {
             Page::Section(_) => "panel",
             page => page.nav_label(),
         }
@@ -96,7 +133,7 @@ impl Shell {
         self.saves.game_running = !probe.processes.is_empty();
         if self
             .saves
-            .refresh_due(self.page == Page::Careers, probe.saves_print)
+            .refresh_due(self.navigation.page == Page::Careers, probe.saves_print)
         {
             self.refresh_saves_in_background(cx);
         }
@@ -105,8 +142,10 @@ impl Shell {
         }
         self.announce_reports(&probe, window, cx);
         self.apply_install(probe.install.take(), probe.merged, cx);
-        if self.launching.cancelling && probe.busy.is_none() && self.game.build.is_some() {
-            self.launching.cancelling = false;
+        if self
+            .launching
+            .cancel_settled(self.game.build.is_some(), probe.busy.is_some())
+        {
             window.notify(
                 Notification::info(tr(
                     "The game files are back as they were. Press Play to build again.",
@@ -115,12 +154,12 @@ impl Shell {
                 cx,
             );
         }
-        self.game.build = probe.busy.take();
-        self.game.processes = std::mem::take(&mut probe.processes);
+        self.game
+            .take_processes(probe.busy.take(), std::mem::take(&mut probe.processes));
         self.sync_shaders(false, cx);
         self.game.attribute();
         self.finish_launch(&probe);
-        self.watch_session(probe.session.as_ref(), cx);
+        Crashes::watch(self, probe.session.as_ref(), cx);
         self.game.session = probe.session;
         self.db_poll(cx);
         let live = was_live || self.launching.launch.is_some();
@@ -185,14 +224,8 @@ impl Shell {
 
     fn apply_install(&mut self, found: Option<Copies>, merged: bool, cx: &mut Context<Self>) {
         if let Some(found) = found {
-            let changed =
-                !self.game.detected || self.game.install != found.active || self.game.copies != found.all;
-            self.game.install = found.active;
-            crate::app::app_log::set_game(self.game.install.as_ref().map(|i| i.dir.as_path()));
-            self.game.copies = found.all;
-            self.game.missing_copies = found.missing;
-            self.game.detected = true;
-            if self.page == Page::Careers && (changed || merged) {
+            let changed = self.game.take_copies(found);
+            if self.navigation.page == Page::Careers && (changed || merged) {
                 self.refresh_saves_in_background(cx);
             }
             if merged {
@@ -207,114 +240,24 @@ impl Shell {
     }
 
     fn finish_launch(&mut self, probe: &Probe) {
-        if let Some(launch) = self.launching.launch.as_mut() {
-            launch.saw_game |= self.game.owners.iter().any(|o| !matches!(o, Owner::Other(_)));
-            launch.stage = probe.launch_stage.clone();
-            if let Some(ok) = launch.finished() {
-                if !ok && !launch.saw_game {
-                    self.game.blocked = Blocked::read(&self.store.root);
-                    let refused = probe
-                        .mods_blocked
-                        .as_ref()
-                        .is_some_and(|r| r.stage == quarantine::Stage::BeforeLaunch && r.at >= launch.at);
-                    let not_stock = probe.not_stock.as_ref().filter(|r| r.at >= launch.at).map(|r| {
-                        crate::dialogs::game_edited::notice(r, self.game.install.as_ref().map(|i| i.source))
-                    });
-                    let failed = probe
-                        .launch_failed
-                        .as_ref()
-                        .filter(|f| f.at >= launch.at)
-                        .map(|f| f.headline().to_owned());
-                    self.launching.notice = Some(match &self.game.blocked {
-                        _ if refused => {
-                            tr("an antivirus removed mod files, so F1 25 was not started").to_owned()
-                        }
-                        _ if not_stock.is_some() => not_stock.unwrap_or_default(),
-                        Some(b) if b.ours() => trn(
-                            b.files.len(),
-                            "a file an earlier Swofty session left in the game folder is in the way; Restore game \
-                             folder clears it",
-                            "{count} files an earlier Swofty session left in the game folder are in the way; \
-                             Restore game folder clears them",
-                        ),
-                        Some(b) => trn(
-                            b.files.len(),
-                            "a file Swofty did not put in the game folder is in the way",
-                            "{count} files Swofty did not put in the game folder are in the way",
-                        ),
-                        None => failed.unwrap_or_else(|| launch.failure()),
-                    })
-                    .filter(|n| !n.contains(swofty_core::game_folder::busy::CANCELLED));
-                    let why = self.launching.notice.clone().unwrap_or_else(|| launch.failure());
-                    if self.launching.notice.is_some() {
-                        crate::app::app_log::action("start F1 25").failed(&why);
-                    }
-                    self.mp_launch_ended(Some(why));
-                } else {
-                    self.mp_launch_ended(None);
-                }
-                self.launching.launch = None;
-            }
+        if let Some(failed) = self.launching.follow(&mut self.game, &self.store, probe) {
+            self.mp_launch_ended(failed);
         }
     }
+}
 
-    fn watch_session(&mut self, session: Option<&SessionRecord>, cx: &mut Context<Self>) {
-        if let Some(s) = session.filter(|s| s.crashed() || s.end.is_some())
-            && self.crashes.latest.as_ref().is_none_or(|(d, _)| *d != s.dir)
-        {
-            let session = s.clone();
-            let crashed = s.crashed();
-            let game_dir = self.game.install.as_ref().map(|i| i.dir.clone());
-            let store = self.store.clone();
-            let fresh = s.ended.is_some_and(|e| game::now_secs() - e < crash::FRESH_SECS);
-            self.crashes.latest = Some((s.dir.clone(), Ok(String::new())));
-            cx.spawn(async move |this, cx| {
-                let dir = session.dir.clone();
-                let (summary, diagnosis) = cx
-                    .background_executor()
-                    .spawn(async move {
-                        if !crashed {
-                            let stall = swofty_core::diagnostics::known_problems::stall(
-                                &session,
-                                game_dir.as_deref(),
-                                &store,
-                            )
-                            .or_else(|| {
-                                swofty_core::diagnostics::known_problems::tyres(
-                                    &session,
-                                    game_dir.as_deref(),
-                                    &store,
-                                )
-                            });
-                            return (Ok(String::new()), stall);
-                        }
-                        let summary = game::crash_summary(&session, game_dir.as_deref());
-                        let diagnosis = swofty_core::diagnostics::known_problems::crash(
-                            &session,
-                            game_dir.as_deref(),
-                            &store,
-                        );
-                        (summary, diagnosis)
-                    })
-                    .await;
-                this.update(cx, |s, cx| {
-                    if let Ok(text) = &summary
-                        && (crashed || diagnosis.is_some())
-                    {
-                        s.crashes.view = Some(CrashView {
-                            dir: dir.clone(),
-                            diagnosis,
-                            crashed,
-                            summary: text.clone(),
-                        });
-                        s.crashes.open |= fresh;
-                    }
-                    s.crashes.latest = Some((dir, summary));
-                    cx.notify();
-                })
-                .ok();
-            })
-            .detach();
-        }
+impl Host<Crashes> for Shell {
+    fn split(&mut self) -> (&mut Crashes, CrashNeeds<'_>) {
+        (
+            &mut self.crashes,
+            CrashNeeds {
+                store: &self.store,
+                game_dir: self.game.install.as_ref().map(|i| i.dir.as_path()),
+            },
+        )
+    }
+
+    fn changed(&mut self, change: Infallible, _: &mut Context<Self>) {
+        match change {}
     }
 }

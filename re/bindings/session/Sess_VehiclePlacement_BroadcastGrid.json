@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_VehiclePlacement_BroadcastGrid",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f63a70",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-GRID;decomp:re/decomp/142f63a70.c;xref:0x1457fa710",
+  "notes": "Log channel GRID: 'VehiclePlacementSystem::broadcastGrid()'"
+ },
+ "signature": {
+  "id": "session.vehicle_placement_broadcast_grid",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 68 83 79 08 01 0F 8F ?? ?? ?? ?? 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142f63a70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f63a70",
+  "kind": "func_start",
+  "names": [
+   "Sess_VehiclePlacement_BroadcastGrid"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_VehiclePlacement_BroadcastGrid",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f63a70.c;xref:0x142f63a70",
+   "notes": "V1909 log strings confirmed by disassembly lea refs inside function"
+  }
+ ],
+ "proofs": []
+}

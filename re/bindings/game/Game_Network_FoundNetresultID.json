@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_FoundNetresultID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cec430",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK/T",
+  "notes": "named from its log messages (channel NETWORK/T): 'Found netresult ID %d, %s'"
+ },
+ "signature": {
+  "id": "game.network_found_netresult_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 BC 24 E0 00 00 00 C5 F9 7F B4 24 D0 00 00 00 48 89 CE 48 8B 81 20 02 00 00",
+  "match": "0x142cec430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cec430",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_FoundNetresultID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142cec430",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142cec430.c",
+   "notes": "V5072 8KB Create Session: picks game/flow_*.xml, session.number_of_laps; Found netresult ID is minor; better Game_Game_CreateSession (vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142cec430",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cec430.c",
+   "notes": "V6888 1269 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

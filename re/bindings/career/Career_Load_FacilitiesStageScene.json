@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Load_FacilitiesStageScene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142351c20",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *scene)",
+  "evidence": "decomp:re/decomp/142351c20.c;xref:0x145781a10",
+  "notes": "myteam-g1: Builds the FacilitiesStage%d_0%d stage scene name (stage number / variant) and loads it."
+ },
+ "signature": {
+  "id": "career.load_facilities_stage_scene",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D C4 19 50 16",
+  "match": "0x142351c20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142351c20",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_FacilitiesStageScene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142351c20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142351c20.c;str:\"FacilitiesStage%d_0%d\"",
+   "notes": "V10165 Formats the stage scene name and drives opened/hidden/opening/skipping/hiding state strings; scene name built then played via stage cutscene call."
+  }
+ ],
+ "proofs": []
+}

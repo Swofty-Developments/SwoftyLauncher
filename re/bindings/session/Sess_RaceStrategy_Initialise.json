@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RaceStrategy_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436a7640",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436a7640.c;xref:0x145859060",
+  "notes": "Slot 16 of the race strategy system vt 0x145858fe0 (8 = Sess_RaceStrategy_UpdateVehicle, 13 = Sess_RaceStrategy_RedFlagRecompute): creates SESSION_STRATEGY pool and 'session_strategy' queue with getDefaultWideJobPolicy (wide = all cores). Addon: strategy jobs run async on this queue."
+ },
+ "signature": {
+  "id": "session.race_strategy_initialise",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 58 4C 89 C6 48 89 D3 48 89 CF 48 8B 02 48 8D 15",
+  "match": "0x1436a7640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436a7640",
+  "kind": "func_start",
+  "names": [
+   "Sess_RaceStrategy_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Sess_RaceStrategy_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/436a7640.c;xref:None",
+   "notes": "V3244 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

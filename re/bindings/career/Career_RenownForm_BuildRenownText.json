@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownForm_BuildRenownText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418ad250",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm, void *out",
+  "evidence": "decomp:re/decomp/1418ad250.c;xref:0x1418b9f6f;xref:0x1457144e0",
+  "notes": "myteam-g1: Builds lng_rf_renown text for the renown and form widgets."
+ },
+ "signature": {
+  "id": "career.renown_form_build_renown_text",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 01 00 00 48 89 CE 48 8B 81 E8 00 00 00",
+  "match": "0x1418ad250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418ad250",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownForm_BuildRenownText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1418ad250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418ad250.c;xref:0x1418b9f6f",
+   "notes": "V9831 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

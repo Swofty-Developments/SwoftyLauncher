@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Input_RebindAction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141dc23f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name rebindAction (class from the log channel); log channel INPUT: 'rebindAction - binding action \"%s\" to axis \"%s\" on device type \"%s UID \"%d\" with calibration Deadzone:%f type:%d'"
+ },
+ "signature": {
+  "id": "game.input_rebind_action",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 48 89 CE 4C 8B BC 24 A0 01 00 00",
+  "match": "0x141dc23f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141dc23f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Input_RebindAction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141dc23f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141dc23f0.c;xref:0x141dbf2ed",
+   "notes": "V5223 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

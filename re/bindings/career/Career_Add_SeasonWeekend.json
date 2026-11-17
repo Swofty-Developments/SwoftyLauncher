@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Add_SeasonWeekend",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ae6160",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Add_SeasonWeekend(void *season, void *weekend)",
+  "evidence": "decomp:re/decomp/140ae6160.c;xref:0x140af241a,0x14309a5b9,0x14309a6e9;decomp:re/decomp/140ae6160.c;decomp:re/decomp/140af1980.c;xref:0x140af241a,0x14309a5b9,0x14309a6e9,0x14309a902;doc:addons/career-editor/protocol/season.md#season-calendar-set-round",
+  "notes": "Season: appends a Weekend to the vector +0x288 and registers it in the season's name map +0x138 keyed by weekend+0x70; duplicate name -> removed again, returns 0x58 appends weekend to the season vector +0x288 (season allocator), inserts it in the name map season+0x138 keyed by weekend+0x70 and registers the child (0x143651ee0 / 0x143652150); returns 0, 0x16 for null, 0x58 when the name is already in the map (weekend popped again, not freed). Season deserialise uses it for every saved weekend name"
+ },
+ "signature": {
+  "id": "career.add_season_weekend",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D7 48 89 CE C5 F8 10 81 70 02 00 00",
+  "match": "0x140ae6160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ae6160",
+  "kind": "func_start",
+  "names": [
+   "Career_Add_SeasonWeekend"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-season",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/season.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Career_Add_SeasonWeekend",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ae6160.c;decomp:re/decomp/140af1980.c;xref:0x140af2419,0x14309a5b8,0x140b98fd0,0x140b9ecbb,0x140ba829c,0x140baf990,0x1411272b6,0x1493efd74",
+   "notes": "V0232 returns via mov eax,esi (0/0x16/0x58, zero-extended); also copies season+0x270/+0x278 into weekend+0x208/+0x210 first; on success 0x143651ee0(weekend,season) then 0x143652150 only when that returns 0; 11 xtls + 2 .data1 callers"
+  }
+ ],
+ "proofs": []
+}

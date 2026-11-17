@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_Set_SafetyCarDeploymentType",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143608160",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Set_SafetyCarDeploymentType(void *sc_state, const void *sc_deployment_msg)",
+  "evidence": "decomp:re/decomp/143608160.c;xref:0x142d5d45a,0x142d6a61d,0x142d6fc7f,0x142dfb5b5,0x143607e59,0x143611222,0x143617d31,0x143645737,0x143646ddb,0x143646e3e",
+  "notes": "SafetyCarDeployment message handler (name kept for signatures.json; per verify-c it handles the whole message, not only the set). msg+0x18 = phase: 0 eDeployed - first message stores the deployment type byte +0x1c (1 = SC, 2 = VSC) in self+0x108, a later SC upgrades a running VSC (2 -> 1), self+0x109 = msg+0x1d; 3 eResumeRace - clears +0x108/+0x109. Every message is re-dispatched as bus msg vtable 0x1457e7840 with msg+8..+0x1f. 7+ callers in session states (0x142d5d45a, 0x142d6a61d, 0x142d6fc7f, 0x142dfb5b5, 0x143607e59, 0x143611222). (used by vmknolle session-watch)"
+ },
+ "signature": {
+  "id": "session.set_safety_car_deployment_type",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 D6 48 89 CF 8B 42 18 83 F8 03",
+  "match": "0x143608160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143608160",
+  "kind": "func_start",
+  "names": [
+   "Sess_Set_SafetyCarDeploymentType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "func",
+   "item": "0x143608160",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_c/decomp/143608160.c;xref:0x142d5d45a,0x142dfb5b5,0x143607e59,0x143645737",
+   "notes": "V1048 it is the SafetyCarLogicSystem handler for a SafetyCarDeployment message (arg2): msg+0x18==0 'eDeployed' sets type +0x108 from msg+0x1c (VSC=2 upgrades to SC=1 only) and +0x109 from msg+0x1d, ==3 'eResumeRace' clears +0x108/+0x109, then re-dispatches the message (0x1439876c0); name covers only the set part; proto missing: void(SafetyCarLogic*, const ScDeploymentMsg*)"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-d",
+   "kind": "func",
+   "item": "0x143608160",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_d/decomp/143608160.c;xref:0x142d5d45a,0x143607e59,0x143611222",
+   "notes": "V1073 SafetyCarLogicSystem handler: msg+0x18 type 0 logs eDeployed and sets state+0x108 from msg+0x1c (+0x109 from +0x1d), type 3 logs eResumeRace and clears it, then re-posts the message; 2-arg proto matches"
+  }
+ ],
+ "proofs": []
+}

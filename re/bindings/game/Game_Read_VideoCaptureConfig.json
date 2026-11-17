@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_VideoCaptureConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ad22a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: DebugCamera.enableDpadCommands, DebugCamera.fov, DebugCamera.invertVerticalLook, DebugCamera.quickSpeedMultiplier, DebugCamera.speedMultiplier, VideoCapture.enabled, VideoCapture.farMax, VideoCapture.farMin, VideoCapture.fovMax, VideoCapture.fovMin, VideoCapture.nearMax,'"
+ },
+ "signature": {
+  "id": "game.read_video_capture_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 89 CE 48 8B 0D",
+  "match": "0x140ad22a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ad22a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_VideoCaptureConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140ad22a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ad22a0.c",
+   "notes": "V4410 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

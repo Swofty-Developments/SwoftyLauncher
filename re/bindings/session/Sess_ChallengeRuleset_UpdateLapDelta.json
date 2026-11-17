@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ChallengeRuleset_UpdateLapDelta",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d3d340",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d3d340.c;xref:0x142d3e049,0x142d3e803",
+  "notes": "Challenge ruleset: computes the car lap progress fraction (Game_VehicleProgressSystem_GetLapProgress, XOR-protected values) and the delta vs reference lap param_3 (records x200). Callers: Sess_ChallengeRuleset_FinaliseResults, Sess_ChallengeRuleset_Update."
+ },
+ "signature": {
+  "id": "session.challenge_ruleset_update_lap_delta",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC B0 00 00 00 C5 78 29 AC 24 A0 00 00 00 C5 78 29 A4 24 90 00 00 00 C5 78 29 9C 24 80 00 00 00 C5 78 29 54 24 70 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 44",
+  "match": "0x142d3d340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d3d340",
+  "kind": "func_start",
+  "names": [
+   "Sess_ChallengeRuleset_UpdateLapDelta"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d3d340",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d3d340.c;xref:0x142d3e049,0x142d3e803",
+   "notes": "V3550 lap progress via 0x1446046a0=Game_VehicleProgressSystem_GetLapProgress with XOR-protected fields, delta vs reference record param_3*200; callers FinaliseResults and Update"
+  }
+ ],
+ "proofs": []
+}

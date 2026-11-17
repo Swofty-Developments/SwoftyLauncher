@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_ModuleSystem_CheckPlatform",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143adcaf0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-MODULE_SYSTEM;decomp:re/decomp/143adcaf0.c;xref:0x143add90d,0x143adf16d,0x143adffe0",
+  "notes": "named from its log messages (channel MODULE_SYSTEM): 'Module \"%s\" excluded by \"platform\" attribute. | Module \"%s\" excluded by \"platformExclude\" attribute.'"
+ },
+ "signature": {
+  "id": "core.module_system_check_platform",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC C0 00 00 00 48 89 D6 48 89 CF 48 8D 05 ?? ?? ?? ?? 48 89 44 24 30",
+  "match": "0x143adcaf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143adcaf0",
+  "kind": "func_start",
+  "names": [
+   "Ne_ModuleSystem_CheckPlatform"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_ModuleSystem_CheckPlatform",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143adcaf0.c;xref:0x143add90d",
+   "notes": "V2045 reads platform attr then platformExclude attr, returns bool include; both strings in MODULE_SYSTEM logs"
+  }
+ ],
+ "proofs": []
+}

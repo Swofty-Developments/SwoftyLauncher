@@ -1,3 +1,4 @@
+#include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/resolve.hpp"
 
@@ -629,6 +630,8 @@ void save_splice_commit()
                      : "did not install (see the [core] lines)");
     snapshots_start(live);
 }
+
+static loader::FunctionSet save_splice_core_set{loader::CoreSetId::save_splice, save_splice_mixins, save_splice_commit};
 
 // ---- W4 career snapshots ----
 namespace save_splice {

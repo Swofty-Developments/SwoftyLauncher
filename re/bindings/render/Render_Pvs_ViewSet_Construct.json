@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Pvs_ViewSet_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c307c0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c307c0.c;xref:0x140150745",
+  "notes": "275-line constructor (vtables 0x1458bdb80 then 0x1458c55f0, CriticalSection, arrays of param_5 qwords from allocator param_2). Callers Game_Read_RendererGfxConfig and Game_Render_InitCamerasAndPVS (many). Hypothesis: PVS/visibility view set."
+ },
+ "signature": {
+  "id": "render.pvs_view_set_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 44 89 CF 4D 89 C6 48",
+  "match": "0x143c307c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c307c0",
+  "kind": "func_start",
+  "names": [
+   "Render_Pvs_ViewSet_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c307c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c307c0.c;xref:0x140150745",
+   "notes": "V7863 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnDiscardedConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143267690",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onDiscardedConnection (class from the log channel); log channel NETWORK: '%s(%d).'"
+ },
+ "signature": {
+  "id": "game.network_on_discarded_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 44 0F B6 F2",
+  "match": "0x143267690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143267690",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnDiscardedConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143267690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143267690.c",
+   "notes": "V5824 name and description match body; log string/pretty name present; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

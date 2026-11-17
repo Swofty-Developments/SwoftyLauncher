@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Queue_EnqueueEventRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423bbd20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1423bbd20.c;xref:0x14235930d",
+  "notes": "Allocates a 0x40-byte record (CS at +0xd8, allocator at +0x70), pushes trace id 0x58 into the error ring, sets an event (Ne_Event_Set). Callers 0x142358cf0, Game_UILatency_UpdateCarMarkerContext. Hypothesis (UI latency event queue)."
+ },
+ "signature": {
+  "id": "core.queue_enqueue_event_record",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 80 79 68 00 0F 84 ?? ?? ?? ?? 44 89 C3 48 89 D7 48 89 CE 48 8B 89 D8 00 00 00 FF 15 ?? ?? ?? ?? 48 8B 4E 70 48 8B 01 BA 40 00 00 00 41 B8 10 00",
+  "match": "0x1423bbd20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423bbd20",
+  "kind": "func_start",
+  "names": [
+   "Ne_Queue_EnqueueEventRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1423bbd20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423bbd20.c;xref:0x14235930d",
+   "notes": "V7531 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

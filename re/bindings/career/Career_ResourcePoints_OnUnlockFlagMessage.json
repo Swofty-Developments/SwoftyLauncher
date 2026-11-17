@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_OnUnlockFlagMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14122a020",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ResourcePoints_OnUnlockFlagMessage(void *rp, void *msg)",
+  "evidence": "decomp:re/decomp/14122a020.c;xref:0x141226b64;xref:0x1412277ba",
+  "notes": "myteam-g2: RP message handler: calls FUN_143508900(rp+0x528, value) in per-team mode or FUN_1434ff240(rp+0x4b8, value) in per-driver mode with value = (msg byte at +0x10 == 5); toggles a wallet flag (likely the lock/allow-spend flag at entry +8). Level 1: meaning of kind 5 not decoded."
+ },
+ "signature": {
+  "id": "career.resource_points_on_unlock_flag_message",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 0F B6 42 10 0F B6 91 B0 04 00 00",
+  "match": "0x14122a020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14122a020",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePoints_OnUnlockFlagMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14122a020",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14122a020.c;xref:0x141226b64;xref:0x1412277ba",
+   "notes": "V9684 Dispatch on mode byte +0x4b0 (1 -> rp+0x528, 0 -> rp+0x4b8) with value (msg+0x10 == 5) matches."
+  }
+ ],
+ "proofs": []
+}

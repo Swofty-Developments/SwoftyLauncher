@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Deserialise_ClaimedFlag",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc6aa0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t Career_Deserialise_ClaimedFlag(void *obj, void *json_value)",
+  "evidence": "decomp:re/decomp/140fc6aa0.c;xref:0x140f8ed57;xref:0x140f967f2;xref:0x140f96cdf",
+  "notes": "myteam-g2: Reads the boolean field claimed from a saved JSON value into obj+0x28 (1 byte); returns 0 on success, 0x58 if the value is not boolean, 0x57 if missing, and records the error code in the thread error stack. Used by Career_Sponsors_Remove and Career_TeamRenownAndForm_Deserialise (renown reward claimed flag). Hook: forcing obj+0x28 marks a reward as claimed."
+ },
+ "signature": {
+  "id": "career.deserialise_claimed_flag",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 D0 48 89 CE 48 8D 15",
+  "match": "0x140fc6aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc6aa0",
+  "kind": "func_start",
+  "names": [
+   "Career_Deserialise_ClaimedFlag"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fc6aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc6aa0.c;xref:0x140f8ed57;str:\"claimed\"",
+   "notes": "V9616 Reads boolean \"claimed\" into obj+0x28; 0x58 wrong type, 0x57 missing, error stored in TLS stack."
+  }
+ ],
+ "proofs": []
+}

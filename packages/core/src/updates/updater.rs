@@ -196,23 +196,30 @@ impl Track {
                 && r.version().is_some_and(|v| managed::newer(installed, &v))
         })
     }
+
+    /// Asks the network about `part`: the CDN's manifest for the launcher, else a probe of the latest
+    /// release and, when `fetch` allows it and one is due, the release itself.
+    pub fn check(&mut self, part: Part, installed: Option<&Version>, fetch: bool, now: u64) {
+        if part == Part::Launcher
+            && let Ok(release) = release::fetch_manifest(release::MANIFEST_URL, release::CHECK_TIMEOUT)
+        {
+            self.on_manifest(part, release, now);
+            return;
+        }
+        self.on_probe(probe(part, release::CHECK_TIMEOUT), now);
+        if fetch && self.fetch_due(installed, now) {
+            self.on_fetch(
+                part,
+                release::fetch_release(part.api_url(), release::CHECK_TIMEOUT),
+                now,
+            );
+        }
+    }
 }
 
+/// [`Track::check`].
 pub fn check(part: Part, track: &mut Track, installed: Option<&Version>, fetch: bool, now: u64) {
-    if part == Part::Launcher
-        && let Ok(release) = release::fetch_manifest(release::MANIFEST_URL, release::CHECK_TIMEOUT)
-    {
-        track.on_manifest(part, release, now);
-        return;
-    }
-    track.on_probe(probe(part, release::CHECK_TIMEOUT), now);
-    if fetch && track.fetch_due(installed, now) {
-        track.on_fetch(
-            part,
-            release::fetch_release(part.api_url(), release::CHECK_TIMEOUT),
-            now,
-        );
-    }
+    track.check(part, installed, fetch, now);
 }
 
 #[derive(Debug, Clone)]
@@ -364,8 +371,23 @@ impl Catalog {
             .map(|c| c.release.tag_name.as_str())
             .collect()
     }
+
+    /// Probes the importer's latest release, lists the releases when due, learns which launcher each
+    /// newer one needs, and removes the cached packages of releases that are not newer than `installed`.
+    pub fn check(&mut self, store: &Store, installed: Option<&Version>, launcher: &Version, now: u64) {
+        self.latest
+            .on_probe(probe(Part::Addon, release::CHECK_TIMEOUT), now);
+        if self.list_due(now) {
+            self.on_list(managed::fetch_releases(release::CHECK_TIMEOUT), now);
+        }
+        self.learn(installed, launcher, now, |r| managed::requirement(store, r));
+        if !self.releases.is_empty() {
+            managed::prune(store, &self.keep(installed));
+        }
+    }
 }
 
+/// [`Catalog::check`].
 pub fn check_importer(
     store: &Store,
     catalog: &mut Catalog,
@@ -373,16 +395,7 @@ pub fn check_importer(
     launcher: &Version,
     now: u64,
 ) {
-    catalog
-        .latest
-        .on_probe(probe(Part::Addon, release::CHECK_TIMEOUT), now);
-    if catalog.list_due(now) {
-        catalog.on_list(managed::fetch_releases(release::CHECK_TIMEOUT), now);
-    }
-    catalog.learn(installed, launcher, now, |r| managed::requirement(store, r));
-    if !catalog.releases.is_empty() {
-        managed::prune(store, &catalog.keep(installed));
-    }
+    catalog.check(store, installed, launcher, now);
 }
 
 #[derive(Debug, Clone, PartialEq)]

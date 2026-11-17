@@ -30,6 +30,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 
 constexpr size_t CMP_LEN = 7;
@@ -93,8 +94,7 @@ bool arm(size_t n, const runtime::Sig &s, void (*fn)(safetyhook::Context &))
 void setup()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_SETUP_VM_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_SETUP_VM_GUARD", v)) {
         swofty::log("[setups] car guard off (SWOFTY_SETUP_VM_GUARD=%s)", v);
         return;
     }

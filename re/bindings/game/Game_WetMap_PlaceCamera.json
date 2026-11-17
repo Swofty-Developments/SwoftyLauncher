@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_WetMap_PlaceCamera",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14478e440",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_WetMap_PlaceCamera(void *wetmap, uint32_t split_screen_id, void *view_camera_params)",
+  "evidence": "xref:0x140158e99;doc:re/db/subsystems/game.md",
+  "notes": "Per frame from GameRendererModule 0x140157d90: wetness-map camera eye = view camera +0x120 xyz + (0,1,0), look (0,-1,0) (0x1454876f0), up (0,0,1) (0x1453829d0); consts 0x1458bb750 (1,0,0,-1000), 0x145c05980 (1000,75,75,0). Coverage = 75 x 75 m square under the player view. Submit 0x14478eb80 only if ws+0x3f0a7f; refresh while ws+0x3f0a54>0.01 else max 3 frames. Dry vs wet meaning of the map lives in material shaders (not decidable from exe) | findings from PR #471 by vogtmarcel07-cloud"
+ },
+ "signature": {
+  "id": "game.wet_map_place_camera",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 28 01 00 00 C5 78 29 AC",
+  "match": "0x14478e440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14478e440",
+  "kind": "func_start",
+  "names": [
+   "Game_WetMap_PlaceCamera"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x14478e440",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14478e440.c;xref:0x140158e99",
+   "notes": "V6644 camera math and consts verified (eye=+0x120 xyz+(0,1,0), look 0x1454876f0, up 0x1453829d0, 0x1458bb750, 0x145c05980) but direct caller is 0x140158da0 (sibling of 0x140157d90, both referenced from 0x14014d230 region), not GameRendererModule 0x140157d90; and ws+0x3f0a7f/0x3f0a54 gating is in submit fn 0x14478eb80, not here"
+  }
+ ],
+ "proofs": []
+}

@@ -133,10 +133,12 @@ Anything else gets a normal review. The workflow's summary lists the reason.
 - The file is at most 64 KiB of UTF-8 JSON with no duplicate keys, `NaN` or `Infinity`, exact key sets, one-line strings.
 - The row passes `kb.py`'s rules: naming, subsystem prefix, level evidence tokens.
 - The pattern parses, is 12 to 256 bytes, and neither starts nor ends with a wildcard.
+- The anchor is under 256 bytes after the match and `expect` is 1 to 16 concrete bytes; rows that need more stay in the tables, where a maintainer owns them.
 - `target` is `match + anchor` for `addr`; the rel32 or disp32 operand is wildcarded for `rel32` and `riprel`; `expect` agrees with the pattern's bytes.
+- No other signature has the same section, pattern bytes, anchor, resolve and kind. The pattern is compared as parsed bytes and the offsets as numbers, the way the core scans once per pattern and resolves each binding from that match.
 - The signature kind fits the binding kind, the section is `.xtls` (or `.data1` with a reason), the address is inside the KB image.
 - Each proof's digest matches the signature and its exe hash; a proof on the KB build found the record's `match` and `target`.
-- The name and address have no verify rows yet, so an old verdict cannot back a new record.
+- The name and address have no verify rows yet, so an old verdict cannot back a new record. A record's own verify rows are about its name, its address or its signature id, and the export gate reads only the first two.
 - `kb_lint.py --structural` passes over the base branch with the PR's records added: no drift between rows, signatures, structs, verify rows and tests.
 - After merging, the `main` job runs `binding.py check` and `kb_lint.py --structural` over `main` again.
 

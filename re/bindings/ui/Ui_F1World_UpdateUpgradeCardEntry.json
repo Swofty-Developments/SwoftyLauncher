@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_UpdateUpgradeCardEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1425b97e0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_F1World_UpdateUpgradeCardEntry(void *self, void *a2, void **entry)",
+  "evidence": "decomp:re/decomp/1425b97e0.c;xref:0x141ae4a89;xref:0x141aed56c;xref:0x141aed8e9",
+  "notes": "myteam-g2: Copies the refcounted card info from entry+0xa8/+0xb0 and calls FUN_1425b98b0, then updates counters when entry+0x18 == 1. F1 World upgrade card screen helper."
+ },
+ "signature": {
+  "id": "ui.f1_world_update_upgrade_card_entry",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 48 89 D6 48 89 CB 49 8B 00 C5 F8 57 C0",
+  "match": "0x1425b97e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425b97e0",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_UpdateUpgradeCardEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1425b97e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1425b97e0.c",
+   "notes": "V10224 Copies refcounted info from entry+0xa8/0xb0, calls 1425b98b0 then 1425b9b10 depending on entry+0x18 (0/1) and counts at self+0x2f0/0x338."
+  }
+ ],
+ "proofs": []
+}

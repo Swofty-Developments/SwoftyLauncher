@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_VehiclePlacement_ResolveTransform",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f62580",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f62580.c;xref:0x14023c600,0x140240c80",
+  "notes": "(placement, Request *r): r+0x18 = slot (car/grid index <32), r+0x1c = type (5 = copy from another request). Maps slot via +0x988 byte table to a vehicle id, finds the vehicle in [this+0x948]+0x28..+0x30 ([v+0x58]+0xe8 == id) and writes its 4x4 transform to r+0x20..+0x5f; 'VEHICLE_PLACEMENT Invalid slot (%d)'. Callers: cutscene SetGarageLocation/SetGridLocation, PitstopCutScene_Initialise, garage gantry, crew working on car. Addon: grid/garage transforms."
+ },
+ "signature": {
+  "id": "session.vehicle_placement_resolve_transform",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC A8 00 00 00 C5 78 29 8C 24 90 00 00 00 C5 78 29 84 24 80 00 00 00 C5 F8 29 7C 24 70 C5 F8 29 74 24 60 48 89 D6",
+  "match": "0x142f62580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f62580",
+  "kind": "func_start",
+  "names": [
+   "Sess_VehiclePlacement_ResolveTransform"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f62580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f62580.c;xref:0x140240cb2,0x140240db1,0x14026abc3",
+   "notes": "V3743 slot <0x20 via +0x988 byte table, type 5 copies another request, [this+0x948]+0x28 vehicle search, 'VEHICLE_PLACEMENT'/'Invalid slot (%d)' strings verified."
+  }
+ ],
+ "proofs": []
+}

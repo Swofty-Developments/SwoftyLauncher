@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Suspension_SolveWheels",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446dee60",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446dee60.c",
+  "notes": "Per-frame wheel/tyre solve of the SuspensionSystem: calls Car_Tyre_MagicFormula and Car_Tyre_GripScale per wheel (4x each), powf; writes the per-wheel result arrays (+0x730..+0x7f0, 4 floats each) that Car_Suspension_PublishWheelState copies to the wheels."
+ },
+ "signature": {
+  "id": "car.suspension_solve_wheels",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 04 00 00 C5 78 29 BC 24 00 04 00 00 C5 78 29 B4 24 F0 03 00 00 C5 78 29 AC 24 E0 03 00 00 C5 78 29 A4 24 D0 03 00 00 C5 78 29 9C 24 C0 03 00 00 C5 78 29 94 24 B0 03 00 00 C5 78 29 8C 24 A0 03 00 00 C5 78 29 84 24 90 03 00 00 C5 F8 29 BC 24 80 03 00 00 C5 F8 29 B4 24 70 03 00 00 C5 78 28 E1",
+  "match": "0x1446dee60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446dee60",
+  "kind": "func_start",
+  "names": [
+   "Car_Suspension_SolveWheels"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446dee60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446dee60.c;xref:0x1409d5f6d",
+   "notes": "V6835 4 MagicFormula and 4 GripScale calls plus powf, result arrays +0x730..0x7f0 confirmed."
+  }
+ ],
+ "proofs": []
+}

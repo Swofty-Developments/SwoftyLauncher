@@ -1,0 +1,39 @@
+{
+ "schema": 1,
+ "name": "Sess_Handle_SafetyCarData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14361f250",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Handle_SafetyCarData(void *cond, void *msg)",
+  "evidence": "decomp:re/decomp/14361f250.c;xref:0x14361f2a4;str:s_Rules_Logic_Conditions_CarsGrouped_HandleSafetyCarDataMessage;imm:0x86f9ef8e",
+  "notes": "cxx=game::rules::logic::conditions::CarsGrouped::handleSafetyCarDataMessage. Client gate cond+0x48>1. Writes the SC condition-passed byte (msg+0x10) into every grouped-condition instance (list cond+0x60..+0x68 stride 0x48, field +0); reads SC start-time float msg+0x14. Log chan NETWORK-SAFETY-CAR/V (0x86f9ef8e)."
+ },
+ "signature": {
+  "id": "session.handle_safety_car",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 83 79 48 02 0F 8C ?? ?? ?? ?? 4C 8B 79 60 4C 8B 61 68 4D 39 E7 0F 84 ?? ?? ?? ?? 48 89 D6 0F B6 05",
+  "match": "0x14361f250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14361f250",
+  "kind": "func_start",
+  "names": [
+   "Sess_Handle_SafetyCarData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "session-re"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

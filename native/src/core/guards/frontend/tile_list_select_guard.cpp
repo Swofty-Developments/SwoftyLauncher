@@ -140,8 +140,7 @@ void push_child_selection(void *widget, void *child)
 bool guard_off()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_TILE_LIST_SELECT_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_TILE_LIST_SELECT_GUARD", v)) {
         swofty::log("[tile-list] select guard off (SWOFTY_TILE_LIST_SELECT_GUARD=%s)", v);
         return true;
     }

@@ -33,6 +33,8 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
+
 const runtime::Sig S_READ{"site_Ai_TeamCurves_VehicleTeamRead", "0F B6 80 E8 0C 00 00 48 8B 89 E0 04 00 00 48 C1 E0 04", 0x65d213,
                           runtime::Sig::addr, 0, 0};
 const runtime::Sig S_EXIT{"site_Ai_TeamCurves_NoTeamEntry", "41 8B 46 60 89 46 68 41 8B 46 64 89 46 6C", 0x65d25e,
@@ -61,8 +63,7 @@ void skip(safetyhook::Context &c)
 void setup()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_AI_CURVES_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_AI_CURVES_GUARD", v)) {
         swofty::log("[ai] team curves guard off (SWOFTY_AI_CURVES_GUARD=%s)", v);
         return;
     }

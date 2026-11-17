@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionManager_ReportJoinError",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143065b00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143065b00.c;xref:0x143056a25,0x14305aecc,0x1430b06d0,0x1430b287f,0x1430b2a56",
+  "notes": "Maps a session/join error code (param2) to a UI message (Game_Network_ClosedMessagePriority) and a NETWORK log: 1 banned, 2 does not exist, 4 full, 5 denied, 6 migration in progress, 9 wrong version, 10 no MP privilege, 11 matching cancelled, 13 app suspended, 15 service lost, 16 excluded from migration, 22 career load failed, 23/24 crossplay, 25/26 safety rating, 27 2p career entitlements, 28 closed, 29 migration disabled. Addon: decode join/kick errors. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2735)"
+ },
+ "signature": {
+  "id": "game.game_session_manager_report_join_error",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 4C 89 C8 4C 89 C6 4C 8B 4C 24 50",
+  "match": "0x143065b00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143065b00",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionManager_ReportJoinError"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_GameSessionManager_ReportJoinError",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143065b00.c;xref:0x143065b00",
+   "notes": "V2735 switch cases 1,2,4,5,6,9,10,11,13,15,16,22,23,24,25,26,27,28,29 match claim list"
+  }
+ ],
+ "proofs": []
+}

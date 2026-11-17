@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_CopyCardListRef",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141af3fe0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void Ui_F1World_CopyCardListRef(void *self, void *list)",
+  "evidence": "decomp:re/decomp/141af3fe0.c;xref:0x141aed577;xref:0x141aed8f4;xref:0x141b91cc7",
+  "notes": "myteam-g2: Copies a refcounted list reference (self+0x298 / +0x2e8) into a local, then processes it for the F1 World upgrade card list; used by BuildUpgradeCardScreen and ShowMaxUpgradeLevelWarning. Level 1."
+ },
+ "signature": {
+  "id": "ui.f1_world_copy_card_list_ref",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D6 48 89 CF 48 8B 81 98 02 00 00",
+  "match": "0x141af3fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141af3fe0",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_CopyCardListRef"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141af3fe0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141af3fe0.c;xref:0x141aed577;xref:0x141aed8f4",
+   "notes": "V9941 Copies refcounted ref at +0x298/+0x2e8 and refreshes the per-card slot entries (stride 0xe0 at +0x3e0) from a list; role is card slot refresh."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ui_NotifyAllListeners",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442bfc50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1442bfc50.c;xref:0x1423592f8",
+  "notes": "Iterates a sparse bitset-indexed array (16-byte entries) and calls vcall +0x58(listener, param_2) on each non-null entry. Callers Game_Fade_FullScreenFadeStartFadeOutCurveId, Game_UILatency_UpdateCarMarkerContext. Hypothesis."
+ },
+ "signature": {
+  "id": "game.ui_notify_all_listeners",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 D6 48 89 C8 8B 52",
+  "match": "0x1442bfc50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442bfc50",
+  "kind": "func_start",
+  "names": [
+   "Game_Ui_NotifyAllListeners"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1442bfc50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442bfc50.c;xref:0x1423592f8",
+   "notes": "V7656 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

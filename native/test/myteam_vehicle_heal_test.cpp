@@ -4,6 +4,7 @@
 
 #include "core/runtime/game_manager_layout.hpp"
 #include "core/guards/career/myteam_vehicle_heal_logic.hpp"
+#include "core/guards/env.hpp"
 
 #include <cstdio>
 #include <map>
@@ -353,7 +354,7 @@ int main()
         ids.first(i);
     expect(!ids.first(999), "cars past 32 are not logged");
 
-    expect(mh::switch_off("0") && mh::switch_off("off") && !mh::switch_off("1") && !mh::switch_off(nullptr), "the switch reads 0 or off");
+    expect(swofty_core::guards::switch_off("0") && swofty_core::guards::switch_off("off") && !swofty_core::guards::switch_off("1") && !swofty_core::guards::switch_off(nullptr), "the switch reads 0 or off");
 
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;

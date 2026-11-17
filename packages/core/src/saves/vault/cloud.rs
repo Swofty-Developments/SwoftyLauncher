@@ -6,7 +6,7 @@ use std::path::Path;
 
 use serde::{Deserialize, Serialize};
 
-use crate::platform::vdf::{self, Vdf};
+use crate::platform::steam::vdf::{self, Vdf};
 
 /// Steam's record of one file as it last synced it.
 #[derive(Debug, Clone, PartialEq, Eq, Serialize, Deserialize)]

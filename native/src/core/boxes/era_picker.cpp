@@ -1,5 +1,6 @@
 #include "core/boxes/picker/picker.hpp"
 
+#include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/resolve.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
@@ -347,6 +348,8 @@ void career_alias_commit()
                         : "did not install (see the [core] lines)");
 }
 
+static loader::FunctionSet career_alias_core_set{loader::CoreSetId::career_alias, career_alias_mixins, career_alias_commit};
+
 void tt_guard_commit()
 {
     if (!vehicle_guard.offered || vehicle_guard.settled)
@@ -373,6 +376,8 @@ void tt_guard_commit()
                                                             "is read into swofty_virtual_list when it is pressed"
                                                           : "did not install (see the [core] lines)");
 }
+
+static loader::FunctionSet tt_guard_core_set{loader::CoreSetId::tt_guard, tt_guard_mixins, tt_guard_commit};
 
 std::vector<CoreMixins> era_mixins()
 {
@@ -415,5 +420,7 @@ void era_commit()
     picker.off = true;
     swofty::log("[era] addon row off: %s", picker.off_why.c_str());
 }
+
+static loader::FunctionSet era_core_set{loader::CoreSetId::era, era_mixins, era_commit};
 
 }

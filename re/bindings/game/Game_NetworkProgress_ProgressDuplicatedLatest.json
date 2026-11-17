@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkProgress_ProgressDuplicatedLatest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14325b7d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-PROGRESS",
+  "notes": "named from its log messages (channel NETWORK-PROGRESS): 'progress (%s) duplicated : latest(%s)'"
+ },
+ "signature": {
+  "id": "game.network_progress_progress_duplicated_latest",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 C6 48 89 D3 48 89 CF 4C 89 44 24 40",
+  "match": "0x14325b7d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14325b7d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkProgress_ProgressDuplicatedLatest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14325b7d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14325b7d0.c;xref:0x14326f35f",
+   "notes": "V5785 Better name Game_NetworkProgress_ValidateProgressOrder: checks out-of-order, duplicated and too-close-to-latest progress with timestamps; duplicated is one of three branches"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14325b7d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14325b7d0.c;xref:0x14326f35e",
+   "notes": "V7029 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

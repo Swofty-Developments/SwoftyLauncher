@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_VideoManager_PauseVideo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f91e90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f91e90.c;xref:0x140226e18,0x1407fdc6f",
+  "notes": "pause video '%s' by handle; 0x16 if unknown. Callers Game_CutsceneManager_Update 0x140226e18, 0x1407fdc6f, dispatcher 0x143f9393f."
+ },
+ "signature": {
+  "id": "core.video_manager_pause_video",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CB 48 8B 81 A0",
+  "match": "0x143f91e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f91e90",
+  "kind": "func_start",
+  "names": [
+   "Ne_VideoManager_PauseVideo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_VideoManager_PauseVideo",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f91e90.c;xref:0x143f9393f",
+   "notes": "V2558 pause video string, 0x16 if unknown"
+  }
+ ],
+ "proofs": []
+}

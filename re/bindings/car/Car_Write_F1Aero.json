@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Write_F1Aero",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446c73f0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446c73f0.c",
+  "notes": "VTF F1Aero: aero maps m_aero_front_cl_*, front wing loss, reference plane/offsets, BodyDragCoeffMin/Max, front/rear wing CoL/CoD, lift multipliers. Correction: this is the serialiser (component data vtable slot 3): it writes the section back as XML through the writer object's vtable (+0x28 begin element, +0x68 attribute, +0x78 end, +0x98 comment); the field list above is what it writes. The reader is slot 2 (Game_Read_VtfFloat by name, values stored XOR-obfuscated)."
+ },
+ "signature": {
+  "id": "car.parse_f1_aero",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 D6 48 89 CF 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 F1 FF 50 28 89 C5",
+  "match": "0x1446c73f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446c73f0",
+  "kind": "func_start",
+  "names": [
+   "Car_Write_F1Aero"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446c73f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446c73f0.c",
+   "notes": "V6824 Serialiser with F1Aero field list confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

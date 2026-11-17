@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvanceVM_AllowOnlineUnready",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422c7d70",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422c7d70.c;xref:0x1422c43c4,0x1422c6694",
+  "notes": "TeamHQAdvanceViewModel::allowOnlineCareerUnready(UnreadyAllowed): logs '(allowed, super ready)', posts show_unready / hide_unready. Many callers (OnCommandRaised, PopulateButtons). Online co-op ready-state UI only. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3087)"
+ },
+ "signature": {
+  "id": "career.team_hq_advance_v_m_allow_online_unready",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 89 D7 48 89 CE 80 3D",
+  "match": "0x1422c7d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422c7d70",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvanceVM_AllowOnlineUnready"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_TeamHqAdvanceVM_AllowOnlineUnready",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422c7d70.c;xref:0x1422c7d70",
+   "notes": "V3087 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_AiApproach",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d9b4e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_ContractRenewal_AiApproach(void *sys, const uint32_t *driver_key)",
+  "evidence": "decomp:re/decomp/140d9b4e0.c;xref:0x140d9a796",
+  "notes": "For one driver key (byte + u16 id) simulates every AI team's approach: team list sys+0x348..+0x350 (stride 0x10, record r = [+8], team key r+4, remaining approaches r+0), seat check via entrants [sys+0x278]+0x2e0..+0x2e8 (stride 0x88, flag +0x4b & 0x10) and Career_Check_ContractFeatureEnabled gate; interest test 0x140d9c350; logs 'START SIMULATED AI APPROACH', Career_ContractRenewal_PickDriverToApproach 0x140d9a7b0; if the pick is this driver logs 'Attempting ai approach' / 'Team is interested in', and unless the driver is already in r's lists (+0x10..+0x18, +0x30..+0x38): Career_ContractRenewal_PushUniqueDriverId(r), r+0 -= 1, finds the driver in sys+0x388..+0x390, logs 'Team officialy approached' and Career_ContractRenewal_PushUniqueDriverKey(driver list, {team, 1}). Only caller Career_ContractRenewal_SimulateApproaches 0x140d9a796. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.contract_renewal_ai_approach",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 49 89 D6 49 89 CC",
+  "match": "0x140d9b4e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d9b4e0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_AiApproach"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d9b4e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d9b4e0.c;xref:0x140d9a796,0x140d9b1f3",
+   "notes": "V4737 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d9b4e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d9b4e0.c",
+   "notes": "V9089 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140d9b4e0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140d9b4e0-0x140d9bda9;xref:0x140d9a796",
+   "notes": "V10608 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller call 0x140d9a796 in 0x140d99210 (riprel hit 0x140d9b1f3 is a mov [rcx+disp] false positive). 2 args. Strings CONTRACT_RENEWAL / START SIMULATED AI APPROACH / Attempting ai approach / Team is interested in / Team officialy approached; team list sys+0x348..+0x350, entrants +0x2e0..+0x2e8 flag +0x4b&0x10, calls 0x140d9c350 and PickDriverToApproach 0x140d9a7b0."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Find_FacilityTopLevelByKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14197bfc0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Find(void *ctx, void **out, void *key)",
+  "evidence": "decomp:re/decomp/14197bfc0.c;xref:0x14197be07;xref:0x14197e5fa;xref:0x14197ffca",
+  "notes": "myteam-g2: Robin-Hood map lookup (Ne_RobinHoodMap_U64_FindIndex) of a top-level facility/dept entry in ctx+0x10..0x28 with TLS cached default; used by Enter_*TopLevel and upgrade header."
+ },
+ "signature": {
+  "id": "career.find_facility_top_level_by_key",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 C6 48 89 D0 48 89 CF",
+  "match": "0x14197bfc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14197bfc0",
+  "kind": "func_start",
+  "names": [
+   "Career_Find_FacilityTopLevelByKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14197bfc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14197bfc0.c;xref:0x14197be07",
+   "notes": "V9855 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

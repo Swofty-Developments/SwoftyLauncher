@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_UnregisterMessageHandlers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c64aa0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *bank)",
+  "evidence": "decomp:re/decomp/140c64aa0.c;xref:0x145683050",
+  "notes": "myteam-g1: If bank+0x3f0 flag is set, unsubscribes the bank component from BankAccountTransactionMessage (handler 140c68310), BankAccountValidTransactionMessage (handler 140c684c0), EndSeasonStart and MessageAttributeSetEffectApplied. Names the handlers that apply bank transactions."
+ },
+ "signature": {
+  "id": "career.bank_unregister_message_handlers",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 80 B9 F0 03 00 00 00",
+  "match": "0x140c64aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c64aa0",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_UnregisterMessageHandlers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140c64aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c64aa0.c;xref:0x145683050;str:\"BankAccountTransactionMessage\";str:\"BankAccountValidTransactionMessage\";str:\"EndSeasonStart\"",
+   "notes": "V8975 Guarded by bank+0x3f0 flag (cleared at the end); calls unsubscribe 143988350 four times with the claimed message names and handlers 140c68310/140c684c0/140c687b0/140c68920."
+  }
+ ],
+ "proofs": []
+}

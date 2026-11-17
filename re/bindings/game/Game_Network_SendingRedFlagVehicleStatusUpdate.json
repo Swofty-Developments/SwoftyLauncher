@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SendingRedFlagVehicleStatusUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143583fb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Network_SendingRedFlagVehicleStatusUpdate(void *red_flag_state, const double *dt)",
+  "evidence": "pat:log-channel-NETWORK/T;decomp:re/decomp/143583fb0.c;xref:0x14584b198",
+  "notes": "Red-flag state object Update(self, double *dt) (vtable slot ptr 0x14584b198; name kept for signatures.json, per verify-c it describes only the send branch). Phase byte self+0x40: 1 = countdown - subtracts *dt from self+0x48 and, at <= self+0x138, sets +0x130, phase 2 and posts bus msg 0x14584ec98, stores a lap value in +0x70; 2 = deployed - sends the per-vehicle red-flag status (msg 0x14584ecf0 on [self+0x178]+0x3d0) and marks every participant in [self+0x158]+0x108..+0x110 as status 4 in table self+0xe0 (2 bytes per car). Timer +0x131/+0x134/+0x13c clears +0x130/+0x131 when it expires. (used by vmknolle session-watch, red-flag-pit)"
+ },
+ "signature": {
+  "id": "game.network_sending_red_flag_vehicle_status_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 D7 48 89 CE 0F B6 41 40",
+  "match": "0x143583fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143583fb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SendingRedFlagVehicleStatusUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "func",
+   "item": "0x143583fb0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_c/decomp/143583fb0.c;xref:0x14584b198",
+   "notes": "V1050 vtable slot 0xc8 Update(self,double* dt) of a red-flag state object: state 1 counts +0x48 down by dt and on <=0 enters state 2 and posts message 0x14584ec98; state 2 sends pending per-vehicle status packets ('Sending red flag vehicle status update...', NETWORK/T); name is only one branch, proto missing: void(void*, const double* dt)"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-d",
+   "kind": "func",
+   "item": "0x143583fb0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_d/decomp/143583fb0.c;xref:0x14584b198",
+   "notes": "V1075 state 2: for each car with pending flag sends vehicle-status msg via net (log under channel, value table per status) and clears it; state 1: counts down +0x48 by *dt, at 0 enters state 2 and posts msg; (state,const double*dt) proto matches"
+  }
+ ],
+ "proofs": []
+}

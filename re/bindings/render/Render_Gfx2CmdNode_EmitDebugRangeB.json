@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2CmdNode_EmitDebugRangeB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a04350",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a04350.c;xref:0x143a06606",
+  "notes": "Writes header constants 0x100000001 / 0x200000002 into +0x60 depending on a flag. Caller Render_Gfx2CmdContext_AllocCommandNodeB. vq0-verify partial/disagree"
+ },
+ "signature": {
+  "id": "render.gfx2_cmd_node_init_header_b",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 88 00 00 00 48 8B 05 ?? ?? ?? ?? 80 B8 CF 00",
+  "match": "0x143a04350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a04350",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2CmdNode_EmitDebugRangeB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a04350",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/143a04350.c;xref:0x143a06606",
+   "notes": "V8525 same pattern as A with 5 entries (0x100000001/0x200000002) passed to vcall +0x210 on a queried interface, not a +0x60 header write; better name Render_Gfx2CmdNode_EmitDebugRangeB"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteF1SeasonFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437583f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-STATEVENT",
+  "notes": "named from its log messages (channel STATEVENT): 'Executing EventWriteF1SeasonFinished with [%d] StatisticDataProviders registered.'"
+ },
+ "signature": {
+  "id": "game.stat_event_write_f1_season_finished",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 B8 1A 00 00",
+  "match": "0x1437583f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437583f0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteF1SeasonFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x1437583f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437583f0.c;xref:0x140b8912d",
+   "notes": "V6206 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

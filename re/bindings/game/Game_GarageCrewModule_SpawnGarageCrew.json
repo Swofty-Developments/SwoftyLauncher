@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrewModule_SpawnGarageCrew",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140388cf0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GarageCrewModule::spawnGarageCrew; log channel GARAGE: 'GarageCrewModule::spawnGarageCrew %d | GarageCrewModule::activate garage id %d mirrored %s | GarageCrewModule::activate garage %d slot %d entrant %s | GarageCrewInstance::GarageCrewInstance %p | Garag'"
+ },
+ "signature": {
+  "id": "game.garage_crew_module_spawn_garage_crew",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 03 00 00 C5 78 29 BC 24 E0 03 00 00 C5 78 29 B4 24 D0 03 00 00 C5 78 29 AC 24 C0 03 00 00 C5 78 29 A4 24 B0 03 00 00 C5 78 29 9C 24 A0 03 00 00 C5 78 29 94 24 90 03 00 00 C5 78 29 8C 24 80 03 00 00 C5 78 29 84 24 70 03 00 00 C5 F8 29 BC 24 60 03 00 00 C5 F8 29 B4 24 50 03 00 00 89 D5 48 89 8C 24 C0 00 00 00",
+  "match": "0x140388cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140388cf0",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrewModule_SpawnGarageCrew"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-crew1",
+   "kind": "func",
+   "item": "0x140388cf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x140389314,0x14038944c,0x14038c7f4",
+   "notes": "V3854 prototype not needed by the guard: it reads only r13/rcx/ebp at the site; ebp is edx (garage id) from 0x140388d5d, rcx (module) spilled to [rsp+0xc0]"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140388cf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140388cf0.c;xref:0x388cc6",
+   "notes": "V4593 string/behaviour in decomp matches name"
+  },
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-crewce0",
+   "kind": "func",
+   "item": "0x140388cf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140388cf0.c;xref:0x1403899d0,0x140389610",
+   "notes": "V8619 V-ce0 claims 1-3 agree: no null check before [r14+0x560] at 0x1403899d0 (r14 from 0x1403895fd or zeroed at 0x140389610 on kind>2, null table, team past end); module at [rsp+0xc0] loaded at 0x1403895a0 and 0x14038941d (rsp fixed in frame); vector entry {record, slot} with record kind byte +0x58 and team word +0x5a read at 0x1403895be/0x1403895e1."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Get_AcclaimProperty",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14177d9d0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *out, void *a, void *src",
+  "evidence": "decomp:re/decomp/14177d9d0.c;xref:0x141781407;xref:0x141781427;xref:0x141782148",
+  "notes": "myteam-g1: UI property getter acclaim (short variant)."
+ },
+ "signature": {
+  "id": "ui.get_acclaim_property",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 C5 F8 29 74 24 50 4C 89 C7 48 89 CE 49 8B 40 08",
+  "match": "0x14177d9d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14177d9d0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Get_AcclaimProperty"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14177d9d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14177d9d0.c;xref:0x141781407;xref:0x141781427",
+   "notes": "V9782 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

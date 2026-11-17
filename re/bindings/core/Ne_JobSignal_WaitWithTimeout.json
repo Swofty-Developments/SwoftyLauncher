@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_JobSignal_WaitWithTimeout",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ac0100",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ac0100.c;xref:0x14018cd44,0x1403d261d",
+  "notes": "Waits on a job/queue signal with timeout (84 callers, e.g. Game_RaceMarshalSystem_Update); on timeout dumps queue/job info (queueName, AJCF, JCS, collection size) and WARN 'The signal timed out ... may indicate a deadlock', then Ne_FatalAbort path. Addon: hooks that block job threads can trigger this abort."
+ },
+ "signature": {
+  "id": "core.job_signal_wait_with_timeout",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 0A 00 00 44",
+  "match": "0x143ac0100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ac0100",
+  "kind": "func_start",
+  "names": [
+   "Ne_JobSignal_WaitWithTimeout"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Ne_JobSignal_WaitWithTimeout",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ac0100.c;xref:0x143ac0100",
+   "notes": "V2845 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

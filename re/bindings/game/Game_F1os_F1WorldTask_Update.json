@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_F1WorldTask_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14273a580",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14273a580.c;xref:0x14579df78,0x14273faa0",
+  "notes": "Per-frame update (virtual, slot ref 0x14579df78) of the F1 World online-service task (log channel F1W-OS): drains request queue (0x14273e430 on +0x98/+0xa0/+0xa8, current op +0xc0), logs 'Current -> %s' and 'Change of Status: %s' on status change (+0xd0); status 6 with online state (+0x68)->+0x39==2 builds a reply via 0x1442d9bf0 into +0x1e8; result 0x14273ea20; when +0x1e0 (fatal) set: stops FullScreenBusySpinner (TOP_LEVEL_UI log '%s: (type=%d, count=%d)', counter +0x1d0->+0x5c) and cleanup 0x14273d680, posts message obj vtable 0x1457a1650 via 0x1439876c0, pushes onto the 'InterruptQueue' (0x140799d20, type 0xb), clears +0x71, logs 'void game::OnlineServer::triggerLogout()' on F1OS and calls OnlineServer::triggerLogout 0x1432bb360 with this+0xe8; timed flags +0x200/+0x208 into +0x128, 500 ms busy window (+0x100/+0x108/+0x110); queues continuation functor 0x14273faa0 (vtable 0x1457a32a0), 'eIgnoreAndNoBlock'. Addon: observe F1 World online status changes and the forced logout path. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3270)"
+ },
+ "signature": {
+  "id": "game.f1os_f1_world_task_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 03 00 00 C5 F8 29 B4 24 F0 02 00 00 48 89 CE 48 81 C1 98 00",
+  "match": "0x14273a580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14273a580",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_F1WorldTask_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1os_F1WorldTask_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14273a580.c;xref:0x14579df78",
+   "notes": "V3270 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Game_RetireLocalPlayer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cea5b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name retireLocalPlayer (class from the log channel); log channel GAME: '%s: reason: %d'"
+ },
+ "signature": {
+  "id": "game.game_retire_local_player",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6B",
+  "match": "0x142cea5b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cea5b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Game_RetireLocalPlayer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "gb-verify",
+   "kind": "func",
+   "item": "Game_Game_RetireLocalPlayer",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cea5b0.c;xref:0x142cea230",
+   "notes": "V1720 claim 7"
+  }
+ ],
+ "proofs": []
+}

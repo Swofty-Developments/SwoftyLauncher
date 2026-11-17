@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Construct_FacilityTileWidget",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417c6660",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Construct(void *tile)",
+  "evidence": "decomp:re/decomp/1417c6660.c;xref:0x1417c6320;xref:0x1418a15d9;xref:0x1418dbbc3",
+  "notes": "myteam-g2: Constructs an FeTile with vtable 0x14570c2e0, sets a string node from literal 0x145612762 and tile fields (+0x1a, +0x1e); used by facility header colours / activity calendar columns."
+ },
+ "signature": {
+  "id": "ui.construct_facility_tile_widget",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 30 48 89 CE 0F B6 84 24 90 00 00 00",
+  "match": "0x1417c6660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417c6660",
+  "kind": "func_start",
+  "names": [
+   "Ui_Construct_FacilityTileWidget"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1417c6660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417c6660.c;xref:0x1417c6320;xref:0x1418a15d9",
+   "notes": "V9788 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

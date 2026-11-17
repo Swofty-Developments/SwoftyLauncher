@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_EntrantChangeTeamsReHost",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143110b90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
+  "notes": "named from its log messages (channel NETWORK-ENTRANTS): 'Entrant %s cannot change teams - we're not the host.'"
+ },
+ "signature": {
+  "id": "game.network_entrants_entrant_change_teams_re_host",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 03 00 00 C5 F9 29 B4 24 10 03 00 00",
+  "match": "0x143110b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143110b90",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_EntrantChangeTeamsReHost"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143110b90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143110b90.c;xref:0x1430d8d5d",
+   "notes": "V5760 1010-line entrants-document request handler (handleEntrantsDocumentMessageRequest/RegisterRequest, team change); not just a rehost team change. Better: Game_NetworkEntrants_HandleEntrantsDocumentMessageRequest"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143110b90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143110b90.c;xref:0x14310e586",
+   "notes": "V6990 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

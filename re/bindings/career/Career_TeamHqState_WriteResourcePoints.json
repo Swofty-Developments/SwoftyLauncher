@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqState_WriteResourcePoints",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ddf400",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int f(void *state, void *save_out)",
+  "evidence": "decomp:re/decomp/140ddf400.c;xref:0x145695370;xref:0x1456953c0;xref:0x145695410",
+  "notes": "myteam-g1: Save writer for field resource_points (u32 at state+0xf0). The team RP value in the saved state."
+ },
+ "signature": {
+  "id": "career.team_hq_state_write_resource_points",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 89 CB 48 C7 44 24 20 00 00 00 00 4C 8B 35 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 4C 24 20 48 89 F1 4D 89 F0 E8 ?? ?? ?? ?? 89 C7 85 C0 75 40 48 81 C3 F0 00 00 00",
+  "match": "0x140ddf400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ddf400",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqState_WriteResourcePoints"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140ddf400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ddf400.c;str:\"resource_points\"",
+   "notes": "V9557 Writes resource_points (u32 at state+0xf0)."
+  }
+ ],
+ "proofs": []
+}

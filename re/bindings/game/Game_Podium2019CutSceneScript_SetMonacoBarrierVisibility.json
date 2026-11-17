@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Podium2019CutSceneScript_SetMonacoBarrierVisibility",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140361f70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=Podium2019CutSceneScript::setMonacoBarrierVisibility; log channel CUTSCENE_PODIUM: 'Podium2019CutSceneScript::setMonacoBarrierVisibility | ERROR: Failed to find Monaco barrier World Object in PodiumMonacoCutSceneScript::setMonacoBarrierVisibility() function. | ERROR: Failed to set th'"
+ },
+ "signature": {
+  "id": "game.podium2019_cut_scene_script_set_monaco_barrier_visibility",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 38 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4D",
+  "match": "0x140361f70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140361f70",
+  "kind": "func_start",
+  "names": [
+   "Game_Podium2019CutSceneScript_SetMonacoBarrierVisibility"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140361f70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140361f70.c",
+   "notes": "V4520 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

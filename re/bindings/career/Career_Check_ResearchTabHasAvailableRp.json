@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Check_ResearchTabHasAvailableRp",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141979720",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t (void *tab)",
+  "evidence": "decomp:re/decomp/141979720.c;xref:0x141979591;xref:0x14197fc15",
+  "notes": "myteam-g2: Research-tab onboarding check: reads the RP wallet (Career_Get_RpWallet on resource points +0x4a8) and the team modifiers (Career_Get_TeamModifiers on +0xc90), enumerates enabled upgrades with Career_Query_EnabledUpgrades and returns 1 when RP are available and an upgrade can be started (FUN_14351dde0). Part of Career_MyTeamLeftWithoutResearch_Check. Read-only."
+ },
+ "signature": {
+  "id": "career.check_research_tab_has_available_rp",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 24 00 00",
+  "match": "0x141979720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141979720",
+  "kind": "func_start",
+  "names": [
+   "Career_Check_ResearchTabHasAvailableRp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141979720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141979720.c;xref:0x141979591",
+   "notes": "V9848 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

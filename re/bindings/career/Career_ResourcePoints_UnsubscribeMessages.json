@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_UnsubscribeMessages",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412276f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/1412276f0.c;xref:0x1456cc090",
+  "notes": "myteam-g1: Subscribes four callbacks (FUN_141229d60/e00/f40/14122a020) to the RP messages; entry point to hook the RP award flow. DISPUTE(V8983) role per verifier: This is the unsubscribe counterpart: it calls 143988350 (unsubscribe) six times, for MessagePracticeEventCompleted, resource_points_generation_message, MessagePassiveObjectiveAwarded, rnd_challenge_applied_message, MessageResourcePointsAwarded and MessageAttributeSetEffectApplied, with handlers 141229d60/e00/f40, 14122a020/070/0a0, then clears the +0x640/+0x660 stat listeners. Should be named UnsubscribeMessages with six handlers, not four subscribes."
+ },
+ "signature": {
+  "id": "career.resource_points_unsubscribe_messages",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 CE 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 80 79 68 00 0F 84 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 20 48 89 74 24 28 48 8D 15 ?? ?? ?? ?? 4C 8D 44 24 20 E8 ?? ?? ?? ?? 48 8B 05",
+  "match": "0x1412276f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412276f0",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePoints_UnsubscribeMessages"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x1412276f0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1412276f0.c;xref:0x1456cc090;str:\"MessagePracticeEventCompleted\";str:\"MessageResourcePointsAwarded\"",
+   "notes": "V8983 This is the unsubscribe counterpart: it calls 143988350 (unsubscribe) six times, for MessagePracticeEventCompleted, resource_points_generation_message, MessagePassiveObjectiveAwarded, rnd_challenge_applied_message, MessageResourcePointsAwarded and MessageAttributeSetEffectApplied, with handlers 141229d60/e00/f40, 14122a020/070/0a0, then clears the +0x640/+0x660 stat listeners. Should be named UnsubscribeMessages with six handlers, not four subscribes."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x1412276f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412276f0.c;xref:0x1456cc090;str:\"MessagePassiveObjectiveAwarded\"",
+   "notes": "V9681 Six 143988350 unsubscribe calls (MessagePracticeEventCompleted, resource_points_generation_message, MessagePassiveObjectiveAwarded, rnd_challenge_applied_message, MessageResourcePointsAwarded, MessageAttributeSetEffectApplied); the dispute text is correct and the name Unsubscribe fits."
+  }
+ ],
+ "proofs": []
+}

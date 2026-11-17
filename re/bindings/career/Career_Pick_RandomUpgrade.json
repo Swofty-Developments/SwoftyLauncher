@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Pick_RandomUpgrade",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14122cf00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void FUN(void *career)",
+  "evidence": "decomp:re/decomp/14122cf00.c;xref:0x1456cc640",
+  "notes": "myteam-g1: Picks a random available upgrade (pickRandomUpgrade): rolls a chance via 0x141273fb0, requires last queue entry type 4, then calls Career_Query_EnabledUpgrades, Career_Push_UpgradeState, Career_Refresh_UpgradeAvailability. Hook for AI R&D choice."
+ },
+ "signature": {
+  "id": "career.pick_random_upgrade",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 98 2E 00 00",
+  "match": "0x14122cf00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14122cf00",
+  "kind": "func_start",
+  "names": [
+   "Career_Pick_RandomUpgrade"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x14122cf00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14122cf00.c;xref:0x1456cc640;str:\"pickRandomUpgrade\";str:\"Random used for %s (randomNum): %d\"",
+   "notes": "V9002 Bails unless queue entry at +0x2e0-4 == 4 (and -3 == 0), then calls the logged-callee chain FUN_1435188d0 (Query_EnabledUpgrades), FUN_1435230e0 (Push_UpgradeState), FUN_14352f300 (Refresh_UpgradeAvailability) per KB names."
+  }
+ ],
+ "proofs": []
+}

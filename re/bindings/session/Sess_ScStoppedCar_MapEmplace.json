@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ScStoppedCar_MapEmplace",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143682080",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143682080.c;xref:0x143641e2c,0x150a5012d",
+  "notes": "std::map<u8,...> emplace (red-black tree, node 0x38, key byte at +0x20); throws on max size. Used by Sess_ScStoppedCarAccumulator_Update (per car index). (2 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.sc_stopped_car_map_emplace",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 4C 89 C3 48 89 D6 48 89 CF 4C 8B 79 08 49 8B 57 08 31 ED 80 7A 19 00 74 0E 49 89 D6 4C 89 F8 80 78 19 00 75 4A EB 3C 0F B6 0B 4C 89 F8 0F 1F 80 00 00 00 00 49 89 D6 44 0F B6 42 20",
+  "match": "0x143682080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143682080",
+  "kind": "func_start",
+  "names": [
+   "Sess_ScStoppedCar_MapEmplace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x143682080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143682080.c;xref:0x143641e2c",
+   "notes": "V6767 std::map<u8> emplace, node 0x38, key +0x20, max-size throw 0x492492492492492 confirmed."
+  }
+ ],
+ "proofs": []
+}

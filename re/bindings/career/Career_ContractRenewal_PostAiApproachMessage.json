@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_PostAiApproachMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d9bdb0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_ContractRenewal_PostAiApproachMessage(void *comp, uint32_t event_key)",
+  "evidence": "decomp:re/decomp/140d9bdb0.c;xref:0x140d9a7a1",
+  "notes": "myteam-g2: Finds the contract event with event_key in comp+0x388, collects its offer values and drivers, then posts a bus message (vtable 0x145696e10) containing the approach day and offer data via Ne_Post_BusMessage; also uses Career_Auction_AiOfferChance. Hook for observing/forcing AI driver approach offers."
+ },
+ "signature": {
+  "id": "career.contract_renewal_post_ai_approach_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 48 89 CB",
+  "match": "0x140d9bdb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d9bdb0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_PostAiApproachMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d9bdb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d9bdb0.c",
+   "notes": "V9546 Finds event in +0x388, collects offer/drivers (+0x348/+0x368), posts vtable 145696e10 via Ne_Post_BusMessage; uses 140c4ab70 (Career_Auction_AiOfferChance)."
+  }
+ ],
+ "proofs": []
+}

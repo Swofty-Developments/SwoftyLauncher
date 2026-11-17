@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Update_ContractHubCoOpState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422f8ac0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "char Vm_Update_ContractHubCoOpState(void *vm)",
+  "evidence": "decomp:re/decomp/1422f8ac0.c;xref:0x1422f7c8f;xref:0x1422f98f1",
+  "notes": "myteam-g2: Same pattern as 0x1422f88f0 but also checks Game_OnlineContract_IsLeadPlayerParticipatingCoOp to enable/disable the contract hub action in co-op career. UI only."
+ },
+ "signature": {
+  "id": "vm.update_contract_hub_co_op_state",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 CE 4C 8B B1 20 07 00 00",
+  "match": "0x1422f8ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422f8ac0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Update_ContractHubCoOpState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422f8ac0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1422f8ac0.c;xref:0x1422f7c8f",
+   "notes": "V10104 Break-contract button state (lng_contracts_break_contract_subtitle_*, final season); co-op check via FUN_140ffd1c0 only."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Noise_Fbm1D",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140390b10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140390b10.c;xref:0x14039aa80",
+  "notes": "(float t): 5-octave fractal value noise (amplitudes 1, 0.5, 0.25.. table 0x14561b600, hash 0x5208dd0d), returns summed noise. Caller: Car_Visual_UpdateRenderState (procedural shake)."
+ },
+ "signature": {
+  "id": "core.noise_fbm1_d",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC B8 00 00 00 C5 78 29 B4 24 A0 00 00 00 C5 78 29 AC 24 90 00 00 00 C5 78 29 A4 24 80 00 00 00 C5 78 29 5C 24 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 F8",
+  "match": "0x140390b10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140390b10",
+  "kind": "func_start",
+  "names": [
+   "Ne_Noise_Fbm1D"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140390b10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140390b10.c;xref:0x14039da5e",
+   "notes": "V3521 5 octave value noise, hash const 0x5208dd0d, amplitude table 0x14561b600; Car_Visual_UpdateRenderState callers"
+  }
+ ],
+ "proofs": []
+}

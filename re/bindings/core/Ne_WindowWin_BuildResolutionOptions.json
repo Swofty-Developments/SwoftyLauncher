@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_WindowWin_BuildResolutionOptions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c907a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/142c907a0.c;xref:0x1457d4d78",
+  "notes": "cxx=NeWindowWin::getMonitorDimensionsByIndex; log channel WINDOW: 'NeWindowWin::getMonitorDimensionsByIndex: failed monitorIndex=%p' cb1-verify: 899-line resolution-option builder; monitor array window+0x8a0 stride 0x18, width +8, height +0xc"
+ },
+ "signature": {
+  "id": "core.window_win_get_monitor_dimensions_by_index",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 04 00 00 C5 F8 29 B4 24 30 04 00 00 4C 89 84 24 68 01 00 00",
+  "match": "0x142c907a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c907a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_WindowWin_BuildResolutionOptions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x142c907a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c907a0.c",
+   "notes": "V4076 vtable slot 0x1457d4d78 (vtable/indirect); WINDOW log 'NeWindowWin::getMonitorDimensionsByIndex: failed monitorIndex=%p'; monitor array window+0x8a0/0x8a8 stride 0x18, width +8 height +0xc (decomp lines 622-628); builds resolution/graphics_card/interlaced option strings"
+  }
+ ],
+ "proofs": []
+}

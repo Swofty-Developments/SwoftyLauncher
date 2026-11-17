@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Load_UpgradeTreeNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14353b030",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "xref:0x14353abf2,0x14353ae09;kb:subsystems/rnd_ui.md",
+  "notes": "R&D upgrade-tree NODE loader (the tile data source): loops the same dept-code table (0x145735d60 codes 0..4, break at 5, NO code-4 exclusion), opens <team_link>.<deptname>.upgrade by instancecount (Gdb_Init_TableCursor), reads grid_coordinates.x/y + every column, appends all departments nodes (incl code-4 fake) into the combined tree model at UpgradesComponent+0x68+0x28. Called from the model builder 0x14353abb0 (player team r8b=0xff + per linked team). Sibling of the flat Career_Load_UpgradeRows 0x143539bc0. Node links resolve via Gdb_Find_RowByLabel (0x1445a2bd0, scan 0..instancecount-1) so our upgrade_1/2/3 need the instancecount bump to be in range.  engine-suppliers 2026-11-13 (capstone): key arg rdx +0x10 is the joined row path char* (checked non-empty at 0x14353b063); r8b engine stat id, 0xff for the team tree (0x14353abee), parent_engine stat id per engine_supplier_upgrades row (0x14353aff8, called 0x14353ae08). Builder loads EVERY supplier row into every team tree; hooked by native/src/core/guards/career/rnd_suppliers_guard.cpp."
+ },
+ "signature": {
+  "id": "career.load_upgrade_tree_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 06 00 00 C5 78 29 84 24",
+  "match": "0x14353b030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14353b030",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_UpgradeTreeNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/rnd_suppliers_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14353b030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14353b030.c;xref:0x14353abf1",
+   "notes": "V6084 code table 0x145735d60 = 00 01 02 03 04 05, loop ends at 0x145735d66, code 5 skipped, 0-4 loaded (no 4 exclusion) verified; callers 0x14353abf1/0x14353ae09"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x14353b030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14353b030.c;xref:0x14353abf1;xref:0x14353ae08;str:\"grid_coordinates.x\"",
+   "notes": "V9244 Loops the 6-byte dept table with no code-4 exclusion; detail correction: code 5 is skipped (cmp rax,5 / je continue) rather than a break, with the same effect since it is the last byte."
+  }
+ ],
+ "proofs": []
+}

@@ -5,7 +5,7 @@ use gpui_kit::component::spinner::Spinner;
 use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::multiplayer::types::{MemberState, Phase, RoomContent, RoomSummary, SessionState};
+use swofty_core::online::multiplayer::types::{MemberState, Phase, RoomContent, RoomSummary, SessionState};
 use swofty_i18n::{fill, tr, trf, trn};
 
 use super::model::*;

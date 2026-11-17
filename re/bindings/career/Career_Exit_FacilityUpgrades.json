@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Exit_FacilityUpgrades",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423defd0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void f(void *flow)",
+  "evidence": "decomp:re/decomp/1423defd0.c;xref:0x145786b80",
+  "notes": "myteam-g1: Flow state: my_team_exiting_facility_upgrades; also handles the purchase cash / upgrades result when leaving."
+ },
+ "signature": {
+  "id": "career.exit_facility_upgrades",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D D8 E3 E1 FF",
+  "match": "0x1423defd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423defd0",
+  "kind": "func_start",
+  "names": [
+   "Career_Exit_FacilityUpgrades"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423defd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1423defd0.c;str:\"my_team_exiting_facility_upgrades\"",
+   "notes": "V10188 Exit string present, but 2194 lines include the same upgrade-list building as Build_FacilityUpgradeList (identical callees, lng_upgrades_none_*, spawn_upgrade_list, OverrideTargetVariant); purchase-cash handling unproven."
+  }
+ ],
+ "proofs": []
+}

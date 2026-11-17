@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressSystem_SubscribeAndClearNet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f09030",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f09030.c;xref:0x1457f4540",
+  "notes": "VehicleProgressSystem init (if this+0x118): subscribes RollingStartMessage (0x142f0b5c0), MessageVehicleLeftGarage, MessageVehicleEnteredGarage, vehicle_newlap, vehicle_cachenewsector, placed_on_grid_message (0x142f0c150), MessageSessionResultsFinalised on bus [g 0x14618b3b8]+8 via 0x143988350; then clears net progress records vector +0x100..+0x108 (NETWORK/F eraseNetProgressRecords) and +0x119/+0x11c/+0x140. Addon: list of progress bus messages to hook for lap/sector sync. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2732)"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_system_subscribe_and_clear_net",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 B9 18 01 00 00",
+  "match": "0x142f09030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f09030",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressSystem_SubscribeAndClearNet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_VehicleProgressSystem_SubscribeAndClearNet",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f09030.c;xref:0x142f09030",
+   "notes": "V2732 7 bus subscribes when +0x118, then clears vector +0x100..+0x108 and +0x119/+0x11c/+0x140 confirmed"
+  }
+ ],
+ "proofs": []
+}

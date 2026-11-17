@@ -1,3 +1,4 @@
+#include "core/frontend/name_hash.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/settings.hpp"
 
@@ -23,16 +24,10 @@ const runtime::Sig S_OPEN{"Game_Mfd_Open call (damage auto-open)",
                           "B8 A8 2C 12 01 41 B9 ED AC C0 5B 44 0F 44 C8 48 8B 8E 88 02 00 00 C6 44 24 20 01 E8 ?? ?? ?? ??",
                           0x2a8cca0, runtime::Sig::rel32, 27, 28, 5};
 
-constexpr uint32_t djb2c(const char *s)
-{
-    uint32_t h = 5381;
-    while (*s)
-        h = h * 33 + uint8_t(*s++);
-    return h;
-}
+using name_hash::djb2;
 
-constexpr uint32_t OSD_MFD = djb2c("osd_mfd"), OSD_MAIN = djb2c("osd_main");
-uint32_t test_panel = djb2c("swofty_addons_panel");
+constexpr uint32_t OSD_MFD = djb2("osd_mfd"), OSD_MAIN = djb2("osd_main");
+uint32_t test_panel = djb2("swofty_addons_panel");
 std::string test_panel_name = "swofty_addons_panel";
 
 using Open_t = uint64_t(void *system, uint32_t mfd, uint32_t group, uint32_t panel, uint8_t activate);
@@ -78,7 +73,7 @@ void mfd_setup()
     char panel[64] = {};
     if (GetEnvironmentVariableA("SWOFTY_MFD_TEST_PANEL", panel, sizeof panel) && panel[0]) {
         test_panel_name = panel;
-        test_panel = djb2c(panel);
+        test_panel = djb2(panel);
     }
     if (test_mode.empty())
         return;

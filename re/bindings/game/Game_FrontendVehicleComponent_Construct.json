@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendVehicleComponent_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1429e5390",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=FrontendVehicleComponent::FrontendVehicleComponent; log channel FrontendVehicleComponent: 'FrontendVehicleComponent::FrontendVehicleComponent'"
+ },
+ "signature": {
+  "id": "game.frontend_vehicle_component_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CF 48 8B 49 08 48 8B 01",
+  "match": "0x1429e5390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429e5390",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendVehicleComponent_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1429e5390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429e5390.c",
+   "notes": "V5162 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

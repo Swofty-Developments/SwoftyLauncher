@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_HandleEntrantsDocumentMessageClear",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431154c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name handleEntrantsDocumentMessageClear (class from the log channel); log channel NETWORK-ENTRANTS: '%s(conn=%d)'"
+ },
+ "signature": {
+  "id": "game.network_entrants_handle_entrants_document_message_clear",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 83 79 08 02 0F 8C",
+  "match": "0x1431154c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431154c0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_HandleEntrantsDocumentMessageClear"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431154c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431154c0.c;xref:0x1430d8bdc",
+   "notes": "V5790 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

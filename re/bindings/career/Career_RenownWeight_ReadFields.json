@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownWeight_ReadFields",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f76120",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t (void *rec, void *json)",
+  "evidence": "decomp:re/decomp/140f76120.c;xref:0x140f760ec;xref:0x140f76d50;xref:0x140f7752d",
+  "notes": "myteam-g2: Save reader for a float plus 5-bit enum sub-record: reads the float at rec+0x14 (key UNK_145612ae4) and a u32 masked with 0x1f at rec+0x10 (key UNK_1456aeda7); returns 0 on success, error codes 0x57/0x58 (missing/wrong type) otherwise."
+ },
+ "signature": {
+  "id": "career.renown_weight_read_fields",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 D3 48 89 CF 48 8D 15 ?? ?? ?? ?? 48 89 D9 E8 ?? ?? ?? ?? 48 85 C0 0F 84 ?? ?? ?? ?? 49 89 C6 48 8B 00 4C 89 F1 FF 50 08 48 8B 10 48 89 C1 FF 52 10 89 C5 48 8B 05 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? FF 50 10 BE 58 00 00 00 39 C5 75 7C",
+  "match": "0x140f76120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f76120",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownWeight_ReadFields"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f76120",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f76120.c;xref:0x140f760ec;str:\"flags\"",
+   "notes": "V9588 Reads \"value\" float into +0x14 and \"flags\" masked 0x1f into +0x10; returns 0/0x57/0x58."
+  }
+ ],
+ "proofs": []
+}

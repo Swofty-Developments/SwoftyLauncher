@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_WriteBudgetData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c6ef50",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t (void *budget, void *json_obj)",
+  "evidence": "decomp:re/decomp/140c6ef50.c;xref:0x140c6e263",
+  "notes": "myteam-g1: Save writer for an account budget: budget_pools[] (type, cash_in_budget, cap, enforce_cap, ratio), has_facility_budget (budget+0x130) and facility_budget {ratios[], key_upgrade_multiplier +0x90, overspend_multiplier_graph +0x98, cost_cap_fraction_engineering_cutoff +0x120, cost_cap_fraction_workforce_cutoff +0x124, workforce_increase_fraction +0x128, workforce_decrease_fraction}. Called from the account writer as account+0x60."
+ },
+ "signature": {
+  "id": "career.bank_write_budget_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D7 49 89 CF 48 8B 32 48 C7 44 24 38 00 00 00 00 4C 8B 05 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 4C 24 38 48 89 F9 E8 ?? ?? ?? ?? 85 C0 0F 85",
+  "match": "0x140c6ef50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c6ef50",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_WriteBudgetData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c6ef50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c6ef50.c;str:\"budget_pools\"",
+   "notes": "V9506 Writes budget_pools (type, cash_in_budget, cap, enforce_cap, ratio), has_facility_budget (+0x130), facility_budget with offsets +0x90,+0x98,+0x120,+0x124,+0x128."
+  }
+ ],
+ "proofs": []
+}

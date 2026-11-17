@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_Setup_ApplyTuning",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c11550",
+  "level": "L3",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-F1_TUNING;decomp:re/decomp/140c11550.c;xref:0x140c0a636,0x140c0ab80,0x140c0af2d,0x140c108de,0x140c11272,0x140c113f4,0x142a4165e,0x142f44bf1,0x142f44f7f,0x142f45554;kb:subsystems/car.md#tuning;trace:T113/2026-10-28-gp:83;trace:T113/2026-10-28-gp:85;trace:T113/2026-10-28-gp:165;trace:T113/2026-10-28-gp:299",
+  "notes": "(setupMgr, u64 *skipMask, setup). car = setupMgr+0x28, tuning system = car+0x590 (structs/CarTuning.h, data at +0x18), sliders = setup+0xb0 if byte setup+0x158 else setup+0x08 (CarSetupValues). Each slider not masked: fraction = clamp(step / [stepCountGlobal]+8, 0, 1) stored on the tuning system, target = lerp(CarTuning Min, Max, fraction): wings -> F1Aero+0x19b4..+0x19c8, diff -> Differential+0xec..+0xfc, camber/toe/ARB -> axle (CarSuspAxle, SuspensionSystem+0x90/+0x98) +0x1650/+0x1654/+0x1664, brake pressure/bias/migration -> BrakeECU+0x21d8..+0x2204, engine braking -> Engine+0x252c, cooling holes/duct -> wheel +0x134/+0x130, chassis z-com -> Chassis+0x158, fuel load -> FuelTank+0x100; spring/ride-height/tyre-pressure sliders go to .data1 helper thunks 0x1446d7580/7780/7980/7b00/7c80/8080/8620. Ends with 0x1446b1ba0(SuspensionSystem) at site_Car_SetupTuningApplied. Log channel F1_TUNING. Runtime 2026-10-28 (T113 pass): runs after every reset (return 0x142f44bf5, 40 calls), at the first setup apply for the 20 race cars (0x140c0ab84, 20), on the per-vehicle reset (0x142f44f83, 3) and 5 more times for the player car id 19 (0x140c0a63a) around race start, race end and the menus, alternating the slider block (sel 0/1)."
+ },
+ "signature": {
+  "id": "car.setup_apply_tuning",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 8B 41 28",
+  "match": "0x140c11550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c11550",
+  "kind": "func_start",
+  "names": [
+   "Car_Setup_ApplyTuning"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "func",
+   "item": "Car_Setup_ApplyTuning",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c11550.c;xref:0x140c0a636,0x140c0ab80,0x140c0af2d,0x140c108de,0x140c11272,0x140c113f4,0x142a4165e,0x142f44bf1,0x142f44f7f,0x142f45554",
+   "notes": "V1230 (setupMgr, u64*, setup). tuning=[[mgr+0x28]+0x590], sliders at setup+0xb0 or +0x08 by byte setup+0x158. Spot-checked writes F1Aero+0x19b4, Diff+0xec, BrakeECU+0x21d8, Engine+0x252c, Chassis+0x158, and FuelTank+0x100 = clamp(load, 0, FuelCapacity) with bit0 of +0x10c cleared. Ends with call 0x1446b1ba0(Susp) at 0x140c1372c, then a bus post. My rel32 scan finds exactly these 10 callers."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "cg-verify",
+   "kind": "func",
+   "item": "Car_Setup_ApplyTuning",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x140c11593,0x140c11596,0x140c11684",
+   "notes": "V1673 cg-verify: 64-bit mask; bits 0x1/0x2 skip wing blocks; polarity for 0x4..0x1000 not uniform/untraced"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "sp-verify",
+   "kind": "func",
+   "item": "Car_Setup_ApplyTuning",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c11550.c;xref:0x140c12854",
+   "notes": "V1683 claim 2; bits 17/18 together"
+  }
+ ],
+ "proofs": []
+}

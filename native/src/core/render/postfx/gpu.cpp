@@ -18,12 +18,6 @@ using SerializeRootFn = HRESULT(WINAPI *)(const D3D12_ROOT_SIGNATURE_DESC *, D3D
 
 }
 
-void release(IUnknown *p)
-{
-    if (p)
-        p->Release();
-}
-
 DXGI_FORMAT view_format(DXGI_FORMAT f)
 {
     switch (f) {

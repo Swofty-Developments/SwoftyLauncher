@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TimeOfDayDebug_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438c35d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1438c35d0.c;xref:0x1438bae4c,0x1438bba6d",
+  "notes": "Lighting/weather debug tick (this+0x1d90/+0x1d98 world/weather): debug modes this+0x1f48..+0x1fa6, label pointer this+0x1f40 = 'IBL SUBSET' / 'TIME OF DAY' / 'WEATHER', forced ToD playback (trace 'Time Of Day Forced Playback (diff, read position)') using Game_TodCurveBinding_EvalNow. Addon: time-of-day override/debug. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2884)"
+ },
+ "signature": {
+  "id": "game.time_of_day_debug_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 BC 24 30 01 00 00 C5 F8 29 B4 24 20 01 00 00 48 89 CE",
+  "match": "0x1438c35d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438c35d0",
+  "kind": "func_start",
+  "names": [
+   "Game_TimeOfDayDebug_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_TimeOfDayDebug_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438c35d0.c;xref:0x1438c35d0",
+   "notes": "V2884 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

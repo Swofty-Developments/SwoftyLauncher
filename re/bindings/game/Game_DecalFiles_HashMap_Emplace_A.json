@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DecalFiles_HashMap_Emplace_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14146cc00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14146cc00.c;xref:0x141431b6f,0x141432708",
+  "notes": "Hash map node emplace (node stride 0x18, 1 byte key + shared ptr copy with refcount); grows via 0x14146d340. Caller Game_DecalCustomisation_LinkFileToPlayer."
+ },
+ "signature": {
+  "id": "game.decal_files_hash_map_emplace_a",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 4D 89 CF 4D 89 C4 48 89 D6 48 89 CF 4C 8D 71 08 48 8B 59 08 48 85 DB 75 0B 4C 89 F1 E8 ?? ?? ?? ?? 48 89 C3 48 8B 03 49 89 06 41 0F B6 04 24",
+  "match": "0x14146cc00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14146cc00",
+  "kind": "func_start",
+  "names": [
+   "Game_DecalFiles_HashMap_Emplace_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14146cc00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14146cc00.c;xref:0x141431b6f",
+   "notes": "V8047 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

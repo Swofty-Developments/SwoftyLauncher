@@ -4,8 +4,14 @@
 #include "core/guards/env.hpp"
 #include "core/guards/skips.hpp"
 
+#include <atomic>
+#include <cstdint>
 #include <cstdio>
 #include <cstring>
+#include <string>
+#include <thread>
+#include <utility>
+#include <vector>
 
 namespace guards = swofty_core::guards;
 
@@ -22,6 +28,9 @@ constinit guards::LogFirst<8> skips{"skips"};
 constinit guards::LogFirst<3> ones{"ones"};
 constinit guards::LogFirst<16> moves{"moves"};
 constinit guards::LogFirst<4> plain;
+constinit guards::FirstKeys<uint32_t, 4> rounds{"rounds"};
+constinit guards::FirstKeys<std::pair<uintptr_t, int>, 16> weekends;
+guards::FirstKeys<std::string, 32> threaded{"vehicles"};
 
 int main()
 {
@@ -64,14 +73,37 @@ int main()
     expect(guards::say(4, 4) == guards::Say::last, "the last logged occurrence says the rest are silent");
     expect(guards::say(5, 4) == guards::Say::none, "occurrences past the cap are silent");
 
-    guards::Skips<4> s;
-    int logged = 0, last = 0;
-    for (int i = 0; i < 100; i++) {
-        int n = s.note();
-        logged += s.logged(n);
-        last += s.last(n);
-    }
-    expect(logged == 4 && last == 1 && s.count == 100, "the plain counter caps and marks like the runtime one");
+    expect(!std::strcmp(rounds.tail(), " (further rounds are not logged)"), "a key cap builds its tail like a count cap");
+    auto first = rounds.note(7);
+    expect(first && first.n == 1 && !std::strcmp(first.tail, ""), "a key's first note is logged plainly");
+    expect(!rounds.note(7), "a key noted before is silent");
+    expect(rounds.note(8) && rounds.note(9), "new keys are logged");
+    auto fourth = rounds.note(10);
+    expect(fourth && fourth.n == 4 && fourth.tail == rounds.tail(), "the key that fills the cap carries the tail");
+    expect(!rounds.note(11) && !rounds.note(7), "new keys past the cap and old keys are silent");
+    expect(rounds.size() == 4, "keys past the cap are not kept");
+
+    int weekend_lines = 0;
+    for (int pass = 0; pass < 3; pass++)
+        for (uintptr_t w = 1; w <= 40; w++)
+            weekend_lines += bool(weekends.note({w * 0x1000, int(w % 3)}));
+    expect(weekend_lines == 16 && weekends.size() == 16, "pair keys log the first sixteen distinct weekends once");
+    expect(!std::strcmp(weekends.tail(), ""), "a key cap without a noun has no tail");
+
+    std::atomic<int> threaded_lines{0}, threaded_tails{0};
+    std::vector<std::thread> threads;
+    for (int t = 0; t < 8; t++)
+        threads.emplace_back([&] {
+            for (int i = 0; i < 200; i++)
+                if (auto line = threaded.note("vehicle_" + std::to_string(i % 50))) {
+                    threaded_lines++;
+                    threaded_tails += *line.tail != 0;
+                }
+        });
+    for (auto &t : threads)
+        t.join();
+    expect(threaded_lines.load() == 32 && threaded_tails.load() == 1 && threaded.size() == 32,
+           "eight threads noting fifty keys log exactly the first thirty-two once, one with the tail");
 
     expect(guards::switch_off("0"), "0 switches a guard off");
     expect(guards::switch_off("off"), "off switches a guard off");

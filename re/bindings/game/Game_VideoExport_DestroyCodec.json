@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VideoExport_DestroyCodec",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444b3770",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-VIDEO_EXPORT",
+  "notes": "named from its log messages (channel VIDEO_EXPORT): 'Failed to destroy codec'"
+ },
+ "signature": {
+  "id": "game.video_export_destroy_codec",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 B9 B8 02 00 00 00",
+  "match": "0x1444b3770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444b3770",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoExport_DestroyCodec"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1444b3770",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444b3770.c;xref:0x142bcf44c",
+   "notes": "V6670 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

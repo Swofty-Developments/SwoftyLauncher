@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_DataDrivenCutSceneScript_InitialiseComponents",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1402501d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1402501d0.c;xref:0x1455ed030",
+  "notes": "DataDrivenCutSceneScript::initialise (vt 0x1455ece70 +0x1c0): sets HQ characters / skip frustum culling / prewarm texture params, reads the ecsfile (eaid://) Components/Component/Name/Parameter/Type/Value blocks, builds the components (list at this+0x870), then base initialise. Addon: entry point of data-driven (ecs) cutscenes; replacing the ecs file changes components without code. d13-verify: tokenizes the script text at this+0x870, calls vslot 0x60 on existing components and binds actors; components are created by 0x140251190 (called from 0x140250ee0)"
+ },
+ "signature": {
+  "id": "game.data_driven_cut_scene_script_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 E8 34 00",
+  "match": "0x1402501d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1402501d0",
+  "kind": "func_start",
+  "names": [
+   "Game_DataDrivenCutSceneScript_InitialiseComponents"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

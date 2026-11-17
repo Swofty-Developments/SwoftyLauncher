@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RttRenderer_SubmitJob",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d8e380",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d8e380.c;xref:0x140176b54",
+  "notes": "Validates and submits one RTT job under CS self+0xd8: null job / invalid camera / invalid texture / no gbuffer matching target texture each log on RTT and call the RTT completion callback g 0x146c39790(userdata 0x146c39798, 0x16, jobId). Called via jmp from 0x140176b54."
+ },
+ "signature": {
+  "id": "core.rtt_renderer_submit_job",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 D7 48 89",
+  "match": "0x143d8e380",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d8e380",
+  "kind": "func_start",
+  "names": [
+   "Ne_RttRenderer_SubmitJob"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_RttRenderer_SubmitJob",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d8e380.c;xref:0x140176b54",
+   "notes": "V2548 RTT Job null/invalid camera/invalid texture/no gbuffer strings"
+  }
+ ],
+ "proofs": []
+}

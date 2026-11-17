@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_HttpV_ProcessHeaders",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144050490",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name processHeaders (class from the log channel); log channel HTTP/V: 'processHeaders'"
+ },
+ "signature": {
+  "id": "game.http_v_process_headers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 49 89 CC",
+  "match": "0x144050490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144050490",
+  "kind": "func_start",
+  "names": [
+   "Game_HttpV_ProcessHeaders"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144050490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144050490.c;xref:0x14404f3aa",
+   "notes": "V6480 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

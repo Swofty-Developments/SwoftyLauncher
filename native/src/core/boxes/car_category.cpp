@@ -1,3 +1,4 @@
+#include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/runtime/resolve.hpp"
 
@@ -534,5 +535,7 @@ void car_category_commit()
     off = true;
     swofty::log("[car-category] addon boxes off: %s", off_why.c_str());
 }
+
+static loader::FunctionSet car_category_core_set{loader::CoreSetId::car_category, car_category_mixins, car_category_commit};
 
 }

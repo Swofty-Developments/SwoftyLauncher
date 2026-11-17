@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CinematicSafetyCar_RunThenFadeIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406c1e20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1406c1e20.c;xref:0x143644983",
+  "notes": "Delegate lea'd by Sess_ScStoppedCarAccumulator_Update: calls the stored action (+0x70)(+0x78), then releases fade reason CinematicSafetyCar (bit 19) and starts the fade in when no reason is left. Addon: SC stopped-car handling under a black screen. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2652)"
+ },
+ "signature": {
+  "id": "game.cinematic_safety_car_run_then_fade_in",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8B 49 78 FF 56 70 48",
+  "match": "0x1406c1e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406c1e20",
+  "kind": "func_start",
+  "names": [
+   "Game_CinematicSafetyCar_RunThenFadeIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Game_CinematicSafetyCar_RunThenFadeIn",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406c1e20.c;xref:0x1406c1e20",
+   "notes": "V2652 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  }
+ ],
+ "proofs": []
+}

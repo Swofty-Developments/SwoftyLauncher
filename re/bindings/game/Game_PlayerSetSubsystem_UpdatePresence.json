@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerSetSubsystem_UpdatePresence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14316d480",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14316d480.c;xref:0x14581f890",
+  "notes": "PlayerSetSubsystem update virtual: reconciles signed-in users with the player set - PRESENCE logs (is new / signs in / signs out / changes UserID (EA login complete?)), creates (Game_PlayerSet_AddPlayer) or destroys entries (DESTROYED, ReportPlayerSetEntryDiscarded), userIx updates. Entries this+0x38..0x40 and +0x58..+0x60. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2496)"
+ },
+ "signature": {
+  "id": "game.player_set_subsystem_update_presence",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 49 89 CE 41 B7",
+  "match": "0x14316d480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14316d480",
+  "kind": "func_start",
+  "names": [
+   "Game_PlayerSetSubsystem_UpdatePresence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_PlayerSetSubsystem_UpdatePresence",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14316d480.c;xref:0x14581f890",
+   "notes": "V2496 PRESENCE logs, DESTROYED, userIx, ReportPlayerSetEntryDiscarded"
+  }
+ ],
+ "proofs": []
+}

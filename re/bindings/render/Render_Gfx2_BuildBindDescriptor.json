@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_BuildBindDescriptor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bdc710",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bdc710.c;xref:0x140102458,0x14029ce8f",
+  "notes": "Builds a 0x100+ byte binding/view descriptor (zero-inits large stack struct) from param_3 resource refs and returns an int handle. 190 lines. Many callers (0x140102320, 0x14029cd40, 0x142435270, 0x143bd1780...). Hypothesis."
+ },
+ "signature": {
+  "id": "render.gfx2_build_bind_descriptor",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 88 01 00 00 48 89 D6 48 89 CF 48 C7 44 24 28 00 00 00 00 C7 84 24 C8",
+  "match": "0x143bdc710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bdc710",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_BuildBindDescriptor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bdc710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bdc710.c;xref:0x140102458",
+   "notes": "V7821 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

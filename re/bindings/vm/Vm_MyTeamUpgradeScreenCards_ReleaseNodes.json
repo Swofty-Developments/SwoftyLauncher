@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_MyTeamUpgradeScreenCards_ReleaseNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142120b70",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/142120b70.c;xref:0x14205b9cd;xref:0x14205c183;xref:0x14205c764",
+  "notes": "myteam-g2: Huge destructor body (about 0xe1 bytes of node holders) of the My Team upgrade screen VM; releases each VM node with Vm_Release_Node. Generic cleanup."
+ },
+ "signature": {
+  "id": "vm.my_team_upgrade_screen_cards_release_nodes",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8D 3D ?? ?? ?? ?? 48 89 B9 00 07 00 00",
+  "match": "0x142120b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142120b70",
+  "kind": "func_start",
+  "names": [
+   "Vm_MyTeamUpgradeScreenCards_ReleaseNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142120b70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142120b70.c;xref:0x14205b9cd",
+   "notes": "V10057 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

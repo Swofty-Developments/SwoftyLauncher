@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_RndNotification_BuildSupplierUpgrade",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141812070",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/141812070.c;xref:0x141c5ebc9",
+  "notes": "myteam-g1: UI binding code; lng_rnd_supplier_upgrade_complete_title/desc, rnd_notification_title/part_card_top. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_notification_build_supplier_upgrade",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 08 25 00 00",
+  "match": "0x141812070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141812070",
+  "kind": "func_start",
+  "names": [
+   "Ui_RndNotification_BuildSupplierUpgrade"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141812070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141812070.c;xref:0x141c5ebc9",
+   "notes": "V9807 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

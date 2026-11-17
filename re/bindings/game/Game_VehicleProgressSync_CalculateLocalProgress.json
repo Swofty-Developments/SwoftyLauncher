@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressSync_CalculateLocalProgress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143260570",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VehicleProgressSync::calculateLocalProgress; log channel NETWORK-PROGRESS/V: 'NEbool network::VehicleProgressSync::calculateLocalProgress(VehicleProgressData &) | %s: progress: %s'"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_sync_calculate_local_progress",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 02 00 00 C5 78 29 BC 24 D0 02 00 00 C5 78 29 B4 24 C0 02 00 00 C5 78 29 AC 24 B0 02 00 00 C5 78 29 A4 24 A0 02 00 00 C5 78 29 9C 24 90 02 00 00 C5 78 29 94 24 80 02 00 00 C5 78 29 8C 24 70 02 00 00 C5 78 29 84 24 60 02 00 00 C5 F8 29 BC 24 50 02 00 00 C5 F9 29 B4 24 40 02 00 00",
+  "match": "0x143260570",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143260570",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressSync_CalculateLocalProgress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143260570",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143260570.c;xref:0x143262aa2",
+   "notes": "V5816 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_EventDispatcher_SendEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14400c680",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/14400c680.c;xref:0x140211c87,0x140bfd2e7,0x140bfd442,0x14251f5ab",
+  "notes": "logged method name sendEvent (class from the log channel); log channel NeEventDispatcher: 'sendEvent()::1_queue(): setUidForOutputPin(DIR): caller outputPin %u has direct uid %u, store it '"
+ },
+ "signature": {
+  "id": "core.event_dispatcher_send_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D7 83 FF FF 0F 84",
+  "match": "0x14400c680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14400c680",
+  "kind": "func_start",
+  "names": [
+   "Ne_EventDispatcher_SendEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-b",
+   "kind": "func",
+   "item": "Ne_EventDispatcher_SendEvent",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14400c680.c;xref:0x14400c680",
+   "notes": "V2023 queues (outputPin,uid) pair; resolves uid from +0xbc if -1; in transaction mode (+0x94) appends 8-byte pair to vector at +0x88, else allocates queued event node from freelist +0x18; three phase logs"
+  }
+ ],
+ "proofs": []
+}

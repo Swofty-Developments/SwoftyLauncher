@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_PassTable_Rehash",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f0d760",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f0d760.c;xref:0x143b81f1a,0x14c6f8e89",
+  "notes": "swiss-style hash map (ne_hash_map.h assert string) grow/rehash of the render-pass name table (string-key compare via Ne_Crt_Strcmp) used by Render_PassTable_FindOrAddBitByName."
+ },
+ "signature": {
+  "id": "render.pass_table_rehash",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 44 24 38 85 C0 74 2E 83 F8 03 74 05 83 F8",
+  "match": "0x143b81f1a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143f0d760",
+  "kind": "func_start",
+  "names": [
+   "Render_PassTable_Rehash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143f0d760",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f0d760.c;xref:0x143b81f1a",
+   "notes": "V8292 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

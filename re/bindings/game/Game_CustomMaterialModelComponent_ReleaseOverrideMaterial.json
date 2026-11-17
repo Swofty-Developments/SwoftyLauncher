@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomMaterialModelComponent_ReleaseOverrideMaterial",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a90980",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name releaseOverrideMaterial (class from the log channel); log channel CustomMaterialModelComponent: 'releaseOverrideMaterial  %016I64x pcn 0x%016I64x  vId %d sId %d  - override material 0x%016I64x'"
+ },
+ "signature": {
+  "id": "game.custom_material_model_component_release_override_material",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 8B 41 48 48 85 C0",
+  "match": "0x142a90980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a90980",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomMaterialModelComponent_ReleaseOverrideMaterial"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a90980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a90980.c;xref:0x142a9042f",
+   "notes": "V4986 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

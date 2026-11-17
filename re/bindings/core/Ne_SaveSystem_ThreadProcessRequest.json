@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem_ThreadProcessRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441396a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1441396a0.c;xref:0x145a5c550",
+  "notes": "Save worker step (vtable slot 0x145a5c550, NeSaveSystem thread object): waits on event self+0x438, pops the next queued request from list self+0x3d8 (count +0x3f0, CS +0x408) into current self+0x478 (CS +0x448), sets request+0x34 result = 0x24 (in progress), dispatches on request+0x18 op type 0..7 to the device self+0x490 vtable (0 Enumerate +0x18, 2 +0x28, 3 AutoSave +0x30, 4 ListLoad +0x38, 5 ListSave +0x40, 6 Delete +0x48, 7 ListDelete +0x50; 1 = +0x58 path); unknown op logs 'Unknown operation type %u' and sets 0x58. On failure (result not 0 / 0x55) asks the error handler self+0x48 (vcall +8/+0x10, ui 5) whether to retry ('The previous operation failed - the result was 0x%x'), request+0x88 flags. Addon: request struct layout (+0x18 op, +0x34 result) lets a hook observe every save/load/delete operation and its result."
+ },
+ "signature": {
+  "id": "core.save_system_thread_process_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 08 00 00 48",
+  "match": "0x1441396a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441396a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem_ThreadProcessRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveSystem_ThreadProcessRequest",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441396a0.c;xref:0x145a5c550",
+   "notes": "V2561 event +0x438, list +0x3d8, current +0x478, result +0x34=0x24, switch on +0x18 with vtable offsets as claimed, Unknown operation type string"
+  }
+ ],
+ "proofs": []
+}

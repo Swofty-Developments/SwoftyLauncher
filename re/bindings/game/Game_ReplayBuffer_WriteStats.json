@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ReplayBuffer_WriteStats",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fdf180",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142fdf180.c;xref:0x142fe0f00,0x142fe0f90",
+  "notes": "Serialises replay buffer statistics into a data node: position, high_position, file_size, high_position_akf, previous_position, last_used_position, stats{bytes_this_frame, bytes_last_frame, avg_bytes_per_frame, most_bytes_one_frame, total_bytes}; traces when the buffer is smaller than the position. Called by Game_MidSessionSave_GetReplayBuffers. Addon: replay buffer diagnostics. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2882)"
+ },
+ "signature": {
+  "id": "game.replay_buffer_write_stats",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 4C 89 C3 48 89",
+  "match": "0x142fdf180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fdf180",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplayBuffer_WriteStats"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_ReplayBuffer_WriteStats",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fdf180.c;xref:0x142fdf180",
+   "notes": "V2882 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

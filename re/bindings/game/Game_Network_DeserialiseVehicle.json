@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_DeserialiseVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14326a9c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name deserialiseVehicle (class from the log channel); log channel NETWORK: '%s() : vehicleIx(%d) not registered.'"
+ },
+ "signature": {
+  "id": "game.network_deserialise_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 06 00 00 C5 78 29 BC 24 90 06 00 00",
+  "match": "0x14326a9c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14326a9c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_DeserialiseVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14326a9c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14326a9c0.c;xref:0x143241538",
+   "notes": "V5831 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

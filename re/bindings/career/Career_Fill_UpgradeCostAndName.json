@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Fill_UpgradeCostAndName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422da5e0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "char * Career_Fill_UpgradeCostAndName(void *self,uint64_t *a2,void * a3)",
+  "evidence": "decomp:re/decomp/1422da5e0.c;xref:0x14577c270",
+  "notes": "myteam-g1: Fills upgrade_cost and upgrade_name text fields for an upgrade row (loc lookups at +0x278/+0x2b0)."
+ },
+ "signature": {
+  "id": "career.fill_upgrade_cost_and_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC F0 00 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 4B 1E AD 37",
+  "match": "0x1422da5e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422da5e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Fill_UpgradeCostAndName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422da5e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1422da5e0.c;xref:0x14577c270",
+   "notes": "V10096 Mixed 1325-line function: upgrade_name/upgrade_cost plus driver-visibility scene logic (FRONTEND_SCENE_MANAGER/DRIVER logs); name only covers part."
+  }
+ ],
+ "proofs": []
+}

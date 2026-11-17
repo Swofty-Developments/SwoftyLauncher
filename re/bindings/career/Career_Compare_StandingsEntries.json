@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Compare_StandingsEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b317a0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "bool Career_Compare_StandingsEntries(void *ctx, const int *a, const int *b)",
+  "evidence": "decomp:re/decomp/140b317a0.c;decomp:re/decomp/140b31170.c;decomp:re/decomp/1413cdb00.c;xref:0x140b31170",
+  "notes": "drivers standings sort predicate (a ranks before b): ctx {standings, u64* packed}; compares entries {u32 key, i32 total}: higher total first, then the countback (standings vt+0x10 0x1413cdb00 counts finishes per position 0..28 over the results up to packed, first differing position with more finishes wins), then the lower key. Used by std::sort 0x140b31170 on the cumulative table sessions"
+ },
+ "signature": {
+  "id": "career.compare_standings_entries",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 08 01 00 00 41 8B 40 04",
+  "match": "0x140b317a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b317a0",
+  "kind": "func_start",
+  "names": [
+   "Career_Compare_StandingsEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-03",
+    "by": "dropscores",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/standings_drop.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-03",
+   "verifier": "agreecheck",
+   "kind": "func",
+   "item": "0x140b317a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b317a0.c;decomp:re/decomp/1413cdb00.c;decomp:re/decomp/140b31170.c;xref:0x140b31170,0x140b3169e,0x140b31aa7",
+   "notes": "V8631 Own read: bool(ctx,a,b), a,b point at {u32 key,i32 total}; total differs -> higher first; else vt+0x10 (1413cdb00) countback of finishes per position 0..28 first difference more finishes wins; else lower key; ctx[0]=standings ctx[1]=ptr to packed u64 (id<<32|round); only called from std::sort 140b31170 and its siblings, never hooked"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140b317a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b317a0.c",
+   "notes": "V9044 Compares total (higher first), then 29 per-position finish counts, then key; matches the claimed countback predicate."
+  }
+ ],
+ "proofs": []
+}

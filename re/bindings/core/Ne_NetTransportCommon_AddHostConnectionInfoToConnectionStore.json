@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetTransportCommon_AddHostConnectionInfoToConnectionStore",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14407ad60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/14407ad60.c;xref:0x14406aca3,0x145a51f58,0x145a52158,0x145a546a8",
+  "notes": "cxx=NeNetTransportCommon::addHostConnectionInfoToConnectionStore; log channel NETWORK-TRANSPORT: 'NeNetTransportCommon::addHostConnectionInfoToConnectionStore'"
+ },
+ "signature": {
+  "id": "core.net_transport_common_add_host_connection_info_to_connection_store",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 4C 89 C7 48 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14407ad60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14407ad60",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetTransportCommon_AddHostConnectionInfoToConnectionStore"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_NetTransportCommon_AddHostConnectionInfoToConnectionStore",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14407ad60.c;xref:0x14407ad60",
+   "notes": "V2098 Own pretty string; FUN_14405ac50 store add, writes host id to +0x70/+0x71, logs host/my ID"
+  }
+ ],
+ "proofs": []
+}

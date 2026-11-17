@@ -1,9 +1,9 @@
 name: Release binaries
 
 # The release build of the swofty CLI, the launcher and Swofty UI for Linux and Windows. CI calls it on every
-# push to main: the run saves the release cache, and a tag on that commit takes the binaries from it instead
-# of building again (release.yml). The release workflow calls it itself only when it finds none. CI's call
-# also builds the installer people test, so main needs no separate installer build.
+# push to main, on EC2 runners when they start, and a tag on that commit takes the binaries from that run
+# instead of building again (release.yml). The release workflow calls it itself, on hosted runners, only when
+# it finds none. CI's call also builds the installer people test, so main needs no separate installer build.
 on:
   workflow_call:
     inputs:
@@ -42,12 +42,9 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      # Only a run on main saves; a tag's own cache would be of no use to the next tag. GTK and WebKitGTK are
-      # for the swofty-ads helper, which hosts the launcher's ad slots on Linux.
+      # No Rust cache: on an EC2 runner a cold release build takes about as long as restoring one. GTK and
+      # WebKitGTK are for the swofty-ads helper, which hosts the launcher's ad slots on Linux.
       - uses: ./.github/actions/setup-rust
-        with:
-          cache: release
-          save: ${{ github.ref == 'refs/heads/main' }}
 
       # The binaries the release ships, not the installer or the addon template.
       # The log server "Send Logs to Developers" uploads to; without it the button is disabled.
@@ -106,11 +103,8 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      # Only a run on main saves; a tag's own cache would be of no use to the next tag.
+      # No Rust cache: on an EC2 runner a cold release build takes about as long as restoring one.
       - uses: ./.github/actions/setup-rust
-        with:
-          cache: release
-          save: ${{ github.ref == 'refs/heads/main' }}
 
       # Only the two binaries the release ships, not the installer or the addon template.
       # The log server "Send Logs to Developers" uploads to; without it the button is disabled.

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_Leave",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430605c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name leave (class from the log channel); log channel NETWORK: '%s: alsoLeaveParty: %d, reason: %d, fireInterrupt: %d'  (this, alsoLeaveParty, reason, fireInterrupt): this = *(NetSub+0x3c0), this+8 = NetSub; calls Ne_NetSystemCommon_LeaveSession(*(NetSub+0xd8), alsoLeaveParty, reason==0xb, 0), stores fireInterrupt at +0x1e1, and if +0x1a8 != 0 runs Game_GameSessionManager_OnLeavingSession. reason 0xb = MatchingCancelled. Callers 36 (list in re/decomp via scan of E8)."
+ },
+ "signature": {
+  "id": "game.network_leave",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC F0 00 00 00 44 89 CD",
+  "match": "0x1430605c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430605c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_Leave"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x1430605c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430605c0.c;xref:0x140996fbb",
+   "notes": "V5502 name matches own log/pretty string and body; no broader behaviour found"
+  },
+  {
+   "date": "2026-11-08",
+   "verifier": "netplay-leave-verify",
+   "kind": "func",
+   "item": "0x1430605c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430605c0.c;decomp:re/decomp/144062c40.c",
+   "notes": "V8732 re-derived: Leave(this,alsoLeaveParty,reason,fireInterrupt) enters critical section this+0x1b0, stores fireInterrupt at +0x1e1, calls Ne_NetSystemCommon_LeaveSession(*(ns+0xd8),..), then OnLeavingSession if +0x1a8 != 0. LeaveSession returns early when state is 0 or 2 (a repeat leave is a no-op); host path notifies clients then tears down, client path notifies connections."
+  }
+ ],
+ "proofs": []
+}

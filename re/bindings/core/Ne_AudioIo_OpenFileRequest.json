@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_AudioIo_OpenFileRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fb8c00",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143fb8c00.c;xref:0x145a43be0",
+  "notes": "cxx=NeAudioIoConfig::m_maxConcurrentIo; log channel AUDIO_IO: '[thread=0x%08I64x] Too many operations, increase 'NeAudioIoConfig::m_maxConcurrentIo. '%s' is rejected because there are other operation(s) waiting in the open ' cb2-verify-a: audio IO open-file request (.bnk handling); rejects when too many concurrent operations (m_maxConcurrentIo)"
+ },
+ "signature": {
+  "id": "core.audio_io_config_m_max_concurrent_io",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 03 00 00 45 89 CE",
+  "match": "0x143fb8c00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fb8c00",
+  "kind": "func_start",
+  "names": [
+   "Ne_AudioIo_OpenFileRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143fb8c00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fb8c00.c",
+   "notes": "V4099 .bnk handling and AUDIO_IO max concurrent IO message; 635 lines (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

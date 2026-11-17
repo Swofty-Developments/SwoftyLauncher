@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Contract_PostCompensationTransactions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d9d0b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *comp, uint8_t *old_team_key, uint8_t *new_team_key, void *offer)",
+  "evidence": "decomp:re/decomp/140d9d0b0.c;xref:0x140d8fda5;xref:0x140ff4b42;xref:0x140ff5514",
+  "notes": "myteam-g2: After a driver contract changes: if the old team is valid and the component is not in the AI-only mode (comp+0x3a0 == 0) and offer+8 > 0, posts a BankAccountTransactionMessage (vtbl 14568d508, category 0x14, kind 1) with amount offer+8 for the old team; then asks FUN_140dbb690 (lookup on comp+0x298->+0x730) and posts a second message (kind 2) for the new team with amount offer+4 minus the part already covered. Hook: offer+4/+8 are the fee/compensation amounts moved between team accounts."
+ },
+ "signature": {
+  "id": "career.contract_post_compensation_transactions",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 80 00 00 00 4C 89 CF 4C 89 C6",
+  "match": "0x140d9d0b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d9d0b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Contract_PostCompensationTransactions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x140d9d0b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d9d0b0.c;xref:0x140d8fda5;xref:0x140ff4b42",
+   "notes": "V9021 First message: team = old key (id != 0x3fff), comp+0x3a0==0, offer+8>0, vtbl 14568d508, type byte 0x14 at msg+0x14, amount msg+0x18 = offer+8, kind msg+0x28=1. Second: FUN_140dbb690 quote on (comp+0x298)->+0x730 for new key, amount = offer+4 minus min(offer+4, quote), posted with kind 2 for the new team when nonzero. What comp+0x3a0 means (AI-only) is not provable from this code."
+  }
+ ],
+ "proofs": []
+}

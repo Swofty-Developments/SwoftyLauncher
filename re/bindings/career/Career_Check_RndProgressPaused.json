@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Check_RndProgressPaused",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143531220",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "bool Career_Check_RndProgressPaused(void *rnd, uint32_t part_key, char flag)",
+  "evidence": "decomp:re/decomp/143531220.c;xref:0x14123acc9;xref:0x14123ae55;xref:0x1412862bc",
+  "notes": "myteam-g2: For rnd state 1 or 2 hashes part_key into the hash map at (rnd+0x18)+0xb8 and returns whether the upgrade progress entry is paused/blocked; used by the progress paused text and state icon."
+ },
+ "signature": {
+  "id": "career.check_rnd_progress_paused",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 70 44 89 C3",
+  "match": "0x143531220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143531220",
+  "kind": "func_start",
+  "names": [
+   "Career_Check_RndProgressPaused"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143531220",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143531220.c;xref:0x14123acc9",
+   "notes": "V10293 Returns bool: sum of team-modifier kind 9 entries for the part type > 0 (hash lookup path for modes 1/2); paused/blocked meaning is inferred."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneDriver_AssignHelmetSuitById",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428a2ef0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428a2ef0.c;xref:0x1428e509c",
+  "notes": "Hash lookup (multiplicative hash, ctrl bytes +0xd8) of ushort id *param_2 in the driver surface-pack map, resolves the driver component (vcall +0x20, object +0x280) and calls Game_SurfacePackSystem_AssignHelmet / AssignSuit / Game_DriverCustomiser_App*. Only caller Game_FrontendSceneComponentDriver_UpdateDecals. Hypothesis."
+ },
+ "signature": {
+  "id": "game.frontend_scene_driver_assign_helmet_suit_by_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 60 01 00 00 48 89 C8",
+  "match": "0x1428a2ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428a2ef0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneDriver_AssignHelmetSuitById"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1428a2ef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428a2ef0.c;xref:0x1428e509c",
+   "notes": "V7534 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

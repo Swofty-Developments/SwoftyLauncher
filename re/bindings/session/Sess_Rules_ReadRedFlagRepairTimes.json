@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_ReadRedFlagRepairTimes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143586b40",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143586b40.c;xref:0x1427846b7,0x14584b0f0",
+  "notes": "rules.red_flags.red_flag_repair_* rows: required_time for repair_front_wing, rear_wing_repairs, body_repairs, underbody_repairs, rear_diffuser_repairs."
+ },
+ "signature": {
+  "id": "session.rules_read_red_flag_repair_times",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 04 00 00 C5 F8 29 BC 24 40 04 00 00 C5 F8 29 B4 24 30 04 00 00 48 89 CE 49 B8 7F 28 98 FB B5 AB 42 05",
+  "match": "0x143586b40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143586b40",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_ReadRedFlagRepairTimes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_Rules_ReadRedFlagRepairTimes",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143586b40.c;xref:0x143586d83",
+   "notes": "V1853 keys rules.red_flags.red_flag_repair_ + required_time, repair_front_wing, rear_wing_repairs, body_repairs, underbody_repairs, rear_diffuser_repairs"
+  }
+ ],
+ "proofs": []
+}

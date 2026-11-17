@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Get_FeatureFlags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413ca0d0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:work/exe/decomp/1413ca0d0_home_flags.c;xref:0x140152e46,0x140217e99,0x140217f75,0x140219122,0x140259f6a,0x14029d4fc,0x140388d68,0x14038f3f7+652;doc:research/exe.md#3.1;decomp:re/decomp/1413ca0d0.c",
+  "notes": "returns the feature-flag words the home case tests (rsi); scope beyond fe_home unknown cb1-verify correction: thunk to 0x14aaaef80; lazily loads the feature list for a content set once and returns &0x146064620 (16-byte struct), not flag words"
+ },
+ "signature": {
+  "id": "core.get_feature_flags",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 5D DE FD A3 48 0F 80 3A DE A5 FD",
+  "match": "0x1413ca0d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413ca0d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Get_FeatureFlags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_Get_FeatureFlags",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1413ca0d0.c;xref:0x140152e45",
+   "notes": "V1987 thunk to FUN_14aaaef80; lazy-inits static (DAT_146064618 flag) from 'content_sets' after log 'Loading feature list - Content set'; returns &DAT_146064620 (16-byte struct pointer), not words; rsi use unchecked"
+  }
+ ],
+ "proofs": []
+}

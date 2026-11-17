@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_Simulate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cb3290",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-DEPARTMENT_EVENTS",
+  "notes": "named from its log messages (channel DEPARTMENT_EVENTS): 'Failed to simulate department event for driver '%s' (%s) as the event was nullptr | Failed to simulate department event (%s) for driver '%s' (%s) as the instance data was invalid | Failed to simulate '"
+ },
+ "signature": {
+  "id": "career.dept_event_simulate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 0B 00 00 C5 78 29 84 24 00 0B 00 00 C5 F8 29 BC 24 F0 0A 00 00 C5 F8 29 B4 24 E0 0A 00 00 49 89 D5",
+  "match": "0x140cb3290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb3290",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_Simulate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140cb3290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb3290.c;xref:0x140cbc307",
+   "notes": "V4648 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140cb3290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb3290.c",
+   "notes": "V9061 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

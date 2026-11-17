@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Signal_FacilitiesStageSceneEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b68bd0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "uint64_t Vm_Signal_FacilitiesStageSceneEvent(void *scene, void *ev, uint8_t flag)",
+  "evidence": "decomp:re/decomp/141b68bd0.c;xref:0x141a0f2d1;xref:0x141a11401;xref:0x141a266fa",
+  "notes": "myteam-g2: Static-init guarded helper that sets an event (Ne_Event_Set) in the facilities stage scene. Called from Career_Despawn_UpgradeList_B, Load_FacilitiesStageScene_2 and team HQ navigation."
+ },
+ "signature": {
+  "id": "vm.signal_facilities_stage_scene_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 80 79 68 00",
+  "match": "0x141b68bd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b68bd0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Signal_FacilitiesStageSceneEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141b68bd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141b68bd0.c;xref:0x141a0f2d1;xref:0x141a11401",
+   "notes": "V9950 Generic thread-safe message post: copies a 0x30-byte event node into a locked queue at obj+0x58/0x60 and sets an event; facilities stage scene is only inferred from callers."
+  }
+ ],
+ "proofs": []
+}

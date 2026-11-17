@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMechanical_SendVehicleMechanicsMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143056460",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name sendVehicleMechanicsMessage (class from the log channel); log channel NETWORK-MECHANICAL/V: '%s(%d, %p, %d)'"
+ },
+ "signature": {
+  "id": "game.network_mechanical_send_vehicle_mechanics_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 05 00 00 4C 89 CE",
+  "match": "0x143056460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143056460",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMechanical_SendVehicleMechanicsMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143056460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143056460.c;xref:0x143054964",
+   "notes": "V5478 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

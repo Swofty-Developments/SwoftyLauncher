@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontEnd_CloseFadeOut",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142266a80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142266a80.c;xref:0x142264c56",
+  "notes": "Front-end close delegate: requests fade OUT reason FrontEnd (bit 1). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2687)"
+ },
+ "signature": {
+  "id": "game.front_end_close_fade_out",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 B8 60 C5 00 00 E8",
+  "match": "0x142266a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142266a80",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontEnd_CloseFadeOut"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Game_FrontEnd_CloseFadeOut",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142266a80.c;xref:0x142266a80",
+   "notes": "V2687 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  }
+ ],
+ "proofs": []
+}

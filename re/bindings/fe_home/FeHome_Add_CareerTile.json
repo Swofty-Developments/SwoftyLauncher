@@ -1,0 +1,49 @@
+{
+ "schema": 1,
+ "name": "FeHome_Add_CareerTile",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141746710",
+  "level": "L3",
+  "subsystem": "fe_home",
+  "proto": "void FeHome_Add_CareerTile(TileList *list, uint8_t index)",
+  "evidence": "decomp:work/exe/decomp/141746710_tile_career.c;xref:0x141742fd2;doc:research/exe.md#3.1;trace:T000/run1:56",
+  "notes": "vt 0x145703de0, id \"career\", lng_mode_career; called at 0x141742fd1 with index r12d=r15+1; runtime: second call from the hook appended one item (2 -> 3) with the Career vtable"
+ },
+ "signature": {
+  "id": "fe_home.career_adder",
+  "section": ".xtls",
+  "pattern": "45 8D 67 01 4C 89 F1 44 89 E2 E8 ?? ?? ?? ?? F6",
+  "match": "0x141742fc7",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0xa"
+  },
+  "target": "0x141746710",
+  "kind": "call",
+  "names": [
+   "FeHome_Add_CareerTile"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "exe-agent",
+    "how": "static"
+   },
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "T000/run1",
+    "how": "runtime scan, 1 hit"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/swofty_core.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

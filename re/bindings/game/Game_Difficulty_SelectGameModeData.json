@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Difficulty_SelectGameModeData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142424d50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-DifficultySystem",
+  "notes": "Log channel DifficultySystem: 'Difficulty now using data for GameMode: %s' | 'Difficulty now using global settings'"
+ },
+ "signature": {
+  "id": "game.difficulty_select_game_mode_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 48 89 D7 48 89 CE 48 8D 59 68",
+  "match": "0x142424d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142424d50",
+  "kind": "func_start",
+  "names": [
+   "Game_Difficulty_SelectGameModeData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142424d50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142424d50.c;xref:0x140baa963",
+   "notes": "V5272 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

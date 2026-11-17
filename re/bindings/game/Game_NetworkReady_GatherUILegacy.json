@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkReady_GatherUILegacy",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436ec5f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name gatherUILegacy (class from the log channel); log channel NETWORK-READY: '%s: showCountdownPanel: %d'"
+ },
+ "signature": {
+  "id": "game.network_ready_gather_ui_legacy",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 06 00 00 C5 F9 29 BC 24 D0 06 00 00",
+  "match": "0x1436ec5f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436ec5f0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkReady_GatherUILegacy"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436ec5f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436ec5f0.c;xref:0x1436e99be",
+   "notes": "V6144 name/log string and function size match the code; strings verified via cstr"
+  }
+ ],
+ "proofs": []
+}

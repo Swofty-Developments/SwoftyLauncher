@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EgoErpLoader_HandleERPEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a65600",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name handleERPEvent (class from the log channel); log channel EGO_ERP_LOADER: 'handleERPEvent - read completed \"%s\"'"
+ },
+ "signature": {
+  "id": "game.ego_erp_loader_handle_erp_event",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 56 57 53 48 81 EC 28 01 00 00",
+  "match": "0x143a65600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a65600",
+  "kind": "func_start",
+  "names": [
+   "Game_EgoErpLoader_HandleERPEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a65600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a65600.c;xref:0x143a65356",
+   "notes": "V6425 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

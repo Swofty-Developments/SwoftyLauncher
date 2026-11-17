@@ -1,0 +1,39 @@
+{
+ "schema": 1,
+ "name": "Vm_Register_NodeClasses",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14419b1d0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "int(void *ui_system)",
+  "evidence": "decomp:re/decomp/14419b1d0.c;xref:0x14419a260;imm:0x47544955",
+  "notes": "constructs+registers ~98 UI node-class factory objects (0xc0 each: vtable +0x00, FOURCC tag +0x10); installs via callback Vm_Install_NodeFactories; full FOURCC class table in subsystems/vm.md"
+ },
+ "signature": {
+  "id": "vm.register_node_classes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 CE 48 8D 05",
+  "match": "0x14419b1d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14419b1d0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Register_NodeClasses"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "ui-re"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

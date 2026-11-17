@@ -2,6 +2,7 @@
 
 #include <cstdint>
 #include <cstring>
+#include "core/frontend/name_hash.hpp"
 #include "core/runtime/presence_id_logic.hpp"
 #include <string>
 
@@ -69,13 +70,7 @@ inline bool sanitize(const std::string &name, std::string &out)
 }
 
 
-inline uint32_t djb2(const char *s)
-{
-    uint32_t h = 5381;
-    while (*s)
-        h = h * 33 + uint8_t(*s++);
-    return h;
-}
+using name_hash::djb2;
 
 // The name to show: SWOFTY_TT_PLAYER_NAME holds the text itself ("0" turns the feature off, empty or unset falls back to the launcher
 // account name read from home_menu.json).

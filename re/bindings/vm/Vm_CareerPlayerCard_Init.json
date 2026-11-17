@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_CareerPlayerCard_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414c1e20",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/1414c1e20.c;xref:0x1456e9af8",
+  "notes": "myteam-g1: Binds the career player card view-model (is_open, cash, resource_points, resource_points_icon, renown_level, team_badge, show_cash, crossplay, xp_booster) and subscribes 8 messages incl. BankAccountValidTransactionMessage, career_player_card_adjust_team_cash, career_player_card_adjust_resource_points, OXPMessageRenownTierIncreased, MessageRnDTreeUpdated, rnd_challenge_applied_message."
+ },
+ "signature": {
+  "id": "vm.career_player_card_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 CE 48 8D B9 68 02 00 00",
+  "match": "0x1414c1e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414c1e20",
+  "kind": "func_start",
+  "names": [
+   "Vm_CareerPlayerCard_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1414c1e20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414c1e20.c;xref:0x1456e9af8",
+   "notes": "V9715 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

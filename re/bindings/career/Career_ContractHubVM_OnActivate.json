@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractHubVM_OnActivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422f4440",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422f4440.c;xref:0x14577d620",
+  "notes": "Slot 6 of vt 0x14577d5f0: driver career contract hub (lng_contract_hub_screen_title): contractual_data from/to season, start/end/review dates, races remaining/total, difference_to_target, rating / recognition / review / break data, show_driver_render_target; thumbnails reason 0. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3234)"
+ },
+ "signature": {
+  "id": "career.contract_hub_v_m_on_activate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 88 10 00",
+  "match": "0x1422f4440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422f4440",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractHubVM_OnActivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Career_ContractHubVM_OnActivate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/422f4440.c;xref:None",
+   "notes": "V3234 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

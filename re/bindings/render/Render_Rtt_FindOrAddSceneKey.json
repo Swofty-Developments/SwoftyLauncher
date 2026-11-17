@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Rtt_FindOrAddSceneKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ceaa30",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ceaa30.c;xref:0x143ce8215",
+  "notes": "FNV-1a hashes a scene name and looks it up with Render_PassTable_FindByName (0x143b81e10); state offsets +0x4a54/+0x4a60/+0x25260. Callers Game_Rtt_CreateScenes (3 sites) and 0x143ce5d80. vp3-verify partial/disagree"
+ },
+ "signature": {
+  "id": "render.rtt_find_scene_by_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 C5 F8 29 74 24 40 4C 89 C7",
+  "match": "0x143ceaa30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ceaa30",
+  "kind": "func_start",
+  "names": [
+   "Render_Rtt_FindOrAddSceneKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143ceaa30",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143ceaa30.c;xref:0x143ce8215",
+   "notes": "V7895 Render_Rtt_FindOrAddSceneKey: interns name, gets 128-bit key via PassTable_FindByName and find-or-ADDs it in table +0x4a60 (count +0x4a54) under CS +0x25260"
+  }
+ ],
+ "proofs": []
+}

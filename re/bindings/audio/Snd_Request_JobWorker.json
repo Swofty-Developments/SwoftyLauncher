@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Snd_Request_JobWorker",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fbdd00",
+  "level": "L2",
+  "subsystem": "audio",
+  "proto": "void Snd_Request_JobWorker(void *worker, uint32_t job_type, uint32_t count)",
+  "evidence": "decomp:re/decomp/143fbdd00.c;decomp:re/decomp/143fc6500.c;xref:0x143fbf90e",
+  "notes": "Wwise job worker request callback (AkJobMgrSettings fnRequestJobWorker; the sound engine init 0x143fbf830 stores its address at 0x143fbf90e; no direct calls). rcx = worker function void(uint32 job_type, uint32 usec), edx = job type, r8d = workers requested. Sets the Wwise max active workers of job types 1 and 2 to the worker count (0x146c64290), then under g_Snd_JobWorkerLock hands each requested worker to an idle worker mailbox (12 of 0x30 bytes at 0x146c63bd0: +0x00 thread id, +0x08 fn, +0x10 wake event signalled by 0x14391cdd0, +0x24 type, +0x28 busy flag; the calling thread's own mailbox is skipped) and queues the rest in g_Snd_JobWorkerOverflow at the first free of 24 slots (loop cmp rax,0x4a8 at 0x143fbdde4), adding 1 to g_Snd_JobWorkerPending per entry. Snd_Run_JobWorkerThread drains only overflow slots 0-11, so an entry queued in slots 12-23 never runs and the pending count never returns to 0."
+ },
+ "signature": {
+  "id": "audio.request_job_worker",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 44 89 C6 89 D7 48 89 CB 8B 15",
+  "match": "0x143fbdd00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fbdd00",
+  "kind": "func_start",
+  "names": [
+   "Snd_Request_JobWorker"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "crash2",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/engine/audio_queue.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-audio",
+   "kind": "func",
+   "item": "0x143fbdd00",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fbdd00.c;decomp:re/decomp/143fbf830.c;decomp:re/decomp/143fc6500.c;decomp:re/decomp/143fcbc30.c;decomp:re/decomp/1443ed5c0.c;xref:0x143fbf90e;imm:0x4a8",
+   "notes": "V2179 Blind re-derivation at 177ebc0d. Address, name, proto, signature and every claim hold. .pdata 0x143fbdd00-0x143fbde29. The only reference in .xtls/.xtext/.data1 is lea rcx at 0x143fbf90b (disp 0x143fbf90e) in 0x143fbf830, stored into the init settings only when settings+0x3f4 != 0 and handed to AK::SoundEngine::Init (export 0x144907580); no calls. Proto: rcx kept in rbx (worker fn), edx in edi (job type), r8d in esi (count), r9 unused, no return value. It calls the export SetJobMgrMaxActiveWorkers (0x144908320) with (1, [0x146c64290]) and (2, [0x146c64290]), then GetCurrentThreadId and EnterCriticalSection(*g_Snd_JobWorkerLock) (0x143fbdd45). Mailbox loop over 0x146c63bd0 + 0x30*i for i < [0x146c64290]: skips +0x00 == own thread id and +0x28 != 0, writes +0x08 fn, +0x24 type, +0x28 = 1 and calls 0x14391cdd0 on +0x10 (SetEvent on the handle at +0x18). Overflow loop: rax = 0x28 + 0x30*i on base 0x146c63e10, exit at cmp rax,0x4a8 (0x143fbdde4), so 24 slots, first free first, pending +1 per slot stored at 0x143fbde03. Tail jmp LeaveCriticalSection at 0x143fbde22. The mailbox array holds 12 (static init 0x143fcbc30 and exit dtor 0x143fbda50 cover 12 entries) and the worker count is capped at 12 (0x1443edd75). Snd_Run_JobWorkerThread compares only overflow flags 0-11 and no other code consumes slots 12-23, so an entry left there never runs and the pending count stays above 0."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-audio",
+   "kind": "sig",
+   "item": "audio.request_job_worker",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/143fbdd00.c;xref:0x143fbdd00",
+   "notes": "V2180 sigcheck --exe --only on d873a1c8: OK hits=1, match = target = 0x143fbdd00, kind func_start, anchor 0. An independent byte scan finds 1 hit in .xtls and 0 in .data1. 0x143fbdd00 is the .pdata start (0x143fbdd00-0x143fbde29). The 24-byte pattern has no wildcards and runs from push r15 through the mov edx,[rip] opcode at 0x143fbdd16, and the target is the claimed function."
+  }
+ ],
+ "proofs": []
+}

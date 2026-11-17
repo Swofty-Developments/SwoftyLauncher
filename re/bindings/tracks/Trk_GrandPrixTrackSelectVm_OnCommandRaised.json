@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Trk_GrandPrixTrackSelectVm_OnCommandRaised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c06dc0",
+  "level": "L2",
+  "subsystem": "tracks",
+  "proto": "void **Trk_GrandPrixTrackSelectVm_OnCommandRaised(void *vm, uint32_t **cmd)",
+  "evidence": "decomp:re/decomp/141c06dc0.c;xref:0x14573b9a0;kb:subsystems/tracks.md#select",
+  "notes": "cxx=HomeSoloTrackSelectViewModel::onCommandRaised (slot 10 of vt_Trk_GrandPrixTrackSelectVm; home_solo.ui solo_track_select, rounds list). advance_pressed 0xfc8f026c is the confirm: returns unless vm+0x93b; vm+0x93a = 1; entity = [[vm+0x648]+0x88]+0x260, component desc 0x14605ad40 looked up in entity+0x1030 and 0x14420cd60(comp+0x298); 0x141c068f0(vm, 0x141c09900) commits the rounds; [vm+0x678]+0x8b = vm+0x939 ^ 1; 0x1424b3640([vm+0x678]); route open to [vm+0x678]+0xf8 through vm+0x620 vt+0x80; entity vt+0xe8. Other commands: insert_track_above 0x56f9ad5a, insert_track_at_end 0x376c04d8, remove_this_track 0xcf84cb3e, selected_track_changed 0xdcd54bcb (needs vm+0x888), back_pressed 0x493fe92b, 0x1412f87b. Grand Prix guard site (R1)."
+ },
+ "signature": {
+  "id": "tracks.grand_prix_track_select_vm_on_command_raised",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 F8 29 B4 24 00 01 00 00 48 8B 02 48 85 C0",
+  "match": "0x141c06dc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c06dc0",
+  "kind": "func_start",
+  "names": [
+   "Trk_GrandPrixTrackSelectVm_OnCommandRaised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "trk-t5",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/tracks/track_select.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "trk-v1",
+   "kind": "func",
+   "item": "Trk_GrandPrixTrackSelectVm_OnCommandRaised",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c06dc0.c;xref:0x14573b9a0,0x141c083b7",
+   "notes": "V1625 Re-derived from a fresh read-only decompile (car-c) and the disassembly 0x141c06dc0..0x141c083a1: djb2(advance_pressed) = 0xfc8f026c is compared at 0x141c06f34, the gate is cmp byte [rsi+0x93b],0 / je 0x141c0837a at 0x141c06f3f, and vm+0x93a = 1 at 0x141c06f4c is the first store. Entry to the gate does only pushes, a stack frame, the vmovaps spill of xmm6 to the own frame, the null test of *cmd and the compare tree, so a wrapper that returns for this hash without calling the original leaves no state. Committing path (entity [[vm+0x648]+0x88]+0x260, desc 0x14605ad40, 0x141c068f0(vm, 0x141c09900), [vm+0x678]+0x8b, 0x1424b3640, route open via vm+0x620 vt+0x80, entity vt+0xe8) matches. Return value is junk (eax = the hash on the not-ready path), so the method is void in practice and a wrapper may return 0. Addition for the guard: the handler has a second route, adjustor thunk 0x141c083b0 (add rcx,-0x268; jmp 0x141c06dc0) at slot 4 of the +0x268 base vtable 0x14573ba60 (constructor 0x141e85ec0 stores it at obj+0x268). Hook the function entry (sig tracks.grand_prix_track_select_vm_on_command_raised, func_start), not only vtable slot 0x14573b9a0, or that route bypasses the guard."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "trk-v1",
+   "kind": "sig",
+   "item": "tracks.grand_prix_track_select_vm_on_command_raised",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:tracks.grand_prix_track_select_vm_on_command_raised;decomp:re/decomp/141c06dc0.c",
+   "notes": "V1634 sigcheck.py --exe on build d873a1c8: 3141/3141 pass, hits=1 match=target=0x141c06dc0. Independent regex search of the 34-byte prologue pattern over .xtls: 1 hit, 0x141c06dc0, the .pdata start of the GP onCommandRaised. A detour here also covers the +0x268 adjustor thunk 0x141c083b0 that jumps to it. used_by names native/src/core/guards/tracks/track_select.cpp, which does not exist yet on trk/t5."
+  }
+ ],
+ "proofs": []
+}

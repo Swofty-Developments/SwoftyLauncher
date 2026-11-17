@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamSponsorDiscoveryReward_Describe",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc7df0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *reward, void *out",
+  "evidence": "decomp:re/decomp/140fc7df0.c;xref:0x1456b1f00",
+  "notes": "myteam-g1: Debug/description text of the reward that schedules a secondary sponsor discovery event for the team (constant string, no args)."
+ },
+ "signature": {
+  "id": "career.my_team_sponsor_discovery_reward_describe",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 89 D1 48 8D 15 ?? ?? ?? ?? E8",
+  "match": "0x140fc7df0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc7df0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamSponsorDiscoveryReward_Describe"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fc7df0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc7df0.c;xref:0x1456b1f00;str:\"Schedules secondary sponsor discovery event for team\"",
+   "notes": "V9619 Constant description text for secondary sponsor discovery."
+  }
+ ],
+ "proofs": []
+}

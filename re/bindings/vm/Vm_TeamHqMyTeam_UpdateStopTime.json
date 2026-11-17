@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqMyTeam_UpdateStopTime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142335dd0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_TeamHqMyTeam_UpdateStopTime(void *vm)",
+  "evidence": "decomp:re/decomp/142335dd0.c;xref:0x14233173e;xref:0x142332dad;xref:0x1423338a2",
+  "notes": "myteam-g2: Computes the current day from the clock (clock>>5 / 0x2d), asks Vm_TeamHqTimeline_AnyDayBoolB whether a stopping day exists and sets hq_stoptime accordingly (StopAdvancing path)."
+ },
+ "signature": {
+  "id": "vm.team_hq_my_team_update_stop_time",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 48 8B 81 00 04 00 00",
+  "match": "0x142335dd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142335dd0",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqMyTeam_UpdateStopTime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142335dd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142335dd0.c;xref:0x14233173e",
+   "notes": "V10142 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

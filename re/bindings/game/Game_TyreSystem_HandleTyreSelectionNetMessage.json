@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreSystem_HandleTyreSelectionNetMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e900e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=TyreSystem::handleTyreSelectionNetMessage; log channel -: 'TyreSystem::handleTyreSelectionNetMessage(connId=%d)'"
+ },
+ "signature": {
+  "id": "game.tyre_system_handle_tyre_selection_net_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 48 89 D7 48 89 CE 0F B6 81 A0 00 00 00",
+  "match": "0x142e900e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e900e0",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreSystem_HandleTyreSelectionNetMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e900e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e900e0.c;xref:0x143a100db",
+   "notes": "V5526 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

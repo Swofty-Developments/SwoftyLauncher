@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_MyTeamCorporateDriverCard_ReleaseNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14239f890",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *card, void *other)",
+  "evidence": "decomp:re/decomp/14239f890.c;xref:0x14226bd14;xref:0x14226c0b6;xref:0x14226f3a1",
+  "notes": "myteam-g2: Release/move helper of the corporate driver card VM (used by Ui_MyTeamCorporateDriverCard_Spawn): releases the intrusive property nodes via Vm_Release_Node and FUN_1416a00f0. Generic cleanup."
+ },
+ "signature": {
+  "id": "vm.my_team_corporate_driver_card_release_nodes",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 48 39 D1 0F 84 ?? ?? ?? ?? 48 89 D6 48 89 CF 48 8D 1D ?? ?? ?? ?? C5 C8 57 F6 EB 2B 0F 1F 44 00 00 48 8B 0D ?? ?? ?? ?? 49 8B 16 E8 ?? ?? ?? ?? 49 C7 06 00 00 00 00 48 81 C7 20 0F 00 00",
+  "match": "0x14239f890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14239f890",
+  "kind": "func_start",
+  "names": [
+   "Vm_MyTeamCorporateDriverCard_ReleaseNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x14239f890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14239f890.c",
+   "notes": "V10175 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RacingCameraArbitrator_RequiresCrossfade",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144534390",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=RacingCameraArbitrator::requiresCrossfade; log channel CAMERA.ARBITRATOR: 'RacingCameraArbitrator::requiresCrossfade returned false as sm_fullyFadedIn == false i.e. the screen isn't faded in'"
+ },
+ "signature": {
+  "id": "game.racing_camera_arbitrator_requires_crossfade",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 48 89 CB",
+  "match": "0x144534390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144534390",
+  "kind": "func_start",
+  "names": [
+   "Game_RacingCameraArbitrator_RequiresCrossfade"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144534390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144534390.c;xref:0x1401849cf",
+   "notes": "V6677 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

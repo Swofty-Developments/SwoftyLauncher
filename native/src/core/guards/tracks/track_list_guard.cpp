@@ -60,6 +60,7 @@ constexpr const char *NEXT_ROW = "site_Career_ScheduleComponent_TrackListNextRow
 constexpr const char *ENTRY_DONE = "site_Career_ScheduleComponent_TrackListEntryDone";
 constexpr const char *SAVE = "site_Career_ScheduleComponent_TrackListSave";
 
+namespace guards = swofty_core::guards;
 namespace tl = runtime::track_list_guard;
 
 uintptr_t next_row = 0;
@@ -147,14 +148,11 @@ void track_list_save(SwoftyContext *c)
 bool env_off()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_TRACK_LIST_GUARD", v, sizeof v);
-    if (!n || n >= sizeof v || !tl::switch_off(v))
+    if (!guards::env_off("SWOFTY_TRACK_LIST_GUARD", v))
         return false;
     swofty::log("[saves] career calendar track list guard off (SWOFTY_TRACK_LIST_GUARD=%s); the custom_track_list count lines stay", v);
     return true;
 }
-
-namespace guards = swofty_core::guards;
 
 class TrackListGuard final : public guards::Guard {
 public:

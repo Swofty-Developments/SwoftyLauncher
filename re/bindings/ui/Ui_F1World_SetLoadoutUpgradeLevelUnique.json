@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_SetLoadoutUpgradeLevelUnique",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141709350",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/141709350.c;xref:0x1417091ea;xref:0x145700be8",
+  "notes": "myteam-g1: UI binding code; overrides.f1_world.loadout_item_upgrades_large/medium[upgrade_level_unique]: F1 World loadout item card UI, not My Team. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.f1_world_set_loadout_upgrade_level_unique",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 0F B6 4F 19",
+  "match": "0x141709350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141709350",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_SetLoadoutUpgradeLevelUnique"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141709350",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141709350.c;xref:0x1417091ea;xref:0x145700be8",
+   "notes": "V9774 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

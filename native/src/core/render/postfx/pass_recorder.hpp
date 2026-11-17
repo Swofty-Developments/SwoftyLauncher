@@ -1,4 +1,5 @@
 #pragma once
+#include "core/render/postfx/addon_data_logic.hpp"
 #include "core/render/postfx/pass.hpp"
 
 #include <windows.h>

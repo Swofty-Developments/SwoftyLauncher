@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_BadgeReplicationManager_ReconcileBadgeInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143128410",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=BadgeReplicationManager::reconcileBadgeInfo; log channel NETWORK-ENTRANTS: 'void network::BadgeReplicationManager::reconcileBadgeInfo(const PlayerDescription &, const game::BadgeStatId::PackedStatId, game::BadgeInfo &&) | %s : Badge Info update was unsuccessful!'"
+ },
+ "signature": {
+  "id": "game.badge_replication_manager_reconcile_badge_info",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 90 00 00 00 4C 89 CB",
+  "match": "0x143128410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143128410",
+  "kind": "func_start",
+  "names": [
+   "Game_BadgeReplicationManager_ReconcileBadgeInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143128410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143128410.c;xref:0x143129671",
+   "notes": "V5859 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

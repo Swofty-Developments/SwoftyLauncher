@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Rnd_SetDepartmentColourIconName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141813670",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/141813670.c;xref:0x14180ea78;xref:0x14180fdb7",
+  "notes": "myteam-g1: UI binding code; department_colour, department_icon, department_name. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_set_department_colour_icon_name",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 CE C6 44 24 20 FF E8 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 06 48 8B 46 10",
+  "match": "0x141813670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141813670",
+  "kind": "func_start",
+  "names": [
+   "Ui_Rnd_SetDepartmentColourIconName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141813670",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141813670.c;xref:0x14180ea78",
+   "notes": "V9811 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

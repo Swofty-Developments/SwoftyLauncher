@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Car_Reset_LastFittedUpgrade",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143517d80",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void Car_Reset_LastFittedUpgrade(void *inst)",
+  "evidence": "decomp:re/decomp/143517d80.c;xref:0x143515295,0x143517d80;doc:addons/rnd-tyres-thermal/native/HOOKS.md#the-fix-flag-instantiate_tyres_upgrades-default-on-install-time",
+  "notes": "Per-instance init/reset of one 0xe0-byte upgrade instance (rcx): [+0x7e] = -1, then dept [+0x72] == 4 gets one sentinel state entry {owner 0x3fff0000, day 0xffff, Invalid, disabled} and returns; other departments get the normal init (Unavailable, enabled). The name predates this reading; the caller's resetLastFittedUpgrade string is not this function's."
+ },
+ "signature": {
+  "id": "car.reset_last_fitted_upgrade",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 89 CE C7 41 7E FF FF FF FF",
+  "match": "0x143517d80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143517d80",
+  "kind": "func_start",
+  "names": [
+   "Car_Reset_LastFittedUpgrade"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "func",
+   "item": "Car_Reset_LastFittedUpgrade",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143517d80.c;xref:0x143515276,0x14351527d,0x143515284,0x143515290,0x14352d071,0x14352e223",
+   "notes": "V0172 Role and arity right: per-instance reset of one 0xe0 upgrade instance (resets +0x7e..+0xd8, empties the state vector, dept 4 gets the Invalid sentinel, else Push_UpgradeState/SetFitted/SetEnabled/tail SetFacilityLocked); void(void*); 3 E8 callers 0x143515290, 0x14352d071, 0x14352e223. Off: 'void game::upgrades::EngineSuppliers::resetLastFittedUpgrade(const Upgrades &) c..' at 0x14351527d is the __FUNCSIG__ the caller 0x143514670 logs with 'Calling %s for %s'. It takes const Upgrades&, so it names the caller-side loop over Completed instances, not this function; the param is an instance, not upgrades"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "func",
+   "item": "Car_Reset_LastFittedUpgrade",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143517d80.c;decomp:re/decomp/1435230e0.c;xref:0x143517d8c,0x143517e0c,0x143517e20,0x143517e47,0x143517e71,0x143517e90,0x143517e9d,0x143517eb8,0x143515290,0x14352d071,0x14352e223,0x14352e228",
+   "notes": "V0217 sigcheck OK, entry window clean; 1 arg (rcx inst, 0xe0 stride at 0x14352e228); [+0x7e]=-1; dept [+0x72]==4 resets the state vector to one entry {0x3fff0000, 0xffff, 5, 0, enabled 0} and returns; else Career_Push_UpgradeState, Set_UpgradeFitted(0x3fff0000), Set_UpgradeEnabled(1), tail Set_UpgradeFacilityLocked; the resetLastFittedUpgrade log at 0x14351527d belongs to the caller 0x143514670"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Rnd_IsPanelEntryForPart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143536e90",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "bool Career_Rnd_IsPanelEntryForPart(void *panel, uint32_t part_key, void *entry)",
+  "evidence": "decomp:re/decomp/143536e90.c;xref:0x1416b55c4;xref:0x141c51d29;xref:0x141c8f219",
+  "notes": "myteam-g2: Compares the last entry of the R&D upgrade queue (entry+0xc0..+0xc8) with part_key (id short at -0xe, kind byte at -0x10, state byte at -8 == 2) to see whether the part is the one currently being worked on. Read-only."
+ },
+ "signature": {
+  "id": "career.rnd_is_panel_entry_for_part",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 78 4D 85 C0 0F 84 ?? ?? ?? ?? 4D 8B 88 C8 00 00 00",
+  "match": "0x143536e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143536e90",
+  "kind": "func_start",
+  "names": [
+   "Career_Rnd_IsPanelEntryForPart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143536e90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143536e90.c;xref:0x1416b55c4",
+   "notes": "V10295 Early-out compares last queue entry with part_key, but the return value is whether modifier kind 5 sum for the type > 0 when state is 6 or 1."
+  }
+ ],
+ "proofs": []
+}

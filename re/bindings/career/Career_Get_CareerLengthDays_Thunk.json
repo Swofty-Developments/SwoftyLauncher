@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "Career_Get_CareerLengthDays_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14111dd30",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t Career_Get_CareerLengthDays_Thunk(void *time)",
+  "evidence": "decomp:re/decomp/14111dd30.c;xref:0x14113d45e;doc:addons/career-editor/protocol/drivers.md#how-a-rating-is-made-what-the-editor-writes decomp:re/decomp/14113d120.c decomp:re/decomp/14a4c4250.c",
+  "notes": "thunk -> .data1 0x14a4c4250. uint32_t (void *time = CareerTime+0x290): total career length in MINUTES (season day counts x 1440 from the date table at time+8..+0x10, 0x10 stride); caller computes x=min(1, clock_minutes [time+0x20 = CareerTime+0x2b0] / result); 0 -> x=0; returns 0 when the index is out of range; read-only (wording per V0283)  the name keeps 'Days' because verify V0283 references it; the result is in minutes"
+ },
+ "signature": {
+  "id": "career.get_career_length_days_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 96 E6 E9 77 0E FC 00 51 8F",
+  "match": "0x14111dd30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14111dd30",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_CareerLengthDays_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-drivers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/drivers.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "func",
+   "item": "Career_Get_CareerLengthDays_Thunk",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14111dd30.c;decomp:re/decomp/14a4c4250.c;decomp:re/decomp/14113d120.c;xref:0x14113d45e,0x140d8f1f0",
+   "notes": "V0283 jmp thunk to .data1 0x14a4c4250, read-only, returns 0 when the index is out of range, divisor at 0x14113d451..47d correct. Wrong units: [time+0x2b0] is the career clock in minutes (bank handler adds 0x5a0 for next day; Record_DriverMove divides by 1440), and the body returns minutes (sum of per-season day counts * 0x5a0 from the date table at time+8..+0x10, 0x10 stride). Corrected: \"uint32_t (void *time = CareerTime+0x290): total career length in MINUTES (season day counts x 1440); caller computes x=min(1, clock_minutes [time+0x20 = CareerTime+0x2b0] / result); 0 -> x=0; read-only\""
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-5",
+   "kind": "func",
+   "item": "Career_Get_CareerLengthDays_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14111dd30.c;decomp:re/decomp/14a4c4250.c;decomp:re/decomp/14113d120.c;xref:0x14111dd30,0x14a4c4277,0x14a4c427d,0x14a4c42c0,0x14a4c434e,0x14113d451;sig:career.get_career_length_days_thunk",
+   "notes": "V0695 sigcheck OK; jmp 0x14a4c4250. idx = count-1 ([0x153e35430] = 0xfa294c40 makes the sub -1); earlier seasons add floor((end-start)/86400+1)*1440, the last floor(...)-1 days *1440; idx >= count (empty table) returns 0; reads only. Rating 0x14113d120 divides [CareerTime+0x2b0] by it and takes min(1,..), 0 when it returns 0. Proto uint32_t(void *) right"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-5",
+   "kind": "func",
+   "item": "Career_Get_CareerLengthDays_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14111dd30.c;decomp:re/decomp/14a4c4250.c;decomp:re/decomp/14113d120.c;xref:0x14111dd30,0x14a4c4277,0x14a4c427d,0x14a4c42c0,0x14a4c434e,0x14113d451;sig:career.get_career_length_days_thunk",
+   "notes": "V0816 sigcheck OK; jmp 0x14a4c4250. idx = count-1 ([0x153e35430] = 0xfa294c40 makes the sub -1); earlier seasons add floor((end-start)/86400+1)*1440, the last floor(...)-1 days *1440; idx >= count (empty table) returns 0; reads only. Rating 0x14113d120 divides [CareerTime+0x2b0] by it and takes min(1,..), 0 when it returns 0. Proto uint32_t(void *) right"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Session_SetLapsCompletedPercentage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142586a60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-GAME",
+  "notes": "named from its log messages (channel GAME): '%s: Set percentage of laps completed from %.2f to %.2f.'"
+ },
+ "signature": {
+  "id": "game.session_set_laps_completed_percentage",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 02 00 00 C5 F8 29 BC 24 B0 02 00 00 C5 F8 29 B4 24 A0 02 00 00 4D 89 C4",
+  "match": "0x142586a60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142586a60",
+  "kind": "func_start",
+  "names": [
+   "Game_Session_SetLapsCompletedPercentage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142586a60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142586a60.c;xref:0x14255a941",
+   "notes": "V5100 10 KB, 47 calls, serialises/updates session blocks (F1W-OS eBlock, data_version); setPercentageOfLapsCompleted log is one inlined bit. Better: Game_Session_UpdateChampionshipSessionData"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x142586a60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142586a60.c;xref:0x14255a941",
+   "notes": "V7298 name fits; finding facts hold; 8 direct calls"
+  }
+ ],
+ "proofs": []
+}

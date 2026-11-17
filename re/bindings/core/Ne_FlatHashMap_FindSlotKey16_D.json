@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_FlatHashMap_FindSlotKey16_D",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143edb740",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143edb740.c;xref:0x143bf8272",
+  "notes": "FNV-1a 64 name lookup (same layout as FindByFnv1a_B). Callers Render_TerrainPlugin_UpdateVisibility. vq2-verify partial"
+ },
+ "signature": {
+  "id": "core.name_table_find_by_fnv1a_d",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 C1 E0 04 49 03 46 18 49 3B 46 20 74 07 8B",
+  "match": "0x143bf8272",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143edb740",
+  "kind": "func_start",
+  "names": [
+   "Ne_FlatHashMap_FindSlotKey16_D"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143edb740",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143edb740.c;xref:0x143bf8272",
+   "notes": "V8290 Ne_FlatHashMap_FindSlotKey16_D - identical to _C, 16-byte key hash, not B layout"
+  }
+ ],
+ "proofs": []
+}

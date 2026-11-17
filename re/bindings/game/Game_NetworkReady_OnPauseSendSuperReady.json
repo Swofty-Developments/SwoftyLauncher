@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkReady_OnPauseSendSuperReady",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143228890",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143228890.c;xref:0x145829528",
+  "notes": "on pause message (type 2/3): paused +0x99=1, pushes super-ready time +0x68 by msg+0xa0 seconds and broadcasts super-ready. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2632)"
+ },
+ "signature": {
+  "id": "game.network_ready_on_pause_send_super_ready",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 60 41 8B 40 10 83 E0 FE 83 F8 02 0F 85 ?? ?? ?? ?? 48 89 CE C5 FB 10 41 68 C5 F9 2E 05 ?? ?? 17 02 0F 82 ?? ?? ?? ?? C6",
+  "match": "0x143228890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143228890",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkReady_OnPauseSendSuperReady"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_NetworkReady_OnPauseSendSuperReady",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143228890.c;xref:0x143228890",
+   "notes": "V2632 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

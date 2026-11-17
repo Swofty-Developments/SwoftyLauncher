@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_WinnerSequence_Enter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142daa070",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142daa070.c;xref:0x142da41b2",
+  "notes": "WinnerSequence (vtable 0x1457e3fe0 slot 8) plays outro_finishline_seq; time limit fixed at 40 s (mov dword [rsi+0xdb0], 40.0f at 0x142da41b2). sb2-verify-b correction: the 40.0f store (rsi+0xdb0 = 0x42200000) is at 0x142daa7c2"
+ },
+ "signature": {
+  "id": "session.winner_sequence_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC E0 00 00 00 48 89 CE 48 8B 81 B0 0C 00 00",
+  "match": "0x142daa070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142daa070",
+  "kind": "func_start",
+  "names": [
+   "Sess_WinnerSequence_Enter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-b",
+   "kind": "func",
+   "item": "Sess_WinnerSequence_Enter",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142daa070.c;xref:0x1457e4020",
+   "notes": "V1874 slot 8 ok, outro_finishline_seq ok; 40.0f store (0x42200000) is at 0x142daa7c2, not 0x142da41b2 (that is another function)"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-b",
+   "kind": "func",
+   "item": "Sess_WinnerSequence_Enter",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142daa070.c;xref:0x1457e4020",
+   "notes": "V3953 slot 8 ok, outro_finishline_seq ok; 40.0f store (0x42200000) is at 0x142daa7c2, not 0x142da41b2 (that is another function)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x142daa070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142daa070.c",
+   "notes": "V4157 vtable slot 0x1457e4020 = 0x1457e3fe0+0x40 = slot 8 (vtable/indirect); logs 'Sent outro_finishline_seq'; store mov [rsi+0xdb0],0x42200000 (40.0f) really at 0x142daa7c2 as in the correction (original address 0x142da41b2 wrong)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ai_Calc_GripLimitScaleB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140606c10",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140606c10.c;xref:0x1405f68b6,0x1405f75ad",
+  "notes": "Same as Ai_Calc_GripLimitScaleA but uses car value +0x168 instead of +0x16c (other grip axis). Slick flag from tyre compound <3, curves [this+0x230]+0x158/+0x140, scale [this+0x20]+0xd0. Called from Ai_Read_GeneralSettings_3. Addon: AI grip limit tuning (second axis). | #587: L2 by lead-authorised promotion for lane owner ai-re (independent agree V2864)"
+ },
+ "signature": {
+  "id": "ai.calc_grip_limit_scale_b",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 80 00 00 00 C5 78 29",
+  "match": "0x140606c10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140606c10",
+  "kind": "func_start",
+  "names": [
+   "Ai_Calc_GripLimitScaleB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Ai_Calc_GripLimitScaleB",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140606c10.c;xref:0x140606c10",
+   "notes": "V2864 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

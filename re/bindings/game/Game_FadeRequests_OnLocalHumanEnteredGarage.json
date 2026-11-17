@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_FadeRequests_OnLocalHumanEnteredGarage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a3b7a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onLocalHumanEnteredGarage (class from the log channel); log channel FADE_REQUESTS: 'onLocalHumanEnteredGarage() vehicleId(%u)'"
+ },
+ "signature": {
+  "id": "game.fade_requests_on_local_human_entered_garage",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 50 48 89 D7 48 89 CE 48 8B 02",
+  "match": "0x142a3b7a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a3b7a0",
+  "kind": "func_start",
+  "names": [
+   "Game_FadeRequests_OnLocalHumanEnteredGarage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a3b7a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142a3b7a0.c;xref:0x142a41cc7",
+   "notes": "V5166 2.3 KB local-human-entered-garage handler (NETWORK/V logs, garage UI flow, vehicle active) plus a fade-in request; channel FADE_REQUESTS is only a sub-call. Better: Game_Garage_OnLocalHumanEnteredGarage"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x142a3b7a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a3b7a0.c;xref:0x142a41cc7",
+   "notes": "V7307 name fits; finding facts hold; 2 direct calls"
+  }
+ ],
+ "proofs": []
+}

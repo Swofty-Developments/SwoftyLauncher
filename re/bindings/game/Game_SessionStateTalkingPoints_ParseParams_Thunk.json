@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Game_SessionStateTalkingPoints_ParseParams_Thunk",
+ "table": "functions",
+ "author": "load-game",
+ "row": {
+  "addr": "0x142d94e20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_SessionStateTalkingPoints_ParseParams_Thunk(void *state, void *params)",
+  "evidence": "decomp:re/decomp/14eb3abf0.c;decomp:re/decomp/142d94f30.c;decomp:re/decomp/142d95b90.c;xref:0x1457e2cf8,0x14eb3ac1b,0x14eb3ac62,0x142d952ae",
+  "notes": "cxx=SessionStateTalkingPoints slot 7 (parse params): vtable 0x1457e2cc0, pointer 0x1457e2cf8; slots 8/9/10/11 are OnStateEnter 0x142d94f30, OnStateUpdate 0x142d95b90, OnStateExit 0x142d967e0, OnStateInterrupt 0x142d95990. 5-byte jmp into .data1 body=0x14eb3abf0 (plaintext in the KB file). The body reads Game.SkipTalkingPoints (Ne_Get_SettingBool 0x143a43b90 called at 0x14eb3ac2a, node [[state+0xdb0]+0x18], default 0; retail config.xml false) and Game.ecaEnabled (call 0x14eb3ac49, default 1; retail true), and stores byte state+0xea1 = 1 when SkipTalkingPoints is true or ecaEnabled is false (0x14eb3ac62, the only writer of +0xea1 for this class), then reads the releaseCutscenesOnExit param. OnStateEnter stores +0xea0 = 1 (0x142d952ae) when the game mode is the class at 0x146129ca0 or has no component 0x14605b108, else +0xea0 = other mode and feature checks OR mode+0xe35 OR +0xea1; with +0xea0 set it does not generate the broadcast sequence. OnStateUpdate returns link skipped (djb2 0x996c4495) on its first update while +0xea0 is set, or snapshot (0x9b3bfc35) when the mode has component 0x146062fc0 and byte [[[0x146075a78]+0x20]+0xd8]+6 is 0. The update's other exits: next (0x7c9b1ec4) once the sequence at +0xe88 reaches status 4 (+0x2c) after the fade to black (+0xea8 requested, +0xea6 set by the fade-out delegate 0x14eb46c90); restart (0x3f29fc8a) when byte +0xcc9 bit 1 is set. No .xtls code references the Game.SkipTalkingPoints string."
+ },
+ "signature": {
+  "id": "game.session_state_talking_points_parse_params_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 0F 89 ?? ?? ?? ?? 85 E9 DC 85 40 FF FE 0F",
+  "match": "0x142d94e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d94e20",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionStateTalkingPoints_ParseParams_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-17",
+    "by": "load-game",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": [
+  {
+   "by": "load-game",
+   "date": "2026-11-17",
+   "tool": "binding.py verify",
+   "exe": {
+    "sha256": "d873a1c8d2044cef2fd76c99c9d5a97649c5b815d055540995105f46619865ae",
+    "size": 408063872,
+    "pe_timestamp": 1789118616
+   },
+   "result": {
+    "result": "resolved",
+    "method": "scan",
+    "matches": 1,
+    "match": "0x142d94e20",
+    "target": "0x142d94e20"
+   },
+   "sigcheck": "passed",
+   "digest": "b6ef342a34c9d1099fabdb7ef97e65d8f091b829fe54e5b7870c2dccf6dee61a"
+  }
+ ]
+}

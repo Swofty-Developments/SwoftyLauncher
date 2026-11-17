@@ -1,3 +1,4 @@
+#include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -228,6 +229,8 @@ void tyre_models_commit()
                 core_mixins_active(MIXIN) ? "armed: fitted tyre models are read 10 s and 60 s into each session"
                                           : "did not install (see the [core] lines)");
 }
+
+static loader::FunctionSet tyre_models_core_set{loader::CoreSetId::tyre_models, tyre_models_mixins, tyre_models_commit};
 
 void tyre_models_tick()
 {

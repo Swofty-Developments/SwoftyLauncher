@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Register_CustomisationAndMenuViewModelTypes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14217f380",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void)",
+  "evidence": "decomp:re/decomp/14217f380.c;xref:0x145d31910",
+  "notes": "myteam-g1: Static initialiser registering view-model type names: CustomisationMyTeamOverviewViewModel, CustomisationMyTeamOwnerBackground/Head/SetupGeneric ViewModels, DcRewardsRenownAndForm ViewModels, and the long alphabetical list up to StoryDriverSelectViewModel (cxx names)."
+ },
+ "signature": {
+  "id": "vm.register_customisation_and_menu_view_model_types",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 C4 E2 79 18 05",
+  "match": "0x14217f380",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14217f380",
+  "kind": "func_start",
+  "names": [
+   "Vm_Register_CustomisationAndMenuViewModelTypes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14217f380",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14217f380.c;xref:0x145d31910",
+   "notes": "V10060 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

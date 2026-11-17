@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_TeamExitAuction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d97750",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
+  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Team is no longer available: %s - Team : %s  | Team exited auction, cannot reapproach until next window: %s - Team : %s  | Driver is no longer available: %s - Team : %s '"
+ },
+ "signature": {
+  "id": "career.contract_renewal_team_exit_auction",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 45 89 CE",
+  "match": "0x140d97750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d97750",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_TeamExitAuction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d97750",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d97750.c;xref:0x140d8e946,0x140d95893",
+   "notes": "V4719 better name Career_ContractRenewal_IsTeamApproachable: bool predicate (returns bVar3&bVar4&bVar11) logging team no longer available/exited auction; not an exit-auction action"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140d97750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d97750.c;xref:0x140d8e946",
+   "notes": "V7175 name fits; finding facts hold; 2 direct calls"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d97750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d97750.c",
+   "notes": "V9083 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

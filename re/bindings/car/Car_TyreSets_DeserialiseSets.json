@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_TyreSets_DeserialiseSets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e8c270",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e8c270.c;xref:0x142e8dfbb",
+  "notes": "(sets, stream) Reads count (Ne_BitStream_ReadRangedUInt 0..15), grows array (entries 0x6c) and deserialises each tyre set (0x142e897c0); logs TYRES/V deserialize '%s: %d tyre sets, ok: %d'. Called from Car_TyreSets_Deserialise."
+ },
+ "signature": {
+  "id": "car.tyre_sets_deserialise_sets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 49 89 D0 48 89",
+  "match": "0x142e8c270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e8c270",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreSets_DeserialiseSets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e8c270",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e8c270.c;xref:0x142e8dfbb",
+   "notes": "V3677 Count ranged 0..0xf, array grown 0x6c per entry, per-set 142e897c0, log '%s: %d tyre sets, ok: %d' verified."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Read_CareerSetupDataConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c32080",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *cfg, void *xml_node)",
+  "evidence": "decomp:re/decomp/140c32080.c;xref:0x141348fca;xref:0x14568c600",
+  "notes": "myteam-g1: Reads career.career_setup (CareerSetupDataGroup, StartingStat, InitialCashBackgroundOutcome, RNDBackgroundOutcome) including facility_upgrade_level, r_and_d_upgrades and upgrades per My Team background/owner choice. Hook for the starting facility levels, initial upgrades and cash of a new My Team career."
+ },
+ "signature": {
+  "id": "career.read_career_setup_data_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 0B 00 00 C5 F8 29 B4 24 C0 0B 00 00",
+  "match": "0x140c32080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c32080",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_CareerSetupDataConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140c32080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c32080.c;xref:0x14568c600;str:\"facility_upgrade_level\";str:\"r_and_d_upgrades\";str:\"initial_cash\"",
+   "notes": "V8980 Reads facility_upgrade_level, cash_balance, r_and_d_upgrades, owner_background_outcomes, initial_cash, num_aero/chassis/engine/durability and upgrades. The type names CareerSetupDataGroup/StartingStat/RNDBackgroundOutcome are not visible in the code."
+  }
+ ],
+ "proofs": []
+}

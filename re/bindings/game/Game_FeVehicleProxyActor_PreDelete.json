@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FeVehicleProxyActor_PreDelete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403c35d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name preDelete (class from the log channel); log channel FeVehicleProxyActor: 'preDelete %p'"
+ },
+ "signature": {
+  "id": "game.fe_vehicle_proxy_actor_pre_delete",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 63 B8 0A 01 00 00",
+  "match": "0x1403c35d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403c35d0",
+  "kind": "func_start",
+  "names": [
+   "Game_FeVehicleProxyActor_PreDelete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403c35d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403c35d0.c",
+   "notes": "V4644 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

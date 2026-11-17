@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_PersistStream_LoadFromFile",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432d4530",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432d4530.c;xref:0x140bcc7c0",
+  "notes": "When this+0x54==1, a user/profile is valid (0x1400fa760 on 0x146044988) and +0x180 is set: resolves the stream file (0x1432d4810; mode +0x58==3 uses +0x70), reads it (0x1430ff600) and copies the bytes into the bit-reader buffer +0x78 (cap +0x8c, bits +0x90, valid +0x94, cursor +0x98/+0x99); then checks the mode RTTI. Caller Sess_TyreAllocation_OnSessionStart (restores saved tyre-set state)."
+ },
+ "signature": {
+  "id": "session.persist_stream_load_from_file",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 83 79 54 01",
+  "match": "0x1432d4530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432d4530",
+  "kind": "func_start",
+  "names": [
+   "Sess_PersistStream_LoadFromFile"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x1432d4530",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432d4530.c;xref:0x140bcc7c0",
+   "notes": "V3765 Gated by this+0x54==1, profile id check (0x1400fa760 on 146044988, 0x3fff0000), +0x180 set, stream file via 1432d4810 (mode +0x58==3 uses +0x70), read by 1430ff600, copies into reader buffer +0x78; caller OnSessionStart verified."
+  }
+ ],
+ "proofs": []
+}

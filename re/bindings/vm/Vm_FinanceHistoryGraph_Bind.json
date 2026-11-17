@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_FinanceHistoryGraph_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ef33f0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t (void *vm)",
+  "evidence": "decomp:re/decomp/141ef33f0.c;xref:0x14575ad08",
+  "notes": "myteam-g1: Binds the finance history graph view-model: selected_season_index, can_toggle_season_left/right, contract_periods, season_breaks, graph_title, amount_label, show_team_balance_title, show_cap_label, cap_label_y_pos (cost cap line on the graph), onTabActivated handler."
+ },
+ "signature": {
+  "id": "vm.finance_history_graph_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 CE 0F B6 81 28 06 00 00 89 C1 80 C9 01 88 8E 28 06 00 00 A8 02 74 08 48 89 F1 E8 ?? ?? ?? ?? C7 44 24 28 04 00 00 00",
+  "match": "0x141ef33f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ef33f0",
+  "kind": "func_start",
+  "names": [
+   "Vm_FinanceHistoryGraph_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141ef33f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141ef33f0.c;xref:0x14575ad08",
+   "notes": "V10010 Binds graph vm: selected_season_index, season toggles, contract_periods, cap_label_y_pos, cost_cap."
+  }
+ ],
+ "proofs": []
+}

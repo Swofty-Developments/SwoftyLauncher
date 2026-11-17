@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_ContractIntro_OnUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436c2dc0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t *Career_ContractIntro_OnUpdate(void *state, uint32_t *link)",
+  "evidence": "decomp:re/decomp/1436c2dc0.c;xref:0x14585a4b8",
+  "notes": "Intro onUpdate (slot +0x48): writes the stay link (0x146cb2280) until the cutscene ends, then g_Career_FlowLinkContinue. Raised by native-1990 with --force in the career lane (owner career-re), approved by the developer on 2026-10-21 for the private F1 1990 build (doc:/mnt/work/.f1-1990/addon/native-requests.md#N1)."
+ },
+ "signature": {
+  "id": "career.contract_intro_on_update",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 D6 48 89 CF 80 B9 9C 0C 00 00 00",
+  "match": "0x1436c2dc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436c2dc0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractIntro_OnUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/contract_skip.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-a",
+   "kind": "func",
+   "item": "Career_ContractIntro_OnUpdate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436c2dc0.c;decomp:re/decomp/1436c2610.c;xref:0x14585a4b8,0x1436c2e5c,0x1436c2e71;sig:career.contract_intro_on_update",
+   "notes": "V0960 Vtable 0x14585a470 slot +0x48 (abs ptr 0x14585a4b8, no rel32 callers). *link = [0x146cb2280] (lea 0x1436c2e5c; static init stores 0) unless +0xc99 is set (by the ContractNegotiationsMessage stage-1 handler 0x1436c2610) and the fade object +0xc80->+0x790 exists with +0x50 == 0, then [0x146cb2284] (lea 0x1436c2e71; 0x7c9b1ec4). With +0xc9c set and 0x1436af750 true it also posts listen_for_user_interruption_message and ContractNegotiationsMessage(5). Returns link; (state, uint32_t *link) -> uint32_t * matches the rdx/rax use. sigcheck: 1 hit"
+  }
+ ],
+ "proofs": []
+}

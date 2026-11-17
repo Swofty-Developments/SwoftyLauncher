@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_MidSessionSave_GetReplayBuffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fe06e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-MidSessionDataSaveDataContainer",
+  "notes": "named from its log messages (channel MidSessionDataSaveDataContainer): 'Failed to get full replay and/or key frame buffer | Failed - replay system not yet initalised'"
+ },
+ "signature": {
+  "id": "game.mid_session_save_get_replay_buffers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 F8 29 B4 24 40 01 00 00 48 8B 99 18 02 00 00",
+  "match": "0x142fe06e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fe06e0",
+  "kind": "func_start",
+  "names": [
+   "Game_MidSessionSave_GetReplayBuffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fe06e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142fe06e0.c;xref:0x14111eafd",
+   "notes": "V5722 Serialises (save) replay full/key buffers, jump_in_time, session_guid into container; callers Game_ReplaySystem_SaveMidSessionData; better Game_MidSessionSave_SerialiseReplayBuffers"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142fe06e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fe06e0.c;xref:0x14111eafd",
+   "notes": "V6930 339 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_TyreSet_DeserialiseCompound",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e884f0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e884f0.c;xref:0x142e8e096,0x142ea05ac",
+  "notes": "(tyreSet, stream) Reads compound (ranged int -1..5) and set index (-1..0xe) via Ne_BitStream_ReadRangedInt; logs TYRES/V deserialize '%s: compound: %s, index: %d'. Callers Car_TyreSets_Deserialise, Car_TyreSelection_SetCurrentTyres."
+ },
+ "signature": {
+  "id": "car.tyre_set_deserialise_compound",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D7 48 89 CE C7 44 24 2C FF FF FF",
+  "match": "0x142e884f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e884f0",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreSet_DeserialiseCompound"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e884f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e884f0.c;xref:0x142e8e096,0x142ea05ac",
+   "notes": "V3671 ReadRangedInt -1..5 then -1..0xe; log strings TYRES/V deserialize '%s: compound: %s, index: %d' verified."
+  }
+ ],
+ "proofs": []
+}

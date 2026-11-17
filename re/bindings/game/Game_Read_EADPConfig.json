@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_EADPConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fcd060",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: EADP.blockListCacheEnabled, EADP.friendCacheEnabled, EADP.logLevel'"
+ },
+ "signature": {
+  "id": "game.read_eadp_config",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 48 01 00 00 48 89 D7 48 89 CE 48 8B 02",
+  "match": "0x143fcd060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fcd060",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_EADPConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143fcd060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fcd060.c",
+   "notes": "V6323 name and logged strings match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

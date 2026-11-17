@@ -115,12 +115,12 @@ impl Shell {
     }
 
     pub(crate) fn go(&mut self, page: Page, cx: &mut Context<Self>) {
-        let moved = self.page != page;
+        let moved = self.navigation.page != page;
         if moved {
             self.cancel_scroll();
         }
         self.db_page_change(page, cx);
-        self.page = page;
+        self.navigation.page = page;
         if let Page::Section(i) = page {
             self.fetch_views(Some(i), cx);
         } else if moved {

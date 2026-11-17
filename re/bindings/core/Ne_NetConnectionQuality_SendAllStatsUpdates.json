@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetConnectionQuality_SendAllStatsUpdates",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144056f10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetConnectionQuality_SendAllStatsUpdates;xref:0x144057727,0x1440577c6;decomp:re/decomp/144056f10.c",
+  "notes": "cxx=neon::NeNetConnectionQuality::sendAllStatsUpdates; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_connection_quality_send_all_stats_updates",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 09 00 00 89",
+  "match": "0x144056f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144056f10",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetConnectionQuality_SendAllStatsUpdates"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-b",
+   "kind": "func",
+   "item": "Ne_NetConnectionQuality_SendAllStatsUpdates",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144056f10.c;xref:0x144056f10",
+   "notes": "V2035 log strings on NETWORK-CONNECTION-QUALITY match method name (log signature and body consistent)"
+  }
+ ],
+ "proofs": []
+}

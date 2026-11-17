@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Powf",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14535a510",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "float(float, float)",
+  "evidence": "decomp:re/decomp/14535a510.c;xref:0x140157c6b,0x140159c8c,0x140159cac,0x14024a3ee",
+  "notes": "C runtime powf (|x| vs 1.0 special cases; used by Car_Suspension_SolveWheels)."
+ },
+ "signature": {
+  "id": "core.crt_powf",
+  "section": ".xtls",
+  "pattern": "48 83 EC 68 66 0F 7F 74 24 20 66 0F 7F 7C 24 30",
+  "match": "0x14535a510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14535a510",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Powf"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_Crt_Powf",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14535a510.c;xref:0x14339d058",
+   "notes": "V2221 pow special cases (0x3f800000, inf/nan)"
+  }
+ ],
+ "proofs": []
+}

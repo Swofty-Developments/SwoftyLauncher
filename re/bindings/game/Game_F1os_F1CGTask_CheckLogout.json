@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_F1CGTask_CheckLogout",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1427a16c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1427a16c0.c;xref:0x14579fdd8,0x1432bb360",
+  "notes": "Virtual (slot ref 0x14579fdd8) of the F1CG online-service task, twin of 0x14273d850: if logout pending (+0x278) cleanup 0x1427a14f0, posts message obj vtable 0x1457a2a18 via 0x1439876c0, pushes onto the 'InterruptQueue' (0x140799d20, type 0xb), clears +0x71, logs 'void game::OnlineServer::triggerLogout()' on F1OS and calls OnlineServer::triggerLogout 0x1432bb360 with this+0xe8; else sets busy flags 0x18 in +0x128 with QPC timer. Addon: hook to observe F1CG forced logout. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3276)"
+ },
+ "signature": {
+  "id": "game.f1os_f1_c_g_task_check_logout",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 80 B9 78 02 00 00",
+  "match": "0x1427a16c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1427a16c0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_F1CGTask_CheckLogout"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1os_F1CGTask_CheckLogout",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1427a16c0.c;xref:0x14579fdd8",
+   "notes": "V3276 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

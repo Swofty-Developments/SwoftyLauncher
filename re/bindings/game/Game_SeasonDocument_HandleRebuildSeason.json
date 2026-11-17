@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SeasonDocument_HandleRebuildSeason",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143091260",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143091260.c;xref:0x14580f810",
+  "notes": "GameSessionSeasonDocument message handler: applies scenario (Game_SeasonDocument_SetScenario), resetTrackSet / addTrackSetToSeason, rebuilds season weekends (Career_Teardown_Weekend, Career_Build_WeekendFromName, Career_Add_SeasonWeekend), RebuildNotStartedWeekends, championship::Session::reset, clears standings, posts bus messages. Addon: online championship (league) season rebuild flow. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2740)"
+ },
+ "signature": {
+  "id": "game.season_document_handle_rebuild_season",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 8B 42 08 FF C8 83 F8",
+  "match": "0x143091260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143091260",
+  "kind": "func_start",
+  "names": [
+   "Game_SeasonDocument_HandleRebuildSeason"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_SeasonDocument_HandleRebuildSeason",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143091260.c;xref:0x143091260",
+   "notes": "V2740 calls SetScenario 1430913f0 at line 150, season rebuild helpers; broad claim consistent, not every callee checked"
+  }
+ ],
+ "proofs": []
+}

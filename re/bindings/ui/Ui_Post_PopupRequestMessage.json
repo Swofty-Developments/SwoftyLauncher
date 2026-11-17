@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Post_PopupRequestMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422774f0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "uint32_t (void *bus_owner, void *src, int mode)",
+  "evidence": "decomp:re/decomp/1422774f0.c;xref:0x142276ff0;xref:0x1423f33b6",
+  "notes": "myteam-g2: If mode == 0 builds a message of class UNK_14565a998 carrying three copied strings (src+0x18, +0x48, +0x70) plus three scalar fields and posts it with Ne_Post_BusMessage; otherwise takes an alternate path through a TLS/Event helper (Ne_Event_Set). A generic UI popup/dialog request used by the sponsor and setup screens."
+ },
+ "signature": {
+  "id": "ui.post_popup_request_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 D6 48 89 CF 45 85 C0",
+  "match": "0x1422774f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422774f0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Post_PopupRequestMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422774f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1422774f0.c;xref:0x142276ff0",
+   "notes": "V10070 Builds a three-string message and posts it when mode==0; no strings visible, popup/dialog purpose and non-zero mode path unprovable."
+  }
+ ],
+ "proofs": []
+}

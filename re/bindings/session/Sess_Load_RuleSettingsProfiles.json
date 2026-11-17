@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_Load_RuleSettingsProfiles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143575df0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143575df0.c;xref:0x145849c00",
+  "notes": "loads rules.rule_manager_settings (32 settings_profile rows: car_to_car_collision, corner_cutting, wall_riding, multiple_warnings.*, anti_griefing.*, ignore_illegal_overtakes.*, safety_car.allowed_pace.*, …) and post_race_penalties into the table at 0x1460fc940. sb3-verify-b correction: 26 named profiles (loop 0x1a over name table 0x14584fb50: Time_Trial, Practice, Qualifying, Race, ...), rows 0x2c bytes at 0x1460fc940; also loads rules.types.infringement_types and penalty_types"
+ },
+ "signature": {
+  "id": "session.load_rule_settings_profiles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 08 00 00 C5 78 29 8C 24 90 08 00 00 C5 78 29 84 24 80 08 00 00 C5 F8 29 BC 24 70 08 00 00 C5 F8 29 B4 24 60 08 00 00 48 BB 35 9C 7C 5A DF CB 88 E3",
+  "match": "0x143575df0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143575df0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Load_RuleSettingsProfiles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-b",
+   "kind": "func",
+   "item": "Sess_Load_RuleSettingsProfiles",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143575df0.c;xref:0x143575df0",
+   "notes": "V1923 Not 32 rows: loop is 0x1a = 26 named profiles (Time_Trial, Practice, Qualifying, Race, ... table 0x14584fb50), row stride 0x2c bytes at 0x1460fc940 (~41 settings per row). Keys car_to_car_collision etc. and post_race_penalties confirmed; also loads rules.types.infringement_types and penalty_types."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-b",
+   "kind": "func",
+   "item": "Sess_Load_RuleSettingsProfiles",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143575df0.c;xref:0x143575df0",
+   "notes": "V3957 Not 32 rows: loop is 0x1a = 26 named profiles (Time_Trial, Practice, Qualifying, Race, ... table 0x14584fb50), row stride 0x2c bytes at 0x1460fc940 (~41 settings per row). Keys car_to_car_collision etc. and post_race_penalties confirmed; also loads rules.types.infringement_types and penalty_types."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x143575df0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143575df0.c",
+   "notes": "V4186 Loop of 0x1a (26) profiles over name table 0x14584fb50, rows 0x2c bytes at 0x1460fc940, strings car_to_car_collision, illegal_blocking, corner_cutting, wall_riding, post_race_penalties.* (lead '32 rows' superseded by sb3 correction); vtable slot 0x145849c00 (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

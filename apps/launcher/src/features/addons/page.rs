@@ -186,13 +186,13 @@ impl Shell {
         let saves = self.saves_banner(false, p, cx);
         let tracks = self.tracks_note(p, cx);
         let split = self.layout.content_width >= SPLIT_AT;
-        let selected = self.open_addon.clone().filter(|id| {
+        let selected = self.navigation.open_addon.clone().filter(|id| {
             self.library
                 .listed()
                 .any(|a| &a.manifest.id == id && self.passes(a, &query, None))
         });
         if selected.is_none() {
-            self.open_addon = None;
+            self.navigation.open_addon = None;
         }
         if self.vanilla() {
             self.addons.selection.clear();

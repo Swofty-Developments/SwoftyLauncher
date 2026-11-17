@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSystemClassicMatchmaking_NotifyPeersMigrationResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144068e20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSystemClassicMatchmaking_NotifyPeersMigrationResult;xref:0x144068eb0;decomp:re/decomp/144068e20.c",
+  "notes": "cxx=neon::NeNetSystemClassicMatchmaking::notifyPeersMigrationResult; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_system_classic_matchmaking_notify_peers_migration_result",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 05 00 00 C5 F8 29 B4 24 B0 05 00 00 48 89 D7 48",
+  "match": "0x144068e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144068e20",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSystemClassicMatchmaking_NotifyPeersMigrationResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetSystemClassicMatchmaking_NotifyPeersMigrationResult",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144068e20.c;xref:0x144065a2c",
+   "notes": "V2077 NETWORK-MIGRATION: failed to send lobby info message / success; own pretty string"
+  }
+ ],
+ "proofs": []
+}

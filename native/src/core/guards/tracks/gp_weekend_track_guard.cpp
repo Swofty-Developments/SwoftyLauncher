@@ -13,8 +13,6 @@
 
 #include <cstddef>
 #include <cstdint>
-#include <mutex>
-#include <set>
 #include <string>
 #include <utility>
 #include <vector>
@@ -45,6 +43,7 @@ namespace {
 
 namespace mem = swofty::mem;
 namespace g = swofty::game;
+namespace guards = swofty_core::guards;
 namespace wt = runtime::gp_weekend_track;
 
 const runtime::Sig S_PRESET_TRACK_READ{"site_Game_TyreAllocationComponent_PresetTrackRead",
@@ -60,8 +59,7 @@ constexpr uintptr_t RECORD_NAME = 0xd0;
 
 uintptr_t weekend_vtable = 0;
 safetyhook::MidHook h_track;
-std::mutex seen_lock;
-std::set<std::pair<uintptr_t, int>> seen;
+guards::FirstKeys<std::pair<uintptr_t, int>, size_t(wt::LOG_CAP)> seen;
 
 bool item_vector(uintptr_t component, uintptr_t &begin, size_t &count)
 {
@@ -111,8 +109,7 @@ void track_read(safetyhook::Context &c)
     wt::Decision d = wt::decide(track, items, mode == "grand_prix");
     if (d.repair)
         *reinterpret_cast<uint8_t *>(weekend + offsetof(g::Weekend, track_stat_id)) = uint8_t(d.to);
-    std::lock_guard<std::mutex> lock(seen_lock);
-    if (!seen.insert({weekend, track}).second || seen.size() > size_t(wt::LOG_CAP))
+    if (!seen.note({weekend, int(track)}))
         return;
     swofty::log("[gp] %s", wt::line(d, track, items.size(), mode, d.repair ? items[size_t(d.to)].name : "").c_str());
 }
@@ -120,8 +117,7 @@ void track_read(safetyhook::Context &c)
 void setup()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_GP_WEEKEND_TRACK_GUARD", v, sizeof v);
-    if (n && n < sizeof v && wt::switch_off(v)) {
+    if (guards::env_off("SWOFTY_GP_WEEKEND_TRACK_GUARD", v, [](const char *s) { return wt::switch_off(s); })) {
         swofty::log("[gp] weekend track guard off (SWOFTY_GP_WEEKEND_TRACK_GUARD=%s)", v);
         return;
     }

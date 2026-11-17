@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Gdb_Index_TutorialStepTable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e6f060",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "void (void *ctx, void *table_ref, uint32_t flags)",
+  "evidence": "decomp:re/decomp/142e6f060.c;xref:0x14101ca79;xref:0x14102421c;xref:0x1410242a1",
+  "notes": "myteam-g2: Builds name hashes (djb2, seed 0x1505) for the tutorial tables (tutorial_steps / tutorialStepped / step collection strings are built inline) via Gdb_Init_TableCursor and Gdb_Get_RowByIndex, concatenating table.row paths. Used by the My Team stage tag setters (My_Team / Seasonal). Read-only game-database indexing."
+ },
+ "signature": {
+  "id": "gamedb.index_tutorial_step_table",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 09 00 00 C5 F8 29 B4 24 50 09 00 00 44 89 C3 48 89 CE",
+  "match": "0x142e6f060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e6f060",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Index_TutorialStepTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142e6f060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e6f060.c",
+   "notes": "V10257 djb2 hash (seed 0x1505, *0x21) with Gdb_Init_TableCursor/Get_RowByIndex confirmed."
+  }
+ ],
+ "proofs": []
+}

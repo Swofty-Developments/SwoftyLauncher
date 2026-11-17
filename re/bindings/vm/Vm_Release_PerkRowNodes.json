@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Release_PerkRowNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14169dc50",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Release_PerkRowNodes(void *self)",
+  "evidence": "decomp:re/decomp/14169dc50.c;xref:0x141b52ce3;xref:0x1422d8343;xref:0x1422d8453",
+  "notes": "myteam-g2: Destructor-like helper that releases the child nodes of a development perk row (FUN_14169ce20, Vm_Release_Node)."
+ },
+ "signature": {
+  "id": "vm.release_perk_row_nodes",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 59 28 48 8B 79 30",
+  "match": "0x14169dc50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14169dc50",
+  "kind": "func_start",
+  "names": [
+   "Vm_Release_PerkRowNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14169dc50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14169dc50.c;xref:0x141b52ce3;xref:0x1422d8343",
+   "notes": "V9749 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

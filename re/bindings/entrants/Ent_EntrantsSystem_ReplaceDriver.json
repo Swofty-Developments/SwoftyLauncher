@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_ReplaceDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14246e3a0",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
+  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Driver Replaced with stat id %s, existing entry? %s | Failed to add driver with stat id %s whilst replacing'"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_replace_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 05 00 00 4D 89 C7",
+  "match": "0x14246e3a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14246e3a0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_ReplaceDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x14246e3a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14246e3a0.c;xref:0x141443186",
+   "notes": "V5279 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

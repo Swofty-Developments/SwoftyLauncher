@@ -39,6 +39,8 @@ pub(crate) struct Dock {
     had_work: bool,
     dismissed: usize,
     base: Option<usize>,
+    pub(crate) wake: bool,
+    pub(crate) notch_beside: bool,
 }
 
 impl Dock {
@@ -150,7 +152,7 @@ impl Shell {
         window: &mut Window,
         cx: &mut Context<Self>,
     ) -> Option<AnyElement> {
-        self.notch_beside = false;
+        self.dock.notch_beside = false;
         let now = Instant::now();
         let input = self.dock_input();
         let fake = cfg!(debug_assertions) && std::env::var_os("SWOFTY_FAKE_DOWNLOAD").is_some();
@@ -159,15 +161,15 @@ impl Shell {
             window.request_animation_frame();
         }
         if let Some(wake) = frame.as_ref().and_then(|f| f.wake)
-            && !self.dock_wake
+            && !self.dock.wake
         {
-            self.dock_wake = true;
+            self.dock.wake = true;
             cx.spawn(async move |this, cx| {
                 cx.background_executor()
                     .timer(wake + Duration::from_millis(20))
                     .await;
                 this.update(cx, |this, cx| {
-                    this.dock_wake = false;
+                    this.dock.wake = false;
                     cx.notify();
                 })
                 .ok();
@@ -199,13 +201,13 @@ impl Shell {
                     Some(1.)
                 },
             )
-        } else if let Some((done, text)) = self.progress.clone() {
+        } else if let Some((done, text)) = self.overlays.progress.clone() {
             (download_title(1, 1, true), text, bar_fraction(Some(done)))
         } else {
             return None;
         };
         let beside = has_sub && layout_width >= 1150.;
-        self.notch_beside = beside;
+        self.dock.notch_beside = beside;
         let top = if has_sub && !beside {
             crate::shell::BAR_HEIGHT + crate::shell::SUB_HEIGHT
         } else {

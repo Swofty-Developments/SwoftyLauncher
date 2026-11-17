@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_ErrorTrace_PushRing",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143919b50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143919b50.c;xref:0x1400f90ec,0x1402078be",
+  "notes": "If error tracing is enabled (g 0x1461078d0) on the owning thread (g 0x1461078d8) pushes {addr param_1, code param_2} into the 5-entry ring 0x146107830 (count max 10). Same pattern is inlined in many functions (codes 1, 2, 5, 0x58)."
+ },
+ "signature": {
+  "id": "core.error_trace_push_ring",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 89 D6 85 D2 0F 84",
+  "match": "0x143919b50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143919b50",
+  "kind": "func_start",
+  "names": [
+   "Ne_ErrorTrace_PushRing"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143919b50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143919b50.c;xref:0x1400f90ec",
+   "notes": "V3594 ring 0x146107830 stride 0x10, 5 entries, count max 10 as claimed"
+  }
+ ],
+ "proofs": []
+}

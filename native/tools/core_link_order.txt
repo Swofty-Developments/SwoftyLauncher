@@ -2,6 +2,9 @@
 # initializers. It is the order of the single zig command the core was built with up to 1.9: the separately
 # compiled objects first, then the core sources in the order that command listed them. build_graph.py links a
 # source missing from this list after the listed ones, sorted by path, and stops when a listed file is gone.
+# tools/core_init_order.txt holds what this order decides (the units with static objects, the SDK mixin list,
+# the on-load sequence and the binding uses), and the build fails when it changes or a unit with static objects is
+# not listed here.
 src/core/diagnostics/crash/stall_walk.cpp
 src/core/hooks/guard.cpp
 third_party/safetyhook/safetyhook.cpp
@@ -48,12 +51,17 @@ src/core/runtime/settings.cpp
 src/core/frontend/home_tiles.cpp
 src/core/frontend/ui.cpp
 src/core/frontend/ui_vm.cpp
+src/core/frontend/addon_page.cpp
 src/core/assets/items.cpp
 src/core/runtime/stage.cpp
 src/core/runtime/mem_pages.cpp
 src/core/frontend/main_menu.cpp
+src/core/frontend/main_menu/navigation.cpp
+src/core/frontend/main_menu/navigation_hooks.cpp
+src/core/frontend/main_menu/tiles.cpp
 src/core/hud/toast.cpp
 src/core/frontend/player_name.cpp
+src/core/frontend/player_name/copies.cpp
 src/core/guards/career/activity_resume_guard.cpp
 src/core/guards/career/sequencer_records_guard.cpp
 src/core/guards/session/race_retirement_guard.cpp
@@ -69,7 +77,7 @@ src/core/assets/resources.cpp
 src/core/assets/gamedb.cpp
 src/core/assets/overlay.cpp
 src/core/events/events.cpp
-src/core/hud/hud.cpp
+src/core/hud/overlay.cpp
 src/core/testing/focus.cpp
 src/core/render/d3d12/subscribers.cpp
 src/core/render/d3d12/swapchain_hooks.cpp
@@ -90,6 +98,7 @@ src/core/career/career.cpp
 src/core/career/career_content.cpp
 src/core/career/career_start.cpp
 src/core/frontend/popup.cpp
+src/core/frontend/popup/hud_data.cpp
 src/core/diagnostics/log_csv.cpp
 src/core/runtime/sdk.cpp
 src/core/diagnostics/perf.cpp

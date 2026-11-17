@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomMaterialModelComponent_SetMaterialOverride",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a8f790",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=CustomMaterialModelComponent::setMaterialOverride; log channel ART_WARN: ' CustomMaterialModelComponent::setMaterialOverride [%s] for slot [%s] used by [%s]'"
+ },
+ "signature": {
+  "id": "game.custom_material_model_component_set_material_override",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 48 89 D6 48 89 CF C6 44 24 40 00",
+  "match": "0x142a8f790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a8f790",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomMaterialModelComponent_SetMaterialOverride"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a8f790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a8f790.c;xref:0x142a9bc39",
+   "notes": "V4984 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

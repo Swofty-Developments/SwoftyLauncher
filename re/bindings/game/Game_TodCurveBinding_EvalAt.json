@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TodCurveBinding_EvalAt",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b12c10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "float(TodCurveBinding*, float time)",
+  "evidence": "decomp:re/decomp/140b12c10.c;decomp:re/decomp/140b12c10.c;xref:0x140aae118,0x141486dc3,0x142f679dc,0x14479613c,0x1437cdaca,0x14479cc75",
+  "notes": "same as Game_TodCurveBinding_EvalNow but at a given time (time / max(owner+0x84, 0.01)); used by the AI wetness forecast 0x1436a4500 / 0x1436a3ab0 (32 callers). (vmknolle wet-track)  | engine-re 2026-11-14 (L2-ready): same as EvalNow but x = clamp01(t / max(clock.length, 0.01)) for the time t in xmm1 (weather seconds * time_scale). 32 call sites incl. TrackInformationSystem_Update (puddles) and the dry-line lookback 0x1437cda00.  raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tod_curve_binding_eval_at",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 C5 F8 29 74 24 20 48 89 CF 48 83 39 00 74 3B C5 F8 28",
+  "match": "0x140b12c10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b12c10",
+  "kind": "func_start",
+  "names": [
+   "Game_TodCurveBinding_EvalAt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140b12c10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b12c10.c;xref:0x1436a45ed",
+   "notes": "V4428 time/max(owner+0x84,0.01) eval confirmed; 32 callers incl 0x1436a4500 and 0x1436a3ab0 confirmed"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "wx-verify",
+   "kind": "func",
+   "item": "0x140b12c10",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140b12c10-0x140b12cd4;xref:0x14479613c,0x1437cdaca,0x14479cc75",
+   "notes": "V9443 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans). 32 call sites by my scan. Same body as EvalNow but x = clamp01(xmm1 / max(clock+0x84, 0.01)) (0x140b12c6e-0x140b12c97), mode 1 -> clock+0x90, x24 when clock+0x22. Callers include 0x144795cf0 (puddles) and 0x1437cda00 (dry line). Proto float(binding*, float) matches."
+  }
+ ],
+ "proofs": []
+}

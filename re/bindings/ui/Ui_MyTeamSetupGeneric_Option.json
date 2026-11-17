@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamSetupGeneric_Option",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142064f90",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/142064f90.c;xref:0x142063caf;xref:0x142063d6e;xref:0x142063e49",
+  "notes": "myteam-g1: Generic option widget for my_team_setup_generic_option."
+ },
+ "signature": {
+  "id": "ui.my_team_setup_generic_option",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 44 89 C5 49 89 D6 48 89 CE",
+  "match": "0x142064f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142064f90",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamSetupGeneric_Option"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142064f90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142064f90.c;xref:0x142063caf",
+   "notes": "V10040 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

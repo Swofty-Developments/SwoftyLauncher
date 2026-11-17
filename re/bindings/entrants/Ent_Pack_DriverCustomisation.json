@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_Pack_DriverCustomisation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142453880",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "void Ent_Pack_DriverCustomisation(uint32_t *out)",
+  "evidence": "decomp:re/decomp/142452e60.c;pat:writes-EntrantRecord+0x54",
+  "notes": "packs the entrant 'driver_customisation' label into EntrantRecord+0x54; 0x3fff0000 when empty."
+ },
+ "signature": {
+  "id": "entrants.pack_driver_customisation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 08 00 00 C5 F8 29 BC 24 70 08 00 00 C5 F8 29 B4 24 60 08 00 00 48 89 D7",
+  "match": "0x142453880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142453880",
+  "kind": "func_start",
+  "names": [
+   "Ent_Pack_DriverCustomisation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142453880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142453880.c;xref:0x140bac005",
+   "notes": "V5275 Looks up label in preloaded_driver_customisation_properties of entrants.driver_customisations, writes stat_id (u16 at +2) else 0x3fff0000; caller Sess_Parse_Entrant passes out ptr"
+  }
+ ],
+ "proofs": []
+}

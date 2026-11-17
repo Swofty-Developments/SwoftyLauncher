@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_Serialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d898d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *renewal, void *save_node",
+  "evidence": "decomp:re/decomp/140d898d0.c;xref:0x145690a40",
+  "notes": "myteam-g1: Writes the contract renewal state to save data (leadPlayerForcedOntoLowestRenownTeam at +0x2f0, event vector +0x348..+0x350, per-event ids)."
+ },
+ "signature": {
+  "id": "career.contract_renewal_serialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 48 89 D7 49 89 CF",
+  "match": "0x140d898d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d898d0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_Serialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d898d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d898d0.c;str:\"leadPlayerForcedOntoLowestRenownTeam\"",
+   "notes": "V9537 Writer of same state; +0x2f0 flag and vector +0x348..+0x350 present."
+  }
+ ],
+ "proofs": []
+}

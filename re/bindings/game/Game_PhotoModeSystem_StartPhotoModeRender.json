@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeSystem_StartPhotoModeRender",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bcf890",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=PhotoModeSystem::startPhotoModeRender; log channel PHOTO-MODE-MOTION: 'PhotoModeSystem::startPhotoModeRender: playbackTime = %f, instReplayEndTime = %f, m_shutterSpeedInSecs = %f, m_startShuttleOffset = %f, m_expectedCurrentReplayT'"
+ },
+ "signature": {
+  "id": "game.photo_mode_system_start_photo_mode_render",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 89 CE 48 8B 81 38 02 00 00",
+  "match": "0x142bcf890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bcf890",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeSystem_StartPhotoModeRender"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142bcf890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bcf890.c;xref:0x142bce4d8",
+   "notes": "V5024 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

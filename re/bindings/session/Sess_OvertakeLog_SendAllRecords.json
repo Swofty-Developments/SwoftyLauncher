@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_OvertakeLog_SendAllRecords",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143379f60",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-RULES;decomp:re/decomp/143379f60.c;xref:0x14583d498",
+  "notes": "Log channel RULES: '-----------------------Sending all overtake log records - new connection arrived-----------------------' | '-----------------------Finished sending all overtake log records - new connection arrived-----------------------'"
+ },
+ "signature": {
+  "id": "session.overtake_log_send_all_records",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 83 79 08 01 0F 8F ?? ?? ?? ?? 89 D3",
+  "match": "0x143379f60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143379f60",
+  "kind": "func_start",
+  "names": [
+   "Sess_OvertakeLog_SendAllRecords"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_OvertakeLog_SendAllRecords",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143379f60.c;xref:0x143379f60",
+   "notes": "V1911 log strings confirmed by disassembly lea refs inside function"
+  }
+ ],
+ "proofs": []
+}

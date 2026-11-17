@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneCameraManager_GetSequencePosition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428a8010",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428a8010.c;xref:0x141b061bb,0x141b0645c",
+  "notes": "(camMgr, out vec, cameraDesc): finds camera actor (+0x158 map) and sequence (+0x110 map, name desc+0x20) and returns the camera position from actor +0x4e0..+0x4e8. Callers 0x141b061bb, 0x141b0645c. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2974)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_camera_manager_get_sequence_position",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 4C 89 C7 48 89",
+  "match": "0x1428a8010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428a8010",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneCameraManager_GetSequencePosition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendSceneCameraManager_GetSequencePosition",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428a8010.c;xref:0x141b061bb",
+   "notes": "V2974 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

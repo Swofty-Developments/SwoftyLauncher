@@ -126,8 +126,7 @@ private:
     void build(std::vector<runtime::CoreMixins> &out) override
     {
         char v[16] = {};
-        DWORD n = GetEnvironmentVariableA("SWOFTY_TRACK_GUARD", v, sizeof v);
-        if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+        if (guards::env_off("SWOFTY_TRACK_GUARD", v)) {
             swofty::log("[tracks] track select guard off (SWOFTY_TRACK_GUARD=%s)", v);
             return;
         }

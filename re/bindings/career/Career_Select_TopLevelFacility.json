@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Select_TopLevelFacility",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14234ed50",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *flow)",
+  "evidence": "decomp:re/decomp/14234ed50.c;xref:0x145781918",
+  "notes": "myteam-g1: Handles MessageTopLevelFacilitySelected and sets team_hq_my_team_facilities_top_level_header."
+ },
+ "signature": {
+  "id": "career.select_top_level_facility",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 04 00 00 C5 F8 29 BC 24 60 04 00 00 C5 F8 29 B4 24 50 04 00 00 48 89 CE 48 8B 99 48 03 00 00",
+  "match": "0x14234ed50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14234ed50",
+  "kind": "func_start",
+  "names": [
+   "Career_Select_TopLevelFacility"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x14234ed50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14234ed50.c",
+   "notes": "V10161 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

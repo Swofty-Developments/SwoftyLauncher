@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FullRaceReplaySystem_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c45070",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_FullRaceReplaySystem_Init(void *self, void *serviceProvider, void *componentMap)",
+  "evidence": "str:s_cfg_ReplayFullRaceReplayEnabled;decomp:re/decomp/142c45070.c;xref:0x142c45292,0x142c45293,0x1457d1040",
+  "notes": "Slot 2 of the vtable at 0x1457d1030 (pointer 0x1457d1040; string FullRaceReplaySystem directly before it). Resolves map components 0x14604ed28 +0x28, 0x146100bf8 +0x30, 0x146100ca8 +0x38, 0x146ce5180 +0x40, 0x14607f1a0 +0x48, 0x1460bed80 +0x50, 0x14607bff8 +0x58, 0x146079b70 +0x60 and the config provider 0x146cb8278 (missing -> 0x16). Reads Replay.FullRaceReplay.Enabled with Ne_Get_SettingBool 0x143a43b90 (node [prov+0x18]) into byte +0x6e1, default = the current value of +0x6e1. If enabled creates the background thread 'replay_bkg_save_load_thread' (0xd0 object, 0x14391d280, stack 0x80000) stored via 0x142c192b0 at +0x148. Always inits sub-objects +0x158 (0x142c41550) and +0x470 (0x142c44090), returning their error; if enabled also creates the +0x6d0 object (0x142c45740/0x142c45860) and returns 0x142c3e3a0([+0x6d8], map), else 0. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.full_race_replay_system_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 4C 89 C7 49 89 D6 48 89 CE",
+  "match": "0x142c45070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c45070",
+  "kind": "func_start",
+  "names": [
+   "Game_FullRaceReplaySystem_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-2",
+   "kind": "func",
+   "item": "0x142c45070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c45070.c;xref:0x1457d1040;str:0x1457d1188,0x1457d11a6",
+   "notes": "V9346 Vtable slot of 'FullRaceReplaySystem' (class string before the vtable): resolves 8 component-map entries, reads bool 'Replay.FullRaceReplay.Enabled' (default = field +0x6e1); if enabled creates thread 'replay_bkg_save_load_thread', inits sub-objects (+0x158, +0x470) and the replay writer; returns 0 or 0x16. Init/ResolveDependencies-style, name OK; 3 args match."
+  }
+ ],
+ "proofs": []
+}

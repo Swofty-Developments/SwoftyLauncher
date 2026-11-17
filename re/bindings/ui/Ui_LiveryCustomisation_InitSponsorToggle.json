@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_LiveryCustomisation_InitSponsorToggle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142043e00",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/142043e00.c;xref:0x145766348",
+  "notes": "myteam-g1: Init for the livery customisation view: wires can_toggle_sponsors and subscribes to a message."
+ },
+ "signature": {
+  "id": "ui.livery_customisation_init_sponsor_toggle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 03 00 00 C5 F8 29 B4 24 70 03 00 00 48 89 CE 48 81 C1 68 02 00 00",
+  "match": "0x142043e00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142043e00",
+  "kind": "func_start",
+  "names": [
+   "Ui_LiveryCustomisation_InitSponsorToggle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142043e00",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142043e00.c;xref:0x145766348",
+   "notes": "V10032 Wires slot_list/selected_slot/can_delete/assignable/assignment_list/can_toggle_sponsors and CustomisationAssignmentChanged: general customisation slot-assignment VM init, sponsor toggle only one property."
+  }
+ ],
+ "proofs": []
+}

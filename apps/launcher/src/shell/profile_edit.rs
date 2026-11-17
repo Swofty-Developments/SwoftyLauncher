@@ -124,7 +124,7 @@ impl Shell {
                                     );
                                     shell
                                         .update(cx, |s, cx| {
-                                            s.open_addon = None;
+                                            s.navigation.open_addon = None;
                                             s.reload_in_background(cx);
                                         })
                                         .ok();

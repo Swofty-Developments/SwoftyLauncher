@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_FormationLapLogic_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143613d50",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143613d50.c;xref:0x143615473,0x143617783",
+  "notes": "updateParkingOnGrid / updateParkedOnGrid: a car parks when rec+0x58 (laps) != 0, or rec+0x31&1 clear and lap fraction rec+0x74 above [0x1460fe8d0]+0x4c; also rec+0x32&2 or logic+0x51; GridFormationLapPenalty / NosePosition. sb-verify-b: park offsets confirmed; the names GridFormationLapPenalty/NosePosition are not referenced in this function (unsupported)"
+ },
+ "signature": {
+  "id": "session.formation_lap_logic_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 48 8B 05",
+  "match": "0x143613d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143613d50",
+  "kind": "func_start",
+  "names": [
+   "Sess_FormationLapLogic_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-b",
+   "kind": "func",
+   "item": "Sess_FormationLapLogic_Update",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143613d50.c;xref:0x143615473",
+   "notes": "V1830 park condition offsets 0x58/0x31/0x74/[..8d0]+0x4c/0x32&2/+0x51 hold; GridFormationLapPenalty/NosePosition strings not found in this function"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-b",
+   "kind": "func",
+   "item": "Sess_FormationLapLogic_Update",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143613d50.c;xref:0x143615473",
+   "notes": "V3948 park condition offsets 0x58/0x31/0x74/[..8d0]+0x4c/0x32&2/+0x51 hold; GridFormationLapPenalty/NosePosition strings not found in this function"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143613d50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143613d50.c",
+   "notes": "V4046 park conditions rec+0x58, rec+0x31&1 + rec+0x74 > [0x1460fe8d0]+0x4c, rec+0x32&2, logic+0x51 confirmed; names unsupported as claim says (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

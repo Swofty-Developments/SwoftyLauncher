@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_HomeScreen_OnHomeScreenInfoResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1433516d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1433516d0.c;xref:0x1433512eb,0x143350f80",
+  "notes": "Result callback of GetHomeScreenInfo (lea-registered at 0x1433512eb in 0x143350f80): clears the op handle +0x30/+0x28; on error text (reply +0x88 flag, +8) calls 0x143350ee0, logs triggerLogout, resets login data (0x1432bb360) and sets state +0xf0=2; else parses the reply +0x90 into the home-screen model +0x58 (0x1432a5e60) and updates the tiles. Addon: hook to read/override home-screen tiles. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3315)"
+ },
+ "signature": {
+  "id": "game.home_screen_on_home_screen_info_result",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 60 02 00 00 48 89 D3 48 89 CE 48",
+  "match": "0x1433516d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1433516d0",
+  "kind": "func_start",
+  "names": [
+   "Game_HomeScreen_OnHomeScreenInfoResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_HomeScreen_OnHomeScreenInfoResult",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1433516d0.c;xref:0x1433512eb",
+   "notes": "V3315 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

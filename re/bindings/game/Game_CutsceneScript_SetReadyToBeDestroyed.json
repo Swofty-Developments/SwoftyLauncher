@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneScript_SetReadyToBeDestroyed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140236b80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name setReadyToBeDestroyed (class from the log channel); log channel CUTSCENE_SCRIPT_VERBOSE: 'setReadyToBeDestroyed %p %s [%s]'"
+ },
+ "signature": {
+  "id": "game.cutscene_script_set_ready_to_be_destroyed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 56 01 00 00 48 8D 0D ?? ?? ?? ?? 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 73 81 FA 2C A8 D4 18 74 30 83 C0 13 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 56 01 00 00 75 C3 EB 3B 48 8D 05 ?? ?? ?? ?? 48 8D 3D ?? ?? ?? ?? 84 DB 48 0F 45 F8 48 8B 06 48 89 F1 FF 50 28 48 89 7C 24 20 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 49 89 F0 49 89 C1 E8 ?? ?? ?? ?? 0F B6 86 39 05 00 00",
+  "match": "0x140236b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140236b80",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneScript_SetReadyToBeDestroyed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140236b80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140236b80.c",
+   "notes": "V4442 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

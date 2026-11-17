@@ -10,6 +10,13 @@ namespace perf {
 
 inline constexpr const char *STEP_LINE = "[perf] step %.1f ms: %s";
 
+// An addon's SwoftyAddonInit that held up the boot for longer than SLOW_ADDON_INIT_MS, one more line beside its step
+// line, so the launcher's known problems can name the addon:
+//   [perf] slow addon init <milliseconds> ms: <addon id, or the dll when settings.json names no addon for it>
+// matching ^\[perf\] slow addon init ([0-9]+) ms: (.+)$. Stable like STEP_LINE.
+inline constexpr double SLOW_ADDON_INIT_MS = 1000.0;
+inline constexpr const char *SLOW_ADDON_INIT_LINE = "[perf] slow addon init %.0f ms: %s";
+
 class Stopwatch {
 public:
     Stopwatch() : start_(std::chrono::steady_clock::now()), lap_(start_) {}

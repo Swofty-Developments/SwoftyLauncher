@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContractsMyTeam_AddPendingEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140db66b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *comp, uint32_t driver_key, uint8_t state)",
+  "evidence": "decomp:re/decomp/140db66b0.c;xref:0x140dade00;xref:0x140dae063;xref:0x140db6e1f",
+  "notes": "myteam-g2: Appends a 0x68-byte pending-entry record (driver key at +0x5c, state byte at +0x64) to the My Team driver contracts component list at comp+0x480 (count comp+0x6f0), then re-sorts it with 140e12de0. Entries are consumed by Game_DriverContractsMyTeamComponent_ProgressDay (state bytes at +0x4e4/+0x4e5). Modder hook: forcing an entry here opens a driver negotiation slot."
+ },
+ "signature": {
+  "id": "career.driver_contracts_my_team_add_pending_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 90 00 00 00 89 D0",
+  "match": "0x140db66b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140db66b0",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContractsMyTeam_AddPendingEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-d",
+   "kind": "func",
+   "item": "0x140db66b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140db66b0.c;xref:0x140dade00;xref:0x140dae063",
+   "notes": "V9023 Appends a 0x68-byte record at comp+0x480+count*0x68, count at +0x6f0, driver key stored at record+0x5c, state byte at record+0x64, then sorts via 140e12de0; early return for key kind/id 0x3fff. The ProgressDay consumer and the negotiation-slot effect were not verified."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_VirtualSessionEntrant_SetNumPartialLapsAccordingToProgress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f71790",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VirtualSessionEntrant::setNumPartialLapsAccordingToProgress; log channel LAPTIMES: 'Partial lap set from VirtualSessionEntrant::setNumPartialLapsAccordingToProgress()'"
+ },
+ "signature": {
+  "id": "game.virtual_session_entrant_set_num_partial_laps_according_to_progress",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 03 00 00 C5 78 29 BC 24 D0 03 00 00 C5 78 29 B4 24 C0 03 00 00 C5 78 29 AC 24 B0 03 00 00 C5 78 29 A4 24 A0 03 00 00 C5 78 29 9C 24 90 03 00 00 C5 78 29 94 24 80 03 00 00 C5 78 29 8C 24 70 03 00 00 C5 78 29 84 24 60 03 00 00 C5 F9 29 BC 24 50 03 00 00",
+  "match": "0x142f71790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f71790",
+  "kind": "func_start",
+  "names": [
+   "Game_VirtualSessionEntrant_SetNumPartialLapsAccordingToProgress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f71790",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f71790.c;xref:0x14ac53f94",
+   "notes": "V5655 1322-line virtual entrant update (speed trap, progress, laps), partial laps is a small part; better Game_VirtualSessionEntrant_UpdateVirtualProgress"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f71790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f71790.c",
+   "notes": "V6922 1322 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_ContractOutro_OnUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436c3750",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t *Career_ContractOutro_OnUpdate(void *state, uint32_t *link)",
+  "evidence": "decomp:re/decomp/1436c3750.c;xref:0x14585a578",
+  "notes": "Outro onUpdate (slot +0x48): stay until the outro ends, then g_Career_FlowLinkContinue (or 0xfd776166 on a 0x140d80a10 branch). Raised by native-1990 with --force in the career lane (owner career-re), approved by the developer on 2026-10-21 for the private F1 1990 build (doc:/mnt/work/.f1-1990/addon/native-requests.md#N1)."
+ },
+ "signature": {
+  "id": "career.contract_outro_on_update",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 D6 48 89 CF 80 B9 A3 0C 00 00 00",
+  "match": "0x1436c3750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436c3750",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractOutro_OnUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/contract_skip.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-a",
+   "kind": "func",
+   "item": "Career_ContractOutro_OnUpdate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436c3750.c;decomp:re/decomp/140d80a10.c;decomp:re/decomp/1436c3230.c;xref:0x14585a578,0x1436c37e9,0x1436c37f7,0x1436c37ff;sig:career.contract_outro_on_update",
+   "notes": "V0962 Vtable 0x14585a530 slot +0x48 (abs ptr 0x14585a578). Stay link [0x146cb2280] (0x1436c37ff) until +0xca1 is set (ContractNegotiationsMessage stage 4 via 0x1436c3230); then [0x146cb2284] (0x1436c37f7, djb2 'next'), except when +0xc90 and +0xc98 are both set and 0x140d80a10(contracts) (call 0x1436c37e9) returns 0, which gives 0xfd776166 = djb2('finish'). 0x140d80a10 is true when the local player's signed record has status byte +0x12 == 11. Proto matches. sigcheck: 1 hit"
+  }
+ ],
+ "proofs": []
+}

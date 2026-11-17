@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeam_ReadSaveSections",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141022960",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *ctx)",
+  "evidence": "decomp:re/decomp/141022960.c;xref:0x1456b7c38",
+  "notes": "myteam-g1: Larger stage registration/switch routine for My_Team, My_Team_Seasonal, My_Team_Setup, My_Team_Stop_Time (TLS init, ctx +0x348..+0x428). Stage change hook for the My Team career flow. CORRECTION(V9003): Most of the body is a My Team save-section reader (selected_teams, team_owners, character_id, background_answers, tutorials, main_driver_swapped, +0x348 map, +0x428 flag). The My_Team/Seasonal/Setup/Stop_Time strings appear only in a trailing stage-name block, so stage registration is a secondary role at best; name overstates it."
+ },
+ "signature": {
+  "id": "career.my_team_read_save_sections",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 02 00 00 C5 F8 29 B4 24 50 02 00 00 4C 89 C3 48 89 D7",
+  "match": "0x141022960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141022960",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeam_ReadSaveSections"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x141022960",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141022960.c;xref:0x1456b7c38;str:\"selected_teams\";str:\"team_owners\";str:\"background_answers\";str:\"My_Team_Stop_Time\";str:\"tutorials\"",
+   "notes": "V9003 Most of the body is a My Team save-section reader (selected_teams, team_owners, character_id, background_answers, tutorials, main_driver_swapped, +0x348 map, +0x428 flag). The My_Team/Seasonal/Setup/Stop_Time strings appear only in a trailing stage-name block, so stage registration is a secondary role at best; name overstates it."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x141022960",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141022960.c;xref:0x1456b7c38;str:\"selected_teams\"",
+   "notes": "V9641 Reader of the same save sections (selected_teams, team_owners, character_id, background_answers, tutorials); stage names only in a trailing block; correction matches."
+  }
+ ],
+ "proofs": []
+}

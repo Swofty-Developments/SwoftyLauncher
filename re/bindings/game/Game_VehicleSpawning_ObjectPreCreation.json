@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleSpawning_ObjectPreCreation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f3e200",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-VEHICLE_SPAWNING_SYSTEM",
+  "notes": "named from its log messages (channel VEHICLE_SPAWNING_SYSTEM): 'objectPreCreation for vehicle %d | Vehicle %d has decals'"
+ },
+ "signature": {
+  "id": "game.vehicle_spawning_object_pre_creation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 48 85 D2",
+  "match": "0x142f3e200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f3e200",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleSpawning_ObjectPreCreation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f3e200",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f3e200.c;xref:0x142f3c216",
+   "notes": "V5621 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

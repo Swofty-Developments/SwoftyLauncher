@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Rtt_CreateAssaoPass",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c2cda0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c2cda0.c;xref:0x143c3073d,0x143d853c2",
+  "notes": "Creates ASSAO ambient occlusion passes (ASSAO DepthOutputArrayUAV, compute/prepare_depths_merged/p0, ASSAO_PrepareDepths, ASSAO_GenerateQuad, ASSAOConstantsBuffer). Named callers: Game_Rtt_CreateScenes."
+ },
+ "signature": {
+  "id": "game.rtt_create_assao_pass",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 4C 8B B4 24",
+  "match": "0x143c2cda0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c2cda0",
+  "kind": "func_start",
+  "names": [
+   "Game_Rtt_CreateAssaoPass"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c2cda0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c2cda0.c;xref:0x143c3073d",
+   "notes": "V7862 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

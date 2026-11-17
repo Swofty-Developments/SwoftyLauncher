@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Hbcn_OnCompressRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445b2f40",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445b2f40.c;xref:0x145beef98",
+  "notes": "HBCN texture compression request handler (vtable slot 0x145beef98): compresses into a target texture; WARN 'Could not create the compressed texture as the target texture was blank' / 'as it did not exist to write to'. | #587: L2 by lead-authorised promotion for lane owner overlay (independent agree V2856)"
+ },
+ "signature": {
+  "id": "render.hbcn_on_compress_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 F8 29 B4 24 10 01 00 00 49 89 CF 80",
+  "match": "0x1445b2f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445b2f40",
+  "kind": "func_start",
+  "names": [
+   "Render_Hbcn_OnCompressRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Render_Hbcn_OnCompressRequest",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445b2f40.c;xref:0x1445b2f40",
+   "notes": "V2856 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

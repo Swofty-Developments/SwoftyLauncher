@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Grow_SkidmarksB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144775930",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144775930.c;xref:0x144713599",
+  "notes": "Hash-map grow instance #2 for Render_Skidmarks_Init; invalid -> stub 0x144775920. Named callers: Render_Skidmarks_Init."
+ },
+ "signature": {
+  "id": "core.hash_map_grow_skidmarks_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? FF C7 81 FF 00 01 00 00 0F 84 ?? ?? ?? ?? 4C 8B 5D 20 4C",
+  "match": "0x144713599",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x144775930",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_Grow_SkidmarksB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x144775930",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144775930.c;xref:0x144713599",
+   "notes": "V8186 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTyres_FormationSetFromNetworkParking",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143614c80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-TYRES",
+  "notes": "named from its log messages (channel NETWORK-TYRES): 'FORMATION: setFromNetwork() V%02d PARKING'"
+ },
+ "signature": {
+  "id": "game.network_tyres_formation_set_from_network_parking",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 4C 89 CF",
+  "match": "0x143614c80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143614c80",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTyres_FormationSetFromNetworkParking"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143614c80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143614c80.c;xref:0x14325a82c",
+   "notes": "V6096 Handles BOTH parking (param_2 -> +0x50) and parked (param_3 -> +0x51) state from network, 4 log variants PARKING/NOT PARKING/PARKED/NOT PARKED, fires events. Better: Game_NetworkTyres_FormationSetFromNetwork."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143614c80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143614c80.c;xref:0x14325a82c",
+   "notes": "V7082 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

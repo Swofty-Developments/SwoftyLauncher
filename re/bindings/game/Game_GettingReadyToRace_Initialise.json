@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GettingReadyToRace_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14027fea0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14027fea0.c;xref:0x1455fc280",
+  "notes": "Garage cutscene initialise (vtable slot 0x1455fc280) 'getting_ready_to_race' (CarMonitor/DualCarMonitor, dual_M_B, driver_in_car_idle01, lead engineer via Game_CutSceneScript_SpawnLeadEngineer). Same garage-location pattern as Game_CrewWorkingOnCar_Initialise. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2813)"
+ },
+ "signature": {
+  "id": "game.getting_ready_to_race_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 05 00 00 C5 78 29 94 24",
+  "match": "0x14027fea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14027fea0",
+  "kind": "func_start",
+  "names": [
+   "Game_GettingReadyToRace_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Game_GettingReadyToRace_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14027fea0.c;xref:0x14027fea0",
+   "notes": "V2813 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

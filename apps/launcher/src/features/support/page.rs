@@ -5,9 +5,10 @@ use gpui_kit::component::{Disableable, Icon, Sizable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::time::Duration;
-use swofty_core::server::support::{BIO_MAX, Goal, Kind, Supporter, format_date, tier_name};
+use swofty_core::online::server::support::{BIO_MAX, Goal, Kind, Supporter, format_date, tier_name};
 use swofty_i18n::{tr, trf};
 
+use super::SupportPage;
 use crate::features::time_trial::Load;
 use crate::shell::Shell;
 use crate::ui::Overlay;
@@ -103,7 +104,7 @@ impl Shell {
         let refresh = Button::new("support-refresh")
             .ghost()
             .icon(IconName::ArrowRightLeft)
-            .on_click(cx.listener(|this, _, _, cx| this.support_reload(cx)));
+            .on_click(cx.listener(|this, _, _, cx| SupportPage::reload(this, cx)));
         let claim = Button::new("support-claim-open")
             .outline()
             .label(tr("Claim previous donation"))
@@ -112,7 +113,7 @@ impl Shell {
                 this.support.notice = None;
                 cx.notify();
             }));
-        let inputs = self.support_inputs(window, cx);
+        let inputs = SupportPage::inputs(self, window, cx);
         if !self.support.bio_synced
             && let Load::Ready(me) = &self.support.me
         {
@@ -224,7 +225,7 @@ impl Shell {
                                         Some((false, tr("Enter both the email and the payment ID.").to_owned()));
                                     cx.notify();
                                 } else {
-                                    this.support_claim(a, b, cx);
+                                    SupportPage::claim(this, a, b, cx);
                                 }
                             })),
                     ),
@@ -370,7 +371,7 @@ impl Shell {
                     .when(!busy, |d| d.cursor_pointer().hover(|d| d.opacity(0.9)))
                     .child(tr("ONE TIME"))
                     .on_click(cx.listener(move |this, _, _, cx| {
-                        this.support_checkout(Kind::OneTime, Some(typed.clone()), cx)
+                        SupportPage::checkout(this, Kind::OneTime, Some(typed.clone()), cx)
                     })),
             )
             .child(muted(tr("Converts to whole months of a tier"), p))
@@ -498,7 +499,7 @@ impl Shell {
             )
             .on_click(cx.listener(move |this, _, _, cx| {
                 if signed_in {
-                    this.support_checkout(kind, None, cx);
+                    SupportPage::checkout(this, kind, None, cx);
                 } else {
                     this.support.notice = Some((false, tr("Sign in with Discord to subscribe.").to_owned()));
                     cx.notify();
@@ -574,7 +575,7 @@ impl Shell {
                             .label(tr("Save"))
                             .disabled(busy || count > BIO_MAX)
                             .on_click(
-                                cx.listener(move |this, _, _, cx| this.support_save(typed.clone(), cx)),
+                                cx.listener(move |this, _, _, cx| SupportPage::save(this, typed.clone(), cx)),
                             ),
                     ),
                 )

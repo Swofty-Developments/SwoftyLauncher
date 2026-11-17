@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_UpdateTemperature",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b7b70",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b7b70.c;xref:0x1446b5914",
+  "notes": "tyre thermal step (arg = CarTyreState+8, dt param_3): work/(dt*75), pressure-ratio lerp of compound +0x690/+0x694, wetness spline compound+0x1168, then 0x1446b8210; reads TyreType.UpgradeTempFactor (+0x634) at 0x1446b7e1f. Not fully read. | If car+0x133 bit2 clear (simplified): wheel+0x6c/+0x70 = WetnessTarget spline (+0x1168)(wheel+0x8c) = target tyre temperature vs water (medium); water cooling clamp((wet-0.15)*4)*0.002; blister wheel+0x94 += dt*BlisterRate(+0x128)*clamp((T-MinBlist+0x12c)/(MaxBlist+0x130-MinBlist)) if HandlingVersion>=13 (wx-drive, static) | findings from PR #471 by vogtmarcel07-cloud"
+ },
+ "signature": {
+  "id": "car.tyre_update_temperature",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC E8 00 00 00 C5 78 29 BC 24 D0 00 00 00 C5 78 29 B4 24 C0 00 00 00 C5 78 29 AC 24 B0 00 00 00 C5 78 29 A4 24 A0 00 00 00 C5 78 29 9C 24 90 00 00 00 C5 78 29 94 24 80 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 C5 F8",
+  "match": "0x1446b7b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b7b70",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_UpdateTemperature"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "cg-verify",
+   "kind": "func",
+   "item": "Car_Tyre_UpdateTemperature",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x1446b8130",
+   "notes": "V1647 cg-verify: cmp dword [rax+0x9f40],0xd; jl (constant 13, i.e. HandlingVersion >= 13); blister meaning not checked"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "cg-verify",
+   "kind": "func",
+   "item": "Car_Tyre_UpdateTemperature",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x1446b8130",
+   "notes": "V3910 cg-verify: cmp dword [rax+0x9f40],0xd; jl (constant 13, i.e. HandlingVersion >= 13); blister meaning not checked"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446b7b70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b7b70.c;xref:0x1409d54b6",
+   "notes": "V6820 Temperature/wetness model and blister gate consistent with decomp (param1=wheel+8)."
+  }
+ ],
+ "proofs": []
+}

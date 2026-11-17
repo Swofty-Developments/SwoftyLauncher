@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PhysWorld_ResizeWorkerContexts",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144104910",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144104910.c;xref:0x1440c3e37,0x14410555c",
+  "notes": "Resizes the physics world's per-worker contexts to the solver job-queue thread count (job queue +0xca8 -> +0x24 when multithread flag +0x130 set, else 1): frees old per-thread pointers (+0x10) and 0x18-byte worker slots (+0xcb0), allocates new ones and builds the vtable-0x145a5ac60 slot array. Callers Ne_PhysWorld_InitFromConfig and Ne_PhysWorld_RunIntegratorJobs (every step)."
+ },
+ "signature": {
+  "id": "core.phys_world_resize_worker_contexts",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE 48 8B 81 A8 0C",
+  "match": "0x144104910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144104910",
+  "kind": "func_start",
+  "names": [
+   "Ne_PhysWorld_ResizeWorkerContexts"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x144104910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144104910.c;xref:0x1440c3e37",
+   "notes": "V8380 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

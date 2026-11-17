@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCarTether_IsVehicleAttached",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14360bc30",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14360bc30.c;xref:0x142a55c42,0x14360e1ad",
+  "notes": "(sys, carIdx) -> bool: finds the tether entry for carIdx (cache sys+0x60+idx*8, else scans list +0x48..+0x50, car idx = [[entry+0x18]+0x58]+0xe8) and returns entry+0x69 != 0 (tether active). (2 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.safety_car_tether_is_vehicle_attached",
+  "section": ".xtls",
+  "pattern": "56 80 FA FF 74 24 0F B6 C2 4C 8B 54 C1 60 4D 85",
+  "match": "0x14360bc30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14360bc30",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCarTether_IsVehicleAttached"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x14360bc30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14360bc30.c;xref:0x142a55c42",
+   "notes": "V6766 Cache/scan and entry+0x69 match."
+  }
+ ],
+ "proofs": []
+}

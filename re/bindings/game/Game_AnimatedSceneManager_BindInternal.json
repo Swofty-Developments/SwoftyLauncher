@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AnimatedSceneManager_BindInternal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14018e420",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=AnimatedSceneManager::bindInternal; log channel ACTOR_BINDING: 'AnimatedSceneManager::bindInternal %s %s'"
+ },
+ "signature": {
+  "id": "game.animated_scene_manager_bind_internal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 85 D2 0F 84 ?? ?? ?? ?? 4C 89 C6 4D 85 C0 0F 84 ?? ?? ?? ?? 48 89 D7 80 3D ?? ?? ?? ?? 01",
+  "match": "0x14018e420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14018e420",
+  "kind": "func_start",
+  "names": [
+   "Game_AnimatedSceneManager_BindInternal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14018e420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14018e420.c",
+   "notes": "V4317 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

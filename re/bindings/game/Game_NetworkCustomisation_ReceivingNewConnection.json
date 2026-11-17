@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkCustomisation_ReceivingNewConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143184840",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-CUSTOMISATION-REPLICATION",
+  "notes": "named from its log messages (channel NETWORK-CUSTOMISATION-REPLICATION): '%s: Receiving new connection from %d...'"
+ },
+ "signature": {
+  "id": "game.network_customisation_receiving_new_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 E9 00 00",
+  "match": "0x143184840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143184840",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkCustomisation_ReceivingNewConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143184840",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143184840.c;xref:0x140383be2",
+   "notes": "V5864 CustomisationReplicationManager_OnNewConnection: onNewConnection: sends replicated data to new connection; 82KB, receive log is one line"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143184840",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143184840.c",
+   "notes": "V7013 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

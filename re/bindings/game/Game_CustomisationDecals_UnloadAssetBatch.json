@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_UnloadAssetBatch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141427ce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141427ce0.c;xref:0x141427c96,0x141fec66a",
+  "notes": "Logs 'Unload asset group batch %p'; unloads a decal asset-group batch. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3052)"
+ },
+ "signature": {
+  "id": "game.customisation_decals_unload_asset_batch",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D6 48 89 CB 48 8B 81",
+  "match": "0x141427ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141427ce0",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_UnloadAssetBatch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Game_CustomisationDecals_UnloadAssetBatch",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141427ce0.c;xref:0x141427ce0",
+   "notes": "V3052 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

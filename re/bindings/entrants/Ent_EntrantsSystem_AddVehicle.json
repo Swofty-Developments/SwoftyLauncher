@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_AddVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142476bd0",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
+  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Vehicle added with stat id %s | Couldn't find array to add vehicle with type %s | Failed to add vehicle with stat id %s'"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_add_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 38 0D 00 00",
+  "match": "0x142476bd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142476bd0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_AddVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142476bd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142476bd0.c;xref:0x140c2fc04",
+   "notes": "V5077 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

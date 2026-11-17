@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_FindOrInsert_ByteKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c02120",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_HashMap_FindOrInsert_ByteKey(void *map, uint8_t key)",
+  "evidence": "decomp:re/decomp/140c02120.c;xref:0x140c03db8;xref:0x140c04130;xref:0x140c07898",
+  "notes": "myteam-g2: Generic ne_hash_map.h (source string D:\\p4\\fone.2026_qa/external/ego/source/base/types/containers/ne_hash_map.h) find-or-insert for a byte key into a 0x30-byte-slot swiss-style table (rehash at 80 percent load); returns pointer to the value. Called by Career_SetupBanks_Read to create the per-season bank setup slot."
+ },
+ "signature": {
+  "id": "core.hash_map_find_or_insert_byte_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 89 D3 48 89 CE 48 8D 41 08",
+  "match": "0x140c02120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c02120",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_FindOrInsert_ByteKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c02120",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c02120.c;str:\"ne_hash_map.h\"",
+   "notes": "V9492 Find-or-insert byte key into table with 0x30-byte slots (hash = param_1[3]*key); used from SetupBanks_Read."
+  }
+ ],
+ "proofs": []
+}

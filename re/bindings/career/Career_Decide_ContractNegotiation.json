@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Decide_ContractNegotiation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d57d10",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t *Career_Decide_ContractNegotiation(void *state, uint32_t *link)",
+  "evidence": "decomp:re/decomp/142d57d10.c;xref:0x1457de5b8",
+  "notes": "state ContractNegotiationsDecision onUpdate (vtable 0x1457de570 slot +0x48). Career = state+0xca0 ->+0x88 ->+0x260; gets DriverCareerContractsManagerComponent (desc 0x14605c0d8) through the registry at career+0x1030; link 0x5e3c3c2d (negotiate) when Career_Needs_DriverContract or not 0x140d79cd0 (human contract ends this season), 0xd2985448 otherwise, 0x7c9b1ec4 without the component. Raised by native-1990 with --force in the career lane (owner career-re), approved by the developer on 2026-10-21 for the private F1 1990 build (doc:/mnt/work/.f1-1990/addon/native-requests.md#N1)."
+ },
+ "signature": {
+  "id": "career.decide_contract_negotiation",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 89 D6 48 8B 81 A0 0C 00 00",
+  "match": "0x142d57d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d57d10",
+  "kind": "func_start",
+  "names": [
+   "Career_Decide_ContractNegotiation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/contract_skip.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-a",
+   "kind": "func",
+   "item": "Career_Decide_ContractNegotiation",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d57d10.c;decomp:re/decomp/140d79cd0.c;decomp:re/decomp/140d83090.c;xref:0x1457de5b8,0x142d57e61,0x142d57e72;sig:career.decide_contract_negotiation",
+   "notes": "V0984 Only reached through vtable 0x1457de570 slot +0x48 (abs ptr 0x1457de5b8); the vtable is stored by a .data1 ctor (lea at 0x14ee720d2) and sits right after the string SessionStateContractNegotiationsDecision (djb2 0xb139d02a, registered at 0x142df359d). Career = [[state+0xca0]+0x88]+0x260; component via career+0x1030 vfunc +0x10 with desc 0x14605c0d8, whose static init (0x140e229dd) stores the name DriverCareerContractsManagerComponent at desc+8. Links confirmed in the disassembly: 0x7c9b1ec4 (djb2 'next') when the career or the first lookup fails; 0x5e3c3c2d when Needs (0x142d57e61) is true or 0x140d79cd0 (0x142d57e72) returns 0; 0xd2985448 when 0x140d79cd0 returns 1 or the second lookup fails. 0x140d79cd0 returns 1 when an entrant flagged +0x4b & 0x10 has a signed record whose +0x24 equals [c+0x370]+0x428 (or status +0x12 == 10), so 'human contract ends this season' fits. Caveat: the '(negotiate)' label for 0x5e3c3c2d is not derivable from the exe (no djb2/fnv1a preimage among exe strings), and that link also covers a signed contract running past this season. sigcheck: 1 hit"
+  }
+ ],
+ "proofs": []
+}

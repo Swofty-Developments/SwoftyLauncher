@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionSeasonDocument_OnMessageMultiplayerScenarioChang",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430982e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionSeasonDocument::onMessageMultiplayerScenarioChanged; log channel NETWORK: '<<< GameSessionSeasonDocument::onMessageMultiplayerScenarioChanged() >>>'"
+ },
+ "signature": {
+  "id": "game.game_session_season_document_on_message_multiplayer_scenario_chang",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 8B 41 08",
+  "match": "0x1430982e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430982e0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionSeasonDocument_OnMessageMultiplayerScenarioChang"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430982e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430982e0.c;xref:0x143095fec",
+   "notes": "V5306 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

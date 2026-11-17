@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_OnAwardToKeyMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141229f40",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ResourcePoints_OnAwardToKeyMessage(void *rp, void *msg)",
+  "evidence": "decomp:re/decomp/141229f40.c;xref:0x141226924;xref:0x141227783",
+  "notes": "myteam-g2: RP message handler (likely MessageResourcePointsAwarded): when msg+0x20 == 0 takes amount msg+0x18 and member key msg+0x1c, scales by the gain rate if amount > 0 and credits the team wallet (rp+0x528, mode 1) or the driver wallet (rp+0x4b8, mode 0). Hook: post this message with amount and key to add RP."
+ },
+ "signature": {
+  "id": "career.resource_points_on_award_to_key_message",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 C5 F8 29 74 24 20 48 83 7A 20 00",
+  "match": "0x141229f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141229f40",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePoints_OnAwardToKeyMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x141229f40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141229f40.c;xref:0x141226924;xref:0x141227783",
+   "notes": "V9013 Only when qword msg+0x20==0: amount msg+0x18, key msg+0x1c, scaled by gain rate if >0, then team wallet (mode 1, team key from entry+0x58) or driver wallet (mode 0). Note the KB's other note says 0x14122a070 is the MessageResourcePointsAwarded handler, so the 'likely' message name guess here is unproven."
+  }
+ ],
+ "proofs": []
+}

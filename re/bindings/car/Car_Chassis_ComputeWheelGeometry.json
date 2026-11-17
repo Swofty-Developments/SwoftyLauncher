@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Car_Chassis_ComputeWheelGeometry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144630450",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144630450.c;xref:0x14462ea68,0x144632071",
+  "notes": "Per wheel (4, [car+0x580]+0x70) computes wheel/suspension geometry into +0x6cc.. using model node data (+0x5d0 +0xe8) and Car_Compute_ChassisMatrix / Car_Suspension_ComputeWheelTransform. Callers: Car_Parse_Chassis, 0x144631e50. (2 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "car.chassis_compute_wheel_geometry",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 B2 5E 87 D0 9E 00 00 C5 7A 11",
+  "match": "0x14462ea68",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x144630450",
+  "kind": "func_start",
+  "names": [
+   "Car_Chassis_ComputeWheelGeometry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x144630450",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144630450.c;xref:0x14462ea68",
+   "notes": "V7416 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

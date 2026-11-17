@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_WizardTitleSlice_DestroyRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b69c90",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_WizardTitleSlice_DestroyRange(void *begin, void *end)",
+  "evidence": "decomp:re/decomp/141b69c90.c;xref:0x141a19cac;xref:0x141a1a5af;xref:0x141a1ceff",
+  "notes": "myteam-g2: Destroys a range of wizard title-slice elements: resets 8 nested string/binding members each to vtable 145612e48 and unlinks their lists. Container destruction helper for Career_WizardTitleSliceVM."
+ },
+ "signature": {
+  "id": "vm.wizard_title_slice_destroy_range",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 48 39 D1 0F 84 ?? ?? ?? ?? 48 89 D6 48 89 CF 48 8D 1D",
+  "match": "0x141b69c90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b69c90",
+  "kind": "func_start",
+  "names": [
+   "Vm_WizardTitleSlice_DestroyRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141b69c90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141b69c90.c;xref:0x141a19cac;xref:0x141a1a5af",
+   "notes": "V9951 Container range destruction resetting nested members to the empty-handle vtable 145612e48 and unlinking lists."
+  }
+ ],
+ "proofs": []
+}

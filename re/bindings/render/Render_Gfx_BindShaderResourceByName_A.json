@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_BindShaderResourceByName_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439fe5e0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439fe5e0.c;xref:0x143c2cf5d",
+  "notes": "FNV-1a 64 hash of a name string, linear search of the shader resource table (40-byte entries, hash at +8, table at *(*(this+0x20)+0x20)+0x678), stores param_3 into this+0xc0[idx] and clears dirty byte this+0xc8[idx]. Addon: names a pass uses to bind SRVs (ASSAO etc.). Twin of _B (likely another binding class)."
+ },
+ "signature": {
+  "id": "render.gfx_bind_shader_resource_by_name_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 4E 68 4C 8B 86 68 02 00 00",
+  "match": "0x143c2cf5d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1439fe5e0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_BindShaderResourceByName_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x1439fe5e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439fe5e0.c;xref:0x143c2cf5d",
+   "notes": "V8243 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

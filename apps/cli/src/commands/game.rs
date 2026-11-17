@@ -28,7 +28,7 @@ pub(crate) enum GameCommand {
         vr: bool,
         #[arg(long, help = "Don't start the EA app when it's closed")]
         no_start_store: bool,
-        #[arg(long, help = crate::GAME_HELP)]
+        #[arg(long, help = crate::commands::cli::GAME_HELP)]
         game: Option<PathBuf>,
     },
 }

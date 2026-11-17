@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationReplicationManager_UpdatePlayerLifeData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143188a40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=CustomisationReplicationManager::updatePlayerLifeData; log channel NETWORK-CUSTOMISATION-REPLICATION: 'void network::CustomisationReplicationManager::updatePlayerLifeData(const PlayerDescription &, game::F1LifeData &) | %s: Updated player (%s) life data!'"
+ },
+ "signature": {
+  "id": "game.customisation_replication_manager_update_player_life_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 78 19 00 00",
+  "match": "0x143188a40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143188a40",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationReplicationManager_UpdatePlayerLifeData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143188a40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143188a40.c;xref:0x143187035",
+   "notes": "V5871 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

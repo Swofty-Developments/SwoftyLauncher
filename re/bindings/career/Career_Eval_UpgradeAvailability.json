@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Eval_UpgradeAvailability",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14352e720",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:calls-Career_Search_UpgradeGraph@0x14352e91e;xref:0x14352e66d;kb:subsystems/rnd_ui.md#instances",
+  "notes": "Mode-0 availability evaluation under Career_Set_UpgradesOwner; uses Career_Search_UpgradeGraph (@0x14352e91e). CORRECTION(V9241): It evaluates availability via the graph search and a cost check, but it is not mode-0 only: it branches on mode byte == 2 (hash lookup of per-owner slot) and otherwise a single-slot path."
+ },
+ "signature": {
+  "id": "career.eval_upgrade_availability",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 0C 00 00 48",
+  "match": "0x14352e720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14352e720",
+  "kind": "func_start",
+  "names": [
+   "Career_Eval_UpgradeAvailability"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14352e720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14352e720.c;xref:0x14352e66d",
+   "notes": "V6081 sole caller Career_Set_UpgradesOwner (0x14352e66d); calls 0x1435288f0 at 0x14352e91e verified"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x14352e720",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14352e720.c;xref:0x14352e66d;xref:0x14352e91e",
+   "notes": "V9241 It evaluates availability via the graph search and a cost check, but it is not mode-0 only: it branches on mode byte == 2 (hash lookup of per-owner slot) and otherwise a single-slot path."
+  }
+ ],
+ "proofs": []
+}

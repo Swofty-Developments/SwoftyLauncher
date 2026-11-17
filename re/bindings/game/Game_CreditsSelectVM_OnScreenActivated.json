@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CreditsSelectVM_OnScreenActivated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a42630",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141a42630.c;xref:0x145728e88",
+  "notes": "CreditsSelectViewModel slot 13 (onScreenActivated): builds the credits list (headers, tables, logos, memoriam) and releases fade reason CreditsTransition (bit 17) -> fade in. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2668)"
+ },
+ "signature": {
+  "id": "game.credits_select_v_m_on_screen_activated",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 06 00 00 C5 F8 29 B4 24 30 06 00 00 49 89 CE 48",
+  "match": "0x141a42630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a42630",
+  "kind": "func_start",
+  "names": [
+   "Game_CreditsSelectVM_OnScreenActivated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Game_CreditsSelectVM_OnScreenActivated",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a42630.c;xref:0x141a42630",
+   "notes": "V2668 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  }
+ ],
+ "proofs": []
+}
