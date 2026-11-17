@@ -661,8 +661,8 @@ on it is off on `46009bd3`:
 
 | what | gate | on `46009bd3` |
 |---|---|---|
-| the title helper | `native/src/core/testing/title_skip.cpp:214` | `title::why()` names StateIntro's KB layout (+0xcd0, +0xef3, +0xef4). The test agent passes the title with the virtual pad instead. The helper's `vm.sync_point_is_complete` signature also matches 0 times there (session `20261117-083906`) |
-| direct start, as a whole | `native/src/core/testing/direct_start.cpp:1195-1198` | needs the title helper: logs `[direct] off: the title can't pass by itself (…)` and returns, so `swofty test session` opens the menu |
+| the title helper | `native/src/core/testing/title_skip.cpp:214` | **ported in round 5** (4d13ceb4e): the gate is `same_build() \|\| steam_1_0_145()`. The update is 213 of 213 instructions equal, its StateIntro fields at the same places, and `Vm_NodeSet_Bool` 171 of 171. The sync point is found from the update's call to it, because its thunk's filler differs per build (`re/tools/sigport.py`, `sigverify.py --disp`) |
+| direct start, as a whole | `native/src/core/testing/direct_start.cpp`, after the title check | still off: an explicit `same_build()` gate logs `[direct] off: the session driver's addresses (RVA_*) and struct offsets are the KB build's …`. 15 of its 16 raw addresses have Sigs that resolve once on both builds (`sigport.py`). The race laps hook is ported (1358 of 1358 instructions equal) |
 | direct start's race laps, StateFTUE exit, flow link | `direct_start.cpp:1183`, `:1201`, `:1216` | not looked up |
 | agent car reads (`car`, `ai_drives_player`) | `native/src/core/testing/agent/agent.cpp:395`, used at `:458` and `:724` | unavailable |
 | agent `career_tile`, resume a career, Team HQ advance, `save_now`, `tile_select` | `agent.cpp:967`, `:1051`, `:1154`, `:1265`, `:1352` | unavailable |
