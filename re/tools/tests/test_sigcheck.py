@@ -24,3 +24,21 @@ class ExceptionDirectory(unittest.TestCase):
             self.assertEqual(image.func_of(0x140001100), (0x140001100, 0x140001180))
             self.assertIsNone(image.func_of(0x140001200))
             image.data._mmap.close()
+
+
+class FindAll(unittest.TestCase):
+    class Img:
+        base = 0x140000000
+
+        def __init__(self, data):
+            self.data = data
+
+        def section_bytes(self, name):
+            return 0x1000, self.data
+
+    def test_overlapping_matches_count_like_the_core_scan(self):
+        unit = bytes.fromhex('4883EC28E8') + bytes(3)
+        img = self.Img(b'\xcc' * 8 + unit * 2 + bytes.fromhex('4883EC28') + b'\xcc' * 8)
+        pat = sigcheck.parse_pattern('48 83 EC 28 E8 ?? ?? ?? 48 83 EC 28')
+        self.assertEqual(sigcheck.find_all(img, '.xtls', pat), [0x140001008, 0x140001010])
+        self.assertEqual(sigcheck.find_all(img, '.xtls', pat, limit=1), [0x140001008])

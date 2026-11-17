@@ -125,12 +125,15 @@ def to_regex(pat):
 
 
 def find_all(img, section, pat, limit=50):
+    """Every match, overlapping ones included, the way the core's scan counts them."""
     va, b = img.section_bytes(section)
-    hits = []
-    for m in to_regex(pat).finditer(b):
-        hits.append(img.base + va + m.start())
-        if len(hits) >= limit:
+    rx, hits, pos = to_regex(pat), [], 0
+    while len(hits) < limit:
+        m = rx.search(b, pos)
+        if not m:
             break
+        hits.append(img.base + va + m.start())
+        pos = m.start() + 1
     return hits
 
 
