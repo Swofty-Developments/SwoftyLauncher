@@ -934,7 +934,10 @@ mod tests {
             .iter()
             .filter(|l| !l.starts_with("removed swofty/"))
             .collect();
-        assert_eq!(removed, [&format!("removed {MIP}")]);
+        assert_eq!(
+            removed,
+            [&format!("removed {MIP}"), "removed videos/cm_f1_sting.bk2"]
+        );
 
         let inst = Installer::new(&h.store.root, &h.game);
         inst.roll_back(true).unwrap();
