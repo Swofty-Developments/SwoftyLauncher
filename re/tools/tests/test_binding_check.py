@@ -694,6 +694,17 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
                             files[os.path.relpath(os.path.join(dp, f), top)] = fh.read()
                 return files
 
+            def listing(top):
+                """{path: (size, mtime)} under top. copy2 keeps both, so a file whose pair still matches its source
+                was never rewritten; every other file is compared byte for byte."""
+                out = {}
+                for dp, dirs, fs in os.walk(top):
+                    dirs[:] = [x for x in dirs if x != '__pycache__']
+                    for f in fs:
+                        st = os.stat(os.path.join(dp, f))
+                        out[os.path.relpath(os.path.join(dp, f), top)] = (st.st_size, st.st_mtime_ns)
+                return out
+
             def copy(name, dirs=('db', 'tools', 'tests', 'bindings')):
                 root = os.path.join(tmp, name)
                 for d in dirs:
@@ -731,8 +742,8 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
                 with open(os.path.join(db, 'signatures.json'), 'w') as f:
                     f.write(json.dumps(sigs, indent=1) + '\n')
 
+            first = gen(os.path.dirname(re_dir), os.path.join(tmp, 'before'))
             outputs, again = copy('outputs'), copy('again', ('db', 'bindings'))
-            first = gen(outputs, os.path.join(tmp, 'before'))
             records = {r.name: r.relpath for r in br.Store.get().records if r.author == 'kb-import' and not r.proofs}
             before = finish(first, os.path.join(tmp, 'before'))
             to_fold, to_unfold = {}, {}
@@ -754,11 +765,13 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
             if to_fold:
                 unfold(again, list(to_fold))
             for d in ('db', 'bindings'):
-                was, now = snapshot(os.path.join(re_dir, d)), snapshot(os.path.join(again, 're', d))
-                was = {k: v for k, v in was.items() if '__pycache__' not in k}
+                was, now = listing(os.path.join(re_dir, d)), listing(os.path.join(again, 're', d))
                 self.assertEqual(sorted(now), sorted(was))
-                for path in was:
-                    self.assertEqual(now[path], was[path], path)
+                for path, st in was.items():
+                    if now[path] != st:
+                        with open(os.path.join(re_dir, d, path), 'rb') as a, \
+                                open(os.path.join(again, 're', d, path), 'rb') as b:
+                            self.assertEqual(b.read(), a.read(), path)
 
             after = finish(second, os.path.join(tmp, 'after'))
             self.assertEqual(sorted(before), sorted(after))
