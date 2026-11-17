@@ -14,15 +14,6 @@ namespace runtime::room_cover {
 
 namespace {
 
-std::mutex lock;
-Cover cover;
-Kind kind = Kind::none;
-Progress progress;
-std::string subtitle = "Starting your session";
-std::atomic<bool> armed{false};
-uint64_t polled_at = 0;
-Signal last = Signal::waiting;
-
 constexpr uint32_t BG_TOP = 0x0b0d12ffu;
 constexpr uint32_t BG_BOTTOM = 0x181b22ffu;
 constexpr uint32_t TEXT = 0xe9ecf3ffu;
@@ -54,7 +45,31 @@ float text_width(const hud::TextStyle &st, const std::string &t)
     return w;
 }
 
-void draw(hud::Frame &f, uint64_t now, float alpha)
+class CoverScreen {
+public:
+    void step(const char *what, float fraction, float ceiling);
+    Snapshot snapshot();
+    void set_subtitle(const char *text);
+    bool setup();
+    bool active() { return armed.load(); }
+    void paint(hud::Frame &f, uint64_t now);
+
+private:
+    void draw(hud::Frame &f, uint64_t now, float alpha);
+
+    std::mutex lock;
+    Cover cover;
+    Kind kind = Kind::none;
+    Progress progress;
+    std::string subtitle = "Starting your session";
+    std::atomic<bool> armed{false};
+    uint64_t polled_at = 0;
+    Signal last = Signal::waiting;
+};
+
+constinit CoverScreen screen;
+
+void CoverScreen::draw(hud::Frame &f, uint64_t now, float alpha)
 {
     hud::reset_state(f);
     f.opacity = alpha;
@@ -108,15 +123,14 @@ void draw(hud::Frame &f, uint64_t now, float alpha)
     hud::text(f, cx - nw * 0.5f, by + 40 * u, foot, note);
 }
 
-}
 
-void step(const char *what, float fraction, float ceiling)
+void CoverScreen::step(const char *what, float fraction, float ceiling)
 {
     std::lock_guard<std::mutex> g(lock);
     progress.step(what, fraction, GetTickCount64(), ceiling);
 }
 
-Snapshot snapshot()
+Snapshot CoverScreen::snapshot()
 {
     Snapshot out;
     if (!armed.load())
@@ -128,7 +142,7 @@ Snapshot snapshot()
     return out;
 }
 
-void set_subtitle(const char *text)
+void CoverScreen::set_subtitle(const char *text)
 {
     if (!text || !*text)
         return;
@@ -136,7 +150,7 @@ void set_subtitle(const char *text)
     subtitle = text;
 }
 
-bool setup()
+bool CoverScreen::setup()
 {
     char env[1024] = {};
     DWORD n = GetEnvironmentVariableA("SWOFTY_DIRECT_START", env, sizeof env);
@@ -160,12 +174,7 @@ bool setup()
     return true;
 }
 
-bool active()
-{
-    return armed.load();
-}
-
-void paint(hud::Frame &f, uint64_t now)
+void CoverScreen::paint(hud::Frame &f, uint64_t now)
 {
     if (!armed.load())
         return;
@@ -196,6 +205,38 @@ void paint(hud::Frame &f, uint64_t now)
     if (last == Signal::shown)
         progress.complete("Ready", now);
     draw(f, now, alpha);
+}
+
+}
+
+void step(const char *what, float fraction, float ceiling)
+{
+    screen.step(what, fraction, ceiling);
+}
+
+Snapshot snapshot()
+{
+    return screen.snapshot();
+}
+
+void set_subtitle(const char *text)
+{
+    screen.set_subtitle(text);
+}
+
+bool setup()
+{
+    return screen.setup();
+}
+
+bool active()
+{
+    return screen.active();
+}
+
+void paint(hud::Frame &f, uint64_t now)
+{
+    screen.paint(f, now);
 }
 
 }
