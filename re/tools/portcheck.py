@@ -25,6 +25,7 @@ import bindverify as bv
 import layoutcmp as lc
 from sigport import KB_EXE, compare, port_one
 from sigverify import STEAM, follow, md, section_map
+from capstone import x86
 from capstone.x86 import X86_GRP_CALL, X86_GRP_JUMP, X86_OP_IMM, X86_OP_MEM, X86_OP_REG, X86_REG_RIP
 
 BASE = 0x140000000
@@ -235,8 +236,8 @@ def prove_field(steam, other, loc, cache, fields, T, f):
         if not fr['ok']:
             why.append(f'{st + BASE:#x}: {fr["why"]}')
             continue
-        hits = [k for k, i in enumerate(fr['sins']) if lc.covers(i, off) and i.address in xr] or \
-               [k for k, i in enumerate(fr['sins']) if lc.covers(i, off)]
+        field = [k for k, i in enumerate(fr['sins']) if lc.covers(i, off) and lc.mem_span(i)[2] != x86.X86_REG_RSP]
+        hits = [k for k in field if fr['sins'][k].address in xr] or field
         if not hits:
             why.append(f'{st + BASE:#x}: no instruction with displacement {off:#x}')
             continue
