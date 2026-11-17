@@ -119,8 +119,8 @@ class Knowledge:
         return k
 
 
-MAX_ANCHOR = 0x1000
-MAX_EXPECT = 32
+MAX_ANCHOR = 0x100
+MAX_EXPECT = 16
 
 
 def pattern_errors(text):
@@ -139,13 +139,21 @@ def pattern_errors(text):
 
 
 def pattern_key(sig):
-    """Two signatures of one kind that match the same bytes and resolve the same way find the same address."""
+    """Two signatures of one kind that match the same bytes and resolve the same way find the same address. The core
+    scans once per section and pattern and applies each binding's anchor, resolve and kind to that one match, so the
+    key compares parsed bytes (a wildcard is one token however many '?' spell it) and numeric offsets."""
+    def num(v):
+        try:
+            return br.number(v)
+        except (ValueError, TypeError):
+            return v
     try:
-        anchor = br.number(sig['anchor'])
-    except (ValueError, TypeError):
-        anchor = sig['anchor']
-    resolve = tuple(sorted((k, str(v)) for k, v in sig['resolve'].items())) if isinstance(sig['resolve'], dict) else ()
-    return sig['section'], ' '.join(sig['pattern'].upper().split()), anchor, resolve, sig['kind']
+        pattern = tuple(parse_pattern(sig['pattern']))
+    except ValueError:
+        pattern = ' '.join(sig['pattern'].upper().split())
+    resolve = tuple(sorted((k, v if k == 'kind' else num(v)) for k, v in sig['resolve'].items())) \
+        if isinstance(sig['resolve'], dict) else ()
+    return sig['section'], pattern, num(sig['anchor']), resolve, sig['kind']
 
 
 def signature_errors(sig, row, table, name, kb_build):
