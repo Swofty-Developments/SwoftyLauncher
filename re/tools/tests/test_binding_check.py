@@ -1,4 +1,4 @@
-import copy, json, os, shutil, subprocess, sys, tempfile, unittest
+import contextlib, copy, io, json, os, shutil, subprocess, sys, tempfile, unittest
 
 TOOLS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, TOOLS)
@@ -22,8 +22,14 @@ def as_new(doc, author=AUTHOR, proof=True):
     return doc
 
 
+def knowledge():
+    if not hasattr(knowledge, 'cached'):
+        knowledge.cached = bc.Knowledge()
+    return knowledge.cached
+
+
 def make_proof(doc, by, sha=None):
-    k = bc.Knowledge()
+    k = knowledge()
     sha = sha or k.build['sha256']
     s = doc['signature']
     return {'by': by, 'date': '2026-11-17', 'tool': br.PROOF_TOOL,
@@ -45,7 +51,7 @@ class Base(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
         cls.doc = sample_doc()
-        cls.knowledge = bc.Knowledge()
+        cls.knowledge = knowledge()
         cls.empty = tempfile.mkdtemp()
         cls.fresh = cls.knowledge.without(br.Record(cls.doc, SAMPLE))
 
@@ -304,59 +310,109 @@ class CiLint(Base):
         d['row']['evidence'] = 'xref:0x1436a3b74 decomp:x'
         errs = binding.lint_with([('re/bindings/' + SAMPLE, raw(d))])
         self.assertTrue(any('malformed' in e for e in errs), errs)
-        self.assertEqual(binding.lint_with([('re/bindings/' + SAMPLE, raw(self.doc))]), [])
+        self.assertTrue(all(SAMPLE in e for e in errs), errs)
 
 
 class UnfoldKeepsBindgenOutput(unittest.TestCase):
-    """Moving bindings from the shared tables into records must not change a byte of bindgen's output."""
+    """A binding gives the same bindgen output from a record as from the shared tables, for every binding kind, and
+    unfold writes back exactly the record and tables that folding it took apart."""
+
+    PER_KIND = 2
 
     def test_round_trip(self):
+        import argparse, binding, kb
         re_dir = os.path.dirname(TOOLS)
         tmp = tempfile.mkdtemp()
         try:
-            root = os.path.join(tmp, 'repo')
-            for d in ('db', 'tools', 'tests', 'bindings'):
-                if os.path.isdir(os.path.join(re_dir, d)):
-                    shutil.copytree(os.path.join(re_dir, d), os.path.join(root, 're', d),
-                                    ignore=shutil.ignore_patterns('__pycache__'))
-            rustfmt = os.path.join(os.path.dirname(re_dir), 'rustfmt.toml')
-            if os.path.exists(rustfmt):
-                shutil.copy(rustfmt, root)
-            tools = os.path.join(root, 're', 'tools')
+            def gen(root, out):
+                tools = os.path.join(root, 're', 'tools')
+                return subprocess.Popen([sys.executable, os.path.join(tools, 'bindgen.py'), '--no-exe', '--json',
+                                         os.path.join(out, 'bindings.json'), '--symbols', os.path.join(out, 'symbols.tsv'),
+                                         '--include', os.path.join(out, 'include'), '--rust', os.path.join(out, 'game.rs')],
+                                        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
 
-            def gen(out):
-                subprocess.run([sys.executable, os.path.join(tools, 'bindgen.py'), '--no-exe', '--json',
-                                os.path.join(out, 'bindings.json'), '--symbols', os.path.join(out, 'symbols.tsv'),
-                                '--include', os.path.join(out, 'include'), '--rust', os.path.join(out, 'game.rs')],
-                               check=True, capture_output=True)
+            def finish(proc, out):
+                _, err = proc.communicate()
+                self.assertEqual(proc.returncode, 0, err.decode())
+                return snapshot(out)
+
+            def snapshot(top):
                 files = {}
-                for dp, _, fs in os.walk(out):
+                for dp, _, fs in os.walk(top):
                     for f in fs:
                         with open(os.path.join(dp, f), 'rb') as fh:
-                            files[os.path.relpath(os.path.join(dp, f), out)] = fh.read()
+                            files[os.path.relpath(os.path.join(dp, f), top)] = fh.read()
                 return files
 
-            before = gen(os.path.join(tmp, 'before'))
-            doc = json.loads(before['bindings.json'])
-            by_kind = {}
-            for b in doc['bindings']:
-                by_kind.setdefault(b['kind'], []).append(b['id'])
-            names = [n for ids in by_kind.values() for n in ids[:5]]
-            r = subprocess.run([sys.executable, os.path.join(tools, 'binding.py'), 'unfold', *names, '--author', 'maint'],
-                               capture_output=True, text=True)
-            if r.returncode:
-                skip = {ln.split()[0] for ln in r.stderr.splitlines() if 'no signature of its own' in ln}
-                names = [n for n in names if n not in skip]
-                subprocess.run([sys.executable, os.path.join(tools, 'binding.py'), 'unfold', *names, '--author', 'maint'],
-                               check=True, capture_output=True)
-            self.assertGreater(len(names), 10)
-            after = gen(os.path.join(tmp, 'after'))
+            def copy(name, dirs=('db', 'tools', 'tests', 'bindings')):
+                root = os.path.join(tmp, name)
+                for d in dirs:
+                    shutil.copytree(os.path.join(re_dir, d), os.path.join(root, 're', d),
+                                    ignore=shutil.ignore_patterns('__pycache__'))
+                rustfmt = os.path.join(os.path.dirname(re_dir), 'rustfmt.toml')
+                if os.path.exists(rustfmt):
+                    shutil.copy(rustfmt, root)
+                return root
+
+            def unfold(root, names):
+                with contextlib.redirect_stdout(io.StringIO()):
+                        binding.cmd_unfold(argparse.Namespace(names=names, author='kb-import'),
+                                       db=os.path.join(root, 're', 'db'), root=os.path.join(root, 're', 'bindings'))
+
+            def fold(root, names):
+                db = os.path.join(root, 're', 'db')
+                docs = []
+                for n in names:
+                    path = os.path.join(root, 're', 'bindings', records[n])
+                    with open(path) as f:
+                        docs.append(json.load(f))
+                    os.remove(path)
+                for table in ('functions', 'globals'):
+                    with open(os.path.join(db, table + '.tsv'), 'a') as f:
+                        for doc in (d for d in docs if d['table'] == table):
+                            row = {**doc['row'], 'name': doc['name'], 'sig': doc['signature']['id']}
+                            f.write('\t'.join(row[c] for c in kb.TABLES[table][0]) + '\n')
+                with open(os.path.join(db, 'verify.tsv'), 'a') as f:
+                    for v in (v for d in docs for v in d['verify']):
+                        f.write('\t'.join(v[c] for c in kb.TABLES['verify'][0]) + '\n')
+                with open(os.path.join(db, 'signatures.json')) as f:
+                    sigs = json.load(f)
+                sigs['signatures'] += [d['signature'] for d in docs]
+                with open(os.path.join(db, 'signatures.json'), 'w') as f:
+                    f.write(json.dumps(sigs, indent=1) + '\n')
+
+            outputs, again = copy('outputs'), copy('again', ('db', 'bindings'))
+            first = gen(outputs, os.path.join(tmp, 'before'))
+            records = {r.name: r.relpath for r in br.Store.get().records if r.author == 'kb-import' and not r.proofs}
+            before = finish(first, os.path.join(tmp, 'before'))
+            to_fold, to_unfold = {}, {}
+            for b in json.loads(before['bindings.json'])['bindings']:
+                pick = to_fold if b['id'] in records else to_unfold
+                if sum(1 for k in pick.values() if k == b['kind']) < self.PER_KIND:
+                    pick[b['id']] = b['kind']
+            self.assertEqual(set(to_fold.values()) | set(to_unfold.values()), {'func', 'site', 'call', 'vtable', 'data'})
+
+            fold(outputs, list(to_fold))
+            if to_unfold:
+                unfold(outputs, list(to_unfold))
+            second = gen(outputs, os.path.join(tmp, 'after'))
+
+            fold(again, list(to_fold))
+            if to_fold:
+                unfold(again, list(to_fold))
+            for d in ('db', 'bindings'):
+                was, now = snapshot(os.path.join(re_dir, d)), snapshot(os.path.join(again, 're', d))
+                was = {k: v for k, v in was.items() if '__pycache__' not in k}
+                self.assertEqual(sorted(now), sorted(was))
+                for path in was:
+                    self.assertEqual(now[path], was[path], path)
+
+            after = finish(second, os.path.join(tmp, 'after'))
             self.assertEqual(sorted(before), sorted(after))
             for k in before:
                 self.assertEqual(before[k], after[k], k)
         finally:
             shutil.rmtree(tmp)
-
 
 if __name__ == '__main__':
     unittest.main()
