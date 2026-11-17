@@ -320,12 +320,6 @@ void track_select_commit();
 std::string track_select_time_trial();
 std::vector<CoreMixins> team_slots_mixins();
 void team_slots_commit();
-std::vector<CoreMixins> netplay_icons_mixins();
-void netplay_icons_commit();
-std::vector<CoreMixins> netplay_keys_mixins();
-std::vector<CoreMixins> netplay_privilege_mixins();
-void netplay_keys_commit();
-void netplay_privilege_commit();
 uint8_t *team_record_of(uint16_t stat);
 void team_record_inserted(std::function<void(uint16_t, uint8_t *)> fn);
 std::vector<CoreMixins> leaderboard_guard_mixins();
@@ -410,19 +404,18 @@ const SwoftyTelemetryFeed &live_memory_view();
 std::vector<LiveEvent> live_take_events();
 void placed_record_setup();
 void placed_record_crash_text(char *out, size_t cap);
-void netplay_setup();
-void netplay_bridge_setup();
-void netplay_bridge_status_changed();
-void netplay_exit();
-void netplay_drive_setup();
-void netplay_room_setup();
-bool netplay_room_requested();
-void netplay_room_screen(const char *name);
-void netplay_flow(uint32_t hash, uint32_t to);
-void netplay_screen(const char *name);
-bool netplay_popup(const char *id, void *fn, void *ctx);
-void netplay_home_vm(void *vm);
-void netplay_tick();
+// The session host (services/session_host.cpp): the core's reports to the session plugin's listeners. Each does
+// nothing while no plugin listens; session_host_message answers true when the plugin took the message, and
+// session_host_cover_signal -1 (failed) when nothing answers for the cover.
+void session_host_ready();
+// The tile list entries the core takes out (swofty_core.cpp).
+void local_tiles_setup();
+void session_host_flow(uint32_t hash, uint32_t to);
+void session_host_screen(const char *name);
+bool session_host_message(const char *id, void *reply, void *ctx);
+void session_host_home(void *vm);
+void session_host_exit();
+int session_host_cover_signal();
 void net_trace_setup();
 void udp_ids_setup();
 // Notes an added track's statId for the Swofty Track telemetry packet (udp_ids.cpp).
@@ -433,7 +426,7 @@ void direct_start_setup();
 void direct_start_tick();
 void direct_start_profile_loaded(bool ok);
 void direct_start_profile_read();
-// The room target's setup (netplay_drive.cpp registers it): polled on the flow thread after the profile has
+// The external target's setup (the session host registers a plugin's): polled on the flow thread after the profile has
 // loaded, while StateFTUE is held, until it answers done or failed.
 using DirectStartSetup = runtime::direct_start::Setup (*)(std::string &why);
 void direct_start_register_room(DirectStartSetup setup);

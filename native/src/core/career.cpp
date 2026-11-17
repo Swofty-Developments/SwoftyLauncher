@@ -259,7 +259,7 @@ void on_flow(SwoftyContext *c)
     runtime::watchdog_flow(hash, to, name.c_str());
     runtime::load_stall_flow(hash, to, name.c_str());
     runtime::session_job_probe_flow(to, name.c_str());
-    runtime::netplay_flow(hash, to);
+    runtime::session_host_flow(hash, to);
     runtime::entitlements_flow(hash, to);
     runtime::testagent_flow(name, to);
     view::flow(hash, to);

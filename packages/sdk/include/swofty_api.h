@@ -1493,6 +1493,47 @@ typedef struct SwoftyApi {
 typedef int (*SwoftyAddonInitFn)(const SwoftyApi *api);
 typedef SwoftyAddonInitFn SwoftyModInitFn;
 
+/* Session host, from the core export SwoftyCoreSessionHost; not a SwoftyApi field. Table version 1. It serves
+   one plugin that sets up an online session from outside the menus; each listener has one slot and a later call
+   replaces it. root: the game's swofty folder, with a trailing backslash. on_ready: fn runs once the core's
+   runtime setup is done, at once when it already is; the game's code is readable from then on. on_flow: every
+   flow state change (the state's name hash and its new status), on the flow thread. on_screen: every screen
+   the UI opens, by name. on_message: every game message before it is queued, with its reply callback and that
+   callback's context; a nonzero answer takes the message, which is then not shown. on_home: the home view
+   model on every home command. on_exit: the process is ending.
+   pad_claim: takes (1) or drops (0) a claim on the core's virtual pad, installing it first; 0 when there is
+   none, and pad_error says why. pad_set holds buttons and triggers, pad_release lets them go.
+   direct_start_setup: the setup of the direct start's external target, polled on the flow thread until it
+   answers 1 (done) or 2 (failed, the reason in why); 0 is pending. cover_step names the launch cover's step
+   and its progress (ceiling below 0: none); cover_state copies the step's label and percent and answers 1
+   while the cover is armed; cover_signal sets what the cover of an external target waits for: -1 failed,
+   0 waiting, 1 shown. ui_set writes one UI view-model path (type 0: a string; 1: a bool and 2: an integer, both from
+   an int32); car_category chooses a Car Category box by value as the screen would (empty: a stock one), 0 with the reason in why. */
+#define SWOFTY_SESSION_HOST_VERSION 1
+typedef int (*SwoftySessionSetupFn)(void *user, char *why, size_t cap);
+typedef int (*SwoftySessionSignalFn)(void *user);
+typedef struct SwoftySessionHost {
+    uint32_t size;
+    uint32_t version;
+    const wchar_t *(*root)(void);
+    void (*on_ready)(void (*fn)(void *user), void *user);
+    void (*on_flow)(void (*fn)(uint32_t state, uint32_t status, void *user), void *user);
+    void (*on_screen)(void (*fn)(const char *name, void *user), void *user);
+    void (*on_message)(int (*fn)(const char *id, void *reply, void *ctx, void *user), void *user);
+    void (*on_home)(void (*fn)(void *vm, void *user), void *user);
+    void (*on_exit)(void (*fn)(void *user), void *user);
+    int (*pad_claim)(int on);
+    const char *(*pad_error)(void);
+    void (*pad_set)(uint16_t buttons, uint8_t lt, uint8_t rt);
+    void (*pad_release)(void);
+    void (*direct_start_setup)(SwoftySessionSetupFn fn, void *user);
+    void (*cover_step)(const char *what, float fraction, float ceiling);
+    int (*cover_state)(char *label, size_t cap, int *percent);
+    void (*cover_signal)(SwoftySessionSignalFn fn, void *user);
+    int (*ui_set)(const char *path, int type, const void *value);
+    int (*car_category)(const char *value, char *why, size_t cap);
+} SwoftySessionHost;
+
 typedef int (*SwoftyCoreAttachFn)(SwoftyApi *api);
 typedef int (*SwoftyCoreInitFn)(const wchar_t *name, SwoftyAddonInitFn init);
 typedef int (*SwoftyCoreCommitFn)(void);
@@ -1508,6 +1549,7 @@ typedef const SwoftyCarOps *(*SwoftyCoreCarOpsFn)(void);
 typedef const SwoftyContentOps *(*SwoftyCoreContentOpsFn)(void);
 typedef const SwoftyLive *(*SwoftyCoreLiveFn)(void);
 typedef const SwoftyMem *(*SwoftyCoreMemFn)(void);
+typedef const SwoftySessionHost *(*SwoftyCoreSessionHostFn)(void);
 
 #define SWOFTY_STAGE_WINDOW 1
 
@@ -1530,6 +1572,7 @@ SWOFTY_EXPORT const SwoftyCarOps *SwoftyCoreCarOps(void);
 SWOFTY_EXPORT const SwoftyContentOps *SwoftyCoreContentOps(void);
 SWOFTY_EXPORT const SwoftyLive *SwoftyCoreLive(void);
 SWOFTY_EXPORT const SwoftyMem *SwoftyCoreMem(void);
+SWOFTY_EXPORT const SwoftySessionHost *SwoftyCoreSessionHost(void);
 
 #ifdef __cplusplus
 }

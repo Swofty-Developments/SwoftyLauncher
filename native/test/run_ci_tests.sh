@@ -16,9 +16,6 @@ t() { NAMES+=("$1"); CMDS+=("$2"); LOCKS+=("${3:-}"); }
 
 zig_test() { echo "zig c++ -target x86_64-linux-musl -std=c++23 -O2 $1 -o $2 && ./$2"; }
 
-# Both bind 127.0.0.1:21414, the game's LAN port. The Wine test skips its case when the port is taken; the
-# socket hooks test fails, so it goes first.
-t "Socket hooks Wine test" native/test/run_netplay_test.sh port-21414
 # A synthetic F1_25.exe carries the signatures; no game files are used.
 t "Wine test" native/test/run_wine_test.sh port-21414
 t "Registry core (shared corpus, Python reference, random stacks, read benchmark)" native/test/run_registry_test.sh

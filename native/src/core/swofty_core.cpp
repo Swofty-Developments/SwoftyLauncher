@@ -173,7 +173,7 @@ SWOFTY_WRAP(FeHome_Handle_Command, uint64_t, FEHomeViewModel *vm, NeStr **cmd)
         perf::Scope p(probe);
         settings_command(cmd && *cmd ? *reinterpret_cast<const uint32_t *>(*cmd) : 0x1505);
     }
-    runtime::netplay_home_vm(vm);
+    runtime::session_host_home(vm);
     runtime::testagent_home_vm(vm);
     return orig(vm, cmd);
 }
@@ -202,6 +202,48 @@ void hide_movie_tile()
         FlushInstructionCache(GetCurrentProcess(), at, sizeof skip_movie);
     }
     swofty::log("[core] F1 THE MOVIE home tile %s", hidden ? "hidden" : "left in place (signature did not resolve)");
+}
+
+// Local Multiplayer list. FeTile_Build_List (base+0x173df80) builds menu_kind 2 as Splitscreen
+// (base+0x1747f90, button_1) and then an inline LAN tile (id "lan", item vtable base+0x5704740,
+// button_2) that the shared tail pushes into the item vector. The anchor is the instruction after the
+// Splitscreen call; a jmp there to the tail the adder-only menus jump to (base+0x1745016, after the
+// temporaries' cleanup, at the item init/populate loop) leaves Splitscreen as the only entry. No
+// branch lands in the 9 replaced bytes.
+const runtime::Sig S_LAN_TILE{"FeTile_LocalMp_LanTile",
+                              "4C 8D 05 ?? ?? ?? ?? 4C 89 F1 B2 01 E8 ?? ?? ?? ?? 48 C7 44 24 38 00 00 00 00",
+                              0x173e7a7, runtime::Sig::addr, 0, 0x11, 0};
+const runtime::Sig S_TILE_TAIL{"FeTile_Build_List_ItemsTail", "4C 89 F1 E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? E8 ?? ?? ?? ?? B2 01",
+                               0x1745016, runtime::Sig::rel32, 8, 9, 5};
+
+void hide_lan_tile()
+{
+    uintptr_t lan = runtime::find(S_LAN_TILE, "core", "core"), tail = runtime::find(S_TILE_TAIL, "core", "core");
+    bool hidden = false;
+    if (lan && tail && tail > lan && tail - lan < 0x10000) {
+        uint8_t skip_lan[9] = {0xE9, 0, 0, 0, 0, 0x90, 0x90, 0x90, 0x90};
+        int32_t rel = int32_t(tail - (lan + 5));
+        memcpy(skip_lan + 1, &rel, sizeof rel);
+        auto at = reinterpret_cast<void *>(lan);
+        DWORD old;
+        hidden = VirtualProtect(at, sizeof skip_lan, PAGE_EXECUTE_READWRITE, &old);
+        if (hidden) {
+            memcpy(at, skip_lan, sizeof skip_lan);
+            VirtualProtect(at, sizeof skip_lan, old, &old);
+            FlushInstructionCache(GetCurrentProcess(), at, sizeof skip_lan);
+        }
+    }
+    swofty::log("[core] LAN Game entry in Local Multiplayer %s",
+                hidden ? "hidden (Splitscreen only)" : "left in place (signature did not resolve)");
+}
+
+}
+
+namespace runtime {
+
+void local_tiles_setup()
+{
+    hide_lan_tile();
 }
 
 }

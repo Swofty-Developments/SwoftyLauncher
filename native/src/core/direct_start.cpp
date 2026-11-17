@@ -23,7 +23,7 @@
 // The direct start: the game goes from boot to its target with no title, no legal screens' waits and no
 // menu. SWOFTY_DIRECT_START in the game's environment, or swofty\direct_start.json written by the launcher for
 // this launch, names the target: a session,
-// or a room (netplay_drive.cpp). The title engages by itself (title_skip.cpp), which loads the profile;
+// or an external target (a plugin's setup, through the session host). The title engages by itself (title_skip.cpp), which loads the profile;
 // the target sets itself up on the flow thread; then the flow leaves the front end from StateFTUE, whose
 // finished link is held until then and replaced by its exit link, so StateFrontend (the menu) never starts.
 // StateFTUE leaves with the game's interrupt exit (kind 0xe, written on the empty front of the interrupt queue
@@ -1123,7 +1123,7 @@ ds::Setup set_up_target(std::string &why)
         return new_grand_prix(why);
     if (driver.target.name == "room") {
         if (!room_setup) {
-            why = "no room setup is registered (netplay_drive.cpp)";
+            why = "no setup is registered for this target (the session plugin is not loaded)";
             return ds::Setup::failed;
         }
         return room_setup(why);
