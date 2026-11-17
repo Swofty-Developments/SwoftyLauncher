@@ -200,6 +200,7 @@ void decide_gates(const lv::BuildProof &build)
     g_forced = env_on("SWOFTY_LIVE_FORCE");
     g_verify = env_on("SWOFTY_TELEMETRY_VERIFY");
     g_sites.progress_from_manager = build.progress_from_manager;
+    g_sites.ers_mode = build.ers_mode;
     lv::Decision d = lv::decide(g_sites, build, g_forced);
     g_gates = d.gates;
     for (unsigned i = 0; i < lv::G_COUNT; i++) {
@@ -385,8 +386,7 @@ void live_setup()
     uint32_t stamp = module_stamp();
     const lv::BuildProof *build = same_build() ? &lv::KB_BUILD : lv::proof_for(stamp);
     if (!build) {
-        swofty::log("[live] off: build %u has no proven live layouts (Steam %u, EA %u)", stamp, lv::KB_BUILD.pe_timestamp,
-                    lv::EA_BUILD.pe_timestamp);
+        swofty::log("[live] off: build %u has no proven live layouts", stamp);
         return;
     }
     resolve_sites();

@@ -242,6 +242,8 @@ class RepoData(unittest.TestCase):
 class SteamExe(unittest.TestCase):
     def test_every_pattern_matches_once(self):
         import bindverify
+        if not bindverify.is_kb_build(os.environ['SWOFTY_STEAM_EXE']):
+            self.skipTest('SWOFTY_STEAM_EXE is not the KB build')
         img = bindverify.Image(os.environ['SWOFTY_STEAM_EXE'])
         _, bindings, _, _ = bindgen.load()
         for b in bindings:
