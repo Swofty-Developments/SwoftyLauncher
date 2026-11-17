@@ -1,3 +1,5 @@
+pub mod link;
+
 use std::path::{Path, PathBuf};
 
 use crate::build::PLAN_FILE;
