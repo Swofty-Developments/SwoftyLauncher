@@ -2,16 +2,16 @@ use crate::shell::notices::Notification;
 use gpui_kit::*;
 use std::path::Path;
 use std::sync::Arc;
-use swofty_core::server::sign_in::{Ban, Session, SignInError};
+use swofty_core::online::server::sign_in::{Ban, Session, SignInError};
 use swofty_i18n::{tr, trf};
 
 use super::Shell;
 
 #[derive(Default)]
 pub(crate) struct Account {
-    pub(crate) session: Option<swofty_core::server::sign_in::Session>,
+    pub(crate) session: Option<swofty_core::online::server::sign_in::Session>,
     pub(crate) busy: bool,
-    pub(crate) ban: Option<swofty_core::server::sign_in::Ban>,
+    pub(crate) ban: Option<swofty_core::online::server::sign_in::Ban>,
     pub(crate) toasts: Vec<Notification>,
     pub(crate) avatar: Option<Arc<Image>>,
     pub(crate) avatar_link: Option<String>,
@@ -60,7 +60,7 @@ impl Account {
                         "Your account has been granted access to: Multiplayer",
                     )));
                 }
-                swofty_core::multiplayer::client::load_in_background(data, &session.token);
+                swofty_core::online::multiplayer::client::load_in_background(data, &session.token);
                 self.session = Some(session);
                 true
             }
@@ -85,7 +85,7 @@ impl Account {
         match refreshed {
             Some(session) => {
                 let gained = session.allowed && !was_allowed;
-                swofty_core::multiplayer::client::load_in_background(data, &session.token);
+                swofty_core::online::multiplayer::client::load_in_background(data, &session.token);
                 self.session = Some(session);
                 if gained {
                     self.toasts.push(Notification::success(tr(
@@ -116,7 +116,7 @@ impl Shell {
             cx.notify();
             return;
         }
-        let (pending, url) = match swofty_core::server::sign_in::begin() {
+        let (pending, url) = match swofty_core::online::server::sign_in::begin() {
             Ok(v) => v,
             Err(e) => {
                 self.account.sign_in_failed(e);
@@ -158,7 +158,7 @@ impl Shell {
         let name = session.name.clone();
         let dir = self.store.root.clone();
         cx.background_executor()
-            .spawn(async move { swofty_core::server::sign_in::sign_out(&dir, &session) })
+            .spawn(async move { swofty_core::online::server::sign_in::sign_out(&dir, &session) })
             .detach();
         self.account
             .toasts
@@ -168,11 +168,11 @@ impl Shell {
 
     pub(crate) fn mp_apply_check(
         &mut self,
-        checked: swofty_core::server::sign_in::Refreshed,
+        checked: swofty_core::online::server::sign_in::Refreshed,
         was_allowed: bool,
         cx: &mut Context<Self>,
     ) {
-        use swofty_core::server::sign_in::Refreshed;
+        use swofty_core::online::server::sign_in::Refreshed;
         match checked {
             Refreshed::Session(session) => self.mp_apply_refresh(Some(session), was_allowed, cx),
             Refreshed::Gone => self.mp_apply_refresh(None, was_allowed, cx),
@@ -187,7 +187,7 @@ impl Shell {
 
     pub(crate) fn mp_apply_refresh(
         &mut self,
-        refreshed: Option<swofty_core::server::sign_in::Session>,
+        refreshed: Option<swofty_core::online::server::sign_in::Session>,
         was_allowed: bool,
         cx: &mut Context<Self>,
     ) {

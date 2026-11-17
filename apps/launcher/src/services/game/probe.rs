@@ -7,7 +7,7 @@ use swofty_core::game_folder::busy::Busy;
 use swofty_core::game_folder::recovery::{Blocked, Notice, SessionLock};
 use swofty_core::game_folder::stock;
 use swofty_core::platform::process::{GameProcess, game_processes};
-use swofty_core::platform::steam_client;
+use swofty_core::platform::steam::client as steam_client;
 use swofty_core::session::SessionRecord;
 use swofty_core::store::Store;
 

@@ -4,7 +4,7 @@
 use gpui_kit::component::button::Button;
 use gpui_kit::*;
 use swofty_core::catalog::Addon;
-use swofty_core::timetrial::boards::{self, Byline, Listed};
+use swofty_core::online::timetrial::boards::{self, Byline, Listed};
 use swofty_i18n::{tr, trf};
 
 use super::*;

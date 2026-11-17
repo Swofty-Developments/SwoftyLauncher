@@ -293,7 +293,7 @@ impl Shell {
             );
         }
         let armed = (room.is_some() || self.account.allowed()).then(|| {
-            swofty_core::multiplayer::client::launch_env_value(&self.store.root, SESSION_MODULE_WAIT)
+            swofty_core::online::multiplayer::client::launch_env_value(&self.store.root, SESSION_MODULE_WAIT)
         });
         match Launch::start(
             &self.store,

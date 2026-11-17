@@ -186,10 +186,10 @@ impl Shell {
                     let installed = managed::installed(&store);
                     let current = update::current_version();
                     if launcher_due {
-                        updater::check(Part::Launcher, &mut launcher, Some(&current), can_install, now);
+                        launcher.check(Part::Launcher, Some(&current), can_install, now);
                     }
                     if addon_due {
-                        updater::check_importer(&store, &mut addon, installed.as_ref(), &current, now);
+                        addon.check(&store, installed.as_ref(), &current, now);
                     }
                     (addon, launcher, installed)
                 })

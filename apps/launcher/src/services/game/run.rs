@@ -7,7 +7,7 @@ use std::time::Instant;
 use swofty_core::diagnostics::launch;
 use swofty_core::platform::app_control::{self, Block};
 use swofty_core::platform::process::flag;
-use swofty_core::platform::steam_client;
+use swofty_core::platform::steam::client as steam_client;
 use swofty_core::session::LaunchMode;
 use swofty_core::store::Store;
 use swofty_i18n::{tr, trf};
@@ -56,7 +56,7 @@ impl Launch {
             steam_saves_once,
         ));
         if let Some(armed) = netplay {
-            c.env(swofty_core::multiplayer::client::LAUNCH_ENV, armed);
+            c.env(swofty_core::online::multiplayer::client::LAUNCH_ENV, armed);
         }
         if let Some(file) = row_ids {
             c.env(swofty_core::row_ids::ENV, file);

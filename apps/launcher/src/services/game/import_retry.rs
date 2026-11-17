@@ -5,7 +5,7 @@ use swofty_core::game_folder::copies::{self};
 use swofty_core::game_folder::recovery::SessionLock;
 use swofty_core::install::Source;
 use swofty_core::platform::process::GameProcess;
-use swofty_core::platform::steam_client;
+use swofty_core::platform::steam::client as steam_client;
 use swofty_core::saves::vault;
 use swofty_core::store::Store;
 
@@ -87,7 +87,7 @@ pub(super) fn retry_import(store: &Store, processes: &[GameProcess]) {
         game_running: false,
         pending: true,
         launch_in_progress: false,
-        steam_usable: swofty_core::platform::steam_client::status().state.usable(),
+        steam_usable: swofty_core::platform::steam::client::status().state.usable(),
         ea_copy: copies::find_active(&store.config()).is_some_and(|c| c.source == Source::EaApp),
         now,
         last,

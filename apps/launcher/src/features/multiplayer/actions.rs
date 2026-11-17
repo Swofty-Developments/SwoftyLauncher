@@ -7,8 +7,8 @@ use crate::ui::scale::px;
 use gpui_kit::component::WindowExt;
 use gpui_kit::*;
 use swofty_core::catalog;
-use swofty_core::multiplayer::client::{self as diag, Session, Setup};
-use swofty_core::multiplayer::types::{RoomSettings, RoomSummary};
+use swofty_core::online::multiplayer::client::{self as diag, Session, Setup};
+use swofty_core::online::multiplayer::types::{RoomSettings, RoomSummary};
 use swofty_i18n::{tr, trf};
 
 use super::model::*;

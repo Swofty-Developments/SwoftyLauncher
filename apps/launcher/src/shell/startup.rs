@@ -25,7 +25,7 @@ impl Prepared {
         let store = Store::open_default().with_builtins(swofty_builtins::all());
         let migrated = store.migrate();
         crate::app::app_log::step("store migrated");
-        swofty_core::server::usage::launcher_heartbeats(store.root.clone());
+        swofty_core::online::server::usage::launcher_heartbeats(store.root.clone());
         let seen = Seen::read(&store);
         crate::app::app_log::step("loading the library");
         let mut library = Library::load(&store);
@@ -328,15 +328,20 @@ impl Shell {
         })
     }
 
-    fn start_account(store: &Store, cx: &mut Context<Self>) -> Option<swofty_core::server::sign_in::Session> {
-        let mp = swofty_core::server::sign_in::load(&store.root);
+    fn start_account(
+        store: &Store,
+        cx: &mut Context<Self>,
+    ) -> Option<swofty_core::online::server::sign_in::Session> {
+        let mp = swofty_core::online::server::sign_in::load(&store.root);
         if let Some(current) = mp.clone() {
             let dir = store.root.clone();
-            swofty_core::multiplayer::client::load_in_background(&dir, &current.token);
+            swofty_core::online::multiplayer::client::load_in_background(&dir, &current.token);
             cx.spawn(async move |this, cx| {
                 let refreshed = cx
                     .background_executor()
-                    .spawn(async move { swofty_core::server::sign_in::refresh_checked(&dir, &current) })
+                    .spawn(
+                        async move { swofty_core::online::server::sign_in::refresh_checked(&dir, &current) },
+                    )
                     .await;
                 this.update(cx, |s, cx| {
                     let allowed = s.account.session.as_ref().is_some_and(|m| m.allowed);
@@ -353,7 +358,7 @@ impl Shell {
                 if let Some((store, game)) = data {
                     cx.background_executor()
                         .spawn(async move {
-                            swofty_core::timetrial::upload::flush(
+                            swofty_core::online::timetrial::upload::flush(
                                 &store.root,
                                 game.as_deref(),
                                 &store.config(),
@@ -379,7 +384,9 @@ impl Shell {
                 let was_allowed = session.allowed;
                 let refreshed = cx
                     .background_executor()
-                    .spawn(async move { swofty_core::server::sign_in::refresh_checked(&dir, &session) })
+                    .spawn(
+                        async move { swofty_core::online::server::sign_in::refresh_checked(&dir, &session) },
+                    )
                     .await;
                 if this
                     .update(cx, |s, cx| s.mp_apply_check(refreshed, was_allowed, cx))

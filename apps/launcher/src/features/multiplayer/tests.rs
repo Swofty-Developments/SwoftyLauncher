@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use swofty_core::multiplayer::types::{
+use swofty_core::online::multiplayer::types::{
     GameStatus, MemberStage, MemberState, Phase, PrintMatch, RelayStatus, Role, RoomAddon, RoomAddons,
     RoomSummary, Screen, SessionState, User,
 };
@@ -9,7 +9,7 @@ use super::model::{
     GameState, RoomStatus, Start, Tone, addon_checks, card_addons, content_check, content_word, exit_leaves,
     exit_notice, joined, member_word, missing, refusal, refusal_text, restart_ok_text, room_meta,
 };
-use swofty_core::multiplayer::types::RoomContent;
+use swofty_core::online::multiplayer::types::RoomContent;
 
 fn status(screen: Screen) -> GameStatus {
     GameStatus {
@@ -240,7 +240,7 @@ fn the_servers_refusal_shows_until_a_load_succeeds() {
 
 #[test]
 fn the_restart_button_says_what_it_does() {
-    use swofty_core::multiplayer::types::RoomSettings;
+    use swofty_core::online::multiplayer::types::RoomSettings;
     assert_eq!(
         restart_ok_text(&Start::Create(RoomSettings::default())),
         "Create room and join"

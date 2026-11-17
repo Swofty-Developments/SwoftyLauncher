@@ -6,8 +6,8 @@ use std::time::{Duration, Instant};
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
 use swofty_core::install::Game;
-use swofty_core::multiplayer::client::{self as diag, Local, Session};
-use swofty_core::multiplayer::types::{GameStatus, RoomSummary, SessionState};
+use swofty_core::online::multiplayer::client::{self as diag, Local, Session};
+use swofty_core::online::multiplayer::types::{GameStatus, RoomSummary, SessionState};
 use swofty_core::store::Store;
 use swofty_i18n::tr;
 
