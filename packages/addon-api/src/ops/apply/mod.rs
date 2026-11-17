@@ -8,7 +8,8 @@ use swofty_formats::hash::fnv1a64;
 use crate::ops::apply::add_row::{AddRow, Walk, add_row, walk};
 use crate::ops::db::{DbOp, DbOps};
 use crate::ops::field_names::{FieldNames, Schema};
-use crate::ops::resolve::{Db, resolve_key, resolve_path, resolve_row, resolve_value};
+use crate::ops::game_db::Db;
+use crate::ops::resolve::{resolve_key, resolve_path, resolve_row, resolve_value};
 use crate::ops::stat_ids::{MovedStatId, VIRTUAL_LISTS, VIRTUAL_LISTS_TAG, virtual_lists};
 use crate::{Error, Result};
 

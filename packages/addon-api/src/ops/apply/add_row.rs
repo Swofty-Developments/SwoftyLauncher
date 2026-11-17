@@ -6,7 +6,8 @@ use swofty_formats::hash::fnv1a64;
 use crate::ops::apply::{AddedRow, Cx};
 use crate::ops::db::{CopyMode, IdFrom, StatIdMode};
 use crate::ops::field_names::{ANY_SHAPE, FieldNames, row_shape};
-use crate::ops::resolve::{Base, Db, Row, resolve_path, resolve_row};
+use crate::ops::game_db::Db;
+use crate::ops::resolve::{Base, Row, resolve_path, resolve_row};
 use crate::ops::stat_ids::{
     MovedStatId, free_stat_id, stat_id_ceiling, stat_id_ceiling_reason, stat_id_field, stat_id_unusable,
     virtual_lists,
