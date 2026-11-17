@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "name": "g_Ne_InlineStrVtable",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145612ea8",
+  "type": "void",
+  "level": "L1",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/14172c840.c",
+  "notes": "Vtable of the inline name string the LAN tile builds on its stack for the game mode name index (Game_GameModes_IndexByName): +0 this vtable, +8 capacity 0x20, +0x10 pointer to the characters, the characters (NUL-terminated) inline after them."
+ },
+ "signature": {
+  "id": "core.ne_inline_str_vtable",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 8B 4B 58 48 8B",
+  "match": "0x14172c8a3",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145612ea8",
+  "kind": "data",
+  "names": [
+   "g_Ne_InlineStrVtable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "room-headless",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_VehicleFillOrderStart",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141238f11",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141238cb0.c;xref:0x141238f0a,0x141238f11;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "lea rbp,[rsp+0x40]: first instruction after lea r15,[k_Career_UpgradeTypeOrder] in the per-vehicle upgrade fill; r15 is the loop pointer (not read before the loop head 0x141238f90). rnd-tyres sets r15 = its extended order table"
+ },
+ "signature": {
+  "id": "career.vehicle_fill_order_start",
+  "section": ".xtls",
+  "pattern": "48 8D 6C 24 40 48 8D 5C 24 2E EB 73",
+  "match": "0x141238f11",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141238f11",
+  "kind": "mid",
+  "expect": "48 8D 6C 24 40",
+  "names": [
+   "site_Career_VehicleFillOrderStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_VehicleFillOrderStart",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141238cb0.c;xref:0x141238f0a,0x141238f11,0x141238f16,0x141238f1b,0x141238f90",
+   "notes": "V0040 lea r15->0x14566fd16 at 0x141238f0a; lea rbp (5 bytes) follows; r15 untouched until loop head 0x141238f90 (movzx esi,[r15]); not read after loop exit; no branch into window"
+  }
+ ],
+ "proofs": []
+}

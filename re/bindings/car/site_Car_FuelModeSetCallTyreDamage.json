@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Car_FuelModeSetCallTyreDamage",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14470e082",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/1553ff3d0.c;xref:0x14470e082",
+  "notes": "call Car_FuelEcu_SetMode_Thunk in Car_TyreDamage_Update (0x14470d760): rcx = [r15+0x548] FuelECU system, edx = (byte [rsp+0xd9] >> 4) & 3 mode (T123)"
+ },
+ "signature": {
+  "id": "car.fuel_mode_set_call_tyre_damage",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 8F A8 05 00 00",
+  "match": "0x14470e082",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14470e082",
+  "kind": "mid",
+  "expect": "E8 19 06 F8 FF",
+  "names": [
+   "site_Car_FuelModeSetCallTyreDamage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-trace",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "re/tests/T123.trace.json"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

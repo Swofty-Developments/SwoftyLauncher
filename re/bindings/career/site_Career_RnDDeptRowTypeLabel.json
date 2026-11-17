@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDDeptRowTypeLabel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c826b6",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141c82470.c;xref:0x141c82698,0x141c826b6;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "lea r8,[\"INVALID UPGRADE\"]: default case of the inlined upgrade type switch (cmp esi,0x12 ; ja) in the department category row 0x141c82470 (label); the join formats lng_rnd_%s (r8) or the <dept>_<type> frame (r9). rnd-tyres sets r8 = its type suffix for 19..22 and jumps to the join"
+ },
+ "signature": {
+  "id": "career.rn_d_dept_row_type_label",
+  "section": ".xtls",
+  "pattern": "4A 63 0C 88 48 01 C1 FF E1 4C 8D 05 ?? ?? ?? ?? E9 ?? ?? ?? ?? 4C 8D 05",
+  "match": "0x141c826a1",
+  "anchor": "0x15",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c826b6",
+  "kind": "mid",
+  "expect": "4C 8D 05 E2 B8 BF 03",
+  "names": [
+   "site_Career_RnDDeptRowTypeLabel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_RnDDeptRowTypeLabel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c82470.c;xref:0x141c82647,0x141c8264f,0x141c82695,0x141c82698,0x141c826b6",
+   "notes": "V0066 esi=r9d=[rax+0x70] type; cmp esi,0x12 ; ja 0x141c826b6 = lea r8 'INVALID UPGRADE' ; jmp join (switch indexes r9); rnd_category_row; rel8 candidate 0x141c82649 is not an instruction boundary"
+  }
+ ],
+ "proofs": []
+}

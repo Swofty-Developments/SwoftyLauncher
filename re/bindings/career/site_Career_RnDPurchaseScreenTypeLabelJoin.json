@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPurchaseScreenTypeLabelJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c5157b",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141c4fde0.c;xref:0x141c5157b;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "join of the upgrade type switch in the R&D purchase screen 0x141c4fde0 (r8 = type suffix); target of the default-case redirect"
+ },
+ "signature": {
+  "id": "career.rn_d_purchase_screen_type_label_join",
+  "section": ".xtls",
+  "pattern": "4C 8D 05 ?? ?? ?? ?? EB 07 4C 8D 05 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 48 8D 8C 24 C0 00 00 00",
+  "match": "0x141c5156b",
+  "anchor": "0x10",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c5157b",
+  "kind": "mid",
+  "expect": "48 8D 15 C7 CB C2 03",
+  "names": [
+   "site_Career_RnDPurchaseScreenTypeLabelJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_RnDPurchaseScreenTypeLabelJoin",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c4fde0.c;xref:0x141c5157b,0x141c51582,0x141c5158a,0x141c514c6",
+   "notes": "V0055 19 cases + default reach 0x141c5157b lea rdx 'lng_rnd_%s' ; call 0x1441630f0; no branch into window"
+  }
+ ],
+ "proofs": []
+}

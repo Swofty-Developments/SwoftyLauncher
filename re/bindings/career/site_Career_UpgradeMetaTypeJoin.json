@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_UpgradeMetaTypeJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14353c8c1",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14353c4f0.c;xref:0x14353c8c1,0x14353c8b3;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "lea rsi,[rsp+0x248]: join of the upgrade_type_metadata loader's 19-name compare loop (rsi = index, r14 = id or 0 when rsi == 0x13, r12 = string; r14 is stored to rec[0]). rnd-tyres sets r14 = 19..22 when rsi == 0x13 and r12 names a Tyres type"
+ },
+ "signature": {
+  "id": "career.upgrade_meta_type_join",
+  "section": ".xtls",
+  "pattern": "75 D2 45 31 F6 48 8D B4 24 48 02 00 00",
+  "match": "0x14353c8bc",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14353c8c1",
+  "kind": "mid",
+  "expect": "48 8D B4 24 48 02 00 00",
+  "names": [
+   "site_Career_UpgradeMetaTypeJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_UpgradeMetaTypeJoin",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14353c4f0.c;xref:0x14353c6d0,0x14353c880,0x14353c890,0x14353c8b3,0x14353c8be,0x14353c8c1,0x14353c6f0",
+   "notes": "V0079 upgrade_type_metadata loader: rsi=0..18, r14=movsx order[rsi], r12='upgrade_type' string (or ''), je join with r14=id else xor r14d at rsi==0x13; r14 not rewritten before mov [rax],r14b at 0x14353c6f0 (rec[0]); hook runs before lea rsi"
+  }
+ ],
+ "proofs": []
+}

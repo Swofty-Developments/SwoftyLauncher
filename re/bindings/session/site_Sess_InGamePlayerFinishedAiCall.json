@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "site_Sess_InGamePlayerFinishedAiCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d56d21",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142d566a0.c;decomp:re/decomp/142d566a0.c;xref:0x142d56d21",
+  "notes": "call site in Sess_InGame_UpdateBase (0x142d566a0): when the player's car record ([st+0xcb0]+0x148[player]) state byte +0x18 == 3 it calls Game_Set_VehicleController_Thunk([st+0xdd0], player, 1, 3) (r8d=1 at 0x142d56d15, r9d=3 at 0x142d56d1b), every frame, then compares the distance 0x1409d2ac0(rec+0xa8) > 8 m to set st+0xee1 (route 0x3d9a48de). That state 3 means 'finished' is the vmknolle runtime reading (cooldown-lap), not shown statically (verify-c). (used by vmknolle cooldown-lap / race-start)"
+ },
+ "signature": {
+  "id": "session.in_game_player_finished_ai_call",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 81 C6 A8 00 00 00 4C 89 F1 E8",
+  "match": "0x142d56d21",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d56d21",
+  "kind": "mid",
+  "expect": "E8 6A 5F B4 00",
+  "names": [
+   "site_Sess_InGamePlayerFinishedAiCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "global",
+   "item": "0x142d56d21",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_c/decomp/142d566a0.c;decomp:work/verify_c/decomp/1519eb350.c;xref:0x142d56d21",
+   "notes": "V1061 call 0x14389cc90 (controller/AI switch) on this+0xdd0 for the player vehicle (index from 0x1400fa590(+0xdd8)) when its state byte (+0x18) == 3, timers 6/8 s; site and callee confirmed, but state 3 == 'finished' is not shown from code here"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-d",
+   "kind": "global",
+   "item": "0x142d56d21",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_d/decomp/142d566a0.c;decomp:work/verify_d/decomp/14389cc90.c;xref:0x142d56d21",
+   "notes": "V1077 in the in-game update 142d566a0, for the local player's vehicle (1400fa590(..,0)) whose status byte +0x18==3 (finished) it calls 14389cc90(ctrl=+0xdd0, veh, 1, 3) which switches the vehicle's controller slot 1 (AI); same callee used by Disqualify with reason 2 -> 'player finished -> AI call' site correct"
+  }
+ ],
+ "proofs": []
+}

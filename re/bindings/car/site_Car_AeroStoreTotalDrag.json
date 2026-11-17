@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Car_AeroStoreTotalDrag",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446de114",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/1446dceb0.c;xref:0x1446de114;kb:subsystems/car.md#f1aero",
+  "notes": "vmovss [rdi+0x19e8], xmm8: the total drag FORCE (N): (body cd lerp + ducts + radiator) x drag_scale x (1+front_wing_damage x BodyCoDByWingDamageMult) + wing drag terms, x density x speed term. Live (T115 snapshot, not traced here): about 0 parked, -2402 N at speed for the player car."
+ },
+ "signature": {
+  "id": "car.aero_store_total_drag",
+  "section": ".xtls",
+  "pattern": "C5 3A 59 C1 C5 7A 11 87 E8 19 00 00",
+  "match": "0x1446de110",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446de114",
+  "kind": "mid",
+  "expect": "C5 7A 11 87 E8 19 00 00",
+  "names": [
+   "site_Car_AeroStoreTotalDrag"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "global",
+   "item": "site_Car_AeroStoreTotalDrag",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446dceb0.c;xref:0x1446de114",
+   "notes": "V1298 vmovss [rdi+0x19e8],xmm8. xmm8 = (lerp(+0x1960,+0x1964) + duct terms (only when handling_version == 100) + radiator) x drag_scale +0x19a0 x (1 + +0x199c x BodyCoDByWingDamageMult sys+0x1838^0x1840) + wing drag terms (+0x19bc x (1 - +0x199c), +0x19c8 x (1 - +0x1998)), then x xmm7 x xmm1."
+  }
+ ],
+ "proofs": []
+}

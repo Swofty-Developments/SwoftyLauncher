@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_WheelMapInsertCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e909e9",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142e90560.c",
+  "notes": "Sess_Veh_UpdateWheelMap loop 2: rcx = TYRE_SYSTEM wheel map (TyreSystem+0x148, robin_hood map<u8,float>), r8 = &u8 vehicle index, before the first insert call (0x142e909ee). Trace-only site for the 26-car heap 0x16 abort: dumps the 32-bucket table's block header each time."
+ },
+ "signature": {
+  "id": "session.wheel_map_insert_call",
+  "section": ".xtls",
+  "pattern": "48 8B 4C 24 38 48 8D 54 24 40 4C 8D 44 24 33 E8",
+  "match": "0x142e909df",
+  "anchor": "0xa",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e909e9",
+  "kind": "mid",
+  "expect": "4C 8D 44 24 33",
+  "names": [
+   "site_Sess_WheelMapInsertCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "heap-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "re/tests/heap-1990.trace.json"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x142e909e9",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142e909e9;decomp:re/decomp/142e90560.c",
+   "notes": "V7421 bytes and enclosing function match"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Game_SaveSlot_Selected",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1429d0c47",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1429d0b90.c;xref:0x1429d0c40,0x1429d0c58,0x1429d0c6a",
+  "notes": "In Game_SaveSlotManager_SelectSlot right after mov [rsi+0x280], rbx: rbx = the SaveSlotInfo being loaded (slot_id [rbx], slot_guid [rbx+8]), rsi = the slot manager. A read here sees the career id before its blob deserialises (0x1429d1270 at 0x1429d0c5b); a later failure restores the old slot at 0x1429d0c6a. Signature game.save_slot_selected (save-re); the core's career id reads it (native/src/core/career/save_splice.cpp, snapshots/runtime.cpp)."
+ },
+ "signature": {
+  "id": "game.save_slot_selected",
+  "section": ".xtls",
+  "pattern": "48 89 9E 80 02 00 00 48 83 BB 78 01 00 00 00",
+  "match": "0x1429d0c40",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429d0c47",
+  "kind": "mid",
+  "expect": "48 83 BB 78 01 00 00 00",
+  "names": [
+   "site_Game_SaveSlot_Selected"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "save-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/save_splice.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v2",
+   "kind": "sig",
+   "item": "game.save_slot_selected",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:game.save_slot_selected;decomp:re/decomp/1429d0b90.c;xref:0x1429d0c40,0x1429d0c47,0x1429d0c4f",
+   "notes": "V1468 sigcheck OK hits=1 at 0x1429d0c40 (3083/3083 pass); the 15-byte pattern has no wildcards and also matches once in the whole image. Target 0x1429d0c47 is cmp qword [rbx+0x178],0 (8 bytes, no RIP-relative operand), so the 5-byte patch sits inside one instruction and je 0x1429d0c4f is not displaced. Linear sweep of the .pdata body 0x1429d0b90-0x1429d112f: no branch lands in 0x1429d0c48..0x1429d0c4b and none targets the site; no rel32/rel8 from elsewhere either (the one disp hit at 0x1429f32c7 is mid-instruction of jae 0x1429f30a5)."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v2",
+   "kind": "global",
+   "item": "site_Game_SaveSlot_Selected",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429d0b90.c;xref:0x1429d0b99,0x1429d0bc0,0x1429d0bc3,0x1429d0c40,0x1429d0c6a",
+   "notes": "V1469 rsi = rcx (manager) at 0x1429d0b99, never rewritten; rbx = *[slots+i] matched by cmp [rbx],rdx (slot_id) at 0x1429d0bc3, not written again before the site; the site runs right after mov [rsi+0x280],rbx. Two caveats for consumers: if the blob load 0x1429d1270 fails, 0x1429d0c6a puts the old slot back in +0x280, and a new career's slot becomes current in 0x1429d1890 (mov [rdi+0x280],rbx at 0x1429d1a27) without passing this site; core's career_loaded re-reads +0x280 and logs the new-career case, so both are covered there."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_F1CGOutro",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14585ac40",
+  "type": "vtable[11]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "pat:flow-state-type-record;xref:0x146101d28;decomp:re/decomp/1437b4b80.c",
+  "notes": "cxx=StateF1CGOutro; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x146101d28 whose +8 names the class); onStateEnter 0x1436cb510, onStateUpdate 0x1436cbb10, onStateExit 0x1436cbb80 (slots 8/9/10). (vmknolle session-flow map)"
+ },
+ "signature": {
+  "id": "session.f1_c_g_outro",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 81 C1 A0 0C 00",
+  "match": "0x1437b4b8b",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14585ac40",
+  "kind": "data",
+  "names": [
+   "vt_Sess_F1CGOutro"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14585ac40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1437b4b8e",
+   "notes": "V7472 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

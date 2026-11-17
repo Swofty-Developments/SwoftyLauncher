@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_FeTile_ListRowFieldLoad",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142428832",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "evidence": "decomp:re/decomp/142428790.c;xref:0x14242882d",
+  "notes": "mov rax,[rax] after Gdb_Get_FieldInt(row,stat_id,0) in FeTile_Check_EntrantListUsable: rax = the returned slot pointer. For a label with no row the pointer is the database miss pointer and [rax] is 0x08000f000800000e (non-canonical), which the following test rax,rax passes and movzx r14d,[rax+8] at 0x14242883a faults on."
+ },
+ "signature": {
+  "id": "fe_tiles.list_row_field_load",
+  "section": ".xtls",
+  "pattern": "48 8B 00 48 85 C0 74 05 44 0F B6 70 08 48 8B 83 60 05 00 00",
+  "match": "0x142428832",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142428832",
+  "kind": "mid",
+  "expect": "48 8B 00 48 85 C0",
+  "names": [
+   "site_FeTile_ListRowFieldLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "fe-tile-guard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/fe_tile_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-02",
+   "verifier": "verify-fe-tile",
+   "kind": "global",
+   "item": "site_FeTile_ListRowFieldLoad",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/vfe/142428790.c;decomp:re/decomp/vfe/1445a2cf0.c;xref:0x14242882d",
+   "notes": "V8628 own disasm: 142428832 mov rax,[rax] (3 bytes) after call Gdb_Get_FieldInt at 14242882d; rax is its returned pointer. test rax,rax at 142428835 lies in the 5-byte window but has no inbound branch (je 14242883f targets 83f). Reading [rax] in the guard is the same load the game does. Same rsp as at function entry+frame (calls balanced), so the jump to 1424288d7 is safe."
+  }
+ ],
+ "proofs": []
+}

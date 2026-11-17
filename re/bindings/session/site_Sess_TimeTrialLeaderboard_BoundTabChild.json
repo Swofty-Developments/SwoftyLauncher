@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_TimeTrialLeaderboard_BoundTabChild",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fcd166",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:own capstone disasm 0x142fcd0d0-0x142fcd17c;xref:0x141f75868",
+  "notes": "In Sess_TimeTrialLeaderboard_ActivateTabBound: mov rax,[rcx] right after mov rcx,[rsi+0x9a0]; add rsi,0x660 (rsi = the leaderboard model, +0x9a0 the child list model), the same read as site_Sess_TimeTrialLeaderboard_TabChild. rcx is 0 when the model's board view was skipped (no board listed for the track) and the read faults (F1_25.exe+0x2fcd166 reading 0, splashv 1.9.20, from 0x141f74cb0+0xbbd < Vm_Dispatch_BindingMessage). Core's time trial leaderboard tab guard hooks it and, for a null child, continues at site_Sess_TimeTrialLeaderboard_BoundTabDone."
+ },
+ "signature": {
+  "id": "session.time_trial_leaderboard_bound_tab_child",
+  "section": ".xtls",
+  "pattern": "48 8B 01 B2 01 FF 50 30 48 89 F1 E8 ?? ?? ?? ?? 90 48 83 C4 40 5E C3 CC CC CC 56 48 83 EC 40",
+  "match": "0x142fcd166",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fcd166",
+  "kind": "mid",
+  "expect": "48 8B 01 B2 01",
+  "names": [
+   "site_Sess_TimeTrialLeaderboard_BoundTabChild"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "ttgaragetab",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/leaderboard_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "ttgaragetab-verify",
+   "kind": "global",
+   "item": "0x142fcd166",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142fcd0d0-0x142fcd17c;decomp:own capstone disasm 0x142fc6a30-0x142fc6ba4,0x141f75806-0x141f75888,0x142fc10b0-0x142fc115c;xref:0x141f75868,0x142fcd0dc,0x142fcd11a,0x142fcd132,0x142fcd13e,0x142fcd148,0x142fc587f,0x142fc5bdc,0x142fcbcec,0x142fc6a63,0x142fc6b96;sig:session.time_trial_leaderboard_bound_tab_child",
+   "notes": "V9264 Static: Re-derived from own capstone disasm of Sess_TimeTrialLeaderboard_ActivateTabBound (.pdata 0x142fcd0d0-0x142fcd17d, unwind push rsi + alloc 0x40). 0x142fcd158 mov rcx,[rsi+0x9a0]; 0x142fcd15f add rsi,0x660; 0x142fcd166 mov rax,[rcx] (3 bytes) + 0x142fcd169 mov dl,1 (2 bytes) is exactly 5 bytes, no rip-relative operand, ending on the boundary 0x142fcd16b; nothing tests rcx before the read. Branches in the function: je 0x142fcd0dc -> 0x142fcd176 and four jcc -> 0x142fcd150 only. A rel32 E8/E9/Jcc scan of Steam .xtls, .xtext and .data1 finds no target in 0x142fcd167..0x142fcd175 (two stray hits, 0x1425c9a30 -> 0x142fcd155 and 0x14bb401c3, lie outside any .pdata function). +0x9a0 can be 0: 0x142fc5750, 0x142fc5ba0, 0x142fcbcb0 and 0x142fc6a30 store 0 there (0x142fc6a30 re-creates it only when the 0x100 alloc at 0x142fc6a8a succeeds), and 0x142fc5dcd, 0x142fcd51d, 0x142fd0178 and 0x142fd5faf null-test it before use. I did not re-trace the 'no board listed' cause. rsp at 0x142fcd166 = entry-0x48 = rsp at 0x142fcd176, with only balanced calls between. Only caller: call at 0x141f75868 in 0x141f74cb0 (return 0x141f7586d = +0xbbd, as in the crash), then jmp 0x141f75830, which writes rax and rcx before reading them, so the skipped return value, vcall [rax+0x30] and call 0x142fb6630 leave nothing undefined; rsi comes back through pop rsi. Signature: sigcheck OK (hits=1, target 0x142fcd166); the pattern is unique in Steam .xtls and EA .rdata (0x2fc1146), and expect '48 8B 01 B2 01' holds on both. The EA twin 0x142fc10b0-0x142fc115d has its own .pdata row with the same unwind (01050200 05720160) and the same instructions, with only rel32/rip disp differing. bindverify's Resolver (with the gate patched to emit this unverified L2 site) resolves it on EA and on Steam, both by hint and by scan. The full sigcheck gate exits 1 on 875 other ids, all hits=1 and all name-table bookkeeping (440 'not in functions.tsv/globals.tsv', 435 'sig column' mismatches); none of them is either of these two ids."
+  }
+ ],
+ "proofs": []
+}

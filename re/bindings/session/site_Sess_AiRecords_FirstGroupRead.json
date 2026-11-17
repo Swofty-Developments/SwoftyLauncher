@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Sess_AiRecords_FirstGroupRead",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438a41b4",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1438a0e00.c;xref:0x1438a41bc",
+  "notes": "In Sess_Ai_BuildVehicleRecords: mov rax,[rsp+0x118] (8 bytes), the load of the local vector's begin pointer right before mov rax,[rax] at 0x1438a41bc, the first read of the first found asset-group node. rax=0 and the fault is reading 0x0 when no asset group held the vehicle's name. Core's session enter guard tests [rsp+0x118] here; rsp is the function's own frame (it is not changed between the prologue and here); [rsp+0x30] is the manager.  UNUSED since PR #676 round 2: the skip (rbx=[rsp+0x30], rip=VehicleNext) drops the vehicle's record and shifts the slot-indexed records at [mgr+0x128] (V8614). Core now fixes the name hash at site_Sess_AiRecords_NameHash instead."
+ },
+ "signature": {
+  "id": "session.ai_records_first_group_read",
+  "section": ".xtls",
+  "pattern": "8B 94 24 F8 00 00 00 48 8B 84 24 18 01 00 00",
+  "match": "0x1438a41ad",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438a41b4",
+  "kind": "mid",
+  "expect": "48 8B 84 24 18 01 00 00",
+  "names": [
+   "site_Sess_AiRecords_FirstGroupRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "sessguard",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-sessenter",
+   "kind": "global",
+   "item": "0x1438a41b4",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1438a0e00.c;xref:0x1438a41bc;sig:session.ai_records_first_group_read;decomp:re/decomp/1438aa730.c;decomp:re/decomp/1438a8b30.c",
+   "notes": "V8614 sigcheck hits=1 target=0x1438a41b4 and the load is [rsp+0x118] as claimed. But the guard that skips the vehicle is not safe: the produced vector at [mgr+0x128] is read as records[vehicleSlot*0x188] by FUN_1438aa730 and FUN_1438aa930 (called from FUN_142f32ad0 and FUN_142882f00 with a vehicle byte) and by FUN_1438a8b30 and FUN_1438a9250 via [[mgr+0x128]+0x48+slot*0x188]. A skipped vehicle shifts every later record by one and the last slots read past the vector end. Only FUN_1438a4f70 iterates positionally (it takes the slot from record+0x3c). Do not hook as a skip; keep one record per slot (see the vehicle_next row)."
+  }
+ ],
+ "proofs": []
+}

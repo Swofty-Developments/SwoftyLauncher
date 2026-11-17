@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_ScheduleComponent_TrackListSave",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141272154",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14126f980.c;xref:0x1412720ff,0x14127211b",
+  "notes": "In Career_ScheduleComponent_Save: mov r12,[r14+0x2b0], the calendar begin read before the custom_track_list child loop; reached from the capacity check (jbe at 0x1412720ff), the failed reallocation (je at 0x14127211b) and after the reallocation. r14 = the schedule component (calendar begin +0x2b0, end +0x2b8), rdi = the custom_track_list array. 7-byte window, no rip-relative operand, no branch lands in 0x141272155..0x141272158. Core logs the count a save writes here (read-only)."
+ },
+ "signature": {
+  "id": "career.schedule_track_list_save",
+  "section": ".xtls",
+  "pattern": "66 89 77 12 4D 8B A6 B0 02 00 00 4D 39 A6 B8 02 00 00",
+  "match": "0x141272150",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141272154",
+  "kind": "mid",
+  "expect": "4D 8B A6 B0 02",
+  "names": [
+   "site_Career_ScheduleComponent_TrackListSave"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "tracklist",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/tracks/track_list_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "tracklist-verify",
+   "kind": "global",
+   "item": "0x141272154",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14126f980.c;xref:0x1412720ff,0x14127211b;sig:career.schedule_track_list_save",
+   "notes": "V9261 Static: r14 = [rsp+0x68] = the component from 0x1412720d3, and it is the base of +0x2b0/+0x2b8 here; no branch into 0x141272155..0x14127215a. EA 0x14126c3a4 (pattern match 0x14126c3a0)."
+  }
+ ],
+ "proofs": []
+}

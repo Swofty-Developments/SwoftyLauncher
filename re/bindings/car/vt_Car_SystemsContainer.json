@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "vt_Car_SystemsContainer",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145c040c8",
+  "type": "vtable[1]",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/144628190.c;xref:0x14462877a;decomp:re/decomp/144628190.c;xref:0x144628773",
+  "notes": "vptr of the component container embedded at CarLive+0x380 (owner +0x10, count +0x18, systems[32] +0x20)"
+ },
+ "signature": {
+  "id": "car.systems_container",
+  "section": ".xtls",
+  "pattern": "C5 F8 11 B7 E9 02 00 00 C5 F8 29 B7 E0 02 00 00 48 8D 05",
+  "match": "0x144628763",
+  "anchor": "0x13",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x10",
+   "len": 7
+  },
+  "target": "0x145c040c8",
+  "kind": "data",
+  "names": [
+   "vt_Car_SystemsContainer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/live/live_rows.hpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v1",
+   "kind": "global",
+   "item": "vt_Car_SystemsContainer",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144628190.c;xref:0x14462877a",
+   "notes": "V1326 0x144628773 lea 0x145c040c8 then mov [rdi+0x380]; +0x388 alloc, +0x390 = rdi (owner = the CarLive), +0x398 = 0 count; systems at +0x3a0 (32 slots up to +0x4a0). Slot 0 = 0x144767290, next qword is string data, so vtable[1]."
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vd",
+   "kind": "global",
+   "item": "0x145c040c8",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144628190.c;xref:0x14462877a",
+   "notes": "V8893 own disx: 0x144628773 lea rax,[0x14462877a+0x15db94e]=0x145c040c8; mov [rdi+0x380],rax; next stores [rdi+0x388]=r13 and [rdi+0x390]=rdi (owner at container+0x10). Table at 0x145c040c8 has 1 pointer (0x144767290) followed by string data, so vtable[1]; container class and CarLive+0x380 embedding match. systems[32]/count offsets not re-derived"
+  }
+ ],
+ "proofs": []
+}

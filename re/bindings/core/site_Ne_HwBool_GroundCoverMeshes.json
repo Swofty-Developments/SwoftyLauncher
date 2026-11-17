@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwBool_GroundCoverMeshes",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ce438c",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/143ce4210.c;xref:0x143ce438c",
+  "notes": "call Ne_Compare_StringNoCase(attr+0x50 value, \"true\") for the hardware-settings attribute 'meshes' (name loaded at 0x143ce4344) in reader 0x143ce4210; the reader stores (result == 0) as the bool; xanpavle.re-optimization redirects it to pin the value"
+ },
+ "signature": {
+  "id": "core.hw_bool_ground_cover_meshes",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 85 C0 0F 94 C1 38 0D",
+  "match": "0x143ce438c",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ce438c",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwBool_GroundCoverMeshes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwBool_GroundCoverMeshes",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ce4210.c;xref:0x143ce438c,0x143ce4344,0x143ce4377,0x143ce439e;sig:core.hw_bool_ground_cover_meshes",
+   "notes": "V0954 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'meshes' from lea 0x143ce4344, r8d 0x1f) at 0x143ce4377; on 0 it sets rcx = [attr+0x50], rdx = \"true\" (0x145612a6a) and the E8 at 0x143ce438c calls 0x14534d918 (.xtls, .pdata 0x143ce4210-0x143ce45cf). sete cl is compared with the global byte 0x146543501 and, when different, stored to byte [rsi] = this+0 at 0x143ce439e (rsi = rcx from 0x143ce4229); the GROUND_COVER log prints it as meshes enabled/disabled. sigcheck: one hit, target 0x143ce438c"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDUpgradeListDeptIcon",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14174dc04",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14174cb20.c;xref:0x14174dc04,0x14174dc0b;doc:addons/rnd-tyres-thermal/native/HOOKS.md#3-tyres-icon-and-colour-in-the-rd-lists-always-on",
+  "notes": "lea r9,[rnd_dept_icons_small] (7 bytes) after mov [rsp+0x20],rdi and before call Ne_Format_String(\"%s.%s.%s\", pkg+0x660, atlas, frame); [rsp+0x20] = frame = dept<4 ? name_table[dept] : \"error_department\"; the hook rewrites [rsp+0x20] for department 4; R&D upgrade list rows (fn called 5x from 0x141c5b260)"
+ },
+ "signature": {
+  "id": "career.rnd_upgrade_list_dept_icon",
+  "section": ".xtls",
+  "pattern": "48 89 7C 24 20 48 89 E9 48 8D 15 ?? ?? ?? ?? 4C 8D 0D",
+  "match": "0x14174dbf5",
+  "anchor": "0xf",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14174dc04",
+  "kind": "mid",
+  "expect": "4C 8D 0D CF E0 FB 03",
+  "names": [
+   "site_Career_RnDUpgradeListDeptIcon"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-d",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_dept_tags.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDUpgradeListDeptIcon",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14174cb20.c;xref:0x14174cc07,0x14174ccf5,0x14174cd55,0x14174dbaf,0x14174dbc0,0x14174dbf5,0x14174dc04,0x14174dc0b,0x141c5b518",
+   "notes": "V0087 lea r9,rnd_dept_icons_small (7B) after mov [rsp+0x20],rdi and before Ne_Format_String(%s.%s.%s,[r12+0x660],atlas,frame); rdi = bl<=3 ? name_table 0x14570de08[dept] : error_department, bl = param_2 byte; 5 E8 callers all in 0x141c5b260; only rel8 hit into window is mid-insn (0x14174dc08), jump tables 0x14174d0b3/0x14174d114 clear"
+  }
+ ],
+ "proofs": []
+}

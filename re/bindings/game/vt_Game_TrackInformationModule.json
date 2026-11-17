@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "vt_Game_TrackInformationModule",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145c06960",
+  "type": "vtable[17]",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "xref:0x14479e1be,0x14479e3b0,0x1447a040c;xref:0x14479e1be;decomp:re/decomp/14479e1b0.c;decomp:re/decomp/144795cf0.c",
+  "notes": "cxx=TrackInformationModule: slot 0 0x14479e1b0 dtor, slot 1 0x14479e3b0 type record 0x146ce9030 ('TrackInformationModule'), slot 3 0x1447957f0 resolves systems (0x146cb8238 -> +0x28, 0x146cb8278 -> +0x18, 0x146cb8158 -> +0x20), slot 4 0x1447959b0, slot 9 Game_TrackInformationSystem_Update 0x144795cf0 (per-frame track wetness ws+0x3f0a38); 17 code slots. (vmknolle wet-track; engine-re bind7) | Weather/time-of-day update component vtable (17 slots, slot 0 0x14479e1b0 = destructor re-storing the vtable at 0x14479e1be). Slot 9 0x144795cf0 = per-frame weather update: reads the weather state singleton g_Game_WeatherSurfaceState (0x146ce91d8) and binds the shader parameters weather/track/wetness and weather/track/puddles. Used by the wet-track addon. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V1821)"
+ },
+ "signature": {
+  "id": "game.weather_update",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 59 10 48 85 DB 0F 84",
+  "match": "0x14479e1be",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145c06960",
+  "kind": "data",
+  "names": [
+   "vt_Game_TrackInformationModule"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/wet-track"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "wt-verify",
+   "kind": "global",
+   "item": "vt_Game_TrackInformationModule",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x14479e1be;xref:0x144795d60",
+   "notes": "V1821 17 function slots then ascii 'Weather C' (not a slot); slot0 14479e1b0 destructor re-stores 145c06960 via lea at 14479e1be; slot9 144795cf0 big per-frame fn reads 146ce91d8 at 144795d60"
+  }
+ ],
+ "proofs": []
+}

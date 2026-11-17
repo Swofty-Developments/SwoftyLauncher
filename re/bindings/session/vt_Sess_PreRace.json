@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_PreRace",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457e1260",
+  "type": "vtable[11]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "pat:flow-state-type-record;xref:0x14607da98;decomp:re/decomp/142db54f0.c",
+  "notes": "cxx=SessionStatePreRace; neon flow state (slot 2 = NeFlowState base 0x1436aef00, slot 0 returns type record 0x14607da98 whose +8 names the class); onStateEnter 0x142d81270, onStateUpdate 0x142d831e0, onStateExit 0x142d843e0 (slots 8/9/10). (vmknolle session-flow map)"
+ },
+ "signature": {
+  "id": "session.pre_race",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 99 E0 0E 00",
+  "match": "0x142db54fe",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457e1260",
+  "kind": "data",
+  "names": [
+   "vt_Sess_PreRace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x1457e1260",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142db5501",
+   "notes": "V7443 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "vt_Career_SponsorLoyaltyXpMessage",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1456bad48",
+  "type": "vtable[2]",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140fc4cf0.c;decomp:re/decomp/14110cf40.c;decomp:re/decomp/141106870.c;xref:0x140fc4d54,0x141110c35,0x14107a583;doc:addons/career-editor/protocol/economy.md#sponsors-my-team",
+  "notes": "vtable of PrimarySponsorLoyaltyXPGainedMessage (slot 1 0x14107a580 returns the name 0x1456bc5e8). Message 0x20 bytes: +8 ptr 0, +0x10 u32 team key, +0x14 i32 loyalty XP, +0x18 u8 reason (0 CompletedRaceWeekendPrimary .. 5 ActivityOutcome, names 0x1456c5650). Posted by the primary-sponsor loyalty reward 0x140fc4cf0; CareerSponsorsComponent handler 0x14110cf40 -> 0x141106870 adds it (perk multiplier, clamp to the top level) to the active primary sponsor's +0x114 loyalty and claims reached loyalty levels"
+ },
+ "signature": {
+  "id": "career.sponsor_loyalty_xp_message",
+  "section": ".xtls",
+  "pattern": "0F B6 40 5C 4C 8B 05 ?? ?? ?? ?? 48 C7 44 24 28 00 00 00 00 4C 8D 0D",
+  "match": "0x140fc4d40",
+  "anchor": "0x17",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x14",
+   "len": 7
+  },
+  "target": "0x1456bad48",
+  "kind": "data",
+  "names": [
+   "vt_Career_SponsorLoyaltyXpMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-econ",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/economy.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "global",
+   "item": "vt_Career_SponsorLoyaltyXpMessage",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc4cf0.c;decomp:re/decomp/14110cf40.c;decomp:re/decomp/141106870.c;xref:0x140fc4cf0,0x14110da77,0x141110c27,0x14107a580",
+   "notes": "V0275 vtable[2] slot1 -> \"PrimarySponsorLoyaltyXPGainedMessage\"; 0x140fc4cf0 (MyTeamPrimarySponsorLoyaltyReward vtbl 0x1456b19e0) posts {+0x10 inst+0x18 team, +0x14 def+0x58 i32, +0x18 def+0x5c u8}; reason names 0x1456c5650 (6 entries); handler 0x14110cf40 -> 0x141106870(comp, team, xp, reason): active primary sponsor +0x114 += xp*perk mult (comp+0x640), clamped to last level, claims reached levels"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDTileCountGuards",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f49c23",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "pat:cmp-cl-3-ja;imm:0x3;kb:subsystems/rnd_ui.md;decomp:re/decomp/141f49bc0.c;xref:0x141f49c23;doc:addons/rnd-tyres-thermal/native/HOOKS.md#2-the-tyres-tile-count-flag-pie_tyres_counts-default-on-install-time",
+  "notes": "Career_Write_RnDPieTileCounts: cmp cl,3 ; ja 0x141f49c12 (code) then cmp ebx,3 ; ja 0x141f49f5b @0x141f49c28 (slot index). cmp cl,3 ; ja 0x141f49c12: cl = dept code"
+ },
+ "signature": {
+  "id": "career.rn_d_tile_count_guards",
+  "section": ".xtls",
+  "pattern": "41 0F B6 4D 00 80 F9 03 77 EA 83 FB 03",
+  "match": "0x141f49c1e",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f49c23",
+  "kind": "mid",
+  "expect": "80 F9 03 77 EA",
+  "names": [
+   "site_Career_RnDTileCountGuards"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_RnDTileCountGuards",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f49bc0.c;xref:0x141f49bf6,0x141f49c1e,0x141f49c23,0x141f49c26,0x141f49c28,0x141f49c2b",
+   "notes": "V0163 cmp cl,3; ja 0x141f49c12 with cl = movzx byte [r13], r13 walking 0x145735d60..+6; then cmp ebx,3; ja 0x141f49f5b @0x141f49c28; 5-byte window (cmp + rel8 ja), no branch inside, no jump tables"
+  }
+ ],
+ "proofs": []
+}

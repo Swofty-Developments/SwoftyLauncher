@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_WeekendObjectiveNext",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14295c694",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14295c0a0.c;xref:0x14295c694,0x14295c6b1;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "add rcx,8: next upgrade instance of the Available-type bitset loop; target of the type 19..22 skip"
+ },
+ "signature": {
+  "id": "career.weekend_objective_next",
+  "section": ".xtls",
+  "pattern": "41 0F AB D7 48 83 C1 08 48 39 C8 74 2F",
+  "match": "0x14295c690",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14295c694",
+  "kind": "mid",
+  "expect": "48 83 C1 08 48 39 C8",
+  "names": [
+   "site_Career_WeekendObjectiveNext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_WeekendObjectiveNext",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14295c0a0.c;xref:0x14295c690,0x14295c694,0x14295c698,0x14295c6b1",
+   "notes": "V0076 add rcx,8 ; cmp rax,rcx (7 bytes) is the loop step after bts; jne 0x14295c694 from the state filter lands on its start; valid skip target (rdx/edx dead there)"
+  }
+ ],
+ "proofs": []
+}

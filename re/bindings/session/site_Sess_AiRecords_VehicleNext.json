@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Sess_AiRecords_VehicleNext",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438a4892",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1438a0e00.c;xref:0x1438a4876,0x1438a47af",
+  "notes": "In Sess_Ai_BuildVehicleRecords: mov r13,rbx at the start of the per-vehicle loop tail, after the record has been appended to [manager+0x128..0x130]. Needs rbx = manager (the body reloads it from [rsp+0x30] at 0x1438a485f); then rsi=[rsp+0x60] (vehicle index), rdi and rbx constants are set, the local vector [rsp+0x118] is freed when non-null (test rdx,rdx; je 0x1438a3980) and 0x1438a3980 advances the index and tests the loop bound. Core's guard sets rbx=[rsp+0x30] and rip here to skip a vehicle that has no asset-group entry; never hooked.  UNUSED since PR #676 round 2 (see site_Sess_AiRecords_FirstGroupRead)."
+ },
+ "signature": {
+  "id": "session.ai_records_vehicle_next",
+  "section": ".xtls",
+  "pattern": "48 89 BB 38 01 00 00 49 89 DD 48 8B 74 24 60",
+  "match": "0x1438a488b",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438a4892",
+  "kind": "mid",
+  "expect": "49 89 DD 48 8B 74 24 60",
+  "names": [
+   "site_Sess_AiRecords_VehicleNext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "sessguard",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-sessenter",
+   "kind": "global",
+   "item": "0x1438a4892",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1438a0e00.c;xref:0x1438a4876,0x1438a47af;sig:session.ai_records_vehicle_next",
+   "notes": "V8615 sigcheck hits=1 target=0x1438a4892 (mov r13,rbx). Jump state is consistent: r13=rbx=[rsp+0x30] manager, rsi=[rsp+0x60] (stored at 0x1438a3c5c for this vehicle), rdi and rbx reloaded as constants, loop head 0x1438a3980 only needs r13/rsi/rdi/rbx; the local vector is zero-initialised at 0x1438a3a1f so the null test at 0x1438a48b8 skips the free; the record is appended only at 0x1438a4834 / 0x1438a487d so none is left half built; rsp is unchanged. The jump is safe in itself, but landing here skips the record append, which breaks the one-record-per-slot invariant the consumers index by vehicle slot (see the first_group_read row), so the skip must not ship as is."
+  }
+ ],
+ "proofs": []
+}

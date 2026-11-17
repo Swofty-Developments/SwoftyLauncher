@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_RaceRuleset",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457dc840",
+  "type": "vtable[60]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142d35de0.c;xref:0x142d35dea,0x14e703c33;decomp:re/decomp/142d38c30.c",
+  "notes": "RaceRuleset vtable (class name 'RaceRuleset' directly before it, after 'start_lights_duration'). Written by the destructor 0x142d35de0 (store 0x142d35dea) and at 0x14e703c33 (.data1 ctor). Slot 13 = OnLapCompleted (vmknolle hook), slot 45 (0x1457dc9a8) = Sess_RaceRuleset_SetTotalLaps writing +0x358, slot 46 its getter. 60 = consecutive code pointers counted. (used by vmknolle red-flag-pit)"
+ },
+ "signature": {
+  "id": "session.race_ruleset_vtable",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 05 ?? ?? ?? ?? 48 8B 48 08 80 79 68 00 0F 84 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 20 48 89 74 24 28 48 8D 15 ?? ?? ?? ?? 4C 8D 44 24 20 E8 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 86 60 03 00 00",
+  "match": "0x142d35dea",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457dc840",
+  "kind": "data",
+  "names": [
+   "vt_Sess_RaceRuleset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-e",
+   "kind": "global",
+   "item": "0x1457dc840",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_e/decomp/14e703c10.c;decomp:work/verify_e/decomp/142d35de0.c;str:0x1457dc831;xref:0x142d35dea,0x14e703c33",
+   "notes": "V1082 no RTTI; literal 'RaceRuleset' sits directly before the vtable (also registered as type name at 0x142df324a); ctor 14e703c10 stores it and binds 'session.number_of_laps', dtor 142d35de0 stores it then base vt 0x1457e6f70; 60 contiguous code slots = vtable[60]"
+  }
+ ],
+ "proofs": []
+}

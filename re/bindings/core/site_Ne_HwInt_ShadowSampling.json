@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwInt_ShadowSampling",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1527d0ab8",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/1527d0a20.c;xref:0x1527d0ab8",
+  "notes": "call Ne_Parse_Long(attr+0x50 value, NULL, 0) for the hardware-settings attribute 'sampling' (name matched case-insensitively against the string loaded at 0x1527d0a70) in reader 0x1527d0a20, a settings listener callback; its return address keys xanpavle.re-optimization's integer enforcement"
+ },
+ "signature": {
+  "id": "core.hw_int_shadow_sampling",
+  "section": ".data1",
+  "pattern": "31 FF 31 D2 45 31 C0 E8 ?? ?? ?? ?? 66",
+  "match": "0x1527d0ab1",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1527d0ab8",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwInt_ShadowSampling"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ],
+  "data1_reason": "return-address key only, never patched: xanpavle.re-optimization wraps Ne_Parse_Long in .xtls and compares its return address with this call; the attribute is read only inside this .data1 body"
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwInt_ShadowSampling",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1527d0a20.c;xref:0x1527d0ab8,0x1527d0a70,0x1527d0aa3,0x1527d0ac9;sig:core.hw_int_shadow_sampling",
+   "notes": "V0938 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'sampling' from lea 0x1527d0a70, r8d 0x1f) at 0x1527d0aa3; on 0 it sets rcx = [attr+0x50], edx = 0, r8d = 0 and the E8 at 0x1527d0ab8 calls 0x14534dcd8 (.data1, .pdata 0x1527d0a20-0x1527d0b69 covers the body; data1_reason present; reached through the .xtls jmp thunk 0x143dd4b10). The loop is skipped when this+0xc8 == 2. Result clamped to 0..3 and stored to this+0xa0, +0xa4 and +0xa8; this+0xb0 gets it when it is 1..3, else 0. Pattern note: it keeps the RIP-relative disp32 of the junk instruction at +5 (66 03 0D C6 D2 E4 F9, add cx,[rip-0x61b2d3a]) unwildcarded, which section 7 asks to wildcard; it matches once and resolves correctly on this build, but a relink will drop it. sigcheck: one hit, target 0x1527d0ab8"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "g_Sess_TyreRulesActive",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1460806c8",
+  "type": "uint8_t",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142e88630.c;xref:0x142e88636",
+  "notes": "byte: 0 = no session tyre rules. Sess_TyreSet_IsUsableNow 0x142e88630 then returns 1 at once; the mode-0 check 0x142e88730 first returns 0 for a damaged or handed-back set (set+9 & 9, 0x142e88739..0x142e8874a) and only then returns 1 (0x142e8874b); the least-worn picker 0x142e8ab90 (body 0x14f3da1d0) skips the checks. Set to 1 by 0x14f3fcb70, cleared by 0x142cec430; corrected after V0969"
+ },
+ "signature": {
+  "id": "session.tyre_rules_active",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 B2 01 80 3D ?? ?? ?? ?? 00",
+  "match": "0x142e88630",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x6",
+   "len": 7
+  },
+  "target": "0x1460806c8",
+  "kind": "data",
+  "names": [
+   "g_Sess_TyreRulesActive"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/fq_tyres.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-b",
+   "kind": "global",
+   "item": "g_Sess_TyreRulesActive",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e88630.c;decomp:re/decomp/142e88730.c;decomp:re/decomp/14f3da1d0.c;decomp:re/decomp/14f3fcb70.c;xref:0x142e88636,0x142e8874b,0x14f3da214,0x14f3fccdd,0x142cecab9;sig:session.tyre_rules_active",
+   "notes": "V0969 Meaning confirmed: 0x142e88630 sets dl = 1, then cmp byte [0x1460806c8], 0 / je to the return, so it returns 1 for any set when the byte is 0; the picker body 0x14f3da1d0 then ranks every set by wear with no flag or tag check. It is the engaged flag of an optional rules block 0x146080688..0x1460806c0: 0x14f3fcb70 copies the block (u32 session type, qwords at +8 and +0x10, a vector) and sets the byte to 1 at 0x14f3fccdd when it was 0; 0x142cec430 clears it at 0x142cecab9. Wrong detail: 0x142e88730 does not return 1 at once. It first tests set+9 & 9 (damaged or handed back) and returns 0 for such a set (0x142e88739..0x142e8874a); only after that does it return 1 when this byte is 0 (0x142e8874b). Both 0x142e88630 and the picker call it only when the byte is non-zero. Other readers: 0x140bcc190 (7 sites), 0x142e8e4c0, 0x142e8c6e0, 0x141f32500, 0x142cec430, and .data1 0x14f3cce20, 0x14f3d1720, 0x14f3da8e0. sigcheck: 1 hit"
+  },
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-b",
+   "kind": "global",
+   "item": "g_Sess_TyreRulesActive",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e88630.c;decomp:re/decomp/142e88730.c;decomp:re/decomp/14f3da1d0.c;decomp:re/decomp/14f3fcb70.c;xref:0x142e88636,0x142e8874b,0x14f3da214,0x14f3fccdd,0x142cecab9;sig:session.tyre_rules_active",
+   "notes": "V0991 Re-check of the corrected row (after V0969 in feat/f1-1990-port). The order now matches the code. 0x142e88630 sets dl = 1 and its cmp byte [0x1460806c8], 0 / je returns 1 at once. 0x142e88730 tests set+9 & 9 first (returns 0 at 0x142e88742) and reaches cmp byte [0x1460806c8], 0 only at 0x142e8874b (returns 1). The picker body 0x14f3da1d0 ranks every set with no checks when the byte is 0. The writers match too: 0x14f3fcb70 sets it to 1 (0x14f3fccdd) when it copies the rules block, and 0x142cec430 clears it (0x142cecab9). sigcheck: 1 hit, target 0x1460806c8"
+  }
+ ],
+ "proofs": []
+}

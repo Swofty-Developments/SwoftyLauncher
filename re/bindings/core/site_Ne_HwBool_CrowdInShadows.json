@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwBool_CrowdInShadows",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14874aa08",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/14874a990.c;xref:0x14874aa08",
+  "notes": "call Ne_Compare_StringNoCase(attr+0x50 value, \"true\") for the hardware-settings attribute 'crowdInShadows' (name loaded at 0x14874a9c5) in reader 0x14874a990; the reader stores (result == 0) as the bool; xanpavle.re-optimization redirects it to pin the value"
+ },
+ "signature": {
+  "id": "core.hw_bool_crowd_in_shadows",
+  "section": ".data1",
+  "pattern": "49 8B 4C 24 50 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 66",
+  "match": "0x14874a9fc",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14874aa08",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwBool_CrowdInShadows"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ],
+  "data1_reason": "redirected: the attribute is read only inside this .data1 body and the only .xtls route is wrapping Ne_Compare_StringNoCase, which has 1553 rel32 callers"
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwBool_CrowdInShadows",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14874a990.c;xref:0x14874aa08,0x14874a9c5,0x14874a9f3,0x14874aa16;sig:core.hw_bool_crowd_in_shadows",
+   "notes": "V0942 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'crowdInShadows' from lea 0x14874a9c5, r8d 0x1f) at 0x14874a9f3; on 0 it sets rcx = [attr+0x50], rdx = \"true\" (0x145612a6a) and the E8 at 0x14874aa08 calls 0x14534d918 (.data1, .pdata 0x14874a990-0x14874aac8 covers the body; data1_reason present; reached through the .xtls jmp thunk 0x140808710). sete dil keeps (result == 0); after the optional PC_OPTIONS log it becomes bit 3 of this+0x260 (with dirty bit 1) when it differs from the current bit. Pattern note: it keeps the RIP-relative disp32 of the junk instruction at +5 (66 8B 0D 07 6C 48 10, mov cx,[rip+0x10486c07]) unwildcarded, which section 7 asks to wildcard; it matches once and resolves correctly on this build, but a relink will drop it. sigcheck: one hit, target 0x14874aa08"
+  }
+ ],
+ "proofs": []
+}

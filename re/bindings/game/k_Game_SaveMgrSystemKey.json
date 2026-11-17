@@ -1,0 +1,44 @@
+{
+ "schema": 1,
+ "name": "k_Game_SaveMgrSystemKey",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146100ca8",
+  "type": "void",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1422c6ba0.c;decomp:re/decomp/14030ffd0.c;xref:0x1422c6d9f,0x140ff6ef8,0x141c4c012,0x141c76992;decomp:re/decomp/1436595b0.c;xref:0x1407d3f7a",
+  "notes": "key (its address is the key) of the save manager in the game manager's systems map [g_Game_Manager+0x30]; looked up with 0x14030ffd0 right before every Game_SaveMgr_RequestProfileSave_Thunk call. 0x14030ffd0 hashes the 8 key bytes (FNV-1a 64) and returns the entry index (entries [map+0x18], 0x10 each, value at +8); a miss returns ([map+0x20]-[map+0x18])>>4. ts-v1 signature for the test agent: the address is the key into the game manager systems map"
+ },
+ "signature": {
+  "id": "game.save_mgr_system_key",
+  "section": ".xtls",
+  "pattern": "49 89 84 24 80 14 00 00 49 8B B4 24 70 14 00 00 48 8D 05",
+  "match": "0x1407d3f67",
+  "anchor": "0x13",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x10",
+   "len": 7
+  },
+  "target": "0x146100ca8",
+  "kind": "data",
+  "names": [
+   "k_Game_SaveMgrSystemKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

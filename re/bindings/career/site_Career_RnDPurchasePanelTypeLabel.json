@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPurchasePanelTypeLabel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c8e919",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141c8d540.c;xref:0x141c8e919,0x141c8e93b;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "cmp rax,0x12 ; ja 0x141c8e93b: head of the inlined upgrade type switch in the develop-upgrade panel Career_Update_RnDPurchasePanel (rax = type). Placing the hook on the head instead of the default 0x141c8e93b (lea r8,[\"INVALID UPGRADE\"]) is a choice: a redirect from the head leaves every register as the default path does (only the jump-table dispatch writes rax/rcx), and the join (lea rdx,[fmt] ; lea rcx,[buf] ; call Ne_Format_String) reads only r8. rnd-tyres sets r8 = its type suffix for 19..22 and jumps to the join; other types fall through"
+ },
+ "signature": {
+  "id": "career.rn_d_purchase_panel_type_label",
+  "section": ".xtls",
+  "pattern": "48 8B 86 A8 06 00 00 0F B6 40 70 48 83 F8 12 77 1C",
+  "match": "0x141c8e90e",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c8e919",
+  "kind": "mid",
+  "expect": "48 83 F8 12 77 1C",
+  "names": [
+   "site_Career_RnDPurchasePanelTypeLabel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_RnDPurchasePanelTypeLabel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c8d540.c;xref:0x141c8e90e,0x141c8e915,0x141c8e919,0x141c8e91d,0x141c8e93b",
+   "notes": "V0070 mov rax,[rsi+0x6a8] ; movzx eax,[rax+0x70] ; cmp rax,0x12 ; ja 0x141c8e93b head in Career_Update_RnDPurchasePanel; default lea r8 'INVALID UPGRADE'. Note: 'no unique signature' rationale inaccurate, harmless"
+  }
+ ],
+ "proofs": []
+}

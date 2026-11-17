@@ -136,7 +136,9 @@ Anything else gets a normal review. The workflow's summary lists the reason.
 - `target` is `match + anchor` for `addr`; the rel32 or disp32 operand is wildcarded for `rel32` and `riprel`; `expect` agrees with the pattern's bytes.
 - The signature kind fits the binding kind, the section is `.xtls` (or `.data1` with a reason), the address is inside the KB image.
 - Each proof's digest matches the signature and its exe hash; a proof on the KB build found the record's `match` and `target`.
-- After merging, the `main` job runs `binding.py check` over every record again.
+- The name and address have no verify rows yet, so an old verdict cannot back a new record.
+- `kb_lint.py --structural` passes over the base branch with the PR's records added: no drift between rows, signatures, structs, verify rows and tests.
+- After merging, the `main` job runs `binding.py check` and `kb_lint.py --structural` over `main` again.
 
 ## Threat model
 
@@ -149,7 +151,7 @@ Anything else gets a normal review. The workflow's summary lists the reason.
 | A record changes a binding players already rely on | only new names, addresses, signature ids, patterns and targets merge themselves; changing or deleting a record needs review. |
 | A new name switches on code that already names it | a binding named anywhere in shipped code needs review. |
 | A fabricated proof | CI cannot run the game, so a proof is a consistency check, not evidence. A record with one proof is not exported. Export needs an agree row from a second GitHub account (or a maintainer), and stable needs a maintainer's L3 trace test. |
-| Two accounts by one person | an experimental binding is used only by addons that name it, and those addons run native code already. Maintainers can demote a record (`kb.py set ... level=L1`) or revert it; `bindings: auto-merge` marks every self-merged PR. |
+| One person with two GitHub accounts | The agree row only proves a second account, so one person with two accounts can take a new binding to `experimental` alone. What they get is an experimental binding that no shipped code names (a name already used in shipped code needs review): nothing calls it unless an addon names it in a hook, and that addon already runs its own native code. They cannot change an existing binding (review) or reach `stable`: stable needs L3, and only a maintainer sets L3, after a trace test the lead runs passes on the KB build (`re/PROTOCOL.md` §1, §8). Maintainers can demote a record (`kb.py set ... level=L1`) or revert it; `bindings: auto-merge` marks every self-merged PR. |
 | Two PRs add the same name | both write the same path, so the second one conflicts and stays open. Two PRs at one address under different names are caught by the `main` job and `test_db_unique`. |
 
 ## Repository settings this needs

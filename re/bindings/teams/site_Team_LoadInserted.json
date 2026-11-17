@@ -1,0 +1,94 @@
+{
+ "schema": 1,
+ "name": "site_Team_LoadInserted",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424697f9",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "teams",
+  "evidence": "decomp:re/decomp/142469440.c;xref:0x1424697f4",
+  "notes": "Sess_Load_Teams: rax the stored record"
+ },
+ "signature": {
+  "id": "teams.load_inserted",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 7C 24 4C 4C 8D 74 24 68",
+  "match": "0x1424697f4",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424697f9",
+  "kind": "mid",
+  "expect": "8B 7C 24 4C 4C 8D 74 24 68",
+  "names": [
+   "site_Team_LoadInserted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "w21b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/team_slots.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "team-v1",
+   "kind": "global",
+   "item": "site_Team_LoadInserted",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142469440.c;decomp:re/decomp/140cdbd40.c;xref:0x1424697f9",
+   "notes": "V1573 Site is right: 0x1424697f9 is the instruction after the call and rax is Team_Insert_RecordByStatId's return (the new record, or 0 for a duplicate stat id; both returns re-read at 0x140cdbe72-ish end of function: *(*plVar7+8+uVar9*0x10)). Patch window 0x1424697f9..0x1424697fd covers mov edi,[rsp+4c] (4 bytes) and one byte of lea r14,[rsp+68] (5 bytes); the engine must relocate both, no branch lands inside, adjacent to but not overlapping the call hook window ending at 0x1424697f9. Same caveat as the call site: the record fires for set 0 and set 1 loads alike, so the inserted callback (redress) also dresses set 1 records."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "team-v1",
+   "kind": "sig",
+   "item": "teams.load_inserted",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/142469440.c;xref:0x1424697f9",
+   "notes": "V1575 sigcheck: same 14-byte pattern, anchor 0x5, unique at 0x1424697f4, target 0x1424697f9 is an instruction boundary (end of the call)."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "team-v1",
+   "kind": "global",
+   "item": "site_Team_LoadInserted",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142469440.c;decomp:re/decomp/140cdbd40.c;xref:0x1424697f9",
+   "notes": "V1597 Re-confirmed: location and rax role right and safe; the row note stays valid as written. Both set loads fire it."
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "w21c",
+   "kind": "global",
+   "item": "site_Team_LoadInserted",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142469440.c;xref:0x1424695af,0x14246ca8c,0x1424697f4",
+   "notes": "V1600 V1596-V1598 say both set loads reach this site; they do not. Sess_Load_Teams (bpl = set, mov ebp,edx at 0x1424694b3) builds the empty slot vector for every set, then at 0x1424695af tests bpl and jumps (0x1424695b2 jne 0x14246ca8c) straight to the message post for any set other than 0, so the entrants.teams walk and Team_Insert_RecordByStatId run for set 0 alone. Set 1's vector stays empty. The key (stat_id<<16, no set byte) therefore needs no set filter; the site fires for the database set only. Disassembly 0x142469440..0x14246cb41."
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "w21c",
+   "kind": "global",
+   "item": "site_Team_LoadInserted",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142469440.c;xref:0x1424695af,0x14246ca8c,0x1424697f4",
+   "notes": "V1602 Site and register roles stand (see the partial row above for the set correction): the walk that reaches this site runs for set 0 only, so the site fires for the database set alone."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_UpgradePushStateBody",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435230fd",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1435230e0.c;xref:0x1435230fd;doc:addons/rnd-tyres-thermal/native/HOOKS.md#the-fix-flag-instantiate_tyres_upgrades-default-on-install-time",
+  "notes": "mov ebp,r9d: fall-through of the dept gate (join target)"
+ },
+ "signature": {
+  "id": "career.upgrade_push_state_body",
+  "section": ".xtls",
+  "pattern": "0F 87 ?? ?? ?? ?? 44 89 CD 44 89 C3",
+  "match": "0x1435230f7",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435230fd",
+  "kind": "mid",
+  "expect": "44 89 CD 44 89 C3",
+  "names": [
+   "site_Career_UpgradePushStateBody"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_UpgradePushStateBody",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435230e0.c;xref:0x1435230f7,0x1435230fd",
+   "notes": "V0176 mov ebp,r9d; mov ebx,r8d at 0x1435230fd is the gate fall-through; 6-byte window clean"
+  }
+ ],
+ "proofs": []
+}

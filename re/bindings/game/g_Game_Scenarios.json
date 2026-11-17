@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "g_Game_Scenarios",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146079b28",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/14315d880.c;decomp:re/decomp/1430913f0.c;xref:0x14315e522",
+  "notes": "Scenario registry singleton pointer. +0x68 begin / +0x70 end of 0x50-byte scenario rows: +0 stat id (byte), +8 pointer to an object whose +0x10 is the scenario name (C string, compared with the category value name in setupFromUnranked), +0x18 game setup mode stat id, +0x20 entrant list."
+ },
+ "signature": {
+  "id": "game.scenarios_global",
+  "section": ".xtls",
+  "pattern": "48 8B 05 ?? ?? ?? ?? 48 8B 70 68 4C 8B 68 70 4C 39 EE",
+  "match": "0x14315e522",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x146079b28",
+  "kind": "data",
+  "names": [
+   "g_Game_Scenarios"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "carcat-scenario",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/car_category.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-carcat-scenario",
+   "kind": "global",
+   "item": "g_Game_Scenarios",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315d880.c;xref:0x14315e522;sig:game.scenarios_global",
+   "notes": "V1274 Re-checked statically by the same session as carcat-scenario: mov rax,[0x146079b28]; rsi=[rax+0x68]; r13=[rax+0x70]; loop step 0x50 (add rsi,0x50 at 0x14315e57e); the same loop shape in Game_Network_SetScenario 0x143091521."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,66 @@
+{
+ "schema": 1,
+ "name": "g_FeTile_CustomisationSystem",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146064df0",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "evidence": "decomp:re/decomp/141726620.c;xref:0x141726628",
+  "notes": "customisation system; +0x230..+0x238 is the content entry vector (0x60 stride: +0x04 packed id, +0x58 dlc_content byte, vehicle hash sets +0x30/+0x48), one entry per customisation.customisation_cars.customisation_car_group row. Raised by native-1990 for the F1 1990 v2 third Career tile (doc:/mnt/work/.f1-1990/v2/third-tile.md)."
+ },
+ "signature": {
+  "id": "fe_tiles.customisation_system",
+  "section": ".xtls",
+  "pattern": "48 89 D6 48 8B 05 ?? ?? ?? ?? 48 8B 90 30 02 00 00",
+  "match": "0x141726625",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x3",
+   "len": 7
+  },
+  "target": "0x146064df0",
+  "kind": "data",
+  "names": [
+   "g_FeTile_CustomisationSystem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/career_content.cpp",
+   "addons/f1-1990/native/src/career_menu_ui.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-content",
+   "kind": "global",
+   "item": "g_FeTile_CustomisationSystem",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/exe/std-content/decomp/141726620.c;decomp:work/exe/std-content/decomp/1417267e0.c;xref:0x141726628,0x141726926;sig:fe_tiles.customisation_system",
+   "notes": "V0907 Independent: pointer global; both content presses read [g]+0x230 (begin) and [g]+0x238 (end), stride 0x60, entry +0x04 = id written to g_FeTile_SelectedCareerContent, +0x58 = byte (2025 press takes the first ==0, 2026 press the first !=0). 143 riprel refs. Not re-derived: the +0x30/+0x48 vehicle hash sets and the one-entry-per-customisation_car_group mapping. sigcheck: riprel data 1 hit"
+  },
+  {
+   "date": "2026-10-21",
+   "verifier": "std-content",
+   "kind": "global",
+   "item": "g_FeTile_CustomisationSystem",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/exe/std-content/decomp/141726620.c;decomp:work/exe/std-content/decomp/1417267e0.c;xref:0x141726628,0x14172681d;sig:fe_tiles.customisation_system",
+   "notes": "V0911 Supersedes V0907, whose xref 0x141726926 was a typo: the 2026 press 0x1417267e0 loads the global at 0x14172681d (mov rax,[rip+0x493e5cc]), the 2025 press at 0x141726628. Verdict and findings unchanged: pointer global, [g]+0x230 begin / [g]+0x238 end, 0x60 stride, entry +0x04 id, +0x58 byte; +0x30/+0x48 hash sets and the car_group row mapping not re-derived"
+  }
+ ],
+ "proofs": []
+}
