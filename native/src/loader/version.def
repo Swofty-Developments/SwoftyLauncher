@@ -18,3 +18,4 @@ EXPORTS
     VerQueryValueA=fwd_VerQueryValueA @16
     VerQueryValueW=fwd_VerQueryValueW @17
     SwoftyLoaderHookPool @18
+    SwoftyLoaderScanMany @19

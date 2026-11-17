@@ -9,6 +9,10 @@ OUT=$1
 "$OUT/bc7_test" content/bc7
 "$OUT/logo_cache_test"
 "$OUT/logo_build_test" content/bc7 "$OUT/logo_out"
+rm -rf "$OUT/logo_slices" "$OUT/logo_out_cold" "$OUT/logo_out_warm"
+LOGO_SLICE_DIR="$OUT/logo_slices" "$OUT/logo_build_test" content/bc7 "$OUT/logo_out_cold" | grep 'slice cache in LOGO_SLICE_DIR'
+LOGO_SLICE_DIR="$OUT/logo_slices" LOGO_SLICE_WARM=1 "$OUT/logo_build_test" content/bc7 "$OUT/logo_out_warm" | grep 'slice cache\(:\| in\) .*\(LOGO_SLICE_DIR\|second run\)'
+python3 content/check_logo_slices.py content/bc7/expect/logo_out.md5 "$OUT/logo_out" "$OUT/logo_out_cold" "$OUT/logo_out_warm"
 "$OUT/logo_deliver_test" content/bc7
 "$OUT/garage_test"
 python3 content/check_logo_build.py content/bc7 "$OUT/logo_out"
