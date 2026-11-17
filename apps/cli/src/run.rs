@@ -506,6 +506,7 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
         request_id: request.id.clone(),
         _lock: lock,
     };
+    crate::build::with_session_env(request.netplay.is_some());
     if apply {
         say("info", &format!("installing profile {profile}"));
         crate::build::install(store, &profile, g, true, &info)?;
@@ -950,7 +951,6 @@ fn play(
     if request.steam_saves_once {
         game_env.insert(swofty_core::launcher_saves::OFF_ENV.to_owned(), "off".to_owned());
     }
-    // lead: place the session plugin here (`client::game_plugin` + infra's `place`) when `request.netplay` is set.
     if let Some(armed) = &request.netplay {
         for (name, value) in parse_launch_env(armed) {
             match game_env.get_mut(&name) {

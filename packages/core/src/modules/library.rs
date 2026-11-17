@@ -249,3 +249,31 @@ impl Drop for Library {
         unsafe { (self.close)(self.handle) };
     }
 }
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    /// Runs against a locally built library module when `SWOFTY_MODULE_TEST_LIBRARY` names one.
+    #[test]
+    fn a_local_library_module_opens_answers_and_refuses_unknown_ops() {
+        let Some(path) = std::env::var_os("SWOFTY_MODULE_TEST_LIBRARY") else {
+            return;
+        };
+        let config = json!({ "data": std::env::temp_dir().join("swofty-module-library-test"), "server": "" });
+        let wrong = Library::open_path("local", Path::new(&path), 0, &config, Hooks::default());
+        assert!(wrong.err().is_some_and(|e| e.contains("abi")));
+        let lib = Library::open_path("local", Path::new(&path), 1, &config, Hooks::default()).unwrap();
+        assert_eq!(lib.call("version", Value::Null).unwrap()["abi"], 1);
+        assert!(lib.call("no.such.op", json!({})).is_err());
+        assert!(lib.call("version", json!(3)).is_err());
+    }
+
+    #[test]
+    fn a_file_that_is_not_a_library_is_an_error() {
+        let path = std::env::temp_dir().join(format!("swofty-not-a-module-{}", std::process::id()));
+        std::fs::write(&path, b"nope").unwrap();
+        assert!(Library::open_path("x", &path, 1, &json!({}), Hooks::default()).is_err());
+        std::fs::remove_file(&path).ok();
+    }
+}

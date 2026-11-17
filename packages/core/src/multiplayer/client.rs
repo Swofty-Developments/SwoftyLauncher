@@ -15,17 +15,14 @@ use super::types::{FixStep, GameStatus, RoomSettings, RoomSummary, SessionState}
 use crate::baseline::Identity;
 use crate::catalog::{self, Addon};
 use crate::modules::library::{Hooks, Library};
-use crate::modules::{self, Api, Unavailable};
+use crate::modules::{self, Unavailable};
 use crate::profile::Profile;
 use crate::store::Store;
+use crate::timetrial::api::Api;
 
 /// The module's name on the server and the ABI this launcher speaks to it.
 pub const MODULE: &str = "mp-launcher";
 pub const MODULE_ABI: u32 = 1;
-/// The in-game plugin that goes with it: its module name, loader id and ABI.
-pub const GAME_MODULE: &str = "mp-game";
-pub const GAME_PLUGIN_ID: &str = "swofty.mp";
-pub const GAME_MODULE_ABI: u32 = 1;
 /// The environment variable that carries [`launch_env`] to the process that starts the game, as a JSON
 /// list of `[name, value]` pairs.
 pub const LAUNCH_ENV: &str = "SWOFTY_SESSION_ENV";
@@ -83,34 +80,20 @@ pub fn load(data: &Path, token: Option<&str>) -> Result<(), Unavailable> {
     if slot.is_some() {
         return Ok(());
     }
-    let api = Api {
-        server: catalog::base_url(),
-        token: token.map(str::to_owned),
-    };
+    let api = Api::new(token.unwrap_or_default());
     let module = modules::ensure(data, &api, MODULE, modules::platform(), MODULE_ABI)?;
     let config = json!({
         "data": data,
-        "server": api.server,
+        "server": api.server(),
         "launcher": crate::update::current_version().to_string(),
     });
     let hooks = Hooks {
         call: Box::new(answer),
         notify: Box::new(|_| {}),
     };
-    let library = Library::open(&module, MODULE_ABI, &config, hooks).map_err(Unavailable)?;
+    let library = Library::open(&module, MODULE_ABI, &config, hooks).map_err(Unavailable::from)?;
     *slot = Some(Arc::new(library));
     Ok(())
-}
-
-/// The in-game plugin a launch for a session needs, verified on disk, for the build to place under
-/// [`GAME_PLUGIN_ID`].
-// lead: merge with infra. Wire the result into infra's `place` wherever `launch_env` is applied.
-pub fn game_plugin(data: &Path, token: Option<&str>) -> Result<modules::Module, Unavailable> {
-    let api = Api {
-        server: catalog::base_url(),
-        token: token.map(str::to_owned),
-    };
-    modules::ensure(data, &api, GAME_MODULE, "windows-x86_64", GAME_MODULE_ABI)
 }
 
 fn call(op: &str, args: Value) -> Result<Value, String> {

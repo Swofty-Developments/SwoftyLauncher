@@ -31,7 +31,6 @@ use crate::theme::{Palette, ScrollArea};
 const TICK: Duration = Duration::from_millis(500);
 const GAME_EVERY: Duration = Duration::from_secs(2);
 const ROOMS_EVERY: Duration = Duration::from_secs(5);
-const STATUS_TIMEOUT: Duration = Duration::from_secs(3);
 const MIN_PLAYERS: u8 = 2;
 const MAX_PLAYERS: u8 = 24;
 const AVATARS_DIR: &str = "avatars";
@@ -870,7 +869,7 @@ impl Shell {
                         m.session = Some(session);
                         m.form = false;
                     }
-                    Err(e) => m.error = Some(e.into()),
+                    Err(e) => m.error = Some(e),
                 }
                 cx.notify();
             })
@@ -1761,14 +1760,13 @@ mod tests {
     use std::collections::HashSet;
 
     use swofty_core::multiplayer::types::{
-        Cover, GameStatus, MemberStage, MemberState, Phase, PrintMatch, RelayStatus, Role, RoomAddon,
-        RoomAddons, RoomSummary, Screen, SessionState, Step, User,
+        GameStatus, MemberStage, MemberState, Phase, PrintMatch, RelayStatus, Role, RoomAddon, RoomAddons,
+        RoomSummary, Screen, SessionState, User,
     };
 
     use super::{
         GameState, RoomContent, RoomStatus, Start, Tone, addon_checks, card_addons, content_check,
         content_word, exit_leaves, exit_notice, joined, member_word, missing, restart_ok_text, room_meta,
-        room_status, step_number,
     };
 
     fn status(screen: Screen) -> GameStatus {
