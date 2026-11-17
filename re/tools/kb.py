@@ -168,9 +168,27 @@ def tokens(ev):
     return out
 
 
+_subsystems = (None, {})
+
+
 def subsystems():
-    rows, _ = read_table('subsystems')
-    return {r['id']: r for r in rows}
+    """subsystems.tsv by id, parsed again only when the file's bytes differ from the last parse."""
+    global _subsystems
+
+    def raw():
+        try:
+            with open(path('subsystems'), 'rb') as f:
+                return f.read()
+        except OSError:
+            return None
+    data = raw()
+    if data is None or data != _subsystems[0]:
+        rows, _ = read_table('subsystems')
+        parsed = {r['id']: r for r in rows}
+        if data is not None and raw() == data:
+            _subsystems = (data, parsed)
+        return {k: dict(v) for k, v in parsed.items()}
+    return {k: dict(v) for k, v in _subsystems[1].items()}
 
 
 def check_level_evidence(level, ev, kind='function'):
@@ -556,37 +574,55 @@ def cmd_import(a):
     print(f'imported {added}, skipped {skipped} (invalid or already present; fix and add them by hand)')
 
 
-def cmd_export(a):
-    """One folder with every table as kb.py reads it (re/db plus re/bindings) and the structs, for tools outside
-    Python such as the Ghidra scripts. Each file is replaced atomically, so concurrent exports are safe."""
+EXPORT_KEEP = 3
+
+
+def export_tree(out):
+    """Every table as kb.py reads it (re/db plus re/bindings), signatures.json and the structs, written into `out`."""
     import shutil
-    os.makedirs(os.path.join(a.dir, 'structs'), exist_ok=True)
-
-    def put(name, text):
-        p = os.path.join(a.dir, name)
-        tmp = f'{p}.{os.getpid()}.tmp'
-        with open(tmp, 'w') as f:
-            f.write(text)
-        os.replace(tmp, p)
-
+    os.makedirs(os.path.join(out, 'structs'))
     for t, (cols, key) in TABLES.items():
         rows, _ = read_table(t)
         if key and key[0] == 'addr':
             rows = sorted(rows, key=lambda r: int(r['addr'], 16))
         elif key:
             rows = sorted(rows, key=lambda r: tuple(r[k] for k in key))
-        put(f'{t}.tsv', '\t'.join(cols) + '\n' + ''.join('\t'.join(r[c] for c in cols) + '\n' for r in rows))
-    put('signatures.json', json.dumps(load_signatures(), indent=1) + '\n')
+        with open(os.path.join(out, f'{t}.tsv'), 'w') as f:
+            f.write('\t'.join(cols) + '\n' + ''.join('\t'.join(r[c] for c in cols) + '\n' for r in rows))
+    with open(os.path.join(out, 'signatures.json'), 'w') as f:
+        f.write(json.dumps(load_signatures(), indent=1) + '\n')
     src = os.path.join(DB, 'structs')
-    keep = {f for f in os.listdir(src) if f.endswith('.h')}
-    for f in sorted(keep):
-        tmp = os.path.join(a.dir, 'structs', f'{f}.{os.getpid()}.tmp')
-        shutil.copyfile(os.path.join(src, f), tmp)
-        os.replace(tmp, os.path.join(a.dir, 'structs', f))
-    for f in os.listdir(os.path.join(a.dir, 'structs')):
-        if f.endswith('.h') and f not in keep:
-            os.remove(os.path.join(a.dir, 'structs', f))
-    print(f'exported {len(TABLES)} tables, signatures.json and {len(keep)} structs to {a.dir}')
+    structs = sorted(f for f in os.listdir(src) if f.endswith('.h'))
+    for f in structs:
+        shutil.copyfile(os.path.join(src, f), os.path.join(out, 'structs', f))
+    return len(structs)
+
+
+def cmd_export(a):
+    """One folder for tools outside Python such as the Ghidra scripts. Each export is written whole into a new
+    sibling folder and `dir` becomes a symlink to it in one rename, so a reader that resolves `dir` once sees one
+    export, never files from two. The last EXPORT_KEEP exports stay for readers still holding an older one."""
+    import shutil, time
+    link = os.path.abspath(a.dir.rstrip('/' + os.sep))
+    parent, base = os.path.dirname(link), os.path.basename(link)
+    os.makedirs(parent, exist_ok=True)
+    version = f'{base}.v{time.time_ns()}.{os.getpid()}'
+    out = os.path.join(parent, version)
+    try:
+        n = export_tree(out)
+    except BaseException:
+        shutil.rmtree(out, ignore_errors=True)
+        raise
+    if os.path.isdir(link) and not os.path.islink(link):
+        os.rename(link, os.path.join(parent, f'{base}.v0.{os.getpid()}'))
+    tmp = os.path.join(parent, f'.{base}.{os.getpid()}.link')
+    os.symlink(version, tmp)
+    os.replace(tmp, link)
+    mine = re.compile(r'^' + re.escape(base) + r'\.v(\d+)\.(\d+)$')
+    old = sorted((int(m.group(1)), f) for f in os.listdir(parent) if (m := mine.match(f)) and f != version)
+    for _, f in old[:max(0, len(old) - (EXPORT_KEEP - 1))]:
+        shutil.rmtree(os.path.join(parent, f), ignore_errors=True)
+    print(f'exported {len(TABLES)} tables, signatures.json and {n} structs to {a.dir} ({version})')
 
 
 def main():

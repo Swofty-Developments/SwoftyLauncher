@@ -10,6 +10,8 @@ else
     KB=$RE/ghidra/kb
     python3 "$RE/tools/kb.py" export "$KB" >/dev/null
 fi
+# kb.py export swaps a symlink to a new folder; pinning the folder keeps one export for the whole job.
+KB=$(readlink -f "$KB")
 MASTER=$RE/ghidra/master
 SCRIPTS=$RE/ghidra/scripts
 PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
