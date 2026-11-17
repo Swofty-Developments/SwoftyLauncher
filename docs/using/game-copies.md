@@ -70,7 +70,7 @@ Each store puts its own game files back:
 
 When files in the Steam copy were changed outside Swofty, the launch stops and **Your game files have been edited** offers **Verify game files in Steam**. See [Game files changed outside Swofty](/reference/launch#game-files-changed-outside-swofty).
 
-Play starts when `amd_fidelityfx_dx12.dll` is not Steam's copy, as with an FSR 4 drop-in. It stays as you put it, and Verify integrity of game files in Steam puts Steam's copy back. `F1_25.exe` and `steam_api64.dll` must still be Steam's.
+Play starts when one of the game's DLLs is not Steam's copy, as with an FSR 4 build of `amd_fidelityfx_dx12.dll`, a VR runtime's `openvr_api.dll` or a DLSS swap. It stays as you put it, and Verify integrity of game files in Steam puts Steam's copy back. A DLL missing from the game folder still stops the launch. `F1_25.exe` and `steam_api64.dll` must still be Steam's.
 
 An EA app copy is not checked against a list of its files. When the launcher finds files in its folder that it didn't put there, the same modal shows the EA app's repair steps instead.
 
