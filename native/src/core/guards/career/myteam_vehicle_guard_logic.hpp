@@ -1,11 +1,8 @@
 #pragma once
 
-#include "core/guards/env.hpp"
-
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <vector>
 
 namespace runtime::myteam_vehicle {
 
@@ -17,8 +14,6 @@ constexpr uint64_t ROW_INDEX = 0x200;
 constexpr uint32_t STAT_ID_MASK = 0x3fff;
 constexpr size_t LABEL_CHARS = 0x100;
 constexpr size_t LOG_LABELS = 32;
-
-using swofty_core::guards::switch_off;
 
 inline bool row_missing(int32_t index)
 {
@@ -80,25 +75,5 @@ template <class Mem> bool skip_base(Mem &mem, uint64_t rsp, uint64_t row, Skip &
     }
     return true;
 }
-
-struct Labels {
-    std::vector<std::string> seen;
-
-    bool first(const std::string &label)
-    {
-        for (const std::string &s : seen)
-            if (s == label)
-                return false;
-        if (seen.size() >= LOG_LABELS)
-            return false;
-        seen.push_back(label);
-        return true;
-    }
-
-    bool last() const
-    {
-        return seen.size() == LOG_LABELS;
-    }
-};
 
 }

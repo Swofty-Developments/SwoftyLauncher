@@ -1,5 +1,6 @@
 #include "core/career/career_ui.hpp"
 #include "core/registry/older.hpp"
+#include "core/runtime/loader/core_sets.hpp"
 
 #include <swofty/game.hpp>
 
@@ -491,6 +492,8 @@ void wizard_commit()
         swofty::log("[wizard] setup: start in F1 %s, tile route %s, steps and options %s, confirm route %s, driver tabs %s",
                     state(0), state(1), state(2), state(3), state(4));
 }
+
+static loader::FunctionSet wizard_core_set{loader::CoreSetId::wizard, wizard_mixins, wizard_commit};
 
 // A tile route whose `from` is a route the game runs later, after the tile press, applies when that
 // route runs (Vm_Run_Route, career_start.cpp): with saves for the content the tile opens the

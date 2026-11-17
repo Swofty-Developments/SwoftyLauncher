@@ -43,6 +43,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace rs = runtime::rnd_suppliers;
 
@@ -217,8 +218,7 @@ void load_hook(void *container, void *key, uint8_t engine)
 void setup()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_RND_SUPPLIER_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_RND_SUPPLIER_GUARD", v)) {
         swofty::log("[rnd] supplier budget off (SWOFTY_RND_SUPPLIER_GUARD=%s)", v);
         return;
     }

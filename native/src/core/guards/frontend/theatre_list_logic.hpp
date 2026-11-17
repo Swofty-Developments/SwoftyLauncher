@@ -7,7 +7,6 @@
 namespace runtime::theatre_list {
 
 using garage_setup::Read;
-using garage_setup::Skips;
 constexpr int LOG_FIRST = garage_setup::LOG_FIRST;
 
 constexpr uint64_t ROWS_END_AT = 0x118;

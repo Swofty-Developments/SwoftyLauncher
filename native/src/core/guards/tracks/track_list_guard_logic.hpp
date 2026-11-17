@@ -1,7 +1,5 @@
 #pragma once
 
-#include "core/guards/env.hpp"
-
 #include <algorithm>
 #include <cstddef>
 #include <cstdint>
@@ -230,7 +228,5 @@ struct SaveLog {
         return true;
     }
 };
-
-using swofty_core::guards::switch_off;
 
 }

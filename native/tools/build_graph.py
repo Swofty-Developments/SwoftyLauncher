@@ -5,7 +5,10 @@ Every C++ file under src/core is a translation unit of swofty_core.dll unless CO
 source file needs no build change. Each translation unit compiles to its own object under <builddir>/obj with a
 depfile, so ninja rebuilds exactly what an edit touches and reruns a compile whose command line changed.
 swofty_core.dll links its objects in the order tools/core_link_order.txt gives, which is also the order their static
-initializers run in.
+initializers, SDK registrations and on-load entries run in and the reverse of the order their static destructors run
+in. Every core compile also reports its objects with a dynamic initializer (tools/cxx_init.sh), and
+tools/init_check.py fails the build on one that tools/init_allow.txt does not list, so no initializer reads another
+unit's object.
 """
 
 import argparse
@@ -81,9 +84,10 @@ class Graph:
     def obj(self, source):
         return f'{self.builddir}/obj/{os.path.splitext(source)[0]}.o'
 
-    def compile(self, rule, source, flags):
+    def compile(self, rule, source, flags, report=False):
         out = self.obj(source)
-        self.build([out], rule, [source], flags)
+        self.build([out] + ([f'| {out}.init'] if report else []), rule, [source] + (['| tools/cxx_init.sh'] if report else []),
+                   flags)
         return out
 
 
@@ -97,6 +101,7 @@ def main():
     ap.add_argument('--define', action='append', default=[])
     ap.add_argument('--game-include', default='')
     ap.add_argument('--strip', default='-s')
+    ap.add_argument('--order-snapshot', help='the link order effects the core build must keep (tools/init_check.py)')
     a = ap.parse_args()
 
     g = Graph(a.builddir)
@@ -109,6 +114,8 @@ def main():
     g.lines.append('')
     g.rule('cc', '$cc $flags -MD -MF $out.d -c $in -o $out', 'CC $in', depfile=True)
     g.rule('cxx', '$cxx $flags -MD -MF $out.d -c $in -o $out', 'CXX $in', depfile=True)
+    g.rule('cxx_core', 'sh tools/cxx_init.sh $out.init $cxx $flags -MD -MF $out.d -c $in -o $out', 'CXX $in', depfile=True)
+    g.rule('init_check', 'python3 tools/init_check.py --allow tools/init_allow.txt $flags $in', 'CHECK static initializers')
     g.rule('link_c', '$cc $flags -shared -o $out $in $strip', 'LINK $out')
     g.rule('link_cxx', '$cxx $flags -shared -o $out $in $strip', 'LINK $out')
 
@@ -128,17 +135,28 @@ def main():
         for src in sources(f'{ZSTD}/{sub}', ('.c',)):
             objects[src] = g.compile('cc', src, ZSTD_FLAGS + [f'-I{ZSTD}'])
     core_sources = sources('src/core', ('.cpp',))
+    core = set()
     for src in core_sources:
         if src in CORE_EXCLUDE:
             continue
         if src in SEH_SOURCES:
-            objects[src] = g.compile('cxx', src, warn + ['-fms-extensions', '-Isrc'] + SEH_SOURCES[src])
+            objects[src] = g.compile('cxx_core', src, warn + ['-fms-extensions', '-Isrc'] + SEH_SOURCES[src], True)
         else:
-            objects[src] = g.compile('cxx', src, core_flags)
+            objects[src] = g.compile('cxx_core', src, core_flags, True)
+        core.add(objects[src])
     missing = (CORE_EXCLUDE | set(SEH_SOURCES)) - set(core_sources)
     if missing:
         sys.exit(f'build_graph.py: listed sources that no longer exist: {sorted(missing)}')
     g.build([f'{a.builddir}/swofty_core.dll'], 'link_cxx', link_order(objects), warn)
+    reports = [f'{o}.init' for o in link_order(objects) if o in core]
+    check = ['--out', f'{a.builddir}/static-init.txt', '--obj-root', f'{a.builddir}/obj', '--order-out',
+             f'{a.builddir}/init-order.txt', '--link-order', 'tools/core_link_order.txt']
+    checked = ['tools/init_check.py', 'tools/init_allow.txt', 'tools/core_link_order.txt', 'src/core/guards/order.hpp']
+    if a.order_snapshot:
+        check += ['--snapshot', a.order_snapshot]
+        checked.append(a.order_snapshot)
+    g.build([f'{a.builddir}/static-init.txt', f'{a.builddir}/init-order.txt'], 'init_check',
+            reports + ['| ' + ' '.join(checked)], check)
 
     gamelog = [g.compile('cxx', 'src/gamelog/gamelog.cpp', warn + ['-fms-extensions', '-Isrc', '-I$sdk', '-Iinclude', '$strip'])]
     g.build([f'{a.builddir}/swofty_gamelog.dll'], 'link_cxx', gamelog, warn)

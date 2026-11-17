@@ -60,7 +60,19 @@ fn shape<T: Serialize + DeserializeOwned + PartialEq + std::fmt::Debug>(value: T
         again, value,
         "{path}: serialize then deserialize changed the value"
     );
-    fnv(&text)
+    let canonical: Value = serde_json::from_str(&text).unwrap();
+    fnv(&sorted(&canonical).to_string())
+}
+
+fn sorted(value: &Value) -> Value {
+    match value {
+        Value::Object(map) => {
+            let keys: BTreeMap<&String, &Value> = map.iter().collect();
+            Value::Object(keys.into_iter().map(|(k, v)| (k.clone(), sorted(v))).collect())
+        }
+        Value::Array(items) => Value::Array(items.iter().map(sorted).collect()),
+        other => other.clone(),
+    }
 }
 
 fn parse<T: Serialize + DeserializeOwned + PartialEq + std::fmt::Debug>(

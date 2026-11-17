@@ -7,7 +7,7 @@ use gpui_kit::component::switch::Switch;
 use gpui_kit::component::{Disableable, Icon, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::multiplayer::types::RoomSummary;
+use swofty_core::online::multiplayer::types::RoomSummary;
 use swofty_i18n::{tr, trf, trn};
 
 use super::model::*;

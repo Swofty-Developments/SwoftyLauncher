@@ -477,9 +477,9 @@ impl Shell {
                                         } else {
                                             tr("Log in with Discord")
                                         })
-                                        .on_click(
-                                            cx.listener(|this, _, window, cx| this.mp_sign_in(window, cx)),
-                                        ),
+                                        .on_click(cx.listener(|this, _, _, cx| {
+                                            crate::shell::account::Account::sign_in(this, cx)
+                                        })),
                                 ),
                             ),
                     )

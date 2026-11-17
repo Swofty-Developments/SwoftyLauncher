@@ -89,8 +89,7 @@ private:
     void build(std::vector<runtime::CoreMixins> &out) override
     {
         char v[16] = {};
-        DWORD n = GetEnvironmentVariableA("SWOFTY_ACCLIM_GUARD", v, sizeof v);
-        if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+        if (guards::env_off("SWOFTY_ACCLIM_GUARD", v)) {
             swofty::log("[acclim] track acclimatisation guard off (SWOFTY_ACCLIM_GUARD=%s)", v);
             return;
         }

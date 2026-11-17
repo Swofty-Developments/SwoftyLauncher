@@ -204,11 +204,11 @@ impl Shell {
 
     /// Writes pending draft changes when the player leaves the DB Editor.
     pub(crate) fn db_page_change(&mut self, to: Page, cx: &mut Context<Self>) {
-        if self.page == Page::Database && to != Page::Database {
+        if self.navigation.page == Page::Database && to != Page::Database {
             self.db_flush(cx);
         }
         // Other pages change what choices offer, such as Driver Manager's drivers.
-        if self.page != Page::Database && to == Page::Database {
+        if self.navigation.page != Page::Database && to == Page::Database {
             self.db.stale_choices = true;
             self.db.view_want = None;
             self.db_refresh_view(cx);
@@ -347,7 +347,7 @@ impl Shell {
 
     /// The poll's check: another writer (the CLI, a second window) changed the draft or its addon.
     pub(crate) fn db_poll(&mut self, cx: &mut Context<Self>) {
-        if self.page != crate::shell::Page::Database {
+        if self.navigation.page != crate::shell::Page::Database {
             return;
         }
         self.db_follow_draft(cx);

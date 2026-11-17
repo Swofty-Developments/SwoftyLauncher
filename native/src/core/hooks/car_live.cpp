@@ -1,3 +1,4 @@
+#include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
@@ -719,6 +720,8 @@ void car_levers_commit()
     if (g_levers_offered)
         swofty::log("[cars] car levers %s", core_mixins_active(LEVERS) ? "armed" : "did not install (see the [core] lines)");
 }
+
+static loader::FunctionSet car_levers_core_set{loader::CoreSetId::car_levers, car_levers_mixins, car_levers_commit};
 
 }
 

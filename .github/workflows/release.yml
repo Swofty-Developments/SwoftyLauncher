@@ -3,6 +3,8 @@ name: Release
 on:
   push:
     tags: ['v*']
+  # Run by hand from the tag itself (gh workflow run release.yml --ref <tag> -f tag=<tag>): the jobs use the
+  # composite actions in the tag's checkout, which a tag older than this workflow does not have.
   workflow_dispatch:
     inputs:
       tag:
@@ -30,19 +32,6 @@ jobs:
         with:
           ref: ${{ env.TAG }}
 
-      # The native scripts pin their compilers to the maintainer's healthy cores (taskset -c 2-7,...),
-      # which leaves two of a hosted runner's four. This shim drops the pin and runs the command as is.
-      - name: Use every runner core
-        run: |
-          mkdir -p "$RUNNER_TEMP/bin"
-          cat > "$RUNNER_TEMP/bin/taskset" <<'EOF'
-          #!/bin/sh
-          [ "$1" = -c ] && shift 2
-          exec "$@"
-          EOF
-          chmod +x "$RUNNER_TEMP/bin/taskset"
-          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
-
       # A fixed install path, so the objects in CI's Zig cache match (see ci.yml).
       - uses: mlugg/setup-zig@v2
         with:
@@ -63,14 +52,8 @@ jobs:
           key: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-${{ hashFiles('native/**', 'addons/*/native/**', 'templates/**/native/**', 'packages/sdk/include/**') }}
           restore-keys: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-
 
-      # native/build.sh runs its compile graph with ninja.
       - name: Ninja
-        run: |
-          curl -fsSL --retry 5 -o "$RUNNER_TEMP/ninja.zip" https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip
-          mkdir -p "$RUNNER_TEMP/ninja"
-          python3 -m zipfile -e "$RUNNER_TEMP/ninja.zip" "$RUNNER_TEMP/ninja"
-          chmod +x "$RUNNER_TEMP/ninja/ninja"
-          echo "$RUNNER_TEMP/ninja" >> "$GITHUB_PATH"
+        uses: ./.github/actions/ninja
 
       - name: Build
         run: native/build.sh

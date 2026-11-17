@@ -65,6 +65,7 @@
 namespace {
 
 constexpr const char *MIXIN = "swofty_core.dll (time trial leaderboard guard)";
+namespace guards = swofty_core::guards;
 namespace lg = runtime::leaderboard_guard;
 
 constexpr const char *TAB_MIXIN = "swofty_core.dll (time trial leaderboard tab guard)";
@@ -81,8 +82,7 @@ std::atomic<int> skipped{0}, tab_skipped{0}, reference_skipped{0}, list_skipped{
 bool env_off(const char *name, const char *label)
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA(name, v, sizeof v);
-    if (!n || n >= sizeof v || !lg::switch_off(v))
+    if (!guards::env_off(name, v))
         return false;
     swofty::log("[leaderboard] %s off (%s=%s)", label, name, v);
     return true;
@@ -206,8 +206,6 @@ void reference_list_board(SwoftyContext *c)
     c->rip = list_done;
     reference_list_skipped(c->rsi, c->rdx);
 }
-
-namespace guards = swofty_core::guards;
 
 class LeaderboardGuard final : public guards::Guard {
 public:

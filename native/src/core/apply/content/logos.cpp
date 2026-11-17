@@ -275,8 +275,6 @@ void list_erps(const std::wstring &dir, const std::string &rel, std::vector<std:
     std::sort(out.begin(), out.end());
 }
 
-using logo_cache::stamp;
-
 bool stat_file(const std::string &rel, uint64_t &size, uint64_t &time)
 {
     WIN32_FILE_ATTRIBUTE_DATA a{};
@@ -369,14 +367,14 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     logo_build::Refusals refusals;
     perf::Stopwatch steps;
     auto step = [&](double ms, const std::string &name) { swofty::log(perf::STEP_LINE, ms, ("logo " + name).c_str()); };
-    uint64_t key = stamp(0xcbf29ce484222325ull, logo_cache::CACHE_FORMAT);
+    uint64_t key = runtime::fnv64_field(runtime::FNV64_BASIS, logo_cache::CACHE_FORMAT);
     for (auto &l : logos) {
         if (!seen.insert(l.array + "|" + l.key).second)
             continue;
         logo_build::Want w;
         w.array = l.array;
         w.key = l.key;
-        key = stamp(key, l.array + "|" + l.key + "|" + l.stock + (l.fallback ? "|f" : ""));
+        key = runtime::fnv64_field(key, l.array + "|" + l.key + "|" + l.stock + (l.fallback ? "|f" : ""));
         if (l.stock.empty()) {
             std::string rel = "addons/" + l.addon + "/" + l.file;
             std::string bytes = runtime::read_file(runtime::under_swofty(rel), size_t(64) << 20), why;
@@ -392,7 +390,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
                 continue;
             }
             w.width = info.width, w.height = info.height;
-            key = stamp(key, bytes);
+            key = runtime::fnv64_field(key, bytes);
             path_of.emplace(w.source, rel);
             if (w.rgba.empty())
                 w.png = std::move(bytes);

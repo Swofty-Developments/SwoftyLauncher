@@ -48,6 +48,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace mh = runtime::myteam_heal;
 
@@ -154,8 +155,6 @@ void session_vehicle(SwoftyContext *c)
         c->rax = v;
 }
 
-namespace guards = swofty_core::guards;
-
 class HealGuard final : public guards::Guard {
 public:
     HealGuard() : Guard(guards::CoreSetId::myteam_vehicle_heal) {}
@@ -165,8 +164,7 @@ private:
     {
         offered = true;
         char v[16] = {};
-        DWORD n = GetEnvironmentVariableA("SWOFTY_MYTEAM_VEHICLE_HEAL", v, sizeof v);
-        if (n && n < sizeof v && mh::switch_off(v)) {
+        if (guards::env_off("SWOFTY_MYTEAM_VEHICLE_HEAL", v)) {
             setup = "off (SWOFTY_MYTEAM_VEHICLE_HEAL)";
             swofty::log("[myteam] vehicle heal off (SWOFTY_MYTEAM_VEHICLE_HEAL=%s)", v);
             return;

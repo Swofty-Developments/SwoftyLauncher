@@ -1,7 +1,5 @@
 #pragma once
 
-#include "core/guards/skips.hpp"
-
 #include <cstddef>
 #include <cstdint>
 #include <vector>
@@ -179,7 +177,5 @@ struct Memo {
         return f;
     }
 };
-
-using Skips = swofty_core::guards::Skips<LOG_FIRST>;
 
 }

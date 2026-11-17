@@ -1,3 +1,4 @@
+#include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include "core/apply/ids.hpp"
@@ -522,6 +523,8 @@ void lap_host_commit()
     if (auto c = lap_host::live(); c && c->settle)
         c->settle();
 }
+
+static loader::FunctionSet lap_host_core_set{loader::CoreSetId::lap_host, lap_host_mixins, lap_host_commit};
 
 }
 

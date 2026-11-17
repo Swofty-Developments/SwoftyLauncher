@@ -2,9 +2,11 @@ mod apply;
 mod db;
 mod erp;
 mod field_names;
+mod game_db;
 mod hud;
 mod pkg;
 mod resolve;
+mod stat_id_cache;
 mod stat_ids;
 
 #[cfg(test)]

@@ -242,11 +242,17 @@ pub fn moved(dir: &Path, recorded: &[PathBuf], is_install: impl Fn(&Path) -> boo
     })
 }
 
+/// `reg query` of an install record or the link handler, kept for [`crate::platform::KEEP_RECORDS`]: the
+/// game's copies are looked for several times in one Play, and the uninstall lists are long.
 #[cfg(windows)]
 fn reg_exe(args: &[&str]) -> Option<String> {
+    static KEPT: crate::platform::Kept<Vec<String>, Option<String>> = crate::platform::Kept::new();
     let mut all = vec!["query"];
     all.extend_from_slice(args);
-    crate::platform::run_as_admin::windows_tool("reg", &all).filter(|o| !o.trim().is_empty())
+    let key = all.iter().map(|a| (*a).to_owned()).collect();
+    KEPT.get(key, crate::platform::KEEP_RECORDS, || {
+        crate::platform::run_as_admin::windows_tool("reg", &all).filter(|o| !o.trim().is_empty())
+    })
 }
 
 #[cfg(windows)]

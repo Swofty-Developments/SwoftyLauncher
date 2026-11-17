@@ -38,6 +38,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace rr = runtime::race_retirement;
 
@@ -129,8 +130,7 @@ void retirement_driver(safetyhook::Context &c)
 void setup()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_RACE_RETIREMENT_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_RACE_RETIREMENT_GUARD", v)) {
         swofty::log("[race] retirement driver guard off (SWOFTY_RACE_RETIREMENT_GUARD=%s)", v);
         return;
     }

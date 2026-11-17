@@ -1,9 +1,9 @@
 name: Release binaries
 
 # The release build of the swofty CLI, the launcher and Swofty UI for Linux and Windows. CI calls it on every
-# push to main: the run saves the release cache, and a tag on that commit takes the binaries from it instead
-# of building again (release.yml). The release workflow calls it itself only when it finds none. CI's call
-# also builds the installer people test, so main needs no separate installer build.
+# push to main, on EC2 runners when they start, and a tag on that commit takes the binaries from that run
+# instead of building again (release.yml). The release workflow calls it itself, on hosted runners, only when
+# it finds none. CI's call also builds the installer people test, so main needs no separate installer build.
 on:
   workflow_call:
     inputs:

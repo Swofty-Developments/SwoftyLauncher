@@ -75,7 +75,7 @@ impl Shell {
         let Some((addon, section, tab)) = self.db.pending_tab.clone() else {
             return;
         };
-        let Page::Section(i) = self.page else {
+        let Page::Section(i) = self.navigation.page else {
             self.db.pending_tab = None;
             return;
         };

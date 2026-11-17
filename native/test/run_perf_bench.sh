@@ -6,7 +6,6 @@ cd "$(dirname "$SELF")"
 OUT=${PERF_OUT:-$PWD/../build/perf-bench}
 WINE=${WINE:-wine}
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 SH=../third_party/safetyhook
 mkdir -p "$OUT"
 [[ $OUT/Zydis.o -nt $SH/Zydis.c ]] || "${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -I$SH -c $SH/Zydis.c -o "$OUT/Zydis.o" &

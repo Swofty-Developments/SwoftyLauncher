@@ -13,11 +13,8 @@
 
 #include "core/diagnostics/perf.hpp"
 #include "core/frontend/popup/message_system.hpp"
+#include "core/frontend/ui_vm.hpp"
 #include "core/hud/hud_leaves_logic.hpp"
-
-bool ui_vm_set_path(const std::string &path, int type, const void *value);
-uintptr_t ui_vm_node_token(const std::string &path);
-uintptr_t ui_vm_epoch();
 
 namespace popup {
 

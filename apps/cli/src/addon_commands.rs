@@ -9,7 +9,7 @@ use swofty_core::manifest::MANIFEST_FILE;
 use swofty_core::registry::{Host, Registry};
 use swofty_core::store::Store;
 
-use crate::Cli;
+use crate::commands::cli::Cli;
 
 pub(crate) struct AddonCommands {
     pub(crate) registry: Registry,
@@ -238,4 +238,189 @@ pub(crate) fn forward_mods(store: &Store, args: &[OsString]) -> Option<(Vec<OsSt
         forwarded,
         format!("swofty mods {verb} is now swofty addons {verb}"),
     ))
+}
+
+#[cfg(test)]
+mod tests {
+    use std::path::Path;
+    use std::sync::Arc;
+
+    use clap::FromArgMatches;
+    use swofty_core::launcher::{Addon, ArgSpec, Builtin};
+    use swofty_core::manifest::AddonManifest;
+
+    use super::*;
+    use crate::commands::cli::{Command, data_dir_arg};
+
+    struct Mods(AddonManifest);
+
+    impl Addon for Mods {
+        fn manifest(&self) -> &AddonManifest {
+            &self.0
+        }
+
+        fn commands(&self) -> Vec<CommandSpec> {
+            let spec = |name: &str, args: Vec<ArgSpec>| CommandSpec {
+                name: name.into(),
+                about: String::new(),
+                args,
+                subcommands: Vec::new(),
+            };
+            let paths = ArgSpec {
+                name: "path".into(),
+                help: String::new(),
+                required: true,
+                many: true,
+            };
+            vec![
+                CommandSpec {
+                    subcommands: vec![spec("list", Vec::new()), spec("import", vec![paths])],
+                    ..spec("mods", Vec::new())
+                },
+                spec("build", Vec::new()),
+            ]
+        }
+    }
+
+    fn store(root: &Path) -> Store {
+        let manifest = AddonManifest::parse(
+            r#"{"schema_version":1,"id":"t.mods","name":"Mods","version":"1.0.0","author":"t","compat":{"game":"f1_25"}}"#,
+        )
+        .unwrap();
+        Store::new(root).with_builtins(vec![Builtin {
+            addon: Arc::new(Mods(manifest)),
+            locked: false,
+            default_on: true,
+        }])
+    }
+
+    fn os(args: &[&str]) -> Vec<OsString> {
+        args.iter().map(OsString::from).collect()
+    }
+
+    #[test]
+    fn an_addon_command_a_built_in_took_stays_reachable_under_its_addon_id() {
+        let spec = |name: &str| CommandSpec {
+            name: name.into(),
+            about: format!("does {name}"),
+            args: Vec::new(),
+            subcommands: Vec::new(),
+        };
+        let all = vec![("someone.tool".to_owned(), vec![spec("registry"), spec("tidy")])];
+        let accepted = vec![("someone.tool".to_owned(), spec("tidy"))];
+        let addons = AddonCommands {
+            registry: Registry::default(),
+            namespaced: namespaced(&all, &accepted),
+            specs: accepted,
+            developer: false,
+        };
+        let listed: Vec<(&str, bool)> = addons
+            .namespaced
+            .iter()
+            .map(|n| (n.name.as_str(), n.listed))
+            .collect();
+        assert_eq!(
+            listed,
+            [("someone.tool:registry", true), ("someone.tool:tidy", false)]
+        );
+        let cmd = addons.command();
+        for (typed, known_as) in [
+            ("someone.tool:registry", "registry"),
+            ("someone.tool:tidy", "tidy"),
+            ("tidy", "tidy"),
+        ] {
+            let m = cmd.clone().try_get_matches_from(["swofty", typed]).unwrap();
+            let (name, _) = m.subcommand().unwrap();
+            let (id, spec) = addons.find(name).unwrap();
+            assert_eq!((id, spec.name.as_str()), ("someone.tool", known_as));
+        }
+        let m = cmd
+            .clone()
+            .try_get_matches_from(["swofty", "registry", "check"])
+            .unwrap();
+        assert!(addons.find(m.subcommand().unwrap().0).is_none());
+        let help = cmd.clone().render_help().to_string();
+        assert!(help.contains("someone.tool:registry"), "{help}");
+        assert!(!help.contains("someone.tool:tidy"), "{help}");
+        for name in ["dev", "test", "registry", "careers"] {
+            assert!(cmd.find_subcommand(name).is_some(), "{name}");
+        }
+    }
+
+    #[test]
+    fn addon_commands_take_mods_and_forward_the_old_forms() {
+        let root = std::env::temp_dir().join(format!("swofty-cli-commands-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let addon = root.join("my-addon");
+        std::fs::create_dir_all(&addon).unwrap();
+        std::fs::write(addon.join(MANIFEST_FILE), "{}").unwrap();
+        let store = store(&root.join("data"));
+        let addons = AddonCommands::load(&store);
+        assert_eq!(addons.specs.len(), 1);
+        let cmd = addons.command();
+        assert_eq!(
+            cmd.find_subcommand("addons").unwrap().get_all_aliases().count(),
+            0
+        );
+        let m = cmd
+            .try_get_matches_from(["swofty", "--profile", "p", "mods", "import", "a.serps", "b.zip"])
+            .unwrap();
+        let (name, sub) = m.subcommand().unwrap();
+        let (mut path, mut input) = (vec![name.to_owned()], Vec::new());
+        command_input(sub, &addons.specs[0].1, &mut path, &mut input);
+        assert_eq!(path, ["mods", "import"]);
+        assert_eq!(input, ["a.serps", "b.zip"]);
+        std::fs::write(root.join("b.zip"), "zip").unwrap();
+        absolute_paths(&mut input, &root);
+        assert_eq!(input, ["a.serps", root.join("b.zip").to_str().unwrap()]);
+        let mut dotted = vec!["./my-addon".to_owned(), "on".to_owned()];
+        absolute_paths(&mut dotted, &root);
+        assert_eq!(dotted, [addon.to_str().unwrap(), "on"]);
+        let dir = addon.to_str().unwrap();
+        let (args, note) =
+            forward_mods(&store, &os(&["swofty", "--profile", "p", "mods", "install", dir])).unwrap();
+        assert_eq!(args, os(&["swofty", "--profile", "p", "addons", "install", dir]));
+        assert_eq!(note, "swofty mods install is now swofty addons install");
+        assert!(forward_mods(&store, &os(&["swofty", "mods", "enable", "swofty.core"])).is_some());
+        assert!(forward_mods(&store, &os(&["swofty", "mods", "enable", "rm.livery"])).is_none());
+        assert!(forward_mods(&store, &os(&["swofty", "mods", "install", "pack.serps"])).is_none());
+        assert_eq!(
+            data_dir_arg(&os(&["swofty", "build", "--data-dir", "/d"])),
+            Some("/d".into())
+        );
+        assert_eq!(
+            data_dir_arg(&os(&["swofty", "--data-dir=/e", "build"])),
+            Some("/e".into())
+        );
+        std::fs::remove_dir_all(&root).ok();
+    }
+
+    #[test]
+    fn a_profile_that_starts_with_a_dash_goes_through_as_one_value() {
+        use swofty_core::process::flag;
+        let root = std::env::temp_dir().join(format!("swofty-cli-dash-profile-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let store = store(&root);
+        let cmd = AddonCommands::load(&store).command();
+        let args = vec![
+            OsString::from("swofty"),
+            flag("data-dir", "/data/-swofty"),
+            flag("profile", "-swofty"),
+            "run".into(),
+            "--apply".into(),
+            flag("game", "/games/-F1 25"),
+        ];
+        let cli = Cli::from_arg_matches(&cmd.clone().try_get_matches_from(&args).unwrap()).unwrap();
+        assert_eq!(cli.profile.as_deref(), Some("-swofty"));
+        assert_eq!(cli.data_dir.as_deref(), Some(Path::new("/data/-swofty")));
+        assert!(matches!(cli.command, Command::Run(_)));
+        assert_eq!(command_at(&args), Some(3));
+        assert_eq!(data_dir_arg(&args), Some("/data/-swofty".into()));
+
+        let split = cmd
+            .try_get_matches_from(["swofty", "--profile", "-swofty", "run", "--apply"])
+            .unwrap_err();
+        assert_eq!(split.kind(), clap::error::ErrorKind::UnknownArgument);
+        std::fs::remove_dir_all(&root).ok();
+    }
 }

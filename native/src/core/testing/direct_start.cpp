@@ -603,8 +603,8 @@ void *registry_call(uint8_t *entity, size_t slot, const void *a2, int a3)
     return reinterpret_cast<void *(*)(void *, const void *, int)>(vt[slot / 8])(reg, a2, a3);
 }
 
-runtime::DirectStartSetup room_setup = nullptr, time_trial_setup = nullptr;
-void (*time_trial_screen)(const char *name) = nullptr;
+constinit runtime::DirectStartSetup room_setup = nullptr, time_trial_setup = nullptr;
+constinit void (*time_trial_screen)(const char *name) = nullptr;
 
 // The race's laps: Game_ChampionshipGameMode_BuildSessionSettings (0x1407b7b90, the championship modes' slot) fills
 // the session's SessionSettings (sessionId +4) and stores the laps at +0xdf0 XOR +0xdf8; for a race session the core

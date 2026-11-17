@@ -124,8 +124,7 @@ uint32_t closest(void *tyre_rules, uint8_t vehicle, const uint32_t *preference, 
 bool turned_off()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_QUALI_TYRES", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_QUALI_TYRES", v)) {
         swofty::log("[tyres] qualifying tyre hooks off (SWOFTY_QUALI_TYRES=%s)", v);
         return true;
     }

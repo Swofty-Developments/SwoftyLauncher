@@ -44,6 +44,7 @@ constexpr const char *READ = "site_Game_PitLane_BoxSlotRead";
 constexpr const char *FALSE_ = "site_Game_PitLane_BoxPoseFalse";
 constexpr uintptr_t PROJECTION_FAILED = 2;
 
+namespace guards = swofty_core::guards;
 namespace pb = runtime::pit_box;
 
 uintptr_t pose_false = 0;
@@ -76,8 +77,6 @@ void box_read(SwoftyContext *c)
     c->rip = pose_false;
 }
 
-namespace guards = swofty_core::guards;
-
 // Two guards in one core set: the race tyre change rule, then the box guard. The rule stays on when the box guard is
 // turned off.
 class PitBoxGuard final : public guards::Guard {
@@ -88,8 +87,7 @@ private:
     void build(std::vector<runtime::CoreMixins> &out) override
     {
         char tv[16] = {};
-        DWORD tn = GetEnvironmentVariableA("SWOFTY_RACE_TYRE_RULE", tv, sizeof tv);
-        if (tn && tn < sizeof tv && (!strcmp(tv, "0") || !strcmp(tv, "off")))
+        if (guards::env_off("SWOFTY_RACE_TYRE_RULE", tv))
             swofty::log("[pit] race tyre change rule off (SWOFTY_RACE_TYRE_RULE=%s)", tv);
         else if (!swofty::api->resolve(TYRE_CHANGE))
             swofty::log("[pit] race tyre change rule off: this build does not resolve %s", TYRE_CHANGE);
@@ -98,8 +96,7 @@ private:
             out.push_back({TYRE_MIXIN, {{TYRE_CHANGE, SWOFTY_MIXIN_WRAP, 100, (void *)&change_entry, (void **)&orig_change}}});
         }
         char v[16] = {};
-        DWORD n = GetEnvironmentVariableA("SWOFTY_PIT_BOX_GUARD", v, sizeof v);
-        if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+        if (guards::env_off("SWOFTY_PIT_BOX_GUARD", v)) {
             swofty::log("[pit] box guard off (SWOFTY_PIT_BOX_GUARD=%s)", v);
             return;
         }

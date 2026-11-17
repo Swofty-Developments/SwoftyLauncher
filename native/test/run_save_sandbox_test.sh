@@ -12,7 +12,6 @@ NEEDS="zig wine xvfb-run"
 . ./game_lock.sh
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
 OUT=$(realpath -m "${1:-$PWD/../build/save-sandbox-test}")
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 rm -rf "$OUT/game" "$OUT/runs" "$OUT/steam"
 mkdir -p "$OUT/game" "$OUT/runs" "$OUT/steam"
 status=0

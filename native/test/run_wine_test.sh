@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # The Wine test. With no option every case runs in turn in one folder and one Wine prefix. --setup [DIR] builds
-# the fake games, the test addons and the prepared folders into DIR/base; --case NAME [DIR] then runs one case
-# in DIR/NAME, a fresh copy of DIR/base with a Wine prefix of its own, so cases can run side by side. --list
-# prints the case names. DIR defaults to native/build/wine-test.
+# the fake games, the test addons and the prepared folders into DIR/base and makes a Wine prefix there; --case
+# NAME [DIR] then runs one case in DIR/NAME, a fresh copy of DIR/base with a copy of that prefix of its own, so
+# cases can run side by side. The copy hard-links the prefix's program files (.dll, .exe and the like), which
+# Wine only reads. --list prints the case names. DIR defaults to native/build/wine-test.
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
 CASES=(modes crash acclim acclim_penalty ers_mode standings weekends teamhq activity setup_vm pairs fe_tiles ai_corner replay_grid garage_crew pit_slots leaderboard myteam_vehicle myteam_keep myteam_heal track_list ntpage int3 stages packed filled register)
@@ -11,7 +12,7 @@ if [[ ${1:-} == --list ]]; then
     printf '%s\n' "${CASES[@]}"
     exit 0
 fi
-NEEDS="zig wine xvfb-run"
+NEEDS="zig wine wineserver xvfb-run"
 . "$(dirname "$SELF")/lib/env.sh"
 MODE=all CASE=
 case ${1:-} in
@@ -23,7 +24,6 @@ OUT=${1:-$PWD/../build/wine-test}
 ITEMS=
 grep -qa '\[items\] ownership check hooked' ../dist/swofty/addons/core/swofty_core.dll && ITEMS=1
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 build() {
 # wine cmd /c reports the game process's own exit code; a bare wine launch can exit 0 when a thread the server kills at termination exits last
 rm -rf "$OUT/game" "$OUT/stages" "$OUT/packed" "$OUT/filled"
@@ -1371,7 +1371,9 @@ cp -r "$OUT/filled" "$GT"
 rm -f "$GT/swofty/loader.log"
 truncate -s 72M "$GT/F1_25.exe"
 LOG=$GT/swofty/loader.log
-env -u SWOFTY_ALLOW_UNSUPPORTED_BUILD SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$GT/F1_25.exe" || :
+echo "      the loader refuses this exe, so the fake game's own checks fail by design and are not counted:"
+env -u SWOFTY_ALLOW_UNSUPPORTED_BUILD SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$GT/F1_25.exe" 2>&1 |
+    sed 's/^/      refused exe: /' || :
 echo "---- $LOG (gated)"
 grep -v '  section ' "$LOG"
 once "gated: a large exe the table does not list is refused" 'exe: size [0-9]+, PE timestamp [0-9]+ is not a build this launcher supports; the core and the addons are NOT loaded'
@@ -1432,13 +1434,26 @@ all)
 setup)
     OUT=$OUT/base
     build
+    environment
+    rm -rf "$WINEPREFIX"
+    timeout 300 "${PIN[@]}" xvfb-run -a wine wineboot -i >/dev/null 2>&1 || { echo "run_wine_test.sh: wineboot -i failed" >&2; exit 1; }
+    timeout 60 wineserver -w
     ;;
 case)
     [[ " ${CASES[*]} " == *" $CASE "* ]] || { echo "run_wine_test.sh: there is no case $CASE" >&2; exit 2; }
     BASE=$OUT/base OUT=$OUT/$CASE
     [ -d "$BASE/game" ] || { echo "run_wine_test.sh: $BASE has no build; run --setup first" >&2; exit 2; }
     rm -rf "$OUT"
-    cp -a "$BASE" "$OUT"
+    mkdir "$OUT"
+    for f in "$BASE"/*; do
+        [[ $f == "$BASE/prefix" ]] || cp -a "$f" "$OUT/"
+    done
+    if [ -d "$BASE/prefix" ]; then
+        cp -a --link "$BASE/prefix" "$OUT/prefix"
+        find "$OUT/prefix" -type f -links +1 ! \( -iname '*.dll' -o -iname '*.exe' -o -iname '*.drv' -o -iname '*.sys' \
+            -o -iname '*.ocx' -o -iname '*.cpl' -o -iname '*.acm' -o -iname '*.ax' -o -iname '*.tlb' -o -iname '*.nls' \) \
+            -exec sh -c 'for f; do cp -p "$f" "$f.copy" && mv -f "$f.copy" "$f"; done' sh {} +
+    fi
     SG=$OUT/stages/game PK=$OUT/packed/game PP=$OUT/packed/plain
     environment
     if [[ $CASE != modes ]]; then

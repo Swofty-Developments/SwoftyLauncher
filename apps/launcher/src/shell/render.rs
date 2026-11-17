@@ -61,7 +61,7 @@ impl Render for Shell {
         self.sync_sliders(window, cx);
         self.sync_blocks(window, cx);
         self.db_pending_tab(window, cx);
-        if self.page == Page::Database {
+        if self.navigation.page == Page::Database {
             self.sync_db(window, cx);
         }
         for note in std::mem::take(&mut self.db.toasts) {
@@ -73,7 +73,7 @@ impl Render for Shell {
         for note in std::mem::take(&mut self.account.toasts) {
             window.notify(note, cx);
         }
-        let content = match self.page {
+        let content = match self.navigation.page {
             Page::News => self.news_page(p, short, cx),
             Page::Importer => self.importer_page(p, cx),
             Page::Tools => match self.developer_section(p, cx) {
@@ -102,8 +102,8 @@ impl Render for Shell {
             Page::Settings => self.settings_page(p, cx),
             Page::Section(i) => self.section_page(i, p, cx),
         };
-        if self.dropping && !cx.has_active_drag() {
-            self.dropping = false;
+        if self.overlays.dropping && !cx.has_active_drag() {
+            self.overlays.dropping = false;
         }
         let has_sub = self.sub_nav(layout_width).is_some();
         let page = self.page_name();
@@ -114,8 +114,8 @@ impl Render for Shell {
             .on_key_down(cx.listener(|this, ev: &KeyDownEvent, window, cx| this.nav_key(ev, window, cx)))
             .size_full()
             .on_drag_move::<ExternalPaths>(cx.listener(|this, _, _, cx| {
-                if !this.dropping {
-                    this.dropping = true;
+                if !this.overlays.dropping {
+                    this.overlays.dropping = true;
                     cx.notify();
                 }
             }))
@@ -162,7 +162,7 @@ impl Render for Shell {
             .children(self.ban_overlay(p, cx))
             .children(self.data_move_overlay(p, cx))
             .children(self.found_data_overlay(p, cx))
-            .when(self.dropping, |d| d.child(self.drop_overlay(p)))
+            .when(self.overlays.dropping, |d| d.child(self.drop_overlay(p)))
             .children(self.ads.sweep());
         self.note_slow("render", page, started);
         tree

@@ -1,4 +1,5 @@
 // SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
+#include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/apply/moments.hpp"
 #include "core/garage/steam_26566308.hpp"
@@ -572,6 +573,9 @@ std::vector<CoreMixins> garage_placement_mixins()
                      {sequence_fn, SWOFTY_MIXIN_WRAP, 0, (void *)&play, (void **)&play_original},
                      {update_fn, SWOFTY_MIXIN_WRAP, 0, (void *)&update, (void **)&update_original}}}};
 }
+
+static loader::FunctionSet garage_placement_core_set{loader::CoreSetId::garage_placement, garage_placement_mixins};
+
 void garage_placement_reset()
 {
     std::lock_guard lock(state_mutex);

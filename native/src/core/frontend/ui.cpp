@@ -10,8 +10,7 @@
 #include "core/runtime/hook_errors.hpp"
 #include "core/runtime/json.hpp"
 #include "core/frontend/ui/screen_loader.hpp"
-
-bool ui_vm_init(uintptr_t module_base, const std::wstring &swofty_dir);
+#include "core/frontend/ui_vm.hpp"
 
 namespace ui {
 
@@ -81,14 +80,6 @@ const Target T_SITE_SCREEN{"site_Ui_Job_ScreenDone", "8B 43 50 FF C0 89 43 50 83
 const Target T_OPEN{"Vm_Open_Screen", "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
                     0x4182660};
 constexpr uintptr_t SCREEN_SYS_LOAD = 0x10c;
-
-uint32_t djb2(const char *s)
-{
-    uint32_t h = 5381;
-    while (*s)
-        h = h * 33 + uint8_t(*s++);
-    return h;
-}
 
 const char *chars(const void *s)
 {
