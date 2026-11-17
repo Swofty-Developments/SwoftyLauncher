@@ -11,9 +11,9 @@ wanted:" line, else "off".
 The times come from lines the core always writes: the boot stages, the flow states ("[career] flow"; a state the core
 has no name for is logged once per process, at its first entry, as "#<djb2 of its node name>", which FLOW_NODES maps
 back), the test agent's title and home lines and the main menu's. With SWOFTY_GAME_LOG=info and
-SWOFTY_GAME_LOG_CHANNELS=SESSION_LOADER,FADE_REQUESTS,TELEMETRY,THUMBNAIL_SYSTEM the game's own load, fade and
-thumbnail lines add detail. All times are seconds from the loader's first line. The exit code is 1 when any run shows
-a regression.
+SWOFTY_GAME_LOG_CHANNELS=default,SESSION_LOADER:info,FADE_REQUESTS:info,TELEMETRY:info,THUMBNAIL_SYSTEM:info the game's
+own load, fade and thumbnail lines add detail. All times are seconds from the loader's first line. The exit code is 1
+when any run shows a regression.
 """
 
 import argparse
