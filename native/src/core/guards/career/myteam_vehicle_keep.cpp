@@ -42,6 +42,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace mk = runtime::myteam_keep;
 namespace mh = runtime::myteam_heal;
@@ -164,8 +165,6 @@ void save_record(SwoftyContext *c)
                     s->handle >> 16, s->original.c_str(), s->saved_engine, s->saved_base, s->stock.c_str());
 }
 
-namespace guards = swofty_core::guards;
-
 class KeepGuard final : public guards::Guard {
 public:
     KeepGuard() : Guard(guards::CoreSetId::myteam_vehicle_keep) {}
@@ -174,12 +173,11 @@ private:
     void build(std::vector<runtime::CoreMixins> &out) override
     {
         char v[16] = {};
-        DWORD n = GetEnvironmentVariableA("SWOFTY_MYTEAM_VEHICLE_KEEP", v, sizeof v);
-        if (n && n < sizeof v && mh::switch_off(v)) {
+        if (guards::env_off("SWOFTY_MYTEAM_VEHICLE_KEEP", v)) {
             swofty::log("[myteam] vehicle keep off (SWOFTY_MYTEAM_VEHICLE_KEEP=%s): a car whose row is gone is skipped", v);
             return;
         }
-        n = GetEnvironmentVariableA("SWOFTY_TEST_MYTEAM_KEEP_LABEL", test_label, sizeof test_label);
+        DWORD n = GetEnvironmentVariableA("SWOFTY_TEST_MYTEAM_KEEP_LABEL", test_label, sizeof test_label);
         if (!n || n >= sizeof test_label)
             test_label[0] = 0;
         char t[160] = {};

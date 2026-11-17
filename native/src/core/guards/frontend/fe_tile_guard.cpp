@@ -10,7 +10,6 @@
 #include <cstddef>
 #include <cstdint>
 #include <cstring>
-#include <mutex>
 #include <string>
 #include <vector>
 
@@ -42,6 +41,7 @@ namespace {
 
 namespace mem = swofty::mem;
 namespace ft = runtime::fe_tile;
+namespace guards = swofty_core::guards;
 
 constexpr const char *MIXIN = "swofty_core.dll (front-end tile list guard)";
 constexpr const char *SCAN_START = "site_FeTile_ListScanStart";
@@ -52,8 +52,7 @@ constexpr const char *ROW_NONE = "site_FeTile_ListRowNone";
 constexpr uint64_t CONTAINER_SLOTS_END = 0x568;
 
 uintptr_t scan_none = 0, row_none = 0;
-std::mutex logged_lock;
-ft::Labels logged;
+guards::FirstKeys<std::string, ft::LOG_LABELS> logged{"lists"};
 thread_local const char *row_label = nullptr;
 
 struct Game {
@@ -70,15 +69,9 @@ struct Game {
 
 void say(const std::string &label)
 {
-    bool first, last;
-    {
-        std::lock_guard<std::mutex> hold(logged_lock);
-        first = logged.first(label);
-        last = logged.last();
-    }
-    if (first)
+    if (auto line = logged.note(label))
         swofty::log("[fe] tiles: entrant list %s is not in the game data; its tile is left without a list%s", label.c_str(),
-                    last ? " (further lists are not logged)" : "");
+                    line.tail);
 }
 
 void scan_start(SwoftyContext *c)
@@ -110,8 +103,6 @@ void row_field_load(SwoftyContext *c)
         label = "(unreadable)";
     say(label);
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::fe_tile_guard,
                         {

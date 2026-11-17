@@ -1,4 +1,5 @@
 #include "core/loading/game_settings_logic.hpp"
+#include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
@@ -197,5 +198,7 @@ void loading_commit()
     logging.store(false);
     swofty::log("[loading] game setting overrides did not install (see the [core] lines)");
 }
+
+static loader::FunctionSet loading_core_set{loader::CoreSetId::loading, loading_mixins, loading_commit};
 
 }

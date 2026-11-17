@@ -120,7 +120,7 @@ protected:
     }
 };
 
-RecordGuard guard;
+constinit RecordGuard guard;
 
 }
 

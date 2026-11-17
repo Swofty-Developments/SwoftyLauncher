@@ -193,8 +193,8 @@ Ranked by likely seconds saved per load, then by safety. "Saved" is an upper bou
 
 ## 3. The game setting override table
 
-Code: `native/src/core/loading/game_settings.cpp` and `game_settings_logic.hpp`, registered as the core set `loading` in
-`native/src/core/runtime/loader/core_sets.cpp`; host test `native/test/game_settings_test.cpp` (Unit `game_settings` in
+Code: `native/src/core/loading/game_settings.cpp` and `game_settings_logic.hpp`, which registers itself as the core set
+`loading`; host test `native/test/game_settings_test.cpp` (Unit `game_settings` in
 `native/test/manifest.py`, `native/test/run_tests.sh game_settings`).
 
 - One row per forced setting: `{feature, setting name, type, forced value bits, effect}`. Types: bool, u32, i32, float. One

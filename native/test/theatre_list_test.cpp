@@ -2,6 +2,7 @@
 // Built and run by native/test/run_tests.sh theatre_list.
 
 #include "core/guards/frontend/theatre_list_logic.hpp"
+#include "core/guards/skips.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -153,13 +154,13 @@ int main()
     noid.dwords.clear();
     expect(!tl::entry_step(entry, no_slot, read, &noid, &exit), "an info whose id does not read is skipped");
 
-    tl::Skips s;
+    swofty_core::guards::LogFirst<tl::LOG_FIRST> s{"skips"};
     int lines = 0, last = 0;
     for (int i = 0; i < 500; i++) {
-        int n = s.note();
-        if (s.logged(n))
+        auto line = s.note();
+        if (line)
             lines++;
-        if (s.last(n))
+        if (line && *line.tail)
             last++;
     }
     expect(lines == tl::LOG_FIRST, "five hundred skips produce exactly the capped number of lines");

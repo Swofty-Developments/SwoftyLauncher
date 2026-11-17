@@ -70,6 +70,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace sr = runtime::sequencer_records;
 
@@ -194,8 +195,7 @@ bool arm(const char *what, const char *site, const char *join, safetyhook::MidHo
 void setup()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_SEQUENCER_RECORDS_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_SEQUENCER_RECORDS_GUARD", v)) {
         swofty::log("[career] events sequencer record, team mate driver and player driver guards and the recognition "
                     "record guard off (SWOFTY_SEQUENCER_RECORDS_GUARD=%s)",
                     v);

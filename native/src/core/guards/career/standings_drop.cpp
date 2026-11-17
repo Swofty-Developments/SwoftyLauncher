@@ -248,7 +248,7 @@ protected:
     }
 };
 
-DropGuard guard;
+constinit DropGuard guard;
 
 }
 

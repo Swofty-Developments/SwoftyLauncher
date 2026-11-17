@@ -1,11 +1,8 @@
 #pragma once
 
-#include "core/guards/env.hpp"
-
 #include <cstddef>
 #include <cstdint>
 #include <string>
-#include <vector>
 
 namespace runtime::fe_tile {
 
@@ -21,8 +18,6 @@ inline bool canonical(uint64_t p)
     uint64_t top = p >> 47;
     return top == 0 || top == 0x1ffff;
 }
-
-using swofty_core::guards::switch_off;
 
 template <class Mem> bool list_present(Mem &mem, uint64_t first_slot, uint64_t end, const std::string &label)
 {
@@ -44,25 +39,5 @@ template <class Mem> bool list_present(Mem &mem, uint64_t first_slot, uint64_t e
     }
     return false;
 }
-
-struct Labels {
-    std::vector<std::string> seen;
-
-    bool first(const std::string &label)
-    {
-        for (const std::string &s : seen)
-            if (s == label)
-                return false;
-        if (seen.size() >= LOG_LABELS)
-            return false;
-        seen.push_back(label);
-        return true;
-    }
-
-    bool last() const
-    {
-        return seen.size() == LOG_LABELS;
-    }
-};
 
 }

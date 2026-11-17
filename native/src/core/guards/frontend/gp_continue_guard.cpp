@@ -137,8 +137,7 @@ private:
     void build(std::vector<runtime::CoreMixins> &out) override
     {
         char v[16] = {};
-        DWORD n = GetEnvironmentVariableA("SWOFTY_GP_F1W_CHECK_GUARD", v, sizeof v);
-        if (n && n < sizeof v && gc::switch_off(v)) {
+        if (guards::env_off("SWOFTY_GP_F1W_CHECK_GUARD", v, gc::switch_off)) {
             swofty::log("[gp] continue F1 World car guard off (SWOFTY_GP_F1W_CHECK_GUARD=%s)", v);
             return;
         }

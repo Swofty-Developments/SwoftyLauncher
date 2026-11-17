@@ -2,6 +2,7 @@
 // Built and run by native/test/run_tests.sh garage_setup.
 
 #include "core/guards/garage/garage_setup_logic.hpp"
+#include "core/guards/skips.hpp"
 
 #include <cstdio>
 #include <cstring>
@@ -77,13 +78,13 @@ int main()
     noid.dwords.clear();
     expect(!gs::entry_usable(entry, read, &noid), "an info whose id does not read is skipped");
 
-    gs::Skips s;
+    swofty_core::guards::LogFirst<gs::LOG_FIRST> s{"skips"};
     int lines = 0, last = 0;
     for (int i = 0; i < 500; i++) {
-        int n = s.note();
-        if (s.logged(n))
+        auto line = s.note();
+        if (line)
             lines++;
-        if (s.last(n))
+        if (line && *line.tail)
             last++;
     }
     expect(lines == gs::LOG_FIRST, "five hundred skips produce exactly the capped number of lines");
