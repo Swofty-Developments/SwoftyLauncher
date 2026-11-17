@@ -16,6 +16,10 @@ use gpui_kit::*;
 use std::time::{Duration, Instant};
 use swofty_i18n::tr;
 
+/// The room each side of a banner in a page header keeps for the title and the
+/// buttons, in logical pixels.
+const HEADER_SIDE: f32 = 500.;
+
 /// How long the video plays before it can be closed.
 const VIDEO_SKIP: Duration = Duration::from_secs(5);
 
@@ -93,6 +97,19 @@ impl Shell {
             return None;
         }
         Some(self.ad_box(Unit::Home, p.background, p)?.into_any_element())
+    }
+
+    /// Whether `unit` fits in the page header, centred between the title and the buttons.
+    pub(crate) fn ad_header_room(&self, unit: Unit) -> bool {
+        self.content_width * crate::scale::current() >= f32::from(unit.size().width) + 2. * HEADER_SIDE
+    }
+
+    /// `unit` for the middle of the page header, when it fits there.
+    pub(crate) fn ad_header(&self, unit: Unit, p: Palette) -> Option<AnyElement> {
+        if !self.ad_header_room(unit) {
+            return None;
+        }
+        Some(self.ad_box(unit, p.background, p)?.into_any_element())
     }
 
     /// A banner centred in `width` layout units, when it fits.

@@ -46,16 +46,22 @@ impl Shell {
                     .disabled(self.browser.fetching)
                     .on_click(cx.listener(|this, _, _, cx| this.fetch_catalog(cx))),
             );
-        let content = match self.browser.view.clone() {
-            View::Addon(id) if self.browser.find(&id).is_some() => self.browser_detail(&id, p, cx),
-            View::Author(id) => self.author_page(&id, p, cx),
-            View::Creators => self.creators_page(p, cx),
-            _ => self.browser_grid(p, cx),
+        let (content, ad) = match self.browser.view.clone() {
+            View::Addon(id) if self.browser.find(&id).is_some() => (self.browser_detail(&id, p, cx), None),
+            View::Author(id) => (self.author_page(&id, p, cx), None),
+            View::Creators => (self.creators_page(p, cx), None),
+            _ => (
+                self.browser_grid(p, cx),
+                self.ad_header(crate::ads::Unit::Discover, p),
+            ),
         };
         v_flex()
             .size_full()
             .relative()
-            .child(self.header(Page::Browser.label(), self.browser.subtitle(), actions, p))
+            .child(
+                self.header(Page::Browser.label(), self.browser.subtitle(), actions, p)
+                    .middle(ad),
+            )
             .children(self.trouble_banner(p, cx))
             .child(content)
             .when(self.browser.activity_open, |d| {
