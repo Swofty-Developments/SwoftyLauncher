@@ -14,6 +14,7 @@ use std::collections::HashMap;
 use std::path::Path;
 use std::rc::Rc;
 use std::time::{Duration, Instant};
+use swofty_ads::Consent;
 
 /// How long the game runs before the slots close. A game that stops sooner,
 /// such as one that crashes as it starts, leaves them as they were.
@@ -43,6 +44,8 @@ pub(crate) enum Unit {
     Addon,
     Online,
     Video,
+    /// RevIQ's consent form, which onboarding shows full size.
+    Consent,
 }
 
 impl Unit {
@@ -53,6 +56,7 @@ impl Unit {
             Self::Addon => "addon",
             Self::Online => "online",
             Self::Video => "video",
+            Self::Consent => "consent",
         }
     }
 
@@ -63,6 +67,7 @@ impl Unit {
             Self::Addon => "left-rail-1",
             Self::Discover | Self::Online => "leaderboard-1",
             Self::Video => "video",
+            Self::Consent => "consent",
         }
     }
 
@@ -72,6 +77,7 @@ impl Unit {
             Self::Home | Self::Addon => size(px(300.), px(250.)),
             Self::Discover | Self::Online => size(px(728.), px(90.)),
             Self::Video => size(px(400.), px(225.)),
+            Self::Consent => size(px(680.), px(420.)),
         }
     }
 }
@@ -118,6 +124,7 @@ pub(crate) struct Host {
     covered: bool,
     paused: bool,
     game_since: Option<Instant>,
+    consent: Option<Consent>,
 }
 
 impl Host {
@@ -171,15 +178,6 @@ impl Host {
         self.frame += 1;
     }
 
-    fn hide_all(&mut self) {
-        for (unit, slot) in &mut self.slots {
-            if slot.shown {
-                slot.shown = false;
-                self.backend.hide(*unit);
-            }
-        }
-    }
-
     fn opened(&mut self, unit: Unit, view: Option<View>) {
         self.backend.adopt(unit, view);
         match self.slots.get(&unit) {
@@ -189,6 +187,12 @@ impl Host {
             }
             Some(_) => self.backend.hide(unit),
             None => self.backend.close(unit),
+        }
+    }
+
+    fn close(&mut self, unit: Unit) {
+        if self.slots.remove(&unit).is_some() {
+            self.backend.close(unit);
         }
     }
 
@@ -223,6 +227,7 @@ impl Ads {
             covered: false,
             paused: false,
             game_since: None,
+            consent: None,
         }));
         Self { host: Some(host) }
     }
@@ -273,12 +278,6 @@ impl Ads {
         }
     }
 
-    pub(crate) fn hide_all(&self) {
-        if let Some(host) = &self.host {
-            host.borrow_mut().hide_all();
-        }
-    }
-
     /// The window moved: slots that live in their own windows follow it.
     pub(crate) fn moved(&self) {
         if let Some(host) = &self.host {
@@ -292,24 +291,78 @@ impl Ads {
         }
     }
 
+    /// Reads what the consent page reported. Returns whether that changed.
+    pub(crate) fn poll_consent(&self) -> bool {
+        let Some(host) = &self.host else { return false };
+        let host = &mut *host.borrow_mut();
+        let mut changed = false;
+        for event in host.backend.events() {
+            if event.slot == Unit::Consent.key() && host.consent != Some(event.consent) {
+                host.consent = Some(event.consent);
+                changed = true;
+            }
+        }
+        changed
+    }
+
+    /// What the consent page last reported, `None` while it loads.
+    pub(crate) fn consent(&self) -> Option<Consent> {
+        self.host.as_ref().and_then(|h| h.borrow().consent)
+    }
+
+    /// Starts the consent form over, from a fresh page.
+    pub(crate) fn restart_consent(&self) {
+        if let Some(host) = &self.host {
+            let host = &mut *host.borrow_mut();
+            host.consent = None;
+            host.close(Unit::Consent);
+        }
+    }
+
+    /// Closes `unit`'s webview, freeing its memory.
+    pub(crate) fn close(&self, unit: Unit) {
+        if let Some(host) = &self.host {
+            host.borrow_mut().close(unit);
+        }
+    }
+
     /// The reserved rectangle for `unit`, over which its webview shows, with
     /// `background` behind the ad while it loads.
     pub(crate) fn slot(&self, unit: Unit, background: Hsla) -> Option<Canvas<()>> {
+        let url = swofty_ads::slot_url(
+            &self.host.as_ref()?.borrow().base,
+            unit.name(),
+            unit.key(),
+            rgb_of(background),
+            dev_placements(),
+        );
+        self.canvas(unit, url, unit.size(), background)
+    }
+
+    /// RevIQ's consent form at `size`. `reopen` opens it over a stored answer.
+    pub(crate) fn consent_form(
+        &self,
+        background: Hsla,
+        reopen: bool,
+        size: Size<Pixels>,
+    ) -> Option<Canvas<()>> {
+        let mut url = swofty_ads::consent_url(
+            &self.host.as_ref()?.borrow().base,
+            rgb_of(background),
+            reopen,
+            dev_placements(),
+        );
+        if let Some(country) = test_country() {
+            url.push_str(&format!("&country={country}&rev-geo={country}"));
+        }
+        self.canvas(Unit::Consent, url, size, background)
+    }
+
+    fn canvas(&self, unit: Unit, url: String, size: Size<Pixels>, background: Hsla) -> Option<Canvas<()>> {
         if !self.on() {
             return None;
         }
         let host = Rc::downgrade(self.host.as_ref()?);
-        let url = {
-            let base = &self.host.as_ref()?.borrow().base;
-            swofty_ads::slot_url(
-                base,
-                unit.name(),
-                unit.key(),
-                rgb_of(background),
-                dev_placements(),
-            )
-        };
-        let size = unit.size();
         Some(
             canvas(
                 move |bounds, window, cx| {
@@ -363,6 +416,14 @@ fn dev_placements() -> bool {
         Ok("0") => false,
         _ => cfg!(debug_assertions),
     }
+}
+
+/// `SWOFTY_ADS_COUNTRY=DE` makes the consent form act as if the player were in
+/// that country, for testing.
+fn test_country() -> Option<String> {
+    std::env::var("SWOFTY_ADS_COUNTRY")
+        .ok()
+        .filter(|c| c.len() == 2 && c.bytes().all(|b| b.is_ascii_uppercase()))
 }
 
 fn base_url() -> Option<String> {

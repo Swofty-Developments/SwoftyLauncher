@@ -5,10 +5,11 @@
 use super::{Area, Unit};
 use gpui_kit::Window;
 use raw_window_handle::{HasWindowHandle, RawWindowHandle};
-use std::io::Write;
+use std::io::{BufRead, BufReader, Write};
 use std::path::{Path, PathBuf};
 use std::process::{Child, ChildStdin, Command, Stdio};
-use swofty_ads::Command as Line;
+use std::sync::{Arc, Mutex};
+use swofty_ads::{Command as Line, Event};
 
 /// The helper opens its slots itself, so nothing is opened here.
 pub(super) enum Opener {}
@@ -24,6 +25,7 @@ pub(super) enum View {}
 pub(super) struct Backend {
     child: Child,
     stdin: Option<ChildStdin>,
+    events: Arc<Mutex<Vec<Event>>>,
 }
 
 impl Backend {
@@ -46,7 +48,7 @@ impl Backend {
             .arg("--data")
             .arg(&dir)
             .stdin(Stdio::piped())
-            .stdout(Stdio::null())
+            .stdout(Stdio::piped())
             .stderr(log.unwrap_or_else(|_| Stdio::null()))
             .spawn()
             .inspect_err(|e| {
@@ -54,7 +56,28 @@ impl Backend {
             })
             .ok()?;
         let stdin = child.stdin.take();
-        Some(Self { child, stdin })
+        let events = Arc::new(Mutex::new(Vec::new()));
+        if let Some(stdout) = child.stdout.take() {
+            let events = events.clone();
+            std::thread::spawn(move || {
+                for line in BufReader::new(stdout).lines() {
+                    let Ok(line) = line else { break };
+                    if let Some(event) = Event::parse(&line)
+                        && let Ok(mut events) = events.lock()
+                    {
+                        events.push(event);
+                    }
+                }
+            });
+        }
+        Some(Self { child, stdin, events })
+    }
+
+    pub(super) fn events(&mut self) -> Vec<Event> {
+        self.events
+            .lock()
+            .map(|mut e| std::mem::take(&mut *e))
+            .unwrap_or_default()
     }
 
     pub(super) fn show(&mut self, unit: Unit, url: &str, area: Area, scale: f32) -> Option<Opener> {

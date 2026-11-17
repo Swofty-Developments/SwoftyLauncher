@@ -5,13 +5,14 @@
 use super::{Area, Unit};
 use gpui_kit::Window;
 use raw_window_handle::{HandleError, HasWindowHandle, RawWindowHandle, Win32WindowHandle, WindowHandle};
-use std::cell::Cell;
+use std::cell::{Cell, RefCell};
 use std::collections::{HashMap, HashSet};
 use std::num::NonZeroIsize;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 use std::sync::Once;
 use swofty_ads::view::{self, wry};
+use swofty_ads::{Consent, Event};
 use windows::Win32::Foundation::{HWND, LPARAM, LRESULT, POINT, WPARAM};
 use windows::Win32::Graphics::Gdi::ClientToScreen;
 use windows::Win32::System::LibraryLoader::GetModuleHandleW;
@@ -29,6 +30,7 @@ pub(super) struct Backend {
     data: PathBuf,
     views: HashMap<Unit, View>,
     opening: HashSet<Unit>,
+    events: Rc<RefCell<Vec<Event>>>,
 }
 
 /// What a slot needs to open, taken out of the backend so it can run with no
@@ -39,11 +41,19 @@ pub(super) struct Opener {
     data: PathBuf,
     url: String,
     area: Area,
+    events: Rc<RefCell<Vec<Event>>>,
 }
 
 impl Opener {
     pub(super) fn open(self) -> Option<View> {
-        View::open(self.owner, &self.data, &self.url, self.area)
+        let (slot, events) = (self.slot, self.events.clone());
+        let report = move |consent| {
+            events.borrow_mut().push(Event {
+                slot: slot.to_owned(),
+                consent,
+            })
+        };
+        View::open(self.owner, &self.data, &self.url, self.area, report)
             .inspect_err(|e| crate::app_log::note(&format!("the {} ad slot didn't open: {e}", self.slot)))
             .ok()
     }
@@ -72,7 +82,12 @@ impl Backend {
             data: data.join("ads"),
             views: HashMap::new(),
             opening: HashSet::new(),
+            events: Rc::default(),
         })
+    }
+
+    pub(super) fn events(&mut self) -> Vec<Event> {
+        std::mem::take(&mut *self.events.borrow_mut())
     }
 
     pub(super) fn show(&mut self, unit: Unit, url: &str, area: Area, _scale: f32) -> Option<Opener> {
@@ -93,6 +108,7 @@ impl Backend {
             data: self.data.clone(),
             url: url.to_owned(),
             area,
+            events: self.events.clone(),
         })
     }
 
@@ -134,7 +150,13 @@ impl Backend {
 }
 
 impl View {
-    fn open(owner: isize, data: &Path, url: &str, area: Area) -> anyhow::Result<Self> {
+    fn open(
+        owner: isize,
+        data: &Path,
+        url: &str,
+        area: Area,
+        report: impl Fn(Consent) + 'static,
+    ) -> anyhow::Result<Self> {
         register_class();
         let (x, y) = to_screen(owner, area);
         let popup = unsafe {
@@ -156,9 +178,16 @@ impl View {
         let mut context = wry::WebContext::new(Some(data.to_path_buf()));
         let background = swofty_ads::slot_background(url).unwrap_or([0, 0, 0]);
         let bounds = view::rect(0, 0, area.width, area.height);
-        let webview = view::builder(&mut context, url, bounds, background, Rc::new(Cell::new(false)))
-            .with_url("about:blank")
-            .build_as_child(&Popup(popup.0 as isize))?;
+        let webview = view::builder(
+            &mut context,
+            url,
+            bounds,
+            background,
+            Rc::new(Cell::new(false)),
+            report,
+        )
+        .with_url("about:blank")
+        .build_as_child(&Popup(popup.0 as isize))?;
         if let Err(e) = view::allow_trackers(&webview) {
             crate::app_log::note(&format!("an ad slot kept tracking prevention on: {e}"));
         }

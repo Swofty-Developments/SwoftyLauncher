@@ -9,7 +9,7 @@ mod protocol;
 #[cfg(feature = "view")]
 pub mod view;
 
-pub use protocol::Command;
+pub use protocol::{Command, Consent, Event};
 
 /// The page for one ad unit at `placement`, which the page reports to RevIQ,
 /// with `background` behind it while the ad loads. `dev` asks for RevIQ's test
@@ -19,6 +19,18 @@ pub fn slot_url(base: &str, unit: &str, placement: &str, background: [u8; 3], de
     format!(
         "{}/app/{unit}?bg={r:02x}{g:02x}{b:02x}&p={placement}{}",
         base.trim_end_matches('/'),
+        if dev { "&dev=1" } else { "" }
+    )
+}
+
+/// The page that runs RevIQ's consent form full size, with `background`
+/// behind it. `reopen` opens the form again over a stored answer.
+pub fn consent_url(base: &str, background: [u8; 3], reopen: bool, dev: bool) -> String {
+    let [r, g, b] = background;
+    format!(
+        "{}/app/consent?bg={r:02x}{g:02x}{b:02x}{}{}",
+        base.trim_end_matches('/'),
+        if reopen { "&show=1" } else { "" },
         if dev { "&dev=1" } else { "" }
     )
 }
@@ -70,6 +82,22 @@ mod tests {
         assert_eq!(
             slot_url("https://ads.swofty.net", "video", "video", [0, 0, 0], true),
             "https://ads.swofty.net/app/video?bg=000000&p=video&dev=1"
+        );
+    }
+
+    #[test]
+    fn a_consent_url_can_reopen_the_form() {
+        assert_eq!(
+            consent_url("https://ads.swofty.net/", [0x1f, 0x23, 0x2d], false, false),
+            "https://ads.swofty.net/app/consent?bg=1f232d"
+        );
+        assert_eq!(
+            consent_url("https://ads.swofty.net", [0, 0, 0], true, true),
+            "https://ads.swofty.net/app/consent?bg=000000&show=1&dev=1"
+        );
+        assert_eq!(
+            slot_background(&consent_url("https://ads.swofty.net", [1, 2, 3], true, false)),
+            Some([1, 2, 3])
         );
     }
 
