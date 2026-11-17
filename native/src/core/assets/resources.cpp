@@ -565,15 +565,6 @@ std::string index_of(const std::vector<Res *> &list, uint64_t &data_size)
     return idx;
 }
 
-uint64_t fnv_more(uint64_t h, const std::string &s)
-{
-    for (unsigned char c : s) {
-        h ^= c;
-        h *= 0x100000001b3ull;
-    }
-    return h;
-}
-
 bool write_all(HANDLE f, const std::string &s)
 {
     size_t done = 0;
@@ -599,10 +590,10 @@ bool write_erp(const std::vector<Res *> &list, const std::string &rel_dir, const
     memcpy(hdr.data() + 0x10, &io, 8);
     memcpy(hdr.data() + 0x18, &isz, 8);
     memcpy(hdr.data() + 0x20, &dof, 8);
-    uint64_t h = fnv_more(fnv_more(0xcbf29ce484222325ull, hdr), idx);
+    uint64_t h = runtime::fnv64(idx, runtime::fnv64(hdr));
     for (auto *r : list)
         for (auto &f : r->frags)
-            h = fnv_more(h, f.packed);
+            h = runtime::fnv64(f.packed, h);
     std::string name = "rt_" + runtime::hex16(h).substr(2) + ".erp";
     out.path = rel_dir + name;
     out.size = dof + data_size;
