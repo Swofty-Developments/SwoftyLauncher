@@ -5,7 +5,7 @@ use crate::addons::builtin::{CORE_ID, CORE_INTRO, stage_intro};
 use crate::addons::settings::{OnAddons, render_ops};
 use crate::asset::{AssetOp, FileKind, OpFile};
 use crate::dbedit::driver_manager;
-use crate::erpbuild::unsupported;
+use crate::erp::unsupported;
 use crate::manifest::AddonManifest;
 use crate::profile::Profile;
 use crate::store::Store;

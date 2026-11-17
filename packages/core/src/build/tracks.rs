@@ -267,7 +267,7 @@ impl Tracks {
                 built.lines.push(format!(
                     "{}: {}",
                     pkg.track_code,
-                    crate::erpbuild::repaired_note(pkg.display_name(), &placement.repaired)
+                    crate::erp::repaired_note(pkg.display_name(), &placement.repaired)
                 ));
             }
             if !placement.spaced.is_empty() {
