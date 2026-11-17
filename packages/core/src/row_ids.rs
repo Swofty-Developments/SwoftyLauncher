@@ -548,7 +548,7 @@ pub fn last_build(overlays: &Path, current: &str, rel: &str) -> Option<LastBuild
             Some((at, p))
         };
         let db = file(d.join(rel));
-        let edits = file(d.join(crate::runtime::ASSETS_FILE));
+        let edits = file(d.join(crate::content::runtime_assets::ASSETS_FILE));
         let at = db.iter().chain(&edits).map(|(at, _)| *at).max()?;
         Some((
             at,

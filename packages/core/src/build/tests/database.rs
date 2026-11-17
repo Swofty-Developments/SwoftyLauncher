@@ -274,7 +274,7 @@ fn a_row_count_past_the_rows_there_stays_at_the_rows() {
 fn a_special_livery_with_an_unknown_team_kit_builds_with_an_empty_one() {
     use crate::dbedit::Catalog;
     use crate::dbedit::package::Package;
-    use crate::livery_kits::{KIT_YEARS, TABLE};
+    use crate::game_db::livery_kits::{KIT_YEARS, TABLE};
     use swofty_formats::gvdb::Record;
     if loader_dir().is_some() {
         return;
@@ -634,7 +634,9 @@ fn adds_a_driver_head_row_and_its_groups_for_a_head_archive_no_row_names() {
         ]
     );
 
-    let listed = crate::heads::for_profile(&store, &game, "default").unwrap().heads;
+    let listed = crate::game_db::heads::for_profile(&store, &game, "default")
+        .unwrap()
+        .heads;
     let labels: Vec<&str> = listed.iter().map(|h| h.label.as_str()).collect();
     assert_eq!(labels, ["amy", "lando_norris", "own_head", "rio_haryanto"]);
     let rio = listed.iter().find(|h| h.label == "rio_haryanto").unwrap();
@@ -642,11 +644,13 @@ fn adds_a_driver_head_row_and_its_groups_for_a_head_archive_no_row_names() {
     assert_eq!(rio.addon_name.as_deref(), Some("Rio facemod"));
     assert!(!rio.female);
     assert!(listed.iter().find(|h| h.label == "amy").unwrap().female);
-    assert_eq!(crate::heads::installed(&store).len(), 4);
+    assert_eq!(crate::game_db::heads::installed(&store).len(), 4);
     store
         .update_profile("default", |p| p.set_enabled("mod.rio", false))
         .unwrap();
-    let listed = crate::heads::for_profile(&store, &game, "default").unwrap().heads;
+    let listed = crate::game_db::heads::for_profile(&store, &game, "default")
+        .unwrap()
+        .heads;
     assert_eq!(
         listed.iter().map(|h| h.label.as_str()).collect::<Vec<_>>(),
         ["amy", "own_head"]

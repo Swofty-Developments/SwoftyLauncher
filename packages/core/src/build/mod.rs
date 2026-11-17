@@ -28,13 +28,13 @@ use self::run::Run;
 use self::saved::Saved;
 use self::setup::Setup;
 use self::start::Start;
+use crate::addons::settings::SessionSettings;
 use crate::asset::Op;
-use crate::conflicts::Report;
+use crate::content::runtime_assets::Runtime;
 use crate::install::{Game, Plan};
 use crate::planner::{Conflict, Planner};
-use crate::resolver::resolve;
-use crate::runtime::Runtime;
-use crate::settings::SessionSettings;
+use crate::profile::conflicts::Report;
+use crate::profile::resolver::resolve;
 use crate::store::Store;
 use crate::{Error, Result};
 

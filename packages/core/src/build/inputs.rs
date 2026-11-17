@@ -12,15 +12,15 @@ use super::tracks::{Tracks, record_ui_lists};
 use super::{Built, GVDB, Pipeline, picture, registry};
 use crate::activation::handling::{self, HandlingMap};
 use crate::activation::ui::{Lists, MapUi, stamp as ui_stamp};
+use crate::addons::builtin::loader_dir;
+use crate::addons::registry::Registry;
+use crate::addons::settings::SessionMod;
 use crate::asset::{AssetOp, ItemOp};
-use crate::baseline::sha256_file;
-use crate::builtin::loader_dir;
+use crate::content::runtime_assets::Runtime;
+use crate::content::shaders::BuildFiles;
+use crate::game_folder::baseline::sha256_file;
 use crate::multiplayer::fingerprint;
-use crate::registry::Registry;
 use crate::row_ids::Overrides;
-use crate::runtime::Runtime;
-use crate::settings::SessionMod;
-use crate::shaders::BuildFiles;
 use crate::stdlib::deps::Std;
 use crate::ui::{ERPS as MENU_ERPS, READS as MENU_READS, ui_file};
 use crate::{Result, io_err};
@@ -86,8 +86,10 @@ impl Inputs {
         let gathered_rest = gathered;
         if head_puts.pending() {
             let path = run.original(GVDB);
-            let stock = crate::heads::labels(&Gvdb::parse(&std::fs::read(&path).map_err(io_err(&path))?)?);
-            let added = crate::heads::ops(&head_puts.new_heads(&stock), &stock, head_puts.registered());
+            let stock =
+                crate::game_db::heads::labels(&Gvdb::parse(&std::fs::read(&path).map_err(io_err(&path))?)?);
+            let added =
+                crate::game_db::heads::ops(&head_puts.new_heads(&stock), &stock, head_puts.registered());
             hash.json(&added.ops);
             built
                 .lines

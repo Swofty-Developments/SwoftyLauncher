@@ -20,10 +20,10 @@ use super::{Built, Pipeline, source_dir};
 use crate::activation::ers::{self, ErsMap};
 use crate::activation::ui::Kept;
 use crate::asset::{AssetOp, Op, Origin, Source};
+use crate::content::runtime_assets::{Prebuilt, overlay_fits};
 use crate::erpbuild::{ErpBuild, Held, reads, writes};
 use crate::manifest::relative_inside;
 use crate::planner::{Kind, Route};
-use crate::runtime::{Prebuilt, overlay_fits};
 use crate::{Error, Result};
 
 /// What applying the archive changes leaves for placing the files.
@@ -310,7 +310,9 @@ impl Pipeline<'_, '_> {
             }
             for (severity, w) in erps.check_textures(&name) {
                 let kind = match severity {
-                    crate::texcheck::Severity::Invalid => "texture the game's renderer may reject",
+                    crate::content::texture_check::Severity::Invalid => {
+                        "texture the game's renderer may reject"
+                    }
                     _ => "texture",
                 };
                 built.warnings.push(format!("{kind}: {w}"));

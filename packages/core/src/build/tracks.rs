@@ -13,10 +13,10 @@ use crate::activation::place::{
 };
 use crate::activation::ui::{Kept, MapUi, build_ui, plan_lists};
 use crate::asset::{AssetOp, GroupOp, Op, Origin, TrackOp};
-use crate::baseline::{Baseline, sha256_opt};
+use crate::content::track_package::{TrackPackage, Unusable};
+use crate::game_folder::baseline::{Baseline, sha256_opt};
+use crate::game_folder::placed::Placed;
 use crate::install::Game;
-use crate::map::{TrackPackage, Unusable};
-use crate::placed::Placed;
 use crate::planner::{Kind, Planner, Route, Target};
 use crate::stdlib::deps::Std;
 use crate::store::Store;
@@ -33,7 +33,7 @@ pub fn track_packages(store: &Store, ops: Vec<Op>) -> Result<TrackPackages> {
             continue;
         };
         let dir = source.resolve(&source_dir(store, &op.origin.addon, source.root))?;
-        let pkg = match crate::map::read_package(&dir) {
+        let pkg = match crate::content::track_package::read_package(&dir) {
             Ok(pkg) => pkg,
             Err(why) => {
                 left_out.push((op.origin, why));
@@ -394,7 +394,11 @@ pub(super) fn track_files(
             .cloned()
             .collect(),
         added,
-        edits: built.plan.loader.get(crate::runtime::ASSETS_FILE).cloned(),
+        edits: built
+            .plan
+            .loader
+            .get(crate::content::runtime_assets::ASSETS_FILE)
+            .cloned(),
     };
     let mut warnings = Vec::new();
     if let Err(e) = crate::activation::facts::write(&store.root, &scan) {

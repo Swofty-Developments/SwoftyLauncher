@@ -810,7 +810,7 @@ fn the_tracks_keep_their_menu_pictures_over_an_addon_that_ships_its_own() {
     assert_eq!((pair.winner.as_str(), pair.resources), ("mod.ring_b", 6));
     assert!(pair.items.contains(&format!("{front}:{}", image(FLAGS))));
     assert_eq!(
-        crate::conflicts::last(&store, "default").unwrap().pairs,
+        crate::profile::conflicts::last(&store, "default").unwrap().pairs,
         built.report.pairs
     );
     std::fs::remove_dir_all(&root).ok();

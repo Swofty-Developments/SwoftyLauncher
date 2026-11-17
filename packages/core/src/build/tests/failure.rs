@@ -117,7 +117,7 @@ fn a_missing_or_cut_short_file_names_its_addon_or_the_game() {
 
 #[test]
 fn a_missing_backup_stops_the_build_and_sends_the_player_through_the_setup_again() {
-    let _pin = crate::builtin::LoaderPin::none();
+    let _pin = crate::addons::builtin::LoaderPin::none();
     let root = std::env::temp_dir().join(format!("swofty-build-backup-gone-{}", std::process::id()));
     std::fs::remove_dir_all(&root).ok();
     let dir = root.join("game");
@@ -137,8 +137,8 @@ fn a_missing_backup_stops_the_build_and_sends_the_player_through_the_setup_again
         user_reg: None,
     };
     let store = Store::new(root.join("data"));
-    crate::setup::reset(&store.root, &game, false).unwrap();
-    crate::setup::finish(&store.root).unwrap();
+    crate::game_folder::setup::reset(&store.root, &game, false).unwrap();
+    crate::game_folder::setup::finish(&store.root).unwrap();
     let objects = Objects {
         root: store.root.join("baseline/objects"),
     };
@@ -151,7 +151,7 @@ fn a_missing_backup_stops_the_build_and_sends_the_player_through_the_setup_again
     baseline.save(&store.root).unwrap();
 
     build(&store, "default", &game).unwrap();
-    assert!(crate::setup::done(&store.root));
+    assert!(crate::game_folder::setup::done(&store.root));
 
     std::fs::remove_dir_all(objects.path(&sha).parent().unwrap()).unwrap();
     let e = build(&store, "default", &game).unwrap_err();
@@ -161,7 +161,7 @@ fn a_missing_backup_stops_the_build_and_sends_the_player_through_the_setup_again
          again: open Swofty Launcher and press Play, or run `swofty setup reset`, repair the game in the EA \
          app or verify the game files in Steam, then run `swofty setup done`"
     );
-    assert!(!crate::setup::done(&store.root));
+    assert!(!crate::game_folder::setup::done(&store.root));
     assert!(
         build(&store, crate::profile::VANILLA, &game).is_ok(),
         "a build without addons reads no backups"

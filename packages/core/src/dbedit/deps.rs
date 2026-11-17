@@ -1205,8 +1205,8 @@ mod tests {
     use swofty_formats::gvdb::Record;
 
     use super::*;
+    use crate::game_db::row_keys::{Names, RowKeys};
     use crate::ops::{DbOps, DbReport, apply_db_ops_report};
-    use crate::rowkeys::{Names, RowKeys};
 
     const PACKAGES: &str = "entrants.vehicles.vehicle_packages";
     const PRESETS: &str = "car_setup.presets";

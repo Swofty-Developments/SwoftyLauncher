@@ -5,11 +5,11 @@ use super::saved::Saved;
 use super::setup::Setup;
 use super::tracks::track_files;
 use super::{ARCHIVE_AGE, ARCHIVE_BYTES, Built, PACKED_AGE, PLAN_FILE, Pipeline, SAVED_FILE, source_dir};
+use crate::addons::builtin::CORE_ID;
 use crate::asset::{Op, Source};
-use crate::builtin::CORE_ID;
-use crate::conflicts::Report;
 use crate::multiplayer::fingerprint;
 use crate::planner::{Target, waiting_lines};
+use crate::profile::conflicts::Report;
 use crate::{Result, io_err};
 
 impl Pipeline<'_, '_> {
@@ -51,14 +51,17 @@ impl Pipeline<'_, '_> {
             }
         }
         for (rel, bytes) in std::mem::take(&mut inputs.shader_files.files) {
-            let path = built.overlay.join(crate::runtime::SWOFTY).join(&rel);
+            let path = built
+                .overlay
+                .join(crate::content::runtime_assets::SWOFTY)
+                .join(&rel);
             let dir = path.parent().expect("has parent");
             std::fs::create_dir_all(dir).map_err(io_err(dir))?;
             std::fs::write(&path, bytes).map_err(io_err(&path))?;
             built
                 .plan
                 .loader
-                .insert(format!("{}/{rel}", crate::runtime::SWOFTY), path);
+                .insert(format!("{}/{rel}", crate::content::runtime_assets::SWOFTY), path);
         }
         built.warnings.extend(waiting_lines(&planned.waiting, features));
         for (_, _, origin) in &fitted.kept {
@@ -71,8 +74,8 @@ impl Pipeline<'_, '_> {
             }
         }
         for c in &mut planned.conflicts {
-            if matches!(&c.target, Target::File(f) if f == crate::builtin::CORE_INTRO_CACHED)
-                || matches!(&c.target, Target::String { key, .. } if key == crate::builtin::CORE_INTRO_SUBTITLE)
+            if matches!(&c.target, Target::File(f) if f == crate::addons::builtin::CORE_INTRO_CACHED)
+                || matches!(&c.target, Target::String { key, .. } if key == crate::addons::builtin::CORE_INTRO_SUBTITLE)
             {
                 c.overridden.retain(|o| o.addon != CORE_ID);
             }
@@ -89,10 +92,10 @@ impl Pipeline<'_, '_> {
             planned.record_names.get(&key).cloned().or_else(|| {
                 catalog
                     .as_deref()
-                    .and_then(|c| crate::conflicts::record_name(c, key))
+                    .and_then(|c| crate::profile::conflicts::record_name(c, key))
             })
         };
-        let (report, within) = crate::conflicts::summarise(profile, &planned.conflicts, &record);
+        let (report, within) = crate::profile::conflicts::summarise(profile, &planned.conflicts, &record);
         built.warnings.extend(report.pairs.iter().map(|p| p.line(&name)));
         built.warnings.extend(within);
         built.report = Report {
@@ -152,7 +155,7 @@ impl Pipeline<'_, '_> {
         if let Some(saved) = saved.filter(|_| !row_ids_unsaved) {
             crate::write_json(&built.overlay.join(SAVED_FILE), &saved)?;
         }
-        crate::write_json(&crate::conflicts::path(store, profile), &built.report)?;
+        crate::write_json(&crate::profile::conflicts::path(store, profile), &built.report)?;
         record_build(run, &mut built, &mut inputs);
         Ok(built)
     }
@@ -175,7 +178,7 @@ impl Pipeline<'_, '_> {
         saved.restore(&mut self.built)?;
         self.built.report.order = run.settings.enabled().map(str::to_owned).collect();
         crate::write_json(
-            &crate::conflicts::path(run.store, run.profile),
+            &crate::profile::conflicts::path(run.store, run.profile),
             &self.built.report,
         )?;
         record_build(run, &mut self.built, &mut inputs);

@@ -8,7 +8,7 @@ use super::{Built, Pipeline, source_dir};
 use crate::activation::ers::{self, ErsMap};
 use crate::activation::handling::{self, HandlingMap};
 use crate::asset::{AssetOp, FileOp, Op, Origin};
-use crate::baseline::Baseline;
+use crate::game_folder::baseline::Baseline;
 use crate::install::Game;
 use crate::manifest::relative_inside;
 use crate::store::Store;

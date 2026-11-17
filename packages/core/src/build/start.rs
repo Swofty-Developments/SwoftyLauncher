@@ -4,13 +4,13 @@ use swofty_formats::gvdb::Gvdb;
 
 use super::run::Run;
 use super::{Built, GVDB, original, stock_max_ids};
-use crate::conflicts::Report;
+use crate::addons::settings::OnAddons;
 use crate::install::{Game, Plan};
 use crate::manifest::{AddonManifest, OptionType};
 use crate::profile::Profile;
-use crate::resolver::resolve;
+use crate::profile::conflicts::Report;
+use crate::profile::resolver::resolve;
 use crate::row_ids::Overrides;
-use crate::settings::OnAddons;
 use crate::stdlib::deps::Std;
 use crate::store::Store;
 use crate::{Error, Result};
@@ -112,7 +112,7 @@ impl Start {
 pub(super) fn report(run: Run) -> Report {
     Report {
         profile: run.profile.into(),
-        built_at: crate::conflicts::now(),
+        built_at: crate::profile::conflicts::now(),
         pairs: Vec::new(),
         order: run.settings.enabled().map(str::to_owned).collect(),
         stock_removals: BTreeMap::new(),

@@ -8,11 +8,11 @@ use crate::activation::db::{Registry, TrackHost, activate_with};
 use crate::activation::grid::grid_size;
 use crate::activation::place::{layer_worlds, slot_asset_group, slot_asset_root};
 use crate::activation::ui::plan_lists;
-use crate::builtin::CORE_ID;
+use crate::addons::builtin::CORE_ID;
+use crate::content::runtime_assets::{db_edits, runtime_loaded_estimate, runtime_record_room};
 use crate::dbedit::driver_manager;
 use crate::multiplayer::fingerprint;
 use crate::planner::{Kind, Route, kept_lists_line, stock_removals_line, track_removals_line};
-use crate::runtime::{db_edits, runtime_loaded_estimate, runtime_record_room};
 use crate::{Error, Result, io_err};
 
 /// What editing the game database leaves for the later stages.
@@ -21,8 +21,8 @@ pub(super) struct DbEdits {
     pub stock_removals: BTreeMap<String, usize>,
     /// The entrant lists each addon renames or removes, which the build keeps.
     pub kept_lists: BTreeMap<String, Vec<String>>,
-    pub waits: Vec<crate::conflicts::Wait>,
-    pub udp_ids: crate::udp_ids::UdpIds,
+    pub waits: Vec<crate::profile::conflicts::Wait>,
+    pub udp_ids: crate::game_db::udp_ids::UdpIds,
     pub id_aliases: crate::row_ids::IdAliases,
     /// A check gave row ids it did not keep, so its build must not be saved for a later one to reuse.
     pub row_ids_unsaved: bool,
@@ -55,7 +55,7 @@ impl Pipeline<'_, '_> {
         let mut stock_removals = BTreeMap::new();
         let mut kept_lists = BTreeMap::new();
         let mut waits = Vec::new();
-        let mut udp_ids = crate::udp_ids::UdpIds::default();
+        let mut udp_ids = crate::game_db::udp_ids::UdpIds::default();
         let mut id_aliases = crate::row_ids::IdAliases::default();
         let mut row_ids_unsaved = false;
         if !fitted.is_empty() || planner.has_db() || room_asked.is_some() {
@@ -137,11 +137,13 @@ impl Pipeline<'_, '_> {
             };
             let staged = (planner.route(Kind::Db) == Route::Runtime && planner.has_db()).then(|| db.clone());
             let mut db_report = crate::ops::DbReport::default();
-            planner.keep_entrant_lists(crate::entrant_lists::StockLists::new(&shipped_db));
+            planner.keep_entrant_lists(crate::game_db::entrant_lists::StockLists::new(&shipped_db));
             planner.keep_row_ids(row_ids);
             let added = planner.apply_db_report(&mut db, &stock, &tracked, &mut db_report)?;
-            built.lines.extend(crate::virtual_lists::settle(&mut db, &stock));
-            built.lines.extend(crate::rnd_budget::report(&db));
+            built
+                .lines
+                .extend(crate::game_db::virtual_lists::settle(&mut db, &stock));
+            built.lines.extend(crate::game_db::rnd_budget::report(&db));
             if let Some(ids) = planner.take_row_ids() {
                 if let Some(missed) = ids.lent_missed() {
                     return Err(Error::Resolve(missed));
@@ -213,10 +215,10 @@ impl Pipeline<'_, '_> {
             for c in crate::dbedit::calendar::cut_rounds(&db) {
                 built.warnings.push(c.line(&run.writer_name(planner, c.key)));
             }
-            for u in crate::heads::keep_wearable(&mut db, &shipped_db) {
+            for u in crate::game_db::heads::keep_wearable(&mut db, &shipped_db) {
                 built.warnings.push(u.line(&run.writer_name(planner, u.key)));
             }
-            for k in crate::livery_kits::keep_kits(&mut db) {
+            for k in crate::game_db::livery_kits::keep_kits(&mut db) {
                 built.warnings.push(k.line(&run.writer_name(planner, k.key)));
             }
             stock_removals = planner.take_stock_removals();
@@ -229,7 +231,7 @@ impl Pipeline<'_, '_> {
             waits = planner
                 .take_waits()
                 .into_iter()
-                .map(|(addon, on)| crate::conflicts::Wait { addon, on })
+                .map(|(addon, on)| crate::profile::conflicts::Wait { addon, on })
                 .collect();
             kept_lists = planner.take_kept_lists();
             for (id, lists) in &kept_lists {
@@ -249,7 +251,7 @@ impl Pipeline<'_, '_> {
                     .or_default()
                     .insert(crate::row_ids::track_row(code), *id);
             }
-            udp_ids = crate::udp_ids::build(&db, &copies);
+            udp_ids = crate::game_db::udp_ids::build(&db, &copies);
             for (addon, code, stat_id) in &track_udp {
                 udp_ids.add_track(addon, code, *stat_id);
             }
@@ -267,7 +269,7 @@ impl Pipeline<'_, '_> {
                     .extend(driver_manager::warnings(&db, driver_picks, &names, why));
             }
             if !added.is_empty() {
-                let found = crate::owned::owned_items(&db, &Gvdb::parse(&shipped)?, &added);
+                let found = crate::game_db::owned::owned_items(&db, &Gvdb::parse(&shipped)?, &added);
                 built.lines.extend(found.lines);
                 built.warnings.extend(found.warnings);
                 session.owned_items = found.items;

@@ -7,7 +7,7 @@ use super::calendar;
 use super::catalog::plain;
 use super::driver_manager::{self, Driver};
 use super::{Catalog, Edits, NodeId, rows};
-use crate::heads::ProfileHead;
+use crate::game_db::heads::ProfileHead;
 use crate::ops::first_segment;
 use crate::tracks::PlanTrack;
 use crate::{Error, Result};
@@ -751,7 +751,7 @@ impl Module {
                         }
                     }
                 }
-                if spec.rows == crate::heads::ROWS {
+                if spec.rows == crate::game_db::heads::ROWS {
                     for h in heads {
                         if !names.iter().any(|(l, _)| *l == h.label) {
                             names.push((h.label.clone(), head_title(h)));

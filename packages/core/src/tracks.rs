@@ -10,8 +10,8 @@ use swofty_addon::ops::DbOp;
 use swofty_formats::gvdb::{Gvdb, Record, ValueType};
 use swofty_formats::hash::fnv1a64;
 
+use crate::content::track_package::{TrackPackage, Unusable};
 use crate::launcher::{ProfileTrack, ProfileTracks};
-use crate::map::{TrackPackage, Unusable};
 use crate::stdlib::deps::Std;
 use crate::store::Store;
 use crate::{Result, io_err};
@@ -238,7 +238,7 @@ fn added_dirs(store: &Store, id: &str, m: &AddonManifest) -> Vec<PathBuf> {
 pub fn older_ids(store: &Store, id: &str, m: &AddonManifest) -> Vec<(String, Option<String>)> {
     added_dirs(store, id, m)
         .iter()
-        .filter_map(|d| crate::map::read_package(d).ok())
+        .filter_map(|d| crate::content::track_package::read_package(d).ok())
         .map(|pkg| {
             let venue = pkg
                 .track_name
@@ -256,7 +256,7 @@ pub fn installed(store: &Store) -> Vec<PlanTrack> {
     let mut out: Vec<PlanTrack> = Vec::new();
     for (id, m) in store.addons().unwrap_or_default() {
         for dir in added_dirs(store, &id, &m) {
-            let Ok(pkg) = crate::map::read_package(&dir) else {
+            let Ok(pkg) = crate::content::track_package::read_package(&dir) else {
                 continue;
             };
             if out.iter().any(|t| t.code == pkg.track_code) {
@@ -276,7 +276,7 @@ pub fn installed(store: &Store) -> Vec<PlanTrack> {
 pub fn unusable(store: &Store, id: &str, m: &AddonManifest) -> Vec<Unusable> {
     added_dirs(store, id, m)
         .iter()
-        .filter_map(|d| crate::map::read_package(d).err())
+        .filter_map(|d| crate::content::track_package::read_package(d).err())
         .collect()
 }
 
@@ -367,14 +367,14 @@ pub fn record_package(
         )));
     };
     let dir = addon_dir.join(inside.trim_end_matches('/'));
-    if dir.join(crate::map::MANIFEST_FILE).is_file() {
-        let pkg = crate::map::read_package(&dir)?;
+    if dir.join(crate::content::track_package::MANIFEST_FILE).is_file() {
+        let pkg = crate::content::track_package::read_package(&dir)?;
         if pkg.track_code != t.code {
             return Err(unusable(format!(
                 "its track record {} has code {}, and {rel}{} is for {}",
                 t.id,
                 t.code,
-                crate::map::MANIFEST_FILE,
+                crate::content::track_package::MANIFEST_FILE,
                 pkg.track_code
             )));
         }
@@ -399,14 +399,14 @@ pub fn record_package(
         version: None,
         author_name: None,
         erp,
-        activation: crate::map::Activation {
+        activation: crate::content::track_package::Activation {
             copy_from_track: base,
             copy_slot: slot,
             ..Default::default()
         },
         ers: Default::default(),
         copy_directories: match mips {
-            true => vec![crate::map::CopyDirectory {
+            true => vec![crate::content::track_package::CopyDirectory {
                 source: "mipmaps/".into(),
                 destination: format!("asset_groups/environment_package/tracks/{}/mipmaps/", t.code),
             }],
@@ -1204,7 +1204,7 @@ fn added_codes(store: &Store, id: &str, m: &AddonManifest) -> Vec<(String, bool)
     let dir = store.addons_dir().join(id);
     let added = added_dirs(store, id, m)
         .iter()
-        .filter_map(|d| match crate::map::read_package(d) {
+        .filter_map(|d| match crate::content::track_package::read_package(d) {
             Ok(pkg) => Some((pkg.track_code, true)),
             Err(why) => why.code.map(|c| (c, false)),
         })
@@ -1591,7 +1591,7 @@ mod tests {
             version: None,
             author_name: None,
             erp: format!("{code}.erp"),
-            activation: crate::map::Activation {
+            activation: crate::content::track_package::Activation {
                 copy_from_track: Some(base.into()),
                 ..Default::default()
             },
@@ -1857,7 +1857,7 @@ mod tests {
         };
         let add = r#"{"schema_version":1,"ops":[{"op":"track.add","source":"track"}]}"#;
         let like = |code: &str, name: &str| {
-            crate::map::tests::OKAYAMA_LIKE
+            crate::content::track_package::tests::OKAYAMA_LIKE
                 .replace(
                     r#""track_code": "testring""#,
                     &format!(r#""track_code": "{code}""#),
@@ -1899,7 +1899,7 @@ mod tests {
         assert_eq!(bad("mod.unread")[0].why, "it has no manifest.json");
         let portimao = bad("mod.portimao");
         assert_eq!(portimao.len(), 1);
-        assert_eq!(portimao[0].why, crate::map::NO_BASE_TRACK);
+        assert_eq!(portimao[0].why, crate::content::track_package::NO_BASE_TRACK);
         assert_eq!(
             left_out_line("Portimao", "mod.portimao", &portimao[0]),
             "Portimao (mod.portimao): track Portimao is left out; its manifest.json doesn't say which track \
@@ -1952,7 +1952,7 @@ mod tests {
             version: None,
             author_name: None,
             erp: format!("{code}.erp"),
-            activation: crate::map::Activation {
+            activation: crate::content::track_package::Activation {
                 copy_from_track: Some(from.into()),
                 copy_slot: slot.map(str::to_owned),
                 ..Default::default()
@@ -2053,7 +2053,11 @@ mod tests {
         )
         .unwrap();
         std::fs::write(root.join("track/ring.erp"), b"erp").unwrap();
-        std::fs::write(root.join("copy/manifest.json"), crate::map::tests::OKAYAMA_LIKE).unwrap();
+        std::fs::write(
+            root.join("copy/manifest.json"),
+            crate::content::track_package::tests::OKAYAMA_LIKE,
+        )
+        .unwrap();
         let found = record_tracks(&root, "mod.x", &["registry/track.json".into()]);
         let ids: Vec<&str> = found.iter().map(|t| t.id.as_str()).collect();
         assert_eq!(

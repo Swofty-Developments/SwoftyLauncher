@@ -6,8 +6,8 @@ use super::loader::loader_line;
 use super::run::Run;
 use super::{Built, source_dir};
 use crate::Result;
+use crate::addons::builtin::{CORE_ID, loader_dir};
 use crate::asset::{Origin, Source};
-use crate::builtin::{CORE_ID, loader_dir};
 use crate::planner::{Features, MipmapNames, OverlayNames, Planner, load_features};
 use crate::session::Config;
 

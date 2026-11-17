@@ -4,12 +4,12 @@ use std::path::{Path, PathBuf};
 use super::database::DbEdits;
 use super::inputs::Inputs;
 use super::{ADDONS_DIR, Built, Pipeline};
+use crate::addons::builtin::{CORE_ID, LOADER_ENV, loader_dir, loader_files};
+use crate::addons::settings::{SessionSettings, SessionUi, screen_file, screens};
 use crate::asset::{AssetOp, LangOp, Op, Origin};
-use crate::builtin::{CORE_ID, LOADER_ENV, loader_dir, loader_files};
 use crate::install::LOADER_DIR;
 use crate::manifest::AddonManifest;
 use crate::planner::{Kind, Route, Target};
-use crate::settings::{SessionSettings, SessionUi, screen_file, screens};
 use crate::stdlib::deps::Std;
 use crate::store::Store;
 use crate::{Error, Result, io_err};
@@ -233,8 +233,8 @@ impl Pipeline<'_, '_> {
                 }
                 session.plugins = plugins.dlls;
                 if !udp_ids.is_empty() {
-                    let rel = format!("{LOADER_DIR}/{}", crate::udp_ids::FILE);
-                    let src = built.overlay.join(crate::udp_ids::FILE);
+                    let rel = format!("{LOADER_DIR}/{}", crate::game_db::udp_ids::FILE);
+                    let src = built.overlay.join(crate::game_db::udp_ids::FILE);
                     std::fs::create_dir_all(&built.overlay).map_err(io_err(&built.overlay))?;
                     crate::write_json(&src, &udp_ids)?;
                     built.plan.loader.insert(rel, src);

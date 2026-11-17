@@ -173,7 +173,7 @@ impl Draft {
     /// Moves a draft file that does not read to `draft.damaged-<unix seconds>.json`.
     pub fn set_aside(store: &Store) -> Result<PathBuf> {
         let from = path(store);
-        let secs = crate::conflicts::now() as u64;
+        let secs = crate::profile::conflicts::now() as u64;
         let to = (0..)
             .map(|n| match n {
                 0 => from.with_file_name(format!("draft.damaged-{secs}.json")),
