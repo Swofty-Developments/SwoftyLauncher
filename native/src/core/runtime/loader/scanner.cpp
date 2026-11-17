@@ -9,6 +9,8 @@
 #include <vector>
 
 #include "core/diagnostics/steps.hpp"
+#include "core/runtime/cache_dir.hpp"
+#include "core/runtime/lifecycle.hpp"
 #include "core/runtime/loader/code_encryption.hpp"
 #include "core/runtime/loader/host_api.hpp"
 #include "core/runtime/loader/mixins.hpp"
@@ -298,6 +300,19 @@ const std::wstring &Scanner::caches(const std::wstring &dir)
              error, cache_name_);
     return cache_dir_;
 }
+
+}
+
+namespace runtime {
+
+const std::wstring &cache_dir()
+{
+    return loader::scanner().caches(Runtime::instance().dir());
+}
+
+}
+
+namespace runtime::loader {
 
 bool Scanner::open(SwoftyApi *a, const std::wstring &dir, long long exe_bytes)
 {

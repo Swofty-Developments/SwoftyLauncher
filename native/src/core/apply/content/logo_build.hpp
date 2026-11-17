@@ -2,11 +2,14 @@
 
 #include "core/apply/content/erp_file.hpp"
 #include "core/apply/content/logo_array.hpp"
+#include "core/apply/content/png_straight.hpp"
 #include "core/apply/content/uidb.hpp"
 
 #include <algorithm>
 #include <atomic>
 #include <chrono>
+#include <cstdio>
+#include <cstring>
 #include <exception>
 #include <functional>
 #include <map>
@@ -35,12 +38,129 @@ inline constexpr const char *OVERRIDES = "eaid://ui_package/databases/overrides.
 inline constexpr const char *ARRAY_URI = "eaid://ui_package/art/texture_arrays/overrides.uidb/overrides.";
 inline constexpr const char *TEXTURE_PATH = "ui_package/art/textures/swofty/team_logos/";
 
+// An image want carries its decoded pixels, or, when the slice cache already knew its PNG decodes, the PNG bytes
+// (png) to decode only if a slice of it has to be encoded; source names those bytes in the slice cache.
 struct Want {
     std::string array, key, donor;
     std::string rgba;
     uint32_t width = 0, height = 0;
     bool fallback = false;
+    std::string png{}, source{};
 };
+
+/* Encoded slices on disk, so a change to one addon re-encodes only its own logos. An entry is named by the PNG's
+   bytes (two 64-bit hashes and the length), the slice size and SLICE_ENCODER, which changes with anything that
+   changes slice_from_rgba's output; it holds a checksum of the slice, and an entry that fails it is encoded again.
+   A PNG's decode result (its size, or why it does not decode) is kept the same way. */
+inline constexpr const char *SLICE_ENCODER = "bc7logo1";
+
+struct SliceCache {
+    std::function<bool(const std::string &name, std::string &bytes)> get;
+    std::function<void(const std::string &name, const std::string &bytes)> put;
+    bool on() const { return get && put; }
+};
+
+inline uint64_t fnv(const void *p, size_t n, uint64_t h)
+{
+    const unsigned char *b = static_cast<const unsigned char *>(p);
+    for (size_t i = 0; i < n; i++)
+        h = (h ^ b[i]) * 0x100000001b3ull;
+    return h;
+}
+
+inline uint64_t mix(const void *p, size_t n)
+{
+    uint64_t h = 0x9e3779b97f4a7c15ull ^ n;
+    const unsigned char *b = static_cast<const unsigned char *>(p);
+    size_t i = 0;
+    for (; i + 8 <= n; i += 8) {
+        uint64_t v;
+        std::memcpy(&v, b + i, 8);
+        h ^= v * 0xff51afd7ed558ccdull;
+        h = (h << 31 | h >> 33) * 0xc4ceb9fe1a85ec53ull;
+    }
+    for (; i < n; i++)
+        h = (h ^ b[i]) * 0x100000001b3ull;
+    h ^= h >> 33;
+    return h * 0xff51afd7ed558ccdull;
+}
+
+inline std::string source_of(const std::string &png)
+{
+    char out[64];
+    std::snprintf(out, sizeof out, "%016llx%016llx-%zx", (unsigned long long)fnv(png.data(), png.size(), 0xcbf29ce484222325ull),
+                  (unsigned long long)mix(png.data(), png.size()), png.size());
+    return out;
+}
+
+inline std::string slice_name(const std::string &source, uint32_t width, uint32_t height)
+{
+    return source + "-" + std::to_string(width) + "x" + std::to_string(height) + "-" + SLICE_ENCODER + ".slice";
+}
+
+inline std::string info_name(const std::string &source)
+{
+    return source + ".png";
+}
+
+inline std::string sealed(const std::string &bytes)
+{
+    uint64_t sum = mix(bytes.data(), bytes.size());
+    std::string out = "SLC1";
+    out.append(reinterpret_cast<const char *>(&sum), 8);
+    return out + bytes;
+}
+
+inline bool unseal(const std::string &stored, std::string &bytes)
+{
+    if (stored.size() < 12 || stored.compare(0, 4, "SLC1"))
+        return false;
+    uint64_t sum;
+    std::memcpy(&sum, stored.data() + 4, 8);
+    if (mix(stored.data() + 12, stored.size() - 12) != sum)
+        return false;
+    bytes.assign(stored, 12, std::string::npos);
+    return true;
+}
+
+struct PngInfo {
+    bool ok = false;
+    uint32_t width = 0, height = 0;
+    std::string why;
+};
+
+inline std::string info_text(const PngInfo &i)
+{
+    return i.ok ? "ok " + std::to_string(i.width) + " " + std::to_string(i.height) : "no " + i.why;
+}
+
+inline bool info_parse(const std::string &text, PngInfo &i)
+{
+    if (!text.compare(0, 3, "no ")) {
+        i = {false, 0, 0, text.substr(3)};
+        return true;
+    }
+    unsigned w = 0, h = 0;
+    char tail = 0;
+    if (text.compare(0, 3, "ok ") || std::sscanf(text.c_str() + 3, "%u %u%c", &w, &h, &tail) != 2 || !w || !h)
+        return false;
+    i = {true, w, h, {}};
+    return true;
+}
+
+// Reads a want's PNG the way deliver_logos always has, but answers from the slice cache when it knows these bytes, so
+// the pixels are decoded only when a slice must be encoded. Returns the decode result; rgba is filled when decoded.
+inline PngInfo look_at_png(const SliceCache &cache, const std::string &png, const std::string &source, std::string &rgba)
+{
+    PngInfo i;
+    std::string stored, text;
+    if (cache.on() && cache.get(info_name(source), stored) && unseal(stored, text) && info_parse(text, i))
+        return i;
+    i.ok = png::decode(png, rgba, i.width, i.height, i.why);
+    if (cache.on())
+        cache.put(info_name(source), sealed(info_text(i)));
+    return i;
+}
 
 /* One slice of a 700x640 array takes hundreds of milliseconds to encode and a boot can ask for hundreds of slices,
    while the game's main thread waits in the database load. Each encode reads only its own image, so they run on
@@ -81,18 +201,72 @@ inline void run_parallel(size_t n, const std::function<void(size_t)> &fn)
             std::rethrow_exception(e);
 }
 
+struct EncodeStats {
+    size_t cached = 0, encoded = 0, decoded = 0;
+};
+
 inline std::vector<std::vector<Encoded>> encode_slices(const std::vector<const Want *> &wants,
-                                                       const std::vector<logo_array::Shape> &shapes)
+                                                       const std::vector<logo_array::Shape> &shapes, const SliceCache &cache = {},
+                                                       EncodeStats *stats = nullptr)
 {
     std::vector<std::vector<Encoded>> out(wants.size(), std::vector<Encoded>(shapes.size()));
-    run_parallel(wants.size() * shapes.size(), [&](size_t job) {
+    std::vector<size_t> misses;
+    std::vector<char> needs_pixels(wants.size());
+    for (size_t job = 0; job < wants.size() * shapes.size(); job++) {
         const Want *w = wants[job / shapes.size()];
         if (!w->donor.empty())
-            return;
+            continue;
+        const logo_array::Shape &shape = shapes[job % shapes.size()];
         Encoded &e = out[job / shapes.size()][job % shapes.size()];
-        e.ok = logo_array::slice_from_rgba(shapes[job % shapes.size()], reinterpret_cast<const uint8_t *>(w->rgba.data()),
-                                           w->width, w->height, e.bytes, e.why, &e.scaled);
+        std::string stored;
+        if (cache.on() && !w->source.empty() && cache.get(slice_name(w->source, shape.width, shape.height), stored) &&
+            unseal(stored, e.bytes)) {
+            e.ok = true;
+            e.scaled = w->width != shape.width || w->height != shape.height;
+            if (stats)
+                stats->cached++;
+            continue;
+        }
+        misses.push_back(job);
+        needs_pixels[job / shapes.size()] = w->rgba.empty();
+    }
+    std::vector<std::string> pixels(wants.size());
+    std::vector<std::string> pixel_why(wants.size());
+    std::vector<size_t> decode;
+    for (size_t i = 0; i < wants.size(); i++)
+        if (needs_pixels[i])
+            decode.push_back(i);
+    run_parallel(decode.size(), [&](size_t k) {
+        const Want *w = wants[decode[k]];
+        uint32_t dw = 0, dh = 0;
+        if (!png::decode(w->png, pixels[decode[k]], dw, dh, pixel_why[decode[k]]) || dw != w->width || dh != w->height) {
+            pixels[decode[k]].clear();
+            if (pixel_why[decode[k]].empty())
+                pixel_why[decode[k]] = "the image decodes to another size than the slice cache says";
+        }
     });
+    if (stats)
+        stats->decoded += decode.size(), stats->encoded += misses.size();
+    run_parallel(misses.size(), [&](size_t k) {
+        size_t job = misses[k], wi = job / shapes.size();
+        const Want *w = wants[wi];
+        Encoded &e = out[wi][job % shapes.size()];
+        const std::string &rgba = w->rgba.empty() ? pixels[wi] : w->rgba;
+        if (rgba.empty()) {
+            e.why = "the image does not decode: " + pixel_why[wi];
+            return;
+        }
+        e.ok = logo_array::slice_from_rgba(shapes[job % shapes.size()], reinterpret_cast<const uint8_t *>(rgba.data()), w->width,
+                                           w->height, e.bytes, e.why, &e.scaled);
+    });
+    if (cache.on())
+        for (size_t job : misses) {
+            const Want *w = wants[job / shapes.size()];
+            const Encoded &e = out[job / shapes.size()][job % shapes.size()];
+            const logo_array::Shape &shape = shapes[job % shapes.size()];
+            if (e.ok && !w->source.empty())
+                cache.put(slice_name(w->source, shape.width, shape.height), sealed(e.bytes));
+        }
     return out;
 }
 
@@ -100,6 +274,13 @@ struct Env {
     std::function<std::vector<std::string>()> list;
     std::function<std::shared_ptr<erpfile::Source>(const std::string &rel)> open;
     std::function<std::vector<std::string>(const std::string &rel)> overlays;
+    SliceCache slices;
+};
+
+// The slice sizes each image want was encoded at, for the next start to encode ahead of the database load.
+struct Planned {
+    std::string source;
+    std::vector<std::pair<uint32_t, uint32_t>> sizes;
 };
 
 struct Result {
@@ -109,6 +290,8 @@ struct Result {
     int built = 0, refused = 0;
     double encode_ms = 0;
     size_t encodes = 0;
+    EncodeStats slices;
+    std::map<const Want *, Planned> planned;
 };
 
 struct Refusals {
@@ -427,11 +610,17 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                 }))
                 shapes.push_back(c.shape);
         auto encode_start = std::chrono::steady_clock::now();
-        std::vector<std::vector<Encoded>> encodes = encode_slices(list, shapes);
+        std::vector<std::vector<Encoded>> encodes = encode_slices(list, shapes, env.slices, &out.slices);
         out.encode_ms += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - encode_start).count();
         for (const Want *w : list)
-            if (w->donor.empty())
+            if (w->donor.empty()) {
                 out.encodes += shapes.size();
+                Planned &p = out.planned[w];
+                p.source = w->source;
+                for (auto &sh : shapes)
+                    if (std::find(p.sizes.begin(), p.sizes.end(), std::make_pair(sh.width, sh.height)) == p.sizes.end())
+                        p.sizes.push_back({sh.width, sh.height});
+            }
         auto encode_of = [&](size_t want, const logo_array::Shape &shape) -> Encoded & {
             size_t at = 0;
             while (shapes[at].width != shape.width || shapes[at].height != shape.height)
