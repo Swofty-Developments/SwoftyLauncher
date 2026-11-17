@@ -1,3 +1,5 @@
+#include "core/runtime/settings.hpp"
+
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <atomic>
@@ -13,7 +15,6 @@
 #include "swofty_api.h"
 
 bool ui_vm_set_path(const std::string &path, int type, const void *value);
-bool settings_command(uint32_t hash);
 
 namespace {
 

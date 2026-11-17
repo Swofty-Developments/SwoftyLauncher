@@ -8,5 +8,7 @@ pub mod fast_fail;
 pub mod known_problems;
 pub mod launch;
 pub mod overlay_guard;
+pub mod phases;
 pub mod quarantine;
 pub mod send_logs;
+pub mod session_end;

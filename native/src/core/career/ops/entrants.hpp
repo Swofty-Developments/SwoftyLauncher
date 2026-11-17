@@ -1,14 +1,8 @@
 #pragma once
 
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
-
 #include <atomic>
 #include <cstddef>
 #include <cstdint>
-#include <cstring>
 #include <initializer_list>
 #include <mutex>
 #include <string>

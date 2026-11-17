@@ -11,9 +11,9 @@ use std::path::{Path, PathBuf};
 
 use serde_json::Value;
 
-use super::api::{Api, ApiError, Uploaded};
 use super::queue::{self, Queue, Waiting};
 use super::watch::valid_id;
+use crate::online::server::api::{Api, ApiError, Uploaded};
 
 pub const MAX_BYTES: u64 = 64 * 1024 * 1024;
 pub const KEEP_SECS: u64 = 2 * 86_400;
@@ -370,7 +370,7 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::online::timetrial::api::{Boards, Meta, Uploaded};
+    use crate::online::server::api::{Boards, Meta, Uploaded};
     use crate::online::timetrial::queue::{Folder, Limits};
     use crate::online::timetrial::swlap::sample;
 

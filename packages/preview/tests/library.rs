@@ -6,10 +6,8 @@ use swofty_preview::{ActiveInstance, Frame, Preview};
 use swofty_shaders::{CompiledEffect, Effect, Origin, Target, compile, pack, parse_effect};
 
 fn dxc() -> Option<PathBuf> {
-    let path = std::env::var_os("SWOFTY_DXC")
-        .map(PathBuf::from)
-        .unwrap_or_else(|| "/home/swofty/SwoftyLauncher/dxc/bin/dxc".into());
-    path.exists().then_some(path)
+    swofty_shaders::find_dxc(&[Path::new(env!("CARGO_MANIFEST_DIR")).join("../../dxc")])
+        .filter(|p| p.exists())
 }
 
 fn library() -> PathBuf {
@@ -157,6 +155,12 @@ fn all_library_effects_together_stay_under_a_frame() {
         .any(|s| adapter.contains(s))
     {
         eprintln!("{adapter} renders on the CPU; the frame time is not checked");
+        return;
+    }
+    if cfg!(debug_assertions) {
+        eprintln!(
+            "an unoptimised build; the frame time is checked only in an optimised one (cargo test --release)"
+        );
         return;
     }
     assert!(ms < 33.0, "{ms} ms per frame");

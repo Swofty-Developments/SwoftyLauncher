@@ -101,6 +101,7 @@ def main():
     ap.add_argument('--define', action='append', default=[])
     ap.add_argument('--game-include', default='')
     ap.add_argument('--strip', default='-s')
+    ap.add_argument('--order-snapshot', help='the link order effects the core build must keep (tools/init_check.py)')
     a = ap.parse_args()
 
     g = Graph(a.builddir)
@@ -114,8 +115,7 @@ def main():
     g.rule('cc', '$cc $flags -MD -MF $out.d -c $in -o $out', 'CC $in', depfile=True)
     g.rule('cxx', '$cxx $flags -MD -MF $out.d -c $in -o $out', 'CXX $in', depfile=True)
     g.rule('cxx_core', 'sh tools/cxx_init.sh $out.init $cxx $flags -MD -MF $out.d -c $in -o $out', 'CXX $in', depfile=True)
-    g.rule('init_check', 'python3 tools/init_check.py --allow tools/init_allow.txt --out $out $in',
-           'CHECK static initializers')
+    g.rule('init_check', 'python3 tools/init_check.py --allow tools/init_allow.txt $flags $in', 'CHECK static initializers')
     g.rule('link_c', '$cc $flags -shared -o $out $in $strip', 'LINK $out')
     g.rule('link_cxx', '$cxx $flags -shared -o $out $in $strip', 'LINK $out')
 
@@ -135,7 +135,7 @@ def main():
         for src in sources(f'{ZSTD}/{sub}', ('.c',)):
             objects[src] = g.compile('cc', src, ZSTD_FLAGS + [f'-I{ZSTD}'])
     core_sources = sources('src/core', ('.cpp',))
-    reports = []
+    core = set()
     for src in core_sources:
         if src in CORE_EXCLUDE:
             continue
@@ -143,12 +143,20 @@ def main():
             objects[src] = g.compile('cxx_core', src, warn + ['-fms-extensions', '-Isrc'] + SEH_SOURCES[src], True)
         else:
             objects[src] = g.compile('cxx_core', src, core_flags, True)
-        reports.append(f'{objects[src]}.init')
+        core.add(objects[src])
     missing = (CORE_EXCLUDE | set(SEH_SOURCES)) - set(core_sources)
     if missing:
         sys.exit(f'build_graph.py: listed sources that no longer exist: {sorted(missing)}')
     g.build([f'{a.builddir}/swofty_core.dll'], 'link_cxx', link_order(objects), warn)
-    g.build([f'{a.builddir}/static-init.txt'], 'init_check', reports + ['| tools/init_check.py tools/init_allow.txt'])
+    reports = [f'{o}.init' for o in link_order(objects) if o in core]
+    check = ['--out', f'{a.builddir}/static-init.txt', '--obj-root', f'{a.builddir}/obj', '--order-out',
+             f'{a.builddir}/init-order.txt', '--link-order', 'tools/core_link_order.txt']
+    checked = ['tools/init_check.py', 'tools/init_allow.txt', 'tools/core_link_order.txt', 'src/core/guards/order.hpp']
+    if a.order_snapshot:
+        check += ['--snapshot', a.order_snapshot]
+        checked.append(a.order_snapshot)
+    g.build([f'{a.builddir}/static-init.txt', f'{a.builddir}/init-order.txt'], 'init_check',
+            reports + ['| ' + ' '.join(checked)], check)
 
     gamelog = [g.compile('cxx', 'src/gamelog/gamelog.cpp', warn + ['-fms-extensions', '-Isrc', '-I$sdk', '-Iinclude', '$strip'])]
     g.build([f'{a.builddir}/swofty_gamelog.dll'], 'link_cxx', gamelog, warn)

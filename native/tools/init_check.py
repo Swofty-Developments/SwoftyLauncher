@@ -9,10 +9,17 @@ appends to a list in the SDK headers that is zero-initialized before any code ru
 or be listed in tools/init_allow.txt with the reason its initializer reads no other unit's object: as
 "<source>: <declaration>" for one object, or as "<header>: #define <MACRO>" for every object spelled in a core macro.
 The fix for a new one is constinit or constexpr, a function-local static, or a SWOFTY_ON_LOAD handler.
+
+With --obj-root it also derives what the link order decides from the reports, given in link order: the units with
+static objects (init: a dynamic initializer, exit: a destructor run at exit, in reverse), the SDK mixin list they
+append to, the on-load entries in the order the loader runs them with the hook guard each SWOFTY_HOOK_GUARD entry
+arms, and the units whose binding uses add to the SDK's wanted list. It writes that to --order-out and, with
+--snapshot, fails when it differs from the snapshot or a unit with static objects is not in --link-order.
 """
 
 import argparse
 import collections
+import difflib
 import glob
 import os
 import re
@@ -22,6 +29,13 @@ NATIVE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SDK = os.path.normpath(os.path.join(NATIVE, '../packages/sdk/include'))
 MACRO_HEADERS = [SDK, os.path.join(NATIVE, 'include')]
 DIAG = re.compile(r'^(.+?):(\d+):\d+: warning: declaration requires a global (constructor|destructor)')
+ORDER_HEADER = """# What tools/core_link_order.txt decides in swofty_core.dll, as tools/init_check.py derives it from the core's
+# compile reports on every build, which fails when it differs from this file. units: the units with static objects in
+# link order (init: a dynamic initializer, exit: a destructor, which runs at exit in the reverse order). mixins: the
+# SDK mixin list in the order the units append to it. on-load: its on-load entries in the order the loader runs them,
+# each SWOFTY_HOOK_GUARD entry arming the next hook guard in HookGuardId order. bindings: the units whose binding uses
+# add to the SDK's wanted list, in order. After an intended change, copy native/build/init-order.txt here.
+"""
 
 
 def sdk_macros():
@@ -31,10 +45,89 @@ def sdk_macros():
     return names
 
 
+def head(decl):
+    m = re.match(r'(SWOFTY_\w+)\s*(?:\(\s*([^,)]*))?', decl)
+    if not m:
+        return decl
+    return f'{m.group(1)}({m.group(2).strip()})' if m.group(2) else m.group(1)
+
+
+def hook_guard_ids():
+    path = os.path.join(NATIVE, 'src/core/guards/order.hpp')
+    m = re.search(r'enum class HookGuardId[^{]*\{([^}]*)\}', open(path).read()) if os.path.isfile(path) else None
+    return [n for n in re.findall(r'(\w+)\s*,', m.group(1)) if n != 'count'] if m else []
+
+
+def link_order_effects(reports, obj_root):
+    units, mixins, onload, bindings = [], [], [], []
+    hooks, armed = hook_guard_ids(), 0
+    for report in reports:
+        unit = os.path.relpath(report, obj_root)
+        if not unit.endswith('.o.init'):
+            sys.exit(f'init_check.py: {report} is not a core report under {obj_root}')
+        unit = unit[:-len('.o.init')] + '.cpp'
+        entries = []
+        for line in open(report):
+            diag, decl, macro = (line.rstrip('\n').split('\t') + ['', ''])[:3]
+            m = DIAG.match(diag)
+            if m:
+                path = os.path.relpath(os.path.normpath(os.path.join(NATIVE, m.group(1))), NATIVE)
+                entries.append((path, int(m.group(2)), m.group(3), decl.strip(), macro))
+        if not entries:
+            continue
+        kinds = [k for k in ('init', 'exit') if any((e[2] == 'constructor') == (k == 'init') for e in entries)]
+        units.append(f'{unit}  {" ".join(kinds)}')
+        own = sorted((e for e in entries if e[0] == unit and e[2] == 'constructor'), key=lambda e: e[1])
+        for path, line, kind, decl, macro in own:
+            if macro not in ('SWOFTY_REG_', 'SWOFTY_ON_LOAD'):
+                continue
+            mixins.append(f'{unit}  {head(decl)}')
+            if macro == 'SWOFTY_ON_LOAD':
+                entry = f'{unit}  {head(decl)}'
+                if decl.startswith('SWOFTY_HOOK_GUARD'):
+                    entry += f', arms {hooks[armed] if armed < len(hooks) else "no hook guard"}'
+                    armed += 1
+                onload.append(entry)
+        if any(e[2] == 'constructor' and e[0].endswith('swofty/mixin.hpp') and 'wanted(' in e[3] for e in entries):
+            bindings.append(unit)
+    text = ORDER_HEADER
+    for name, rows in (('units', units), ('mixins', mixins), ('on-load', onload), ('bindings', bindings)):
+        text += name + '\n' + ''.join(f'  {r}\n' for r in rows)
+    return text, [u.split('  ')[0] for u in units]
+
+
+def check_order(text, units, a):
+    listed = {line.strip() for line in open(a.link_order) if line.strip() and not line.startswith('#')}
+    unpinned = [u for u in units if u not in listed]
+    if unpinned:
+        print(f'init_check.py: these sources have static objects but {a.link_order} does not list them, so they link '
+              'after every listed source in path order. Pin each one by adding it to that file where its initializers, '
+              'mixins, on-load entries and exit-time destructors must run, then copy native/build/init-order.txt to '
+              f'{a.snapshot}:', file=sys.stderr)
+        print('\n'.join(f'  {u}' for u in unpinned), file=sys.stderr)
+        return False
+    body = lambda t: [line for line in t.splitlines() if not line.startswith('#')]
+    want = body(open(a.snapshot).read()) if os.path.isfile(a.snapshot) else []
+    if body(text) != want:
+        print(f'init_check.py: what the link order decides differs from {a.snapshot}. A reordered '
+              'tools/core_link_order.txt, or a unit that gains its first or loses its last static object, mixin, on-load '
+              'entry or binding use, changes the order the core\'s initializers, registrations, on-load entries and '
+              'exit-time destructors run in. If that is intended, copy native/build/init-order.txt to '
+              f'native/{a.snapshot} and commit it with the change:', file=sys.stderr)
+        sys.stderr.writelines(l + '\n' for l in difflib.unified_diff(want, body(text), a.snapshot, 'init-order.txt',
+                                                                     n=1, lineterm=''))
+        return False
+    return True
+
+
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument('--allow', required=True)
     ap.add_argument('--out', required=True)
+    ap.add_argument('--obj-root')
+    ap.add_argument('--order-out')
+    ap.add_argument('--link-order')
+    ap.add_argument('--snapshot')
     ap.add_argument('reports', nargs='+')
     a = ap.parse_args()
 
@@ -91,7 +184,14 @@ def main():
         for (path, line, macro), (kind, decl) in found.items():
             if kind == 'destructor':
                 out.write(f'exit\t{where(path, line, macro)}\t{decl}\n')
-    if unknown or stale:
+    order_ok = True
+    if a.obj_root:
+        text, units = link_order_effects(a.reports, a.obj_root)
+        with open(a.order_out, 'w') as out:
+            out.write(text)
+        if a.snapshot:
+            order_ok = check_order(text, units, a)
+    if unknown or stale or not order_ok:
         if unknown:
             print('init_check.py: these objects have a dynamic initializer, which runs in link order. Make them constinit '
                   'or constexpr, a function-local static or a SWOFTY_ON_LOAD handler, or, if the initializer reads no '

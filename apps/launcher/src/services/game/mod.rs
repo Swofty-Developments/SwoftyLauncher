@@ -15,7 +15,6 @@ mod run;
 mod tests;
 mod vault_watch;
 pub(crate) use crash::crash_summary;
-pub(crate) use discovery::{discover, discover_all};
 pub(crate) use import_retry::import_now;
 pub(crate) use probe::{Probe, blocked_at, probe};
 pub(crate) use restore::{recover_stale, restore};

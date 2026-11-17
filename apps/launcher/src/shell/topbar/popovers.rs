@@ -64,9 +64,9 @@ impl Shell {
                     .label(tr("Log out"))
                     .disabled(self.account.busy || self.game_busy())
                     .tooltip(tr("Close the game to sign in or out"))
-                    .on_click(cx.listener(|this, _, window, cx| {
+                    .on_click(cx.listener(|this, _, _window, cx| {
                         this.navigation.popover = None;
-                        this.mp_sign_out(window, cx);
+                        crate::shell::account::Account::sign_out(this, cx);
                     })),
             )
             .into_any_element()

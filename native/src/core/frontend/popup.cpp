@@ -1,4 +1,5 @@
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -18,7 +19,6 @@
 #include "core/hud/text_entry.hpp"
 #include "core/frontend/popup/message_system.hpp"
 #include "core/frontend/ui_vm.hpp"
-#include "core/runtime/settings.hpp"
 #include "core/hud/race_hud.hpp"
 
 // Message popups (NeUIMessageSystem). The game raises every popup the same way: construct a message

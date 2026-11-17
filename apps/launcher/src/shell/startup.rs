@@ -7,6 +7,7 @@ use std::rc::Rc;
 use std::time::{Duration, Instant};
 use swofty_core::store::Store;
 
+use super::account::Account;
 use super::{Page, Seen, Shell};
 use swofty_i18n::tr;
 
@@ -345,9 +346,7 @@ impl Shell {
                     .await;
                 this.update(cx, |s, cx| {
                     let allowed = s.account.session.as_ref().is_some_and(|m| m.allowed);
-                    s.mp_apply_check(refreshed, allowed, cx);
-                    s.sync_avatar(cx);
-                    s.sync_support(cx);
+                    Account::apply_check(s, refreshed, allowed, cx);
                 })
                 .ok();
                 let data = this
@@ -369,34 +368,7 @@ impl Shell {
             })
             .detach();
         }
-        let mp_poll = cx.spawn(async move |this, cx| {
-            loop {
-                cx.background_executor().timer(ACCOUNT_CHECK).await;
-                let current = match this.update(cx, |s, _| {
-                    s.account.session.clone().map(|sess| (s.store.root.clone(), sess))
-                }) {
-                    Ok(c) => c,
-                    Err(_) => break,
-                };
-                let Some((dir, session)) = current else {
-                    continue;
-                };
-                let was_allowed = session.allowed;
-                let refreshed = cx
-                    .background_executor()
-                    .spawn(
-                        async move { swofty_core::online::server::sign_in::refresh_checked(&dir, &session) },
-                    )
-                    .await;
-                if this
-                    .update(cx, |s, cx| s.mp_apply_check(refreshed, was_allowed, cx))
-                    .is_err()
-                {
-                    break;
-                }
-            }
-        });
-        mp_poll.detach();
+        Account::keep_checked(ACCOUNT_CHECK, cx).detach();
         mp
     }
 

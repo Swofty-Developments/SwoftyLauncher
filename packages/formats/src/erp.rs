@@ -196,6 +196,43 @@ pub fn compress_at(data: &[u8], level: i32) -> Result<Vec<u8>> {
     }
 }
 
+/// Compresses each of `inputs` at `level` as [`compress_at`] does, several at a time, and returns them
+/// in the same order. Each frame is the same bytes whichever thread wrote it.
+pub fn compress_many(inputs: &[&[u8]], level: i32) -> Result<Vec<Vec<u8>>> {
+    let threads = parallelism().min(inputs.len());
+    if threads <= 1 {
+        return inputs.iter().map(|data| compress_at(data, level)).collect();
+    }
+    let next = std::sync::atomic::AtomicUsize::new(0);
+    let done: Vec<std::sync::Mutex<Option<Result<Vec<u8>>>>> =
+        inputs.iter().map(|_| std::sync::Mutex::new(None)).collect();
+    std::thread::scope(|s| {
+        for _ in 0..threads {
+            s.spawn(|| {
+                loop {
+                    let at = next.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+                    let Some(data) = inputs.get(at) else { break };
+                    *done[at].lock().unwrap_or_else(|e| e.into_inner()) = Some(compress_at(data, level));
+                }
+            });
+        }
+    });
+    done.into_iter()
+        .map(|slot| {
+            slot.into_inner()
+                .unwrap_or_else(|e| e.into_inner())
+                .expect("every input is compressed")
+        })
+        .collect()
+}
+
+/// How many compressions run at once, and how many workers one large frame is split across: half the
+/// cores, at most four, so a build leaves the rest of the PC responsive.
+fn parallelism() -> usize {
+    static N: std::sync::OnceLock<usize> = std::sync::OnceLock::new();
+    *N.get_or_init(|| std::thread::available_parallelism().map_or(1, |n| (n.get() / 2).clamp(1, 4)))
+}
+
 static PACKED: std::sync::Mutex<Option<std::path::PathBuf>> = std::sync::Mutex::new(None);
 
 static WORK: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
@@ -232,8 +269,10 @@ fn zstd_error(code: usize) -> Error {
 
 /// The settings `zstd -c -<level> --zstd=wlog=20 --stream-size=<n>` compresses
 /// with: a checksum, the content size, a 1 MiB window, and the command line's
-/// multithreaded path with one worker, whose output differs from the
-/// single-threaded encoder's on large inputs.
+/// multithreaded path, whose output differs from the single-threaded encoder's
+/// on large inputs. That path cuts a frame into jobs by size alone, so its
+/// output is the same for any number of workers; more workers only finish a
+/// frame of several jobs sooner.
 fn encoder(level: i32) -> Result<Encoder> {
     use zstd::zstd_safe::CParameter;
     let mut ctx =
@@ -243,7 +282,7 @@ fn encoder(level: i32) -> Result<Encoder> {
         CParameter::WindowLog(ZSTD_WINDOW_LOG),
         CParameter::ContentSizeFlag(true),
         CParameter::ChecksumFlag(true),
-        CParameter::NbWorkers(1),
+        CParameter::NbWorkers(parallelism() as u32),
     ] {
         ctx.set_parameter(p).map_err(zstd_error)?;
     }
@@ -321,7 +360,9 @@ fn compress_cached(dir: &Path, data: &[u8], level: i32) -> Result<Vec<u8>> {
         return Ok(raw);
     }
     let raw = encode(data, level)?;
-    let tmp = path.with_extension(format!("{}.tmp", std::process::id()));
+    static TMP: std::sync::atomic::AtomicU64 = std::sync::atomic::AtomicU64::new(0);
+    let n = TMP.fetch_add(1, std::sync::atomic::Ordering::Relaxed);
+    let tmp = path.with_extension(format!("{}-{n}.tmp", std::process::id()));
     let stored = path
         .parent()
         .map_or(Ok(()), std::fs::create_dir_all)
@@ -789,6 +830,44 @@ mod tests {
         enc.multithread(1).unwrap();
         std::io::Write::write_all(&mut enc, data).unwrap();
         enc.finish().unwrap()
+    }
+
+    #[test]
+    fn compressing_many_at_once_writes_what_compressing_each_in_turn_does() {
+        let mut seed = 11u64;
+        let mut noisy = |n: usize| -> Vec<u8> {
+            (0..n)
+                .map(|i| {
+                    seed = seed
+                        .wrapping_mul(6364136223846793005)
+                        .wrapping_add(1442695040888963407);
+                    if i % 4 == 0 {
+                        (seed >> 59) as u8
+                    } else {
+                        b"surface_array_"[i % 14]
+                    }
+                })
+                .collect()
+        };
+        let inputs: Vec<Vec<u8>> = [0, 1, 300, 20 << 10, 70 << 10, 2 << 20, 5 << 20, 9, 40 << 10]
+            .into_iter()
+            .map(&mut noisy)
+            .collect();
+        let refs: Vec<&[u8]> = inputs.iter().map(Vec::as_slice).collect();
+        for level in [3, ZSTD_LEVEL] {
+            let many = compress_many(&refs, level).unwrap();
+            assert_eq!(many.len(), inputs.len());
+            for (data, packed) in inputs.iter().zip(&many) {
+                assert_eq!(
+                    *packed,
+                    streamed(data, level),
+                    "{} bytes, level {level}",
+                    data.len()
+                );
+                assert_eq!(zstd::decode_all(packed.as_slice()).unwrap(), *data);
+            }
+        }
+        assert!(compress_many(&[], ZSTD_LEVEL).unwrap().is_empty());
     }
 
     #[test]

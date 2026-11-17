@@ -22,6 +22,8 @@ If you're contributing to Swofty Launcher for F1 25, start here for the intended
 | `native/` | In-game loader and menu entry |
 | `addons/swoftymod` | Built-in menu changes |
 
+How the launcher's code is laid out, and where a feature's behaviour goes, is in [Launcher app](/design/launcher-app).
+
 Keep the interface separate from the shared core. When you're working on the Rust format code, check it with the Python tools in `tools/`.
 
 ## Addons and tracks

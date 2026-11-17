@@ -17,17 +17,27 @@ use crate::{Result, io_err};
 /// build, which moves their modified time without changing them.
 const CONTENT_STAMP_MAX: u64 = 1 << 20;
 
+/// The SHA-256 of a file small enough to be keyed by its bytes rather than its modified time; None for a
+/// larger file or a folder.
+pub(super) fn small_file_digest(path: &Path, meta: &std::fs::Metadata) -> Result<Option<String>> {
+    if !meta.is_file() || meta.len() > CONTENT_STAMP_MAX {
+        return Ok(None);
+    }
+    let data = std::fs::read(path).map_err(io_err(path))?;
+    Ok(Some(hex(&Sha256::digest(&data))))
+}
+
 /// What a source contributes to the build hash: a small file's digest, else its size and modified time. A
 /// folder is its files, which the caller stamps one by one.
 fn source_stamp(path: &Path, meta: &std::fs::Metadata) -> Result<Vec<u8>> {
     if meta.is_dir() {
         return Ok(b"dir".to_vec());
     }
-    if meta.len() <= CONTENT_STAMP_MAX {
-        let data = std::fs::read(path).map_err(io_err(path))?;
-        return Ok(format!("{}|sha256 {}", data.len(), hex(&Sha256::digest(&data))).into_bytes());
+    Ok(match small_file_digest(path, meta)? {
+        Some(sha) => format!("{}|sha256 {sha}", meta.len()),
+        None => format!("{}|{:?}", meta.len(), meta.modified().ok()),
     }
-    Ok(format!("{}|{:?}", meta.len(), meta.modified().ok()).into_bytes())
+    .into_bytes())
 }
 
 /// The digest of everything a build reads; two builds with the same hash make the same overlay.
@@ -67,6 +77,10 @@ impl BuildHash {
 
     /// The files `ops` of `addon` read, by size and modified time.
     pub fn sources(&mut self, store: &Store, addon: &str, ops: &[AssetOp]) -> Result<()> {
+        crate::diagnostics::phases::time_part("build.hash_sources", || self.sources_of(store, addon, ops))
+    }
+
+    fn sources_of(&mut self, store: &Store, addon: &str, ops: &[AssetOp]) -> Result<()> {
         // Many resource edits read the same archive or directory. Inspect each source
         // once per batch, but feed every occurrence into the digest in its original order.
         // Keep this local: a helper can change cache/data sources before the next batch.
@@ -96,6 +110,19 @@ impl BuildHash {
     /// What a build depends on without reading it through an op: the game and pipeline versions, the
     /// loader's features, addon plugins and the game archives ERP ops change.
     pub fn unread(
+        &mut self,
+        store: &Store,
+        game: &Game,
+        order: &[&AddonManifest],
+        erp_ops: &[Op],
+        resolve: &dyn Fn(&str) -> PathBuf,
+    ) -> Result<()> {
+        crate::diagnostics::phases::time_part("build.hash_unread", || {
+            self.unread_of(store, game, order, erp_ops, resolve)
+        })
+    }
+
+    fn unread_of(
         &mut self,
         store: &Store,
         game: &Game,
