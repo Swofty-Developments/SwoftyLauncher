@@ -54,13 +54,10 @@ impl Shell {
             .collect();
         let store = &self.store;
         let pinned = |id: &str| store.is_builtin(id) || order::is_pinned(id);
-        order::diagnose(
-            &self.library.profile,
-            &installed,
+        order::ProfileOrder::new(&self.library.profile, &installed, &pinned).diagnose(
             self.addons.report.as_ref(),
             &self.addons.careers,
             &|id| tracks.contains(id),
-            &pinned,
             &|id| self.library.place(id),
         )
     }
