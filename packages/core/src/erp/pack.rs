@@ -10,6 +10,11 @@ pub(crate) fn set_fragment(res: &mut Resource, index: usize, data: &[u8]) -> swo
     res.set_fragment(index, data)
 }
 
+/// Rewrites the stale TSMD stats of `res` from its fragment 0; true when it did.
+pub(crate) fn repair_stats(res: &mut Resource) -> swofty_formats::Result<bool> {
+    res.repair_stats()
+}
+
 /// A resource named `name` with the layout of `template` and `data` as its fragments, compressed as the
 /// template's are.
 pub(crate) fn like(name: &str, template: &Resource, data: &[Vec<u8>]) -> swofty_formats::Result<Resource> {

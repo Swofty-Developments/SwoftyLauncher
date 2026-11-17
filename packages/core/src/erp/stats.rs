@@ -1,6 +1,7 @@
 use swofty_formats::erp::{ErpFile, Resource};
 
 use super::ErpBuild;
+use super::pack;
 use crate::Result;
 
 #[derive(Debug, Clone, Default, PartialEq)]
@@ -33,7 +34,7 @@ pub fn repair_stats_in(file: &ErpFile) -> Result<ArchiveRepair> {
         .filter(|(_, r)| r.has_stats())
     {
         let mut res = file.load(r)?;
-        match res.repair_stats() {
+        match pack::repair_stats(&mut res) {
             Ok(true) => fixed.push((i, res)),
             Ok(false) => {}
             Err(_) => broken.push(r.name.clone()),
@@ -81,7 +82,7 @@ impl ErpBuild<'_> {
             for r in archive.written_mut() {
                 let origin = self.writers.get(&(rel.clone(), r.name.clone()));
                 let at = (origin.cloned().unwrap_or_default(), r.name.clone());
-                match r.repair_stats() {
+                match pack::repair_stats(r) {
                     Ok(true) => out.repaired.push(at),
                     Ok(false) => {}
                     Err(_) => out.broken.push(at),
