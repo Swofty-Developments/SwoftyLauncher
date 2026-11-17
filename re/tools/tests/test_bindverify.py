@@ -166,6 +166,24 @@ class Synthetic(unittest.TestCase):
         odd = bindverify.compare(ref, d, ref_res, moved, d, bindverify.verify(moved, d))
         self.assertEqual([i for i, _ in odd], ['site_X'])
 
+    def test_compare_reads_a_protector_thunk_by_its_relocated_body(self):
+        body = b'\x48\x89\x5C\x24\x08\x57\x48\x83\xEC\x20\x48\x8B\xF9\xE8\x10\x20\x30\x40' + bytes(range(14))
+        other = bytes(range(100, 132))
+
+        def build(filler, to):
+            jmp = b'\xE9' + struct.pack('<i', 0x2000 + 0x400 - (0x1000 + 0x100 + 5))
+            code = page((0x0F0, filler), (0x100, jmp + FUNC), (0x100 + 5 + len(FUNC), filler))
+            return self.image(pe({'.xtls': (0x1000, CODE, code), '.data1': (0x2000, RWX, page((0x400, to)))}))
+        b = binding('Fn_Thunk', pattern='E9 ?? ?? ?? ?? ' + PATTERN)
+        d = doc(b)
+        ref = build(bytes(range(16)), body)
+        moved_filler, other_body = build(bytes(range(200, 216)), body), build(bytes(range(200, 216)), other)
+        ref_res = bindverify.verify(ref, d)
+        self.assertEqual(bindverify.compare(ref, d, ref_res, moved_filler, d, bindverify.verify(moved_filler, d)), [])
+        odd = bindverify.compare(ref, d, ref_res, other_body, d, bindverify.verify(other_body, d))
+        self.assertEqual([i for i, _ in odd], ['Fn_Thunk'])
+        self.assertIn('thunk body', odd[0][1])
+
 
 def resolves(r, method, hinted):
     if r['id'] in hinted:

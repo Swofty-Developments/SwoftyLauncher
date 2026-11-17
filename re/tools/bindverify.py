@@ -508,10 +508,20 @@ def similarity(a, b):
     return sum(x == y for x, y in zip(a, b)) / max(min(len(a), len(b)), 1) if a and b else 0.0
 
 
+def relocated_body(img, rva):
+    """The body a protector thunk at rva jumps to outside its own section, or None."""
+    s = img.section_of(rva)
+    if s is None or not img.readable(rva, 5) or img.mem[rva] != 0xE9:
+        return None
+    body = follow_jumps(img, rva)
+    return body if body != rva and not s.has(body) and img.readable(body, 16) else None
+
+
 def compare(ref_img, ref_doc, ref_results, img, doc, results, context=0.4, callee=0.5):
     """Flag bindings that resolve on both builds but probably not to the same place. A pattern made of protector
     filler can match once elsewhere, so the bytes around the match (outside the pattern) and, for a call, the
-    callee's first bytes must look like the reference build's."""
+    callee's first bytes must look like the reference build's. Around a protector thunk the filler differs per
+    build, so there the relocated bodies the two thunks jump to must look alike instead."""
     ref = {b['id']: (b, r) for b, r in zip(ref_doc['bindings'], ref_results)}
     out = []
     for b, r in zip(doc['bindings'], results):
@@ -522,12 +532,18 @@ def compare(ref_img, ref_doc, ref_results, img, doc, results, context=0.4, calle
             continue
         m, rm = r['match'] if r['match'] is not None else r['target'], rr['match'] if rr['match'] is not None else rr['target']
         n, rn = len(b['pattern'].split()), len(rb['pattern'].split())
-        around = max(similarity(img.read(m - 16, 16), ref_img.read(rm - 16, 16)),
-                     similarity(img.read(m + n, 16), ref_img.read(rm + rn, 16)))
-        why = []
-        if around < context:
-            why.append(f'bytes around the match look {around:.2f} alike')
         t, rt = r['target'], rr['target']
+        body, rbody = relocated_body(img, t), relocated_body(ref_img, rt)
+        why = []
+        if body is not None and rbody is not None:
+            sim = similarity(img.read(body, 16), ref_img.read(rbody, 16))
+            if sim < context:
+                why.append(f'the thunk body {body:#x} looks {sim:.2f} like the reference body {rbody:#x}')
+        else:
+            around = max(similarity(img.read(m - 16, 16), ref_img.read(rm - 16, 16)),
+                         similarity(img.read(m + n, 16), ref_img.read(rm + rn, 16)))
+            if around < context:
+                why.append(f'bytes around the match look {around:.2f} alike')
         if ref_img.readable(rt, 5) and ref_img.mem[rt] == 0xE8:
             if not (img.readable(t, 5) and img.mem[t] == 0xE8):
                 why.append('the reference site is a call and this one is not')
