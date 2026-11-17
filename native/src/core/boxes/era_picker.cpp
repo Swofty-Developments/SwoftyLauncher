@@ -1,4 +1,5 @@
 #include "core/testing/direct_start_tt.hpp"
+#include "core/runtime/log_changed.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/session/replay_grid_logic.hpp"
 
@@ -214,17 +215,17 @@ constexpr size_t BOX_TIME_TRIAL = offsetof(SwoftyEraBox, time_trial_entrant_list
 constexpr size_t BOX_ONLY = offsetof(SwoftyEraBox, only);
 static_assert(BOX_TIME_TRIAL == 0x28 && BOX_ONLY == 0x30);
 logic::DrsSwaps drs;
-std::string last_drs_line;
+constinit runtime::LogChanged drs_log{"[drs] %s"};
 logic::WarmerSwaps warmers;
-std::string last_warmers_line;
+constinit runtime::LogChanged warmers_log{"[tyres] %s"};
 logic::PointsSwaps points;
-std::string last_points_line;
+constinit runtime::LogChanged points_log{"[points] %s"};
 logic::TyreChangeSwaps tyre_change;
-std::string last_tyre_change_line;
+constinit runtime::LogChanged tyre_change_log{"[tyres] %s"};
 logic::TimeLimitSwaps time_limits;
 logic::WeekendSwaps weekends;
-std::string last_weekend_line;
-std::string last_box_options_line;
+constinit runtime::LogChanged weekend_log{"[weekend] %s"};
+constinit runtime::LogChanged box_options_log{"[box-rules] %s"};
 
 template <class T> T at(const void *base, size_t off)
 {
@@ -248,16 +249,33 @@ uint8_t *setup_owner(void *mode)
     return owner ? at<uint8_t *>(owner, SETUP_MODES) : nullptr;
 }
 
-template <class F> void for_each_host_setup(void *mode, F f)
+// The game mode's game setup modes: the vector its setup owner's virtual at +0x1d0 returns. False when the mode has
+// no setup owner or the owner returns no vector.
+struct SetupModes {
+    uint8_t **begin = nullptr, **end = nullptr;
+    bool found = false;
+
+    explicit operator bool() const { return found; }
+};
+
+SetupModes setup_modes(void *mode)
 {
     auto *modes = setup_owner(mode);
     if (!modes)
-        return;
+        return {};
     auto get = reinterpret_cast<uint8_t *(*)(void *)>((*reinterpret_cast<void ***>(modes))[SETUP_MODES_VFUNC / 8]);
     uint8_t *vec = get(modes);
     if (!vec)
+        return {};
+    return {at<uint8_t **>(vec, 8), at<uint8_t **>(vec, 0x10), true};
+}
+
+template <class F> void for_each_host_setup(void *mode, F f)
+{
+    SetupModes modes = setup_modes(mode);
+    if (!modes)
         return;
-    for (auto **p = at<uint8_t **>(vec, 8), **e = at<uint8_t **>(vec, 0x10); p != e; ++p) {
+    for (auto **p = modes.begin; p != modes.end; ++p) {
         const char *name = name_of(*p, SETUP_MODE_NAME);
         if (!name || strcmp(name, logic::HOST))
             continue;
@@ -270,26 +288,14 @@ template <class F> void for_each_host_setup(void *mode, F f)
 
 template <class F> void for_each_host_mode(void *mode, F f)
 {
-    auto *modes = setup_owner(mode);
+    SetupModes modes = setup_modes(mode);
     if (!modes)
         return;
-    auto get = reinterpret_cast<uint8_t *(*)(void *)>((*reinterpret_cast<void ***>(modes))[SETUP_MODES_VFUNC / 8]);
-    uint8_t *vec = get(modes);
-    if (!vec)
-        return;
-    for (auto **p = at<uint8_t **>(vec, 8), **e = at<uint8_t **>(vec, 0x10); p != e; ++p) {
+    for (auto **p = modes.begin; p != modes.end; ++p) {
         const char *name = name_of(*p, SETUP_MODE_NAME);
         if (name && !strcmp(name, logic::HOST))
             f(*p);
     }
-}
-
-void log_drs(const std::string &line)
-{
-    if (line == last_drs_line)
-        return;
-    last_drs_line = line;
-    swofty::log("[drs] %s", line.c_str());
 }
 
 void apply_drs(void *mode, const char *list)
@@ -304,7 +310,7 @@ void apply_drs(void *mode, const char *list)
             if (own.empty() && text && mem::readable(text, 1))
                 own = std::string(text, strnlen(text, logic::DRS_LABEL_MAX));
         });
-        log_drs(box.line + (own.empty() ? std::string() : " (" + own + ")"));
+        drs_log.say(box.line + (own.empty() ? std::string() : " (" + own + ")"));
         return;
     }
     logic::DrsHolder *holder = drs.holder(box.label);
@@ -313,15 +319,7 @@ void apply_drs(void *mode, const char *list)
         drs.swap(m, holder);
         modes++;
     });
-    log_drs(holder && modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
-}
-
-void log_warmers(const std::string &line)
-{
-    if (line == last_warmers_line)
-        return;
-    last_warmers_line = line;
-    swofty::log("[tyres] %s", line.c_str());
+    drs_log.say(holder && modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
 }
 
 // Tyre warmers per box: the pressed box's rules.tyre_warmers goes into every swofty_f1 mode's has_tyre_warmers byte;
@@ -331,7 +329,7 @@ void apply_warmers(void *mode, const char *list)
     auto box = swofty_core::apply::content::tyre_warmers_for_box(list);
     if (!box.warmers) {
         warmers.put_back();
-        log_warmers(box.line);
+        warmers_log.say(box.line);
         return;
     }
     size_t modes = 0;
@@ -339,7 +337,7 @@ void apply_warmers(void *mode, const char *list)
         warmers.swap(m, *box.warmers);
         modes++;
     });
-    log_warmers(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
+    warmers_log.say(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
 }
 
 // Fuel rules per box: the pressed box's refuelling, race and qualifying fuel and parc ferme rule go to the per-frame fuel
@@ -350,24 +348,14 @@ void apply_fuel(const char *list)
 }
 
 void clear_fuel() { swofty_core::hooks::race_fuel_rules({}); }
-void log_weekend(const std::string &line)
-{
-    if (line == last_weekend_line)
-        return;
-    last_weekend_line = line;
-    swofty::log("[weekend] %s", line.c_str());
-}
-
 uint8_t *find_mode(void *mode, const std::string &want)
 {
-    auto *modes = setup_owner(mode);
-    if (!modes || want.empty())
+    if (want.empty())
         return nullptr;
-    auto get = reinterpret_cast<uint8_t *(*)(void *)>((*reinterpret_cast<void ***>(modes))[SETUP_MODES_VFUNC / 8]);
-    uint8_t *vec = get(modes);
-    if (!vec)
+    SetupModes modes = setup_modes(mode);
+    if (!modes)
         return nullptr;
-    for (auto **p = at<uint8_t **>(vec, 8), **e = at<uint8_t **>(vec, 0x10); p != e; ++p) {
+    for (auto **p = modes.begin; p != modes.end; ++p) {
         const char *name = name_of(*p, SETUP_MODE_NAME);
         if (name && want == name)
             return *p;
@@ -452,15 +440,7 @@ void apply_weekend(void *mode, const char *list)
                 line += "; weekend on the first of " + std::to_string(hosts) + " " + std::string(logic::HOST) + " modes";
         }
     }
-    log_weekend(line);
-}
-
-void log_box_options(const std::string &line)
-{
-    if (line == last_box_options_line)
-        return;
-    last_box_options_line = line;
-    swofty::log("[box-rules] %s", line.c_str());
+    weekend_log.say(line);
 }
 
 // Game options per box: each of the pressed box's option rules goes into its options store option; a rule the box
@@ -478,7 +458,7 @@ void apply_box_options(const char *list)
     }
     if (!put.empty())
         line += "; the player's " + put + " setting put back";
-    log_box_options(line);
+    box_options_log.say(line);
 }
 
 void put_back_box_options()
@@ -489,25 +469,17 @@ void put_back_box_options()
         if (runtime::box_option_put_back(i))
             put += (put.empty() ? "" : ", ") + std::string(content::BOX_OPTION_RULES[i].rule);
     if (!put.empty())
-        log_box_options("the player's " + put + " setting put back");
+        box_options_log.say("the player's " + put + " setting put back");
 }
 
-std::string last_grid_line;
-
-void log_grid(const std::string &line)
-{
-    if (line == last_grid_line)
-        return;
-    last_grid_line = line;
-    swofty::log("[grid] %s", line.c_str());
-}
+constinit runtime::LogChanged grid_log{"[grid] %s"};
 
 // Grid rules per box: the pressed box's rules.grid goes to box_grid.cpp; a box without the rule clears it.
 void apply_grid(const char *list)
 {
     auto box = swofty_core::apply::content::grid_for_box(list);
     runtime::box_grid_set(box.rule, list);
-    log_grid(box.line);
+    grid_log.say(box.line);
 }
 
 // Qualifying tyres per box: the pressed box's rules.qualifying_tyres mask goes to the qualifying tyre hooks
@@ -518,14 +490,6 @@ void apply_quali_tyres(const char *list)
     runtime::quali_tyres_box(box.mask, box.mask ? box.line : std::string());
 }
 
-void log_points(const std::string &line)
-{
-    if (line == last_points_line)
-        return;
-    last_points_line = line;
-    swofty::log("[points] %s", line.c_str());
-}
-
 // Points per box: the race sessions of every swofty_f1 mode point at the preset the boot apply added for the pressed
 // box's rules.points, found among the parsed presets by its points; a box without the rule puts the game's back.
 void apply_points(void *mode, const char *list)
@@ -533,7 +497,7 @@ void apply_points(void *mode, const char *list)
     auto box = swofty_core::apply::content::points_for_box(list);
     if (!box.found) {
         points.put_back();
-        log_points(box.line);
+        points_log.say(box.line);
         return;
     }
     logic::Readable ok = [](const void *p, size_t n) { return mem::readable(p, n); };
@@ -546,7 +510,7 @@ void apply_points(void *mode, const char *list)
     const uint8_t *preset = logic::find_points_preset(ok, begin, end, want);
     if (!preset) {
         points.put_back();
-        log_points(box.line + "; not applied (preset " + box.label + " not among the game's parsed presets)");
+        points_log.say(box.line + "; not applied (preset " + box.label + " not among the game's parsed presets)");
         return;
     }
     size_t sessions = 0;
@@ -556,16 +520,8 @@ void apply_points(void *mode, const char *list)
             sessions++;
         }
     });
-    log_points(sessions ? box.line + " on " + std::to_string(sessions) + " race session(s)"
+    points_log.say(sessions ? box.line + " on " + std::to_string(sessions) + " race session(s)"
                         : box.line + "; not applied (no race session in a " + std::string(logic::HOST) + " mode)");
-}
-
-void log_tyre_change(const std::string &line)
-{
-    if (line == last_tyre_change_line)
-        return;
-    last_tyre_change_line = line;
-    swofty::log("[tyres] %s", line.c_str());
 }
 
 // Mandatory tyre change per box: the pressed box's rules.mandatory_tyre_change goes into every swofty_f1 mode's
@@ -575,7 +531,7 @@ void apply_tyre_change(void *mode, const char *list)
     auto box = swofty_core::apply::content::tyre_change_for_box(list);
     if (!box.required) {
         tyre_change.put_back();
-        log_tyre_change(box.line);
+        tyre_change_log.say(box.line);
         return;
     }
     size_t modes = 0;
@@ -583,7 +539,7 @@ void apply_tyre_change(void *mode, const char *list)
         tyre_change.swap(m, *box.required);
         modes++;
     });
-    log_tyre_change(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
+    tyre_change_log.say(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
 }
 
 void put_back_drs()
@@ -591,17 +547,17 @@ void put_back_drs()
     runtime::box_grid_set(std::nullopt, std::string());
     runtime::quali_tyres_box(0, std::string());
     if (size_t n = drs.put_back())
-        log_drs(std::string(logic::HOST) + "'s DRS group put back on " + std::to_string(n) + " mode(s)");
+        drs_log.say(std::string(logic::HOST) + "'s DRS group put back on " + std::to_string(n) + " mode(s)");
     if (size_t n = warmers.put_back())
-        log_warmers(std::string(logic::HOST) + "'s tyre warmer setting put back on " + std::to_string(n) + " mode(s)");
+        warmers_log.say(std::string(logic::HOST) + "'s tyre warmer setting put back on " + std::to_string(n) + " mode(s)");
     if (size_t n = tyre_change.put_back())
-        log_tyre_change(std::string(logic::HOST) + "'s tyre regulations put back on " + std::to_string(n) + " mode(s)");
+        tyre_change_log.say(std::string(logic::HOST) + "'s tyre regulations put back on " + std::to_string(n) + " mode(s)");
     if (size_t n = time_limits.put_back())
-        log_weekend(std::string(logic::HOST) + "'s race time limit put back on " + std::to_string(n) + " mode(s)");
+        weekend_log.say(std::string(logic::HOST) + "'s race time limit put back on " + std::to_string(n) + " mode(s)");
     if (weekends.put_back())
-        log_weekend(std::string(logic::HOST) + "'s own weekend put back");
+        weekend_log.say(std::string(logic::HOST) + "'s own weekend put back");
     if (size_t n = points.put_back())
-        log_points(std::string(logic::HOST) + "'s points put back on " + std::to_string(n) + " race session(s)");
+        points_log.say(std::string(logic::HOST) + "'s points put back on " + std::to_string(n) + " race session(s)");
     put_back_box_options();
 }
 
@@ -1118,17 +1074,13 @@ void time_trial_budget(void *mode, uintptr_t setup)
     uint8_t board = 0;
     if (!mem::read(setup + SELECTED_LIST, selected) || !selected || !leaderboard_of(reinterpret_cast<void *>(selected), board))
         return;
-    auto *modes = setup_owner(mode);
+    SetupModes modes = setup_modes(mode);
     if (!modes)
-        return;
-    auto get = reinterpret_cast<uint8_t *(*)(void *)>((*reinterpret_cast<void ***>(modes))[SETUP_MODES_VFUNC / 8]);
-    uint8_t *vec = get(modes);
-    if (!vec)
         return;
     std::vector<LeaderboardList> found{{reinterpret_cast<void *>(selected), {}}};
     std::vector<bool> addon{false};
     uint32_t pools = 0;
-    for (auto **p = at<uint8_t **>(vec, 8), **e = at<uint8_t **>(vec, 0x10); p != e; ++p) {
+    for (auto **p = modes.begin; p != modes.end; ++p) {
         const char *gsm = name_of(*p, SETUP_MODE_NAME);
         bool host = gsm && !strcmp(gsm, logic::HOST);
         int64_t n = at<int64_t>(*p, ENTRANT_SETUP_COUNT);
@@ -1934,14 +1886,14 @@ void drop_setup_pointers()
     time_limits.forget();
     weekends.forget();
     points.forget();
-    last_drs_line.clear();
-    last_warmers_line.clear();
-    last_points_line.clear();
-    last_tyre_change_line.clear();
-    last_weekend_line.clear();
+    drs_log.forget();
+    warmers_log.forget();
+    points_log.forget();
+    tyre_change_log.forget();
+    weekend_log.forget();
     runtime::box_options_forget();
-    last_box_options_line.clear();
-    last_grid_line.clear();
+    box_options_log.forget();
+    grid_log.forget();
     std::string line = logic::availability_drop_line(p);
     if (!line.empty() && !logged_dropped.exchange(true))
         swofty::log("[era] %s", line.c_str());
