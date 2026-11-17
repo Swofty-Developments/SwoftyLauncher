@@ -5,6 +5,7 @@ pub mod app_control;
 pub mod disk;
 pub mod ea_app;
 pub mod process;
+pub mod registry;
 pub mod run_as_admin;
 pub mod steam;
 
@@ -55,13 +56,12 @@ pub fn installed_by(dir: &Path) -> Option<&'static dyn LaunchPlatform> {
     PLATFORMS.into_iter().find(|p| p.installed(dir))
 }
 
-/// How long a record read with a Windows tool is kept. Steam and the EA app change their install records
-/// only when they install, move or remove something, one Play reads them several times, and each read
-/// starts a `reg query` process.
+/// How long the Steam folders Windows records, and those a running steam.exe shows, are kept: one Play
+/// looks for them several times.
 #[cfg(windows)]
 pub(crate) const KEEP_RECORDS: Duration = Duration::from_secs(30);
 
-/// Answers kept by key for a while, so lookups close together start a Windows tool once.
+/// Answers kept by key for a while, so lookups close together find them once.
 #[cfg(any(windows, test))]
 pub(crate) struct Kept<K, V>(Mutex<BTreeMap<K, (Instant, V)>>);
 

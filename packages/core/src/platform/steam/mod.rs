@@ -138,7 +138,7 @@ pub fn registered_roots(reg: &dyn client::Registry) -> Vec<PathBuf> {
 fn registered_roots_cached() -> Vec<PathBuf> {
     static KEPT: crate::platform::Kept<(), Vec<PathBuf>> = crate::platform::Kept::new();
     KEPT.get((), crate::platform::KEEP_RECORDS, || {
-        let mut roots = registered_roots(&client::RegExe);
+        let mut roots = registered_roots(&client::LocalRegistry);
         roots.extend(
             crate::platform::process::named_paths("steam.exe")
                 .iter()
@@ -686,7 +686,7 @@ pub fn search_save_in(
 #[cfg(windows)]
 pub fn active_user() -> Option<u32> {
     use client::Registry;
-    let out = client::RegExe.query(client::ACTIVE_PROCESS_KEY)?;
+    let out = client::LocalRegistry.query(client::ACTIVE_PROCESS_KEY)?;
     crate::platform::run_as_admin::reg_dword(&out, "ActiveUser").filter(|u| *u != 0)
 }
 

@@ -141,15 +141,16 @@ pub struct Proc {
 }
 
 pub trait Registry {
-    /// `reg query <key>` output, or None when it cannot run.
+    /// What `reg query <key>` prints, or None when the key cannot be read.
     fn query(&self, key: &str) -> Option<String>;
 }
 
-pub struct RegExe;
+/// This computer's registry, read in process ([`crate::platform::registry`]).
+pub struct LocalRegistry;
 
-impl Registry for RegExe {
+impl Registry for LocalRegistry {
     fn query(&self, key: &str) -> Option<String> {
-        crate::platform::run_as_admin::windows_tool("reg", &["query", key])
+        crate::platform::registry::reg_query(&[key])
     }
 }
 
@@ -416,7 +417,7 @@ pub fn status() -> Status {
         .map(|p| p.pid)
         .collect();
     windows_status(
-        &RegExe,
+        &LocalRegistry,
         &pids,
         &crate::platform::process::started,
         &super::steam_roots(),
@@ -544,7 +545,7 @@ pub fn windows_starter(reg: &dyn Registry, roots: &[PathBuf]) -> Starter {
 
 #[cfg(windows)]
 pub fn starter(_install: &[&Path]) -> Option<Starter> {
-    Some(windows_starter(&RegExe, &super::steam_roots()))
+    Some(windows_starter(&LocalRegistry, &super::steam_roots()))
 }
 
 #[cfg(not(windows))]
