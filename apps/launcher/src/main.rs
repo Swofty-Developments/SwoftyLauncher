@@ -9,7 +9,6 @@ mod shell;
 mod ui;
 
 use app::{app_log, chart_demo, dialog_keys, fonts};
-use shell::page_parts;
 use ui::theme;
 
 use gpui_kit::component::{TitleBar, v_flex};
@@ -110,7 +109,7 @@ impl Render for Launcher {
                     .items_center()
                     .justify_center()
                     .gap(px(20.))
-                    .child(page_parts::wordmark(220.))
+                    .child(ui::wordmark(220.))
                     .child(swofty_i18n::tr("Loading your launcher…")),
             )
             .into_any_element()

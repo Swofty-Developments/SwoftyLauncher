@@ -15,10 +15,11 @@ use super::tiles::landing_rows;
 use super::*;
 use crate::services::library::Type;
 use crate::shell::Shell;
-use crate::shell::page_parts::{GUTTER, tile};
 use crate::ui::facet::FILTERS_W;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
+use crate::ui::tile;
+use crate::ui::tokens::space::GUTTER;
 
 pub(super) type GridKey = (String, Sort, Tab, BTreeSet<Facet>, bool, u64);
 

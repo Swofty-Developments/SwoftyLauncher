@@ -8,8 +8,9 @@ use swofty_core::dbedit::{Hit, HitKind};
 use swofty_i18n::{tr, trf};
 
 use crate::shell::Shell;
-use crate::shell::page_parts::{GUTTER, label};
+use crate::ui::label;
 use crate::ui::theme::{Palette, ScrollArea};
+use crate::ui::tokens::space::GUTTER;
 
 fn hit_group(kind: HitKind) -> &'static str {
     match kind {

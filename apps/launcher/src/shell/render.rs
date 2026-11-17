@@ -82,7 +82,7 @@ impl Render for Shell {
                     .child(div().flex_1().min_h_0().child(self.tools_page(p, window, cx)))
                     .child(
                         div()
-                            .px(px(crate::shell::page_parts::GUTTER))
+                            .px(px(crate::ui::tokens::space::GUTTER))
                             .pb(px(16.))
                             .child(dev),
                     )

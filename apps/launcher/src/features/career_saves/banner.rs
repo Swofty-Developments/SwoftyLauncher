@@ -7,10 +7,10 @@ use swofty_i18n::tr;
 
 use super::banner_data::Kind;
 use crate::shell::Shell;
-use crate::shell::page_parts::GUTTER;
 use crate::ui::Callout;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
+use crate::ui::tokens::space::GUTTER;
 
 impl Shell {
     pub(crate) fn saves_banner(&self, on_page: bool, _: Palette, cx: &mut Context<Self>) -> Option<Div> {

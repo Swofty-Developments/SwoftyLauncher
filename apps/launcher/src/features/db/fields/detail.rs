@@ -11,7 +11,7 @@ use super::FieldModel;
 use super::value::{hex_rgb, swatch_color};
 use super::{hex, type_name};
 use crate::shell::Shell;
-use crate::shell::page_parts::fact;
+use crate::ui::fact;
 use crate::ui::theme::{Palette, ScrollArea};
 
 impl Shell {

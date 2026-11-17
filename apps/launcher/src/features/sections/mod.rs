@@ -18,8 +18,8 @@ use swofty_i18n::trf;
 use crate::services::game::Install;
 use crate::services::library::SectionItem;
 use crate::shell::Shell;
-use crate::shell::page_parts::{badge, monogram};
 use crate::ui::theme::Palette;
+use crate::ui::{badge, monogram};
 
 mod intake;
 mod page;

@@ -10,10 +10,10 @@ use swofty_i18n::{tr, trf};
 
 use crate::features::time_trial::Load;
 use crate::shell::Shell;
-use crate::shell::page_parts::GUTTER;
 use crate::ui::Overlay;
 use crate::ui::scale::px;
 use crate::ui::theme::{Palette, ScrollArea};
+use crate::ui::tokens::space::GUTTER;
 
 const LIST_WIDTH: f32 = 470.;
 const YELLOW: u32 = 0xffc933;

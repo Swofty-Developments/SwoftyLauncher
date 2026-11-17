@@ -21,9 +21,9 @@ use swofty_core::store::Store;
 use crate::dialogs::game_edited::discord_link;
 use crate::services::game::Install;
 use crate::shell::Shell;
-use crate::shell::page_parts::{game_art, label};
 use crate::ui::Callout;
 use crate::ui::theme::{Palette, palette};
+use crate::ui::{game_art, label};
 use swofty_i18n::{tr, trf};
 
 pub(crate) const RISK: &str = "Because of how Swofty Launcher hooks the game's engine, which lets addons run \

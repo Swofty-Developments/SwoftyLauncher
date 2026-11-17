@@ -1,9 +1,9 @@
 use crate::shell::notices::{Notification, Notify};
-use crate::shell::page_parts::GUTTER;
 use crate::shell::{Page, Shell};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
 use crate::ui::tokens::Tone;
+use crate::ui::tokens::space::GUTTER;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::tooltip::Tooltip;

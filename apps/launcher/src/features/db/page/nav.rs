@@ -9,7 +9,7 @@ use swofty_i18n::{tr, trf};
 
 use crate::features::db::{LinkState, Nav, icon_named};
 use crate::shell::Shell;
-use crate::shell::page_parts::label;
+use crate::ui::label;
 use crate::ui::theme::{Palette, SCROLLBAR_GAP, ScrollArea};
 
 pub(crate) fn nav_row(

@@ -10,8 +10,9 @@ use swofty_i18n::{fill, tr, trf, trn};
 
 use super::model::*;
 use crate::shell::Shell;
-use crate::shell::page_parts::{GUTTER, tag};
+use crate::ui::tag;
 use crate::ui::theme::{Palette, ScrollArea};
+use crate::ui::tokens::space::GUTTER;
 
 impl Shell {
     pub(super) fn mp_room_view(

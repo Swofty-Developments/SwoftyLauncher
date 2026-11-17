@@ -17,8 +17,8 @@ use swofty_core::store::Store;
 use swofty_i18n::{tr, trn};
 
 use crate::shell::Shell;
-use crate::shell::page_parts::badge;
 use crate::shell::play_bar::link;
+use crate::ui::badge;
 use crate::ui::theme::{Palette, palette};
 
 const MAX_LINES: usize = 20_000;

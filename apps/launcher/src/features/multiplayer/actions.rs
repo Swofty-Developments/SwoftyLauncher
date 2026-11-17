@@ -13,8 +13,8 @@ use swofty_i18n::{tr, trf};
 
 use super::model::*;
 use super::state::*;
-use crate::shell::page_parts::monogram;
 use crate::shell::{Page, Shell};
+use crate::ui::monogram;
 use crate::ui::theme::Palette;
 
 impl Shell {

@@ -9,11 +9,11 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::{day, since};
 use crate::shell::Shell;
-use crate::shell::page_parts::{label, stat};
 use crate::ui::format;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
 use crate::ui::{Callout, ProgressBar};
+use crate::ui::{label, stat};
 
 pub(super) fn detail_about(a: &Addon, mono: &SharedString, p: Palette) -> Div {
     let description = if a.description.trim().is_empty() {

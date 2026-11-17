@@ -9,9 +9,9 @@ use swofty_core::ea_app::Moved;
 use swofty_core::install::EA_APP_SEEN;
 
 use crate::shell::Shell;
-use crate::shell::page_parts::{game_art, logo};
 use crate::ui::discord::invite_button;
 use crate::ui::theme::{Palette, palette};
+use crate::ui::{game_art, logo};
 use swofty_i18n::{tr, trf};
 
 const HEIGHT: f32 = 470.;

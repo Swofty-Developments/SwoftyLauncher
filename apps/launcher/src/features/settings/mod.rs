@@ -13,10 +13,10 @@ use gpui_kit::*;
 use swofty_core::data_usage::Usage;
 use swofty_i18n::tr;
 
-use crate::shell::page_parts::GUTTER;
 use crate::shell::{Page, Shell};
 use crate::ui::form::side_nav_item;
 use crate::ui::theme::Palette;
+use crate::ui::tokens::space::GUTTER;
 
 pub use usage::{GameCopy, clear_logs_at_start, low_space_warning};
 

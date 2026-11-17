@@ -558,7 +558,7 @@ impl Shell {
             .justify_center()
             .gap(px(10.))
             .pb(px(48.))
-            .child(crate::shell::page_parts::badge(IconName::Database, 44., p))
+            .child(crate::ui::badge(IconName::Database, 44., p))
             .child(
                 div()
                     .pt(px(8.))

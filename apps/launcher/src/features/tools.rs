@@ -18,10 +18,10 @@ use gpui_kit::*;
 use serde::Deserialize;
 use swofty_core::app_control::Block;
 
-use crate::shell::page_parts::GUTTER;
 use crate::shell::{Page, Shell};
 use crate::ui::Card;
 use crate::ui::theme::{Palette, scrollbar_x};
+use crate::ui::tokens::space::GUTTER;
 
 mod art {
     include!(concat!(env!("OUT_DIR"), "/tools_art.rs"));

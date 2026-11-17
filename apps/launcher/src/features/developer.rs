@@ -12,8 +12,8 @@ use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
-use crate::shell::page_parts::label;
 use crate::shell::{PlayState, Shell};
+use crate::ui::label;
 use crate::ui::theme::Palette;
 use swofty_i18n::tr;
 

@@ -1,6 +1,6 @@
-use crate::shell::page_parts::{logo, wordmark};
 use crate::ui::scale::{Hit, fixed};
 use crate::ui::theme::Palette;
+use crate::ui::{logo, wordmark};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::menu::{DropdownMenu, PopupMenuItem};

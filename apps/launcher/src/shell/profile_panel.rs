@@ -1,6 +1,6 @@
 use crate::services::library::ProfileItem;
-use crate::shell::page_parts::avatar;
 use crate::shell::{Page, PlayState, Shell};
+use crate::ui::avatar;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, ScrollArea};
 use gpui_kit::assets::IconName;

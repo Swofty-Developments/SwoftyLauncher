@@ -108,7 +108,7 @@ impl Shell {
             .find(|a| a.manifest.id == addon)
             .and_then(|a| a.icon.as_ref())
         {
-            return crate::shell::page_parts::addon_icon(icon, size, p);
+            return crate::ui::addon_icon(icon, size, p);
         }
         if let Some(d) = self.catalog_icon_of(addon, size, p) {
             return d;
@@ -120,7 +120,7 @@ impl Shell {
                 .rounded(px(size * 0.22))
                 .overflow_hidden()
                 .child(img(image.clone()).size_full().object_fit(ObjectFit::Cover)),
-            _ => crate::shell::page_parts::badge(IconName::Trophy, size, p),
+            _ => crate::ui::badge(IconName::Trophy, size, p),
         }
     }
 
