@@ -2,9 +2,7 @@
 set -euo pipefail
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-if ! command -v zig >/dev/null; then
-    exec nix shell nixpkgs#zig -c "$SELF" "$@"
-fi
+. "$(dirname "$SELF")/lib/env.sh"
 OUT=${PERF_OUT:-$PWD/../build/perf-bench}
 WINE=${WINE:-wine}
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache

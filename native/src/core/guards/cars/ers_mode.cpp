@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -46,7 +47,6 @@ constexpr int LOG_FIRST = 8;
 
 using Reset = void(void *, uint32_t);
 
-bool offered = false, settled = false, wanted = false;
 std::atomic<int> fixed{0};
 
 bool reset_ers(uintptr_t ers)
@@ -83,40 +83,16 @@ void mode_load(SwoftyContext *c)
                 n == LOG_FIRST ? " (further fixes are not logged)" : "");
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> ers_mode_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_ERS_MODE_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[ers] mode guard off (SWOFTY_ERS_MODE_GUARD=%s)", v);
-        return out;
-    }
-    if (!swofty::api->resolve(SITE)) {
-        swofty::log("[ers] mode guard off: needs %s, which this build does not resolve", SITE);
-        return out;
-    }
-    wanted = true;
-    out.push_back({MIXIN, {{SITE, SWOFTY_MIXIN_SITE, 100, (void *)&mode_load, nullptr}}});
-    return out;
-}
-
-void ers_mode_commit()
-{
-    if (!offered || settled || !wanted)
-        return;
-    settled = true;
-    swofty::log("[ers] mode guard %s",
-                core_mixins_active(MIXIN)
-                    ? "armed: a car whose ERS mode is out of range gets its ERS reset to Medium instead of faulting"
-                    : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::ers_mode,
+                        {
+                            .set = MIXIN,
+                            .name = "[ers] mode guard",
+                            .env = "SWOFTY_ERS_MODE_GUARD",
+                            .needs = {SITE},
+                            .mixins = {{SITE, SWOFTY_MIXIN_SITE, 100, (void *)&mode_load, nullptr}},
+                            .armed = "a car whose ERS mode is out of range gets its ERS reset to Medium instead of faulting",
+                        }};
 
 }

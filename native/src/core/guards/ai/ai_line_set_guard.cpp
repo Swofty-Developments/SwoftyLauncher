@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -48,7 +49,6 @@ constexpr const char *PUSHED = "site_Ai_BuildSystem_RecordPushed";
 
 namespace al = runtime::ai_line_set;
 
-bool offered = false, settled = false;
 std::atomic<int> logged{0};
 
 bool read_memory(uint64_t address, void *out, size_t n, void *)
@@ -81,38 +81,17 @@ void record_pushed(SwoftyContext *c)
                 n == al::LOG_FIRST ? " (further fixes are not logged)" : "");
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> ai_line_set_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_AI_LINE_SET_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[ai] line set guard off (SWOFTY_AI_LINE_SET_GUARD=%s)", v);
-        return out;
-    }
-    if (!swofty::api->resolve(PUSHED)) {
-        swofty::log("[ai] line set guard off: needs %s, which this build does not resolve", PUSHED);
-        return out;
-    }
-    out.push_back({MIXIN, {{PUSHED, SWOFTY_MIXIN_SITE, 100, (void *)&record_pushed, nullptr}}});
-    return out;
-}
-
-void ai_line_set_commit()
-{
-    if (!offered || settled)
-        return;
-    settled = true;
-    swofty::log("[ai] line set guard %s",
-                core_mixins_active(MIXIN) ? "armed: a car no AI map lists borrows another car's tables and brake line settings"
-                                          : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::ai_line_set,
+                        {
+                            .set = MIXIN,
+                            .name = "[ai] line set guard",
+                            .env = "SWOFTY_AI_LINE_SET_GUARD",
+                            .needs = {PUSHED},
+                            .mixins = {{PUSHED, SWOFTY_MIXIN_SITE, 100, (void *)&record_pushed, nullptr}},
+                            .armed = "a car no AI map lists borrows another car's tables and brake line settings",
+                            .settles_when_off = true,
+                        }};
 
 }

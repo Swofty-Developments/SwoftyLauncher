@@ -100,8 +100,8 @@ pub const STEAM_SAVE_WARNING: &str = "This profile's addon careers live in your 
 #[cfg(test)]
 mod tests {
     use super::*;
+    use crate::saves::vault::{Layout, Location, Meta, Snapshot, Taken};
     use crate::stdlib::careers::parse;
-    use crate::vault::{Layout, Location, Meta, Snapshot, Taken};
 
     fn dir(name: &str) -> std::path::PathBuf {
         let d = std::env::temp_dir().join(format!("vault-guard-{name}-{}", std::process::id()));

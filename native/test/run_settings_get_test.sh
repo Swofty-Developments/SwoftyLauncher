@@ -8,9 +8,9 @@ case "$(uname -s)" in
 MINGW* | MSYS* | CYGWIN*) NATIVE=1 ;;
 *) NATIVE=0 ;;
 esac
-if [[ $NATIVE == 0 ]] && { ! command -v wine >/dev/null || ! command -v zig >/dev/null; }; then
-    exec nix shell nixpkgs#zig nixpkgs#wineWow64Packages.stable -c "$SELF" "$@"
-fi
+NEEDS=zig
+[[ $NATIVE == 0 ]] && NEEDS="zig wine"
+. "$(dirname "$SELF")/lib/env.sh"
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
 OUT=${1:-$PWD/../build/settings-get-test}
 SDK=../../packages/sdk/include

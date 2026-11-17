@@ -1,5 +1,5 @@
 // Host-native unit test for the core's tile list select guard (native/src/core/guards/frontend/tile_list_select_logic.hpp).
-// Built and run by native/test/run_tile_list_select_test.sh.
+// Built and run by native/test/run_tests.sh tile_list_select.
 
 #include "core/guards/frontend/tile_list_select_logic.hpp"
 

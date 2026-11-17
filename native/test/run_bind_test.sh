@@ -5,9 +5,8 @@
 set -euo pipefail
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-if ! command -v wine >/dev/null || ! command -v zig >/dev/null; then
-    exec nix shell nixpkgs#zig nixpkgs#wineWow64Packages.stable -c "$SELF" "$@"
-fi
+NEEDS="zig wine"
+. "$(dirname "$SELF")/lib/env.sh"
 . ./game_lock.sh
 OUT=${1:-$PWD/../build/bind-test}
 DIST=${DIST:-$PWD/../dist}

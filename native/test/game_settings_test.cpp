@@ -1,7 +1,7 @@
 // Host-native unit test for the game setting overrides (native/src/core/loading/game_settings_logic.hpp): the rows a
 // feature arms, which getter names an armed row answers with which value, the feature list a measurement run sets,
 // and the record of logged reads. The shipped table holds bool rows only; TYPED below covers the numeric getters.
-// Built and run by native/test/run_game_settings_test.sh.
+// Built and run by native/test/run_tests.sh game_settings.
 
 #include "core/loading/game_settings_logic.hpp"
 

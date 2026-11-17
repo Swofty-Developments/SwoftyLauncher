@@ -18,8 +18,8 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus, Stdio};
 use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
-use crate::compat::{parse_reg_query, reg_dword};
-use crate::vdf::{self, Vdf};
+use crate::platform::run_as_admin::{parse_reg_query, reg_dword};
+use crate::platform::vdf::{self, Vdf};
 
 pub const FLATPAK_APP: &str = "com.valvesoftware.Steam";
 pub const ACTIVE_PROCESS_KEY: &str = r"HKCU\Software\Valve\Steam\ActiveProcess";
@@ -149,7 +149,7 @@ pub struct RegExe;
 
 impl Registry for RegExe {
     fn query(&self, key: &str) -> Option<String> {
-        crate::compat::windows_tool("reg", &["query", key])
+        crate::platform::run_as_admin::windows_tool("reg", &["query", key])
     }
 }
 
@@ -398,7 +398,7 @@ pub fn processes() -> Vec<Proc> {
                 ns_pid,
                 name: name.to_owned(),
                 exe: String::from_utf8_lossy(exe).into_owned(),
-                started: crate::process::started(pid),
+                started: crate::platform::process::started(pid),
             })
         })
         .collect()
@@ -411,12 +411,15 @@ pub fn processes() -> Vec<Proc> {
 
 #[cfg(windows)]
 pub fn status() -> Status {
-    let pids: Vec<u32> = crate::process::named("steam.exe").iter().map(|p| p.pid).collect();
+    let pids: Vec<u32> = crate::platform::process::named("steam.exe")
+        .iter()
+        .map(|p| p.pid)
+        .collect();
     windows_status(
         &RegExe,
         &pids,
-        &crate::process::started,
-        &crate::steam::steam_roots(),
+        &crate::platform::process::started,
+        &crate::platform::steam::steam_roots(),
     )
 }
 
@@ -541,7 +544,7 @@ pub fn windows_starter(reg: &dyn Registry, roots: &[PathBuf]) -> Starter {
 
 #[cfg(windows)]
 pub fn starter(_install: &[&Path]) -> Option<Starter> {
-    Some(windows_starter(&RegExe, &crate::steam::steam_roots()))
+    Some(windows_starter(&RegExe, &crate::platform::steam::steam_roots()))
 }
 
 #[cfg(not(windows))]
@@ -1293,7 +1296,7 @@ mod tests {
             fn status(&self) -> Status {
                 let ours: Vec<Proc> = processes()
                     .into_iter()
-                    .filter(|p| crate::process::descends_from(p.pid, std::process::id()))
+                    .filter(|p| crate::platform::process::descends_from(p.pid, std::process::id()))
                     .collect();
                 linux_status(&self.home.0, &ours)
             }

@@ -12,7 +12,7 @@ use std::time::Duration;
 use ring::signature::{ED25519, UnparsedPublicKey};
 use serde::Deserialize;
 
-use crate::baseline::sha256_bytes;
+use crate::game_folder::baseline::sha256_bytes;
 use crate::timetrial::api::Api;
 
 /// The addon id the module loads under. It is not a user addon: no profile, addon list or fingerprint has it.

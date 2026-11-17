@@ -1,6 +1,6 @@
 // Host-native unit test for the core's DRED crash data (native/src/core/diagnostics/crash/dred_logic.hpp): when DRED is switched
 // on, which register values mean a removed GPU, the breadcrumb window and the wording of the report lines.
-// Built and run by native/test/run_dred_test.sh.
+// Built and run by native/test/run_tests.sh dred.
 
 #include "core/diagnostics/crash/dred_logic.hpp"
 

@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -36,7 +37,6 @@ namespace rf = runtime::red_flag_recompute;
 
 using Recompute = void(void *, void *);
 Recompute *orig_recompute = nullptr;
-bool offered = false, settled = false, wanted = false;
 std::atomic<int> skipped{0};
 rf::Skips skips;
 
@@ -53,39 +53,16 @@ void recompute(void *processor, void *race_session_data)
                 skips.last(n) ? " (further skips are not logged)" : "");
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> red_flag_recompute_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_RED_FLAG_RECOMPUTE_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[session] red flag recompute guard off (SWOFTY_RED_FLAG_RECOMPUTE_GUARD=%s)", v);
-        return out;
-    }
-    if (!swofty::api->resolve(TARGET)) {
-        swofty::log("[session] red flag recompute guard off: needs %s, which this build does not resolve", TARGET);
-        return out;
-    }
-    wanted = true;
-    out.push_back({MIXIN, {{TARGET, SWOFTY_MIXIN_WRAP, 100, (void *)&recompute, (void **)&orig_recompute}}});
-    return out;
-}
-
-void red_flag_recompute_commit()
-{
-    if (!offered || settled || !wanted)
-        return;
-    settled = true;
-    swofty::log("[session] red flag recompute guard %s",
-                core_mixins_active(MIXIN) ? "armed: a red flag strategy recompute without a race session record returns instead of faulting"
-                                          : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::red_flag_recompute,
+                        {
+                            .set = MIXIN,
+                            .name = "[session] red flag recompute guard",
+                            .env = "SWOFTY_RED_FLAG_RECOMPUTE_GUARD",
+                            .needs = {TARGET},
+                            .mixins = {{TARGET, SWOFTY_MIXIN_WRAP, 100, (void *)&recompute, (void **)&orig_recompute}},
+                            .armed = "a red flag strategy recompute without a race session record returns instead of faulting",
+                        }};
 
 }

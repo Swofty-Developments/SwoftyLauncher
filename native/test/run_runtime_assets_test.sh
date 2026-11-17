@@ -2,9 +2,8 @@
 set -euo pipefail
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
-if ! command -v wine >/dev/null || ! command -v xvfb-run >/dev/null || ! command -v zig >/dev/null; then
-    exec nix shell nixpkgs#zig nixpkgs#wineWow64Packages.stable nixpkgs#xvfb-run -c "$SELF" "$@"
-fi
+NEEDS="zig wine xvfb-run"
+. "$(dirname "$SELF")/lib/env.sh"
 . ./game_lock.sh
 DIST=${DIST:-dist}
 OUT=${1:-$PWD/../build/wine-runtime-assets}
@@ -26,7 +25,7 @@ for c in $ZS/common/*.c $ZS/decompress/*.c; do
     [[ $o -nt $c ]] || "${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -DZSTD_DISABLE_ASM -DXXH_NAMESPACE=ZSTD_ -DZSTD_LEGACY_SUPPORT=0 -I$ZS -c "$c" -o "$o" &
 done
 wait
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -Wno-unused-function -I$ZS -o "$OUT/game/F1_25.exe" fake_runtime.c "${ZOBJ[@]}" -lversion -luser32 -lws2_32
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -Wno-unused-function -I$ZS -o "$OUT/game/F1_25.exe" fake_runtime.c "${ZOBJ[@]}" -lversion -luser32 -lws2_32
 cat > "$OUT/slow_mod.c" <<'EOC'
 #include <windows.h>
 __declspec(dllexport) int SwoftyAddonInit(const void *api)

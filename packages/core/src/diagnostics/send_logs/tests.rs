@@ -847,7 +847,8 @@ fn bundles_the_running_games_logs_first_with_its_performance_summary() {
         "{addons}"
     );
     assert!(
-        on.contains("     1. SwoftyMod ") && on.contains(&format!("({}), built in", crate::builtin::CORE_ID)),
+        on.contains("     1. SwoftyMod ")
+            && on.contains(&format!("({}), built in", crate::addons::builtin::CORE_ID)),
         "{addons}"
     );
     assert!(
@@ -1186,7 +1187,7 @@ fn sends_the_career_editor_snapshot_a_game_that_cant_write_its_folder_left_in_th
         .unwrap()
         .set_modified(std::time::SystemTime::now() - Duration::from_secs(3600))
         .unwrap();
-    let kept = crate::addon_storage::addon_dir(&store.root, "swofty.career-editor").join("snapshot.json");
+    let kept = crate::addons::storage::addon_dir(&store.root, "swofty.career-editor").join("snapshot.json");
     put(&kept, r#"{"status":{"career":false}}"#);
     let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "20261020-101010");
     assert_eq!(
@@ -1290,8 +1291,8 @@ fn says_when_the_mod_loader_never_attached() {
         ),
         "{summary}"
     );
-    crate::quarantine::Report::new(
-        crate::quarantine::Stage::InGame,
+    crate::diagnostics::quarantine::Report::new(
+        crate::diagnostics::quarantine::Stage::InGame,
         vec!["version.dll".into()],
         &game,
     )
@@ -1308,12 +1309,14 @@ fn says_when_the_mod_loader_never_attached() {
         "{summary}"
     );
     assert!(!summary.contains("  found: "), "{summary}");
-    let mut blocked = crate::quarantine::Report::new(
-        crate::quarantine::Stage::InGame,
+    let mut blocked = crate::diagnostics::quarantine::Report::new(
+        crate::diagnostics::quarantine::Stage::InGame,
         vec!["version.dll".into()],
         &game,
     );
-    blocked.cause = Some(Box::new(crate::quarantine::Cause::SmartAppControl { seen: true }));
+    blocked.cause = Some(Box::new(crate::diagnostics::quarantine::Cause::SmartAppControl {
+        seen: true,
+    }));
     blocked.write(&store.root).unwrap();
     let summary = summary_of(&Bundle::collect_with(
         &store,
@@ -1336,8 +1339,8 @@ fn names_a_program_windows_blocked() {
     let root = tmp("blocked");
     let (store, game) = fake_data(&root);
     let cli = std::path::Path::new(r"C:\Swofty\bin\swofty.exe");
-    let block = crate::app_control::Block::from_code(cli, 4551).unwrap();
-    crate::launch::Failure::new(crate::launch::Cause::Blocked(block))
+    let block = crate::platform::app_control::Block::from_code(cli, 4551).unwrap();
+    crate::diagnostics::launch::Failure::new(crate::diagnostics::launch::Cause::Blocked(block))
         .write(&store.root)
         .unwrap();
     let summary = summary_of(&Bundle::collect_with(
@@ -1507,7 +1510,7 @@ fn lists_the_addons_by_name_in_load_order_with_their_source_and_settings() {
         r#"{"schema_version":1,"name":"test","addons":[{"id":"mod.cars","enabled":true}]}"#,
     );
     let pairs = r#"{"profile":"default","built_at":1.0,"pairs":[{"winner":"t.grid","loser":"mod.cars","database":1,"resources":0,"files":0,"items":["tracks.Track_3.laps"]}]}"#;
-    put(&crate::conflicts::path(&store, "default"), pairs);
+    put(&crate::profile::conflicts::path(&store, "default"), pairs);
     let bundle = Bundle::collect_with(&store, &report(&game), Limits::default(), "20261023-120000");
     let summary = summary_of(&bundle);
     let addons = summary
@@ -2054,10 +2057,13 @@ fn reads_both_ends_of_a_log_bigger_than_the_cap() {
     log.push_str("3 [overlay] first overlay frame submitted: 96 vertices\n");
     put(&path, &log);
     let head_only = read_head(&path, 1024).unwrap();
-    let missed = crate::overlay_guard::SessionOverlay::scan(&String::from_utf8_lossy(&head_only)).unwrap();
+    let missed =
+        crate::diagnostics::overlay_guard::SessionOverlay::scan(&String::from_utf8_lossy(&head_only))
+            .unwrap();
     assert!(!missed.drew);
     let ends = read_ends(&path, 1024, 1024).unwrap();
-    let seen = crate::overlay_guard::SessionOverlay::scan(&String::from_utf8_lossy(&ends)).unwrap();
+    let seen =
+        crate::diagnostics::overlay_guard::SessionOverlay::scan(&String::from_utf8_lossy(&ends)).unwrap();
     assert!(seen.armed && seen.drew);
     assert_eq!(read_ends(&path, 1 << 20, 1 << 20).unwrap(), log.as_bytes());
 }
