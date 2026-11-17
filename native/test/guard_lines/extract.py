@@ -1,9 +1,10 @@
 #!/usr/bin/env python3
 """Writes expected.txt: the off, needs and settle lines every SiteGuard logged before the guard registry, taken from
-the guard sources at the commit the registry started from (git show 2a13cf459:<path>).
+the guard sources at the commit the registry started from (git show 2a13cf459:<path>), and the off, hook failure and
+armed lines of the single-hook guards before they became MidHookSpecs (git show 157c412bf:<path>).
 
-Each guard's lines are the literal format strings of its old offer and commit functions with every compile-time
-constant substituted; the environment variable's value stays %s.
+Each guard's lines are the literal format strings of its old functions with every compile-time constant substituted;
+the environment variable's value and the hook error stay %s.
 """
 
 import re
@@ -12,6 +13,7 @@ import sys
 from pathlib import Path
 
 BASE = '2a13cf459'
+HOOK_BASE = '157c412bf'
 HERE = Path(__file__).resolve().parent
 ROOT = HERE.parents[2]
 
@@ -37,6 +39,13 @@ GUARDS = {
     'session_enter': 'session/session_enter.cpp',
     'team_slots': 'session/team_slots.cpp',
     'thrustmaster_lcd': 'session/thrustmaster_lcd.cpp',
+}
+
+HOOKS = {
+    'ai_curves': 'ai/ai_curves_guard.cpp',
+    'race_retirement': 'session/race_retirement_guard.cpp',
+    'teammate_pairs': 'session/teammate_pairs_guard.cpp',
+    'gp_weekend_track': 'tracks/gp_weekend_track_guard.cpp',
 }
 
 TOKEN = re.compile(r'\s+|//[^\n]*|"(?:[^"\\]|\\.)*"|[A-Za-z_][\w:]*|.', re.S)
@@ -85,6 +94,10 @@ def literal(toks):
 def value(toks, constants):
     if all(t.startswith('"') for t in toks):
         return literal(toks)
+    if toks and toks[0] == 'runtime::hook_error':
+        return '%s'
+    if len(toks) == 3 and toks[1:] == ['.', 'what'] and toks[0] in constants:
+        return constants[toks[0]]
     if len(toks) == 1 and toks[0] in constants:
         return constants[toks[0]]
     if len(toks) == 1 and toks[0] == 'v':
@@ -106,6 +119,28 @@ def render(args, constants, choose=None):
     return ''.join(p + (vals[i] if i < len(vals) else '') for i, p in enumerate(parts))
 
 
+def source(base, rel):
+    path = f'native/src/core/guards/{rel}'
+    return subprocess.run(['git', '-C', str(ROOT), 'show', f'{base}:{path}'], check=True, capture_output=True,
+                          text=True).stdout
+
+
+def string_constants(text):
+    constants = {m[0]: m[1] for m in re.findall(r'constexpr const char \*(\w+) = ("(?:[^"\\]|\\.)*");', text)}
+    constants.update(re.findall(r'const runtime::Sig (\w+)\{("(?:[^"\\]|\\.)*")', text))
+    return {k: literal([v]) for k, v in constants.items()}
+
+
+def hook_lines(stem, rel):
+    text = source(HOOK_BASE, rel)
+    constants = string_constants(text)
+    calls = log_calls(function(text, 'void setup()'))
+    pick = lambda mark: [render(c, constants) for c in calls if mark in literal(c[0])]
+    off, failed, armed = pick(' off ('), pick('the hook failed: '), pick(' armed: ')
+    assert len(off) == 1 and len(failed) == 1 and len(armed) == 1, stem
+    return [f'[hook {stem}]', f'off {off[0]}', f'failed {failed[0]}', f'armed {armed[0]}', '']
+
+
 def main():
     out = []
     for stem, rel in GUARDS.items():
@@ -122,8 +157,10 @@ def main():
         not_installed = render(commit[0], constants, 'not_installed')
         assert ' off (' in off and 'does not resolve' in needs, stem
         out += [f'[{stem}]', f'off {off}', f'unresolved {needs}', f'armed {armed}', f'not_installed {not_installed}', '']
+    for stem, rel in HOOKS.items():
+        out += hook_lines(stem, rel)
     (HERE / 'expected.txt').write_text('\n'.join(out))
-    print(f'wrote {len(GUARDS)} guards to {HERE / "expected.txt"}')
+    print(f'wrote {len(GUARDS)} site guards and {len(HOOKS)} hook guards to {HERE / "expected.txt"}')
 
 
 if __name__ == '__main__':

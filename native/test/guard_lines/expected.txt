@@ -123,3 +123,23 @@ off [tmlcd] thrustmaster lcd guard off (SWOFTY_TMLCD_GUARD=%s)
 unresolved [tmlcd] thrustmaster lcd guard off: needs site_Game_ThrustmasterLcd_EntrantRecord and site_Game_ThrustmasterLcd_SectorTail, which this build does not resolve
 armed [tmlcd] thrustmaster lcd guard armed: a sector entrant without a record leaves the LCD team name alone
 not_installed [tmlcd] thrustmaster lcd guard did not install (see the [core] lines)
+
+[hook ai_curves]
+off [ai] team curves guard off (SWOFTY_AI_CURVES_GUARD=%s)
+failed [ai] team curves guard: the hook failed: %s
+armed [ai] team curves guard armed: a player whose vehicle is not in the vehicle table no longer faults the AI build
+
+[hook race_retirement]
+off [race] retirement driver guard off (SWOFTY_RACE_RETIREMENT_GUARD=%s)
+failed [race] retirement driver guard: the hook failed: %s
+armed [race] retirement driver guard armed: a car that retires with no driver in the entrants system gets a retirement message with no driver name instead of faulting
+
+[hook teammate_pairs]
+off [strategy] teammate pairs guard off (SWOFTY_TEAMMATE_PAIRS_GUARD=%s)
+failed [strategy] teammate pairs guard: the hook failed: %s
+armed [strategy] teammate pairs guard armed: a team with more than two cars pairs its first two for strategy instead of throwing
+
+[hook gp_weekend_track]
+off [gp] weekend track guard off (SWOFTY_GP_WEEKEND_TRACK_GUARD=%s)
+failed [gp] weekend track guard: site_Game_TyreAllocationComponent_PresetTrackRead: the hook failed: %s
+armed [gp] weekend track guard armed: a Grand Prix whose remembered track has no track data record starts on melbourne instead of aborting in its tyre allocation

@@ -173,7 +173,7 @@ std::map<std::string, Expected> expected_lines(const std::filesystem::path &path
             continue;
         }
         size_t space = line.find(' ');
-        if (stem.empty() || space == std::string::npos)
+        if (stem.empty() || stem.rfind("hook ", 0) == 0 || space == std::string::npos)
             continue;
         std::string kind = line.substr(0, space), text = line.substr(space + 1);
         Expected &e = out[stem];
