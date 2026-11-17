@@ -56,23 +56,33 @@ pub(super) struct SteamClient<'a> {
     pub in_library: bool,
     pub steam_session: bool,
     pub detect: &'a mut dyn FnMut() -> client::Status,
-    pub starter: Option<client::Starter>,
+    /// How Steam is started, found only when it has to be.
+    pub starter: Box<dyn FnOnce() -> Option<client::Starter> + 'a>,
     pub wait: client::Wait,
 }
 
-impl SteamClient<'_> {
-    pub(super) fn for_launch<'d>(
-        start: ClientStart<'_>,
-        detect: &'d mut dyn FnMut() -> client::Status,
-    ) -> SteamClient<'d> {
-        let root = steam::find_game().map(|g| g.steam_root);
-        let hints: Vec<&Path> = root.as_deref().into_iter().chain([start.game]).collect();
+impl<'a> SteamClient<'a> {
+    /// Starts Steam whatever folder the game is in, looking for the client beside the game's Steam
+    /// install and `game`.
+    fn starting(game: Option<&'a Path>, detect: &'a mut dyn FnMut() -> client::Status) -> Self {
+        SteamClient {
+            in_library: true,
+            steam_session: false,
+            detect,
+            starter: Box::new(move || {
+                let root = steam::find_game().map(|g| g.steam_root);
+                let hints: Vec<&Path> = root.as_deref().into_iter().chain(game).collect();
+                client::starter(&hints)
+            }),
+            wait: client::Wait::default(),
+        }
+    }
+
+    pub(super) fn for_launch(start: ClientStart<'a>, detect: &'a mut dyn FnMut() -> client::Status) -> Self {
         SteamClient {
             in_library: steam::in_steam_library(start.game),
             steam_session: client::steam_session(),
-            detect,
-            starter: client::starter(&hints),
-            wait: client::Wait::default(),
+            ..Self::starting(Some(start.game), detect)
         }
     }
 
@@ -108,7 +118,7 @@ impl SteamClient<'_> {
             );
             return Ok(ClientReady::LeftClosed);
         }
-        let starter = self.starter;
+        let starter = (self.starter)();
         let timeout = self.wait.timeout;
         let note = std::cell::RefCell::new(note);
         let ready = client::ensure(
@@ -159,6 +169,18 @@ impl SteamClient<'_> {
     }
 }
 
+impl steam::Steam {
+    /// Brings Steam up and signed in whatever folder the game is in, as `swofty steam start` does.
+    pub fn start_client(
+        &self,
+        game: Option<&Path>,
+        note: &mut dyn FnMut(ClientNote),
+    ) -> Result<ClientReady, String> {
+        let mut detect = client::status;
+        SteamClient::starting(game, &mut detect).ensure(true, note)
+    }
+}
+
 /// What the EA app's start is, after the setting and the computer are read.
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(super) enum EaPolicy {
@@ -181,8 +203,9 @@ pub(super) fn ea_policy(handoff: bool, allowed: bool, running: bool) -> EaPolicy
 pub(super) struct EaClient<'a> {
     pub handoff: bool,
     pub running: &'a dyn Fn() -> bool,
-    /// The command that opens the EA app, and whether its exit code says it failed to.
-    pub opener: Option<(Command, bool)>,
+    /// The command that opens the EA app, and whether its exit code says it failed to; found only
+    /// when the EA app has to be started.
+    pub opener: Box<dyn FnOnce() -> Option<(Command, bool)> + 'a>,
     pub timeout: Duration,
     pub settle: Duration,
     pub poll: Duration,
@@ -194,9 +217,11 @@ impl EaClient<'_> {
         EaClient {
             handoff: handoff.is_some(),
             running: &ea_app::running,
-            opener: handoff
-                .as_ref()
-                .and_then(|h| ea_app::desktop_opener(h, crate::platform::run_as_admin::elevated())),
+            opener: Box::new(move || {
+                handoff
+                    .as_ref()
+                    .and_then(|h| ea_app::desktop_opener(h, crate::platform::run_as_admin::elevated()))
+            }),
             timeout: EA_START_TIMEOUT,
             settle: EA_SETTLE,
             poll: client::POLL_INTERVAL,
@@ -220,7 +245,7 @@ impl EaClient<'_> {
                     .into(),
             ),
             EaPolicy::Start => {
-                let Some((mut open, exit_tells)) = self.opener else {
+                let Some((mut open, exit_tells)) = (self.opener)() else {
                     note(ClientNote::Log(
                         "detected: closed; the launch link starts it".into(),
                     ));
@@ -326,7 +351,7 @@ mod tests {
             in_library: true,
             steam_session: false,
             detect,
-            starter: None,
+            starter: Box::new(|| None),
             wait: quick(),
         }
     }
@@ -410,7 +435,7 @@ mod tests {
         EaClient {
             handoff: true,
             running,
-            opener,
+            opener: Box::new(move || opener),
             timeout: Duration::from_millis(300),
             settle: Duration::ZERO,
             poll: Duration::from_millis(10),
@@ -473,6 +498,11 @@ mod tests {
             got,
             Err("the EA app didn't start within 0 s; open the EA app and press Play again".into())
         );
+        let (got, _) = run_ea(ea(&|| false, Some((Command::new("true"), true))), true);
+        assert_eq!(
+            got,
+            Err("the EA app didn't start within 0 s; open the EA app and press Play again".into())
+        );
         let calls = std::cell::Cell::new(0);
         let running = || {
             calls.set(calls.get() + 1);
@@ -481,5 +511,141 @@ mod tests {
         let (got, notes) = run_ea(ea(&running, Some((failing(), false))), true);
         assert_eq!(got, Ok(ClientReady::Started));
         assert_eq!(notes[1], ClientNote::Stage("Starting the EA app…"));
+    }
+
+    #[cfg(unix)]
+    /// The notes as the session log shows them, with the timings and exit codes as `#`.
+    fn lines(notes: &[ClientNote]) -> Vec<String> {
+        notes
+            .iter()
+            .map(|n| match n {
+                ClientNote::Log(l) => l
+                    .chars()
+                    .map(|c| if c.is_ascii_digit() { '#' } else { c })
+                    .collect(),
+                ClientNote::Stage(s) => format!("stage: {s}"),
+            })
+            .collect()
+    }
+
+    #[cfg(unix)]
+    fn states(seen: Vec<State>) -> impl FnMut() -> Status {
+        let mut seen = seen.into_iter();
+        let mut last = State::Stopped;
+        move || {
+            if let Some(s) = seen.next() {
+                last = s;
+            }
+            status(last)
+        }
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn starting_steam_logs_the_lines_the_cli_has_always_logged() {
+        let starter = || Some(client::Starter::Exe("true".into()));
+        let mut detect = states(vec![
+            State::Stopped,
+            State::Starting,
+            State::SigningIn,
+            State::Ready,
+        ]);
+        let (got, notes) = run(
+            SteamClient {
+                starter: Box::new(starter),
+                wait: client::Wait {
+                    timeout: Duration::from_secs(5),
+                    poll: Duration::from_millis(1),
+                },
+                ..steam(&mut detect)
+            },
+            true,
+        );
+        assert_eq!(got, Ok(ClientReady::Started));
+        assert_eq!(
+            lines(&notes),
+            [
+                "detected: not running",
+                "stage: Starting Steam…",
+                "starting Steam: true -silent",
+                "starting (the client hasn't registered yet) at #.# s",
+                "waiting for sign-in (no sign-in signal) at #.# s",
+                "stage: Waiting for Steam to sign in…",
+                "ready after #.# s (no sign-in signal)",
+            ]
+        );
+        let mut detect = states(vec![State::Unconfirmed]);
+        let (got, notes) = run(
+            SteamClient {
+                wait: client::Wait {
+                    timeout: Duration::from_millis(30),
+                    poll: Duration::from_millis(1),
+                },
+                ..steam(&mut detect)
+            },
+            true,
+        );
+        assert_eq!(got, Ok(ClientReady::Running));
+        assert_eq!(
+            lines(&notes),
+            ["detected: waiting for sign-in (no sign-in signal)"]
+        );
+        let mut detect = states(vec![State::Starting, State::Unconfirmed]);
+        let (got, notes) = run(
+            SteamClient {
+                wait: client::Wait {
+                    timeout: Duration::from_millis(30),
+                    poll: Duration::from_millis(1),
+                },
+                ..steam(&mut detect)
+            },
+            true,
+        );
+        assert_eq!(got, Ok(ClientReady::Unconfirmed));
+        assert_eq!(
+            lines(&notes),
+            [
+                "detected: starting (the client hasn't registered yet)",
+                "stage: Starting Steam…",
+                "waiting for sign-in (no sign-in signal) at #.# s",
+                "stage: Waiting for Steam to sign in…",
+                "no sign-in seen after # s; launching anyway",
+            ]
+        );
+    }
+
+    #[cfg(unix)]
+    #[test]
+    fn starting_the_ea_app_logs_the_lines_the_cli_has_always_logged() {
+        let command = |code: u8| {
+            let mut c = Command::new("sh");
+            c.args(["-c", &format!("exit {code}")]);
+            c
+        };
+        let calls = std::cell::Cell::new(0);
+        let running = || {
+            calls.set(calls.get() + 1);
+            calls.get() > 2
+        };
+        let (got, notes) = run_ea(ea(&running, Some((command(0), true))), true);
+        assert_eq!(got, Ok(ClientReady::Started));
+        assert_eq!(
+            lines(&notes),
+            [
+                "detected: closed; starting the EA app",
+                "stage: Starting the EA app…",
+                "running after #.# s",
+            ]
+        );
+        let (got, notes) = run_ea(ea(&|| false, Some((command(3), true))), true);
+        assert_eq!(got, Ok(ClientReady::ByLink));
+        assert_eq!(
+            lines(&notes),
+            [
+                "detected: closed; starting the EA app",
+                "stage: Starting the EA app…",
+                "the command did not open the EA app (exit status: #); the launch link starts it",
+            ]
+        );
     }
 }
