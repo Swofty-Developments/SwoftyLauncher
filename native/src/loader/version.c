@@ -148,48 +148,18 @@ static uintptr_t module_base(void)
     return image_base;
 }
 
-static int parse_pattern(const char *p, int *out, int max)
-{
-    int n = 0;
-    while (*p) {
-        while (*p == ' ')
-            p++;
-        if (!*p)
-            break;
-        if (n == max)
-            return -1;
-        if (*p == '?') {
-            out[n++] = -1;
-            while (*p == '?')
-                p++;
-        } else {
-            char *end;
-            long v = strtol(p, &end, 16);
-            if (end == p || end - p > 2 || v < 0 || v > 255)
-                return -1;
-            out[n++] = (int)v;
-            p = end;
-        }
-    }
-    return n;
-}
-
 static int is_readable(const MEMORY_BASIC_INFORMATION *m)
 {
     return m->State == MEM_COMMIT && (m->Protect & 0xEE) && !(m->Protect & (PAGE_GUARD | PAGE_NOACCESS));
 }
 
-static int scan(const char *section, const char *pattern, uintptr_t *out)
+typedef void (*RunFn)(const uint8_t *lo, const uint8_t *hi, void *ctx);
+
+/* Calls fn on each run of readable pages of the named section, or of every executable section, in address
+   order within a section; returns how many sections matched. */
+static int each_readable_run(const char *section, RunFn fn, void *ctx)
 {
-    int pat[256], n = parse_pattern(pattern, pat, 256), a1 = -1, a2 = -1;
-    uintptr_t first = 0;
-    int hits = 0, searched = 0;
-    if (out)
-        *out = 0;
-    if (n <= 0 || !pick_anchors(pat, n, &a1, &a2)) {
-        slog("scan: invalid pattern '%s'", pattern);
-        return 0;
-    }
+    int searched = 0;
     for (int s = 0; s < section_count; s++) {
         const Section *sec = &sections[s];
         if (section ? strcmp(sec->name, section) != 0 : !(sec->flags & IMAGE_SCN_MEM_EXECUTE))
@@ -207,23 +177,46 @@ static int scan(const char *section, const char *pattern, uintptr_t *out)
                 if (!run)
                     run = a;
             } else if (run) {
-                uintptr_t f = 0;
-                int h = scan_range((const uint8_t *)run, (const uint8_t *)a, pat, n, a1, a2, &f);
-                if (h && !hits)
-                    first = f;
-                hits += h;
+                fn((const uint8_t *)run, (const uint8_t *)a, ctx);
                 run = 0;
             }
             a = next;
         }
-        if (run) {
-            uintptr_t f = 0;
-            int h = scan_range((const uint8_t *)run, (const uint8_t *)a, pat, n, a1, a2, &f);
-            if (h && !hits)
-                first = f;
-            hits += h;
-        }
+        if (run)
+            fn((const uint8_t *)run, (const uint8_t *)a, ctx);
     }
+    return searched;
+}
+
+typedef struct {
+    const int *pat;
+    int n, a1, a2, hits;
+    uintptr_t first;
+} OneScan;
+
+static void scan_one_run(const uint8_t *lo, const uint8_t *hi, void *ctx)
+{
+    OneScan *o = (OneScan *)ctx;
+    uintptr_t f = 0;
+    int h = scan_range(lo, hi, o->pat, o->n, o->a1, o->a2, &f);
+    if (h && !o->hits)
+        o->first = f;
+    o->hits += h;
+}
+
+static int scan(const char *section, const char *pattern, uintptr_t *out)
+{
+    int pat[256], n = parse_pattern(pattern, pat, 256), a1 = -1, a2 = -1;
+    if (out)
+        *out = 0;
+    if (n <= 0 || !pick_anchors(pat, n, &a1, &a2)) {
+        slog("scan: invalid pattern '%s'", pattern);
+        return 0;
+    }
+    OneScan o = {pat, n, a1, a2, 0, 0};
+    int searched = each_readable_run(section, scan_one_run, &o);
+    int hits = o.hits;
+    uintptr_t first = o.first;
     if (!searched)
         slog("scan: section '%s' not found", section ? section : "<executable>");
     if (hits == 1) {
@@ -238,6 +231,61 @@ static int scan(const char *section, const char *pattern, uintptr_t *out)
         slog("scan %s [%s] -> 0 hits, rejected: need exactly 1", section ? section : "<exec>", pattern);
     }
     return hits;
+}
+
+typedef struct {
+    const MultiScan *ms;
+    int *hits;
+    uintptr_t *first;
+} ManyScan;
+
+static void scan_many_run(const uint8_t *lo, const uint8_t *hi, void *ctx)
+{
+    ManyScan *m = (ManyScan *)ctx;
+    multi_scan_range(m->ms, lo, hi, m->hits, m->first);
+}
+
+/* scan() for many patterns of one section in a single pass: hits[i] is what scan(section, patterns[i]) returns
+   and first[i] its first hit, and nothing is logged, so the caller logs each scan's line as it uses it. A
+   pattern that does not parse gets hits[i] = -1. Returns 0, having scanned nothing, when the section is not in
+   the exe or memory runs short. */
+__declspec(dllexport) int SwoftyLoaderScanMany(const char *section, const char *const *patterns, int count, int *hits,
+                                               uintptr_t *first)
+{
+    if (!section || count <= 0)
+        return 0;
+    int found = 0;
+    for (int s = 0; s < section_count && !found; s++)
+        found = !strcmp(sections[s].name, section);
+    if (!found)
+        return 0;
+    int *tokens = (int *)malloc(sizeof(int) * 256 * (size_t)count), *index = (int *)malloc(sizeof(int) * (size_t)count);
+    ScanPattern *pats = (ScanPattern *)malloc(sizeof(ScanPattern) * (size_t)count);
+    int *part_hits = (int *)calloc((size_t)count, sizeof(int));
+    uintptr_t *part_first = (uintptr_t *)calloc((size_t)count, sizeof(uintptr_t));
+    MultiScan ms;
+    int kept = 0, ok = tokens && index && pats && part_hits && part_first;
+    for (int i = 0; ok && i < count; i++) {
+        int *t = tokens + 256 * kept, n = parse_pattern(patterns[i], t, 256), a1, a2;
+        hits[i] = -1, first[i] = 0;
+        if (n <= 0 || !pick_anchors(t, n, &a1, &a2))
+            continue;
+        pats[kept].pat = t, pats[kept].n = n, pats[kept].a1 = a1, pats[kept].a2 = a2;
+        index[kept++] = i;
+    }
+    if (ok && (ok = multi_prepare(&ms, pats, kept))) {
+        ManyScan m = {&ms, part_hits, part_first};
+        each_readable_run(section, scan_many_run, &m);
+        multi_free(&ms);
+        for (int k = 0; k < kept; k++)
+            hits[index[k]] = part_hits[k], first[index[k]] = part_first[k];
+    }
+    free(tokens);
+    free(index);
+    free(pats);
+    free(part_hits);
+    free(part_first);
+    return ok;
 }
 
 static SwoftyApi api = {1, slog, module_base, scan, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL, NULL};

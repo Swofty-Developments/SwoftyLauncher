@@ -7,6 +7,7 @@
 
 #include <string>
 #include <unordered_map>
+#include <vector>
 
 namespace runtime::loader {
 
@@ -18,6 +19,10 @@ public:
     bool open(SwoftyApi *a, const std::wstring &dir, long long exe_bytes);
     void save();
     int scan(const char *section, const char *pattern, uintptr_t *out);
+    // Scans the patterns of one section that the scan cache does not know in a single pass of the loader's, when
+    // there are enough of them; until end_prescan, scan() answers each of them once from that pass.
+    void prescan(const std::string &section, const std::vector<std::string> &patterns);
+    void end_prescan();
     int addon_scan(const char *section, const char *pattern, uintptr_t *out);
     void read_section_map(const json::Value &doc, const std::string &file, const std::unordered_map<std::string, size_t> &uses,
                           bool any_binding);
@@ -27,8 +32,16 @@ public:
 
 private:
     bool refused(const char *section, const char *pattern, uintptr_t hit);
+    int scan_now(const char *section, const char *pattern, uintptr_t *out);
+
+    struct Prescanned {
+        int hits;
+        uintptr_t first;
+    };
 
     int (*loader_scan_)(const char *, const char *, uintptr_t *) = nullptr;
+    int (*loader_scan_many_)(const char *, const char *const *, int, int *, uintptr_t *) = nullptr;
+    std::unordered_map<std::string, Prescanned> prescanned_;
     scancache::Cache cache_;
     std::wstring cache_path_, cache_dir_;
     const char *cache_name_ = "swofty\\cache";
