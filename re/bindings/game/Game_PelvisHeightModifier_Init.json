@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PelvisHeightModifier_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401d3140",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401d3140.c;xref:0x1401b20a5",
+  "notes": "PelvisHeightModifier setup for a driver actor: looks up bone 'Bip01' (or a configured bone) in the actor skeleton, WARN 'Scene/Art Data Error => PelvisHeightModifier is unable to find [..] in [..] - Actor %s in Scene %s'. Referenced from Game_DriverActorSpawner_MakeSceneSetup (0x1401b20a5) and a modifier factory table (0x1455e3aa0). Addon: custom driver rigs must keep the Bip01 pelvis bone. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2795)"
+ },
+ "signature": {
+  "id": "game.pelvis_height_modifier_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 40 07 00 00 48 8B 41",
+  "match": "0x1401d3140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401d3140",
+  "kind": "func_start",
+  "names": [
+   "Game_PelvisHeightModifier_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Game_PelvisHeightModifier_Init",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401d3140.c;xref:0x1401d3140",
+   "notes": "V2795 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

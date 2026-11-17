@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Purchase_SelectTierButton",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418df8e0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_Purchase_SelectTierButton(void *popup, int32_t tier_id)",
+  "evidence": "decomp:re/decomp/1418df8e0.c;xref:0x1419e4f16;xref:0x141d219fd",
+  "notes": "myteam-g2: Scans the tier button list ((popup+0xb30)+0x50..+0x58) for tier_id and selects it; called when a purchase tier is applied or the popup refreshes. Shop UI."
+ },
+ "signature": {
+  "id": "ui.purchase_select_tier_button",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 48 8D 81 30 0B 00 00",
+  "match": "0x1418df8e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418df8e0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Purchase_SelectTierButton"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1418df8e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418df8e0.c;xref:0x1419e4f16",
+   "notes": "V9838 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

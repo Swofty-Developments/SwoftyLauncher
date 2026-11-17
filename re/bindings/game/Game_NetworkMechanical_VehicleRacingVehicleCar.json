@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMechanical_VehicleRacingVehicleCar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432495e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-MECHANICAL",
+  "notes": "named from its log messages (channel NETWORK-MECHANICAL): '%s: Vehicle %s has no racing::vehicle::car.'"
+ },
+ "signature": {
+  "id": "game.network_mechanical_vehicle_racing_vehicle_car",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 78 29 BC 24 B0 01 00 00 C5 78 29 B4 24 A0 01 00 00 C5 78 29 AC 24 90 01 00 00 C5 78 29 A4 24 80 01 00 00 C5 78 29 9C 24 70 01 00 00 C5 78 29 94 24 60 01 00 00 C5 78 29 8C 24 50 01 00 00 C5 78 29 84 24 40 01 00 00 C5 F8 29 BC 24 30 01 00 00 C5 F8 29 B4 24 20 01 00 00 80 79 70 00",
+  "match": "0x1432495e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432495e0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMechanical_VehicleRacingVehicleCar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432495e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1432495e0.c;xref:0x14305f982",
+   "notes": "V5751 Better name Game_VehicleMechanicalManager_AttachVehicle: 11KB function = VehicleMechanicalManager::attachVehicle (pretty string present); fetches ghost/wing/suspension/rear wing/tyre/session result components, builds state; the logged no-racing::vehicle::car message is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1432495e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432495e0.c;xref:0x14305f981",
+   "notes": "V7025 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

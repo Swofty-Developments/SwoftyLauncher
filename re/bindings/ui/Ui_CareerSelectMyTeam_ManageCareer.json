@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_CareerSelectMyTeam_ManageCareer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a244b0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/141a244b0.c;xref:0x145726fd0",
+  "notes": "myteam-g1: Select card handler referencing eMyTeam enum, lng_save_slot_name_my_team, to_manage_career_my_team."
+ },
+ "signature": {
+  "id": "ui.career_select_my_team_manage_career",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 CE 81 FA 02 4A 3C 35",
+  "match": "0x141a244b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a244b0",
+  "kind": "func_start",
+  "names": [
+   "Ui_CareerSelectMyTeam_ManageCareer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141a244b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a244b0.c;xref:0x145726fd0",
+   "notes": "V9921 Select card handler with eMyTeam/eDriver, lng_save_slot_name_my_team, to_manage_career_my_team; driver counterpart also present."
+  }
+ ],
+ "proofs": []
+}

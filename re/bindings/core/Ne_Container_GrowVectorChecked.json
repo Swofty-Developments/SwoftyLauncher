@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Container_GrowVectorChecked",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ed51c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ed51c0.c;xref:0x143beff19",
+  "notes": "Checked vector growth with source-path assert string (...ego/source/base/types/containers), 0x28f5c28f5c28f5c3 element-size divide. Caller Render_Texture_CreateFromResourceCore."
+ },
+ "signature": {
+  "id": "core.container_grow_vector_checked",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 74 24 38 66 66 66 66 2E 0F",
+  "match": "0x143beff19",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143ed51c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Container_GrowVectorChecked"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143ed51c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ed51c0.c;xref:0x143beff19",
+   "notes": "V8289 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLapsStorageSystem_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f8fd40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name GhostLapsStorageSystem (class from the log channel); log channel GHOSTLAP-TRACE: '%s()'"
+ },
+ "signature": {
+  "id": "game.ghost_laps_storage_system_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 4C 89 8C 24 A8 00 00 00 4D 89 C6",
+  "match": "0x142f8fd40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f8fd40",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLapsStorageSystem_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f8fd40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f8fd40.c;xref:0x1407f1096",
+   "notes": "V5698 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

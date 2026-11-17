@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingAttribs_UpdateRatings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315ae90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionMatchingAttribs::updateRatings; log channel NETWORK-ATTRIBUTES: 'void network::GameSessionMatchingAttribs::updateRatings(NEint) | %s: [%d, %d].'"
+ },
+ "signature": {
+  "id": "game.game_session_matching_attribs_update_ratings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 48 8B 05 ?? ?? ?? ?? 48 8B 40 20",
+  "match": "0x14315ae90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315ae90",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingAttribs_UpdateRatings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14315ae90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14315ae90.c",
+   "notes": "V6001 Per-frame update: changePlayerState/changeSessionState logging and SafetyRating write; ratings log only one line. Better: Game_GameSessionMatchingAttribs_Update; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14315ae90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315ae90.c",
+   "notes": "V7000 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Find_UpgradeEntryByKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418730b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Find(void *ctx, void *out, void *key_struct)",
+  "evidence": "decomp:re/decomp/1418730b0.c;xref:0x141c49d29;xref:0x141c53dfd;xref:0x141c5a74a",
+  "notes": "myteam-g2: Robin-Hood map probe (Ne_RobinHoodMap_U64_FindIndex) on ctx+0x20..0x38 for an upgrade/part key; TLS thread-init cached default. Read-only; used by RnD potential pie, fit upgrades list, contract send."
+ },
+ "signature": {
+  "id": "career.find_upgrade_entry_by_key",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 4C 89 C1 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 47 18 48 3B 47 20 0F 84 ?? ?? ?? ?? 48 8B 58 08",
+  "match": "0x1418730b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418730b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Find_UpgradeEntryByKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1418730b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418730b0.c;xref:0x141c49d29",
+   "notes": "V9828 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

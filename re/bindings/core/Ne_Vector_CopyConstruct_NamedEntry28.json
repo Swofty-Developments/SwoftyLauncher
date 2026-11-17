@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Vector_CopyConstruct_NamedEntry28",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f34d10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Vector_CopyConstruct_NamedEntry28(void *dst, void *src)",
+  "evidence": "decomp:re/decomp/140f34d10.c;xref:0x140e6da7c;xref:0x140e6e87c;xref:0x140e6f67c",
+  "notes": "myteam-g2: Copy-constructs a vector of 0x28-byte entries (small-string name + value) with allocator at src->vtable+0x18; each entry reserved with Ne_String_Reserve. Generic container code behind the facility / event param lists."
+ },
+ "signature": {
+  "id": "core.vector_copy_construct_named_entry28",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8D 05",
+  "match": "0x140f34d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f34d10",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vector_CopyConstruct_NamedEntry28"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f34d10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f34d10.c;xref:0x140e6da7c",
+   "notes": "V9574 Allocates n*0x28, constructs each entry (vtable 145612ec0 inline string 0x10 + copy) from source; allocator taken from src."
+  }
+ ],
+ "proofs": []
+}

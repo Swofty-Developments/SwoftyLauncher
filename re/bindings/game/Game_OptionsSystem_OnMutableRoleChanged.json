@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OptionsSystem_OnMutableRoleChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ad7170",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_OptionsSystem_OnMutableRoleChanged;xref:0x142ad737a",
+  "notes": "cxx=game::OptionsSystem::onMutableRoleChanged; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.options_system_on_mutable_role_changed",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC C0 00 00 00 89 D7 48",
+  "match": "0x142ad7170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ad7170",
+  "kind": "func_start",
+  "names": [
+   "Game_OptionsSystem_OnMutableRoleChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142ad7170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ad7170.c",
+   "notes": "V5013 name/strings/body match; log-based claim holds for this function size (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

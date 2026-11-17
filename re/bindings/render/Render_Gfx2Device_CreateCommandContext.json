@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_CreateCommandContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439c8bb0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439c8bb0.c;xref:0x140151e7e",
+  "notes": "Registers a resource into set +0x4ae0 via 0x1439d8b40 and copies descriptors into arrays at +0xbc0..+0xbd8. Called from Render_Gfx2Device_Initialise and Game_Read_RendererGfxConfig. Hypothesis (view/sampler descriptor registration). vp2-verify partial/disagree"
+ },
+ "signature": {
+  "id": "render.gfx2_device_track_resource_set4ae0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D3 48 89 CE 48 8B 89 68 26 00 00",
+  "match": "0x1439c8bb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439c8bb0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_CreateCommandContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439c8bb0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1439c8bb0.c;xref:0x140151e7e",
+   "notes": "V7748 better name Render_Gfx2Device_CreateCommandContext: allocs a 0x40220-byte object (same layout used by FlushResourceBarriers: +0x20150, +0x4020c) via ctor 0x1439d8b40 and push_backs it to +0xbc8 vector, registers in +0x4ae0; not descriptors"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteResourcesPoints",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143738540",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143738540.c;xref:0x143724cb6,0x143749e5d",
+  "notes": "EventWriteResourcesPointsEarned + ResourcesPointsSpent (career resource points). Iterates the registered StatisticDataProviders (skips disabled ones) and writes stat keys built from GameplayModeId/SectionId/DriverStatId/IsInTeamCareer etc. Addon: listen to these stat/achievement events (career/progression telemetry) or add own stat keys. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2504)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_resources_points",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 02 00 00 48 8B 81 B0 00",
+  "match": "0x143738540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143738540",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteResourcesPoints"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_StatEvent_WriteResourcesPoints",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143738540.c;xref:0x143738540",
+   "notes": "V2504 ResourcesPointsEarned + ResourcesPointsSpent"
+  }
+ ],
+ "proofs": []
+}

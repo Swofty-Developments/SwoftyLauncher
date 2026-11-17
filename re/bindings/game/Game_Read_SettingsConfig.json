@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_SettingsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141cef700",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: settings.bloom.selected_option, settings.brightness.selected_option, settings.camera_roll.selected_option, settings.camera_select.selected_option, settings.capture_size.selected_option, settings.capture_type.selected_option, settings.colour_grade.selected_option, setting'"
+ },
+ "signature": {
+  "id": "game.read_settings_config",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 81 B0 08 00 00",
+  "match": "0x141cef700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141cef700",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_SettingsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141cef700",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141cef700.c",
+   "notes": "V4964 Photo mode settings VM construct: 25 settings.*.selected_option refs and wires the OnSelectionChanged/ColourGrade/Exposure/Brightness/Saturation/Contrast handlers (callers of 0x141d05b80..0x141d06f00 are all here). Better: Game_PhotoModeViewModel_Construct (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141cef700",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141cef700.c",
+   "notes": "V7255 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

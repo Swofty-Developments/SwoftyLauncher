@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameInputModule_DeviceDataReadCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a7c680",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameInputModule::deviceDataReadCallback; log channel INPUT: 'Snap GameInputModule::deviceDataReadCallback'"
+ },
+ "signature": {
+  "id": "game.game_input_module_device_data_read_callback",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 49 89 CC",
+  "match": "0x142a7c680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a7c680",
+  "kind": "func_start",
+  "names": [
+   "Game_GameInputModule_DeviceDataReadCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a7c680",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a7c680.c;xref:0x141da8e07",
+   "notes": "V4973 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

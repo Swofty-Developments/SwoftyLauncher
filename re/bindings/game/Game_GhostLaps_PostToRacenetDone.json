@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLaps_PostToRacenetDone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f8f3c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-GHOSTLAPS",
+  "notes": "named from its log messages (channel GHOSTLAPS): 'Post ghost to racenet http transaction {%d} complete, statusCode %d.'"
+ },
+ "signature": {
+  "id": "game.ghost_laps_post_to_racenet_done",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 80 7C 24 70 00",
+  "match": "0x142f8f3c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f8f3c0",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLaps_PostToRacenetDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f8f3c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f8f3c0.c;xref:0x142f8dc8b",
+   "notes": "V5695 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

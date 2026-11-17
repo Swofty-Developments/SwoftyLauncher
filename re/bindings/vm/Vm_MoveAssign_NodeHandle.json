@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_MoveAssign_NodeHandle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442bc170",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "-",
+  "evidence": "pat:handle-unlink-next+8-prev;xref:0x1408126d0,0x14099a1e3,0x14099a2bb,0x141f45519;kb:subsystems/rnd_ui.md#pie-object",
+  "notes": "VM node handle {vtable,node,next,prev} move-assign, 2323 E8 callers: if dst.node != src.node and dst.node != 0, unlink dst ([next+8] = prev) and release, then take src. Faults at mov [rdx+8],rcx @0x1442bc19d when dst is unconstructed memory."
+ },
+ "signature": {
+  "id": "vm.move_assign_node_handle",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 01 48 8B 0A 48 39 C8 0F 84 ?? ?? ?? ?? 48 89 D7 48",
+  "match": "0x1442bc170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442bc170",
+  "kind": "func_start",
+  "names": [
+   "Vm_MoveAssign_NodeHandle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1442bc170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442bc170.c;xref:0x1408126d0",
+   "notes": "V6579 verified: dst!=src, [next+8]=prev at 0x1442bc19d, release call"
+  }
+ ],
+ "proofs": []
+}

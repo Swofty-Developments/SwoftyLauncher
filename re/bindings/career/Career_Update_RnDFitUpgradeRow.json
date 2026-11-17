@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Update_RnDFitUpgradeRow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c5b260",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Update_RnDFitUpgradeRow(void * self)",
+  "evidence": "decomp:re/decomp/141c5b260.c;xref:0x141c5a618;xref:0x141c5ac3d;xref:0x141c5b09b",
+  "notes": "myteam-g1: Refreshes one \"update_upgrade\" row on the fit screen."
+ },
+ "signature": {
+  "id": "career.update_rn_dfit_upgrade_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 09 00 00 48 89 CE",
+  "match": "0x141c5b260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c5b260",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_RnDFitUpgradeRow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c5b260",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c5b260.c;xref:0x141c5a618;xref:0x141c5ac3d",
+   "notes": "V9974 Dispatches update_upgrade on fit rows (drivers_performance, duration)."
+  }
+ ],
+ "proofs": []
+}

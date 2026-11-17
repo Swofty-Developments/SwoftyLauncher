@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownFormVM_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14209a120",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/14209a120.c;xref:0x145768708",
+  "notes": "myteam-g1: Init of the renown and form view model (lng_rf_renown)."
+ },
+ "signature": {
+  "id": "career.renown_form_vm_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 48 89 CE 48 8D 99 70 02 00 00",
+  "match": "0x14209a120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14209a120",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownFormVM_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14209a120",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14209a120.c;xref:0x145768708",
+   "notes": "V10048 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

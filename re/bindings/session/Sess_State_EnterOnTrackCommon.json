@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_State_EnterOnTrackCommon",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d55b80",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d55b80.c;xref:0x142d55b39,0x142d5d475,0x142d672c6,0x142e01d3a,0x142e0861e",
+  "notes": "Shared on-track session state enter (once, this+0xee8): resets replay state, practice/quali flags, registers trigger_mid_session_save / trigger_mission_load / trigger_checkpoint_load handlers, VR monitor transitions; when online (0x14077c790(session,1)) enables progress replication [this+0xde0]+0x4f1=1 (log PROGRESS REPLICATION ENABLED); then 0x142d60f30 / 0x142d61070. Addon: progress-replication enable point; byte +0x4f1 of the progress system = replication on."
+ },
+ "signature": {
+  "id": "session.state_enter_on_track_common",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 70 02 00 00 C5 F8",
+  "match": "0x142d55b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d55b80",
+  "kind": "func_start",
+  "names": [
+   "Sess_State_EnterOnTrackCommon"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Sess_State_EnterOnTrackCommon",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d55b80.c;xref:0x142e07e80",
+   "notes": "V2729 once flag +0xee8, online check 14077c790 then [this+0xde0]+0x4f1=1, then 142d60f30/142d61070 confirmed"
+  }
+ ],
+ "proofs": []
+}

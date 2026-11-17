@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_DeviceDataLoader_Request",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a76ae0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-INPUT",
+  "notes": "named from its log messages (channel INPUT): 'GameDeviceDataLoader - Starting request for \"%s\" | GameDeviceDataLoader - Calling device data callback | GameDeviceDataLoader - Finished request for \"%s\" | GameInputModule::clearInputSnapshot() | Game'"
+ },
+ "signature": {
+  "id": "game.device_data_loader_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 78 29 84 24 F0 01 00 00 C5 F8 29 BC 24 E0 01 00 00 C5 F8 29 B4 24 D0 01 00 00 49 89 CD",
+  "match": "0x142a76ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a76ae0",
+  "kind": "func_start",
+  "names": [
+   "Game_DeviceDataLoader_Request"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a76ae0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142a76ae0.c",
+   "notes": "V4966 8.4KB GameInputModule::update (m_pendingRefresh, refreshData, clearInputSnapshot) with DeviceDataLoader request inlined; better Game_GameInputModule_Update (vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142a76ae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a76ae0.c",
+   "notes": "V6878 1328 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

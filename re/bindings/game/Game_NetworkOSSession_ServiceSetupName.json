@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkOSSession_ServiceSetupName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143070a80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-OS-SESSION",
+  "notes": "named from its log messages (channel NETWORK-OS-SESSION): 'Service setup with name: %s'"
+ },
+ "signature": {
+  "id": "game.network_os_session_service_setup_name",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6F B8 E7 00 00 00",
+  "match": "0x143070a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143070a80",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkOSSession_ServiceSetupName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143070a80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143070a80.c;xref:0x14306f727",
+   "notes": "V5557 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

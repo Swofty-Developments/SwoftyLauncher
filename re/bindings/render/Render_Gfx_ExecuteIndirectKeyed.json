@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_ExecuteIndirectKeyed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a03620",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a03620.c;xref:0x143a015f7",
+  "notes": "Indirect execute with a command signature looked up per pipeline key: FNV-1a over the 8 key bytes at ctx+0x12e0 -> hash map (param_2+0x18..0x48) -> signature handle, then context vcall +0x148(signature, maxCount, argBuf, argOff, countBuf, countOff). Hypothesis (ExecuteIndirect with count buffer)."
+ },
+ "signature": {
+  "id": "render.gfx_execute_indirect_keyed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4D 89 CF 44 89 C6 49 89",
+  "match": "0x143a03620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a03620",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_ExecuteIndirectKeyed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a03620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a03620.c;xref:0x143a015f7",
+   "notes": "V8522 FNV hash of key at +0x12e0 to signature map, vcall +0x148"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Engine_ComputeNetTorque",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144688ff0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144688ff0.c;xref:0x14450e22f,0x14468ef3b",
+  "notes": "(tank, ?, rate) fuel flow/consumption step: curve +0x5d8, config +0x538 (+0x680, +0x698), +0x8c0/+0x8c8, +0x252c, obfuscated capacity [+0x548]+0x150^+0x158. Hypothesis. Caller: Car_FuelTank_Step. (2 xref site(s), fb.py callers.) lb23-verify partial"
+ },
+ "signature": {
+  "id": "car.fuel_tank_compute_flow",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 78 29 5C 24 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 F2 C5 78",
+  "match": "0x144688ff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144688ff0",
+  "kind": "func_start",
+  "names": [
+   "Car_Engine_ComputeNetTorque"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x144688ff0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144688ff0.c;xref:0x14468ef3b",
+   "notes": "V6805 Param is the Engine object (+0x5d8 curve, +0x28 power spline, FuelECU scales) and the return value is net engine torque, not fuel flow; better name Car_Engine_ComputeNetTorque."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144688ff0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144688ff0.c;xref:0x14450e22f",
+   "notes": "V7251 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

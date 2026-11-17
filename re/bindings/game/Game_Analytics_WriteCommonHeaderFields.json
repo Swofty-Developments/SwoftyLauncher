@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_WriteCommonHeaderFields",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14055d490",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Analytics_WriteCommonHeaderFields(void *record, void *json_writer, void *ctx)",
+  "evidence": "decomp:re/decomp/14055d490.c;xref:0x1403dccb8;xref:0x1403e912d;xref:0x1403ea15d",
+  "notes": "myteam-g2: Writes the common analytics header: userID, config, platform, subplatform, trial, free_weekend, country, date, entrantsList, gameMode, saveSlotGUID, crossplay flags, nucleusId, ea_play_subscription, is_f1_world, f1_world_tech_level, safety_rating_grade, productName, buildType, playerFacingGameMode, owns_26_dlc. Telemetry only."
+ },
+ "signature": {
+  "id": "game.analytics_write_common_header_fields",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 4C 89 C3 48 89 D6 48 89 CF 48 83 79 68 10",
+  "match": "0x14055d490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14055d490",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_WriteCommonHeaderFields"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x14055d490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14055d490.c;str:\"entrantsList\"",
+   "notes": "V9468 Writes userID, config, platform, subplatform, trial, free_weekend, country, date, entrantsList, gameMode, saveSlotGUID, crossplay, nucleusId, ea_play_subscription, is_f1_world, buildType, owns_26_dlc (string referenced at 0x1456356b1)."
+  }
+ ],
+ "proofs": []
+}

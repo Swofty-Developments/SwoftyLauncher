@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Tod_StitchWeatherScenario",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14461d300",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-WEATHER_LOGIC_V;decomp:re/decomp/14461d300.c;xref:0x14461ca02",
+  "notes": "Log channel WEATHER_LOGIC_V: '------ Stitching weather scenario for %s. totalTransitionCount: %u, internalStateCount: %u' | '  vv Transitions' | '  vv States'"
+ },
+ "signature": {
+  "id": "session.weather_stitch_scenario",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 06 00 00 C5 78 29 B4 24 D0 06 00 00",
+  "match": "0x14461d300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14461d300",
+  "kind": "func_start",
+  "names": [
+   "Sess_Tod_StitchWeatherScenario"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb5-verify",
+   "kind": "func",
+   "item": "Sess_Tod_StitchWeatherScenario",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14461d300.c;xref:0x14461ca02",
+   "notes": "V1983 lea xrefs to 'Stitching', '  vv Transitions', '  vv States' strings"
+  }
+ ],
+ "proofs": []
+}

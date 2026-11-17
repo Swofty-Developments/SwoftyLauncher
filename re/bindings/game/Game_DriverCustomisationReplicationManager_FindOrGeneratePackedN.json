@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCustomisationReplicationManager_FindOrGeneratePackedN",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14313b680",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=DriverCustomisationReplicationManager::findOrGeneratePackedNetStatId; log channel NETWORK-ENTRANTS: 'game::DriverCustomisationStatId::PackedStatId network::DriverCustomisationReplicationManager::findOrGeneratePackedNetStatId(const PlayerDescription &, game::Dri | %s : Attempt to add a new network rep'"
+ },
+ "signature": {
+  "id": "game.driver_customisation_replication_manager_find_or_generate_packed_n",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 B8 F0 C5 00 00",
+  "match": "0x14313b680",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14313b680",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCustomisationReplicationManager_FindOrGeneratePackedN"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x14313b680",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14313b680.c;xref:0x140fe0986",
+   "notes": "V5890 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Set_FacilityPhaseLabel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423e2ef0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *view)",
+  "evidence": "decomp:re/decomp/1423e2ef0.c;xref:0x1423e07b2;xref:0x1423e0e8a;xref:0x1423e0efe",
+  "notes": "myteam-g1: Writes the lng_facility_phase text."
+ },
+ "signature": {
+  "id": "career.set_facility_phase_label",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 60 44 89 C3",
+  "match": "0x1423e2ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423e2ef0",
+  "kind": "func_start",
+  "names": [
+   "Career_Set_FacilityPhaseLabel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423e2ef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423e2ef0.c",
+   "notes": "V10192 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

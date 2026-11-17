@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineSyncSyncOnePolicy_OnSynchronisationStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ff9720",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_Championship_CareerOnlineSynchroniserSyncOnePolicy_OnSynchronisationSt;xref:0x140ff97ae",
+  "notes": "cxx=game::championship::CareerOnlineSynchroniserSyncOnePolicy::onSynchronisationStart; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.career_online_sync_sync_one_policy_on_synchronisation_start",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 41 18 48 8B 80",
+  "match": "0x140ff9720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ff9720",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineSyncSyncOnePolicy_OnSynchronisationStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x140ff9720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff9720.c",
+   "notes": "V4527 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Populate_RnDPieSlices",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f48030",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f48030.c;kb:subsystems/rnd_ui.md#pie",
+  "notes": "Per-slice populate for Career_Build_RnDPieOverview (also called from the 0x141f4a760 callback). Loops k_Career_UpgradeDeptCodeTable; code guard cmp r14d,3/ja @0x141f48218, slot index cap cmp r13d,4/ja @0x141f4821e (already permits 5), 4-entry jump table (bound cmp r14d,3 @0x141f4822b, table @0x141f48231, default = error_department/white). Colours are an INLINE switch (aero 0xffeead00 @0x141f4858e, chassis 0xff3ec58d, maintenance 0xff16deff, engine 0xff7a2aed). Names lng_rnd_dept_%s / _overview_description from the matched icon name. Slot = [this+0x670] + 0x80 + idx*0x220 (@0x141f48327); builds a temp with Career_Build_RnDPieSlot @0x141f484bd, move-assigns it in with Career_MoveAssign_RnDPieSlot @0x141f484c8, destroys the temp @0x141f484d0. Sector VM nodes by name-hash under rnd_wheel_icon (empty handle on a miss); highlight clamp 3 < g_Career_RnDOverviewSelectedDept. A 5th slot must be CONSTRUCTED after Career_Construct_RnDPieObject and destroyed on every destroy path before the guard is relaxed: relaxing the guard over an unconstructed slot faults in Vm_MoveAssign_NodeHandle at career load (rnd_ui.md#pie-object)."
+ },
+ "signature": {
+  "id": "career.populate_rn_d_pie_slices",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 03 00 00 C5 F8 29 BC 24",
+  "match": "0x141f48030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f48030",
+  "kind": "func_start",
+  "names": [
+   "Career_Populate_RnDPieSlices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141f48030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f47825",
+   "notes": "V5236 Verified cmp r14d,3 @0x141f48218, cmp r13d,4 @0x141f4821e, jump table @0x141f48231, colours inline, BuildPieSlot @0x141f484bd"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141f48030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f48218;xref:0x141f4821e;xref:0x141f484c8;xref:0x141f4858e",
+   "notes": "V9201 Guards cmp r14d,3 and cmp r13d,4, colour 0xffeead00 at 0x141f4858e, imul 0x220 slot stride, move-assign call at 0x141f484c8 and destructor-like call at 0x141f484d0 all present."
+  }
+ ],
+ "proofs": []
+}

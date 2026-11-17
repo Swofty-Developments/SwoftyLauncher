@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownFormSmallWidget_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423d3240",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/1423d3240.c;xref:0x1457860e8",
+  "notes": "myteam-g1: Updates small renown/form widgets (#overrides.team_hq.renown_and_form.form_small[%d], renown_icon_small[%d], lng_rf_renown_level_%d)."
+ },
+ "signature": {
+  "id": "career.renown_form_small_widget_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 03 00 00 C5 F8 29 B4 24 30 03 00 00 49 89 CF 0F B6 81 28 06 00 00",
+  "match": "0x1423d3240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423d3240",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownFormSmallWidget_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423d3240",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423d3240.c",
+   "notes": "V10180 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

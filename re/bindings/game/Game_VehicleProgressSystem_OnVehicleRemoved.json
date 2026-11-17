@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressSystem_OnVehicleRemoved",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f077f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f077f0.c;xref:0x142f0791d",
+  "notes": "Removes all pending progress messages (+0x100..+0x108) for vehicle msg+0x10 and resets that vehicle's progress entry ([sys+0x38][idx], 0x144602d90); logs out-of-range on PROGRESS. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2483)"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_system_on_vehicle_removed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8B 99",
+  "match": "0x142f077f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f077f0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressSystem_OnVehicleRemoved"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_VehicleProgressSystem_OnVehicleRemoved",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f077f0.c;xref:0x142f077f0",
+   "notes": "V2483 erases pending entries for vehicle msg+0x10, resets entry via 144602d90, out-of-range PROGRESS log"
+  }
+ ],
+ "proofs": []
+}

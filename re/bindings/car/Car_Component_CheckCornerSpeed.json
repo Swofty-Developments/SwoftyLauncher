@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Component_CheckCornerSpeed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f2a0d0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-VEHICLE_COMPONENT",
+  "notes": "named from its log messages (channel VEHICLE_COMPONENT): 'We have somehow calculated an impossible speed for a corner, delta time is: %f'"
+ },
+ "signature": {
+  "id": "car.component_check_corner_speed",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 80 79 18 00",
+  "match": "0x142f2a0d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f2a0d0",
+  "kind": "func_start",
+  "names": [
+   "Car_Component_CheckCornerSpeed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f2a0d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f2a0d0.c;xref:0x142f2d185",
+   "notes": "V5608 Per-frame vehicle component update of corner time list (+0x9cc8..+0x9d38, posts messages); impossible-speed log is only the delta<=0 branch; better Car_Component_UpdateCornerTimes"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f2a0d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f2a0d0.c;xref:0x142f2d185",
+   "notes": "V6913 330 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

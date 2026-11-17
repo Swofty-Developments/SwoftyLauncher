@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Libpng_SetjmpCleanup_1447a0cf0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447a0cf0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447a0cf0.c;xref:0x143915712",
+  "notes": "Uses Ne_Crt_Setjmp then frees the png jmp buffer (via user free fn at +0x410 or default). 175 bytes, callers Ne_Libpng_WriteImage (0x143915712), 0x1447a7848. Hypothesis."
+ },
+ "signature": {
+  "id": "core.libpng_setjmp_cleanup_1447a0cf0",
+  "section": ".xtls",
+  "pattern": "55 56 57 53 48 81 EC 28 01 00 00 48 8D AC 24 80",
+  "match": "0x1447a0cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447a0cf0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Libpng_SetjmpCleanup_1447a0cf0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1447a0cf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447a0cf0.c;xref:0x143915712",
+   "notes": "V8405 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

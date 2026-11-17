@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Chassis_ReadAxleWheelParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144633400",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144633400.c;xref:0x14462ec72,0x144632088",
+  "notes": "Reads front/rear wheel params (+0x18c, +0x194, type +0x2b4==2 table 0x1455d8b30) from wheel objects [car+0x580]+0x70/+0x78 and passes them to 0x14475ce00. Callers: Car_Parse_Chassis. (2 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "car.chassis_read_axle_wheel_params",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 78 4C 89 C0 4C 8B 82 80 05 00 00",
+  "match": "0x144633400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144633400",
+  "kind": "func_start",
+  "names": [
+   "Car_Chassis_ReadAxleWheelParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x144633400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144633400.c;xref:0x14462ec72",
+   "notes": "V6798 Builds 4-wheel param array and calls 0x14475ce00 confirmed."
+  }
+ ],
+ "proofs": []
+}

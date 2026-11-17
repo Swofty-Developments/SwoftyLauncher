@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Ai_TableCursor_Update2DKeyedA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14068fb80",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_TableCursor_Update2DKeyedA(void *table, const float *query, float *cursor)",
+  "evidence": "decomp:re/decomp/14068fb80.c;xref:0x14063ed1b",
+  "notes": "query {x +0, y +4, key byte +8}; cursor {x, y, key, x lo/hi idx +0x10/+0x18, y lo/hi +0x20/+0x28, key idx +0x30}. Returns early if x, y and key equal the cached values. If x leaves [axis[lo], axis[hi]] of table+0x38 the bracket is re-searched by the searcher at table+0x28 (vtbl +0x10 when byte +0x50 == 0, else vtbl +8; single-value axis -> 0/0); same for y with axis +0x68, searcher +0x58, flag +0x80. Key axis: when table+0xc0 < 2 idx = 0, else if the key byte differs from bytes table+0x98 at the cached idx a linear search sets the new idx (-1 if absent). Stores query into the cursor. Caller Ai_Job_UpdateCarsParallel (0x14063ed1b). L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.table_cursor_update2_d_keyed_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4A 8B 4C 2F 70 4E 8D 04 2F 49 81",
+  "match": "0x14063ed1b",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14068fb80",
+  "kind": "func_start",
+  "names": [
+   "Ai_TableCursor_Update2DKeyedA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x14068fb80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14068fb80.c;xref:0x14063ed1b",
+   "notes": "V3439 re-brackets 2D cursor when key byte or x/y leave cached intervals; axes at +0x38/+0x68 with vcall +0x10 on +0x28/+0x58; sole caller Ai_Job_UpdateCarsParallel"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14068fb80",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14068fb80-0x14068fd09;xref:0x14063ed1b",
+   "notes": "V10624 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x14063ed1b in 0x14063e370. 3 args. Table axes +0x38/+0x68, searchers +0x28/+0x58 via vtbl +8/+0x10 by flags +0x50/+0x80, key axis count +0xc0 and key bytes +0x98; cursor +0x10..+0x30."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Get_DriverOverallRating",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14113d120",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "float Career_Get_DriverOverallRating(void *self, void *data, const uint32_t *driver, bool round)",
+  "evidence": "decomp:re/decomp/14113d120.c;xref:0x140db967e,0x140e0aa11,0x140c581d4;doc:addons/career-editor/protocol/drivers.md#snapshot-section-drivers",
+  "notes": "cxx=game::championship::DriverStatisticsComponent overall rating: weighted sum over the stat infos at self+0x2d0 (weight info+0x130) of vtable+0x280 getter values at x=min(1,day/careerLength); data=self+0x2a8 (lea rdx,[rcx+0x2a8] at 0x140db966e); driver = packed u8 kind + u16 stat id at +2; returns float (rounded when round); read-only, 140 callers incl. Contracts_Calc_Offer"
+ },
+ "signature": {
+  "id": "career.get_overall",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 78 29 8C 24 90 00 00 00 C5 78 29 84 24 80 00 00 00 C5 F8 29 7C 24 70 C5 F8 29 74 24 60 45 89 CC 4C 89 44 24 58",
+  "match": "0x14113d120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14113d120",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_DriverOverallRating"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-drivers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/drivers.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "func",
+   "item": "Career_Get_DriverOverallRating",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14113d120.c;xref:0x140db967d,0x14113d45e",
+   "notes": "V0284 rcx self, rdx data, r8 driver, r9b round; finds driverData (data+0x68, 0x50 stride, key u8+u16@2), picks context/default set, for each stat (0x140 stride) weight = matching info (self+0x2d0, 16-byte slots) +0x130, value = self->vtbl+0x280(self,data,driver,&id,ctx,x,patched,1,0); x=min(1,[t+0x2b0]/thunk) or 0 when vtbl+0x278(self,driver) is true; fallback path when the driver is absent; round = half away from zero. 141 call sites. read-only"
+  }
+ ],
+ "proofs": []
+}

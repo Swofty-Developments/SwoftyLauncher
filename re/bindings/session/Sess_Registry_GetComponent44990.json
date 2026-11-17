@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Registry_GetComponent44990",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bb3270",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142bb3270.c;xref:0x142bb2bc5,0x14356792d",
+  "notes": "(registry) Component lookup for key 0x146044990 (results-related; also used by FinaliseResultsSync). Stored by Sess_RuleManager_Initialise at +0x1c90; also Sess_FormationLapLogic_Reset."
+ },
+ "signature": {
+  "id": "session.registry_get_component44990",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 46 18 48 3B 46 20 74 06 48 8B 40 08 EB 02 31 C0 48 83 C4 30 5E C3 CC CC CC CC CC CC E9 ?? ?? ?? ?? 80 1E 03",
+  "match": "0x142bb3270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bb3270",
+  "kind": "func_start",
+  "names": [
+   "Sess_Registry_GetComponent44990"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142bb3270",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142bb3270.c;xref:0x14356792d,0x143616ea2",
+   "notes": "V3427 registry lookup key 0x146044990 via FUN_14030ffd0 ok; Sess_RuleManager_Initialise stores result at +0x1c90 (decomp 1435676a0.c:159) and Sess_FormationLapLogic_Reset calls it; but no call from FinaliseResultsSync (0x142d5c9b0) among the 3 sites - the third site 0x142bb2bc5 is in an unnamed function"
+  }
+ ],
+ "proofs": []
+}

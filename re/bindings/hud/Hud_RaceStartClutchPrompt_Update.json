@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Hud_RaceStartClutchPrompt_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14152d760",
+  "level": "L2",
+  "subsystem": "hud",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14152d760.c;xref:0x1456ed640",
+  "notes": "HUD race-start clutch prompt update (vtable slot 0x1456ed640): active once anti-stall system ([self+0x3c8]+0x109 lights out) and Game_VehicleAntiStallSystem_IsStartPromptActive(car self+0x270); shows lng_hold_clutch / lng_maintain_rpm / lng_match_rpm / lng_release_clutch / lng_accelerate_icon / lng_engage_clutch / lng_clutch_unavailable (prompt holder self+0x280, shown flag +0x278); checks pit state [0x146095a88]+0x68+car*0x10 +4. Addon: hide/replace the manual-start clutch prompt. | #587: L2 by lead-authorised promotion for lane owner ui-re (independent agree V2829)"
+ },
+ "signature": {
+  "id": "hud.race_start_clutch_prompt_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 48 8B 81 C8",
+  "match": "0x14152d760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14152d760",
+  "kind": "func_start",
+  "names": [
+   "Hud_RaceStartClutchPrompt_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Hud_RaceStartClutchPrompt_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14152d760.c;xref:0x14152d760",
+   "notes": "V2829 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

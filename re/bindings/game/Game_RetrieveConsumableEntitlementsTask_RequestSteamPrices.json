@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RetrieveConsumableEntitlementsTask_RequestSteamPrices",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407938d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407938d0.c;xref:0x140794a00,0x145644e5d",
+  "notes": "Step of the consumable-entitlements task: joins the app ids (+0x7958..+0x7960) with ',', formats 'https://store.steampowered.com/api/appdetails?appids=%s[&cc=%s]&filters=price_overview' (cc when +0x7970 set), creates a child OnlineSubsystemTaskBase HTTP task (vtable 0x145644f20, completion = Game_Steam_ParsePriceOverview) stored at +0x7978/+0x7980 and schedules it via 0x1432bf840; with no ids it goes straight to CollatePackageData 0x140794a00. Addon: shows how store prices for DLC/consumables are fetched. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3253)"
+ },
+ "signature": {
+  "id": "game.retrieve_consumable_entitlements_task_request_steam_prices",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CE 48 8B 41 08 48",
+  "match": "0x1407938d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407938d0",
+  "kind": "func_start",
+  "names": [
+   "Game_RetrieveConsumableEntitlementsTask_RequestSteamPrices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_RetrieveConsumableEntitlementsTask_RequestSteamPrices",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407938d0.c;xref:0x140794a00",
+   "notes": "V3253 ids joined, appdetails URL, child HTTP task, CollatePackageData fallthrough consistent"
+  }
+ ],
+ "proofs": []
+}

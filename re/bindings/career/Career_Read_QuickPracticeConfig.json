@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Read_QuickPracticeConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14121b330",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *cfg, ...)",
+  "evidence": "decomp:re/decomp/14121b330.c;xref:0x1456cb6d0",
+  "notes": "myteam-g1: Reads career.quick_practice (QuickPracticeConfig) including time_per_resource_point (seconds of practice per RP) at cfg+0x1c20..+0x1ca4. Hook to change practice RP yield."
+ },
+ "signature": {
+  "id": "career.read_quick_practice_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 0C 00 00 C5 78 29 84 24 B0 0C 00 00 C5 F8 29 BC 24 A0 0C 00 00 C5 F8 29 B4 24 90 0C 00 00 49 89 CC",
+  "match": "0x14121b330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14121b330",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_QuickPracticeConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x14121b330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14121b330.c;xref:0x1456cb6d0;str:\"time_per_resource_point\"",
+   "notes": "V9677 Reads career.quick_practice QuickPracticeConfig fields incl. time_per_resource_point, writes into cfg+0x1c60..+0x1ca4."
+  }
+ ],
+ "proofs": []
+}

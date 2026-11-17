@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_InstantRace_SetupTrackList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ba28d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_InstantRace_SetupTrackList(void *comp)",
+  "evidence": "decomp:re/decomp/140ba28d0.c;xref:0x140ba52ca",
+  "notes": "INSTANT_RACE: logs '-------------Setting up track list...-------------', clears the VM list (0x14420cd60), picks the source list comp+0x2a0 or comp+0x368 (flag comp+0x292), walks TrackDataSystem ([comp+0x4f0]) +0x28..+0x30 records (count >> 4) with helpers 0x140ba4a10 / 0x140ba4c40, fills 'track_%u' entries (0x140d2b290), shuffles with a time-seeded RNG (0x14534f548(0)) and logs '-------------End Track list-------------'. Only caller 0x140ba52ca. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.instant_race_setup_track_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 0A 00 00 C5 F8 29 B4 24 A0 0A 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140ba28d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ba28d0",
+  "kind": "func_start",
+  "names": [
+   "Game_InstantRace_SetupTrackList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140ba28d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ba28d0.c",
+   "notes": "V4448 name/description match strings and code in decomp (log string verified via data read)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x140ba28d0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140ba28d0-0x140ba337f;xref:0x140ba52ca",
+   "notes": "V10381 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x140ba52ca. Strings INSTANT_RACE, -------------Setting up track list...-------------, track_%u, -------------End Track list-------------. 0x14420cd60 clear (0x140ba296e), comp+0x292 picks comp+0x2a0 / comp+0x368, [comp+0x4f0]+0x28/+0x30 count sar 4, 0x140ba4a10 / 0x140ba4c40, RNG seeded from 0x14534f548(0) (0x140ba2b9c, MT-style 0x6ab9d291 init loop), 0x140d2b290 adds (0x140ba3111/0x140ba32a5)."
+  }
+ ],
+ "proofs": []
+}

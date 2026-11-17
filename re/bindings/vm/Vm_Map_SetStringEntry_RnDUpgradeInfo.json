@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Map_SetStringEntry_RnDUpgradeInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b9c200",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void *Vm_Map_SetStringEntry_RnDUpgradeInfo(void *map, void *out, const char *key, const char **value)",
+  "evidence": "decomp:re/decomp/141b9c200.c;xref:0x141b2c424;xref:0x141c73842;xref:0x1423e1e97",
+  "notes": "myteam-g2: Builds two interned strings (key and value) and looks the key up in the 16-byte-entry map at map+0x18 (FUN_141b53d80); inserts when missing, replaces the stored value when present. Fills text parameters of the R&D upgrade info card."
+ },
+ "signature": {
+  "id": "vm.map_set_string_entry_rn_dupgrade_info",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 4D 89 CE",
+  "match": "0x141b9c200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b9c200",
+  "kind": "func_start",
+  "names": [
+   "Vm_Map_SetStringEntry_RnDUpgradeInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141b9c200",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141b9c200.c;xref:0x141b2c424;xref:0x141c73842",
+   "notes": "V9954 Interns key and value strings, looks up via 141b53d80 and inserts or replaces in a 16-byte-entry map at map+0x18; the R&D upgrade info attribution is only by caller."
+  }
+ ],
+ "proofs": []
+}

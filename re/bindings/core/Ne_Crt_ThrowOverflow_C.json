@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_ThrowOverflow_C",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14476b790",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14476b790.c;xref:0x14464dbd5,0x14476b13b,0x14476bfbc",
+  "notes": "Calls 0x145351784 then int3 (container overflow). (3 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "core.crt_throw_overflow_c",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 59 44 2D",
+  "match": "0x14476b790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14476b790",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_ThrowOverflow_C"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x14476b790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14476b790.c;xref:0x14464dbd5",
+   "notes": "V6640 sub rsp; call 0x145351784; int3 only"
+  }
+ ],
+ "proofs": []
+}

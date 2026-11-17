@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvance_SyncNetwork",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ffa300",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-TEAMHQ_ADVANCE",
+  "notes": "named from its log messages (channel TEAMHQ ADVANCE): '%s received event: %s, day %d, continue %d | %s sending network message: %s, day: %d, continue %d'"
+ },
+ "signature": {
+  "id": "career.team_hq_advance_sync_network",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 AA 00 00 00",
+  "match": "0x140ffa300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffa300",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvance_SyncNetwork"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x140ffa300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ffa300.c;xref:0x140ffa00b",
+   "notes": "V4528 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x140ffa300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ffa300.c;str:\"%s received event: %s, day %d, continue %d | %s sending netw\"",
+   "notes": "V9124 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

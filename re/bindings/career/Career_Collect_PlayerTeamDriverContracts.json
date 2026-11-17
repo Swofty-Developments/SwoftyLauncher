@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Collect_PlayerTeamDriverContracts",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142458560",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void* (void *out_vec, void *career, void *allocator)",
+  "evidence": "decomp:re/decomp/142458560.c;xref:0x1416a1298;xref:0x14181ef5f;xref:0x14197bb6b",
+  "notes": "myteam-g2: Collects the driver contract/entrant records of the player team: gets the team key (func 1407c5390), walks the list at career+0x1030 (vtbl +0x1c8) and keeps the records whose team field (+0x58/+0x5a) equals the player team key. Used by the My Team driver comms card and the TeamHq driver contracts view."
+ },
+ "signature": {
+  "id": "career.collect_player_team_driver_contracts",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4C 89 44 24 28 48 89 D3",
+  "match": "0x142458560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142458560",
+  "kind": "func_start",
+  "names": [
+   "Career_Collect_PlayerTeamDriverContracts"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142458560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142458560.c",
+   "notes": "V10211 Vtable+0x1c8 list at career+0x1030, key from 1407c5390, keeps records with matching +0x58/+0x5a, sorts result."
+  }
+ ],
+ "proofs": []
+}

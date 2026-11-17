@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Car_Read_VehicleAttribute",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14351df60",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "uint32_t Car_Read_VehicleAttribute(CarPerfVehicle *vehicle, uint32_t driverStatId, void *effectDef, int zero)",
+  "evidence": "decomp:re/decomp/1435173e0.c;xref:0x143517492",
+  "notes": "reader invoked by Car_Apply_UpgradeToVehicle; result stored into effectDef+0xa4; reads the vehicle performance attribute array. decomp body at re/decomp (regen at 0x14351df60 for full)"
+ },
+ "signature": {
+  "id": "car.read_vehicle_attribute",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 FA 2A C0 C5 FA 59 05 ?? ?? ?? ?? C5 F8 54 0D ?? ?? ?? ?? C4 E2 79 18 15 ?? ?? ?? ?? C5 F0 56 CA C5 FA 58 C1 C4 E3 79 0A C0 0B C5 FA 2C C0 39 E8 0F 8F",
+  "match": "0x141241dbb",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14351df60",
+  "kind": "func_start",
+  "names": [
+   "Car_Read_VehicleAttribute"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x14351df60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14351df60.c;xref:0x141241dbb",
+   "notes": "V7361 body filters enabled upgrade instances for a stat id (Career_Query_EnabledUpgrades), gets team modifiers and returns Career_Calc_UpgradeCost(option|2): an upgrade cost/value calc not a plain vehicle attribute read; better name Career_Calc_StatUpgradeCost; Car_Apply_UpgradeToVehicle name not in db"
+  }
+ ],
+ "proofs": []
+}

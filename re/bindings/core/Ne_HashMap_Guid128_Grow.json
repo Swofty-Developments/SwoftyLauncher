@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Guid128_Grow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cc4e60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cc4e60.c;xref:0x142cc4c00",
+  "notes": "727-byte rehash/grow of the 128-bit GUID keyed hash map. Caller Ne_HashMap_Guid128_FindOrReserveSlot (0x142cc4c00)."
+ },
+ "signature": {
+  "id": "core.hash_map_guid128_grow",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 31 D2 84 C0 0F 84 ?? ?? ?? ?? FF C5 41 BA 00 00 00 00 81 FD 00 01 00 00 0F 85 ?? ?? ?? ?? EB 06 41 BA 01 00 00 00 48 89 16 44 89 56 08 48 89 F0 48 83 C4 20 5B 5D 5F 5E 41 5C 41",
+  "match": "0x142cc4c00",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142cc4e60",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_Guid128_Grow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x142cc4e60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cc4e60.c;xref:0x142cc4c00",
+   "notes": "V8223 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

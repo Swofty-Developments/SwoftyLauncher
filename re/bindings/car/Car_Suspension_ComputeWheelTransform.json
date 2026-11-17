@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Suspension_ComputeWheelTransform",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b8ce0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b8ce0.c;xref:0x144630f30,0x14464fb87",
+  "notes": "Builds a wheel/upright transform into param_2 from param_3: when angle params at [this+0x140]+0x44/+0x48/+0x4c (camber/toe/steer) are non-zero (sign flipped for side +0x2b4 == 2) builds a rotation quat (0x1429ac1e0) with this+0x15c and applies it. Callers: Car_Solver_PrepareWheel, Car_Physics_StepVehicle, Car_Suspension_PublishWheelState."
+ },
+ "signature": {
+  "id": "car.suspension_compute_wheel_transform",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC A8 00 00 00 C5 78 29 9C",
+  "match": "0x1446b8ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b8ce0",
+  "kind": "func_start",
+  "names": [
+   "Car_Suspension_ComputeWheelTransform"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1446b8ce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b8ce0.c;xref:0x144630f30",
+   "notes": "V3715 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

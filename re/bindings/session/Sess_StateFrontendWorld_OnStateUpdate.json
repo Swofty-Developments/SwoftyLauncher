@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_StateFrontendWorld_OnStateUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436d6f50",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436d6f50.c;pat:crash-site;xref:0x1436d7076,0x14585b6e8,0x1436af6e0;doc:research/ui-native.md#9",
+  "notes": "front-end reboot crash: mov rax,[rdi+0xca0]; mov rax,[rax+0x88] (null); mov rcx,[rax+0x260] faults at F1_25.exe+0x36d7076 after the missing-screen route reboots the front end"
+ },
+ "signature": {
+  "id": "session.frontend_world_update",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 D6 48 89 CF 8B 0D ?? ?? ?? ?? 85 C9 74 0D 8D 51 01",
+  "match": "0x1436d6f50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436d6f50",
+  "kind": "func_start",
+  "names": [
+   "Sess_StateFrontendWorld_OnStateUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "std16-direct",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436d6f50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1436d6f50.c",
+   "notes": "V6128 Disasm claims hold (0x1436d7068 mov rax,[rdi+0xca0]; 0x1436d706f mov rax,[rax+0x88]; 0x1436d7076 mov rcx,[rax+0x260]) but null/crash is not static-provable and function is StateFrontendWorld::onStateUpdate (FINISHED LINK:* logs). Better: Game_StateFrontendWorld_OnStateUpdate. (no direct call site; vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1436d6f50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1436d6f50.c",
+   "notes": "V7095 current name Vm_ prefix wrong; function is StateFrontendWorld::onStateUpdate -> Game_StateFrontendWorld_OnStateUpdate; facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

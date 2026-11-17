@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "FeTile_Add_EraTile",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a6d0e0",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "void FeTile_Add_EraTile(void *tiles, void *alloc, uint8_t index, const char *node, const char *name, uint8_t enabled, const char *title, const char *command, const char *image, uint8_t is_dlc)",
+  "evidence": "decomp:re/decomp/141a6d0e0.c;decomp:re/decomp/141a6e980.c;decomp:re/decomp/141a6e420.c;xref:0x141a6f063,0x141a6f0f7,0x141a6f18d,0x141a6f20a,0x141a6f287,0x141a6f472,0x141a6f52f,0x141a6f5ac,0x141a6f629,0x141a6f6a6,0x141a6f723",
+  "notes": "Adds one era-select tile: allocates a 0x1a8 Tile from alloc (vtable call +0x18), constructs it with node (the VM child name, select_tile_<n>) and the template era_select_tile, sets VM name/enabled/title/subtitle(empty)/command/is_dlc, keeps name, title and command as C-string holders (command at Tile+0x150, which the press handler 0x141a6e420 raises as entrant_list_selected), binds image (#overrides.home_screen.tiles_solo_6x6[...]) and pushes {alloc, Tile*} onto the vector at tiles+0x48. tiles = view model+0x690, alloc = *(view model+0x270), index = tiles added so far. Stock F1 2025 tile: name f1, title lng_showroom_f1, command f1_2025, image tiles_solo_6x6[f1], is_dlc 0. All 11 calls are in FeTile_Build_EraTiles."
+ },
+ "signature": {
+  "id": "fe_tiles.add_era_tile",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 4D 89 CF 44 89 C5 48 89 D7",
+  "match": "0x141a6d0e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a6d0e0",
+  "kind": "func_start",
+  "names": [
+   "FeTile_Add_EraTile"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "classic-seasons",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/classic-seasons/native/src/era_tiles.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-seasons",
+   "kind": "func",
+   "item": "FeTile_Add_EraTile",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a6d0e0.c;decomp:re/decomp/141a6e980.c;decomp:re/decomp/141a6e420.c;xref:0x141a6f063,0x141a6f0f7,0x141a6f18d,0x141a6f20a,0x141a6f287,0x141a6f472,0x141a6f52f,0x141a6f5ac,0x141a6f629,0x141a6f6a6,0x141a6f723;sig:fe_tiles.add_era_tile",
+   "notes": "V1002 Re-decompiled from the f1-modding master (no KB names there) and read the disassembly. Args: rcx tiles, rdx alloc, r8b index (passed to FeTile_Construct_Tile as the priority), r9 node, then [rsp+0xf0] name, byte [rsp+0xf8] enabled, [rsp+0x100] title, [rsp+0x108] command, [rsp+0x110] image, byte [rsp+0x118] is_dlc, so the proto order and types are right. node is djb2-hashed into the child of the tiles node (*(tiles+8)), and if it contains '#', '.', '[' or ']' no child is made and the empty handle is used. It is also the name given to the Tile ctor with template era_select_tile. The 0x1a8 Tile comes from alloc vt+0x18 (align 0x10). The holders are {vt, node, next, prev}: name +0xc8, enabled +0xe8, title +0x108, subtitle +0x128 (set to an empty string), command +0x148, image +0x168, is_dlc +0x188. So Tile+0x150 is the command holder's node handle, and the press handler reads exactly that (lea rdi,[r14+0x150] at 0x141a6e70b). It pushes {alloc, Tile} onto [tiles+0x48,+0x50) with capacity +0x58, growing 1.5x through the allocator at tiles+0x40. There is no NULL check when the Tile allocation fails. A rel32 scan of .xtls and .data1 finds exactly the 11 calls, all in the builder. sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

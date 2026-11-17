@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_GameValue_GetUpgradesResearchedDuringTimeAdvance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140a78aa0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "float FUN(void)",
+  "evidence": "decomp:re/decomp/140a78aa0.c;xref:0x140a40771",
+  "notes": "myteam-g1: Thin wrapper returning a float for game_value_upgrades_researched_during_time_advance."
+ },
+ "signature": {
+  "id": "career.game_value_get_upgrades_researched_during_time_advance",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 89 C0 C4 E1 FA 2A C0 48 83 C4 28 C3 CC CC CC CC 56 57 48 83 EC 38",
+  "match": "0x140a78aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140a78aa0",
+  "kind": "func_start",
+  "names": [
+   "Career_GameValue_GetUpgradesResearchedDuringTimeAdvance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140a78aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140a78aa0.c;str:\"game_value_upgrades_researched_during_time_advance\"",
+   "notes": "V9484 Disassembly: rdx = game_value_upgrades_researched_during_time_advance, calls 140ab6770, uint to float."
+  }
+ ],
+ "proofs": []
+}

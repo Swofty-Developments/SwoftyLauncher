@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Chassis_UpdateMassInertia",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144678300",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "void Car_Chassis_UpdateMassInertia(void *chassis)",
+  "evidence": "doc:re/db/subsystems/car.md",
+  "notes": "Every frame (from 0x144677720): m0 = sqrtMass^2 + Engine+0x2534 + GearBox+0x67c (fault masses) + fuel FuelTank+0x100 as box (sizes +0xc8/+0xd8/+0xe8, centre Y +0xa8 Z +0xb8) + chassis +0x32c..+0x338; mass-weighted COM, inertia with parallel axis; then 0x144676a80 (agents car-chassis, car-pu, static)"
+ },
+ "signature": {
+  "id": "car.chassis_update_mass_inertia",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC E0 00 00 00 C5 78 29 BC 24 D0 00 00 00 C5 78 29 B4 24 C0 00 00 00 C5 78 29 AC 24 B0 00 00 00 C5 78 29 A4 24 A0 00 00 00 C5 78 29 9C 24 90 00 00 00 C5 78 29 94 24 80 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 C5 FA",
+  "match": "0x144678300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144678300",
+  "kind": "func_start",
+  "names": [
+   "Car_Chassis_UpdateMassInertia"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144678300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144678300.c;xref:0x144677747",
+   "notes": "V6742 +0x2534,+0x67c,+0x32c..+0x338, call 0x144676a80 verified"
+  }
+ ],
+ "proofs": []
+}

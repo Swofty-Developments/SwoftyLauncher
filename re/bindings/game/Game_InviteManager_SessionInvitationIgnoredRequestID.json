@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_InviteManager_SessionInvitationIgnoredRequestID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143161030",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-InviteManager",
+  "notes": "named from its log messages (channel InviteManager): 'Session invitation ignored, requestID = %s'"
+ },
+ "signature": {
+  "id": "game.invite_manager_session_invitation_ignored_request_id",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC F0 01 00 00 48 89 D6",
+  "match": "0x143161030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143161030",
+  "kind": "func_start",
+  "names": [
+   "Game_InviteManager_SessionInvitationIgnoredRequestID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143161030",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143161030.c;xref:0x1406d3c44",
+   "notes": "V5779 InviteManager_OnSessionInvitationReceived: 7KB handler checking blocked/pending invites and vcalls; ignore log is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143161030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143161030.c;xref:0x1406d3c44",
+   "notes": "V7002 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

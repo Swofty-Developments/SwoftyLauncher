@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamF1Length_ChoiceTable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143869910",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/143869910.c;xref:0x14386407c;xref:0x1438641ac",
+  "notes": "myteam-g1: career_my_team_f1_full/medium/short season-length choice table."
+ },
+ "signature": {
+  "id": "career.my_team_f1_length_choice_table",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 89 D3 48 8B 39",
+  "match": "0x143869910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143869910",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamF1Length_ChoiceTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143869910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143869910.c;xref:0x14386407c",
+   "notes": "V10329 Strings career_f2/f1/my_team_f1 short/medium/full and storymode_act."
+  }
+ ],
+ "proofs": []
+}

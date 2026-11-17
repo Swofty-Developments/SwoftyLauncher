@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Pitlane_Multiplayer_teleportToGarage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434d17f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/1434d17f0.c;xref:0x143254578",
+  "notes": "Multiplayer teleport-to-garage for car idx <= 26: posts bus message (vtable 0x145624020, payload idx | 5<<32) to [0x14618b3b8]+8, Game_Pitlane_SetVehicleStatus(self, idx, 9), FUN_1434d0b90(self, idx); if the car's pit-stop record ([self+0x48]+0x938+idx*16) is active (state +0xd4 != 6, +0xe0 < 24) re-issues it (0x1434c03c0); clears record+0x104. Returns idx < 27. Caller 0x143254578. (used by vmknolle race-start)"
+ },
+ "signature": {
+  "id": "game.pitlane_multiplayer_teleport_to_garage",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 50 89 D3",
+  "match": "0x1434d17f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434d17f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Pitlane_Multiplayer_teleportToGarage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-a",
+   "kind": "func",
+   "item": "0x1434d17f0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_a/decomp/1434d17f0.c;xref:0x143254578",
+   "notes": "V1026 vehicle<27: posts MessageTriggerGarageCrewEvent type 5 (ReturnToGarage_Inst), sets pit status 9 (0x1434bc540), calls 0x1434d0b90, clears crew-ready ('PitLaneMovementManager::clearCrewReady', 'PittingVehicle::setCrewReady %d false') and logs '%s(%d) : %s -> %s.' with method 'multiplayer_teleportToGarage'; KB proto missing - code is bool(PitLaneSystem*, uint8 vehicle) returning vehicle<27"
+  }
+ ],
+ "proofs": []
+}

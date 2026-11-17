@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamSetup_StageSet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e6cad0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *ctx)",
+  "evidence": "decomp:re/decomp/142e6cad0.c;xref:0x142314fb2;xref:0x142315037;xref:0x14233244a",
+  "notes": "myteam-g1: Applies My_Team / My_Team_Setup stage tags."
+ },
+ "signature": {
+  "id": "career.my_team_setup_stage_set",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 40 04 00 00 48 89 D7",
+  "match": "0x142e6cad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e6cad0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamSetup_StageSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142e6cad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e6cad0.c",
+   "notes": "V10255 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1World_ApplySkipOnboarding",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1427447d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_F1World_ApplySkipOnboarding(void *self)",
+  "evidence": "str:s_cfg_GameF1WorldSkipOnboarding;decomp:re/decomp/1427447d0.c;xref:0x1427447f6,0x1427447f7",
+  "notes": "Vtable slot 0xa0 of unnamed vtable 0x14579e440 (pointer 0x14579e4e0). Onboarding state byte self+0xe0: returns if 5. Reads Game.F1World.SkipOnboarding via Ne_Get_SettingBool on [self+0x70]+0x18, default 0; if set and state is not 2/3, takes O=[self+0x78]: if [O+0x68]+0x39 == 0 -> state 6; else if O+0x128|O+0x12c already has bit 0x100 -> state 3; otherwise sets bit 0x100 in O+0x128, restarts the timer pair O+0x100/+0x108 from the clock 0x145d3c778 + 0x1461089f8, and sets state 2 (or 3 when no timer was running). So the setting marks onboarding as done and advances the state machine. Existing name Game_Read_GameF1WorldSkipOnboardingSetting undersells it. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.f1_world_apply_skip_onboarding",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 80 B9 E0 00 00 00 05",
+  "match": "0x1427447d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1427447d0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1World_ApplySkipOnboarding"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-2",
+   "kind": "func",
+   "item": "0x1427447d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1427447d0.c;xref:0x14579e4e0;str:0x14570c278",
+   "notes": "V9344 Vtable slot: unless state byte +0xe0 is 5, reads bool 'Game.F1World.SkipOnboarding' (default false); if set and state not 2/3, sets state to 6 (feature unavailable) or 2/3 after setting flag 0x100 and adjusting a timer. Applies the skip-onboarding setting to the F1 World state; 1 arg matches."
+  }
+ ],
+ "proofs": []
+}

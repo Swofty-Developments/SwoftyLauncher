@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SpectatorDirector_RequestDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e19950",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void(SpectatorDirector*, uint32_t driver)",
+  "evidence": "decomp:re/decomp/142e19950.c;xref:0x142e19950",
+  "notes": "DISPUTE(V1535): not a general request. Steps the director off a driver that became unwatchable: when its argument equals the current driver [dir+0xd6] it stores the next eligible driver in race order (FUN_142e19bd0, state 2) into [dir+0xdc] and calls Update; otherwise only fade bookkeeping. Callers: ghost-fade check 0x142f35060 and two .data1 message thunks (0x14f2efe11, 0x14f2f1767; msg type 5, driver byte at msg+0x10). To make the director follow a car, store the byte in [dir+0xdc] as the HUD next/previous commands do (0x141c24c63, 0x141c26725) after requiring entrant state byte [+0x18]&0xfe==2. Old claim kept for history: 'stores the argument when it differs from the current driver'."
+ },
+ "signature": {
+  "id": "session.spectator_director_request_driver",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 80 B9 D1 00 00 00 00",
+  "match": "0x142e19950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e19950",
+  "kind": "func_start",
+  "names": [
+   "Sess_SpectatorDirector_RequestDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ai-v1",
+   "kind": "func",
+   "item": "0x142e19950",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/142e19950.c;xref:0x142f35060,0x14f2efe11,0x14f2f1767",
+   "notes": "V1535 The KB description (stores the requested driver when it differs from the current one) is wrong. Disassembly of the tail (0x142e19b61): cmp [dir+0xd6],bl; jne skip -> it stores [dir+0xdc]=FUN_142e19bd0(dir,driver,1,0) and calls Update ONLY when the argument equals the current driver, and the stored value is the next eligible driver in race order, not the argument. For any other driver it only does fade bookkeeping. Callers are a ghost-fade check (0x142f35060, when the car's alpha falls to a threshold) and two .data1 message thunks (type 5, driver byte at msg+0x10): i.e. it is 'this driver is no longer watchable, advance if it is the one being followed'. It cannot implement follow(car). The HUD next/previous commands store the byte directly: 0x141c24c63 and 0x141c26725 write [dir+0xdc] after requiring entrant state byte [+0x18]&0xfe==2, and 0x142e18c3e (SetActive) does the same for the first driver."
+  }
+ ],
+ "proofs": []
+}

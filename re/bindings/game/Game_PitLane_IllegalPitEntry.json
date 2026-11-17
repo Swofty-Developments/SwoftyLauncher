@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_IllegalPitEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434bceb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434bceb0.c;xref:0x1434b8868",
+  "notes": "Log channel PITLANE: '  - Vehicle %d is attempting an illegal pit entry' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x1434b8868); the body itself references 'PITLANE' / '  - Vehicle %d is attempting an illegal pit entry'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_lane_illegal_pit_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 0F B6 FA",
+  "match": "0x1434bceb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434bceb0",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_IllegalPitEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434bceb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434bceb0.c;xref:0x1434b8869",
+   "notes": "V6014 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434bceb0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434bceb0-0x1434bd0a8;xref:0x1434b8868",
+   "notes": "V10501 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only call 0x1434b8868. Vehicle %d is attempting an illegal pit entry; calls VehicleExiting 0x1434bf980 and 0x1434bff40. 2 args."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Update_UpgradeCardSelectionState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141af1430",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void Vm_Update_UpgradeCardSelectionState(void *screen)",
+  "evidence": "decomp:re/decomp/141af1430.c;xref:0x141ae9759;xref:0x141aeacfb;xref:0x141aebafa",
+  "notes": "myteam-g2: Updates selected / locked / equipped bool nodes of an upgrade card from the card data (Vm_NodeSet_Bool). UI only."
+ },
+ "signature": {
+  "id": "vm.update_upgrade_card_selection_state",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 8B 81 D8 11 00 00 FF C8 83 F8 07 0F 87 ?? ?? ?? ?? 48 8D 15",
+  "match": "0x141af1430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141af1430",
+  "kind": "func_start",
+  "names": [
+   "Vm_Update_UpgradeCardSelectionState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141af1430",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141af1430.c;xref:0x141ae9759;xref:0x141aeacfb",
+   "notes": "V9940 Switch on state at +0x11d8 that sets one bool node to false (offsets 0x128/0x148/0x168...); it clears a state-specific node, not selected/locked/equipped from card data."
+  }
+ ],
+ "proofs": []
+}

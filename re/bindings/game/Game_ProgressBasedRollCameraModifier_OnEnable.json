@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ProgressBasedRollCameraModifier_OnEnable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406bbf10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1406bbf10.c;xref:0x14563eab0",
+  "notes": "ProgressBasedRollCameraModifier: zeroes this+0x1b8, VehicleProgressComponent -> this+0x1b0. Camera component onEnable (slot next to the class-name string): binds target entity components via Ne_Entity_FindComponent(target+0x200, type); logs CAMERA warning Problem enabling camera component and returns 0x57 when missing, else 0. Type ids: 0x146ce6690 VehicleProgressComponent, 0x146ce8b40 VehicleDataComponent, 0x146ce8b00 VehicleComponent (its +0x58 = Car). Addon: camera roll driven by track progress. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2331)"
+ },
+ "signature": {
+  "id": "game.progress_based_roll_camera_modifier_on_enable",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CF 48 C7 81 B8 01 00 00",
+  "match": "0x1406bbf10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406bbf10",
+  "kind": "func_start",
+  "names": [
+   "Game_ProgressBasedRollCameraModifier_OnEnable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d2-verify",
+   "kind": "func",
+   "item": "Game_ProgressBasedRollCameraModifier_OnEnable",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406bbf10.c;xref:0x1406bbf10",
+   "notes": "V2331 +0x1b8 qword zeroed, VPC -> +0x1b0 ok"
+  }
+ ],
+ "proofs": []
+}

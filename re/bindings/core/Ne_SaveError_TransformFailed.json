@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveError_TransformFailed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144152410",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144152410.c;xref:0x14413e9c5,0x14414530f",
+  "notes": "SAVE error helper with fixed message 'Failed to transform data, result was 0x%x' (code param_1 + 3 u32 args); used where the security info / save data encrypt-decrypt transform fails (0x14413e9c5, 0x14414530f, ProcessSerialiserActions)."
+ },
+ "signature": {
+  "id": "core.save_error_transform_failed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 50 08 00 00 89 CE 48 8D 44 24",
+  "match": "0x144152410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144152410",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveError_TransformFailed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveError_TransformFailed",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144152410.c;xref:0x14413e9c5",
+   "notes": "V2572 code param_1, message confirmed"
+  }
+ ],
+ "proofs": []
+}

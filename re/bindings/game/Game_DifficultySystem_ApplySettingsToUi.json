@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_DifficultySystem_ApplySettingsToUi",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142419550",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_DifficultySystem_ApplySettingsToUi(void *self, int *settings, int flag)",
+  "evidence": "decomp:re/decomp/142419550.c;xref:0x142418af7,0x1424250e8,0x14c9f1137,0x14c9f3939,0x14c9f44be,0x14ca07dee",
+  "notes": "was Game_Read_SettingsConfig_2 (renamed 2026-11-16 to the name its signature lists: it writes the settings to UI references, it does not read). For each assist/difficulty setting in the settings int array it writes the value name into the UI reference settings.<name> through 0x1442b1540([0x146ca54f8], path, key, value_string, 1); logs DifficultySystem updateUIReference %s Can not update UI reference / Trying to update %s with invalid value %d. Racing line: settings[7] (+0x1c) -> settings.dynamic_racing_line, clamped to 2, names off/corners_only/always_on (table 0x14565aa08, 0x14241dbc2); settings[8] (+0x20) -> settings.racing_line_type two_d/three_d (table 0x14578cf50, 0x14241e012); settings[9] (+0x24) -> settings.dynamic_racing_line_highvis off/on (table 0x14578d028, 0x14241e5a7). The flag argument 1 selects the path prefix #secondary_player.settings. instead of settings.current_settings.; value -1 skips the write and logs the invalid-value message. Callers: 0x142418a50 (0x142418af7), 0x142424d50 Game_Difficulty_SelectGameModeData (0x1424250e8, flag 1) and the .data1 bodies 0x14c9f0fa0, 0x14c9f38a0, 0x14c9f4330, 0x14ca07cb0. L2 2026-11-16 (engine-re racing-line round 2): decomp read, claims checked against the disassembly, refs from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1; blind verifier agreed (corrections applied). raised by engine-re with --force 2026-11-16 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_settings_config_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 48 89 D7 48 89 8C 24 80 01 00 00",
+  "match": "0x142419550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142419550",
+  "kind": "func_start",
+  "names": [
+   "Game_DifficultySystem_ApplySettingsToUi"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142419550",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142419550.c;xref:0x142418af7",
+   "notes": "V5270 5663-line DifficultySystem settings applier (updateUIReference/updateAIStrengthUIReference over ~30 settings.* keys, invalid-value logs). Better Game_DifficultySystem_ApplySettingsToUi"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x142419550",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142419550.c;xref:0x142418af7",
+   "notes": "V7293 name fits; finding facts hold; 6 direct calls"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "triage-verify",
+   "kind": "func",
+   "item": "0x142419550",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own re/tools/decomp read on the KB build;xref:0x142418af7,0x1424250e8",
+   "notes": "V10759 Own read. Writes assist settings into UI references through 0x1442b1540 with names settings.<x> and channel DifficultySystem logs; settings[7] (param_2[7]) selects settings.dynamic_racing_line (clamped to 2, table off/corners_only/always_on), param_2[8] settings.racing_line_type (two_d/three_d/automatic table), param_2[9] settings.dynamic_racing_line_highvis (off/on). Name ApplySettingsToUi agrees, Read was wrong."
+  }
+ ],
+ "proofs": []
+}

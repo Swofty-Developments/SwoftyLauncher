@@ -57,3 +57,21 @@ on the regional archive mirror.
 - Instance profile `swofty-ci-bake`, for SSM on bake instances only.
 - Lambda `swofty-ci-reaper` in ap-south-2 (role `swofty-ci-reaper`, EventBridge rule `swofty-ci-reaper`),
   with the regions in its `REGIONS` variable.
+
+## Cache budget
+
+The repository has 10 GB of Actions cache space, and GitHub evicts the least recently used caches beyond it.
+The workflows save these, measured on hosted and EC2 runs in November 2026:
+
+| Cache | Saved by | Size |
+|---|---|---|
+| `v0-rust-test-…-Linux-…` | Rust tests on main, and on a pull request whose key main lacks | 0.96 GB |
+| `v0-rust-test-…-Windows_NT-…` | the same | 0.84 GB |
+| `zig-Linux-0.16.0-<month>-<hash>` | the native job on main; the step after it deletes main's older ones | 2.75 GB |
+| `pnpm-*` | the documentation build on main | 0.10 GB |
+| `setup-zig-tarball-*` | `mlugg/setup-zig`, per branch | 0.05–0.09 GB |
+
+Main holds about 4.8 GB. A pull request that changes `Cargo.lock`, the toolchain or the root `[profile]`
+sections adds its own test caches (1.8 GB), so main and two such pull requests stay under 9 GB. In CI the
+templates' Zig cache folders link to the native one, which saves their libc++ and MinGW builds once. Clippy,
+the installer and the release builds keep no Rust cache.

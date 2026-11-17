@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_BuildUpgradeButton",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141af6b00",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/141af6b00.c;xref:0x141ae6c5c",
+  "notes": "myteam-g1: UI binding code; upgrade_button_enabled/visible, upgrade_cost_pills, upgrade_info_visible (2250 lines). Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.f1_world_build_upgrade_button",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 4C 89 C7 48 89 94 24 88 00 00 00",
+  "match": "0x141af6b00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141af6b00",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_BuildUpgradeButton"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141af6b00",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141af6b00.c;xref:0x141ae6c5c",
+   "notes": "V9945 2250-line builder of the whole loadout/crafting menu bindings (upgrade_button_*, cards, filtered_cards, tooltips, can_craft); name covers only the upgrade button."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Podium2019CutSceneScript_MakeChampagneSeq02",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403606b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=Podium2019CutSceneScript::makeChampagneSeq02; log channel CUTSCENE_PODIUM: 'Podium2019CutSceneScript::makeChampagneSeq02 | Podium2019CutSceneScript::hideActor | PodiumBaseCutSceneScript::spawnPodiumSceneDriverWithResultInRace | getIsLeadEngineerLoaded m_leadEngineerAssetGroup'"
+ },
+ "signature": {
+  "id": "game.podium2019_cut_scene_script_make_champagne_seq02",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 48 89 F1 41 B0 01 E8 ?? ?? ?? ?? 48 89 F1 48 89 C2 41 B0 01 E8 ?? ?? ?? ?? 48 8B 8E 18 01 00 00 FF 15 ?? ?? ?? ?? 48 8B BE 80 00 00 00 48 2B 7E 78 74 65 48",
+  "match": "0x1403685f0",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1403606b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Podium2019CutSceneScript_MakeChampagneSeq02"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1403606b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403606b0.c;xref:0x1403685f0",
+   "notes": "V7317 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

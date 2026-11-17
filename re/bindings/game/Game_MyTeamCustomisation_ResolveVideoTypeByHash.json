@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamCustomisation_ResolveVideoTypeByHash",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428cfcc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint8_t *Game_MyTeamCustomisation_ResolveVideoTypeByHash(uint8_t *out, int32_t name_hash, void *ctx)",
+  "evidence": "decomp:re/decomp/1428cfcc0.c;xref:0x141a18e41;xref:0x141a49885;xref:0x141a55636",
+  "notes": "myteam-g2: Binary-search switch on a 32-bit string hash (e.g. 0xf05c9d -> 0x18, 0x2c272941, 0x63bae92) mapping a customisation video id to a type byte, falling back to context data. Used by customisation enter/exit and sponsor toggle."
+ },
+ "signature": {
+  "id": "game.my_team_customisation_resolve_video_type_by_hash",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 4C 89 C7 48 89 CE 81 FA 9C 5C F0 00",
+  "match": "0x1428cfcc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428cfcc0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamCustomisation_ResolveVideoTypeByHash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1428cfcc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428cfcc0.c",
+   "notes": "V10230 Hash switch (0xf05c9d->0x18, 0x2c272941 with context checks, 0x63bae92) writes a type byte to *out, default 1."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Calc_CalendarEntryStartMinutes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1410f5a80",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "int Calc(void *calendar, uint32_t index)",
+  "evidence": "decomp:re/decomp/1410f5a80.c;xref:0x140a80dff;xref:0x140a9031c;xref:0x140c571e1",
+  "notes": "myteam-g2: Entry index into calendar vector (calendar+8, stride 0x10 = timestamp pair), converts via Ne_Crt_DiffClock to days then multiplies by 0x5a0 (1440 min/day). Returns minutes-from-start of that calendar entry (0 if out of range). Read-only date helper."
+ },
+ "signature": {
+  "id": "career.calc_calendar_entry_start_minutes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 C5 F8 29 74 24 20 89 D3",
+  "match": "0x1410f5a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1410f5a80",
+  "kind": "func_start",
+  "names": [
+   "Career_Calc_CalendarEntryStartMinutes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x1410f5a80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1410f5a80.c;xref:0x140a80dff",
+   "notes": "V9648 Returns cumulative minutes (days*0x5a0 summed) of entries 0..index inclusive, i.e. the end of the entry, not its start."
+  }
+ ],
+ "proofs": []
+}

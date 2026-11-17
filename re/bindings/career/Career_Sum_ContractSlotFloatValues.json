@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Sum_ContractSlotFloatValues",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f71410",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "float Sum(void *cache, char mode, uint16_t type_mask)",
+  "evidence": "decomp:re/decomp/140f71410.c;xref:0x140c585b5;xref:0x140c5aad3;xref:0x140daf14c",
+  "notes": "myteam-g2: Sums float fields (+0x14) of the polymorphic contract-slot objects in the list at cache+0x20..0x28 whose vtbl+0x10 type code matches (types 0..4; switch on type_mask&0xff); returns the total. Feeds DriverContracts_CalcBaseValues (base salary/bonus components); read-only."
+ },
+ "signature": {
+  "id": "career.sum_contract_slot_float_values",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 89 CE 80 79 14 00",
+  "match": "0x140f71410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f71410",
+  "kind": "func_start",
+  "names": [
+   "Career_Sum_ContractSlotFloatValues"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f71410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f71410.c;xref:0x140c585b5",
+   "notes": "V9583 Loops 16-byte slot list (+0x20..+0x28), switch on type mask, accumulates float at obj+0x14 into two buckets, optional clamp from cache+8 (+0x60..+0x6c), returns sum; flag +0x14 shortcut returns +0x74."
+  }
+ ],
+ "proofs": []
+}

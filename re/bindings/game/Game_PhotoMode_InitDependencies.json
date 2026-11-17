@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoMode_InitDependencies",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bcd750",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_PhotoMode_InitDependencies(void *self, void *serviceProvider)",
+  "evidence": "str:s_cfg_PhotoModeDebugNum360VideoFramesToStopAfter;decomp:re/decomp/142bcd750.c;xref:0x142bcd843,0x142bcd844,0x1457cc8a8",
+  "notes": "Slot 17 of the vtable at 0x1457cc820 (pointer 0x1457cc8a8; string PhotoModeConfig before it). Resolves seven services via provider vcall +0x28: config provider 0x146cb8278 -> +0x18, 0x14604ec98 -> +0x30, 0x1460449f0 -> +0x38, 0x146cb8018 -> +0x20, 0x146cb8158 -> +0x40, 0x146cb80b8 -> +0x48, 0x146cb8258 -> +0x88; a missing one sets TLS errno 0x16 and returns 0x16. Then reads PhotoMode.debugNum360VideoFramesToStopAfter with Ne_Map_FindOrDefaultWithErrorContext 0x143a42f10 (u32, default 0) from node [[+0x18]+0x18] into self+0x1cb0 (debug frame count after which 360-video capture stops) and returns 0. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.photo_mode_init_dependencies",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D6 48 89 CF 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 F1 FF 50 28 48 89 47 18 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 06 48 8D 15 ?? ?? ?? ?? 48 89 F1 FF 50 28 48 89 47 30",
+  "match": "0x142bcd750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bcd750",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoMode_InitDependencies"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-0",
+   "kind": "func",
+   "item": "0x142bcd750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bcd750.c;xref:0x1457cc8a8",
+   "notes": "V9314 Photo-mode object init: resolves 7 services from the service provider (vtbl+0x28) into fields, aborting with 0x16 on any miss, then reads PhotoMode.debugNum360VideoFramesToStopAfter (default 0) into +0x1cb0; returns 0; vtable follows PhotoModeConfig strings; 2 args match"
+  }
+ ],
+ "proofs": []
+}

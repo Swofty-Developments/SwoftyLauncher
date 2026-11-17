@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ai_Update_DriverTick",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1405f5dd0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Update_DriverTick(void *ai_driver, float dt, void *ai_ctx)",
+  "evidence": "decomp:re/decomp/1405f5dd0.c;xref:0x140605e34,0x140605eb0,0x140645b42,0x1405f67a1",
+  "notes": "Per-driver AI tick. Callers are parallel-for loops: 0x140605db0 (2 sites) and job 0x140645b00 call it with rcx = [sys+0x50][i] (driver), xmm1 = *dt, r8 = [sys+0x38] (ctx; AiCarRecord = [ctx+0xa8]+veh*0x508, veh = *[driver+0x48]). Calls Ai_Race_ComputeLapTargets, Ai_Select_ErsDeployMode, the lateral helpers 0x14060a480/a600/ab60/b130/b360 (0x1405f67a1), grip-limit scales, awareness queries; resolves ai.general_ai_settings.awareness_time/max_test_* lazily (Ne_Tweak_FindByName, guard 0x146046c78) - these log/key strings gave the old name. Corner-exit throttle error (kept, offsets fixed): once per exit draws a random (0x143929b90 rng 0x1460470b0), maps it through the curve at AiCarRecord+0x348 (= AiDriverConfig+0x110 exit_fallibility.throttle_error_practice, session type 1-4, 0x1405f8bb6) or +0x350 (= AiDriverConfig+0x118 throttle_error_qualifying_race, types 5-18, 0x1405f76f6), caps it by handling exit_fallibility.max_throttle_error_by_mass (+0x300, 0x1405f8d2b) and by_grip_dry/_wet (+0x308/+0x310), zeroed while |yaw| of the car's 0xa70 entry +8 >= max_yaw_angle (+0x318, 0x1405f8ccb). (corrected 2026-11-14: was 'per-car AI data +0x348/+0x350'; name was log-derived) (renamed 2026-11-14 from Ai_Read_GeneralSettings_3: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.read_general_settings_3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 01 00 00 C5 78 29 BC 24 A0 01 00 00 C5 78 29 B4 24 90 01 00 00 C5 78 29 AC 24 80 01 00 00 C5 78 29 A4 24 70 01 00 00 C5 78 29 9C 24 60 01 00 00 C5 78 29 94 24 50 01 00 00 C5 78 29 8C 24 40 01 00 00 C5 78 29 84 24 30 01 00 00 C5 F8 29 BC 24 20 01 00 00 C5 F8 29 B4 24 10 01 00 00 C5 F8 28 F1",
+  "match": "0x1405f5dd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1405f5dd0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Update_DriverTick"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1405f5dd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1405f5dd0.c;xref:0x605e34",
+   "notes": "V4683 code reads the 5 keys but is a ~24KB per-vehicle AI function (corner-exit throttle error +0x348/+0x350 confirmed); name 'Read_GeneralSettings_3' misleading; better Ai_Update_ExitThrottleError"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1405f5dd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1405f5dd0.c;xref:0x140605e34",
+   "notes": "V7127 name fits; finding facts hold; 3 direct calls"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1405f5dd0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1405f5dd0-0x1405f98ee;xref:0x140605e34,0x140605eb0,0x140645b42",
+   "notes": "V10594 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 0x140605e34/0x140605eb0 (0x140605db0) and 0x140645b42 (job 0x140645b00): rcx = [[sys+0x50]+i*8], xmm1 = *dt, r8 = [sys+0x38]; 3 args. Key claim checked: add rax,0x348 at 0x1405f8bb6 (session type < 4 path) and add rax,0x350 at 0x1405f76f6; handling +0x300 at 0x1405f8d2b, +0x318 vs |yaw| at 0x1405f8ccb; calls 0x14060a480 at 0x1405f67a1. New name (per-driver tick) fits; the old GeneralSettings name came from the lazy tunables only."
+  }
+ ],
+ "proofs": []
+}

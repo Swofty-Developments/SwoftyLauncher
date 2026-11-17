@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineServerLogInTask_SetFinishedReleaseRef",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14336bb60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14336bb60.c;xref:0x14583c358",
+  "notes": "OnlineServerLogInTask override of slot 23 (base Game_F1osTask_SetFinishedReleaseRef 0x1432c1dd0): state +0x1b8=2; unless 0x14336da00 defers, applies 'Network.ForceMPMode' and marks finished; then drops the ref-counted holder passed in param_2 (+8 counter). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3319)"
+ },
+ "signature": {
+  "id": "game.online_server_log_in_task_set_finished_release_ref",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D6 48 89 CF C6 81 B8",
+  "match": "0x14336bb60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14336bb60",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineServerLogInTask_SetFinishedReleaseRef"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_OnlineServerLogInTask_SetFinishedReleaseRef",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14336bb60.c;xref:0x14336bb60",
+   "notes": "V3319 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

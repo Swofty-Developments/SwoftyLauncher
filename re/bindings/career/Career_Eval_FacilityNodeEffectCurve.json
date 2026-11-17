@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Eval_FacilityNodeEffectCurve",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f88930",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Career_Eval_FacilityNodeEffectCurve(void *node)",
+  "evidence": "decomp:re/decomp/140f88930.c;xref:0x140f814f2;xref:0x141983a11;xref:0x141983af4",
+  "notes": "myteam-g2: Evaluates a facility perk node effect: reads an input stat via FUN_140f88c60, maps (value - node+0x15c) * node+0x158 into [0,1], interpolates the 64-entry byte LUT at node+0x174 scaled by node+0x160/+0x16c (or node+0x164 at 1.0), then clamps by the min/max of the team attribute found via node+0x18 team key / node+0xa8 attribute id. Called by Career_Tick_FacilityNodes and the workforce view; hook: the LUT bytes at node+0x174 define perk strength. CORRECTION(V9018): Curve part verified: input FUN_140f88c60, (v-node+0x15c)*node+0x158 clamped to [0,1], 64-entry byte LUT at +0x174 linearly interpolated with scale +0x160 and offset +0x16c (+0x164 at exactly 1.0). Correction: the team attribute (node+0x20 set, team key node+0x18, id node+0xa8) is not used to clamp the result; its clamped value (attr+0x7c, 1.0 if missing) multiplies the curve value before conversion to int."
+ },
+ "signature": {
+  "id": "career.eval_facility_node_effect_curve",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CF",
+  "match": "0x140f88930",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f88930",
+  "kind": "func_start",
+  "names": [
+   "Career_Eval_FacilityNodeEffectCurve"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x140f88930",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140f88930.c;xref:0x140f814f2;xref:0x141983a11",
+   "notes": "V9018 Curve part verified: input FUN_140f88c60, (v-node+0x15c)*node+0x158 clamped to [0,1], 64-entry byte LUT at +0x174 linearly interpolated with scale +0x160 and offset +0x16c (+0x164 at exactly 1.0). Correction: the team attribute (node+0x20 set, team key node+0x18, id node+0xa8) is not used to clamp the result; its clamped value (attr+0x7c, 1.0 if missing) multiplies the curve value before conversion to int."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f88930",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f88930.c;xref:0x140f814f2",
+   "notes": "V9595 Curve part and attribute multiplier correction both visible in code: LUT at +0x174 scaled by +0x160/+0x16c, attribute value (+0x7c clamped by def +0xc/+0x10) looked up via team key +0x18 / name +0xa8."
+  }
+ ],
+ "proofs": []
+}

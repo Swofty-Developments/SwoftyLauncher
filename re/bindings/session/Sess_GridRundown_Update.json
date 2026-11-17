@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_GridRundown_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d60cb0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint32_t * Sess_GridRundown_Update(void *state, uint32_t *route, double dt)",
+  "evidence": "decomp:re/decomp/142d60cb0.c;xref:0x1457df318",
+  "notes": "SessionStateGridRundown onUpdate (vtable 0x1457df2d0 slot 9, ptr 0x1457df318). If state+0xcc9 bit 1 is set: clears it, stores 0x3f29fc8a ('restart') in state+0xc90 and routes 'restart'. Else route = FUN_140ac77f0(state+0xdc0, dt) ? 0x7c9b1ec4 : g_Game_FlowLinkStay (0x146cb2280) - stays until the rundown sequence at +0xdc0 reports done. (used by vmknolle race-start, pitlane-start)"
+ },
+ "signature": {
+  "id": "session.grid_rundown_update",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 96 CC E9 ?? ?? ?? ?? 0F 8C",
+  "match": "0x142d60cb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d60cb0",
+  "kind": "func_start",
+  "names": [
+   "Sess_GridRundown_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-24",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-a",
+   "kind": "func",
+   "item": "0x142d60cb0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_a/decomp/142d60cb0.c;xref:0x1457df318",
+   "notes": "V1016 slot 9 of vtable 0x1457df2d0 next to name 'SessionStateGridRundown' (0x1457df2b0); if flag 0xcc9&2 clears it and routes 0x3f29fc8a, else ticks sub-object +0xdc0 with dt (0x140ac77f0) and routes 0x7c9b1ec4 when done / DAT_146cb2280 otherwise; (state,route,double dt) matches"
+  }
+ ],
+ "proofs": []
+}

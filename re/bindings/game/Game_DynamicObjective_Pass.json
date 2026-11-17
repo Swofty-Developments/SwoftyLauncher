@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DynamicObjective_Pass",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14115dbe0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-DYNAMIC_OBJECTIVES",
+  "notes": "Log channel DYNAMIC_OBJECTIVES: 'Attempting to pass an objective that's not active.'"
+ },
+ "signature": {
+  "id": "game.dynamic_objective_pass",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 C5 F9 29 74 24 50 80 79 18 01 0F 85 ?? ?? ?? ?? 48 89 CE 48 8B 01 FF 90 F8 00 00 00 84 C0 0F 85 ?? ?? ?? ?? C6 46 18 02",
+  "match": "0x14115dbe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14115dbe0",
+  "kind": "func_start",
+  "names": [
+   "Game_DynamicObjective_Pass"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14115dbe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14115dbe0.c",
+   "notes": "V4631 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

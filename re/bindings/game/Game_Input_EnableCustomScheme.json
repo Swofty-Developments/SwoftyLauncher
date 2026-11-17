@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Input_EnableCustomScheme",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a5ec00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-INPUT",
+  "notes": "named from its log messages (channel INPUT): 'Enable custom control scheme \"%s\" for player %d | Cannot enable custom control scheme \"%s\", 1 or more required device types are not connected.'"
+ },
+ "signature": {
+  "id": "game.input_enable_custom_scheme",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 45 89 CC 4D 89 C7",
+  "match": "0x142a5ec00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a5ec00",
+  "kind": "func_start",
+  "names": [
+   "Game_Input_EnableCustomScheme"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a5ec00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a5ec00.c",
+   "notes": "V4942 name/strings/body match; log-based claim holds for this function size (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_OnRaceFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143790310",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143790310.c;xref:0x15134e68a,0x15135297c",
+  "notes": "Large end-of-session stat handler: MaximumResourcesPointsInAPracticeSession, SetWinsInCurrentSeason, PodiumsAchieved, BeatTeamMate, FlashbacksUsedInSession, RaceSpectated, AchieveExpectedFinishingPosition, CompleteRankedRaceInElite, BeatOtherPlayerAfterQualifyingBehind; dispatches WriteGotPodiumFinish[V2/V3], OneTwoFinish, FinishedRaceWithCustomWeather/TOD, FinishedHardcoreRace, AssistsDisabled, DriveThroughAndWinRace, RankedMatches, SetFastestLapInSession. Iterates the registered StatisticDataProviders (skips disabled ones) and writes stat keys built from GameplayModeId/SectionId/DriverStatId/IsInTeamCareer etc. Addon: listen to these stat/achievement events (career/progression telemetry) or add own stat keys. Addon: single hook for race-result achievements. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2511)"
+ },
+ "signature": {
+  "id": "game.stat_event_on_race_finished",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 48 4C 00",
+  "match": "0x143790310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143790310",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_OnRaceFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_StatEvent_OnRaceFinished",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143790310.c;xref:0x143790310",
+   "notes": "V2511 events MaximumResourcesPointsInAPracticeSession, SetWins, Podiums, BeatTeamMate, Flashbacks, RaceSpectated, ExpectedFinishingPosition, RankedRaceInElite, BeatOtherPlayerAfterQualifyingBehind confirmed"
+  }
+ ],
+ "proofs": []
+}

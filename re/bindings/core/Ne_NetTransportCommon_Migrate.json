@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetTransportCommon_Migrate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440795b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetTransportCommon_Migrate;xref:0x14407997b;decomp:re/decomp/1440795b0.c",
+  "notes": "cxx=neon::NeNetTransportCommon::migrate; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_transport_common_migrate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 06 00 00 4C 89 C7 89 D3",
+  "match": "0x1440795b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440795b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetTransportCommon_Migrate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetTransportCommon_Migrate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440795b0.c;xref:0x14402f587",
+   "notes": "V2094 own pretty string; NETWORK-MIGRATION broadcastMigrationInfo, lists clients/dropped"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_Parse_EntrantList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142453c40",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Parse_EntrantList(int *ordinal, const GdbTableCursor *row, void *list, void *driver_registry)",
+  "evidence": "decomp:re/decomp/142453c40.c;decomp:re/decomp/1424544e0.c;decomp:re/decomp/142452e60.c;xref:0x142453e74,0x142454740;doc:research/grid24-cap.md#1",
+  "notes": "Reads the entrant rows of one list row. row is a key struct (GdbTableCursor: container char[256] at +0, row name char[256] at +0x100, count int at +0x200) that it joins as container.row; it reads the joined row's 'entrant' instance count (Gdb_Init_TableCursor 0x1445a25c0), then for i < count makes row.entrant_<i> (0x1445a28f0), parses it with Sess_Parse_Entrant 0x142452e60 (out, ordinal, row, driver_registry; *ordinal post-incremented at 0x142453690) and pushes the 0x88 record with Sess_EntrantVec_PushBack 0x140bacc60 into list+8 ({allocator, begin, end, capacity in elements}); it touches nothing of list outside +8..+0x28. driver_registry is read without a null check as {_, begin +8, end +0x10}; with an empty one Sess_Parse_Entrant writes +0x60 = *(u32 *)0x14578e440 (0x3fff0000). Callers: Sess_Load_AvailableEntrantLists 0x1424544e0 at 0x142454740 (ordinal 1, r9 = [rsp+0x150]) for every row below the table's count, and itself at 0x142453e74 once per named child row (same ordinal, list and registry)."
+ },
+ "signature": {
+  "id": "session.parse_entrant_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 06 00 00 4C 89 4C 24 38",
+  "match": "0x142453c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142453c40",
+  "kind": "func_start",
+  "names": [
+   "Sess_Parse_EntrantList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "re-infra",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "vlist-verify",
+   "kind": "func",
+   "item": "Sess_Parse_EntrantList",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:capstone 0x142453c40-0x1424540d3;decomp:capstone 0x142452e60;decomp:capstone 0x140bacc60;xref:0x142453e74,0x142454740;imm:0x14578e440=0x3fff0000",
+   "notes": "V9250 Agree: count via 0x1445a25c0 on key leaf 'entrant', per-row key via 0x1445a28f0, 0x142452e60(out,ordinal,row,reg), push 0x140bacc60 into list+8; vector {alloc,begin+8,end+0x10,cap elems+0x18} grows via alloc vtbl+0x18 (0x88 elems); only list+8..+0x28 touched; *ordinal post-incremented in 0x142452e60 (0x142453690); registry +8/+0x10 read without null check; boot caller passes ordinal=1, r9=[rsp+0x150]. Differs: (1) proto - rdx is not a const char* but a path-key struct {char parent[256]; char leaf[256] @+0x100; int count @+0x200; u8 @+0x204}, joined parent.leaf; (2) 0x142453e74 is a RECURSIVE self-call inside this function (one per named child of the row node, key built by 0x1445a2bd0), passing the same ordinal/list and its own r9; (3) empty registry: +0x60 is still written, explicitly with the global default *(u32*)0x14578e440 = 0x3FFF0000."
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "vlist-verify",
+   "kind": "func",
+   "item": "Sess_Parse_EntrantList",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:capstone 0x142453c40;decomp:capstone 0x1445a28f0;decomp:capstone 0x1445a25c0;imm:0x142453f45 '.';imm:0x1445a2a01 '_'",
+   "notes": "V9251 Re-check of corrected row: all note sentences hold. Join at 0x142453f45 adds only '.'; 0x1445a28f0 copies container unchanged, sets row = row+'_'+decimal(i), +0x200=-1, +0x204=1. Boot key = container 'entrants.entrant_lists' / row 'entrant_list' -> parsed path entrants.entrant_lists.entrant_list_<n>.entrant_<i>, no extra index. 0x1445a25c0 reads the count only when +0x200 < 0 (jns at 0x1445a25cf) and stores it at 0x1445a28df; +0x204 is not read there (its role unproven, not claimed in notes)."
+  }
+ ],
+ "proofs": []
+}

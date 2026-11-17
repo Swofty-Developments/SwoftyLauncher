@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Dispatch_RnDContainerCommand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c86fc0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "imm:0x5c31ec68;imm:0x7c93fd0c;kb:subsystems/rnd_ui.md#back",
+  "notes": "R&D departments container command dispatch (vt+0x50). open case @0x141c87032 maps djb2(name) to a card: aero 0x7c93fd0c, chassis 0xc239ed13, engine 0xfb78dbfb, maintenance 0x5c31ec68 (last compare @0x141c873c2), purchase 0x396ca87, perks 0x10230e0a; anything else -> jne 0x141c875f5, return (event consumed, no tab change). Stock tail 0x141c875a5 stores the card at [rsi+0x7b8], finds its slot and selects it."
+ },
+ "signature": {
+  "id": "career.dispatch_rn_d_container_command",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 48 89 4C 24 40 48 8B 02 48",
+  "match": "0x141c86fc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c86fc0",
+  "kind": "func_start",
+  "names": [
+   "Career_Dispatch_RnDContainerCommand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141c86fc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c86fc0.c",
+   "notes": "V4955 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141c86fc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c86fc0.c;xref:0x141c87057;xref:0x141c873c2",
+   "notes": "V9192 All six djb2 compares exist in the disasm (aero 0x7c93fd0c, chassis, engine, maintenance at 0x141c873c2, purchase, perks) and the store to [rsi+0x7b8] at 0x141c875ad."
+  }
+ ],
+ "proofs": []
+}

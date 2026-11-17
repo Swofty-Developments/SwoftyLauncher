@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PodiumBaseCutSceneScript_BindToVehicleWithResultInRace",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140362900",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=PodiumBaseCutSceneScript::bindToVehicleWithResultInRace; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::bindToVehicleWithResultInRace'"
+ },
+ "signature": {
+  "id": "game.podium_base_cut_scene_script_bind_to_vehicle_with_result_in_race",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 58 44 89 C5 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140362900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140362900",
+  "kind": "func_start",
+  "names": [
+   "Game_PodiumBaseCutSceneScript_BindToVehicleWithResultInRace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140362900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140362900.c;xref:0x305542",
+   "notes": "V4541 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

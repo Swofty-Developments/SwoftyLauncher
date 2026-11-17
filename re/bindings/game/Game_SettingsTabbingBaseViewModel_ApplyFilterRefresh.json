@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsTabbingBaseViewModel_ApplyFilterRefresh",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141da4520",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141da4520.c;xref:0x145752188",
+  "notes": "Base virtual (vt slot @0x145752188, 3 slots before GotoCategory) that re-applies the current options difficulty filter and refreshes the settings list. Shares the inlined UIOptionsSystem::setSelectedFilter block: filter level global 0x14606aa34 (0=filter_basic,1=filter_advanced,2=filter_expert) is matched by name in the options list [this+0x630]+0x70..0x78, then UIOptionsSystem refresh 0x142adc6d0(this+0x640 if this[0x114]) and vcall this+0x118 (refresh view). Addon: force the advanced/expert option set by writing 0x14606aa34 then calling this slot. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2461)"
+ },
+ "signature": {
+  "id": "game.settings_tabbing_base_view_model_apply_filter_refresh",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 48 8B 99 30",
+  "match": "0x141da4520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141da4520",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsTabbingBaseViewModel_ApplyFilterRefresh"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_SettingsTabbingBaseViewModel_ApplyFilterRefresh",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141da4520.c;xref:0x141da4520",
+   "notes": "V2461 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

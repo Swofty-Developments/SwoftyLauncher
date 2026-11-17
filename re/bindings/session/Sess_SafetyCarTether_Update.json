@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCarTether_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14360d700",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14360d700.c;xref:0x145851068",
+  "notes": "SafetyCarTetherSystem update: per vehicle tether entry (list sys+0x48..+0x50: +0x18 vehicle, +0x20 race status, +0x69 attached), attaches only under SC/VSC (SCLogic+0x108 1/2) for the speed-delta and gap rules (mostly the player); receive 0x14360d4d0, send 0x14360bf30/0x143610340, attach 0x14360aff0, detach 0x14360b550. sb4-verify correction: send function is 0x143610340 only; 0x14360bf30 is onPlayerDriverChanged (log only)"
+ },
+ "signature": {
+  "id": "session.safety_car_tether_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 78 29 BC 24 00 01 00 00 C5 79 29 B4 24 F0 00 00 00",
+  "match": "0x14360d700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14360d700",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCarTether_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb4-verify",
+   "kind": "func",
+   "item": "Sess_SafetyCarTether_Update",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14360d700.c;xref:0x145851068",
+   "notes": "V1945 offsets +0x18/+0x20/+0x69, 0x108 1/2, attach aff0 detach b550 receive d4d0 ok; send is 0x143610340 only - 0x14360bf30 is onPlayerDriverChanged"
+  }
+ ],
+ "proofs": []
+}

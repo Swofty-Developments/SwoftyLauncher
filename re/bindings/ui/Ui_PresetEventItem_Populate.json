@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_PresetEventItem_Populate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14173cd40",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_PresetEventItem_Populate(void *item)",
+  "evidence": "str:s_cfg_TrackName;decomp:re/decomp/14173cd40.c;xref:0x14173cdad,0x14173cdb4,0x14173cdb5,0x145706670",
+  "notes": "Vtable slot +0x20 (Populate) of the FeTile item vtable 0x145706650 (pointer 0x145706670); slot +0x28 of the same vtable is 0x14173d1a0, the GetAction that applies the '<prefix>.*' presets (Game_Apply_PresetSetupMode .. Game_Apply_PresetEqualPerformance). Calls FeTile_ItemBase_Populate 0x141697b90, reads '<prefix>.Track.name' (prefix = item+0x10 NeStr or k_Ne_EmptyStrChars; Ne_StrBuf_Printf 0x1401009f0, Ne_Config_GetString 0x143a44700 on *(item+0x150)+0x18, default empty), finds the track object in *(item+0x160)+0x28..+0x30 by its name at +0x78, resolves its 'track_title' VM node (Vm_Resolve_RegistryNode 0x1442b1b60, Vm_Link_RegistryNode 0x144179360), localises it with the string table *(item+0x148) vtable +0x18, formats it ('%s', Ne_Format_String 0x1441630f0) into the string property item+0x60 (Vm_NodeSet_String 0x140828440) and sets the bool property item+0x80 to false (Vm_NodeSet_Bool 0x140973e20). Empty or unknown track: empty string. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "ui.preset_event_item_populate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 48 89 CE E8",
+  "match": "0x14173cd40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14173cd40",
+  "kind": "func_start",
+  "names": [
+   "Ui_PresetEventItem_Populate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-2",
+   "kind": "func",
+   "item": "0x14173cd40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14173cd40.c;xref:0x145706670;str:0x14565a00f,0x14568dedb",
+   "notes": "V9339 Vtable slot (vtable at ~0x145706650, next slot 0x14173d1a0 applies the Game.* presets) that calls FeTile_ItemBase_Populate, reads '<item>.Track.name' string, finds the matching track, localises its 'track_title' and sets it into a string node, then sets a bool node; this is the populate override of a preset event tile. Proto void(item) fits (decomp return is refcount leftover)."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationReplicationManager_SendVehicleCustom_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143143860",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VehicleCustomisationReplicationManager::sendVehicleCustomisationSegmentedDecals; log channel NETWORK-ENTRANTS-MESSAGES: 'void network::VehicleCustomisationReplicationManager::sendVehicleCustomisationSegmentedDecals(const neon::NeNetMessageDestination &, const PlayerVehicleKey &, c | %s : Sent VehicleCustomisationSegment'"
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_replication_manager_send_vehicle_custom_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 02 00 00 C5 F8 29 B4 24 00 02 00 00 4C 89 4C 24 40",
+  "match": "0x143143860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143143860",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationReplicationManager_SendVehicleCustom_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143143860",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143143860.c;xref:0x14313fd4a",
+   "notes": "V5934 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

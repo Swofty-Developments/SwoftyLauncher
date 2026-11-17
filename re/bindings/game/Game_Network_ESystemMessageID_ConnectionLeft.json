@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_ESystemMessageID_ConnectionLeft",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14406b390",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name eSystemMessageID_ConnectionLeft (class from the log channel); log channel NETWORK: 'Handling eSystemMessageID_ConnectionLeft'"
+ },
+ "signature": {
+  "id": "game.network_e_system_message_id_connection_left",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 07 00 00 C5 F8 29 B4 24 40 07 00 00 F7 81 B0 04 00 00 FD FF FF FF",
+  "match": "0x14406b390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14406b390",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_ESystemMessageID_ConnectionLeft"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14406b390",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14406b390.c;xref:0x152f10694",
+   "notes": "V6495 partial: better name Game_Network_HandleSystemMessage; 13 KB handleSystemMessage switch (Hello, ConnectionLeft, ...)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14406b390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14406b390.c;xref:0x152f10694",
+   "notes": "V7142 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

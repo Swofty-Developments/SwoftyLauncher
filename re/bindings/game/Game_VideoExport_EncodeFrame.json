@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VideoExport_EncodeFrame",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444b16c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-VIDEO_EXPORT",
+  "notes": "named from its log messages (channel VIDEO_EXPORT): 'Failed to get initialise WebM file | Failed to fetch graphics resource. | Frame time = %I64d, Time step sum = %I64d, Time step counter = %I64d, Time step average = %I64d | Failed to encode frame, erro'"
+ },
+ "signature": {
+  "id": "game.video_export_encode_frame",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC B0 01 00 00 48 89 CE 48 8B 89 90 02 00 00",
+  "match": "0x1444b16c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444b16c0",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoExport_EncodeFrame"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1444b16c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444b16c0.c",
+   "notes": "V6667 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Hash_Md5Digest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143929a10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143929a10.c;xref:0x14019d166",
+  "notes": "MD5: init state 0x67452301/0xefcdab89/0x98badcfe/0x10325476, 64-byte block buffering (0x40) over (data=param_2, len=param_3). 12 call sites incl Game_CustomMaterialModelComponent_CreateOverrideMaterial (0x142a9006f): override materials appear keyed by an MD5 of their inputs. Hypothesis on key use."
+ },
+ "signature": {
+  "id": "core.hash_md5_digest",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC D0 00 00 00 4C 89 C6 48 89 D7",
+  "match": "0x143929a10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143929a10",
+  "kind": "func_start",
+  "names": [
+   "Ne_Hash_Md5Digest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x143929a10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143929a10.c;xref:0x14019d166",
+   "notes": "V7630 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

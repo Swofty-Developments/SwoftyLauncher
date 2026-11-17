@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DynamicObjective_Deactivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14115dad0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-DYNAMIC_OBJECTIVES",
+  "notes": "named from its log messages (channel DYNAMIC_OBJECTIVES): 'Attempting to deactivate the %s Dynamic Objective that's already inactive.'"
+ },
+ "signature": {
+  "id": "game.dynamic_objective_deactivate",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 48 48 89 CE 0F B6 59 18",
+  "match": "0x14115dad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14115dad0",
+  "kind": "func_start",
+  "names": [
+   "Game_DynamicObjective_Deactivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14115dad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14115dad0.c",
+   "notes": "V4628 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

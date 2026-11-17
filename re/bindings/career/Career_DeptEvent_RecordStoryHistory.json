@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_RecordStoryHistory",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cc91a0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void FUN(void *career, void *event)",
+  "evidence": "decomp:re/decomp/140cc91a0.c;xref:0x145688138",
+  "notes": "myteam-g1: Handles department_event_hash and story_department_event_history: stores the hash of a played story department event."
+ },
+ "signature": {
+  "id": "career.dept_event_record_story_history",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D6 48 8D B9 E8 02 00 00",
+  "match": "0x140cc91a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cc91a0",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_RecordStoryHistory"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140cc91a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140cc91a0.c;str:\"story_department_event_history\"",
+   "notes": "V9524 Uses save-node readers (FUN_143931730/143931ad0) for department_event_hash, outcome_hash, story_department_event_history; it is a load of the history, not recording a played event."
+  }
+ ],
+ "proofs": []
+}

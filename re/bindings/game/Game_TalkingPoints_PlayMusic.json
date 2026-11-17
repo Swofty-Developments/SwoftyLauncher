@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TalkingPoints_PlayMusic",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140a23890",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140a23890.c;xref:0x142d95864",
+  "notes": "Picks the talking-points music event by session type ([this+0xd98]+4: practice p1..p3, quali q1..q3, sprint shootout sq1..sq3, sprint s, race r -> 'play_music_talking_points_*') and posts it to the audio object [[this+0xc60]+0xe0] vcall +0x10. Called from Sess_StateTalkingPoints_OnStateEnter."
+ },
+ "signature": {
+  "id": "game.talking_points_play_music",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 8B 81 98 0D 00 00",
+  "match": "0x140a23890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140a23890",
+  "kind": "func_start",
+  "names": [
+   "Game_TalkingPoints_PlayMusic"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140a23890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140a23890.c;xref:0x142d95864",
+   "notes": "V3835 switch on [this+0xd98]+4 selects play_music_talking_points_p1..p3,q1..q3,sq1..sq3,s,r and posts to [[this+0xc60]+0xe0]; caller Sess_StateTalkingPoints_OnStateEnter seen"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_SceneView_BuildViewParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143be0360",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143be0360.c;xref:0x14013c2c8,0x1401583d0,0x142fae638",
+  "notes": "Hypothesis: huge (5.2 KB) view parameter builder: Ne_RenderViewParams_InitDefaults x2, atanf x4 (FOV), statics at 0x1464d2840; 27 callers incl Game_WetMap_CreateResources. Named callers: Game_WetMap_CreateResources, Render_SceneView_SubmitCamera."
+ },
+ "signature": {
+  "id": "render.scene_view_build_view_params",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 16 48 8B 06 48 89 7C 24 20",
+  "match": "0x14013c2c8",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143be0360",
+  "kind": "func_start",
+  "names": [
+   "Render_SceneView_BuildViewParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143be0360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143be0360.c;xref:0x14013c2c8",
+   "notes": "V8145 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

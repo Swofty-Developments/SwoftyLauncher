@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UIHubTrace_NewCommunicatorRegistered",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143805fa0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-UIHubTrace",
+  "notes": "named from its log messages (channel UIHubTrace): '%zu [COMMS] New communicator registered [%s].'"
+ },
+ "signature": {
+  "id": "game.ui_hub_trace_new_communicator_registered",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 CE",
+  "match": "0x143805fa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143805fa0",
+  "kind": "func_start",
+  "names": [
+   "Game_UIHubTrace_NewCommunicatorRegistered"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143805fa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143805fa0.c;xref:0x143806341",
+   "notes": "V6284 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

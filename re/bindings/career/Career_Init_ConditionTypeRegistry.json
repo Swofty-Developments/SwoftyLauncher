@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Init_ConditionTypeRegistry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f3cce0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void)",
+  "evidence": "decomp:re/decomp/140f3cce0.c;xref:0x145d31778",
+  "notes": "myteam-g1: Large static initialiser registering condition/event type names such as DaysSinceUpgradeUnlockedByFacility and EngineSupplierDaysSinceLastAvailableUpgrade plus default value tables. Generic registry code."
+ },
+ "signature": {
+  "id": "career.init_condition_type_registry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 04 00 00 C5 F8 29 BC 24 C0 04 00 00",
+  "match": "0x140f3cce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f3cce0",
+  "kind": "func_start",
+  "names": [
+   "Career_Init_ConditionTypeRegistry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f3cce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f3cce0.c;xref:0x145d31778;str:\"DaysSinceUpgradeUnlockedByFacility\"",
+   "notes": "V9576 Giant static init registering type names (e.g. DaysSinceUpgradeUnlockedByFacility, EngineSupplierDaysSinceLastAvailableUpgrade) plus default tables."
+  }
+ ],
+ "proofs": []
+}

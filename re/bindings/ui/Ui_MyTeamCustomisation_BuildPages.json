@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamCustomisation_BuildPages",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414a6c60",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/1414a6c60.c;xref:0x1456e84a0",
+  "notes": "myteam-g1: Builds the customisation menu page set referencing customisation_my_team_area, customisation_my_team_colours_editor, customisation_my_team_details_select."
+ },
+ "signature": {
+  "id": "ui.my_team_customisation_build_pages",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 C5 F8 29 74 24 50 48 89 CE 48 8B 49 10",
+  "match": "0x1414a6c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414a6c60",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamCustomisation_BuildPages"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1414a6c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414a6c60.c;xref:0x1456e84a0",
+   "notes": "V9713 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

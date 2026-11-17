@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSessionLAN_MigrateSessionClient",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14408df30",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/14408df30.c;xref:0x14408de9b,0x145a543c8",
+  "notes": "cxx=NeNetSessionLAN::migrateSessionClient; log channel NETWORK-MIGRATION: 'NeNetSessionLAN::migrateSessionClient'"
+ },
+ "signature": {
+  "id": "core.net_session_lan_migrate_session_client",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 70 01 00 00",
+  "match": "0x14408df30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14408df30",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSessionLAN_MigrateSessionClient"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_NetSessionLAN_MigrateSessionClient",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14408df30.c;xref:0x14408df30",
+   "notes": "V2109 Logs, stores conn info into +0xb0.., prints ip:port, invokes callback"
+  }
+ ],
+ "proofs": []
+}

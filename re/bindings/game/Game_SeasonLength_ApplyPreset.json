@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Game_SeasonLength_ApplyPreset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bc9fc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_SeasonLength_ApplyPreset(void *component, uint8_t preset)",
+  "evidence": "decomp:re/decomp/140bc9fc0.c;xref:0x14386dd03,0x1417343f6",
+  "notes": "jmp thunk to the .data1 body 0x1498ccd50: picks the season length preset whose type byte (+0x18 of the 0x30-byte entries at [component +0x290] +0xc0..+0xc8) is preset and, when the game mode allows it, rebuilds the component's calendar (+0x2a8) from that preset's track list. The season length step's Full Season handler calls it with 0 before it adds wizard option 9; the step machine's skip path with 2 EA (re/db/builds/ea.json): the thunk is EA 0x140bc8930 (jmp to the .xcode body 0x14913baa0, the same code as Steam's .data1 body up to protector junk); all 6 Steam callers (4 .xtls, 2 in .data1 bodies) mapped to EA call it (.xtls rel32 sites 0x141a29190, 0x141a2d2b6, 0x14385aed3, 0x14172e7c6); the Steam thunk filler differs, so EA takes its own 14-byte pattern."
+ },
+ "signature": {
+  "id": "game.season_length_apply_preset",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? BE 0F 8C 16 9D 87 FC",
+  "match": "0x140bc9fc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bc9fc0",
+  "kind": "func_start",
+  "names": [
+   "Game_SeasonLength_ApplyPreset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_wizard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-c",
+   "kind": "func",
+   "item": "Game_SeasonLength_ApplyPreset",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bc9fc0.c;decomp:re/decomp/1498ccd50.c;decomp:re/decomp/14386d890.c;decomp:re/decomp/14bc8c400.c;decomp:re/decomp/141734090.c;decomp:re/decomp/141a325e0.c;xref:0x14386dd02,0x1417343f5,0x141a2ec9f,0x141a32dc5,0x14bc8c545,0x14bc8c57f;sig:game.season_length_apply_preset",
+   "notes": "V0997 V0992 0x140bc9fc0 is jmp 0x1498ccd50. The body walks [component+0x290]+0xc0..+0xc8 (0x30 stride) for the entry whose type byte +0x18 == preset and checks the game mode bits (career vt+200) against its masks +0x1c/+0x20/+0x24. It then clears the calendar (+0x2b0..+0x2b8), looks the preset's list name (+0x08) up in career+0xf58 (map +0xa0, entries +0xb8, 0x28 each), sets +0x2c8 = count and pushes each entry into +0x2a8 with 0x140bc9d80. The proto is right. There are 6 callers. 0x14386dd02 is the skip path of step machine 0x14386d890 (preset 2). In .data1 0x14bc8c400, full_season (djb2 0x5bec6ec0) calls it with 0 at 0x14bc8c545 and then adds option 9, and custom_season (0xf9da2148) calls it with 0 at 0x14bc8c57f and then adds option 10. 0x1417343f5 in 0x141734090 passes 0, then adds option 9 and routes career_wizard_driver_career. 0x141a2ec9f passes 0, and 0x141a32dc5 passes 0, 1 or 2 depending on a selection. So the row's 0x1417343f6 is a separate caller, not the full_season handler, and the xref list is incomplete. The exe names the component's class TrackListComponent (see the k_ row). sigcheck: one hit"
+  },
+  {
+   "date": "2026-10-27",
+   "verifier": "easites-verify",
+   "kind": "sig",
+   "item": "game.season_length_apply_preset",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:game.season_length_apply_preset;xref:0x1417343f5,0x141a2ec9f,0x141a32dc5,0x14386dd02,0x14bc8c545,0x14bc8c57f;xref:0x1498ccd50;pat:E9 ?? ?? ?? ?? 78 19 18 8F CC CC 6E F2 7A",
+   "notes": "V1143 EA overlay: the override matches EA .rdata once at 0xbc8930 (jmp to .xcode 0x14913baa0), and the 6 Steam callers of 0x140bc9fc0 (4 .xtls, 2 .data1) map by wildcarded windows to the 6 EA callers of 0x140bc8930 at the same function offsets (0x14172e7c5, 0x141a2918f, 0x141a2d2b5, 0x14385aed2, 0x14ae6a92c, 0x14ae6a966). The EA body 0x14913baa0 equals Steam's 0x1498ccd50 (both 0x1ea bytes) up to protector junk (one dead store, lea rdi,[rsp+0x20] computed via a constant that sums to 0x20), with the same callees, the entry vtable lea and the PushCalendarEntry thunk call at +0x1c0."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamTopLevels_Exit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142350080",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *ctx)",
+  "evidence": "decomp:re/decomp/142350080.c;xref:0x14234f6e6;xref:0x14234fa33",
+  "notes": "myteam-g1: Exits my_team_exiting_corporate/engineering/personnel_top_level events."
+ },
+ "signature": {
+  "id": "career.my_team_top_levels_exit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 48 89 D5 48 89 CE",
+  "match": "0x142350080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142350080",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamTopLevels_Exit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142350080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142350080.c",
+   "notes": "V10163 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

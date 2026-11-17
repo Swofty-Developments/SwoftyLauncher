@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CrowdExcitement_RaiseForVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413f3ae0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CROWD_EXCITEMENT",
+  "notes": "Log channel CROWD_EXCITEMENT: 'Zone : %u - Raising excitement because of vehicle id %u because of trigger %s'"
+ },
+ "signature": {
+  "id": "game.crowd_excitement_raise_for_vehicle",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 80 79 30 00",
+  "match": "0x1413f3ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413f3ae0",
+  "kind": "func_start",
+  "names": [
+   "Game_CrowdExcitement_RaiseForVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1413f3ae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413f3ae0.c;xref:0x1413f38d8",
+   "notes": "V4799 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

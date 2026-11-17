@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveError_SetFmtSSS",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144152630",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144152630.c;xref:0x14414de55,0x14414dff1",
+  "notes": "SAVE error helper (code, fmt, char* file, char* path, char* save): 'Failed to open/write/read %s (%s) in save %s because the save is corrupt / device removed', 'Cannot delete a file that is not listed in the security info file'. All callers in Ne_SaveSystem2Win_ProcessSerialiserActions."
+ },
+ "signature": {
+  "id": "core.save_error_set_fmt_s_s_s",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 50 08 00 00 89 CE 48 8B 84 24",
+  "match": "0x144152630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144152630",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveError_SetFmtSSS"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveError_SetFmtSSS",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144152630.c;xref:0x144152630",
+   "notes": "V2573 code param_1, fmt + 3 strings"
+  }
+ ],
+ "proofs": []
+}

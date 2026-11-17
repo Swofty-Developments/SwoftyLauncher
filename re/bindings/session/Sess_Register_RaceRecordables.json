@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Register_RaceRecordables",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140802dc0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Register_RaceRecordables(void *game)",
+  "evidence": "decomp:re/decomp/140802dc0.c;xref:0x1407f7320;doc:re/db/subsystems/session.md",
+  "notes": "fb-verify C1 (agent flashback): race-world recordable hub (called from the game object init 0x1407f7320): 94 Sess_Recordable_Register calls {name, system, id, buffer}, e.g. SessionSystem 0x12, VehicleLapTimesSystem 0x0b, VehicleProgressSystem 0x14, RuleManager 0x10, RuleManagerSettings 0x86, PenaltyLog 0x11, PitLaneSystem 0x0d, TyreSystem 0x27, SessionStrategySystem 0x26, DamageTrackingSystem 0x64, RepairTimesSystem 0x65, ModsSystem 0x7f, VehicleRecordable x3, PitStopRecordable 5, VehicleModule 8, GarageCrewModule 9, FormationLapLogicSystem 0x25 (full list work/flashback_verify/hub_names.txt). Recordables are rewound by flashback; what each one serialises is not decoded"
+ },
+ "signature": {
+  "id": "session.register_race_recordables",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 CE 48 8B 79 30",
+  "match": "0x140802dc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140802dc0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Register_RaceRecordables"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "fb-verify",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "fb-verify",
+   "kind": "func",
+   "item": "Sess_Register_RaceRecordables",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x1407f7320",
+   "notes": "V1806 C1 94 registrations (hub_names.txt)"
+  }
+ ],
+ "proofs": []
+}

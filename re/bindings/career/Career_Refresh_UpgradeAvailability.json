@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Refresh_UpgradeAvailability",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14352f300",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Refresh_UpgradeAvailability(void *upgrades, uint16_t day)",
+  "evidence": "pat:calls-Career_Search_UpgradeGraph;xref:0x14122d463,0x1412301e5,0x1412306c6,0x141230a66;kb:subsystems/rnd_ui.md#instances;decomp:re/decomp/14352f300.c;xref:0x14352f300;doc:addons/rnd-tyres-thermal/native/HOOKS.md#the-fix-flag-instantiate_tyres_upgrades-default-on-install-time",
+  "notes": "Availability refresh of one Upgrades model (rcx), day in dx. Calls Career_Search_UpgradeGraph once, at 0x14352f67e. Branches on mode [U+8] == 2 versus every other mode. 19 E8 callers."
+ },
+ "signature": {
+  "id": "career.refresh_upgrade_availability",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 0C 00 00 66 89 54 24 4E",
+  "match": "0x14352f300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14352f300",
+  "kind": "func_start",
+  "names": [
+   "Career_Refresh_UpgradeAvailability"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "func",
+   "item": "Career_Refresh_UpgradeAvailability",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14352f300.c;decomp:re/decomp/14352f6c0.c;decomp:re/decomp/14352f810.c;xref:0x14352f67e,0x14352f5c3,0x14352f76a,0x14352f8ba",
+   "notes": "V0184 Role and proto right: rcx upgrades, dx day (spilled [rsp+0x4e], passed as Push_UpgradeState r9w). Per owner (mode 2 = owner hash set at +0x1a68.., otherwise 0x3fff0000) it walks instances with last state <2, enabled and not locked, runs Career_Search_UpgradeGraph and pushes the state; 19 E8 callers. Off: its only Career_Search_UpgradeGraph call is 0x14352f67e; 0x14352f76a and 0x14352f8ba are in the separate .pdata functions 0x14352f6c0 and 0x14352f810, which it never calls. The mode test is ==2 vs everything else"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "func",
+   "item": "Career_Refresh_UpgradeAvailability",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14352f300.c;xref:0x14352f313,0x14352f324,0x14352f477,0x14352f5fa,0x14352f67e",
+   "notes": "V0220 sigcheck OK, 6-byte entry window clean; rcx Upgrades, dx day (stored [rsp+0x4e]); single call to Career_Search_UpgradeGraph 0x1435288f0 at 0x14352f67e; mode tests are cmp byte [U+8],2; 19 E8 callers, all in .xtls"
+  }
+ ],
+ "proofs": []
+}

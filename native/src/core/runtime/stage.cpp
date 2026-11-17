@@ -241,11 +241,6 @@ uintptr_t find(const Sig &s, const char *tag, const char *channel)
     return out;
 }
 
-bool readable(const void *p, size_t n)
-{
-    return swofty::mem::readable(p, n);
-}
-
 std::string read_file(const std::wstring &path, size_t limit)
 {
     HANDLE f = CreateFileW(path.c_str(), GENERIC_READ, FILE_SHARE_READ, nullptr, OPEN_EXISTING, 0, nullptr);

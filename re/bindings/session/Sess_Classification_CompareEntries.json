@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Classification_CompareEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cccff0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cccff0.c;xref:0x140d319f1,0x140d31dd2",
+  "notes": "Sort predicate for race classification (30 call sites in 0x140d31970 / 0x140d31d70): status byte +0x18 (2..7 -> priority table 0x1457e7c54), +0x125 flag, lap progress float stored XOR-masked (+8 ^ +0x10), race time double XOR-masked (+0x28 ^ +0x30, plus +0x38 ^ +0x40 unless *param_1), tie on id byte +0; WARN 'progress values are outside their expected ranges' when progress < -1 or > track length ([[0x14604c2c8]+0x1a8]+0xdf0 ^ +0xdf8). Addon: classification values in memory are XOR-masked pairs."
+ },
+ "signature": {
+  "id": "session.classification_compare_entries",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 4C 89 C6 48 89 D7 48 89 CB 44 0F B6 7A",
+  "match": "0x142cccff0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cccff0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Classification_CompareEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Sess_Classification_CompareEntries",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cccff0.c;xref:0x142cccff0",
+   "notes": "V2837 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

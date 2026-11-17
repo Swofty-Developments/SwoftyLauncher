@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Table_UpdateKeyCache",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14068ab50",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Table_UpdateKeyCache(void *table, const float *key, float *cache)",
+  "evidence": "decomp:re/decomp/14068ab50.c;xref:0x1405f6979,0x1405f6ed8,0x1405fc26a,0x1405fc2ae,0x1405fc2d8,0x140615f12,0x140616031,0x140616120,0x1406176c1,0x140617700,0x14063ed00,0x140651e96",
+  "notes": "Key = {f0, f1, f2, f3, byte b} (0x14 B). If equal to the cached key returns. Otherwise refreshes the bracket indices in the cache for every axis whose value left the cached bracket: axis 0 uses breakpoints at table+0x88 (count +0x198) when f3 != 0, else table+0x58 (count +0x190), indices cache+0x18/+0x20; f1 axis table+0xb8 -> cache+0x28/+0x30; f2 axis table+0xe8 -> cache+0x38/+0x40; f3 axis table+0x118 -> cache+0x48/+0x50; byte axis table+0x178 (count +0x1b8) linear search -> cache+0x58 (-1 if missing). Bracket search through the axis searcher object's vtbl +8 / +0x10 (table+0x48/+0x78/+0xa8/+0xd8/+0x108, mode byte +0x70/+0xa0/+0xd0/+0x100/+0x130); single-breakpoint axes get 0. Finally copies key into cache. Used before Ai_Table_InterpolateA/B (axis-0 split matches A=+0x190/B=+0x198). (corrected 2026-11-14: no notify via obj+0x108 vtbl +8; +0x48 is not a cached result; callers are more than Ai_Job_UpdateCarsParallel.) (renamed 2026-11-14 from Ai_State_SetTargetIfChanged: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.state_set_target_if_changed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C6 48 89 D7 48 89 CB C4 C1 7A 10",
+  "match": "0x14068ab50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14068ab50",
+  "kind": "func_start",
+  "names": [
+   "Ai_Table_UpdateKeyCache"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14068ab50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14068ab50.c;xref:0x14063ed00",
+   "notes": "V3579 compares {vec4,flag} src vs dst and, if changed, re-brackets via distance index arrays (+0x58/+0x88 when +0x198/+0x190 >1) then calls a vcall on obj+0x108 (+0x10 or +8) storing a 16-byte result at dst+0x48 before copying src to dst; this is a table-cursor refresh rather than a plain notify. Better name Ai_TableCursor_UpdateIfChanged"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14068ab50",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14068ab50-0x14068ae9a;xref:0x1405f6979,0x1405f6ed8,0x1405fc26a,0x1405fc2ae,0x1405fc2d8,0x140615f12,0x140616031,0x140616120,0x1406176c1,0x140617700,0x14063ed00,0x140651e96",
+   "notes": "V10554 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 3 args. Axis 0 uses table+0x88/count +0x198 or table+0x58/count +0x190, byte axis table+0x178 count +0x1b8 -> cache+0x58 (0x14068ad02/0x14068ad08), searcher vcalls +8/+0x10. Call sites as listed. Rename from Ai_State_SetTargetIfChanged fits."
+  }
+ ],
+ "proofs": []
+}

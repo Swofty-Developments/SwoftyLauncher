@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SequenceResource_CreateResource",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143662660",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143662660.c;xref:0x145856a00",
+  "notes": "cxx=NeSequenceResource::createResource; log channel NeSequenceResource: 'NeSequenceResource::createResource %s'"
+ },
+ "signature": {
+  "id": "core.sequence_resource_create_resource",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 4C 89 CF 48 89 D6",
+  "match": "0x143662660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143662660",
+  "kind": "func_start",
+  "names": [
+   "Ne_SequenceResource_CreateResource"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_SequenceResource_CreateResource",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143662660.c;xref:total",
+   "notes": "V1996 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

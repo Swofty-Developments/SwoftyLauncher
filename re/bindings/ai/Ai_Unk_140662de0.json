@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ai_Unk_140662de0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140662de0",
+  "level": "L1",
+  "subsystem": "ai",
+  "proto": "void Ai_Unk_140662de0(void *self, AiCarRecord *rec, void *unused, void *span)",
+  "evidence": "decomp:re/decomp/140662de0.c;xref:0x145635060",
+  "notes": "Vtable slot 0 of a 6-slot vtable at 0x145635060 (siblings: 0x145635000 -> 0x140665e80, 0x145635030 -> 0x140667f40, 0x145634fd0 -> 0x1406636f0). Returns if side [rec+0x30]+0x170 == 2. Own car geometry from [[rec+0x40]+0x108] + [rec+0x40]+0x178*0xa70 (+4 lateral pos, +0xc/+0x10/+0x14 widths, +0x914/+0x918); target = span+0x90 (+width) or span+0x94 (-width) by side, blended 0.75 toward current pos; adds an own-car band via Ai_IntervalProfile_AddRamps(span, rec, t-w, t, t+w, 0). If |pos-target|<0.2, heading [[rec+0x18]+0x48]+8 < 10 deg and |pos| >= limit: inserts full [0,1] span weight clamp(1-0/max_test_speed) via Ai_Interval_MergeInsert into span+0x58; else adds a weighted range with speed = tweak hash 0xbf94ee0409660a4c (mph -> m/s: *1.609344/0.001/3600) vs max_test_speed (Ai_Interval_AddWeightedRange). (corrected 2026-11-14: decompiled; reads only max_test_speed) KEPT L1 2026-11-14 (engine-re AI round): mechanics read, but the meaning of side +0x170 and of the hashed tweak 0xbf94ee0409660a4c are unknown, so no name. edited by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.unk_140662de0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC A8 00 00 00 C5 78 29 8C 24 90 00 00 00 C5 78 29 84 24 80 00 00 00 C5 F8 29 7C 24 70 C5 F8 29 74 24 60 48 8B 42",
+  "match": "0x140662de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140662de0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Unk_140662de0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140662de0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140662de0.c",
+   "notes": "V4721 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

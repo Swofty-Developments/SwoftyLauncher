@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Vm_Set_Int",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d38fd0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void *Vm_Set_Int(void *registry, void *parent, const char *name, int64_t *value, int overwrite)",
+  "evidence": "decomp:re/decomp/140d38fd0.c;xref:0x141698223,0x140c1f905,0x1414a1353+370;doc:research/ui-native.md#12",
+  "notes": "same template as Vm_Set_Bool/Vm_Set_String (node set 0x140972de0); 308 named call sites incl. value x8, min x2, max x4, index x34, notification_type (base populate 0x141698223); used for UISL value/min/max (UISL reads them as int)"
+ },
+ "signature": {
+  "id": "vm.set_int",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 7C 24 30 C5 F8 57 C0 C5 F8 11 44 24 38 48 C7 44 24 48 00 00 00 00 48 8B 00 48 89 44 24 38 48 85 C0 74 24 48 8B 48 28 48 89 4C 24 40 48 C7 44 24 48 00 00 00 00 48 85 C9 74 04 4C 89 71 10 4C 89 70 28 66 F0 FF 40 24 4C 8D 3D ?? ?? ?? ?? 4C 89 7C 24 30 48 8D 8D E8 03 02",
+  "match": "0x1414a1353",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140d38fd0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Set_Int"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x140d38fd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d38fd0.c;xref:0x140c1f905",
+   "notes": "V7326 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

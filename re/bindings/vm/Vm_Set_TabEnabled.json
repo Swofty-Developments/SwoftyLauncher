@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Vm_Set_TabEnabled",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14431f470",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Set_TabEnabled(uintptr_t tabs, uintptr_t node, uint32_t enabled)",
+  "evidence": "decomp:re/decomp/141c86fc0.c;xref:0x14431f470;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v061--the-develop-upgrade-screen-for-the-tyres-upgrades",
+  "notes": "jmp thunk into a .data1 body; enables one tab node of a UITC tab container (container+0x2d8)"
+ },
+ "signature": {
+  "id": "vm.set_tab_enabled",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? C0 EF A9 4D CB 0F 83",
+  "match": "0x14431f470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14431f470",
+  "kind": "func_start",
+  "names": [
+   "Vm_Set_TabEnabled"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "func",
+   "item": "Vm_Set_TabEnabled",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14431f470.c;xref:0x14431f470,0x153c60e40,0x153c60e53,0x153c60e56,0x153c60f3b,0x153c60f53,0x141c867aa,0x141c867c9",
+   "notes": "V0189 thunk = E9 into .data1 0x153c60e40 (plaintext): node!=0, scans tabs+0x270..0x278 (16-byte entries) for entry[1]+0x20 == node, flags = (!enabled)<<1 | current&~2, tail-jmp 0x14431f8e0; callers pass node = obj+0x268 and, in the R&D grid/pages, tabs = obj+0x2d8; 70 E8 + 5 E9 callers; arity and types right (only the low byte of enabled is used)"
+  }
+ ],
+ "proofs": []
+}

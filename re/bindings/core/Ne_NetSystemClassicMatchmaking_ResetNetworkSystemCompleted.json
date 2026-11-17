@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSystemClassicMatchmaking_ResetNetworkSystemCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14406abf0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSystemClassicMatchmaking_ResetNetworkSystemCompleted;xref:0x14406ac60,0x14406ad1b;decomp:re/decomp/14406abf0.c",
+  "notes": "cxx=neon::NeNetSystemClassicMatchmaking::resetNetworkSystemCompleted; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_system_classic_matchmaking_reset_network_system_completed",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 B8 00 01",
+  "match": "0x14406abf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14406abf0",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSystemClassicMatchmaking_ResetNetworkSystemCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetSystemClassicMatchmaking_ResetNetworkSystemCompleted",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14406abf0.c;xref:0x145a4fc78",
+   "notes": "V2083 vtable slot; Classic override with inline Common body (setRole Offline, Disconnected, clear connectivity map)"
+  }
+ ],
+ "proofs": []
+}

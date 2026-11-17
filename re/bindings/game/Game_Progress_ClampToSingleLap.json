@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Progress_ClampToSingleLap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446034b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/1446034b0.c;xref:0x144603a23,0x144603cae,0x144603f81,0x144604074",
+  "notes": "logged method name clampToSingleLap (class from the log channel); log channel PROGRESS: 'clampToSingleLap - prev progress lap %d, new lap %d veh %d' Decompiled (re/decomp/1446034b0.c): this is the whole per-vehicle progress update, clampToSingleLap is only the branch gated by self+0x2a9. Called per record by Game_Progress_UpdateVehicles. After Game_VehicleProgress_Update it posts, synchronously on g_Game_MessageBus, vehicle_newlap (vtable 0x1457e6ec0, call 0x144603a7e, return +0x5d3) when the lap changed, vehicle_cachenewsector (0x145803318) and vehicle_newsector (0x145803340) when the sector changed, and post_vehicle_newlap (0x145bf4240); each message carries the vehicle id (self+0x2a8) at +0x10. A crash stack ending Ne_Post_BusMessage+0xdc < Game_Progress_ClampToSingleLap+0x5d3 is a vehicle_newlap subscriber faulting (Game_ErsSystem_HandleVehicleNewLap)."
+ },
+ "signature": {
+  "id": "game.progress_clamp_to_single_lap",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 78 29 84 24 D0 00 00 00 C5 F8 29 BC 24 C0 00 00 00 C5 F9 7F B4 24 B0 00 00 00",
+  "match": "0x1446034b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446034b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Progress_ClampToSingleLap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1446034b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446034b0.c;xref:0x142d68dd0",
+   "notes": "V6702 0xc6a body calls Game_VehProgress_UpdatePoints, Game_VehicleProgress_Update, posts NEW SECTOR MESSAGE bus messages; clampToSingleLap is one log. Better: Game_VehicleProgress_TickAndPostSectorMessages"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1446034b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446034b0.c;xref:0x142d68dd0",
+   "notes": "V7236 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

@@ -11,6 +11,8 @@
 #include <string>
 #include <vector>
 
+#include "core/runtime/pages.hpp"
+
 namespace crash {
 
 struct Symbol {
@@ -51,7 +53,10 @@ public:
 extern ModuleMap modules;
 extern SymbolTable symbol_table;
 
-bool readable(uintptr_t a, size_t n);
+inline bool readable(uintptr_t a, size_t n)
+{
+    return runtime::pages::readable_now(a, n);
+}
 
 // Copies from memory that may be unmapped, asking Windows about each page once.
 struct Reader {

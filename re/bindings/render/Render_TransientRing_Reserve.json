@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_TransientRing_Reserve",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c537b0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c537b0.c;xref:0x143b017a3,0x143b165a6",
+  "notes": "Lock-free reserve of param_2 bytes from a transient ring (counter +0x24 used, +0x1c high-water mark with dirty flag +0x20, base from +8/+0x28+slot*0x18); on exhaustion rolls back and returns 0 with *param_3=0, logs error 0x58 when the ring is disabled (+0x28==0). Caller Ne_Gfx2Renderer_UploadTransientBatch. Hypothesis (upload heap sub-allocation)."
+ },
+ "signature": {
+  "id": "render.transient_ring_reserve",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 80 79 28 00 74 31 41 89 D1 F0",
+  "match": "0x143c537b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c537b0",
+  "kind": "func_start",
+  "names": [
+   "Render_TransientRing_Reserve"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143c537b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c537b0.c;xref:0x143b017a3",
+   "notes": "V8337 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

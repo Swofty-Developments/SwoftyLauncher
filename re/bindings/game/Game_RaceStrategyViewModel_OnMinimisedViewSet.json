@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RaceStrategyViewModel_OnMinimisedViewSet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d6f4c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=RaceStrategyViewModel::onMinimisedViewSet; log channel UI: 'RaceStrategyViewModel::onMinimisedViewSet: No valid vehicle data exists for player vehicle index %d with player index'"
+ },
+ "signature": {
+  "id": "game.race_strategy_view_model_on_minimised_view_set",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE 48 8B 89 38 06 00 00",
+  "match": "0x141d6f4c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d6f4c0",
+  "kind": "func_start",
+  "names": [
+   "Game_RaceStrategyViewModel_OnMinimisedViewSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141d6f4c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d6f4c0.c",
+   "notes": "V5198 name/cxx or log string and body match; body size consistent with name (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

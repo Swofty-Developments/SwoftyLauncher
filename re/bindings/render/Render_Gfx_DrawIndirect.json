@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_DrawIndirect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a02f70",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a02f70.c;xref:0x143a0151a",
+  "notes": "Dirty-state flush then ExecuteIndirect-style context vcall +0x148(signature global [0x14618caa8+0x2580], count 1, argument buffer address, offset): draw-indirect with the global draw command signature. Hypothesis."
+ },
+ "signature": {
+  "id": "render.gfx_draw_indirect",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 83 C7 48 48 39 DF 72 E8 E9 ?? ?? ?? ?? 85 D2 0F 84 ?? ?? ?? ?? 66 66 2E 0F 1F 84 00 00 00 00 00 44 8B 47 08 48 8B",
+  "match": "0x143a0151a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143a02f70",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_DrawIndirect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143a02f70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a02f70.c;xref:0x143a0151a",
+   "notes": "V8245 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

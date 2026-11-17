@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SendForcedRelayRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14326a880",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name sendForcedRelayRequest (class from the log channel); log channel NETWORK: 'sendForcedRelayRequest(%d/%s) - but I am the host, there's no-one to relay for me.'"
+ },
+ "signature": {
+  "id": "game.network_send_forced_relay_request",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 44 89 C3 89 D7 48 89 CE 0F B6 49 18",
+  "match": "0x14326a880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14326a880",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SendForcedRelayRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14326a880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14326a880.c;xref:0x1432683b0",
+   "notes": "V5830 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

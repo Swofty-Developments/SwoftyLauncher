@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUI_StartRankedRematching",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430b06e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430b06e0.c;xref:0x1430e6314,0x14315adb7",
+  "notes": "startRankedRematching: recalculates the safety search class (A/B/C/D, table 0x145755418) into hopper+0x3c and session settings [[hopper+0x10]+1000] (+0xac8 race length, +0xacc safety), restarts SearchMatch, sets this+0x432. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2599)"
+ },
+ "signature": {
+  "id": "game.network_u_i_start_ranked_rematching",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 CE 80 3D ?? ?? ?? ?? 01 48 8D 1D",
+  "match": "0x1430b06e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430b06e0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUI_StartRankedRematching"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_NetworkUI_StartRankedRematching",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b06e0.c;xref:0x1430b06e0",
+   "notes": "V2599 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

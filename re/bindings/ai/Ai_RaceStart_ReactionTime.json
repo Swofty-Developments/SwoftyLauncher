@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_RaceStart_ReactionTime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406527c0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "int Ai_RaceStart_Update(void *beh, float dt, AiSystem *sys)",
+  "evidence": "decomp:re/decomp/1406527c0.c;xref:0x145637220",
+  "notes": "Vtable slot (abs64 0x145637220 in vtable 0x145637200). beh+0x1d = car index into sys+0xa8 records. State beh+0x50: 0 countdown beh+0x5c -= dt then state 1 with timer [[rec+0x230]+0x518]; 1 sets beh+0x54 mask of nearby cars (status &0x3000==0x1000, speed<15, max(+0x5c,+0x60)<0.25) and flags +0x74/+0x78/+0x7c, -> 2 when timer expires or a car is blocked and speed>60; 2 -> 3 on [rec+0x40]+0x5a. Init branch (session id == g 0x146048424): beh+0x5c = 0.6*grid value or [hcfg+0x518]; +0x70 rand in [hcfg+0x4e0,+0x4e8]; +0x68 reaction time = rand between lerp of race_start.min_reaction_time_upper/lower ([rec+0x440]/[rec+0x430]) and max_upper/lower ([rec+0x438]/[rec+0x428]) by s=[rec+0x20]+0x14c*[rec+0x20]+0xb4 (0x140652b10..b63); +0x6c bad start same with +0x448..+0x460 and +0xb0 (0x140652d41..d9f); logs RaceStarts 'Reaction Time...%f' / 'Race Start performance...' (=(1-x)*100). (corrected 2026-11-14: was log-only claim) Name kept (used in repo docs/code/signatures); a code-true name would be Ai_RaceStart_Update. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.race_start_reaction_time",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 4C 89 C7 48 89 CE",
+  "match": "0x1406527c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406527c0",
+  "kind": "func_start",
+  "names": [
+   "Ai_RaceStart_ReactionTime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1406527c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406527c0.c",
+   "notes": "V4706 string/behaviour in decomp matches name; vtable/indirect"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1406527c0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1406527c0-0x1406531b3;xref:0x145637220",
+   "notes": "V10580 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 0x145637220 (vtable 0x145637200 slot 4). 3 args (rdx unused). Session id vs 0x146048424, 0.6 * grid value, [hcfg+0x518], +0x4e0/+0x4e8, reaction time from [rec+0x428/0x430/0x438/0x440] lerped by [rec+0x20]+0x14c, stored beh+0x68 (0x140652bc6), bad-start bounds +0x448..+0x460, RaceStarts logs confirmed. Note: the body is the whole race-start behaviour update (proto name Ai_RaceStart_Update); ReactionTime names only one part."
+  }
+ ],
+ "proofs": []
+}

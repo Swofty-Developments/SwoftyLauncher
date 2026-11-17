@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Math_BuildFrustumPlanesFromClipCorners",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14395cfe0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14395cfe0.c;xref:0x14395cd17",
+  "notes": "SIMD 4x4 matrix inverse core (optional sign-flip param_3, uses +-0.0 masks and 1.0). Callers Ne_Math_Mat4Invert and Ne_Math_Matrix4x4_Invert. vq0-verify partial/disagree"
+ },
+ "signature": {
+  "id": "core.math_mat4_invert_simd",
+  "section": ".xtls",
+  "pattern": "48 81 EC 18 01 00 00 C5 78 29 B4 24 00 01 00 00 C5 78 29 AC 24 F0 00 00 00 C5 78 29 A4 24 E0 00 00 00 C5 78 29 9C 24 D0 00 00 00 C5 78 29 94 24 C0 00 00 00 C5 78 29 8C 24 B0 00 00 00 C5 78 29 84 24 A0 00 00 00 C5 F8 29 BC 24 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 C5 F8 28 05",
+  "match": "0x14395cfe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14395cfe0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Math_BuildFrustumPlanesFromClipCorners"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x14395cfe0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/14395cfe0.c;xref:0x14395cd17",
+   "notes": "V8483 not a matrix inverse: builds 8 clip-space corner constants (+-1), transforms them and derives 6 planes via cross products (frustum planes); better name Ne_Math_BuildFrustumPlanesFromClipCorners"
+  }
+ ],
+ "proofs": []
+}

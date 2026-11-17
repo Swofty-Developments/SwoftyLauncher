@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Material_ResolvePassSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401406e0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401406e0.c;xref:0x14013dfe6",
+  "notes": "Derives a pass/permutation mask from material flags at param_3+0x20 (bits 0x40->8, 0x400->0x400, 0x1000/0x78 -> 0xac3/0x8c0, 0x2->0x42, 0x1->0x41, 0x4->1) unless param_3+0x78 is set, resolves a slot via 0x143bda160 and reads the 0x180-byte entry (stride) of the table at param_2+0x30. Output pair {slot, 0xffffffff on miss}. 13 callers, all in 0x14013d2c0. Hypothesis."
+ },
+ "signature": {
+  "id": "render.material_resolve_pass_slot",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 78 48 89 CE 4D 85 C0 0F 84",
+  "match": "0x1401406e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401406e0",
+  "kind": "func_start",
+  "names": [
+   "Render_Material_ResolvePassSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1401406e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1401406e0.c;xref:0x143bafbc4",
+   "notes": "V7952 Render_Material_ResolvePassSlot: code matches (3 uint output); callers not all in 0x14013d2c0 (also Tonemap_SetupEyeAdaptation/Execute, SubmitCamera)"
+  }
+ ],
+ "proofs": []
+}

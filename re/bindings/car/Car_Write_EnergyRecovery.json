@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Write_EnergyRecovery",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446cf6c0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446cf6c0.c;xref:0x145bfdb08",
+  "notes": "Serialises the whole ERS data section, not one mode (corrected per V1241): from MaxDeployPower data+0x10 (system+0x28) through the top-level constants (MaxDeratePower, BoostModePowerAddLimit, PowerReductionRateLimit, throttle timers, HarvestTorqueFactor, HarvestLimitMGUK, DeployLimit), EnergyStoreCapacity, the efficiencies, the splines and the ES/MGUK wear, then 4 mode blocks of stride 0x40 (Name, First..EighthGearModifier, DerateStartSpeed): three via 0x1446cf330 at data+0x1868/+0x18a8/+0x18e8, the fourth inline at +0x1928. Its signature id car.parse_energy_recovery_mode is historical and misleading: the signature targets this whole-section writer. Correction: this is the serialiser (component data vtable slot 3): it writes the section back as XML through the writer object's vtable (+0x28 begin element, +0x68 attribute, +0x78 end, +0x98 comment); the field list above is what it writes. The reader is slot 2 (Car_Read_EnergyRecovery, Game_Read_VtfFloat by name, plain floats). | car-b: data vtable slot 3 (vtable entry 0x145bfdb08). Capstone cross-check: it reads the same data offsets the paired Car_Read_ function writes (differences only in vector internals, derived fields and ERS TrackSettings, which are not written back), so the struct offsets in the car-b structs hold for both"
+ },
+ "signature": {
+  "id": "car.parse_energy_recovery_mode",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 D6 48 89 CF C5 FA 10 71 10",
+  "match": "0x1446cf6c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446cf6c0",
+  "kind": "func_start",
+  "names": [
+   "Car_Write_EnergyRecovery"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "func",
+   "item": "Car_Write_EnergyRecovery",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446cf6c0.c;decomp:re/decomp/1446cf330.c;xref:0x145bfdb08",
+   "notes": "V1241 Role right (ERS data vt 0x145bfdaf0 +0x18 serialiser). 'Per-mode ERS block' is wrong: it writes the whole ERS data section, not one mode, starting at data+0x10 MaxDeployPower (system+0x28). That covers the top-level constants (to DeployLimit), EnergyStoreCapacity, the efficiencies, the splines and the ES/MGUK wear. Then come 4 mode blocks (stride 0x40: Name, First..EighthGearModifier, DerateStartSpeed): three via 0x1446cf330 at data+0x1868/+0x18a8/+0x18e8 and the fourth inline at +0x1928."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446cf6c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446cf6c0.c",
+   "notes": "V6830 Serialiser with per-mode ERS fields confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

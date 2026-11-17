@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_DriverContracts_RankTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407c45d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int *Game_DriverContracts_RankTeam(int *out, void *standings, void *game_mode, uint32_t team, uint64_t season, void *alloc)",
+  "evidence": "decomp:re/decomp/1407c45d0.c;decomp:re/decomp/140d80ef0.c;xref:0x140d811dc",
+  "notes": "jmp thunk to the .data1 body 0x1486c8830: a team's performance rank; out[0] = rank, byte out+4 = valid. Looks the team key up in the game mode's UpgradesComponent teams (+0x298..+0x2a0, key at +0xc) and ranks by R&D (0x1407c4900); otherwise ranks it among the teams of the game mode's championships (+0x1068..+0x1070) that contain it, invalid when a team's +0x588 flag in standings +0x2c8 is clear. 49 callers. Raised by wizard-1990"
+ },
+ "signature": {
+  "id": "game.driver_contracts_rank_team",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? E9 ?? ?? ?? ?? E9 ?? ?? ?? ?? B0 38",
+  "match": "0x1407c45d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407c45d0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverContracts_RankTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

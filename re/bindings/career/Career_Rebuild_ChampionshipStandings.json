@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Rebuild_ChampionshipStandings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ae78f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Rebuild_ChampionshipStandings(void *champ_list, void *extra_points, void *extra_e)",
+  "evidence": "decomp:re/decomp/140ae78f0.c;xref:0x14566acb8;decomp:re/decomp/140ae78f0.c;decomp:re/decomp/140ae8040.c;xref:0x14566acb8;doc:addons/career-editor/protocol/season.md#season-points-adjust",
+  "notes": "for every season (championship+0x548) builds the two order lists (0x140ae2d80) and calls Career_Rebuild_SeasonStandings(season, a, b, copy of extra_points, copy of extra_e); extra_points = {u32 entrant key, i32 points} added to the drivers' standings, extra_e = {u32 key, value} list applied on the constructors side (standings+0x210); frees the caller's engaged lists. Each season silently skips the extra lists when its first weekend has no sessions (see Career_Rebuild_SeasonStandings) (V0233)"
+ },
+ "signature": {
+  "id": "career.rebuild_championship_standings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 BC 24 30 01 00 00 C5 F8 29 B4 24 20 01 00 00 4C 89 C6 48 89 D7 4C 8B A9 40 03 00 00",
+  "match": "0x140ae78f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ae78f0",
+  "kind": "func_start",
+  "names": [
+   "Career_Rebuild_ChampionshipStandings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-season",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/season.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Career_Rebuild_ChampionshipStandings",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140ae78f0.c;decomp:re/decomp/140ae8040.c;decomp:re/decomp/1413cf090.c;decomp:re/decomp/1413ccb90.c;xref:0x14566acb8,0x140ae7f57",
+   "notes": "V0233 role, this=championship+0x208, slot 0x14566acb8 (slot 53 of 0x14566ab10), seasons at this+0x340 (= +0x548), lists via 0x140ae2d80 and freeing of the caller's lists all check; no direct callers. Wrong: the two extra lists are not both {driver key, points}: only extra_points goes to the drivers (0x1413ccb90, +0xa8) and the team sum (0x1413cfb70); extra_e is matched by key against the constructors-side entry list (from standings+0x120) and stored at standings+0x210. Corrected: for every season (championship+0x548) builds the two order lists (0x140ae2d80) and calls Career_Rebuild_SeasonStandings(season, a, b, copy of extra_points, copy of extra_e); extra_points = {u32 entrant key, i32 points} added to the drivers' standings, extra_e = {u32 key, value} list applied on the constructors side (standings+0x210); frees the caller's engaged lists. Each season silently skips the extra lists when its first weekend has no sessions (see Career_Rebuild_SeasonStandings)"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "func",
+   "item": "Career_Rebuild_ChampionshipStandings",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ae78f0.c;decomp:re/decomp/140ae8040.c;decomp:re/decomp/1413cf090.c;xref:0x14566acb8",
+   "notes": "V0302 Independent: 3 args (rcx this=championship+0x208, rdx extra_points, r8 extra_e; no r9/stack use), seasons this+0x340..+0x348 = champ+0x548, 0x140ae2d80(this-0x208, i, &a, &b), deep copies of a, b and both extra lists passed to 0x140ae8040, own order lists freed, caller's engaged extra lists freed and zeroed after the loop; no direct callers, only secondary vtable slot 0x14566acb8. Wording note: extras are applied per entrant in the season's standings (keys not among weekend[0] session-0 entrants are dropped by 0x1413ccb90)."
+  }
+ ],
+ "proofs": []
+}

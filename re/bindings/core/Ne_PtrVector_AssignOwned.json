@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PtrVector_AssignOwned",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140101790",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140101790.c;xref:0x14012ec0d",
+  "notes": "Assign for a vector of owned polymorphic pointers (allocator at [0], begin/end/cap at +0x10/+0x18/+0x20): destroys existing elements via vcall +0 and frees via allocator +0x38, then grows (1.5x, vector too long guard 0x14029b1a0) and copies from param_2. 13 callers, all in 0x14012e320."
+ },
+ "signature": {
+  "id": "core.ptr_vector_assign_owned",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 48 8B 59 10 4C",
+  "match": "0x140101790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140101790",
+  "kind": "func_start",
+  "names": [
+   "Ne_PtrVector_AssignOwned"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140101790",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140101790.c;xref:0x143d8b062",
+   "notes": "V7949 Ne_PtrVector_AssignOwned: code matches; caller claim wrong: 10 in 0x14012e320, 1 in 0x142faf540, 2 in Render_SceneView_SubmitCamera"
+  }
+ ],
+ "proofs": []
+}

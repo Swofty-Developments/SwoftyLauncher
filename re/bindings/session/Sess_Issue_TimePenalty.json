@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Issue_TimePenalty",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143573b40",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Issue_TimePenalty(void *rules, uint8_t *incident, uint32_t reason, uint32_t seconds)",
+  "evidence": "decomp:re/decomp/143573b40.c;xref:0x14356cc29,0x14356d66e,0x143571af8,0x14357371e,0x143573729,0x143573734,0x143573748,0x1435744a0",
+  "notes": "Issue a time penalty: param_2 = infringement record (byte car +0, lap +9, +0x14), param_3 = reason byte, param_4 = seconds. Online games may scale the seconds (x g 0x145f96748, msg 0x14584ee80 on [[rules+0x1cd0]+0xa0]+0x3d0). Converts to a pit-served penalty when the car's race record ([rules+0x1c68]+0x148[car]) allows; records it (0x1435668e0 / 0x143573400 with the penalty kind, reason, seconds, lap), posts bus msg 0x14584ec18 (car, kind, reason) and, for a local human car, shows it on the HUD ([rules+0x1c18]+0xa0: +0x1104 = seconds, UI event 0x145849882). Callers 0x14356cc29, 0x14356d66e and tail jumps 0x143571af8, 0x14357371e..0x143573748. (used by vmknolle track-limits)"
+ },
+ "signature": {
+  "id": "session.issue_time_penalty",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F9 29 BC 24 A0 00 00 00",
+  "match": "0x143573b40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143573b40",
+  "kind": "func_start",
+  "names": [
+   "Sess_Issue_TimePenalty"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "func",
+   "item": "0x143573b40",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_c/decomp/143573b40.c;xref:0x14356cc29,0x14356d66e,0x143571af8,0x14357371e,0x143573729,0x143573734,0x143573748,0x1435744a0",
+   "notes": "V1047 logs 'Car %d ISSUE %d SECOND PENALTY' with arg4, adds arg4*k to the vehicle's accumulated penalty time, records penalty type 4 (time penalty; 0x12 variant), radio 'TimePenalties'; 4 args (rules, incident*, reason, seconds) match"
+  }
+ ],
+ "proofs": []
+}

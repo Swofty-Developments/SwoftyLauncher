@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MaterialActorProxyPropertyRegister_RegisterUpdateGroup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401c54e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=MaterialActorProxyPropertyRegister::registerUpdateGroup; log channel MaterialActorProxyPropertyRegister: 'MaterialActorProxyPropertyRegister::registerUpdateGroup %s'"
+ },
+ "signature": {
+  "id": "game.material_actor_proxy_property_register_register_update_group",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D6 48 89 CB 48 8B 7C 24 60 80 3D ?? ?? ?? ?? 01 75 6A B8 74 01 00 00",
+  "match": "0x1401c54e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401c54e0",
+  "kind": "func_start",
+  "names": [
+   "Game_MaterialActorProxyPropertyRegister_RegisterUpdateGroup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401c54e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401c54e0.c",
+   "notes": "V4348 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

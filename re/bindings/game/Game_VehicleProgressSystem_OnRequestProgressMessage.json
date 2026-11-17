@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressSystem_OnRequestProgressMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f07750",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VehicleProgressSystem::onRequestProgressMessage; log channel NETWORK: 'VehicleProgressSystem::onRequestProgressMessage(connId=%d)'"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_system_on_request_progress_message",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 71",
+  "match": "0x142f07750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f07750",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressSystem_OnRequestProgressMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142f07750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f07750.c;xref:0x142ef75c7",
+   "notes": "V5570 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

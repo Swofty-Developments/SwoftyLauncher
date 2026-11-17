@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Build_DriverCustomisationWillThumb",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e31ac0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Build_DriverCustomisationWillThumb(void *a, void *ctx, uint32_t id, uint8_t f1, uint8_t f2, void *out)",
+  "evidence": "decomp:re/decomp/142e31ac0.c;xref:0x141c56e84;xref:0x141c6191b;xref:0x141cbd1eb",
+  "notes": "myteam-g2: Looks up the driver customisation thumbnail (Game_UIThumbnailSystem_FindDriverCustomisationWill) for the equipped upgrade and builds the thumbnail node. Cosmetic UI for the R&D equipped upgrades panel."
+ },
+ "signature": {
+  "id": "ui.build_driver_customisation_will_thumb",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 20 02 00 00 44 89 CB",
+  "match": "0x142e31ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e31ac0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Build_DriverCustomisationWillThumb"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142e31ac0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e31ac0.c",
+   "notes": "V10250 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

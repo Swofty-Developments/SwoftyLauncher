@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_TexStream_ComputeMipDeficit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bfc8d0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bfc8d0.c;xref:0x143eb930c",
+  "notes": "Computes mip deficit for a streamed texture: wanted = density*scale*p3 against the per-mip size table at tex+0xd8 (mip bounds tex+0x35..+0x39), picks mip index, raises pending-mip count, uses ctx+0x1f0/0x200 and ctx flags 0x21c. Log strings TEXTURE_STREAM_ADD_COMMANDS, \"[Priority %3.3f] Density [%3.3f] Deficit [%3.3f] ... Mips %d to %d\", \"FAILED for %s Required %llu, Available Memory %d, Available Temp Memory\". Caller Game_TextureStreaming_AdjustQualityFactor. Addon: texture streaming debug/quality."
+ },
+ "signature": {
+  "id": "render.tex_stream_compute_mip_deficit",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 48 89 CB 44 0F",
+  "match": "0x143bfc8d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bfc8d0",
+  "kind": "func_start",
+  "names": [
+   "Render_TexStream_ComputeMipDeficit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bfc8d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bfc8d0.c;xref:0x143eb930c",
+   "notes": "V7845 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

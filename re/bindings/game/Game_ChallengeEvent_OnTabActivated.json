@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ChallengeEvent_OnTabActivated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a84600",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141a84600.c;xref:0x14572b558",
+  "notes": "Challenge event tab populate: event title/description/countdown, weekly and passive goals (goal_%d), wallet balance, track list. F1 World only. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3070)"
+ },
+ "signature": {
+  "id": "game.challenge_event_on_tab_activated",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 05 00 00 C5 F8 29 BC 24 E0 05 00 00 C5 F8 29 B4 24 D0 05 00 00 48 89 CE 80 3D",
+  "match": "0x141a84600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a84600",
+  "kind": "func_start",
+  "names": [
+   "Game_ChallengeEvent_OnTabActivated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Game_ChallengeEvent_OnTabActivated",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a84600.c;xref:0x14572b558",
+   "notes": "V3070 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UnrankedMatching_OnIncomingConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315f400",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=UnrankedMatching::onIncomingConnection; log channel NETWORK: 'virtual neon::NeNetError network::UnrankedMatching::onIncomingConnection(const neon::NePresenceUserIDList &) | %s: event session is about to start, tell the player session is full'"
+ },
+ "signature": {
+  "id": "game.unranked_matching_on_incoming_connection",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 C5 F9 29 7C 24 40 C5 F9 29 74 24 30 48 89 CF",
+  "match": "0x14315f400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315f400",
+  "kind": "func_start",
+  "names": [
+   "Game_UnrankedMatching_OnIncomingConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14315f400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315f400.c",
+   "notes": "V5770 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

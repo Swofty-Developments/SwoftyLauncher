@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Careereventssequencer_ResetState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c71b00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name resetState (class from the log channel); log channel CareerEventsSequencer_Verbose: 'resetState'"
+ },
+ "signature": {
+  "id": "game.careereventssequencer_reset_state",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 61 B8 74 01 00 00",
+  "match": "0x140c71b00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c71b00",
+  "kind": "func_start",
+  "names": [
+   "Game_Careereventssequencer_ResetState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c71b00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c71b00.c;xref:0x1406ef5e7,0x140c740ff",
+   "notes": "V4597 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

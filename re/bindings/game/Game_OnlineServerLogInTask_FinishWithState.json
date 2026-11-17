@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineServerLogInTask_FinishWithState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14336b270",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14336b270.c;xref:0x14336b4e9,0x14336cc5a",
+  "notes": "Direct helper of OnlineServerLogInTask (not in the vtable): stores param_2 into state +0x1b8; unless 0x14336da00 says a continuation is pending, applies 'Network.ForceMPMode' (0x1430ed330) and marks the task finished (+0xa1=1, F1OS-TASKSYSTEM 'setting finished' log). Called from Game_F1osTasksystem_RefreshingSessionTokenReceived 0x14336b390 (log-out on token refresh) and the geolocation code after 0x14336be50 (3 calls). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3318)"
+ },
+ "signature": {
+  "id": "game.online_server_log_in_task_finish_with_state",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 88 91 B8 01 00 00 E8",
+  "match": "0x14336b270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14336b270",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineServerLogInTask_FinishWithState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_OnlineServerLogInTask_FinishWithState",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14336b270.c;xref:0x14336b270",
+   "notes": "V3318 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

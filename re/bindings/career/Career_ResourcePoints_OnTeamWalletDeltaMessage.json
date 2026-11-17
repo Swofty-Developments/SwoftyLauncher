@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_OnTeamWalletDeltaMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14122a070",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ResourcePoints_OnTeamWalletDeltaMessage(void *rp, void *msg)",
+  "evidence": "decomp:re/decomp/14122a070.c;xref:0x141226da4;xref:0x1412277f1",
+  "notes": "myteam-g2: RP message handler: in per-team mode (rp+0x4b0 == 1) calls Career_Adjust_RpTeamWallet(rp+0x528, team_key = msg+0x14, delta = msg+0x10). Ignored in per-driver mode. Hook: simplest RP add/spend entry point (delta signed int at msg+0x10, team key at msg+0x14)."
+ },
+ "signature": {
+  "id": "career.resource_points_on_team_wallet_delta_message",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 80 B9 B0 04 00 00 01 75 13",
+  "match": "0x14122a070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14122a070",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePoints_OnTeamWalletDeltaMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x14122a070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14122a070.c;xref:0x141226da4;xref:0x1412277f1",
+   "notes": "V9011 Exactly: if rp+0x4b0==1 call FUN_143508540 (Career_Adjust_RpTeamWallet) on rp+0x528 with team = msg+0x14, delta = msg+0x10; otherwise nothing."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PauseAvailabilityVM_OnActivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bb74b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_PauseAvailabilityVM_OnActivate(void *vm)",
+  "evidence": "str:s_cfg_UIShowLoadingTips;decomp:re/decomp/142bb74b0.c;xref:0x142bbd7fe,0x142bbd7ff,0x1457cba58",
+  "notes": "Slot 13 (screen VM OnActivate) of the vtable at 0x1457cb9f0 (pointer 0x1457cba58), the same vtable whose slot 10 is Game_PauseAvailabilityViewModel_OnCommandRaised 0x142bc10f0 and slot 18 Game_PauseMenu_ResetToTrackCfg 0x142bb7020 (string PauseAvailabilityViewModel before it). Size 0x6dbe: builds the whole pause-menu view model (Game_PauseAvailability_Rebuild 0x142bb3370, options/popup_root nodes, objectives, specialists, weekly events, connection warning icons, ratings, report code). The setting is a small part: UI.ShowLoadingTips via Ne_Get_SettingBool 0x143a43b90 on node [[vm+0x428]+0x18], default 1; show_hints = value AND global byte [0x14604ea28]+0x38 == 0, written with Vm_Set_Bool as 'show_hints' and gating the hint_title/hint_subtitle block. Then allocates a 0x60-byte helper into vm+0x1108. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.pause_availability_vm_on_activate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 05 00 00 C5 F8 29 B4 24 F0 04 00 00 48 89 CE C6 81 C8 10 00 00 00",
+  "match": "0x142bb74b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bb74b0",
+  "kind": "func_start",
+  "names": [
+   "Game_PauseAvailabilityVM_OnActivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-3",
+   "kind": "func",
+   "item": "0x142bb74b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bb74b0.c;xref:0x1457cba58",
+   "notes": "V9360 Slot shared with TitleScreen OnScreenActivated (+0x68 from vtable start), in the vtable whose OnCommandRaised is Game_PauseAvailabilityViewModel_OnCommandRaised; very large body that populates pause-menu availability properties (quit/restart message type, weekly_event_*, connection icons, safety_rating_affected, ranked, settings.use_camera, UI.ShowLoadingTips...); arity 1 matches."
+  }
+ ],
+ "proofs": []
+}

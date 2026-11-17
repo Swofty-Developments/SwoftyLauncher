@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Init_SponsorTypeEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f52f40",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *entry, void *a, void *b, void *row",
+  "evidence": "decomp:re/decomp/140f52f40.c;xref:0x140f0da77;xref:0x140f0daad",
+  "notes": "myteam-g1: Constructs a sponsor_type definition entry from a game-db row: bool derived from a FNV-1a hashed string field (case-folded) at +0x48 and an int (+0x4c)."
+ },
+ "signature": {
+  "id": "career.init_sponsor_type_entry",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 4C 89 CF 48 89 CE 4C 89 41 08 48 C7 41 10 00 00 00 00 48 C7 41 20 00 00 00 00 48 89 51 28 48 8D 05 ?? ?? ?? ?? 48 89 01 C5 F8 57 C0",
+  "match": "0x140f52f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f52f40",
+  "kind": "func_start",
+  "names": [
+   "Career_Init_SponsorTypeEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f52f40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f52f40.c;xref:0x140f0da77;str:\"sponsor_type\"",
+   "notes": "V9578 Reads sponsor_type attr, FNV-1a hash compared to one constant -> bool at +0x48; int num_race_weekends at +0x4c."
+  }
+ ],
+ "proofs": []
+}

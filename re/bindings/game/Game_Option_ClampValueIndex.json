@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Option_ClampValueIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142abb3a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142abb3a0.c;xref:0x140311003,0x14094aaa4",
+  "notes": "(option, index) -> clamped index: type +0x18==2 int range [+0x160,+0x164] (valid flag +0x168), type 1 list (count +0xb8); on invalid input logs 'generic_option_error'. 143 call sites (frontend view models, Game_CannedEvents_LoadPlayerFaultData, Vm_Set_Bool)."
+ },
+ "signature": {
+  "id": "game.option_clamp_value_index",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 89 D7 44 8B",
+  "match": "0x142abb3a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142abb3a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Option_ClampValueIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142abb3a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142abb3a0.c;xref:0x140976d10,0x1409ba0c0",
+   "notes": "V3414 type +0x18==2 range +0x160/+0x164 valid +0x168, count +0xb8, generic_option_error logging ok; but .xtls call sites = 149 not 143; named callers Vm_Set_Bool and Game_CannedEvents_LoadPlayerFaultData ok"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142abb3a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142abb3a0.c;xref:0x140976d10,0x1409ba0c0",
+   "notes": "V3419 CORRECTION of V3414: .xtls call sites = 143 (data1 excluded) matches; type +0x18==2 range +0x160/+0x164 valid +0x168, list count +0xb8, generic_option_error"
+  }
+ ],
+ "proofs": []
+}

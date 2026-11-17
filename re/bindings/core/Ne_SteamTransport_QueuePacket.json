@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SteamTransport_QueuePacket",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14409aa40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14409aa40.c;xref:0x14409a9a1,0x14409cb16",
+  "notes": "Steam P2P transport: per-peer aggregation buffers (reliable at peer+0x4c0, unreliable when param3==0 at peer+8, max 0x492 bytes, length u32 at +0x494); sub-message header u16 = channel<<13, reliable<<12, len&0x7ff; packet header u16 = (len-2)&0xfff; sends via ISteamNetworking SendP2PPacket when full; per-filter byte counters. Addon: raw packet framing of online traffic."
+ },
+ "signature": {
+  "id": "core.steam_transport_queue_packet",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4C 89 4C 24 38 44 89 44",
+  "match": "0x14409aa40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14409aa40",
+  "kind": "func_start",
+  "names": [
+   "Ne_SteamTransport_QueuePacket"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Ne_SteamTransport_QueuePacket",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14409aa40.c;xref:0x14409aa40",
+   "notes": "V2790 sub header (ch<<13|rel<<12|len&0x7ff), max 0x492, packet header (len-2)&0xfff, reliable buf +0x4c0 confirmed"
+  }
+ ],
+ "proofs": []
+}

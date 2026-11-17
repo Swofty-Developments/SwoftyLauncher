@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_SendRegisteredEntrants",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431099a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name sendRegisteredEntrants (class from the log channel); log channel NETWORK-ENTRANTS: '%s(%d).'"
+ },
+ "signature": {
+  "id": "game.network_entrants_send_registered_entrants",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 83 79 08 01 7F 0F",
+  "match": "0x1431099a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431099a0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_SendRegisteredEntrants"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431099a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431099a0.c;xref:0x14309fd99",
+   "notes": "V5743 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

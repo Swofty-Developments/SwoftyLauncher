@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorRenewalDetailsVM_Build",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423f0190",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm, void *data",
+  "evidence": "decomp:re/decomp/1423f0190.c;xref:0x1423efe6a;xref:0x1423eff7a",
+  "notes": "myteam-g1: Builds my_team_sponsor_renewal_details and my_team_sponsor_contract_basic_offer with sponsor_info and lng_sponsor_next_reward."
+ },
+ "signature": {
+  "id": "career.sponsor_renewal_details_vm_build",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 B4 24 80 01 00 00 0F B7 42 08",
+  "match": "0x1423f0190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423f0190",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorRenewalDetailsVM_Build"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423f0190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423f0190.c",
+   "notes": "V10201 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

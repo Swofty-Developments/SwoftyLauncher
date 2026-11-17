@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_PassTable_FindOrAddBitByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b81e10",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b81e10.c;xref:0x143b19823",
+  "notes": "Takes a global CS, hashes a C string (0x143f0d610) in the table at this+8 (entries 0x20 stride at this+0x20) and returns a ref-counted entry. 15 call sites in Game_Renderer_CreateRenderPasses (render passes by name). Hypothesis on entry type. vp3-verify partial/disagree"
+ },
+ "signature": {
+  "id": "render.pass_table_find_by_name",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 48 89 D6 48 89 CF 4C",
+  "match": "0x143b81e10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b81e10",
+  "kind": "func_start",
+  "names": [
+   "Render_PassTable_FindOrAddBitByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143b81e10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143b81e10.c;xref:0x143b19823",
+   "notes": "V7786 Render_PassTable_FindOrAddBitByName: under global CS hashes name, returns a 128-bit one-hot mask (assigns next bit and copies the name when missing); not a ref-counted entry"
+  }
+ ],
+ "proofs": []
+}

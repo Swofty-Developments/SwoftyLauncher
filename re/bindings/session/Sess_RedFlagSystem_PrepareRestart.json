@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlagSystem_PrepareRestart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143584c00",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(RedFlagSystem*)",
+  "evidence": "decomp:re/decomp/143584c00.c;xref:0x142dff5c5",
+  "notes": "red flag restart prep (from Sess_RedFlagToRestart_Update): per car increments participant +0x14 (pit stops), records a history row (+0x198 +0x40) and posts PitStopComplete (vt 0x145845aa8) {car, time = +0x6c*60, stops}: the red flag tyre change counts as a pit stop; free tyre change flag from the repair-table row. sb-verify-a: PitStopComplete fields time +0x14, stops +0x1c; 'free tyre change flag' is unproven: row byte +4 (same flag as the front-wing fix) only gates a history-row bool copied from snapshot table +0x100[car]"
+ },
+ "signature": {
+  "id": "session.red_flag_system_prepare_restart",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 79 29 94 24",
+  "match": "0x143584c00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143584c00",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlagSystem_PrepareRestart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_RedFlagSystem_PrepareRestart",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143584c00.c;xref:0x142dff5c5",
+   "notes": "V1850 role holds: participant +0x14++, history row +0x198+0x40, PitStopComplete vt 145845aa8 {car, time +0x14 = 60*+0x6c, stops +0x1c}. Detail unproven: row byte +4 is not clearly a 'free tyre change' flag - it is the same flag that gates front-wing fix in PerformRepairs; here it gates history-row bool = snapshot table +0x100[car]"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_RedFlagSystem_PrepareRestart",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143584c00.c;xref:0x142dff5c5",
+   "notes": "V3952 role holds: participant +0x14++, history row +0x198+0x40, PitStopComplete vt 145845aa8 {car, time +0x14 = 60*+0x6c, stops +0x1c}. Detail unproven: row byte +4 is not clearly a 'free tyre change' flag - it is the same flag that gates front-wing fix in PerformRepairs; here it gates history-row bool = snapshot table +0x100[car]"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x143584c00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143584c00.c;xref:0x142dff5c5",
+   "notes": "V4188 Per car increments participant +0x14 (pit stops), history row via 0x1403106f0 on +0x198+0x40, posts PitStopComplete vt 0x145845aa8 with time +0x14 = 60*(+0x6c) and stops +0x1c; caller Sess_RedFlagToRestart_Update"
+  }
+ ],
+ "proofs": []
+}

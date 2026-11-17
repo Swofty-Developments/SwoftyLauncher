@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_SaveSlotManager_Deserialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1429d6810",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_SaveSlotManager_Deserialise(void *iface, void *bag, void *ctx)",
+  "evidence": "decomp:re/decomp/1429d6810.c;xref:0x1457b6158",
+  "notes": "slot manager vt+0x18 (this = manager+0x18): clears the slots (0x1429d2820), reads the 'slots' list and loads each with 0x1429d42f0 (slot info 0x1429d4a30, mss_id, data_size + raw 'data' blob kept at slot+0x178/+0x180), then active_slot_id and highest_slot_id. The career data of every slot of a mode lives here, inside that mode's container."
+ },
+ "signature": {
+  "id": "game.save_slot_manager_deserialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4D 89 C7 49 89 D6",
+  "match": "0x1429d6810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429d6810",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveSlotManager_Deserialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "kbverify-saves1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/save_splice.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-saves1",
+   "kind": "func",
+   "item": "Game_SaveSlotManager_Deserialise",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429d6810.c;xref:0x1457b6158,0x1429d6830,0x1429d6a90",
+   "notes": "V3855 Own decompile and disasm: rcx=iface (manager+0x18, lea rbx,[rcx-0x18]), rdx=bag, r8=ctx; ms64 convention, int return, 0 on success. Clears slots (0x1429d2820), reads 'slots' list, loads each with LoadSlot, then active_slot_id and highest_slot_id; proto matches. Reached only by vtable 0x1457b6158, so a wrap must patch the entry."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqDriverContractsView_BindWidgets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141eed330",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_TeamHqDriverContractsView_BindWidgets(void *view)",
+  "evidence": "decomp:re/decomp/141eed330.c;xref:0x14575a660",
+  "notes": "myteam-g1: Resolves/binds child widgets of the driver_contracts panel (view+0x670..0x730 widget slots, stride 0x20) by name through the UI tree and caches them. UI plumbing for the HQ driver contracts card."
+ },
+ "signature": {
+  "id": "career.team_hq_driver_contracts_view_bind_widgets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 48 89 CE 48 8B 41 10",
+  "match": "0x141eed330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141eed330",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqDriverContractsView_BindWidgets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141eed330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141eed330.c;xref:0x14575a660",
+   "notes": "V10007 Binds driver_contracts child widgets (show_contracts, show_ratings, show_leverage)."
+  }
+ ],
+ "proofs": []
+}

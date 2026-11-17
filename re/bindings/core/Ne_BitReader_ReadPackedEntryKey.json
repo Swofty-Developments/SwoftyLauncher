@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_BitReader_ReadPackedEntryKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b87cc0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140b87cc0.c;xref:0x140b7a937",
+  "notes": "Reads a 16-bit little-endian value at the current bit offset (+0x24) from buffer (+0x10, size +0x1c, limit +0x20); sets error byte +0x28 on overrun. Callers Game_ChampComponent_FlushPendingSpawn, ChampionshipQualifyingTyreComponent_Deserialize. vp0-verify partial"
+ },
+ "signature": {
+  "id": "core.bit_reader_read_u16",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 48 89 D6 48 89 CF 0F B7",
+  "match": "0x140b87cc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b87cc0",
+  "kind": "func_start",
+  "names": [
+   "Ne_BitReader_ReadPackedEntryKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140b87cc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140b87cc0.c;xref:0x140b87c3c",
+   "notes": "V8020 Ne_BitReader_ReadPackedEntryKey: reads u16 (rotated by 14 bits), a ranged int via 0x143925a50 and a byte into a struct; not a plain u16 read"
+  }
+ ],
+ "proofs": []
+}

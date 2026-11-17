@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationReplicationManager_UpdatePlayerLifeDataVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14318b770",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=CustomisationReplicationManager::updatePlayerLifeDataVehicleCustomisations; log channel NETWORK-CUSTOMISATION-REPLICATION: 'void network::CustomisationReplicationManager::updatePlayerLifeDataVehicleCustomisations(const PlayerDescription &, const game::F1LifeVehicleCustomisationsGroup | %s: Updated player (%s) life data veh'"
+ },
+ "signature": {
+  "id": "game.customisation_replication_manager_update_player_life_data_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC E0 07 00 00",
+  "match": "0x14318b770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14318b770",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationReplicationManager_UpdatePlayerLifeDataVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14318b770",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14318b770.c;xref:0x14318d247",
+   "notes": "V5886 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DepartmentEventsComponent_DeserialiseTeamData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cc1c90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_Championship_DepartmentEventsComponent_DeserialiseTeamData;xref:0x140cc1d40,0x140cc21eb,0x140cc2e44,0x140cc30ab,0x140cc34d5,0x140cc3699,0x140cc3b45,0x140cc3c76,0x140cc43d8,0x140cc4d88,0x140cc53f4,0x140cc6ccf,0x140cc6f40",
+  "notes": "cxx=game::championship::DepartmentEventsComponent::deserialiseTeamData; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.department_events_component_deserialise_team_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 C5 78 29 8C 24",
+  "match": "0x140cc1c90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cc1c90",
+  "kind": "func_start",
+  "names": [
+   "Game_DepartmentEventsComponent_DeserialiseTeamData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140cc1c90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cc1c90.c;xref:0x140cc1796",
+   "notes": "V4672 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

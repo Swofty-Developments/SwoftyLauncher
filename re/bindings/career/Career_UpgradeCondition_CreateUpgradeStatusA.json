@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_UpgradeCondition_CreateUpgradeStatusA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f5c0e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *FUN(void *self, void *owner, void *ctx, void *cfg)",
+  "evidence": "decomp:re/decomp/140f5c0e0.c;xref:0x140f11537;xref:0x140f1156d",
+  "notes": "myteam-g1: Condition constructor reading upgrade_status and mapping the status string by FNV-1a hash to a status enum."
+ },
+ "signature": {
+  "id": "career.upgrade_condition_create_upgrade_status_a",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 4C 89 CF 48 89 CE 4C 89 41 08 48 C7 41 10 00 00 00 00 48 C7 41 20 00 00 00 00 48 89 51 28 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 15 ?? ?? ?? ?? 4C 89 C9 E8 ?? ?? ?? ?? 48 8B 40 10 48 85 C0 0F 84",
+  "match": "0x140f5c0e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f5c0e0",
+  "kind": "func_start",
+  "names": [
+   "Career_UpgradeCondition_CreateUpgradeStatusA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f5c0e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f5c0e0.c;xref:0x140f11537;str:\"upgrade_status\"",
+   "notes": "V9579 Reads upgrade_status, FNV-1a lowercase hash mapped to enum 1..8 (0 default); vtable 1456ac900."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqMyTeam_UpdateDayNumber",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14232ac80",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_TeamHqMyTeam_UpdateDayNumber(void *vm)",
+  "evidence": "decomp:re/decomp/14232ac80.c;xref:0x142329000;xref:0x142333394",
+  "notes": "myteam-g2: Computes the current career day number from the clock at (vm+0x360)+0x2b0 (>>5 / 0x2d) and sets the displayed day (day-of-season entry +1) from the team day record (FUN_141268490). UI refresh only."
+ },
+ "signature": {
+  "id": "vm.team_hq_my_team_update_day_number",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 F8 29 BC 24 00 01 00 00 C5 F8 29 B4 24 F0 00 00 00 48 89 CE 48 8B 81 60 03 00 00",
+  "match": "0x14232ac80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14232ac80",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqMyTeam_UpdateDayNumber"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14232ac80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14232ac80.c;xref:0x142329000",
+   "notes": "V10137 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

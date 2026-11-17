@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Window_NeWindowWinChangeSettingsChanging",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439f7d80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-WINDOW",
+  "notes": "named from its log messages (channel WINDOW): 'NeWindowWin::changeSettings: Changing resolution and display mode at the same time - new resolution = (%dx%d)!!'"
+ },
+ "signature": {
+  "id": "game.window_ne_window_win_change_settings_changing",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 0C 00 00 49 89 C8",
+  "match": "0x1439f7d80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439f7d80",
+  "kind": "func_start",
+  "names": [
+   "Game_Window_NeWindowWinChangeSettingsChanging"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1439f7d80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1439f7d80.c;xref:0x1439dc282",
+   "notes": "V6408 0x223b changeSettings: resolution, display mode, HDR mode, save hardware settings; log is one case. Better Game_Window_NeWindowWinChangeSettings"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1439f7d80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439f7d80.c;xref:0x1439dc282",
+   "notes": "V7043 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

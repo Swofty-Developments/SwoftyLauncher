@@ -4,6 +4,8 @@
 #include <cstdint>
 #include <string>
 
+#include "core/runtime/pages.hpp"
+
 namespace runtime {
 
 // The running game build and how the core finds addresses in it.
@@ -28,7 +30,6 @@ bool verified_build();
 uintptr_t manager_entrants_system();
 
 uintptr_t find(const Sig &s, const char *tag, const char *channel = "assets");
-bool readable(const void *p, size_t n);
 // The running build's distribution as the binding set names it: "steam", "ea" or "unknown", and the exe's SHA-256.
 std::string build_distribution();
 std::string build_exe_sha();

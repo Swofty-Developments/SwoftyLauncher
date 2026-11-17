@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StateSpectatorSyncMonitor_OnUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436fac90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=StateSpectatorSyncMonitor::onUpdate; log channel NETWORK: 'StateSpectatorSyncMonitor::onUpdate() leaving as we were interrupted'"
+ },
+ "signature": {
+  "id": "game.state_spectator_sync_monitor_on_update",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CF 48 8B 81 F8 0B 00 00",
+  "match": "0x1436fac90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436fac90",
+  "kind": "func_start",
+  "names": [
+   "Game_StateSpectatorSyncMonitor_OnUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436fac90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436fac90.c",
+   "notes": "V6148 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

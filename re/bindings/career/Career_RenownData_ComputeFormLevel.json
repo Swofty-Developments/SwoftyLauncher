@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownData_ComputeFormLevel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f99080",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int (void *renown_data)",
+  "evidence": "decomp:re/decomp/140f99080.c;xref:0x140a8d011;xref:0x140e57650;xref:0x140f94858",
+  "notes": "myteam-g2: Computes the form value from the renown weighting entries (list renown_data+0xd8..0xe0, 0x78-byte items with 16-byte points): weighted average of (x + point[0]) * point[1]/sum, weighted by age_weighting (+0xf4, 1-weight for items with kind > 10) plus +0xf0; then maps the float to a signed level by walking the up-threshold table (config +0x28) or the down-threshold table (+0x48), returning -n on the negative side. Read-only form value shown with renown."
+ },
+ "signature": {
+  "id": "career.renown_data_compute_form_level",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 C5 F8 29 7C 24 10 C5 F8 29 34 24 48 8B 81 D8 00 00 00",
+  "match": "0x140f99080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f99080",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownData_ComputeFormLevel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f99080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f99080.c;xref:0x140a8d011",
+   "notes": "V9605 Weighted average over 0x78-byte items (+0xd8..+0xe0) with +0xf0/+0xf4 weights, then threshold walk in config tables +0x28/+0x48, negative on down side; matches."
+  }
+ ],
+ "proofs": []
+}

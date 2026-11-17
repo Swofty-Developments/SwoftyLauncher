@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneSystem_UnloadAllUnlockedCustomisation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428bda10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name unloadAllUnlockedCustomisation (class from the log channel); log channel FRONTEND_SCENE_SYSTEM: 'unloadAllUnlockedCustomisation()'"
+ },
+ "signature": {
+  "id": "game.frontend_scene_system_unload_all_unlocked_customisation",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5D B8 74 00 00 00",
+  "match": "0x1428bda10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428bda10",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneSystem_UnloadAllUnlockedCustomisation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428bda10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428bda10.c;xref:0x141643e0e",
+   "notes": "V5128 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

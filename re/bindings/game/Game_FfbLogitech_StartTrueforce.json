@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbLogitech_StartTrueforce",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f1cb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-LOGITECH",
+  "notes": "named from its log messages (channel LOGITECH): 'Preparing to start FFB | STARTING TRUEFORCE at address: %p |  - m_constantForce->Start( 1, 0 ); with result %X |  - m_springForce->Start( 1, 0 ); with result %X |  - m_frictionForce->Start( 1, 0 ); wi'"
+ },
+ "signature": {
+  "id": "game.ffb_logitech_start_trueforce",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE C7 81 B0 01 00 00 00 00 00 00 C5 F8 57 C0",
+  "match": "0x1446f1cb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f1cb0",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbLogitech_StartTrueforce"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f1cb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f1cb0.c",
+   "notes": "V6840 Start strings (constant/spring/friction Start(1,0)) confirmed; calls StopTrueforce on failure. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

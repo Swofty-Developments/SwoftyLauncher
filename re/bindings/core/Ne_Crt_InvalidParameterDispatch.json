@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_InvalidParameterDispatch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14534a050",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14534a050.c;xref:0x145349d3c,0x145349d1c",
+  "notes": "CRT invalid-parameter dispatcher: fills a state block (flags from _DAT_1460142e0, handler defaults _DAT_145f8cc68..) and calls 0x145349f38 / 0x14532e950 to invoke the user handler. Called from Ne_Crt_FatalTrapB."
+ },
+ "signature": {
+  "id": "core.crt_invalid_parameter_dispatch",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 55 48 8B EC 48 83 EC 70 48 83 65 C0 00 83 3D",
+  "match": "0x14534a050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14534a050",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_InvalidParameterDispatch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x14534a050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14534a050.c;xref:0x145349d1c",
+   "notes": "V8192 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

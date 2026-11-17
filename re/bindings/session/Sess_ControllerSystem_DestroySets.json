@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ControllerSystem_DestroySets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143899f30",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(ControllerSystem*)",
+  "evidence": "decomp:re/decomp/143899f30.c;xref:0x145882560",
+  "notes": "vt_Sess_ControllerSystem slot 24 (+0xc0). Destroys every ControllerSet in [sys+0x30..+0x38) (Game_ControllerSet_Destroy then free through the allocator [sys+0x10]), empties the list, clears [sys+0x48] (human count) and [sys+0x365] (sets built), frees the observer object [sys+0x368]. Every pointer into a set (or to its human/AI controller) is dead after this runs. The only callers of Game_ControllerSet_Destroy are this function and the system destructor 0x1438d2a40."
+ },
+ "signature": {
+  "id": "session.controller_system_destroy_sets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 4C 8B 71 30",
+  "match": "0x143899f30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143899f30",
+  "kind": "func_start",
+  "names": [
+   "Sess_ControllerSystem_DestroySets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ai-v1",
+   "kind": "func",
+   "item": "0x143899f30",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143899f30.c;xref:0x145882560",
+   "notes": "V1532 slot 24 (+0xc0) confirmed by raw read. Destroys every set in [sys+0x30..+0x38) via Game_ControllerSet_Destroy 0x143896ed0 (callers: this function and the system destructor 0x1438d2a40 only), truncates the list, zeroes [sys+0x48] and byte [sys+0x365], frees [sys+0x368]. Does not clear [sys+0x366]."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RaceStrategy_FinalisePlan",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14369bfa0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14369bfa0.c;xref:0x14369e007",
+  "notes": "State +0x1e0: 6/7 or no stints -> 7; else sets +0x268 flag 0x4000 (state <= 1) or 0x80000 (state 3), calls 0x14369aed0 and Sess_RaceStrategy_BuildPitPlan, sets +0x1d8 = 0xffffffff00000004. (1 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.race_strategy_finalise_plan",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 8B 81 E0 01 00 00 89 C1",
+  "match": "0x14369bfa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14369bfa0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RaceStrategy_FinalisePlan"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x14369bfa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14369bfa0.c;xref:0x14369e007",
+   "notes": "V6769 Matches exactly; BuildPitPlan = 0x14369a120."
+  }
+ ],
+ "proofs": []
+}

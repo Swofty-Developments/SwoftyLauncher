@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Update_ResourcePointsAvailable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141bc6c80",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void f(void *view)",
+  "evidence": "decomp:re/decomp/141bc6c80.c;xref:0x141f773b0;xref:0x145753cf8",
+  "notes": "myteam-g1: View update showing resource_points_available with the RP icon overrides."
+ },
+ "signature": {
+  "id": "career.update_resource_points_available",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 58 79 00 00",
+  "match": "0x141bc6c80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141bc6c80",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_ResourcePointsAvailable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141bc6c80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141bc6c80.c;xref:0x141f773b0;xref:0x145753cf8",
+   "notes": "V9955 1380-line view update dominated by session_track_info/time_remaining/track status/cars on track; resource_points_available with RP icons is only one section."
+  }
+ ],
+ "proofs": []
+}

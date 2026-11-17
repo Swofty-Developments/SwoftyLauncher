@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamContract_OnSendCounterOffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142345130",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_MyTeamContract_OnSendCounterOffer(void *screen, void **event, void *arg)",
+  "evidence": "decomp:re/decomp/142345130.c;xref:0x145780eb0",
+  "notes": "myteam-g1: UI action for my_team_driver_contracts_send_counter_offer: reads the edited offer values from the screen (screen+0x5a0..0x6c0, comp at +0x298), sends the counter offer through the contract component (FUN_140dbc230 family) and updates the status text."
+ },
+ "signature": {
+  "id": "career.my_team_contract_on_send_counter_offer",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 40 01 00 00 48 8B 02",
+  "match": "0x142345130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142345130",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamContract_OnSendCounterOffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142345130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142345130.c",
+   "notes": "V10153 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

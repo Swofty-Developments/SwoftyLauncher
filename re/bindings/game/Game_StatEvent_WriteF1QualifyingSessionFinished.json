@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteF1QualifyingSessionFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143766c60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-STATEVENT",
+  "notes": "named from its log messages (channel STATEVENT): 'Executing EventWriteF1QualifyingSessionFinished with [%d] StatisticDataProviders registered.'"
+ },
+ "signature": {
+  "id": "game.stat_event_write_f1_qualifying_session_finished",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 38 19 00 00 E8 ?? ?? ?? ?? 48 29 C4 44 89 CF",
+  "match": "0x143766c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143766c60",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteF1QualifyingSessionFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x143766c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143766c60.c;xref:0x1437935ea",
+   "notes": "V6220 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

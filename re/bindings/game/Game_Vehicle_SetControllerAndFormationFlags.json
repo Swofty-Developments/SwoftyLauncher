@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Vehicle_SetControllerAndFormationFlags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143613aa0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143613aa0.c;doc:re/db/subsystems/game.md",
+  "notes": "cf-verify claim 6: same car+0x124 / car+0x134 b7 write as 0x14389cc90 target; also sets car+0x130 b7 (PU wear), +0x131 b6, +0x132 b2 (fuel use) (formation lap path, H)"
+ },
+ "signature": {
+  "id": "game.vehicle_set_controller_and_formation_flags",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 89 CF 66 C7 41",
+  "match": "0x143613aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143613aa0",
+  "kind": "func_start",
+  "names": [
+   "Game_Vehicle_SetControllerAndFormationFlags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143613aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143613aa0.c",
+   "notes": "V4045 +0x124/+0x134 b7 write (lines 174-177) and +0x130 b7, +0x131 b6, +0x132 b2 (lines 51-53) confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

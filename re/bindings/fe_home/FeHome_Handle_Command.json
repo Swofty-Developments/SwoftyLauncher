@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "FeHome_Handle_Command",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141bb3c20",
+  "level": "L3",
+  "subsystem": "fe_home",
+  "proto": "uint64_t FeHome_Handle_Command(FEHomeViewModel *vm, NeStr **cmd)",
+  "evidence": "decomp:work/exe/decomp/141bb3c20_fe_home_dispatch.c;xref:0x145738ab0;doc:research/exe.md#3.3;str:s_FEHomeViewModel_onCommandRaised;imm:0x02b0357a;trace:T000/run1:58",
+  "notes": "cxx=game::FEHomeViewModel::onCommandRaised; commands matched by djb2 (see strings_anchors h_*); select_pressed -> GetSelectedItem -> vt+0x70 -> vt+0x30/0x38 -> vt+0x28 getAction -> type 1 fires route; runtime: getAction reached on select  return type: rax is returned on every path (e.g. 0x7a), meaning unproven; a hook must preserve rax"
+ },
+ "signature": {
+  "id": "fe_home.on_command_raised",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 D7 48 89 CE 48 8B 05 ?? ?? ?? ?? 48 8D 0D",
+  "match": "0x141bb3c20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141bb3c20",
+  "kind": "func_start",
+  "names": [
+   "FeHome_Handle_Command"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "exe-agent",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_GroundCover_BuildMeshIndices",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ce1f40",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ce1f40.c;xref:0x143ce1a55,0x143ce4691",
+  "notes": "Large (8.9 KB) ground cover (grass/gravel instancing) builder; strings 'Unnamed Scene', 'UpdateGroundCoverMeshIndices'; called from Render_GroundCover_Construct. Addon: where grass instancing meshes are prepared. Named callers: Render_GroundCover_Construct."
+ },
+ "signature": {
+  "id": "render.ground_cover_build_mesh_indices",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 06 00 00 C5 78 29 94 24",
+  "match": "0x143ce1f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ce1f40",
+  "kind": "func_start",
+  "names": [
+   "Render_GroundCover_BuildMeshIndices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143ce1f40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ce1f40.c;xref:0x143ce1a55",
+   "notes": "V7894 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Select_MyTeamSetupQuestion",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14205a470",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *flow)",
+  "evidence": "decomp:re/decomp/14205a470.c;xref:0x14205a100;xref:0x14205c13b",
+  "notes": "myteam-g1: Chooses which My Team setup question page to show: cash, facilities, owner, R&D (my_team_setup_question_*)."
+ },
+ "signature": {
+  "id": "career.select_my_team_setup_question",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC C8 00 00 00 80 7A 10 00",
+  "match": "0x14205a470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14205a470",
+  "kind": "func_start",
+  "names": [
+   "Career_Select_MyTeamSetupQuestion"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14205a470",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14205a470.c;xref:0x14205a100",
+   "notes": "V10035 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

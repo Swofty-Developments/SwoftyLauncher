@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_TrackLine_FindCornerEndAndStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14066df70",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "int Ai_TrackLine_FindCornerEndAndStart(void *result, float car_dist, float query_dist, void *spline_data, int route_idx)",
+  "evidence": "decomp:re/decomp/14066df70.c;decomp:re/decomp/140677ae0.c;xref:0x14066deb4",
+  "notes": "was Ai_TrackLine_FindCornerEndAndRetire (renamed 2026-11-16: the tables are not retire lines). Only caller Ai_Overtake_EvaluateGap (0x14066deb4). Lane = [[spline_data+0x60][route_idx]]+0x58 (lane 4). Walks lane+0x4a0 (corner_end_line table, channel 2) for the first key > query (wrap on closed loop lane+0x88) -> result+0x18; then lane+0x4a8 (corner_start_line table, channel 3) backwards for the last key below that corner end -> result+0x20. result+0x40 = corner end distance - car distance (wrapped), result+0x44 = corner start distance - car or 1e38 when < 0 or > +0x40. Gate distance = out-node [gate+0x60+r*8]+0x40 -> +0xb4, else in-node [gate+0x70+r*8]+0x40 -> +0xb0. Returns result+0x18 != 0 && result+0x20 != 0. Table mapping proven via the AISplineData readers (types 1/2/3/5 -> gate+0xd0/+0xd8/+0xe0/+0xf0) and CompileMarkerChannel (gate+0xc8+c*8 -> lane+0x490+c*8); the earlier order brake/corner_start/corner_end/retire = +0x490..+0x4a8 was wrong. L2 2026-11-16 (engine-re racing-line round): decomp read, claims checked against the disassembly, refs from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1; blind verifier agreed. raised by engine-re with --force 2026-11-16 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.track_line_find_corner_end_and_retire",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 78 29 5C 24 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 FA C5 F8",
+  "match": "0x14066df70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14066df70",
+  "kind": "func_start",
+  "names": [
+   "Ai_TrackLine_FindCornerEndAndStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x14066df70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14066df70.c;xref:0x14066deb4",
+   "notes": "V4089 route+0x4a0/+0x4a8 tables to result+0x18/+0x20, caller Ai_Overtake_EvaluateGap"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "triage-verify",
+   "kind": "func",
+   "item": "0x14066df70",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own re/tools/decomp read on the KB build;xref:0x14066deb4",
+   "notes": "V10742 Own read. Route = [[spline_data+0x60][car]]+0x58; finds the first key above the query distance in the table at lane+0x4a0 (wrapping on a closed loop) into result+0x18, then the last key below the corner end in lane+0x4a8 into result+0x20, and writes distances to result+0x40/+0x44. Returns both-found. Table to channel mapping cross-checked: CompileMarkerChannel (0x140677ae0) stores channel c at lane+0x490+c*8 (0x140677ee9) from gate+0xc8+c*8, corner end reader stores gate+0xd8 (channel 2), corner start reader gate+0xe0 (channel 3), so 0x4a0 = corner ends and 0x4a8 = corner starts. FindCornerEndAndStart is the right name, Retire was wrong."
+  }
+ ],
+ "proofs": []
+}

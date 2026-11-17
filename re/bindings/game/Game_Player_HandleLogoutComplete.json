@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Player_HandleLogoutComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434d6a40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_Player_HandleLogoutComplete;xref:0x1434d6aad",
+  "notes": "cxx=game::Player::handleLogoutComplete; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.player_handle_logout_complete",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 CE 80 3D ?? ?? ?? ?? 01 75 63 B8",
+  "match": "0x1434d6a40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434d6a40",
+  "kind": "func_start",
+  "names": [
+   "Game_Player_HandleLogoutComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1434d6a40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434d6a40.c",
+   "notes": "V6059 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

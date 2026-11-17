@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_ResetBindState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439ff280",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439ff280.c;xref:0x1439ff7f8,0x1439ffb03,0x143c8fae5",
+  "notes": "Hypothesis: zeroes input state blocks (+0x7c0 0x400, +0x78 0x548, +0xdc0 0x4c8) and sets defaults of 4; part of XeSS_PrepareInputs chain. Named callers: Render_XeSS_PrepareInputs. vp2-verify partial/disagree"
+ },
+ "signature": {
+  "id": "render.xe_s_s_reset_state",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8D 79 78 48 81",
+  "match": "0x1439ff280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439ff280",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_ResetBindState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439ff280",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1439ff280.c;xref:0x1439ff7f8",
+   "notes": "V7799 better name Render_Gfx_ResetBindState: zeroes blocks and fills 16+ words with 4; callers are generic render passes (0x1439ffae0 forwarder, 0x143c8ef90 ...) with only one XeSS caller; XeSS attribution weak"
+  }
+ ],
+ "proofs": []
+}

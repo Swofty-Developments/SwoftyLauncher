@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_GetResourceViewHandle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bdd2a0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bdd2a0.c;xref:0x143c72753,0x143c7278a",
+  "notes": "Returns a view handle for resource index param_3 (entries stride 0x180 at ctx+0x30; 0xffffffff -> invalid), with mip/slice params and a flag char; copies type field (+0xd0). Callers render passes. Hypothesis."
+ },
+ "signature": {
+  "id": "render.gfx2_get_resource_view_handle",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 84 24 D0 01 00 00 89 83 10 01",
+  "match": "0x143c72753",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143bdd2a0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_GetResourceViewHandle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143bdd2a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bdd2a0.c;xref:0x143c72753",
+   "notes": "V8144 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

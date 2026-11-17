@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_OnNegotiationsFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ff4260",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ff4260.c;xref:0x140ff26c6,0x140ff5743",
+  "notes": "onContractNegotiationsFinished handler: logs 'Negotiations finished', 'Showing perks next time in TeamHQ: %s' (from ShouldShowFiredState). Called from the message dispatchers 0x140ff1480 / 0x140ff5560. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3035)"
+ },
+ "signature": {
+  "id": "career.online_negotiations_on_negotiations_finished",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6B B8",
+  "match": "0x140ff4260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ff4260",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_OnNegotiationsFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_OnlineNegotiations_OnNegotiationsFinished",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff4260.c;xref:0x140ff1480",
+   "notes": "V3035 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_SpeechSystem_PostLine",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140a30b60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_SpeechSystem_PostLine(void *speech, void *line, uint8_t retrigger)",
+  "evidence": "decomp:re/decomp/140a30b60.c;xref:0x140a2a6e9,0x140a3500a,0x140a38787;decomp:re/decomp/140a36730.c;decomp:re/decomp/140ac1160.c;decomp:re/decomp/140ac11a0.c;decomp:re/decomp/142b77fa0.c",
+  "notes": "posts one speech line: line+0x98 = now + line+0x88 ms; event play_speech_<speaker>_<type> with speaker = *(*(*(speech+0x728) + 0x60 + line[+0x80]*0x88) + 0x18) when line[+0x80] < speech[+0x7cc], type from the 4-entry table 0x146051dc0 by line[+0x140]; on the line's emitter (line+0x28) it sets RTPC random_number_generator through vtable +0x60 (emitter, name, float value, int, float interpolation 0.05, int), the language switch, then posts through vtable +0x10 with the speech system's callback object (speech+0x858, vtable 0x14566be50), whose handlers 0x140ac1160/0x140ac11a0 move the line state (+0x144: 8 = finished, 2/4 = playing) - so a line that is not posted never finishes. The audio options set the Wwise RTPC vol_speech (id from 0x142b77fa0). Raised by native-1990 for the F1 1990 per-career agent mute (doc:/mnt/work/.f1-1990/addon/native-requests.md#N7)"
+ },
+ "signature": {
+  "id": "game.speech_system_post_line",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 30 01 00 00 C5 F9 29 B4 24 20 01 00 00",
+  "match": "0x140a30b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140a30b60",
+  "kind": "func_start",
+  "names": [
+   "Game_SpeechSystem_PostLine"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/agent_voice.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-ui-verify",
+   "kind": "func",
+   "item": "Game_SpeechSystem_PostLine",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140a30b60.c;xref:0x140a2a6e9,0x140a3500a,0x140a38787;sig:game.speech_system_post_line",
+   "notes": "V0916 rel32 scan gives exactly the 3 callers (0x140a2a4e0, 0x140a34790, 0x140a36730). Prologue keeps rcx/rdx/r8d (retrigger byte), early return on null line, so the 3-arg proto holds. Speaker = *(*(*(speech+0x728)+0x60+line[+0x80]*0x88)+0x18) guarded by line[+0x80] < dword speech[+0x7cc], else empty; format play_speech_%s_%s with type from table 0x146051dc0 (stride 0x60, idx line[+0x140] < 4). Emitter = line+0x28; at 0x140a30e26 call [vtbl+0x60] with rcx emitter, rdx random_number_generator, xmm2 float (cvtsi2ss), r9d 0, stack float 0x3d4ccccd (0.05), stack int 0; final post call [vtbl+0x10] with event name, line+0x90, speech+0x858, line. line+0x98 = now + line+0x88/1000 confirmed. Handlers 0x140ac1160/0x140ac11a0 and vol_speech not rechecked. sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

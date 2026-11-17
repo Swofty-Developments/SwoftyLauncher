@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CarCustomisation_ApplyDriverNumbers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14207e990",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14207e990.c;xref:0x14208274f,0x142082d41",
+  "notes": "Applies custom driver numbers to the preview car (ComponentCar_SetCarCustomDriverNumbers) and sets dirty=1. Callers 0x14208274f, 0x142082d41, 0x1420832da. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2945)"
+ },
+ "signature": {
+  "id": "game.car_customisation_apply_driver_numbers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 B8 F8 4B 00 00 E8",
+  "match": "0x14207e990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14207e990",
+  "kind": "func_start",
+  "names": [
+   "Game_CarCustomisation_ApplyDriverNumbers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_CarCustomisation_ApplyDriverNumbers",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14207e990.c;xref:0x14208274f",
+   "notes": "V2945 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

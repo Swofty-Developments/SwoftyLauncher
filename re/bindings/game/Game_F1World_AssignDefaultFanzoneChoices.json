@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1World_AssignDefaultFanzoneChoices",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14170c8c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_F1World_AssignDefaultFanzoneChoices(void *self)",
+  "evidence": "str:s_cfg_GameF1WorldForceFanzoneChoices;decomp:re/decomp/14170c8c0.c;xref:0x14170c8e8,0x14170c8e9,0x14b6b96f0",
+  "notes": "Game.F1World.ForceFanzoneChoices (lea 0x14170c8e8) -> Ne_Get_SettingBool 0x143a43b90 on *(self[0])+0x18, default 0. When the setting is 0: finds the active profile entry in the map at self[5] (+0x48 slots, +0x50 metadata, +0x58 count) that passes 0x142a814c0, reads its profile record (0x1417c8d10), and if 0x143882d30(self[7]) holds, +0xc7 is 0 and the favourite team (+0xa2/+0xa0) or driver (+0xa6/+0xa4) is unset (0x3fff), picks default team and driver ids from two feature-flag tables (*(0x146070320)+0x70 and +0x38, keyed by 0x145f94848 / 0x145f948a4, only when feature flag byte 1 bit 3 is set; else 0x3fff), sends them with Game_F1os_SendingChangeFavouriteTeamDriver 0x142742670 and requests a profile save (Game_SaveMgr_RequestProfileSave_Thunk 0x1436595b0). When the setting is 1 nothing is auto-assigned, so the fanzone choice stays open for the player. No .xtls caller; called from the .data1 body 0x14b6b95c0 at 0x14b6b96f0. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.f1_world_assign_default_fanzone_choices",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 CF C6 44 24 2F 00",
+  "match": "0x14170c8c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14170c8c0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1World_AssignDefaultFanzoneChoices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-3",
+   "kind": "func",
+   "item": "0x14170c8c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14170c8c0.c",
+   "notes": "V9353 Reads Game.F1World.ForceFanzoneChoices (default false); when false, walks a hash set for the last valid entry, and if the player profile's favourite team/driver slots are still unset (0x3fff and flag 0) builds a 2-value payload from lookup maps and calls Game_F1os_SendingChangeFavouriteTeamDriver; i.e. assigns default fanzone team/driver. No direct call/lea/vtable xref found (only an .srdata RVA entry), so reached indirectly; arity 1 matches."
+  }
+ ],
+ "proofs": []
+}

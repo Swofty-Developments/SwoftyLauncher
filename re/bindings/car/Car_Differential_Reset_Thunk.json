@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_Differential_Reset_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14467e010",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void (void *diff, uint32_t flags)",
+  "evidence": "decomp:re/decomp/14467e010.c;decomp:re/decomp/1553d6f70.c;xref:0x145bfa138",
+  "notes": "Differential system Reset (vtable +0x18), body 0x1553d6f70: flags & 0x2000 (with F1Tuning car+0x590 present) applies the F1Tuning diff sliders into the car's Differential through car+0x578, not through this (corrected per V1195): +0xec off-throttle multiple, +0xf0 on-throttle multiple (lerp of F1Tuning ranges, logs F1_TUNING), +0xf4/+0xf8/+0xfc three more setup values (roles open). structs/CarDifferential.h | #529 verifier carlive-verify (2026-10-29, partial on the PR's L1 notes): C5 writer is a jmp stub into .data1, write side not verifiable statically"
+ },
+ "signature": {
+  "id": "car.diff_apply_tuning",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 0F 87 ?? ?? ?? ?? AD E9",
+  "match": "0x14467e010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14467e010",
+  "kind": "func_start",
+  "names": [
+   "Car_Differential_Reset_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v2",
+   "kind": "func",
+   "item": "Car_Differential_Reset_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14467e010.c;decomp:re/decomp/1553d6f70.c;decomp:re/decomp/1446d1660.c;xref:0x145bfa138",
+   "notes": "V1195 vt 0x145bfa120 +0x18, jmp to 0x1553d6f70. Body: when flags & 0x2000 and car+0x590 (F1Tuning) != 0, clamps the slider floats to [0,1] and writes into car+0x578 (the Differential) +0xec = lerp(tuning data +0x20,+0x24) (DifferentialOffThrottleMultipleMin/Max, logs 'Setting diff off throttle multiple'), +0xf0 = lerp(+0x18,+0x1c) (OnThrottle, logs on throttle), +0xf4 = lerp(+0x28,+0x2c), +0xf8/+0xfc = clamps of tuning +0x2a0/+0x2a4 into data +0x30..+0x3c. It writes through car->differential, not through its own this."
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "carlive-verify",
+   "kind": "func",
+   "item": "Car_Differential_Reset_Thunk",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x14467e010",
+   "notes": "V3941 C5 writer is a jmp stub into .data1, write side not verifiable statically"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14467e010",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14467e010.c",
+   "notes": "V6747 stub to .data1; vtable 0x145bfa120 slot 3 verified; body not verifiable (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_ScRedFlagDeploy_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143646d20",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143646d20.c;xref:0x145855100",
+  "notes": "Red Flag Deploy state (id 0xF, vtable 0x1458550e0): puts every car on setController(AI, SAFETY_CAR) via 0x143583b60 and sends RedFlagStatusChangedMessage. sb5-verify correction: the message sent has vtable 0x145857e18 carrying byte [this+0x40]+0x108 (not proven to be RedFlagStatusChangedMessage; Deploy itself posts vt 0x14584ec98); when that byte is 1 it also posts SafetyCarDeployment records phase 1 and 2, type 1"
+ },
+ "signature": {
+  "id": "session.sc_red_flag_deploy_update",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 D7 48 89 CE 48 8B 05",
+  "match": "0x143646d20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143646d20",
+  "kind": "func_start",
+  "names": [
+   "Sess_ScRedFlagDeploy_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb5-verify",
+   "kind": "func",
+   "item": "Sess_ScRedFlagDeploy_Update",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143646d20.c;xref:0x145855100",
+   "notes": "V1971 calls 0x143583b60 = Sess_RedFlagSystem_Deploy (AI/SAFETY_CAR for all cars) ok; but the message it sends (vt 0x145857e18, byte [param+0x40]+0x108) is not proven RedFlagStatusChangedMessage (Deploy itself posts vt 0x14584ec98); also posts SafetyCarDeployment records (phase 1 and 2, type 1) when [+0x40]+0x108==1"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb5-verify",
+   "kind": "func",
+   "item": "Sess_ScRedFlagDeploy_Update",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143646d20.c;xref:0x145855100",
+   "notes": "V3961 calls 0x143583b60 = Sess_RedFlagSystem_Deploy (AI/SAFETY_CAR for all cars) ok; but the message it sends (vt 0x145857e18, byte [param+0x40]+0x108) is not proven RedFlagStatusChangedMessage (Deploy itself posts vt 0x14584ec98); also posts SafetyCarDeployment records (phase 1 and 2, type 1) when [+0x40]+0x108==1"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143646d20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143646d20.c",
+   "notes": "V4050 message vt 0x145857e18 with byte [this+0x40]+0x108, 0x143583b60(this+0x38,0), byte==1 posts phase 1 and 2 records; confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

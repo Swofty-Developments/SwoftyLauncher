@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_CareerWizard_BuildMyTeamEntryPoint",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1415df0b0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void FUN(void *vm, void *ctx)",
+  "evidence": "decomp:re/decomp/1415df0b0.c;xref:0x1456f5438",
+  "notes": "myteam-g1: Large (1969 lines) view-model builder for career_wizard_my_team_entry_point and driver_career_rnd_challengers."
+ },
+ "signature": {
+  "id": "vm.career_wizard_build_my_team_entry_point",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 4C 89 C7 48 89 54 24 38 48 89 CB",
+  "match": "0x1415df0b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1415df0b0",
+  "kind": "func_start",
+  "names": [
+   "Vm_CareerWizard_BuildMyTeamEntryPoint"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1415df0b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1415df0b0.c;xref:0x1456f5438",
+   "notes": "V9724 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

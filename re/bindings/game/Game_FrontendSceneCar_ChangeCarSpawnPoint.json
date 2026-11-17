@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneCar_ChangeCarSpawnPoint",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428c3ef0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name changeCarSpawnPoint (class from the log channel); log channel FRONTEND_SCENE_CAR: 'changeCarSpawnPoint() - with vehicle placement'"
+ },
+ "signature": {
+  "id": "game.frontend_scene_car_change_car_spawn_point",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 C8 15 00 00",
+  "match": "0x1428c3ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428c3ef0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneCar_ChangeCarSpawnPoint"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428c3ef0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1428c3ef0.c;xref:0x1428ced5b",
+   "notes": "V5129 7 KB: dirty/livery/decals/sticker/number change detection (doesCarNeedRespawn inlined), setCarAsDecalEditorVehicle, spawn point change; changeCarSpawnPoint log is one branch. Better: Game_FrontendSceneCar_ApplyCarConfiguration"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1428c3ef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428c3ef0.c;xref:0x1428ced5b",
+   "notes": "V7301 name fits; finding facts hold; 2 direct calls"
+  }
+ ],
+ "proofs": []
+}

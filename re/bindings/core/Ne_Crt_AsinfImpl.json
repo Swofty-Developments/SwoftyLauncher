@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_AsinfImpl",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1453521e4",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1453521e4.c;xref:0x14473e88d,0x14478e96e,0x144dc6f39",
+  "notes": "Software asinf with NaN/range handling (string asinf). Named callers: Game_Teleport_Vehicle, Game_WetMap_PlaceCamera."
+ },
+ "signature": {
+  "id": "core.crt_asinf_impl",
+  "section": ".xtls",
+  "pattern": "48 83 EC 68 0F 29 74 24 50 0F 57 ED 0F 28 F0 F3",
+  "match": "0x1453521e4",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1453521e4",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_AsinfImpl"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1453521e4",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1453521e4.c;xref:0x14473e88d",
+   "notes": "V7717 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

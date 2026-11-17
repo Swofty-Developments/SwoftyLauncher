@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_LapTimes_CheckPersonalBestSector",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f2e6e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f2e6e0.c;xref:0x142f2d8eb",
+  "notes": "(lapTimes, carIdx) Finds the car's player entry (session +0x2e0..+0x2e8, car +0x82), gets profile (0x14243fd10) difficulty byte +0xcea -> slot, and when Sess_LapTimes_IsNewFastestLap(this, car, this+0xbc+slot) is true raises the fastest-lap notification. Called from Sess_LapTimes_OnNewSector."
+ },
+ "signature": {
+  "id": "session.lap_times_check_personal_best_sector",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 81 B0 00 00",
+  "match": "0x142f2e6e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f2e6e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_LapTimes_CheckPersonalBestSector"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f2e6e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f2e6e0.c;xref:0x142f2d8eb",
+   "notes": "V3723 Player entry scan +0x2e0 (car +0x82), profile 14243fd10 difficulty byte +0xcea -> slot verified, calls IsNewFastestLap(this,car,this+0xbc+slot) then stores car at +0xbc+slot and sets +0xca=1; it maintains per-difficulty fastest-lap holder, nothing sector/personal-best specific; name misleading (e.g. UpdateFastestLapHolder)."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f2e6e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f2e6e0.c;xref:0x142f2d8eb",
+   "notes": "V4025 Player entry scan +0x2e0 (car +0x82), profile 14243fd10 difficulty byte +0xcea -> slot verified, calls IsNewFastestLap(this,car,this+0xbc+slot) then stores car at +0xbc+slot and sets +0xca=1; it maintains per-difficulty fastest-lap holder, nothing sector/personal-best specific; name misleading (e.g. UpdateFastestLapHolder)."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x142f2e6e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f2e6e0.c;xref:0x142f2d8eb",
+   "notes": "V4171 Finds player entry in session +0x2e0..+0x2e8 (car at +0x82), profile via Sess_ResolveEntityHandle (0x14243fd10), byte +0xcea -> slot table 0x145803c38, calls Sess_LapTimes_IsNewFastestLap with the stored byte at this+0xbc+slot, on true stores car there and sets this+0xca=1; caller Sess_LapTimes_OnNewSector"
+  }
+ ],
+ "proofs": []
+}

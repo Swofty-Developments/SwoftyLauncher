@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineRole_HandleSessionDataRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140997290",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140997290.c;xref:0x14305a1b2,0x14305a42d",
+  "notes": "OnlineRoleManager: connection param_2 requests session data; sends it only if the connection is watching/ready, else logs its state or 'not in the OnlineRoleManager list'. Called from Game_GameSessionManager_OnIncomingData. Addon: spectator / late-join data flow. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2430)"
+ },
+ "signature": {
+  "id": "game.online_role_handle_session_data_request",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 89 D3 48 89 CE 80 3D",
+  "match": "0x140997290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140997290",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineRole_HandleSessionDataRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_OnlineRole_HandleSessionDataRequest",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140997290.c;xref:0x140997290",
+   "notes": "V2430 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

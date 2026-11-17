@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventsSequencer_UnloadAssetGroupsAndActors",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c7d520",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name unloadAssetGroupsAndActors (class from the log channel); log channel CareerEventsSequencer: 'unloadAssetGroupsAndActors'"
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_unload_asset_groups_and_actors",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6B B8 AD 00 00 00",
+  "match": "0x140c7d520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c7d520",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventsSequencer_UnloadAssetGroupsAndActors"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c7d520",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c7d520.c;xref:0x140c7a66e",
+   "notes": "V4618 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

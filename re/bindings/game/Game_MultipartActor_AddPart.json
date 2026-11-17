@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MultipartActor_AddPart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401cb030",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=MultipartActor::addPart; log channel ACTOR_REGEX: 'MultipartActor::addPart %s'"
+ },
+ "signature": {
+  "id": "game.multipart_actor_add_part",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 02 00 00 C5 F8 29 BC 24 30 02 00 00",
+  "match": "0x1401cb030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401cb030",
+  "kind": "func_start",
+  "names": [
+   "Game_MultipartActor_AddPart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401cb030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401cb030.c",
+   "notes": "V4362 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

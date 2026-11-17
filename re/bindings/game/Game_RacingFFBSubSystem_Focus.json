@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RacingFFBSubSystem_Focus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f9b70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=RacingFFBSubSystem::Focus; log channel -: 'RacingFFBSubSystem::Focus regained!'"
+ },
+ "signature": {
+  "id": "game.racing_ffb_sub_system_focus",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 80 B9 C9 02 00 00 00",
+  "match": "0x1446f9b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f9b70",
+  "kind": "func_start",
+  "names": [
+   "Game_RacingFFBSubSystem_Focus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f9b70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f9b70.c;xref:0x1446f9a6d",
+   "notes": "V6859 Focus loss/regained strings confirmed."
+  }
+ ],
+ "proofs": []
+}

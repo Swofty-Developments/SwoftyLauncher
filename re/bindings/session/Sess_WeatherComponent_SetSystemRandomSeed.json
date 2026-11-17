@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Sess_WeatherComponent_SetSystemRandomSeed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bde3e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_WeatherComponent_SetSystemRandomSeed(void *component)",
+  "evidence": "decomp:re/decomp/140bde3e0.c;decomp:re/decomp/1438c80e0.c;xref:0x1430396eb,0x143099156,0x1430a2f4b;doc:addons/career-editor/protocol/weather.md",
+  "notes": "cxx=WeatherAndTimeOfDayComponent::setWeatherSystemRandomSeed (log WEATHER_SEED_EXTENDED). rcx=WeatherAndTimeOfDayComponent; weekend = season current_weekend (via component+0x270 vtable +0x88, index +0x2a0 into +0x288 vector) if valid else 0; calls Sess_GameWeatherSystem_UpdateRandomSeed(*(component+0x2a0), component+0x2c4 rnd_seed, weekend), then sets ws+0x1f02 (weekend valid), ws+0x1f04 (component+0x270 vtable +0xf8), ws+0x1f08 (weekend) which setupSession's first-weekend rule reads. career-editor seed pin sets the forced override ws+0x1f14 and calls this (the game's own path) instead of UpdateRandomSeed directly."
+ },
+ "signature": {
+  "id": "session.weather_component_set_system_random_seed",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 48 89 CE 48 8B 89 70 02 00 00",
+  "match": "0x140bde3e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bde3e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_WeatherComponent_SetSystemRandomSeed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-weather",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/weather.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "func",
+   "item": "Sess_WeatherComponent_SetSystemRandomSeed",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bde3e0.c;decomp:re/decomp/1438c80e0.c;xref:0x1430396ea,0x143099155,0x1430a2f4a,0x1498ffe49,0x149902874",
+   "notes": "V0304 Independent: one arg rcx; season = (+0x270)->vt+0x88; idx +0x2a0 < (+0x290-+0x288)>>3 and slot non-null -> weekend=idx, flag=1, else 0/0; +0xf8 result (0 when no season); WEATHER_SEED_EXTENDED log; UpdateRandomSeed(*(+0x2a0), +0x2c4, weekend); then ws+0x1f02=flag, +0x1f04, +0x1f08=weekend. Callers: 3 .xtls plus 2 .data1 (0x1498ffd00, 0x149902860), not claimed otherwise."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Ffb_ThreadRun",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446fab00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FFB",
+  "notes": "named from its log messages (channel FFB): 'RoInitialize failed on FFB thread (hr=0x%08x) | No Plugins for effect at address: %p, for device %s' | 2026-10-28 wx: adds 8 plugins via 0x1446f1880 (1446fae42..af23) with id descriptors 0x146ce7f78..7fe8: centre_spring, wave_player, surface, tyre_force_real, collision, slip_ratio, slip_angle, race_start (tyre_force_stm 0x146ce7ff8 not added); 0x1446f1880 = AddPlugin (creates plugin via factory, Init, logs scale +0x50), name SetPluginScale is misleading (wx-verify claim 14) | findings from PR #472 by vogtmarcel07-cloud; independent check 2026-10-28 by wx-verify: agree"
+ },
+ "signature": {
+  "id": "game.ffb_thread_run",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 BC 24 F0 00 00 00 C5 F8 29 B4 24 E0 00 00 00 49 89 D5 48 89 CB B9 01 00 00 00",
+  "match": "0x1446fab00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446fab00",
+  "kind": "func_start",
+  "names": [
+   "Game_Ffb_ThreadRun"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "wx-verify",
+   "kind": "func",
+   "item": "Game_Ffb_ThreadRun",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1446fae42,0x1446faf23",
+   "notes": "V3895 wx-verify: 8 calls to 0x1446f1880 with descriptors 0x146ce7f78..7fe8"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446fab00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446fab00.c;xref:0x1446f8489",
+   "notes": "V6862 RoInitialize and No Plugins strings, 8 AddPlugin calls confirmed; descriptors are bss so ids unverifiable statically."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_SetLocation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140241330",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=CutSceneScript::setLocation; log channel CUTSCENE_SCRIPT_VERBOSE: 'CutSceneScript::setLocation %p %s for [%s] failed - check the placement markers exist in the wep'"
+ },
+ "signature": {
+  "id": "game.cut_scene_script_set_location",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC C0 00 00 00 C5 78 29 94 24 B0 00 00 00",
+  "match": "0x140241330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140241330",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_SetLocation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x140241330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140241330.c;xref:0x14023e35e,0x140260de6",
+   "notes": "V4055 CutSceneScript::setLocation + CUTSCENE_SCRIPT_VERBOSE failed string confirmed"
+  }
+ ],
+ "proofs": []
+}

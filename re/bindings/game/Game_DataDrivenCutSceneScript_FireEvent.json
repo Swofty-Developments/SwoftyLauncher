@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DataDrivenCutSceneScript_FireEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1402527b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1402527b0.c;xref:0x1455ed148",
+  "notes": "DataDrivenCutSceneScript::fireEvent (vt slot 0x1455ed148): calls Game_Handle_SequenceEvent, if event name == 'STOP' calls own vslot 0x88 (stop), then forwards the event to every component (vslot 0x90). Addon: inject a STOP event to end any data-driven cutscene early. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3134)"
+ },
+ "signature": {
+  "id": "game.data_driven_cut_scene_script_fire_event",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 C5 F8 28",
+  "match": "0x1402527b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1402527b0",
+  "kind": "func_start",
+  "names": [
+   "Game_DataDrivenCutSceneScript_FireEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d13-verify",
+   "kind": "func",
+   "item": "Game_DataDrivenCutSceneScript_FireEvent",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1402527b0.c;xref:0x1455ed148",
+   "notes": "V3134 role/offsets/strings confirmed in decomp (INIT pattern calls thunks 140240410/140240700 -> alt copy 147562600 of advanceStartTimeOffset)"
+  }
+ ],
+ "proofs": []
+}

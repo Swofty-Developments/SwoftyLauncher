@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Link_RnDRegistryNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141877dd0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "uint64_t Link(void *vm, uint32_t *id)",
+  "evidence": "decomp:re/decomp/141877dd0.c;xref:0x14187656b;xref:0x141878fba;xref:0x14187a5ba",
+  "notes": "myteam-g2: Links/resolves a registry node (Vm_Link_RegistryNode / Resolve) and releases resource set (Game_Hud_ReleaseResourceSet_140c22460). UI only."
+ },
+ "signature": {
+  "id": "ui.link_rn_dregistry_node",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 28 02 00 00 0F B7 42 02",
+  "match": "0x141877dd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141877dd0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Link_RnDRegistryNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141877dd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141877dd0.c;xref:0x14187656b",
+   "notes": "V9829 builds a registry node by id (0x3fff = none) and resolves it against a path stored at +0x20; nothing R&D specific visible in the code"
+  }
+ ],
+ "proofs": []
+}

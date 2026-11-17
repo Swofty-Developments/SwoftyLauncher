@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_HandleForcedRelayRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14325f6e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name handleForcedRelayRequest (class from the log channel); log channel NETWORK: 'handleForcedRelayRequest(%d to %d): %s'"
+ },
+ "signature": {
+  "id": "game.network_handle_forced_relay_request",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 00 01 00 00 48 8D 0D ?? ?? ?? ?? 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 81 FA BB 5E FE A7 74 34 85 D2 74 68 83 C0 19",
+  "match": "0x14325f6e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14325f6e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_HandleForcedRelayRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14325f6e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14325f6e0.c;xref:0x14325dc87",
+   "notes": "V5801 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

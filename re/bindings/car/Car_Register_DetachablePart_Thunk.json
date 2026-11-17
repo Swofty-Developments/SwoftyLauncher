@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Register_DetachablePart_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144660400",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void Car_Register_DetachablePart_Thunk(void *front_wing, void **cb, uint32_t *name_id, void *params, float k)",
+  "evidence": "decomp:re/decomp/144660400.c;decomp:re/decomp/1446612a0.c;decomp:re/decomp/144661440.c;decomp:re/decomp/1446686d0.c;xref:0x14465f898,0x14465f912,0x14465f98c,0x14465fa0d,0x14465fa87,0x14465fb01,0x14465fb82,0x14465fbfc,0x14465fc76,0x14465fce7,0x14465fd58;kb:subsystems/car.md#parts",
+  "notes": "thunk -> .data1 0x15537d4f0; cb = {bool fn(ctx, threshold), ctx}; model = Game_Get_ModelNodeId(name); params 0x70 bytes (int type 2, float 0.4, 4x4 identity at +0x10, extents 0.05 at +0x50); also registers '<name>_%03d' sub-pieces; part object (0x200 bytes, vtable 0x145bf94d0) in the car part manager car+0x2c8, appended to fw+0xb0; part+0x18/+0x20 fn/ctx, +0x30 threshold, +0x38 detached, +0x130 hit count (>= 100 detaches); part update slot 3 0x1446686d0 calls fn(ctx, threshold) every frame, true -> detach (slot 0xa0). Fails (no part) if the model has no such node (0x143cfc8f0 = -1). (used by the vmknolle addons parts-detach) | PR #453/#448 (vmknolle): jmp stub into .data1 (0x15537d4f0). Register a detachable car part: args (component, callback {fn, ctx} 16 bytes, &node name id, 0x70-byte part descriptor (matrix + extents), float factor). Builds the part record on the stack, resolves the model node (0x1446612a0 with the name id; logs the node name from the name table 0x14618ce18 on a miss, format 0x145bf4637) (car-re fix: 0x1446612a0 is Car_Add_DetachablePart_Thunk, which creates the part and appends it; nothing is logged on a miss, the body just returns; 0x14618ce18 is the name table lock and 0x145bf4637 is '%s_%03d', used after a success to name the sub-pieces) and appends the part to component+0xb0..+0xb8 via the component's allocator ([+0xb8-8] vcall +0x88) (car-re fix: the append is inside 0x1446612a0, allocator fw+0xa8; [fw+0xb8-8] is the part just added and its vtable +0x88 returns its node transform part+0x60, used for the sub-piece distance). 11 calls from the front wing init (0x14465f898 ..). (used by vmknolle parts-detach) | car-re 2026-10-28 L2 (kb:subsystems/car.md#parts): body read on the Steam build. At 0x15537d5e9 calls Car_Add_DetachablePart_Thunk(fw, cb, &id, params, k) = Car_Create_DetachablePart([fw+8]+0x2c8, ...) then append to fw+0xb0..+0xb8 (cap +0xc0); returns at once when that fails. Then registers sub-pieces '<name>_001', '_002', ... (0x15537d73b, same cb and params) until one fails; each sub-piece's +0x30 = 1 - d when k == 1.0, else min(0.99, k + d), d = min(0.2, 2 x the distance between its and the main piece's node translations (part+0x90)), and its +0x1f4 = 1. The main piece keeps k unchanged at +0x30 (V1191's transform is for the sub-pieces only). k is the predicate multiplier: the part update calls fn(ctx, part+0x30). 11 callers, all in Car_FrontWing_Init, the 11th at 0x14465fd58 (V1191); no other .xtls caller. Prior evidence V1191 (verify-f, agree at L1)."
+ },
+ "signature": {
+  "id": "car.register_detachable_part_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 6C A9 05 F7 A2 85 3C F4",
+  "match": "0x144660400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144660400",
+  "kind": "func_start",
+  "names": [
+   "Car_Register_DetachablePart_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-f",
+   "kind": "func",
+   "item": "0x144660400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_f/decomp/144660400.c;decomp:work/verify_f/decomp/1446612a0.c;xref:0x14465f898,0x14465f912,0x14465f98c,0x14465fa0d,0x14465fa87,0x14465fb01,0x14465fb82,0x14465fbfc,0x14465fc76,0x14465fce7,0x14465fd58",
+   "notes": "V1191 jmp stub to .data1 0x15537d4f0: registers a part (cb pair, model-name hash, 0x70-byte params, float) via 0x1446612a0 (creates in car+0x2c8 mgr, appends to vector +0xb0), then loops '%s_%03d' sub-parts; 5-arg proto matches. Minor: 11th caller 0x14465fd58 missing from KB xref; p5 'threshold' is really a per-part factor (1.0 -> 1-min(0.2,2d), else min(0.99,min(0.2,2d)+p5) stored at part+0x30)"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "func",
+   "item": "0x144660400",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144660400.c;decomp:re/decomp/15537d4f0.c;xref:0x14465f898,0x14465f912,0x14465f98c,0x14465fa0d,0x14465fa87,0x14465fb01,0x14465fb82,0x14465fbfc,0x14465fc76,0x14465fce7,0x14465fd58",
+   "notes": "V1451 jmp 0x15537d4f0. rel32 scan of .xtls and .data1: 11 callers, all in 0x14465f620, no others. Body: Add thunk at 0x15537d5e9 (fw, cb copy, &id, 0x70-byte params copy, k), returns on false; then i = 1.. formats '%s_%03d' (0x145bf4637) from the name table [0x14618ce08]+8 under lock 0x14618ce18 and adds again at 0x15537d73b until false. Per sub-piece ([fw+0xb8]-8): vt+0x88 = 0x144762720 returns part+0x60, d = min(0.2, 2 x distance between the +0x90 translations of sub and main piece), +0x30 = 1 - d when k == 1.0 else min(0.99, k + d), +0x1f4 = 1. Main piece keeps k. 5-arg void proto matches; sigcheck passes car.register_detachable_part_thunk."
+  }
+ ],
+ "proofs": []
+}

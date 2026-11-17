@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Ugc_UpdateItemCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441604c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/1441604c0.c;xref:0x14415f09f",
+  "notes": "logged method name updateItemCallback (class from the log channel); log channel NeUgc: 'updateItemCallback - result=%p ioFailure=%d'"
+ },
+ "signature": {
+  "id": "core.ugc_update_item_callback",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 44 89 C3 48 89 D7",
+  "match": "0x1441604c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441604c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Ugc_UpdateItemCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_Ugc_UpdateItemCallback",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441604c0.c;xref:0x14415e160",
+   "notes": "V2253 Handles SubmitItemUpdate result: logs failed, m_eResult, legal agreement flag, unhandled code."
+  }
+ ],
+ "proofs": []
+}

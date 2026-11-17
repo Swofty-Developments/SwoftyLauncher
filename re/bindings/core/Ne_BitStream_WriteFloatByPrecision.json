@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_BitStream_WriteFloatByPrecision",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143924c30",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143924c30.c;xref:0x142e8928e,0x14326417b",
+  "notes": "Network bitstream: write float value (xmm1) in [min xmm2, max xmm3] quantised by precision (stack arg, e.g. 0.001); in typed mode (stream+0x29) writes type tags 0xf/0xd first; traces 'numerical space ... too large' and falls back to raw when range/precision overflows. Stream: +8 write buf, +0x1c size, +0x20 write bit pos, +0x28 error. Used by Game_NetworkTyres_TyreSetSerializeStart and vehicle serialisers. Addon: decode network packets."
+ },
+ "signature": {
+  "id": "core.bit_stream_write_float_by_precision",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 C5",
+  "match": "0x143924c30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143924c30",
+  "kind": "func_start",
+  "names": [
+   "Ne_BitStream_WriteFloatByPrecision"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Ne_BitStream_WriteFloatByPrecision",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143924c30.c;xref:0x143924c30",
+   "notes": "V2885 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

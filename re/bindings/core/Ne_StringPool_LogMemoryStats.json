@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_StringPool_LogMemoryStats",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fa73a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143fa73a0.c;xref:0x145a42bf0",
+  "notes": "Typed value store debug stats (vtable slot 8, vt 0x145a42bb0): traces 'Type Strings: used/capacity = %g kB'. Part of the reflection/property value pools. Reference only."
+ },
+ "signature": {
+  "id": "core.string_pool_log_memory_stats",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 C5 F8 29 74 24 30 80 3D",
+  "match": "0x143fa73a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fa73a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_StringPool_LogMemoryStats"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Ne_StringPool_LogMemoryStats",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fa73a0.c;xref:0x143fa73a0",
+   "notes": "V2907 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

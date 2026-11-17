@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Calc_DriverContractValueCurve",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f71610",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Calc_DriverContractValueCurve(float x, uint32_t flags, void *team, int64_t *drv, float *out, void *table)",
+  "evidence": "decomp:re/decomp/140f71610.c;xref:0x140dba4f1;xref:0x140f78ed9;xref:0x1419c4013",
+  "notes": "myteam-g2: Computes a contract value / market curve: copies a 24-byte-stride rating table, evaluates it (FUN_140f74c10), uses Career_Get_DriverOverallRating and Ne_Crt_Localtime64 for age. Called by Career_DriverContracts_CalcBaseValues and RenownForm icon override; base salary / cost model for hiring."
+ },
+ "signature": {
+  "id": "career.calc_driver_contract_value_curve",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 78 29 B4 24 80 01 00 00",
+  "match": "0x140f71610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f71610",
+  "kind": "func_start",
+  "names": [
+   "Career_Calc_DriverContractValueCurve"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f71610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f71610.c;xref:0x140dba4f1",
+   "notes": "V9584 Copies 0x18-stride table, FUN_140f74c10, age via Ne_Crt_Localtime64 from calendar, Career_Get_DriverOverallRating (14113d120) and a curve eval; plausible contract value curve."
+  }
+ ],
+ "proofs": []
+}

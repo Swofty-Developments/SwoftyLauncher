@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Phys_EnsureReflectionRegistered",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144448ae0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144448ae0.c;xref:0x140108bb3",
+  "notes": "One-shot (flag 0x146cb5a50) registration of physics types with the module registry (vcall +0x20, descriptors 0x146441258 and 0x145f98b38). 33 callers (Game_Read_PhysicsWorldConfig, RacingVehicles_Initialise, Render init). Hypothesis."
+ },
+ "signature": {
+  "id": "core.phys_ensure_reflection_registered",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 80 3D ?? ?? ?? ?? 00 0F 85 ?? ?? ?? ?? 48 89 CE C6 05",
+  "match": "0x144448ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144448ae0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Phys_EnsureReflectionRegistered"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144448ae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144448ae0.c;xref:0x140108bb3",
+   "notes": "V7675 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

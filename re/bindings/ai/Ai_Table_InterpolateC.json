@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Table_InterpolateC",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140686e50",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_Table_InterpolateC(void *table, float a, float b, float (*cell_eval)(void *cell, float a, float b), void *key)",
+  "evidence": "decomp:re/decomp/140686e50.c;xref:0x140606925,0x14061718a,0x1406191f3,0x140651ca3,0x140680beb,0x140680c91,0x140681387,0x14068142a",
+  "notes": "7-axis table of cell pointers (table+0x10): 4 leading exact indices key+0x20/+0x28/+0x30/+0x38 with strides +0x160/+0x168/+0x170/+0x178, then trilinear interpolation on 3 axes: indices key+0x40/+0x48 (axis values +0xd8, position key+0x10), key+0x50/+0x58 (axis +0x108, key+0x14), key+0x60/+0x68 (axis +0x138, key+0x18), strides +0x180/+0x188. Each of the 8 corner cells is evaluated once with cell_eval(cell, a, b) (duplicates reused); equal axis values skip the lerp; the first-index axis lerp is skipped when +0x178 <= 1 (corrected 2026-11-14: was 'linear interpolation on the last axis'). Callers: Ai_Eval_ClampedTestSpeed, Ai_Update_VehicleDriver, Ai_TestGraph_EvalDistanceSpeedC, Ai_Build_SpeedProfileAhead, Ai_Lookahead_AdvancePhase (2x), Ai_SpeedPlan_EvalAtDistance (2x). L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.table_interpolate_c",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC C0 00 00 00 C5 78 29 84 24 B0 00 00 00 C5 F8 29 BC 24 A0 00 00 00 C5 F8 29 B4 24 90 00 00 00 4C 89 CF C5 F8 28 F2 48 89 CE 48 8B 9C 24 10 01 00 00 48 8B 53 50 48",
+  "match": "0x140686e50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140686e50",
+  "kind": "func_start",
+  "names": [
+   "Ai_Table_InterpolateC"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140686e50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140686e50.c;xref:0x1406191f3",
+   "notes": "V3574 multi-dim lookup with strides +0x160,+0x168,+0x170,+0x178,+0x180,+0x188 and key indices +0x20..+0x48 from param_5, linear interpolation on last axis; caller Ai_Awareness_QueryNearbyCars seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140686e50",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140686e50-0x1406872d6;xref:0x140606925,0x14061718a,0x1406191f3,0x140651ca3,0x140680beb,0x140680c91,0x140681387,0x14068142a",
+   "notes": "V10570 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 8 callers re-listed exactly: 0x140606925 (Ai_Eval_ClampedTestSpeed), 0x14061718a (Ai_Update_VehicleDriver), 0x1406191f3 (0x140619140), 0x140651ca3 (0x140650f90), 0x140680beb/0x140680c91 (0x1406807b0), 0x140681387/0x14068142a (0x140681140). 5 args (rcx table, xmm1, xmm2, r9 cell_eval, stack key). Strides +0x160/+0x168/+0x170/+0x178/+0x180/+0x188 and axis values +0xd8/+0x108/+0x138 present."
+  }
+ ],
+ "proofs": []
+}

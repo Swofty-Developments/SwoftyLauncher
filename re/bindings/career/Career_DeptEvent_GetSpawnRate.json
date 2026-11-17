@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_GetSpawnRate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cc1780",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void FUN(void *career, void *cfg)",
+  "evidence": "decomp:re/decomp/140cc1780.c;xref:0x145686b48",
+  "notes": "myteam-g1: Reads department_events_spawn_rate from config and applies it to the department event scheduler."
+ },
+ "signature": {
+  "id": "career.dept_event_get_spawn_rate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D3 48 89 CE E8",
+  "match": "0x140cc1780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cc1780",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_GetSpawnRate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140cc1780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cc1780.c;str:\"department_events_spawn_rate\"",
+   "notes": "V9523 Reads department_events_spawn_rate array with spawn_rate_index entries from config."
+  }
+ ],
+ "proofs": []
+}

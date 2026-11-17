@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_ApplyLoadoutUpgradeLevelBinding",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417082d0",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void Ui_F1World_ApplyLoadoutUpgradeLevelBinding(void *self, void *card, void *a3, void *a4)",
+  "evidence": "decomp:re/decomp/1417082d0.c;xref:0x141708d96;xref:0x14170935e;xref:0x141af5c2e",
+  "notes": "myteam-g2: Applies the upgrade level of a loadout card (level read at card+0xc) to the bound property at self+0x30 and the unique-level binding. UI only."
+ },
+ "signature": {
+  "id": "ui.f1_world_apply_loadout_upgrade_level_binding",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 4C 89 4C 24 78 4C 89 44 24 70",
+  "match": "0x1417082d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417082d0",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_ApplyLoadoutUpgradeLevelBinding"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1417082d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1417082d0.c;xref:0x141708d96;xref:0x14170935e",
+   "notes": "V9772 No strings; callees set s32 property and bool nodes, but level at card+0xc and binding at self+0x30 could not be confirmed quickly."
+  }
+ ],
+ "proofs": []
+}

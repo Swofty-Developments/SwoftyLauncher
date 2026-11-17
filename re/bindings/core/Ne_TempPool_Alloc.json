@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_TempPool_Alloc",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14395eb80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_TempPool_Alloc(void *pool, uint64_t size, uint64_t align)",
+  "evidence": "decomp:re/decomp/14395eb80.c;xref:0x14395ee40,0x14395ee50;xref:0x140178228,0x1401a9516",
+  "notes": "save-v2: slot +0x18 (and +0x10) of the temp pool vtable 0x14568df40 (SAVE_PROPERTY_BAG_TEMP). Bump allocator over [pool+0x98, +0xa0 size); past the end it calls vt+0x118 (Ne_TempPool_ReportError) with error 0xc and returns 0. | (alloc, size, align): bump allocator from ne_memory_alloc_only.cpp; commits 2 MB pages on demand, logs 'Not enough free memory to allocate %d byes (alignment %d)' via vtbl +0x118. 13 call sites incl. Ne_Gfx2TextureManager_SetInRaceOn, Ai_DriverVariationInRaceSystem_Setup. | #589 proposed the name Ne_MemAllocOnly_AllocateAligned"
+ },
+ "signature": {
+  "id": "core.mem_alloc_only_allocate_aligned",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 58 4D 89 C6 48 89 D7 48",
+  "match": "0x14395eb80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14395eb80",
+  "kind": "func_start",
+  "names": [
+   "Ne_TempPool_Alloc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14395eb80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14395eb80.c;xref:0x140178228",
+   "notes": "V3602 allocateAligned bump allocator, 2MB commit, error string present; 15 call sites vs 13 claimed (minor)"
+  }
+ ],
+ "proofs": []
+}

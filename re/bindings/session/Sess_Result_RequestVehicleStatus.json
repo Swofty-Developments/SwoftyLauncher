@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Result_RequestVehicleStatus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407c36e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-SESSION-RESULT;decomp:re/decomp/1407c36e0.c;xref:0x1407bec26,0x14868ee63",
+  "notes": "named from its log messages (channel SESSION-RESULT): 'Vehicle %d requested status %s.%s'"
+ },
+ "signature": {
+  "id": "session.result_request_vehicle_status",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 83 B9 90 14 00 00 00",
+  "match": "0x1407c36e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407c36e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Result_RequestVehicleStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-a",
+   "kind": "func",
+   "item": "Sess_Result_RequestVehicleStatus",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407c36e0.c;xref:0x1407bec26",
+   "notes": "V1877 log SESSION-RESULT 'Vehicle %d requested status %s.%s' present (eDisqualified path; else branch is vehicle ghost)"
+  }
+ ],
+ "proofs": []
+}

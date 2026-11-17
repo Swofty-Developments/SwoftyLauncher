@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Sess_IntroVideo_PushAllocRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142df0ec0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142df0ec0.c;xref:0x142d6d338",
+  "notes": "(sys, request) If sys+0x68 is clear: only debug trace (RtlCaptureStackBackTrace ring). Else under CS sys+0x98 allocates a 0x18 node from allocator sys+0x70 (vcall +0x18) and links the request; on failure traces. Called once from Sess_IntroVideo_OnStateEnter. Hypothesis: queue-push helper of the intro video system."
+ },
+ "signature": {
+  "id": "session.intro_video_push_alloc_request",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? B0 01 48 83 C4 38 5F 5E C3 66 C7",
+  "match": "0x142d6d338",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142df0ec0",
+  "kind": "func_start",
+  "names": [
+   "Sess_IntroVideo_PushAllocRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x142df0ec0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142df0ec0.c;xref:0x142d6d338",
+   "notes": "V3469 +0x68==0 -> trace errno 0x58; else CS *(sys+0x98), 0x18-byte node via alloc *(sys+0x70) vcall +0x18, links, SetEvent(*(sys+0x90)); caller Sess_IntroVideo_OnStateEnter (2nd ref in .data1 not analysed)"
+  }
+ ],
+ "proofs": []
+}

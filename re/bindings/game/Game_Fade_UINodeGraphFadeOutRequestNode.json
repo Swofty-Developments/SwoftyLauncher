@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Fade_UINodeGraphFadeOutRequestNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143801e90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FADE",
+  "notes": "named from its log messages (channel FADE): '[this=%p] [master=%d] UI node graph fade out request from node=\"%s\" parentNode=\"%s\"'"
+ },
+ "signature": {
+  "id": "game.fade_ui_node_graph_fade_out_request_node",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 60 4C 89 C7 48 89 D3",
+  "match": "0x143801e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143801e90",
+  "kind": "func_start",
+  "names": [
+   "Game_Fade_UINodeGraphFadeOutRequestNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143801e90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143801e90.c",
+   "notes": "V6259 handles both fade in and fade out node-graph requests (FADE_REQUESTS). Better Game_Fade_UINodeGraphFadeRequest; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143801e90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143801e90.c",
+   "notes": "V7115 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OwnerSetup_SumSelectedPerkValues",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c31790",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int32_t (void *owner_setup)",
+  "evidence": "decomp:re/decomp/140c31790.c;xref:0x142052f90;xref:0x14226aeda;xref:0x1422709be",
+  "notes": "myteam-g2: Fetches the id vector for the player team (FUN_14100e390 on owner_setup+0x470) and sums the value field (+4) of every pair in the list at owner_setup+0x4c0..0x4c8 whose id matches. Likely the total of selected owner perks, shown in the corporate setup cards. Read-only."
+ },
+ "signature": {
+  "id": "career.owner_setup_sum_selected_perk_values",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC F8 00 00 00 48 8B B9 70 04 00 00",
+  "match": "0x140c31790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c31790",
+  "kind": "func_start",
+  "names": [
+   "Career_OwnerSetup_SumSelectedPerkValues"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c31790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c31790.c",
+   "notes": "V9496 Gets id vector via FUN_14100e390 on owner_setup+0x470 and sums value (+4) of matching pairs in list +0x4c0..+0x4c8 (8-byte pairs)."
+  }
+ ],
+ "proofs": []
+}

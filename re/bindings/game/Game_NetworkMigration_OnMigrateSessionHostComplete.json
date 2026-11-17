@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkMigration_OnMigrateSessionHostComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144069f10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onMigrateSessionHostComplete (class from the log channel); log channel NETWORK-MIGRATION: '%s: save the migration data, start migration host task'"
+ },
+ "signature": {
+  "id": "game.network_migration_on_migrate_session_host_complete",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x144069f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144069f10",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkMigration_OnMigrateSessionHostComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144069f10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144069f10.c;xref:0x144069d85",
+   "notes": "V6493 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

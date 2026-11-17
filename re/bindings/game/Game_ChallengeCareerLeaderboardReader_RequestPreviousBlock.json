@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ChallengeCareerLeaderboardReader_RequestPreviousBlock",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140adeac0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_ChallengeCareerLeaderboardReader_RequestPreviousBlock;xref:0x140adec8f,0x140aded82,0x140adedca",
+  "notes": "cxx=game::ChallengeCareerLeaderboardReader::requestPreviousBlock; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.challenge_career_leaderboard_reader_request_previous_block",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 38 01 00 00 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 54 B8",
+  "match": "0x140adeac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140adeac0",
+  "kind": "func_start",
+  "names": [
+   "Game_ChallengeCareerLeaderboardReader_RequestPreviousBlock"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140adeac0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140adeac0.c",
+   "notes": "V4423 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Construct_RnDDeptCard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c7aac0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Construct_RnDDeptCard(void *card, void *ctx, void *builder, void *allocator, const char *name, const char *icon, uint8_t dept)",
+  "evidence": "decomp:re/decomp/141c7aac0.c;decomp:re/decomp/141c85f70.c;xref:0x141c7aac0;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v030--the-live-5th-box-shipped-box-only-pie-deferred",
+  "notes": "R&D department card/tab constructor; 0x950-byte object. Args (card, ctx = [builder+0x28], builder, allocator = [builder+0x298], name = lang key e.g. lng_rnd_dept_aero, icon = icon path cstr, dept = enum byte). Hashes name with djb2 (seed 0x1505, *0x21); copies icon into a NeStr at +0x818; stores dept at byte +0x6d8 and colour k_Career_RnDDeptColourTable[dept] (bound <6) at byte +0x948. Called 4x (once per stock dept) from Career_Build_RnDDeptBoxGrid."
+ },
+ "signature": {
+  "id": "career.construct_rn_d_dept_card",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 98 02 00 00 C5 F8 29 B4 24 80 02 00 00",
+  "match": "0x141c7aac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c7aac0",
+  "kind": "func_start",
+  "names": [
+   "Career_Construct_RnDDeptCard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "func",
+   "item": "Career_Construct_RnDDeptCard",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141c7aac0.c;xref:0x141c861e3,0x141c862ee,0x141c863fb,0x141c86508,0x141c7aadb,0x141c7abc6,0x141c7abe8,0x141c7ad13",
+   "notes": "V0135 role, 7-arg proto, 4 box-grid callers, 0x950 alloc and colour bound<6 confirmed, but the djb2 (0x1505,*0x21) hashes arg5 name (lang key, e.g. lng_rnd_dept_aero), not the icon path (arg6 goes to a NeStr at +0x818); enum/colour are at byte +0x6d8/+0x948 (0xdb/0x129 are qword indices); dept is read as a byte, caller writes only the low byte"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "func",
+   "item": "Career_Construct_RnDDeptCard",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c7aac0.c;decomp:re/decomp/141c85f70.c;xref:0x141c8613f,0x141c861bc,0x141c861c3,0x141c861e3,0x141c862ee,0x141c863fb,0x141c86508,0x141c7ad00,0x141c7ad13,0x141c7ad57",
+   "notes": "V0210 sigcheck OK, 5-byte entry window clean; 7 args (rcx card, rdx [builder+0x28], r8 builder, r9 [builder+0x298], name/icon/dept on stack +0x28/+0x30/+0x38), returns card (mov rax,rsi); 4 E8 callers in Career_Build_RnDDeptBoxGrid after 0x950 allocs, dept 0,1,3,2 with lng_rnd_dept_*; djb2 of name, icon via 0x1442b17e0 into +0x818, dept byte +0x6d8, uint32 colour (cmp bl,5; ja -> 0xffffffff) at offset +0x948"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqFinances_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ef6280",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t (void *vm)",
+  "evidence": "decomp:re/decomp/141ef6280.c;xref:0x14575af08",
+  "notes": "myteam-g1: Binds the Finances screen: current_balance, recurring_transactions, periods (period_weekly, period_season via Vm_FinancePeriod_Bind), selected_period, lead_driver, lead_driver_icon, show_lead_driver_icon."
+ },
+ "signature": {
+  "id": "vm.team_hq_finances_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 04 00 00 C5 F8 29 B4 24 D0 04 00 00 49 89 CC 48 8B 81 68 32 00 00",
+  "match": "0x141ef6280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ef6280",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqFinances_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141ef6280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141ef6280.c;xref:0x14575af08",
+   "notes": "V10012 Binds Finances screen: current_balance, recurring_transactions, periods, lead_driver and teammate fields."
+  }
+ ],
+ "proofs": []
+}

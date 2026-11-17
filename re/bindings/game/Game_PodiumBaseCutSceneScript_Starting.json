@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PodiumBaseCutSceneScript_Starting",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140362490",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=PodiumBaseCutSceneScript::starting; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::starting'"
+ },
+ "signature": {
+  "id": "game.podium_base_cut_scene_script_starting",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 02 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140362490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140362490",
+  "kind": "func_start",
+  "names": [
+   "Game_PodiumBaseCutSceneScript_Starting"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140362490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140362490.c;xref:0x362335",
+   "notes": "V4540 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}
