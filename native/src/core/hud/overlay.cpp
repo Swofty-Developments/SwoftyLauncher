@@ -8,7 +8,6 @@
 #include "core/hud/room_cover.hpp"
 #include "core/services/lap_host.hpp"
 #include "core/render/d3d12_hooks.hpp"
-#include "core/runtime/loader/host_api.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -342,7 +341,7 @@ bool Overlay::arm()
 {
     perf::Stopwatch steps;
     bool resolved = resolve_d3d12();
-    runtime::loader::api->log(perf::STEP_LINE, steps.lap_ms(), "overlay arm resolve d3d12");
+    swofty::log(perf::STEP_LINE, steps.lap_ms(), "overlay arm resolve d3d12");
     if (!resolved)
         return false;
     d3d12hooks::on_present(present_hook);
@@ -350,7 +349,7 @@ bool Overlay::arm()
     d3d12hooks::on_unread_queue(unread_queue_hook);
     std::optional<d3d12hooks::ProbeScope> probe(std::in_place);
     bool swapchain = d3d12hooks::arm_swapchain();
-    runtime::loader::api->log(perf::STEP_LINE, steps.lap_ms(), "overlay arm swapchain (probe device made)");
+    swofty::log(perf::STEP_LINE, steps.lap_ms(), "overlay arm swapchain (probe device made)");
     if (before_fg_wanted()) {
         arm_before_fg("frame generation is on in the game's settings, or SWOFTY_OVERLAY_FG / \"overlay_fg\"");
     } else if (std::vector<std::string> mods = loaded_modules(); hud::guard::device_hooks_wanted_for(mods)) {
@@ -359,10 +358,10 @@ bool Overlay::arm()
                     hud::guard::present_layer_in(mods).c_str());
         arm_before_fg("the NVIDIA app's present layer is in the process");
     }
-    runtime::loader::api->log(perf::STEP_LINE, steps.lap_ms(), "overlay arm device hooks");
+    swofty::log(perf::STEP_LINE, steps.lap_ms(), "overlay arm device hooks");
     probe.reset();
-    runtime::loader::api->log(perf::STEP_LINE, steps.lap_ms(), "overlay arm probe device release");
-    runtime::loader::api->log(perf::STEP_LINE, steps.total_ms(), "overlay arm total");
+    swofty::log(perf::STEP_LINE, steps.lap_ms(), "overlay arm probe device release");
+    swofty::log(perf::STEP_LINE, steps.total_ms(), "overlay arm total");
     return swapchain;
 }
 
