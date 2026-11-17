@@ -12,6 +12,7 @@ use serde::{Deserialize, Serialize};
 /// folder, which a restore deletes.
 pub const DIR: &str = "swofty-cache";
 const OVERLAY: &str = "overlay";
+const ORIGINALS: &str = "originals";
 const INDEX: &str = "index.json";
 /// Room left on the game's drive after the cache is filled.
 pub const MARGIN: u64 = 2 << 30;
@@ -37,6 +38,13 @@ pub fn dir(game: &Path) -> PathBuf {
 
 pub fn root(game: &Path) -> PathBuf {
     dir(game).join(OVERLAY)
+}
+
+/// The folder an install moves the game files it replaces into, each named by
+/// its SHA-256, so the rollback renames them back instead of copying them from
+/// the backup.
+pub fn originals(game: &Path) -> PathBuf {
+    dir(game).join(ORIGINALS)
 }
 
 fn index_path(game: &Path) -> PathBuf {
