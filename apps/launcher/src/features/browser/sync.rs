@@ -105,7 +105,7 @@ impl Shell {
         }
         catalog::log(&self.store.root, &line);
         let b = &mut self.browser;
-        b.activity.push_front(Activity {
+        b.feed.activity.push_front(Activity {
             at: SystemTime::now(),
             op,
             ok,
@@ -113,14 +113,14 @@ impl Shell {
             detail,
             took,
         });
-        b.activity.truncate(ACTIVITY_KEPT);
+        b.feed.activity.truncate(ACTIVITY_KEPT);
     }
 
     pub(crate) fn fetch_catalog(&mut self, cx: &mut Context<Self>) {
-        if self.browser.fetching {
+        if self.browser.feed.fetching {
             return;
         }
-        self.browser.fetching = true;
+        self.browser.feed.fetching = true;
         let root = self.store.root.clone();
         let shown = self.browser.addons.clone();
         let known = self
@@ -172,14 +172,14 @@ impl Shell {
                     b.creators = creators;
                 }
                 b.avatars.extend(fetched.avatars);
-                b.fetching = false;
-                b.checked = Some(Instant::now());
-                b.trouble = fetched.error;
+                b.feed.fetching = false;
+                b.feed.checked = Some(Instant::now());
+                b.feed.trouble = fetched.error;
                 if let Some(addons) = fetched.addons {
                     b.addons = addons;
-                    b.live = true;
-                    b.saved = true;
-                    b.fetched_at = Some(SystemTime::now());
+                    b.feed.live = true;
+                    b.feed.saved = true;
+                    b.feed.fetched_at = Some(SystemTime::now());
                 }
                 b.icons.extend(fetched.icons);
                 s.sync_catalog_updates();
@@ -194,11 +194,11 @@ impl Shell {
 
     pub(crate) fn sync_stars(&mut self, cx: &mut Context<Self>) {
         let b = &mut self.browser;
-        if b.syncing {
-            b.sync_again = true;
+        if b.feed.syncing {
+            b.feed.sync_again = true;
             return;
         }
-        b.syncing = true;
+        b.feed.syncing = true;
         let sent = b.stars.outgoing();
         let client = b.stars.client.clone();
         let started = Instant::now();
@@ -210,7 +210,7 @@ impl Shell {
                 .await;
             this.update(cx, |s, cx| {
                 let took = started.elapsed();
-                s.browser.syncing = false;
+                s.browser.feed.syncing = false;
                 match result {
                     Ok(reply) => {
                         let applied = reply.applied;
@@ -245,7 +245,7 @@ impl Shell {
                 if let Err(e) = s.browser.stars.save(&s.store.root) {
                     eprintln!("swofty-launcher: could not save the stars: {e}");
                 }
-                if std::mem::take(&mut s.browser.sync_again) {
+                if std::mem::take(&mut s.browser.feed.sync_again) {
                     s.sync_stars(cx);
                 }
                 cx.notify();
@@ -271,12 +271,12 @@ impl Shell {
             ),
         );
         self.browser.catalog_revision = self.browser.catalog_revision.wrapping_add(1);
-        self.browser.star_gen += 1;
-        let ticket = self.browser.star_gen;
+        self.browser.feed.star_gen += 1;
+        let ticket = self.browser.feed.star_gen;
         cx.spawn(async move |this, cx| {
             cx.background_executor().timer(STAR_DELAY).await;
             this.update(cx, |s, cx| {
-                if s.browser.star_gen == ticket {
+                if s.browser.feed.star_gen == ticket {
                     s.sync_stars(cx);
                 }
             })

@@ -231,7 +231,7 @@ impl Shell {
         let (title, body, action) = if self.browser.addons.is_empty() {
             (
                 tr("No addons to show yet"),
-                if self.browser.fetching {
+                if self.browser.feed.fetching {
                     tr("Checking the registry for addons…")
                 } else {
                     tr("The registry couldn't be reached. Retry to check again.")
@@ -241,7 +241,7 @@ impl Shell {
                     .tap_sm()
                     .icon(IconName::RefreshCw)
                     .label(tr("Retry"))
-                    .disabled(self.browser.fetching)
+                    .disabled(self.browser.feed.fetching)
                     .on_click(cx.listener(|this, _, _, cx| this.fetch_catalog(cx))),
             )
         } else {

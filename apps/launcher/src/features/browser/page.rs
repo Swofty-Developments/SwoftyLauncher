@@ -42,8 +42,8 @@ impl Shell {
                     .tap_sm()
                     .icon(IconName::RefreshCw)
                     .label(tr("Refresh"))
-                    .loading(self.browser.fetching)
-                    .disabled(self.browser.fetching)
+                    .loading(self.browser.feed.fetching)
+                    .disabled(self.browser.feed.fetching)
                     .on_click(cx.listener(|this, _, _, cx| this.fetch_catalog(cx))),
             );
         let (content, ad) = match self.browser.view.clone() {

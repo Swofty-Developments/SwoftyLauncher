@@ -72,7 +72,7 @@ impl Shell {
     pub(super) fn stars_status(&self, p: Palette, cx: &mut Context<Self>) -> Stateful<Div> {
         let s = &self.browser.stars;
         let waiting = s.pending.len();
-        let (icon, color, text) = if self.browser.syncing {
+        let (icon, color, text) = if self.browser.feed.syncing {
             (IconName::RefreshCw, p.text_muted, tr("Syncing stars…").to_owned())
         } else if s.error.is_some() {
             (
@@ -138,8 +138,8 @@ impl Shell {
     }
 
     pub(super) fn trouble_banner(&self, p: Palette, cx: &mut Context<Self>) -> Option<Div> {
-        let trouble = self.browser.trouble.as_ref()?;
-        let what = match (trouble, self.browser.saved) {
+        let trouble = self.browser.feed.trouble.as_ref()?;
+        let what = match (trouble, self.browser.feed.saved) {
             (Trouble::Offline(_), true) => tr("Couldn't reach the registry · showing the saved catalog"),
             (Trouble::Offline(_), false) => tr("Couldn't reach the registry · nothing saved to show"),
             (Trouble::Failed(_), true) => {
@@ -185,8 +185,8 @@ impl Shell {
                         .tap_sm()
                         .icon(IconName::RefreshCw)
                         .label(tr("Retry"))
-                        .loading(self.browser.fetching)
-                        .disabled(self.browser.fetching)
+                        .loading(self.browser.feed.fetching)
+                        .disabled(self.browser.feed.fetching)
                         .on_click(cx.listener(|this, _, _, cx| this.fetch_catalog(cx))),
                 ),
         )
@@ -195,6 +195,7 @@ impl Shell {
     pub(super) fn activity_panel(&self, p: Palette, cx: &mut Context<Self>) -> Stateful<Div> {
         let rows: Vec<AnyElement> = self
             .browser
+            .feed
             .activity
             .iter()
             .enumerate()
@@ -249,7 +250,7 @@ impl Shell {
                             .text_color(p.text_placeholder)
                             .child(trf!(
                                 "last {count} · {file}",
-                                count = self.browser.activity.len(),
+                                count = self.browser.feed.activity.len(),
                                 file = catalog::LOG_FILE
                             )),
                     )
