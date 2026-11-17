@@ -1,33 +1,8 @@
 #include "core/boxes/picker/picker.hpp"
 
-#include "core/testing/direct_start_tt.hpp"
-#include "core/runtime/log_changed.hpp"
 #include "core/runtime/runtime.hpp"
-#include "core/guards/session/replay_grid_logic.hpp"
 
-#include <swofty/game.hpp>
-#include <swofty/mem.hpp>
-#include <swofty/mixin.hpp>
-
-#include <algorithm>
-#include <array>
-#include <atomic>
-#include <cstddef>
-#include <cstdio>
-#include <cstring>
 #include <iterator>
-#include <map>
-#include <mutex>
-#include <optional>
-#include <string>
-#include <vector>
-
-#include "core/apply/content/appliers.hpp"
-#include "core/apply/moments.hpp"
-#include "core/apply/scheduler.hpp"
-#include "core/boxes/box_grid_logic.hpp"
-#include "core/boxes/era_logic.hpp"
-#include "core/boxes/tt_loaded_logic.hpp"
 
 namespace era_picker {
 
