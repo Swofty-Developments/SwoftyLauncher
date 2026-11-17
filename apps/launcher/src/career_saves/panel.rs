@@ -44,8 +44,21 @@ impl Shell {
                     false => line(tr("You get back"), p.success, list(&d.get_back)),
                 });
                 let mut lose = Vec::new();
-                if !d.lose.is_empty() {
-                    lose.push(trf!("{careers} (not in that version)", careers = list(&d.lose)));
+                let flagged: Vec<&str> = d.marked_missing.iter().map(|b| b.career.as_str()).collect();
+                let absent: Vec<_> = d
+                    .lose
+                    .iter()
+                    .filter(|b| !flagged.contains(&b.career.as_str()))
+                    .cloned()
+                    .collect();
+                if !absent.is_empty() {
+                    lose.push(trf!("{careers} (not in that version)", careers = list(&absent)));
+                }
+                if !d.marked_missing.is_empty() {
+                    lose.push(trf!(
+                        "{careers} (that version lists them as missing)",
+                        careers = list(&d.marked_missing)
+                    ));
                 }
                 for (now, then) in &d.progress {
                     lose.push(trf!(

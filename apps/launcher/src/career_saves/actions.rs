@@ -7,7 +7,7 @@ use swofty_core::vault::restore::Running;
 use swofty_core::vault::{self, Location, Vault};
 use swofty_i18n::{tr, trf};
 
-use super::labels::{notice_body, notice_title};
+use super::labels::{missing_warning, notice_body, notice_title};
 use super::steam::steam_save_in;
 use crate::format::ago_since as ago;
 use crate::scale::px;
@@ -161,6 +161,12 @@ impl Shell {
             .and_then(|v| v.find(name))
             .ok()
             .map(|s| s.at);
+        let flagged = Vault::open(&root, source)
+            .and_then(|v| Ok(v.index_of(&v.find(name)?)))
+            .ok()
+            .flatten()
+            .map(|i| vault::careers::missing_briefs(&i))
+            .unwrap_or_default();
         let restored = Vault::open(&root, source).and_then(|v| {
             let snap = v.find(name)?;
             let loc = Location::of_source(&root, source)
@@ -176,14 +182,18 @@ impl Shell {
             Ok(r) => {
                 crate::app_log::note(&r.log_line());
                 self.saves.confirm = None;
-                Notification::success(match (when, &r.before) {
+                let ok = match (when, &r.before) {
                     (Some(at), Some(_)) => trf!(
                         "Restored your save from {when}. The save it replaced is kept as a version.",
                         when = ago(at as f64)
                     ),
                     (Some(at), None) => trf!("Restored your save from {when}.", when = ago(at as f64)),
                     (None, _) => tr("Restored your save.").to_owned(),
-                })
+                };
+                match flagged.is_empty() {
+                    true => Notification::success(ok),
+                    false => Notification::warning(format!("{ok} {}", missing_warning(&flagged))),
+                }
             }
             Err(e) => {
                 crate::app_log::action("restore a save").failed(&e);
