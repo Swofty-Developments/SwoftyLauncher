@@ -421,6 +421,15 @@ jobs:
           key: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-${{ hashFiles('native/**', 'addons/*/native/**', 'packages/sdk/include/**') }}
           restore-keys: zig-${{ runner.os }}-0.16.0-${{ steps.zig-period.outputs.month }}-
 
+      # native/build.sh runs its compile graph with ninja.
+      - name: Ninja
+        run: |
+          curl -fsSL --retry 5 -o "$RUNNER_TEMP/ninja.zip" https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip
+          mkdir -p "$RUNNER_TEMP/ninja"
+          python3 -m zipfile -e "$RUNNER_TEMP/ninja.zip" "$RUNNER_TEMP/ninja"
+          chmod +x "$RUNNER_TEMP/ninja/ninja"
+          echo "$RUNNER_TEMP/ninja" >> "$GITHUB_PATH"
+
       - name: Build version.dll and swofty_core.dll
         run: native/build.sh
 
