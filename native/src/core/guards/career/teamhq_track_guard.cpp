@@ -70,7 +70,7 @@ constexpr size_t RECORD_LOAD_LEN = 7;
 constexpr size_t TRACK_LOAD_LEN = 0xf;
 
 uintptr_t handle_next = 0, node_next = 0, track_next = 0, vm_next = 0, myteam_next = 0;
-runtime::track_record::Seen seen, vm_seen, myteam_seen;
+guards::FirstBytes seen, vm_seen, myteam_seen;
 std::mutex seen_lock;
 safetyhook::MidHook h_handle, h_node, h_track, h_vm, h_myteam;
 

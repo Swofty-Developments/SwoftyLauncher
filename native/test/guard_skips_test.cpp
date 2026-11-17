@@ -1,5 +1,5 @@
-// Host-native unit test for the guards' shared first-N log caps (native/src/core/guards/skips.hpp) and switch values
-// (native/src/core/guards/env.hpp). Built and run by native/test/run_tests.sh guard_skips.
+// Host-native unit test for the guards' shared first-N log caps and first-seen sets (native/src/core/guards/skips.hpp)
+// and switch values (native/src/core/guards/env.hpp). Built and run by native/test/run_tests.sh guard_skips.
 
 #include "core/guards/env.hpp"
 #include "core/guards/skips.hpp"
@@ -104,6 +104,14 @@ int main()
         t.join();
     expect(threaded_lines.load() == 32 && threaded_tails.load() == 1 && threaded.size() == 32,
            "eight threads noting fifty keys log exactly the first thirty-two once, one with the tail");
+
+    guards::FirstBytes tracks;
+    expect(tracks.first(0) && tracks.first(255), "the first note of keys 0 and 255 is new");
+    expect(!tracks.first(0) && !tracks.first(255), "a key noted before is not new");
+    int fresh = 0;
+    for (int i = 0; i < 256; i++)
+        fresh += tracks.first(uint8_t(i));
+    expect(fresh == 254, "every other one-byte key is new once, with no cap");
 
     expect(guards::switch_off("0"), "0 switches a guard off");
     expect(guards::switch_off("off"), "off switches a guard off");

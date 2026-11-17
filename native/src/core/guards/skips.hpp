@@ -138,4 +138,20 @@ private:
     Tail tail_;
 };
 
+// Whether a one-byte key (a track id) is noted for the first time. It keeps all 256 keys, has no cap and no tail, and
+// is not synchronised: its holder locks around it.
+class FirstBytes {
+public:
+    bool first(uint8_t key)
+    {
+        if (seen_[key])
+            return false;
+        seen_[key] = true;
+        return true;
+    }
+
+private:
+    bool seen_[256] = {};
+};
+
 }
