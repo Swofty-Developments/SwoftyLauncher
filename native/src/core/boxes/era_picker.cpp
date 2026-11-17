@@ -1750,7 +1750,7 @@ std::vector<era::Box> era_boxes()
 
 void era_press(const char *entrant_list)
 {
-    void *mode = nullptr, *entity = nullptr;
+    void *entity = nullptr;
     uintptr_t slot = swofty::api ? swofty::api->resolve("g_Game_Manager") : 0, mgr = 0, ctx = 0;
     if (slot && mem::read(slot, mgr) && mgr)
         mem::read(mgr + offsetof(swofty::game::GameManager, mode_context), ctx);
