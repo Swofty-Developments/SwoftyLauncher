@@ -220,6 +220,42 @@ fn the_integrity_module_is_placed_for_a_session_and_rolled_back_with_it() {
 }
 
 #[test]
+fn a_server_plugin_is_placed_for_a_session_and_rolled_back_with_it() {
+    use swofty_core::modules::{self, Module, TT_GAME};
+    const DLL: &str = "swofty/addons/swofty.tt/swofty_tt.dll";
+    let f = Fixture::new("server-plugin");
+    let cached = f
+        .root
+        .join("data/modules/tt-game/windows-x86_64/1.0/swofty_tt.dll");
+    write(&cached, "plugin");
+    let module = Module {
+        name: TT_GAME.name.into(),
+        version: "1.0".into(),
+        path: cached,
+        sha256: String::new(),
+    };
+    let mut plan = f.plan("on");
+    let mut session = f.store.session_settings("on").unwrap();
+    modules::place(&module, TT_GAME.id, &mut plan.loader, &mut session.plugins);
+    assert_eq!(session.plugins, ["addons/swofty.tt/swofty_tt.dll"]);
+
+    let inst = Installer::new(&f.store.root, &f.game);
+    inst.apply(&plan).unwrap();
+    assert_eq!(std::fs::read_to_string(f.game.dir.join(DLL)).unwrap(), "plugin");
+
+    inst.apply(&f.plan("on")).unwrap();
+    assert!(!f.has("swofty/addons/swofty.tt"));
+    assert!(f.has("swofty/addons/t.native/native/t_native.dll"));
+
+    inst.apply(&plan).unwrap();
+    assert!(f.has(DLL));
+    assert!(inst.restore().unwrap().is_empty());
+    assert!(!f.has("swofty"));
+    let ids: Vec<String> = f.store.addons().unwrap().keys().cloned().collect();
+    assert!(!ids.iter().any(|id| id == TT_GAME.id));
+}
+
+#[test]
 fn the_integrity_module_is_not_a_user_addon() {
     let f = Fixture::new("not-an-addon");
     let ids: Vec<String> = f.store.addons().unwrap().keys().cloned().collect();

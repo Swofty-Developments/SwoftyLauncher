@@ -9,6 +9,7 @@
   "{count} min": "{count} min",
   "{h} h {m} min": "{h} h {m} min",
   "_language": "Español",
+  "Advertisement": "Publicidad",
   " and {count} more": " y {count} más",
   ", {size} on {drive}": ", {size} en {drive}",
   "ADDONS": "COMPLEMENTOS",
@@ -954,7 +955,8 @@
   "Stop game": "Detener juego",
   "Support": "Apoyo",
   "Supporters": "Colaboradores",
-  "Supporting a free and open-source launcher with no ads": "Apoyas un launcher gratuito, de código abierto y sin anuncios",
+  "Supporting a free and open-source launcher": "Apoyas un launcher gratuito y de código abierto",
+  "No ads in the launcher": "Sin anuncios en el launcher",
   "Switch away from {vanilla} to use addons": "Cambia de {vanilla} a otro perfil para usar complementos",
   "Swofty Developments": "Swofty Developments",
   "Swofty stops after the file it is on and puts the game files back. Your profile and addons stay as they are, and the next Play builds again.": "Swofty se detiene después del archivo en el que está y vuelve a poner los archivos del juego. Tu perfil y tus complementos se quedan como están, y el siguiente Jugar vuelve a compilar.",
@@ -1321,5 +1323,9 @@
   "{v} is available. Update addons from the play bar.": "{v} está disponible. Actualiza los complementos desde la barra de Jugar.",
   "{v} is not a number": "{v} no es un número",
   "{when}: {downloads}": "{when}: {downloads}",
-  "{wins} wins - {podiums} podiums": "{wins} victorias - {podiums} podios"
+  "{wins} wins - {podiums} podiums": "{wins} victorias - {podiums} podios",
+  "Too many tracks": "Demasiados circuitos",
+  "Left out: the game holds {room} tracks": "Excluido: el juego admite {room} circuitos",
+  "{shown} and {more} more": "{shown} y {more} más",
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["El juego admite {room} circuitos, así que {count} circuito queda fuera de esta compilación: {list}. Desactiva algunos complementos de circuitos para jugarlo.", "El juego admite {room} circuitos, así que {count} circuitos quedan fuera de esta compilación: {list}. Desactiva algunos complementos de circuitos para jugarlos."]
 }

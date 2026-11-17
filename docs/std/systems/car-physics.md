@@ -508,6 +508,7 @@ The launcher applies the `vehicle.handling` records in an addon's data files to 
 ```text
 handling swofty.f1-1990/ferrari_1990 -> ferrari.vtf: 112 change(s)
 handling ferrari.vtf: GearBox: 6 gears, ratios past the top gear 0, 4 shift-speed multiple(s) past it removed
+handling ferrari.vtf: GearBox: AllowGearRatioTuning false, so the car drives these ratios and not the setup's
 handling ferrari.vtf: EnergyRecoverySystem: section removed, 3 part(s) dropped from the radUpgrade blocks
 handling ferrari.vtf: SuspensionSystem/RestLength: 0.1 -> 0.2
 handling ferrari.vtf: Chassis/Mass: 771 -> 620
@@ -532,6 +533,22 @@ The record's `vtf` names the archive. Every VTF in it is changed, or only the on
 Layers apply in load order as a merge patch: `"extends"` on your own records, a key with a `/` for a layer on another addon's record, and `"$select"` entries with `ids`, `where` and `when`. `when` reads the addon's options at build, so an option changes the file at the next Play. `tag` and `in` entries are skipped at build. Layers written in native code run in game, after the build, and don't reach the file.
 
 A vehicle record with a `tyre_group` and a `handling` sets `chassis.tyre_physics_group` on that handling record when the record doesn't set it.
+
+### Equal performance
+
+With equal performance on, the game takes every section of a car's handling from its base car, not from the team file. The car layer names the base in `CarPhysics2.baseVtfAsset`. A layer without one, such as every F1 25 2025 car, gets the game's F1 2025 base car.
+
+An addon whose records name team files in their own package (`eaid://sw_2013_vehicle_package/teams/redbull/handling/redbull.vtf`) and that ships that package's base, `teams/fom_car/handling/fom_car.vtf`, gets two more changes at build:
+
+- The base car takes each value most of the package's records share, so equal performance drives one car of the season.
+- Every `-carmodel.layer` in the records' archives that has a `vtfAsset` and no `baseVtfAsset` gets `baseVtfAsset` set to that base.
+
+An addon that ships no base, such as a livery pack for a season, uses the base of the addon that ships it. A record that names the base file itself sets it; the build leaves it as the record sets it.
+
+```text
+handling swofty.swofty-seasons-2013/sw_2013_vehicle_package equal performance -> fom_car.vtf: 31 change(s)
+handling mclaren-carmodel.layer: CarPhysics2/baseVtfAsset: eaid://sw_2013_vehicle_package/teams/fom_car/handling/fom_car.vtf, so equal performance drives the season's base car
+```
 
 ### Typed sections
 
@@ -567,6 +584,8 @@ A section holds any other key of its VTF section too: `engine.wear_ice_rate`, `f
 ### Gear count
 
 `gearbox.ratios.size()` is the gear count. The build writes the ratios, writes 0 for the gears past the top one and removes the shift-speed multiples past it, the layout of the EA F2 car. `up_speed_multiple` and `down_speed_multiple` hold one value per shift: up for gears 1 to n-1, down for gears 2 to n.
+
+A record that sets `ratios` or `final_drive_ratio` also sets `AllowGearRatioTuning` to false in the GearBox section, as the EA F2 car does. While it is true, the game's default for F1 cars, the gearbox takes its ratios and final drive from the car setup and ignores the handling file's.
 
 ```json
 { "gearbox": { "ratios": [3.1, 2.3, 1.8, 1.4, 1.1, 0.9] } }

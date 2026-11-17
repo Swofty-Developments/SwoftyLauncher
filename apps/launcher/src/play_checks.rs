@@ -75,6 +75,7 @@ pub(crate) struct Inputs {
     pub store: Store,
     pub profile: String,
     pub game: PathBuf,
+    pub build_id: Option<u64>,
     pub anyway: bool,
 }
 
@@ -93,6 +94,7 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
         store,
         profile,
         game,
+        build_id,
         anyway,
     } = inputs;
     let mut timings = Timings::default();
@@ -114,6 +116,9 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
             timings.time("lonely", || {
                 notes.extend(lonely(&store, &p, &installed, &catalog))
             });
+            timings.time("track limit", || {
+                notes.extend(track_limit_note(&store, &game, build_id, &p))
+            });
             registry(&store, &game, &p, &installed, anyway, &mut notes, &mut timings)
         }
         _ => Verdict::Go,
@@ -128,6 +133,50 @@ pub(crate) fn run(inputs: Inputs) -> Checked {
         room,
         timings,
     }
+}
+
+fn track_limit_note(
+    store: &Store,
+    game: &std::path::Path,
+    build_id: Option<u64>,
+    profile: &swofty_core::profile::Profile,
+) -> Option<Note> {
+    if profile.is_vanilla() {
+        return None;
+    }
+    let identity = swofty_core::baseline::Identity::detect_cached(&store.root, game, build_id).ok()?;
+    let game = swofty_core::install::Game {
+        dir: game.to_path_buf(),
+        user_reg: None,
+        identity,
+    };
+    let limit = swofty_core::build::track_limit(store, &profile.name, &game).ok()?;
+    swofty_core::tracks::record_track_limit(&store.root, &profile.name, limit.as_ref()).ok();
+    limit.as_ref().map(limit_note)
+}
+
+pub(crate) fn limit_text(room: usize, names: &[String]) -> String {
+    const SHOWN: usize = 4;
+    let list = match names.len().saturating_sub(SHOWN) {
+        0 => names.join(", "),
+        more => trf!(
+            "{shown} and {more} more",
+            shown = names[..SHOWN].join(", "),
+            more = more
+        ),
+    };
+    fill(
+        &trn(
+            names.len(),
+            "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.",
+            "The game holds {room} tracks, so {count} tracks are left out of this build: {list}. Turn some track addons off to play them.",
+        ),
+        &[("room", room.to_string()), ("list", list)],
+    )
+}
+
+pub(crate) fn limit_note(limit: &swofty_core::tracks::TrackLimit) -> Note {
+    Note::warning(tr("Too many tracks"), limit_text(limit.room, &limit.names))
 }
 
 fn lonely(
@@ -375,6 +424,42 @@ mod tests {
         let n = lonely_note("Base", &family);
         assert!(n.body.contains("S1, S2, S3, S4 and 2 more"));
         assert_eq!(n.title, "Base needs one of its addons");
+    }
+
+    #[test]
+    fn limit_text_names_the_tracks_left_out() {
+        let names: Vec<String> = ["Mugello", "Okayama"].map(String::from).into();
+        assert_eq!(
+            limit_text(64, &names),
+            "The game holds 64 tracks, so 2 tracks are left out of this build: Mugello, Okayama. Turn some track addons off to play them."
+        );
+        assert_eq!(
+            limit_text(64, &names[..1]),
+            "The game holds 64 tracks, so 1 track is left out of this build: Mugello. Turn some track addons off to play it."
+        );
+    }
+
+    #[test]
+    fn limit_text_names_four_and_counts_the_rest() {
+        let names: Vec<String> = (1..=13).map(|i| format!("T{i}")).collect();
+        let text = limit_text(64, &names);
+        assert!(text.contains("13 tracks are left out"));
+        assert!(text.contains("T1, T2, T3, T4 and 9 more."));
+        assert!(!text.contains("T5"));
+    }
+
+    #[test]
+    fn limit_note_is_a_sticky_warning() {
+        let limit = swofty_core::tracks::TrackLimit {
+            room: 64,
+            stock: 35,
+            names: vec!["Mugello".into()],
+            addons: vec!["mod.mugello".into()],
+        };
+        let n = limit_note(&limit);
+        assert_eq!(n.title, "Too many tracks");
+        assert_eq!(n.level, NoteLevel::Warning);
+        assert!(n.sticky);
     }
 
     #[test]

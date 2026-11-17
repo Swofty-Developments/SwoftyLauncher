@@ -1,7 +1,5 @@
 //! Small helpers for the launcher's authenticated calls to its own server.
 
-use crate::multiplayer::ws::loopback;
-
 /// The host of `host[:port]` or `[v6]:port`, without brackets.
 pub fn host_of(authority: &str) -> &str {
     let authority = authority.rsplit('@').next().unwrap_or(authority);
@@ -9,6 +7,14 @@ pub fn host_of(authority: &str) -> &str {
         return v6.split(']').next().unwrap_or("");
     }
     authority.split(':').next().unwrap_or("")
+}
+
+/// Whether `host` is this machine: `localhost`, 127.0.0.0/8 or ::1.
+pub fn loopback(host: &str) -> bool {
+    host.eq_ignore_ascii_case("localhost")
+        || host
+            .parse::<std::net::IpAddr>()
+            .is_ok_and(|ip| ip.to_canonical().is_loopback())
 }
 
 /// Whether a Bearer token may be sent to `server`: any https server, or a plain http one on loopback.

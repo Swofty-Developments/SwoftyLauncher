@@ -658,8 +658,43 @@ static void test_badge()
     live.update(2.0);
     CHECK(live.read_team_badge(1, out, sizeof out) && !std::strcmp(out, "ferrari_2026"));
     CHECK(!live.read_team_badge(2, out, sizeof out));
+    char path[96];
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "#overrides.osd.timing_tower.team_badges_hud.ferrari_2026"));
+    CHECK(!live.read_team_badge_texture(1, path, 40) && !path[0]);
+    CHECK(!live.read_team_badge_texture(2, path, sizeof path));
     a.put<uint8_t>(rec + L::badge::record_render, 1);
     CHECK(!live.read_team_badge(1, out, sizeof out));
+    uintptr_t badge = ents + L::badge::entrant_stride + L::badge::entrant_badge;
+    a.put<uint32_t>(badge, (7u << 16) | 0);
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_ePreLoaded 7"));
+    a.put<uint32_t>(badge, (12u << 16) | 0x5500 | 2);
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_eNetworkReplicated 12"));
+    a.put<uint32_t>(badge, (L::badge::badge_none << 16) | 0);
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_default.tga"));
+    a.put<uint32_t>(badge, (7u << 16) | 3);
+    CHECK(!live.read_team_badge_texture(1, path, sizeof path));
+    a.put<uint32_t>(badge, (7u << 16) | 0);
+    Gates off = Gates::all();
+    off.on[G_BADGE_RENDER] = false;
+    Live plain(w.mem(), w.s, off);
+    plain.update(2.0);
+    CHECK(!plain.read_team_badge_texture(1, path, sizeof path));
+    a.put<uint8_t>(rec + L::badge::record_render, 0);
+    CHECK(plain.read_team_badge_texture(1, path, sizeof path));
+    a.put<uint8_t>(rec + L::badge::record_render, 1);
+    a.put<uint32_t>(ents + L::badge::entrant_stride + L::badge::entrant_team, (3u << 16) | L::badge::my_team_kind);
+    a.put<uint32_t>(badge, (4u << 16) | 1);
+    CHECK(!live.read_team_badge(1, out, sizeof out) && !live.read_team_badge_texture(1, path, sizeof path));
+    a.put<uint32_t>(ents + L::badge::entrant_stride + L::badge::entrant_team, (3u << 16) | 0);
+    a.put<uint8_t>(rec + L::badge::record_render, 0);
+    CHECK(live.read_team_badge(1, out, sizeof out));
+    a.put<uint32_t>(w.s.vehicle_count, 0);
+    live.update(3.0);
+    CHECK(!live.active() && !live.read_team_badge(1, out, sizeof out) && !live.read_team_badge_texture(1, path, sizeof path));
 }
 
 static void test_utf8_prefix()
@@ -783,6 +818,11 @@ static void test_driver_name()
     Live gated(w.mem(), w.s, off);
     gated.update(0.0);
     CHECK(!gated.read_driver_name(1, out, sizeof out));
+    a.put<uintptr_t>(vh + D::participants + 8, parts + 8 * 5);
+    CHECK(live.read_driver_name(1, out, sizeof out));
+    a.put<uint32_t>(w.s.vehicle_count, 0);
+    live.update(4.0);
+    CHECK(!live.active() && !live.read_driver_name(1, out, sizeof out));
 }
 
 static void test_pit_lane()
@@ -1026,7 +1066,7 @@ static void test_build_gate()
 
     CHECK(proof_for(1789118616u) == &KB_BUILD && proof_for(1789128892u) == &EA_BUILD && !proof_for(1234u) && !proof_for(0));
     CHECK(EA_BUILD.progress_from_manager == 0x2a0 && KB_BUILD.progress_from_manager == L::progress::from_manager);
-    CHECK(EA_BUILD.groups == (ALL_GROUPS & ~bit(G_DRIVER_NAMES)) && KB_BUILD.groups == ALL_GROUPS);
+    CHECK(EA_BUILD.groups == (ALL_GROUPS & ~(bit(G_DRIVER_NAMES) | bit(G_BADGE_RENDER))) && KB_BUILD.groups == ALL_GROUPS);
 
     World ea(EA_BUILD.progress_from_manager);
     Sites ea_sites = ea.s;
@@ -1061,6 +1101,127 @@ static void test_build_gate()
 
     Sites none;
     CHECK(on_mask(decide(none, EA_BUILD, false, backed)) == 0);
+}
+
+static void test_steam_26566308()
+{
+    const BuildProof *build = proof_for(1794312636u);
+    CHECK(build == &STEAM_26566308_BUILD);
+    CHECK(build->groups == ALL_GROUPS);
+    CHECK(build->progress_from_manager == 0x2d0);
+    CHECK(!KB_BUILD.field_proofs && !EA_BUILD.field_proofs);
+    World w;
+    Arena &a = w.a;
+    uintptr_t reg = a.get<uintptr_t>(a.get<uintptr_t>(w.s.game_manager) + L::registry::from_manager);
+    uintptr_t slots = a.get<uintptr_t>(reg + L::registry::slots), info = a.get<uintptr_t>(reg + L::registry::info);
+    uintptr_t tyres = a.alloc(0x120), vehicles = a.alloc(3 * 8), components[3];
+    a.put<uintptr_t>(slots + 8 * 16, w.s.key_tyres);
+    a.put<uintptr_t>(slots + 8 * 16 + 8, tyres);
+    a.put<uint8_t>(info + 8, 1);
+    a.put<uintptr_t>(tyres + L::tyres::per_vehicle, vehicles);
+    a.put<uintptr_t>(tyres + L::tyres::per_vehicle + 8, vehicles + 3 * 8);
+    for (unsigned i = 0; i < 3; i++) {
+        uintptr_t c = components[i] = a.alloc(L::tyres::hi), set = a.alloc(L::tyres::set_stride);
+        uintptr_t physical = a.alloc(8), visual = a.alloc(0x58);
+        a.put<uintptr_t>(vehicles + 8 * i, c);
+        a.put<uint64_t>(c + L::tyres::version, 1);
+        a.put<uint64_t>(c + L::tyres::built_for, 1);
+        a.put<uint64_t>(c + L::tyres::built, 1);
+        a.put<uint64_t>(c + L::tyres::count, 1);
+        a.put<uintptr_t>(c + L::tyres::set_begin, set);
+        a.put<uintptr_t>(c + L::tyres::set_end, set + L::tyres::set_stride);
+        a.put<uint32_t>(set + 0xc, 1);
+        a.put<uint32_t>(c + L::tyres::list, 1);
+        a.put<uintptr_t>(c + L::tyres::list + L::tyres::desc_physical, physical);
+        a.put<uintptr_t>(c + L::tyres::list + L::tyres::desc_visual, visual);
+        a.put<uint8_t>(physical, uint8_t(i == 2 ? 7 : 18));
+        a.put<uint8_t>(visual, uint8_t(i == 2 ? 7 : 16));
+        a.put<int32_t>(visual + L::tyres::visual_compound, i == 2 ? 7 : 3);
+    }
+    Sites sites = resolved_everywhere(w.s);
+    sites.progress_from_manager = build->progress_from_manager;
+    sites.ers_mode = build->ers_mode;
+    for (unsigned i = 0; i < 3; i++) a.put<int32_t>(w.ers[i] + sites.ers_mode, 2);
+    Decision d = decide(sites, *build, false);
+    CHECK(on_mask(d) == STEAM_26566308_GROUPS);
+    BuildProof missing_fields = *build; missing_fields.field_proofs = 0;
+    CHECK(!decide(sites, missing_fields, false).gates[G_DRIVER_NAMES]);
+    Row unmapped[G_COUNT]; std::memcpy(unmapped, ROWS, sizeof unmapped);
+    unmapped[G_DRIVER_NAMES].mapped = false;
+    CHECK(!decide(sites, *build, false, unmapped).gates[G_DRIVER_NAMES]);
+    for (const auto &need : NEEDS) for (auto slot : need.sites) if (slot) {
+        Sites missing = sites; missing.*slot = 0;
+        CHECK(!decide(missing, *build, false).gates[need.group]);
+    }
+    for (unsigned i = 0; i < G_COUNT; i++)
+        CHECK((build->groups & bit(Group(i))) ? d.verdict[i].why == Why::on : !d.gates[Group(i)]);
+
+    Live live(w.mem(), sites, d.gates);
+    live.update(0.0);
+    live.update(1.0);
+    CHECK(live.active());
+    CHECK(live.ses.have & SWOFTY_LIVE_SHAVE_PLAYER);
+    CHECK(live.ses.have & SWOFTY_LIVE_SHAVE_ORDER);
+    constexpr uint64_t expected = SWOFTY_LIVE_HAVE_IDENT | SWOFTY_LIVE_HAVE_CLASS | SWOFTY_LIVE_HAVE_PIT |
+        SWOFTY_LIVE_HAVE_PIT_LANE | SWOFTY_LIVE_HAVE_TYRE | SWOFTY_LIVE_HAVE_SPEED | SWOFTY_LIVE_HAVE_RPM |
+        SWOFTY_LIVE_HAVE_GEAR | SWOFTY_LIVE_HAVE_PEDALS | SWOFTY_LIVE_HAVE_CLUTCH | SWOFTY_LIVE_HAVE_STEER |
+        SWOFTY_LIVE_HAVE_G | SWOFTY_LIVE_HAVE_WORLD | SWOFTY_LIVE_HAVE_ERS_STORE | SWOFTY_LIVE_HAVE_ERS_MODE |
+        SWOFTY_LIVE_HAVE_ERS_POWER | SWOFTY_LIVE_HAVE_ERS_LAP | SWOFTY_LIVE_HAVE_PROGRESS |
+        SWOFTY_LIVE_HAVE_GAP_LEADER | SWOFTY_LIVE_HAVE_GAP_AHEAD | SWOFTY_LIVE_HAVE_SECTOR;
+    CHECK((live.cars[0].have & expected) == expected);
+    CHECK(live.cars[0].ers_mode == 2 && live.cars[0].gear == 3 && live.cars[0].speed == 50.f);
+    CHECK(live.cars[0].tyre_actual == 18 && live.cars[0].tyre_visual == 16 && live.cars[0].tyre_letter == 'S');
+    CHECK(live.cars[2].tyre_actual == 7 && live.cars[2].tyre_letter == 'I');
+    constexpr uint64_t session_bits = SWOFTY_LIVE_SHAVE_TYPE | SWOFTY_LIVE_SHAVE_TRACK_LENGTH |
+        SWOFTY_LIVE_SHAVE_GAME_MODE | SWOFTY_LIVE_SHAVE_ROAD_ORDER;
+    CHECK((live.ses.have & session_bits) == session_bits);
+    char name[128];
+    CHECK(!live.read_driver_name(0, name, sizeof name));
+    a.put<uint64_t>(components[0] + L::tyres::built_for, 2);
+    live.update(2.0);
+    CHECK(!(live.cars[0].have & SWOFTY_LIVE_HAVE_TYRE));
+    CHECK(live.cars[1].have & SWOFTY_LIVE_HAVE_TYRE);
+    a.put<uint64_t>(components[0] + L::tyres::built_for, 1);
+    live.update(3.0);
+    CHECK(live.cars[0].have & SWOFTY_LIVE_HAVE_TYRE);
+
+    sites.key_pit = 0;
+    d = decide(sites, *build, false);
+    CHECK(!d.gates[G_PIT] && !d.gates[G_PIT_LANE]);
+    CHECK(d.verdict[G_PIT].why == Why::site && d.verdict[G_PIT_LANE].why == Why::site);
+    CHECK(d.gates[G_CLASS] && d.gates[G_TYRES] && d.gates[G_CONTROL]);
+    sites.key_tyres = 0;
+    CHECK(!decide(sites, *build, false).gates[G_TYRES]);
+    sites.controllers = 0;
+    CHECK(!decide(sites, *build, false).gates[G_CONTROL]);
+    sites.key_results = 0;
+    CHECK(!decide(sites, *build, false).gates[G_CLASS]);
+    CHECK(on_mask(decide(Sites{}, *build, false)) == 0);
+    CHECK(!proof_for(1794312635u) && !proof_for(1794312637u));
+}
+
+static void test_steam_26566308_ers_mode()
+{
+    CHECK(KB_BUILD.ers_mode == 0x1a68 && EA_BUILD.ers_mode == 0x1a68);
+    CHECK(STEAM_26566308_BUILD.ers_mode == 0x1a6c);
+    World original;
+    Live kb(original.mem(), original.s, Gates::all());
+    kb.update(0.0);
+    CHECK((kb.cars[0].have & SWOFTY_LIVE_HAVE_ERS_MODE) && kb.cars[0].ers_mode == 2);
+    World current;
+    current.s.ers_mode = STEAM_26566308_BUILD.ers_mode;
+    current.a.put<int32_t>(current.ers[0] + L::ers::mode, 0x7fffffff);
+    current.a.put<int32_t>(current.ers[0] + current.s.ers_mode, 1);
+    Live live(current.mem(), current.s, Gates::all());
+    live.update(0.0);
+    CHECK((live.cars[0].have & SWOFTY_LIVE_HAVE_ERS_MODE) && live.cars[0].ers_mode == 1);
+    current.a.put<int32_t>(current.ers[0] + current.s.ers_mode, 3);
+    live.update(1.0);
+    CHECK((live.cars[0].have & SWOFTY_LIVE_HAVE_ERS_MODE) && live.cars[0].ers_mode == 3);
+    current.a.put<int32_t>(current.ers[0] + current.s.ers_mode, 5);
+    live.update(2.0);
+    CHECK(!(live.cars[0].have & SWOFTY_LIVE_HAVE_ERS_MODE));
+    CHECK(live.cars[0].have & SWOFTY_LIVE_HAVE_ERS_STORE);
 }
 
 static void test_readiness_rows()
@@ -1099,6 +1260,8 @@ int main()
     test_bus_events_in_live();
     test_readiness_rows();
     test_build_gate();
+    test_steam_26566308();
+    test_steam_26566308_ers_mode();
     if (failures) {
         std::printf("%d failures\n", failures);
         return 1;

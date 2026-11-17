@@ -351,6 +351,36 @@ A `statId` in `set` on a `game_setup.scenarios` row moves the same way when a ro
 
 The conflicts report counts each clash as a database conflict between the two addons. The id a copy moves to depends on the addons before it in the load order, so a career made with one load order expects that order's ids. An id that a stock row holds stays as set. A copy into a nested table, such as an entrant of an entrant list, keeps its source's id; the build prints a line when the nested table's ids were all different.
 
+#### Unlock items
+
+The rows of `unlockable_content.unlockable_items.unlockable_item_list_<n>.folder_<m>.<kind>` (`unlockable_livery`, `unlockable_se_livery`, `unlockable_decal_set`, `unlockable_suit` and every other kind) carry a `statId` that must be unique within the unlock list, across all its folders and kinds ([Sponsors](/reference/data/sponsors#ids)). Leave `statId` out of `set` and the launcher gives the row one:
+
+| An `add-row` into an unlock folder | `statId` of the copy |
+| --- | --- |
+| no `statId` in `set` | the id the install keeps for the row, else a free one ([Kept ids](#kept-ids)) |
+| `"stat_id": "keep"` and no `statId` in `set` | the source row's |
+| a `statId` in `set` that no row of the list holds | as set |
+| a `statId` in `set` that a stock row or a row added earlier holds | a free one, with a warning |
+
+A free id is the lowest from 10000 (or above the list's highest stock id, should that ever pass 10000) up to 65535 that no row of the list holds, no addon later in the load order sets on an unlock row of the list, `row-ids.json` keeps for no other row, and the core's `ids.json` holds for no registry livery's unlock row (`livery.unlock`, one pool for all lists, [Liveries](/std/systems/liveries)). Ids from 10000 stay clear of the game: an update adds its unlock rows right above the highest stock id, as Steam build 26566308 added `toro_rosso_barcelona_26` with 5280. Each unlock list is its own id space, so a decal set added to lists 1 and 2 can get the same id in both. When no id up to 65535 is free, the row takes an id kept for an addon the build leaves out, then the `add-row` fails.
+
+The id is kept in `row-ids.json` under `<addon>/<list>.unlockable_item/<kind>/<label>`, for example `my-addon/unlockable_content.unlockable_items.unlockable_item_list_2.unlockable_item/unlockable_se_livery/my_livery`, so it stays the same at every build, whatever the profile, the load order or the other addons, and moving the row to another folder keeps it. The build prints where each id came from:
+
+```text
+my-addon: add-row unlockable_content.unlockable_items.unlockable_item_list_2.folder_23.unlockable_se_livery_22 (from unlockable_content.unlockable_items.unlockable_item_list_2.folder_23.unlockable_se_livery[_metadata_=toro_rosso_miami_26]): statId 10000 (the source's is 5274)
+my-addon: add-row unlockable_content.unlockable_items.unlockable_item_list_2.folder_23.unlockable_se_livery_22 (from unlockable_content.unlockable_items.unlockable_item_list_2.folder_23.unlockable_se_livery[_metadata_=toro_rosso_miami_26]): statId 10000 (the source's is 5274; kept from row-ids.json)
+```
+
+A `statId` in `set` that another row of the list holds moves, unlike a `stat_id` a stock row holds: two unlock rows with one id hide each other, and a game update can give a stock row the id an addon picked. The copy gets an id of its own, kept from then on, a `[statId=<id>]` selector later in the same file finds the copy, and the build warns:
+
+```text
+my-addon: add-row unlockable_content.unlockable_items.unlockable_item_list_2.folder_23.unlockable_se_livery_22 (from …): statId 5280 is taken by unlockable_content.unlockable_items.unlockable_item_list_2.folder_23.unlockable_se_livery_21 (toro_rosso_barcelona_26); statId 10000
+my-addon: statId 5280 of my_livery is taken by toro_rosso_barcelona_26 from the game; the build gave it statId 10000. The addon's author should leave statId out of add-row
+my-addon: statId 5281 of my_livery is taken by f1_sticker from other-addon; the build gave it statId 10001. The addon's author should leave statId out of add-row
+```
+
+A clash with another addon's row counts as a database conflict between the two addons. A `statId` below 0 or one that is not a number stays as set.
+
 An `unlockable_se_livery` row added to an `unlockable_content.unlockable_items.unlockable_item_list_<n>.folder_<m>` table, by `add-row` or by `put-record`, unlocks the new special livery. The build writes the row's ownership key, the djb2 hash of `eSELivery` and the row's `_metadata_`, to the `owned_items` block of `swofty/settings.json`, and `swofty_core.dll` reports that key as owned to the livery picker. A key that any stock database value also gives is left out with a warning.
 
 ## What a copy does not bring along

@@ -82,6 +82,21 @@ static_assert(offsetof(GameWeatherSystem, forced_seed) == 0x1f14);
 static_assert(offsetof(GameWeatherSystem, weekend) == 0x1f18);
 static_assert(offsetof(GameWeatherSystem, dataset_dynamic) == 0x2f3a);
 
+struct InputRecord {
+    uint8_t _pad_0x0[0x4];
+    int32_t gear_request; // L2 experimental
+    uint8_t _pad_0x8[0x4];
+    float brake; // L2 experimental
+    float clutch; // L2 experimental
+    float steering; // L2 experimental
+    float throttle; // L2 experimental
+};
+static_assert(offsetof(InputRecord, gear_request) == 0x4);
+static_assert(offsetof(InputRecord, brake) == 0xc);
+static_assert(offsetof(InputRecord, clutch) == 0x10);
+static_assert(offsetof(InputRecord, steering) == 0x14);
+static_assert(offsetof(InputRecord, throttle) == 0x18);
+
 struct RedFlagSystem {
     uint8_t _pad_0x0[0x40];
     uint8_t state; // L2 experimental
@@ -320,6 +335,8 @@ inline constexpr fn<"Sess_Build_GroupResult", Sess_Build_GroupResult_t> Sess_Bui
 inline constexpr address<"Sess_Build_SafetyCarLogicGraph"> Sess_Build_SafetyCarLogicGraph{}; // L2 experimental
 using Sess_Build_SelectableDriverList_t = NeVecU32 *(NeVecU32 *out, void *ctx, void *entrants, const void *filter, void *alloc, uint8_t flag);
 inline constexpr fn<"Sess_Build_SelectableDriverList", Sess_Build_SelectableDriverList_t> Sess_Build_SelectableDriverList{}; // L2 experimental
+using Sess_Build_VehicleTyreInfo_t = void *(void *out, void *system, uint8_t vehicle, uint32_t flags, const void *ctx, float scale);
+inline constexpr fn<"Sess_Build_VehicleTyreInfo", Sess_Build_VehicleTyreInfo_t> Sess_Build_VehicleTyreInfo{}; // L2 experimental
 inline constexpr address<"Sess_ChallengeRuleset_UpdateLapDelta"> Sess_ChallengeRuleset_UpdateLapDelta{}; // L2 experimental
 using Sess_ChampionshipWonDecision_Update_t = uint32_t *(void *state, uint32_t *route);
 inline constexpr fn<"Sess_ChampionshipWonDecision_Update", Sess_ChampionshipWonDecision_Update_t> Sess_ChampionshipWonDecision_Update{}; // L2 experimental, SessionStateChampionshipWonDecision.

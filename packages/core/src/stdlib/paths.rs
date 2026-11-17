@@ -65,7 +65,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "content.package",
-        include_str!("../../../sdk/std/registries/content.package/1.5.json"),
+        include_str!("../../../sdk/std/registries/content.package/1.6.json"),
     ),
     (
         "driver.head",
@@ -105,7 +105,7 @@ const SCHEMAS: &[(&str, &str)] = &[
     ),
     (
         "hud.element",
-        include_str!("../../../sdk/std/registries/hud.element/1.2.json"),
+        include_str!("../../../sdk/std/registries/hud.element/1.3.json"),
     ),
     (
         "hub.tab",
@@ -122,6 +122,10 @@ const SCHEMAS: &[(&str, &str)] = &[
     (
         "rules.drs",
         include_str!("../../../sdk/std/registries/rules.drs/1.0.json"),
+    ),
+    (
+        "session.points",
+        include_str!("../../../sdk/std/registries/session.points/1.0.json"),
     ),
     ("suit", include_str!("../../../sdk/std/registries/suit/1.0.json")),
     (

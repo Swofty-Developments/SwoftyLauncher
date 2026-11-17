@@ -9,14 +9,15 @@
 #include <cstring>
 #include <vector>
 
-// AI corner start guard (re/db/globals.tsv site_Ai_UpdateCars_CornerLineLoad).
+// AI brake line guard (re/db/globals.tsv site_Ai_UpdateCars_CornerLineLoad).
 //
-// Ai_Job_UpdateCarsParallel keeps a gap evaluation per car (Ai_Overtake_EvaluateGap), and its second pass
-// (Ai_TrackLine_FindNextCornerStart) stores the next corner start line ahead of the car at result+8, or 0 when the
-// route's corner start table has no usable entry ahead, with the valid flag result+0x4b still set. A track whose AI
-// line has an incomplete set of corner starts and ends, such as a WIP track addon, leaves that 0. One later read,
-// mov rax,[rax+rdi*8+0xb8] at F1_25.exe+0x64069e (Ai_Job_UpdateCarsParallel+0x232e), takes the line's per-car entry
-// without checking it: ACCESS_VIOLATION reading 0xb8.
+// Ai_Job_UpdateCarsParallel keeps a track-line query per car (Ai_Overtake_EvaluateGap). Its second pass
+// (Ai_TrackLine_FindNextCornerStart; despite the name it reads the lane's brake line table, lane+0x498) stores the
+// next brake line ahead of the car at result+8 when that line lies between the corner start and corner end the first
+// pass found, or 0 when there is none, with the valid flag result+0x4b still set. A track whose AI line has a corner
+// without a brake line inside it, or an incomplete set of corner starts and ends, such as a WIP track addon, leaves
+// that 0. One later read, mov rax,[rax+rdi*8+0xb8] at F1_25.exe+0x64069e (Ai_Job_UpdateCarsParallel+0x232e), takes
+// the brake line's per-route entry without checking it: ACCESS_VIOLATION reading 0xb8.
 //
 // At site_Ai_UpdateCars_CornerLineLoad a zero line continues at site_Ai_UpdateCars_NoCornerLine, the path the very
 // next test of that load takes for a line without an entry, so the car keeps driving its line without corner data.
@@ -26,7 +27,7 @@
 
 namespace {
 
-constexpr const char *MIXIN = "swofty_core.dll (ai corner start guard)";
+constexpr const char *MIXIN = "swofty_core.dll (ai brake line guard)";
 constexpr const char *LOAD = "site_Ai_UpdateCars_CornerLineLoad";
 constexpr const char *NONE = "site_Ai_UpdateCars_NoCornerLine";
 
@@ -40,8 +41,9 @@ void corner_load(SwoftyContext *c)
         return;
     c->rip = no_corner;
     if (tally.first())
-        swofty::log("[ai] corner start: car %d has no corner start ahead on this track's AI line (its corner starts and "
-                    "ends are incomplete); it drives the line without corner data",
+        swofty::log("[ai] brake line: car %d has no brake line ahead inside the next corner on this track's AI line (a "
+                    "corner without a brake line, or incomplete corner starts and ends); it drives the line without "
+                    "corner data",
                     int(static_cast<int32_t>(c->rdi)));
 }
 
@@ -58,13 +60,13 @@ std::vector<CoreMixins> ai_corner_guard_mixins()
     char v[16] = {};
     DWORD n = GetEnvironmentVariableA("SWOFTY_AI_CORNER_GUARD", v, sizeof v);
     if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[ai] corner start guard off (SWOFTY_AI_CORNER_GUARD=%s)", v);
+        swofty::log("[ai] brake line guard off (SWOFTY_AI_CORNER_GUARD=%s)", v);
         return out;
     }
     no_corner = swofty::api->resolve(NONE);
     if (!no_corner || !swofty::api->resolve(LOAD)) {
         no_corner = 0;
-        swofty::log("[ai] corner start guard off: needs %s and %s, which this build does not resolve", LOAD, NONE);
+        swofty::log("[ai] brake line guard off: needs %s and %s, which this build does not resolve", LOAD, NONE);
         return out;
     }
     out.push_back({MIXIN, {{LOAD, SWOFTY_MIXIN_SITE, 100, (void *)&corner_load, nullptr}}});
@@ -76,8 +78,8 @@ void ai_corner_guard_commit()
     if (!offered || settled || !no_corner)
         return;
     settled = true;
-    swofty::log("[ai] corner start guard %s",
-                core_mixins_active(MIXIN) ? "armed: a car with no corner start ahead drives its line without corner data"
+    swofty::log("[ai] brake line guard %s",
+                core_mixins_active(MIXIN) ? "armed: a car with no brake line ahead drives its line without corner data"
                                           : "did not install (see the [core] lines)");
 }
 

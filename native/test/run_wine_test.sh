@@ -280,7 +280,7 @@ PY
         fi
         check "career: swofty_core itself still initialises" 'addon swofty_core\.dll: SwoftyAddonInit returned 1 \(ok\)'
         check "addons: a plugin exporting only SwoftyModInit loads" 'addon t_v1\.dll: loaded at .*, API v1 plugin, SwoftyModInit runs after the mixin commit'
-        check "addons: every dll in both folders loads" 'addons: done, 14 addon\(s\) loaded'
+        check "addons: every dll in both folders loads" 'addons: done, 15 addon\(s\) loaded'
         check "career content: a content registered at init is queued for the commit" '\[career\] content .wine-test. from t_content\.dll registered \(tile 1 after the stock ones, 2026 model, data group f1_career_wine, suffix wt, mode driver_career_wine\): queued for the next mixin commit'
         check "career content: a duplicate data group is refused" '\[career\] content .wine-test-2. from t_content\.dll refused: another content already has data group f1_career_wine'
         check "career content: a stock data group is refused" '\[career\] content .wine-stock. from t_content\.dll refused: data_group f1_career_2026 is a stock career'
@@ -395,9 +395,9 @@ EOF
         once "fe tiles: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(front-end tile list guard\)': 3 mixin\(s\)"
         once "fe tiles: the guard is armed" '\[fe\] tiles guard armed'
         once "fe tiles: a list missing from the slot array is skipped and logged once" '\[fe\] tiles: entrant list f2_2026 is not in the game data; its tile is left without a list'
-        once "ai corner: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ai corner start guard\)': 1 mixin"
-        once "ai corner: the guard is armed" '\[ai\] corner start guard armed'
-        once "ai corner: a car with no corner start line is skipped and logged once" '\[ai\] corner start: car 3 has no corner start ahead on this track'"'"'s AI line'
+        once "ai corner: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(ai brake line guard\)': 1 mixin"
+        once "ai corner: the guard is armed" '\[ai\] brake line guard armed'
+        once "ai corner: a car with no brake line is skipped and logged once" '\[ai\] brake line: car 3 has no brake line ahead inside the next corner on this track'"'"'s AI line'
         once "replay grid: the guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(replay recorder grid guard\)': 1 mixin"
         once "replay grid: the guard is armed" '\[replay\] recorder grid guard armed'
         once "replay grid: the read guard is armed" '\[replay\] read guard armed'
@@ -413,6 +413,10 @@ EOF
         once "leaderboard: the time trial leaderboard guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(time trial leaderboard guard\)': 1 mixin"
         once "leaderboard: the time trial leaderboard guard is armed" '\[leaderboard\] time trial leaderboard guard armed'
         count "leaderboard: each view without a board is skipped and logged" 2 '\[leaderboard\] Time Trial leaderboard view 0x[0-9a-f]+ has no board for this track'
+        once "lap host: an addon finds the table and attaches" '\[t_laphost\] lap host version 1, size ok, swofty root set, files root set, build bits [0-3], attach 1'
+        once "lap host: the core takes the module's hook set while it collects sets" '\[t_laphost\] offer: add_hooks answered 1'
+        once "lap host: the module's hook set is a core mixin set of its own" "core mixin set 't_laphost\.dll \(lap host set\)': 1 mixin"
+        once "lap host: the module hears its hook set is in place" '\[t_laphost\] settle: the hook set is active'
         once "acclim: the track acclimatisation guard is a core mixin set of its own" "core mixin set 'swofty_core\.dll \(track acclimatisation guard\)': 1 mixin"
         once "acclim: the track acclimatisation guard is armed" '\[acclim\] track acclimatisation guard armed'
         once "acclim: the programme without targets is skipped and logged" '\[acclim\] Track Acclimatisation programme 0x[0-9a-f]+ has no targets at this track \(targets 0x0\); refresh skipped'
@@ -906,16 +910,16 @@ for guard in on off; do
     code=0
     rm -f "$SW"/crash-*.txt "$SW"/crash-*.dmp
     SWOFTY_AI_CORNER_GUARD=$([[ $guard == off ]] && echo 0) timeout 120 "${PIN[@]}" xvfb-run -a wine cmd /c "$OUT/game/F1_25.exe" ai_corner >"$OUT/ai_corner.out" 2>&1 || code=$?
-    grep -E '\[ai\] corner start|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
+    grep -E '\[ai\] brake line|\[crash\] (unhandled |crash report [^:]*crash-[0-9])' "$LOG" || true
     if [[ $guard == on ]]; then
-        once "ai corner on: the car is skipped and logged" '\[ai\] corner start: car 3 has no corner start ahead on this track'"'"'s AI line'
+        once "ai corner on: the car is skipped and logged" '\[ai\] brake line: car 3 has no brake line ahead inside the next corner on this track'"'"'s AI line'
         grep -q 'ai corner: the car returned 0x9be\b' "$OUT/ai_corner.out" && echo "ok  : ai corner on: the car took the game's no-corner-line path" ||
             { echo "FAIL: ai corner on: the car did not take the game's no-corner-line path"; status=1; }
         count "ai corner on: no unhandled fault" 0 '\[crash\] unhandled '
         compgen -G "$SW/crash-*.txt" >/dev/null && { echo "FAIL: ai corner on: a crash report was written"; status=1; } ||
             echo "ok  : ai corner on: no crash report"
     else
-        once "ai corner off: the guard is off" '\[ai\] corner start guard off \(SWOFTY_AI_CORNER_GUARD=0\)'
+        once "ai corner off: the guard is off" '\[ai\] brake line guard off \(SWOFTY_AI_CORNER_GUARD=0\)'
         check "ai corner off: the read faults where the game does" '\[crash\] unhandled ACCESS_VIOLATION .*Ai_Job_UpdateCarsParallel\+0x10'
         [[ $code != 0 ]] && echo "ok  : ai corner off: process ended with $code" || { echo "FAIL: ai corner off: process exited 0"; status=1; }
     fi

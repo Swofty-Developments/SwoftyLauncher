@@ -11,6 +11,9 @@ use super::dialogs::note_notification;
 use super::{PlayState, Shell};
 use swofty_i18n::{tr, trf};
 
+/// How long Play waits for a session module load that is already running.
+const SESSION_MODULE_WAIT: std::time::Duration = std::time::Duration::from_millis(1500);
+
 impl Shell {
     pub(crate) fn play_state(&self) -> PlayState {
         if self.owners.contains(&Owner::Active) {
@@ -97,6 +100,7 @@ impl Shell {
             store: self.store.clone(),
             profile: self.library.profile.name.clone(),
             game: install.dir.clone(),
+            build_id: install.build_id,
             anyway: std::mem::take(&mut self.play_anyway),
         };
         // This press's ask only: a dialog, a cancel or a stale result must not hand it to the next Play.
@@ -192,18 +196,15 @@ impl Shell {
                 cx,
             );
         }
-        let armed = match &room {
-            Some(_) => Some(swofty_core::multiplayer::bridge::ARMED),
-            None => self
-                .mp_allowed()
-                .then_some(swofty_core::multiplayer::bridge::ARMED),
-        };
+        let armed = (room.is_some() || self.mp_allowed()).then(|| {
+            swofty_core::multiplayer::client::launch_env_value(&self.store.root, SESSION_MODULE_WAIT)
+        });
         match Launch::start(
             &self.store,
             &self.library.profile.name,
             &install,
             self.launch_mode(),
-            armed,
+            armed.as_deref(),
             room.as_ref().and_then(|r| r.row_ids.as_deref()),
             room.as_ref().map(|r| r.direct_start.as_str()),
             steam_saves_once,

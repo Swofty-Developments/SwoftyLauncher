@@ -24,7 +24,7 @@ impl Shell {
         subtitle: String,
         actions: impl IntoElement,
         _: Palette,
-    ) -> impl IntoElement {
+    ) -> PageHeader {
         PageHeader::new(title)
             .subtitle(subtitle)
             .error(self.library.error.clone())

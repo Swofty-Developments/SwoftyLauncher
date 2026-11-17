@@ -1,6 +1,5 @@
 #include "runtime.hpp"
 
-#include "netplay_room.hpp"
 #include "room_cover.hpp"
 #include "room_cover_logic.hpp"
 
@@ -177,10 +176,8 @@ void paint(hud::Frame &f, uint64_t now)
             int sig = direct_start_cover_signal();
             last = sig < 0 ? Signal::failed : sig > 0 ? Signal::shown : Signal::waiting;
         } else {
-            auto sig = netplay_room::cover_signal();
-            last = sig == netplay_room::CoverSignal::failed  ? Signal::failed
-                   : sig == netplay_room::CoverSignal::shown ? Signal::shown
-                                                             : Signal::waiting;
+            int sig = session_host_cover_signal();
+            last = sig < 0 ? Signal::failed : sig > 0 ? Signal::shown : Signal::waiting;
         }
     }
     Event ev = Event::none;

@@ -161,11 +161,14 @@ impl Shell {
             trn(shown.len(), "{count} addon", "{count} addons")
         };
         let width = self.content_width - FILTERS_W - 20.;
+        let ad = (!self.ad_header_room(crate::ads::Unit::Discover))
+            .then(|| self.ad_banner(crate::ads::Unit::Discover, width - GUTTER, p))
+            .flatten();
         let landing = !self.browser.addons.is_empty() && self.browser.on_landing(!query.is_empty());
         if landing {
             let filters = self.filter_column(p, cx);
             let body = self.virtual_cards(shown, query, width, true, count, sort, p, cx);
-            return self.browser_columns(filters, div(), body);
+            return self.browser_columns(filters, div(), ad, body);
         }
         let bar = self.grid_bar(&count, sort, !query.is_empty(), p, cx);
         let filters = self.filter_column(p, cx);
@@ -197,7 +200,7 @@ impl Shell {
         } else {
             self.virtual_cards(shown, query, width, false, count, sort, p, cx)
         };
-        self.browser_columns(filters, bar, body)
+        self.browser_columns(filters, bar, ad, body)
     }
 
     fn grid_bar(&self, count: &str, sort: Sort, searching: bool, p: Palette, cx: &mut Context<Self>) -> Div {
@@ -257,7 +260,13 @@ impl Shell {
         self.empty(IconName::PackageSearch, title, body, action, p)
     }
 
-    pub(super) fn browser_columns(&self, filters: Div, bar: Div, body: impl IntoElement) -> AnyElement {
+    pub(super) fn browser_columns(
+        &self,
+        filters: Div,
+        bar: Div,
+        ad: Option<AnyElement>,
+        body: impl IntoElement,
+    ) -> AnyElement {
         h_flex()
             .flex_1()
             .min_h_0()
@@ -272,6 +281,7 @@ impl Shell {
                     .min_w_0()
                     .h_full()
                     .child(bar.pr(px(GUTTER)))
+                    .children(ad.map(|ad| div().pr(px(GUTTER)).pb(px(14.)).child(ad)))
                     .child(body),
             )
             .into_any_element()

@@ -25,6 +25,7 @@ struct Sites {
     uintptr_t bus_slot = 0, bus_subscribe = 0;
     uintptr_t image_lo = 0, image_hi = 0;
     uintptr_t progress_from_manager = 0;
+    uintptr_t ers_mode = 0; // Zero uses the KB layout; other builds supply their independently checked displacement.
 };
 
 enum Group : unsigned {
@@ -49,6 +50,7 @@ enum Group : unsigned {
     G_SPECTATE_GAP,
     G_BUS_EVENTS,
     G_DRIVER_NAMES,
+    G_BADGE_RENDER,
     G_COUNT
 };
 
@@ -70,7 +72,7 @@ inline const char *group_name(Group g)
                                                "classification", "timing", "pit",       "penalties",    "tyres",
                                                "flags",       "controllers", "spectator", "mode",       "badges",
                                                "track",       "pit lane", "track name", "spectator gap", "bus events",
-                                               "driver names"};
+                                               "driver names", "rendered badges"};
     return names[g];
 }
 

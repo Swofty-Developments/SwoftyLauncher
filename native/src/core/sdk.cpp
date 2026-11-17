@@ -278,14 +278,14 @@ void ready()
     postfx_setup();
     grade_setup();
     srv_clamp_setup();
+    rtas_guard_setup();
     live_setup();
     telemetry_setup();
-    lap_rec_setup();
     placed_record_setup();
     net_trace_setup();
     udp_ids_setup();
-    netplay_setup();
-    netplay_drive_setup();
+    local_tiles_setup();
+    session_host_ready();
     testagent_setup();
     direct_start_setup();
     load_stall_setup();

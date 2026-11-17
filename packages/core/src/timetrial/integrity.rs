@@ -19,7 +19,7 @@ use crate::timetrial::api::Api;
 pub const PLUGIN_ID: &str = "swofty.integrity";
 pub const DLL: &str = "swofty_integrity.dll";
 /// Base64 of the Ed25519 public key whose private half signs published modules.
-const PUBLIC_KEY: &str = "Y79gick8AdEJDzKoMDuiVdEV5UYuc2xgxJ+V7VGgZxg=";
+pub(crate) const PUBLIC_KEY: &str = "Y79gick8AdEJDzKoMDuiVdEV5UYuc2xgxJ+V7VGgZxg=";
 const SIGNED_PREFIX: &str = "swofty-tt-integrity-v1";
 const MAX_SIZE: u64 = 16 * 1024 * 1024;
 const DOWNLOAD_TIMEOUT: Duration = Duration::from_secs(60);
@@ -174,7 +174,7 @@ fn prune(data: &Path, current: &str) {
 }
 
 /// Standard base64, padded or not.
-fn decode(text: &str) -> Option<Vec<u8>> {
+pub(crate) fn decode(text: &str) -> Option<Vec<u8>> {
     let mut out = Vec::with_capacity(text.len() * 3 / 4);
     let (mut acc, mut bits) = (0u32, 0);
     for b in text.trim_end_matches('=').bytes() {
@@ -203,20 +203,11 @@ pub fn place(
     loader: &mut std::collections::BTreeMap<String, PathBuf>,
     plugins: &mut Vec<String>,
 ) {
-    let rel = format!("{PLUGIN_ID}/{DLL}");
-    loader.insert(
-        format!(
-            "{}/{}/{rel}",
-            crate::install::LOADER_DIR,
-            crate::build::ADDONS_DIR
-        ),
-        module.dll.clone(),
-    );
-    plugins.push(format!("{}/{rel}", crate::build::ADDONS_DIR));
+    crate::modules::place_file(PLUGIN_ID, DLL, &module.dll, loader, plugins);
 }
 
 #[cfg(test)]
-mod tests {
+pub(crate) mod tests {
     use super::*;
     use ring::rand::SystemRandom;
     use ring::signature::{Ed25519KeyPair, KeyPair};
@@ -225,12 +216,12 @@ mod tests {
 
     const BYTES: &[u8] = b"MZ not really a dll";
 
-    fn pair() -> Ed25519KeyPair {
+    pub(crate) fn pair() -> Ed25519KeyPair {
         let pkcs8 = Ed25519KeyPair::generate_pkcs8(&SystemRandom::new()).unwrap();
         Ed25519KeyPair::from_pkcs8(pkcs8.as_ref()).unwrap()
     }
 
-    fn b64(bytes: &[u8]) -> String {
+    pub(crate) fn b64(bytes: &[u8]) -> String {
         const T: &[u8; 64] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
         let mut out = String::new();
         for c in bytes.chunks(3) {
@@ -260,9 +251,9 @@ mod tests {
         })
     }
 
-    type Route = (&'static str, &'static str, Vec<u8>);
+    pub(crate) type Route = (&'static str, &'static str, Vec<u8>);
 
-    fn serve(
+    pub(crate) fn serve(
         routes: Vec<Route>,
         requests: usize,
     ) -> (String, Arc<Mutex<Vec<String>>>, std::thread::JoinHandle<()>) {
@@ -304,7 +295,7 @@ mod tests {
         (url, seen, t)
     }
 
-    fn json(v: &serde_json::Value) -> Vec<u8> {
+    pub(crate) fn json(v: &serde_json::Value) -> Vec<u8> {
         v.to_string().into_bytes()
     }
 

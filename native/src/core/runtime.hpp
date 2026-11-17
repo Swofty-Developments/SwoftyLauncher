@@ -176,6 +176,8 @@ namespace toast {
 void tick();
 }
 const SwoftyCareerContent *career_content_table();
+std::vector<CoreMixins> leaderboard_guard_mixins();
+void leaderboard_guard_commit();
 std::vector<CoreMixins> career_content_mixins();
 void career_content_commit();
 void career_content_tick();
@@ -296,6 +298,9 @@ void tyre_models_commit();
 void tyre_models_tick();
 void tyre_models_drop();
 std::vector<CoreMixins> garage_crew_mixins();
+std::vector<CoreMixins> garage_placement_mixins();
+void garage_placement_reset();
+bool garage_placement_listening();
 std::vector<CoreMixins> pit_slots_mixins();
 void garage_crew_commit();
 void pit_slots_commit();
@@ -317,18 +322,8 @@ void track_select_commit();
 std::string track_select_time_trial();
 std::vector<CoreMixins> team_slots_mixins();
 void team_slots_commit();
-std::vector<CoreMixins> netplay_icons_mixins();
-void netplay_icons_commit();
-std::vector<CoreMixins> netplay_keys_mixins();
-std::vector<CoreMixins> netplay_privilege_mixins();
-void netplay_keys_commit();
-void netplay_privilege_commit();
 uint8_t *team_record_of(uint16_t stat);
 void team_record_inserted(std::function<void(uint16_t, uint8_t *)> fn);
-std::vector<CoreMixins> leaderboard_guard_mixins();
-std::vector<CoreMixins> lap_rec_mixins();
-void lap_rec_commit();
-void leaderboard_guard_commit();
 std::vector<CoreMixins> thrustmaster_lcd_mixins();
 void thrustmaster_lcd_commit();
 std::vector<CoreMixins> estimate_laptime_mixins();
@@ -359,35 +354,11 @@ void focus_setup();
 void hud_fatal();
 void grade_setup();
 void srv_clamp_setup();
+void rtas_guard_setup();
 void postfx_setup();
 void telemetry_setup();
 void telemetry_tick();
 void telemetry_session_enter();
-void lap_rec_setup();
-void lap_rec_tick();
-void lap_rec_session_enter();
-void lap_rec_session_end();
-bool lap_rec_active();
-void tt_bridge_tick();
-bool tt_bridge_ghost_id(uint8_t out[48]);
-bool tt_bridge_presence_id(runtime::presence_id::Id &out);
-bool tt_bridge_pb_armed();
-bool tt_bridge_ours_session();
-void tt_bridge_lap_finished(int64_t lap_ms, int valid);
-void tt_bridge_lap_progress(double path_m, double elapsed_s);
-void tt_bridge_lap_started();
-std::string tt_bridge_last_board();
-std::string tt_bridge_session_board();
-bool tt_bridge_session_track(std::string &code);
-void tt_bridge_session_exit();
-void tt_bridge_session_enter();
-void tt_bridge_track_watch(bool session_live);
-void lap_rec_ghost(uintptr_t handler);
-void lap_rec_native_trace(const uint8_t *data, size_t size);
-bool lap_rec_current_board(std::string &content, std::string &track, std::string &weather);
-void lap_rec_assists(const uint8_t *summary, size_t size, int device, int performance);
-bool ghost_play_trace_armed();
-void lap_rec_newlap(int car);
 bool telemetry_wants_udp();
 void telemetry_udp(const uint8_t *buf, size_t len);
 struct LiveEvent {
@@ -407,19 +378,18 @@ const SwoftyTelemetryFeed &live_memory_view();
 std::vector<LiveEvent> live_take_events();
 void placed_record_setup();
 void placed_record_crash_text(char *out, size_t cap);
-void netplay_setup();
-void netplay_bridge_setup();
-void netplay_bridge_status_changed();
-void netplay_exit();
-void netplay_drive_setup();
-void netplay_room_setup();
-bool netplay_room_requested();
-void netplay_room_screen(const char *name);
-void netplay_flow(uint32_t hash, uint32_t to);
-void netplay_screen(const char *name);
-bool netplay_popup(const char *id, void *fn, void *ctx);
-void netplay_home_vm(void *vm);
-void netplay_tick();
+// The session host (services/session_host.cpp): the core's reports to the session plugin's listeners. Each does
+// nothing while no plugin listens; session_host_message answers true when the plugin took the message, and
+// session_host_cover_signal -1 (failed) when nothing answers for the cover.
+void session_host_ready();
+// The tile list entries the core takes out (swofty_core.cpp).
+void local_tiles_setup();
+void session_host_flow(uint32_t hash, uint32_t to);
+void session_host_screen(const char *name);
+bool session_host_message(const char *id, void *reply, void *ctx);
+void session_host_home(void *vm);
+void session_host_exit();
+int session_host_cover_signal();
 void net_trace_setup();
 void udp_ids_setup();
 // Notes an added track's statId for the Swofty Track telemetry packet (udp_ids.cpp).
@@ -430,7 +400,7 @@ void direct_start_setup();
 void direct_start_tick();
 void direct_start_profile_loaded(bool ok);
 void direct_start_profile_read();
-// The room target's setup (netplay_drive.cpp registers it): polled on the flow thread after the profile has
+// The external target's setup (the session host registers a plugin's): polled on the flow thread after the profile has
 // loaded, while StateFTUE is held, until it answers done or failed.
 using DirectStartSetup = runtime::direct_start::Setup (*)(std::string &why);
 void direct_start_register_room(DirectStartSetup setup);

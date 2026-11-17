@@ -1640,38 +1640,48 @@ fn names_the_overlay_addons_and_whether_the_overlay_drew() {
 
 #[test]
 fn sends_the_room_logs_trace_and_state_without_secrets() {
+    // No session module is loaded in this process: the files an earlier run wrote are redacted by the
+    // launcher alone.
+    const CREDENTIAL: &str = "dGVzdC1jcmVkZW50aWFsLTEyMzQ1Njc4OQ==";
+    const ACCOUNT: &str = "lowercase-account-token-0001";
     let root = tmp("room");
     let (store, game) = fake_data(&root);
-    crate::multiplayer::diag::secret("bundle-test", &["turn-credential-9f8e7d"]);
+    assert!(!crate::multiplayer::client::is_loaded());
+    crate::multiplayer::client::know_secret(ACCOUNT);
     put(
-        &store.root.join(crate::multiplayer::diag::FILE),
-        "20261026-101010.000Z room ABCD opened: 1 member(s)\n20261026-101011.000Z leaked turn-credential-9f8e7d\n",
+        &store.root.join(crate::multiplayer::client::LOG_FILE),
+        format!(
+            "20261026-101010.000Z room ABCD opened: 1 member(s)\n20261026-101011.000Z leaked {CREDENTIAL} and \
+             {ACCOUNT}\n20261026-101012.000Z fingerprint {}\n",
+            "a1".repeat(32)
+        ),
     );
     put(
-        &store.root.join(crate::multiplayer::diag::PREVIOUS),
-        "20261026-090000.000Z phase: in the lobby\n",
+        &store.root.join(crate::multiplayer::client::LOG_PREVIOUS),
+        format!("20261026-090000.000Z phase: in the lobby, key={CREDENTIAL}\n"),
     );
     put(
-        &game.join(crate::multiplayer::bridge::STATUS_FILE),
+        &game.join(crate::multiplayer::client::GAME_STATUS_FILE),
         r#"{"pid":42,"self":2,"base":41000,"game_port":21414}"#,
     );
     put(&game.join(NET_TRACE), "# swofty net trace\nbind s=1 port=21414\n");
     put(
         &store
             .root
-            .join(crate::multiplayer::diag::PRINTS_DIR)
+            .join(crate::multiplayer::client::PRINTS_DIR)
             .join("ABCD-20261026-101010.json"),
-        r#"{"room":"ABCD","host":{"note":"turn-credential-9f8e7d"}}"#,
+        format!(
+            r#"{{"room":"ABCD","host":{{"note":"{CREDENTIAL}","credential":"short-one","who":"{ACCOUNT}"}}}}"#
+        ),
     );
     let mut r = report(&game);
     r.room = Some(serde_json::json!({
         "phase": {"phase": "in_lobby"},
         "room": {"code": "ABCD"},
         "session_token": "tok-should-go",
-        "last_error": "relay said turn-credential-9f8e7d",
+        "last_error": format!("relay said {CREDENTIAL}"),
     }));
     let bundle = Bundle::collect_with(&store, &r, Limits::default(), "20261026-101010");
-    crate::multiplayer::diag::secret("bundle-test", &[]);
     let zip = bundle.zip().unwrap();
     let got = names(&zip);
     for want in [
@@ -1684,15 +1694,18 @@ fn sends_the_room_logs_trace_and_state_without_secrets() {
     ] {
         assert!(got.contains(want), "no {want} in {got:?}");
     }
-    assert!(entry(&zip, "state/multiplayer.log").contains("room ABCD opened"));
+    let log = entry(&zip, "state/multiplayer.log");
+    assert!(log.contains("room ABCD opened"), "{log}");
+    assert!(log.contains(&"a1".repeat(32)), "a digest stays readable: {log}");
     assert!(entry(&zip, "game/netplay.json").contains("\"game_port\":21414"));
     assert!(entry(&zip, "game/net-trace.log").contains("bind s=1 port=21414"));
     let room = entry(&zip, "multiplayer/session.json");
     assert!(room.contains("\"code\": \"ABCD\""), "{room}");
     for name in &got {
         let text = entry(&zip, name);
-        assert!(!text.contains("turn-credential-9f8e7d"), "{name}: {text}");
-        assert!(!text.contains("tok-should-go"), "{name}: {text}");
+        for secret in [CREDENTIAL, ACCOUNT, "tok-should-go", "short-one"] {
+            assert!(!text.contains(secret), "{name} carries {secret}: {text}");
+        }
     }
 }
 

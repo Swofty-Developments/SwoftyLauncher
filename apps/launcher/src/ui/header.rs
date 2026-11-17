@@ -1,16 +1,19 @@
 use gpui_kit::component::{h_flex, v_flex};
+use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 
 use super::tokens::{space, text};
 use crate::theme::palette;
 
-/// A page's title row: title and subtitle on the left, actions on the right.
+/// A page's title row: title and subtitle on the left, actions on the right,
+/// and optionally something centred between them.
 #[derive(IntoElement)]
 pub(crate) struct PageHeader {
     title: SharedString,
     subtitle: Option<SharedString>,
     error: Option<SharedString>,
     actions: Option<AnyElement>,
+    middle: Option<AnyElement>,
 }
 
 impl PageHeader {
@@ -20,6 +23,7 @@ impl PageHeader {
             subtitle: None,
             error: None,
             actions: None,
+            middle: None,
         }
     }
 
@@ -37,17 +41,28 @@ impl PageHeader {
         self.actions = Some(actions.into_any_element());
         self
     }
+
+    /// The two sides then share the rest of the row equally, which keeps it centred.
+    pub(crate) fn middle(mut self, middle: Option<impl IntoElement>) -> Self {
+        self.middle = middle.map(IntoElement::into_any_element);
+        self
+    }
 }
 
 impl RenderOnce for PageHeader {
     fn render(self, _: &mut Window, cx: &mut App) -> impl IntoElement {
         let p = palette(cx);
+        let centred = self.middle.is_some();
         h_flex()
             .px(space::gutter())
-            .pt(crate::scale::px(22.))
-            .pb(space::lg())
             .gap(space::lg())
-            .items_end()
+            .map(|row| {
+                if centred {
+                    row.py(crate::scale::px(6.)).items_center()
+                } else {
+                    row.pt(crate::scale::px(22.)).pb(space::lg()).items_end()
+                }
+            })
             .flex_shrink_0()
             .child(
                 v_flex()
@@ -70,8 +85,10 @@ impl RenderOnce for PageHeader {
                             .map(|e| div().text_size(text::body()).text_color(p.error).child(e)),
                     ),
             )
+            .children(self.middle)
             .child(
                 h_flex()
+                    .when(centred, |side| side.flex_1().justify_end())
                     .gap(space::sm())
                     .pb(crate::scale::px(2.))
                     .children(self.actions),

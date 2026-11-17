@@ -148,6 +148,9 @@ pub struct Shell {
     _shaders_events: Subscription,
     pub(crate) tools: crate::tools::Carousel,
     pub(crate) settings: crate::settings::Settings,
+    pub(crate) ads: crate::ads::Ads,
+    pub(crate) ad_video: Option<crate::ads::AdVideo>,
+    _window_moved: Subscription,
     _console_closed: Subscription,
     _poll: Task<()>,
     _live: Task<()>,
@@ -201,8 +204,10 @@ impl Shell {
                                 "Your account has been granted access to: Multiplayer",
                             )));
                         }
+                        swofty_core::multiplayer::client::load_in_background(&s.store.root, &session.token);
                         s.mp = Some(session);
                         s.sync_avatar(cx);
+                        s.sync_support(cx);
                     }
                     Err(swofty_core::mpauth::SignInError::Banned(ban)) => s.ban = Some(ban),
                     Err(e) => s
@@ -228,6 +233,7 @@ impl Shell {
         let Some(session) = self.mp.take() else {
             return;
         };
+        self.sync_support(cx);
         self.mp_leave(cx);
         let name = session.name.clone();
         let dir = self.store.root.clone();
@@ -252,6 +258,7 @@ impl Shell {
             Refreshed::Banned(ban) => {
                 self.mp_leave(cx);
                 self.mp = None;
+                self.sync_support(cx);
                 self.ban = Some(ban);
                 cx.notify();
             }
@@ -267,6 +274,7 @@ impl Shell {
         match refreshed {
             Some(session) => {
                 let gained = session.allowed && !was_allowed;
+                swofty_core::multiplayer::client::load_in_background(&self.store.root, &session.token);
                 self.mp = Some(session);
                 self.sync_avatar(cx);
                 if gained {
@@ -277,6 +285,7 @@ impl Shell {
             }
             None => self.mp = None,
         }
+        self.sync_support(cx);
         cx.notify();
     }
 }

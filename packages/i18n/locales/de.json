@@ -1,5 +1,6 @@
 {
   "_language": "Deutsch",
+  "Advertisement": "Werbung",
   "\nTurned on in {profile}": "\nAktiviert in {profile}",
   "\n{changes} aren't in it; save, then export again to include them.": "\n{changes} sind nicht enthalten; speichere und exportiere erneut, um sie aufzunehmen.",
   "\n{count} skipped:": "\n{count} übersprungen:",
@@ -689,6 +690,7 @@
   "Old backup": "Altes Backup",
   "On": "An",
   "Online": "Online",
+  "Online sessions aren't available: {why}": "Online-Sitzungen sind nicht verfügbar: {why}",
   "Only {free} free on the drive with your addons and saves: installing or building addons may fail.": "Nur {free} frei auf dem Laufwerk mit deinen Addons und Spielständen: Installieren oder Aufbauen von Addons kann fehlschlagen.",
   "Only {free} free on {drive}, and F1 25 needs {need} to start.": "Nur {free} frei auf {drive}, und F1 25 braucht {need} zum Starten.",
   "Only {free} free on {drive}. F1 25 won't start with less than {need} free there.": "Nur {free} frei auf {drive}. F1 25 startet nicht mit weniger als {need} freiem Platz dort.",
@@ -935,7 +937,8 @@
   "Storage": "Speicher",
   "Support": "Unterstützen",
   "Supporters": "Unterstützer",
-  "Supporting a free and open-source launcher with no ads": "Unterstützung für einen kostenlosen Open-Source-Launcher ohne Werbung",
+  "Supporting a free and open-source launcher": "Unterstützung für einen kostenlosen Open-Source-Launcher",
+  "No ads in the launcher": "Keine Werbung im Launcher",
   "Switch away from {vanilla} to use addons": "Wechsle weg von {vanilla}, um Addons zu nutzen",
   "Switch the copy of F1 25 Play uses": "Die von „Spielen“ genutzte F1 25-Kopie wechseln",
   "Switch to it": "Dorthin wechseln",
@@ -1410,5 +1413,9 @@
   "{v} is available. Update addons from the play bar.": "{v} ist verfügbar. Aktualisiere Addons über die Spielleiste.",
   "{v} is not a number": "{v} ist keine Zahl",
   "{when}: {downloads}": "{when}: {downloads}",
-  "{wins} wins - {podiums} podiums": "{wins} Siege - {podiums} Podien"
+  "{wins} wins - {podiums} podiums": "{wins} Siege - {podiums} Podien",
+  "Too many tracks": "Zu viele Strecken",
+  "Left out: the game holds {room} tracks": "Ausgelassen: Das Spiel fasst {room} Strecken",
+  "{shown} and {more} more": "{shown} und {more} weitere",
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["Das Spiel fasst {room} Strecken, daher fällt {count} Strecke aus diesem Build heraus: {list}. Schalte einige Strecken-Addons aus, um sie zu fahren.", "Das Spiel fasst {room} Strecken, daher fallen {count} Strecken aus diesem Build heraus: {list}. Schalte einige Strecken-Addons aus, um sie zu fahren."]
 }

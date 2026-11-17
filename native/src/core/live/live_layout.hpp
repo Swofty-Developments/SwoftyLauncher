@@ -148,8 +148,12 @@ namespace badge {
 constexpr uintptr_t mode = 0x88, game = 0x260, entrants = 0x2e0;
 constexpr size_t entrant_stride = 0x88;
 constexpr uintptr_t entrant_team = 0x58, entrant_vid = 0x82, tables = 0x2c8, table_vec = 0x8, slot_record = 0x8,
-                    record_key = 0x4d8, record_render = 0x58d;
-constexpr unsigned max_kind = 2, my_team_kind = 1;
+                    record_key = 0x4d8, record_render = 0x58d, entrant_badge = 0x68;
+constexpr unsigned max_kind = 2, my_team_kind = 1, badge_none = 0x3fff;
+constexpr char catalogue_prefix[] = "#overrides.osd.timing_tower.team_badges_hud.";
+constexpr char render_prefix[] = "eaid://ui_package/art/textures/render_badge_";
+constexpr char render_default[] = "eaid://ui_package/art/textures/render_badge_default.tga";
+constexpr const char *table_names[] = {"ePreLoaded", "eUserDefined", "eNetworkReplicated"};
 }
 
 // Driver names, as Sess_Get_CarDriverName (0x142f28c10) resolves them: the car's VehicleHelperSystem participant (found
@@ -308,6 +312,7 @@ LIVE_TIE(EntrantsManager, session_begin, badge::entrants);
 LIVE_TIE(EntrantsManager, session_end, badge::entrants + 8);
 LIVE_TIE(SessionEntrantView, team_stat_id, badge::entrant_team);
 LIVE_TIE(SessionEntrantView, vehicle_id, badge::entrant_vid);
+LIVE_TIE(SessionEntrantView, badge_stat_id, badge::entrant_badge);
 LIVE_SIZE(SessionEntrantView, badge::entrant_stride);
 LIVE_TIE(EntrantsSystem, team_sets, badge::tables - 8);
 LIVE_TIE(TeamSetRef, slots, 0x8);

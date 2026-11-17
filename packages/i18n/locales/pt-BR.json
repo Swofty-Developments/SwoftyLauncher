@@ -1,5 +1,6 @@
 {
   "_language": "Português (Brasil)",
+  "Advertisement": "Publicidade",
   "\nTurned on in {profile}": "\nAtivado em {profile}",
   "\n{changes} aren't in it; save, then export again to include them.": "\n{changes} não estão incluídas; salve e exporte de novo para incluí-las.",
   "\n{count} skipped:": "\n{count} ignorados:",
@@ -689,6 +690,7 @@
   "Old backup": "Backup antigo",
   "On": "Ativado",
   "Online": "Online",
+  "Online sessions aren't available: {why}": "Sessões online não estão disponíveis: {why}",
   "Only {free} free on the drive with your addons and saves: installing or building addons may fail.": "Só há {free} livres na unidade com seus complementos e saves: instalar ou compilar complementos pode falhar.",
   "Only {free} free on {drive}, and F1 25 needs {need} to start.": "Só há {free} livres em {drive}, e o F1 25 precisa de {need} para iniciar.",
   "Only {free} free on {drive}. F1 25 won't start with less than {need} free there.": "Só há {free} livres em {drive}. O F1 25 não inicia com menos de {need} livres ali.",
@@ -935,7 +937,8 @@
   "Storage": "Armazenamento",
   "Support": "Apoiar",
   "Supporters": "Apoiadores",
-  "Supporting a free and open-source launcher with no ads": "Apoiar um launcher gratuito, de código aberto e sem anúncios",
+  "Supporting a free and open-source launcher": "Apoiar um launcher gratuito e de código aberto",
+  "No ads in the launcher": "Sem anúncios no launcher",
   "Switch away from {vanilla} to use addons": "Saia de {vanilla} para usar complementos",
   "Switch the copy of F1 25 Play uses": "Trocar a cópia do F1 25 que o Jogar usa",
   "Switch to it": "Mudar para ela",
@@ -1410,5 +1413,9 @@
   "{v} is available. Update addons from the play bar.": "{v} está disponível. Atualize os complementos pela barra de Jogar.",
   "{v} is not a number": "{v} não é um número",
   "{when}: {downloads}": "{when}: {downloads}",
-  "{wins} wins - {podiums} podiums": "{wins} vitórias - {podiums} pódios"
+  "{wins} wins - {podiums} podiums": "{wins} vitórias - {podiums} pódios",
+  "Too many tracks": "Pistas demais",
+  "Left out: the game holds {room} tracks": "Deixada de fora: o jogo comporta {room} pistas",
+  "{shown} and {more} more": "{shown} e mais {more}",
+  "The game holds {room} tracks, so {count} track is left out of this build: {list}. Turn some track addons off to play it.": ["O jogo comporta {room} pistas, então {count} pista fica de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-la.", "O jogo comporta {room} pistas, então {count} pistas ficam de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-las.", "O jogo comporta {room} pistas, então {count} pistas ficam de fora desta compilação: {list}. Desative alguns complementos de pistas para jogá-las."]
 }

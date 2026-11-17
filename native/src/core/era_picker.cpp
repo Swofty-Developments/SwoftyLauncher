@@ -84,6 +84,10 @@ void box_grid_set(const std::optional<box_grid::Rule> &rule, const std::string &
 // group the core added at boot for the box's rules.drs (content.package rules.drs). A box without a rule, a stock
 // box press and a build that narrows to no addon list put the game's group back. The DRS system reads the current
 // mode's group at session load, at a full safety car end and at a red flag restart; every other mode keeps its own.
+// Points per box: the same narrowing points the race sessions of every swofty_f1 mode at the standings preset the
+// boot apply added for the box's rules.points (logic::PointsSwaps); the same put backs restore the game's presets.
+// Mandatory tyre change per box: the same narrowing writes the box's rules.mandatory_tyre_change into every
+// swofty_f1 mode's 39 tyre regulation requirement flags (+0x8b) (logic::TyreChangeSwaps); the same put backs restore them.
 // Tyre warmers per box: the same narrowing writes the box's rules.tyre_warmers into every swofty_f1 mode's
 // has_tyre_warmers byte (+0x1c8) and the same put backs restore the game's value (logic::WarmerSwaps).
 // Race time limit and weekend per box: the same narrowing writes the box's rules.race_time_limit_s into every swofty_f1
@@ -213,6 +217,10 @@ logic::DrsSwaps drs;
 std::string last_drs_line;
 logic::WarmerSwaps warmers;
 std::string last_warmers_line;
+logic::PointsSwaps points;
+std::string last_points_line;
+logic::TyreChangeSwaps tyre_change;
+std::string last_tyre_change_line;
 logic::TimeLimitSwaps time_limits;
 logic::WeekendSwaps weekends;
 std::string last_weekend_line;
@@ -510,6 +518,74 @@ void apply_quali_tyres(const char *list)
     runtime::quali_tyres_box(box.mask, box.mask ? box.line : std::string());
 }
 
+void log_points(const std::string &line)
+{
+    if (line == last_points_line)
+        return;
+    last_points_line = line;
+    swofty::log("[points] %s", line.c_str());
+}
+
+// Points per box: the race sessions of every swofty_f1 mode point at the preset the boot apply added for the pressed
+// box's rules.points, found among the parsed presets by its points; a box without the rule puts the game's back.
+void apply_points(void *mode, const char *list)
+{
+    auto box = swofty_core::apply::content::points_for_box(list);
+    if (!box.found) {
+        points.put_back();
+        log_points(box.line);
+        return;
+    }
+    logic::Readable ok = [](const void *p, size_t n) { return mem::readable(p, n); };
+    uintptr_t slot = swofty::api ? swofty::api->resolve("g_Game_Scenarios") : 0;
+    const uint8_t *scenarios = nullptr, *begin = nullptr, *end = nullptr;
+    logic::peek(ok, reinterpret_cast<const void *>(slot), 0, scenarios);
+    logic::peek(ok, scenarios, logic::SCENARIOS_PRESETS_BEGIN, begin);
+    logic::peek(ok, scenarios, logic::SCENARIOS_PRESETS_END, end);
+    logic::PointsWant want{box.full, box.reduced, box.bonus, box.rule};
+    const uint8_t *preset = logic::find_points_preset(ok, begin, end, want);
+    if (!preset) {
+        points.put_back();
+        log_points(box.line + "; not applied (preset " + box.label + " not among the game's parsed presets)");
+        return;
+    }
+    size_t sessions = 0;
+    for_each_host_mode(mode, [&](uint8_t *m) {
+        for (uint64_t *s : logic::race_sessions(ok, m)) {
+            points.swap(s, reinterpret_cast<uint64_t>(preset));
+            sessions++;
+        }
+    });
+    log_points(sessions ? box.line + " on " + std::to_string(sessions) + " race session(s)"
+                        : box.line + "; not applied (no race session in a " + std::string(logic::HOST) + " mode)");
+}
+
+void log_tyre_change(const std::string &line)
+{
+    if (line == last_tyre_change_line)
+        return;
+    last_tyre_change_line = line;
+    swofty::log("[tyres] %s", line.c_str());
+}
+
+// Mandatory tyre change per box: the pressed box's rules.mandatory_tyre_change goes into every swofty_f1 mode's
+// tyre regulation requirement flags; a box without the rule puts the game's flags back.
+void apply_tyre_change(void *mode, const char *list)
+{
+    auto box = swofty_core::apply::content::tyre_change_for_box(list);
+    if (!box.required) {
+        tyre_change.put_back();
+        log_tyre_change(box.line);
+        return;
+    }
+    size_t modes = 0;
+    for_each_host_mode(mode, [&](uint8_t *m) {
+        tyre_change.swap(m, *box.required);
+        modes++;
+    });
+    log_tyre_change(modes ? box.line : box.line + "; not applied (no " + std::string(logic::HOST) + " mode found)");
+}
+
 void put_back_drs()
 {
     runtime::box_grid_set(std::nullopt, std::string());
@@ -518,10 +594,14 @@ void put_back_drs()
         log_drs(std::string(logic::HOST) + "'s DRS group put back on " + std::to_string(n) + " mode(s)");
     if (size_t n = warmers.put_back())
         log_warmers(std::string(logic::HOST) + "'s tyre warmer setting put back on " + std::to_string(n) + " mode(s)");
+    if (size_t n = tyre_change.put_back())
+        log_tyre_change(std::string(logic::HOST) + "'s tyre regulations put back on " + std::to_string(n) + " mode(s)");
     if (size_t n = time_limits.put_back())
         log_weekend(std::string(logic::HOST) + "'s race time limit put back on " + std::to_string(n) + " mode(s)");
     if (weekends.put_back())
         log_weekend(std::string(logic::HOST) + "'s own weekend put back");
+    if (size_t n = points.put_back())
+        log_points(std::string(logic::HOST) + "'s points put back on " + std::to_string(n) + " race session(s)");
     put_back_box_options();
 }
 
@@ -715,8 +795,11 @@ void narrow(void *mode, const char *list)
     });
     apply_drs(mode, list);
     apply_warmers(mode, list);
+    apply_tyre_change(mode, list);
     apply_fuel(list);
     apply_weekend(mode, list);
+    // After the weekend exchange: the points swap edits the race sessions the host mode holds now.
+    apply_points(mode, list);
     apply_box_options(list);
     apply_grid(list);
     apply_quali_tyres(list);
@@ -1847,10 +1930,14 @@ void drop_setup_pointers()
     }
     p.drs = drs.forget();
     warmers.forget();
+    tyre_change.forget();
     time_limits.forget();
     weekends.forget();
+    points.forget();
     last_drs_line.clear();
     last_warmers_line.clear();
+    last_points_line.clear();
+    last_tyre_change_line.clear();
     last_weekend_line.clear();
     runtime::box_options_forget();
     last_box_options_line.clear();

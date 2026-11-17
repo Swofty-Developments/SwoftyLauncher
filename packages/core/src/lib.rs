@@ -43,6 +43,7 @@ pub mod livery_kits;
 pub mod loader_check;
 pub mod managed;
 pub mod map;
+pub mod modules;
 pub mod mpauth;
 pub mod multiplayer;
 pub mod offline;

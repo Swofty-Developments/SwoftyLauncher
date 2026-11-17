@@ -684,8 +684,6 @@ inline constexpr address<"Ne_PresenceNameResolverEADP_OnBatchPlayerCardsRequestC
 inline constexpr address<"Ne_PresenceNameResolverEADP_UpdateToResolveList"> Ne_PresenceNameResolverEADP_UpdateToResolveList{}; // L2 experimental, neon::NePresenceNameResolverEADP::updateToResolveList
 inline constexpr address<"Ne_PresenceNameResolverEADP_UpdateToResolveList_Lambda"> Ne_PresenceNameResolverEADP_UpdateToResolveList_Lambda{}; // L2 experimental, neon::NePresenceNameResolverEADP::updateToResolveList
 inline constexpr address<"Ne_PresenceNameResolverEADP_VectorGrow"> Ne_PresenceNameResolverEADP_VectorGrow{}; // L2 experimental
-using Ne_PresenceNameResolverFixed_AddName_t = void(void *resolver, const void *user, const char *name);
-inline constexpr fn<"Ne_PresenceNameResolverFixed_AddName", Ne_PresenceNameResolverFixed_AddName_t> Ne_PresenceNameResolverFixed_AddName{}; // L2 experimental, neon::NePresenceNameResolverFixed::addName
 inline constexpr address<"Ne_PresenceNameResolverFixed_InsertName"> Ne_PresenceNameResolverFixed_InsertName{}; // L2 experimental
 inline constexpr address<"Ne_PresenceNameResolverFixed_MapFatalStub"> Ne_PresenceNameResolverFixed_MapFatalStub{}; // L2 experimental
 inline constexpr address<"Ne_PresenceNameResolverFixed_StartResolving"> Ne_PresenceNameResolverFixed_StartResolving{}; // L2 experimental, neon::NePresenceNameResolverFixed::startResolving
@@ -715,7 +713,6 @@ inline constexpr address<"Ne_RenderViewParams_InitDefaults"> Ne_RenderViewParams
 inline constexpr address<"Ne_ReplayBuffer_GetOldestValidPosition"> Ne_ReplayBuffer_GetOldestValidPosition{}; // L2 experimental
 inline constexpr address<"Ne_ReplayRecordable_ReadFrom"> Ne_ReplayRecordable_ReadFrom{}; // L2 experimental
 inline constexpr address<"Ne_ReplaySystem_ForceReset"> Ne_ReplaySystem_ForceReset{}; // L2 experimental
-inline constexpr address<"Ne_ReplaySystem_ResetSlot24"> Ne_ReplaySystem_ResetSlot24{}; // L2 experimental
 inline constexpr address<"Ne_Replay_SetState"> Ne_Replay_SetState{}; // L2 experimental
 inline constexpr address<"Ne_ResourceHandle_Init"> Ne_ResourceHandle_Init{}; // L2 experimental
 inline constexpr address<"Ne_ResourceMgr_ReleaseIfOwned"> Ne_ResourceMgr_ReleaseIfOwned{}; // L2 experimental

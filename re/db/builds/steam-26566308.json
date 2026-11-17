@@ -15,6 +15,10 @@
   ".data1": ".trace"
  },
  "overrides": {
+  "Ai_Handle_PitStateChanged_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 33 0F 88 46 73 F5 FB 0F",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
+  },
   "Car_Register_DetachablePart_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? E2 0F 83 16 25 89 FF 31",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
@@ -41,10 +45,6 @@
   },
   "FeTile_ItemBase_Slot78_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? E9 E5 AF ?? ?? ?? ?? CC 07 24 0A",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
-  },
-  "Game_CheckPrivilegeTask_OnUpdate": {
-   "pattern": "E9 ?? ?? ?? ?? E9 05 1F 28 02 F7 33 57",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
   },
   "Game_CreateSessionDlcSelectTab_BuildTiles": {
@@ -706,6 +706,9 @@
   },
   "Ai_Get_GeneralSettings": {
    "match": "0x6662bd"
+  },
+  "Ai_Handle_PitStateChanged_Thunk": {
+   "match": "0x6b3150"
   },
   "Ai_HashMap_FindIndexU64": {
    "match": "0x63f13e"
@@ -2945,12 +2948,6 @@
   "Game_Championship_VirtualisePendingSessions": {
    "match": "0xbd45e0"
   },
-  "Game_CheckPrivilegeTask_OnUpdate": {
-   "match": "0x33727c0"
-  },
-  "Game_CheckPrivilegeTask_PrivilegeCheckTaskCallback": {
-   "match": "0x3372e00"
-  },
   "Game_Check_ReturnToGarageTimeLimit": {
    "match": "0x24ae250"
   },
@@ -4088,15 +4085,6 @@
   "Game_GhostLapHandler_OnSessionRivalSearchCompleted": {
    "match": "0x2f9fdf0"
   },
-  "Game_GhostLapHandler_StartLeaderboardEntryWrite": {
-   "match": "0x2fa2ff0"
-  },
-  "Game_GhostLapHandler_StartRemoteStorageDownload": {
-   "match": "0x2fa28b0"
-  },
-  "Game_GhostLapHandler_StartRemoteStorageUpload": {
-   "match": "0x2fa6370"
-  },
   "Game_GhostLapHandler_Update": {
    "match": "0x2f9a8b0"
   },
@@ -4105,9 +4093,6 @@
   },
   "Game_GhostLapsStorageSystem_Dtor": {
    "match": "0x2f932b0"
-  },
-  "Game_GhostLapsStorageSystem_OnSessionEnter": {
-   "match": "0x2f98470"
   },
   "Game_GhostLapsStorageSystem_OnSessionExit": {
    "match": "0x2f993a0"
@@ -4213,9 +4198,6 @@
   },
   "Game_InstantRace_SetupTrackList": {
    "match": "0xba28b0"
-  },
-  "Game_InviteManager_Cancel": {
-   "match": "0x30646d0"
   },
   "Game_InviteManager_ChangeState": {
    "match": "0x3164140"
@@ -4466,14 +4448,8 @@
   "Game_NetworkReady_SetRelevantSet": {
    "match": "0x2cf6240"
   },
-  "Game_NetworkSubsystem_ChangeMPMode": {
-   "match": "0x30ef8c0"
-  },
   "Game_NetworkSubsystem_SelectTitleConfig": {
    "match": "0x309b9b0"
-  },
-  "Game_NetworkSubsystem_UpdateKeyMaterial": {
-   "match": "0x320b3f0"
   },
   "Game_NetworkUI_StartRankedDivisionSearch": {
    "match": "0x30b23b0"
@@ -4579,9 +4555,6 @@
   },
   "Game_OptionsUI_ApplyFilterLevelCollectChanges": {
    "match": "0x1dbef30"
-  },
-  "Game_OsService_SubmitRequest": {
-   "match": "0x32be2a0"
   },
   "Game_PagedBuffer_Transfer": {
    "match": "0x45da410"
@@ -5038,6 +5011,9 @@
   },
   "Game_SceneManager_DestroyScene": {
    "match": "0x18a550"
+  },
+  "Game_Scene_UpdateInstanceTransformsBatch": {
+   "match": "0x1e7aa0"
   },
   "Game_ScoreBreakdownVM_OnActivate": {
    "match": "0x1f62710"
@@ -7220,9 +7196,6 @@
   "Ne_PresenceNameResolverEADP_VectorGrow": {
    "match": "0x4138270"
   },
-  "Ne_PresenceNameResolverFixed_AddName": {
-   "match": "0x412c8f0"
-  },
   "Ne_PresenceNameResolverFixed_InsertName": {
    "match": "0x412c907"
   },
@@ -7306,9 +7279,6 @@
   },
   "Ne_ReplaySystem_ForceReset": {
    "match": "0x45d8350"
-  },
-  "Ne_ReplaySystem_ResetSlot24": {
-   "match": "0x45d8050"
   },
   "Ne_Replay_SetState": {
    "match": "0x45d84b0"
@@ -8116,6 +8086,9 @@
   },
   "Sess_Build_SelectableDriverList": {
    "match": "0x245bcd0"
+  },
+  "Sess_Build_VehicleTyreInfo": {
+   "match": "0xbcd400"
   },
   "Sess_ChallengeRuleset_UpdateLapDelta": {
    "match": "0x2d3f8d0"

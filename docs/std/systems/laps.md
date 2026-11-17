@@ -1,15 +1,15 @@
 ---
 title: Laps
-description: The lap files the core records in Time Trial, and the two events around writing one.
+description: The lap files the Time Trial plugin records, and the two events around writing one.
 ---
 
 # Laps
 
-While Time Trial boards are on, the core records every completed Time Trial lap to a file under `laps/` in the launcher's data folder. When the core can't write the data folder, the file goes under `swofty/laps/` in the game folder instead. An addon reads those files, adds a section to one before it is written, or reacts when one lands.
+While Time Trial boards are on and the player is signed in with Discord, every completed Time Trial lap is recorded to a file under `laps/` in the launcher's data folder. When the data folder can't be written, the file goes under `swofty/laps/` in the game folder instead. An addon reads those files, adds a section to one before it is written, or reacts when one lands.
 
-The recorder runs when the launcher writes `"tt_boards": true` into `swofty/tt.json` and the session is a Time Trial. It samples the player's car at 60 Hz. A lap starts at a line crossing and ends at the next one. The lap out of the garage is not recorded. A lap is dropped when the car is reset or moved, when the session ends, or when it is too short or too long to be a lap.
+The recorder is part of the [Time Trial plugin](#the-time-trial-plugin). It runs when the launcher writes `"tt_boards": true` into `swofty/tt.json` and the session is a Time Trial. It samples the player's car at 60 Hz. A lap starts at a line crossing and ends at the next one. The lap out of the garage is not recorded. A lap is dropped when the car is reset or moved, when the session ends, or when it is too short or too long to be a lap.
 
-On the build the core's lap offsets are from, the core also hooks the game's own lap record (`Sess_LapTimes_ReportNewLapTime`). A completed lap then waits up to two seconds after its line crossing for the game's lap result and, when the lap is valid, for the ghost blob the game commits on a personal best. The file is written when both have arrived or when the two seconds have passed. When the hook is not available the file is written at once and the lap's time comes from the clock. The ghost blob comes from the one hook on the game's personal best commit, a byte-scan hook of the in-game boards code that is armed whenever `tt_boards` is on, with or without `tt_bridge`. `SWOFTY_LAP_GAME_RESULT=0` turns the lap result off and `SWOFTY_LAP_GHOST=0` the ghost blob.
+A completed lap waits up to two seconds after its line crossing for the game's lap result and, when the lap is valid, for the ghost blob the game commits on a personal best. The file is written when both have arrived or when the two seconds have passed. Without the game's lap result the lap's time comes from the clock. `SWOFTY_LAP_GAME_RESULT=0` turns the lap result off and `SWOFTY_LAP_GHOST=0` the ghost blob.
 
 ## The file
 
@@ -117,6 +117,19 @@ The mailbox request's `board.track` carries the same key. The core takes the req
 
 A board is the core's own when its descriptor is 6 or higher or when its track is custom. The request redirect and the guards use that one rule. A request for a stock descriptor on a custom track goes to the mailbox like an addon board, and with guards on a lap on a custom track in the game's own season does not reach the publisher's boards.
 
+## The Time Trial plugin
+
+The launcher places `swofty.tt` for a session in which the player is signed in with Discord: a closed-source DLL that Swofty's server publishes. The launcher reads the offer from `GET /v1/modules`, downloads the file from `GET /v1/modules/file`, and checks its size, its sha256 and an Ed25519 signature over `swofty-module-v1\0 || name || \0 || platform || \0 || version || \0 || abi || \0 || sha256` against the public key pinned in the launcher. A copy that passes is kept under `modules/tt-game/<platform>/<version>/` in the launcher's data folder. The session places it as `swofty/addons/swofty.tt/swofty_tt.dll`, and the session's rollback removes it with every other placed file. It is not an addon in any profile.
+
+The plugin attaches to the core's lap host, `SwoftyCoreLapHost` in `swofty_api.h`:
+
+```
+[tt] attached to the core's lap host (version 1)
+module tt-game: not loaded for this session: none published
+```
+
+Without the plugin no lap is recorded and the in-game boards are off.
+
 ## The integrity module
 
 The launcher loads one more native addon for a session in which Time Trial boards is on and the player is signed in with Discord: `swofty.integrity`, a closed-source DLL that Swofty's server publishes. The launcher fetches it from `GET /v1/tt/integrity`, checks its size and sha256, and checks an Ed25519 signature over `swofty-tt-integrity-v1\0 || version || \0 || sha256` against the public key pinned in the launcher. A copy that passes is kept under `timetrial/integrity/<version>/` in the launcher's data folder, the newest two versions. The session places it as `swofty/addons/swofty.integrity/swofty_integrity.dll` and lists it in `swofty/settings.json` under `plugins`, and the session's rollback removes it with every other placed file.
@@ -142,20 +155,11 @@ json = { "v": 1, "module": "2026.11.10.1", "nonce": "...", "body_sha256": "...",
 
 ## In-game boards
 
-The core can show addon content on the game's own Time Trial leaderboard screen. It is off until the launcher writes `"tt_bridge": true` into `swofty/tt.json`, which it does when Time Trial boards in the game is on. It runs only on the game build the core's hook points were taken from. Each step logs one `[boards]` line, so one Time Trial session shows which steps worked.
+The Time Trial plugin shows addon content on the game's own Time Trial leaderboard screen, the Time Trial track select's View Leaderboards. It is off until the launcher writes `"tt_bridge": true` into `swofty/tt.json`, which it does when Time Trial boards in the game is on. Each step logs one `[boards]` line.
 
-The game names a board `LBV` + the descriptor id (2 digits) + the track (2 digits) + `D` or `W`: `LBV0605D` is descriptor 6, track 5, dry. Descriptors 0 to 5 are the game's own. Descriptors 6 and up are the ids the core assigned to addon boards. The game knows a board only if `system/leaderboard.xml` defines it.
+The game names a board `LBV` + the descriptor id (2 digits) + the track (2 digits) + `D` or `W`: `LBV0605D` is descriptor 6, track 5, dry. Descriptors 0 to 5 are the game's own. Descriptors 6 and up are addon boards.
 
-Board definitions. When the game loads `leaderboard.xml` the core appends one copy of a stock `<leaderboard>` element per addon descriptor, per track the stock boards name and per custom track's stat id, per weather. It also appends the custom tracks' stat ids under every stock descriptor the file uses. A board name the file already defines is not added again, so a custom track on a dormant stock row whose board exists adds nothing under that descriptor. The copies get new `id` and `name` values, ids above every id in the file, and keep the template's other attributes and children. The file's line endings and quoting are kept. The core logs the template element once.
-
-```
-[boards] bridge on (tt.json tt_bridge); OnResult resolved for all five methods
-[boards] board definitions armed at base+0x30daa2a
-[boards] board definitions: 2918 bytes, template element LBV0001D: <leaderboard id="10" name="LBV0001D" ...
-[boards] board definitions: appended 96 board(s) for 2 addon descriptor(s) over 24 track(s) (ids 41..136, 0 already defined), 12 of them for 2 custom track(s) (all addon descriptors and 1 stock descriptor(s)), buffer 2918 -> 41872 bytes
-```
-
-Requests. Five methods carry the screen's data: `GetTTLeaderboard`, `GetFriendsTTLeaderboard`, `GetBinaryDataForUser`, `AddLeaderboardEntry`, `UpdateLeaderboardEntryBinaryData`. When one names an addon board the core does not send it. It writes the request to `tt/outbox/<seq>.json` in the launcher's data folder (`swofty/tt/outbox/` in the game folder when the core can't write the data folder):
+A request for an addon board or a custom track's board goes to the launcher instead of the game's servers. The plugin writes it to `tt/outbox/<seq>.json` in the launcher's data folder (`swofty/tt/outbox/` in the game folder when it can't write the data folder):
 
 ```json
 { "seq": 12, "method": "GetTTLeaderboard",
@@ -164,37 +168,9 @@ Requests. Five methods carry the screen's data: `GetTTLeaderboard`, `GetFriendsT
   "player": { "ghost_id": "<base64 of the 0x30-byte id block, once a personal best was committed>" } }
 ```
 
-`args` holds every key of the method's argument struct the core could read. Binary data is not copied into it. The answer is `tt/inbox/<seq>.json` beside it, `{ "seq": 12, "status": 200, "body": "<JSON text>" }`. Both sides write a `.tmp` file and rename it, and both ignore files older than 60 seconds. The core deletes an answer it used. The flow tick finds the answer and gives the game's `OnResult` for that method a response with that status and body. A request with no answer after 8 seconds completes with status 504 and the body `{"Message":"The request timed out","Data":null}`. Every other request goes to the game's servers unchanged.
+The launcher answers with `tt/inbox/<seq>.json` beside it, `{ "seq": 12, "status": 200, "body": "<JSON text>" }`. Both sides write a `.tmp` file and rename it, and both ignore files older than 60 seconds. A request with no answer after 8 seconds completes with status 504 and the body `{"Message":"The request timed out","Data":null}`. Requests for the game's own boards go to the game's servers unchanged.
 
-```
-[boards] request GetTTLeaderboard LBV0605D redirected (seq 1789200100, to the mailbox, string form NeStr*@word0)
-[boards] request 1789200100 GetTTLeaderboard LBV0605D written to the mailbox (412 bytes)
-[boards] completion 1789200100 GetTTLeaderboard LBV0605D: status 200, 1880 body bytes, answered after 310 ms (OnResult returned)
-[boards] request GetTTLeaderboard LBV0105D passes (stock board, string form NeStr*@word0)
-[boards] request GetTTLeaderboard: LeaderboardID not readable as a board name (slot bytes: ...); passed through
-```
-
-Personal bests. When the game commits a personal best, the core keeps the 0x30-byte id block of the ghost's description. `ghost_id` carries it in later requests.
-
-```
-[boards] personal best committed (time word 0x3f3a1b2c): player id block 0700000000000000 ...
-```
-
-Guards. They are off. `"tt_guards": true` in `swofty/tt.json` or `SWOFTY_TT_GUARDS=1` turns them on, and the core logs `[boards] guards off: enable with tt_guards after the in-game confirmation` at arm time when they are off. The facts they use are not confirmed in the running game. With guards on, with or without `tt_bridge`, while the session's content is an addon's or the session's track is custom, the core returns at the entry of the game's remote storage upload, remote storage download and Racenet post. A lap in addon content or on a custom track does not reach the publisher's boards. With the bridge off and guards on, `AddLeaderboardEntry` and `UpdateLeaderboardEntryBinaryData` for an addon board or a custom track's board are answered locally with `{"Rank":0}` and `{}`.
-
-```
-[boards] guard: remote storage upload guard armed at base+0x2fa3de0: it returns for addon content
-[boards] guard: remote storage upload skipped for addon content swofty.swofty-2022/f1_2022
-[boards] guard: remote storage upload skipped for a custom track in the game's own content
-```
-
-`SWOFTY_TT_UPLOAD_GUARD=0`, `SWOFTY_TT_DOWNLOAD_GUARD=0`, `SWOFTY_TT_RACENET_GUARD=0` and `SWOFTY_TT_REQUEST_GUARD=0` turn single guards off. A step whose hook point does not resolve logs `off, needs <name>` and the rest keep running. Each kind of line is logged a few times and then goes quiet.
-
-Online-state gate. In a session without the platform session (the launcher's offline component), the game's own Time Trial requests stop at the checks that open every online method: a missing presence record, the platform state words, the session token. The leaderboard screen then shows the Platform Client Overlay popup and no request reaches the push hook. With the bridge on, for the five Time Trial methods and a request of an addon board or a custom track's board, the core skips those checks at the start of the method, so the request is built and handed to the push hook, which answers it. Other methods and the publisher's boards keep the game's checks. The core logs `[boards] gate <method> armed at base+0x...` per method at arm time and `[boards] gate <method> <board>: online-state checks skipped (would have failed with ...)` per request.
-
-With the bridge on, the game's rival search (inside the ghost handler's update) also counts an addon board or custom track board as online: the core logs `[boards] rival finder gate armed at base+0x...` and one `rival finder gate of handler ...` line per distinct state. The leaderboard screen is the front end's Time Trial track select, View Leaderboards; there is no in-session leaderboard entry in the game.
-
-`SWOFTY_TT_DIAG=1` turns on a logging-only mode, with the bridge on or off: each gate with its values and caller (`[boards] diag: online-state gate of ...`), every request pushed to the game's request ring, the board file the game loaded, the account-state error handler with a short backtrace (the popup's trigger) and the ghost handler of the storage system. Nothing changes in that mode.
+Guards are off. `"tt_guards": true` in `swofty/tt.json` or `SWOFTY_TT_GUARDS=1` turns them on. A lap in addon content or on a custom track then does not reach the publisher's boards.
 
 ## Barred addons
 

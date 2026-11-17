@@ -7,6 +7,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstdint>
+#include <cstdio>
 #include <cstring>
 #include <vector>
 
@@ -225,36 +226,32 @@ public:
 
     bool read_team_badge(uint32_t vehicle, char *key, size_t cap)
     {
-        if (!g_[G_BADGES] || !s_.key_game_mode || !s_.key_team_tables || vehicle >= MAX_CARS || cap < 2)
+        BadgeRef b;
+        if (cap < 2 || !find_badge(vehicle, b) || b.kind == L::badge::my_team_kind || b.render)
             return false;
-        uintptr_t gmc = find(c_mode_, s_.key_game_mode);
-        uintptr_t mode = 0, game = 0, ev[2];
-        if (!gmc || !m_.get(gmc + L::badge::mode, mode) || !mode || !m_.get(mode + L::badge::game, game) || !game ||
-            !m_.read(game + L::badge::entrants, ev, sizeof ev) || ev[1] <= ev[0] ||
-            (ev[1] - ev[0]) % L::badge::entrant_stride || (ev[1] - ev[0]) / L::badge::entrant_stride > 512)
+        return read_cstr(b.key, key, cap > 40 ? 40 : cap);
+    }
+
+    bool read_team_badge_texture(uint32_t vehicle, char *path, size_t cap)
+    {
+        BadgeRef b;
+        if (cap < 2 || !find_badge(vehicle, b) || b.kind == L::badge::my_team_kind)
             return false;
-        size_t n = (ev[1] - ev[0]) / L::badge::entrant_stride;
-        for (size_t i = 0; i < n; i++) {
-            uint8_t vid = 0xff;
-            uint32_t team = 0;
-            uintptr_t e = ev[0] + i * L::badge::entrant_stride;
-            if (!m_.get(e + L::badge::entrant_vid, vid) || vid != vehicle)
-                continue;
-            if (!m_.get(e + L::badge::entrant_team, team))
-                return false;
-            unsigned kind = team & 0xff, index = team >> 16;
-            if (kind > L::badge::max_kind || kind == L::badge::my_team_kind)
-                return false;
-            uintptr_t tt = find(c_teams_, s_.key_team_tables), table = 0, vec[2], rec = 0, str = 0;
-            uint8_t render = 0;
-            if (!tt || !m_.get(tt + L::badge::tables + kind * 16, table) || !table ||
-                !m_.read(table + L::badge::table_vec, vec, sizeof vec) || vec[1] <= vec[0] ||
-                index >= (vec[1] - vec[0]) / 16 || !m_.get(vec[0] + uintptr_t(index) * 16 + L::badge::slot_record, rec) || !rec ||
-                !m_.get(rec + L::badge::record_render, render) || render ||
-                !m_.get(rec + L::badge::record_key, str) || !str)
-                return false;
-            return read_cstr(str, key, cap > 40 ? 40 : cap);
+        char id[40];
+        int n = -1;
+        if (!b.render) {
+            if (read_cstr(b.key, id, sizeof id))
+                n = std::snprintf(path, cap, "%s%s", L::badge::catalogue_prefix, id);
+        } else if (uint32_t badge = 0; g_[G_BADGE_RENDER] && m_.get(b.entrant + L::badge::entrant_badge, badge)) {
+            unsigned table = badge & 0xff, index = badge >> 16;
+            if (index == L::badge::badge_none)
+                n = std::snprintf(path, cap, "%s", L::badge::render_default);
+            else if (table <= L::badge::max_kind)
+                n = std::snprintf(path, cap, "%s%s %u", L::badge::render_prefix, L::badge::table_names[table], index);
         }
+        if (n > 0 && size_t(n) < cap)
+            return true;
+        path[0] = 0;
         return false;
     }
 
@@ -264,7 +261,7 @@ public:
     bool read_driver_name(uint32_t vehicle, char *out, size_t cap)
     {
         namespace D = L::driver;
-        if (!g_[G_DRIVER_NAMES] || !s_.key_game_mode || !s_.key_team_tables || !s_.key_session_component ||
+        if (!active() || !g_[G_DRIVER_NAMES] || !s_.key_game_mode || !s_.key_team_tables || !s_.key_session_component ||
             vehicle >= MAX_CARS || cap < 2)
             return false;
         uintptr_t vh = find(c_s1_, s_.key_session_component), pv[2];
@@ -518,6 +515,48 @@ private:
                     return false;
             }
             n += chunk;
+        }
+        return false;
+    }
+
+    struct BadgeRef {
+        unsigned kind = 0;
+        uintptr_t entrant = 0, key = 0;
+        uint8_t render = 0;
+    };
+
+    bool find_badge(uint32_t vehicle, BadgeRef &out)
+    {
+        if (!active() || !g_[G_BADGES] || !s_.key_game_mode || !s_.key_team_tables || vehicle >= MAX_CARS)
+            return false;
+        uintptr_t gmc = find(c_mode_, s_.key_game_mode);
+        uintptr_t mode = 0, game = 0, ev[2];
+        if (!gmc || !m_.get(gmc + L::badge::mode, mode) || !mode || !m_.get(mode + L::badge::game, game) || !game ||
+            !m_.read(game + L::badge::entrants, ev, sizeof ev) || ev[1] <= ev[0] ||
+            (ev[1] - ev[0]) % L::badge::entrant_stride || (ev[1] - ev[0]) / L::badge::entrant_stride > 512)
+            return false;
+        size_t n = (ev[1] - ev[0]) / L::badge::entrant_stride;
+        for (size_t i = 0; i < n; i++) {
+            uint8_t vid = 0xff;
+            uint32_t team = 0;
+            uintptr_t e = ev[0] + i * L::badge::entrant_stride;
+            if (!m_.get(e + L::badge::entrant_vid, vid) || vid != vehicle)
+                continue;
+            if (!m_.get(e + L::badge::entrant_team, team))
+                return false;
+            unsigned kind = team & 0xff, index = team >> 16;
+            if (kind > L::badge::max_kind)
+                return false;
+            out.kind = kind;
+            out.entrant = e;
+            if (kind == L::badge::my_team_kind)
+                return true;
+            uintptr_t tt = find(c_teams_, s_.key_team_tables), table = 0, vec[2], rec = 0;
+            return tt && m_.get(tt + L::badge::tables + kind * 16, table) && table &&
+                   m_.read(table + L::badge::table_vec, vec, sizeof vec) && vec[1] > vec[0] &&
+                   index < (vec[1] - vec[0]) / 16 && m_.get(vec[0] + uintptr_t(index) * 16 + L::badge::slot_record, rec) && rec &&
+                   m_.get(rec + L::badge::record_render, out.render) && m_.get(rec + L::badge::record_key, out.key) &&
+                   (out.render || out.key);
         }
         return false;
     }
@@ -1218,7 +1257,11 @@ private:
                   hh = field<float>(b, L::ers::live_lo, L::ers::harvest_h), dp = field<float>(b, L::ers::live_lo, L::ers::deploy),
                   hl = field<float>(b, L::ers::live_lo, L::ers::harvest_lap), dl = field<float>(b, L::ers::live_lo, L::ers::deploy_lap),
                   ll = field<float>(b, L::ers::live_lo, L::ers::lap_limit);
-            int32_t mode = field<int32_t>(b, L::ers::live_lo, L::ers::mode);
+            int32_t mode = -1;
+            if (s_.ers_mode && s_.ers_mode != L::ers::mode)
+                m_.get(c.es + s_.ers_mode, mode);
+            else
+                mode = field<int32_t>(b, L::ers::live_lo, L::ers::mode);
             if (within(energy, -1.0e5f, 2.0e7f)) {
                 e.store = std::max(0.f, energy);
                 e.have |= SWOFTY_LIVE_HAVE_ERS_STORE;

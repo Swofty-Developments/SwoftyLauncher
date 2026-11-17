@@ -29,8 +29,13 @@
 //     drsAllowed 22, actualTyreCompound 25, visualTyreCompound 26, tyresAgeLaps 27, vehicleFiaFlags i8 28,
 //     ersStoreEnergy f32 37.
 //   Car Damage (10), 1041 bytes: 22 x 46 bytes: tyresWear f32[4] at 0.
-// The 2026 Session, Car Telemetry, Car Status and Car Damage packets have other sizes (Car Status 1445 and Car
-// Telemetry 1448 are 59 bytes per car) whose field offsets are not catalogued, so they are left alone.
+//   2026 Car Telemetry (6), 1448 bytes: 24 x 59 bytes, then three u8; engineTemperature is a u8 (u16 before), so
+//     the fields read above keep their offsets. Never replayed on a recording; it rests on the published
+//     f1-packets 2026.1.0 spec.
+//   2026 Car Status (7), 1445 bytes: 24 x 59 bytes; the fields read above sit at offsets 5..37 of the entry and
+//     the extra bytes are not catalogued.
+// The 2026 Session and Car Damage packets have other sizes whose field offsets are not catalogued, so they are
+// left alone.
 
 namespace runtime::udp_tel {
 
@@ -50,7 +55,8 @@ inline const Spec *specs(size_t &n)
         {2025, 2, 1285, 57, 22, HEADER}, {2026, 2, 1399, 57, 24, HEADER}, {2024, 3, 45, 0, 0, 0},
         {2025, 3, 45, 0, 0, 0},       {2026, 3, 45, 0, 0, 0},       {2024, 4, 1350, 60, 22, HEADER + 1},
         {2025, 4, 1284, 57, 22, HEADER + 1}, {2026, 4, 1470, 60, 24, HEADER + 1}, {2024, 6, 1352, 60, 22, HEADER},
-        {2025, 6, 1352, 60, 22, HEADER}, {2024, 7, 1239, 55, 22, HEADER}, {2025, 7, 1239, 55, 22, HEADER},
+        {2025, 6, 1352, 60, 22, HEADER}, {2026, 6, 1448, 59, 24, HEADER}, {2024, 7, 1239, 55, 22, HEADER},
+        {2025, 7, 1239, 55, 22, HEADER}, {2026, 7, 1445, 59, 24, HEADER},
         {2024, 10, 1041, 46, 22, HEADER}, {2025, 10, 1041, 46, 22, HEADER},
     };
     n = sizeof table / sizeof *table;

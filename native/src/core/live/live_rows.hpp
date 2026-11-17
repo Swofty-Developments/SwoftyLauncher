@@ -6,7 +6,7 @@
 namespace swofty_core::live {
 
 // A group reads on its own when every site it needs resolves (bindgen exports a site only after its KB row has an
-// independent agree), every struct field it reads is declared by the generated game headers (the same gate), and its
+// independent agree), every field has a generated declaration or an explicit proof for this exact build, and its
 // reads are all backed by KB rows. `mapped` is false for a group that still reads a chain the KB has no row for; that
 // group stays off until SWOFTY_LIVE_FORCE=1 or until the row lands and the entry is flipped.
 struct Row {
@@ -89,6 +89,7 @@ inline constexpr bool F_DRIVER_NAMES =
     LIVE_HAS(VehicleHelperSystem, participants_begin) && LIVE_HAS(VehicleHelperSystem, participants_end) &&
     LIVE_HAS(VehicleHelperParticipant, physics) && LIVE_HAS(VehicleHelperParticipant, driver_kind) &&
     LIVE_HAS(CarPhysicsRecord, car);
+inline constexpr bool F_BADGE_RENDER = F_BADGES && LIVE_HAS(SessionEntrantView, badge_stat_id);
 inline constexpr bool F_TRACK_NAME =
     LIVE_HAS(RacingVehicles, owner) && LIVE_HAS(RacingOwner, track) && LIVE_HAS(RacingTrack, name);
 
@@ -118,6 +119,7 @@ inline constexpr Row ROWS[G_COUNT] = {
     {G_DRIVER_NAMES, F_DRIVER_NAMES && F_REGISTRY, true,
      "the game mode entrant chain, SessionEntrantView.driver_ref, EntrantsSystem driver tables, DriverRecord.display_name, "
      "VehicleHelperSystem participants and player name, VehicleHelperParticipant and CarPhysicsRecord.car"},
+    {G_BADGE_RENDER, F_BADGE_RENDER && F_REGISTRY, true, "the badges rows and SessionEntrantView.badge_stat_id"},
 };
 
 struct Needs {
@@ -149,6 +151,7 @@ inline constexpr Needs NEEDS[] = {
     {G_TRACK_NAME, {&Sites::track_world}},
     {G_BUS_EVENTS, {&Sites::bus_slot, &Sites::bus_subscribe}},
     {G_DRIVER_NAMES, {&Sites::game_manager, &Sites::key_game_mode, &Sites::key_team_tables, &Sites::key_session_component}},
+    {G_BADGE_RENDER, {&Sites::game_manager, &Sites::key_game_mode, &Sites::key_team_tables}},
 };
 
 constexpr uint32_t bit(Group g)
@@ -158,12 +161,15 @@ constexpr uint32_t bit(Group g)
 
 // A build other than the KB build reads a group only when the group is listed here for that build's PE timestamp: the
 // layouts the group reads were compared against the KB build's (re/tools/layoutcmp.py, research/ea-layouts.md) and the
-// sites it needs resolve in that build's bindings set. `progress_from_manager` is the one displacement that differs.
+// sites it needs resolve in that build's bindings set. Displacements that differ are selected per build below.
 struct BuildProof {
     uint32_t pe_timestamp;
     const char *name;
     uint32_t groups;
     uintptr_t progress_from_manager;
+    uintptr_t ers_mode = layout::ers::mode;
+    // Field layouts independently checked for this build when the baseline KB headers omit a field.
+    uint32_t field_proofs = 0;
 };
 
 inline constexpr uint32_t ALL_GROUPS = (1u << G_COUNT) - 1;
@@ -171,13 +177,20 @@ inline constexpr uint32_t ALL_GROUPS = (1u << G_COUNT) - 1;
 inline constexpr BuildProof KB_BUILD = {1789118616u, "Steam", ALL_GROUPS, layout::progress::from_manager};
 
 // Driver names read the EntrantsSystem driver tables and VehicleHelperSystem participants, which have not been compared
-// against the EA build's layout yet.
-inline constexpr uint32_t EA_GROUPS = ALL_GROUPS & ~(1u << G_DRIVER_NAMES);
+// against the EA build's layout yet; the rendered badge path reads a SessionEntrantView field that has not been either.
+inline constexpr uint32_t EA_GROUPS = ALL_GROUPS & ~(bit(G_DRIVER_NAMES) | bit(G_BADGE_RENDER));
 
 inline constexpr BuildProof EA_BUILD = {1789128892u, "EA", EA_GROUPS,
                                          runtime::game_manager::tail_field(layout::progress::from_manager, "ea")};
 
-inline constexpr const BuildProof *PROVEN_BUILDS[] = {&KB_BUILD, &EA_BUILD};
+// Steam 26566308 (1.0.145.2472): existing Live State layouts checked against this executable.
+// See re/research/live-steam-26566308.md for the build identity and instruction evidence.
+// Resolving a binding alone does not prove the object layout behind it; the current ERS mode moved by four bytes.
+inline constexpr uint32_t STEAM_26566308_GROUPS = ALL_GROUPS;
+inline constexpr BuildProof STEAM_26566308_BUILD = {
+    1794312636u, "Steam 26566308", STEAM_26566308_GROUPS, layout::progress::from_manager, 0x1a6c, bit(G_DRIVER_NAMES)};
+
+inline constexpr const BuildProof *PROVEN_BUILDS[] = {&KB_BUILD, &EA_BUILD, &STEAM_26566308_BUILD};
 
 inline const BuildProof *proof_for(uint32_t pe_timestamp)
 {
@@ -210,7 +223,8 @@ inline Decision decide(const Sites &s, const BuildProof &b, bool force, const Ro
         for (auto slot : n.sites)
             if (slot && !(s.*slot) && !v.missing)
                 v.missing = slot;
-        bool rows = row.fields && row.mapped, proven = (b.groups & bit(n.group)) != 0;
+        bool rows = (row.fields || (b.field_proofs & bit(n.group))) && row.mapped;
+        bool proven = (b.groups & bit(n.group)) != 0;
         v.why = v.missing ? Why::site : !rows ? Why::row : !proven ? Why::build : Why::on;
         d.gates.on[n.group] = !v.missing && ((rows && proven) || force);
         if (d.gates.on[n.group])

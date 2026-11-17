@@ -3,6 +3,7 @@
 #include "../../src/core/apply/content/box_options.hpp"
 #include "../../src/core/apply/content/grid_rules.hpp"
 #include "../../src/core/apply/content/quali_tyres.hpp"
+#include "../../src/core/apply/content/tyre_change.hpp"
 #include "../../src/core/apply/content/tyre_warmers.hpp"
 #include "../../src/core/apply/content/weekend.hpp"
 #include "../../src/core/apply/ids.hpp"
@@ -768,6 +769,78 @@ static void twelve_team_tests(const std::string &regs)
             check(!added_line, "and no grown row is logged");
         }
     }
+}
+
+static void short_list_tests(const std::string &regs)
+{
+    registry::reset_store();
+    auto &st = registry::store();
+    st.set_order({"swofty.swofty-seasons-2012"});
+    st.set_validator(&registry::schema_validator());
+    const SwoftyRegistry *t = registry::table();
+    for (const char *name : {"engine_sound", "vehicle.package", "vehicle", "livery", "content.package", "era.box"}) {
+        std::string schema = slurp(regs + "/" + name + "/1.0.json");
+        t->declare(name, SwoftyText{schema.data(), schema.size()});
+    }
+    static const char *keys[] = {"redbull", "mclaren", "ferrari", "mercedes", "lotus", "forceindia",
+                                 "sauber", "tororosso", "williams", "caterham", "hrt", "marussia"};
+    std::string teams;
+    for (int i = 0; i < 12; i++) {
+        std::string k = keys[i];
+        teams += std::string(i ? "," : "") + R"({ "key": ")" + k + R"(", "vehicle": "game/)" + k + R"(_2012", "drivers": [ )" +
+                 R"({ "driver": "game/)" + k + R"(_a", "number": )" + std::to_string(i + 1) + R"(, "look": null } ] })";
+    }
+    std::string tt = R"({ "content.package": { "f1_2012_tt": { "title": "lng_f2012", "entrant_list": "f2012_tt", "season": 2012,
+        "teams": [ )" + teams + R"( ], "database": { "entrant_list": "f2012_tt", "entrant_prefix": "f12-", "standings": "f2012_tt_teams",
+        "entrant_list_from": "f1_2026", "content_sets": ["2025"] } },
+        "f1_2012_one": { "title": "lng_f2012", "entrant_list": "f2012_one", "season": 2012,
+        "teams": [ { "key": "redbull", "vehicle": "game/redbull_2012", "drivers": [ { "driver": "game/redbull_a", "number": 1, "look": null } ] } ],
+        "database": { "entrant_list": "f2012_one", "entrant_prefix": "f12o-", "standings": "f2012_one_teams", "content_sets": ["2025"] } } } })";
+    int r = registry::load_data_file("swofty.swofty-seasons-2012", "registry/content.json", tt);
+    st.end_register();
+    check(r == SWOFTY_ASSET_OK, "a one-car-per-team package registers");
+    Db db;
+    stock_wide_rows(db);
+    content::Expansion x(db.base());
+    content::expand(st, x, {});
+    int refused = 0;
+    for (auto &[k, n] : x.refused)
+        refused += n;
+    for (auto &l : x.lines["content.package"])
+        std::printf("      %s\n", l.c_str());
+    auto text = [&](const std::string &path) -> std::optional<std::string> {
+        if (auto w = written(x.engine, path))
+            return w;
+        auto rec = db.base()(content::gvdb::fnv64(path));
+        return rec ? std::optional<std::string>(rec->text) : std::nullopt;
+    };
+    auto row_of = [&](const char *table, const char *row, const std::string &label) {
+        for (int i = 0; i < 8; i++) {
+            std::string p = std::string(table) + "." + row + "_" + std::to_string(i);
+            if (written(x.engine, p + "._metadata_") == label)
+                return p;
+        }
+        return std::string();
+    };
+    std::string list = row_of("entrants.entrant_lists", "entrant_list", "f2012_tt");
+    std::string one = row_of("entrants.entrant_lists", "entrant_list", "f2012_one");
+    std::string one_teams = row_of("entrants.standings", "standings", "f2012_one_teams");
+    bool line = false;
+    for (auto &l : x.lines["content.package"])
+        line |= l.find("entrant list f2012_tt has 12 entrants; f1_2026 holds 22, the rest are left out") != std::string::npos;
+    check(refused == 0 && x.records["content.package"] == 2, "both short packages apply");
+    check(!list.empty() && text(list + "._entrant_instancecount_") == "12" &&
+              text(list + ".entrant_11.team") == "marussia_2012",
+          "a 12-car list copied from a 22-car one holds 12 entrants, not the source's last 10");
+    check(text("entrants.entrant_lists.entrant_list_1._entrant_instancecount_") == "22",
+          "the stock f1_2026 list keeps its 22 entrants");
+    check(line, "the boot log says the rest of the source list is left out");
+    check(!one.empty() && text(one + "._entrant_instancecount_") == "1", "a one-car list holds one entrant");
+    check(!one_teams.empty() && text(one_teams + "._team_reference_instancecount_") == "1" &&
+              text(one_teams + ".team_reference_0.team") == "redbull_2012",
+          "a one-team package's standings hold one team");
+    check(text("entrants.standings.standings_0._team_reference_instancecount_") == "2",
+          "the stock f1_teams_2024 row keeps its 2 teams");
 }
 
 // The team and car rows a package's teams are checked against: three team rows inside the table's count and one
@@ -1828,6 +1901,16 @@ static void drs_tests(const std::string &regs)
     Value w1959b = swofty::json::parse(R"({"entrant_list":"f1_1959","rules":{"tyre_warmers":true}})");
     boxes.push_back({"mod.b/f1_1959", &w1959b});
     check(content::tyre_warmers_pick("f1_1959", boxes).warmers == true, "the last package with the box's entrant list decides");
+    Value c1950 = swofty::json::parse(R"({"entrant_list":"f1_1950","rules":{"mandatory_tyre_change":false}})");
+    Value c2007 = swofty::json::parse(R"({"entrant_list":"f1_2007","rules":{"mandatory_tyre_change":true}})");
+    Value c2008 = swofty::json::parse(R"({"entrant_list":"f1_2008","rules":{"mandatory_tyre_change":null}})");
+    std::vector<std::pair<std::string, const Value *>> change = {{"mod.a/f1_1950", &c1950}, {"mod.a/f1_2007", &c2007}, {"mod.a/f1_2008", &c2008}};
+    auto chg = content::tyre_change_pick("f1_1950", change);
+    std::printf("      %s\n", chg.line.c_str());
+    check(chg.required == false && content::tyre_change_pick("f1_2007", change).required == true,
+          "a box whose package sets rules.mandatory_tyre_change runs that rule");
+    check(!content::tyre_change_pick("f1_2008", change).required && !content::tyre_change_pick("f1_2025", change).required,
+          "null or a stock box: the mode keeps its own tyre regulations");
 
     Value k1959 = swofty::json::parse(R"({"entrant_list":"f1_1959","rules":{"race_time_limit_s":10800,"weekend_mode":"swofty_f1_short_quali"}})");
     Value k2004 = swofty::json::parse(R"({"entrant_list":"f1_2004","rules":{"weekend_mode":"swofty_f1_one_shot"}})");
@@ -2102,6 +2185,58 @@ static void race_fuel_tests()
     check(content::race_tyre_change_pick(true, 8, true, 0) == TyreChange::game, "qualifying: the game's change");
     check(content::race_tyre_change_pick(false, 15, true, 0) == TyreChange::game, "no rule: the game's change");
     check(content::race_tyre_change_pick(true, 15, true, 0x20) == TyreChange::kept, "flags outside the damage mask: kept");
+}
+
+static void points_tests()
+{
+    std::printf("== session.points\n");
+    Value rec = swofty::json::parse(R"({"points":[8,6,4,3,2],"fastest_lap":1})");
+    content::Plan plan;
+    content::lower_session_points("mod.a/f1_1950", rec, plan);
+    for (auto &l : plan.lines)
+        std::printf("      %s\n", l.c_str());
+    std::string label = content::points_label("mod.a/f1_1950");
+    std::string row = std::string(content::POINTS_PRESETS) + "[_metadata_=" + label + "]";
+    bool full = false, levels = true;
+    size_t sets = 0;
+    for (std::size_t i = 0; i < plan.ops.size(); i++) {
+        const Value &op = plan.ops[i];
+        if (op["op"].as_string() == "add-row") {
+            full = op["table"].as_string() == std::string(content::POINTS_TABLE) &&
+                   op["set"]["points"].as_string() == "8,6,4,3,2,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0" &&
+                   op["set"]["fastest_lap_bonus"].as_string() == "1" && op["set"]["fastest_lap_rule"].as_string() == "BestOfTop10";
+        } else if (op["op"].as_string() == "set") {
+            sets++;
+            levels = levels && op["select"].as_string().rfind(row + ".reduced_points_data[_metadata_=", 0) == 0;
+        }
+    }
+    check(plan.refused == 0 && full && sets == 9 && levels,
+          "a points system becomes one standing preset row (26 places, BestOfTop10) and its three reduced levels");
+
+    Value none = swofty::json::parse(R"({"points":[9,6,4,3,2,1],"fastest_lap":null,"reduced":[[4,3,2,1,1]]})");
+    auto s = content::points_system("mod.a/f1_1990", none, nullptr);
+    check(s && s->rule == 0 && s->bonus == 0 && s->reduced.size() == 3 && s->reduced[0][0] == 4 && s->reduced[1][0] == 9 &&
+              s->full.size() == content::POINTS_PLACES,
+          "no fastest lap: rule None; a missing reduced level gives the full points");
+    for (const char *bad : {R"({"points":"25,18"})", R"({"points":[]})", R"({"points":[1,-1]})",
+                            R"({"points":[1],"fastest_lap":"1"})", R"({"points":[1],"reduced":[[1],[1],[1],[1]]})"}) {
+        content::Plan p;
+        content::lower_session_points("mod.a/bad", swofty::json::parse(bad), p);
+        check(p.refused == 1 && p.ops.size() == 0, std::string("refused, nothing applied: ") + bad);
+    }
+
+    std::map<std::string, content::PointsSystem> systems = {{"mod.a/f1_1950", *content::points_system("mod.a/f1_1950", rec, nullptr)}};
+    Value b1950 = swofty::json::parse(R"({"entrant_list":"f1_1950","rules":{"points":"mod.a/f1_1950"}})");
+    Value b1951 = swofty::json::parse(R"({"entrant_list":"f1_1951","rules":{"points":"mod.a/missing"}})");
+    Value b1952 = swofty::json::parse(R"({"entrant_list":"f1_1952","rules":{}})");
+    std::vector<std::pair<std::string, const Value *>> boxes = {{"mod.a/f1_1950", &b1950}, {"mod.a/f1_1951", &b1951}, {"mod.a/f1_1952", &b1952}};
+    auto pick = content::points_pick("f1_1950", boxes, systems);
+    std::printf("      %s\n", pick.line.c_str());
+    check(pick.system && pick.system->label == label && pick.package == "mod.a/f1_1950",
+          "a box whose package names an applied points system runs it");
+    check(!content::points_pick("f1_1951", boxes, systems).system && !content::points_pick("f1_1952", boxes, systems).system &&
+              !content::points_pick("f1_2025", boxes, systems).system,
+          "a system not added at boot, no rule, or a stock box: the mode keeps its own points");
 }
 
 static void stock_career_rows(Db &db)
@@ -2608,6 +2743,7 @@ int main(int argc, char **argv)
     livery_tests();
     garage_tests();
     package_team_row_tests();
+    points_tests();
     if (argc > 1)
         variant_tests(argv[1]);
     if (argc > 1)
@@ -2616,6 +2752,8 @@ int main(int argc, char **argv)
         team_tests(argv[1]);
     if (argc > 1)
         twelve_team_tests(argv[1]);
+    if (argc > 1)
+        short_list_tests(argv[1]);
     if (argc > 1)
         stock_only_tests(argv[1]);
     if (argc > 1)

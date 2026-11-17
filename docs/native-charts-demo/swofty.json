@@ -5,7 +5,7 @@
   "version": "0.1.0",
   "author": "Swofty Contributors",
   "description": "Generic native chart controls with a chart-capability fallback.",
-  "license": "AGPL-3.0-or-later",
+  "license": "PolyForm-Noncommercial-1.0.0",
   "compat": {
     "game": "f1_25"
   },

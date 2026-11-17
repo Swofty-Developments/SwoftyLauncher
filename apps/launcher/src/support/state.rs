@@ -103,6 +103,25 @@ impl Shell {
         }
     }
 
+    pub(crate) fn support_fetch_me(&mut self, cx: &mut Context<Self>) {
+        let api = self.support_api();
+        self.support.me = Load::Loading;
+        cx.spawn(async move |this, cx| {
+            let me = cx
+                .background_executor()
+                .spawn(async move { api.support_me() })
+                .await;
+            this.update(cx, |s, cx| {
+                if s.mp.is_some() {
+                    s.support.me = load(me);
+                }
+                cx.notify();
+            })
+            .ok();
+        })
+        .detach();
+    }
+
     pub(super) fn support_reload(&mut self, cx: &mut Context<Self>) {
         let api = self.support_api();
         let signed_in = self.mp.is_some();
