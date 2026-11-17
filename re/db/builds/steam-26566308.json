@@ -764,6 +764,9 @@
   "Ai_Parse_RaceStartConfig": {
    "match": "0x65e080"
   },
+  "Ai_Parse_TrackConfig": {
+   "match": "0x2e606a0"
+  },
   "Ai_RaceStart_ReactionTime": {
    "match": "0x652800"
   },
@@ -875,6 +878,9 @@
   "Car_Assets_CreateSystemForPerformanceMode": {
    "match": "0x4745150"
   },
+  "Car_BrakeEcu_ApplyBias": {
+   "match": "0x4678ac0"
+  },
   "Car_Build_VtfComponents": {
    "match": "0x473eca0"
   },
@@ -922,6 +928,9 @@
   },
   "Car_FuelEcu_SetMode_Thunk": {
    "match": "0x4710a12"
+  },
+  "Car_FuelTank_StepBurn": {
+   "match": "0x4691620"
   },
   "Car_Load_Vtf": {
    "match": "0x475cc10"
@@ -992,6 +1001,9 @@
   "Car_Tyre_CheckCompoundClassRule": {
    "match": "0x2e8acc0"
   },
+  "Car_Tyre_ComputeGripMultiplier": {
+   "match": "0x46b9c00"
+  },
   "Car_Tyre_GripScale": {
    "match": "0x46b9ab0"
   },
@@ -1003,6 +1015,9 @@
   },
   "Car_Tyre_SetWearFactor": {
    "match": "0x2ea4890"
+  },
+  "Car_Tyre_Step": {
+   "match": "0x46b7f90"
   },
   "Car_Tyre_UpdateWear": {
    "match": "0x46ba260"
@@ -1051,6 +1066,9 @@
   },
   "Career_Add_TeamModifier": {
    "match": "0x34faf90"
+  },
+  "Career_Add_TrackSetToSeason": {
+   "match": "0x309bbe0"
   },
   "Career_Adjust_RpDriverWallet": {
    "match": "0x350155a"
@@ -2780,11 +2798,17 @@
   "Game_AudioEngineBundle_Initialise": {
    "match": "0x451ec30"
   },
+  "Game_AutoResetToTrack_FireDeferred": {
+   "match": "0x2f05fc0"
+  },
   "Game_AutoResetToTrack_StartTimer": {
    "match": "0x2f037a0"
   },
   "Game_AutoResetToTrack_Teleport": {
    "match": "0x2f05840"
+  },
+  "Game_BaseGameModeSetupDataContract_UpdateSelectedTrackContextual": {
+   "match": "0x38550d0"
   },
   "Game_BenchmarkGameMode_BuildSessionSettings": {
    "match": "0x7a48a0"
@@ -2800,6 +2824,9 @@
   },
   "Game_BroadcastViewVehicleVM_OnDeactivate": {
    "match": "0x19ff3c0"
+  },
+  "Game_Build_CustomisationCatalogue": {
+   "match": "0x14061a0"
   },
   "Game_Build_PassiveObjectiveKeyName": {
    "match": "0x297e150"
@@ -3170,8 +3197,17 @@
   "Game_DRLSystem_ResolveDependencies": {
    "match": "0x243c440"
   },
+  "Game_DRS_CollectZoneMarkup": {
+   "match": "0x2bf20d0"
+  },
   "Game_DRS_OnSessionLoad": {
    "match": "0x2bee310"
+  },
+  "Game_DRS_UpdateCars": {
+   "match": "0x2bebe60"
+  },
+  "Game_DRS_UpdateZoneTracker": {
+   "match": "0x2be9b20"
   },
   "Game_DataDrivenCutSceneScript_CreateComponents": {
    "match": "0x251190"
@@ -3379,6 +3415,12 @@
   },
   "Game_EventDispatcher_SendPositionEvent": {
    "match": "0x2526fa0"
+  },
+  "Game_EventListGridSetupComponent_SetupStartingGrid": {
+   "match": "0xb9cd50"
+  },
+  "Game_EventModifier_SetWheelWetnessGripScale": {
+   "match": "0x13a6970"
   },
   "Game_EventObjectives_OnTargetPositionDone": {
    "match": "0x17fe4c0"
@@ -4640,6 +4682,9 @@
   "Game_PitLaneSystem_Multiplayer_handlePitLaneEventMessage": {
    "match": "0x34d4150"
   },
+  "Game_PitLane_ApplyPitstopTyres": {
+   "match": "0x34c02e0"
+  },
   "Game_PitLane_EnterControlRelease": {
    "match": "0x34ce4c0"
   },
@@ -4669,6 +4714,9 @@
   },
   "Game_PitLane_OnGarageCrewMessage": {
    "match": "0x34d1170"
+  },
+  "Game_PitLane_ProjectBoxPose": {
+   "match": "0x34c0c1e"
   },
   "Game_PitLane_PutVehicleInPitBox": {
    "match": "0x34d37f0"
@@ -5072,6 +5120,9 @@
   "Game_SecretMeetings_Initialise": {
    "match": "0x267e80"
   },
+  "Game_SessionDirectorContainerViewModel_AddTabPitStopsScreen": {
+   "match": "0x22a1668"
+  },
   "Game_SessionHud_OnPlayerDroppedIn": {
    "match": "0x14b1be0"
   },
@@ -5345,6 +5396,12 @@
   "Game_TitleScreenVM_OnScreenActivated": {
    "match": "0x1e9f230"
   },
+  "Game_TodCurveBinding_EvalAt": {
+   "match": "0xb12c60"
+  },
+  "Game_TodCurveBinding_EvalNow": {
+   "match": "0x29c310"
+  },
   "Game_TodData_FindParam": {
    "match": "0x46114b0"
   },
@@ -5366,6 +5423,12 @@
   "Game_TrackExtraYacht_Initialise": {
    "match": "0x269c10"
   },
+  "Game_TrackInfoSystem_CreateResourceListeners": {
+   "match": "0x4796c60"
+  },
+  "Game_TrackInformation_ParseTrackInfoXml": {
+   "match": "0x4780c00"
+  },
   "Game_TrackModelComponent_Initialise": {
    "match": "0x2aa26f0"
   },
@@ -5378,11 +5441,20 @@
   "Game_TrackSpaceTracker_Reset": {
    "match": "0x2f603f0"
   },
+  "Game_TrackSpace_FindVolume": {
+   "match": "0x45f5ea0"
+  },
   "Game_TrackSpace_GetDistanceAtPos": {
    "match": "0x5fc710"
   },
+  "Game_TrackSpace_LapDistance": {
+   "match": "0x45f6340"
+  },
   "Game_TrackSpace_LoadXml": {
    "match": "0x45ede70"
+  },
+  "Game_TrackSpace_NearestVolume": {
+   "match": "0x45f6020"
   },
   "Game_TrackSpace_RangeOverlaps": {
    "match": "0x45faeb0"
@@ -5392,6 +5464,12 @@
   },
   "Game_TrackSpline_ResolveRouteEnds": {
    "match": "0x5fed50"
+  },
+  "Game_TrackSurface_DryLineStrength": {
+   "match": "0x37cff90"
+  },
+  "Game_TrackSurface_UpdateWheelRecords": {
+   "match": "0x37cef50"
   },
   "Game_TransactionSystem_OnRequestPurchaseComplete_A": {
    "match": "0x2e69950"
@@ -8321,8 +8399,14 @@
   "Sess_Get_PlayerVehicleIndex": {
    "match": "0xfa590"
   },
+  "Sess_Get_VehicleTrackFactor": {
+   "match": "0x36b0a00"
+  },
   "Sess_GridRundown_Update": {
    "match": "0x2d63240"
+  },
+  "Sess_HumanController_Update": {
+   "match": "0x3897f50"
   },
   "Sess_InGamePQ_Update": {
    "match": "0x2d6a790"
@@ -8344,6 +8428,9 @@
   },
   "Sess_InGame_UpdateBase": {
    "match": "0x2d58c30"
+  },
+  "Sess_Init_TyreComponentSet": {
+   "match": "0x2e96000"
   },
   "Sess_IntroVideo_CanFinish": {
    "match": "0x2d6f940"
@@ -9272,6 +9359,9 @@
   "Sess_TyreCompoundClasses_SortEntriesB": {
    "match": "0x2e9f368"
   },
+  "Sess_Tyre_ShowFittedSet": {
+   "match": "0x2ea5020"
+  },
   "Sess_Tyres_ClosestAvailableCompound": {
    "match": "0x2a3de0c"
   },
@@ -9379,6 +9469,9 @@
   },
   "Team_Insert_RecordByStatId": {
    "match": "0xbc1a11"
+  },
+  "Team_Load_PitTimes": {
+   "match": "0x34cb170"
   },
   "Trk_CareerWizardTrackSelectVm_OnCommandRaised": {
    "match": "0x1a33dc0"
@@ -10051,6 +10144,12 @@
   },
   "Vm_WizardTitleSlice_DestroyRange": {
    "match": "0x1b6b860"
+  },
+  "g_Car_FfbForceWetMultiple": {
+   "match": "0x4703597"
+  },
+  "g_Car_FfbFrictionWetMultiple": {
+   "match": "0x47035b5"
   },
   "g_Career_FlowLinkContinue": {
    "match": "0x36c5400"
