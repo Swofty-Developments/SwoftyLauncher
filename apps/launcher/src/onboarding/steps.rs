@@ -16,17 +16,17 @@ const ENTER: Duration = Duration::from_millis(420);
 
 pub(super) fn enter(step: Step, body: impl IntoElement) -> impl IntoElement {
     div().child(body).with_animation(
-        ("onboarding-step", step.index()),
+        ("onboarding-step", step.order()),
         Animation::new(ENTER).with_easing(ease_out_quint()),
         |el, t| el.opacity(t).relative().top(px((1. - t) * 18.)),
     )
 }
 
-pub(super) fn dots(step: Step, p: Palette) -> impl IntoElement {
+pub(super) fn dots(step: Step, steps: &[Step], p: Palette) -> impl IntoElement {
     h_flex()
         .gap(px(8.))
         .items_center()
-        .children(Step::ALL.iter().map(|s| {
+        .children(steps.iter().map(|s| {
             let active = *s == step;
             div()
                 .h(px(8.))
@@ -36,7 +36,7 @@ pub(super) fn dots(step: Step, p: Palette) -> impl IntoElement {
         }))
 }
 
-fn heading(title: &'static str, subtitle: &'static str, p: Palette) -> impl IntoElement {
+pub(super) fn heading(title: &'static str, subtitle: &'static str, p: Palette) -> impl IntoElement {
     v_flex()
         .items_center()
         .gap(px(8.))

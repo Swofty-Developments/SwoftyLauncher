@@ -38,6 +38,7 @@ mod startup;
 mod tabs;
 mod topbar;
 
+pub(crate) use dialogs::offline_terms;
 pub use page::{Page, PlayState};
 pub(crate) use prompt::Prompt;
 pub(crate) use seen::Seen;

@@ -14,9 +14,7 @@ impl Shell {
             window.focus(&self.root_focus, cx);
             return;
         }
-        let wizard = crate::onboarding::Onboarding::new(mode, cx);
-        window.focus(&wizard.focus, cx);
-        self.onboarding = Some(wizard);
+        self.start_onboarding(mode, window, cx);
     }
 
     pub(crate) fn set_ui_mode(&mut self, mode: UiMode, window: &mut Window, cx: &mut Context<Self>) {

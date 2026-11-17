@@ -8,7 +8,7 @@ use gpui_kit::*;
 use swofty_core::process::stop_game_in;
 
 use super::Shell;
-use super::dialogs::offline_terms;
+use super::offline_terms;
 use swofty_i18n::tr;
 
 impl Shell {

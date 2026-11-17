@@ -114,7 +114,7 @@ pub(super) fn show_launch_failed(f: &launch::Failure, window: &mut Window, cx: &
     });
 }
 
-pub(super) fn offline_terms(p: Palette) -> impl IntoElement {
+pub(crate) fn offline_terms(p: Palette) -> impl IntoElement {
     v_flex()
         .gap(px(14.))
         .child(div().text_size(px(13.)).text_color(p.text_muted).child(tr(

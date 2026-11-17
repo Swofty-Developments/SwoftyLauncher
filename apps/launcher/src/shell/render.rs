@@ -14,8 +14,8 @@ impl Render for Shell {
         self.painted = Instant::now();
         let p = palette(cx);
         if let Some(wizard) = self.onboarding_view(p, cx) {
-            self.ads.hide_all();
-            return wizard;
+            self.ads.begin(false);
+            return wizard.children(self.ads.sweep());
         }
         let state = self.play_state();
         if self

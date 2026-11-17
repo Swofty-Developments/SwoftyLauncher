@@ -181,7 +181,7 @@ pub fn clamp_ui_scale(percent: u16) -> u16 {
 }
 
 /// The version of the welcome wizard. Raise it to show the wizard once more to everyone.
-pub const ONBOARDING_VERSION: u32 = 1;
+pub const ONBOARDING_VERSION: u32 = 2;
 
 impl Config {
     /// Whether the welcome wizard is due: never seen, or an older version.
