@@ -329,6 +329,9 @@ impl Bundle {
             entries: Vec::new(),
             skipped: Vec::new(),
         };
+        if let Some(account) = crate::mpauth::load(&store.root) {
+            crate::multiplayer::client::know_secret(&account.token);
+        }
         match std::fs::read(store.config_path()) {
             Ok(data) => {
                 let (text, note) = match serde_json::from_slice::<Value>(&data) {
@@ -457,7 +460,7 @@ impl Bundle {
             c.file(
                 format!("{}/{}", crate::multiplayer::client::PRINTS_DIR, file_name(&print)),
                 &print,
-                Some(crate::multiplayer::client::scrub as fn(&str) -> String),
+                Some(crate::multiplayer::client::scrub_json as fn(&str) -> String),
             );
         }
         c.ea_diagnostics();

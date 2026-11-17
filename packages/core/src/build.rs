@@ -4595,13 +4595,10 @@ mod tests {
         assert_eq!(detail.paths, ["a.dds"]);
         let (_, other) = prints("c", "track.zip", "another texture");
         assert_ne!(other.digest, a.1.digest);
-        let found = fingerprint::compare(&other, &a.1, &[]);
-        assert!(
-            found
-                .iter()
-                .any(|m| m.differences == ["a.dds differs".to_owned()]),
-            "{found:?}"
-        );
+        let other_track = other.addons.iter().find(|x| x.id == "mod.track").unwrap();
+        let other_detail = other_track.detail.as_ref().unwrap();
+        assert_eq!(other_detail.paths, detail.paths);
+        assert_ne!(other_detail.reads, detail.reads, "{other_detail:?}");
     }
 
     struct Rows(AddonManifest);

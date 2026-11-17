@@ -11,6 +11,9 @@ use super::dialogs::note_notification;
 use super::{PlayState, Shell};
 use swofty_i18n::{tr, trf};
 
+/// How long Play waits for a session module load that is already running.
+const SESSION_MODULE_WAIT: std::time::Duration = std::time::Duration::from_millis(1500);
+
 impl Shell {
     pub(crate) fn play_state(&self) -> PlayState {
         if self.owners.contains(&Owner::Active) {
@@ -193,9 +196,9 @@ impl Shell {
                 cx,
             );
         }
-        let armed = (room.is_some() || self.mp_allowed())
-            .then(|| swofty_core::multiplayer::client::launch_env_value(false))
-            .flatten();
+        let armed = (room.is_some() || self.mp_allowed()).then(|| {
+            swofty_core::multiplayer::client::launch_env_value(&self.store.root, SESSION_MODULE_WAIT)
+        });
         match Launch::start(
             &self.store,
             &self.library.profile.name,

@@ -955,13 +955,16 @@ fn play(
         for (name, value) in parse_launch_env(armed) {
             match game_env.get_mut(&name) {
                 Some(have) if name == "SWOFTY_GAME_LOG_CHANNELS" => {
-                    for channel in value.split(',').map(str::trim).filter(|c| !c.is_empty()) {
-                        if !have.split(',').any(|h| h.trim() == channel) {
-                            if !have.trim().is_empty() {
-                                have.push(',');
-                            }
-                            have.push_str(channel);
+                    let named = |c: &str| c.trim().split(':').next().unwrap_or("").to_owned();
+                    for channel in value.split(',').map(str::trim) {
+                        let name = named(channel);
+                        if name.is_empty() || name == "default" || have.split(',').any(|h| named(h) == name) {
+                            continue;
                         }
+                        if !have.trim().is_empty() {
+                            have.push(',');
+                        }
+                        have.push_str(channel);
                     }
                 }
                 Some(_) => {}

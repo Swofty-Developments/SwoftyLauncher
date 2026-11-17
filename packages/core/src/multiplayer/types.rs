@@ -5,7 +5,6 @@ use std::collections::BTreeMap;
 use serde::{Deserialize, Serialize};
 use serde_json::Value;
 
-use super::fingerprint::Mismatch;
 use crate::row_ids::Overrides;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Serialize, Deserialize)]
@@ -284,7 +283,8 @@ pub struct SessionState {
     pub room: Option<RoomInfo>,
     pub self_member: Option<u8>,
     pub members: Vec<MemberState>,
-    pub mismatches: Vec<Mismatch>,
+    /// How this player's content differs from the host's, as the module reports it.
+    pub mismatches: Vec<Value>,
     pub lobby_connected: bool,
     pub relay: Option<String>,
     pub base: Option<u16>,

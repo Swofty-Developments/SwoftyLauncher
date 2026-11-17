@@ -4,8 +4,8 @@
 use std::collections::{BTreeMap, HashMap};
 use std::path::{Path, PathBuf};
 use std::sync::atomic::{AtomicU64, Ordering};
-use std::sync::{Arc, Mutex, MutexGuard};
-use std::time::SystemTime;
+use std::sync::{Arc, Condvar, Mutex, MutexGuard};
+use std::time::{Duration, Instant, SystemTime};
 
 use serde::Serialize;
 use serde_json::{Value, json};
@@ -37,23 +37,41 @@ pub const GAME_STATUS_FILE: &str = "swofty/netplay.json";
 /// Reads this player's content again for a running session.
 pub type Refresh = Arc<dyn Fn() -> Option<Local> + Send + Sync>;
 
-static LOADED: Mutex<Option<Arc<Library>>> = Mutex::new(None);
+enum State {
+    Idle,
+    Loading,
+    Loaded(Arc<Library>),
+    Failed(String),
+}
+
+static STATE: Mutex<State> = Mutex::new(State::Idle);
+static CHANGED: Condvar = Condvar::new();
 static REFRESHES: Mutex<Option<HashMap<u64, Refresh>>> = Mutex::new(None);
 static NEXT_REF: AtomicU64 = AtomicU64::new(1);
+static KNOWN: Mutex<Vec<String>> = Mutex::new(Vec::new());
 
 fn lock<T>(m: &Mutex<T>) -> MutexGuard<'_, T> {
     m.lock().unwrap_or_else(|e| e.into_inner())
 }
 
 fn loaded() -> Result<Arc<Library>, String> {
-    lock(&LOADED)
-        .clone()
-        .ok_or_else(|| "the session module isn't loaded".to_owned())
+    match &*lock(&STATE) {
+        State::Loaded(library) => Ok(library.clone()),
+        _ => Err("the session module isn't loaded".to_owned()),
+    }
 }
 
 /// Whether [`load`] has succeeded in this process.
 pub fn is_loaded() -> bool {
-    lock(&LOADED).is_some()
+    matches!(&*lock(&STATE), State::Loaded(_))
+}
+
+/// Why the last [`load`] failed, as the sentence to show; `None` when it succeeded or never ran.
+pub fn unavailable() -> Option<String> {
+    match &*lock(&STATE) {
+        State::Failed(why) => Some(why.clone()),
+        _ => None,
+    }
 }
 
 fn answer(request: &Value) -> Result<Value, String> {
@@ -74,12 +92,44 @@ fn answer(request: &Value) -> Result<Value, String> {
 }
 
 /// Makes the session module ready: fetched and verified (or the cached copy), then loaded once for this
-/// process. `token` is the signed-in session, when there is one. The error is the sentence to show.
+/// process. `token` is the signed-in session, when there is one. The error is the sentence to show. A load
+/// another thread already runs is waited for instead of started twice; nothing else waits on a load.
 pub fn load(data: &Path, token: Option<&str>) -> Result<(), Unavailable> {
-    let mut slot = lock(&LOADED);
-    if slot.is_some() {
-        return Ok(());
+    {
+        let mut state = lock(&STATE);
+        loop {
+            match &*state {
+                State::Loaded(_) => return Ok(()),
+                State::Loading => state = CHANGED.wait(state).unwrap_or_else(|e| e.into_inner()),
+                State::Idle | State::Failed(_) => break,
+            }
+        }
+        *state = State::Loading;
     }
+    if let Some(token) = token {
+        know_secret(token);
+    }
+    let opened = open(data, token);
+    let mut state = lock(&STATE);
+    let result = match opened {
+        Ok(library) => {
+            *state = State::Loaded(Arc::new(library));
+            Ok(())
+        }
+        Err(e) => {
+            *state = State::Failed(e.why.clone());
+            Err(e)
+        }
+    };
+    drop(state);
+    CHANGED.notify_all();
+    if result.is_ok() {
+        remember_launch_env(data);
+    }
+    result
+}
+
+fn open(data: &Path, token: Option<&str>) -> Result<Library, Unavailable> {
     let api = Api::new(token.unwrap_or_default());
     let module = modules::ensure(data, &api, MODULE, modules::platform(), MODULE_ABI)?;
     let config = json!({
@@ -91,9 +141,39 @@ pub fn load(data: &Path, token: Option<&str>) -> Result<(), Unavailable> {
         call: Box::new(answer),
         notify: Box::new(|_| {}),
     };
-    let library = Library::open(&module, MODULE_ABI, &config, hooks).map_err(Unavailable::from)?;
-    *slot = Some(Arc::new(library));
-    Ok(())
+    Library::open(&module, MODULE_ABI, &config, hooks).map_err(Unavailable::from)
+}
+
+/// Starts [`load`] on its own thread unless the module is loaded or a load is running. Returns at once.
+pub fn load_in_background(data: &Path, token: &str) {
+    if matches!(&*lock(&STATE), State::Loaded(_) | State::Loading) {
+        return;
+    }
+    let (data, token) = (data.to_path_buf(), token.to_owned());
+    std::thread::Builder::new()
+        .name("session-module".into())
+        .spawn(move || {
+            if let Err(e) = load(&data, Some(&token)) {
+                eprintln!("session module: not loaded: {e}");
+            }
+        })
+        .ok();
+}
+
+/// Waits up to `limit` for a load that is running now; returns at once when none is.
+fn settle(limit: Duration) {
+    let deadline = Instant::now() + limit;
+    let mut state = lock(&STATE);
+    while matches!(&*state, State::Loading) {
+        let left = deadline.saturating_duration_since(Instant::now());
+        if left.is_zero() {
+            break;
+        }
+        state = CHANGED
+            .wait_timeout(state, left)
+            .unwrap_or_else(|e| e.into_inner())
+            .0;
+    }
 }
 
 fn call(op: &str, args: Value) -> Result<Value, String> {
@@ -125,10 +205,49 @@ pub fn launch_env(for_session: bool) -> Vec<(String, String)> {
     read("launch.env", json!({ "room": for_session })).unwrap_or_default()
 }
 
-/// [`launch_env`] as the value of [`LAUNCH_ENV`]; `None` when there is nothing to carry.
-pub fn launch_env_value(for_session: bool) -> Option<String> {
-    let env = launch_env(for_session);
-    (!env.is_empty()).then(|| json!(env).to_string())
+/// Where the last environment the module gave is kept, under the data folder.
+const LAUNCH_ENV_FILE: &str = "state/session-env.json";
+/// The environment a game was started with before the module named it; used until the module has been
+/// loaded once on this machine.
+const FIRST_LAUNCH_ENV: [(&str, &str); 4] = [
+    ("SWOFTY_NETPLAY", "armed"),
+    ("SWOFTY_NET_TRACE", "1"),
+    ("SWOFTY_NET_TRACE_CAP_KB", "16384"),
+    ("SWOFTY_GAME_LOG_CHANNELS", "default,NETWORK*:info,SSL*:info"),
+];
+
+fn remember_launch_env(data: &Path) -> Option<Vec<(String, String)>> {
+    let env = launch_env(false);
+    if env.is_empty() {
+        return None;
+    }
+    let file = data.join(LAUNCH_ENV_FILE);
+    if let Some(dir) = file.parent() {
+        std::fs::create_dir_all(dir).ok();
+    }
+    std::fs::write(file, json!(env).to_string()).ok();
+    Some(env)
+}
+
+/// The value of [`LAUNCH_ENV`] for a game started now. Never waits on the network: a load that is
+/// already running is given up to `wait`; with the module loaded the environment is the module's;
+/// otherwise it is the one the module last gave on this machine, or the first-launch one.
+pub fn launch_env_value(data: &Path, wait: Duration) -> String {
+    settle(wait);
+    let env = is_loaded()
+        .then(|| remember_launch_env(data))
+        .flatten()
+        .or_else(|| {
+            let text = std::fs::read_to_string(data.join(LAUNCH_ENV_FILE)).ok()?;
+            Some(parse_launch_env(&text)).filter(|env| !env.is_empty())
+        })
+        .unwrap_or_else(|| {
+            FIRST_LAUNCH_ENV
+                .iter()
+                .map(|(k, v)| ((*k).to_owned(), (*v).to_owned()))
+                .collect()
+        });
+    json!(env).to_string()
 }
 
 /// The pairs a [`LAUNCH_ENV`] value carries.
@@ -141,9 +260,69 @@ pub fn line(text: impl std::fmt::Display) {
     call("diag.line", json!({ "text": text.to_string() })).ok();
 }
 
-/// `text` with the secrets the module knows replaced; unchanged while it isn't loaded.
+const REDACTED: &str = "[redacted]";
+const TOKEN_MIN: usize = 20;
+const KNOWN_MIN: usize = 6;
+
+/// Names a secret this process holds (a sign-in token), so [`scrub`] replaces it wherever it appears.
+pub fn know_secret(value: &str) {
+    let mut known = lock(&KNOWN);
+    if value.len() >= KNOWN_MIN && !known.iter().any(|k| k == value) {
+        known.push(value.to_owned());
+    }
+}
+
+fn token_char(c: char) -> bool {
+    c.is_ascii_alphanumeric() || matches!(c, '+' | '/' | '=' | '_' | '-')
+}
+
+/// Whether `word` looks like a credential rather than a name, a path or a digest: long, with digits and
+/// both letter cases. Lower-case hex digests and plain words stay readable.
+fn token_like(word: &str) -> bool {
+    word.len() >= TOKEN_MIN
+        && word.bytes().any(|b| b.is_ascii_digit())
+        && word.bytes().any(|b| b.is_ascii_uppercase())
+        && word.bytes().any(|b| b.is_ascii_lowercase())
+        && word.bytes().filter(|b| *b == b'/').count() <= 3
+}
+
+fn redact_tokens(text: &str) -> String {
+    let mut out = String::with_capacity(text.len());
+    let mut rest = text;
+    while !rest.is_empty() {
+        let start = rest.find(token_char).unwrap_or(rest.len());
+        out.push_str(&rest[..start]);
+        rest = &rest[start..];
+        let end = rest.find(|c| !token_char(c)).unwrap_or(rest.len());
+        let word = &rest[..end];
+        out.push_str(if token_like(word) { REDACTED } else { word });
+        rest = &rest[end..];
+    }
+    out
+}
+
+/// `text` safe to send: the secrets the module registered (when it is loaded), the ones this process
+/// named with [`know_secret`], and anything that looks like a credential are replaced. Works without the
+/// module, for files an earlier run wrote.
 pub fn scrub(text: &str) -> String {
-    read("diag.scrub", json!({ "text": text })).unwrap_or_else(|_| text.to_owned())
+    let mut text = read::<String>("diag.scrub", json!({ "text": text })).unwrap_or_else(|_| text.to_owned());
+    for secret in lock(&KNOWN).iter() {
+        if text.contains(secret.as_str()) {
+            text = text.replace(secret.as_str(), REDACTED);
+        }
+    }
+    redact_tokens(&text)
+}
+
+/// [`scrub`] for a JSON document: values under secret-looking names are replaced as well.
+pub fn scrub_json(text: &str) -> String {
+    match serde_json::from_str::<Value>(text) {
+        Ok(mut doc) => {
+            crate::send_logs::redact_json(&mut doc);
+            scrub(&serde_json::to_string_pretty(&doc).unwrap_or_default())
+        }
+        Err(_) => scrub(text),
+    }
 }
 
 /// The running session's state for a sent logs bundle, secrets redacted.
@@ -255,6 +434,7 @@ impl Session {
 
     fn start(op: &str, setup: Setup, mut args: Value) -> Result<Session, String> {
         let library = loaded()?;
+        know_secret(&setup.token);
         let refresh = NEXT_REF.fetch_add(1, Ordering::Relaxed);
         if let Some(f) = setup.refresh {
             lock(&REFRESHES)
@@ -356,5 +536,50 @@ impl Drop for Session {
         if let Some(r) = lock(&REFRESHES).as_mut() {
             r.remove(&self.refresh);
         }
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+
+    #[test]
+    fn a_game_started_without_the_module_gets_the_last_environment_or_the_first_launch_one() {
+        let data = std::env::temp_dir().join(format!("swofty-session-env-{}", std::process::id()));
+        std::fs::create_dir_all(data.join("state")).unwrap();
+        let started = Instant::now();
+        let first = parse_launch_env(&launch_env_value(&data, Duration::from_secs(5)));
+        assert!(
+            started.elapsed() < Duration::from_secs(1),
+            "nothing is loading, so nothing is waited for"
+        );
+        assert_eq!(first.len(), FIRST_LAUNCH_ENV.len());
+        assert_eq!(first[0], ("SWOFTY_NETPLAY".to_owned(), "armed".to_owned()));
+        std::fs::write(data.join(LAUNCH_ENV_FILE), r#"[["A","1"],["B","2"]]"#).unwrap();
+        let kept = parse_launch_env(&launch_env_value(&data, Duration::ZERO));
+        assert_eq!(
+            kept,
+            [("A".to_owned(), "1".to_owned()), ("B".to_owned(), "2".to_owned())]
+        );
+        std::fs::write(data.join(LAUNCH_ENV_FILE), "not json").unwrap();
+        assert_eq!(parse_launch_env(&launch_env_value(&data, Duration::ZERO)), first);
+        std::fs::remove_dir_all(&data).ok();
+    }
+
+    #[test]
+    fn credentials_are_replaced_and_names_paths_and_digests_stay() {
+        let digest = "0f".repeat(32);
+        let text = format!(
+            "relay user 1731800000:u1 pass Zm9vYmFyMTIzNDU2Nzg5MGFiY2RlZg== at /mnt/work/F1/launcher-todo/x.json \
+             print {digest} addon swofty.seasons-2014"
+        );
+        let out = scrub(&text);
+        assert!(!out.contains("Zm9vYmFy"), "{out}");
+        assert!(
+            out.contains(&digest) && out.contains("swofty.seasons-2014") && out.contains("1731800000:u1")
+        );
+        assert!(out.contains("/mnt/work/F1/launcher-todo/x.json"), "{out}");
+        let doc = scrub_json(r#"{"turn":{"credential":"abc","username":"1:u"},"n":3}"#);
+        assert!(!doc.contains("abc") && doc.contains("1:u"), "{doc}");
     }
 }
