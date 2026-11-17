@@ -84151,30 +84151,6 @@
    "used_by": []
   },
   {
-   "id": "game.ghost_lap_handler_start_remote_storage_upload",
-   "section": ".xtls",
-   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 04 00 00 48 89 D7 48 89",
-   "match": "0x142fa3de0",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x142fa3de0",
-   "kind": "func_start",
-   "names": [
-    "Game_GhostLapHandler_StartRemoteStorageUpload"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "engine-re",
-     "how": "static"
-    }
-   ],
-   "used_by": []
-  },
-  {
    "id": "car.systems_reset_thunk",
    "section": ".xtls",
    "pattern": "E9 ?? ?? ?? ?? A5 0F 8B ?? ?? ?? ?? E9",
@@ -161962,31 +161938,6 @@
    "used_by": [
     "native/src/core/live_state.cpp"
    ]
-  },
-  {
-   "id": "game.leaderboard_xml_loaded",
-   "section": ".xtls",
-   "pattern": "48 8B 40 58 48 89 44 24 78 48 8B 4C 24 70",
-   "match": "0x1430daa26",
-   "anchor": "0x4",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x1430daa2a",
-   "kind": "mid",
-   "expect": "48 89 44 24 78",
-   "names": [
-    "site_Game_LeaderboardXml_Loaded"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-11-10",
-     "by": "tt-re",
-     "how": "static"
-    }
-   ],
-   "used_by": []
   },
   {
    "id": "game.f1_world_entry_point",

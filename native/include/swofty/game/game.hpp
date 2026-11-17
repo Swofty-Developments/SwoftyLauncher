@@ -783,7 +783,6 @@ inline constexpr address<"Game_GhostLapHandler_Dtor"> Game_GhostLapHandler_Dtor{
 inline constexpr address<"Game_GhostLapHandler_EvaluatePerformanceState"> Game_GhostLapHandler_EvaluatePerformanceState{}; // L2 experimental
 inline constexpr address<"Game_GhostLapHandler_FreeSessionRivalStorage"> Game_GhostLapHandler_FreeSessionRivalStorage{}; // L2 experimental
 inline constexpr address<"Game_GhostLapHandler_OnSessionRivalSearchCompleted"> Game_GhostLapHandler_OnSessionRivalSearchCompleted{}; // L2 experimental
-inline constexpr address<"Game_GhostLapHandler_StartRemoteStorageUpload"> Game_GhostLapHandler_StartRemoteStorageUpload{}; // L2 experimental
 inline constexpr address<"Game_GhostLapHandler_Update"> Game_GhostLapHandler_Update{}; // L2 experimental
 inline constexpr address<"Game_GhostLapsStorageSystem_Connect"> Game_GhostLapsStorageSystem_Connect{}; // L2 experimental
 inline constexpr address<"Game_GhostLapsStorageSystem_Dtor"> Game_GhostLapsStorageSystem_Dtor{}; // L2 experimental

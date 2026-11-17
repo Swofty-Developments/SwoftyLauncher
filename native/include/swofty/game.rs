@@ -10755,11 +10755,6 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
-    pub const Game_GhostLapHandler_StartRemoteStorageUpload: Binding = Binding {
-        id: "Game_GhostLapHandler_StartRemoteStorageUpload",
-        kind: "func",
-        status: Status::Experimental,
-    };
     pub const Game_GhostLapHandler_Update: Binding = Binding {
         id: "Game_GhostLapHandler_Update",
         kind: "func",

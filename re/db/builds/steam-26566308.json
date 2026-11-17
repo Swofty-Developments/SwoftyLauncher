@@ -4085,9 +4085,6 @@
   "Game_GhostLapHandler_OnSessionRivalSearchCompleted": {
    "match": "0x2f9fdf0"
   },
-  "Game_GhostLapHandler_StartRemoteStorageUpload": {
-   "match": "0x2fa6370"
-  },
   "Game_GhostLapHandler_Update": {
    "match": "0x2f9a8b0"
   },
