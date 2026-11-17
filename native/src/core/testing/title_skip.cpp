@@ -116,6 +116,8 @@ constexpr size_t PM_PRIMARY = 0x198, PM_LEAD = 0x1b0, PM_CANDIDATE = 0x1d0, PM_S
 
 namespace bp = runtime::build_proof;
 
+constexpr bp::Proof SIGNIN_STATE{"the player manager's sign-in state at +0x1f0", bp::bit(bp::Build::kb)};
+constexpr bp::Gate SIGNIN_WRITE{"SWOFTY_DIRECT_SIGNIN", &SIGNIN_STATE};
 constexpr bp::Proof STATE_INTRO{"StateIntro's state layout (+0xcd0, +0xef3, +0xef4)",
                                 bp::bit(bp::Build::kb) | bp::bit(bp::Build::steam_1_0_145)};
 constexpr bp::Gate TITLE_HELPER{"the title helper", &STATE_INTRO};
@@ -155,7 +157,7 @@ void player_probe(uint8_t *state)
     }
     char env[8] = {};
     if (!signin_tried && signin == 0 && !primary && GetEnvironmentVariableA("SWOFTY_DIRECT_SIGNIN", env, sizeof env) &&
-        env[0] == '1') {
+        env[0] == '1' && runtime::holds(SIGNIN_WRITE)) {
         signin_tried = true;
         *reinterpret_cast<uint32_t *>(m + PM_SIGNIN) = 1;
         swofty::log("[title] SWOFTY_DIRECT_SIGNIN: player manager sign-in state set to 1");
