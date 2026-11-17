@@ -1332,6 +1332,10 @@
    "note": "The pattern is the EA 1.0.145 code of this function, found by comparison with the Steam 1.0.145 build and the EA 1.0.141 dump; the loader's own jump patches in the decrypted dump are wildcarded.",
    "anchor": 0,
    "expect": "49 83 C7 08 4D 39 E7"
+  },
+  "Ai_Handle_PitStateChanged_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 0F 8B 65 6C 1B FF E9 FB D8 B6 FF",
+   "note": "A protector thunk; the pattern is its EA 1.0.145 bytes. It is the only thunk in its slot range whose body is the Steam 1.0.145 function (instruction match 0.93, the same 17 field offsets and constants)."
   }
  },
  "hints": {
@@ -1667,6 +1671,9 @@
   },
   "site_Game_TileListSelect_ChildNext": {
    "match": "0x382881e"
+  },
+  "Ai_Handle_PitStateChanged_Thunk": {
+   "match": "0x6b3b60"
   }
  },
  "unresolvable": {
