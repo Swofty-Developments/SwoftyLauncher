@@ -40,7 +40,7 @@ impl Shell {
             self.refresh_saves_in_background(cx);
         }
         if page == Page::Moderation {
-            self.tt_open(cx);
+            crate::features::time_trial::TtPage::open(self, cx);
         }
         if page == Page::Support {
             crate::features::support::SupportPage::open(self, cx);
