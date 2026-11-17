@@ -107,6 +107,8 @@ int n = api->scan(".xtls", "48 89 5C 24 ?? 57 48 83 EC 20", &hit); // the hit co
 [core] addon my_plugin.dll dropped: needs Game_NewThing, which bindings.json does not list; none of its mixins install
 ```
 
+To add a binding the Game API lacks, see [Adding a binding](/reference/addons/bindings).
+
 A binding that is listed but has no single match on the running build:
 
 ```text

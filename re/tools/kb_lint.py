@@ -109,7 +109,7 @@ def main():
 
     anchors = {r['id'] for r in tables['strings_anchors']}
     tests = {f[:4] for f in os.listdir(os.path.join(kb.RE, 'tests')) if re.match(r'^T\d{3}\.md$', f)}
-    sigdoc = json.load(open(os.path.join(kb.DB, 'signatures.json')))
+    sigdoc = kb.load_signatures()
     sigs = {s.get('id'): s for s in sigdoc.get('signatures', [])}
 
     def check_tokens(where, level, ev):

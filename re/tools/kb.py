@@ -11,6 +11,7 @@
   kb.py --agent A test-new "<question>"               allocate re/tests/T###.md
   kb.py --agent A import <rows.tsv> <table>           add rows not yet present (ghidra_export output)
 Tables: functions globals db_keys strings_anchors subsystems verify
+functions, globals and verify also hold the rows of the binding records under re/bindings (binding_record.py).
 """
 import argparse, datetime, json, os, re, sys, contextlib
 try:
@@ -48,7 +49,28 @@ def path(table):
     return os.path.join(DB, f'{table}.tsv')
 
 
+RECORD_TABLES = ('functions', 'globals', 'verify')
+
+
 def read_table(table):
+    rows, errs = read_tsv(table)
+    if table in RECORD_TABLES:
+        import binding_record
+        more, more_errs = binding_record.Store.get().table_rows(table)
+        rows += more
+        errs += more_errs
+    return rows, errs
+
+
+def load_signatures():
+    with open(os.path.join(DB, 'signatures.json')) as f:
+        doc = json.load(f)
+    import binding_record
+    doc['signatures'] += binding_record.Store.get().signatures()
+    return doc
+
+
+def read_tsv(table):
     cols, _ = TABLES[table]
     p = path(table)
     rows = []
@@ -73,6 +95,18 @@ def read_table(table):
 
 
 def write_table(table, rows):
+    """Base rows go to <table>.tsv; rows that came from a binding record go back into that record."""
+    records = [r for r in rows if r.get('_record')]
+    if records:
+        import binding_record
+        store = binding_record.Store.get()
+        for r in records:
+            rec = store.by_relpath(r['_record'])
+            before = rec.to_json()
+            rec.set_table_row(r)
+            if rec.to_json() != before:
+                rec.save()
+    rows = [r for r in rows if not r.get('_record')]
     cols, key = TABLES[table]
     if key and key[0] in ('addr',):
         rows = sorted(rows, key=lambda r: int(r['addr'], 16))
@@ -436,6 +470,15 @@ def cmd_verify(a):
         taken = [int(m.group(1)) for x in rows if (m := re.match(r'V(\d+) ', x['notes']))]
         n = max([len(rows), *taken]) + 1
         r['notes'] = f'V{n:04d} ' + r['notes']
+        import binding_record
+        rec = binding_record.Store.get().by_item(a.item)
+        if rec:
+            rec.verify.append(r)
+            rec.save()
+            journal(a.agent, 'verify', a.kind, a.item, None, r)
+            print(f'V{n:04d} recorded in re/bindings/{rec.relpath} ({a.verdict})')
+            return
+        rows = [x for x in rows if not x.get('_record')]
         rows.append(r)
         cols = TABLES['verify'][0]
         p = path('verify')

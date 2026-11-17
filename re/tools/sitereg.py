@@ -118,7 +118,7 @@ def main():
         sig = reuse
         print(f'reusing signature {sid}')
     else:
-        if any(s['id'] == sid for s in doc['signatures']):
+        if any(s['id'] == sid for s in kb.load_signatures()['signatures']):
             raise SystemExit(f'signature id {sid} already used for another target; pass --id')
         if a.what == 'data':
             if not a.via or not a.type:
