@@ -9,6 +9,7 @@ re/
   PROTOCOL.md          rules: evidence levels L0-L3, gates, naming, recording, verification, concurrency, tests, hooks
   TRACE_PLUGIN.md      runtime trace plugin spec (config schema, log format, safety limits)
   bindings/<sub>/<Name>.json  one binding per file: row, signature, verify rows and local proofs (PROTOCOL §11)
+  .cache/records.json  parsed records keyed by path, mtime, size, ctime and inode (gitignored; SWOFTY_RECORD_CACHE=0 turns it off)
   db/                  the knowledge base (plain text, one build: sha256 d873a1c8...)
     functions.tsv        addr name sig level subsystem proto evidence notes
     globals.tsv          data, vtables (vtable[N]) and hook/trace code sites (site_*)

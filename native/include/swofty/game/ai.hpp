@@ -369,6 +369,8 @@ using Ai_Parse_OvertakeConfig_t = void(void **slots, void *driver_row);
 inline constexpr fn<"Ai_Parse_OvertakeConfig", Ai_Parse_OvertakeConfig_t> Ai_Parse_OvertakeConfig{}; // L2 experimental
 using Ai_Parse_RaceStartConfig_t = void(void **slots, void *driver_row);
 inline constexpr fn<"Ai_Parse_RaceStartConfig", Ai_Parse_RaceStartConfig_t> Ai_Parse_RaceStartConfig{}; // L2 experimental
+using Ai_Parse_TrackConfig_t = void(void **slots, void *track_db_node);
+inline constexpr fn<"Ai_Parse_TrackConfig", Ai_Parse_TrackConfig_t> Ai_Parse_TrackConfig{}; // L2 experimental
 inline constexpr address<"Ai_RaceStart_ReactionTime"> Ai_RaceStart_ReactionTime{}; // L2 experimental
 using Ai_Read_AlongsideConfig_t = void(AiDriverConfig *cfg, void *row_key);
 inline constexpr fn<"Ai_Read_AlongsideConfig", Ai_Read_AlongsideConfig_t> Ai_Read_AlongsideConfig{}; // L2 experimental
