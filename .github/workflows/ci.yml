@@ -263,6 +263,13 @@ jobs:
         shell: bash
         run: echo "CACHE_ON_FAILURE=true" >> "$GITHUB_ENV"
 
+      # A hosted Windows runner has 4 cores, and most of its test time is spent waiting on files and processes
+      # (the summed test time is 1433 s against 225 s on Linux), so it runs twice as many tests at once.
+      - name: More tests at once on a hosted Windows runner
+        if: runner.os == 'Windows' && runner.environment == 'github-hosted'
+        shell: bash
+        run: echo "NEXTEST_TEST_THREADS=8" >> "$GITHUB_ENV"
+
       # Every test of every binary in one pool (.config/nextest.toml), with the slow ones listed at the end.
       # The real-file round trips skip without F1_25_DIR; CI has no game files.
       - name: Test
