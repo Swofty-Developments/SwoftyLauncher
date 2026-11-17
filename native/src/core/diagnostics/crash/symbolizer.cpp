@@ -7,8 +7,7 @@
 #include "core/diagnostics/crash/crash_log.hpp"
 #include "core/diagnostics/crash/constants.hpp"
 #include "core/diagnostics/crash/process.hpp"
-
-std::string core_code_owner(uintptr_t addr);
+#include "core/runtime/loader/introspection.hpp"
 
 namespace crash {
 

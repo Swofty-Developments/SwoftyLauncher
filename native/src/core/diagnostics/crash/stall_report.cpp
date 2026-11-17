@@ -18,8 +18,7 @@
 #include "core/diagnostics/crash/stall_order_logic.hpp"
 #include "core/diagnostics/crash/stall_walk.hpp"
 #include "core/diagnostics/crash/symbolizer.hpp"
-
-std::string core_code_owner(uintptr_t addr);
+#include "core/runtime/loader/introspection.hpp"
 
 namespace crash {
 
