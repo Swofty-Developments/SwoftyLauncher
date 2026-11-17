@@ -18,7 +18,6 @@ mod seed;
 mod tracks;
 
 const VEHICLES: (&str, &str) = ("entrants.vehicles", "vehicle");
-
 const PACKAGES: (&str, &str) = ("entrants.vehicles.vehicle_packages", "vehicle_package");
 
 fn db((table, row): (&str, &str), stock: i64) -> Gvdb {
@@ -236,7 +235,6 @@ fn leaves_out_rows(labels: &[&str], career: Option<i64>) -> crate::Result<(BTree
 }
 
 const MODES: (&str, &str) = ("game_setup.game_setup_modes", "game_setup_mode");
-
 const ENTRANT_MODES: (&str, &str) = ("entrants.entrant_setup_modes", "entrant_setup_mode");
 
 // A table of stock rows holding the ids 0 to `top`.

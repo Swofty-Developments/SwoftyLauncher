@@ -18,7 +18,6 @@ pub struct Artifacts {
 /// The two artifacts the manager runs: (prelaunch, probe).
 #[cfg(windows)]
 pub(super) const RUNNERS: [&str; 2] = ["f1op-prelaunch.exe", "f1op-probe.exe"];
-
 #[cfg(not(windows))]
 pub(super) const RUNNERS: [&str; 2] = ["f1op-prelaunch-linux-x86_64", "f1op-probe-linux-x86_64"];
 

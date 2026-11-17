@@ -45,7 +45,6 @@ pub use self::journal::{Slot, restage, restore, restore_pending, slot, stage};
 pub use self::probe::{Probe, probe, probe_cached, probe_path};
 
 const EAC_EXE: &str = "EAAntiCheat.GameServiceLauncher.exe";
-
 const EAC_BAK: &str = "EAAntiCheat.GameServiceLauncher.exe.bak";
 
 /// The terms shown before consent and by `swofty offline accept`.
@@ -69,10 +68,8 @@ We may collect anonymised usage data from your use of the launcher.";
 
 /// The extension release this manager pins.
 pub const EXTENSION_VERSION: &str = "0.3.13";
-
 /// Where the artifacts are hosted (binaries; source lives in the repository).
 pub const DEFAULT_BASE_URL: &str = "https://swofty-developments.github.io/F1-OfflinePlay";
-
 pub const SOURCE_URL: &str = "https://github.com/Swofty-Developments/F1-OfflinePlay";
 
 /// Pinned digests for release v0.3.13. Every artifact is checked against its
@@ -112,7 +109,6 @@ pub const REQUIRED: &[&str] = &[
     "f1op-prelaunch.exe",
     "f1op-probe.exe",
 ];
-
 #[cfg(not(windows))]
 pub const REQUIRED: &[&str] = &[
     "f1op_hook.dll",

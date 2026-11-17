@@ -4,7 +4,6 @@ use super::{FILE, Store, addon_of, row_name};
 
 /// The table name of the track rows `track.add` adds; the game reads their `statId` in a byte, 0xff = none.
 const TRACK_TABLE: &str = "tracks.Track";
-
 pub const TRACK_STAT_MAX: i64 = 254;
 
 /// The `<table>.<row>/<label>` name of the track row `track.add` adds for the track `code`, as a build's added-row
