@@ -42,6 +42,7 @@ t "Career UI Wine test" native/test/run_career_ui_test.sh
 t "Fast-fail crash reports (fast-fail codes, reasons, exit statuses, byte patterns)" native/test/run_fast_fail_test.sh
 t "Loader log fallback Wine test" native/test/run_log_fallback_test.sh
 t "String override Wine test" native/test/run_lang_override_test.sh
+t "String scope unit test" native/test/run_lang_scope_test.sh
 t "Overlay toolkit Wine test" native/test/run_toolkit_test.sh
 t "Overlay draw-list unit test" native/test/run_hud_test.sh
 t "HUD leaf table unit test" native/test/run_hud_leaves_test.sh
