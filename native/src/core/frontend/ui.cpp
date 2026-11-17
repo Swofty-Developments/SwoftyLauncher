@@ -82,14 +82,6 @@ const Target T_OPEN{"Vm_Open_Screen", "41 57 41 56 41 55 41 54 56 57 55 53 48 83
                     0x4182660};
 constexpr uintptr_t SCREEN_SYS_LOAD = 0x10c;
 
-uint32_t djb2(const char *s)
-{
-    uint32_t h = 5381;
-    while (*s)
-        h = h * 33 + uint8_t(*s++);
-    return h;
-}
-
 const char *chars(const void *s)
 {
     return s ? static_cast<const char *>(s) + 9 : "";

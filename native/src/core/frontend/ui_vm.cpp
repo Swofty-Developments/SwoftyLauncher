@@ -9,6 +9,7 @@
 #include <string>
 #include <vector>
 
+#include "core/frontend/name_hash.hpp"
 #include "core/runtime/json.hpp"
 
 bool settings_command(uint32_t hash);
@@ -114,13 +115,7 @@ uintptr_t lea_target(uintptr_t insn)
     return insn + 7 + *reinterpret_cast<const int32_t *>(insn + 3);
 }
 
-uint32_t djb2(const char *s)
-{
-    uint32_t h = 5381;
-    while (*s)
-        h = h * 33 + uint8_t(*s++);
-    return h;
-}
+using name_hash::djb2;
 
 ViewModel *owner(void *native)
 {

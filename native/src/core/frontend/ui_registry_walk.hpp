@@ -7,6 +7,8 @@
 #include <unordered_map>
 #include <vector>
 
+#include "core/frontend/name_hash.hpp"
+
 // Read-only walk of the game's UI view-model registry that finds string leaves with a given text. It calls no game function:
 // every number comes from copying bytes with the caller's `read(address, out, size)`, which must fail instead of faulting on an
 // unmapped range (the core's SEH-guarded copy; the host test reads a fake heap).
@@ -229,12 +231,6 @@ size_t find_string(Read &read, uint64_t registry, const Layout &lay, const std::
     return hits.size();
 }
 
-inline uint32_t djb2(const std::string &s)
-{
-    uint32_t h = 5381;
-    for (unsigned char c : s)
-        h = h * 33 + c;
-    return h;
-}
+using name_hash::djb2;
 
 }
