@@ -4,6 +4,7 @@
 #include <cstring>
 #include <mutex>
 
+#include "core/diagnostics/steps.hpp"
 #include "core/runtime/addon_api.hpp"
 #include "core/runtime/loader/bindings.hpp"
 #include "core/runtime/loader/code_encryption.hpp"
@@ -53,9 +54,11 @@ void Runtime::start(Start point)
     for (const Subsystem &s : subsystems()) {
         if (s.start != point)
             continue;
-        if (point == Start::attach || point == Start::ready)
+        if (point == Start::attach || point == Start::ready) {
+            perf::Stopwatch step;
             s.install();
-        else
+            loader::api->log(perf::STEP_LINE, step.total_ms(), (std::string("subsystem ") + s.name).c_str());
+        } else
             when_code_ready(s.name, s.install);
     }
 }
@@ -73,12 +76,15 @@ int Runtime::attach(SwoftyApi *a)
     dir_ = path;
     dir_.resize(dir_.find_last_of(L'\\') + 1);
     const std::wstring &dir = dir_;
+    perf::Stopwatch steps;
     start(Start::attach);
+    loader::api->log(perf::STEP_LINE, steps.lap_ms(), "attach subsystems");
     long long running_stamp = (long long)image().nt_headers()->FileHeader.TimeDateStamp;
     BindingSet &set = bindings();
     json::Value doc = set.load(dir, running_stamp);
     scanner().read_section_map(doc, set.file(), set.section_uses(), !set.empty());
     set.log_loaded(doc);
+    loader::api->log(perf::STEP_LINE, steps.lap_ms(), "attach bindings load");
     long long kb_size = doc["build"]["size"].num(-1), exe_size = -1;
     wchar_t exe[MAX_PATH] = {};
     WIN32_FILE_ATTRIBUTE_DATA fa{};
@@ -88,10 +94,13 @@ int Runtime::attach(SwoftyApi *a)
     if (!scanner().open(a, dir, exe_size))
         set.use_kb_addresses(false);
     set.plan_kb_addresses(kb_size, exe_size);
+    loader::api->log(perf::STEP_LINE, steps.lap_ms(), "attach scan cache open");
     read_mixin_manifest(dir);
     publish_addon_api(a);
     add_core_mixin_sets(runtime::career_mixins());
+    loader::api->log(perf::STEP_LINE, steps.lap_ms(), "attach addon api");
     set.build.sha = scanner().exe_sha256(exe, scanner().caches(dir) + L"exe-sha256.tsv", exe_size, running_stamp);
+    loader::api->log(perf::STEP_LINE, steps.lap_ms(), "attach exe sha256");
     const auto &said = doc["build"]["packed"];
     auto cs = image().section_by_name(scanner().game_code());
     double ce = cs ? code().section_entropy(cs) : -1;
@@ -102,13 +111,19 @@ int Runtime::attach(SwoftyApi *a)
     loader::api->log("[core] build %s: %s (%s); code section %s entropy %.2f, reads %s", set.build.tag.c_str(),
              code().packed() ? "packed" : "not packed", said.type == json::Value::Bool ? "the set says so" : "measured at init",
              cname, ce < 0 ? 0 : ce, CodeEncryption::reads(ce));
+    loader::api->log(perf::STEP_LINE, steps.lap_ms(), "attach code entropy");
     {
         std::lock_guard<std::recursive_mutex> g(resolve_lock());
         set.attempt_unresolved();
+        loader::api->log(perf::STEP_LINE, steps.lap_ms(), "attach binding pass");
         set.report("init");
+        loader::api->log(perf::STEP_LINE, steps.lap_ms(), "attach binding report");
     }
     scanner().save();
+    loader::api->log(perf::STEP_LINE, steps.lap_ms(), "attach scan cache save");
     start(Start::attach_code);
+    loader::api->log(perf::STEP_LINE, steps.lap_ms(), "attach code subsystems");
+    loader::api->log(perf::STEP_LINE, steps.total_ms(), "attach total");
     if (code().packed())
         runtime::on_stage(bind_stage);
     return 1;
@@ -193,8 +208,10 @@ size_t Runtime::run_code_tasks(const char *pass, bool final)
         }
         loader::api->log("[core] %s: %s reads decrypted (entropy %.2f) at the %s pass; setting it up now", t.what.c_str(),
                  scanner().game_code().c_str(), e, pass);
+        perf::Stopwatch step;
         t.fn();
         runtime::stage_catch_up();
+        loader::api->log(perf::STEP_LINE, step.total_ms(), ("code ready " + t.what + " (" + pass + " pass)").c_str());
     }
     return tasks.size();
 }
@@ -313,8 +330,10 @@ void Runtime::when_code_ready(const char *what, void (*fn)())
             return;
         }
     }
+    perf::Stopwatch step;
     fn();
     runtime::stage_catch_up();
+    loader::api->log(perf::STEP_LINE, step.total_ms(), (std::string("code ready ") + what).c_str());
 }
 
 /* Lazy lookups ask this before caching a miss, so a miss on code that still reads encrypted is tried again. */

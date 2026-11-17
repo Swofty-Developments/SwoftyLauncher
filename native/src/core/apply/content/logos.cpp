@@ -6,6 +6,7 @@
 #include "core/apply/content/logo_cache.hpp"
 #include "core/apply/content/logo_deliver.hpp"
 #include "core/apply/content/png_straight.hpp"
+#include "core/diagnostics/steps.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -140,6 +141,8 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     std::vector<logo_build::Want> wants;
     std::set<std::string> seen;
     logo_build::Refusals refusals;
+    perf::Stopwatch steps;
+    auto step = [&](double ms, const std::string &name) { swofty::log(perf::STEP_LINE, ms, ("logo " + name).c_str()); };
     uint64_t key = stamp(0xcbf29ce484222325ull, logo_cache::CACHE_FORMAT);
     for (auto &l : logos) {
         if (!seen.insert(l.array + "|" + l.key).second)
@@ -163,6 +166,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         wants.push_back(std::move(w));
     }
     refusals.flush(report.lines);
+    step(steps.lap_ms(), "decode (" + std::to_string(wants.size()) + " logo(s))");
     if (wants.empty())
         return;
     std::vector<std::string> files;
@@ -228,6 +232,8 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
     inputs.insert(logo_build::DATABASES);
     logo_cache::Keyed keyed = key_inputs(inputs, before);
     std::string id = runtime::hex16(keyed.key).substr(2);
+    step(steps.lap_ms(), "list and hash (" + std::to_string(keyed_files.size()) + " archive(s), " + std::to_string(keyed.hashed) +
+                             " hashed)");
     std::string manifest_name = "logos_" + id + ".manifest";
     std::string manifest = runtime::read_file(runtime::under_swofty(dir + manifest_name), size_t(1) << 20);
     logo_cache::Routes routes;
@@ -255,7 +261,11 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             else
                 kept.push_back(w);
         logo_build::Result res;
+        perf::Stopwatch build_steps;
         logo_build::build(env, kept, res);
+        double built_ms = build_steps.lap_ms();
+        step(res.encode_ms, "encode (" + std::to_string(res.encodes) + " slice encode(s))");
+        step(built_ms - res.encode_ms, "read and plan (" + std::to_string(res.read.size()) + " archive(s) read)");
         made.lines = res.lines;
         made.refused += res.refused;
         made.built = res.built;
@@ -301,6 +311,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             layered = layered || overlay_rels.count(rel);
             a.routes.emplace_back(rel, file);
         }
+        step(build_steps.lap_ms(), "archive rewrite (" + std::to_string(res.changes.size()) + " archive(s))");
         return a;
     };
     logo_deliver::Sink sink;
@@ -337,7 +348,9 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
             layered = layered || overlay_rels.count(r.first);
     } else
         first = make({});
+    steps.lap_ms();
     logo_deliver::Outcome done = logo_deliver::deliver(std::move(first), make, sink);
+    step(steps.lap_ms(), done.last.cached ? "deliver (cached archives)" : "build and deliver");
     routes = done.last.routes;
     if (done.last.cached) {
         report.built = cached_built;
@@ -378,6 +391,7 @@ void deliver_logos(const std::vector<LogoImage> &logos, LogoReport &report)
         } while (FindNextFileW(h, &fd));
         FindClose(h);
     }
+    step(steps.total_ms(), "total");
 }
 
 }

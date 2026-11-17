@@ -6,6 +6,7 @@
 
 #include <algorithm>
 #include <atomic>
+#include <chrono>
 #include <exception>
 #include <functional>
 #include <map>
@@ -106,6 +107,8 @@ struct Result {
     std::set<std::string> read;
     std::vector<std::string> lines;
     int built = 0, refused = 0;
+    double encode_ms = 0;
+    size_t encodes = 0;
 };
 
 struct Refusals {
@@ -423,7 +426,12 @@ inline bool build(const Env &env, const std::vector<Want> &wants, Result &out)
                     return s.width == c.shape.width && s.height == c.shape.height;
                 }))
                 shapes.push_back(c.shape);
+        auto encode_start = std::chrono::steady_clock::now();
         std::vector<std::vector<Encoded>> encodes = encode_slices(list, shapes);
+        out.encode_ms += std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - encode_start).count();
+        for (const Want *w : list)
+            if (w->donor.empty())
+                out.encodes += shapes.size();
         auto encode_of = [&](size_t want, const logo_array::Shape &shape) -> Encoded & {
             size_t at = 0;
             while (shapes[at].width != shape.width || shapes[at].height != shape.height)
