@@ -341,7 +341,7 @@ Ranked by likely seconds saved per load, then by safety. "Saved" is an upper bou
 | — | loading screen delay (`delayLength`) | nothing: no retail flow uses the state | — | L2 by absence (§1.6) | **dropped** |
 | — | "start at the main menu" with a synthesised press | the player's reaction time | **unsafe**: the press picks the primary player | §1.3.1 | **not built**; the safe design is §1.3.1 |
 | — | `jitPsoCreation` | boot PSO time, paid back as in-session hitches | low: off the tested path, missing-PSO is fatal otherwise | L1 | **not worth a flag** |
-| — | sign-in, EA login, entitlement, online handshakes, the offline-play error popup | network time, the popup | — | — | out of scope by rule |
+| — | sign-in, EA login, entitlement, online handshakes, the online-services error popup | network time, the popup | — | — | out of scope by rule |
 
 ## 3. The game setting override table
 
@@ -377,7 +377,7 @@ Why it is safe for saves, online and anti-tamper: no game memory is written exce
 never written, so `config.xml` and the player's settings files are untouched; the hook sites are `.xtls` function starts that a
 shipped addon already wraps (bool, u32) or rows with agree verifications (i32, float); the changes are timers, a video and a
 presentation sequence. Test offline first (the track load state checks the online session right after its gate, and the
-intro video state has `showInMultiplayer` flags).
+intro video state has flags for online sessions).
 
 ## 4. Loading-related engine settings
 
