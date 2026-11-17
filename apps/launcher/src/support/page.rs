@@ -406,10 +406,11 @@ impl Shell {
                     .w(px(280.))
                     .child(self.tier_pill(Kind::Supporter, "$5", false, busy, p, cx))
                     .child(perks(&[
+                        tr("No ads in the launcher"),
                         tr("Access to #f1-supporter-leaks"),
                         tr("The #f1-supporter-general chat"),
                         tr("Discord embed links and external emoji permissions"),
-                        tr("Supporting a free and open-source launcher with no ads"),
+                        tr("Supporting a free and open-source launcher"),
                     ])),
             )
             .child(
