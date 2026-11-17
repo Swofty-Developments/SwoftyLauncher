@@ -1,7 +1,5 @@
 #pragma once
 
-#include "core/guards/env.hpp"
-
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -20,8 +18,6 @@ inline bool canonical(uint64_t p)
     uint64_t top = p >> 47;
     return top == 0 || top == 0x1ffff;
 }
-
-using swofty_core::guards::switch_off;
 
 template <class Mem> bool list_present(Mem &mem, uint64_t first_slot, uint64_t end, const std::string &label)
 {

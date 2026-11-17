@@ -2,6 +2,7 @@
 // Built and run by native/test/run_tests.sh myteam_vehicle_guard.
 
 #include "core/guards/career/myteam_vehicle_guard_logic.hpp"
+#include "core/guards/env.hpp"
 #include "core/guards/skips.hpp"
 
 #include <cstdio>
@@ -178,7 +179,7 @@ int main()
            "the 32nd vehicle is the last logged");
     expect(!labels.note("vehicle_extra"), "vehicles past 32 are not logged");
 
-    expect(mv::switch_off("0") && mv::switch_off("off") && !mv::switch_off("1") && !mv::switch_off(nullptr), "the switch reads 0 or off");
+    expect(swofty_core::guards::switch_off("0") && swofty_core::guards::switch_off("off") && !swofty_core::guards::switch_off("1") && !swofty_core::guards::switch_off(nullptr), "the switch reads 0 or off");
 
     std::printf("%s\n", failed ? "FAILED" : "all passed");
     return failed ? 1 : 0;

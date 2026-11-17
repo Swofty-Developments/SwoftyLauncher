@@ -1,7 +1,5 @@
 #pragma once
 
-#include "core/guards/env.hpp"
-
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -16,8 +14,6 @@ constexpr uint64_t ROW_INDEX = 0x200;
 constexpr uint32_t STAT_ID_MASK = 0x3fff;
 constexpr size_t LABEL_CHARS = 0x100;
 constexpr size_t LOG_LABELS = 32;
-
-using swofty_core::guards::switch_off;
 
 inline bool row_missing(int32_t index)
 {

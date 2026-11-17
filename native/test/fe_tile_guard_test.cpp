@@ -2,6 +2,7 @@
 // entrant-list slot arrays hold a label, which database answers are the miss pointer, how often a label is logged and
 // how the env switch parses. Built and run by native/test/run_tests.sh fe_tile_guard.
 
+#include "core/guards/env.hpp"
 #include "core/guards/frontend/fe_tile_guard_logic.hpp"
 #include "core/guards/skips.hpp"
 
@@ -99,11 +100,11 @@ int main()
     }
     expect(capped && labels.size() == ft::LOG_LABELS && tails == 1, "labels past the cap are not logged");
 
-    expect(ft::switch_off("0"), "0 turns the guard off");
-    expect(ft::switch_off("off"), "off turns the guard off");
-    expect(!ft::switch_off("1"), "1 leaves the guard on");
-    expect(!ft::switch_off("00"), "00 leaves the guard on");
-    expect(!ft::switch_off(nullptr), "an unset switch leaves the guard on");
+    expect(swofty_core::guards::switch_off("0"), "0 turns the guard off");
+    expect(swofty_core::guards::switch_off("off"), "off turns the guard off");
+    expect(!swofty_core::guards::switch_off("1"), "1 leaves the guard on");
+    expect(!swofty_core::guards::switch_off("00"), "00 leaves the guard on");
+    expect(!swofty_core::guards::switch_off(nullptr), "an unset switch leaves the guard on");
 
     std::printf("%s\n", failed ? "FAILED" : "all ok");
     return failed ? 1 : 0;

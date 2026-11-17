@@ -1,7 +1,5 @@
 #pragma once
 
-#include "core/guards/env.hpp"
-
 #include <cstddef>
 #include <cstdint>
 #include <cstdio>
@@ -35,8 +33,6 @@ constexpr uint16_t MAX_ID = 0x400;
 constexpr size_t MAX_SLOTS = 0x4000;
 constexpr size_t MAX_ENTRANTS = 0x1000;
 constexpr size_t LOG_IDS = 32;
-
-using swofty_core::guards::switch_off;
 
 inline uint8_t kind(uint32_t handle)
 {

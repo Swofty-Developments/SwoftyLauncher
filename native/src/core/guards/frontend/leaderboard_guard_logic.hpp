@@ -1,6 +1,5 @@
 #pragma once
 
-#include "core/guards/env.hpp"
 #include "core/guards/skips.hpp"
 
 #include <cstdint>
@@ -51,7 +50,5 @@ inline Say say(int occurrence)
 {
     return swofty_core::guards::say(occurrence, LOG_FIRST);
 }
-
-using swofty_core::guards::switch_off;
 
 }
