@@ -1,3 +1,4 @@
+#include "core/runtime/pages.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include "core/frontend/main_menu.hpp"
@@ -500,9 +501,7 @@ bool entry_point_writable(uintptr_t at)
 {
     if (at && entry_point_checked.load() == at)
         return entry_point_rw.load();
-    MEMORY_BASIC_INFORMATION m{};
-    bool ok = at && VirtualQuery(reinterpret_cast<const void *>(at), &m, sizeof m) == sizeof m &&
-              logic::region_writable(m.State == MEM_COMMIT, m.Protect, uintptr_t(m.BaseAddress), m.RegionSize, at, 4);
+    bool ok = at && runtime::pages::writable_in_region(at, 4);
     entry_point_rw = ok;
     entry_point_checked = at;
     return ok;
