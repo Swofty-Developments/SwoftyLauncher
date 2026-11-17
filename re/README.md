@@ -8,6 +8,7 @@ The shared knowledge base, rules and tools for every agent working on the game's
 re/
   PROTOCOL.md          rules: evidence levels L0-L3, gates, naming, recording, verification, concurrency, tests, hooks
   TRACE_PLUGIN.md      runtime trace plugin spec (config schema, log format, safety limits)
+  bindings/<sub>/<Name>.json  one binding per file: row, signature, verify rows and local proofs (PROTOCOL §11)
   db/                  the knowledge base (plain text, one build: sha256 d873a1c8...)
     functions.tsv        addr name sig level subsystem proto evidence notes
     globals.tsv          data, vtables (vtable[N]) and hook/trace code sites (site_*)
@@ -40,6 +41,7 @@ re/
 
 | tool | use |
 |---|---|
+| `binding.py` | add a binding as one file under `bindings/`: `new`, `verify` (proof on your exe), `agree`, `check` (what CI runs), `status`, `unfold` |
 | `kb.py` | the only writer of `db/*.tsv`: `add`, `set` (`col=`, `col+=`), `get`, `find`, `claim`/`release`, `note`, `verify`, `test-new`, `import` |
 | `kb_lint.py` | schema, uniqueness, naming, evidence rules per level, cross-references, struct layouts, exe string bytes; prints KB counts |
 | `sigcheck.py` | every signature unique on the KB build, target resolved and re-checked, hook sites on instruction boundaries; `--exe new.exe` for a game update, `--make <va> --kind mid` for a new candidate, `--sigs file` to test candidates |

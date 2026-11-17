@@ -202,3 +202,13 @@ Rules:
 - `bindverify.py --compare <KB exe>` flags bindings whose match surroundings or callee differ from the KB build's, which catches a pattern that matches once on the wrong code.
 - `native/build.sh` runs bindverify on the emitted sets when `SWOFTY_STEAM_EXE` or `SWOFTY_EA_DUMP` is set.
 - `re/tools/py re/tools/bindgen.py --exe <KB exe>` runs sigcheck on every exported binding and drops any that fails.
+
+## 11. Binding records
+
+A binding can live in one file instead of the shared tables: `re/bindings/<subsystem>/<Name>.json` holds its `functions.tsv` or `globals.tsv` row, its signature, the verify rows about it and the local proofs contributors ran on their own exe. `kb.py` merges records into every table it reads, so the levels, gates and lint rules above apply unchanged. `kb.py set` and `kb.py verify` on a record's item write into the record.
+
+- `re/tools/binding.py new|verify|agree|check|status` is the contributor command; the page for addon authors is `docs/reference/addons/bindings.md`.
+- A record's `author` and every proof's and verify row's `by`/`verifier` is a GitHub login. The author never verifies their own record (§5).
+- A proof is `binding.py verify`'s result on one exe: the exe's sha256, size and timestamp, the resolution result with core's rules, the sigcheck result, and a digest over the signature fields that decide where the binding lands plus the exe hash. CI cannot rerun it; it checks the build is known, the digest matches and a KB-build proof found the recorded `match` and `target`.
+- `.github/workflows/bindings.yml` merges a pull request by itself when it only adds L1/L2 records with a proof by their author, or only adds one agree row plus proof by a second account; everything else gets review.
+- `binding.py unfold <Name>...` moves bindings from the shared tables into records; bindgen's output does not change (`re/tools/tests/test_binding_check.py`).

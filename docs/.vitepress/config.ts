@@ -646,6 +646,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
                 icon: "file",
                 items: [
                   { text: "The mixin system", link: "/reference/addons/hooking", icon: "file" },
+                  { text: "Adding a binding", link: "/reference/addons/bindings", icon: "file" },
                   { text: "Addon settings", link: "/reference/addons/settings", icon: "file" },
                   { text: "In-game UI", link: "/reference/addons/in-game-ui", icon: "file" },
                   { text: "Post-process passes", link: "/reference/addons/postfx", icon: "file" },

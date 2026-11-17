@@ -11,6 +11,7 @@
   kb.py --agent A test-new "<question>"               allocate re/tests/T###.md
   kb.py --agent A import <rows.tsv> <table>           add rows not yet present (ghidra_export output)
 Tables: functions globals db_keys strings_anchors subsystems verify
+functions, globals and verify also hold the rows of the binding records under re/bindings (binding_record.py).
 """
 import argparse, datetime, json, os, re, sys, contextlib
 try:
