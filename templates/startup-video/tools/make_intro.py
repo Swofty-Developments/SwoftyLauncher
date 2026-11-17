@@ -5,7 +5,8 @@ The logo is apps/launcher/assets/icon.svg rendered to a 2048 px PNG with a trans
 background (any SVG renderer; Edge or Chrome headless works:
   msedge --headless=new --default-background-color=00000000 --window-size=2048,2048 --screenshot=logo.png logo.html).
 The glow is composited in float with fresh dither and light grain per frame, so it shows no
-rings after the Bink encode. The optional voice line comes from voice.ps1 (offline Windows TTS).
+rings after the Bink encode. --voice mixes an optional voice line (any mono or stereo WAV) in under the chimes;
+the shipped video has none.
 
   python make_intro.py --logo logo.png [--voice voice.wav] [--out DIR] [--ffmpeg ffmpeg]
   -> DIR/swofty_intro.mp4 (+ .wav and two stills)

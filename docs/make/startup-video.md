@@ -17,7 +17,6 @@ vmknolle.swofty-intro/
   files/videos/cm_f1_sting.bk2
   assets/subtitle.json
   tools/make_intro.py
-  tools/voice.ps1
 ```
 
 ## 1. Know the stock video
@@ -29,7 +28,7 @@ The EA intro is the loose file `videos/cm_f1_sting.bk2`: Bink 2, 1920x1080, 30 f
 `tools/make_intro.py` draws every frame in Python and pipes them to ffmpeg, with the sound from a WAV it writes first:
 
 ```sh
-python tools/make_intro.py --logo logo.png --voice voice.wav --out out
+python tools/make_intro.py --logo logo.png --out out
 ```
 
 - Render the logo from a vector source at a large size (the intro uses `apps/launcher/assets/icon.svg` at 2048 px) and scale it down per frame. An upscaled small icon looks soft at 1080p.
@@ -52,7 +51,7 @@ Use an MP4 (H.264 and AAC) as input. Decode the result once to check it (`radvid
   "schema_version": 1,
   "id": "vmknolle.swofty-intro",
   "name": "Swofty Intro",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "kind": ["files", "text"],
   "compat": { "game": "f1_25", "game_builds": [] },
   "operations": {
