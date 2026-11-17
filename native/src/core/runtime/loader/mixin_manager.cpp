@@ -7,10 +7,10 @@
 #include <utility>
 #include <vector>
 
-#include "core/guards/install.hpp"
 #include "core/hooks/hooks.hpp"
 #include "core/runtime/loader/bindings.hpp"
 #include "core/runtime/loader/code_encryption.hpp"
+#include "core/runtime/loader/core_sets.hpp"
 #include "core/runtime/loader/host_api.hpp"
 #include "core/runtime/loader/image.hpp"
 #include "core/runtime/loader/introspection.hpp"
@@ -305,13 +305,13 @@ void MixinManager::add_core_sets(std::vector<runtime::CoreMixins> sets)
 size_t MixinManager::offer_core_sets()
 {
     size_t before = addons_.size();
-    swofty_core::guards::offer_core_sets([](std::vector<runtime::CoreMixins> sets) { manager.add_core_sets(std::move(sets)); });
+    loader::offer_core_sets([](std::vector<runtime::CoreMixins> sets) { manager.add_core_sets(std::move(sets)); });
     return addons_.size() - before;
 }
 
 void MixinManager::settle_core_sets()
 {
-    swofty_core::guards::commit_core_sets();
+    loader::commit_core_sets();
 }
 
 void MixinManager::extend_held(Held &h, const Group &g)

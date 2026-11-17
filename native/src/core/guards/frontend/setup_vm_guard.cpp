@@ -1,4 +1,5 @@
 #include "core/guards/guard.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/frontend/setup_vm_logic.hpp"
 
@@ -11,10 +12,6 @@
 #include <cstdint>
 #include <cstring>
 #include <mutex>
-
-namespace runtime {
-std::string hook_error(const safetyhook::MidHook::Error &e);
-}
 
 // Car setup screen car guard (re/db/globals.tsv site_Game_CarSetupVm_*).
 //

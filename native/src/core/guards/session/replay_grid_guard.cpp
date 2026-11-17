@@ -1,5 +1,6 @@
 #include "core/guards/session/replay_grid_logic.hpp"
 #include "core/guards/guard.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -12,10 +13,6 @@
 #include <cstring>
 #include <string>
 #include <vector>
-
-namespace runtime {
-std::string hook_error(const safetyhook::MidHook::Error &e);
-}
 
 // Replay recorder holder guard (re/db/globals.tsv site_Ne_ReplayAfterRecord).
 //

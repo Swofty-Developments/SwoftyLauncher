@@ -38,6 +38,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace ts = runtime::tyre_slots;
 
@@ -59,7 +60,7 @@ constexpr size_t SLOT_VISUAL = 0x10;
 constexpr int LOG_FIRST = 8;
 
 uintptr_t vis_tail = 0, wear_return = 0;
-std::atomic<int> logged{0};
+guards::LogFirst<LOG_FIRST> logged{"repairs"};
 
 uint8_t vehicle_of(uintptr_t tc)
 {
@@ -86,8 +87,8 @@ const char *name_of(ts::Kind k)
 
 void report(const char *where, uintptr_t tc, uint32_t option, const ts::Slot *slots, uint64_t count, const ts::Plan &p)
 {
-    int n = ++logged;
-    if (n > LOG_FIRST)
+    auto line = logged.note();
+    if (!line)
         return;
     char list[64] = {};
     size_t at = 0;
@@ -96,13 +97,12 @@ void report(const char *where, uintptr_t tc, uint32_t option, const ts::Slot *sl
     if (p.kind == ts::Kind::skip)
         swofty::log("[tyres] slot guard (%s): vehicle %u's fitted option %u has no usable slot in its class's table "
                     "(count %llu, options %s); refit skipped%s",
-                    where, unsigned(vehicle_of(tc)), option, (unsigned long long)count, at ? list : "none",
-                    n == LOG_FIRST ? " (further repairs are not logged)" : "");
+                    where, unsigned(vehicle_of(tc)), option, (unsigned long long)count, at ? list : "none", line.tail);
     else
         swofty::log("[tyres] slot guard (%s): vehicle %u's fitted option %u has no usable slot in its class's table "
                     "(count %llu, options %s); slot %d %s with the compounds of option %u's slot%s",
                     where, unsigned(vehicle_of(tc)), option, (unsigned long long)count, at ? list : "none", p.index,
-                    name_of(p.kind), slots[p.donor].option, n == LOG_FIRST ? " (further repairs are not logged)" : "");
+                    name_of(p.kind), slots[p.donor].option, line.tail);
 }
 
 bool repair(uintptr_t tc, const char *where)
@@ -153,8 +153,6 @@ void wear_lookup(SwoftyContext *c)
     if (!repair(c->rsi, "wear factor"))
         c->rip = wear_return;
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::tyre_slots,
                         {

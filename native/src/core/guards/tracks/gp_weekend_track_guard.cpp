@@ -1,6 +1,7 @@
 #include "core/apply/moments.hpp"
 #include "core/guards/tracks/gp_weekend_track_logic.hpp"
 #include "core/guards/guard.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -17,10 +18,6 @@
 #include <string>
 #include <utility>
 #include <vector>
-
-namespace runtime {
-std::string hook_error(const safetyhook::MidHook::Error &e);
-}
 
 // Grand Prix weekend track guard (re/db/globals.tsv site_Game_TyreAllocationComponent_PresetTrackRead).
 //

@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/guards/env.hpp"
+
 #include <cstddef>
 #include <cstdint>
 #include <string>
@@ -16,12 +18,7 @@ constexpr uint32_t STAT_ID_MASK = 0x3fff;
 constexpr size_t LABEL_CHARS = 0x100;
 constexpr size_t LOG_LABELS = 32;
 
-inline bool switch_off(const char *value)
-{
-    if (!value)
-        return false;
-    return value[0] == '0' && value[1] == 0 ? true : value[0] == 'o' && value[1] == 'f' && value[2] == 'f' && value[3] == 0;
-}
+using swofty_core::guards::switch_off;
 
 inline bool row_missing(int32_t index)
 {

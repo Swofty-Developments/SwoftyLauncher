@@ -1,5 +1,6 @@
 #include "core/guards/session/race_retirement_logic.hpp"
 #include "core/guards/guard.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -12,10 +13,6 @@
 #include <cstring>
 #include <mutex>
 #include <string>
-
-namespace runtime {
-std::string hook_error(const safetyhook::MidHook::Error &e);
-}
 
 // Race retirement driver guard (re/db/globals.tsv site_Sess_InGameRaceRetirementDriver).
 //
