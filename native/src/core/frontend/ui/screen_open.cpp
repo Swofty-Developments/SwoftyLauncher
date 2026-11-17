@@ -99,9 +99,8 @@ uint64_t ScreenLoader::opened(void *scene, void *screen, void *a3, void *a4)
                                : "?";
         swofty::log("[perf] screen open '%.64s': %.2f ms (addon screen registration %.2f ms, engine open %.2f ms)", name,
                     total, perf_ms(t0, t1), perf_ms(t1, t2));
-        static bool probed;
-        if (perf && !probed) {
-            probed = true;
+        if (perf && !perf_probed) {
+            perf_probed = true;
             perf_probe("the screen object", screen);
             perf_probe("the scene object", scene);
         }

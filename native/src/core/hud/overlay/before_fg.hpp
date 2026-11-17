@@ -49,6 +49,7 @@ private:
     std::vector<std::pair<ID3D12GraphicsCommandList *, Presenting>> presenting;
     std::atomic<bool> active{false}, pending_ready{false};
     std::atomic<size_t> back_count{0}, presenting_count{0};
+    bool told_queue = false, told_shape = false, told_device = false;
 };
 
 }
