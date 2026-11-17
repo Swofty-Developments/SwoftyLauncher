@@ -96,6 +96,7 @@ UNITS = [
     Unit('guard_lines', 'Site guard log lines test', args=['../src/core/guards', 'guard_lines/expected.txt']),
     Unit('guard_registry', 'Core mixin-set registry order test', args=['../src/core']),
     Unit('guard_skips', 'Guard first-N log cap unit test'),
+    Unit('guard_on_demand', 'On-demand guard arming unit test'),
     Unit('protection_spans', 'Binding pass protection spans unit test'),
     Unit('game_settings', 'Game setting override table unit test'),
     Unit('player_name', 'Player name sanitising unit test'),
