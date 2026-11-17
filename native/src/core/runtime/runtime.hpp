@@ -381,7 +381,7 @@ void placed_record_crash_text(char *out, size_t cap);
 // nothing while no plugin listens; session_host_message answers true when the plugin took the message, and
 // session_host_cover_signal -1 (failed) when nothing answers for the cover.
 void session_host_ready();
-// The tile list entries the core takes out (swofty_core.cpp).
+// The tile list entries the core takes out (home_tiles.cpp).
 void local_tiles_setup();
 void session_host_flow(uint32_t hash, uint32_t to);
 void session_host_screen(const char *name);
