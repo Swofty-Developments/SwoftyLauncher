@@ -285,7 +285,7 @@ pub const TRACK_REGISTRY: &str = "track";
 /// `$DATA/registry/older-tracks.json`: the tracks `track.add` adds for addons with no track record.
 pub const OLDER_FILE: &str = "older-tracks.json";
 pub const OLDER_VERSION: u32 = 1;
-const VENUES_JSON: &str = include_str!("../../sdk/std/data/venues.json");
+const VENUES_JSON: &str = include_str!("../../../sdk/std/data/venues.json");
 
 /// A `track` record an addon's data file adds under its own id.
 #[derive(Debug, Clone, PartialEq, Eq)]
