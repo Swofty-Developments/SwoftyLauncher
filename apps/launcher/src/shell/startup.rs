@@ -127,18 +127,7 @@ impl Shell {
             tools: Default::default(),
             settings: Default::default(),
             ads,
-            game: crate::shell::probe::GameWatch {
-                install: None,
-                copies: Vec::new(),
-                missing_copies: Vec::new(),
-                detected: false,
-                rediscover: true,
-                processes: Vec::new(),
-                owners: Vec::new(),
-                session: None,
-                build: None,
-                blocked: None,
-            },
+            game: crate::shell::probe::GameWatch::new(),
             launching: crate::shell::play::Launching::default(),
             account: crate::shell::account::Account {
                 session: mp,
@@ -284,7 +273,7 @@ impl Shell {
             loop {
                 let Ok((store, rediscover, seen, profile, banner_due, saves_open)) =
                     this.update(cx, |s, _| {
-                        let r = std::mem::take(&mut s.game.rediscover);
+                        let r = s.game.take_rediscover();
                         let profile = s.library.profile.name.clone();
                         let due = r || s.saves.banner_profile != profile || game::banner_stale();
                         (
