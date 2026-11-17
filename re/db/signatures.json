@@ -7027,7 +7027,6 @@
    "used_by": [
     "addons/career-editor/native/src/components.cpp",
     "native/src/core/career.cpp",
-    "native/src/core/netplay_room.cpp",
     "native/src/core/testagent/agent.cpp",
     "native/src/core/myteam_vehicle_keep.cpp"
    ]
@@ -22645,32 +22644,6 @@
    "used_by": []
   },
   {
-   "id": "game.invite_manager_cancel",
-   "section": ".xtls",
-   "pattern": "56 57 53 48 83 EC 40 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5D B8 73 00 00 00",
-   "match": "0x143062140",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x143062140",
-   "kind": "func_start",
-   "names": [
-    "Game_InviteManager_Cancel"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-22",
-     "by": "vmknolle",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay_drive.cpp"
-   ]
-  },
-  {
    "id": "game.game_session_manager_content_domain_verifier_send_to",
    "section": ".xtls",
    "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 05 00 00 45 89 CD",
@@ -28572,9 +28545,7 @@
      "how": "static"
     }
    ],
-   "used_by": [
-    "native/src/core/netplay_room.cpp"
-   ]
+   "used_by": []
   },
   {
    "id": "game.network_laptimes_serialise_network",
@@ -53771,32 +53742,6 @@
    "used_by": []
   },
   {
-   "id": "game.game_session_ui_on_invite_join_notification",
-   "section": ".xtls",
-   "pattern": "56 57 53 48 83 EC 40 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 70 01 00 00",
-   "match": "0x1430acca0",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x1430acca0",
-   "kind": "func_start",
-   "names": [
-    "Game_GameSessionUI_OnInviteJoinNotification"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-22",
-     "by": "vmknolle",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay_room.cpp"
-   ]
-  },
-  {
    "id": "career.game_session_ui_on_career_session_requested",
    "section": ".xtls",
    "pattern": "56 48 83 EC 40 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 41 89 D1",
@@ -54011,32 +53956,6 @@
     }
    ],
    "used_by": []
-  },
-  {
-   "id": "game.network_subsystem_change_mp_mode",
-   "section": ".xtls",
-   "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 20 02 00 00 C5 F8 29 B4 24 10 02 00 00",
-   "match": "0x1430ed330",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x1430ed330",
-   "kind": "func_start",
-   "names": [
-    "Game_NetworkSubsystem_ChangeMPMode"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-22",
-     "by": "vmknolle",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay_room.cpp"
-   ]
   },
   {
    "id": "game.network_subsystem_on_game_mode_selected",
@@ -56091,30 +56010,6 @@
    "kind": "func_start",
    "names": [
     "Game_VehicleCustomisationReplicationManager_GenerateHostNetStatI"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-22",
-     "by": "vmknolle",
-     "how": "static"
-    }
-   ],
-   "used_by": []
-  },
-  {
-   "id": "game.network_subsystem_update_key_material",
-   "section": ".xtls",
-   "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC A8 00 00 00 0F B6 02 31 D2",
-   "match": "0x143208e60",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x143208e60",
-   "kind": "func_start",
-   "names": [
-    "Game_NetworkSubsystem_UpdateKeyMaterial"
    ],
    "verified": [
     {
@@ -59245,32 +59140,6 @@
     }
    ],
    "used_by": []
-  },
-  {
-   "id": "game.network_custom_create",
-   "section": ".xtls",
-   "pattern": "56 48 81 EC 70 01 00 00 48 89 CE E8",
-   "match": "0x1430ae3f0",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x1430ae3f0",
-   "kind": "func_start",
-   "names": [
-    "Game_Network_CustomCreate"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-22",
-     "by": "vmknolle",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay_room.cpp"
-   ]
   },
   {
    "id": "game.network_ui_on_view_profile_requested_by_player_description",
@@ -65823,32 +65692,6 @@
     }
    ],
    "used_by": []
-  },
-  {
-   "id": "game.network_mox_session_generic",
-   "section": ".xtls",
-   "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 60 B8 00 01 00 00 48 8D 0D ?? ?? ?? ?? 66 90 8B 14 81 81 FA BB 5E FE A7 74 34 85 D2 74 43 83 C0 19 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 00 01 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B 46 40",
-   "match": "0x143083570",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x143083570",
-   "kind": "func_start",
-   "names": [
-    "Game_Network_MOXSessionGeneric"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-22",
-     "by": "vmknolle",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay_room.cpp"
-   ]
   },
   {
    "id": "game.network_session_join_result_code",
@@ -76836,57 +76679,6 @@
    ]
   },
   {
-   "id": "game.presence_name_remote_added",
-   "section": ".xtls",
-   "pattern": "48 8B 47 38 48 8B 88 50 05 00 00 4C 8D 46 50 48 8D 56 10 E8 ?? ?? ?? ?? 48 8B 47 38 C5 F8 10 46 10",
-   "match": "0x1431691ac",
-   "anchor": "0x18",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x1431691c4",
-   "kind": "mid",
-   "names": [
-    "site_Game_PresenceNameRemoteAdded"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-29",
-     "by": "driver-name",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay.cpp"
-   ],
-   "expect": "48 8B 47 38 C5 F8 10 46 10"
-  },
-  {
-   "id": "core.presence_name_resolver_fixed_add_name",
-   "section": ".xtls",
-   "pattern": "56 57 53 48 81 EC 20 01 00 00 4C 89 C6 48 89 D7",
-   "match": "0x14412a320",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x14412a320",
-   "kind": "func_start",
-   "names": [
-    "Ne_PresenceNameResolverFixed_AddName"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "engine-re",
-     "how": "static"
-    }
-   ],
-   "used_by": []
-  },
-  {
    "id": "session.setup_vehicle_components",
    "section": ".xtls",
    "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE C6 41 48 01",
@@ -81013,222 +80805,6 @@
     }
    ],
    "used_by": []
-  },
-  {
-   "id": "game.platform_icon_gate_session_cars",
-   "section": ".xtls",
-   "pattern": "80 B8 50 07 00 00 02 75 40 80 B9 D8 10 00 00 00",
-   "match": "0x141775550",
-   "anchor": "0x7",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x141775557",
-   "kind": "mid",
-   "names": [
-    "site_Game_PlatformIconGate_SessionCars"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "driver-platform",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay.cpp"
-   ],
-   "expect": "75 40 80 B9 D8 10 00 00 00"
-  },
-  {
-   "id": "game.platform_icon_gate_grid_list",
-   "section": ".xtls",
-   "pattern": "80 B8 50 07 00 00 02 0F 85 ?? ?? ?? ?? 80 B9 D8 10 00 00 00",
-   "match": "0x14221b43d",
-   "anchor": "0x7",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x14221b444",
-   "kind": "mid",
-   "names": [
-    "site_Game_PlatformIconGate_GridList"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "driver-platform",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay.cpp"
-   ],
-   "expect": "0F 85 76 03 00 00"
-  },
-  {
-   "id": "game.platform_icon_gate_leaderboard",
-   "section": ".xtls",
-   "pattern": "80 B8 50 07 00 00 02 75 30 80 B9 D8 10 00 00 00",
-   "match": "0x1418261c5",
-   "anchor": "0x7",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x1418261cc",
-   "kind": "mid",
-   "names": [
-    "site_Game_PlatformIconGate_Leaderboard"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "driver-platform",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay.cpp"
-   ],
-   "expect": "75 30 80 B9 D8 10 00 00 00"
-  },
-  {
-   "id": "game.platform_icon_gate_featured_driver",
-   "section": ".xtls",
-   "pattern": "80 B8 50 07 00 00 02 75 26 80 B9 D8 10 00 00 00 74 0B B0 01 80 B9 D7 10 00 00 00 75 14 48 8B 81 C8 03 00 00 0F B6 80 7C 02 00 00 34 01 EB 02 31 C0 88 84 24 70 01 00 00",
-   "match": "0x14183aac6",
-   "anchor": "0x7",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x14183aacd",
-   "kind": "mid",
-   "names": [
-    "site_Game_PlatformIconGate_FeaturedDriver"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "driver-platform",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay.cpp"
-   ],
-   "expect": "75 26 80 B9 D8 10 00 00 00"
-  },
-  {
-   "id": "game.platform_icon_gate_dropzone",
-   "section": ".xtls",
-   "pattern": "80 B8 50 07 00 00 02 75 26 80 B9 D8 10 00 00 00 74 0B B0 01 80 B9 D7 10 00 00 00 75 14 48 8B 81 C8 03 00 00 0F B6 80 7C 02 00 00 34 01 EB 02 31 C0 20 84 24 D0 00 00 00",
-   "match": "0x1418fa221",
-   "anchor": "0x7",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x1418fa228",
-   "kind": "mid",
-   "names": [
-    "site_Game_PlatformIconGate_Dropzone"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "driver-platform",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay.cpp"
-   ],
-   "expect": "75 26 80 B9 D8 10 00 00 00"
-  },
-  {
-   "id": "game.platform_icon_gate_driver_row_a",
-   "section": ".xtls",
-   "pattern": "80 B8 50 07 00 00 02 75 26 80 B9 D8 10 00 00 00 74 0B B0 01 80 B9 D7 10 00 00 00 75 14 48 8B 81 C8 03 00 00 0F B6 80 7C 02 00 00 34 01 EB 02 31 C0 20 84 24 DC 00 00 00",
-   "match": "0x141902887",
-   "anchor": "0x7",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x14190288e",
-   "kind": "mid",
-   "names": [
-    "site_Game_PlatformIconGate_DriverRowA"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "driver-platform",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay.cpp"
-   ],
-   "expect": "75 26 80 B9 D8 10 00 00 00"
-  },
-  {
-   "id": "game.platform_icon_gate_driver_row_b",
-   "section": ".xtls",
-   "pattern": "80 B8 50 07 00 00 02 75 26 80 B9 D8 10 00 00 00 74 0B B0 01 80 B9 D7 10 00 00 00 75 14 48 8B 81 C8 03 00 00 0F B6 80 7C 02 00 00 34 01 EB 02 31 C0 20 84 24 D4 00 00 00",
-   "match": "0x14190c960",
-   "anchor": "0x7",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x14190c967",
-   "kind": "mid",
-   "names": [
-    "site_Game_PlatformIconGate_DriverRowB"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "driver-platform",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay.cpp"
-   ],
-   "expect": "75 26 80 B9 D8 10 00 00 00"
-  },
-  {
-   "id": "game.platform_icon_gate_driver_row_ai",
-   "section": ".xtls",
-   "pattern": "80 B8 50 07 00 00 02 75 2B 41 80 BE D8 10 00 00 00",
-   "match": "0x14190ee3c",
-   "anchor": "0x7",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x14190ee43",
-   "kind": "mid",
-   "names": [
-    "site_Game_PlatformIconGate_DriverRowAi"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-10-30",
-     "by": "driver-platform",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay.cpp"
-   ],
-   "expect": "75 2B 41 80 BE D8 10 00 00 00"
   },
   {
    "id": "session.pu_panel_slot_holder",
@@ -160545,37 +160121,7 @@
      "how": "static"
     }
    ],
-   "used_by": [
-    "native/src/core/netplay_room.cpp"
-   ]
-  },
-  {
-   "id": "game.net_subsystem_key",
-   "section": ".xtls",
-   "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 48 89 D9 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 43 18 48 3B 43 20 0F 84 ?? ?? ?? ?? 48 8B 40 08 48 89 86 50 01 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 8B 07 48 8D 15 ?? ?? ?? ?? 48 89 F9 FF 50 28 48 85 C0 0F 84",
-   "match": "0x14172c5ef",
-   "anchor": "0x3",
-   "resolve": {
-    "kind": "riprel",
-    "insn": "0x0",
-    "len": 7
-   },
-   "target": "0x1460bed80",
-   "kind": "data",
-   "names": [
-    "g_Game_NetSubsystemKey"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-11-01",
-     "by": "room-headless",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay_room.cpp"
-   ]
+   "used_by": []
   },
   {
    "id": "game.service_map_find",
@@ -160599,9 +160145,7 @@
      "how": "static"
     }
    ],
-   "used_by": [
-    "native/src/core/netplay_room.cpp"
-   ]
+   "used_by": []
   },
   {
    "id": "game.game_modes_name_index",
@@ -160623,9 +160167,7 @@
      "how": "static"
     }
    ],
-   "used_by": [
-    "native/src/core/netplay_room.cpp"
-   ]
+   "used_by": []
   },
   {
    "id": "game.f1_world_container_add_tabs",
@@ -160647,9 +160189,7 @@
      "how": "static"
     }
    ],
-   "used_by": [
-    "native/src/core/netplay_room.cpp"
-   ]
+   "used_by": []
   },
   {
    "id": "game.ne_inline_str_vtable",
@@ -160675,37 +160215,7 @@
      "how": "static"
     }
    ],
-   "used_by": [
-    "native/src/core/netplay_room.cpp"
-   ]
-  },
-  {
-   "id": "game.net_subsystem_vtable",
-   "section": ".xtls",
-   "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 48 8D 05 ?? ?? ?? ?? 48 89 46 20 48 8D 05 ?? ?? ?? ?? 48 89 46 28 C5 C8 57 F6",
-   "match": "0x1430cffee",
-   "anchor": "0x3",
-   "resolve": {
-    "kind": "riprel",
-    "insn": "0x0",
-    "len": 7
-   },
-   "target": "0x145814050",
-   "kind": "data",
-   "names": [
-    "vt_Game_NetworkSubsystem"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-11-01",
-     "by": "room-fix",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay_room.cpp"
-   ]
+   "used_by": []
   },
   {
    "id": "core.memory_map_heap_size",
@@ -162159,84 +161669,6 @@
    ],
    "used_by": [
     "native/src/core/entitlements.cpp"
-   ]
-  },
-  {
-   "id": "game.os_service_submit_request",
-   "section": ".xtls",
-   "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 4C 89 C6 48 89 CF 8B 02 8B 4A 04",
-   "match": "0x1432bbd10",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x1432bbd10",
-   "kind": "func_start",
-   "names": [
-    "Game_OsService_SubmitRequest"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-11-08",
-     "by": "netplay-keys",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay.cpp"
-   ]
-  },
-  {
-   "id": "game.check_privilege_task_on_update",
-   "section": ".xtls",
-   "pattern": "E9 ?? ?? ?? ?? 14 31 F1 80 6C BD AD 39",
-   "match": "0x143370240",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x143370240",
-   "kind": "func_start",
-   "names": [
-    "Game_CheckPrivilegeTask_OnUpdate"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-11-08",
-     "by": "netplay-privilege-verify",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay.cpp"
-   ]
-  },
-  {
-   "id": "game.check_privilege_task_privilege_callback",
-   "section": ".xtls",
-   "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 40 01 00 00 44 89 C3",
-   "match": "0x143370880",
-   "anchor": "0x0",
-   "resolve": {
-    "kind": "addr"
-   },
-   "target": "0x143370880",
-   "kind": "func_start",
-   "names": [
-    "Game_CheckPrivilegeTask_PrivilegeCheckTaskCallback"
-   ],
-   "verified": [
-    {
-     "build": "d873a1c8d2044cef",
-     "date": "2026-11-08",
-     "by": "netplay-privilege-verify",
-     "how": "static"
-    }
-   ],
-   "used_by": [
-    "native/src/core/netplay.cpp"
    ]
   },
   {

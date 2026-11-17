@@ -88,7 +88,6 @@ const Step STEPS[] = {
     {"popup_tick", [] { runtime::popup_tick(); }},
     {"main_menu::tick", [] { runtime::main_menu::tick(); }},
     {"mfd_tick", [] { runtime::mfd_tick(); }},
-    {"netplay_tick", [] { runtime::netplay_tick(); }},
     {"career_content_tick", [] { runtime::career_content_tick(); }},
     {"entitlements_tick", [] { runtime::entitlements_tick(); }},
     {"hub_tick", [] { runtime::hub_tick(); }},

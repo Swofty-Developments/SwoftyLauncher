@@ -196,6 +196,8 @@ struct SponsorLoyaltyLevel;
 struct SponsorLoyaltyXpMessage;
 struct SponsorTeamRecord;
 struct StandingsPoints;
+struct StandingsPointsLevel;
+struct StandingsPreset;
 struct StandingsResult;
 struct StandingsRound;
 struct StandingsSession;
@@ -245,5 +247,7 @@ struct WeatherState;
 struct WeatherTransition;
 struct WeatherTypeRange;
 struct Weekend;
+struct WeekendSession;
+struct WeekendStructure;
 
 }

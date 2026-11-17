@@ -684,8 +684,6 @@ inline constexpr address<"Ne_PresenceNameResolverEADP_OnBatchPlayerCardsRequestC
 inline constexpr address<"Ne_PresenceNameResolverEADP_UpdateToResolveList"> Ne_PresenceNameResolverEADP_UpdateToResolveList{}; // L2 experimental, neon::NePresenceNameResolverEADP::updateToResolveList
 inline constexpr address<"Ne_PresenceNameResolverEADP_UpdateToResolveList_Lambda"> Ne_PresenceNameResolverEADP_UpdateToResolveList_Lambda{}; // L2 experimental, neon::NePresenceNameResolverEADP::updateToResolveList
 inline constexpr address<"Ne_PresenceNameResolverEADP_VectorGrow"> Ne_PresenceNameResolverEADP_VectorGrow{}; // L2 experimental
-using Ne_PresenceNameResolverFixed_AddName_t = void(void *resolver, const void *user, const char *name);
-inline constexpr fn<"Ne_PresenceNameResolverFixed_AddName", Ne_PresenceNameResolverFixed_AddName_t> Ne_PresenceNameResolverFixed_AddName{}; // L2 experimental, neon::NePresenceNameResolverFixed::addName
 inline constexpr address<"Ne_PresenceNameResolverFixed_InsertName"> Ne_PresenceNameResolverFixed_InsertName{}; // L2 experimental
 inline constexpr address<"Ne_PresenceNameResolverFixed_MapFatalStub"> Ne_PresenceNameResolverFixed_MapFatalStub{}; // L2 experimental
 inline constexpr address<"Ne_PresenceNameResolverFixed_StartResolving"> Ne_PresenceNameResolverFixed_StartResolving{}; // L2 experimental, neon::NePresenceNameResolverFixed::startResolving

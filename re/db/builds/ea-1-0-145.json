@@ -51,10 +51,6 @@
    "pattern": "E9 ?? ?? ?? ?? 95 C2 F7 A4 B1 57 CC E9 BC EB D9",
    "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
   },
-  "Game_CheckPrivilegeTask_OnUpdate": {
-   "pattern": "E9 ?? ?? ?? ?? E9 35 11 B6 FF 28 50 E9 73 20 F2",
-   "note": "The pattern is anchored on the EA image: the protector thunk or the wildcarded Steam match, located by its callers, its jump target or its surrounding bytes."
-  },
   "Game_CreateSessionDlcSelectTab_BuildTiles": {
    "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? ?? 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00 48 8B 46 10 48 8D 50 08 48 85 C0 49 0F 44 D6 48 8B 0D ?? ?? ?? 05 C7 44 24 20 01 00 00 00 4C 8D 05 ?? ?? ?? 03 4C 8D 4C 24 30 E8 ?? ?? F3 FE 48",
    "note": "The pattern is the Steam 1.0.145 match at the same place in the EA image, extended until it matches once, with the bytes that differ wildcarded."

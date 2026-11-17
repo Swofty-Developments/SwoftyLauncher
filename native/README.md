@@ -130,12 +130,6 @@ native/test/run_net_trace_test.sh
 Runs a stand-in `F1_25.exe` under Wine that does what the game's UDP receive pump does: an overlapped `WSARecvFrom` waited on with `WSAWaitForMultipleEvents` and completed with `WSAGetOverlappedResult` against another socket's `sendto`, plus the other traced calls. Like the game, the stand-in imports ws2_32 through two descriptors, one of them by ordinal. Without `SWOFTY_NET_TRACE` it checks that no trace log is written and that no ws2_32 import slot or export changed. With `SWOFTY_NET_TRACE=1` (import table hooks in both descriptors, inline hooks for what is not imported) and with `SWOFTY_NET_TRACE=inline` it checks exactly which slots and exports the trace patched, that an export ws2_32 forwards to another DLL is never patched, that every call still returns what plain ws2_32 returns, with the same buffers and last error, and that `swofty/net-trace.log` has exactly one line per call (none from ws2_32 calling itself) with the socket, addresses, length, first bytes, overlapped and event, return value, error and caller. It also checks that a socket's 450 `sendto` calls log the first 200, then the 300th and 400th, and that the log stops at its size cap with a last line.
 
 ```sh
-native/test/run_netplay_test.sh
-```
-
-Runs a stand-in `F1_25.exe` under Wine against the core's socket address hooks. The stand-in imports ws2_32 through two descriptors like the game and puts spies into its `sendto`, `recvfrom` and `GetAdaptersAddresses` import slots before the core loads. It checks which addresses the hooks rewrite and which they leave alone, that results and last errors are kept, and that with the hooks off no import slot changes, no status file is written and the log has no lines from them. CI runs it on every push.
-
-```sh
 native/test/run_runtime_assets_test.sh
 ```
 

@@ -35,9 +35,9 @@
 // Every construct passes through the wrap below, which records the system pointer (the game
 // constructs messages from boot on, the online-services wait box first). Requests queue from any
 // thread and are shown from the flow tick.
-// While a launcher netplay command drives the LAN menus, the wrap hands it the LAN Game dialog and
-// the Join via IP prompt instead of queueing them (runtime::netplay_popup): the caller gets an empty
-// handle, which the handle setter and release accept, and netplay answers the response callback.
+// The wrap offers every message to the session plugin first (runtime::session_host_message). One the plugin
+// takes is not queued: the caller gets an empty handle, which the handle setter and release accept, and the
+// plugin answers the response callback.
 //
 // The wrap also logs each stock message id once per session (game_message_log_logic.hpp).
 //
@@ -170,7 +170,7 @@ Handle *construct_hook(void *s, Handle *out, FixedId *id, Callback *cb, const ch
         text_entry::state.begin(GetTickCount64());
         swofty::log("[popup] '%.64s' takes typed text; core hotkeys are held back until it closes", name);
     }
-    if (name && out && cb && swofty::mem::readable(cb, sizeof *cb) && runtime::netplay_popup(name, cb->fn, cb->ctx)) {
+    if (name && out && cb && swofty::mem::readable(cb, sizeof *cb) && runtime::session_host_message(name, cb->fn, cb->ctx)) {
         *out = Handle{s, nullptr};
         return out;
     }
