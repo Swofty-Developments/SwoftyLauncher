@@ -10,7 +10,7 @@
 #include "core/runtime/loader/hook_pool.hpp"
 #include "core/runtime/loader/host_api.hpp"
 #include "core/runtime/loader/image.hpp"
-#include "core/runtime/loader/mixins.hpp"
+#include "core/runtime/loader/mixin_manager.hpp"
 #include "core/runtime/loader/resolve_locks.hpp"
 #include "core/runtime/loader/scanner.hpp"
 #include "core/runtime/runtime.hpp"
@@ -88,9 +88,9 @@ int Runtime::attach(SwoftyApi *a)
     if (!scanner().open(a, dir, exe_size))
         set.use_kb_addresses(false);
     set.plan_kb_addresses(kb_size, exe_size);
-    read_mixin_manifest(dir);
+    mixins().read_manifest(dir);
     publish_addon_api(a);
-    add_core_mixin_sets(runtime::career_mixins());
+    mixins().add_core_sets(runtime::career_mixins());
     set.build.sha = scanner().exe_sha256(exe, scanner().caches(dir) + L"exe-sha256.tsv", exe_size, running_stamp);
     const auto &said = doc["build"]["packed"];
     auto cs = image().section_by_name(scanner().game_code());
@@ -116,33 +116,33 @@ int Runtime::attach(SwoftyApi *a)
 
 int Runtime::init_addon(const wchar_t *name, SwoftyAddonInitFn init)
 {
-    return loader::init_addon(name, init);
+    return mixins().init_addon(name, init);
 }
 
 int Runtime::commit_pass()
 {
     std::lock_guard<std::recursive_mutex> c(commit_lock());
-    offer_core_mixin_sets();
-    size_t from = settled_addons();
+    mixins().offer_core_sets();
+    size_t from = mixins().settled();
     size_t count[7] = {};
-    install_addons(from, count);
-    if (!addons_wait(true))
+    mixins().install(from, count);
+    if (!mixins().waiting(true))
         runtime::career_setup();
     if (!from)
         start(Start::commit_code);
-    if (!addons_wait(true))
-        settle_core_mixin_sets();
-    run_addons_on_load(from);
-    if (offer_core_mixin_sets()) {
+    if (!mixins().waiting(true))
+        mixins().settle_core_sets();
+    mixins().run_on_load_from(from);
+    if (mixins().offer_core_sets()) {
         loader::api->log("[core] commit: installing the core mixin sets that registrations at load asked for");
-        install_addons(settled_addons(), count);
+        mixins().install(mixins().settled(), count);
     }
-    if (!addons_wait(true))
-        settle_core_mixin_sets();
-    close_mixins((from || runtime::load_stage() != "early") && !addons_wait(false));
+    if (!mixins().waiting(true))
+        mixins().settle_core_sets();
+    mixins().close((from || runtime::load_stage() != "early") && !mixins().waiting(false));
     if (!from)
         when_code_ready(RUNTIME_SETUP, runtime::ready);
-    size_t total = 0, active = active_addons_from(from, &total);
+    size_t total = 0, active = mixins().active_from(from, &total);
     loader::api->log("[core] commit: %zu of %zu mixin addon(s) active; %zu wrap(s), %zu site(s), %zu vtable slot(s), %zu "
              "redirect(s), %zu patch(es)",
              active, total, count[SWOFTY_MIXIN_WRAP], count[SWOFTY_MIXIN_SITE], count[SWOFTY_MIXIN_VTABLE],
@@ -205,7 +205,7 @@ void Runtime::late_pass(const char *pass, bool final)
     std::lock_guard<std::recursive_mutex> r(resolve_lock());
     BindingSet &set = bindings();
     size_t before = set.deferred_count();
-    if (!before && !addons_wait(false) && code_tasks_.empty()) {
+    if (!before && !mixins().waiting(false) && code_tasks_.empty()) {
         if (set.unreported())
             set.report(pass);
         return;
@@ -213,17 +213,17 @@ void Runtime::late_pass(const char *pass, bool final)
     code().forget_samples();
     std::string sampled = set.sample_deferred_sections();
     set.retry_deferred(final);
-    reinit_deferred_addons(final);
-    offer_core_mixin_sets();
+    mixins().reinit_deferred(final);
+    mixins().offer_core_sets();
     size_t count[7] = {};
-    install_late_addons(count);
-    if (!addons_wait(true)) {
+    mixins().install_late(count);
+    if (!mixins().waiting(true)) {
         runtime::career_setup();
-        settle_core_mixin_sets();
+        mixins().settle_core_sets();
     }
     size_t setups = run_code_tasks(pass, final);
-    if (!addons_wait(false))
-        close_mixins(true);
+    if (!mixins().waiting(false))
+        mixins().close(true);
     size_t after = set.deferred_count(), installed = 0;
     for (size_t k : count)
         installed += k;
@@ -236,7 +236,7 @@ void Runtime::late_pass(const char *pass, bool final)
              "%zu vtable slot(s), %zu redirect(s), %zu patch(es)%s",
              pass, sampled.c_str(), before - after, after, count[SWOFTY_MIXIN_WRAP], count[SWOFTY_MIXIN_SITE],
              count[SWOFTY_MIXIN_VTABLE], count[SWOFTY_MIXIN_REDIRECT], count[SWOFTY_MIXIN_PATCH],
-             addons_wait(false) ? "; some addons still wait" : "");
+             mixins().waiting(false) ? "; some addons still wait" : "");
     set.report(pass);
     scanner().save();
 }
@@ -244,7 +244,7 @@ void Runtime::late_pass(const char *pass, bool final)
 bool Runtime::pending()
 {
     std::lock_guard<std::recursive_mutex> c(commit_lock());
-    return bindings().deferred_count() || addons_wait(false) || !code_tasks_.empty();
+    return bindings().deferred_count() || mixins().waiting(false) || !code_tasks_.empty();
 }
 
 void Runtime::settle_std16(bool force)
