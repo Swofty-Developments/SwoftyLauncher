@@ -204,7 +204,7 @@ const footPaths = footBands.map((b) => ({ color: b.color, d: wave(b, 1440, 420) 
           <span class="lp-dot" aria-hidden="true" />
           <a :href="`${repo}/blob/main/LICENSE`" rel="noopener"><Icon name="scale" /><span>Licence</span></a>
         </div>
-        <p>Released under the AGPL-3.0-or-later licence. The SDK and the addon template are MIT.</p>
+        <p>Released under the PolyForm Noncommercial 1.0.0 licence. The SDK and the addon template are MIT.</p>
         <p>Not affiliated with Codemasters, Electronic Arts or Formula 1.</p>
         <p class="lp-credit">
           Styled after <a href="https://geode-sdk.org/" rel="noopener">Geode</a>. The docs reuse CSS from the

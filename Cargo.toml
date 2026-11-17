@@ -4,10 +4,10 @@ members = ["addons/builtins", "apps/ads-helper", "apps/cli", "apps/launcher", "i
 default-members = ["addons/builtins", "apps/cli", "packages/addon-api", "packages/ads", "packages/core", "packages/formats", "packages/i18n", "packages/sdk", "packages/shaders", "templates/launcher-addon", "templates/std/whatif/launcher"]
 
 [workspace.package]
-version = "1.9.61"
+version = "1.9.62"
 edition = "2024"
 rust-version = "1.95"
-license = "AGPL-3.0-or-later"
+license = "PolyForm-Noncommercial-1.0.0"
 repository = "https://github.com/Swofty-Developments/SwoftyLauncher"
 
 [workspace.dependencies]
