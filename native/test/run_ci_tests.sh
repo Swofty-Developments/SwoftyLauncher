@@ -114,6 +114,7 @@ t "Grand Prix weekend track guard unit test" native/test/run_gp_weekend_track_te
 t "Session enter guard unit test" native/test/run_session_enter_test.sh
 t "AI line set guard unit test" native/test/run_ai_line_set_test.sh
 t "Audio job queue fix unit test" native/test/run_audio_queue_test.sh
+t "Loading setting overrides unit test" native/test/run_loading_settings_test.sh
 t "Shader resource view clamp unit test" native/test/run_srv_clamp_test.sh
 t "Heap size table unit test" native/test/run_heap_sizes_test.sh
 t "Profiler minute summary unit test" native/test/run_perf_logic_test.sh

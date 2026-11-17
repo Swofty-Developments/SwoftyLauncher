@@ -314,6 +314,8 @@ std::vector<CoreMixins> track_acclim_mixins();
 void track_acclim_commit();
 std::vector<CoreMixins> audio_queue_mixins();
 void audio_queue_commit();
+std::vector<CoreMixins> loading_mixins();
+void loading_commit();
 std::vector<CoreMixins> heap_sizes_mixins();
 void heap_sizes_commit();
 bool save_heap_raised(uint64_t &bytes);
