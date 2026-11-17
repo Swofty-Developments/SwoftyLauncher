@@ -77,14 +77,6 @@ impl RoomStatus {
     }
 }
 
-pub(super) fn capitalised(text: &str) -> String {
-    let mut chars = text.chars();
-    match chars.next() {
-        Some(c) => c.to_uppercase().chain(chars).collect(),
-        None => String::new(),
-    }
-}
-
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub(crate) enum Tone {
     Working,
@@ -121,7 +113,7 @@ pub(crate) fn room_status(state: &SessionState) -> Status {
         return Status {
             tone: Tone::Over,
             progress: Progress {
-                label: capitalised(why),
+                label: crate::ui::format::capitalised(why),
                 ..progress
             },
             problem: None,

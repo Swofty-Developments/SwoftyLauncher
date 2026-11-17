@@ -348,7 +348,7 @@ impl Library {
                         false => {
                             let mut lines: Vec<String> = swofty_core::tracks::unusable(store, &m.id, m)
                                 .iter()
-                                .map(|u| format!("{}.", crate::features::update::sentence(&u.text())))
+                                .map(|u| format!("{}.", crate::ui::format::capitalised(&u.text())))
                                 .collect();
                             if enabled.contains(&m.id) && over_limit.contains(&m.id) {
                                 lines.push(left_out_limit_line());

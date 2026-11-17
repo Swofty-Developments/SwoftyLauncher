@@ -64,7 +64,7 @@ impl Shell {
         let (id, name) = (u.id.clone(), u.name.clone());
         let reason = format!(
             "{}.",
-            crate::features::update::sentence(&trf!("it {reason}", reason = u.reason))
+            crate::ui::format::capitalised(&trf!("it {reason}", reason = u.reason))
         );
         h_flex()
             .id(SharedString::from(format!("broken-{id}")))

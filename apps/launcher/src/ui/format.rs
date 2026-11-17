@@ -73,16 +73,20 @@ fn now_secs() -> f64 {
         .map_or(0., |d| d.as_secs_f64())
 }
 
+/// The text with its first letter in upper case.
+pub fn capitalised(text: &str) -> String {
+    let mut chars = text.chars();
+    match chars.next() {
+        Some(c) => c.to_uppercase().chain(chars).collect(),
+        None => String::new(),
+    }
+}
+
 /// An id as words: `team_simplified` becomes `Team Simplified`.
 pub fn title_case(word: &str) -> String {
     word.split(['_', '-'])
         .filter(|w| !w.is_empty())
-        .map(|w| {
-            let mut c = w.chars();
-            c.next()
-                .map(|f| f.to_uppercase().chain(c).collect::<String>())
-                .unwrap_or_default()
-        })
+        .map(capitalised)
         .collect::<Vec<_>>()
         .join(" ")
 }
@@ -124,6 +128,14 @@ mod tests {
         assert_eq!(ago(60.), "1 minute ago");
         assert_eq!(ago(5. * 3600.), "5 hours ago");
         assert_eq!(ago(3. * 86_400.), "3 days ago");
+    }
+
+    #[test]
+    fn capitalises_only_the_first_letter() {
+        assert_eq!(capitalised("waiting for the host"), "Waiting for the host");
+        assert_eq!(capitalised("éclair"), "Éclair");
+        assert_eq!(capitalised(""), "");
+        assert_eq!(title_case("team_simplified-mode"), "Team Simplified Mode");
     }
 }
 

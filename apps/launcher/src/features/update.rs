@@ -143,20 +143,12 @@ fn blocked_text(version: &Version, reason: &str) -> String {
     trf!(
         "Swofty Launcher {version} is available. {reason}. You have {current}.",
         version = version,
-        reason = sentence(reason),
+        reason = crate::ui::format::capitalised(reason),
         current = update::current_version()
     )
 }
 
 pub(crate) const NOT_RELEASE_FOLDER: &str = "does not run from a release folder";
-
-pub(crate) fn sentence(text: &str) -> String {
-    let mut chars = text.chars();
-    match chars.next() {
-        Some(c) => c.to_uppercase().chain(chars).collect(),
-        None => String::new(),
-    }
-}
 
 impl Shell {
     pub(crate) fn watch_updates(cx: &mut Context<Self>) -> Task<()> {

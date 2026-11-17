@@ -51,13 +51,6 @@ pub(crate) fn link(id: &'static str, label: &'static str, p: Palette) -> Statefu
         .child(label)
 }
 
-fn capitalised(s: &str) -> String {
-    let mut c = s.chars();
-    c.next()
-        .map(|f| f.to_uppercase().chain(c).collect())
-        .unwrap_or_default()
-}
-
 fn status_row() -> Div {
     h_flex()
         .flex_1()
@@ -329,7 +322,7 @@ impl Shell {
                     true => tr("Cancelling the build…").to_owned(),
                     false => format!(
                         "{} for {} · {}",
-                        capitalised(&b.progress()),
+                        crate::ui::format::capitalised(&b.progress()),
                         b.profile,
                         duration((b.minutes() * 60).max(1))
                     ),
