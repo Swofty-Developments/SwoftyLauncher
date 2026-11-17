@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -38,7 +39,6 @@ constexpr const char *TAIL = "site_Game_ThrustmasterLcd_SectorTail";
 namespace tl = runtime::thrustmaster_lcd;
 
 uintptr_t sector_tail = 0;
-bool offered = false, settled = false;
 std::atomic<int> skipped{0};
 tl::Skips skips;
 
@@ -54,40 +54,17 @@ void entrant_record(SwoftyContext *c)
                 skips.last(n) ? " (further skips are not logged)" : "");
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> thrustmaster_lcd_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_TMLCD_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[tmlcd] thrustmaster lcd guard off (SWOFTY_TMLCD_GUARD=%s)", v);
-        return out;
-    }
-    sector_tail = swofty::api->resolve(TAIL);
-    if (!sector_tail || !swofty::api->resolve(RECORD)) {
-        sector_tail = 0;
-        swofty::log("[tmlcd] thrustmaster lcd guard off: needs %s and %s, which this build does not resolve", RECORD, TAIL);
-        return out;
-    }
-    out.push_back({MIXIN, {{RECORD, SWOFTY_MIXIN_SITE, 100, (void *)&entrant_record, nullptr}}});
-    return out;
-}
-
-void thrustmaster_lcd_commit()
-{
-    if (!offered || settled || !sector_tail)
-        return;
-    settled = true;
-    swofty::log("[tmlcd] thrustmaster lcd guard %s",
-                core_mixins_active(MIXIN) ? "armed: a sector entrant without a record leaves the LCD team name alone"
-                                          : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::thrustmaster_lcd,
+                        {
+                            .set = MIXIN,
+                            .name = "[tmlcd] thrustmaster lcd guard",
+                            .env = "SWOFTY_TMLCD_GUARD",
+                            .keeps = {{TAIL, &sector_tail}},
+                            .needs = {RECORD, TAIL},
+                            .mixins = {{RECORD, SWOFTY_MIXIN_SITE, 100, (void *)&entrant_record, nullptr}},
+                            .armed = "a sector entrant without a record leaves the LCD team name alone",
+                        }};
 
 }

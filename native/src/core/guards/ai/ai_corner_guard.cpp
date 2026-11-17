@@ -1,4 +1,5 @@
 #include "core/guards/ai/ai_corner_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -32,7 +33,6 @@ constexpr const char *LOAD = "site_Ai_UpdateCars_CornerLineLoad";
 constexpr const char *NONE = "site_Ai_UpdateCars_NoCornerLine";
 
 uintptr_t no_corner = 0;
-bool offered = false, settled = false;
 runtime::ai_corner::Tally tally;
 
 void corner_load(SwoftyContext *c)
@@ -47,40 +47,17 @@ void corner_load(SwoftyContext *c)
                     int(static_cast<int32_t>(c->rdi)));
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> ai_corner_guard_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_AI_CORNER_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[ai] brake line guard off (SWOFTY_AI_CORNER_GUARD=%s)", v);
-        return out;
-    }
-    no_corner = swofty::api->resolve(NONE);
-    if (!no_corner || !swofty::api->resolve(LOAD)) {
-        no_corner = 0;
-        swofty::log("[ai] brake line guard off: needs %s and %s, which this build does not resolve", LOAD, NONE);
-        return out;
-    }
-    out.push_back({MIXIN, {{LOAD, SWOFTY_MIXIN_SITE, 100, (void *)&corner_load, nullptr}}});
-    return out;
-}
-
-void ai_corner_guard_commit()
-{
-    if (!offered || settled || !no_corner)
-        return;
-    settled = true;
-    swofty::log("[ai] brake line guard %s",
-                core_mixins_active(MIXIN) ? "armed: a car with no brake line ahead drives its line without corner data"
-                                          : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::ai_corner_guard,
+                        {
+                            .set = MIXIN,
+                            .name = "[ai] brake line guard",
+                            .env = "SWOFTY_AI_CORNER_GUARD",
+                            .keeps = {{NONE, &no_corner}},
+                            .needs = {LOAD, NONE},
+                            .mixins = {{LOAD, SWOFTY_MIXIN_SITE, 100, (void *)&corner_load, nullptr}},
+                            .armed = "a car with no brake line ahead drives its line without corner data",
+                        }};
 
 }
