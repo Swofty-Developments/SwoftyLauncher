@@ -273,7 +273,13 @@ impl Ads {
         let host = Rc::downgrade(self.host.as_ref()?);
         let url = {
             let base = &self.host.as_ref()?.borrow().base;
-            swofty_ads::slot_url(base, unit.name(), rgb_of(background))
+            swofty_ads::slot_url(
+                base,
+                unit.name(),
+                unit.key(),
+                rgb_of(background),
+                dev_placements(),
+            )
         };
         let size = unit.size();
         Some(
@@ -318,6 +324,16 @@ impl Ads {
             .absolute()
             .size_0(),
         )
+    }
+}
+
+/// RevIQ's test placements, for debug builds unless `SWOFTY_ADS_DEV=0`, or any
+/// build with `SWOFTY_ADS_DEV=1`.
+fn dev_placements() -> bool {
+    match std::env::var("SWOFTY_ADS_DEV").as_deref() {
+        Ok("1") => true,
+        Ok("0") => false,
+        _ => cfg!(debug_assertions),
     }
 }
 

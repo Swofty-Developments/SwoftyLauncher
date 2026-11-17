@@ -11,12 +11,15 @@ pub mod view;
 
 pub use protocol::Command;
 
-/// The page for one ad unit, with `background` behind it while the ad loads.
-pub fn slot_url(base: &str, unit: &str, background: [u8; 3]) -> String {
+/// The page for one ad unit at `placement`, which the page reports to RevIQ,
+/// with `background` behind it while the ad loads. `dev` asks for RevIQ's test
+/// placements, which never count as real impressions.
+pub fn slot_url(base: &str, unit: &str, placement: &str, background: [u8; 3], dev: bool) -> String {
     let [r, g, b] = background;
     format!(
-        "{}/app/{unit}?bg={r:02x}{g:02x}{b:02x}",
-        base.trim_end_matches('/')
+        "{}/app/{unit}?bg={r:02x}{g:02x}{b:02x}&p={placement}{}",
+        base.trim_end_matches('/'),
+        if dev { "&dev=1" } else { "" }
     )
 }
 
@@ -55,14 +58,30 @@ mod tests {
     #[test]
     fn a_slot_url_names_the_unit_and_background() {
         assert_eq!(
-            slot_url("https://ads.swofty.net/", "right-rail-1", [0x1a, 0x1b, 0x0c]),
-            "https://ads.swofty.net/app/right-rail-1?bg=1a1b0c"
+            slot_url(
+                "https://ads.swofty.net/",
+                "right-rail-1",
+                "home",
+                [0x1a, 0x1b, 0x0c],
+                false
+            ),
+            "https://ads.swofty.net/app/right-rail-1?bg=1a1b0c&p=home"
+        );
+        assert_eq!(
+            slot_url("https://ads.swofty.net", "video", "video", [0, 0, 0], true),
+            "https://ads.swofty.net/app/video?bg=000000&p=video&dev=1"
         );
     }
 
     #[test]
     fn a_slot_url_gives_its_background_back() {
-        let url = slot_url("https://ads.swofty.net", "video", [0x0b, 0xfe, 0x40]);
+        let url = slot_url(
+            "https://ads.swofty.net",
+            "video",
+            "video",
+            [0x0b, 0xfe, 0x40],
+            false,
+        );
         assert_eq!(slot_background(&url), Some([0x0b, 0xfe, 0x40]));
         assert_eq!(slot_background("https://ads.swofty.net/app/video"), None);
         assert_eq!(
