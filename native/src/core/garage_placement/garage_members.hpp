@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 #pragma once
 #include "steam_26566308.hpp"
 namespace runtime::garage_placement::members {

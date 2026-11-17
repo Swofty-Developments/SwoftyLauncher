@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 #include "runtime.hpp"
 #include "apply/moments.hpp"
 #include "garage_placement/steam_26566308.hpp"

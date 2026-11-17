@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: AGPL-3.0-or-later
+// SPDX-License-Identifier: PolyForm-Noncommercial-1.0.0
 #include "garage_vehicle.hpp"
 #include "garage_rig.hpp"
 #include "garage_central.hpp"
