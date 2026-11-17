@@ -190,7 +190,7 @@ bool page_readable(uintptr_t p, size_t n)
     MEMORY_BASIC_INFORMATION m{};
     if (!VirtualQuery(reinterpret_cast<void *>(p), &m, sizeof m))
         return false;
-    bool readable = m.State == MEM_COMMIT && (m.Protect & 0xEE) && !(m.Protect & (PAGE_GUARD | PAGE_NOACCESS));
+    bool readable = pages::readable_region(m);
     uintptr_t end = reinterpret_cast<uintptr_t>(m.BaseAddress) + m.RegionSize;
     if (pass_spans && m.Type == MEM_IMAGE && reinterpret_cast<uintptr_t>(m.AllocationBase) == image().base())
         pass_spans->remember(reinterpret_cast<uintptr_t>(m.BaseAddress), end, readable);

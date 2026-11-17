@@ -1,4 +1,5 @@
 #include "core/guards/order.hpp"
+#include "core/runtime/loader/core_set_order.hpp"
 
 #include <algorithm>
 #include <cctype>
@@ -11,6 +12,7 @@
 #include <vector>
 
 namespace guards = swofty_core::guards;
+namespace loader = runtime::loader;
 
 // The core mixin sets in the order offer_core_sets and settle_core_sets in runtime/manager.cpp listed them on
 // v1.10.0 (9d21d3a9b) before the registry took them over.
@@ -188,19 +190,19 @@ size_t count(const std::string &text, const std::string &needle)
 
 int main(int argc, char **argv)
 {
-    expect(guards::CORE_SET_COUNT == OFFERED.size(), "the registry holds " + std::to_string(OFFERED.size()) + " sets");
-    for (size_t i = 0; i < OFFERED.size() && i < guards::CORE_SET_COUNT; i++)
-        expect(guards::core_set_name(guards::CoreSetId(i)) == OFFERED[i],
+    expect(loader::CORE_SET_COUNT == OFFERED.size(), "the registry holds " + std::to_string(OFFERED.size()) + " sets");
+    for (size_t i = 0; i < OFFERED.size() && i < loader::CORE_SET_COUNT; i++)
+        expect(loader::core_set_name(loader::CoreSetId(i)) == OFFERED[i],
                "offer slot " + std::to_string(i) + " is " + OFFERED[i]);
 
-    expect(guards::COMMIT_ORDER.size() == SETTLED.size(), "the commit order holds " + std::to_string(SETTLED.size()));
-    for (size_t i = 0; i < SETTLED.size() && i < guards::COMMIT_ORDER.size(); i++)
-        expect(guards::core_set_name(guards::COMMIT_ORDER[i]) == SETTLED[i],
+    expect(loader::COMMIT_ORDER.size() == SETTLED.size(), "the commit order holds " + std::to_string(SETTLED.size()));
+    for (size_t i = 0; i < SETTLED.size() && i < loader::COMMIT_ORDER.size(); i++)
+        expect(loader::core_set_name(loader::COMMIT_ORDER[i]) == SETTLED[i],
                "commit slot " + std::to_string(i) + " is " + SETTLED[i]);
-    for (size_t i = 0; i < guards::CORE_SET_COUNT; i++) {
-        auto id = guards::CoreSetId(i);
-        expect(guards::settles(id) == (guards::commit_rank(id) < guards::COMMIT_ORDER.size()),
-               std::string(guards::core_set_name(id)) + " settles exactly when the commit order lists it");
+    for (size_t i = 0; i < loader::CORE_SET_COUNT; i++) {
+        auto id = loader::CoreSetId(i);
+        expect(loader::settles(id) == (loader::commit_rank(id) < loader::COMMIT_ORDER.size()),
+               std::string(loader::core_set_name(id)) + " settles exactly when the commit order lists it");
     }
 
     // Every set registers exactly once, in some core source, under its id.
@@ -210,8 +212,8 @@ int main(int argc, char **argv)
         if (entry.path().extension() != ".cpp")
             continue;
         std::string text = read(entry.path());
-        for (size_t i = 0; i < guards::CORE_SET_COUNT; i++) {
-            std::string name(guards::CORE_SET_NAMES[i]);
+        for (size_t i = 0; i < loader::CORE_SET_COUNT; i++) {
+            std::string name(loader::CORE_SET_NAMES[i]);
             registrations[name] += count(text, "CoreSetId::" + name);
         }
     }

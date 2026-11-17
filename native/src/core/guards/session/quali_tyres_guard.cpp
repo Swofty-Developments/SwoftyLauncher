@@ -39,6 +39,7 @@
 namespace {
 
 namespace content = swofty_core::apply::content;
+namespace guards = swofty_core::guards;
 
 constexpr const char *MIXIN_ALLOWED = "swofty_core.dll (qualifying tyres: set usable)";
 constexpr const char *MIXIN_CLASS = "swofty_core.dll (qualifying tyres: session tag check)";
@@ -57,7 +58,7 @@ Closest *orig_closest = nullptr;
 
 std::atomic<uint8_t> g_mask{0};
 const uint32_t *g_session = nullptr;
-std::atomic<int> refused{0};
+guards::LogFirst<LOG_FIRST> refused{"refusals"};
 bool wanted = false;
 std::mutex line_mu;
 std::string last_line;
@@ -69,12 +70,11 @@ uint32_t session_now()
 
 void log_refusal(const char *where, uint32_t option, uint32_t session)
 {
-    int n = ++refused;
-    if (n > LOG_FIRST)
+    auto line = refused.note();
+    if (!line)
         return;
     swofty::log("[tyres] %s: option %u (%s) is qualifying only, refused in session %u%s", where, option,
-                option < 3 ? content::QUALI_OPTION_NAMES[option] : "?", session,
-                n == LOG_FIRST ? " (further refusals are not logged)" : "");
+                option < 3 ? content::QUALI_OPTION_NAMES[option] : "?", session, line.tail);
 }
 
 bool refused_set(const uint8_t *set, const char *where)
@@ -131,8 +131,6 @@ bool turned_off()
     }
     return false;
 }
-
-namespace guards = swofty_core::guards;
 
 class QualiTyresGuard final : public guards::Guard {
 public:

@@ -46,11 +46,22 @@ runs:
           echo "RUSTUP_HOME=/home/runner/.rustup" >> "$GITHUB_ENV"
         fi
 
+    # rust-cache 2.9.3 hashes the members' manifests but not the workspace root's, so a change to its
+    # [profile] or [patch] sections would restore the old builds under an exact match, rebuild them in every
+    # run and never save the result. Their hash goes into the key instead (the release after 2.9.3 hashes
+    # them itself). Only those sections, without comments: the root's version bump in every release would
+    # empty the cache.
+    - name: Workspace profile hash
+      id: profiles
+      shell: bash
+      run: echo "hash=$(awk '/^\[/ { on = ($0 ~ /^\[(profile|patch)[.\]]/) } on && !/^[[:space:]]*(#|$)/' Cargo.toml | sha256sum | cut -c1-8)" >> "$GITHUB_OUTPUT"
+
     # The key ends in a hash of the external crates in Cargo.lock, so a dependency change saves a new cache
     # and restores the newest older one meanwhile; a release's version bump of the workspace crates does not.
     - uses: Swatinem/rust-cache@v2
       with:
         shared-key: ${{ inputs.cache }}
+        key: profiles-${{ steps.profiles.outputs.hash }}
         save-if: ${{ inputs.save }}
 
     - name: System libraries

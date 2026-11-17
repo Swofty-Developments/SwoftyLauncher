@@ -33,12 +33,12 @@ namespace {
 constexpr const char *MIXIN = "swofty_core.dll (red flag recompute guard)";
 constexpr const char *TARGET = "Sess_RaceStrategy_RedFlagRecompute";
 
+namespace guards = swofty_core::guards;
 namespace rf = runtime::red_flag_recompute;
 
 using Recompute = void(void *, void *);
 Recompute *orig_recompute = nullptr;
-std::atomic<int> skipped{0};
-rf::Skips skips;
+guards::LogFirst<rf::LOG_FIRST> skipped{"skips"};
 
 void recompute(void *processor, void *race_session_data)
 {
@@ -46,14 +46,12 @@ void recompute(void *processor, void *race_session_data)
         orig_recompute(processor, race_session_data);
         return;
     }
-    int n = ++skipped;
-    if (!skips.logged(n))
+    auto line = skipped.note();
+    if (!line)
         return;
     swofty::log("[session] a red flag strategy recompute has no race session record for a vehicle, so that vehicle is skipped%s",
-                skips.last(n) ? " (further skips are not logged)" : "");
+                line.tail);
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::red_flag_recompute,
                         {

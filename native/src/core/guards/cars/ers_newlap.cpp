@@ -38,6 +38,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 
 constexpr const char *MIXIN = "swofty_core.dll (ers new lap guard)";
@@ -49,7 +50,7 @@ constexpr size_t VEHICLE_ID = 0xe8;
 constexpr int LOG_FIRST = 8;
 
 uintptr_t next_vehicle = 0;
-std::atomic<int> skipped{0};
+guards::LogFirst<LOG_FIRST> skipped{"skips"};
 
 void lookup_entry(SwoftyContext *c)
 {
@@ -69,19 +70,16 @@ void lookup_entry(SwoftyContext *c)
     if (step != runtime::ers::Step::skip)
         return;
     c->rip = next_vehicle;
-    int n = ++skipped;
-    if (n > LOG_FIRST)
+    auto line = skipped.note();
+    if (!line)
         return;
     uintptr_t begin = 0;
     mem::read(c->rcx + SELF_BEGIN, begin);
     swofty::log("[ers] vehicle_newlap for vehicle %u: participant %lld of %lld has no vehicle (entry 0x%llx, vehicle "
                 "0x%llx); skipped%s",
                 unsigned(c->rdx & 0xff), begin ? (long long)(c->rax - begin) / 8 : -1LL,
-                begin ? (long long)(c->r8 - begin) / 8 : -1LL, (unsigned long long)c->r9, (unsigned long long)vehicle,
-                n == LOG_FIRST ? " (further skips are not logged)" : "");
+                begin ? (long long)(c->r8 - begin) / 8 : -1LL, (unsigned long long)c->r9, (unsigned long long)vehicle, line.tail);
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::ers_newlap,
                         {

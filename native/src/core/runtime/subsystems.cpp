@@ -42,6 +42,7 @@ constexpr Subsystem SUBSYSTEMS[] = {
     {"postfx", Start::ready, postfx_setup},
     {"grade", Start::ready, grade_setup},
     {"srv clamp", Start::ready, srv_clamp_setup},
+    {"rtas guard", Start::ready, rtas_guard_setup},
     {"live", Start::ready, live_setup},
     {"telemetry", Start::ready, telemetry_setup},
     {"placed record", Start::ready, placed_record_setup},

@@ -32,6 +32,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 
 constexpr const char *MIXIN = "swofty_core.dll (track acclimatisation guard)";
@@ -47,7 +48,7 @@ using Refresh = void(void *);
 Refresh *orig_refresh = nullptr;
 uintptr_t penalty_return = 0;
 bool wanted = false;
-std::atomic<int> skipped{0}, penalty_skipped{0};
+guards::LogFirst<LOG_FIRST> skipped{"skips"}, penalty_skipped{"skips"};
 
 void refresh(void *self)
 {
@@ -58,13 +59,12 @@ void refresh(void *self)
         orig_refresh(self);
         return;
     }
-    int n = ++skipped;
-    if (n > LOG_FIRST)
+    auto line = skipped.note();
+    if (!line)
         return;
     swofty::log("[acclim] Track Acclimatisation programme 0x%llx has no targets at this track (targets 0x%llx); "
                 "refresh skipped%s",
-                (unsigned long long)(uintptr_t)self, (unsigned long long)begin,
-                n == LOG_FIRST ? " (further skips are not logged)" : "");
+                (unsigned long long)(uintptr_t)self, (unsigned long long)begin, line.tail);
 }
 
 void penalty_entry(SwoftyContext *c)
@@ -73,16 +73,13 @@ void penalty_entry(SwoftyContext *c)
     if (!mem::read(c->rcx + TARGETS_BEGIN, begin) || !mem::read(c->rcx + TARGETS_END, end) || begin != end)
         return;
     c->rip = penalty_return;
-    int n = ++penalty_skipped;
-    if (n > LOG_FIRST)
+    auto line = penalty_skipped.note();
+    if (!line)
         return;
     swofty::log("[acclim] Track Acclimatisation programme 0x%llx has no targets at this track (targets 0x%llx); "
                 "penalty flag skipped%s",
-                (unsigned long long)c->rcx, (unsigned long long)begin,
-                n == LOG_FIRST ? " (further skips are not logged)" : "");
+                (unsigned long long)c->rcx, (unsigned long long)begin, line.tail);
 }
-
-namespace guards = swofty_core::guards;
 
 class AcclimGuard final : public guards::Guard {
 public:
