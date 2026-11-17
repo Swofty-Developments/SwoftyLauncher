@@ -12,7 +12,7 @@ use swofty_core::crash::{Event, LogScan, Symbols, fatal_name};
 use swofty_core::install::{Game, Installer, PROXY, Source};
 use swofty_core::launch;
 use swofty_core::loader_check;
-use swofty_core::multiplayer::bridge::{ENV as NETPLAY_ENV, armed_env, with_network_log_channels};
+use swofty_core::multiplayer::client::{LAUNCH_ENV as NETPLAY_ENV, parse_launch_env};
 use swofty_core::process::{
     descends_from, flag, game_processes, game_running_in, games_in, steamvr_running, stop_game_in,
     stop_process,
@@ -506,6 +506,7 @@ fn wrapper(store: &Store, profile: &str, args: &RunArgs, g: &Game) -> Result<Exi
         request_id: request.id.clone(),
         _lock: lock,
     };
+    crate::build::with_session_env(request.netplay.is_some());
     if apply {
         say("info", &format!("installing profile {profile}"));
         crate::build::install(store, &profile, g, true, &info)?;
@@ -951,14 +952,27 @@ fn play(
         game_env.insert(swofty_core::launcher_saves::OFF_ENV.to_owned(), "off".to_owned());
     }
     if let Some(armed) = &request.netplay {
-        for (name, value) in armed_env(armed) {
-            game_env.entry(name.to_owned()).or_insert(value);
+        for (name, value) in parse_launch_env(armed) {
+            match game_env.get_mut(&name) {
+                Some(have) if name == "SWOFTY_GAME_LOG_CHANNELS" => {
+                    let named = |c: &str| c.trim().split(':').next().unwrap_or("").to_owned();
+                    for channel in value.split(',').map(str::trim) {
+                        let name = named(channel);
+                        if name.is_empty() || name == "default" || have.split(',').any(|h| named(h) == name) {
+                            continue;
+                        }
+                        if !have.trim().is_empty() {
+                            have.push(',');
+                        }
+                        have.push_str(channel);
+                    }
+                }
+                Some(_) => {}
+                None => {
+                    game_env.insert(name, value);
+                }
+            }
         }
-    }
-    if game_env.contains_key(NETPLAY_ENV)
-        && let Some(channels) = game_env.get_mut("SWOFTY_GAME_LOG_CHANNELS")
-    {
-        *channels = with_network_log_channels(channels);
     }
     // The prefix's registry override is not always what Wine reads at start,
     // so the session also names version.dll in WINEDLLOVERRIDES, which wins

@@ -119,13 +119,24 @@ fn build_profile(
 
 /// The in-game plugins the server publishes for a signed-in session, verified. A plugin that is not
 /// there is one log line with the reason and the session goes on without it.
+static SESSION_ENV: AtomicBool = AtomicBool::new(false);
+
+/// Whether the game this process starts gets the session module's environment; its in-game plugin is
+/// placed only then.
+pub fn with_session_env(on: bool) {
+    SESSION_ENV.store(on, Ordering::Relaxed);
+}
+
 fn server_plugins(store: &Store, out: &dyn Fn(&str)) -> Vec<(Plugin, modules::Module)> {
     let Some(session) = swofty_core::mpauth::load(&store.root) else {
         return Vec::new();
     };
     let api = swofty_core::timetrial::api::Api::new(&session.token);
     let mut found = Vec::new();
-    for plugin in [modules::TT_GAME] {
+    let wanted = [modules::TT_GAME]
+        .into_iter()
+        .chain(SESSION_ENV.load(Ordering::Relaxed).then_some(modules::MP_GAME));
+    for plugin in wanted {
         match modules::ensure(&store.root, &api, plugin.name, modules::GAME_PLATFORM, plugin.abi) {
             Ok(m) => {
                 if m.is_local() {

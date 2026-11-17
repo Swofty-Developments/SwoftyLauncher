@@ -6,6 +6,8 @@
 //! [`crate::timetrial::integrity`]. Every failure is an [`Unavailable`] with one sentence for the log or the
 //! page; the launcher goes on without the module.
 
+pub mod library;
+
 use std::collections::BTreeMap;
 use std::fmt;
 use std::path::{Path, PathBuf};
@@ -43,6 +45,13 @@ pub struct Plugin {
 pub const TT_GAME: Plugin = Plugin {
     name: "tt-game",
     id: "swofty.tt",
+    abi: 1,
+};
+
+/// Placed only for a game started with the session module's environment.
+pub const MP_GAME: Plugin = Plugin {
+    name: "mp-game",
+    id: "swofty.mp",
     abi: 1,
 };
 

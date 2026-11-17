@@ -7136,6 +7136,7 @@ version = "1.9.60"
 dependencies = [
  "flate2",
  "libc",
+ "libloading",
  "md-5 0.11.0",
  "png 0.18.1",
  "rars",

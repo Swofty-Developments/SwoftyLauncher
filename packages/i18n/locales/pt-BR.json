@@ -689,6 +689,7 @@
   "Old backup": "Backup antigo",
   "On": "Ativado",
   "Online": "Online",
+  "Online sessions aren't available: {why}": "Sessões online não estão disponíveis: {why}",
   "Only {free} free on the drive with your addons and saves: installing or building addons may fail.": "Só há {free} livres na unidade com seus complementos e saves: instalar ou compilar complementos pode falhar.",
   "Only {free} free on {drive}, and F1 25 needs {need} to start.": "Só há {free} livres em {drive}, e o F1 25 precisa de {need} para iniciar.",
   "Only {free} free on {drive}. F1 25 won't start with less than {need} free there.": "Só há {free} livres em {drive}. O F1 25 não inicia com menos de {need} livres ali.",
