@@ -185,17 +185,18 @@ constexpr size_t commit_rank(CoreSetId id)
     return COMMIT_ORDER.size();
 }
 
-// The guards that hook game code through safetyhook themselves, in the order they are armed (when_code_ready).
+// The guards that hook game code through safetyhook themselves, in the order they are armed (when_code_ready): the
+// order their sources link in (tools/core_link_order.txt), which is the order their SDK on-load entries run in.
 enum class HookGuardId : uint8_t {
-    ai_curves,
     activity_resume,
-    rnd_suppliers,
     sequencer_records,
-    teamhq_track,
-    setup_vm,
     race_retirement,
-    replay_read,
     teammate_pairs,
+    setup_vm,
+    teamhq_track,
+    ai_curves,
+    replay_read,
+    rnd_suppliers,
     gp_weekend_track,
     count,
 };
@@ -203,8 +204,16 @@ enum class HookGuardId : uint8_t {
 constexpr size_t HOOK_GUARD_COUNT = size_t(HookGuardId::count);
 
 constexpr std::array<std::string_view, HOOK_GUARD_COUNT> HOOK_GUARD_NAMES = {
-    "ai_curves", "activity_resume", "rnd_suppliers", "sequencer_records", "teamhq_track",
-    "setup_vm",  "race_retirement", "replay_read",   "teammate_pairs",    "gp_weekend_track",
+    "activity_resume",
+    "sequencer_records",
+    "race_retirement",
+    "teammate_pairs",
+    "setup_vm",
+    "teamhq_track",
+    "ai_curves",
+    "replay_read",
+    "rnd_suppliers",
+    "gp_weekend_track",
 };
 
 constexpr std::string_view hook_guard_name(HookGuardId id) { return HOOK_GUARD_NAMES[size_t(id)]; }
