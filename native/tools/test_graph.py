@@ -12,7 +12,8 @@ every host test, `test-wine` every Wine test, and each test's name and each grou
 Ninja starts first the edges with the longest chain of edges behind them. A unit's compile has two (its link and its
 run), and the run of a script without programs, which takes longest, has none, so PRIORITY stamp edges follow each
 such run and one follows the run of a script with programs: those scripts start first, then their programs' compiles,
-then the units.
+then the units. A Program of kind 'obj' has a stamp edge in place of a link, so its compile is not left with the
+units.
 """
 
 import argparse
@@ -143,7 +144,8 @@ def main():
             if len(p.objects) != 1 or len(p.objects[0].sources) != 1:
                 sys.exit(f'test_graph.py: {out} is an object, so it compiles one source')
             compile_into(out, p.objects[0], p.objects[0].sources[0])
-            return out
+            lines.extend([f'build {out}.built: stamp {out}', f'  name = {p.out}'])
+            return f'{out}.built'
         targets = {o.target for o in p.objects}
         if len(targets) != 1:
             sys.exit(f'test_graph.py: {out} mixes targets {sorted(targets)}')
