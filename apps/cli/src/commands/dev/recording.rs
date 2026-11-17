@@ -7,11 +7,14 @@ use anyhow::{Context, Result, bail};
 use serde_json::Value;
 use swofty_core::manifest::MANIFEST_FILE;
 use swofty_core::store::Store;
+use swofty_formats::pe::has_export;
 
 use crate::commands::dev::lock::{LOCK_FILE, Lock};
 use crate::commands::dev::native_test::ENGINE_SOURCES;
 use crate::commands::dev::toolchain::which;
-use crate::commands::dev::{RECORDER_ENV, WINE_ENV, check, data_paths, data_root, lock, pe};
+use crate::commands::dev::{RECORDER_ENV, WINE_ENV, check, data_paths, data_root, lock};
+
+pub const REGISTER_EXPORT: &str = "SwoftyAddonRegister";
 
 pub fn manifest_json(folder: &Path) -> Result<Value> {
     let path = folder.join(MANIFEST_FILE);
@@ -34,7 +37,7 @@ pub fn register_dlls(folder: &Path, manifest: &Value) -> Result<Vec<PathBuf>> {
         let path = folder.join(&rel);
         let image =
             std::fs::read(&path).with_context(|| format!("{rel} is missing; build the addon first"))?;
-        if pe::has_register(&image) {
+        if has_export(&image, REGISTER_EXPORT) {
             out.push(path);
         }
     }

@@ -4,7 +4,6 @@ mod data_paths;
 mod link;
 pub mod lock;
 mod native_test;
-pub mod pe;
 mod recording;
 mod scaffold;
 mod toolchain;
