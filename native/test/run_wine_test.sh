@@ -1,11 +1,14 @@
 #!/usr/bin/env bash
-set -euo pipefail
+set -Eeuo pipefail
 # The Wine test. With no option every case runs in turn in one folder and one Wine prefix. --setup [DIR] builds
 # the fake games, the test addons and the prepared folders into DIR/base and makes a Wine prefix there; --case
 # NAME [DIR] then runs one case in DIR/NAME, a fresh copy of DIR/base with a copy of that prefix of its own, so
 # cases can run side by side. The copy hard-links the prefix's program files (.dll, .exe and the like), which
 # Wine only reads. Without a wineserver of the same Wine build (lib/wineserver.sh), or when making the prefix
 # fails, the setup says so and each case makes its own prefix, as the first Wine start in an empty one does. --list prints the case names. DIR defaults to native/build/wine-test.
+# Every way it fails prints a FAIL line: a check that fails, a game run that exits nonzero (exited), and a command
+# that stops the script under set -e (stopped names it and its line).
+trap 'line=$LINENO' ERR
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
 CASES=(modes crash acclim acclim_penalty ers_mode standings weekends teamhq activity setup_vm pairs fe_tiles ai_corner replay_grid garage_crew pit_slots leaderboard myteam_vehicle myteam_keep myteam_heal track_list ntpage int3 stages packed filled register)
@@ -21,6 +24,15 @@ case ${1:-} in
 --case) MODE=case CASE=${2:?--case needs a case name}; shift 2 ;;
 esac
 . ./game_lock.sh
+LOCK_TRAP=
+lock_trap() { LOCK_TRAP=$3; }
+[ -z "$(trap -p EXIT)" ] || eval "lock_trap $(trap -p EXIT)"
+stopped() {
+    local rc=$1
+    [[ $rc == 0 || -n ${finished-} ]] || echo "FAIL: run_wine_test.sh stopped at line ${line-?}: $BASH_COMMAND exited with status $rc"
+    eval "$LOCK_TRAP"
+}
+trap 'stopped $?' EXIT
 OUT=${1:-$PWD/../build/wine-test}
 ITEMS=
 grep -qa '\[items\] ownership check hooked' ../dist/swofty/addons/core/swofty_core.dll && ITEMS=1
@@ -122,6 +134,10 @@ count() {
     local n
     n=$(grep -cE "$3" "$LOG" || true)
     if [[ $n == "$2" ]]; then echo "ok  : $1"; else echo "FAIL: $1 (logged $n times, want $2)"; status=1; fi
+}
+exited() {
+    echo "FAIL: $1 exited with status $2"
+    status=1
 }
 }
 prepare() {
@@ -251,7 +267,7 @@ EOF
     [[ $mode == trigger || $mode == vm ]] && gl_channels=default,verbose
     rm -f "$OUT"/game/swofty/stall-*.txt
     SWOFTY_TEST_LOAD_STALL_REPORT=$([[ $mode == state ]] && echo 1) SWOFTY_UDP_STOCK_IDS=$udp_ids SWOFTY_RESOLVE=$resolve SWOFTY_TEST_ASSETS=$([[ $mode == assets* ]] && echo 1) SWOFTY_GAME_LOG=$gl_level SWOFTY_GAME_LOG_RATE=$gl_rate SWOFTY_GAME_LOG_CHANNELS=$gl_channels SWOFTY_TEST_REQUESTS=${req:+Z:${req//\//\\}} SWOFTY_TEST_ITEMS=$ITEMS \
-        "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode || status=1
+        "${PIN[@]}" xvfb-run -a wine "$OUT/game/F1_25.exe" $mode || exited "$mode: the game" $?
     if [[ $mode == assets_ro ]]; then
         GAME_ADDON=$OUT/game/swofty/addons/example.sample-mod
         ro_files="data log=$(cat "$KEPT/save/log.txt" 2>/dev/null) state=$([[ -e $KEPT/save/state.txt ]] && echo yes || echo no)"
@@ -1210,7 +1226,7 @@ done
 case_stages() {
 echo "==== stages"
 LOG=$SG/swofty/loader.log
-SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$SG/F1_25.exe" stages || status=1
+SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$SG/F1_25.exe" stages || exited "stages: the game" $?
 echo "---- $LOG (stages)"
 grep -v '  section ' "$LOG"
 check "stages: early stage on from the environment" 'early stage: on \(SWOFTY_EARLY_STAGE=1\)'
@@ -1271,7 +1287,7 @@ doc['build']['size'] += 1
 json.dump(doc, open(sys.argv[1], 'w'), indent=1)
 EOF
 rm -rf "$SG/swofty/cache"
-SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$SG/F1_25.exe" stages || status=1
+SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$SG/F1_25.exe" stages || exited "stages: the game" $?
 once "stages: an exe of another size than the KB build never uses the KB addresses" '\[core\] binding resolution: the exe is [0-9]+ bytes and the KB build [0-9]+; the KB addresses are not used, every pattern is scanned'
 count "stages: with another size, nothing binds at a KB address" 0 'via pattern at the KB address|does not match at the KB address'
 once "stages: with another size, the early site is found by a scan" '\[core\] bind wine-test:site_Stage_Entry -> 0x[0-9a-f]+ \(base\+0x[0-9a-f]+\), site experimental via pattern[[:space:]]*$'
@@ -1283,7 +1299,7 @@ for mode in packed packed_never packed_plain; do
     dir=$PK
     [[ $mode == packed_plain ]] && dir=$PP
     LOG=$dir/swofty/loader.log
-    SWOFTY_EARLY_STAGE=1 timeout 120 "${PIN[@]}" xvfb-run -a wine "$dir/F1_25.exe" $mode || status=1
+    SWOFTY_EARLY_STAGE=1 timeout 120 "${PIN[@]}" xvfb-run -a wine "$dir/F1_25.exe" $mode || exited "$mode: the game" $?
     echo "---- $LOG ($mode)"
     grep -E '\[bind\] summary|\[core\] (build|bindings|.* pass:|.* waits:|.*setting it up now|.*fails closed|scan .*refused|addon .*(dropped|runs again|ran again))|\[crash\] Ne_Report|stage: window|trigger: KERNEL32' "$LOG" || true
     python3 packed_game.py check $mode "$LOG" "$dir/F1_25.exe" || status=1
@@ -1352,7 +1368,7 @@ done
 case_filled() {
 echo "==== filled"
 LOG=$OUT/filled/swofty/loader.log
-SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$OUT/filled/F1_25.exe" || status=1
+SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$OUT/filled/F1_25.exe" || exited "filled: the game" $?
 echo "---- $LOG (filled)"
 grep -v '  section ' "$LOG"
 check "filled: the exe's import table lacks the early slot" "trigger: game IAT slot KERNEL32!CreateMutexW not found or not writable; the exe's import table is filled at load"
@@ -1382,7 +1398,7 @@ check "gated: the trigger fires and loads nothing" 'addons NOT loaded, this exe 
 count "gated: no addon is loaded" 0 'loading addons now'
 count "gated: the core never attaches" 0 'provides the mixin API'
 rm -f "$LOG"
-SWOFTY_ALLOW_UNSUPPORTED_BUILD=1 SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$GT/F1_25.exe" || status=1
+SWOFTY_ALLOW_UNSUPPORTED_BUILD=1 SWOFTY_EARLY_STAGE=1 "${PIN[@]}" xvfb-run -a wine "$GT/F1_25.exe" || exited "gated: the allowed game" $?
 echo "---- $LOG (gated, override)"
 grep -v '  section ' "$LOG"
 count "gated: the override leaves the exe unrefused" 0 'is not a build this launcher supports'
@@ -1407,7 +1423,7 @@ json.dump({'version': 1, 'profile': 'wine-test', 'order': ['t.register', 'wine.d
 json.dump({'wine.thing': {'extra': {'name': 'extra', 'n': 7}}}, open(root + '/addons/wine.data/registry/records.json', 'w'))
 EOF
 LOG=$SR/swofty/loader.log
-env -u SWOFTY_EARLY_STAGE "${PIN[@]}" xvfb-run -a wine "$SR/F1_25.exe" register || status=1
+env -u SWOFTY_EARLY_STAGE "${PIN[@]}" xvfb-run -a wine "$SR/F1_25.exe" register || exited "register: the game" $?
 echo "---- $LOG (register)"
 grep -v '  section ' "$LOG"
 check "register: a dll that exports SwoftyAddonRegister turns the early stage on" 'early stage: on for 1 addon dll\(s\) that export SwoftyAddonRegister'
@@ -1471,4 +1487,5 @@ case)
     "case_$CASE"
     ;;
 esac
+finished=1
 exit $status
