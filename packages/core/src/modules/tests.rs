@@ -120,6 +120,7 @@ fn the_servers_signature_format_is_accepted() {
         size: 1,
         signature: KAT.into(),
         file: FILE.into(),
+        cdn_url: Some("https://cdn.example/not-signed".into()),
     };
     assert_eq!(
         signed_message(&offer),
@@ -287,6 +288,133 @@ fn a_busy_server_counts_as_unreachable() {
         let (got, _) = ask(&d, &key, vec![(LIST, status, b"{}".to_vec())], 1);
         assert_eq!(got.unwrap().version, "1.0");
     }
+    std::fs::remove_dir_all(d).ok();
+}
+
+fn with_cdn(mut offer: serde_json::Value, url: &str) -> serde_json::Value {
+    offer["cdn_url"] = url.into();
+    offer
+}
+
+/// One request answered with `status` and `body`; the whole request as it arrived.
+fn cdn(status: &str, body: Vec<u8>) -> (String, std::thread::JoinHandle<String>) {
+    use std::io::{Read, Write};
+    let listener = std::net::TcpListener::bind("127.0.0.1:0").unwrap();
+    let url = format!("http://{}/modules/tt-game/{FILE}", listener.local_addr().unwrap());
+    let status = status.to_owned();
+    let t = std::thread::spawn(move || {
+        let (mut c, _) = listener.accept().unwrap();
+        let mut got = Vec::new();
+        let mut buf = [0u8; 4096];
+        while !got.windows(4).any(|w| w == b"\r\n\r\n") {
+            let n = c.read(&mut buf).unwrap();
+            if n == 0 {
+                break;
+            }
+            got.extend_from_slice(&buf[..n]);
+        }
+        let head = format!(
+            "HTTP/1.1 {status}\r\nContent-Length: {}\r\nConnection: close\r\n\r\n",
+            body.len()
+        );
+        c.write_all(head.as_bytes()).ok();
+        c.write_all(&body).ok();
+        String::from_utf8_lossy(&got).into_owned()
+    });
+    (url, t)
+}
+
+#[test]
+fn a_cdn_link_is_downloaded_without_the_sign_in_and_the_server_is_only_listed() {
+    let key = pair();
+    let (url, t) = cdn("200 OK", BYTES.to_vec());
+    let offer = with_cdn(offer_of(&key, "1.0", 1, BYTES), &url);
+    let (got, d, seen) = run("cdn", &key, vec![(LIST, "200 OK", listing(&[offer]))], 1);
+    let asked = t.join().unwrap();
+    let m = got.unwrap();
+    assert_eq!(std::fs::read(&m.path).unwrap(), BYTES);
+    assert_eq!(seen, ["/v1/modules?platform=windows-x86_64&abi.tt-game=1"]);
+    assert!(asked.starts_with(&format!("GET /modules/tt-game/{FILE} ")));
+    assert!(!asked.to_ascii_lowercase().contains("authorization"), "{asked}");
+    assert!(!asked.contains("tok"), "{asked}");
+    let stored: Offer =
+        serde_json::from_slice(&std::fs::read(m.path.with_file_name(OFFER_FILE)).unwrap()).unwrap();
+    assert_eq!(stored.cdn_url.as_deref(), Some(url.as_str()));
+    std::fs::remove_dir_all(d).ok();
+}
+
+#[test]
+fn a_cdn_that_fails_or_serves_other_bytes_leaves_the_download_to_the_server() {
+    let key = pair();
+    for (label, status, body) in [
+        ("cdn-404", "404 Not Found", b"gone".to_vec()),
+        ("cdn-hash", "200 OK", b"MZ not really a dlL".to_vec()),
+        ("cdn-long", "200 OK", [BYTES, b" and more"].concat()),
+    ] {
+        let (url, t) = cdn(status, body);
+        let offer = with_cdn(offer_of(&key, "1.0", 1, BYTES), &url);
+        let routes = vec![
+            (DOWNLOAD, "200 OK", BYTES.to_vec()),
+            (LIST, "200 OK", listing(&[offer])),
+        ];
+        let (got, d, seen) = run(label, &key, routes, 2);
+        t.join().unwrap();
+        assert_eq!(std::fs::read(got.unwrap().path).unwrap(), BYTES, "{label}");
+        assert_eq!(seen.len(), 2, "{label}");
+        std::fs::remove_dir_all(d).ok();
+    }
+}
+
+#[test]
+fn a_cdn_link_that_is_not_https_is_not_followed() {
+    assert!(cdn_link("https://cdn.swofty.net/modules/x"));
+    assert!(cdn_link("http://127.0.0.1:9/x"));
+    assert!(!cdn_link("http://cdn.swofty.net/modules/x"));
+    assert!(!cdn_link("file:///etc/passwd"));
+    assert!(!cdn_link("ftp://cdn.swofty.net/x"));
+    let key = pair();
+    let offer = with_cdn(offer_of(&key, "1.0", 1, BYTES), "http://10.255.255.1:9/x");
+    let routes = vec![
+        (DOWNLOAD, "200 OK", BYTES.to_vec()),
+        (LIST, "200 OK", listing(&[offer])),
+    ];
+    let (got, d, seen) = run("cdn-plain", &key, routes, 2);
+    assert_eq!(std::fs::read(got.unwrap().path).unwrap(), BYTES);
+    assert_eq!(seen.len(), 2);
+    std::fs::remove_dir_all(d).ok();
+}
+
+#[test]
+fn a_busy_download_keeps_the_cached_copy_and_a_refused_one_does_not() {
+    let key = pair();
+    let d = data("busy-file");
+    fetch(&d, &key, "1.0", 1, BYTES);
+    let next = b"MZ the next build, longer than any error answer the server sends for it";
+    let newer = || listing(&[offer_of(&key, "1.1", 1, next)]);
+    let busy = br#"{"error":"too many requests; try again later"}"#.to_vec();
+    for status in ["429 Too Many Requests", "503 Service Unavailable"] {
+        let routes = vec![(DOWNLOAD, status, busy.clone()), (LIST, "200 OK", newer())];
+        let (got, seen) = ask(&d, &key, routes, 2);
+        assert_eq!(got.unwrap().version, "1.0", "{status}");
+        assert_eq!(seen.len(), 2);
+    }
+    let routes = vec![
+        (
+            DOWNLOAD,
+            "403 Forbidden",
+            br#"{"error":"needs the beta role"}"#.to_vec(),
+        ),
+        (LIST, "200 OK", newer()),
+    ];
+    let (got, _) = ask(&d, &key, routes, 2);
+    assert_eq!(got.unwrap_err().why, "needs the beta role");
+    let routes = vec![
+        (DOWNLOAD, "429 Too Many Requests", busy),
+        (LIST, "200 OK", newer()),
+    ];
+    let (got, empty, _) = run("busy-empty", &key, routes, 2);
+    assert_eq!(got.unwrap_err().why, "too many requests; try again later");
+    std::fs::remove_dir_all(empty).ok();
     std::fs::remove_dir_all(d).ok();
 }
 
