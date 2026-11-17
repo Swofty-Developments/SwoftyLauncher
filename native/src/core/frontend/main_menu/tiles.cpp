@@ -4,6 +4,7 @@
 #include "core/frontend/main_menu/context.hpp"
 #include "core/frontend/main_menu_logic.hpp"
 #include "core/frontend/tile_list.hpp"
+#include "core/frontend/vm_string.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
@@ -37,7 +38,7 @@ Add_t target(const uint8_t *at, size_t off)
 
 using tile_list::last_item;
 using tile_list::route_action;
-using tile_list::set_string;
+using vm::set_string;
 
 void typed_populate(HomeItem *item, void *node, uint32_t a7) { menu.tiles.populate_typed(item, node, a7); }
 

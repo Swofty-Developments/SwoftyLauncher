@@ -3,6 +3,7 @@
 #include "core/frontend/player_name/copies.hpp"
 #include "core/frontend/player_name_logic.hpp"
 #include "core/frontend/ui_registry_walk.hpp"
+#include "core/frontend/vm_string.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -375,10 +376,7 @@ int pin_names(const std::string &name, const std::string &stock)
         const char *leaf = h.depth >= 1 ? runtime::player_name::leaf_name(h.chain[h.depth - 1]) : nullptr;
         if (!leaf || !h.parent || h.depth < 2 || !runtime::player_name::root_allowed(h.chain[0]))
             continue;
-        swofty::game::NeStr *str = nullptr;
-        swofty::game::Ne_Make_StrFromCStr(&str, name.c_str(), 0, 0);
-        swofty::game::Vm_Set_String(reinterpret_cast<void *>(reg), reinterpret_cast<void *>(h.parent + 8), leaf, &str, 1);
-        swofty::game::Ne_Make_StrFromCStr(&str, nullptr, 0, 0);
+        vm::set_string(reinterpret_cast<void *>(reg), reinterpret_cast<void *>(h.parent + 8), leaf, name.c_str());
         written++;
     }
     if (written && logged.fetch_add(1) < 6)

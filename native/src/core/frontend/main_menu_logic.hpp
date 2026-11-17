@@ -4,6 +4,7 @@
 #include <string>
 #include <vector>
 
+#include "core/frontend/name_hash.hpp"
 #include "core/runtime/json.hpp"
 
 namespace runtime::main_menu {
@@ -185,13 +186,7 @@ inline Point scene_to_px(double x, double y, float width, float height)
             b.top + float(SCENE_CENTRE_Y) * b.height - s * float(y)};
 }
 
-constexpr uint32_t djb2(const char *s)
-{
-    uint32_t h = 5381;
-    for (; *s; s++)
-        h = h * 33 + uint8_t(*s);
-    return h;
-}
+using name_hash::djb2;
 
 inline std::string button_name(bool pad) { return pad ? "RB" : "V"; }
 

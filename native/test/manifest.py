@@ -117,6 +117,8 @@ UNITS = [
     Unit('setup_vm', 'Setup screen car guard unit test'),
     Unit('srv_clamp', 'Shader resource view clamp unit test'),
     Unit('rtas_guard', 'Ray tracing build guard unit test'),
+    Unit('d3d12_probe', 'D3D12 probe device sharing unit test'),
+    Unit('font_upload', 'Overlay font atlas upload unit test'),
     Unit('lang_scope', 'String scope unit test'),
     Unit('stall_order', 'Load-stall report running-threads order unit test'),
     Unit('standings_drop', 'Standings dropped scores unit test'),

@@ -1,7 +1,10 @@
 #include "core/render/d3d12/hooking.hpp"
 
+#include "core/diagnostics/steps.hpp"
 #include "core/hud/hud_guard.hpp"
 #include "core/render/d3d12_hooks.hpp"
+#include "core/render/probe_logic.hpp"
+#include "core/runtime/loader/host_api.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -12,8 +15,7 @@ namespace d3d12hooks {
 namespace {
 
 std::mutex probe_lock;
-ID3D12Device *probe_held;
-int probe_scopes;
+constinit ProbeHold<ID3D12Device> probe;
 
 }
 
@@ -44,20 +46,16 @@ bool install(safetyhook::InlineHook &h, void *target, void *detour, const char *
 ID3D12Device *probe_device()
 {
     std::lock_guard<std::mutex> g(probe_lock);
-    if (probe_held) {
-        probe_held->AddRef();
-        return probe_held;
-    }
-    HMODULE d3d12 = LoadLibraryA("d3d12.dll");
-    auto create = d3d12 ? reinterpret_cast<PFN_D3D12_CREATE_DEVICE>(GetProcAddress(d3d12, "D3D12CreateDevice")) : nullptr;
-    ID3D12Device *dev = nullptr;
-    if (!create || FAILED(create(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&dev))))
-        return nullptr;
-    if (probe_scopes) {
-        dev->AddRef();
-        probe_held = dev;
-    }
-    return dev;
+    return probe.get([]() -> ID3D12Device * {
+        perf::Stopwatch made;
+        HMODULE d3d12 = LoadLibraryA("d3d12.dll");
+        auto create = d3d12 ? reinterpret_cast<PFN_D3D12_CREATE_DEVICE>(GetProcAddress(d3d12, "D3D12CreateDevice")) : nullptr;
+        ID3D12Device *dev = nullptr;
+        if (!create || FAILED(create(nullptr, D3D_FEATURE_LEVEL_11_0, IID_PPV_ARGS(&dev))))
+            return nullptr;
+        runtime::loader::api->log(perf::STEP_LINE, made.total_ms(), "d3d12 probe device made");
+        return dev;
+    });
 }
 
 std::string module_of(const void *addr, HMODULE *mod)
@@ -77,14 +75,15 @@ std::string module_of(const void *addr, HMODULE *mod)
 ProbeScope::ProbeScope()
 {
     std::lock_guard<std::mutex> g(probe_lock);
-    ++probe_scopes;
+    probe.open();
 }
 
 ProbeScope::~ProbeScope()
 {
     std::lock_guard<std::mutex> g(probe_lock);
-    if (--probe_scopes == 0)
-        release(probe_held);
+    perf::Stopwatch released;
+    if (probe.close())
+        runtime::loader::api->log(perf::STEP_LINE, released.total_ms(), "d3d12 probe device release");
 }
 
 }
