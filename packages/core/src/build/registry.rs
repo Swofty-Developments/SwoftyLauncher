@@ -3,8 +3,8 @@ use std::path::Path;
 
 use super::Built;
 use super::run::Run;
-use crate::builtin::loader_dir;
-use crate::runtime::Runtime;
+use crate::addons::builtin::loader_dir;
+use crate::content::runtime_assets::Runtime;
 use crate::stdlib::deps::Std;
 use crate::stdlib::manifest::RegistryManifest;
 

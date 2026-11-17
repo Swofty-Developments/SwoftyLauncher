@@ -27,7 +27,7 @@ pub use search::{Hit, HitKind, Target};
 
 use std::path::PathBuf;
 
-use crate::baseline::DepotHashes;
+use crate::game_folder::baseline::DepotHashes;
 use crate::install::Game;
 use crate::store::Store;
 use crate::{Error, Result};
@@ -36,9 +36,9 @@ use crate::{Error, Result};
 /// else the game folder's file, refused when Steam's manifest says it was
 /// changed (a database mod copied in by hand).
 pub fn stock_database(store: &Store, game: &Game) -> Result<PathBuf> {
-    let depots = crate::steam::find_game()
+    let depots = crate::platform::steam::find_game()
         .filter(|g| g.dir == game.dir)
-        .and_then(|g| crate::stock::Depots::load(&g).ok());
+        .and_then(|g| crate::game_folder::stock::Depots::load(&g).ok());
     stock_database_with(store, game, depots.as_ref().map(|d| d as &dyn DepotHashes))
 }
 
@@ -78,7 +78,7 @@ mod tests {
         std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
         std::fs::write(dir.join(crate::build::GVDB), "db").unwrap();
         let game = Game {
-            identity: crate::baseline::Identity::detect(&dir, Some(1)).unwrap(),
+            identity: crate::game_folder::baseline::Identity::detect(&dir, Some(1)).unwrap(),
             dir: dir.clone(),
             user_reg: None,
         };

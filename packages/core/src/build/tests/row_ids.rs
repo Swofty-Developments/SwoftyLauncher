@@ -157,7 +157,6 @@ fn build_reply_fields_name_the_columns_add_row_copies() {
 
 #[test]
 fn a_room_launch_build_uses_the_hosts_ids_under_its_own_cache_key_and_keeps_row_ids_json() {
-    let _lending = LENDING.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
     use swofty_formats::gvdb::Record;
     if loader_dir().is_some() {
         return;

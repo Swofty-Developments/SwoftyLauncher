@@ -2,7 +2,7 @@
 //! its manifest `requires`, and theirs, at versions the catalog lists and this
 //! launcher can install. Nothing installs when one of them can't be met.
 
-use crate::conflicts::and_list;
+use crate::profile::conflicts::and_list;
 use std::cell::RefCell;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt;
@@ -15,7 +15,7 @@ use semver::VersionReq;
 use serde::Deserialize;
 
 use super::{Addon, INSTALLING, Stage, Version, download, downloads_dir, file_name};
-use crate::builtin::CORE_ID;
+use crate::addons::builtin::CORE_ID;
 use crate::manifest::{AddonManifest, MANIFEST_FILE, Requirement};
 use crate::store::Store;
 use crate::{Error, Result};
@@ -78,7 +78,9 @@ impl<'a> Have<'a> {
             have.addons.insert(id, m);
             if id == CORE_ID || builtin(id) {
                 have.builtin.insert(id);
-            } else if crate::managed::is_managed(id) || id.starts_with(crate::dbedit::package::ID_PREFIX) {
+            } else if crate::updates::managed::is_managed(id)
+                || id.starts_with(crate::dbedit::package::ID_PREFIX)
+            {
                 have.kept.insert(id);
             }
         }
@@ -273,7 +275,7 @@ impl<'w> Walk<'w> {
             return Ok(());
         }
         if let Some(at) = self.decided.get(id).cloned() {
-            if crate::version::satisfies(&r.version, &at) {
+            if crate::addons::version::satisfies(&r.version, &at) {
                 self.needs.entry(id.to_owned()).or_default().push(need);
                 return Ok(());
             }
@@ -298,7 +300,11 @@ impl<'w> Walk<'w> {
             needs.extend(self.dependents(id, &m.version));
         }
         needs.push(need);
-        let fits = |v: &semver::Version| needs.iter().all(|n| crate::version::satisfies(&n.version, v));
+        let fits = |v: &semver::Version| {
+            needs
+                .iter()
+                .all(|n| crate::addons::version::satisfies(&n.version, v))
+        };
         if let Some(m) = installed {
             if fits(&m.version) {
                 self.decided.insert(id.to_owned(), m.version.clone());
@@ -358,7 +364,7 @@ impl<'w> Walk<'w> {
             .flat_map(|m| {
                 m.requires
                     .iter()
-                    .filter(|r| r.id == id && crate::version::satisfies(&r.version, at))
+                    .filter(|r| r.id == id && crate::addons::version::satisfies(&r.version, at))
                     .map(|r| Need {
                         by: m.name.clone(),
                         version: r.version.clone(),
@@ -418,7 +424,7 @@ pub fn plan(
             let needs: Vec<_> = walk
                 .dependents(&addon.id, &installed.version)
                 .into_iter()
-                .filter(|need| !crate::version::satisfies(&need.version, &v.version))
+                .filter(|need| !crate::addons::version::satisfies(&need.version, &v.version))
                 .collect();
             if !needs.is_empty() {
                 walk.unmet(&addon.id, needs, Why::Installing(v.version.clone()));
@@ -694,7 +700,7 @@ fn install_with(
     progress: &dyn Fn(Event),
 ) -> Result<Vec<AddonManifest>> {
     let (dir, zips) = downloads;
-    let launcher = crate::update::current_version();
+    let launcher = crate::updates::release::current_version();
     // Other installs may change the store while this job is downloading. Replan
     // under the installation lock, but never perform network work while holding it.
     for _ in 0..SETTLE {
@@ -1336,7 +1342,9 @@ mod tests {
 
         let done = install_in_profile(&store, &catalog, &listed, &from, "p", &|_| {}).unwrap();
         assert!(done[0].is_shader_only());
-        let due = crate::catalog::store_updates(&store, &catalog, &crate::update::current_version()).unwrap();
+        let due =
+            crate::catalog::store_updates(&store, &catalog, &crate::updates::release::current_version())
+                .unwrap();
         assert_eq!(due.len(), 1);
         assert_eq!(due[0].to.version, to.version);
 
@@ -1346,7 +1354,7 @@ mod tests {
         assert_eq!(installed.version, to.version);
         assert!(store.addons_dir().join("t.look/icons/look.png").is_file());
         assert!(
-            crate::catalog::store_updates(&store, &catalog, &crate::update::current_version())
+            crate::catalog::store_updates(&store, &catalog, &crate::updates::release::current_version())
                 .unwrap()
                 .is_empty()
         );
@@ -1395,7 +1403,7 @@ mod tests {
         let mut v = version("1.0.0", listed.unwrap_or_default());
         v.requires = listed.map(|_| v.requires.clone().unwrap());
         v.size = zip.len() as u64;
-        v.sha256 = crate::baseline::sha256_bytes(zip);
+        v.sha256 = crate::game_folder::baseline::sha256_bytes(zip);
         v.url = format!("{base}{path}");
         v
     }
@@ -1569,7 +1577,7 @@ mod tests {
             consumer
                 .requires
                 .iter()
-                .any(|r| r.id == "t.c" && crate::version::satisfies(&r.version, dep))
+                .any(|r| r.id == "t.c" && crate::addons::version::satisfies(&r.version, dep))
         );
         assert_ne!(installed.contains_key("t.a"), installed.contains_key("t.b"));
         std::fs::remove_dir_all(&root).ok();

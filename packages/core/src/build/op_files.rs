@@ -1,13 +1,13 @@
 use std::path::Path;
 
 use super::buildhash::BuildHash;
+use crate::addons::builtin::{CORE_ID, CORE_INTRO, stage_intro};
+use crate::addons::settings::{OnAddons, render_ops};
 use crate::asset::{AssetOp, FileKind, OpFile};
-use crate::builtin::{CORE_ID, CORE_INTRO, stage_intro};
 use crate::dbedit::driver_manager;
 use crate::erpbuild::unsupported;
 use crate::manifest::AddonManifest;
 use crate::profile::Profile;
-use crate::settings::{OnAddons, render_ops};
 use crate::store::Store;
 use crate::{Error, Result, io_err};
 

@@ -22,8 +22,8 @@ use std::process::Command;
 
 use serde::{Deserialize, Serialize};
 
-use crate::app_control::Block;
-use crate::baseline::{DepotHashes, sha256_file, sha256_opt};
+use crate::game_folder::baseline::{DepotHashes, sha256_file, sha256_opt};
+use crate::platform::app_control::Block;
 use crate::{Error, Result, io_err, read_json, with_retry, write_json};
 
 const EAC_EXE: &str = "EAAntiCheat.GameServiceLauncher.exe";
@@ -142,8 +142,9 @@ pub fn consent(data: &Path) -> Option<Consent> {
 
 /// True when the terms were accepted and the text has not changed since.
 pub fn is_accepted(data: &Path) -> bool {
-    consent(data)
-        .is_some_and(|c| c.accepted && c.text_sha256 == crate::baseline::sha256_bytes(DISCLOSURE.as_bytes()))
+    consent(data).is_some_and(|c| {
+        c.accepted && c.text_sha256 == crate::game_folder::baseline::sha256_bytes(DISCLOSURE.as_bytes())
+    })
 }
 
 pub fn record_accept(data: &Path) -> Result<Consent> {
@@ -153,7 +154,7 @@ pub fn record_accept(data: &Path) -> Result<Consent> {
         .unwrap_or(0);
     let c = Consent {
         schema: 1,
-        text_sha256: crate::baseline::sha256_bytes(DISCLOSURE.as_bytes()),
+        text_sha256: crate::game_folder::baseline::sha256_bytes(DISCLOSURE.as_bytes()),
         accepted: true,
         accepted_utc: secs.to_string(),
         extension_version: EXTENSION_VERSION.into(),
@@ -357,8 +358,8 @@ fn av_error(e: Error) -> Error {
 /// it at `staged`, so the proxy found no file.
 pub fn stub_blocked(game: &Path, proxy_logs: &[String], since: i64, staged: Option<i64>) -> Option<Block> {
     let logged = proxy_logs.iter().any(|log| {
-        crate::ea_diag::proxy_virus_block(log, EAC_EXE, since)
-            || staged.is_some_and(|at| crate::ea_diag::proxy_file_missing(log, EAC_EXE, at))
+        crate::diagnostics::ea_launch::proxy_virus_block(log, EAC_EXE, since)
+            || staged.is_some_and(|at| crate::diagnostics::ea_launch::proxy_file_missing(log, EAC_EXE, at))
     });
     logged.then(|| stub_removed(game))
 }
@@ -368,7 +369,7 @@ pub fn stub_blocked(game: &Path, proxy_logs: &[String], since: i64, staged: Opti
 pub fn stub_removed(game: &Path) -> Block {
     Block {
         program: game.join(EAC_EXE),
-        code: crate::quarantine::ERROR_VIRUS_INFECTED,
+        code: crate::diagnostics::quarantine::ERROR_VIRUS_INFECTED,
     }
 }
 
@@ -404,7 +405,7 @@ pub fn stub_removed_text(data: &Path, stub: &Path) -> String {
 }
 
 fn virus_code(code: i32) -> bool {
-    crate::quarantine::is_virus_code(code)
+    crate::diagnostics::quarantine::is_virus_code(code)
 }
 
 fn virus_blocked(e: &std::io::Error) -> bool {
@@ -901,7 +902,7 @@ fn require_launcher(game: &Path) -> Result<()> {
     }
     Err(Error::MissingStock {
         files: vec![EAC_EXE.to_owned()],
-        version: crate::exe_version::read(&game.join(crate::GAME_EXE)),
+        version: crate::game_folder::exe_version::read(&game.join(crate::GAME_EXE)),
     })
 }
 
@@ -1511,7 +1512,7 @@ mod tests {
     fn digests(release: &[(&'static str, String)]) -> Vec<(&'static str, String)> {
         release
             .iter()
-            .map(|(n, b)| (*n, crate::baseline::sha256_bytes(b.as_bytes())))
+            .map(|(n, b)| (*n, crate::game_folder::baseline::sha256_bytes(b.as_bytes())))
             .collect()
     }
 
@@ -2545,7 +2546,10 @@ mod tests {
         let log = missing_line(game, "2026-11-13T10:00:00.698Z");
         let block = stub_blocked(game, std::slice::from_ref(&log), 0, Some(staged)).unwrap();
         assert_eq!(block, stub_removed(game));
-        assert_eq!(block.blocker(), Some(crate::app_control::Blocker::Antivirus));
+        assert_eq!(
+            block.blocker(),
+            Some(crate::platform::app_control::Blocker::Antivirus)
+        );
         assert!(block.text().contains("antivirus"), "{}", block.text());
         assert_eq!(stub_blocked(game, std::slice::from_ref(&log), 0, None), None);
         let restaged = crate::catalog::epoch("2026-11-13T10:12:00Z").unwrap();

@@ -2,12 +2,12 @@ use std::collections::BTreeMap;
 use std::path::PathBuf;
 
 use crate::Result;
+use crate::addons::settings::OnAddons;
 use crate::asset::Root;
 use crate::install::Game;
 use crate::manifest::AddonManifest;
 use crate::planner::Planner;
 use crate::profile::Profile;
-use crate::settings::OnAddons;
 use crate::store::Store;
 
 /// What one build of a profile reads, the same for every stage of it.
@@ -71,7 +71,7 @@ impl<'a> Run<'a> {
     pub fn cancel(&self) -> Result<()> {
         match self.checking {
             true => Ok(()),
-            false => crate::busy::check(&self.store.root),
+            false => crate::game_folder::busy::check(&self.store.root),
         }
     }
 }

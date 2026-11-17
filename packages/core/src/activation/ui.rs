@@ -5,7 +5,7 @@ use swofty_formats::erp::{Entry, Erp, ErpFile, Resource, STORED, ZSTD, compress_
 use swofty_formats::pkg::{Node, Obj, Pkg, Val, Value};
 
 use super::place::{ASSET_ROOT, SLOT_DIR, slot_asset_group, slot_file};
-use crate::map::TrackPackage;
+use crate::content::track_package::TrackPackage;
 use crate::{Error, Result, io_err};
 
 pub const PICTURE_SLOT: &str = "invitational_image_2";
@@ -426,7 +426,7 @@ pub fn stamp(maps: &[MapUi], original: &dyn Fn(&str) -> PathBuf) -> Result<Strin
         let meta = std::fs::metadata(&p).map_err(io_err(&p))?;
         sha2::Digest::update(&mut h, format!("{rel}|{}|{:?}", meta.len(), meta.modified().ok()));
     }
-    Ok(crate::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
+    Ok(crate::game_folder::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
 }
 
 pub type Lists = BTreeMap<String, BTreeSet<String>>;

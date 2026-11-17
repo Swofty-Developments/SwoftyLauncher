@@ -172,7 +172,7 @@ impl Catalog {
         let gvdb = Gvdb::parse(db)?;
         Ok(Self::from_gvdb(
             gvdb,
-            crate::baseline::sha256_bytes(db)[..16].to_owned(),
+            crate::game_folder::baseline::sha256_bytes(db)[..16].to_owned(),
         ))
     }
 
@@ -594,7 +594,7 @@ impl Catalog {
         static CACHE: Mutex<Option<(String, Arc<Catalog>)>> = Mutex::new(None);
         let path = super::stock_database(store, game)?;
         let bytes = std::fs::read(&path).map_err(io_err(&path))?;
-        let id = crate::baseline::sha256_bytes(&bytes)[..16].to_owned();
+        let id = crate::game_folder::baseline::sha256_bytes(&bytes)[..16].to_owned();
         let mut cache = CACHE.lock().unwrap_or_else(|e| e.into_inner());
         if let Some((have, cat)) = cache.as_ref()
             && *have == id
@@ -602,7 +602,8 @@ impl Catalog {
             return Ok(cat.clone());
         }
         let mut cat = Catalog::load(&bytes)?;
-        if let Ok(p) = crate::baseline::original_lang(&store.root, &game.dir, &game.identity, "eng")
+        if let Ok(p) =
+            crate::game_folder::baseline::original_lang(&store.root, &game.dir, &game.identity, "eng")
             && let Ok(english) = std::fs::read(&p)
         {
             cat.set_lang(&english)?;

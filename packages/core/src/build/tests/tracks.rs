@@ -265,11 +265,9 @@ fn a_track_rows_stat_id_is_an_added_row_id_and_a_lent_one_is_the_one_the_build_g
         rows: BTreeMap::from([("mod.testring".to_owned(), BTreeMap::from([(row.clone(), 40)]))]),
         ..Default::default()
     };
-    let lending = LENDING.lock().unwrap_or_else(std::sync::PoisonError::into_inner);
     crate::row_ids::lend(Some(host));
     let lent = build(&store, "default", &game);
     crate::row_ids::lend(None);
-    drop(lending);
     let lent = lent.unwrap();
     assert_eq!(stat_id(&lent), "40");
     assert_eq!(lent.row_ids["mod.testring"][&row], 40);
@@ -812,7 +810,7 @@ fn the_tracks_keep_their_menu_pictures_over_an_addon_that_ships_its_own() {
     assert_eq!((pair.winner.as_str(), pair.resources), ("mod.ring_b", 6));
     assert!(pair.items.contains(&format!("{front}:{}", image(FLAGS))));
     assert_eq!(
-        crate::conflicts::last(&store, "default").unwrap().pairs,
+        crate::profile::conflicts::last(&store, "default").unwrap().pairs,
         built.report.pairs
     );
     std::fs::remove_dir_all(&root).ok();

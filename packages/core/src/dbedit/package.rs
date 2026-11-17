@@ -237,14 +237,14 @@ fn raise_launcher(req: &mut Option<semver::VersionReq>, current: &semver::Versio
 fn origin() -> crate::manifest::Origin {
     crate::manifest::Origin {
         tool: ORIGIN_TOOL.into(),
-        tool_version: Some(crate::update::current_version().to_string()),
+        tool_version: Some(crate::updates::release::current_version().to_string()),
         file: None,
         sha256: None,
     }
 }
 
 fn manifest(id: &str, name: &str) -> Result<AddonManifest> {
-    let launcher = launcher_floor(&crate::update::current_version());
+    let launcher = launcher_floor(&crate::updates::release::current_version());
     let m: AddonManifest = serde_json::from_value(serde_json::json!({
         "schema_version": crate::manifest::SCHEMA_VERSION,
         "id": id,
@@ -397,8 +397,8 @@ fn import_any_zip(store: &Store, catalog: &Catalog, file: &Path) -> Result<Incom
 }
 
 fn import_zip(store: &Store, file: &Path, scratch: &Path) -> Result<Imported> {
-    crate::map::unzip(file, scratch, Error::Other)?;
-    let root = crate::import::addon_root(scratch).unwrap_or_else(|| scratch.to_path_buf());
+    crate::content::track_package::unzip(file, scratch, Error::Other)?;
+    let root = crate::addons::import::addon_root(scratch).unwrap_or_else(|| scratch.to_path_buf());
     if !root.join(MARKER).is_file() || !root.join(MANIFEST_FILE).is_file() {
         return Err(Error::Other(format!(
             "{} is not a DB Editor addon; install it on the Addons page",
@@ -613,7 +613,7 @@ fn database_edits(catalog: &Catalog, bytes: &[u8], label: &str) -> Result<(Edits
 /// Ids of the DB Editor addons enabled in `profile`, in load order.
 pub fn enabled_packages(store: &Store, profile: &str) -> Result<Vec<String>> {
     let p = store.profile(profile)?;
-    let order = match crate::resolver::resolve(&p, &store.addons()?) {
+    let order = match crate::profile::resolver::resolve(&p, &store.addons()?) {
         Ok(plan) => plan.order,
         Err(_) => p.enabled().map(str::to_owned).collect(),
     };
@@ -673,9 +673,9 @@ pub fn export_packages(store: &Store, game: &Game, packages: &[Package], out: &P
     let mut db = Gvdb::parse(&stock)?;
     let keys: HashSet<u64> = db.records.iter().map(|r| r.key).collect();
     let fields = std::collections::BTreeMap::new();
-    let names = crate::rowkeys::Names {
+    let names = crate::game_db::row_keys::Names {
         fields: &fields,
-        keys: crate::rowkeys::RowKeys::builtin(),
+        keys: crate::game_db::row_keys::RowKeys::builtin(),
         stock: Some(&keys),
         tracks: None,
     };
@@ -733,7 +733,7 @@ pub fn export_packages(store: &Store, game: &Game, packages: &[Package], out: &P
             "these addons change nothing in this game's database".into(),
         ));
     }
-    let build = crate::baseline::sha256_bytes(&stock)[..16].to_owned();
+    let build = crate::game_folder::baseline::sha256_bytes(&stock)[..16].to_owned();
     let readme = readme(packages, game, &build, left_out);
     let tmp = out.with_extension(format!("zip.{}.tmp", std::process::id()));
     let written = write_game_zip(&tmp, &bytes, &readme).and_then(|()| {
@@ -866,11 +866,14 @@ impl Package {
         let m = &mut self.manifest;
         if m.origin.is_none() {
             m.origin = Some(origin());
-            let floor = launcher_floor(&crate::update::current_version());
+            let floor = launcher_floor(&crate::updates::release::current_version());
             m.compat.launcher = semver::VersionReq::parse(&format!(">={floor}")).ok();
         }
         if !self.edits.rows.is_empty() {
-            raise_launcher(&mut m.compat.launcher, &crate::update::current_version());
+            raise_launcher(
+                &mut m.compat.launcher,
+                &crate::updates::release::current_version(),
+            );
         }
         let dir = dir(store, &self.id);
         crate::write_json_shared(&dir.join(OPS_FILE), &self.edits.to_ops())?;
@@ -1042,7 +1045,7 @@ mod tests {
         ] {
             assert_eq!(launcher_floor(&v(current)), v(floor), "{current}");
         }
-        let current = crate::update::current_version();
+        let current = crate::updates::release::current_version();
         let m = manifest("dbedit.x", "x").unwrap();
         let req = m.compat.launcher.as_ref().unwrap();
         assert_eq!(req.to_string(), format!(">={}", launcher_floor(&current)));
@@ -1075,7 +1078,7 @@ mod tests {
         assert!(
             p.manifest
                 .compat
-                .accepts_launcher(&crate::update::current_version())
+                .accepts_launcher(&crate::updates::release::current_version())
         );
         let before = modified(&s, &p.id).unwrap();
         p.edits.set(&cat, fnv1a64(NUM), "33").unwrap();
@@ -1429,7 +1432,7 @@ mod tests {
         Game {
             dir,
             user_reg: None,
-            identity: crate::baseline::Identity {
+            identity: crate::game_folder::baseline::Identity {
                 build_id: "25251167".into(),
                 exe_sha256: "ab".repeat(32),
             },

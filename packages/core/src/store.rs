@@ -4,12 +4,12 @@ use std::sync::{Arc, Mutex, MutexGuard};
 
 use swofty_addon::launcher::Builtin;
 
-use crate::builtin::{CORE_ID, core_manifest};
-use crate::helper::Helpers;
+use crate::addons::builtin::{CORE_ID, core_manifest};
+use crate::addons::helper::Helpers;
+use crate::addons::settings::{self, Merge, Requests, SessionSettings};
 use crate::manifest::{AddonManifest, MANIFEST_FILE};
 use crate::profile::{self, Profile};
 use crate::session::Config;
-use crate::settings::{self, Merge, Requests, SessionSettings};
 use crate::{Error, Result, io_err, with_retry};
 
 pub const DEFAULT_PROFILE: &str = "default";
@@ -200,12 +200,12 @@ impl Store {
         &self.helpers
     }
 
-    pub fn registry(&self) -> Result<crate::registry::Registry> {
-        crate::registry::Registry::load(self)
+    pub fn registry(&self) -> Result<crate::addons::registry::Registry> {
+        crate::addons::registry::Registry::load(self)
     }
 
     pub fn open_default() -> Self {
-        Self::new(crate::paths::data_dir())
+        Self::new(crate::data::paths::data_dir())
     }
 
     pub fn addons_dir(&self) -> PathBuf {
@@ -284,7 +284,7 @@ impl Store {
 
     pub fn migrate(&self) -> Result<Vec<String>> {
         let mut notes = Vec::new();
-        if let Some(target) = crate::paths::dangling_link(&self.root) {
+        if let Some(target) = crate::data::paths::dangling_link(&self.root) {
             return Err(Error::Other(format!(
                 "the data folder {} links to {}, which is missing. Reconnect that drive or restore the folder; the launcher will not start a new data folder in its place",
                 self.root.display(),
@@ -379,7 +379,10 @@ impl Store {
             .addons()?
             .into_values()
             .filter(|m| {
-                !m.is_builtin() && !self.is_builtin(&m.id) && m.id != crate::managed::ID && m.id != CORE_ID
+                !m.is_builtin()
+                    && !self.is_builtin(&m.id)
+                    && m.id != crate::updates::managed::ID
+                    && m.id != CORE_ID
             })
             .collect();
         installed.sort_by_cached_key(|m| m.name.to_lowercase());
@@ -510,7 +513,7 @@ impl Store {
             let m = match AddonManifest::load(&dir) {
                 Ok(m) => m,
                 Err(e) => {
-                    let u = Unreadable::of(&dir, &e, &crate::update::current_version());
+                    let u = Unreadable::of(&dir, &e, &crate::updates::release::current_version());
                     warn_once(format!("skipped addon {}: it {}", u.id, u.reason));
                     bad.push(u);
                     continue;
@@ -541,22 +544,23 @@ impl Store {
         }
         if self
             .addons_dir()
-            .join(crate::managed::ID)
+            .join(crate::updates::managed::ID)
             .join(MANIFEST_FILE)
             .is_file()
         {
-            p.set_enabled(crate::managed::ID, true).expect("not vanilla");
+            p.set_enabled(crate::updates::managed::ID, true)
+                .expect("not vanilla");
         }
     }
 
     pub fn install_addon(&self, src: &Path) -> Result<AddonManifest> {
-        self.install_addon_for(src, &crate::update::current_version())
+        self.install_addon_for(src, &crate::updates::release::current_version())
     }
 
     /// Every addon `src` holds: a zip or rar may carry several addon folders
     /// and packages.
     pub fn install_addons(&self, src: &Path) -> Vec<Result<AddonManifest>> {
-        let launcher = crate::update::current_version();
+        let launcher = crate::updates::release::current_version();
         if !src.is_file() {
             return vec![self.install_addon_for(src, &launcher)];
         }
@@ -580,7 +584,7 @@ impl Store {
     pub fn install_addon_in_profile(&self, src: &Path, profile: &str) -> Result<AddonManifest> {
         self.install_addon_target(
             src,
-            &crate::update::current_version(),
+            &crate::updates::release::current_version(),
             Some(profile),
             InstallFrom::Other,
         )
@@ -596,7 +600,7 @@ impl Store {
     ) -> Result<AddonManifest> {
         self.install_addon_target(
             src,
-            &crate::update::current_version(),
+            &crate::updates::release::current_version(),
             profile,
             InstallFrom::Catalog(id, version),
         )
@@ -633,7 +637,7 @@ impl Store {
             std::fs::remove_dir_all(&scratch).ok();
             return result;
         }
-        let src = &crate::import::addon_root(src).unwrap_or_else(|| src.to_path_buf());
+        let src = &crate::addons::import::addon_root(src).unwrap_or_else(|| src.to_path_buf());
         if src.join(crate::dbedit::package::MARKER).is_file() {
             return crate::dbedit::package::install(self, src).map(|(p, _)| {
                 std::fs::remove_file(self.registry_install_path(&p.manifest.id)).ok();
@@ -660,7 +664,7 @@ impl Store {
                 m.id, m.version
             )));
         }
-        if crate::managed::is_managed(&m.id) && !matches!(from, InstallFrom::ManagedRelease) {
+        if crate::updates::managed::is_managed(&m.id) && !matches!(from, InstallFrom::ManagedRelease) {
             return Err(Error::Other(format!(
                 "{} is managed by the launcher, which installs and updates it itself",
                 m.id
@@ -679,10 +683,10 @@ impl Store {
                 m.id
             )));
         }
-        if let Some(why) = crate::resolver::launcher_refusal(&m, launcher) {
+        if let Some(why) = crate::profile::resolver::launcher_refusal(&m, launcher) {
             return Err(Error::Other(why));
         }
-        crate::busy::refuse_change(&self.root, &m.id, &m.name)?;
+        crate::game_folder::busy::refuse_change(&self.root, &m.id, &m.name)?;
         let dest = self.addons_dir().join(&m.id);
         let fresh = !dest.exists();
         self.helpers.forget(&m.id);
@@ -760,11 +764,11 @@ impl Store {
         if scratch.exists() {
             std::fs::remove_dir_all(scratch).map_err(io_err(scratch))?;
         }
-        crate::import::unpack(archive, scratch)?;
-        let found = if crate::import::is_package(archive) {
-            crate::import::addon_root(scratch).into_iter().collect()
+        crate::addons::import::unpack(archive, scratch)?;
+        let found = if crate::addons::import::is_package(archive) {
+            crate::addons::import::addon_root(scratch).into_iter().collect()
         } else {
-            crate::import::found_addons(scratch)
+            crate::addons::import::found_addons(scratch)
         };
         if found.is_empty() {
             return Err(Error::Other(format!(
@@ -787,7 +791,7 @@ impl Store {
         if self.is_builtin(id) {
             return Err(Error::Other(format!("{id} is built in and cannot be removed")));
         }
-        if crate::managed::is_managed(id) {
+        if crate::updates::managed::is_managed(id) {
             return Err(Error::Other(format!(
                 "{id} is managed by the launcher and cannot be removed"
             )));
@@ -797,7 +801,7 @@ impl Store {
             return Err(Error::Other(format!("no addon named {id} is installed")));
         }
         let name = AddonManifest::load(&dir).map_or_else(|_| id.to_owned(), |m| m.name);
-        crate::busy::refuse_change(&self.root, id, &name)?;
+        crate::game_folder::busy::refuse_change(&self.root, id, &name)?;
         let _write = profile_write();
         self.helpers.forget(id);
         delete_addon_dir(
@@ -904,13 +908,16 @@ impl Store {
         self.adopt_builtins(&mut p);
         if from.is_none() {
             for m in self.addons()?.into_values().filter(|m| {
-                !m.is_builtin() && !self.is_builtin(&m.id) && m.id != crate::managed::ID && m.id != CORE_ID
+                !m.is_builtin()
+                    && !self.is_builtin(&m.id)
+                    && m.id != crate::updates::managed::ID
+                    && m.id != CORE_ID
             }) {
                 p.add_addon(&m.id)?;
             }
         }
         self.save_profile(&p)?;
-        crate::addon_storage::profile_created(&self.root, name, from)?;
+        crate::addons::storage::profile_created(&self.root, name, from)?;
         Ok(p)
     }
 
@@ -919,7 +926,7 @@ impl Store {
             return Err(Error::Other("the vanilla profile cannot be renamed".into()));
         }
         // The running game keeps writing to the saves folder this would move.
-        if let Some(j) = crate::journal::Journal::open(&self.root)?
+        if let Some(j) = crate::game_folder::journal::Journal::open(&self.root)?
             .into_iter()
             .find(|j| j.profile == from)
         {
@@ -950,7 +957,7 @@ impl Store {
         // gone everything can still go back to how it was.
         let undo = || {
             std::fs::remove_file(self.profiles_dir().join(format!("{to}.json"))).ok();
-            crate::addon_storage::profile_deleted(&self.root, to).ok();
+            crate::addons::storage::profile_deleted(&self.root, to).ok();
         };
         if has_saves && let Err(e) = with_retry(&saves, || std::fs::rename(&saves, &saves_to)) {
             undo();
@@ -966,10 +973,10 @@ impl Store {
             undo();
             return Err(e);
         }
-        crate::launcher_saves::rename_vaults(&self.root, from, to)?;
-        crate::launcher_saves::rename_in_marker(&self.root, from, to)?;
+        crate::saves::launcher::rename_vaults(&self.root, from, to)?;
+        crate::saves::launcher::rename_in_marker(&self.root, from, to)?;
         crate::stdlib::careers::rename_profile(&self.root, from, to)?;
-        crate::addon_storage::profile_deleted(&self.root, from)?;
+        crate::addons::storage::profile_deleted(&self.root, from)?;
         if self.config().active_profile.as_deref().unwrap_or(DEFAULT_PROFILE) == from {
             self.set_active_profile(to)?;
         }
@@ -1015,7 +1022,7 @@ impl Store {
                 "{name} is the only profile; create another profile before deleting it"
             )));
         };
-        if let Some(j) = crate::journal::Journal::open(&self.root)?
+        if let Some(j) = crate::game_folder::journal::Journal::open(&self.root)?
             .into_iter()
             .find(|j| j.profile == name)
         {
@@ -1074,7 +1081,7 @@ impl Store {
                 return Err(io_err(path)(e));
             }
         }
-        crate::addon_storage::profile_deleted(&self.root, name)?;
+        crate::addons::storage::profile_deleted(&self.root, name)?;
         Ok(plan)
     }
 
@@ -1105,16 +1112,16 @@ impl Store {
     }
 
     pub fn folders_path(&self) -> PathBuf {
-        self.root.join(crate::folders::FILE)
+        self.root.join(crate::profile::folders::FILE)
     }
 
-    pub fn folders(&self) -> crate::folders::Folders {
+    pub fn folders(&self) -> crate::profile::folders::Folders {
         load_settings(&self.folders_path())
     }
 
-    pub fn save_folders(&self, folders: &crate::folders::Folders) -> Result<()> {
+    pub fn save_folders(&self, folders: &crate::profile::folders::Folders) -> Result<()> {
         let path = self.folders_path();
-        set_aside_unreadable::<crate::folders::Folders>(&path)?;
+        set_aside_unreadable::<crate::profile::folders::Folders>(&path)?;
         crate::write_json(&path, folders)
     }
 
@@ -1149,14 +1156,14 @@ impl Store {
     /// The settings of a session of `p`, a profile as the caller has it, such as one a room lends the host's
     /// load order and options.
     pub fn session_settings_of(&self, p: &Profile) -> Result<SessionSettings> {
-        let requests = crate::paths::game_folder_view(&self.requests_path(&p.name));
+        let requests = crate::data::paths::game_folder_view(&self.requests_path(&p.name));
         let installed = self.addons()?;
         let mut s = SessionSettings::build(p, &installed, Some(requests))?;
         // Each addon's folder and track flag, as the launcher's Addons page has them.
         let folders = self.folders();
         for a in &mut s.addons {
             let Some(m) = installed.get(&a.id) else { continue };
-            let builtin = self.is_builtin(&a.id) || a.id == crate::managed::ID;
+            let builtin = self.is_builtin(&a.id) || a.id == crate::updates::managed::ID;
             a.track |=
                 !self.is_builtin(&a.id) && crate::tracks::is_track_addon(&self.addons_dir().join(&a.id), m);
             let category = m
@@ -1164,10 +1171,12 @@ impl Store {
                 .or(a.track.then_some(swofty_addon::manifest::Category::Tracks));
             a.folder = folders.place(&a.id, builtin, category).map(|k| folders.name(&k));
         }
-        let redirect = p.launcher_saves && !crate::launcher_saves::steam_save_pending(&self.root, &p.name);
+        let redirect = p.launcher_saves && !crate::saves::launcher::steam_save_pending(&self.root, &p.name);
         s.launcher_saves = redirect.then(|| settings::SessionSaves {
             profile: p.name.clone(),
-            remote: crate::paths::game_folder_view(&crate::launcher_saves::remote_dir(&self.root, &p.name)),
+            remote: crate::data::paths::game_folder_view(&crate::saves::launcher::remote_dir(
+                &self.root, &p.name,
+            )),
         });
         s.addons
             .retain(|a| a.id == CORE_ID || !self.is_builtin(&a.id) || !a.options.is_empty());
@@ -1210,13 +1219,13 @@ impl Store {
     pub fn apply_fix(
         &self,
         name: &str,
-        plan: &crate::order::FixPlan,
-        default_place: &dyn Fn(&str) -> Option<crate::folders::Key>,
+        plan: &crate::profile::order::FixPlan,
+        default_place: &dyn Fn(&str) -> Option<crate::profile::folders::Key>,
     ) -> Result<()> {
         let _write = profile_write();
         let saved = self.profile(name)?;
         let mut fixed = saved.clone();
-        crate::folders::reorder(&mut fixed, &plan.order, &|_| false);
+        crate::profile::folders::reorder(&mut fixed, &plan.order, &|_| false);
         self.save_profile(&fixed)?;
         if plan.ejected.is_empty() {
             return Ok(());
@@ -1464,7 +1473,7 @@ mod tests {
 
     #[test]
     fn apply_fix_writes_the_order_and_the_folders_together() {
-        use crate::folders::Key;
+        use crate::profile::folders::Key;
         let root = tmp("apply-fix");
         let store = Store::new(&root);
         let mut p = store.profile(DEFAULT_PROFILE).unwrap();
@@ -1472,12 +1481,12 @@ mod tests {
             p.set_enabled(id, true).unwrap();
         }
         store.save_profile(&p).unwrap();
-        let plan = crate::order::FixPlan {
+        let plan = crate::profile::order::FixPlan {
             order: [CORE_ID, "t.a", "t.b", "t.c"].map(str::to_owned).to_vec(),
             ejected: vec![("t.c".to_owned(), Key::Own("f".into()))],
             moved: 2,
         };
-        let mut f = crate::folders::Folders::default();
+        let mut f = crate::profile::folders::Folders::default();
         f.placed.insert("t.c".into(), Key::Own("f".into()).text());
         store.save_folders(&f).unwrap();
         let default = Key::Category(swofty_addon::manifest::Category::Seasons);
@@ -1509,7 +1518,8 @@ mod tests {
         let mut p = store.profile(DEFAULT_PROFILE).unwrap();
         p.set_enabled(&m.id, true).unwrap();
         store.save_profile(&p).unwrap();
-        let plan = crate::resolver::resolve(&store.profile(DEFAULT_PROFILE).unwrap(), &addons).unwrap();
+        let plan =
+            crate::profile::resolver::resolve(&store.profile(DEFAULT_PROFILE).unwrap(), &addons).unwrap();
         assert_eq!(plan.order, [CORE_ID, m.id.as_str()]);
         std::fs::remove_dir_all(&root).ok();
     }
@@ -1524,12 +1534,14 @@ mod tests {
             std::fs::create_dir_all(src.join(id)).unwrap();
             std::fs::write(src.join(id).join(MANIFEST_FILE), manifest_json(id)).unwrap();
         }
-        let busy = crate::busy::Busy {
+        let busy = crate::game_folder::busy::Busy {
             pid: std::process::id().wrapping_add(1),
-            ..crate::busy::Busy::new("default", vec!["t.used".into()])
+            ..crate::game_folder::busy::Busy::new("default", vec!["t.used".into()])
         };
         busy.write(&root).unwrap();
-        let lock = crate::recovery::SessionLock::try_acquire(&root).unwrap().unwrap();
+        let lock = crate::game_folder::recovery::SessionLock::try_acquire(&root)
+            .unwrap()
+            .unwrap();
         let err = store.install_addon(&src.join("t.used")).unwrap_err().to_string();
         assert!(err.contains("is in the build that is running"), "{err}");
         let err = store.remove_addon("t.used").unwrap_err().to_string();
@@ -1572,7 +1584,7 @@ mod tests {
         assert!(!addons.contains_key("w3.hud") && !addons.contains_key("t.look"));
         let bad = store.unreadable_addons();
         let lines: Vec<String> = bad.iter().map(Unreadable::line).collect();
-        let launcher = crate::update::current_version();
+        let launcher = crate::updates::release::current_version();
         assert_eq!(
             lines,
             [
@@ -1766,7 +1778,7 @@ mod tests {
             let rar = root.join(name);
             std::fs::write(&rar, b.to_bytes().unwrap()).unwrap();
             assert_eq!(
-                crate::import::addon_claim(&rar),
+                crate::addons::import::addon_claim(&rar),
                 swofty_addon::launcher::Claim::Yes
             );
             let ids: Vec<String> = store
@@ -1802,7 +1814,7 @@ mod tests {
         let game_mod = root.join("mod.rar");
         std::fs::write(&game_mod, b.to_bytes().unwrap()).unwrap();
         assert_eq!(
-            crate::import::addon_claim(&game_mod),
+            crate::addons::import::addon_claim(&game_mod),
             swofty_addon::launcher::Claim::No
         );
         let err = store.install_addons(&game_mod).remove(0).unwrap_err();
@@ -1815,7 +1827,7 @@ mod tests {
         let root = tmp("managed-claimed");
         let store = Store::new(root.join("data"));
         let fake = root.join("fake");
-        write_addon(&fake, crate::managed::ID);
+        write_addon(&fake, crate::updates::managed::ID);
 
         for err in [
             store.install_addon(&fake).unwrap_err(),
@@ -1824,7 +1836,7 @@ mod tests {
         ] {
             assert!(err.to_string().contains("managed by the launcher"), "{err}");
         }
-        assert!(!store.addons_dir().join(crate::managed::ID).exists());
+        assert!(!store.addons_dir().join(crate::updates::managed::ID).exists());
         std::fs::remove_dir_all(&root).ok();
     }
 
@@ -1876,26 +1888,26 @@ mod tests {
         z.finish().unwrap();
 
         let m = store
-            .install_managed_release(&pkg, &crate::update::current_version())
+            .install_managed_release(&pkg, &crate::updates::release::current_version())
             .unwrap();
-        assert_eq!(m.id, crate::managed::ID);
-        assert!(store.addons().unwrap().contains_key(crate::managed::ID));
+        assert_eq!(m.id, crate::updates::managed::ID);
+        assert!(store.addons().unwrap().contains_key(crate::updates::managed::ID));
 
-        let err = store.remove_addon(crate::managed::ID).unwrap_err();
+        let err = store.remove_addon(crate::updates::managed::ID).unwrap_err();
         assert!(err.to_string().contains("managed"), "{err}");
         assert!(
             store
                 .addons_dir()
-                .join(crate::managed::ID)
+                .join(crate::updates::managed::ID)
                 .join(MANIFEST_FILE)
                 .is_file()
         );
 
         let reg = store.registry().unwrap();
-        assert!(reg.get(crate::managed::ID).unwrap().locked);
+        assert!(reg.get(crate::updates::managed::ID).unwrap().locked);
 
         let p = store.profile(DEFAULT_PROFILE).unwrap();
-        assert!(p.enabled().any(|id| id == crate::managed::ID));
+        assert!(p.enabled().any(|id| id == crate::updates::managed::ID));
         std::fs::remove_dir_all(&root).ok();
     }
 
@@ -1967,7 +1979,7 @@ mod tests {
         std::fs::write(store.config_path(), config).unwrap();
         std::fs::write(store.folders_path(), folders).unwrap();
         assert_eq!(store.config().active_profile, None);
-        assert_eq!(store.folders(), crate::folders::Folders::default());
+        assert_eq!(store.folders(), crate::profile::folders::Folders::default());
         assert_eq!(std::fs::read_to_string(store.config_path()).unwrap(), config);
         assert_eq!(std::fs::read_to_string(store.folders_path()).unwrap(), folders);
 
@@ -1987,7 +1999,7 @@ mod tests {
             let kept = aside("config.json");
             assert_eq!(kept.len(), 1, "{round}: {kept:?}");
             assert_eq!(std::fs::read_to_string(&kept[0]).unwrap(), config, "{round}");
-            let kept = aside(crate::folders::FILE);
+            let kept = aside(crate::profile::folders::FILE);
             assert_eq!(kept.len(), 1, "{round}: {kept:?}");
             assert_eq!(std::fs::read_to_string(&kept[0]).unwrap(), folders, "{round}");
         }
@@ -2201,7 +2213,7 @@ mod tests {
         let out = store.merge_requests(DEFAULT_PROFILE, false).unwrap().unwrap();
         assert_eq!(out.changed, ["swofty.core.show_launcher_panel = Off"]);
         assert!(path.is_file());
-        let core = crate::builtin::core_manifest();
+        let core = crate::addons::builtin::core_manifest();
         let p = store.profile(DEFAULT_PROFILE).unwrap();
         assert_eq!(p.option(&core, &core.options[0]), false);
         let again = store.merge_requests(DEFAULT_PROFILE, true).unwrap().unwrap();
@@ -2219,7 +2231,7 @@ mod tests {
         let root = tmp("builtin-settings");
         let parse = |json: &str| AddonManifest::parse(json).unwrap();
         let builtin = |m| Builtin {
-            addon: Arc::new(crate::registry::DeclaredAddon::new(m)),
+            addon: Arc::new(crate::addons::registry::DeclaredAddon::new(m)),
             locked: false,
             default_on: true,
         };
@@ -2246,8 +2258,8 @@ mod tests {
         };
         write_addon(&Store::new(&root).addons_dir().join("a.user"), "a.user");
         crate::write_json(
-            &crate::launcher_saves::marker_path(&root),
-            &crate::launcher_saves::Marker {
+            &crate::saves::launcher::marker_path(&root),
+            &crate::saves::launcher::Marker {
                 at: 0,
                 launcher: String::new(),
                 profiles: Vec::new(),
@@ -2260,7 +2272,7 @@ mod tests {
         let mut expected = SessionSettings::build(
             &plain.profile(DEFAULT_PROFILE).unwrap(),
             &plain.addons().unwrap(),
-            Some(crate::paths::game_folder_view(
+            Some(crate::data::paths::game_folder_view(
                 &plain.requests_path(DEFAULT_PROFILE),
             )),
         )
@@ -2270,7 +2282,7 @@ mod tests {
         }
         expected.launcher_saves = Some(settings::SessionSaves {
             profile: DEFAULT_PROFILE.into(),
-            remote: crate::paths::game_folder_view(&crate::launcher_saves::remote_dir(
+            remote: crate::data::paths::game_folder_view(&crate::saves::launcher::remote_dir(
                 &plain.root,
                 DEFAULT_PROFILE,
             )),
@@ -2314,7 +2326,7 @@ mod tests {
                 .launcher_saves
                 .is_none()
         );
-        let remote = crate::launcher_saves::remote_dir(&root, DEFAULT_PROFILE);
+        let remote = crate::saves::launcher::remote_dir(&root, DEFAULT_PROFILE);
         std::fs::create_dir_all(&remote).unwrap();
         std::fs::write(remote.join("savegame@profile#X"), b"x").unwrap();
         assert!(
@@ -2451,7 +2463,7 @@ mod tests {
                 .join("marker")
                 .is_file()
         );
-        let marker = crate::launcher_saves::marker(&root).unwrap();
+        let marker = crate::saves::launcher::marker(&root).unwrap();
         assert_eq!(marker.profiles, ["vrgrid", "other"]);
         let index = crate::stdlib::careers::read(&crate::stdlib::careers::data_path(&root));
         assert_eq!(index[0].profile.as_deref(), Some("vrgrid"));
@@ -2664,7 +2676,7 @@ mod tests {
         store.create_profile("grid", None).unwrap();
         store.set_active_profile("grid").unwrap();
         touch(&store.saves_dir("grid").join("remote/save"));
-        let j = crate::journal::Journal::create(&root, "grid", "build-1", true).unwrap();
+        let j = crate::game_folder::journal::Journal::create(&root, "grid", "build-1", true).unwrap();
 
         let err = store.rename_profile("grid", "main").unwrap_err();
         assert!(err.to_string().contains("installed in the game folder"), "{err}");
@@ -2731,7 +2743,7 @@ mod tests {
         store.create_profile("grid", None).unwrap();
         store.create_profile("main", None).unwrap();
         touch(&store.overlay_dir("grid", "h1").join(crate::build::PLAN_FILE));
-        let j = crate::journal::Journal::create(&root, "grid", "build-1", false).unwrap();
+        let j = crate::game_folder::journal::Journal::create(&root, "grid", "build-1", false).unwrap();
 
         let err = store.delete_profile("grid").unwrap_err();
         assert!(err.to_string().contains("installed in the game folder"), "{err}");

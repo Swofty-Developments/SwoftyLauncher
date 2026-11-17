@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::STEAM_APP_ID;
 use crate::asset::Kind;
-use crate::update::UpdateConfig;
+use crate::updates::release::UpdateConfig;
 
 pub const DEFAULT_WINEDEBUG: &str = "+timestamp,+pid,+tid,+loaddll,fixme-all";
 pub const LOADER_LOG: &str = "swofty/loader.log";
@@ -697,7 +697,7 @@ impl SessionEnd {
         code: Option<i32>,
         unread: &str,
         stopped: Option<&str>,
-        loader: Option<&crate::launch::LoaderSeen>,
+        loader: Option<&crate::diagnostics::launch::LoaderSeen>,
     ) -> Self {
         let loader = loader.copied().unwrap_or_default();
         let code = loader.stub_exit.map(|c| c as i32).or(code);
@@ -708,7 +708,7 @@ impl SessionEnd {
             reason,
         };
         let named = |x: u32| {
-            crate::crash::fatal_name(x)
+            crate::diagnostics::crash::fatal_name(x)
                 .map(|n| format!("{n}, "))
                 .unwrap_or_default()
         };
@@ -751,7 +751,7 @@ impl SessionEnd {
                 ),
             );
         }
-        if c == crate::launcher_saves::EXIT && loader.attached && loader.unhandled.is_none() {
+        if c == crate::saves::launcher::EXIT && loader.attached && loader.unhandled.is_none() {
             return end(
                 Ending::Stopped,
                 None,
@@ -780,7 +780,7 @@ impl SessionEnd {
                 format!("F1 25 closed with code {c} after its Insufficient Storage dialog"),
             );
         }
-        if let Some(sentence) = crate::fast_fail::sentence(u) {
+        if let Some(sentence) = crate::diagnostics::fast_fail::sentence(u) {
             return end(Ending::Crash, Some(u), sentence);
         }
         if crash_code(u) {
@@ -1464,8 +1464,8 @@ mod tests {
         std::fs::remove_dir_all(&dir).ok();
     }
 
-    fn seen(log: &str) -> crate::launch::LoaderSeen {
-        crate::launch::LoaderSeen::scan(log)
+    fn seen(log: &str) -> crate::diagnostics::launch::LoaderSeen {
+        crate::diagnostics::launch::LoaderSeen::scan(log)
     }
 
     const ATTACHED: &str = "swofty loader (version.dll proxy) attached, pid 15228\n";

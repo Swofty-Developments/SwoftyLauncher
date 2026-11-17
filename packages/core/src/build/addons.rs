@@ -5,14 +5,14 @@ use super::buildhash::BuildHash;
 use super::op_files::{core_intro, package_ops, render_file, unbuilt};
 use super::registry::added_tables;
 use super::run::Run;
+use crate::addons::builtin::{CORE_DB, CORE_ID, core_db_ops};
+use crate::addons::registry::{Host, Registry};
 use crate::asset::{AssetOp, FileKind, Op, OpFile, Origin, Root, Source};
-use crate::builtin::{CORE_DB, CORE_ID, core_db_ops};
+use crate::content::runtime_assets::Runtime;
 use crate::launcher::BuildCx;
 use crate::manifest::AddonManifest;
 use crate::multiplayer::fingerprint::{self, OutputBuilder};
 use crate::planner::{Features, Planner};
-use crate::registry::{Host, Registry};
-use crate::runtime::Runtime;
 use crate::stdlib::manifest::RegistryManifest;
 use crate::{Error, Result, io_err};
 
@@ -24,7 +24,7 @@ pub(super) struct Gathered {
     /// The Driver Manager drivers each DB Editor package picks, by the package's name.
     pub driver_picks: Vec<(String, Vec<String>)>,
     pub hud_inputs: Vec<crate::hud::Input>,
-    pub head_puts: crate::heads::Puts,
+    pub head_puts: crate::game_db::heads::Puts,
     /// An addon's operations file is applied by the core from its registry records.
     pub left_to_core: bool,
 }

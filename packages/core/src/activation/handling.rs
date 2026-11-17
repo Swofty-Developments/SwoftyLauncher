@@ -944,7 +944,7 @@ pub fn stamp(maps: &[HandlingMap], sources: &[PathBuf]) -> Result<String> {
             format!("{}|{}|{:?}", p.display(), meta.len(), meta.modified().ok()),
         );
     }
-    Ok(crate::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
+    Ok(crate::game_folder::baseline::hex(&sha2::Digest::finalize(h))[..16].to_owned())
 }
 
 pub fn build_stock(
