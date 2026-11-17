@@ -98,14 +98,9 @@ impl Shell {
         let mut shell = Self {
             library,
             store,
-            page: Page::News,
-            nav: None,
-            popover: None,
             popup_timer: false,
             root_focus: cx.focus_handle(),
-            profiles_open: true,
             online: crate::features::online::Online::new(&root),
-            open_addon: None,
             mp_page: crate::features::multiplayer::Multiplayer::new(window, cx),
             seen,
             sliders: HashMap::new(),
@@ -120,7 +115,6 @@ impl Shell {
             painted: Instant::now(),
             dock: crate::shell::download_dock::Dock::default(),
             live_n: 0,
-            highlight: None,
             addons: crate::features::addons::AddonsPage::new(window, cx),
             saves: crate::features::career_saves::SavesPage::default(),
             tt: crate::features::time_trial::TtPage::default(),
@@ -173,6 +167,14 @@ impl Shell {
                 _catalog: catalog,
             },
             overlays: super::overlays::Overlays::default(),
+            navigation: crate::shell::nav::Navigation {
+                page: Page::News,
+                cursor: None,
+                popover: None,
+                profiles_open: true,
+                open_addon: None,
+                highlight: None,
+            },
         };
         shell.refresh_views(cx);
         match std::env::var("SWOFTY_LAUNCHER_OPEN_PAGE").as_deref() {
@@ -291,7 +293,7 @@ impl Shell {
                             s.requests,
                             profile,
                             due,
-                            s.page == Page::Careers,
+                            s.navigation.page == Page::Careers,
                         )
                     })
                 else {

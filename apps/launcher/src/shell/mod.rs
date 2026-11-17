@@ -40,15 +40,10 @@ pub(crate) use topbar::{BAR_HEIGHT, SUB_HEIGHT};
 
 pub struct Shell {
     pub(crate) store: Store,
-    pub(crate) page: Page,
-    pub(crate) nav: Option<tabs::Cursor>,
-    pub(crate) popover: Option<topbar::Popover>,
     pub(crate) popup_timer: bool,
     pub(crate) root_focus: FocusHandle,
-    pub(crate) profiles_open: bool,
     pub(crate) online: crate::features::online::Online,
     pub(crate) library: Library,
-    pub(crate) open_addon: Option<String>,
     pub(crate) mp_page: crate::features::multiplayer::Multiplayer,
     pub(crate) seen: Seen,
     pub(crate) sliders: HashMap<String, SliderSlot>,
@@ -63,8 +58,6 @@ pub struct Shell {
     painted: Instant,
     pub(crate) dock: crate::shell::download_dock::Dock,
     pub(crate) live_n: u64,
-    /// The addon the Addons page highlights, and since when.
-    pub(crate) highlight: Option<(String, Instant)>,
     pub(crate) addons: crate::features::addons::AddonsPage,
     pub(crate) saves: crate::features::career_saves::SavesPage,
     pub(crate) tt: crate::features::time_trial::TtPage,
@@ -87,6 +80,7 @@ pub struct Shell {
     pub(crate) layout: crate::shell::render::Layout,
     pub(crate) _background: crate::shell::startup::Background,
     pub(crate) overlays: overlays::Overlays,
+    pub(crate) navigation: crate::shell::nav::Navigation,
 }
 
 pub struct SliderSlot {

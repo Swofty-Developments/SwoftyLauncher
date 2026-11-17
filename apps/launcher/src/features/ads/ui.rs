@@ -44,7 +44,7 @@ impl Shell {
     /// Whether an overlay could be over a slot: slots draw over everything in
     /// the window, so they hide while one is open.
     pub(crate) fn ads_covered(&self, window: &mut Window, cx: &mut App) -> bool {
-        self.popover.is_some()
+        self.navigation.popover.is_some()
             || self.overlays.tasks.is_some()
             || self.crashes.shown().is_some()
             || self.account.ban.is_some()

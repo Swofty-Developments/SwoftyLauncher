@@ -32,8 +32,12 @@ impl Shell {
         );
         let collapsed = step.collapsed();
         let account = step.account();
-        let current = self.page.tab();
-        let focus = self.nav.filter(|c| c.row == Row::Tabs).map(|c| c.col);
+        let current = self.navigation.page.tab();
+        let focus = self
+            .navigation
+            .cursor
+            .filter(|c| c.row == Row::Tabs)
+            .map(|c| c.col);
         let left = h_flex()
             .id("notch-left")
             .flex_shrink_0()
@@ -93,12 +97,14 @@ impl Shell {
                                     action_focus(1),
                                     p,
                                 )
-                                .when(self.page == Page::Settings || self.page == Page::Tools, |d| {
-                                    d.bg(p.selected)
-                                })
+                                .when(
+                                    self.navigation.page == Page::Settings
+                                        || self.navigation.page == Page::Tools,
+                                    |d| d.bg(p.selected),
+                                )
                                 .on_click(cx.listener(|this, _, _, cx| {
-                                    this.nav = None;
-                                    this.popover = None;
+                                    this.navigation.cursor = None;
+                                    this.navigation.popover = None;
                                     this.open_page(Page::Settings, cx);
                                 })),
                             ),
@@ -138,14 +144,14 @@ impl Shell {
         p: Palette,
         cx: &mut Context<Self>,
     ) -> impl IntoElement {
-        let open = self.popover == Some(Popover::Notices);
+        let open = self.navigation.popover == Some(Popover::Notices);
         div()
             .relative()
             .child(
                 self.icon_button("open-notices", IconName::Bell, tr("Notifications"), focused, p)
                     .when(open, |d| d.bg(p.selected))
                     .on_click(cx.listener(|this, _, _, cx| {
-                        this.nav = None;
+                        this.navigation.cursor = None;
                         this.open_popover(Popover::Notices, cx);
                     })),
             )
@@ -233,7 +239,7 @@ impl Shell {
                         .text_color(p.text_muted)
                 }))
                 .on_click(cx.listener(|this, _, _, cx| {
-                    this.nav = None;
+                    this.navigation.cursor = None;
                     this.open_popover(Popover::Account, cx);
                 }))
                 .into_any_element()
@@ -321,10 +327,10 @@ impl Shell {
             })
             .child(tab.label())
             .on_click(cx.listener(move |this, _, _, cx| {
-                this.nav = None;
-                this.popover = None;
-                let page = if this.page.tab() == Some(tab) {
-                    this.page
+                this.navigation.cursor = None;
+                this.navigation.popover = None;
+                let page = if this.navigation.page.tab() == Some(tab) {
+                    this.navigation.page
                 } else {
                     tab.home()
                 };
@@ -361,8 +367,8 @@ impl Shell {
                             .on_click(move |_, _, cx| {
                                 shell
                                     .update(cx, |s, cx| {
-                                        let page = if s.page.tab() == Some(tab) {
-                                            s.page
+                                        let page = if s.navigation.page.tab() == Some(tab) {
+                                            s.navigation.page
                                         } else {
                                             tab.home()
                                         };
@@ -383,10 +389,14 @@ impl Shell {
         cx: &mut Context<Self>,
     ) -> Option<impl IntoElement> {
         let nav = self.sub_nav(layout_width)?;
-        let focus = self.nav.filter(|c| c.row == Row::Links).map(|c| c.col);
+        let focus = self
+            .navigation
+            .cursor
+            .filter(|c| c.row == Row::Links)
+            .map(|c| c.col);
         let inline_len = nav.inline.len();
         let more_active =
-            nav.more.iter().any(|l| l.page == self.page) || focus.is_some_and(|f| f >= inline_len);
+            nav.more.iter().any(|l| l.page == self.navigation.page) || focus.is_some_and(|f| f >= inline_len);
         let mut links: Vec<AnyElement> = nav
             .inline
             .iter()
@@ -409,7 +419,7 @@ impl Shell {
             let shell = cx.entity().downgrade();
             let items: Vec<(SharedString, Page)> =
                 nav.more.iter().map(|l| (l.label.clone(), l.page)).collect();
-            let current = self.page;
+            let current = self.navigation.page;
             h_flex()
                 .h_full()
                 .items_center()
@@ -464,8 +474,8 @@ impl Shell {
     }
 
     pub(super) fn link(&self, link: &Link, focused: bool, p: Palette, cx: &mut Context<Self>) -> AnyElement {
-        let active = self.page == link.page;
-        let underline = self.page.tab().map_or(p.accent, |t| t.tint(&p));
+        let active = self.navigation.page == link.page;
+        let underline = self.navigation.page.tab().map_or(p.accent, |t| t.tint(&p));
         let page = link.page;
         let key = match page {
             Page::Section(i) => i + 100,
@@ -510,7 +520,7 @@ impl Shell {
                     .child(n.to_string())
             }))
             .on_click(cx.listener(move |this, _, _, cx| {
-                this.nav = None;
+                this.navigation.cursor = None;
                 this.open_page(page, cx);
             }))
             .into_any_element()

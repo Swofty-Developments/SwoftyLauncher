@@ -61,7 +61,7 @@ impl Shell {
     }
 
     pub(super) fn page_name(&self) -> &'static str {
-        match self.page {
+        match self.navigation.page {
             Page::Section(_) => "panel",
             page => page.nav_label(),
         }
@@ -96,7 +96,7 @@ impl Shell {
         self.saves.game_running = !probe.processes.is_empty();
         if self
             .saves
-            .refresh_due(self.page == Page::Careers, probe.saves_print)
+            .refresh_due(self.navigation.page == Page::Careers, probe.saves_print)
         {
             self.refresh_saves_in_background(cx);
         }
@@ -192,7 +192,7 @@ impl Shell {
             self.game.copies = found.all;
             self.game.missing_copies = found.missing;
             self.game.detected = true;
-            if self.page == Page::Careers && (changed || merged) {
+            if self.navigation.page == Page::Careers && (changed || merged) {
                 self.refresh_saves_in_background(cx);
             }
             if merged {

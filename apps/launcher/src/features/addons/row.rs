@@ -86,7 +86,7 @@ impl Shell {
     ) -> AnyElement {
         let man = &m.manifest;
         let id = man.id.clone();
-        let selected = self.open_addon.as_ref() == Some(&id);
+        let selected = self.navigation.open_addon.as_ref() == Some(&id);
         let draggable = self.movable(m);
         let shader_only = man.is_shader_only();
         let off = !self.vanilla() && !self.addon_on(m) && !shader_only;
@@ -174,7 +174,8 @@ impl Shell {
                         cx.notify();
                         return;
                     }
-                    this.open_addon = (this.open_addon.as_ref() != Some(&id)).then(|| id.clone());
+                    this.navigation.open_addon =
+                        (this.navigation.open_addon.as_ref() != Some(&id)).then(|| id.clone());
                     cx.notify();
                 }
             }));

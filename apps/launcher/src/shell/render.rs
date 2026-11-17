@@ -61,7 +61,7 @@ impl Render for Shell {
         self.sync_sliders(window, cx);
         self.sync_blocks(window, cx);
         self.db_pending_tab(window, cx);
-        if self.page == Page::Database {
+        if self.navigation.page == Page::Database {
             self.sync_db(window, cx);
         }
         for note in std::mem::take(&mut self.db.toasts) {
@@ -73,7 +73,7 @@ impl Render for Shell {
         for note in std::mem::take(&mut self.account.toasts) {
             window.notify(note, cx);
         }
-        let content = match self.page {
+        let content = match self.navigation.page {
             Page::News => self.news_page(p, short, cx),
             Page::Importer => self.importer_page(p, cx),
             Page::Tools => match self.developer_section(p, cx) {
