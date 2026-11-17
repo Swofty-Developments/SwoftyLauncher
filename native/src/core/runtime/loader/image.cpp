@@ -162,13 +162,39 @@ std::string GameImage::section_name(const IMAGE_SECTION_HEADER *s)
     return n;
 }
 
+namespace {
+
+thread_local ProtectionSpans *pass_spans;
+
+}
+
+ImageProtectionPass::ImageProtectionPass() : outer_(pass_spans)
+{
+    if (!outer_)
+        pass_spans = &spans_;
+}
+
+ImageProtectionPass::~ImageProtectionPass()
+{
+    if (!outer_)
+        pass_spans = nullptr;
+}
+
 bool page_readable(uintptr_t p, size_t n)
 {
+    if (pass_spans) {
+        auto known = pass_spans->lookup(p, n);
+        if (known != ProtectionSpans::Answer::unknown)
+            return known == ProtectionSpans::Answer::readable;
+    }
     MEMORY_BASIC_INFORMATION m{};
-    if (!VirtualQuery(reinterpret_cast<void *>(p), &m, sizeof m) || m.State != MEM_COMMIT || !(m.Protect & 0xEE) ||
-        (m.Protect & (PAGE_GUARD | PAGE_NOACCESS)))
+    if (!VirtualQuery(reinterpret_cast<void *>(p), &m, sizeof m))
         return false;
-    return p + n <= reinterpret_cast<uintptr_t>(m.BaseAddress) + m.RegionSize;
+    bool readable = m.State == MEM_COMMIT && (m.Protect & 0xEE) && !(m.Protect & (PAGE_GUARD | PAGE_NOACCESS));
+    uintptr_t end = reinterpret_cast<uintptr_t>(m.BaseAddress) + m.RegionSize;
+    if (pass_spans && m.Type == MEM_IMAGE && reinterpret_cast<uintptr_t>(m.AllocationBase) == image().base())
+        pass_spans->remember(reinterpret_cast<uintptr_t>(m.BaseAddress), end, readable);
+    return readable && p + n <= end;
 }
 
 size_t insn_span(uintptr_t a, size_t min)

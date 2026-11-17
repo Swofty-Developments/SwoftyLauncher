@@ -502,6 +502,7 @@ void BindingSet::attempt(Binding &b, bool final)
 
 void BindingSet::attempt_unresolved()
 {
+    ImageProtectionPass pass;
     for (auto &b : bindings_)
         if (!b.resolved && !b.deferred)
             attempt(b, false);
@@ -509,6 +510,7 @@ void BindingSet::attempt_unresolved()
 
 void BindingSet::retry_deferred(bool final)
 {
+    ImageProtectionPass pass;
     for (auto &b : bindings_)
         if (b.deferred)
             attempt(b, final);
@@ -516,6 +518,7 @@ void BindingSet::retry_deferred(bool final)
 
 std::string BindingSet::sample_deferred_sections()
 {
+    ImageProtectionPass pass;
     std::vector<std::string> seen;
     std::string sampled;
     for (auto &b : bindings_)
@@ -555,6 +558,7 @@ std::string BindingSet::site_bytes(long long site) const
 
 void BindingSet::report(const char *pass)
 {
+    ImageProtectionPass image_pass;
     unreported_ = false;
     size_t done = 0, waiting = 0, failed = 0;
     for (auto &b : bindings_) {

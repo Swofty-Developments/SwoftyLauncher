@@ -9,6 +9,8 @@
 #include <cstdint>
 #include <string>
 
+#include "core/runtime/protection_spans_logic.hpp"
+
 namespace runtime::loader {
 
 // The running game exe as mapped in memory: its headers, sections and the functions its exception
@@ -38,6 +40,19 @@ private:
 };
 
 GameImage &image();
+
+/* Keeps the game image's VirtualQuery answers on this thread for one binding pass that installs nothing. */
+class ImageProtectionPass {
+public:
+    ImageProtectionPass();
+    ~ImageProtectionPass();
+    ImageProtectionPass(const ImageProtectionPass &) = delete;
+    ImageProtectionPass &operator=(const ImageProtectionPass &) = delete;
+
+private:
+    ProtectionSpans spans_;
+    ProtectionSpans *outer_;
+};
 
 bool page_readable(uintptr_t p, size_t n);
 size_t insn_span(uintptr_t a, size_t min);
