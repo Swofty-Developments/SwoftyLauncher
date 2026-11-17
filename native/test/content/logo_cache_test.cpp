@@ -1,4 +1,4 @@
-#include "../../src/core/apply/content/logo_cache.hpp"
+#include "core/apply/content/logo_cache.hpp"
 
 #include <algorithm>
 #include <cstdlib>

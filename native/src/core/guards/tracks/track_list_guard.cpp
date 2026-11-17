@@ -1,8 +1,8 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
-#include "track_list_guard_logic.hpp"
+#include "core/guards/tracks/track_list_guard_logic.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>

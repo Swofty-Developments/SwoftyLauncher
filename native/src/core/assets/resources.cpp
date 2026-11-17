@@ -1,7 +1,7 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
-#include "apply/content/overlay_copies.hpp"
-#include "erp_zstd.hpp"
+#include "core/apply/content/overlay_copies.hpp"
+#include "core/assets/erp_zstd.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mixin.hpp>

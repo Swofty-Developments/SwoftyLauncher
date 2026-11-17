@@ -12,13 +12,13 @@
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include "../loader/data_folder.h"
+#include "loader/data_folder.h"
 #include "Zydis.h"
-#include "json.hpp"
-#include "perf.hpp"
+#include "core/runtime/json.hpp"
+#include "core/diagnostics/perf.hpp"
 #include "safetyhook.hpp"
-#include "scan_cache.hpp"
-#include "view_state.hpp"
+#include "core/runtime/scan_cache.hpp"
+#include "core/frontend/view_state.hpp"
 #include "swofty_api.h"
 
 void crash_attach(SwoftyApi *a, const std::wstring &dir);

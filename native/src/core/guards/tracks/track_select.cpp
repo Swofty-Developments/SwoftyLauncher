@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
@@ -8,7 +8,7 @@
 #include <mutex>
 #include <string>
 
-#include "apply/tracks/box.hpp"
+#include "core/apply/tracks/box.hpp"
 
 // The track select guard (work/std16/TRACKS-PLAN.md R1; re/db/subsystems/tracks.md#select, verify V1625-V1637).
 // The Grand Prix track select (HomeSoloTrackSelectViewModel::onCommandRaised 0x141c06dc0, advance_pressed

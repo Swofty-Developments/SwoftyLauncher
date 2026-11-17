@@ -8,5 +8,5 @@ if ! command -v "$CXX" >/dev/null; then
 fi
 OUT=${1:-$PWD/../build/gp-track-test}
 mkdir -p "$OUT"
-"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src/core -o "$OUT/gp_track_test" gp_track_test.cpp
+"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src -o "$OUT/gp_track_test" gp_track_test.cpp
 "$OUT/gp_track_test"

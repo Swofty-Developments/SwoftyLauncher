@@ -1,7 +1,7 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
-#include "room_cover.hpp"
-#include "room_cover_logic.hpp"
+#include "core/hud/room_cover.hpp"
+#include "core/hud/room_cover_logic.hpp"
 
 #include <swofty/mixin.hpp>
 

@@ -12,7 +12,7 @@
 namespace runtime::save_splice {
 
 constexpr size_t NAME_LIMIT = 63;
-// W4: the career snapshots' own root container (native/src/core/snapshots/format.hpp), and the bag
+// W4: the career snapshots' own root container (native/src/core/career/snapshots/format.hpp), and the bag
 // type id its body's layout assumes: type ids are four characters in memory order ('pbag' for a bag,
 // 'dstr' for the length-prefixed string it carries the data in), read from the game at arm time.
 constexpr const char *ENTRY_NAME = "swofty_registry";

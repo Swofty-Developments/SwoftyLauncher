@@ -8,7 +8,7 @@
 //! builds two trees per team, so one tree may hold 192. More rows overflow Team HQ's lists.
 //!
 //! [`report`] tells the build which groups pass that budget. The core then loads a team's own supplier first and
-//! leaves suppliers that do not fit out of that team's trees (native/src/core/rnd_suppliers_guard.cpp).
+//! leaves suppliers that do not fit out of that team's trees (native/src/core/guards/career/rnd_suppliers_guard.cpp).
 
 use std::collections::HashMap;
 

@@ -1,8 +1,8 @@
 #pragma once
 
-#include "base.hpp"
-#include "per_package.hpp"
-#include "../../career_ops/fuel_logic.hpp"
+#include "core/apply/tracks/base.hpp"
+#include "core/apply/tracks/per_package.hpp"
+#include "core/career/ops/fuel_logic.hpp"
 
 #include <cstdint>
 #include <cstdio>

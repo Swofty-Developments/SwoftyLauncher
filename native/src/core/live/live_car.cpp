@@ -1,9 +1,9 @@
-#include "live_car.hpp"
+#include "core/live/live_car.hpp"
 
-#include "axes_logic.hpp"
-#include "live_car_logic.hpp"
-#include "postfx_logic.hpp"
-#include "runtime.hpp"
+#include "core/live/axes_logic.hpp"
+#include "core/live/live_car_logic.hpp"
+#include "core/render/postfx_logic.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>

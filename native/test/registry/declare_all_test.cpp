@@ -1,6 +1,6 @@
-#include "../../src/core/registry/declare_all.hpp"
-#include "../../src/core/registry/older.hpp"
-#include "../../src/core/registry/table.hpp"
+#include "core/registry/declare_all.hpp"
+#include "core/registry/older.hpp"
+#include "core/registry/table.hpp"
 
 #include <cstdio>
 #include <cstdlib>

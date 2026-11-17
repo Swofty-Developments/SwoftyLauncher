@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
@@ -16,11 +16,11 @@
 #include <string>
 #include <vector>
 
-#include "career_saves_logic.hpp"
-#include "save_diag_logic.hpp"
-#include "save_heap_logic.hpp"
-#include "layout.hpp"
-#include "save_splice_logic.hpp"
+#include "core/career/career_saves_logic.hpp"
+#include "core/career/save_diag_logic.hpp"
+#include "core/career/save_heap_logic.hpp"
+#include "core/runtime/layout.hpp"
+#include "core/career/save_splice_logic.hpp"
 
 // Save splice: keeps the save containers of absent addons through a profile save
 // (re/db/subsystems/game.md#save-containers, #save-splice).
@@ -83,7 +83,7 @@ sp::Store store;
 sp::Owed owed;
 uint32_t loads = 0;
 
-// ---- W4 career snapshots (native/src/core/snapshots/): the core's own swofty_registry entry rides in
+// ---- W4 career snapshots (native/src/core/career/snapshots/): the core's own swofty_registry entry rides in
 // this store like any unclaimed container. The game never claims it, so a load keeps it and a save
 // writes it back; the hooks hand its body to the snapshots at each root load and take a new one at
 // each profile save. ----

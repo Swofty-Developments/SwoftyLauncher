@@ -1,7 +1,7 @@
-#include "runtime.hpp"
-#include "telemetry_feed.hpp"
-#include "live/live_telemetry_fill.hpp"
-#include "udp_telemetry_logic.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/telemetry/telemetry_feed.hpp"
+#include "core/live/live_telemetry_fill.hpp"
+#include "core/telemetry/udp_telemetry_logic.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mixin.hpp>

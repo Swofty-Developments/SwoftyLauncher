@@ -18,15 +18,15 @@ FLAGS=(-std=c++23 -O2 -Wall -Wextra -Werror -Wno-nullability-completeness -I../.
 SRC=../src/core/registry/schema.cpp
 mkdir -p "$OUT"
 # The core builds for x86_64-windows-gnu; the check must compile there as it is.
-"${PIN[@]}" zig c++ -target x86_64-windows-gnu "${FLAGS[@]}" -c -o "$OUT/schema.obj" "$SRC"
-"${PIN[@]}" zig c++ -target x86_64-linux-musl "${FLAGS[@]}" -o "$OUT/schema_test" schema/schema_test.cpp "$SRC"
-"${PIN[@]}" zig c++ -target x86_64-linux-musl "${FLAGS[@]}" -o "$OUT/schema_agree" schema/schema_agree.cpp "$SRC"
+"${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src "${FLAGS[@]}" -c -o "$OUT/schema.obj" "$SRC"
+"${PIN[@]}" zig c++ -target x86_64-linux-musl -I../src "${FLAGS[@]}" -o "$OUT/schema_test" schema/schema_test.cpp "$SRC"
+"${PIN[@]}" zig c++ -target x86_64-linux-musl -I../src "${FLAGS[@]}" -o "$OUT/schema_agree" schema/schema_agree.cpp "$SRC"
 "${PIN[@]}" "$OUT/schema_test" "${SCHEMA_FUZZ_ROUNDS:-20000}" | tee "$OUT/schema_test.log"
 grep '^speed:' "$OUT/schema_test.log" | sed "s/^/$(date -u +%FT%TZ) /" >>"$OUT/perf.log"
 # A sanitizer build runs the same cases and a longer fuzz loop where the host compiler supports it.
 CXX=${CXX:-c++}
 if command -v "$CXX" >/dev/null && echo 'int main(){}' | "$CXX" -x c++ -fsanitize=address,undefined -o "$OUT/probe" - 2>/dev/null; then
-    "${PIN[@]}" "$CXX" -std=c++23 -O1 -g -Wall -Wextra -fsanitize=address,undefined -fno-sanitize-recover=all \
+    "${PIN[@]}" "$CXX" -I../src -std=c++23 -O1 -g -Wall -Wextra -fsanitize=address,undefined -fno-sanitize-recover=all \
         -I../../packages/sdk/include -o "$OUT/schema_test_san" schema/schema_test.cpp "$SRC"
     "${PIN[@]}" "$OUT/schema_test_san" "${SCHEMA_SAN_FUZZ_ROUNDS:-100000}"
 else

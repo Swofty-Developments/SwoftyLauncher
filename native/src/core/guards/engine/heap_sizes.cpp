@@ -1,5 +1,5 @@
-#include "heap_sizes_logic.hpp"
-#include "runtime.hpp"
+#include "core/guards/engine/heap_sizes_logic.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 

@@ -1,8 +1,8 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
-#include "ai_line_set_logic.hpp"
+#include "core/guards/ai/ai_line_set_logic.hpp"
 
 #include <swofty/mixin.hpp>
 

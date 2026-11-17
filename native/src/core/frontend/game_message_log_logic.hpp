@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-// Which stock game messages the core logs (native/src/core/popup.cpp, the Ui_Message_Construct wrap, which is
+// Which stock game messages the core logs (native/src/core/frontend/popup.cpp, the Ui_Message_Construct wrap, which is
 // Game_UiMessage_DisplayMessage 0x1442d9bf0 in re/db/functions.tsv). Every message the game raises by its UIMD id is
 // logged once per id per session, so a player's loader.log names the popup they saw
 // ("[popup] game message 'continue_solo_gp_f1w_offline_warning'"). Messages the core raises itself (swofty_message,

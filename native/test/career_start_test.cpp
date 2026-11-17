@@ -2,7 +2,7 @@
 // the front-end career routes to a mode and a kind and leaves every other route alone, blocks are
 // held per owner and mode, and the popup throttle lets one popup through per gap.
 // run_events_test.sh builds and runs it.
-#include "../src/core/career_start.hpp"
+#include "core/career/career_start.hpp"
 
 #include <cstdio>
 #include <string>

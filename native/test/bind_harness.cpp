@@ -6,7 +6,7 @@
 #include <cstring>
 #include <string>
 #include <vector>
-#include "../src/core/json.hpp"
+#include "core/runtime/json.hpp"
 #include "../src/loader/pattern_scan.h"
 #include "swofty_api.h"
 

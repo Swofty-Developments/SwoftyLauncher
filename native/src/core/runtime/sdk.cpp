@@ -1,10 +1,10 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
 
 #include <mutex>
 
-#include "perf.hpp"
+#include "core/diagnostics/perf.hpp"
 
 std::string settings_addon(const void *from, std::string &dll);
 

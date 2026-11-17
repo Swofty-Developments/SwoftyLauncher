@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
@@ -14,8 +14,8 @@
 #include <string>
 #include <utility>
 
-#include "save_diag_logic.hpp"
-#include "save_sandbox_logic.hpp"
+#include "core/career/save_diag_logic.hpp"
+#include "core/testing/save_sandbox_logic.hpp"
 
 // Test save sandbox (re/db/subsystems/core.md#save-sandbox, docs/design/std-2/test-suite.md "The save
 // sandbox"). Only when `swofty test` starts the game with a run token: SWOFTY_TEST_RUN names the run

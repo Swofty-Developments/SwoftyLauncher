@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -11,8 +11,8 @@
 #include <set>
 #include <string>
 
-#include "career_content_logic.hpp"
-#include "registry/older.hpp"
+#include "core/career/career_content_logic.hpp"
+#include "core/registry/older.hpp"
 
 std::string settings_addon(const void *from, std::string &dll);
 

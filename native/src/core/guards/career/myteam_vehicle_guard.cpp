@@ -1,5 +1,5 @@
-#include "myteam_vehicle_guard_logic.hpp"
-#include "runtime.hpp"
+#include "core/guards/career/myteam_vehicle_guard_logic.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 

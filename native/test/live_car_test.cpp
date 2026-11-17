@@ -1,5 +1,5 @@
-#include "live_car_logic.hpp"
-#include "postfx_logic.hpp"
+#include "core/live/live_car_logic.hpp"
+#include "core/render/postfx_logic.hpp"
 
 #include <cstdio>
 

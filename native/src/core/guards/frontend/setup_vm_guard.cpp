@@ -1,5 +1,5 @@
-#include "runtime.hpp"
-#include "setup_vm_logic.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/guards/frontend/setup_vm_logic.hpp"
 
 #include <windows.h>
 

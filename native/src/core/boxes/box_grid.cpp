@@ -1,12 +1,12 @@
-#include "box_grid_logic.hpp"
-#include "runtime.hpp"
+#include "core/boxes/box_grid_logic.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
-#include "apply/content/appliers.hpp"
+#include "core/apply/content/appliers.hpp"
 
 #include <algorithm>
 #include <atomic>

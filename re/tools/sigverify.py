@@ -16,7 +16,7 @@
 
 Images are a PE file or a flat dump (file offset = RVA), read as bindverify.py reads them. A Sig's section is the
 KB build's name; the port's name comes from re/db/builds/<build>.json "sections" (.xtls -> .rdata on EA).
-The rules are runtime::find's (native/src/core/stage.cpp): the pattern must match exactly once in the section;
+The rules are runtime::find's (native/src/core/runtime/stage.cpp): the pattern must match exactly once in the section;
 addr resolves to match + anchor, rel32 and riprel to match + insn + len + int32 at match + anchor.
 
 Per signature: hits on each image, the KB target against the declared rva, and whether both targets are the same

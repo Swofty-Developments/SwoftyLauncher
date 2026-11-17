@@ -1,6 +1,6 @@
 // Review checks for the W5 dispatch table (host test, same build as run_hooks_test.sh). Each check
 // states what the spec or the SDK promises; a FAIL is a finding, not a broken test.
-#include "../../src/core/hooks/dispatch.hpp"
+#include "core/hooks/dispatch.hpp"
 
 #include <cstdio>
 #include <string>

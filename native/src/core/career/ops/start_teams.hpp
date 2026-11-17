@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "teams_plan.hpp"
+#include "core/career/ops/teams_plan.hpp"
 
 // The start-season team plan of a data group (work/std16/RE-CAREER-TEAMS.md section 2.2 for a career whose start
 // season varies, docs/std/systems/career.md): pure logic over the boot-time effective career.season records and the

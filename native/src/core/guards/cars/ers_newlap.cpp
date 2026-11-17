@@ -1,9 +1,9 @@
-#include "runtime.hpp"
-#include "services/lap_host.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/services/lap_host.hpp"
 
 #include <windows.h>
 
-#include "ers_newlap_logic.hpp"
+#include "core/guards/cars/ers_newlap_logic.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>

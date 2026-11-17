@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <algorithm>
 #include <swofty/game.hpp>
@@ -11,8 +11,8 @@
 #include <string>
 #include <vector>
 
-#include "apply/content/box_options.hpp"
-#include "car_category_logic.hpp"
+#include "core/apply/content/box_options.hpp"
+#include "core/boxes/car_category_logic.hpp"
 
 // Box rules that are game options (content.package 1.5: rules.safety_car, rules.formation_lap, rules.penalties,
 // rules.corner_cutting; apply/content/box_options.hpp). The era picker calls box_option_apply with the pressed box's

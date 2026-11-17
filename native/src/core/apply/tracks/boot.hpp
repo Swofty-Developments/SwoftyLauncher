@@ -1,9 +1,9 @@
 #pragma once
 
-#include "base.hpp"
-#include "seed.hpp"
+#include "core/apply/tracks/base.hpp"
+#include "core/apply/tracks/seed.hpp"
 
-#include "../../registry/store.hpp"
+#include "core/registry/store.hpp"
 
 #include <algorithm>
 #include <functional>

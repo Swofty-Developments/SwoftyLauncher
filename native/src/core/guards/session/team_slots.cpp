@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
@@ -12,7 +12,7 @@
 #include <mutex>
 #include <vector>
 
-#include "team_slots_logic.hpp"
+#include "core/guards/session/team_slots_logic.hpp"
 
 // The loaded team records (re/db/subsystems/teams.md#team-record). Sess_Load_Teams stores each available
 // entrants.teams row as a 0x768-byte TeamRecord in a stat-id indexed slot vector through

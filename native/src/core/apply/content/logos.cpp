@@ -1,11 +1,11 @@
-#include "logos.hpp"
+#include "core/apply/content/logos.hpp"
 
-#include "../files_api.hpp"
-#include "../../runtime.hpp"
-#include "logo_build.hpp"
-#include "logo_cache.hpp"
-#include "logo_deliver.hpp"
-#include "png_straight.hpp"
+#include "core/apply/files_api.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/apply/content/logo_build.hpp"
+#include "core/apply/content/logo_cache.hpp"
+#include "core/apply/content/logo_deliver.hpp"
+#include "core/apply/content/png_straight.hpp"
 
 #include <swofty/mixin.hpp>
 

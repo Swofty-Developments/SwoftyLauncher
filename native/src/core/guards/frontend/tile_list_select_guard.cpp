@@ -1,8 +1,8 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
-#include "tile_list_select_logic.hpp"
+#include "core/guards/frontend/tile_list_select_logic.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>

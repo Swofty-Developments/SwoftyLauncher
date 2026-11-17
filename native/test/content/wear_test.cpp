@@ -1,7 +1,7 @@
-#include "../../src/core/apply/content/boot.hpp"
-#include "../../src/core/apply/ids.hpp"
-#include "../../src/core/registry/table.hpp"
-#include "../../src/core/registry/validate.hpp"
+#include "core/apply/content/boot.hpp"
+#include "core/apply/ids.hpp"
+#include "core/registry/table.hpp"
+#include "core/registry/validate.hpp"
 
 #include <algorithm>
 #include <cstdio>

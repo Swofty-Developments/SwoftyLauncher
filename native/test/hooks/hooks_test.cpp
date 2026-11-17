@@ -3,10 +3,10 @@
 // the test's fault path), addon points and scopes, the per-fire log lines the test suite counts, a game
 // point installed on a function in this binary (first subscriber, last subscriber, late install, an
 // overwrite it yields to), and services' when ordering. run_hooks_test.sh builds and runs it.
-#include "../../src/core/hooks/dispatch.hpp"
-#include "../../src/core/hooks/game_point.hpp"
-#include "../../src/core/hooks/payloads.hpp"
-#include "../../src/core/services/services.hpp"
+#include "core/hooks/dispatch.hpp"
+#include "core/hooks/game_point.hpp"
+#include "core/hooks/payloads.hpp"
+#include "core/services/services.hpp"
 #include "../sdk_payloads.h"
 
 #include <cstdio>

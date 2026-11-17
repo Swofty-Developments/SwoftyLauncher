@@ -1,8 +1,8 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
-#include "garage_slots_logic.hpp"
+#include "core/guards/garage/garage_slots_logic.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>

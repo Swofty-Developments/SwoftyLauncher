@@ -2,9 +2,9 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-#include "imports.hpp"
-#include "runtime.hpp"
-#include "udp_ids_logic.hpp"
+#include "core/runtime/imports.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/telemetry/udp_ids_logic.hpp"
 
 #include <swofty/mixin.hpp>
 

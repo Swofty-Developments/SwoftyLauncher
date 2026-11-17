@@ -7,9 +7,9 @@
 #include <swofty/systems/career.hpp>
 #include <swofty/systems/tracks.hpp>
 
-#include "dispatch.hpp"
-#include "game_point.hpp"
-#include "payloads.hpp"
+#include "core/hooks/dispatch.hpp"
+#include "core/hooks/game_point.hpp"
+#include "core/hooks/payloads.hpp"
 
 // The core's game hook points (standard library 1.6.0), one detour per game function:
 //   career.calendar.add_activity  Game_CareerActivities_AddActivity  void(calendar, activity, day)

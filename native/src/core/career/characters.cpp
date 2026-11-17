@@ -1,5 +1,5 @@
-#include "career_ui.hpp"
-#include "registry/older.hpp"
+#include "core/career/career_ui.hpp"
+#include "core/registry/older.hpp"
 
 #include <atomic>
 #include <mutex>

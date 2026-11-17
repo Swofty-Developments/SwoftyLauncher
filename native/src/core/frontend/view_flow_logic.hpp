@@ -2,7 +2,7 @@
 #include <cstddef>
 #include <cstdint>
 
-#include "career_state.hpp"
+#include "core/career/career_state.hpp"
 
 // The game hashes a flow node's own name, not its class name: Game_SessionStateViewInstantReplay is the node
 // "InstantReplay" (0x24941c93), the driving node is "InGame" (0xba16bc16). Each entry below is the djb2 of a node

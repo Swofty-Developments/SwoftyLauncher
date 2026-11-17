@@ -1,4 +1,4 @@
-#include "../runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "stats.hpp"
+#include "core/career/ops/stats.hpp"
 
 // career::set_driver_ratings: Progressive Career's driver statistics writer (its native/src/
 // stats_mem.hpp, itself the Career Mode Editor's drivers.ratings.set) moved into the core. Every curve of a

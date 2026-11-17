@@ -1,6 +1,6 @@
-#include "../room_cover.hpp"
-#include "../runtime.hpp"
-#include "../virtual_pad.hpp"
+#include "core/hud/room_cover.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/testing/virtual_pad.hpp"
 
 #include <swofty/mixin.hpp>
 

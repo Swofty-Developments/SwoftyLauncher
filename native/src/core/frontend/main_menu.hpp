@@ -1,7 +1,7 @@
 #pragma once
 #include <cstdint>
 
-#include "hud_drawlist.hpp"
+#include "core/hud/hud_drawlist.hpp"
 
 namespace runtime::main_menu {
 

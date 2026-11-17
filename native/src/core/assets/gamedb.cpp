@@ -1,13 +1,13 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
-#include "apply/database.hpp"
-#include "apply/moments.hpp"
-#include "apply/room.hpp"
-#include "apply/scheduler.hpp"
-#include "apply/tracks/keys.hpp"
-#include "dbread_logic.hpp"
-#include "perf.hpp"
-#include "registry/table.hpp"
+#include "core/apply/database.hpp"
+#include "core/apply/moments.hpp"
+#include "core/apply/room.hpp"
+#include "core/apply/scheduler.hpp"
+#include "core/apply/tracks/keys.hpp"
+#include "core/assets/dbread_logic.hpp"
+#include "core/diagnostics/perf.hpp"
+#include "core/registry/table.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mixin.hpp>

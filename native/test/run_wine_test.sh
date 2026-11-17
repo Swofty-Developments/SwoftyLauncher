@@ -14,9 +14,9 @@ PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 # wine cmd /c reports the game process's own exit code; a bare wine launch can exit 0 when a thread the server kills at termination exits last
 rm -rf "$OUT/game" "$OUT/stages" "$OUT/packed" "$OUT/filled"
 mkdir -p "$OUT/game" "$OUT/stages" "$OUT/packed" "$OUT/filled"
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/game/F1_25.exe" fake_game.c -lversion -luser32 -lws2_32 &
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -DPACKED_TEST -o "$OUT/packed/F1_25.exe" fake_game.c -lversion -luser32 -lws2_32 &
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/filled/F1_25.exe" fake_filled_iat.c -luser32 &
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -o "$OUT/game/F1_25.exe" fake_game.c -lversion -luser32 -lws2_32 &
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -DPACKED_TEST -o "$OUT/packed/F1_25.exe" fake_game.c -lversion -luser32 -lws2_32 &
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -o "$OUT/filled/F1_25.exe" fake_filled_iat.c -luser32 &
 cp -r ../dist/. "$OUT/game/"
 cp -r ../dist/. "$OUT/filled/"
 mkdir -p "$OUT/game/swofty/mods/core" "$OUT/register"
@@ -31,7 +31,7 @@ for m in addons/t_*.cpp; do
     t_ntpage | t_int3hook) dest=$OUT ;;
     *) dest=$OUT/game/swofty/addons ;;
     esac
-    "${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -I../include -shared -s \
+    "${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -Wall -Wextra -I../../packages/sdk/include -I../include -shared -s \
         -o "$dest/$name.dll" "$m" &
 done
 wait

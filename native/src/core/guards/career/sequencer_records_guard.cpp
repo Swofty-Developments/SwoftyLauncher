@@ -1,5 +1,5 @@
-#include "runtime.hpp"
-#include "sequencer_records_logic.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/guards/career/sequencer_records_logic.hpp"
 
 #include <windows.h>
 

@@ -6,7 +6,7 @@
 //   schema_agree --patterns < cases.json    [[pattern, [text, ...]], ...] -> [[compiled, [matched, ...]], ...]
 //   schema_agree --merge < cases.json       [[schema, base, patch], ...] -> [merged or null when it fails, ...]
 
-#include "../../src/core/registry/schema.hpp"
+#include "core/registry/schema.hpp"
 
 #include <algorithm>
 #include <filesystem>

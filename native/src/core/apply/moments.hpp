@@ -5,9 +5,9 @@
 #include <utility>
 #include <vector>
 
-#include "facts.hpp"
-#include "ids.hpp"
-#include "room.hpp"
+#include "core/apply/facts.hpp"
+#include "core/apply/ids.hpp"
+#include "core/apply/room.hpp"
 
 namespace swofty_core::apply::moments {
 

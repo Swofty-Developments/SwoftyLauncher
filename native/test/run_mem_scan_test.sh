@@ -8,5 +8,5 @@ if ! command -v "$CXX" >/dev/null; then
 fi
 OUT=${1:-$PWD/../build/mem-scan-test}
 mkdir -p "$OUT"
-"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src/core -I../../packages/sdk/include -o "$OUT/mem_scan_test" mem_scan_test.cpp
+"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src -I../../packages/sdk/include -o "$OUT/mem_scan_test" mem_scan_test.cpp
 "$OUT/mem_scan_test"

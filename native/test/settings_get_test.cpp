@@ -1,11 +1,11 @@
-// Builds src/core/settings.cpp with the registry store and reads an option the way an addon's hot wrap does.
+// Builds src/core/runtime/settings.cpp with the registry store and reads an option the way an addon's hot wrap does.
 // The stand-in runtime::older_store() counts every trip settings.cpp makes into the registry: reads must take
 // one trip per change, and a read while another thread holds the store's lock must not wait for it.
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 
-#include "../src/core/registry/older.hpp"
-#include "../src/core/registry/table.hpp"
+#include "core/registry/older.hpp"
+#include "core/registry/table.hpp"
 #include "swofty_api.h"
 
 #include <atomic>

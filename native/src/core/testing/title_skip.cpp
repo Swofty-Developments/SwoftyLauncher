@@ -1,7 +1,7 @@
-#include "title_skip.hpp"
+#include "core/testing/title_skip.hpp"
 
-#include "runtime.hpp"
-#include "virtual_pad.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/testing/virtual_pad.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mixin.hpp>

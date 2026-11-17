@@ -1,6 +1,6 @@
-#include "load_stall_logic.hpp"
-#include "runtime.hpp"
-#include "watchdog_grace_logic.hpp"
+#include "core/diagnostics/load_stall_logic.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/guards/engine/watchdog_grace_logic.hpp"
 
 #include <windows.h>
 

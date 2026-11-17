@@ -1,4 +1,4 @@
-#include "../runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
@@ -7,8 +7,8 @@
 #include <cstring>
 #include <string>
 
-#include "hooks.hpp"
-#include "session_points.hpp"
+#include "core/hooks/hooks.hpp"
+#include "core/hooks/session_points.hpp"
 
 // The session hook points and operations on the live game (session_points.hpp): memory reads are checked
 // (swofty::mem), the flow thread is the one that ticks on_frame, and the config picks the ai.controller.update

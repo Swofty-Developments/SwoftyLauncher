@@ -1,8 +1,8 @@
 #pragma once
 
-#include "erp_file.hpp"
-#include "logo_array.hpp"
-#include "uidb.hpp"
+#include "core/apply/content/erp_file.hpp"
+#include "core/apply/content/logo_array.hpp"
+#include "core/apply/content/uidb.hpp"
 
 #include <functional>
 #include <map>

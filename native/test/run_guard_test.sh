@@ -24,9 +24,9 @@ fi
 SDK=../../packages/sdk/include
 mkdir -p "$OUT"
 set -e
-"${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -fms-extensions \
+"${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -fms-extensions \
     -I$SDK -c ../src/core/hooks/guard.cpp -o "$OUT/hooks_guard.o" 2>/dev/null
-"${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -fms-extensions \
+"${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O2 -Wall -Wextra -Wno-nullability-completeness -fms-extensions \
     -Wno-missing-designated-field-initializers -I$SDK -o "$OUT/guard_test.exe" hooks/guard_test.cpp "$OUT/hooks_guard.o"
 set +e
 if [[ $NATIVE == 0 ]]; then

@@ -1,9 +1,9 @@
 #pragma once
 
-#include "presence_id_logic.hpp"
+#include "core/runtime/presence_id_logic.hpp"
 
-#include "direct_start_logic.hpp"
-#include "session_lifecycle_logic.hpp"
+#include "core/testing/direct_start_logic.hpp"
+#include "core/events/session_lifecycle_logic.hpp"
 #include <windows.h>
 
 #include <algorithm>
@@ -14,7 +14,7 @@
 #include <string>
 #include <vector>
 
-#include "json.hpp"
+#include "core/runtime/json.hpp"
 #include "swofty_api.h"
 
 namespace swofty_core::registry {
@@ -243,7 +243,7 @@ struct TestRun {
 const TestRun *test_run();
 // run.json still holds the token: false once `swofty test` has retired the run.
 bool test_run_live();
-// W4 career snapshots (native/src/core/snapshots/runtime.cpp): started once the save splice settles.
+// W4 career snapshots (native/src/core/career/snapshots/runtime.cpp): started once the save splice settles.
 void snapshots_start(bool splice_live);
 // career::report_season from caller (an addon id): SWOFTY_ASSET_OK, _LATE, _INVALID or SWOFTY_REFUSED.
 int snapshots_report_season(const std::string &caller, int year, int season_index);
@@ -393,7 +393,7 @@ void net_trace_setup();
 void udp_ids_setup();
 // Notes an added track's statId for the Swofty Track telemetry packet (udp_ids.cpp).
 void udp_track(int64_t stat_id, const std::string &addon, const std::string &code);
-// The test agent (native/src/core/testagent/agent.cpp): armed only by `swofty test`'s run token.
+// The test agent (native/src/core/testing/agent/agent.cpp): armed only by `swofty test`'s run token.
 void testagent_setup();
 void direct_start_setup();
 void direct_start_tick();

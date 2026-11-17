@@ -1,11 +1,11 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
-#include "main_menu.hpp"
-#include "main_menu_logic.hpp"
-#include "apply/moments.hpp"
+#include "core/frontend/main_menu.hpp"
+#include "core/frontend/main_menu_logic.hpp"
+#include "core/apply/moments.hpp"
 #include <safetyhook.hpp>
-#include "virtual_pad.hpp"
-#include "json.hpp"
+#include "core/testing/virtual_pad.hpp"
+#include "core/runtime/json.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>

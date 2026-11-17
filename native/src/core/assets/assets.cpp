@@ -14,9 +14,9 @@
 #include <unordered_set>
 #include <vector>
 
-#include "json.hpp"
-#include "perf.hpp"
-#include "runtime.hpp"
+#include "core/runtime/json.hpp"
+#include "core/diagnostics/perf.hpp"
+#include "core/runtime/runtime.hpp"
 
 namespace {
 

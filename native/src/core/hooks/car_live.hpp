@@ -11,7 +11,7 @@
 
 #include <swofty_api.h>
 
-#include "ai_racecraft.hpp"
+#include "core/hooks/ai_racecraft.hpp"
 
 // The core's live car operations (SwoftyCoreCarOps, standard library 1.6): cars::live reads and writes a
 // car's handling values while it is on track. A car is a slot of g_Sess_VehicleTable (its CarLive, whose

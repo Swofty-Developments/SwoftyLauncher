@@ -1,10 +1,10 @@
 #include <swofty/game.hpp>
 #include <swofty/mixin.hpp>
 
-#include "main_menu.hpp"
-#include "main_menu_logic.hpp"
-#include "perf.hpp"
-#include "runtime.hpp"
+#include "core/frontend/main_menu.hpp"
+#include "core/frontend/main_menu_logic.hpp"
+#include "core/diagnostics/perf.hpp"
+#include "core/runtime/runtime.hpp"
 
 using namespace swofty::game;
 

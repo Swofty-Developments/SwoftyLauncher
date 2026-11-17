@@ -1,4 +1,4 @@
-// Host test for career snapshots (native/src/core/snapshots/): the swofty_registry entry's format and
+// Host test for career snapshots (native/src/core/career/snapshots/): the swofty_registry entry's format and
 // bag envelope, freezes and reads through the registry store, budgets, unknown majors and items kept
 // byte for byte, migration through an adapter, a career from before 1.6, Freeze::at_creation, corrupt
 // input, and the entry spliced into a profile save's containers block with the save splice's own
@@ -6,9 +6,9 @@
 // owner-only career::report_season, career.created after a new-career route, career.season.start once per
 // career and year, and the dry save default. --generate DIR writes the fixture entries of packages/sdk/std/fixtures; --fixtures DIR checks
 // every fixture there loads and reads as its .json says. run_snapshots_test.sh builds and runs it.
-#include "../../src/core/save_splice_logic.hpp"
-#include "../../src/core/snapshots/clock.hpp"
-#include "../../src/core/snapshots/snapshots.hpp"
+#include "core/career/save_splice_logic.hpp"
+#include "core/career/snapshots/clock.hpp"
+#include "core/career/snapshots/snapshots.hpp"
 
 #include <cstdio>
 #include <filesystem>

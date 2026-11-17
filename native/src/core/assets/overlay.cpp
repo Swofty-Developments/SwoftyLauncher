@@ -1,6 +1,6 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
-#include "perf.hpp"
+#include "core/diagnostics/perf.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mixin.hpp>

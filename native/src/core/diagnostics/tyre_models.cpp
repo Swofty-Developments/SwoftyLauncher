@@ -1,8 +1,8 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
-#include "tyre_models_logic.hpp"
+#include "core/diagnostics/tyre_models_logic.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>

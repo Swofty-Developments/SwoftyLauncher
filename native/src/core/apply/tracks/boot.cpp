@@ -1,12 +1,12 @@
-#include "boot.hpp"
-#include "box.hpp"
+#include "core/apply/tracks/boot.hpp"
+#include "core/apply/tracks/box.hpp"
 
-#include "../applier.hpp"
-#include "../database.hpp"
-#include "../ids.hpp"
-#include "../content/gvdb.hpp"
+#include "core/apply/applier.hpp"
+#include "core/apply/database.hpp"
+#include "core/apply/ids.hpp"
+#include "core/apply/content/gvdb.hpp"
 
-#include "../../runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
 

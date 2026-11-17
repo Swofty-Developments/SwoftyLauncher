@@ -1,5 +1,5 @@
-#include "runtime.hpp"
-#include "standings_drop_logic.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/guards/career/standings_drop_logic.hpp"
 
 #include <windows.h>
 

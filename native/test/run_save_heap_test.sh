@@ -8,5 +8,5 @@ if ! command -v "$CXX" >/dev/null; then
 fi
 OUT=${1:-$PWD/../build/save-heap-test}
 mkdir -p "$OUT"
-"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src/core -o "$OUT/save_heap_test" save_heap_test.cpp
+"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src -o "$OUT/save_heap_test" save_heap_test.cpp
 "$OUT/save_heap_test"

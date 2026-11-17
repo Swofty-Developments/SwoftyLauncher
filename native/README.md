@@ -10,7 +10,7 @@ The in-game half of Swofty Launcher for F1 25. `native/build.sh` writes it to `n
 | `swofty/addons/core/bindings.json` | `re/tools/bindgen.py` | Game functions, data and call sites that plugins can bind to, with their signatures. |
 | `swofty/addons/core/symbols.tsv` | `re/tools/bindgen.py` | Function names by address, for crash reports. |
 | `swofty/addons/core/log_channels.tsv` | `src/gamelog/log_channels.tsv` | The engine's log channels, for the game log filter. |
-| `swofty/addons/core/features.json` | `FEATURES` in `src/core/stage.cpp` | The runtime asset features of this core, each `stable` or `experimental`. |
+| `swofty/addons/core/features.json` | `FEATURES` in `src/core/runtime/stage.cpp` | The runtime asset features of this core, each `stable` or `experimental`. |
 
 Everything logs to `<game>/swofty/loader.log`, or to `%LOCALAPPDATA%\Swofty\state\loader-fallback.log` when the game can't create that file. Plugins get the C ABI in `packages/sdk/include/swofty_api.h` and the C++ helpers in `packages/sdk/include/swofty/mixin.hpp`. The generated game headers are in `include/swofty/game/`.
 
@@ -89,7 +89,7 @@ An experimental feature applies only when `"features"` in `swofty/assets.json` l
 native/build.sh
 ```
 
-Runs `re/tools/bindgen.py`, then cross-compiles the three DLLs with zig for `x86_64-windows-gnu` into `native/build/` and copies them to `native/dist/` with `features.json`. safetyhook, Zydis, zstd 1.5.7 and stb_image 2.30 are vendored in `third_party/` with their licences, and `third_party/titillium-web/` holds the SIL OFL licence of the overlay font. `tools/hud_font_sdf.py` regenerates the overlay font atlas (`src/core/hud_font_data.hpp`, `src/core/hud_font_atlas.hpp`) from Titillium Web SemiBold at a pinned google/fonts commit. safetyhook carries one local change, marked `Swofty:` in `trap_threads`: it keeps an ntdll page executable while it patches it. The build is deterministic.
+Runs `re/tools/bindgen.py`, then cross-compiles the three DLLs with zig for `x86_64-windows-gnu` into `native/build/` and copies them to `native/dist/` with `features.json`. safetyhook, Zydis, zstd 1.5.7 and stb_image 2.30 are vendored in `third_party/` with their licences, and `third_party/titillium-web/` holds the SIL OFL licence of the overlay font. `tools/hud_font_sdf.py` regenerates the overlay font atlas (`src/core/hud/hud_font_data.hpp`, `src/core/hud/hud_font_atlas.hpp`) from Titillium Web SemiBold at a pinned google/fonts commit. safetyhook carries one local change, marked `Swofty:` in `trap_threads`: it keeps an ntdll page executable while it patches it. The build is deterministic.
 
 The launcher takes the files from `loader/` beside its `bin/` folder in a release, from `native/dist/` in a checkout, or from the folder named by `SWOFTY_LOADER_DIR`.
 

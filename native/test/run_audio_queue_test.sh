@@ -8,5 +8,5 @@ if ! command -v "$CXX" >/dev/null; then
 fi
 OUT=${1:-$PWD/../build/audio-queue-test}
 mkdir -p "$OUT"
-"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src/core -o "$OUT/audio_queue_test" audio_queue_test.cpp
+"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src -o "$OUT/audio_queue_test" audio_queue_test.cpp
 "$OUT/audio_queue_test"

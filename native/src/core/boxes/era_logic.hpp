@@ -12,10 +12,10 @@
 #include <utility>
 #include <vector>
 
-#include "apply/facts.hpp"
-#include "apply/tracks/base.hpp"
-#include "apply/tracks/seed.hpp"
-#include "json.hpp"
+#include "core/apply/facts.hpp"
+#include "core/apply/tracks/base.hpp"
+#include "core/apply/tracks/seed.hpp"
+#include "core/runtime/json.hpp"
 
 // Pure logic of the era picker addon row (era_picker.cpp): the box check, the box order, the image
 // default, the Time Trial list and its car limit, the press guard, the links of the row's two node handles

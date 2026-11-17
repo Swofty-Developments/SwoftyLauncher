@@ -1,6 +1,6 @@
 #pragma once
 
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>

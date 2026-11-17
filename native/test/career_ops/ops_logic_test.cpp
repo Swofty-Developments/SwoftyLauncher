@@ -6,10 +6,10 @@
 #include <string>
 #include <vector>
 
-#include "../../src/core/career_ops/driver_rows.hpp"
-#include "../../src/core/career_ops/fuel_logic.hpp"
-#include "../../src/core/career_ops/number_plan.hpp"
-#include "../../src/core/career_ops/seat_plan.hpp"
+#include "core/career/ops/driver_rows.hpp"
+#include "core/career/ops/fuel_logic.hpp"
+#include "core/career/ops/number_plan.hpp"
+#include "core/career/ops/seat_plan.hpp"
 
 using namespace career_ops;
 

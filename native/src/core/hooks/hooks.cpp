@@ -1,12 +1,12 @@
-#include "../runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
 
-#include "../blackbox.hpp"
-#include "../perf.hpp"
-#include "core_events.hpp"
-#include "guard.hpp"
-#include "hooks.hpp"
+#include "core/diagnostics/crash/blackbox.hpp"
+#include "core/diagnostics/perf.hpp"
+#include "core/hooks/core_events.hpp"
+#include "core/hooks/guard.hpp"
+#include "core/hooks/hooks.hpp"
 
 #include <mutex>
 #include <string>

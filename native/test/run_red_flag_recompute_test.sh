@@ -8,5 +8,5 @@ if ! command -v "$CXX" >/dev/null; then
 fi
 OUT=${1:-$PWD/../build/red-flag-recompute-test}
 mkdir -p "$OUT"
-"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src/core -o "$OUT/red_flag_recompute_test" red_flag_recompute_test.cpp
+"$CXX" -std=c++23 -O2 -Wall -Wextra -I../src -o "$OUT/red_flag_recompute_test" red_flag_recompute_test.cpp
 "$OUT/red_flag_recompute_test"

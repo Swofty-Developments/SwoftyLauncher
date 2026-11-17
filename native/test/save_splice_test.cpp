@@ -4,7 +4,7 @@
 // It checks that a profile save's containers block with the kept entries spliced in after a bumped
 // count reads back as the registered children plus the kept bags, unchanged. run_events_test.sh
 // builds and runs it.
-#include "../src/core/save_splice_logic.hpp"
+#include "core/career/save_splice_logic.hpp"
 
 #include <cstdio>
 #include <map>

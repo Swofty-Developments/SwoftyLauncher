@@ -1,6 +1,6 @@
-#include "apply/moments.hpp"
-#include "gp_weekend_track_logic.hpp"
-#include "runtime.hpp"
+#include "core/apply/moments.hpp"
+#include "core/guards/tracks/gp_weekend_track_logic.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 

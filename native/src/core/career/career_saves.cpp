@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
@@ -11,10 +11,10 @@
 
 #include <swofty/mixin.hpp>
 
-#include "career_saves_logic.hpp"
-#include "hooks/core_events.hpp"
-#include "hooks/hooks.hpp"
-#include "registry/table.hpp"
+#include "core/career/career_saves_logic.hpp"
+#include "core/hooks/core_events.hpp"
+#include "core/hooks/hooks.hpp"
+#include "core/registry/table.hpp"
 
 // Career saves (since 1.7.0): the career index and the per-career addon data.
 //

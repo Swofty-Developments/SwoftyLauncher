@@ -1,5 +1,5 @@
-#include "load_stall_logic.hpp"
-#include "runtime.hpp"
+#include "core/diagnostics/load_stall_logic.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 

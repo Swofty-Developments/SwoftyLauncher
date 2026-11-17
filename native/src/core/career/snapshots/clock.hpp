@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "../registry/store.hpp"
+#include "core/registry/store.hpp"
 
 // When a career's seasons start (docs/std/scopes.md#career-snapshots): which year a season index is,
 // when the core fires career.created and career.season.start, and who may say a season's year. No game

@@ -2,7 +2,7 @@
 // save-slot data group walk over a fake career (championship list, CareerSetupComponent, entrant
 // list names), the car group pick and the database requirements against a fake database shaped
 // like the 1990 content's. run_events_test.sh builds and runs it.
-#include "../src/core/career_content_logic.hpp"
+#include "core/career/career_content_logic.hpp"
 
 #include <cstdio>
 #include <map>

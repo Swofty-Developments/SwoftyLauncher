@@ -1,5 +1,5 @@
 // The swofty_core.dll stand-ins that mem_addon_test.exe loads (see run_mem_pages_test.sh). Built with
-// SWOFTY_MEM_SHARED and src/core/mem_pages.cpp, it is the core's own SwoftyCoreMem export plus mem_test_answers,
+// SWOFTY_MEM_SHARED and src/core/runtime/mem_pages.cpp, it is the core's own SwoftyCoreMem export plus mem_test_answers,
 // the count of page answers its table looked up. Built with MEM_ADDON_FAKE_CORE, it is a core whose SwoftyCoreMem
 // gives a table an addon must not use (version 0 when MEM_TEST_FAKE is "v0", null functions when it is "nullfn")
 // and whose functions count their calls in mem_fake_calls and answer readable for every address.

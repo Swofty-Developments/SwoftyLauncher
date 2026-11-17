@@ -1,6 +1,6 @@
-#include "../../src/core/career_content_logic.hpp"
-#include "../../src/core/registry/older.hpp"
-#include "../../src/core/registry/table.hpp"
+#include "core/career/career_content_logic.hpp"
+#include "core/registry/older.hpp"
+#include "core/registry/table.hpp"
 
 #include <cstdio>
 #include <string>

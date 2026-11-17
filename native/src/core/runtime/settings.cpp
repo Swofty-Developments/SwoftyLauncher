@@ -7,9 +7,9 @@
 #include <string>
 #include <unordered_map>
 #include <vector>
-#include "json.hpp"
-#include "registry/older.hpp"
-#include "runtime.hpp"
+#include "core/runtime/json.hpp"
+#include "core/registry/older.hpp"
+#include "core/runtime/runtime.hpp"
 #include "swofty_api.h"
 
 bool ui_vm_set_path(const std::string &path, int type, const void *value);

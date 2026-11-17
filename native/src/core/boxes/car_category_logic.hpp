@@ -4,7 +4,7 @@
 #include <string>
 #include <vector>
 
-#include "era_logic.hpp"
+#include "core/boxes/era_logic.hpp"
 
 // Pure logic of the LAN Car Category addon boxes (car_category.cpp): the press commands, the option value
 // name decoding, the value match and the handle release. No game calls, so the unit test runs on the host.

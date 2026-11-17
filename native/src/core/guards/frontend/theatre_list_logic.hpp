@@ -1,6 +1,6 @@
 #pragma once
 
-#include "garage_setup_logic.hpp"
+#include "core/guards/garage/garage_setup_logic.hpp"
 
 #include <cstdint>
 

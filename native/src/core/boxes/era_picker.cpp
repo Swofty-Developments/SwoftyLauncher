@@ -1,6 +1,6 @@
-#include "direct_start_tt.hpp"
-#include "runtime.hpp"
-#include "replay_grid_logic.hpp"
+#include "core/testing/direct_start_tt.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/guards/session/replay_grid_logic.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -19,12 +19,12 @@
 #include <string>
 #include <vector>
 
-#include "apply/content/appliers.hpp"
-#include "apply/moments.hpp"
-#include "apply/scheduler.hpp"
-#include "box_grid_logic.hpp"
-#include "era_logic.hpp"
-#include "tt_loaded_logic.hpp"
+#include "core/apply/content/appliers.hpp"
+#include "core/apply/moments.hpp"
+#include "core/apply/scheduler.hpp"
+#include "core/boxes/box_grid_logic.hpp"
+#include "core/boxes/era_logic.hpp"
+#include "core/boxes/tt_loaded_logic.hpp"
 
 std::string settings_addon(const void *from, std::string &dll);
 int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);

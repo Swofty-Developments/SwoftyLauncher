@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -11,8 +11,8 @@
 #include <unordered_map>
 #include <vector>
 
-#include "dbread_logic.hpp"
-#include "layout.hpp"
+#include "core/assets/dbread_logic.hpp"
+#include "core/runtime/layout.hpp"
 
 namespace {
 

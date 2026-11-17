@@ -7,7 +7,7 @@
 #include <unordered_map>
 #include <vector>
 
-#include "hud_font.hpp"
+#include "core/hud/hud_font.hpp"
 #include "swofty_api.h"
 
 // The overlay's portable draw list: paint callbacks tessellate straight into triangles in framebuffer

@@ -1,6 +1,6 @@
-#include "virtual_pad.hpp"
+#include "core/testing/virtual_pad.hpp"
 
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <safetyhook.hpp>
 

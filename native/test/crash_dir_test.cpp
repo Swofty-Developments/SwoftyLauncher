@@ -1,5 +1,5 @@
 // Host unit test for the crash report location logic (crash_dir.hpp). run_events_test.sh builds and runs it.
-#include "../src/core/crash_dir.hpp"
+#include "core/diagnostics/crash/crash_dir.hpp"
 
 #include <cstdio>
 #include <string>

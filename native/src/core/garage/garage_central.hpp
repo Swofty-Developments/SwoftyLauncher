@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
-#include "garage_rig.hpp"
+#include "core/garage/garage_rig.hpp"
 #include <algorithm>
 
 namespace runtime::garage_placement {

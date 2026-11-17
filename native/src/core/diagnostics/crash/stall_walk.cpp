@@ -1,4 +1,4 @@
-#include "stall_walk.hpp"
+#include "core/diagnostics/crash/stall_walk.hpp"
 
 namespace stall_walk {
 

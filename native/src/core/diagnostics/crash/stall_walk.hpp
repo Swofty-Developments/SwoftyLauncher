@@ -1,7 +1,7 @@
 #pragma once
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
-#include "stall_order_logic.hpp"
+#include "core/diagnostics/crash/stall_order_logic.hpp"
 #include <cstddef>
 #include <cstdint>
 

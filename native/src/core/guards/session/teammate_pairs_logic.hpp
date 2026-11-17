@@ -1,5 +1,5 @@
 #pragma once
-#include "garage_crew_logic.hpp"
+#include "core/guards/garage/garage_crew_logic.hpp"
 
 #include <cstdint>
 

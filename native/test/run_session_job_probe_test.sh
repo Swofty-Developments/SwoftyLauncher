@@ -8,5 +8,5 @@ if ! command -v "$CXX" >/dev/null; then
 fi
 OUT=${1:-$PWD/../build/session-job-probe-test}
 mkdir -p "$OUT"
-"$CXX" -std=c++23 -O2 -Wall -Wextra -pthread -I../src/core -o "$OUT/session_job_probe_test" session_job_probe_test.cpp
+"$CXX" -std=c++23 -O2 -Wall -Wextra -pthread -I../src -o "$OUT/session_job_probe_test" session_job_probe_test.cpp
 "$OUT/session_job_probe_test"

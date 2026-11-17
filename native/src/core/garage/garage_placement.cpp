@@ -1,9 +1,9 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-#include "runtime.hpp"
-#include "apply/moments.hpp"
-#include "garage_placement/steam_26566308.hpp"
-#include "garage_placement/garage_crew_pose.hpp"
-#include "garage_placement/garage_vehicle.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/apply/moments.hpp"
+#include "core/garage/steam_26566308.hpp"
+#include "core/garage/garage_crew_pose.hpp"
+#include "core/garage/garage_vehicle.hpp"
 #include <swofty/mixin.hpp>
 #include <swofty/mem.hpp>
 #include <atomic>

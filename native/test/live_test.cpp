@@ -1,11 +1,11 @@
-#include "../src/core/live/live_bus.hpp"
-#include "../src/core/live/live_rows.hpp"
-#include "../src/core/live/live_state.hpp"
-#include "../src/core/live/live_snapshot.hpp"
-#include "../src/core/live/live_telemetry_fill.hpp"
-#include "../src/core/live/live_turns.hpp"
-#include "../src/core/telemetry_feed.hpp"
-#include "../src/core/udp_telemetry_logic.hpp"
+#include "core/live/live_bus.hpp"
+#include "core/live/live_rows.hpp"
+#include "core/live/live_state.hpp"
+#include "core/live/live_snapshot.hpp"
+#include "core/live/live_telemetry_fill.hpp"
+#include "core/live/live_turns.hpp"
+#include "core/telemetry/telemetry_feed.hpp"
+#include "core/telemetry/udp_telemetry_logic.hpp"
 
 #include <cstdio>
 #include <cstring>

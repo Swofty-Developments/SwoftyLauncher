@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -12,7 +12,7 @@
 #include <string>
 #include <vector>
 
-#include "car_category_logic.hpp"
+#include "core/boxes/car_category_logic.hpp"
 
 // LAN Car Category addon boxes. The host's Car Category screen after the LAN Game dialog is the F1 World
 // container's tab session_create_dlc_select_tab (CreateSessionDLCSelectTabViewModel). Its tile build

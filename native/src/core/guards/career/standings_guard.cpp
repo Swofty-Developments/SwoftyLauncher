@@ -1,5 +1,5 @@
-#include "runtime.hpp"
-#include "track_record_logic.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/guards/tracks/track_record_logic.hpp"
 
 #include <windows.h>
 

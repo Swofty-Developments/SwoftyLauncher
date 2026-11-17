@@ -11,7 +11,7 @@
 #include <utility>
 #include <vector>
 
-#include "json.hpp"
+#include "core/runtime/json.hpp"
 
 // Pure logic of the test save sandbox (save_sandbox.cpp, re/db/subsystems/core.md#save-sandbox): the
 // run token `swofty test` hands the game, the checks on the save device before its Steam remote storage

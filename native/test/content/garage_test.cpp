@@ -1,5 +1,5 @@
 #define ZSTD_STATIC_LINKING_ONLY
-#include "../../src/core/apply/content/garage_build.hpp"
+#include "core/apply/content/garage_build.hpp"
 
 #include <cstdio>
 #include <memory>

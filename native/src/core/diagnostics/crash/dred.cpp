@@ -1,10 +1,10 @@
-#include "dred.hpp"
+#include "core/diagnostics/crash/dred.hpp"
 
 #include <d3d12.h>
 
 #include <vector>
 
-#include "dred_logic.hpp"
+#include "core/diagnostics/crash/dred_logic.hpp"
 #include "safetyhook.hpp"
 
 namespace runtime::dred {

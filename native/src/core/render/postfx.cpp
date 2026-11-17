@@ -1,10 +1,10 @@
-#include "d3d12_hooks.hpp"
-#include "hud_guard.hpp"
-#include "live_car.hpp"
-#include "perf.hpp"
-#include "postfx_logic.hpp"
-#include "runtime.hpp"
-#include "view_state.hpp"
+#include "core/render/d3d12_hooks.hpp"
+#include "core/hud/hud_guard.hpp"
+#include "core/live/live_car.hpp"
+#include "core/diagnostics/perf.hpp"
+#include "core/render/postfx_logic.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/frontend/view_state.hpp"
 
 #include <swofty/mixin.hpp>
 

@@ -2,8 +2,8 @@
 
 #include <string>
 
-#include "direct_start_logic.hpp"
-#include "json.hpp"
+#include "core/testing/direct_start_logic.hpp"
+#include "core/runtime/json.hpp"
 
 namespace runtime::direct_start::tt {
 

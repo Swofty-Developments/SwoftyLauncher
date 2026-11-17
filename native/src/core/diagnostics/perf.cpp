@@ -1,8 +1,8 @@
-#include "perf.hpp"
+#include "core/diagnostics/perf.hpp"
 
-#include "blackbox.hpp"
-#include "perf_logic.hpp"
-#include "runtime.hpp"
+#include "core/diagnostics/crash/blackbox.hpp"
+#include "core/diagnostics/perf_logic.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>

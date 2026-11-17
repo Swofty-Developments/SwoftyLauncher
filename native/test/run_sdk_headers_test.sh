@@ -13,13 +13,13 @@ if [ -n "${SWOFTY_JSON_INCLUDE:-}" ]; then
     INC=(-I../../packages/sdk/include -I"$SWOFTY_JSON_INCLUDE")
 fi
 mkdir -p "$OUT"
-"${PIN[@]}" zig c++ -target x86_64-windows-gnu -std=c++23 -O1 -Wall -Wextra -Werror -Wno-nullability-completeness -Wno-missing-designated-field-initializers "${INC[@]}" \
+"${PIN[@]}" zig c++ -target x86_64-windows-gnu -I../src -std=c++23 -O1 -Wall -Wextra -Werror -Wno-nullability-completeness -Wno-missing-designated-field-initializers "${INC[@]}" \
     -o "$OUT/sdk_headers_test.exe" sdk_headers_test.cpp
-"${PIN[@]}" zig c++ -target x86_64-linux-musl -std=c++23 -O1 -Wall -Wextra -Werror -Wno-nullability-completeness -Wno-missing-designated-field-initializers "${INC[@]}" \
+"${PIN[@]}" zig c++ -target x86_64-linux-musl -I../src -std=c++23 -O1 -Wall -Wextra -Werror -Wno-nullability-completeness -Wno-missing-designated-field-initializers "${INC[@]}" \
     -o "$OUT/sdk_headers_test" sdk_headers_test.cpp
 "$OUT/sdk_headers_test"
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -std=c11 -Wall -Wextra -Werror -pedantic -I../../packages/sdk/include \
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -std=c11 -Wall -Wextra -Werror -pedantic -I../../packages/sdk/include \
     -o "$OUT/sdk_api_c_test.exe" sdk_api_c_test.c
-"${PIN[@]}" zig cc -target x86_64-linux-musl -std=c11 -Wall -Wextra -Werror -pedantic -I../../packages/sdk/include \
+"${PIN[@]}" zig cc -target x86_64-linux-musl -I../src -std=c11 -Wall -Wextra -Werror -pedantic -I../../packages/sdk/include \
     -o "$OUT/sdk_api_c_test" sdk_api_c_test.c
 "$OUT/sdk_api_c_test"

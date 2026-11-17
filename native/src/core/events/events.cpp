@@ -1,16 +1,16 @@
 #include <atomic>
-#include "runtime.hpp"
-#include "main_menu.hpp"
-#include "services/lap_host.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/frontend/main_menu.hpp"
+#include "core/services/lap_host.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
-#include "apply/moments.hpp"
-#include "events_dispatch.hpp"
-#include "perf.hpp"
-#include "session_lifecycle_logic.hpp"
+#include "core/apply/moments.hpp"
+#include "core/events/events_dispatch.hpp"
+#include "core/diagnostics/perf.hpp"
+#include "core/events/session_lifecycle_logic.hpp"
 
 #include <cstring>
 #include <mutex>

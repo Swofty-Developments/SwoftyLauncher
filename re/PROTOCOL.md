@@ -140,7 +140,7 @@ The verifier appends one `verify.tsv` row via `kb.py verify`: verdict `agree`, `
 | `names` | the `functions.tsv`/`globals.tsv` name(s) the target is |
 | `kind` | `func_start`, `mid` (MidHook site), `call` or `data` |
 | `verified` | list of `{build, date, by}`; `build` is the first 16 hex chars of the exe sha256 |
-| `used_by` | files that consume it (`native/src/core/swofty_core.cpp`) |
+| `used_by` | files that consume it (`native/src/core/frontend/swofty_core.cpp`) |
 
 Rules: a pattern must match **exactly once** in its section on every build listed in `verified`; it must not start or end on a wildcard; it is at least 12 bytes; a `mid` target must sit on an instruction boundary inside a `.pdata` function in `.xtls`; `.data1` bodies get signatures only for the §2 exception (`section` `.data1`, `data1_reason`, `func_start` when `.pdata` lacks the body). `re/tools/sitereg.py` makes, checks and records a site, data or function signature together with its KB row. `sigcheck.py --make <va> --kind mid|func_start` prints a candidate object; `sigcheck.py --sigs <file>` checks candidates before they go in; plain `sigcheck.py` is the gate.
 

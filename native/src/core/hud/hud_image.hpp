@@ -24,7 +24,7 @@
 #define STBI_NO_LINEAR
 #define STB_IMAGE_STATIC
 #define STB_IMAGE_IMPLEMENTATION
-#include "../../third_party/stb/stb_image.h"
+#include "../../../third_party/stb/stb_image.h"
 #if defined(__GNUC__)
 #pragma GCC diagnostic pop
 #endif

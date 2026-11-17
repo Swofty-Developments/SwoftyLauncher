@@ -1,10 +1,10 @@
-// Host-native unit test for the core's career calendar track list guard (native/src/core/track_list_guard_logic.hpp):
+// Host-native unit test for the core's career calendar track list guard (native/src/core/guards/tracks/track_list_guard_logic.hpp):
 // the game's custom_track_list load loop is replayed with and without the guard over event rows that share ids, a
 // track twice in one season, duplicate event rows, clean saves over several save and load cycles, a save the game
 // already blew up, a season longer than the default event list, and the race weekends read from the career calendar.
 // Built and run by native/test/run_track_list_guard_test.sh.
 
-#include "track_list_guard_logic.hpp"
+#include "core/guards/tracks/track_list_guard_logic.hpp"
 
 #include <cstdio>
 #include <cstring>

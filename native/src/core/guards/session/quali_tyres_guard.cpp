@@ -1,9 +1,9 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
-#include "apply/content/appliers.hpp"
-#include "apply/content/quali_tyres.hpp"
+#include "core/apply/content/appliers.hpp"
+#include "core/apply/content/quali_tyres.hpp"
 
 #include <swofty/mixin.hpp>
 

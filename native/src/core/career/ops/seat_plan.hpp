@@ -3,7 +3,7 @@
 #include <string>
 #include <vector>
 
-#include "lineup_plan.hpp"
+#include "core/career/ops/lineup_plan.hpp"
 
 // career::set_seat's planner: pure logic over the career's entrant rows (lineup_plan.hpp's Row), so
 // native/test builds it on the host. The executor is apply_lineup's (career_ops.cpp execute()). The seat

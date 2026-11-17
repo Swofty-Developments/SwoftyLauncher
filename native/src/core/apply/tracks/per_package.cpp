@@ -1,7 +1,7 @@
-#include "box.hpp"
+#include "core/apply/tracks/box.hpp"
 
-#include "../applier.hpp"
-#include "../scheduler.hpp"
+#include "core/apply/applier.hpp"
+#include "core/apply/scheduler.hpp"
 
 #include <swofty/mixin.hpp>
 

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "keys.hpp"
+#include "core/apply/tracks/keys.hpp"
 
 #include <swofty/json.hpp>
 
@@ -272,7 +272,7 @@ inline Tables tables_of(const Value &v)
     return t;
 }
 
-#include "track_keys.inc"
+#include "core/apply/tracks/track_keys.inc"
 
 inline const Tables &builtin_tables()
 {

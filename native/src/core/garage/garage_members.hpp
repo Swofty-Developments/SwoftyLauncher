@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
-#include "steam_26566308.hpp"
+#include "core/garage/steam_26566308.hpp"
 namespace runtime::garage_placement::members {
 namespace sdk = swofty::garage_placement;
 using Role = sdk::Mechanic;

@@ -13,7 +13,7 @@ GAME=$OUT/game
 [[ -d $GAME/swofty ]] && chmod u+w "$GAME/swofty"
 rm -rf "$GAME"
 mkdir -p "$GAME/swofty"
-"${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$GAME/F1_25.exe" fake_log.c -lversion
+"${PIN[@]}" zig cc -target x86_64-windows-gnu -I../src -O2 -o "$GAME/F1_25.exe" fake_log.c -lversion
 cp ../dist/version.dll "$GAME/"
 export WINEPREFIX="$OUT/prefix" WINEDLLOVERRIDES="version=n,b;mscoree,mshtml=;winemenubuilder.exe,winedbg.exe=d" WINEDEBUG=-all
 LOCAL=$(winepath -u "$(wine cmd /c 'echo %LOCALAPPDATA%' | tr -d '\r')")

@@ -1,10 +1,10 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
 
-#include "../loader/data_folder.h"
-#include "perf.hpp"
-#include "storage_logic.hpp"
+#include "loader/data_folder.h"
+#include "core/diagnostics/perf.hpp"
+#include "core/runtime/storage_logic.hpp"
 
 #include <cstdio>
 #include <unordered_map>

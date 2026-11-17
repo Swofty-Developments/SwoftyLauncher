@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
@@ -9,13 +9,13 @@
 #include <string>
 #include <unordered_map>
 
-#include "apply/moments.hpp"
-#include "career_state.hpp"
-#include "dbread_logic.hpp"
-#include "layout.hpp"
-#include "myteam_vehicle_heal_logic.hpp"
-#include "perf.hpp"
-#include "view_state.hpp"
+#include "core/apply/moments.hpp"
+#include "core/career/career_state.hpp"
+#include "core/assets/dbread_logic.hpp"
+#include "core/runtime/layout.hpp"
+#include "core/guards/career/myteam_vehicle_heal_logic.hpp"
+#include "core/diagnostics/perf.hpp"
+#include "core/frontend/view_state.hpp"
 
 // Flow states (site_FeFlow_SetStateStatus, FlowState). Every flow state's status change goes
 // through FeFlow_Set_StateStatus(state, status); the site sits after its prologue with rcx = the

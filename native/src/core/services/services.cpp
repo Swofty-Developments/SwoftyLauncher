@@ -1,9 +1,9 @@
-#include "../runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
 
-#include "../hooks/guard.hpp"
-#include "services.hpp"
+#include "core/hooks/guard.hpp"
+#include "core/services/services.hpp"
 
 std::string settings_addon(const void *from, std::string &dll);
 

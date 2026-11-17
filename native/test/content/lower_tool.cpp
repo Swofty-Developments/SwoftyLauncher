@@ -1,7 +1,7 @@
-#include "../../src/core/apply/content/gvdb.hpp"
-#include "../../src/core/apply/content/lower.hpp"
-#include "../../src/core/registry/table.hpp"
-#include "../../src/core/registry/validate.hpp"
+#include "core/apply/content/gvdb.hpp"
+#include "core/apply/content/lower.hpp"
+#include "core/registry/table.hpp"
+#include "core/registry/validate.hpp"
 
 #include <fstream>
 #include <iostream>

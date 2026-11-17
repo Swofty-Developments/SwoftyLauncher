@@ -1,4 +1,4 @@
-#include "ui_registry_walk.hpp"
+#include "core/frontend/ui_registry_walk.hpp"
 
 #include <cstdio>
 #include <map>

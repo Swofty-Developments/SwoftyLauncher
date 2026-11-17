@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -13,12 +13,12 @@
 #include <mutex>
 #include <thread>
 
-#include "apply/moments.hpp"
-#include "direct_start_logic.hpp"
-#include "json.hpp"
-#include "room_cover.hpp"
-#include "testagent/agent_logic.hpp"
-#include "title_skip.hpp"
+#include "core/apply/moments.hpp"
+#include "core/testing/direct_start_logic.hpp"
+#include "core/runtime/json.hpp"
+#include "core/hud/room_cover.hpp"
+#include "core/testing/agent/agent_logic.hpp"
+#include "core/testing/title_skip.hpp"
 
 // The direct start: the game goes from boot to its target with no title, no legal screens' waits and no
 // menu. SWOFTY_DIRECT_START in the game's environment, or swofty\direct_start.json written by the launcher for

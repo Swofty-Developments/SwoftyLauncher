@@ -1,5 +1,5 @@
-#include "garage_crew_logic.hpp"
-#include "runtime.hpp"
+#include "core/guards/garage/garage_crew_logic.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 

@@ -5,7 +5,7 @@
 #include <string>
 #include <vector>
 
-#include "../registry/store.hpp"
+#include "core/registry/store.hpp"
 
 namespace swofty_core::apply {
 

@@ -1,6 +1,6 @@
-#include "d3d12_hooks.hpp"
-#include "grade_math.hpp"
-#include "runtime.hpp"
+#include "core/render/d3d12_hooks.hpp"
+#include "core/render/grade_math.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
 

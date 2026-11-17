@@ -1,9 +1,9 @@
-#include "d3d12_hooks.hpp"
+#include "core/render/d3d12_hooks.hpp"
 
-#include "hud_guard.hpp"
-#include "runtime.hpp"
-#include "srv_clamp_logic.hpp"
-#include "perf.hpp"
+#include "core/hud/hud_guard.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/render/srv_clamp_logic.hpp"
+#include "core/diagnostics/perf.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mixin.hpp>

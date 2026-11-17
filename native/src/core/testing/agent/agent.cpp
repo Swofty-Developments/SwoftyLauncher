@@ -1,4 +1,4 @@
-#include "../runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/game.hpp>
@@ -13,10 +13,10 @@
 #include <thread>
 #include <vector>
 
-#include "../apply/tracks/box.hpp"
-#include "../title_skip.hpp"
-#include "../virtual_pad.hpp"
-#include "agent_logic.hpp"
+#include "core/apply/tracks/box.hpp"
+#include "core/testing/title_skip.hpp"
+#include "core/testing/virtual_pad.hpp"
+#include "core/testing/agent/agent_logic.hpp"
 
 // The test agent (docs/design/std-2/test-suite.md, "The test run" and "The agent's commands"). It arms
 // only in a test run: SWOFTY_TEST_RUN names the run folder, SWOFTY_TEST_TOKEN equals the token in its

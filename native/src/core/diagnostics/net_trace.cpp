@@ -2,8 +2,8 @@
 #include <winsock2.h>
 #include <ws2tcpip.h>
 
-#include "imports.hpp"
-#include "runtime.hpp"
+#include "core/runtime/imports.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <tlhelp32.h>
 

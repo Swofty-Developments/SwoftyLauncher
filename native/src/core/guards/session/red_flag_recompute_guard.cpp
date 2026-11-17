@@ -1,8 +1,8 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
-#include "red_flag_recompute_logic.hpp"
+#include "core/guards/session/red_flag_recompute_logic.hpp"
 
 #include <swofty/mixin.hpp>
 

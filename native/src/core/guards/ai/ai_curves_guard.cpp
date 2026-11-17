@@ -1,5 +1,5 @@
-#include "ai_curves_logic.hpp"
-#include "runtime.hpp"
+#include "core/guards/ai/ai_curves_logic.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 

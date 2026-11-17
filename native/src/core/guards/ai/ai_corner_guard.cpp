@@ -1,5 +1,5 @@
-#include "ai_corner_logic.hpp"
-#include "runtime.hpp"
+#include "core/guards/ai/ai_corner_logic.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 

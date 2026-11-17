@@ -1,7 +1,7 @@
 // Host unit test for the era picker logic (era_logic.hpp): the box check, the default title and image,
 // the box order, the Time Trial list and car limit, the press guard, the addon row's handle links, the DRS
 // group swap and the restore stack of list cuts. run_events_test.sh builds and runs it.
-#include "../src/core/era_logic.hpp"
+#include "core/boxes/era_logic.hpp"
 
 #include <cstdio>
 #include <string>

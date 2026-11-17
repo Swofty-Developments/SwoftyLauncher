@@ -1,6 +1,6 @@
-#include "blackbox.hpp"
-#include "runtime.hpp"
-#include "session_job_probe_logic.hpp"
+#include "core/diagnostics/crash/blackbox.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/diagnostics/session_job_probe_logic.hpp"
 
 #include <windows.h>
 

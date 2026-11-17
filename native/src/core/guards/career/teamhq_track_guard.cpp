@@ -1,5 +1,5 @@
-#include "runtime.hpp"
-#include "teamhq_track_logic.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/guards/career/teamhq_track_logic.hpp"
 
 #include <windows.h>
 

@@ -1,4 +1,4 @@
-#include "../runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -11,13 +11,13 @@
 #include <memory>
 #include <mutex>
 
-#include "../apply/moments.hpp"
-#include "../hooks/core_events.hpp"
-#include "../hooks/hooks.hpp"
-#include "../registry/table.hpp"
-#include "../save_splice_logic.hpp"
-#include "clock.hpp"
-#include "snapshots.hpp"
+#include "core/apply/moments.hpp"
+#include "core/hooks/core_events.hpp"
+#include "core/hooks/hooks.hpp"
+#include "core/registry/table.hpp"
+#include "core/career/save_splice_logic.hpp"
+#include "core/career/snapshots/clock.hpp"
+#include "core/career/snapshots/snapshots.hpp"
 
 // Career snapshots in game: the book (snapshots.cpp) on the core's registry store, fed by the career
 // moments on the hooks table and by the save splice's root loads and profile saves.

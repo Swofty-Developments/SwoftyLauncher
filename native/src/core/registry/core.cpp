@@ -1,6 +1,6 @@
 #include <swofty/mixin.hpp>
 
-#include "../runtime.hpp"
+#include "core/runtime/runtime.hpp"
 #include "declare_all.hpp"
 #include "older.hpp"
 #include "table.hpp"

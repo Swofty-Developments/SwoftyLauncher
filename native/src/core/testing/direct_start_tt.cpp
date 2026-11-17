@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -9,11 +9,11 @@
 #include <string>
 #include <vector>
 
-#include "apply/moments.hpp"
-#include "direct_start_tt.hpp"
-#include "direct_start_tt_logic.hpp"
-#include "era_logic.hpp"
-#include "tt_loaded_logic.hpp"
+#include "core/apply/moments.hpp"
+#include "core/testing/direct_start_tt.hpp"
+#include "core/testing/direct_start_tt_logic.hpp"
+#include "core/boxes/era_logic.hpp"
+#include "core/boxes/tt_loaded_logic.hpp"
 
 // The direct start's Time Trial (a `session` request with "mode": "time_trial"): the Time Trial mode made
 // current, then its setup written where the front end's screens leave it, so StateFrontendWorld's 'session'

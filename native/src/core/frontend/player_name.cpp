@@ -1,10 +1,10 @@
-#include "hooks/guard.hpp"
-#include "main_menu_logic.hpp"
-#include "mem_scan_logic.hpp"
-#include "player_name_logic.hpp"
-#include "ui_registry_walk.hpp"
-#include "runtime.hpp"
-#include "services/lap_host.hpp"
+#include "core/hooks/guard.hpp"
+#include "core/frontend/main_menu_logic.hpp"
+#include "core/frontend/mem_scan_logic.hpp"
+#include "core/frontend/player_name_logic.hpp"
+#include "core/frontend/ui_registry_walk.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/services/lap_host.hpp"
 
 #include <windows.h>
 
@@ -14,7 +14,7 @@
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
-#include "apply/moments.hpp"
+#include "core/apply/moments.hpp"
 
 #include <atomic>
 #include <algorithm>

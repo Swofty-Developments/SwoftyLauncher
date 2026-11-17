@@ -1,16 +1,16 @@
-#include "../runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
-#include "../apply/ids.hpp"
-#include "../apply/moments.hpp"
-#include "../apply/tracks/base.hpp"
-#include "../direct_start_tt.hpp"
-#include "../era_logic.hpp"
-#include "../hooks/core_events.hpp"
-#include "../hooks/guard.hpp"
-#include "../hooks/hooks.hpp"
-#include "../live_car.hpp"
-#include "../view_state.hpp"
-#include "lap_host.hpp"
+#include "core/apply/ids.hpp"
+#include "core/apply/moments.hpp"
+#include "core/apply/tracks/base.hpp"
+#include "core/testing/direct_start_tt.hpp"
+#include "core/boxes/era_logic.hpp"
+#include "core/hooks/core_events.hpp"
+#include "core/hooks/guard.hpp"
+#include "core/hooks/hooks.hpp"
+#include "core/live/live_car.hpp"
+#include "core/frontend/view_state.hpp"
+#include "core/services/lap_host.hpp"
 
 #include <swofty/mixin.hpp>
 #include <swofty/systems/laps.hpp>

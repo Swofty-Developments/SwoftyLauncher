@@ -1,11 +1,11 @@
-#include "live/live_bus.hpp"
-#include "live/live_rows.hpp"
-#include "live/live_snapshot.hpp"
-#include "live/live_state.hpp"
-#include "live/live_telemetry_fill.hpp"
-#include "live/live_turns.hpp"
-#include "runtime.hpp"
-#include "telemetry_feed.hpp"
+#include "core/live/live_bus.hpp"
+#include "core/live/live_rows.hpp"
+#include "core/live/live_snapshot.hpp"
+#include "core/live/live_state.hpp"
+#include "core/live/live_telemetry_fill.hpp"
+#include "core/live/live_turns.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/telemetry/telemetry_feed.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>

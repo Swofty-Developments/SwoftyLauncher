@@ -9,7 +9,7 @@
 #include <utility>
 #include <vector>
 
-#include "../json.hpp"
+#include "core/runtime/json.hpp"
 
 // The test agent's protocol and command runner, without the game: parsing the CLI's command lines,
 // the results it writes back, the virtual pad's buttons and the runner that takes one command at a

@@ -1,10 +1,10 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mem.hpp>
 #include <swofty/mixin.hpp>
 
-#include "game_manager_layout.hpp"
-#include "state_logic.hpp"
+#include "core/runtime/game_manager_layout.hpp"
+#include "core/runtime/state_logic.hpp"
 
 #include <mutex>
 

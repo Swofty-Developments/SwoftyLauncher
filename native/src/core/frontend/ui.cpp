@@ -7,10 +7,10 @@
 #include <string>
 #include <vector>
 
-#include "json.hpp"
-#include "perf.hpp"
-#include "main_menu.hpp"
-#include "services/lap_host.hpp"
+#include "core/runtime/json.hpp"
+#include "core/diagnostics/perf.hpp"
+#include "core/frontend/main_menu.hpp"
+#include "core/services/lap_host.hpp"
 
 namespace runtime {
 std::string hook_error(const safetyhook::MidHook::Error &e);

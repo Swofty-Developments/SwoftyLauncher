@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
-#include "garage_vehicle.hpp"
-#include "garage_rig.hpp"
-#include "garage_central.hpp"
+#include "core/garage/garage_vehicle.hpp"
+#include "core/garage/garage_rig.hpp"
+#include "core/garage/garage_central.hpp"
 
 #include <cassert>
 #include <cstring>

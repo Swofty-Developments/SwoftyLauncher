@@ -1,4 +1,4 @@
-#include "entitlements_logic.hpp"
+#include "core/assets/entitlements_logic.hpp"
 
 #include <cstdio>
 #include <cstdlib>

@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
-#include "garage_central.hpp"
-#include "garage_car_pose.hpp"
+#include "core/garage/garage_central.hpp"
+#include "core/garage/garage_car_pose.hpp"
 #include <swofty/garage_placement.hpp>
 #include <string_view>
 

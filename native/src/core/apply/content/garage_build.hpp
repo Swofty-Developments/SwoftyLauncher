@@ -1,8 +1,8 @@
 #pragma once
 
-#include "bc7.hpp"
-#include "erp_file.hpp"
-#include "png_straight.hpp"
+#include "core/apply/content/bc7.hpp"
+#include "core/apply/content/erp_file.hpp"
+#include "core/apply/content/png_straight.hpp"
 
 #include <algorithm>
 #include <cctype>

@@ -1,7 +1,7 @@
-// Host-native unit test for the core's shader resource view clamp (native/src/core/srv_clamp_logic.hpp).
+// Host-native unit test for the core's shader resource view clamp (native/src/core/render/srv_clamp_logic.hpp).
 // Built and run by native/test/run_srv_clamp_test.sh.
 
-#include "srv_clamp_logic.hpp"
+#include "core/render/srv_clamp_logic.hpp"
 
 #include <cstdio>
 

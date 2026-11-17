@@ -1,11 +1,11 @@
-// career::apply_lineup's season planner (native/src/core/career_ops/lineup_plan.hpp) on the host.
+// career::apply_lineup's season planner (native/src/core/career/ops/lineup_plan.hpp) on the host.
 
 #include <cstdio>
 #include <cstdlib>
 #include <string>
 #include <vector>
 
-#include "../../src/core/career_ops/lineup_plan.hpp"
+#include "core/career/ops/lineup_plan.hpp"
 
 using namespace career_ops::plan;
 

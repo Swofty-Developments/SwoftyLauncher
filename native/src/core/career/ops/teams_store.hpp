@@ -4,8 +4,8 @@
 
 #include <swofty/json.hpp>
 
-#include "../registry/store.hpp"
-#include "teams_plan.hpp"
+#include "core/registry/store.hpp"
+#include "core/career/ops/teams_plan.hpp"
 
 // The career.season records of one data group as the planner's input (docs/std/systems/career.md): the
 // effective records for the data group's context, the teams list read slot by slot, a team identity as its id.

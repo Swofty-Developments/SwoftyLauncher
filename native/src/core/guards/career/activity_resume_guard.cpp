@@ -1,5 +1,5 @@
-#include "runtime.hpp"
-#include "activity_resume_logic.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/guards/career/activity_resume_logic.hpp"
 
 #include <windows.h>
 

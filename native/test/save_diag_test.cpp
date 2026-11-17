@@ -1,4 +1,4 @@
-#include "../src/core/save_diag_logic.hpp"
+#include "core/career/save_diag_logic.hpp"
 
 #include <cstdio>
 

@@ -5,8 +5,8 @@
 
 #include "swofty_api.h"
 
-#include "dispatch.hpp"
-#include "game_point.hpp"
+#include "core/hooks/dispatch.hpp"
+#include "core/hooks/game_point.hpp"
 
 // What the rest of the core uses of the 1.6 hook points: the dispatch table, the current facts, the
 // firing helper for the core's own events, the 1.x bridge, the game point ops and the window-stage

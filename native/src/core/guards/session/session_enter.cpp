@@ -1,9 +1,9 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
-#include "hooks/guard.hpp"
-#include "session_enter_logic.hpp"
+#include "core/hooks/guard.hpp"
+#include "core/guards/session/session_enter_logic.hpp"
 
 #include <swofty/mixin.hpp>
 

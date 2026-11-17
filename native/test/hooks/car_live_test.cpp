@@ -6,8 +6,8 @@
 // plain half changes), range refusals (steering lock, differential, fuel over capacity, NaN), writes off
 // the flow thread, a car without a system, and cars::live::cars/get/set/scale/is_ai through the table.
 // run_car_live_test.sh builds and runs it.
-#include "../../src/core/hooks/car_live.hpp"
-#include "../../src/core/hooks/player_facts.hpp"
+#include "core/hooks/car_live.hpp"
+#include "core/hooks/player_facts.hpp"
 
 #include <swofty/systems/cars.hpp>
 

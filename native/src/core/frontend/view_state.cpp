@@ -1,6 +1,6 @@
-#include "view_state.hpp"
+#include "core/frontend/view_state.hpp"
 
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -10,9 +10,9 @@
 #include <mutex>
 #include <string>
 
-#include "career_state.hpp"
-#include "pause_edge.hpp"
-#include "view_flow_logic.hpp"
+#include "core/career/career_state.hpp"
+#include "core/frontend/pause_edge.hpp"
+#include "core/frontend/view_flow_logic.hpp"
 
 namespace runtime {
 std::string hook_error(const safetyhook::MidHook::Error &e);

@@ -4,8 +4,8 @@
 #include <mutex>
 #include <string>
 
-#include "dispatch.hpp"
-#include "game_point.hpp"
+#include "core/hooks/dispatch.hpp"
+#include "core/hooks/game_point.hpp"
 
 // A game hook point on one slot of a class's vtable: the core writes its dispatcher into the slot while the
 // point has subscribers and puts the game's function back when the last one leaves. Only the original table

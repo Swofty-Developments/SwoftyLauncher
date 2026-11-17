@@ -1,4 +1,4 @@
-#include "../runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>
@@ -9,8 +9,8 @@
 #include <string>
 #include <vector>
 
-#include "fuel_logic.hpp"
-#include "track_fuel.hpp"
+#include "core/career/ops/fuel_logic.hpp"
+#include "core/career/ops/track_fuel.hpp"
 
 // tracks::set_track_fuel (SwoftyCareerOps version 4): Progressive Career's race weekend fuel copy (its
 // native/src/ui/fuel.cpp) moved into the core and driven by a request. It writes a track's fuel in

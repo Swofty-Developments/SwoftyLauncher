@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -8,8 +8,8 @@
 #include <mutex>
 #include <string>
 
-#include "career_start.hpp"
-#include "perf.hpp"
+#include "core/career/career_start.hpp"
+#include "core/diagnostics/perf.hpp"
 
 // Career start gate (Vm_Run_Route, sig vm.run_route). Every native route fire (Vm_Fire_Route,
 // which the front-end tile handlers call) runs its steps through Vm_Run_Route(ui_system, node,

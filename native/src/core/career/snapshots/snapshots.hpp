@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "../registry/store.hpp"
-#include "format.hpp"
+#include "core/registry/store.hpp"
+#include "core/career/snapshots/format.hpp"
 
 // Career snapshots (docs/std/scopes.md#career-snapshots): the swofty_registry entry in memory, the
 // freezes at career creation and season start, and the reads a loaded career makes through the

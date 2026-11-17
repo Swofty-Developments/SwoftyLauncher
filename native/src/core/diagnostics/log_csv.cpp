@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/mixin.hpp>
 
@@ -9,7 +9,7 @@
 #include <mutex>
 #include <thread>
 
-#include "log_csv_logic.hpp"
+#include "core/diagnostics/log_csv_logic.hpp"
 
 // The CSV recorder behind swofty/log_csv.hpp: files under swofty/addons/<addon id>/diag/, a ring per file
 // (log_csv_logic.hpp), and one writer thread that formats and writes every ring about ten times a second.

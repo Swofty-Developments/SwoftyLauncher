@@ -1,6 +1,6 @@
-#include "runtime.hpp"
-#include "services/lap_host.hpp"
-#include "toast_logic.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/services/lap_host.hpp"
+#include "core/hud/toast_logic.hpp"
 
 #include <windows.h>
 

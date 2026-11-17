@@ -1,8 +1,8 @@
 #pragma once
 
-#include "lower.hpp"
-#include "teams.hpp"
-#include "wear.hpp"
+#include "core/apply/content/lower.hpp"
+#include "core/apply/content/teams.hpp"
+#include "core/apply/content/wear.hpp"
 
 #include <cstdio>
 #include <map>

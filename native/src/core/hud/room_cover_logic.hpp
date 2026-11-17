@@ -4,7 +4,7 @@
 #include <cstdint>
 #include <string>
 
-#include "json.hpp"
+#include "core/runtime/json.hpp"
 
 namespace runtime::room_cover {
 

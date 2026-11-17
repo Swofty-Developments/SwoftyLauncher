@@ -12,7 +12,7 @@
 
 The image is a PE file or a flat dump whose file offset is the RVA (a file starting with MZ whose length is its
 SizeOfImage). Both are read with the PE header found in the image itself, as the core reads its own module.
-The order mirrors resolve_binding in native/src/core/manager.cpp: the byte-checked match hint, then the section
+The order mirrors resolve_binding in native/src/core/runtime/manager.cpp: the byte-checked match hint, then the section
 scan (exactly one hit), then the string anchor; apply_match checks the resolve step, expect and the target section.
 A packed set also applies attempt(): pages that read encrypted defer the binding.
 Exit status 0 only when every binding that is not marked unresolvable resolves.

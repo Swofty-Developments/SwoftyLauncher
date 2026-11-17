@@ -1,7 +1,7 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
 
-#include "garage_owner.hpp"
+#include "core/garage/garage_owner.hpp"
 
 namespace runtime::garage_placement {
 

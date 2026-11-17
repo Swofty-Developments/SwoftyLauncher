@@ -1,4 +1,4 @@
-#include "runtime.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -13,10 +13,10 @@
 #include <string>
 #include <vector>
 
-#include "game_message_log_logic.hpp"
-#include "hud_leaves_logic.hpp"
-#include "perf.hpp"
-#include "text_entry.hpp"
+#include "core/frontend/game_message_log_logic.hpp"
+#include "core/hud/hud_leaves_logic.hpp"
+#include "core/diagnostics/perf.hpp"
+#include "core/hud/text_entry.hpp"
 
 // Message popups (NeUIMessageSystem). The game raises every popup the same way: construct a message
 // by its UIMD id (Ui_Message_Construct, 0x1442d9bf0: system, out handle, fixed-capacity id string,

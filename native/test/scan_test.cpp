@@ -1,5 +1,5 @@
-#include "../src/core/json.hpp"
-#include "../src/core/scan_cache.hpp"
+#include "core/runtime/json.hpp"
+#include "core/runtime/scan_cache.hpp"
 #include "../src/loader/pattern_scan.h"
 
 #include <chrono>

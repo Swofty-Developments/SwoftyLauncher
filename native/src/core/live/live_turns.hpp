@@ -4,7 +4,7 @@
 #pragma once
 #include <swofty_api.h>
 
-#include "live_corners_data.hpp"
+#include "core/live/live_corners_data.hpp"
 
 #include <algorithm>
 #include <cmath>

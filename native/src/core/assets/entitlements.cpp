@@ -1,5 +1,5 @@
-#include "entitlements_logic.hpp"
-#include "runtime.hpp"
+#include "core/assets/entitlements_logic.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <swofty/game.hpp>
 #include <swofty/mem.hpp>

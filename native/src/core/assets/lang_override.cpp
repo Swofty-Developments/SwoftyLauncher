@@ -1,5 +1,5 @@
-#include "runtime.hpp"
-#include "registry/older.hpp"
+#include "core/runtime/runtime.hpp"
+#include "core/registry/older.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mixin.hpp>

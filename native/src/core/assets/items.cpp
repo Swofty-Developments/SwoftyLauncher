@@ -7,8 +7,8 @@
 #include <string>
 #include <vector>
 
-#include "json.hpp"
-#include "perf.hpp"
+#include "core/runtime/json.hpp"
+#include "core/diagnostics/perf.hpp"
 
 namespace {
 

@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: AGPL-3.0-or-later
 #pragma once
-#include "garage_members.hpp"
+#include "core/garage/garage_members.hpp"
 namespace runtime::garage_placement::vehicle {
 using Result = swofty::garage_placement::Result;
 struct Pose { Address scene{}; Matrix scene_world{}, car_world{}; };
