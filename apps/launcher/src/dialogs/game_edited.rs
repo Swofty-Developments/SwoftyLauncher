@@ -13,6 +13,7 @@ use swofty_core::game_folder::stock;
 
 use crate::shell::{Page, Shell};
 use crate::ui::discord::{BLURPLE, INVITE, LOGO};
+use crate::ui::numbered_step;
 use crate::ui::theme::{Palette, palette};
 use crate::ui::{game_art, label};
 use swofty_i18n::{tr, trf};
@@ -291,56 +292,16 @@ fn files_box(edited: &Edited, p: Palette) -> impl IntoElement {
         )
 }
 
-fn step(n: u32, title: &'static str, body: &'static str, p: Palette) -> impl IntoElement {
-    h_flex()
-        .gap(px(12.))
-        .items_start()
-        .child(
-            div()
-                .size(px(20.))
-                .flex_shrink_0()
-                .flex()
-                .items_center()
-                .justify_center()
-                .rounded_full()
-                .bg(p.selected)
-                .text_size(px(12.))
-                .font_weight(FontWeight::SEMIBOLD)
-                .text_color(p.accent)
-                .child(n.to_string()),
-        )
-        .child(
-            v_flex()
-                .flex_1()
-                .min_w_0()
-                .gap(px(1.))
-                .child(
-                    div()
-                        .text_size(px(13.))
-                        .font_weight(FontWeight::MEDIUM)
-                        .text_color(p.text)
-                        .child(title),
-                )
-                .child(
-                    div()
-                        .text_size(px(12.))
-                        .line_height(px(18.))
-                        .text_color(p.text_muted)
-                        .child(body),
-                ),
-        )
-}
-
 fn steps(edited: &Edited, repair: &Repair, p: Palette) -> AnyElement {
     if let Some(fix) = edited.missing() {
-        let update = step(
+        let update = numbered_step(
             1,
             "Update F1 25",
             "In Steam or the EA app, install the latest F1 25 update, then press Play again.",
             p,
         );
         let verify = |n| {
-            step(
+            numbered_step(
                 n,
                 repair.title,
                 edited.open(repair).map_or(repair.how, |o| o.how),
@@ -361,7 +322,7 @@ fn steps(edited: &Edited, repair: &Repair, p: Palette) -> AnyElement {
         return v_flex()
             .gap(px(9.))
             .child(label(tr("WHAT TO DO"), p))
-            .child(step(
+            .child(numbered_step(
                 1,
                 "Restore the game folder",
                 tr("Restore game folder below moves the files aside and puts the game's own files back."),
@@ -375,27 +336,27 @@ fn steps(edited: &Edited, repair: &Repair, p: Palette) -> AnyElement {
         .gap(px(9.))
         .child(label(tr("WHAT TO DO"), p))
         .when(leftovers, |d| {
-            d.child(step(
+            d.child(numbered_step(
                 1,
                 "A mod was copied into the game folder",
                 "If you put mod files in the F1 25 folder by hand, take them back out.",
                 p,
             ))
         })
-        .child(step(
+        .child(numbered_step(
             first,
             repair.title,
             edited.open(repair).map_or(repair.how, |o| o.how),
             p,
         ))
-        .child(step(
+        .child(numbered_step(
             first + 1,
             "Add mods the safe way",
             "Use the Simplified Importer below to add a mod as an addon Swofty installs and removes cleanly.",
             p,
         ))
         .when(leftovers, |d| {
-            d.child(step(
+            d.child(numbered_step(
                 4,
                 "Or restore the game folder",
                 tr("Restore game folder below moves the files aside and puts the game's own files back."),

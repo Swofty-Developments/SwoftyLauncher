@@ -22,6 +22,7 @@ use crate::dialogs::game_edited::discord_link;
 use crate::services::game::Install;
 use crate::shell::Shell;
 use crate::ui::Callout;
+use crate::ui::numbered_step;
 use crate::ui::theme::{Palette, palette};
 use crate::ui::{game_art, label};
 use swofty_i18n::{tr, trf};
@@ -317,16 +318,16 @@ impl SetupWizard {
                 v_flex()
                     .gap(px(9.))
                     .child(label(tr("WHAT TO DO"), p))
-                    .child(step(1, first.0, first.1, p))
+                    .child(numbered_step(1, first.0, first.1, p))
                     .when(self.install.source != Source::Unknown, |d| {
-                        d.child(step(
+                        d.child(numbered_step(
                             2,
                             "Wait for it to finish",
                             "It checks every game file and downloads only the ones that changed.",
                             p,
                         ))
                     })
-                    .child(step(
+                    .child(numbered_step(
                         if self.install.source == Source::Unknown {
                             2
                         } else {
@@ -528,20 +529,20 @@ fn welcome(p: Palette) -> Div {
             v_flex()
                 .gap(px(9.))
                 .child(label(tr("ONE-TIME SETUP"), p))
-                .child(step(
+                .child(numbered_step(
                     1,
                     "Tell us about your game folder",
                     "Whether it already holds mods Swofty didn't add.",
                     p,
                 ))
-                .child(step(
+                .child(numbered_step(
                     2,
                     "Check your game files",
                     "Steam's file list checks them, or you verify or repair them once, so Swofty starts \
                      from a clean copy of F1 25.",
                     p,
                 ))
-                .child(step(
+                .child(numbered_step(
                     3,
                     "Play",
                     "Swofty builds your addons and starts the game.",
@@ -596,46 +597,6 @@ fn heading(title: &'static str, body: impl Into<SharedString>, p: Palette) -> im
                 .line_height(px(19.))
                 .text_color(p.text_muted)
                 .child(body.into()),
-        )
-}
-
-fn step(n: u32, title: &'static str, body: &'static str, p: Palette) -> impl IntoElement {
-    h_flex()
-        .gap(px(12.))
-        .items_start()
-        .child(
-            div()
-                .size(px(20.))
-                .flex_shrink_0()
-                .flex()
-                .items_center()
-                .justify_center()
-                .rounded_full()
-                .bg(p.selected)
-                .text_size(px(12.))
-                .font_weight(FontWeight::SEMIBOLD)
-                .text_color(p.accent)
-                .child(n.to_string()),
-        )
-        .child(
-            v_flex()
-                .flex_1()
-                .min_w_0()
-                .gap(px(1.))
-                .child(
-                    div()
-                        .text_size(px(13.))
-                        .font_weight(FontWeight::MEDIUM)
-                        .text_color(p.text)
-                        .child(title),
-                )
-                .child(
-                    div()
-                        .text_size(px(12.))
-                        .line_height(px(18.))
-                        .text_color(p.text_muted)
-                        .child(body),
-                ),
         )
 }
 
