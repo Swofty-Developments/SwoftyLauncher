@@ -11,6 +11,7 @@ Each guide builds one real addon from an empty folder, with the finished code, t
 
 - **[A livery](/make/livery)**: a Red Bull repaint on the stock car for every year, on one year's own car, or as an extra choice in the livery picker.
 - **[An engine sound pack](/make/engine-sounds)**: a V10 for the Ferrari, in every year or only in Classic Seasons 2017.
+- **[A startup video](/make/startup-video)**: a Swofty logo intro instead of the EA SPORTS video, with its own subtitle line.
 - **[A what-if history editor](/make/what-if)**: a launcher page where players change each season's grid and driver ratings in Progressive Career, without touching its files.
 
 ## Add something new

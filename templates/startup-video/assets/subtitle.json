@@ -1,0 +1,6 @@
+{
+  "schema_version": 1,
+  "ops": [
+    { "op": "lang.set", "language": "*", "key": "lng_subtitle_ea_sports_intro", "value": "SWOFTY" }
+  ]
+}

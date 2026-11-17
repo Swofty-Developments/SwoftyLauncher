@@ -15,6 +15,7 @@
 *.zip binary
 *.dll binary
 *.exe binary
+*.bk2 binary
 
 native/third_party/** linguist-vendored
 
