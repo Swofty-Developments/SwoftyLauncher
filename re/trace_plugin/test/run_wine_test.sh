@@ -7,7 +7,7 @@ if ! command -v wine >/dev/null || ! command -v xvfb-run >/dev/null || ! command
 fi
 OUT=${1:-$PWD/../build/wine-test}
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
+. ../../../native/tools/pin.sh
 rm -rf "$OUT/game"
 mkdir -p "$OUT/game/swofty/mods"
 "${PIN[@]}" zig cc -target x86_64-windows-gnu -O2 -o "$OUT/game/F1_25.exe" fake_game.c -lversion -luser32
