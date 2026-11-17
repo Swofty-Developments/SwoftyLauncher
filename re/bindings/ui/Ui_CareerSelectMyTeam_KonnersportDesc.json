@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_CareerSelectMyTeam_KonnersportDesc",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a241c0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/141a241c0.c;xref:0x145726fb8",
+  "notes": "myteam-g1: Career-type select card: lng_career_desc_my_team_konnersport, lng_my_team_career_title, my_team_career."
+ },
+ "signature": {
+  "id": "ui.career_select_my_team_konnersport_desc",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 CE E8 ?? ?? ?? ?? 48 8D 05",
+  "match": "0x141a241c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a241c0",
+  "kind": "func_start",
+  "names": [
+   "Ui_CareerSelectMyTeam_KonnersportDesc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141a241c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a241c0.c;xref:0x145726fb8",
+   "notes": "V9920 Builds career-type card with lng_career_desc_my_team_konnersport and lng_my_team_career_title; also has the driver_career counterpart."
+  }
+ ],
+ "proofs": []
+}

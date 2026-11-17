@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ReplayCamera_IsVehicleSelectable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406ae510",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1406ae510.c;xref:0x1406adf7d",
+  "notes": "Predicate whether vehicle index param_2 can be focused by the replay camera: false for 0xff, >=0x1b, or vehicle state (u32 at entry+4 < 0xe, bitmask 0x3f01) in excluded states; otherwise checks the vehicle actor via 0x143f9b3c0. Callers Game_ReplayCamera_UpdateFocusVehicle, 0x1406ae1e0, 0x1406ae360."
+ },
+ "signature": {
+  "id": "game.replay_camera_is_vehicle_selectable",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 80 FA FF 0F 84 ?? ?? ?? ?? 48 89",
+  "match": "0x1406ae510",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406ae510",
+  "kind": "func_start",
+  "names": [
+   "Game_ReplayCamera_IsVehicleSelectable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1406ae510",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406ae510.c;xref:0x1406adf7d",
+   "notes": "V8000 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

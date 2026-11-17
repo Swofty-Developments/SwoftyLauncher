@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Rnd_GetPausedReason",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14385a2e0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Career_Rnd_GetPausedReason(void *out, void *a2, void *rnd, uint32_t part_key)",
+  "evidence": "decomp:re/decomp/14385a2e0.c;xref:0x14181613b;xref:0x141816676;xref:0x1419bf164",
+  "notes": "myteam-g2: Builds a lookup key with the active profile (0x14604c2c8), loops over the R&D queue (rnd+0x2e0..+0x2e8, 0x88 stride) and writes {ushort reason, byte flag} into out for the upgrade progress popup. Read-only."
+ },
+ "signature": {
+  "id": "career.rnd_get_paused_reason",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 44 89 CD",
+  "match": "0x14385a2e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14385a2e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Rnd_GetPausedReason"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14385a2e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14385a2e0.c;xref:0x14181613b",
+   "notes": "V10321 Finds queue entry (stride 0x88) and writes {ushort,byte} result via FUN_14385a9b0; paused-reason meaning and popup usage are unproven."
+  }
+ ],
+ "proofs": []
+}

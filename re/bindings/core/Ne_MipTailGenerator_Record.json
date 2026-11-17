@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_MipTailGenerator_Record",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d36c40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143d36c40.c;xref:0x1459b2190",
+  "notes": "cxx=NeMipTailGenerator::record; log channel MIPTAIL: 'NeMipTailGenerator::record: this %x m_forPlanarReflections %d m_currentTechnique %d'"
+ },
+ "signature": {
+  "id": "core.mip_tail_generator_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 78 29 8C 24 80 01 00 00 C5 78 29 84 24 70 01 00 00 C5 F8 29 BC 24 60 01 00 00 C5 F8 29 B4 24 50 01 00 00 80 B9 1C 05 00 00 00",
+  "match": "0x143d36c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d36c40",
+  "kind": "func_start",
+  "names": [
+   "Ne_MipTailGenerator_Record"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_MipTailGenerator_Record",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d36c40.c;xref:0x1459b2190",
+   "notes": "V2058 record: logs mip count / per-mip size, Stencil_Copy, Convolve_Copy, Copy passes; vtable slot"
+  }
+ ],
+ "proofs": []
+}

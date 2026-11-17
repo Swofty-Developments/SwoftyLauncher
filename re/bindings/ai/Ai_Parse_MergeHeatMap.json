@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Ai_Parse_MergeHeatMap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140682580",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Parse_MergeHeatMap(uint64_t *out8, void *node, int which)",
+  "evidence": "decomp:re/decomp/140682580.c;xref:0x1406833fe,0x140683410;kb:subsystems/ai.md#merge-heatmap",
+  "notes": "reads 8 merge_rates.{steering,vehicle}_heat_map.* floats into out[0..7] (which=1 steering, which=0 vehicle): blocking_starting/ending_merge_rate, max_merge_rate_for_drafting_human/ai/Side_Swipe, celebration/space_seeking/max_merge_rate. Called twice by Sess_Parse_AiHandlingConfig (session) at config+0x77 (steering) and +0x7f (vehicle). Reads via Gdb_Get_FieldInt"
+ },
+ "signature": {
+  "id": "ai.merge_heatmap_parse",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE 45 85 C0",
+  "match": "0x140682580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140682580",
+  "kind": "func_start",
+  "names": [
+   "Ai_Parse_MergeHeatMap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "ai-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

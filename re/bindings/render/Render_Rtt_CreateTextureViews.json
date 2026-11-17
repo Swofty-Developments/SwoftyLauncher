@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Rtt_CreateTextureViews",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d7b320",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d7b320.c;xref:0x143d81ded",
+  "notes": "Creates a render-target texture and its named views using Ne_StrBuf_Printf formats '%s.rtv', '%s.dsv', '%s.dsv_ro', '%s.dsv_roZ', '%s.uav' (RTV, depth DSV, read-only DSV, read-only-Z DSV, UAV). Caller Game_Rtt_CreateTextures. Addon: names of RTT views."
+ },
+ "signature": {
+  "id": "render.rtt_create_texture_views",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 02 00 00 4D 89 CF 4C 89",
+  "match": "0x143d7b320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d7b320",
+  "kind": "func_start",
+  "names": [
+   "Render_Rtt_CreateTextureViews"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d7b320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d7b320.c;xref:0x143d81ded",
+   "notes": "V7925 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSessionF1OS_MigrateSessionClient",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144083f40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/144083f40.c;xref:0x145a52fe8",
+  "notes": "cxx=NeNetSessionF1OS::migrateSessionClient; log channel NETWORK-SESSION: 'virtual NEerrno neon::NeNetSessionF1OS::migrateSessionClient(const NeNetSessionMigrateConnectionInfo &, const MigrateSessionInternalDelegate) | %s: session id to join: %d'"
+ },
+ "signature": {
+  "id": "core.net_session_f1_os_migrate_session_client",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 4C 89 C3 48 89 D7 48 89 CE 48 8B 49 28",
+  "match": "0x144083f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144083f40",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSessionF1OS_MigrateSessionClient"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_NetSessionF1OS_MigrateSessionClient",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144083f40.c;xref:0x144083f40",
+   "notes": "V2104 Pretty string; stores conn info + migrate params; log reuses join-session fmt string"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_DamageMeshes_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144650b00",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144650b00.c",
+  "notes": "the object at car+0x5e0: damage meshes at +0x58 (stride 0x60; name object at +0, u16 current +0x58 / max +0x5a) for rearwing_*, sidepod_*, sidewing_*, wing_mirror_*, bargeboard_*, floor_damage_*, camera_wing, topcanopy_bm, diffuser_bm; also loads the 'rearwing' collision hull."
+ },
+ "signature": {
+  "id": "car.damage_meshes_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 78 29 9C 24 A0 00 00 00 C5 78 29 94 24 90 00 00 00 C5 78 29 8C 24 80 00 00 00 C5 78 29 44 24 70 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 89 D3 48 89 CE",
+  "match": "0x144650b00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144650b00",
+  "kind": "func_start",
+  "names": [
+   "Car_DamageMeshes_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144650b00",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144650b00.c",
+   "notes": "V6724 structure ok (vector +0x58 stride 0x60, u16 at +0x58, 0x640000 = cur 0/max 100, RearWing hull lookup) but the rearwing_/sidepod_/bargeboard_ name lists are not in this function (strings used by Render_Evaluate_CarDamageLevels 0x142f17170 / 0x142f182e0) (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

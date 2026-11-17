@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_SessionHud_Shutdown",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414a3960",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1414a3960.c;xref:0x1456e8540",
+  "notes": "In-session HUD/time-trial presenter (vtable ~0x1456e84a0, same class as Game_TimeTrial_Leave/SetReference) shutdown (logged on GHOSTLAP-TRACE): unregisters TT leave callback 0x14147c2d0 and 0x141483fc0 from the [+0x158] datastore, releases HUD data nodes +0x20560..+0x20798. Addon: HUD/TT teardown hook. d3-verify correction: unregisters the message handlers viewGhostProfileByDriverId 0x141483fc0 and clearRivalSelection 0x14147c2d0; frees the whole [+0x158] datastore (+0x20540..+0x20798), sets [+0x158] = 0, frees the +0x168 object"
+ },
+ "signature": {
+  "id": "game.session_hud_shutdown",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC A0 00 00 00 48 89 CE E8",
+  "match": "0x1414a3960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414a3960",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionHud_Shutdown"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d3-verify",
+   "kind": "func",
+   "item": "Game_SessionHud_Shutdown",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1414a3960.c;xref:0x1456e8540",
+   "notes": "V2354 vtable 0x1456e84a0 slot 0xa0. Registered callbacks are message handlers for events viewGhostProfileByDriverId (141483fc0) and clearRivalSelection (14147c2d0 / 14147e740), not a 'TT leave callback'; also frees whole [+0x158] datastore (+0x20540..+0x20798) and sets it 0, then frees +0x168 object. Better role: SessionHud_Destroy datastore + unregister ghost-rival UI handlers."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "d3-verify",
+   "kind": "func",
+   "item": "Game_SessionHud_Shutdown",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1414a3960.c;xref:0x1456e8540",
+   "notes": "V3969 vtable 0x1456e84a0 slot 0xa0. Registered callbacks are message handlers for events viewGhostProfileByDriverId (141483fc0) and clearRivalSelection (14147c2d0 / 14147e740), not a 'TT leave callback'; also frees whole [+0x158] datastore (+0x20540..+0x20798) and sets it 0, then frees +0x168 object. Better role: SessionHud_Destroy datastore + unregister ghost-rival UI handlers."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x1414a3960",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414a3960.c",
+   "notes": "V4148 shutdown GHOSTLAP-TRACE log, frees datastore [+0x158] (+0x20540..+0x20798), sets [+0x158]=0, frees +0x168 object; handlers are viewGhostProfileByDriverId/clearRivalSelection per d3 correction; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

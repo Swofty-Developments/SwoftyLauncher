@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Update_FacilityUpgradeButton",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423e20b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *view)",
+  "evidence": "decomp:re/decomp/1423e20b0.c;xref:0x1423e07c7;xref:0x1423e0d5b;xref:0x1423e0e9f",
+  "notes": "myteam-g1: Computes can_press_upgrade_button and the lng_facility_upgrade_no_free_slots/no_slots_reason texts for upgrade_%d slots."
+ },
+ "signature": {
+  "id": "career.update_facility_upgrade_button",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 44 89 CF 4C 89 C6",
+  "match": "0x1423e20b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423e20b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_FacilityUpgradeButton"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423e20b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423e20b0.c",
+   "notes": "V10191 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

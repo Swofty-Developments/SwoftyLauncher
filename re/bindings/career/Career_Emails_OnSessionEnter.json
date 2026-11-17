@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Emails_OnSessionEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140dd4550",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-EMAILS",
+  "notes": "named from its log messages (channel EMAILS): 'Entering a session where we shouldn't be entering the hub, so no emails have been generated. Session(%s)'"
+ },
+ "signature": {
+  "id": "career.emails_on_session_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 CE 48 8D B9 E0 02 00 00",
+  "match": "0x140dd4550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dd4550",
+  "kind": "func_start",
+  "names": [
+   "Career_Emails_OnSessionEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140dd4550",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140dd4550.c;xref:0x140dd3491",
+   "notes": "V4762 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140dd4550",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140dd4550.c",
+   "notes": "V9098 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

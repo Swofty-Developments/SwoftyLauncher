@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownForm_ApplyIconAndRiskOverlayB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423d75e0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/1423d75e0.c;xref:0x145786290",
+  "notes": "myteam-g1: Applies renown_icon_large.renown_icon_01_la and risk_state_03 overlay overrides (variant B, returns a flag)."
+ },
+ "signature": {
+  "id": "career.renown_form_apply_icon_and_risk_overlay_b",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 81 C1 B0 02 00 00",
+  "match": "0x1423d75e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423d75e0",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownForm_ApplyIconAndRiskOverlayB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423d75e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1423d75e0.c;str:\"renown_icon_01_large\"",
+   "notes": "V10182 Same dummy-data filler as variant A (placeholder strings incl. Lorem ipsum) plus icon overrides; calls Game_Read_OverridesTeamHqConfig; not purely an overlay apply."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Tyres_ShouldShowScreenDuringLoading",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bcf610",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name shouldShowScreenDuringLoading (class from the log channel); log channel TYRES/V: '%s'"
+ },
+ "signature": {
+  "id": "game.tyres_should_show_screen_during_loading",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 48 89 CF",
+  "match": "0x140bcf610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bcf610",
+  "kind": "func_start",
+  "names": [
+   "Game_Tyres_ShouldShowScreenDuringLoading"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bcf610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bcf610.c",
+   "notes": "V4494 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

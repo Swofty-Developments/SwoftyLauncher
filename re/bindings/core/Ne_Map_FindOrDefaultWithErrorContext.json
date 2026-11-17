@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Map_FindOrDefaultWithErrorContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a42f10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a42f10.c;xref:0x140356f96",
+  "notes": "Lookup under lock (0x1449e2298): if map empty/key missing writes default param_4 to *param_3 and tags TLS error contexts code 2 (stack capture), else reads the record. Callers Game_Podium2019CutSceneScript_ChooseCutScenesToPlay, Asset_Load_DevSessionWorlds. Hypothesis."
+ },
+ "signature": {
+  "id": "core.map_find_or_default_with_error_context",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 44 89 CB 4D 89",
+  "match": "0x143a42f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a42f10",
+  "kind": "func_start",
+  "names": [
+   "Ne_Map_FindOrDefaultWithErrorContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143a42f10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a42f10.c;xref:0x140356f96",
+   "notes": "V7824 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

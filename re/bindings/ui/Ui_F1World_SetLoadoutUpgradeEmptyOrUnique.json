@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_SetLoadoutUpgradeEmptyOrUnique",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ad3dc0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/141ad3dc0.c;xref:0x14572e558",
+  "notes": "myteam-g1: UI binding code; loadout_item_upgrades_large[upgrade_empty] / [upgrade_level_unique]. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.f1_world_set_loadout_upgrade_empty_or_unique",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4C 89 C6 48 89 CB",
+  "match": "0x141ad3dc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ad3dc0",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_SetLoadoutUpgradeEmptyOrUnique"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141ad3dc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141ad3dc0.c;xref:0x14572e558",
+   "notes": "V9933 Sets loadout_item_upgrades_large[upgrade_empty] / [upgrade_level_unique] overrides plus rarity overrides."
+  }
+ ],
+ "proofs": []
+}

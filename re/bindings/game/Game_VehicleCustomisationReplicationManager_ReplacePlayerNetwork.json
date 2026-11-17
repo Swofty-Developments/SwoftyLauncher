@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisationReplicationManager_ReplacePlayerNetwork",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143141710",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VehicleCustomisationReplicationManager::replacePlayerNetworkReplicatedCustomisation; log channel NETWORK-ENTRANTS: 'game::VehicleCustomisationStatId::PackedStatId network::VehicleCustomisationReplicationManager::replacePlayerNetworkReplicatedCustomisation(const PlayerDescript | %s : Failed to find the network repli'"
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_replication_manager_replace_player_network",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 98 00 00 00 48 8B 41 10",
+  "match": "0x143141710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143141710",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisationReplicationManager_ReplacePlayerNetwork"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143141710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143141710.c;xref:0x140fe0bdf",
+   "notes": "V5926 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

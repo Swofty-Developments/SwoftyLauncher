@@ -1,0 +1,91 @@
+{
+ "schema": 1,
+ "name": "Ai_Handle_PitStateChanged_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406b3110",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "uint64_t Ai_Handle_PitStateChanged_Thunk(void *ai, void *msg)",
+  "evidence": "decomp:own capstone disasm 0x1406b3110-0x1406b3115,0x1484045c0-0x1484046b8;decomp:own capstone disasm steam-26566308 0x1482422a0-0x148242382;xref:0x1406b2944,0x1406b34ed",
+  "notes": "5-byte jmp thunk into .data1 body 0x1484045c0-0x1484046b8 (plaintext in the KB file; only two range limits come from .data1 values: 5 = 0x76b7f719 + [0x14af8e820], 3 = [0x1571fc68c] ^ 0x482404ac); same logic on Steam 1.0.145 (steam-26566308: thunk 0x1406b3150 -> body 0x1482422a0-0x148242382). Handler for bus message 'MessagePitStateChanged' (0x14565cdc2): lea at 0x1406b2944 stores {thunk, self} as a delegate and subscribes it with Ne_Subscribe_BusMessage 0x143987810 in 0x1406b26c0 (vtable slot 0x14563e0f8); lea at 0x1406b34ed passes the same {thunk, self} pair and message name to 0x143988350 in 0x1406b3420 (unsubscribe by pairing: 0x143988350 is itself a jmp thunk into unreadable .data1 0x151e9d120) (vtable slot 0x14563e110). Full rel32/lea/abs64 scan of the KB exe finds only these two refs. Reads only rcx (ai, kept in rsi) and rdx (msg); r8/r9 never read; single exit at KB 0x1484046ae xor eax,eax (Steam 0x148242378) -> returns 0. Data flow: dword msg+0x18 must be 0xf or 2, else return; car = byte msg+0x10; walks qword [ai+0x98] .. qword [ai+0xa0] (entries stride 0x28, byte key at +0) for car, none -> return; rec = call 0x1446046a0 (KB; Steam 0x144606f10) (qword [ai+0x40], car); entry+0x14 u16 = (rec+0x18 ^ rec+0x20) + rec+0x28; entry+0x13 = 0 unless car <= 0x1a, then v = (car < [[ai+0x68]+0x2d8]+0xc20) ? dword [[ai+0x68]+0x2d8]+0x78+car*0x70 : 0 and cls = dword [[ai+0x68]+0x68+car*0x10]+0xc: cls 0 -> v in 3..5, cls 1 -> v in 1..5, else 0; then entry+0x16 u16 = 1 (+0x16 = 1, +0x17 = 0), entry+0x18 = 0. Protector side effect inside the body: KB sub dword [0x157f7329e], esi (sil = byte [0x14fe39125]); Steam sub word [0x15373f911], 0xf727 (.data1 self-modifying counter). Black box: callable through the thunk only, never hooked. lane owner review requested (ai lane owner ai-re)"
+ },
+ "signature": {
+  "id": "ai.handle_pit_state_changed_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? F4 49 5A 39 87 21 7D F8 4B",
+  "match": "0x1406b3110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406b3110",
+  "kind": "func_start",
+  "names": [
+   "Ai_Handle_PitStateChanged_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-f",
+   "kind": "func",
+   "item": "0x1406b3110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_f/decomp/1406b3110.c;xref:0x1406b2944,0x1406b34ed",
+   "notes": "V1187 5-byte jmp to .data1 0x1484045c0; both xrefs register it as handler for event name 'MessagePitStateChanged' (rdx=0x14565cdc2, call 0x143987810/0x143988350); body filters msg+0x18 in {2,0xf}, finds AI car entry (stride 0x28 at ai+0x98) by msg+0x10 car id, updates entry flags, returns 0 -> (ai,msg)->uint64 fits"
+  },
+  {
+   "date": "2026-11-16",
+   "verifier": "pr1252-verifier",
+   "kind": "func",
+   "item": "Ai_Handle_PitStateChanged_Thunk",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1406b3110-0x1406b3115,0x1484045c0-0x1484046b8,0x1406b26c0-0x1406b2969,0x1406b3420-0x1406b3520,0x143987810-0x1439878b6;decomp:own capstone disasm steam-26566308 0x1406b3150-0x1406b3155,0x1482422a0-0x148242382;xref:0x1406b2944,0x1406b34ed,0x14563e0f8,0x14563e110;sig:ai.handle_pit_state_changed_thunk",
+   "notes": "V10771 Independent pass from the bytes. CONFIRMED: KB thunk 0x1406b3110 = jmp 0x1484045c0, Steam thunk 0x1406b3150 = jmp 0x1482422a0; the KB signature and the steam override pattern each match exactly once in the whole file (.xtls 0x1406b3110 / .tls$ 0x1406b3150). Own full rel32+abs64 scan of the KB exe: only lea rcx 0x1406b2944 (in 0x1406b26c0, vtable 0x14563e0f8) and lea rax 0x1406b34ed (in 0x1406b3420, vtable 0x14563e110), both with rdx = 'MessagePitStateChanged' 0x14565cdc2; Steam has the same two at 0x1406b2984/0x1406b352d. 0x143987810 takes (bus, name, {fn,self} heap delegate) and skips duplicates = subscribe; 0x1406b3420 passes the same pair from the stack to 0x143988350 = unsubscribe (inferred: 0x143988350 is itself a jmp thunk into .data1 0x151e9d120, which is unreadable on Steam). Body: rcx/rdx only, r8/r9 never read, single exit xor eax,eax; filter dword msg+0x18 in {0xf,2}; car = byte msg+0x10; stride-0x28 walk with byte key; entry+0x14/+0x13/+0x16/+0x18 writes and the cls 0 -> 3..5, cls 1 -> 1..5 ranges all as claimed; Steam protector sub word [0x15373f911],0xf727 as claimed. DIFFERS: (1) 'packed on the KB build' is wrong for this body: KB 0x1484045c0-0x1484046b8 is plaintext in the file, same logic, only the range limits come from .data1 (0x76b7f719+[0x14af8e820] = 5, [0x1571fc68c]^0x482404ac = 3) and the protector op is sub dword [0x157f7329e],esi; (2) the call's first argument is qword [ai+0x40] (loaded pointer), not ai+0x40; likewise the walk bounds are qword [ai+0x98]..qword [ai+0xa0]; the KB VA of the callee is 0x1446046a0 (notes give only the Steam VA 0x144606f10); (3) the unsubscribe callee 0x143988350 is a .data1 thunk, so its role rests on the pairing, not on read code. Role, proto, callers and data flow hold; fix the notes wording"
+  },
+  {
+   "date": "2026-11-16",
+   "verifier": "pr1252-verifier2",
+   "kind": "func",
+   "item": "Ai_Handle_PitStateChanged_Thunk",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1406b3110-0x1406b3115,0x1484045c0-0x1484046b8,0x1406b26c0-0x1406b26ca,0x1406b2915-0x1406b2969,0x1406b3420-0x1406b351e,0x143987810-0x1439878b6,0x143988350-0x143988355;decomp:own capstone disasm steam-26566308 0x1406b3150-0x1406b3155,0x1482422a0-0x148242382,0x1406b2984-0x1406b29a4,0x1406b352d-0x1406b354a;xref:0x1406b2944,0x1406b34ed,0x14563e0f8,0x14563e110;sig:ai.handle_pit_state_changed_thunk",
+   "notes": "V10772 Second independent pass over the whole current claim from the bytes. HOLDS: KB thunk 0x1406b3110 = jmp 0x1484045c0 (.data1, plaintext in the file); Steam 0x1406b3150 = jmp 0x1482422a0 (.trace = .data1); sigcheck.py on the KB exe: 1/1 pass, hits=1 at 0x1406b3110; steam override pattern matches exactly once on Steam 1.0.145 (0x1406b3150, .tls$) and neither pattern matches on the other build. Own full numpy scan of every KB section for rel32/disp32 (0..4 trailing bytes) and abs64 = 0x1406b3110: only lea rcx 0x1406b2944 and lea rax 0x1406b34ed (third hit 0x149226d69 in .data1 is the imm of push 0xc3a20f9b, not a ref); Steam same two at 0x1406b2984/0x1406b352d. 0x1406b2944: {thunk, rsi=self (mov rsi,rcx at 0x1406b26c7, not rewritten)} stored in a 0x10/align 8 alloc from [bus+0x78] vtable+0x18, passed as r8 with rdx 'MessagePitStateChanged' 0x14565cdc2 and rcx bus to 0x143987810 (walks bus+0x100..0x108 stride 0x18, name+fn+self compare = duplicate skip); vtable slots 0x14563e0f8 -> 0x1406b26c0, 0x14563e110 -> 0x1406b3420 (Steam +0x2000 -> 0x1406b2700/0x1406b3460). 0x1406b34ed: same pair on stack + same name to 0x143988350 = jmp 0x151e9d120 (unsubscribe by pairing, labelled as such). Body: only rcx/rdx read, r8/r9 never read, return 0; dword msg+0x18 in {0xf,2}; car=byte msg+0x10; qword [ai+0x98]..[ai+0xa0], stride 0x28, byte key +0; call 0x1446046a0 (KB) / 0x144606f10 (Steam) with rcx=qword [ai+0x40], edx=car; entry+0x14, +0x13 (car<=0x1a unsigned, qword [[[ai+0x68]+0x2d8]+0xc20] > car), cls 0 -> 3..5, cls 1 -> 1..5, else 0, +0x16 word 1, +0x18 byte 0: all as claimed. File values [0x14af8e820]=0x894808ec (+0x76b7f719 = 5), [0x1571fc68c]=0x482404af (^0x482404ac = 3); protector KB sil=byte [0x14fe39125], sub dword [0x157f7329e],esi; Steam lea rsi 0x15373f911, sub word [rsi],0xf727: as claimed. WRONG: (1) 'single exit at 0x148242378' is the Steam VA, given unlabelled in the KB-addressed notes; the KB single exit is 0x1484046ae (xor eax,eax; ret at 0x1484046b7). UNPROVABLE: (2) '(used by vmknolle race-start)': no consumer in this worktree and the signature used_by is []; not checkable from the bytes. Fix (1) (label as Steam or give the KB VA) and source or drop (2); role, proto, return, callers and data flow hold"
+  },
+  {
+   "date": "2026-11-16",
+   "verifier": "pr1252-verifier2",
+   "kind": "func",
+   "item": "Ai_Handle_PitStateChanged_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1406b3110-0x1406b3115,0x1484045c0-0x1484046b8,0x1406b26c0-0x1406b26ca,0x1406b2915-0x1406b2969,0x1406b3420-0x1406b351e,0x143987810-0x1439878b6,0x143988350-0x143988355;decomp:own capstone disasm steam-26566308 0x1406b3150-0x1406b3155,0x1482422a0-0x148242382,0x1406b2984-0x1406b29a4,0x1406b352d-0x1406b354a;xref:0x1406b2944,0x1406b34ed,0x14563e0f8,0x14563e110;sig:ai.handle_pit_state_changed_thunk",
+   "notes": "V10773 Re-check after the two fixes asked for in V10772, whole current row re-read. (1) notes now say single exit at KB 0x1484046ae xor eax,eax (Steam 0x148242378): own disasm has xor eax,eax at KB 0x1484046ae (ret 0x1484046b7) and at Steam 0x148242378 (ret 0x148242381), every return path reaches it; (2) '(used by vmknolle race-start)' is gone. Every other column (name, sig, level, proto, evidence) and every other notes statement is unchanged from the text checked in V10772, and all of it holds from the bytes: thunks KB 0x1406b3110 -> 0x1484045c0 / Steam 0x1406b3150 -> 0x1482422a0; sigcheck 1/1 pass at 0x1406b3110; Steam override unique at 0x1406b3150; only refs 0x1406b2944 (subscribe via 0x143987810, slot 0x14563e0f8) and 0x1406b34ed (unsubscribe by pairing via .data1 thunk 0x143988350, slot 0x14563e110), name 0x14565cdc2; args rcx/rdx only, returns 0; data flow, range limits 5/3 from .data1 values and protector side effects as stated. Unsubscribe role stays inference by pairing, labelled as such"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "triage-verify",
+   "kind": "func",
+   "item": "Ai_Handle_PitStateChanged_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own pefile rel32 and lea scan of both Steam builds;xref:0x1406b2944,0x1406b34ed,0x1406b2984,0x1406b352d,0x1406b3110,0x1406b3150",
+   "notes": "V10774 Independent check by triage-verify, on top of the pr1252 verifier rows: my own scan of every executable section for rel32 calls/jumps and rip-relative lea to the thunk finds exactly two references on each build, lea rcx at 0x1406b2944 and lea rax at 0x1406b34ed on 25251167, lea rcx at 0x1406b2984 and lea rax at 0x1406b352d on 26566308. The thunk is a protector stub (cc padding, then e9 rel32 into .data1) at 0x1406b3110 on 25251167 and at 0x1406b3150 on 26566308, whose override pattern matches once there. Bindverify with the added hint 0x6b3150 resolves the binding by hint on 26566308 and by the KB signature on 25251167."
+  }
+ ],
+ "proofs": []
+}

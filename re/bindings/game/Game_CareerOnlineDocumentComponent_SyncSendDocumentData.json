@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineDocumentComponent_SyncSendDocumentData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fce030",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_Championship_CareerOnlineDocumentComponent_SyncSendDocumentData;xref:0x140fce0b0,0x140fce130",
+  "notes": "cxx=game::championship::CareerOnlineDocumentComponent::syncSendDocumentData; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.career_online_document_component_sync_send_document_data",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 4C 89 CE 44 89 C3 48 89 CF",
+  "match": "0x140fce030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fce030",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineDocumentComponent_SyncSendDocumentData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fce030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fce030.c;xref:0x140fcd7a4",
+   "notes": "V4804 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

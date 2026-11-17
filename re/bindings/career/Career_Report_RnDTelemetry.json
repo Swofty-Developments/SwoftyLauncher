@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Report_RnDTelemetry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406d8470",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1406d8470.c;str:s_UpgradeResearchPurchasedMessage;kb:subsystems/career.md#telemetry",
+  "notes": "ElasticSearch/telemetry message subscriber for R&D events: upgrade_research/development_purchased_message, upgrade_{research,development,adaptation}_cancelled_message, upgrades_update_failed_rnd_message, upgrade_adapted_message, UpgradeFittingChangedMessage, MessageESMyTeamFacilityUpgradePurchased, MessageRnDEndofWeekendResourcePointTotal, DriverPerkPurchased. onRnD* handlers near 0x1406da500. Hook surface for purchase/spend events; the RP -= cost write still needs a trace. CORRECTION(V9037): Strings confirm the R&D/facility messages (upgrade_research_purchased_message, MessageRnDEndofWeekendResourcePointTotal, DriverPerkPurchased, MessageESMyTeamFacilityUpgradePurchased) but the same 650KB function also registers many unrelated telemetry messages (session_enter, MessageFlashbackUsed, MessageCheckpointLoaded...); it is a general telemetry subscriber, R&D is a subset."
+ },
+ "signature": {
+  "id": "career.report_rn_d_telemetry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 08 02 00 00 48 89 CE 48 8B 05",
+  "match": "0x1406d8470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406d8470",
+  "kind": "func_start",
+  "names": [
+   "Career_Report_RnDTelemetry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1406d8470",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406d8470.c;xref:0x6d70ab",
+   "notes": "V4760 string/behaviour in decomp matches name"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x1406d8470",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1406d8470.c",
+   "notes": "V9037 Strings confirm the R&D/facility messages (upgrade_research_purchased_message, MessageRnDEndofWeekendResourcePointTotal, DriverPerkPurchased, MessageESMyTeamFacilityUpgradePurchased) but the same 650KB function also registers many unrelated telemetry messages (session_enter, MessageFlashbackUsed, MessageCheckpointLoaded...); it is a general telemetry subscriber, R&D is a subset."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Rnd_SetProgressStateIcon",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141818860",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/141818860.c;xref:0x141c4c94a;xref:0x141c4d36c;xref:0x141c513ba",
+  "notes": "myteam-g1: UI binding code; lng_rnd_progress_paused, rnd_state_icons_new. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_set_progress_state_icon",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 60 4D 85 C0",
+  "match": "0x141818860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141818860",
+  "kind": "func_start",
+  "names": [
+   "Ui_Rnd_SetProgressStateIcon"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141818860",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141818860.c;xref:0x141c4c94a",
+   "notes": "V9814 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

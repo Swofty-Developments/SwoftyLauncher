@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Upgrades_ReassignTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435294e0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-UPGRADES",
+  "notes": "named from its log messages (channel UPGRADES): 'Reassigning upgrades team %s, driver %s not found | Reassigning upgrades team %s, found driver %s at index %d | Reassigning upgrades from driver %s to index %d on team %s | Reassigning upgrades %s fro'"
+ },
+ "signature": {
+  "id": "career.upgrades_reassign_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 0D 00 00 C5 F8 29 B4 24 90 0D 00 00",
+  "match": "0x1435294e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435294e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Upgrades_ReassignTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1435294e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435294e0.c;xref:0x14123ccb1",
+   "notes": "V6078 name/log string and function size match the code; strings verified via cstr"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x1435294e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435294e0.c;str:\"UPGRADES\";str:\"Reassigning upgrades team %s, found driver %s at index %d\"",
+   "notes": "V9238 Contains the Reassigning upgrades team/driver messages named in the claim."
+  }
+ ],
+ "proofs": []
+}

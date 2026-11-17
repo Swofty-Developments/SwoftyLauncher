@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Texture_QueueLoadRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f3e5e0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f3e5e0.c;xref:0x143bef9ae,0x143fb9141",
+  "notes": "Under critical section +0x480 builds a chain of 0x78-byte request nodes (init 0x143f41f10, first node 0x143f41bc0, set state 2/0xc via 0x143f41ff0) for a texture/file read, links them to the sync object and waits (Ne_Sync_WaitObject) when needed. Callers Render_Texture_CreateFromResourceCore and Ne_AudioIo_OpenFileRequest (shared request builder). Hypothesis."
+ },
+ "signature": {
+  "id": "render.texture_queue_load_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 4C 89 4C 24 68",
+  "match": "0x143f3e5e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f3e5e0",
+  "kind": "func_start",
+  "names": [
+   "Render_Texture_QueueLoadRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143f3e5e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f3e5e0.c;xref:0x143bef9ae",
+   "notes": "V8366 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

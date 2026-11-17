@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TitleSponsorsLoyalty_RefreshFlags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423f3590",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_TitleSponsorsLoyalty_RefreshFlags(void *vm)",
+  "evidence": "decomp:re/decomp/1423f3590.c;xref:0x1423f142c;xref:0x1423f2b5d",
+  "notes": "myteam-g2: Reads two bound values (vm+0x260 int-typed, (vm+0x2a0)+0x68 bool-typed) and writes a bool into the bound value at (vm+0x2a0)+0x68 via FUN_140973e20; refreshes the enabled/visible state of the title-sponsor loyalty rewards screen. UI only."
+ },
+ "signature": {
+  "id": "vm.title_sponsors_loyalty_refresh_flags",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 CE 48 8B B9 60 02 00 00",
+  "match": "0x1423f3590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423f3590",
+  "kind": "func_start",
+  "names": [
+   "Vm_TitleSponsorsLoyalty_RefreshFlags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423f3590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423f3590.c",
+   "notes": "V10203 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

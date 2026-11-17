@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_MyTeamUpgradeScreen_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14205a8e0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t (void *vm)",
+  "evidence": "decomp:re/decomp/14205a8e0.c;xref:0x14205a3c2;xref:0x14205c34c",
+  "notes": "myteam-g1: Binds the facility/R&D upgrade screen: option_1..option_4, selected_option, screen_title, current_stage, aero/chassis/engine/maintenance upgrades, corporate_income, facility_visible, contextual_data."
+ },
+ "signature": {
+  "id": "vm.my_team_upgrade_screen_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 7C 24 70 C5 F8 29 74 24 60 48 89 CE 48 8B B9 68 02 00 00",
+  "match": "0x14205a8e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14205a8e0",
+  "kind": "func_start",
+  "names": [
+   "Vm_MyTeamUpgradeScreen_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14205a8e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14205a8e0.c;xref:0x14205a3c2",
+   "notes": "V10036 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

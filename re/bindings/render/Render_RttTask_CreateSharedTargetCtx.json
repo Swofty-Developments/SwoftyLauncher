@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_RttTask_CreateSharedTargetCtx",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d3dd80",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d3dd80.c;xref:0x142e2632d",
+  "notes": "If ctx+0x118 is null allocates a 4-byte counter and a 0x28-byte shared-ptr control block (refs 0x100000001, vtable 0x145a3b500, allocator 0x146129c00) from plRam0000000146c621e0 (+0x40), then fills thumbnail render state. Only caller Game_ThumbnailTask_Update. Hypothesis."
+ },
+ "signature": {
+  "id": "render.rtt_task_create_shared_target_ctx",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 C5 F8 29 74 24 20 4C 89 C6 48 83 B9",
+  "match": "0x143d3dd80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d3dd80",
+  "kind": "func_start",
+  "names": [
+   "Render_RttTask_CreateSharedTargetCtx"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d3dd80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d3dd80.c;xref:0x142e2632d",
+   "notes": "V7915 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

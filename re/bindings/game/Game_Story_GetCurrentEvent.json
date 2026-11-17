@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_Story_GetCurrentEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413301b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1413301b0.c;xref:0x140374dd4,0x141324405",
+  "notes": "(storyMgr) -> event*: walks chapters at story+0x278->+0x1040 (16-byte entries, obj+0x208 vtable) accumulating event counts (+0x288..+0x290) until progress +0x514 is reached; for mode +0x518 in 6..9 or no active event creates a candidate list and picks the first match. 46 call sites incl. Game_StoryTeamHub_Initialise, Game_StoryCarPlacement_LogPlacements, Sess_StoryRollingStart_OnStateEnter."
+ },
+ "signature": {
+  "id": "game.story_get_current_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC D8 00 00 00 48 89 CE 48 8B",
+  "match": "0x1413301b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413301b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Story_GetCurrentEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x1413301b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1413301b0.c;xref:0x140374dd4,0x141324405",
+   "notes": "V3362 Chapter walk +0x278->+0x1040 16B entries, obj+0x208 vtbl, counts +0x288..+0x290, progress +0x514, mode +0x518 in 6..9 match; caller count is 52 functions/69 sites not 46"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x1413301b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1413301b0.c;xref:0x140374dd4,0x141324405",
+   "notes": "V3379 CORRECTION of V3362: layout (+0x278->+0x1040, +0x288..+0x290, +0x514, +0x518 6..9) matches; .xtls call sites = 47 (claimed 46), 6 more in .data1"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x1413301b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413301b0.c;xref:0x140374dd4,0x141324405",
+   "notes": "V3417 CORRECTION of V3379: with .data1 sites excluded (VA<0x146faf000) there are exactly 46 call sites; layout +0x278->+0x1040, +0x288..+0x290, +0x514, +0x518 6..9 all match"
+  }
+ ],
+ "proofs": []
+}

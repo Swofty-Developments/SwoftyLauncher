@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutsceneManagerAssetGroupsRequest_UnloadAssetGroups",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140229cf0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name unloadAssetGroups (class from the log channel); log channel CUTSCENE_MANAGER_ASSET_GROUPS_REQUEST: 'unloadAssetGroups unexpected ref-- less than 0 %d %s'"
+ },
+ "signature": {
+  "id": "game.cutscene_manager_asset_groups_request_unload_asset_groups",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 4C 89 C7 48 89 D3 48 89 CE 48 8B 09 FF 15",
+  "match": "0x140229cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140229cf0",
+  "kind": "func_start",
+  "names": [
+   "Game_CutsceneManagerAssetGroupsRequest_UnloadAssetGroups"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140229cf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140229cf0.c",
+   "notes": "V4418 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageComponent_OnPlayerDroppedIn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a416c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GarageComponent::onPlayerDroppedIn; log channel GARAGE: 'GarageComponent::onPlayerDroppedIn(%u)'"
+ },
+ "signature": {
+  "id": "game.garage_component_on_player_dropped_in",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142a416c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a416c0",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageComponent_OnPlayerDroppedIn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a416c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a416c0.c;xref:0x142a3f996",
+   "notes": "V5169 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

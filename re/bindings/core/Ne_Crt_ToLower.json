@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_ToLower",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14536123c",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14536123c.c;xref:0x140171e81,0x140368451",
+  "notes": "CRT tolower: ASCII fast path (A-Z +0x20) when locale flag g 0x1460142e0 is 0, else locale-aware 0x145361268. Callers: Game_Pod2019FirstScript_Initialise, Game_Read_PitCrewTrainingConfig."
+ },
+ "signature": {
+  "id": "core.crt_to_lower",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 83 3D ?? ?? ?? ?? 00 74 0B 33 D2 E8",
+  "match": "0x14536123c",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14536123c",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_ToLower"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14536123c",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14536123c.c;xref:0x140171e81",
+   "notes": "V3769 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

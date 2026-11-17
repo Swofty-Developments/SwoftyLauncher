@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_RenderGraph_AddPassWithConst12",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bc6f50",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bc6f50.c;xref:0x143bc222b,0x143bc253d",
+  "notes": "Bump-allocates a 12-byte (aligned 4) constant block from the frame arena (fatal abort on overflow) and fills it. Called by Ne_PostProcessXGenerator_Copy_Render. vp5-verify partial/disagree"
+ },
+ "signature": {
+  "id": "render.frame_arena_alloc_const12",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 C1 E4 04 4A 8B 9C 23 E8 02 00",
+  "match": "0x143bc222b",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143bc6f50",
+  "kind": "func_start",
+  "names": [
+   "Render_RenderGraph_AddPassWithConst12"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143bc6f50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143bc6f50.c;xref:0x143bc222b",
+   "notes": "V8141 Better name Render_RenderGraph_AddPassWithConst12: after bump-allocating 12 bytes (1.0f 2.0f consts) it builds a 0xc0-byte pass record with interned name hash and calls 143bdd920; far more than alloc and fill"
+  }
+ ],
+ "proofs": []
+}

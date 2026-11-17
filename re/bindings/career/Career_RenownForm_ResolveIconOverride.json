@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownForm_ResolveIconOverride",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419c3ea0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *data, uint32_t *a, uint32_t *b, void *c",
+  "evidence": "decomp:re/decomp/1419c3ea0.c;xref:0x142349f2d;xref:0x1423d6099",
+  "notes": "myteam-g1: Resolves renown_icon_large.renown_icon_0%d_l / renown_icon_10_la override names for a renown level."
+ },
+ "signature": {
+  "id": "career.renown_form_resolve_icon_override",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 4D 89 CF 4C 89 C3",
+  "match": "0x1419c3ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419c3ea0",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownForm_ResolveIconOverride"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419c3ea0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1419c3ea0.c;xref:0x142349f2d",
+   "notes": "V9902 also handles secret-meeting rating arrows and driver contract value formatting besides renown_icon_large override names"
+  }
+ ],
+ "proofs": []
+}

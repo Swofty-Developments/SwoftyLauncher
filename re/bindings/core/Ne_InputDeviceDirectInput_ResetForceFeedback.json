@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_InputDeviceDirectInput_ResetForceFeedback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f2ec0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1446f2ec0.c;xref:0x145bff9c8",
+  "notes": "cxx=NeInputDeviceDirectInput::resetForceFeedback; log channel LOGITECH: 'NeInputDeviceDirectInput::resetForceFeedback - reset FFB and re-acquired device, result %X'"
+ },
+ "signature": {
+  "id": "core.input_device_direct_input_reset_force_feedback",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 28 01 00 00 C5 F8 29 BC 24 10 01 00 00",
+  "match": "0x1446f2ec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f2ec0",
+  "kind": "func_start",
+  "names": [
+   "Ne_InputDeviceDirectInput_ResetForceFeedback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_InputDeviceDirectInput_ResetForceFeedback",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f2ec0.c;xref:0x1446f2ec0",
+   "notes": "V2219 recycle log + resetForceFeedback re-acquire log confirmed; also recreates effects"
+  }
+ ],
+ "proofs": []
+}

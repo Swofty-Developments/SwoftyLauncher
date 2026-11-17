@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UITrack_Apply_DevContractTrack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143853ef0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_UITrack_Apply_DevContractTrack(void *self, void *cfg)",
+  "evidence": "str:s_cfg_DevSessionDataContractTrackName;decomp:re/decomp/143853ef0.c;xref:0x143853f20,0x143853f21,0x14587db10",
+  "notes": "Calls Game_UITrack_Select_DefaultTrack 0x1438520f0(self, cfg) first, then setting DevSessionDataContract.Track.name -> string getter 0x143a44eb0 on cfg into self+0x68, default = the current self+0x68 string (the default track). If the getter returns non-zero (not set) it returns. Otherwise it walks the track list at *(self+0x98)+0x28..+0x30 (16-byte slots, object at +8) and Ne_Crt_Strcmp 0x14535d850 the object's name at +0x78 with the value; on a match tail-jumps to Game_UITrack_TrackFoundGameModeTracklistWill 0x143852230(self, name). Pointer at 0x14587db10 (table 0x14587daf8 slot 3). Disassembly size 0xf8; the Ghidra decompile file runs past the function end. Existing L1 name Game_Read_DevSessionDataContractTrackNameSetting; lea is 0x143853f20 (KB 0x143853f23 = disp32). hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.uitrack_apply_dev_contract_track",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE E8 ?? ?? ?? ?? 4C 8D 46 68",
+  "match": "0x143853ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143853ef0",
+  "kind": "func_start",
+  "names": [
+   "Game_UITrack_Apply_DevContractTrack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-3",
+   "kind": "func",
+   "item": "0x143853ef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143853ef0.c;xref:0x14587db10",
+   "notes": "V9364 Vtable slot; first applies Game_UITrack_Select_DefaultTrack, then reads config string DevSessionDataContract.Track.name from cfg (param_2) into self+0x68, finds it in the track list (self+0x98) and selects it in track_info.track_list, falling back to seasons.current_season.track_list then track_data.track_list with UI_TRACK warnings; arity 2 matches."
+  }
+ ],
+ "proofs": []
+}

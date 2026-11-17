@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Get_SegmentTurnRadius",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060dab0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_Get_SegmentTurnRadius(void *ai, float dist, uint32_t node_idx, float lateral_offset, int route_idx)",
+  "evidence": "decomp:re/decomp/14060dab0.c;xref:0x14060d941,0x140640238,0x140641a83,0x140641b83,0x140641c73,0x140615b72,0x14060cd51,0x14060da81",
+  "notes": "was Ai_Get_SegmentSpeedLimit (renamed 2026-11-16: the value is a signed turn radius, not a speed limit). node = lane4 node [[[[ai+0x4f8]+0x78][route_idx]+0x58]+0x18][node_idx]; link = node+8, from gate = link+0x10, to gate = link+0x18. Per gate: v = node +0xbc of the out link ([gate+0x60+route*8]+0x40) and of the in link ([gate+0x70+route*8]+0x40), default 1e38; keeps whichever of (v - lateral_offset) has the smaller magnitude, clamped to +-500. Node +0xb8/+0xbc are written by Game_AiRoute_BuildGraph (0x14067e075/0x14067e07e): the parameters where the two averaged horizontal normals of the node (0.5*(n_in+n_chord) at P0, 0.5*(n_chord+n_out) at P1) intersect, i.e. the signed distance to the centre of curvature (turn radius, sign = turn side); FLT_MAX when |2D cross| < FLT_EPSILON. t = clamp((dist - node+0xb4)/node+0xc0, 0, 1). Same sign: a + (b-a)*t. Opposite signs: the radius passes through +-500 (straight) at t0 = |a|/(|a|+|b|), exactly 500.0 at t0. Missing node or gates -> 500.0. Callers take the absolute value (Ai_Get_TurnRadiusAtDistance, Ai_Get_TurnRadiusOnOwnRoute) or the signed value (Ai_Get_SignedTurnRadiusOnOwnRoute); Ai_Job_UpdateCarsParallel stores three results at record +0x164/+0x168/+0x16c. L2 2026-11-16 (engine-re racing-line round): decomp read, claims checked against the disassembly, refs from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1; blind verifier agreed. raised by engine-re with --force 2026-11-16 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.get_segment_speed_limit",
+  "section": ".xtls",
+  "pattern": "48 83 EC 18 C5 F8 29 34 24 4C 63 4C 24 40 48 8B",
+  "match": "0x14060dab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14060dab0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Get_SegmentTurnRadius"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14060dab0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14060dab0.c;xref:0x140640238",
+   "notes": "V3546 walks car table ([[ai+0x4f8]+0x78][car]+0x58)+0x18[seg] to two bound entries, picks nearer/blends with clamp +-500 (0x43fa0000), role speed limit plausible; callers Ai_Get_SpeedLimitAtDistance/Update_VehicleDriver/Job_UpdateCarsParallel seen"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "triage-verify",
+   "kind": "func",
+   "item": "0x14060dab0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own re/tools/decomp read on the KB build;xref:0x14060cd51,0x14060d941,0x14060da81,0x140615b72,0x140640238,0x140641a83,0x140641b83,0x140641c73",
+   "notes": "V10730 Own read without the KB notes. Node table [[[[ai+0x4f8]+0x78][route]+0x58]+0x18][node]; link gates +0x10/+0x18; per gate takes node +0xbc of the in and out links, subtracts the lateral offset, keeps the smaller magnitude, clamps to +-500, interpolates between the two gates, returns 500 when absent. Proto matches. +0xbc is solved at 0x14067e000-0x14067e07e as a 2x2 line-intersection parameter (FLT_MAX when the determinant is tiny) and the only value consumer chain clamps it to max_test_radius and maps it to speed, so TurnRadius is the right name and SpeedLimit was wrong."
+  }
+ ],
+ "proofs": []
+}

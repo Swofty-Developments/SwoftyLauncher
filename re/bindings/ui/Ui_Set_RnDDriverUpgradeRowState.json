@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_RnDDriverUpgradeRowState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141812c40",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void Set(void *vm, void *row, char flag, uint32_t value)",
+  "evidence": "decomp:re/decomp/141812c40.c;xref:0x141c48682;xref:0x141c5fc15",
+  "notes": "myteam-g2: Sets driver upgrade row state; no callees beyond field stores. UI only."
+ },
+ "signature": {
+  "id": "ui.set_rn_ddriver_upgrade_row_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 85 D2 0F 84 ?? ?? ?? ?? 44 89 CF 44 89 C3",
+  "match": "0x141812c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141812c40",
+  "kind": "func_start",
+  "names": [
+   "Ui_Set_RnDDriverUpgradeRowState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141812c40",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141812c40.c;xref:0x141c48682",
+   "notes": "V9809 writes uint16 values and flags into two components resolved through vtable lookups at vm+0x1030 (per-slot 0/1/2 or indexed rows), not UI-only field stores; role = set driver upgrade row values/flags"
+  }
+ ],
+ "proofs": []
+}

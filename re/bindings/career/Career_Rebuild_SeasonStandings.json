@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Rebuild_SeasonStandings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ae8040",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Rebuild_SeasonStandings(void *season, void *order_a, void *order_b, void *extra_points, void *extra_e)",
+  "evidence": "decomp:re/decomp/140ae8040.c;xref:0x140ae41b4,0x140ae7f58;decomp:re/decomp/140ae8040.c;decomp:re/decomp/1413cf090.c;decomp:re/decomp/1413ccb90.c;decomp:re/decomp/1413cfb70.c;xref:0x140ae41b4,0x140ae7f58;doc:addons/career-editor/protocol/season.md#season-points-adjust",
+  "notes": "clears the four standings (season+0x2a8, *+0x510, *+0x520, *+0x530); if weekend[0] has sessions, re-inits them via 0x1413cf090 (only caller) with copies of four optional vectors {alloc*, begin, end, count, u8 engaged@+0x20}; extra_points {u32 entrant key, i32 points} -> 0x1413ccb90 stores it at standings+0xa8 (model adds it, vt+0x40 0x140b2fc20) and 0x1413cfb70 sums it per team; extra_e is stored on the constructors side at standings+0x210; then re-applies results (0x140aecf80) and recomputes points, and finally frees each engaged caller list with its alloc vt+0x38 and zeroes it. Callers Season start 0x140ae35a0 and Career_Rebuild_ChampionshipStandings (V0234)"
+ },
+ "signature": {
+  "id": "career.rebuild_season_standings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 F8 29 BC 24 F0 00 00 00 C5 F8 29 B4 24 E0 00 00 00 4C 89 CE",
+  "match": "0x140ae8040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ae8040",
+  "kind": "func_start",
+  "names": [
+   "Career_Rebuild_SeasonStandings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-season",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/season.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Career_Rebuild_SeasonStandings",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140ae8040.c;decomp:re/decomp/1413cf090.c;decomp:re/decomp/1413ccb90.c;decomp:re/decomp/140b2fc20.c;xref:0x140ae41b3,0x140ae7f57,0x140ae8663",
+   "notes": "V0234 5 args confirmed (arg5 at rsp+0x170); 0x1413cf090 has one caller (0x140ae8663); +0xa8 store and vt+0x40 0x140b2fc20 (.data1 0x14961b930) reader check. Wrong/missing: the re-init is conditional: if the season has no weekends or weekend[0]'s session vector +0x220..+0x228 is empty, 0x1413cf090 is skipped and all four lists are dropped (still freed); the function deep-copies each list for 0x1413cf090 and then frees the caller's four engaged buffers itself; extra_e goes to the constructors side (standings+0x210), not as extra driver points. Corrected: clears the four standings (season+0x2a8, *+0x510, *+0x520, *+0x530); if weekend[0] has sessions, re-inits them via 0x1413cf090 (only caller) with copies of four optional vectors {alloc*, begin, end, count, u8 engaged@+0x20}; extra_points {u32 entrant key, i32 points} -> 0x1413ccb90 stores it at standings+0xa8 (model adds it, vt+0x40 0x140b2fc20) and 0x1413cfb70 sums it per team; extra_e is stored on the constructors side at standings+0x210; then re-applies results (0x140aecf80) and recomputes points, and finally frees each engaged caller list with its alloc vt+0x38 and zeroes it. Callers Season start 0x140ae35a0 and Career_Rebuild_ChampionshipStandings"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "func",
+   "item": "Career_Rebuild_SeasonStandings",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ae8040.c;decomp:re/decomp/1413cf090.c;decomp:re/decomp/1413ccb90.c;xref:0x140ae41b3,0x140ae7f57,0x140ae8663",
+   "notes": "V0303 Independent: 5 args (arg5 [rsp+0x170] after 8 pushes+0x108), clears +0x2a8 and *+0x510/+0x520/+0x530, skips 0x1413cf090 when no weekends, weekend[0] +0x220==+0x228 or begin 0; 0x1413cf090(+0x2a8, session0+0x18, copies) -> 0x1413ccb90 fills +0xa8, 0x1413cfb70 (thunk) team side, extra_e matched by key against +0x120 list into +0x210; 0x140aecf80(season,1) and recompute; caller lists freed and zeroed; callers 0x140ae35a0, 0x140ae78f0. Wording notes: vector +0x18 is capacity (copy alloc size), not count; +0xa8 becomes one {key, points-or-0} per weekend[0] session-0 entrant, extra keys not among them are dropped."
+  }
+ ],
+ "proofs": []
+}

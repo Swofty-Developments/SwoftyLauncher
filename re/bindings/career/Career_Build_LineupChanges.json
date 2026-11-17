@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Build_LineupChanges",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142457a90",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Career_Build_LineupChanges(void *out, const void *current_entrants, const void *baseline_entrants)",
+  "evidence": "decomp:re/decomp/142457a90.c;decomp:re/decomp/140d766b0.c;xref:0x140d7849e,0x140db4e1d;doc:addons/career-editor/protocol/drivers.md#op-driversswap",
+  "notes": "fills out (0x288 bytes: LineupChange[40] at +0, u64 count at +0x280, zeroed first) with the drivers whose team or race-seat status differs between the current entrant vector object (entity+0x2d8: {allocator, begin, end}) and a baseline one (weekend+0x18, the weekend from vtable slot +0xa0 of the signing's weekend source); race seat = team set, team_position < 2 and its has-position byte set. Called by the Driver Career signing (0x140d7849e) and the season processor (0x140db4e1d) right before posting the three MessageDriverMovesFinalised messages; reads only"
+ },
+ "signature": {
+  "id": "career.build_lineup_changes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 01 00 00 4C 89 44 24 40",
+  "match": "0x142457a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142457a90",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_LineupChanges"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-drivers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/drivers.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-8",
+   "kind": "func",
+   "item": "Career_Build_LineupChanges",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142457a90.c;decomp:re/decomp/140d766b0.c;decomp:re/decomp/140db18e0.c;xref:0x142457aad,0x142457b0d,0x142457b1b,0x140d78476,0x140d78480,0x140d78486,0x140d7848f,0x140d7849e,0x140db4e1c;sig:career.build_lineup_changes",
+   "notes": "V0880 sigcheck OK. Proto right: rcx out, rdx current, r8 baseline, returns out. The signing passes rcx = rsp+0x70, rdx = [comp+0x278] + 0x2d8, r8 = ([comp+0x270] vt+0xa0)() + 0x18 (0x140d78476..0x140d7849e); both vectors are read at +8/+0x10 with 0x88 stride; race seat = team stat != 0x3fff, byte +0x80 < 2 and +0x81 set; capacity 40 (at 0x28 it only TRACE-logs); count at +0x280; only out is written. Quibbles: only the count is zeroed first (entries past count are not cleared, and the signing does not clear the buffer); each 0x10 entry also holds the replaced driver key at +0xc (TRACE 'replaced driver', 0x3fff0000 if none); the season-processor xref 0x140db4e1d is the rel32 of the call at 0x140db4e1c, and that caller passes stack vector copies, not entity+0x2d8"
+  }
+ ],
+ "proofs": []
+}

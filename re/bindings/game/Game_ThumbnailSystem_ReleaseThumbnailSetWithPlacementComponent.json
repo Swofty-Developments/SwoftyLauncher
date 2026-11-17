@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailSystem_ReleaseThumbnailSetWithPlacementComponent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e2f010",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name releaseThumbnailSetWithPlacementComponent (class from the log channel); log channel THUMBNAIL_SYSTEM: 'releaseThumbnailSetWithPlacementComponent() - Releasing thumbnail set ID [%d] - as it contains a driver placement pointer that is being destroyed'"
+ },
+ "signature": {
+  "id": "game.thumbnail_system_release_thumbnail_set_with_placement_component",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 8B B1 C8 00 00 00",
+  "match": "0x142e2f010",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e2f010",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailSystem_ReleaseThumbnailSetWithPlacementComponent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e2f010",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e2f010.c;xref:0x14d28b140",
+   "notes": "V5472 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

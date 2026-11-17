@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EndRaceUiSequencer_StopSequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ea5800",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name stopSequence (class from the log channel); log channel END_RACE_UI_SEQUENCER: 'stopSequence() called'"
+ },
+ "signature": {
+  "id": "game.end_race_ui_sequencer_stop_sequence",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 80 3D ?? ?? ?? ?? 01 75 4E B8 A1 00 00 00",
+  "match": "0x142ea5800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ea5800",
+  "kind": "func_start",
+  "names": [
+   "Game_EndRaceUiSequencer_StopSequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142ea5800",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ea5800.c;xref:0x142dabaa1",
+   "notes": "V5550 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Handle_WebSocketUpgradeWait",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144441810",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Handle_WebSocketUpgradeWait(void * self,uint64_t a2,uint64_t a3,char *a4,char a5 ,char *param_6)",
+  "evidence": "decomp:re/decomp/144441810.c;xref:0x1432ba4aa",
+  "notes": "myteam-g1: eWaitForSocketUpgrade state handler of a websocket/http client; generic networking, keyword match only."
+ },
+ "signature": {
+  "id": "core.handle_web_socket_upgrade_wait",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 70 01 00 00 4C 89 CB",
+  "match": "0x144441810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144441810",
+  "kind": "func_start",
+  "names": [
+   "Ne_Handle_WebSocketUpgradeWait"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x144441810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144441810.c;xref:0x1432ba4aa",
+   "notes": "V10359 Strings eWaitForSocketUpgrade, eWaitForSignalRNegotiation, Failed to crack URL."
+  }
+ ],
+ "proofs": []
+}

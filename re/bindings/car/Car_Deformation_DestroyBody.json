@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Deformation_DestroyBody",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440cc840",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440cc840.c;xref:0x14465d118,0x14476172d",
+  "notes": "Releases the body's particles (Car_Deformation_ReleaseParticles on body+0x170), then finds *param_2 in mgr vector +0x10..+0x18 (stride 0x10, body at +8), erases it (0x1441082c0), clears *param_2, logs 'There are now %I64u deformable bodies.' (CS mgr+0xa90). Returns 0 ok / 0x16 not found. Callers Car_TyreDeformation_SetTyre 0x14465c950 and 0x1447615c0 (tyre model switch / teardown). | #587: L2 by lead-authorised promotion for lane owner car-re (independent agree V2311)"
+ },
+ "signature": {
+  "id": "car.deformation_destroy_body",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D3 48 89 CE BA 70 01",
+  "match": "0x1440cc840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440cc840",
+  "kind": "func_start",
+  "names": [
+   "Car_Deformation_DestroyBody"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Car_Deformation_DestroyBody",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440cc840.c;xref:0x14465c950",
+   "notes": "V2311 Verified: ReleaseParticles(body+0x170), vector erase, returns 0/0x16."
+  }
+ ],
+ "proofs": []
+}

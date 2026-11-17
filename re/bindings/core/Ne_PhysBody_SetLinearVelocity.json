@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_PhysBody_SetLinearVelocity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440c2290",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440c2290.c;xref:0x1434cd235,0x14444d1dd",
+  "notes": "Writes linear velocity param_2 into body [this+0x18]+0x210 and clamps its magnitude to max speed +0x400. Used by pit limiter zones, Car_Failsafe_LimitVelocity, teleport. Callers: Game_PitLane_UpdateLimitZones, Car_Failsafe_LimitVelocity."
+ },
+ "signature": {
+  "id": "core.phys_body_set_linear_velocity",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 02 48 8B 71 18 C5 F8 29 86 10",
+  "match": "0x1440c2290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440c2290",
+  "kind": "func_start",
+  "names": [
+   "Ne_PhysBody_SetLinearVelocity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1440c2290",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440c2290.c;xref:0x1434cd235",
+   "notes": "V3640 writes +0x210 but clamps the +0x220 vector against +0x400; names of 0x1440c2080/0x1440c2290 look swapped; callers PitLane_UpdateLimitZones, Car_Failsafe_LimitVelocity confirmed"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1440c2290",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440c2290.c;xref:0x1434cd235",
+   "notes": "V4013 writes +0x210 but clamps the +0x220 vector against +0x400; names of 0x1440c2080/0x1440c2290 look swapped; callers PitLane_UpdateLimitZones, Car_Failsafe_LimitVelocity confirmed"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1440c2290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440c2290.c;xref:0x1434cd235,0x14444d1dd",
+   "notes": "V4111 sets linear velocity with clamp; callers PitLane_UpdateLimitZones 0x1434cd235 and Car_Failsafe_LimitVelocity confirmed"
+  }
+ ],
+ "proofs": []
+}

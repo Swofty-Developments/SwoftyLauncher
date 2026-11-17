@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Rnd_SetDepartmentPipColourB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417abe90",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/1417abe90.c;xref:0x14174dec2;xref:0x14174dedb;xref:0x14174def4",
+  "notes": "myteam-g1: UI binding code; department_pip_colour (variant B). Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_set_department_pip_colour_b",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 CE 48 8B 42 08 48 8D 50 08 48 85 C0 4C 8D 3D ?? ?? ?? ?? 49 0F 44 D7 E8",
+  "match": "0x1417abe90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417abe90",
+  "kind": "func_start",
+  "names": [
+   "Ui_Rnd_SetDepartmentPipColourB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1417abe90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417abe90.c;xref:0x14174dec2;xref:0x14174dedb",
+   "notes": "V9786 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeHelperModule_ImageFileWriteDataCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bd1ae0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=PhotoModeHelperModule::imageFileWriteDataCallback; log channel PHOTO-MODE: ' - (%d%%) PhotoModeHelperModule::imageFileWriteDataCallback - writing %I64u bytes, total = %I64u'"
+ },
+ "signature": {
+  "id": "game.photo_mode_helper_module_image_file_write_data_callback",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 49 89 D1 48 8B 81 D8 12 00 00",
+  "match": "0x142bd1ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bd1ae0",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeHelperModule_ImageFileWriteDataCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142bd1ae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bd1ae0.c;xref:0x142bd29bd",
+   "notes": "V5025 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

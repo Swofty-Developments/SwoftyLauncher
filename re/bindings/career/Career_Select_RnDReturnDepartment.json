@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Select_RnDReturnDepartment",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c89730",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Select_RnDReturnDepartment(void * self,uint64_t *a2)",
+  "evidence": "decomp:re/decomp/141c89730.c;xref:0x141c89a67;xref:0x145740900",
+  "notes": "myteam-g1: Writes laptop_r_and_d_departments_container.return_department value."
+ },
+ "signature": {
+  "id": "career.select_rn_dreturn_department",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE",
+  "match": "0x141c89730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c89730",
+  "kind": "func_start",
+  "names": [
+   "Career_Select_RnDReturnDepartment"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c89730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c89730.c;xref:0x141c89a67;xref:0x145740900",
+   "notes": "V9998 Writes return_department and perks_tab_selected in the departments container."
+  }
+ ],
+ "proofs": []
+}

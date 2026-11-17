@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressManager_RefreshAuthority",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143266ed0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143266ed0.c;xref:0x14325b635,0x14582dbc0",
+  "notes": "Re-reads the local machine id (+0x18/+0x19), then for each VehicleProgressSync (+0xf8..+0x1d0) recomputes local/remote flags (+0x7c bits 1/2) vs owner +0x78 and updates physics +0x9ea8; logs authority changes. Addon: runs on host migration / ownership change. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2770)"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_manager_refresh_authority",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 48 8B 41 28 48",
+  "match": "0x143266ed0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143266ed0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressManager_RefreshAuthority"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_VehicleProgressManager_RefreshAuthority",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143266ed0.c;xref:0x143266ed0",
+   "notes": "V2770 +0x18/+0x19 from machine vcalls, loop +0xf8..+0x1d0, +0x7c bits 1/2 and physics +0x9ea8 confirmed"
+  }
+ ],
+ "proofs": []
+}

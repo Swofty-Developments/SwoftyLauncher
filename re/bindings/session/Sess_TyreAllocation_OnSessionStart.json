@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Sess_TyreAllocation_OnSessionStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bcc190",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_TyreAllocation_OnSessionStart(void *component)",
+  "evidence": "decomp:re/decomp/140bcc190.c;xref:0x14567a8b8;decomp:re/decomp/142e8e170.c;decomp:re/decomp/142e88630.c;decomp:re/decomp/142e88730.c;decomp:re/decomp/142e88c30.c",
+  "notes": "tyre allocation component virtual (vtable slot 0x14567a8b8), run at each session start: session = (component+0x270)->vtbl[+0xa8]() (+0x08 id), weekend = (component+0x270)->vtbl[+0x98](); for every car allocation (entries component+0x2b0..+0x2b8, 16 bytes, allocation at +8) restores each set's saved wear unless 0x1484f4c20 (via +0x2f8) returns non-zero or the +0x318 lookup hits (the restore copies savedDamage bit1 into bit0), then by session id hands sets back (0x142e8e170 most-worn practice-tagged sets, 0x142e8e970 Q3-tagged ones when the qualifying format is not full) and sets allocation+0xe8 (dirty). Allocation: five compound vectors {begin +0x20, end +0x28} every 0x28 from +0x10, count +0xd8; sets 0x6c bytes: +0x00 recommended session tag (0 = any), +0x09 flags (bit0 damaged, bit1 savedDamage, bit2 mandatory, bit3 handed back, bit4 usedOutsideGarage; serialiser 0x142e88c30), wear floats +0x0c/+0x18/+0x24/+0x30. Usable checks: a tag-0 set is usable in any session; the mode-0 check 0x142e88730 has no case for shootout sessions 10..14 with tagged sets, while the mode-1 check 0x142e88630 accepts tags 10..14 in sessions 10..14 when the tag equals the session or the session is 13 or 14. Raised by native-1990 for the F1 1990 Friday qualifying tyres; corrected after V0967"
+ },
+ "signature": {
+  "id": "session.tyre_allocation_on_session_start",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 CE 48 8B 89 70 02 00 00",
+  "match": "0x140bcc190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bcc190",
+  "kind": "func_start",
+  "names": [
+   "Sess_TyreAllocation_OnSessionStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/fq_tyres.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-b",
+   "kind": "func",
+   "item": "Sess_TyreAllocation_OnSessionStart",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140bcc190.c;decomp:re/decomp/142e8e170.c;decomp:re/decomp/142e8e970.c;decomp:re/decomp/142e8e7d0.c;decomp:re/decomp/140afe570.c;decomp:re/decomp/142e88630.c;decomp:re/decomp/142e88730.c;decomp:re/decomp/142e88c30.c;xref:0x14567a8b8;sig:session.tyre_allocation_on_session_start",
+   "notes": "V0967 Confirmed: 1 arg; the only reference is the .xtext slot 0x14567a8b8 (no rel32 callers). Session id = vtbl[+0xa8]()+8 and weekend = vtbl[+0x98]() on component+0x270; the loop over +0x2b0..+0x2b8 (16-byte entries, allocation at +8) copies each set's saved block +0x3c..+0x63 into +0x0c..+0x33 and bit1 into bit0, then switches on the session id. 0x142e8e170(alloc, n) hands back (bit3) the most-worn sets tagged 1/2/3 (tag list 0x1457ef0fc, picker 0x142e8e7d0) until n are handed back, with n taken from the rules mode. 0x142e8e970 marks every tag-7 (Q3) set handed back when 0x140afe570(weekend+0x240, group 1) != 4 (not a multi-session qualifying) and on the eliminated-driver paths. Allocation+0xe8 = 1. The layout (five vectors from +0x10 every 0x28, count +0xd8, 0x6c-byte sets, tag +0x00, wear +0x0c/+0x18/+0x24/+0x30) matches the serialiser 0x142e88c30. Wrong details: (1) flags bit0 is 'damaged' in the serialiser's own log ('recommendedSession damaged savedDamage mandatory handedBack usedOutsideGarage' = +0x00 then bits 0..4), not 'used'; the restore copies savedDamage (bit1) into it. (2) 'no case for shootout sessions 10..14 with tagged sets' holds only for the mode-0 check 0x142e88730. The mode-1 inline rules of 0x142e88630 (0x142e88698..0x142e886bc) accept tags 10..14 in sessions 10..14 when tag == session or the session is 13/14. (3) The wear restore is conditional: it is skipped when 0x1484f4c20 (via +0x2f8) returns non-zero or the +0x318 lookup hits"
+  },
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-b",
+   "kind": "func",
+   "item": "Sess_TyreAllocation_OnSessionStart",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bcc190.c;decomp:re/decomp/142e8e170.c;decomp:re/decomp/142e8e970.c;decomp:re/decomp/140afe570.c;decomp:re/decomp/142e88630.c;decomp:re/decomp/142e88730.c;decomp:re/decomp/142e88c30.c;xref:0x14567a8b8;sig:session.tyre_allocation_on_session_start",
+   "notes": "V0990 Re-check of the corrected row (after V0967 in feat/f1-1990-port). The flag bits now match the serialiser log of 0x142e88c30: bit0 damaged, bit1 savedDamage, bit2 mandatory, bit3 handedBack, bit4 usedOutsideGarage. The shootout statement is now split correctly: 0x142e88730 has no case for sessions 10..14, while 0x142e88630 at 0x142e88698..0x142e886bc accepts tags 10..14 when tag == session or the session is 13/14. The conditional restore (skipped when 0x1484f4c20 via +0x2f8 returns non-zero or the +0x318 lookup hits) matches 0x140bcc190. The rest is unchanged and still holds: 1 arg, only reference the .xtext slot 0x14567a8b8, session/weekend virtuals on +0x270, entries +0x2b0..+0x2b8, 0x142e8e170 / 0x142e8e970 hand-backs, +0xe8 set, and the allocation layout. sigcheck: 1 hit, target 0x140bcc190"
+  }
+ ],
+ "proofs": []
+}

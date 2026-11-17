@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Deformation_RebuildTyreConstraints",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14410c7d0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14410c7d0.c;xref:0x14465cbf0",
+  "notes": "Clears +0x1b8 list and walks bodies +0x178..+0x180 rebuilding per-tyre constraints with stiffness param_3. Hypothesis. Caller: Car_TyreDeformation_SetTyre. (1 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "car.deformation_rebuild_tyre_constraints",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 8B 81 B8",
+  "match": "0x14410c7d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14410c7d0",
+  "kind": "func_start",
+  "names": [
+   "Car_Deformation_RebuildTyreConstraints"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x14410c7d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14410c7d0.c;xref:0x14465cbf0",
+   "notes": "V6791 Resets +0x1b8 list end, walks +0x178..+0x180 confirmed; hypothesis."
+  }
+ ],
+ "proofs": []
+}

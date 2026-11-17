@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Write_RegulationAdaptRange_Alt",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14350f420",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Write_RegulationAdaptRange_Alt(void * self,uint64_t *a2)",
+  "evidence": "decomp:re/decomp/14350f420.c;xref:0x15056617f",
+  "notes": "myteam-g1: Second writer for min/max_percentage_upgrades_that_can_be_adapted (calls Career_Write_AdaptableUpgradeCounts)."
+ },
+ "signature": {
+  "id": "career.write_regulation_adapt_range_alt",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 48 C7 44 24 20 00 00 00 00 48 8B 1D",
+  "match": "0x14350f420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14350f420",
+  "kind": "func_start",
+  "names": [
+   "Career_Write_RegulationAdaptRange_Alt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14350f420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14350f420.c;xref:0x15056617f",
+   "notes": "V10270 Same as 8 but keyed by engine_stat_id (engine supplier) and calls 14350d740."
+  }
+ ],
+ "proofs": []
+}

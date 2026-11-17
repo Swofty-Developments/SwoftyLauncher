@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Options_UpdatingPresetKeyedOptionValReq",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142abe6d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-OPTIONS/P",
+  "notes": "named from its log messages (channel OPTIONS/P): 'Updating preset keyed to option %s, val = %d, req = %d'"
+ },
+ "signature": {
+  "id": "game.options_updating_preset_keyed_option_val_req",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 45 89 C1",
+  "match": "0x142abe6d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142abe6d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Options_UpdatingPresetKeyedOptionValReq"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142abe6d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142abe6d0.c;xref:0x142abe39b",
+   "notes": "V5007 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

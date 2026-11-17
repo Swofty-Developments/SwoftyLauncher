@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCustomisationReplicationManager_ReplaceCustomisation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14313c660",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14313c660.c;xref:0x140fe0976,0x140fee32e",
+  "notes": "replacePlayerNetworkReplicatedCustomisation(old, new, ...): optional remove (0x14313bcd0), copies PlayerDescription (+8..+0x48) and posts message via 0x14313c810. Callers CareerOnlineManager reconcile. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2615)"
+ },
+ "signature": {
+  "id": "game.driver_customisation_replication_manager_replace_customisation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 B8 28 C6 00 00 E8",
+  "match": "0x14313c660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14313c660",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCustomisationReplicationManager_ReplaceCustomisation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_DriverCustomisationReplicationManager_ReplaceCustomisation",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14313c660.c;xref:0x14313c660",
+   "notes": "V2615 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

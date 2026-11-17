@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamSponsorUnlockReward_Describe",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc7f60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *reward, void *out",
+  "evidence": "decomp:re/decomp/140fc7f60.c;xref:0x1456b1ff0",
+  "notes": "myteam-g1: Description text \"Unlocks sponsor %s for team\" (sponsor name from reward+0x58); sibling of Career_MyTeamSponsorUnlockReward_Apply."
+ },
+ "signature": {
+  "id": "career.my_team_sponsor_unlock_reward_describe",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 89 D0 4C 8B 41 58 48 8D 15 ?? ?? ?? ?? 48 89 C1 E8 ?? ?? ?? ?? 90 48 83 C4 28 C3 56 48 81 EC D0 00 00 00",
+  "match": "0x140fc7f60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc7f60",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamSponsorUnlockReward_Describe"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fc7f60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc7f60.c;xref:0x1456b1ff0;str:\"Unlocks sponsor\"",
+   "notes": "V9620 Format text Unlocks sponsor with name from reward+0x58."
+  }
+ ],
+ "proofs": []
+}

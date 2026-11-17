@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_AsyncJob_StopAndNotify",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14416cf60",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14416cf60.c;xref:0x142929b70,0x142a3cbe0",
+  "notes": "(job): releases pending handle (+0x148 flag +0x180), copies status, and if state (+0x48) is 2 or 5 sets state 3/2 and invokes every callback in +0x100..+0x108 (16-byte {fn,ctx}); state 1 sets +0x1c9. Called on the global job objects 0x146103ff0 / 0x146104180 by Sess_State_EnterOnTrackCommon, Sess_PreRaceGridState_OnEnter, garage fade, pit drive-through. Role HYPOTHESIS."
+ },
+ "signature": {
+  "id": "core.async_job_stop_and_notify",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC A0 00 00 00 48 89 CE 48 8D 7C",
+  "match": "0x14416cf60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14416cf60",
+  "kind": "func_start",
+  "names": [
+   "Ne_AsyncJob_StopAndNotify"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14416cf60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14416cf60.c;xref:0x140b7aa1c",
+   "notes": "V3649 state machine with callbacks matches; callers Sess_PreRaceGridState_OnEnter, Sess_State_EnterOnTrackCommon confirmed (role hypothesis)"
+  }
+ ],
+ "proofs": []
+}

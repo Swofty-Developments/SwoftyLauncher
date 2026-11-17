@@ -1,0 +1,50 @@
+{
+ "schema": 1,
+ "name": "FeInput_Add_PlayerProvider",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434d6fd0",
+  "level": "L1",
+  "subsystem": "fe_input",
+  "proto": "undefined4(longlong player,longlong provider)",
+  "evidence": "decomp:re/decomp/1434d6fd0.c;str:s_Player_AddPlayerInputProvider",
+  "notes": "cxx=game::Player::addPlayerInputProvider; attaches an input device provider to a Player and publishes device-present bools on VM nodes player+0x290/+0x2b0/+0x2d0 via Vm_NodeSet_Bool; returns 0x16 if the provider is incomplete; INPUT log; L1 (no clean caller xref, reached indirectly)"
+ },
+ "signature": {
+  "id": "fe_input.add_input_provider",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC E0 00 00 00 48 89 D7",
+  "match": "0x1434d6fd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434d6fd0",
+  "kind": "func_start",
+  "names": [
+   "FeInput_Add_PlayerProvider"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "ui-re"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1434d6fd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434d6fd0.c",
+   "notes": "V6060 0x16 returned when provider +0x28/+0x30 null or +0x38==-1 (verified); +0x290/+0x2b0/+0x2d0 nodes set via 0x140973e20 (=Vm_NodeSet_Bool, verified) gated by predicates; log string matches (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

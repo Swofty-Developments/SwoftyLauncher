@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_CreateSessionDlcSelectTab_HandleCommand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a3f7f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "char *Game_CreateSessionDlcSelectTab_HandleCommand(void *view_model, void *command)",
+  "evidence": "decomp:re/decomp/141a3f7f0.c;xref:0x145728c00",
+  "notes": "CreateSessionDLCSelectTabViewModel command handler (vtable 0x145728bb0 slot 10 at 0x145728c00). Command hash 0x324cce31 (F1 2025 box): *(u16*)(*(vm+0x790)+0x4f4)=0x100 (DLC domain disc), logs NETWORK-CONTENT Setting DLC domain, fires route open_create_custom_25 on vm+0x620; 0x324cce32 (F1 2026): DLC entitlement check 0x1424283d0(vm+0x788,f1_2026), 0x101, open_create_custom_26; 0x493fe92b: back_to_local_multiplayer or goto_mpgp."
+ },
+ "signature": {
+  "id": "game.create_session_dlc_select_handle_command",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 8B 02 48 85 C0 0F 84 34 06 00 00 48 89 CE 8B 00",
+  "match": "0x141a3f7f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a3f7f0",
+  "kind": "func_start",
+  "names": [
+   "Game_CreateSessionDlcSelectTab_HandleCommand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "mp-carcat",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/car_category.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "verify-mp-carcat",
+   "kind": "func",
+   "item": "Game_CreateSessionDlcSelectTab_HandleCommand",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a3f7f0.c;xref:0x145728c00;sig:game.create_session_dlc_select_handle_command",
+   "notes": "V1154 Re-checked: slot 10 at 0x145728c00; command hashes are djb2 of button_1 (0x324cce31), button_2 (0x324cce32) and back_pressed (0x493fe92b), confirmed by hashing every identifier string in the exe. Same-session verify pass."
+  }
+ ],
+ "proofs": []
+}

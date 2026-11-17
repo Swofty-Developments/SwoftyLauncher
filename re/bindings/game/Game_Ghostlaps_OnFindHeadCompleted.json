@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ghostlaps_OnFindHeadCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f869f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onFindHeadCompleted (class from the log channel); log channel GHOSTLAPS: '%s(%d, %s, %s, %d)'"
+ },
+ "signature": {
+  "id": "game.ghostlaps_on_find_head_completed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC A8 00 00 00 C5 F9 29 BC 24 90 00 00 00",
+  "match": "0x142f869f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f869f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Ghostlaps_OnFindHeadCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f869f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f869f0.c;xref:0x142f99692",
+   "notes": "V5681 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

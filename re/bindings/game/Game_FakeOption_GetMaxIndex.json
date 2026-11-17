@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FakeOption_GetMaxIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142abe1b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142abe1b0.c;xref:0x1457c5188",
+  "notes": "Sibling virtual of the fake option (vt slot @0x1457c5188): logs the same fake/not implemented warning and returns [this+0xb8]-1 (value count - 1). Option name at [[this+0x10]+0x10]. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2472)"
+ },
+ "signature": {
+  "id": "game.fake_option_get_max_index",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 67 B8 77 00",
+  "match": "0x142abe1b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142abe1b0",
+  "kind": "func_start",
+  "names": [
+   "Game_FakeOption_GetMaxIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_FakeOption_GetMaxIndex",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142abe1b0.c;xref:0x1457c5188",
+   "notes": "V2472 test dup check"
+  }
+ ],
+ "proofs": []
+}

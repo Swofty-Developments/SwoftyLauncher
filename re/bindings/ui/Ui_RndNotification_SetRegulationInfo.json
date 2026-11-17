@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_RndNotification_SetRegulationInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14180f090",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/14180f090.c;xref:0x14180d1de;xref:0x1418114f6",
+  "notes": "myteam-g1: UI binding code; rnd_notification_regulation_info. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_notification_set_regulation_info",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 4D 89 C6 48 89 D6",
+  "match": "0x14180f090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14180f090",
+  "kind": "func_start",
+  "names": [
+   "Ui_RndNotification_SetRegulationInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14180f090",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14180f090.c;xref:0x14180d1de",
+   "notes": "V9802 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

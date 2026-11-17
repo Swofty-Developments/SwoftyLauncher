@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_PhysBody_ApplyImpulse",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440c12e0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_PhysBody_ApplyImpulse(void *body, const float *J, const float *worldPoint)",
+  "evidence": "decomp:re/decomp/1440c12e0.c;doc:re/db/subsystems/core.md;xref:0x142f04d96,0x142f04dcc",
+  "notes": "gb-verify claim 13 (agent barrier): flags +0x46c bit0: body+0x220 += J*invMass(+0x438); bit1: body+0x210 += I^-1(+0xd0)*((P-COM+0x378) x J), then maxLinSpeed +0x400 clamp (inside the bit1 branch only) and angular clamp +0x3f4..+0x3fc"
+ },
+ "signature": {
+  "id": "core.phys_body_apply_impulse",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE 8B 81",
+  "match": "0x1440c12e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440c12e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PhysBody_ApplyImpulse"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "gb-verify",
+   "kind": "func",
+   "item": "Ne_PhysBody_ApplyImpulse",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440c12e0.c",
+   "notes": "V1723 claim 13; +0x400 clamp only in angular branch"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "gb-verify",
+   "kind": "func",
+   "item": "Ne_PhysBody_ApplyImpulse",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440c12e0.c",
+   "notes": "V2066 claim 13; +0x400 clamp only in angular branch"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_PhysBody_ApplyImpulse",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440c12e0.c;xref:0x1440c12e0",
+   "notes": "V2116 Flags +0x46c bit0 linear (+0x220 += J*invMass +0x438); bit1 angular via inertia +0xd0 and r=(P-COM +0x378); lin clamp +0x400 inside bit1 branch, ang clamp +0x3f4..3fc"
+  }
+ ],
+ "proofs": []
+}

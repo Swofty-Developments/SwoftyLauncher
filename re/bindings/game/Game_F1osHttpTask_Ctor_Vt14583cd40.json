@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osHttpTask_Ctor_Vt14583cd40",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14336e2f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14336e2f0.c;xref:0x140795f2d,0x14336d903",
+  "notes": "Constructor of an online HTTP task with vtable 0x14583cd40: OnlineSubsystemTaskBase part inline ('Created OnlineSubsystemTaskBase' log), embeds a neon HTTP request object (vtable 0x145a8e338, ref holder 0x145841b10, 64 KiB buffer) and copies a URL string. Callers: consumable-entitlements collation (0x140795f2d) and geolocation/server-status code (0x14336d903). Addon: layout reference for direct-URL tasks. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3321)"
+ },
+ "signature": {
+  "id": "game.f1os_http_task_ctor_vt14583cd40",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 B8 58 00 01 00 E8",
+  "match": "0x14336e2f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14336e2f0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osHttpTask_Ctor_Vt14583cd40"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1osHttpTask_Ctor_Vt14583cd40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14336e2f0.c;xref:0x140795f2d",
+   "notes": "V3321 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

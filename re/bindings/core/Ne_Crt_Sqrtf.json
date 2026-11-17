@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Sqrtf",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14535d734",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14535d734.c;xref:0x14063e370,0x1406427e0",
+  "notes": "CRT sqrtf with NaN/negative error path ('sqrtf'). Callers: AI job, particles, terrain plugin, physics impulse."
+ },
+ "signature": {
+  "id": "core.crt_sqrtf",
+  "section": ".xtls",
+  "pattern": "F3 0F 11 44 24 08 48 83 EC 58 B9 00 00 80 7F F3",
+  "match": "0x14535d734",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14535d734",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Sqrtf"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14535d734",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14535d734.c;xref:0x140159f3b",
+   "notes": "V3761 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

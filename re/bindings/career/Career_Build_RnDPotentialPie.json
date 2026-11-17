@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDPotentialPie",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f41d60",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141f41d60.c",
+  "notes": "Builds the R&D DEVELOPMENT POTENTIAL pie + per-dept overview descriptions. Loops k_Career_UpgradeDeptCodeTable but GATED: if(code<4) and if(4<i)break => effectively 4 depts. switch(code) maps 0->aero,1->chassis,2->maintenance,3->engine, default->error_department, with INLINE hardcoded colours 0xffeead00/0xff3ec58d/0xff16deff/0xff7a2aed (default white). Writes per-dept entries at base+0x6b0 stride 0x220. Hardcoded 4, independent of the dept data model. Class A (vt_Career_RnDResearchViewModel 0x14575e000, Team HQ research overview); constructs its object with Career_Construct_RnDPieObject @0x141f41e56 and move-assigns it @0x141f41e7d like class B."
+ },
+ "signature": {
+  "id": "career.build_rn_d_potential_pie",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 04 00 00 C5 F8 29 BC 24",
+  "match": "0x141f41d60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f41d60",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDPotentialPie"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141f41d60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f41d60.c",
+   "notes": "V5233 Verified: code<4 guard, i>4 break, stride 0x220 at +0x6b0, 4 inline colours, construct @0x141f41e56 and move-assign @0x141f41e7d (vtable/indirect)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141f41d60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f41d60.c;str:\"error_department\";str:\"lng_rnd_dept_%s_overview_description\"",
+   "notes": "V9197 Slot 0x13 (+0x98) of vtable 0x14575e000 is this function; the four colours and code-3 jump table are present, object constructed at 0x141f41e56 and move-assigned at 0x141f41e7d."
+  }
+ ],
+ "proofs": []
+}

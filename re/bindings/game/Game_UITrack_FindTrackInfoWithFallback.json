@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_UITrack_FindTrackInfoWithFallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143852230",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_UITrack_FindTrackInfoWithFallback(void *contract, const char *track_name)",
+  "evidence": "decomp:re/decomp/143852230.c;xref:0x1407a65ba,0x1407b54ec,0x1407b816b,0x143852214,0x143853fb4,0x15186dccc;kb:subsystems/tracks.md#list",
+  "notes": "was Game_UITrack_TrackFoundGameModeTracklistWill (log fragment; renamed 2026-11-14 to the name signature game.ui_track_track_found_game_mode_tracklist_will already lists). Resolves track_name in <mode node>.track_info.track_list; not found -> logs UI_TRACK 'Track [%hs] is not found in game mode tracklist...' and tries seasons.current_season.track_list; list missing -> 'Tracklist [%hs] has not been found. Try the default tracklist' and uses track_data.track_list; not in that either -> 'Track [0] will be attempted instead' (item 0). The found node is assigned to the contract's VM node contract+0x30 (0x140977b20) when that node is live and of the expected type. Callers: game mode setup steps 0x1407b5330 (0x1407b54ec) and 0x1407b7b90 (0x1407b816b), 0x1407a65ba, 0x143852214, jmp 0x143853fb4, .data1 jmp 0x15186dccc. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.ui_track_track_found_game_mode_tracklist_will",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 D3 48 89 CF",
+  "match": "0x143852230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143852230",
+  "kind": "func_start",
+  "names": [
+   "Game_UITrack_FindTrackInfoWithFallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143852230",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143852230.c;xref:0x1407a65ba",
+   "notes": "V6317 track lookup with fallback chain (game mode tracklist, season tracklist, default tracklist, track 0), not just one log. Better Game_UITrack_FindTrackInfoWithFallback"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143852230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143852230.c;xref:0x1407a65ba",
+   "notes": "V7122 facts verified (strings, size, caller)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x143852230",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x143852230-0x143852b38;xref:0x1407b54ec,0x1407b816b,0x1407a65ba,0x143852214,0x143853fb4,0x15186dccc",
+   "notes": "V10373 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 6 refs by my scan (4 call + 2 jmp). Strings: track_info, track_list, UI_TRACK, Track [%hs] is not found in game mode tracklist..., Tracklist [%hs] has not been found. Try the default tracklist, seasons.current_season.track_list, track_data.track_list, ...global tracklist... Track [0] will be attempt.... End: contract+0x30 node checked (not null, not 0x1461029d0, flag +0x26 bit0 clear, vt+0x20 live, type match vs 0x146ca5550) then 0x140977b20(node,&found,0,1) at 0x143852a7c. Args rcx contract, rdx track name. Rename to FindTrackInfoWithFallback is supported by the code."
+  }
+ ],
+ "proofs": []
+}

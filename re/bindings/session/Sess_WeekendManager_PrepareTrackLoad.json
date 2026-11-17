@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_WeekendManager_PrepareTrackLoad",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142409db0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142409db0.c;xref:0x142da7a1c,0x1436f7e0e",
+  "notes": "(mgr, a, b, c, d) If enabled (0x142409b30): reads setting 'Game.WeekendSessionManagerInFirstSession', resolves session from [this+0x88]+0x260 (type check 0x146129ca0) and prepares the weekend session list for a track load (300 lines). Callers Sess_Loader_RequestTrackLoad, Game_StateSession_OnStateUpdate (2x)."
+ },
+ "signature": {
+  "id": "session.weekend_manager_prepare_track_load",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 CF 44",
+  "match": "0x142409db0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142409db0",
+  "kind": "func_start",
+  "names": [
+   "Sess_WeekendManager_PrepareTrackLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142409db0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142409db0.c;xref:0x142da7a1c,0x1436f7e0e",
+   "notes": "V3382 gate func 0x142409b30, setting Game.WeekendSessionManagerInFirstSession, session via +0x88->+0x260 type 0x146129ca0; callers Sess_Loader_RequestTrackLoad and Game_StateSession_OnStateUpdate (2 sites in .xtls total 3)"
+  }
+ ],
+ "proofs": []
+}

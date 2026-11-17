@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Steering_UpdateYawRateCorrection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060b130",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Steering_UpdateYawRateCorrection(uint8_t *ctl, void *ai_car)",
+  "evidence": "decomp:re/decomp/14060b130.c;xref:0x1405f67ca",
+  "notes": "car = g_cars 0x146ce86e0[ctl.byte0], phys = car+0x558. speed = |dot(phys+0x1b0, phys+0x170)|. Frame = Ai_SplineCursor_GetFrame(route(ai_car+0x40)+0x108 + idx(+0x178)*0xa70 + 0x490, lateral 0). t = |frame.pos - ctl+0xb0| / max(0.01, speed) (corrected 2026-11-14: 0.01 is the min of speed; 0.05 is the min of t). desired = asin(clamp(dot(phys+0x190 xyz, frame dir), -1, 1)) (polynomial acos form) / max(0.05, t) -> ctl+0x14. actual = dot(phys+0x180 xyz, phys+0x1a0 xyz) -> ctl+0x18. err = desired - actual -> ctl+0x1c; err zeroed when actual*err > 0, deadband +-0.4, ctl+0x10 = deadbanded err * -0.03 (steering correction output; previously not listed). (renamed 2026-11-14 from Ai_Car_ComputeHeadingErrorRate: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.car_compute_heading_error_rate",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC C0 00 00 00 C5 78 29 84 24 B0 00 00 00 C5 F8 29 BC 24 A0 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CE",
+  "match": "0x14060b130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14060b130",
+  "kind": "func_start",
+  "names": [
+   "Ai_Steering_UpdateYawRateCorrection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14060b130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14060b130.c;xref:0x1405f67ca",
+   "notes": "V3537 uses Ai_SplineCursor_GetFrame, result float at +0x14 with 0.05 minimum; caller seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14060b130",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14060b130-0x14060b35f;xref:0x1405f67ca",
+   "notes": "V10561 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x1405f67ca (Ai_Update_DriverTick). 2 args (rcx ctl, rdx ai_car). Confirmed car = [0x146ce86e0+idx], phys = car+0x558, speed dot(+0x1b0,+0x170), min 0.01 on speed (0x14060b1d8), asin polynomial, min 0.05 on t, stores ctl+0x14/+0x18/+0x1c, deadband +-0.4 and ctl+0x10 = err*-0.03 (0x14060b32c/0x14060b334). Rename from Ai_Car_ComputeHeadingErrorRate fits (output is the yaw-rate steering correction)."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_ChampionshipFormationLapComponent_OnRaceStarted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b808a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_Championship_ChampionshipFormationLapComponent_OnRaceStarted;xref:0x140b80b8b,0x140b80c2e,0x140b80d75",
+  "notes": "cxx=game::championship::ChampionshipFormationLapComponent::onRaceStarted; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.race_started",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 53",
+  "match": "0x140b808a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b808a0",
+  "kind": "func_start",
+  "names": [
+   "Game_ChampionshipFormationLapComponent_OnRaceStarted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-18",
+    "by": "events",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/events/events.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140b808a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b808a0.c",
+   "notes": "V4431 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

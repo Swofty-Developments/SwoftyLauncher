@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_CostCap_ReadSaveData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c9df00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t (void *costcap, void *json_obj, uint64_t flags)",
+  "evidence": "decomp:re/decomp/140c9df00.c;xref:0x1456863a8",
+  "notes": "myteam-g1: Save reader counterpart of Career_CostCap_WriteSaveData: reads team_cost_cap_data/season_cost_cap_data (season_id, cached_expenses, cost_cap, cached_modifier) and event_card_data (career_day, activity_type, seen). Patching the loaded cost_cap/cached_expenses here changes the stored per-season cap."
+ },
+ "signature": {
+  "id": "career.cost_cap_read_save_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 78 29 8C 24 60 01 00 00 C5 78 29 84 24 50 01 00 00 C5 F8 29 BC 24 40 01 00 00 C5 F8 29 B4 24 30 01 00 00 4C 89 C7",
+  "match": "0x140c9df00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c9df00",
+  "kind": "func_start",
+  "names": [
+   "Career_CostCap_ReadSaveData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140c9df00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c9df00.c;xref:0x1456863a8;str:\"team_cost_cap_data\";str:\"season_cost_cap_data\";str:\"cached_modifier\"",
+   "notes": "V8972 Strings season_id/cached_expenses/cost_cap/cached_modifier present; event_card_data found by lea at 0x140c9e1bf with activity_type/seen/career_day inside. The 'patch here changes stored cap' remark is an inference, not shown by the code."
+  }
+ ],
+ "proofs": []
+}

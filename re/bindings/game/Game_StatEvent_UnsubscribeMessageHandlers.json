@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_UnsubscribeMessageHandlers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143749390",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int (void *owner)",
+  "evidence": "decomp:re/decomp/143749390.c;xref:0x145860ab0",
+  "notes": "myteam-g1: Unsubscribes all stat-event handlers; shows BankAccountTransactionMessage is handled by FUN_143737790 (stat event on each bank transaction)."
+ },
+ "signature": {
+  "id": "game.stat_event_unsubscribe_message_handlers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 10 02 00 00",
+  "match": "0x143749390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143749390",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_UnsubscribeMessageHandlers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143749390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143749390.c;xref:0x145860ab0",
+   "notes": "V10317 Unsubscribe counterpart; same message list, handler 143737790."
+  }
+ ],
+ "proofs": []
+}

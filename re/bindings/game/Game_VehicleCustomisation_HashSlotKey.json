@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleCustomisation_HashSlotKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432be130",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432be130.c;xref:0x141436f4b",
+  "notes": "Hashes a customisation slot key (kind byte *param_2; kind 3 with +0x38 -> all ones, kind 7 -> xor of u64 +0x18/+0x20, else +8/+0x10) times this+0x148 with a >>0x21 finaliser and probes a 32-wide bucket group. Callers Game_DecalGeneration_UpdateService, Game_VehicleCustomisationReplicationManager_SendVehicleCustom_2, 0x143188210."
+ },
+ "signature": {
+  "id": "game.vehicle_customisation_hash_slot_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 89 C8 0F B6 0A 80 F9",
+  "match": "0x1432be130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432be130",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleCustomisation_HashSlotKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1432be130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432be130.c;xref:0x141436f4b",
+   "notes": "V7580 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

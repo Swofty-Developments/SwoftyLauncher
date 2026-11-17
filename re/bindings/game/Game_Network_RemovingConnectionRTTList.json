@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_RemovingConnectionRTTList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144070890",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): 'Removing connection [%d] from RTT list'"
+ },
+ "signature": {
+  "id": "game.network_removing_connection_rtt_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 44 89 C3 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x144070890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144070890",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_RemovingConnectionRTTList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144070890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144070890.c;xref:0x14406c453",
+   "notes": "V6501 size=531; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

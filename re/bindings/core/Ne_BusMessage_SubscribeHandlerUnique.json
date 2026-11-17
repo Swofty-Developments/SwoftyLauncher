@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_BusMessage_SubscribeHandlerUnique",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442344c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1442344c0.c;xref:0x140bd650a",
+  "notes": "Registers a handler on a message source: *param_2 = listener, checks vcalls +0x20/+0x10/+0x28, scans listener array [+0x40..+0x48] (24-byte entries: 16-byte key + flag) for a duplicate of key param_3, else appends; function-static TLS list (Ne_Crt_InitThreadHeader on 0x1461089d4, Ne_Tls_GetValue). 342 call sites (every message type, e.g. 0x140bd6480). Hypothesis."
+ },
+ "signature": {
+  "id": "core.bus_message_subscribe_handler_unique",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 8B 1A 48",
+  "match": "0x1442344c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442344c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_BusMessage_SubscribeHandlerUnique"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1442344c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442344c0.c;xref:0x140bd650a",
+   "notes": "V7648 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

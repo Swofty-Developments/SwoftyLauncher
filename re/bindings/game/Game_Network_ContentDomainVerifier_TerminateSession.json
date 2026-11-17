@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_ContentDomainVerifier_TerminateSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143063ef0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name ContentDomainVerifier_TerminateSession (class from the log channel); log channel NETWORK: '%s: error code: %d'"
+ },
+ "signature": {
+  "id": "game.network_content_domain_verifier_terminate_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC F0 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 75 7D B8 00 01 00 00",
+  "match": "0x143063ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143063ef0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_ContentDomainVerifier_TerminateSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143063ef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143063ef0.c",
+   "notes": "V5668 name matches own log/pretty string and body; no broader behaviour found [vtable/indirect]"
+  }
+ ],
+ "proofs": []
+}

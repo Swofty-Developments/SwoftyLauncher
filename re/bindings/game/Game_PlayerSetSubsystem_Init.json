@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerSetSubsystem_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143168d20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143168d20.c;xref:0x14581f760",
+  "notes": "PlayerSetSubsystem init virtual: 'Registering MutableRole interface' and 'Registering NetMessage stuff' - registers Game_PlayerSetSubsystem_HandleUpdatePresenceNameMessage, Game_PlayerSetSubsystem_HandlePlayerSetInfoMessage, Game_Playerset_HandlePlayerSetRequestSpectateMessage. Addon: where to add custom player-set net messages. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2492)"
+ },
+ "signature": {
+  "id": "game.player_set_subsystem_init",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 58 01 00 00 4C 89 C7 48",
+  "match": "0x143168d20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143168d20",
+  "kind": "func_start",
+  "names": [
+   "Game_PlayerSetSubsystem_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_PlayerSetSubsystem_Init",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143168d20.c;xref:0x14581f760",
+   "notes": "V2492 logs both strings; registers 3 net messages as factory/handler pairs: 143168620/143169110, 143169230/1431692f0, 14316a2b0/14316a360"
+  }
+ ],
+ "proofs": []
+}

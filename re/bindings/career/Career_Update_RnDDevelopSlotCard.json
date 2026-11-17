@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Update_RnDDevelopSlotCard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c4b050",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Update_RnDDevelopSlotCard(void * self,char a2)",
+  "evidence": "decomp:re/decomp/141c4b050.c;xref:0x141c47f88;xref:0x141c48341",
+  "notes": "myteam-g1: Refreshes one \"update_upgrade\" card of the Development tab (state flag param). Reads the R&D vm fields +0x270..+0x358."
+ },
+ "signature": {
+  "id": "career.update_rn_ddevelop_slot_card",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 0D 00 00 48 8B 81 50 03 00 00",
+  "match": "0x141c4b050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c4b050",
+  "kind": "func_start",
+  "names": [
+   "Career_Update_RnDDevelopSlotCard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c4b050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c4b050.c;xref:0x141c47f88;xref:0x141c48341",
+   "notes": "V9965 Dispatches update_upgrade for a develop slot card (drivers_performance, driver1/driver2)."
+  }
+ ],
+ "proofs": []
+}

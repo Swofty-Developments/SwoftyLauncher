@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveError_Win32FmtSSU",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144148040",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144148040.c;xref:0x144146ede,0x144147038",
+  "notes": "SAVE error helper, fixed code 0x58, fmt with (char*, char*, u32 Win32 error): 'Failed to open temp file %s in save %s, result was 0x%x' in Ne_SaveSystem2Win_Mount."
+ },
+ "signature": {
+  "id": "core.save_error_win32_fmt_s_s_u",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 48 08 00 00 48 89 C8 48 8D 4C 24 48 48 C7 44 24 38 00 08 00 00 48 89 4C 24 40 C6 44 24 48 00 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 41 8B 09 4D",
+  "match": "0x144148040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144148040",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveError_Win32FmtSSU"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveError_Win32FmtSSU",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144148040.c;xref:0x144147c9e",
+   "notes": "V2563 fixed code 0x58, fmt + 2 strings + u32"
+  }
+ ],
+ "proofs": []
+}

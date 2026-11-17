@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Batch_ResolveInstanceRecords",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143e83aa0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143e83aa0.c;xref:0x143d4d7e2",
+  "notes": "Loops over batch instance list [this+0xd8]->{+8..+0x10} (24-byte records: ptr +8, index +0x10), maps index into the 16-byte table at param_3+0x50 and resolves each record through a type-list walk (sentinels 0x146129ca0/0x146c620c0) with thread-local init guards. Caller Render_Batch_Submit. Hypothesis."
+ },
+ "signature": {
+  "id": "render.batch_resolve_instance_records",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 8B 81 D8",
+  "match": "0x143e83aa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e83aa0",
+  "kind": "func_start",
+  "names": [
+   "Render_Batch_ResolveInstanceRecords"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143e83aa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143e83aa0.c;xref:0x143d4d7e2",
+   "notes": "V7934 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

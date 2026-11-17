@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Http_ValidSessionHandleCreateSessionURI",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14404cae0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-HTTP/V",
+  "notes": "named from its log messages (channel HTTP/V): '[%u] Valid Session Handle: Create session for URI %s (wide %ls)'"
+ },
+ "signature": {
+  "id": "game.http_valid_session_handle_create_session_uri",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 80 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 75 70 B8 C6 00 00 00",
+  "match": "0x14404cae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14404cae0",
+  "kind": "func_start",
+  "names": [
+   "Game_Http_ValidSessionHandleCreateSessionURI"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14404cae0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14404cae0.c",
+   "notes": "V6476 partial: better name Game_Http_BeginRequest; beginRequest: opens session, creates request, error handling"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14404cae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14404cae0.c",
+   "notes": "V7114 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_OptionalVector56_CopyAssign",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14136b330",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14136b330.c;xref:0x1427bd713",
+  "notes": "Copy-constructs an optional<vector<56-byte elements>> (engaged flag +0x20, allocator +0). Caller Sess_Parse_PlayerCarStateJson. cv1-verify partial: also assigns into an engaged optional"
+ },
+ "signature": {
+  "id": "core.optional_vector56_copy_ctor",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D7 48 89 CE 80 79 20 00 0F",
+  "match": "0x14136b330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14136b330",
+  "kind": "func_start",
+  "names": [
+   "Ne_OptionalVector56_CopyAssign"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x14136b330",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14136b330.c;xref:0x1427bd713",
+   "notes": "V3365 56-byte (7 qword) elems, engaged flag +0x20, allocator +0 ok; but function also has an assign branch when dest already engaged (copy-assign of optional), better name Ne_OptionalVector56_CopyAssign; callers Sess_Parse_PlayerCarStateJson + Game_Emails_GenerateEmails"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x14136b330",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14136b330.c;xref:0x1427bd713",
+   "notes": "V3981 56-byte (7 qword) elems, engaged flag +0x20, allocator +0 ok; but function also has an assign branch when dest already engaged (copy-assign of optional), better name Ne_OptionalVector56_CopyAssign; callers Sess_Parse_PlayerCarStateJson + Game_Emails_GenerateEmails"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x14136b330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14136b330.c;xref:0x1427bd713,0x140de8e17",
+   "notes": "V4131 copy-constructs when disengaged and assigns when engaged (flag +0x20, 0x38 elements); caller Sess_Parse_PlayerCarStateJson"
+  }
+ ],
+ "proofs": []
+}

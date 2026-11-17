@@ -1,0 +1,48 @@
+{
+ "schema": 1,
+ "name": "Ne_Make_StrFromCStr",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441974e0",
+  "level": "L3",
+  "subsystem": "core",
+  "proto": "uint32_t Ne_Make_StrFromCStr(NeStr **out, const char *s, uint32_t flags, uintptr_t len)",
+  "evidence": "decomp:work/exe/decomp/1441974e0_nestr_from_cstr.c;xref:0x14019f9ee,0x14019fbae,0x14019fd74,0x14019ff38,0x1401a00fc,0x1401a02e9,0x1401a46a6,0x1401a46dd+7641;doc:research/exe.md#3.4;trace:T000/run1:56",
+  "notes": "creates/updates a refcounted NeStr from a C string; runtime: produced the mod_menu id"
+ },
+ "signature": {
+  "id": "core.nestr_from_cstr",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 44 89 C6 48 89 CF",
+  "match": "0x1441974e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441974e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Make_StrFromCStr"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "exe-agent",
+    "how": "static"
+   },
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "T000/run1",
+    "how": "runtime scan, 1 hit"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/swofty_core.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

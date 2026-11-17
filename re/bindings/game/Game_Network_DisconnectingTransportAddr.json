@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_DisconnectingTransportAddr",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144092f10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): 'Disconnecting from transport addr %s'"
+ },
+ "signature": {
+  "id": "game.network_disconnecting_transport_addr",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x144092f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144092f10",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_DisconnectingTransportAddr"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144092f10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144092f10.c",
+   "notes": "V6521 better name Game_Network_MigrateConnections: method migrateConnections (host=%d, %d dropped), drops connections, disconnect transport addr, removeConnectionFromStore (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144092f10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144092f10.c",
+   "notes": "V7154 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

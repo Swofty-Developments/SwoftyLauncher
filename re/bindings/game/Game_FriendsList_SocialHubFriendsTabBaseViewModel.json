@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_FriendsList_SocialHubFriendsTabBaseViewModel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141dffe30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FRIENDS_LIST",
+  "notes": "named from its log messages (channel FRIENDS_LIST): 'SocialHubFriendsTabBaseViewModel: we got %I64u platform friends from F1OS'"
+ },
+ "signature": {
+  "id": "game.friends_list_social_hub_friends_tab_base_view_model",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 04 00 00 C5 F8 29 B4 24 F0 03 00 00 48 89 D3 49 89 CF",
+  "match": "0x141dffe30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141dffe30",
+  "kind": "func_start",
+  "names": [
+   "Game_FriendsList_SocialHubFriendsTabBaseViewModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141dffe30",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141dffe30.c",
+   "notes": "V5227 1396-line friends-list builder (platform + EA friends from F1OS, blocked exclusion, GetFriends error); log is one step. Better Game_FriendsList_BuildFriendsListFromF1OS (vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141dffe30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141dffe30.c",
+   "notes": "V7272 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

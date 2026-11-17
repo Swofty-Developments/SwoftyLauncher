@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GameSurfacePackSystem_SetAllowConstruction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142df4cf0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name setAllowConstruction (class from the log channel); log channel FADE_REQUESTS: 'setAllowConstruction = %d'"
+ },
+ "signature": {
+  "id": "game.game_surface_pack_system_set_allow_construction",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 CE C6 81 28 10 00 00 00",
+  "match": "0x142df4cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142df4cf0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSurfacePackSystem_SetAllowConstruction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142df4cf0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142df4cf0.c",
+   "notes": "V5458 207-line function: fade-out request, loading_location, Story_GetCurrentEvent, session scan; setAllowConstruction log is one part; better Game_GameSurfacePackSystem_UpdateAllowConstruction"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142df4cf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142df4cf0.c",
+   "notes": "V6898 207 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

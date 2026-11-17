@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Sess_SortAssignGarages_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a3f4c0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "xref:0x142d4a7a7;doc:research/grid24-cap.md#2;decomp:re/decomp/142a3f4c0.c",
+  "notes": "stub to .data1 body 0x14d95f6b0 (sorts sys+0x1f0 garages, then assigns); black box cs-verify: sorts vector sys+0x1f8..+0x200, then conditionally Sess_Assign_GarageSlotsByClass, then posts a bus message"
+ },
+ "signature": {
+  "id": "session.sort_garages_thunk",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 86 19 01 00 00 01 48 89 F1 E8",
+  "match": "0x142d4a7a6",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142a3f4c0",
+  "kind": "func_start",
+  "names": [
+   "Sess_SortAssignGarages_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x142a3f4c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a3f4c0.c;xref:0x142d4a7a6",
+   "notes": "V4040 5-byte thunk to 0x14d95f6b0: sorts vector sys+0x1f8..0x200 (introsort), conditionally Sess_Assign_GarageSlotsByClass, posts bus message; sole caller Sess_Loader_Update (not claimed)"
+  }
+ ],
+ "proofs": []
+}

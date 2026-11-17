@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDInProgressTile",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f3bec0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Build_RnDInProgressTile(void * self,char *a2)",
+  "evidence": "decomp:re/decomp/141f3bec0.c;xref:0x141f3b2db;xref:0x141f3b2ed",
+  "notes": "myteam-g1: Builds the in-progress R&D tile: department_name, lng_rnd_dept_%s, lng_rnd_research_delayed; \"INVALID UPGRADE\" guard."
+ },
+ "signature": {
+  "id": "career.build_rn_din_progress_tile",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 F8 1A 00 00",
+  "match": "0x141f3bec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f3bec0",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDInProgressTile"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141f3bec0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f3bec0.c;xref:0x141f3b2db;xref:0x141f3b2ed",
+   "notes": "V10017 In-progress tile with department_name, delivery_days, lng_rnd_research_delayed, INVALID UPGRADE."
+  }
+ ],
+ "proofs": []
+}

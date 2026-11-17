@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SkippingLightsMPReasons",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d8fcc0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): 'Skipping lights MP reasons'"
+ },
+ "signature": {
+  "id": "game.network_skipping_lights_mp_reasons",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 C5 F8 29 74 24 40 C5 F8 28 F2 48 89 D6 48 89 CF",
+  "match": "0x142d8fcc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d8fcc0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SkippingLightsMPReasons"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d8fcc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142d8fcc0.c",
+   "notes": "V5425 StartLights/HUD-hide/replay-reset session state update (327 lines), skipping-lights is one branch; better Game_Flow_SessionStateStartLights_OnStateUpdate"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142d8fcc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d8fcc0.c",
+   "notes": "V6894 327 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

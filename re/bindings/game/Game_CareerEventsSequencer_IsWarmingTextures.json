@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventsSequencer_IsWarmingTextures",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c74070",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=CareerEventsSequencer::isWarmingTextures; log channel CUTSCENE_TEXTURE_CONTROL_VERBOSE: '>>>>CareerEventsSequencer::isWarmingTextures FALSE timeout > 30.0f'"
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_is_warming_textures",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 03 00 00 C5 78 29 BC 24 00 03 00 00 C5 78 29 B4 24 F0 02 00 00 C5 78 29 AC 24 E0 02 00 00 C5 78 29 A4 24 D0 02 00 00 C5 78 29 9C 24 C0 02 00 00 C5 78 29 94 24 B0 02 00 00 C5 78 29 8C 24 A0 02 00 00 C5 78 29 84 24 90 02 00 00 C5 F8 29 BC 24 80 02 00 00 C5 F8 29 B4 24 70 02 00 00 48 89 D7",
+  "match": "0x140c74070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c74070",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventsSequencer_IsWarmingTextures"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c74070",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c74070.c;xref:0x140c6ace7",
+   "notes": "V4600 better name Game_CareerEventsSequencer_Update: giant per-frame update (strings update m_loadingEnabled/setWorldsToLoad/fade/isWarmingTextures inlined), not isWarmingTextures itself"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140c74070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c74070.c",
+   "notes": "V7163 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

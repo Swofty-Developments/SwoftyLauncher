@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UIHubTrace_AcceptingInputHubInputFlag",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143803d90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-UIHubTrace",
+  "notes": "named from its log messages (channel UIHubTrace): '%zu [Input Flag Change] AcceptingInput=%d  HubInputFlag=%d  HubInputAllowed=%d'"
+ },
+ "signature": {
+  "id": "game.ui_hub_trace_accepting_input_hub_input_flag",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 88 91 98 00 00 00",
+  "match": "0x143803d90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143803d90",
+  "kind": "func_start",
+  "names": [
+   "Game_UIHubTrace_AcceptingInputHubInputFlag"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143803d90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143803d90.c",
+   "notes": "V6263 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

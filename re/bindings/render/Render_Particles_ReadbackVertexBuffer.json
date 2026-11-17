@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_ReadbackVertexBuffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143af8fd0",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143af8fd0.c;xref:0x143b7c283",
+  "notes": "Particle system: maps the particle vertex buffer (self+0xa5b718) and copies up to self+0xa5b708 bytes of particle data; WARN 'Couldn't retrieve memory from mapped vertex buffer in the particle system'. Caller Ne_Gfx2Renderer_RenderFrame. | #587: L2 by lead-authorised promotion for lane owner overlay (independent agree V2846)"
+ },
+ "signature": {
+  "id": "render.particles_readback_vertex_buffer",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 89 18 B7 A5",
+  "match": "0x143af8fd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143af8fd0",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_ReadbackVertexBuffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Render_Particles_ReadbackVertexBuffer",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143af8fd0.c;xref:0x143af8fd0",
+   "notes": "V2846 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

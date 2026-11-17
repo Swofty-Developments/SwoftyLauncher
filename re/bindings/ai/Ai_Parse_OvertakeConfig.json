@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Ai_Parse_OvertakeConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14065de80",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Parse_OvertakeConfig(void **slots, void *driver_row)",
+  "evidence": "decomp:re/decomp/14065de80.c;xref:0x14065de52",
+  "notes": "Binds 19 overtake.* field slots (Gdb_Get_FieldInt 0x1445a2cf0 per key) into slots[0..0x12]: attacker_close_enough_car_lengths, braking_zone_abort_overtake_time, close_range_car_lengths_to_continue/_to_start_overtake, oppertunist_overtake_time, oppertunist_overtake_track_speed_difference, danger_overtake_continue/full_heat/initiate_time_adjustment, danger_overtake_pull_out_time, danger_overtake_buffer, regular_overtake_continue/full_heat/initiate_time_adjustment, regular_overtake_pull_out_time, overlap_percentage, concede_speed_diff, concede_slowdown_speed_diff, concede_time_vs_behind. Only caller Ai_Parse_DriverConfig 0x14065dc50 with slots = AiDriverConfig+0x158 (..+0x1e8), whose row path is 'ai_driver_config' (Ai_DriverConfig_InitDefault 0x14249a4f0 builds that string). (corrected 2026-11-14: source is ai_driver_config, not ai_vehicle_config) No unique byte signature (body identical to sibling section binders). L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.parse_overtake_config",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 8F F0 01 00 00 48 89 F2 E8",
+  "match": "0x14065de52",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14065de80",
+  "kind": "func_start",
+  "names": [
+   "Ai_Parse_OvertakeConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x14065de80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14065de80.c;xref:0x14065de52",
+   "notes": "V7320 name matches log/pretty-function string and body; sibling-consistent"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14065de80",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14065de80-0x14065e03d;xref:0x14065de52",
+   "notes": "V10600 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x14065de52 in Ai_Parse_DriverConfig with rcx = rdi+0x158. 2 args. 19 calls to Gdb_Get_FieldInt 0x1445a2cf0 with the overtake.* keys, stored to consecutive slots."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Damage_SetPartsByNames",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f14a60",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f14a60.c;xref:0x142bf0442,0x142bf41d1",
+  "notes": "(?, vehicle, const char *names[], float level xmm3) For each name in the list finds the matching damage part in [[vehicle+8]+0x58]+0x5e0 list (+0x58..+0x60, stride 0x60, name +0x10) and sets it to clamp(level,0,1)*part max (+0x5a u16) via 0x144652780(part,value,1). 17 callers: Sess_RedFlagSystem_PerformRepairs, Game_RepairTimes_OnVehicleStatusFadeIn, DRS markup. Addon: repair/damage a car by part names."
+ },
+ "signature": {
+  "id": "car.damage_set_parts_by_names",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 48 8B 42 08 48",
+  "match": "0x142f14a60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f14a60",
+  "kind": "func_start",
+  "names": [
+   "Car_Damage_SetPartsByNames"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f14a60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f14a60.c;xref:0x143584995,0x142bf0442,0x142bf41d1",
+   "notes": "V3705 Part list [[vehicle+8]+0x58]+0x5e0 (+0x58..+0x60), name strcmp 14535d850, value = level * u16 at part+0x5a, applied via 144652780(part,value,1); callers PerformRepairs, RepairTimes_OnVehicleStatusFadeIn, DRS CollectZoneMarkup verified."
+  }
+ ],
+ "proofs": []
+}

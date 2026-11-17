@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_Get_ModelNodeId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a3d780",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_Get_ModelNodeId(const char *name)",
+  "evidence": "decomp:re/decomp/143a3d780.c;xref:0x14017f9fa,0x14017fa31,0x14017fa68,0x14017fa9f,0x14017fad6,0x1401855f3,0x140185976,0x140185ac8,0x140185c3a,0x140185c93",
+  "notes": "Global name -> id interning (name kept: it is L2 upstream under this name). Generic, not only model nodes (verify-e/verify-d: callers also pass CutSceneScript, Grading Preset, OVERLAY): djb2 of the C string (seed 0x1505, *33+c), lookup FUN_143a3df70(hash, name) under the shared read lock 0x14618ce18; on miss takes the write lock, looks up again and inserts the string into the name arena (g 0x14618ce20, 0x20000-byte blocks from allocator 0x14618ce10), returning the new id. Ids index the name table [0x14618ce08]+8 (16-byte entries), the same id space Game_Scene_FindByName and scene +0xe8 use. ~1000 callers. (used by vmknolle parts-detach)"
+ },
+ "signature": {
+  "id": "game.get_model_node_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 49 89 CE 0F B6 09",
+  "match": "0x143a3d780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a3d780",
+  "kind": "func_start",
+  "names": [
+   "Game_Get_ModelNodeId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "func",
+   "item": "0x143a3d780",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_c/decomp/143a3d780.c;xref:0x14017f9fa,0x14017fa31,0x1401c939e,0x140c72b16,0x140198c12",
+   "notes": "V1054 global name-interning registry: djb2 hash, lookup under lock 0x14618ce18, insert if missing, returns id; callers pass bone/node names but also 'CutSceneScript', 'Grading Preset', 'Sun Rotation', 'OVERLAY', 'number' -> generic string id, not model-node specific; proto ok"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-d",
+   "kind": "func",
+   "item": "0x143a3d780",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_d/decomp/143a3d780.c;decomp:work/verify_d/decomp/1401a4810.c;xref:0x14017f9fa,0x1401855f3",
+   "notes": "V1076 u32 f(const char*) matches, but it is the generic global name intern: djb2 hash, lookup in table 0x14618ce18, on miss copies string and appends (get-or-create id); same table SceneManager::findScene uses for scene names, 999 refs -> 'ModelNodeId' is too narrow"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-e",
+   "kind": "func",
+   "item": "0x143a3d780",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_e/decomp/143a3d780.c;xref:0x14017f9fa,0x14017fa31,0x1401855f3,0x140198780 (999 call sites)",
+   "notes": "V1080 djb2 hash (5381,*33+c) of C string, locked lookup in interned-name table, on miss copies string, appends {ptr,hash} and inserts into hash map; returns uint32 index -> name-id interning, proto uint32_t(const char*) matches"
+  }
+ ],
+ "proofs": []
+}

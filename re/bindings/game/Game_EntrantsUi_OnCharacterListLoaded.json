@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_EntrantsUi_OnCharacterListLoaded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424bacc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int64_t Game_EntrantsUi_OnCharacterListLoaded(void *ctx, const void *message)",
+  "evidence": "decomp:re/decomp/1424bacc0.c;xref:0x1424b6e94,0x1424b9346,0x1424cf3a0",
+  "notes": "GameCharacterListLoaded handler (registered with 0x143987810/0x143988350 under that name; the message, vtable 0x14578d548, is posted by the character loader at 0x14247e28a): resolves the VM node character_list and rebuilds it from the character vector at message+0x10 (begin +0x08, end +0x10, 0x38-byte rows) through 0x1424f2b10, which clears the node and calls 0x1424f1d70 per row; ctx is unused; returns 0. In the open game lane until entrants-re sorts it. Raised by native-1990 for the F1 1990 per-career agent (doc:/mnt/work/.f1-1990/addon/native-requests.md#N8)"
+ },
+ "signature": {
+  "id": "game.entrants_ui_on_character_list_loaded",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 48 89 D6 48 8B 0D ?? ?? ?? ?? 48 8B 41 08 48 8D 50 08 48 85 C0 48 8D 05 ?? ?? ?? ?? 48 0F 44 D0 4C 8D 05 ?? ?? ?? ?? 49 B9 01 08 00 00 00 00 00 05 66 0F 1F 84 00 00 00 00 00 45 0F B6 10 45 8D 5A DD 41 83 FB 3A 77 06 4D 0F A3 D9 72 1C 45 85 D2 74 05 49 FF C0 EB E2 C7 44 24 24 8D 8D E6 35",
+  "match": "0x1424bacc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424bacc0",
+  "kind": "func_start",
+  "names": [
+   "Game_EntrantsUi_OnCharacterListLoaded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/agent_character.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-ui-verify",
+   "kind": "func",
+   "item": "Game_EntrantsUi_OnCharacterListLoaded",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424bacc0.c;decomp:re/decomp/1424f2b10.c;xref:0x1424b6e94,0x1424b9346,0x1424cf3a0,0x14247e28a,0x1424bad8d;imm:0x35e68d8d;sig:game.entrants_ui_on_character_list_loaded",
+   "notes": "V0915 rcx is overwritten at 0x1424bacc9 (ctx unused), rdx kept in rsi; node resolved by djb2 0x35e68d8d = character_list; calls 0x1424f2b10(tmp, *(message+0x10), node) at 0x1424bad8d; returns 0. No direct calls: lea refs 0x1424b6e94 (registered via 0x143987810) and 0x1424b9346 (via 0x143988350), both with name 0x14578d558 GameCharacterListLoaded; 0x1424cf3a0 is slot 1 of vtable 0x14578d548 returning that name; 0x14247e28a stores that vtable into a 0x18-byte message whose +0x10 is the vector object. Wording: begin/end +0x08/+0x10 are on the object *(message+0x10). 0x1424f2b10 clears the node then calls 0x1424f1d70 per 0x38-byte row. sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,101 @@
+{
+ "schema": 1,
+ "name": "Sess_PitStopUpdateJob_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403c06a0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_PitStopUpdateJob_Update(void *job)",
+  "evidence": "decomp:re/decomp/1403c06a0.c;xref:0x1456236b8",
+  "notes": "Pit stop update job, vtable slot 3 (ptr 0x1456236b8 in the table at 0x1456236a0; no direct calls). job+0x08 PitStopInstance, job+0x10 float dt. Returns early while PitStopInstance+0x64 is set. At 0x1403c0add it scales dt by PitStopInstance+0x3bc, the crew rate (while job+0x14 is 0 the sequence evaluate at 0x1403c07a1-0x1403c07d4 runs first, and its Start/Stop events can rewrite +0x3bc before that read), runs the PitStopLogic update (+0x330 vt+0x18) with the scaled dt, then Game_PitStopActionObserver_SetTransitionSequence (observer at +0x370). While +0x65 is clear (the transition call is skipped too while it is set) it then rewrites +0x3bc as factor x +0x33c (0x1403c1ab0, 0x1403c1f73), the factor set by the transition at +0x380 (1.0 by default; other transitions use other constants and clamped catch-up ratios); +0x33c is the base rate. Game_PitStopLogic_NeSequenceClipTargetImpl writes the crew speed from the pit lane car record *(pitlane+0x68+car*0x10) into both +0x33c (logic +0x14c, logic at +0x1f0) and +0x3bc on the sequence's Start event; Stop puts both back to 1.0, and so does SetTransitionSequence on every state change or forced call (on both sides of its +0x388 test), so a rate kept in +0x33c lasts only until the next state change, Start or Stop. So a rate written only to +0x3bc applies to the frame that reads it and is replaced at the end of the call; a rate that should persist goes in +0x33c. The scaled dt then advances the sequence instances: the crew sequence +0x3b0 while its flags +0x74 & 0x21 are clear, and +0x398/+0x3a0/+0x3a8 only while the bytes +0x390/+0x391/+0x392 are set (and their flags allow), each by instance+0x5c (the sequence time, float) += scaled dt x global scale (0x146046628) x resource+0x54 (the resource time scale). In game the time runs in seconds (the 1990 pit stop log: the crew speed, written by the Start event at 13/30 s of F1StartJobDoStandardStop258, is already set when the time reads 0.5), so +0x54 is about 1, not a frame rate. The instance's resource is instance+0x08, its name index resource+0x38 (g_Ne_NameTable); the update also reads a second name index at resource+0x3c (0x1403c0d4c)."
+ },
+ "signature": {
+  "id": "session.pit_stop_update_job_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 70 02 00 00 C5 78 29 BC 24 60 02 00 00",
+  "match": "0x1403c06a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403c06a0",
+  "kind": "func_start",
+  "names": [
+   "Sess_PitStopUpdateJob_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "rules",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-pit",
+   "kind": "func",
+   "item": "Sess_PitStopUpdateJob_Update",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1403c06a0.c;decomp:re/decomp/1403c4ae0.c;decomp:re/decomp/1403c69e0.c;decomp:re/decomp/1403bbda0.c;decomp:re/decomp/1403bc300.c;decomp:re/decomp/1403b9960.c;decomp:re/decomp/1403b36a0.c;decomp:re/decomp/143660b60.c;xref:0x1456236b8,0x1403c4bae,0x1403c72c0,0x1403c72c7,0x1403c0add,0x1403c1ab0,0x1403c1f73",
+   "notes": "V2162 Blind re-derive at 073dcf0f. Agreed: address (.pdata 0x1403c06a0-0x1403c23ae), name, proto (only rcx is read, no rdx/r8/r9 before a write, nothing returned), and the job layout. The only reference is the absolute pointer 0x1456236b8, slot 3 of the 4-slot table 0x1456236a0 (the next table 0x1456236c0 is referenced on its own by 0x1403d52e0/0x1403d9020); a rel32 scan of .xtls and .data1 finds no call or jmp. 0x1403c4ae0 fills the 0x20-byte jobs (vtable 0x1456236a0, 5 lea sites): +0x08 the instance from the list entry +8, +0x10 (float) of the double dt, +0x14 a bool the update copies to inst+0x65, +0x18 a pointer. The instance is the PitStopInstance: its ctor 0x1403c69e0 sets inst+0x1f0 = inst (PitStopLogic embedded at +0x1f0, owner at logic+0) and inst+0x378 = inst (PitStopActionObserver at +0x370, owner at +8) at 0x1403c72c0/0x1403c72c7, and PitStopInstance::playSequence 0x1403b36a0 writes +0x3b0. Returns early on job+8 null, +0x64 set, or the sequence-count byte <= +0xc0 and +0xc1. At 0x1403c0add dt *= inst+0x3bc; +0x330 is logic+0x140, the current PitStopLogic state that Game_PitStopLogic_ChangeState 0x1403b9960 swaps, and its vt+0x18(state, logic, scaled dt) result goes to ChangeState; with +0x65 clear it calls SetTransitionSequence(inst+0x370, +0x328, byte +0x32c, then cleared). inst+0x3b8 += scaled dt; +0x5c += scaled dt * static 0x146046628 (lazy 1.0) * resource+0x54 for +0x398/+0x3a0/+0x3a8/+0x3b0 with (+0x74 & 0x21) == 0; resource = instance+8 (0x143660b60 sets it and seeds +0x58/+0x5c from resource+0x40). Wrong (1), the rate: this function itself rewrites inst+0x3bc every frame that +0x65 is clear. At 0x1403c1ab0 and 0x1403c1f73, [inst+0x378]+0x3bc = factor * inst+0x33c. The factor comes from a switch on the transition at inst+0x380 (jump table 0x145624cc8: 1.0 for 4, 5, 12, 13 and out of range; the other transitions use car-to-crew distance terms). This runs after dt was scaled, so it sets the next frame's rate. The base rate is +0x33c: the Start event of Game_PitStopLogic_NeSequenceClipTargetImpl writes the car record's float +0x00 to both logic+0x14c (= inst+0x33c) and owner+0x3bc (1.0 for car >= 27); Stop writes 1.0 to both; and Game_PitStopActionObserver_SetTransitionSequence also resets both to 1.0 when observer+0x18 is set. A write to +0x3bc alone lasts one frame; scale +0x33c. Wrong (2): +0x398, +0x3a0 and +0x3a8 advance only while the bytes +0x390, +0x391 and +0x392 are set; +0x3b0 has no such gate. Nit: transitions 6, 7, 14 and 15 also read a second id, resource+0x3c, through g 0x14618ce08 (0x1403c0d4c; atoi of the name from char 3, / 30)."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-pit",
+   "kind": "sig",
+   "item": "session.pit_stop_update_job_update",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/1403c06a0.c;xref:0x1403c06a0",
+   "notes": "V2163 sigcheck --exe --only on d873a1c8: one match in .xtls at 0x1403c06a0, kind func_start, anchor 0 resolves to 0x1403c06a0, the .pdata start of the 0x1403c06a0-0x1403c23ae body (push r15/r14/r12/rsi/rdi/rbp/rbx; sub rsp,0x270; vmovaps [rsp+0x260],xmm15); names Sess_PitStopUpdateJob_Update, and the functions row's sig column carries the same id."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-pit2",
+   "kind": "func",
+   "item": "0x1403c06a0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1403c06a0.c;decomp:re/decomp/1403c4ae0.c;decomp:re/decomp/1403bbda0.c;decomp:re/decomp/1403bc300.c;decomp:re/decomp/14366b6c0.c;decomp:re/decomp/14366b420.c;decomp:re/decomp/1403b36a0.c;decomp:re/decomp/143660b60.c;xref:0x1456236b8,0x1403c0add,0x1403c0b14,0x1403c1ab0,0x1403c1f73,0x1403c07d4,0x1403c72c0,0x1403c72c7",
+   "notes": "V2166 Blind re-derive at aa966ecc. Agreed: address is the .pdata start (0x1403c06a0-0x1403c23ae); the only reference is the pointer at 0x1456236b8, slot 3 of the table at 0x1456236a0, no rel32 call or jmp; 0x1403c4ae0 fills the 0x20-byte jobs with +0x08 = the pit stop instance and +0x10 = the frame time double cast to float (+0x14 bool is copied to inst+0x65), so job+0x08 instance and job+0x10 float dt hold; proto void(void *job) fits (prologue and decompile use only rcx); early return on inst+0x64; vmulss by [rsi+0x3bc] at 0x1403c0add; state [+0x330] vt+0x18(state, inst+0x1f0, dt) then Game_PitStopLogic_ChangeState; +0x380 is observer(+0x370)+0x10, set by SetTransitionSequence; the writes at 0x1403c1ab0 and 0x1403c1f73 go to [inst+0x378]+0x3bc = factor x +0x33c, and the init 0x1403c69e0 stores the instance into +0x1f0 and +0x378 (0x1403c72c0, 0x1403c72c7), so logic, observer owner and target are the same instance; the clip target at +0x1f8 (vtable 0x14561d4c0, slot 6 = 0x1403bbda0, logic = +0x1f0) writes dword 0 of *(*(inst+0x3c0)+0x98+0x68+car*0x10) to logic+0x14c (= +0x33c) and +0x3bc on 'Start' (1.0 when car >= 0x1b) and 1.0 to both on 'Stop'; sequence advance from 0x1403c0b1a (flags +0x74 & 0x21, bytes +0x390..+0x392, global 0x146046628 static-initialised to 1.0, resource+0x54) matches; ctor 0x143660b60 stores the resource at instance+0x08 and createInstance logs resource+0x38. Wrong or imprecise: (1) '+0x3bc as it is on entry': while job+0x14 is 0 the call first evaluates +0x398/+0x3a0/+0x3a8/+0x3b0 with 0x14366b6c0 (0x1403c07a1-0x1403c07d4); Game_PitStopInstance_PlaySequence binds the +0x3b0 clips to the clip target +0x1f8, and 0x14366b6c0 runs the event-key evaluator 0x14366b420 (track vt+0x10) over the frames advanced last call, so a Start or Stop crossed there can rewrite +0x3bc and +0x33c before 0x1403c0add; the dt scale is the value after that evaluation, and in such a frame a value written only to +0x3bc before the call is lost rather than applied. (2) SetTransitionSequence is skipped too while +0x65 is set (je 0x1403c0c98 at 0x1403c0b14), not only the rewrite. (3) The factor list is incomplete: cases 1/9 fall back to 2.0 (constant 0x1453ca8c8 loaded at 0x1403c1a98), cases 6/7/0xe/0xf give 1.2 (0x3f99999a, state 4) or clamped catch-up ratios of car distance and speed against the crew sequence's remaining time, cases 2/3 always 1.0. (4) SetTransitionSequence resets +0x33c and +0x3bc to 1.0 only when the state changes (or the force byte is set) and observer+0x18 (+0x388) is non-zero."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-pit2",
+   "kind": "sig",
+   "item": "session.pit_stop_update_job_update",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/1403c06a0.c;xref:0x1403c06a0",
+   "notes": "V2167 sigcheck --exe --only on d873a1c8: one match in .xtls at 0x1403c06a0, kind func_start, anchor 0 resolves to 0x1403c06a0, the .pdata start; the pattern is the prologue push r15..rbx, sub rsp 0x270, vmovaps [rsp+0x260] xmm15 of Sess_PitStopUpdateJob_Update."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-pit3",
+   "kind": "func",
+   "item": "0x1403c06a0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1403c06a0.c;decomp:re/decomp/1403bc300.c;decomp:re/decomp/1403bbda0.c;decomp:re/decomp/1403c4ae0.c;decomp:re/decomp/14366b6c0.c;decomp:re/decomp/143660a60.c;decomp:re/decomp/143660b60.c;decomp:re/decomp/1403c69e0.c;xref:0x1456236b8,0x1403c4bae,0x1403c0b0b,0x1403c0cbd,0x1403bc3a2,0x1403bc3b3,0x1403bc47f,0x1403bc490,0x1403c1ab0,0x1403c1f73,0x1403c72c0,0x1403c72c7,0x1403c6f5e,0x1403c0d4c;imm:0x145624cc8;sig:session.pit_stop_update_job_update",
+   "notes": "V2170 Blind re-derivation. One claim is wrong: SetTransitionSequence does not need +0x388 to reset the rates. Its only gate is the early return at 0x1403bc32a-0x1403bc332 (same state and the force byte r8b clear; the update passes the old +0x32c, then clears it). After that it writes 1.0 to owner+0x33c and to *(owner+0x1f0)+0x3bc on both sides of the observer+0x18 (= +0x388) test: 0x1403bc3a2/0x1403bc3b3 when set, 0x1403bc47f/0x1403bc490 when clear. So both rates go back to 1.0 on every state change or forced call, and a rate kept in +0x33c lasts only until the next state change, Start or Stop. Everything else holds. The vtable at 0x1456236a0 (slot 3 = 0x1456236b8) is filled by job builder 0x1403c4ae0 with 0x20-byte jobs: +0x08 instance, +0x10 float dt, +0x14 byte copied to +0x65, +0x18 ptr. There are no rel32 refs, and proto void(void*) matches (only rcx is read at entry). It returns early on +0x64. The evaluate calls 0x1403c07a1-0x1403c07d4 go to 0x14366b6c0 on +0x398/+0x3a0/+0x3a8/+0x3b0, and only run when job+0x14 is 0. dt*=+0x3bc at 0x1403c0add, then +0x330 vt+0x18(state, +0x1f0, dt) and ChangeState at 0x1403c0b0b. SetTransitionSequence (+0x370) and the switch run only while +0x65 is clear (0x1403c0b10). The factor is 1.0 for states 0/4/5/12/13/>16 (jump table 0x145624cc8, const 0x145381184), and 1.5/2.0/4.0/1.2 or clamped ratios otherwise. The stores at 0x1403c1ab0/0x1403c1f73 go through +0x378, and ctor 0x1403c69e0 sets +0x378 and +0x1f0 to self. The clip target vtable 0x14561d4c0 (slot 6 = 0x1403bbda0) sits at +0x1f8 with +0x10 = logic. Start writes the first dword of the record at *(pitlane+0x68+car*0x10) (1.0 if car>=0x1b) to logic+0x14c and +0x3bc. Stop writes 1.0 to both. The advance holds for +0x5c += dt*rate*[0x146046628]*res+0x54 under the 0x21 flags and the +0x390-0x392 bytes. res = inst+0x08 (ctor 0x143660b60); its name index +0x38 is confirmed by the createInstance log 0x143660a60. The update itself reads a second name index at res+0x3c (0x1403c0d4c) for states 6/7/14/15. sigcheck passes."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-pit4",
+   "kind": "func",
+   "item": "0x1403c06a0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/exe/kbverify-pit4/1403c06a0.c;decomp:work/exe/kbverify-pit4/1403bbda0.c;decomp:work/exe/kbverify-pit4/1403bc300.c;decomp:work/exe/kbverify-pit4/14366b6c0.c;decomp:work/exe/kbverify-pit4/14366b420.c;decomp:work/exe/kbverify-pit4/1403c4ae0.c;decomp:work/exe/kbverify-pit4/1403b9960.c;xref:0x1456236b8,0x1403c4bae,0x1403c0add,0x1403c1ab0,0x1403c1f73,0x1403c0d4c,0x1403bc3a2,0x1403bc47f,0x1403c72c0,0x1403c72c7,0x1403c6f69;sig:session.pit_stop_update_job_update",
+   "notes": "V2171 Blind re-derivation. Only ref is the abs ptr 0x1456236b8 = slot 3 of the table at 0x1456236a0 (no rel32/riprel refs); 0x1403c4ae0 builds 0x20-byte jobs: +0x08 instance, +0x10 (float)dt, +0x14 bool (count>1), +0x18 ptr. Proto void(void*) holds: only rcx is read, callers ignore rax. Returns while +0x64 set; +0x65 = job+0x14; calls to 0x14366b6c0 at 0x1403c07a1-0x1403c07d4 on +0x398/+0x3a0/+0x3a8/+0x3b0 only when it is 0; 0x1403c0add vmulss [rsi+0x3bc]; *(+0x330) vt+0x18(state, inst+0x1f0, scaled dt) then ChangeState (so +0x330 is logic+0x140, the current state); +0x65 set skips SetTransitionSequence(inst+0x370, +0x328, +0x32c) and both +0x3bc writes. 0x1403c1ab0/0x1403c1f73 store factor x [r14+0x33c] to [*(+0x378)+0x3bc]; ctor 0x1403c69e0 sets +0x1f0 and +0x378 to the instance itself (0x1403c72c0/0x1403c72c7) and clip target +0x1f8 gets logic=inst+0x1f0 (0x1403c6f69), so logic+0x14c = +0x33c. Switch on +0x380: default 1.0, 8/16 4.0|1.5, 1/9 clamped ratio|2.0, 6/7/14/15 clamped ratio (1.2 in state 4), 2/3/10/11 1.0 plus crew-seq frame jump. Clip target: Start writes first dword of *(*(+0x3c0)+0x98+0x68+car*0x10) (1.0 if car>=0x1b) to logic+0x14c and +0x3bc; Stop writes 1.0 to both. SetTransitionSequence returns only if state same and not forced, else writes 1.0 to both on either side of observer+0x18 (= +0x388) test (0x1403bc3a2, 0x1403bc47f). Only other +0x33c writer in 0x140380000-0x140400000 is the ctor (1.0). Advance loop, 0x146046628, resource+0x54 and resource+0x3c name index at 0x1403c0d4c all as stated; resource+0x38 name reads seen in pit code (e.g. 0x1403b80b8), not in this function. Event path evaluate -> track vt+0x10 0x14366b420 -> track vt+0x30 0x14366b3e0 jumps into .data1 (0x150c8e840), so the last hop to the clip target is not followed statically. sigcheck 1/1 OK; kb_lint clean for the row once re/decomp is present."
+  }
+ ],
+ "proofs": []
+}

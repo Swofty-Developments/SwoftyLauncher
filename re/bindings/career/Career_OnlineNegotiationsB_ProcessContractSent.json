@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiationsB_ProcessContractSent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141001df0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141001df0.c;xref:0x140fffc86,0x141003a3b",
+  "notes": "Second family 'Process contract message sent': checks same-team / all-have-contracts / only-one-participating (Game_OnlineContractNegotiationsV_* checks), applies 0x140d7d3b0 and sends. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3042)"
+ },
+ "signature": {
+  "id": "career.online_negotiations_b_process_contract_sent",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC E0 00 00 00 48 89 D7 48 89 CE",
+  "match": "0x141001df0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141001df0",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiationsB_ProcessContractSent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_OnlineNegotiationsB_ProcessContractSent",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141001df0.c;xref:0x141001df0",
+   "notes": "V3042 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

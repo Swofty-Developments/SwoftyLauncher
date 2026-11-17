@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamCustomisationCorporateOverview_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a23810",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/141a23810.c;xref:0x141a23801;xref:0x14bc82239",
+  "notes": "myteam-g1: UI setup for customisation_my_team_corporate and customisation_my_team_overview screens."
+ },
+ "signature": {
+  "id": "ui.my_team_customisation_corporate_overview_init",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B B9 70 02 00 00",
+  "match": "0x141a23810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a23810",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamCustomisationCorporateOverview_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141a23810",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141a23810.c;xref:0x141a23801;xref:0x14bc82239",
+   "notes": "V9919 It is a screen-routing function: picks customisation_my_team_overview/corporate for My Team but also driver_career_* screen names (driver_select, driver_type_select, confirm_selections, team_select) and navigates; not only UI setup."
+  }
+ ],
+ "proofs": []
+}

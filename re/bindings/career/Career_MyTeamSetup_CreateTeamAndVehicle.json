@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamSetup_CreateTeamAndVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c2e560",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void (void *setup, void *data)",
+  "evidence": "decomp:re/decomp/140c2e560.c;xref:0x1420544de;xref:0x14205c9a8;xref:0x1422671a1",
+  "notes": "myteam-g2: Creates the My Team entrant from the completed setup data: removes the previous player team/vehicle (Ent_EntrantsSystem_RemoveTeam/RemoveVehicle using setup+0x2e0/0x2e4), builds the new team and car records from data (+0x14..+0xd8: names, colours, livery packed vec4 via Game_Customisation_GetPackedVec4WithKeyOverride), adds them with Ent_EntrantsSystem_AddTeam/AddVehicle, constructs Game_MyTeamDriverAttributeSet and Game_MyTeamTeamAttributeSet_FindOrCreate and applies Career_OwnerSetup_ApplySuit. Hook: the point where the My Team team record is created. CORRECTION(V9025): Core role right (RemoveTeam/RemoveVehicle, AddTeam 142474a60, AddVehicle 142476bd0, MyTeamDriverAttributeSet construct, TeamAttributeSet_FindOrCreate, ApplySuit). Offset detail is wrong: RemoveTeam uses setup+0x2e4 and RemoveVehicle uses setup+0x2e8 (not 0x2e0/0x2e4); setup+0x2e6 is the 0x3fff none check."
+ },
+ "signature": {
+  "id": "career.my_team_setup_create_team_and_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 0D 00 00",
+  "match": "0x140c2e560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c2e560",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamSetup_CreateTeamAndVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-d",
+   "kind": "func",
+   "item": "0x140c2e560",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c2e560.c",
+   "notes": "V9025 Core role right (RemoveTeam/RemoveVehicle, AddTeam 142474a60, AddVehicle 142476bd0, MyTeamDriverAttributeSet construct, TeamAttributeSet_FindOrCreate, ApplySuit). Offset detail is wrong: RemoveTeam uses setup+0x2e4 and RemoveVehicle uses setup+0x2e8 (not 0x2e0/0x2e4); setup+0x2e6 is the 0x3fff none check."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c2e560",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c2e560.c",
+   "notes": "V9495 Core right (RemoveTeam, FUN_142474a60 AddTeam, FUN_142476bd0 AddVehicle, attribute sets). Offsets wrong: team id at setup+0x2e4, vehicle id at +0x2e8, none check +0x2e6/+0x2ea (0x3fff), not 0x2e0/0x2e4."
+  }
+ ],
+ "proofs": []
+}

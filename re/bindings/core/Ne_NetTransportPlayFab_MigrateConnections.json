@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetTransportPlayFab_MigrateConnections",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440a0800",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetTransportPlayFab_MigrateConnections;xref:0x1440a08b6;decomp:re/decomp/1440a0800.c",
+  "notes": "cxx=neon::NeNetTransportPlayFab::migrateConnections; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_transport_play_fab_migrate_connections",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D6 48 89 CF 80 3D",
+  "match": "0x1440a0800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440a0800",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetTransportPlayFab_MigrateConnections"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_NetTransportPlayFab_MigrateConnections",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440a0800.c;xref:0x1440a0800",
+   "notes": "V2115 Logs host/dropped, sets host byte, drops each listed connection via vslot +0xd8"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_GameWeatherSystem_SetActiveSessionType",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438b9660",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_GameWeatherSystem_SetActiveSessionType(void *gws, int session_type, float time_scale)",
+  "evidence": "decomp:re/decomp/1438b9660.c;doc:re/db/subsystems/game.md;xref:0x142f6e458,0x1438b749e",
+  "notes": "GWS+0x1f1c dataset = table 0x14588ccf8[type-2] {1,2,0,3,3,3,3,3,4,4,4,4,4,5,6,7} else 0; on change TOD+0x26c4 = dataset, TOD+0xb42b = 1 (rebuild); GWS+0x1eec = FUN_1438c4f40(type)*scale; TOD+0x338+slot*0x288 playback speed; [GWS+0x1d88]+0x3f0a8c = (type != 18 Time Trial) (wx-drive, static)"
+ },
+ "signature": {
+  "id": "session.game_weather_system_set_active_session_type",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 F2 89",
+  "match": "0x1438b9660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438b9660",
+  "kind": "func_start",
+  "names": [
+   "Sess_GameWeatherSystem_SetActiveSessionType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb5-verify",
+   "kind": "func",
+   "item": "Sess_GameWeatherSystem_SetActiveSessionType",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438b9660.c;xref:0x142f6e458,0x1438b749e",
+   "notes": "V1980 table 0x14588ccf8 ints {1,2,0,3,3,3,3,3,4,4,4,4,4,5,6,7} idx type-2; +0x1f1c; TOD+0x26c4 = min(dataset,9), +0xb42b=1; +0x1eec; TOD+0x338+slot*0x288 double; +0x3f0a8c = type!=0x12"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Neos_SendingWebSocketString",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144443b50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NEOS",
+  "notes": "named from its log messages (channel NEOS): 'Sending web socket string: %s'"
+ },
+ "signature": {
+  "id": "game.neos_sending_web_socket_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 78 01 00 00 C7 81 2C 02 00 00 00 00 00 00",
+  "match": "0x144443b50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144443b50",
+  "kind": "func_start",
+  "names": [
+   "Game_Neos_SendingWebSocketString"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144443b50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144443b50.c;xref:0x1432ba8f6",
+   "notes": "V6605 better name Game_Neos_ConnectWebSocketUpdate: state machine eWaitForSignalRConnect/WebSocketStarted, invalid URL, http error; sending string log is one step"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144443b50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144443b50.c;xref:0x1432ba8f6",
+   "notes": "V7213 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

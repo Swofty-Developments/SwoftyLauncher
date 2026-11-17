@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CannedEvents_LoadPlayerFaultData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409b5fb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void(void *cfg)",
+  "evidence": "decomp:re/decomp/1409b5fb0.c",
+  "notes": "Loads canned_events.Faults/Failures/Accidents.RaceLengthPercentages and canned_events.player_data.fault_data (attributes with faultType and FaultChanceAttribute, race_length_point_thresholds, track_vo fault_imminent/occurred/fixed) and failure_data.track_vo (suspected, confirmed, innocuous, ai_control, retirement_destination). Fault types: Engine, Gearbox, MissingGear, GearJammed, ERS, DRS, Tyre, ERSInaccessibleModes, ERSSoftwareGlitch, EngineLeanFuel."
+ },
+ "signature": {
+  "id": "game.canned_events_load_player_fault_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 04 00 00 C5 F8 29 BC 24 70 04 00 00 C5 F8 29 B4 24 60 04 00 00 49 89 CF",
+  "match": "0x1409b5fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409b5fb0",
+  "kind": "func_start",
+  "names": [
+   "Game_CannedEvents_LoadPlayerFaultData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1409b5fb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409b5fb0.c",
+   "notes": "V4373 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

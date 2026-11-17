@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineContract_FirstPlayerFinishedTeamSelection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ffda70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
+  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'First player finished team selection'"
+ },
+ "signature": {
+  "id": "game.online_contract_first_player_finished_team_selection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 75 63 B8 24 01 00 00",
+  "match": "0x140ffda70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffda70",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineContract_FirstPlayerFinishedTeamSelection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x140ffda70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140ffda70.c;xref:0x1436c1d39",
+   "notes": "V4535 21KB negotiation flow controller (progress negotiations, team-select sequencing, holding screen); first-player log is one branch; better Game_OnlineContract_ProgressNegotiations"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140ffda70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ffda70.c;xref:0x1436c1d39",
+   "notes": "V7182 name fits; finding facts hold; 4 direct calls"
+  }
+ ],
+ "proofs": []
+}

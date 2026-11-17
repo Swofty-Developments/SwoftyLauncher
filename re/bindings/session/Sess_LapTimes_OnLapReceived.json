@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_LapTimes_OnLapReceived",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f32480",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-LAPTIMES;decomp:re/decomp/142f32480.c",
+  "notes": "named from its log messages (channel LAPTIMES): 'received lap %d, to vehicle %d, and session time was %f'"
+ },
+ "signature": {
+  "id": "session.lap_times_on_lap_received",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 0B 01 00 00",
+  "match": "0x142f32480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f32480",
+  "kind": "func_start",
+  "names": [
+   "Sess_LapTimes_OnLapReceived"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_LapTimes_OnLapReceived",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f32480.c;xref:0x142f32480",
+   "notes": "V1905 log strings confirmed by disassembly lea refs inside function"
+  }
+ ],
+ "proofs": []
+}

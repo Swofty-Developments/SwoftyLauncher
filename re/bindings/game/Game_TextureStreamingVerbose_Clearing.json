@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TextureStreamingVerbose_Clearing",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143eb8070",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name Clearing (class from the log channel); log channel TEXTURE_STREAMING_VERBOSE: '%s reducing quality flag'"
+ },
+ "signature": {
+  "id": "game.texture_streaming_verbose_clearing",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 04 00 00 C5 F8 29 BC 24 40 04 00 00 C5 F8 29 B4 24 30 04 00 00 48 8B 71 08",
+  "match": "0x143eb8070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143eb8070",
+  "kind": "func_start",
+  "names": [
+   "Game_TextureStreamingVerbose_Clearing"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x143eb8070",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143eb8070.c",
+   "notes": "V6295 partial: better name Game_TextureStreaming_AdjustQualityFactor; 7 KB texture-manager cache/quality-factor/purge logic; reducing-quality-flag is one log of many"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143eb8070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143eb8070.c",
+   "notes": "V7054 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

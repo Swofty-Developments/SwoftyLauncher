@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_WindowWin_ToggleFullScreen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439f7b80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1439f7b80.c;xref:0x1439f27df",
+  "notes": "cxx=NeWindowWin::toggleFullScreen; log channel WINDOW: 'NeWindowWin::toggleFullScreen: Old display mode = %d'"
+ },
+ "signature": {
+  "id": "core.window_win_toggle_full_screen",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC B8 01 00 00 48 89 CE 48 8B 81 E8 00 00 00",
+  "match": "0x1439f7b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439f7b80",
+  "kind": "func_start",
+  "names": [
+   "Ne_WindowWin_ToggleFullScreen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_WindowWin_ToggleFullScreen",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439f7b80.c;xref:0x1439f27df",
+   "notes": "V2007 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

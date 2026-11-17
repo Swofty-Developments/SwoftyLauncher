@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_SessionPostRaceConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407d7f90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: session.post_race.time_trial_replay_available, session.post_race.time_trial_replay_fastest_lap_available, session.post_race.time_trial_restart_available'"
+ },
+ "signature": {
+  "id": "game.read_session_post_race_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 03 00 00 C5 F8 29 B4 24 70 03 00 00 4C 89 4C 24 58",
+  "match": "0x1407d7f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407d7f90",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_SessionPostRaceConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1407d7f90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407d7f90.c",
+   "notes": "V4311 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

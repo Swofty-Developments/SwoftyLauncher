@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Gfx_BuildPipelineStateKeyMd5",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439d4c90",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439d4c90.c;xref:0x1424372fa",
+  "notes": "253-line open hash map find-or-insert keyed by FNV-1a string hash (helpers 0x143928ed0, 0x1439297a0). Callers 0x142435aa0, 0x142a476d0, 0x143b5e0e0, 0x143bebcf0 (renderer resource tables). Hypothesis. vp2-verify partial/disagree"
+ },
+ "signature": {
+  "id": "core.hash_map_find_or_insert_by_str",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 18 01 00 00 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 02",
+  "match": "0x1439d4c90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439d4c90",
+  "kind": "func_start",
+  "names": [
+   "Ne_Gfx_BuildPipelineStateKeyMd5"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439d4c90",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1439d4c90.c;xref:0x1424372fa",
+   "notes": "V7759 better name Render_Gfx_BuildPipelineStateKeyMd5: copies a state block, builds format array from up to 6 render-target slots (format byte, 1<<+0x3c) and finishes via Ne_Hash_Md5Transform/Finalize; no FNV-1a open hash map"
+  }
+ ],
+ "proofs": []
+}

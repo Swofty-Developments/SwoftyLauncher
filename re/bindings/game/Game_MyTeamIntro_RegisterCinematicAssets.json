@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamIntro_RegisterCinematicAssets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140264b90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void f(void *scene)",
+  "evidence": "decomp:re/decomp/140264b90.c;xref:0x1455efee0",
+  "notes": "myteam-g1: Lazy-inits a static cinematic descriptor and registers the My Team intro/outro assets: my_team_intro_2025(+_camera), my_team_intro_2025_outro(+_camera), my_team_crowd_2025, my_team_outro_2025."
+ },
+ "signature": {
+  "id": "game.my_team_intro_register_cinematic_assets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 04 00 00 C5 F8 29 BC 24 40 04 00 00 C5 F8 29 B4 24 30 04 00 00 48 89 CE 8B 05",
+  "match": "0x140264b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140264b90",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamIntro_RegisterCinematicAssets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140264b90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140264b90.c;str:\"my_team_intro_2025\"",
+   "notes": "V9460 Builds the My Team intro sequence: intro camera/intro, crowd, reporter1/2, car_reveal*, outro camera/outro; stores results at +0x840/+0x848. Also does car reveal and video queue, wider than claimed."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Gdb_Lookup_Key",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445a22f0",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "void **Gdb_Lookup_Key(const char *path)",
+  "evidence": "decomp:re/decomp/1445a22f0.c;xref:0x14065bda3,0x14065c103,0x14065c3a3,0x14065c673,0x14065cb2b,0x1407c5d26,0x1407c5e68,0x1407cecd9+206;doc:research/grid24-cap.md#1;decomp:re/decomp/1445a22f0.c;xref:0x14065bda3,0x1407c5d26,0x1407cecd9;doc:addons/career-editor/protocol/drivers.md#snapshot-section-drivers",
+  "notes": "lookup used by Gdb_Init_TableCursor FNV-1a-64 of the dotted path, robin-hood probe of the global database map (*0x146cc4278: mult +0xb8, keyvals +0xc0, info +0xc8, mask +0xd8, infoInc +0xe8, shift +0xec); returns &entry.value (the record pointer slot) or NULL on a miss (lVar2+i*0x10 == info); read-only. core/gamedb.cpp already calls it as void **(const char *)"
+ },
+ "signature": {
+  "id": "gamedb.lookup_key",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 49 B8 25 23 22 84 E4 9C F2 CB",
+  "match": "0x1445a22f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445a22f0",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Lookup_Key"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-drivers",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-5",
+   "kind": "func",
+   "item": "Gdb_Lookup_Key",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445a22f0.c;xref:0x1445a22f4,0x1445a22fe,0x1445a233f,0x1445a2354,0x1445a2360,0x1445a2372,0x1445a237c,0x1445a2383;sig:gamedb.lookup_key",
+   "notes": "V0698 sigcheck OK. FNV-1a-64 (0xcbf29ce484222325, 0x100000001b3), map *0x146cc4278: mult +0xb8, keyvals +0xc0, info +0xc8, mask +0xd8, infoInc +0xe8, shift +0xec, 0x10-byte entries; returns keyvals+i*0x10+8 or NULL when the index reaches info; no writes; 260 call sites incl. Gdb_Init_TableCursor 0x1445a25c0; native/src/core/assets/gamedb.cpp types it void **(const char *)"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-5",
+   "kind": "func",
+   "item": "Gdb_Lookup_Key",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445a22f0.c;xref:0x1445a22f4,0x1445a22fe,0x1445a233f,0x1445a2354,0x1445a2360,0x1445a2372,0x1445a237c,0x1445a2383;sig:gamedb.lookup_key",
+   "notes": "V0819 sigcheck OK. FNV-1a-64 (0xcbf29ce484222325, 0x100000001b3), map *0x146cc4278: mult +0xb8, keyvals +0xc0, info +0xc8, mask +0xd8, infoInc +0xe8, shift +0xec, 0x10-byte entries; returns keyvals+i*0x10+8 or NULL when the index reaches info; no writes; 260 call sites incl. Gdb_Init_TableCursor 0x1445a25c0; native/src/core/assets/gamedb.cpp types it void **(const char *)"
+  }
+ ],
+ "proofs": []
+}

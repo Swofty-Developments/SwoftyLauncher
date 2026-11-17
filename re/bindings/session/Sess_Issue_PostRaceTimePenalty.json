@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Issue_PostRaceTimePenalty",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143575400",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-RULES;decomp:re/decomp/143575400.c;xref:0x1505b712c,0x1505bba6c",
+  "notes": "Log channel RULES: 'ISSUING POST-RACE %.2f SECOND TIME PENALTY TO VEHICLE %d'"
+ },
+ "signature": {
+  "id": "session.issue_post_race_time_penalty",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 89 CF",
+  "match": "0x143575400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143575400",
+  "kind": "func_start",
+  "names": [
+   "Sess_Issue_PostRaceTimePenalty"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-b",
+   "kind": "func",
+   "item": "Sess_Issue_PostRaceTimePenalty",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143575400.c;xref:0x143575400",
+   "notes": "V1922 RULES channel + format confirmed"
+  }
+ ],
+ "proofs": []
+}

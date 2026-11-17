@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsControlsScreenViewModel_RebindAxis",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141dbee30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141dbee30.c;xref:0x141dbdd20",
+  "notes": "Controls screen: performs a rebind of an axis/action. Builds node path '#input_device.%hs.axis.%hs[%hs]' from device/axis names (param_2[1], *param_3), refuses in multiplayer with message 'rebind_not_allowed_mp' (Game_UiMessage_DisplayMessage), calls Game_Input_RebindAction and 0x141dc23f0, clears pending flags this+0xbf4/+0xc01/+0xc00/+0xcb9, logs GameInputModule::clearInputSnapshot(), fires 'enable_list', vcall +0xe0(0). Caller currently named Game_OptionsUI_SetDynamicTexturesUpdate (0x141dbd9d0, likely misnamed). Addon: hook to observe/override user rebinds (wheel axes, buttons). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2463)"
+ },
+ "signature": {
+  "id": "game.settings_controls_screen_view_model_rebind_axis",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC E8 01 00 00 C5 F8 29 BC 24",
+  "match": "0x141dbee30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141dbee30",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsControlsScreenViewModel_RebindAxis"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_SettingsControlsScreenViewModel_RebindAxis",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141dbee30.c;xref:0x141dbee30",
+   "notes": "V2463 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OsMetrics_CreateRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432b6e30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name createRecord (class from the log channel); log channel OS_METRICS: 'createRecord %d: %s, %s'"
+ },
+ "signature": {
+  "id": "game.os_metrics_create_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 4D 89 C5 49 89 D7",
+  "match": "0x1432b6e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432b6e30",
+  "kind": "func_start",
+  "names": [
+   "Game_OsMetrics_CreateRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1432b6e30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432b6e30.c;xref:0x1432b6e0c",
+   "notes": "V5891 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

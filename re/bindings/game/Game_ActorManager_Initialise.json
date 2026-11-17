@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ActorManager_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14018bdb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14018bdb0.c;xref:0x1455dfe90",
+  "notes": "Module slot 4 of vt 0x1455dfe70 (12 = Game_SceneManager_DestroyScene): creates ACTOR_* memory pools, job queue 'actor_jobs' via inline getDefaultJobPolicy (CPU info at 0x146ca5e30: count, mask +0x34, reserved +0x3c/+0x44; policy {u16 0x100, u8 group, u32 affinity, int threads}) -> 0x143ac3620, loads physics_bone_sim Default.pbsconfig and body_form Default.bfmconfig, reads Renderer.Gfx.platformSpecificModifiers / enablePrototypeModifiers. Logs POLICY line. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3173)"
+ },
+ "signature": {
+  "id": "game.actor_manager_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 48 89 CE 48 8B 0D",
+  "match": "0x14018bdb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14018bdb0",
+  "kind": "func_start",
+  "names": [
+   "Game_ActorManager_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_ActorManager_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/4018bdb0.c;xref:None",
+   "notes": "V3173 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

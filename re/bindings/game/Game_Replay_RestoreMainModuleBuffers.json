@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Replay_RestoreMainModuleBuffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c45d10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c45d10.c;xref:0x142c45fc1",
+  "notes": "Replay manager (this+0x40 = ReplaySystem): when backup buffers this+0x6b8 or this+0x6c8 are set, looks up the replay module named main in ReplaySystem+0x110 (vector +0x28..+0x30 of {name,module} stride 0x10, fallback list +0x48) and calls 0x1445ccaf0(main, this+0x6b0, this+0x6c0) to swap the main recording buffers back, then reset-if-flagged. Caller 0x142c45ec0. Addon: how to reach the main replay module and its buffer pair. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2339)"
+ },
+ "signature": {
+  "id": "game.replay_restore_main_module_buffers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 48 81 C1 58",
+  "match": "0x142c45d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c45d10",
+  "kind": "func_start",
+  "names": [
+   "Game_Replay_RestoreMainModuleBuffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d2-verify",
+   "kind": "func",
+   "item": "Game_Replay_RestoreMainModuleBuffers",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c45d10.c;xref:0x142c45fc1",
+   "notes": "V2339 module named at ReplaySystem+0x110 vec +0x28..+0x30 stride 0x10 fallback +0x48, 1445ccaf0(main,+0x6b0,+0x6c0), reset; also calls 142c422f0(this+0x158) first (unmentioned); caller 0x142c45fc1"
+  }
+ ],
+ "proofs": []
+}

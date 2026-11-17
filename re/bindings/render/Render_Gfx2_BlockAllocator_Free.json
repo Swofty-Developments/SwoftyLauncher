@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_BlockAllocator_Free",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439e7170",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439e7170.c;xref:0x1439bb546",
+  "notes": "Free of a block in a boundary-tag style allocator: nodes of 0x38 bytes (+0x31 flag 0x20 = free, +0x24 size, +0x28 neighbour offset), merges with free neighbours using a free list at +0x38; function-static TLS error list. 19 call sites in the graphics memory pools (0x1439cb4f0 etc.). Hypothesis."
+ },
+ "signature": {
+  "id": "render.gfx2_block_allocator_free",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 0F B6 42 31",
+  "match": "0x1439e7170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439e7170",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_BlockAllocator_Free"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439e7170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439e7170.c;xref:0x1439bb546",
+   "notes": "V7785 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

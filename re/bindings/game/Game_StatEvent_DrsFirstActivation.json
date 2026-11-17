@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_DrsFirstActivation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14377a0f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-STAT_EVENT_DRS",
+  "notes": "Log channel STAT_EVENT_DRS: 'DRS activated for the first time in this zone for driver %d'"
+ },
+ "signature": {
+  "id": "game.stat_event_drs_first_activation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 04 00 00 8B 5A 10",
+  "match": "0x14377a0f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14377a0f0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_DrsFirstActivation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x14377a0f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14377a0f0.c;xref:0x143779cf6",
+   "notes": "V6246 Is the STATEVENT writer for EventWriteActivateDRS (SectionId/F1WEventMode keys); the STAT_EVENT_DRS log is one line. Better name Game_StatEvent_WriteActivateDRS"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14377a0f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14377a0f0.c",
+   "notes": "V7108 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

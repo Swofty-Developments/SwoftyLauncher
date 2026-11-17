@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_IsCandidateOnContractedTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ffc990",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "bool (void *neg)",
+  "evidence": "decomp:re/decomp/140ffc990.c;xref:0x140ffc719;xref:0x140ffd972;xref:0x140ffda23",
+  "notes": "myteam-g2: For the candidate list at neg+0x2d0 (skipping entries the other player has contracted via Game_OnlineContractNegotiationsV_IsOtherPlayersContractEnding...) checks whether the first remaining pending entry (8-byte records at neg+0x2f0..0x2f8) has the same team key as the candidate contract (+0x58). Gate of Career_OnlineNegotiations_CheckPlayerTurnGate."
+ },
+ "signature": {
+  "id": "career.online_negotiations_is_candidate_on_contracted_team",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 81 F0 02 00 00",
+  "match": "0x140ffc990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffc990",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_IsCandidateOnContractedTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140ffc990",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ffc990.c;xref:0x140ffc719",
+   "notes": "V9632 Scans candidates (+0x2d0) via 140ffca90, compares pending 8-byte record (+0x2f0..) team key with candidate +0x58; matches claim."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_RndNotification_BuildDevComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14180caf0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/14180caf0.c;xref:0x141c7f653",
+  "notes": "myteam-g1: UI binding code; lng_rnd_department_dev_complete_title, regulation_change, supplier_upgrade_complete notification text. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_notification_build_dev_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 61 00 00",
+  "match": "0x14180caf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14180caf0",
+  "kind": "func_start",
+  "names": [
+   "Ui_RndNotification_BuildDevComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14180caf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14180caf0.c;xref:0x141c7f653",
+   "notes": "V9796 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

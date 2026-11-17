@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageMonitorTvFeedVM_OnActivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141fa0ae0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141fa0ae0.c;xref:0x1457622d8",
+  "notes": "Slot 13 of vt 0x145762270: garage car monitor / TV feed (view_model_data.garage_monitor_tvfeed): vehicles list, current_index / current_car / info, change_car_enabled, video f1_swipe_short.bk2 + HDR flag, logo, platform icon, current_standings (pos_str/points_str); thumbnails reason 0. Addon: garage monitor standings feed. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3225)"
+ },
+ "signature": {
+  "id": "game.garage_monitor_tv_feed_v_m_on_activate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 98 51 00",
+  "match": "0x141fa0ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fa0ae0",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageMonitorTvFeedVM_OnActivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_GarageMonitorTvFeedVM_OnActivate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/41fa0ae0.c;xref:None",
+   "notes": "V3225 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

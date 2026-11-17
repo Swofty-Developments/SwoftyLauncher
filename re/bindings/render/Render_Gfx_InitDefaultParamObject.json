@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_InitDefaultParamObject",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143be2500",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143be2500.c;xref:0x143be24e5",
+  "notes": "Constructor filling a default parameter object (vtable 0x14560e200): floats 1.0, 0.2, 1000.0, 0.5625, many unit vectors/identity quats. Called from Render_Gfx_InitFrameStateBlock and GroundCover mesh code. Hypothesis: default light/camera-like parameter block."
+ },
+ "signature": {
+  "id": "render.gfx_init_default_param_object",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 F0 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC CC CC CC CC CC 48",
+  "match": "0x143be24e5",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143be2500",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_InitDefaultParamObject"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143be2500",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143be2500.c;xref:0x143be24e5",
+   "notes": "V8279 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Remove_ActivitiesByKindUpToLevel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141265e40",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *activities_comp, char kind, uint16_t level, char inclusive)",
+  "evidence": "decomp:re/decomp/141265e40.c;xref:0x140dae09a;xref:0x1410f0472;xref:0x14126b900",
+  "notes": "myteam-g2: Collects the activity records (via 14126f540/141265cf0) whose kind byte (+0x10) equals kind and whose level (ushort +0xa) is below (or <=, if inclusive) the given level, then calls Game_CareerActivities_RemoveActivity on every entry in both activity lists of the current activity slot (comp+0x410, 0x80 stride; lists +0x40 with 200-byte and +0x60 with 0xd8-byte entries). Called when a driver contract window is opened or a driver is selected. Modder hook: removes scheduled activities."
+ },
+ "signature": {
+  "id": "career.remove_activities_by_kind_up_to_level",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 44 88 4C 24 2C",
+  "match": "0x141265e40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141265e40",
+  "kind": "func_start",
+  "names": [
+   "Career_Remove_ActivitiesByKindUpToLevel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141265e40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141265e40.c;xref:0x140dae09a;xref:0x1410f0472",
+   "notes": "V9696 Collects by kind byte +0x10 and level ushort +0xa (< or <= by flag) then removes; matches."
+  }
+ ],
+ "proofs": []
+}

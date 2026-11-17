@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqAdvanceItem_ReleaseNodes_3aaca0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423aaca0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/1423aaca0.c;xref:0x1422be953;xref:0x1422c04e0;xref:0x1422c21a3",
+  "notes": "myteam-g2: Destructor body of a department event / advance item VM (about 0x29 bytes of node holders): Vm_Release_Node cleanup. Generic."
+ },
+ "signature": {
+  "id": "vm.team_hq_advance_item_release_nodes_3aaca0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 CE 48 8D 1D ?? ?? ?? ?? 48 89 99 40 01 00 00",
+  "match": "0x1423aaca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423aaca0",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqAdvanceItem_ReleaseNodes_3aaca0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423aaca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423aaca0.c",
+   "notes": "V10176 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqContractsVM_ClearRows",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422f1b60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_TeamHqContractsVM_ClearRows(void *vm)",
+  "evidence": "decomp:re/decomp/1422f1b60.c;xref:0x14577d1a8",
+  "notes": "myteam-g1: Destroys all contract rows (0x9a8-byte elements from vm+0x2e0, count vm+0xc88 = 0) and unregisters the StartContractNegotiationsFlow handler (1422f1ad0)."
+ },
+ "signature": {
+  "id": "career.team_hq_contracts_vm_clear_rows",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 81 88 0C 00 00",
+  "match": "0x1422f1b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422f1b60",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqContractsVM_ClearRows"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422f1b60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422f1b60.c;xref:0x14577d1a8",
+   "notes": "V10102 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Fmodf",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1453556a4",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1453556a4.c;xref:0x140184cb0,0x1405fed10",
+  "notes": "CRT fmodf(x,y) (error path name 'fmodf' via 0x145370600). Callers: AI parallel job, track spline route ends, auto-cross ruleset placement, camera clip sync."
+ },
+ "signature": {
+  "id": "core.crt_fmodf",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 B2 59 C0 C4 C1 7A 5E C0 C4 C1",
+  "match": "0x1401871f5",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1453556a4",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Fmodf"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1453556a4",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1453556a4.c;xref:0x1401871f5,0x1405fee7c",
+   "notes": "V3498 fmodf CRT with error path name fmodf (0x1455cad78) via 0x145370600; callers CameraActorSyncJob_ApplyClipResults, Game_TrackSpline_ResolveRouteEnds, Sess_AutoCrossRuleset_PlaceVehicles confirmed"
+  }
+ ],
+ "proofs": []
+}

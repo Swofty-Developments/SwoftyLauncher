@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_ProcessContractSent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ff4850",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140ff4850.c;xref:0x140ff2fc6,0x140ff581f",
+  "notes": "'Process contract message sent': applies the local contract decision (0x140d9d0b0, Career_ContractRenewal_ForceToLowestTeam when unsigned) and sends it. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3037)"
+ },
+ "signature": {
+  "id": "career.online_negotiations_process_contract_sent",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 48 89 D7 48 89 CE 48 8B 89",
+  "match": "0x140ff4850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ff4850",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_ProcessContractSent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_OnlineNegotiations_ProcessContractSent",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff4850.c;xref:0x140ff4850",
+   "notes": "V3037 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

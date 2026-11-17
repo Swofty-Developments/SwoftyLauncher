@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RC_SendAheadOfLeadData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14361dac0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14361dac0.c;xref:0x145851d80",
+  "notes": "sends the AheadOfLead result as network message 0x8F (safety_car_unlapping_message, vtable 0x145857c60)."
+ },
+ "signature": {
+  "id": "session.rc_send_ahead_of_lead_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 83 79 48 01 0F 8F ?? ?? ?? ?? 48 89 CE 48 8B A9 90 00 00 00",
+  "match": "0x14361dac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14361dac0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RC_SendAheadOfLeadData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb4-verify",
+   "kind": "func",
+   "item": "Sess_RC_SendAheadOfLeadData",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14361dac0.c;xref:0x145857c60",
+   "notes": "V1948 msg id 0x8f, name string at 0x145857c88"
+  }
+ ],
+ "proofs": []
+}

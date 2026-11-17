@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkPclock_PossibleClockChangeOnlyValidOffset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14325eab0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-PCLOCK",
+  "notes": "named from its log messages (channel NETWORK-PCLOCK): 'Possible clock change - only %d of %d valid. Offset range %+1.3f to %+1.3f'"
+ },
+ "signature": {
+  "id": "game.network_pclock_possible_clock_change_only_valid_offset",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 79 29 BC 24 E0 00 00 00",
+  "match": "0x14325eab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14325eab0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkPclock_PossibleClockChangeOnlyValidOffset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14325eab0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14325eab0.c;xref:0x14325dbeb",
+   "notes": "V5795 Better name Game_NetworkPclock_UpdatePhysicsClock: 2.3KB physics-clock update (PHUP/PHYS records, offset range validation); possible-clock-change log is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14325eab0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14325eab0.c",
+   "notes": "V7030 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

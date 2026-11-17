@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Showroom_ShowInfoPanel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141cc1430",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141cc1430.c;xref:0x141cc127d,0x141cc125f",
+  "notes": "F1 World showroom (ShowroomWide / F1ShowroomInfo cameras, Main subscene): show_info/hide_info; adds rotation disabler to showroom camera (queued if modifier invalid). Callers 0x141cc127d. Addon: showroom camera lock. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2935)"
+ },
+ "signature": {
+  "id": "game.showroom_show_info_panel",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CE 0F B6 81 60",
+  "match": "0x141cc1430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141cc1430",
+  "kind": "func_start",
+  "names": [
+   "Game_Showroom_ShowInfoPanel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_Showroom_ShowInfoPanel",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141cc1430.c;xref:0x141cc127d",
+   "notes": "V2935 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

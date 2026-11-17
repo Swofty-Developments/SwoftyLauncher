@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Rtt_RegisterCameras",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140140fb0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140140fb0.c;xref:0x14014e54f,0x14015eed4",
+  "notes": "Registers 20 RTT cameras 'rttCamera%d' (resource lookup via 0x143993770 then owner vcall +0x38), logs 'Registered Rtt Camera %s', then registers listed extra generators (param_1[7..8]) and up to 3 optional pairs (param_1[0x2b..0x30]). Callers Game_Read_RendererGfxConfig 0x14014e54f, 0x14015eed4, 0x14033148e. Addon: max 20 RTT cameras (mirrors, thumbnails, screens)."
+ },
+ "signature": {
+  "id": "core.rtt_register_cameras",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 48 89 CE 48 8D 3D",
+  "match": "0x140140fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140140fb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Rtt_RegisterCameras"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_Rtt_RegisterCameras",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140140fb0.c;xref:0x14014e54f",
+   "notes": "V2521 20-iteration rttCamera%d loop, vcall +0x38 register confirmed"
+  }
+ ],
+ "proofs": []
+}

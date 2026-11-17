@@ -1,0 +1,91 @@
+{
+ "schema": 1,
+ "name": "Ai_Interval_AddFullSpanWeighted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14065f520",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Interval_AddFullSpanWeighted(void *set, float value, float limit, uint32_t tag)",
+  "evidence": "decomp:re/decomp/14065f520.c;xref:0x1406662af",
+  "notes": "If value < limit (vucomiss 0x14065f524): w = clamp(1 - value/limit, 0, 1) (0x14065f52d..0x14065f54a, 1.0 constant 0x145382510), builds record {start 0.0, end 1.0, w, w, tag} on stack (movabs 0x3f80000000000000 0x14065f554) and calls Ai_Interval_MergeInsert(&rec, set+0x58) (0x14065f57d). (corrected 2026-11-14: was 'merges [lo,hi]' - it always inserts the full 0..1 span; lo/hi only set the weight). Caller Ai_Lateral_AddOpponentIntervals passes value = nearby-car entry +8 (a speed) and limit = max_test_speed, tag = car index + 0x3d. (renamed 2026-11-14 from Ai_Interval_AddIfValid: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.interval_add_if_valid",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 C5 F8 2E D1 76 58 48 89 CA C5 F2 5E",
+  "match": "0x14065f520",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14065f520",
+  "kind": "func_start",
+  "names": [
+   "Ai_Interval_AddFullSpanWeighted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14065f520",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14065f520.c;xref:0x1406662af",
+   "notes": "V3565 condition lo<hi and set at +0x58 are right, but it does not merge [lo,hi]: it inserts the full span [0,1] with weight clamp(1 - p2/p3) and tag p4 (FUN_140661b20). Better name Ai_Interval_AddFullSpanWeighted"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14065f520",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14065f520.c;xref:0x1406662af",
+   "notes": "V4002 condition lo<hi and set at +0x58 are right, but it does not merge [lo,hi]: it inserts the full span [0,1] with weight clamp(1 - p2/p3) and tag p4 (FUN_140661b20). Better name Ai_Interval_AddFullSpanWeighted"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x14065f520",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14065f520.c;xref:0x1406662af,0x14075d7a7",
+   "notes": "V4086 code: if lo<hi inserts a single [0,1] interval with weight clamp(1-p2/p3) into set+0x58 via 0x140661b20; the lead \"merges [lo,hi]\" is wrong, cv0 correction right"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x14065f520",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14065f520.c;xref:0x1406662af",
+   "notes": "V7141 name fits; finding facts hold; 1 direct calls"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14065f520",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14065f520-0x14065f588;xref:0x1406662af",
+   "notes": "V10582 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only call 0x1406662af (Ai_Lateral_AddOpponentIntervals); the two riprel hits are noise. 4 args (rcx set, xmm1 value, xmm2 limit, r9d tag). value < limit test, w = clamp(1 - value/limit), record {0.0, 1.0, w, w, tag} (movabs 0x3f80000000000000) into Ai_Interval_MergeInsert(&rec, set+0x58) confirmed. Rename from Ai_Interval_AddIfValid justified."
+  }
+ ],
+ "proofs": []
+}

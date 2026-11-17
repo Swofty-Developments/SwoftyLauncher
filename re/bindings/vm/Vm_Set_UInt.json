@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Vm_Set_UInt",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d38210",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d38210.c;xref:0x1415a9608,0x140c18e79,0x1414760f2+18;doc:research/ui-native.md#12",
+  "notes": "same template, node set 0x140d2b600; used for priority (FeTile_Construct_Tile), stat_id, id, bound_vehicle_index; likely uint32"
+ },
+ "signature": {
+  "id": "vm.set_u_int",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 89 B4 24 D0 01 00 00 4C 8D 84",
+  "match": "0x140c18e79",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140d38210",
+  "kind": "func_start",
+  "names": [
+   "Vm_Set_UInt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x140d38210",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d38210.c;xref:0x140c18e79",
+   "notes": "V7325 same template as Vm_Set_Int but node-set 0x140d2b600 is a jmp thunk into .data1 (black box) so uint32 type not verifiable; type object 0x146129da0 differs from Int 0x146129d40"
+  }
+ ],
+ "proofs": []
+}

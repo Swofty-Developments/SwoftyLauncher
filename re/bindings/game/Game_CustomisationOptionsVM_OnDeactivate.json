@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationOptionsVM_OnDeactivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14205f970",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14205f970.c;xref:0x145766f48",
+  "notes": "Slot 15 of vt 0x145766ed0: 0x142060550 cleanup and clears ThumbnailSystem reason 0. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3230)"
+ },
+ "signature": {
+  "id": "game.customisation_options_v_m_on_deactivate",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B B9 A8 03 00 00 48 8B 99",
+  "match": "0x14205f970",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14205f970",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationOptionsVM_OnDeactivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_CustomisationOptionsVM_OnDeactivate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/4205f970.c;xref:None",
+   "notes": "V3230 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

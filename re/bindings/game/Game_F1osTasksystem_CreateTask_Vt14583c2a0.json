@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_CreateTask_Vt14583c2a0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432bb100",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432bb100.c;xref:0x150060ce0",
+  "notes": "F1OS typed task allocator: allocates a 0x550-byte task, constructs it with Game_F1osTask_Ctor_Vt14583c2a0 0x1433696a0, holder vtable 0x145837840, logs 'Allocated new task %s' on F1OS-TASKSYSTEM, AddTask 0x1432dd060, returns {task,holder} (null pair if the type check fails). Only caller found is the jump-region site 0x150060ce0. Addon: hook to observe this task type. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3288)"
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_create_task_vt14583c2a0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 4C 89 C3 48 89 D6 49 89 CE 4C 8B 61 10 49 8B 04 24 BA 50 05 00",
+  "match": "0x1432bb100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432bb100",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_CreateTask_Vt14583c2a0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1osTasksystem_CreateTask_Vt14583c2a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432bb100.c;xref:0x1432bb100",
+   "notes": "V3288 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

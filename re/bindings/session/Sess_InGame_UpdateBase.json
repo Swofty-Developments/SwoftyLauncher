@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_InGame_UpdateBase",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d566a0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint32_t * Sess_InGame_UpdateBase(void *state, uint32_t *route, double dt)",
+  "evidence": "decomp:re/decomp/142d566a0.c;xref:0x142d56660,0x142d5d8cb,0x142d683b6,0x142e055e2,0x142e09761,0x1457e6cd8",
+  "notes": "Shared onUpdate tail of the in-race session states (InGame vtable slot ptr 0x1457e6cd8; tail-called by FormationLap 0x142d5d8cb, InGamePQ 0x142d683b6, 0x142d56660, 0x142e055e2, 0x142e09761). Returns g_Game_FlowLinkStay while st+0xee9. Online: when the host signals session end ([st+0xcb0]+0x180 == 0, +0xf8) sets st+0xee2 and hands every car to controller type 3 (0x14389cc90(st+0xd90, i, 1, 3)); else decides st+0xee1 (player finished: car record +0x18 state 7/5/3 with distance thresholds 6 m / 8 m). Practice/qualifying (Sess_Rules_IsPracticeQualifying): tracks the player's pit status (+0xee4, mask 0x1e01) and toggles the garage UI (0x1445d5c40). Route results: 0x192e0a32 (UI exit), 0xfa1db361 (st+0xee0 quit), 0x3d9a48de (st+0xee1 player finished), 0x5fa57fc (st+0xee3), 0x38d5604f (st+0xee2 session complete, after the countdown st+0xe6c and the results camera), otherwise ticks director [st+0xe90] and FUN_142d61d70 and stays. (used by vmknolle race-start)"
+ },
+ "signature": {
+  "id": "session.in_game_update_base",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 40 01 00 00 C5 F8 29 B4 24 30 01 00 00 48 89 D6",
+  "match": "0x142d566a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d566a0",
+  "kind": "func_start",
+  "names": [
+   "Sess_InGame_UpdateBase"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-b",
+   "kind": "func",
+   "item": "0x142d566a0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_b/decomp/142d566a0.c;xref:0x142d5d8cb,0x142d683b6,0x142d56660,0x142e055e2,0x142e09761,0x1457e6cd8",
+   "notes": "V1029 common state Update called at the end of FormationLap (0x142d5d480) and InGamePQ (0x142d68200, vtable after name SessionStateInGamePQ) updates and in a base vtable slot; decrements double timer +0x1000 by xmm2 dt, returns transition hashes (0x192e0a32/0xfa1db361/0x3d9a48de/...) via *param_2 or forwards to 0x142d61d70(state,route,dt); (state,route,double) matches"
+  }
+ ],
+ "proofs": []
+}

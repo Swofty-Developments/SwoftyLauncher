@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DepartmentEventsComponent_SerialiseTeamData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cbd660",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_Championship_DepartmentEventsComponent_SerialiseTeamData;xref:0x140cbd930,0x140cbddc9,0x140cbe6de,0x140cc04ac,0x140cc04f8,0x140cc13c5,0x140cc13ef,0x140cc1699,0x140cc174e,0x140cc176f",
+  "notes": "cxx=game::championship::DepartmentEventsComponent::serialiseTeamData; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.department_events_component_serialise_team_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 78 29 84 24 60 01 00 00 C5 F8 29 BC 24 50 01 00 00 C5 F8 29 B4 24 40 01 00 00 4C 89 84 24 38 01",
+  "match": "0x140cbd660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cbd660",
+  "kind": "func_start",
+  "names": [
+   "Game_DepartmentEventsComponent_SerialiseTeamData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140cbd660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cbd660.c",
+   "notes": "V4669 log/pretty strings and body checked in decomp; vtable/indirect callers"
+  }
+ ],
+ "proofs": []
+}

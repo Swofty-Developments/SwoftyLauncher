@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RndPropScene_Spawn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14026dd90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void FUN(void *scene_mgr, uint8_t idx, void *spawn_info, uint8_t flag)",
+  "evidence": "decomp:re/decomp/14026dd90.c;xref:0x14026d835;xref:0x14026d84c;xref:0x14026d863",
+  "notes": "myteam-g1: Spawns the R&D prop scene (\"Spawning prop scene for RND\"; props rnd_f/rnd_f_laptop/rnd_m/rnd_m_laptop = female/male R&D person with laptop); selects by param_2 (0..7), logs when a prop is missing."
+ },
+ "signature": {
+  "id": "game.rnd_prop_scene_spawn",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 02 00 00 88 54 24 6E",
+  "match": "0x14026dd90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14026dd90",
+  "kind": "func_start",
+  "names": [
+   "Game_RndPropScene_Spawn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x14026dd90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14026dd90.c;str:\"Spawning prop scene for RND\"",
+   "notes": "V9464 Selects prop by index (5 principal, 6 rnd, 7 strategist; male/female by flag +0x50), logs Spawning prop scene for RND and spawns rnd_*/rnd_*_laptop scenes."
+  }
+ ],
+ "proofs": []
+}

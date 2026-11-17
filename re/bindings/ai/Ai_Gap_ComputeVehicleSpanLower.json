@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Ai_Gap_ComputeVehicleSpanLower",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060e460",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_Gap_ComputeVehicleSpanLower(void *ctrl, int opp)",
+  "evidence": "decomp:re/decomp/14060e460.c;xref:0x14064eb9d,0x140664b2e,0x1406653c7,0x140665ab3,0x140666131,0x140666824",
+  "notes": "Opponent entry e = [ctrl+0x40]+0x108 + opp*0xa70: byte valid +0, float offset +4, float relative heading +8. If valid: L2 = max(|c0-c1|^2, |c2-c1|^2) over XZ of the own car corners [ctrl+0x38]+0x1b0/+0x1c0/+0x1d0, heading wrapped to +-pi, ext = sqrt(L2*(1-cos^2)) + |cos * [ctrl+0x38]+0x30| (projected footprint at that heading); else ext = [ctrl+0x38]+0x30. Buffer curve = **([ctrl+0x230]+200) (64-sample byte LUT, scale +0x10, offset +0x14) evaluated at |[ctrl+0x40]+0x160|. Returns e.offset - ext - [ctrl+0x20]+0xc4 * curve. Twin 0x14060e6c0 returns e.offset + ext + buffer (identical body otherwise), i.e. the two are the lower and upper lateral edge of the zone an opponent occupies. In Ai_Lateral_AddOpponentIntervals both results become min/max and go into Ai_Interval_AddWeightedRange as [x1,x2]. Callers 0x14064d6b0, 0x1406649a0, 0x140665070 (x2), Ai_Lateral_AddOpponentIntervals, Ai_Unk_1406663d0. (corrected 2026-11-14: widths come from the OWN car +0x38 corners, not from the opponent; twin is the upper edge, not 'the opposite side'.) (renamed 2026-11-14 from Ai_Gap_ComputeSideMargin: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.gap_compute_side_margin",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 F8 28 F0 48 89 F1 89 EA E8",
+  "match": "0x14064eb9d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14060e460",
+  "kind": "func_start",
+  "names": [
+   "Ai_Gap_ComputeVehicleSpanLower"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x14060e460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14060e460.c;xref:0x140666131,0x140666824",
+   "notes": "V3428 opponent table +0x108 stride 0xa70, heading diff wrapped to +-pi, corner vectors +0x1b0/+0x1c0/+0x1d0; returns gap minus margin; callers Ai_Unk_140665e80/Ai_Unk_1406663d0 confirmed"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14060e460",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14060e460-0x14060e6be;xref:0x14064eb9d,0x140664b2e,0x1406653c7,0x140665ab3,0x140666131,0x140666824",
+   "notes": "V10613 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 6 callers. 2 args. Entry [ctrl+0x40]+0x108 + opp*0xa70, corners +0x1b0.., default ext [ctrl+0x38]+0x30, buffer LUT **([ctrl+0x230]+0xc8) evaluated at |[ctrl+0x40]+0x160|, scaled by [ctrl+0x20]+0xc4; returns offset - ext - buf (twin 0x14060e6c0 adds), so Lower fits. Detail: proto still carries the old name Ai_Gap_ComputeOpponentLateralMin (should be Ai_Gap_ComputeVehicleSpanLower)."
+  }
+ ],
+ "proofs": []
+}

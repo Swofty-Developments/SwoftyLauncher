@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ScState_Deploy_Enter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143645670",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void(ScState*, ScEntry*)",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/143645670.c;xref:0x145855070",
+  "notes": "posts the SafetyCarDeployment record (vt 0x1457e7840 {entry, vehicle, phase, type}) through Sess_Set_SafetyCarDeploymentType: logic +0x108 == 2 (VSC running) -> phase 0 type 1 (VSC upgraded to SC); 0 -> phase 0 type 1 with the deployment-points kind ([+0x40]+0x228); clears 0x1460ff714."
+ },
+ "signature": {
+  "id": "session.sc_state_deploy_enter",
+  "section": ".xtls",
+  "pattern": "48 83 EC 48 48 89 C8 48 8B 49 58 44 0F B6 81 08",
+  "match": "0x143645670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143645670",
+  "kind": "func_start",
+  "names": [
+   "Sess_ScState_Deploy_Enter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb4-verify",
+   "kind": "func",
+   "item": "Sess_ScState_Deploy_Enter",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143645670.c;xref:0x145855070",
+   "notes": "V1954 msg +0x10 entry,+0x14 vehicle,+0x18 phase 0,+0x1c type 1,+0x1d kind (4 for VSC upgrade)"
+  }
+ ],
+ "proofs": []
+}

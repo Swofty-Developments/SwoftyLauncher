@@ -198,7 +198,8 @@ def check_level_evidence(level, ev, kind='function'):
 
 
 def validate_row(table, r, subs=None):
-    subs = subs if subs is not None else subsystems()
+    if subs is None and table in ('functions', 'globals', 'db_keys'):
+        subs = subsystems()
     errs = []
     cols, _ = TABLES[table]
     for c in cols:

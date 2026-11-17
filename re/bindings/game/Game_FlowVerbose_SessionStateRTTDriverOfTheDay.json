@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FlowVerbose_SessionStateRTTDriverOfTheDay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d8caa0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FLOW_VERBOSE",
+  "notes": "named from its log messages (channel FLOW_VERBOSE): 'SessionStateRTTDriverOfTheDay::onStateEnter wait'"
+ },
+ "signature": {
+  "id": "game.flow_verbose_session_state_rtt_driver_of_the_day",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 F8 29 B4 24 F0 01 00 00 40 B6 01 48 83 B9 B0 0D 00 00 00",
+  "match": "0x142d8caa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d8caa0",
+  "kind": "func_start",
+  "names": [
+   "Game_FlowVerbose_SessionStateRTTDriverOfTheDay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d8caa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d8caa0.c",
+   "notes": "V5419 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

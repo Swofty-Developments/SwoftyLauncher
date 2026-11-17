@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_DevSessionDataContractEntrantsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141127eb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: DevSessionDataContract.Entrants.%s_%u.car_number, DevSessionDataContract.Entrants.%s_%u.driver_customisation_name, DevSessionDataContract.Entrants.%s_%u.driver_emote, DevSessionDataContract.Entrants.%s_%u.driver_gloves, DevSessionDataContract.Entrants.%s_%u.driver_helmet'"
+ },
+ "signature": {
+  "id": "game.read_dev_session_data_contract_entrants_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 CB 00 00",
+  "match": "0x141127eb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141127eb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_DevSessionDataContractEntrantsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141127eb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141127eb0.c;xref:0x141125f43",
+   "notes": "V4601 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_UpdateResolutionScaleFactors",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14016ce50",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14016ce50.c;xref:0x140157488",
+  "notes": "Per-frame camera/view dependent update: chooses profile pointer [g_14618caa8]+0x1d40 or +0x1d78 by flag [g_14618caa0+0x161], reads uint at +0x20, uses Ne_Crt_Sqrtf, writes ~20 fields at this+0x568..0x620. Callers Game_Render_InitCamerasAndPVS, 0x14016d890. Hypothesis on exact content. vp0-verify partial"
+ },
+ "signature": {
+  "id": "render.camera_update_view_dependent_state",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE 80 B9",
+  "match": "0x14016ce50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14016ce50",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_UpdateResolutionScaleFactors"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14016ce50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14016ce50.c;xref:0x140157488",
+   "notes": "V7957 Render_Gfx_UpdateResolutionScaleFactors: computes sqrt(2073600/(w*h)) clamp 1.0, writes this+0x63c and per-pass +0x4cc/0x4d0/0x4d4; not camera/view per-frame update"
+  }
+ ],
+ "proofs": []
+}

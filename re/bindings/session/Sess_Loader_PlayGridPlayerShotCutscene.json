@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Loader_PlayGridPlayerShotCutscene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d4c6a0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d4c6a0.c;xref:0x142d47d3c,0x142d4a7b5",
+  "notes": "Session loader step: if talking points are ready (FUN_140ac6e60) builds CutSceneParams from the player entrant (0x14022d670 setupDataFromTeamStatIdAndDriverIndex, secondary driver 0x14022fe10) and plays grid_plyshot via the CutsceneManager (sess+0x48 -> +0xc0, 0x140227400), preloads the talking-points cutscene, then sets next/prev script hints on the cutscene scripts (setNextScriptHint / setPrevScriptHint). Addon: skip or replace the player grid shot at session load."
+ },
+ "signature": {
+  "id": "session.loader_play_grid_player_shot_cutscene",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 60 03 00 00 C5 F8 29",
+  "match": "0x142d4c6a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d4c6a0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Loader_PlayGridPlayerShotCutscene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d13-verify",
+   "kind": "func",
+   "item": "Sess_Loader_PlayGridPlayerShotCutscene",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d4c6a0.c;xref:0x142d47d3c",
+   "notes": "V3167 role/offsets/strings confirmed in decomp (INIT pattern calls thunks 140240410/140240700 -> alt copy 147562600 of advanceStartTimeOffset)"
+  }
+ ],
+ "proofs": []
+}

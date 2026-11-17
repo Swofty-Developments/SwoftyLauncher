@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingHopper_JoinMatch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143165d50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionMatchingHopper::joinMatch; log channel NETWORK-CONTENT: 'GameSessionMatchingHopper::joinMatch()'"
+ },
+ "signature": {
+  "id": "game.game_session_matching_hopper_join_match",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 40 02 00 00 C5 F8 29 B4 24 30 02 00 00 48 89 CE 48 8D 79 18",
+  "match": "0x143165d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143165d50",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingHopper_JoinMatch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143165d50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143165d50.c",
+   "notes": "V5806 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

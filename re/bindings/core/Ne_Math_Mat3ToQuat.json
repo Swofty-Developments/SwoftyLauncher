@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Math_Mat3ToQuat",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445dae90",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445dae90.c;xref:0x1434b684e,0x144594200",
+  "notes": "SIMD 3x3 matrix helper: from rows param_2[0..2] computes cofactors and reciprocal determinant and writes the inverse matrix to param_1. Used by tyre deformation particle checks. Callers: Car_TyreDeformation_CheckParticles. cv3-verify: rotation matrix to quaternion (trace+1, sqrt), not an inverse"
+ },
+ "signature": {
+  "id": "core.math_mat3_inverse",
+  "section": ".xtls",
+  "pattern": "57 48 83 EC 60 C5 78 29 5C 24 50 C5 78 29 54 24",
+  "match": "0x1445dae90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445dae90",
+  "kind": "func_start",
+  "names": [
+   "Ne_Math_Mat3ToQuat"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1445dae90",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1445dae90.c;xref:0x1434b684e",
+   "notes": "V3668 decomp is a rotation matrix -> quaternion conversion (trace+1, sqrt, 0.5/sqrt, off-diagonal sums), not a 3x3 inverse; better name Ne_Math_Mat3ToQuat"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_MessageQueue_Alloc",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b86850",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b86850.c;xref:0x143b8684a,0x143b869da",
+  "notes": "Allocates a message slot (size param_4, 16-byte aligned +0x1f) in a double-buffered message queue (lock self+0xa8, capacity self+0x90, current buffer self+0x98 stride 0x20); WARN 'Message size too large for the buffer, increase the size of the message queue.'."
+ },
+ "signature": {
+  "id": "core.message_queue_alloc",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4C 89 CF 44 89",
+  "match": "0x143b86850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b86850",
+  "kind": "func_start",
+  "names": [
+   "Ne_MessageQueue_Alloc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Ne_MessageQueue_Alloc",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b86850.c;xref:0x143b86850",
+   "notes": "V2847 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

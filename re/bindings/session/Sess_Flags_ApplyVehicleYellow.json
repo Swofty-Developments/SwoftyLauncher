@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Flags_ApplyVehicleYellow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143582070",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143582070.c;xref:0x14356e621,0x143582067",
+  "notes": "(flags, yellow, double) Builds per-zone yellow state for all marshal zones ([+0x68]+0x78 count), sends yellow messages (0x14402e500 type 1/2) and stores summary at +0xd9c..+0xdac. Callers Sess_Flags_UpdateYellowReasons, Sess_Flags_SetVehicleYellow (tail jump)."
+ },
+ "signature": {
+  "id": "session.flags_apply_vehicle_yellow",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 48 89 CE C5 F8",
+  "match": "0x143582070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143582070",
+  "kind": "func_start",
+  "names": [
+   "Sess_Flags_ApplyVehicleYellow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143582070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143582070.c;xref:0x14356e621",
+   "notes": "V3789 Zone count from [+0x68]+0x70/+0x78, sends messages via 14402e500 type 1 and 2, stores summary at +0xd9c/+0xda4/+0xdac."
+  }
+ ],
+ "proofs": []
+}

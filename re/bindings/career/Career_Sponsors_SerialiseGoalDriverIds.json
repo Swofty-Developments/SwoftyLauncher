@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_SerialiseGoalDriverIds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411190d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *ctx, void *goal_list, void *save_node, void *key",
+  "evidence": "decomp:re/decomp/1411190d0.c;xref:0x1410ffddd;xref:0x1410ffdff;xref:0x1410ffe25",
+  "notes": "myteam-g1: Writes teamSponsorGoalAwardedDriverIds / teamSponsorGoalCompletedDriverIds lists for each goal state (which drivers completed/were awarded a sponsor goal)."
+ },
+ "signature": {
+  "id": "career.sponsors_serialise_goal_driver_ids",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4C 89 C8 4C 89 C7",
+  "match": "0x1411190d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411190d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_SerialiseGoalDriverIds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x1411190d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411190d0.c;xref:0x1410ffddd;str:\"teamSponsorGoalAwardedDriverIds\"",
+   "notes": "V9663 Writes teamSponsorGoalAwardedDriverIds/CompletedDriverIds lists with goal_id and driver ids."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetReliableAsyncSocket_SetKeyMaterial",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144076bb0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetReliableAsyncSocket_SetKeyMaterial;xref:0x144076c75;decomp:re/decomp/144076bb0.c",
+  "notes": "cxx=neon::NeNetReliableAsyncSocket::setKeyMaterial; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_reliable_async_socket_set_key_material",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 2F 01",
+  "match": "0x144076bb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144076bb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetReliableAsyncSocket_SetKeyMaterial"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetReliableAsyncSocket_SetKeyMaterial",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144076bb0.c;xref:0x145a51fe0",
+   "notes": "V2092 vtable slot; own pretty string; forwards SSLKeyMaterial parts (+0,+0x28,+0x50) to member at +0x290 vtable +0x48/+0x50/+0x58"
+  }
+ ],
+ "proofs": []
+}

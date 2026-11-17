@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteWonSeasonAtFinalWeekend",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14371ef00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-STATEVENT",
+  "notes": "named from its log messages (channel STATEVENT): 'Executing EventWriteWonSeasonAtFinalWeekend with [%d] StatisticDataProviders registered.'"
+ },
+ "signature": {
+  "id": "game.stat_event_write_won_season_at_final_weekend",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 80 BE E1 02 00 00 00 0F 84 ?? ?? ?? ?? 48 8B",
+  "match": "0x140b89e95",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14371ef00",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteWonSeasonAtFinalWeekend"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x14371ef00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14371ef00.c;xref:0x140b89e95",
+   "notes": "V7370 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

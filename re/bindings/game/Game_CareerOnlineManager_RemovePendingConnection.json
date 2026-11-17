@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineManager_RemovePendingConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fe3d20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name removePendingConnection (class from the log channel); log channel CAREER_ONLINE_MANAGER: '%s: connection: %d'"
+ },
+ "signature": {
+  "id": "game.career_online_manager_remove_pending_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 72 B8 51 01 00 00",
+  "match": "0x140fe3d20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fe3d20",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineManager_RemovePendingConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fe3d20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fe3d20.c;xref:0x140fe3c8f",
+   "notes": "V4837 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

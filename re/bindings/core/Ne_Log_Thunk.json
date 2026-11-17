@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "Ne_Log_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406d4c80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Log_Thunk(const char *channel, const char *fmt, ...)",
+  "evidence": "decomp:re/decomp/1406d4c80.c;decomp:re/decomp/140af0460.c;xref:0x140af04f4,0x1400fb0f3,0x140140ffe,0x1401554a0,0x141bb4022,0x141bb56ec,0x1421b8140,0x144424e32+14664",
+  "notes": "thunk=Ne_Log_Body. Channel logger (channel, printf fmt, ...): the body formats with the static CRT vsprintf (options|2) into a buffer of at most 0x800, turns CR/LF into spaces, '\"' into ''' and '\\\\' into '/', then hands (channel, text) to the sink at [0x14604bbc8]. 14672 rel32 call sites; each one sits behind a g_Ne_LogGate check (enabled byte == 1 and the site's channel hash in the set), so the retail game never reaches it. Channels seen: F1OS, NETWORK, TOP_LEVEL_UI, WARN, TRACE, UI, FLOW, ACTOR_ERROR, ..."
+ },
+ "signature": {
+  "id": "core.log_call",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8B BE 98 04 00 00",
+  "match": "0x140af04df",
+  "anchor": "0x16",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x15"
+  },
+  "target": "0x1406d4c80",
+  "kind": "call",
+  "names": [
+   "Ne_Log_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "gamelog",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/gamelog/gamelog.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-17",
+   "verifier": "gamelog-verify",
+   "kind": "func",
+   "item": "Ne_Log_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406d4c80.c;decomp:re/decomp/1406d4e10.c;decomp:re/decomp/140af0460.c;xref:0x140af04f4,0x1431325c2,0x144091ed1,0x140174fd7+14668",
+   "notes": "V0014 0x1406d4c80 is e9 rel32 to 0x14847a000 (.data1). Body: rcx channel kept in rsi; rdx fmt goes to r9 of CRT vsprintf 0x14532e54c (opts|2, sizing pass then a buffer capped at 0x800 from the [[sink+0x209d8]+0x10] allocator); r8/r9 spilled to home slots as va_list; CR/LF to space, dquote to squote, backslash to slash; then 0x1406d4e10(sink=[0x14604bbc8], channel, &{alloc,text}) which stores channel and text into a record; buffer freed via alloc vtbl+0x38. Proto void(const char*, const char*, ...) matches. 14672 E8 rel32 call sites in .xtls (plus 1058 E8 and 66 E9 in .data1). Not every site is gated: see g_Ne_LogGate verify (0x14119c4cc)."
+  }
+ ],
+ "proofs": []
+}

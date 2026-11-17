@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_BroadcastIntrosConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419fe120",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: broadcast_intros.driver_comparison_qualifying, broadcast_intros.driver_comparison_race, broadcast_intros.dummy_messages_for_vm.driver_in_car, broadcast_intros.dummy_messages_for_vm.driver_moves, broadcast_intros.dummy_messages_for_vm.intro_driver_info, broadcast_intros.d'"
+ },
+ "signature": {
+  "id": "game.read_broadcast_intros_config",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE 80 FA 2E",
+  "match": "0x1419fe120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419fe120",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_BroadcastIntrosConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1419fe120",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419fe120.c;xref:0x1419fd98a",
+   "notes": "V4924 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldActivityContainer_SelectEntrantList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a79180",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_F1WorldActivityContainer_SelectEntrantList(void *container, const char *entrant_list)",
+  "evidence": "decomp:re/decomp/141a79180.c;decomp:re/decomp/141a77d60.c;decomp:re/decomp/1424b3640.c;xref:0x141a77fbb",
+  "notes": "Called once (0x141a77fbb), from the F1WorldActivityContainerViewModel command handler 0x141a77d60 (vtable 0x14572ac70 slot 10) on entrant_list_selected (djb2 0x22f71644; FeTile_Press_EraTile raises it with the pressed era tile's command), with the command's text. Walks the game setup modes of the container's mode (*(container+0x2f0); *(*(mode+0x88)+0x260) vtable +0x1d0 returns the setup-mode vector at +8..+0x10). For the first setup mode whose entrant setup modes (array at gsm+0x10, count gsm+0x70) list entrant_list (each entrant setup mode: list objects at +0x130, count +0x230, name *(*(list+0x28)+0x10)), it stores the setup mode's stat id (byte gsm+0x80) with 0x14245c440(&0x14604eac0, id) and the list's stat id (byte at the list object) with a tail call 0x14245c720(&0x14604eac0, id). The handler then calls 0x141a79480 (championship) and 0x1424b3640, which tail-jumps (0x1424b37fb) into 0x1424b2c90; its store at 0x1424b2ed1 fills the selected list (+0xe18) with the entrant setup mode's first list (+0x130[0]) when it is empty. The counts at gsm+0x70 and esm+0x230 are qwords; the 32 list slots are inline from +0x130 (V1007)."
+ },
+ "signature": {
+  "id": "game.f1_world_activity_container_select_entrant_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D6 48 8B 81 F0 02 00 00",
+  "match": "0x141a79180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a79180",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldActivityContainer_SelectEntrantList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "classic-seasons",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/classic-seasons/native/src/era_tiles.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-23",
+   "verifier": "verify-seasons-2",
+   "kind": "func",
+   "item": "Game_F1WorldActivityContainer_SelectEntrantList",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a79180.c;decomp:re/decomp/141a77d60.c;decomp:re/decomp/1424b3640.c;decomp:re/decomp/141a6cfd0.c;decomp:re/decomp/14249f190.c;decomp:re/decomp/141a753c0.c;xref:0x141a77fbb,0x141a79297,0x141a792da,0x141a79210,0x1424b2ed1,0x14572acc0;sig:game.f1_world_activity_container_select_entrant_list",
+   "notes": "V1009 Re-check of the renamed row (was V1007 under Game_F1WorldActivityTab_SelectEntrantList). The name, signature and proto now match the code. The signature is func_start, its pattern is the prologue with no rel32 bytes, and sigcheck gets one hit at 0x141a79180. The proto is (container, entrant_list) with a void return. The notes match V1007: one call at 0x141a77fbb in the 0x22f71644 branch of the container handler (slot 10 at 0x14572acc0), the +0x2f0/+0x88/+0x260/vt+0x1d0 path, qword counts gsm+0x70 and esm+0x230 with 32 inline slots from +0x130, the first match in vector order, and the byte gsm+0x80 / byte [list] setters on 0x14604eac0. EntrantSetupMode.h now types both counts as uint64_t, which matches the parser 0x14249f190. Two wording nits remain. 'the tab's mode' should read 'the container's mode'. The +0xe18 fill is at 0x1424b2ed1 in 0x1424b2c90, reached from 0x1424b3640 by tail jmp at 0x1424b37fb. The stat-id reading of the two bytes is still unverified (obfuscated .data1 setters). sigcheck: one hit"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v2",
+   "kind": "func",
+   "item": "Game_F1WorldActivityContainer_SelectEntrantList",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141a79180.c;xref:0x141a71d87,0x141a71b0d",
+   "notes": "V1480 W6b's mode-name reach from the era picker: this function reads *(*(*(container+0x2f0)+0x88)+0x260) vt+0x1d0, the same +0x88 -> +0x260 shape as GameModeContext -> mode object, so *(*(container+0x2f0)+0x88)+0x278 is the mode name if that object is a GameModeContext. Not proven: the only +0x2f0 writer in the class range is 0x141a71d87 (mov [r12+0x2f0],rsi), with rsi = container+0x270 (0x141a71b0d), whose source was not followed. The session-load path through g_Game_Manager is proven (Game_Game_SetCurrentGameMode notes). In game the log line '[apply] facts: game mode <label> is <mode>' at a box press settles it."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v2",
+   "kind": "func",
+   "item": "Game_F1WorldActivityContainer_SelectEntrantList",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a79180.c;xref:0x141a77fbb,0x141a792da",
+   "notes": "V1482 Supersedes V1480, which was misfiled here. Role and proto re-checked: its one caller, the container's command handler 0x141a77d60, calls it at 0x141a77fbb on command djb2 0x22f71644 with rcx = the container (rsi) and rdx = the command's text, and ignores rax. It walks *(*(*(container+0x2f0)+0x88)+0x260) vt+0x1d0's setup modes, compares each entrant list's name with entrant_list (0x14535d850), and on the first match records the pick (0x14245c440, then tail jmp 0x14245c720 at 0x141a792da). void (void *container, const char *entrant_list) holds. V1480's partial concerned only W6b's mode-name path through container+0x2f0; it is now filed on struct GameModeContext."
+  }
+ ],
+ "proofs": []
+}

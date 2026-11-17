@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Set_UpgradesOwner",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14352e620",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Set_UpgradesOwner(void *upgrades, uint32_t owner)",
+  "evidence": "pat:owner-cache-0x1aa8;xref:0x14351892b,0x14352e3cf,0x14352e51f,0x14352f710,0x14352f860;kb:subsystems/rnd_ui.md#instances;decomp:re/decomp/14352e620.c;decomp:re/decomp/14352ea40.c;xref:0x14351892b,0x14352e3cf,0x14352e51f,0x14352f710,0x14352f860;doc:addons/career-editor/protocol/rnd.md",
+  "notes": "Mode-0 owner switch (one shared tree, owner cache U+0x1aa8): runs Career_Eval_UpgradeAvailability (@0x14352e66d) and writes the state byte of each instance's last entry directly, bypassing Career_Push_UpgradeState and its dept gate. Mode-0 availability pass for one owner (what Career_Query_EnabledUpgrades runs when the owner cache +0x1aa8 differs): per tree-0 instance Career_Eval_UpgradeAvailability writes the latest entry's state byte, 0x14352ea40 recomputes its facility lock (+0xd) from unlock_at_facility_level (+0x74) against the team's kind-4 modifier sum for the department (not locked when the level is < 1 or the state is 2..4); if 0x14352eb30 says so, every Available becomes Unavailable; stores owner in +0x1aa8."
+ },
+ "signature": {
+  "id": "career.set_upgrades_owner",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D6 48 89 CF 4C 8B B9 10 0D 00 00",
+  "match": "0x14352e620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14352e620",
+  "kind": "func_start",
+  "names": [
+   "Career_Set_UpgradesOwner"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-rnd",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/rnd.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "func",
+   "item": "Career_Set_UpgradesOwner",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14352e620.c;decomp:re/decomp/14352ea40.c;decomp:re/decomp/14352eb30.c;xref:0x14351892b,0x14352e3cf,0x14352e51f,0x14352f710,0x14352f860",
+   "notes": "V0309 Independent: rcx upgrades, edx owner; per tree-0 (+0x110, count +0xd10) instance 0x14352e720 result written to latest entry +8 and 0x14352ea40 result to +0xd directly (no Push); 0x14352eb30 true -> every latest Available(1) set Unavailable(0); +0x1aa8 = owner; Career_Query_EnabledUpgrades calls it in mode 0 when owner != none and differs from +0x1aa8 (same gate at all 5 callers). Wording note: 0x14352ea40 keeps the current +0xd when the team has no kind-4 modifier for the department."
+  }
+ ],
+ "proofs": []
+}

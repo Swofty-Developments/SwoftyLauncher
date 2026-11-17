@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_HoldInGarage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434be090",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434be090.c;xref:0x1434b88b3,0x1434b8967,0x1434b91a8,0x1434b92d5",
+  "notes": "Log channel PITLANE_SAFETYCAR: '%f %f %f - PitLaneMovementManager::holdInGarage' L2 2026-11-14 (engine-re round 2): decomp read; 4 reference(s) (0x1434b88b3, 0x1434b8967, 0x1434b91a8, 0x1434b92d5); the body itself references 'PitLaneMovementManager::holdInGarage' / 'PITLANE_SAFETYCAR' / '%f %f %f - PitLaneMovementManager::holdInGarage'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_lane_hold_in_garage",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC D0 00 00 00 C5 F8 29 B4 24 C0 00 00 00 44 0F B6 FA",
+  "match": "0x1434be090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434be090",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_HoldInGarage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434be090",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434be090.c;xref:0x1434b88b4",
+   "notes": "V6018 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434be090",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434be090-0x1434be458;xref:0x1434b88b3,0x1434b8967,0x1434b91a8,0x1434b92d5",
+   "notes": "V10504 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 4 callers in 0x1434b83e0. PITLANE_SAFETYCAR holdInGarage log. 3 args (+xmm2)."
+  }
+ ],
+ "proofs": []
+}

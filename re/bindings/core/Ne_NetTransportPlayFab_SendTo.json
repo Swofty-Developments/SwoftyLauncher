@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetTransportPlayFab_SendTo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440a0370",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetTransportPlayFab_SendTo;xref:0x1440a0500,0x1440a0661;decomp:re/decomp/1440a0370.c",
+  "notes": "cxx=neon::NeNetTransportPlayFab::sendTo; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_transport_play_fab_send_to",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 90 00 00 00 4C 89 C8 4C 8B 8C",
+  "match": "0x1440a0370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440a0370",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetTransportPlayFab_SendTo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_NetTransportPlayFab_SendTo",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440a0370.c;xref:0x1440a0370",
+   "notes": "V2114 Finds connection by id (stride 400) and forwards to FUN_14409f900; errors if not found or size>0x48d"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamSetupRecord_InitDefault",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142268640",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *rec)",
+  "evidence": "decomp:re/decomp/142268640.c;xref:0x14025a892;xref:0x140aa9af1;xref:0x140c2c96c",
+  "notes": "myteam-g2: Initialises the My Team setup selection record (static instance at 0x14606d340): copies default blocks, clears the 0x80-byte inline string buffers and sets the no-selection markers 0x3fff0000 (invalid team/stat key). Called before every setup VM pass."
+ },
+ "signature": {
+  "id": "career.my_team_setup_record_init_default",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 48 89 C8 48 BF 63 87 E9 21 4D 12 FE 24",
+  "match": "0x142268640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142268640",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamSetupRecord_InitDefault"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142268640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142268640.c;xref:0x14025a892",
+   "notes": "V10064 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

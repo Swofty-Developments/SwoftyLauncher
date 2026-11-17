@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Strategy_TyreClassTimeLoss",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436a4230",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436a4230.c;xref:0x14369e6a4,0x1436a1d2e",
+  "notes": "(strat, tyreClass, laps) time loss of running the current tyre class in the current conditions: factor +0x22c, per-class rates +0x1b8, wetness state +0x1d0/+0x1d4, tyre data +0x9bc0. Named in Sess_RaceStrategy_UpdateVehicle notes (weather class pit trigger). (2 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.strategy_tyre_class_time_loss",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 58 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE C5 FA 10",
+  "match": "0x1436a4230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436a4230",
+  "kind": "func_start",
+  "names": [
+   "Sess_Strategy_TyreClassTimeLoss"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1436a4230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436a4230.c;xref:0x14369e6a4",
+   "notes": "V6774 Factor +0x22c, rates +0x1b8, +0x1d0/+0x1d4, +0x9bc0 confirmed."
+  }
+ ],
+ "proofs": []
+}

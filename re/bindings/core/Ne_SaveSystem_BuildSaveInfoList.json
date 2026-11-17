@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem_BuildSaveInfoList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14413b6f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-SAVE;decomp:re/decomp/14413b6f0.c;xref:0x14413b5bb,0x14413eda7,0x14413f7c9,0x14414125c;kb:subsystems/core.md#save-sandbox",
+  "notes": "named from its log messages (channel SAVE): 'Build save info list requested | Create save enumerator requested | Enumerate save requested - %s | saveName '%s' already in save list | Enumerate save result: 0x%x | Found '%S' | '%S' is not a valid '"
+ },
+ "signature": {
+  "id": "core.save_system_build_save_info_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 07 00 00 4C 89 CB",
+  "match": "0x14413b6f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14413b6f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem_BuildSaveInfoList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/save_sandbox.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "func",
+   "item": "0x14413b6f0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14413b6f0.c;decomp:re/decomp/144144920.c;xref:0x14413b5bb,0x14413eda7,0x14413f7c9,0x14414125c",
+   "notes": "V1476 Callers re-listed: Enumerate, SelectAndLoad, SelectAndSave, SelectAndDelete. Cloud branch (+0x3e8 test 0x14413b7dc) calls helper+0x108 +0x90/+0x98 and ReadSaveIndex 0x144144920 (0x14413cc7b, 0x14413d3d2) which does FileExists +0x68, GetFileSize +0x78, FileRead +0x08; local branch FindFirstFileW/FindNextFileW. It reads SECUINFO contents before any mount."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "save-v3",
+   "kind": "sig",
+   "item": "core.save_system_build_save_info_list",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/14413b6f0.c;xref:0x14413b6f0",
+   "notes": "V1483 sigcheck on d873a1c8: exactly one match in .xtls at 0x14413b6f0, func_start, target is the decompiled function."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_SaveSystem_BuildSaveInfoList",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14413b6f0.c;xref:0x14413b4b0",
+   "notes": "V2235 Large enumerator: FindFirstFile or Steam remote storage listing, validates names, reads display name, marks corrupt. Logs match."
+  }
+ ],
+ "proofs": []
+}

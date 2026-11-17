@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Register_EntrantSetupMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424a0480",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1424a0480.c;xref:0x14cb3e59a;doc:research/grid24-cap.md#2",
+  "notes": "copies the 0x288 struct into a 0x290 heap object indexed by stat_id"
+ },
+ "signature": {
+  "id": "session.register_entrant_setup_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 D7 48 89 CE 44 0F B6 3A",
+  "match": "0x1424a0480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424a0480",
+  "kind": "func_start",
+  "names": [
+   "Sess_Register_EntrantSetupMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-a",
+   "kind": "func",
+   "item": "Sess_Register_EntrantSetupMode",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424a0480.c;xref:0x14cb3e599",
+   "notes": "V1881 sparse vector of {allocator,obj}; obj alloc 0x290 align 0x10, index=*param_2 (stat_id byte); copies fields up to +0x280 (source size 0x288 not directly provable); vectors at +0x20/+0x130 sized +0x120/+0x230"
+  }
+ ],
+ "proofs": []
+}

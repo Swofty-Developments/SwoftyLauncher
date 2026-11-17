@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Write_DepartmentSchedules",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143511cc0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Career_Write_DepartmentSchedules(uint64_t self,int64_t *a2,void * a3)",
+  "evidence": "decomp:re/decomp/143511cc0.c;xref:0x14a6bd496",
+  "notes": "myteam-g1: Writes department and department_schedules."
+ },
+ "signature": {
+  "id": "career.write_department_schedules",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 4C 89 C7 48 89 D6 48 8B 1A",
+  "match": "0x143511cc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143511cc0",
+  "kind": "func_start",
+  "names": [
+   "Career_Write_DepartmentSchedules"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143511cc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143511cc0.c;xref:0x14a6bd496",
+   "notes": "V10272 Writes supplier_schedules -> supplier -> department_schedules -> department/schedule; claim omits the supplier wrapper."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_InputSystem_UnbindDevice",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a8f3d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-INPUT;decomp:re/decomp/143a8f3d0.c;xref:0x143a880e9,0x1521dcfe6,0x1521dd860",
+  "notes": "named from its log messages (channel INPUT): 'NeInputSystem - unbinding all axes on action map \"%s\" | NeInputSystem - unbinding device \"%s\" from action map \"%s\"'"
+ },
+ "signature": {
+  "id": "core.input_system_unbind_device",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC C8 00 00 00 49 89 CE",
+  "match": "0x143a8f3d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a8f3d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_InputSystem_UnbindDevice"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_InputSystem_UnbindDevice",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a8f3d0.c;xref:0x143a880e9",
+   "notes": "V2015 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

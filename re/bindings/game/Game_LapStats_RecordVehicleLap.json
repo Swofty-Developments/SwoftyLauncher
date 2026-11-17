@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_LapStats_RecordVehicleLap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e9e6c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e9e6c0.c;xref:0x1401740e2,0x14071790b",
+  "notes": "Per-lap stat recorder for vehicle param_2: resolves session ([g 0x14604c2c8+0xc0]+0x88)+0x260 and a registry service (key 0x146080ce8), walks stat definitions (+0x68..+0x70) whose session/mode bitmasks (+0x20/+0x24/+0x28) match the current session and updates counters. Called on new lap (ElasticSearch reporter, leaderboard row VM, strategy). Callers: Game_ElasticSearchReporterModule_OnVehicleNewLapRecorded."
+ },
+ "signature": {
+  "id": "game.lap_stats_record_vehicle_lap",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 49 89 D7 49",
+  "match": "0x142e9e6c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e9e6c0",
+  "kind": "func_start",
+  "names": [
+   "Game_LapStats_RecordVehicleLap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e9e6c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e9e6c0.c;xref:0x14071790b,0x14156db17",
+   "notes": "V3699 Registry key 146080ce8, session ([14604c2c8+0xc0]+0x88)+0x260, stat defs +0x68..+0x70 with masks +0x20/+0x24/+0x28 seen."
+  }
+ ],
+ "proofs": []
+}

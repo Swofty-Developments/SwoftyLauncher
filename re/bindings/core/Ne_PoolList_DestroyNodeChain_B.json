@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_PoolList_DestroyNodeChain_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ed2c80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ed2c80.c;xref:0x143b77bbf",
+  "notes": "Recursive node release (frees payload with vtable +0x38 via owner at +0x20, recurses on +8) used by pool list B. Callers Ne_PoolList_Resize_B."
+ },
+ "signature": {
+  "id": "core.pool_list_destroy_node_chain_b",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 8E 50 02 00 00 4C 8B 86 90",
+  "match": "0x143b77bbf",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143ed2c80",
+  "kind": "func_start",
+  "names": [
+   "Ne_PoolList_DestroyNodeChain_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143ed2c80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ed2c80.c;xref:0x143b77bbf",
+   "notes": "V8286 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

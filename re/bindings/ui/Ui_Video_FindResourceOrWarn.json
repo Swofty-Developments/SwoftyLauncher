@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Video_FindResourceOrWarn",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428bbfe0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Ui_Video_FindResourceOrWarn(void *self, void *video_ref)",
+  "evidence": "decomp:re/decomp/1428bbfe0.c;xref:0x141bef6db;xref:0x141bef710;xref:0x141bf131b",
+  "notes": "myteam-g2: Resolves a video resource (self+0x28 resource manager) and logs ART_WARN '[ART ISSUE] Failed to find a valid resource for video [%s]' when missing. Generic UI/art helper used by the My Team customisation screens."
+ },
+ "signature": {
+  "id": "ui.video_find_resource_or_warn",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 83 3A 00 0F 84 ?? ?? ?? ?? 48 89 D6",
+  "match": "0x1428bbfe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428bbfe0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Video_FindResourceOrWarn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1428bbfe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428bbfe0.c",
+   "notes": "V10228 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

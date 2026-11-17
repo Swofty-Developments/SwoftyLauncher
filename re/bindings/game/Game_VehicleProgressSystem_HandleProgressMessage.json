@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressSystem_HandleProgressMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f07330",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f07330.c;xref:0x14f608b89",
+  "notes": "VehicleProgressSystem::handleVehicleProgressMessage(connId): payload msg+0x10 {u8 vehicleId, s16 progressLap +0x12, ..., +0x17 reset flag}; tracks max progress lap +0x11c; ignores cars owned by this machine; until the session is entered queues it in the pending list +0x100..+0x110 (8-byte entries; ADDED/REPLACED/IGNORED logs on PROGRESS). Only reference from .data1 0x14f608b89. d4-verify-b correction: IGNORED (haven't entered session yet) when +0x119 == 0 and no qualifying local entry exists; ADDED/REPLACED in pending list +0x100.. when +0x119 != 0 or a qualifying entry exists"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_system_handle_progress_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 44 89 C3 48 89 D6 48 89 CF 80 7A 17",
+  "match": "0x142f07330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f07330",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressSystem_HandleProgressMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_VehicleProgressSystem_HandleProgressMessage",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f07330.c;xref:0x14f608b89",
+   "notes": "V2482 fields ok (vehId msg+0x10, s16 lap +0x12, reset +0x17, max +0x11c, owner early return). Queue logic differs: IGNORED (not entered session) when +0x119==0 and no qualifying local entry; ADDED/REPLACED pending (+0x100..0x110) when +0x119!=0 or a qualifying entry exists - not simply until session entered. Name ok"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_VehicleProgressSystem_HandleProgressMessage",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f07330.c;xref:0x14f608b89",
+   "notes": "V3970 fields ok (vehId msg+0x10, s16 lap +0x12, reset +0x17, max +0x11c, owner early return). Queue logic differs: IGNORED (not entered session) when +0x119==0 and no qualifying local entry; ADDED/REPLACED pending (+0x100..0x110) when +0x119!=0 or a qualifying entry exists - not simply until session entered. Name ok"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x142f07330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f07330.c",
+   "notes": "V4168 Strings handleVehicleProgressMessage ... IGNORED/ADDED/REPLACED PROGRESS MESSAGE (PROGRESS channel); +0x17 reset flag, s16 lap at +0x12, max lap +0x11c, +0x119 gate, pending list +0x100..+0x110; only ref from .data1 0x14f608b88 (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

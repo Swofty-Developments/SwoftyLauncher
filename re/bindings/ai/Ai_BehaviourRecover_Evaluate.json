@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Ai_BehaviourRecover_Evaluate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140653440",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "uint64_t Ai_BehaviourTestRecover_Update(void *self, void *unused, void *ai_system)",
+  "evidence": "decomp:re/decomp/140653440.c;xref:0x145637340",
+  "notes": "Slot 4 of vtable 0x145637320 'BehaviourTestRecover'. Copies the car spline cursor (route +0x108 + (+0x178)*0xa70; switches to route 0 when route+0x484==1 and within 20 m of its end). Window W = [*(session...+0x4b0)+8]. Init path (car human, route+0x180>=4 or +0x90 clear): +0x50 = dist, +0x54 = dist+W, +0x58 = dist-W (lap wrap), points +0x60/+0x80 via GetFrame, +0x70 = 1.0, +0x90 = 1. Update path: points ahead (+0x54) and behind (+0x58) at lateral +-2*(entry+0x38)->+0x30 on the car side; raycast Ne_PhysWorld_RaycastClosest layer 0xe from car pos (+0x1b0 / +0x1d0, +1 m up) to each point; ahead steps -1 m if hit else +1 m (table 0x145636ad8), behind +1/-1 (0x1455d8b30), clamped to the window; +0x70 = (ahead - dist)/W. +0x92 = !(entry+0x28)->+0x162. Returns 0. No stuck timer, speed threshold or surface logic (gb-verify claim 6 confirmed). Name kept (used in repo docs/code/signatures); a code-true name would be Ai_BehaviourTestRecover_Update (vtable slot 4). L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.behaviour_recover_evaluate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 06 00 00 C5 78 29 9C 24",
+  "match": "0x140653440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140653440",
+  "kind": "func_start",
+  "names": [
+   "Ai_BehaviourRecover_Evaluate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "gb-verify",
+   "kind": "func",
+   "item": "Ai_BehaviourRecover_Evaluate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140653440.c",
+   "notes": "V1719 claim 6 no stuck/surface logic"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "gb-verify",
+   "kind": "func",
+   "item": "Ai_BehaviourRecover_Evaluate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140653440.c",
+   "notes": "V3930 claim 6 no stuck/surface logic"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x140653440",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140653440.c",
+   "notes": "V4084 +0x50/+0x54/+0x58 distance math, 20.0 check, calls 0x14060cd70/0x14060b8e0/0x1440c0f10 confirmed; no direct callers (vtable/indirect)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140653440",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140653440-0x140653b96;xref:0x145637340",
+   "notes": "V10567 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 0x145637340 = vtable 0x145637320 slot 4. Route +0x108 + idx*0xa70, +0x484==1 switch within 20 m (0x1406534e3), window [..+0x4b0], init stores +0x50/+0x54/+0x58, +0x70 = 1.0, +0x90 = 1, Ne_PhysWorld_RaycastClosest 0x1440c0f10 with layer 0xe, GetFrame 0x14060b8e0 confirmed. 3 args (rdx unused)."
+  }
+ ],
+ "proofs": []
+}

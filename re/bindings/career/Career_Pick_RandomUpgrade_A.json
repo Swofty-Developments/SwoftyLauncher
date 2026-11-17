@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Pick_RandomUpgrade_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142967160",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Pick_RandomUpgrade_A(void * self)",
+  "evidence": "decomp:re/decomp/142967160.c;xref:0x1429652f4;xref:0x1429661ed",
+  "notes": "myteam-g1: UPGRADES/R pickRandomUpgrade for the player-facing list (iterates team entries at +0x298/+0x2a0, Career_Query_EnabledUpgrades)."
+ },
+ "signature": {
+  "id": "career.pick_random_upgrade_a",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 A8 3A 00 00",
+  "match": "0x142967160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142967160",
+  "kind": "func_start",
+  "names": [
+   "Career_Pick_RandomUpgrade_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142967160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142967160.c;str:\"pickRandomUpgrade\"",
+   "notes": "V10240 Strings UPGRADES/R, pickRandomUpgrade, Random used for %s match; uses Career_Query_EnabledUpgrades."
+  }
+ ],
+ "proofs": []
+}

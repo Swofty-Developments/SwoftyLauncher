@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Store_SubscribeMessages",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142b92560",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t (void *owner)",
+  "evidence": "decomp:re/decomp/142b92560.c;xref:0x1457cabb8",
+  "notes": "myteam-g1: Subscribes store handlers: online_currency_transaction_authorisation_message, update_currency_message, clear_packages_message, MarketPlaceOverlayClosedMessage, MessageItemUnlocked, MessageHomeScreenInfoRetrieved."
+ },
+ "signature": {
+  "id": "game.store_subscribe_messages",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 00 02 00 00 48 89 CE",
+  "match": "0x142b92560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142b92560",
+  "kind": "func_start",
+  "names": [
+   "Game_Store_SubscribeMessages"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142b92560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142b92560.c",
+   "notes": "V10245 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

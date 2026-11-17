@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SeasonDocument_UnpackChampionship",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430a1e90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-WEATHERSEED",
+  "notes": "named from its log messages (channel NETWORK-WEATHERSEED): 'GameSessionSeasonDocument::unpackChampionship set seed to %u | %s(%u). | WeatherAndTimeOfDayComponent::setRandomSeed %u'"
+ },
+ "signature": {
+  "id": "game.season_document_unpack_championship",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 28 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5C",
+  "match": "0x1430a1e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430a1e90",
+  "kind": "func_start",
+  "names": [
+   "Game_SeasonDocument_UnpackChampionship"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430a1e90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430a1e90.c;xref:0x143036981",
+   "notes": "V5316 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

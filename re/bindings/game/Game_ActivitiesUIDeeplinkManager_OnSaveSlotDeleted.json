@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ActivitiesUIDeeplinkManager_OnSaveSlotDeleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438637b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_ActivitiesUIDeeplinkManager_OnSaveSlotDeleted;xref:0x14386382e",
+  "notes": "cxx=game::ActivitiesUIDeeplinkManager::onSaveSlotDeleted; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.activities_u_i_deeplink_manager_on_save_slot_deleted",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 68 B8",
+  "match": "0x1438637b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438637b0",
+  "kind": "func_start",
+  "names": [
+   "Game_ActivitiesUIDeeplinkManager_OnSaveSlotDeleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1438637b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438637b0.c;xref:0x143860ed1",
+   "notes": "V6333 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

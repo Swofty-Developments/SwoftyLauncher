@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Calc_SpeedForRadius",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060d720",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_Calc_SpeedForRadius(void *table, float radius, void *cursor)",
+  "evidence": "decomp:re/decomp/14060d720.c;xref:0x14061517f,0x14061534a,0x140615d0c,0x14061680f,0x140616c15",
+  "notes": "Lazily resolves the five ai.general_ai_settings tunables (awareness_time, max_test_distance, max_test_radius, max_test_speed, max_test_time -> 0x146046c50..c70, guard 0x146046c78) but uses only max_test_radius (0x146046c60, 0x14060d757): x = clamp(xmm1, 0, max_test_radius), then tail-jumps (0x14060d79b) to Ai_Table_InterpolateD 0x14068fd10(table, x, getter 0x14063bda0, cursor). All 5 callers in Ai_Update_VehicleDriver pass the per-car table AiCarRecord+0x68 with its cursor AiCarRecord+0x158. Ai_SuggestedGear_ComputeForZone 0x142f5bb50 inlines the same sequence on a gate radius and compares the result with the vehicle gear-speed thresholds, so the table maps corner radius -> speed. (corrected 2026-11-14: was 'returns an interpolated awareness test value'; only the radius clamp is used) (renamed 2026-11-14 from Ai_Calc_AwarenessTest: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.calc_awareness_test",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 C5 F8 29 74 24 20 4C 89 C6 C5 F8 28 F1 48 89 CF 8B 05 ?? ?? ?? ?? 8B 0D ?? ?? ?? ?? 65 48 8B 14 25 58 00 00 00 48 8B 0C CA 3B 81 04 00 00 00 7F 49 48",
+  "match": "0x14060d720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14060d720",
+  "kind": "func_start",
+  "names": [
+   "Ai_Calc_SpeedForRadius"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14060d720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14060d720.c;xref:0x14061517f",
+   "notes": "V3544 resolves the five ai.general_ai_settings.* tweaks once and returns Ai_Table_InterpolateD (0x14068fd10) value; Ai_Update_VehicleDriver call site 0x14061517f seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14060d720",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14060d720-0x14060d825;xref:0x14061517f,0x14061534a,0x140615d0c,0x14061680f,0x140616c15",
+   "notes": "V10597 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 5 calls in Ai_Update_VehicleDriver 0x140614d70 (table [rec+0x68], cursor rec+0x158, e.g. 0x14061501d/0x140615026); the two riprel hits in 0x14060cfe0 are not instruction starts. 3 args. Uses only max_test_radius 0x146046c60 (0x14060d757), getter 0x14063bda0, tail jmp 0x14068fd10. New name fits."
+  }
+ ],
+ "proofs": []
+}

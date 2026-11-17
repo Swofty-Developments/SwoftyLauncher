@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Save_DeptEventState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14128b4b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int FUN(void *state, void *field_list, void *ctx)",
+  "evidence": "decomp:re/decomp/14128b4b0.c;xref:0x1412709b8;xref:0x141271266",
+  "notes": "myteam-g1: Serializes department event state: department_event_generation_seed_buffer, department_event_id_hash_buffer, has_department_event_buffer."
+ },
+ "signature": {
+  "id": "career.save_dept_event_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 38 1D 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 BC 24 20 1D 00 00",
+  "match": "0x14128b4b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14128b4b0",
+  "kind": "func_start",
+  "names": [
+   "Career_Save_DeptEventState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14128b4b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14128b4b0.c;xref:0x1412709b8;xref:0x141271266",
+   "notes": "V9708 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

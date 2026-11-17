@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StreamingAssetLoadTask_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d4b6a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d4b6a0.c;xref:0x142d4a477",
+  "notes": "Async asset load task: state +0x10 0 -> starts load via (+0x70)+0x88 vcall +0x48 with callbacks 0x142d4e040/0x142d4e060 (skipped while the texture manager is busy 0x143bf3780); state 2 -> waits until every resource id in +0x188..+0x190 reports loaded (0x142e39bb0 == 2), then unpauses texture streaming (texmgr+0x21c &= ~0x20), calls completion +0x220 and sets +8 = 2. Caller 0x142d4a477. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2538)"
+ },
+ "signature": {
+  "id": "game.streaming_asset_load_task_update",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 CE 8B 41 10 83 F8 02",
+  "match": "0x142d4b6a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d4b6a0",
+  "kind": "func_start",
+  "names": [
+   "Game_StreamingAssetLoadTask_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Game_StreamingAssetLoadTask_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d4b6a0.c;xref:0x142d4a477",
+   "notes": "V2538 state 0 start load, state 2 wait, &=0xdf unpause with setStreamingPaused false log, completion +0x220"
+  }
+ ],
+ "proofs": []
+}

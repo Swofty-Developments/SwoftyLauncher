@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_U64Map_FindValue_At580",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14450aaf0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14450aaf0.c;xref:0x14039aa80,0x14356b120",
+  "notes": "(owner, u64 key): robin-hood map embedded at owner+0x580 (seed +0x580, slots +0x588, meta +0x590, mask +0x5a0, step +0x5b0); returns entry value ([entry]+8) or 0. Callers: Car_Visual_UpdateRenderState, Sess_Rules_DisqualifyForPenaltyPoints, Sess_Infringement_ProcessQueue."
+ },
+ "signature": {
+  "id": "core.u64_map_find_value_at580",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 89 C8 48 8B 89 80 05 00 00 48 0F AF",
+  "match": "0x14450aaf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14450aaf0",
+  "kind": "func_start",
+  "names": [
+   "Ne_U64Map_FindValue_At580"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14450aaf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14450aaf0.c;xref:0x14039df38",
+   "notes": "V3662 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SequenceClipInstance_BindOptional",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143669690",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143669690.c;xref:0x14018e308,0x14018e374,0x14018e564,0x14018e615",
+  "notes": "cxx=NeSequenceClipInstance::bindOptional; log channel ACTOR_BINDING: 'NeSequenceClipInstance::bindOptional [PASS] CLIP [%s] TARGET [%s]'"
+ },
+ "signature": {
+  "id": "core.sequence_clip_instance_bind_optional",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE 48 8B 59 08",
+  "match": "0x143669690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143669690",
+  "kind": "func_start",
+  "names": [
+   "Ne_SequenceClipInstance_BindOptional"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_SequenceClipInstance_BindOptional",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143669690.c;xref:0x14018e308",
+   "notes": "V1998 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetReliableAsyncSocket_DisconnectAll",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440932f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetReliableAsyncSocket_DisconnectAll;xref:0x144093380;decomp:re/decomp/1440932f0.c",
+  "notes": "cxx=neon::NeNetReliableAsyncSocket::DisconnectAll; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_reliable_async_socket_disconnect_all",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 CE C5 C8 57 F6 C5 F8 11 71 30 66 C7 41",
+  "match": "0x1440932f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440932f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetReliableAsyncSocket_DisconnectAll"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_NetReliableAsyncSocket_DisconnectAll",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440932f0.c;xref:0x1440932f0",
+   "notes": "V2111 Pretty string is DisconnectAll; iterates connections (state!=4) under critsec and setState('disconnecting')"
+  }
+ ],
+ "proofs": []
+}

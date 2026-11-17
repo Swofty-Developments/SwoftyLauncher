@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressManager_AddVehicleSync",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143261250",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143261250.c;xref:0x1430e5409,0x1430e576c,0x14325f952",
+  "notes": "Creates a 0x2a0-byte VehicleProgressSync for car idx (<=26) with authority owner machine param3, stored at this+0xf8+idx*8; subscribes vehicle_newlap_recorded, binds the chassis entity, installs [chassis+0x558]+0x3d0 = Game_VehicleProgressSync_AdvanceChassisPhysics (ctx +0x3d8); sync flags +0x7c: bit0 registered, bit1 remote, bit2 local authority, bit3 entity bound; mirrors the remote flag into physics +0x9ea8 bit3; log Authority of vehicle given to. Addon: core of online car state replication (who simulates each car). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2768)"
+ },
+ "signature": {
+  "id": "game.vehicle_progress_manager_add_vehicle_sync",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 F8 29 B4 24 B0 01 00 00 80 FA 1A 77",
+  "match": "0x143261250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143261250",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressManager_AddVehicleSync"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_VehicleProgressManager_AddVehicleSync",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143261250.c;xref:0x143261250",
+   "notes": "V2768 idx<=0x1a, slot this+0xf8+idx*8, 0x2a0 object, +0x7c flag bits, chassis +0x558 hook +0x3d0/+0x3d8, physics +0x9ea8 confirmed"
+  }
+ ],
+ "proofs": []
+}

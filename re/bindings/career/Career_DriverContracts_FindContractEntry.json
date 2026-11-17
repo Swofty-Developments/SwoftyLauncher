@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContracts_FindContractEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140db7e30",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "bool Find(void *comp, uint32_t *driver_key, uint16_t slot)",
+  "evidence": "decomp:re/decomp/140db7e30.c;xref:0x140aa1bd0;xref:0x140aa1be0;xref:0x140c580be",
+  "notes": "myteam-g2: Robin-Hood hash lookup (comp[0xdb] multiplier, shift byte @+0x70c, table comp[0xdc..]) of a driver key in the contracts map; checks the contract slot (u16). Boolean answer for 'does this driver have this contract / slot'. Hash=(id)*mult;h^=h>>33 open-addressing Robin-Hood map (key packed as u32: byte kind @+0, ushort id @+2)."
+ },
+ "signature": {
+  "id": "career.driver_contracts_find_contract_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 66 44 89 44 24 2E",
+  "match": "0x140db7e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140db7e30",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContracts_FindContractEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140db7e30",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140db7e30.c",
+   "notes": "V9552 Robin-Hood hash lookup (comp[0xdb] mult, shift +0x70c) confirmed, but it first scans a vector at comp[0x54..0x55] for the driver key and compares slot u16 against +0x28 of the entry."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PodiumBaseCutSceneScript_Shutdown",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140358270",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=PodiumBaseCutSceneScript::shutdown; log channel CUTSCENE_PODIUM: 'PodiumBaseCutSceneScript::shutdown'"
+ },
+ "signature": {
+  "id": "game.podium_base_cut_scene_script_shutdown",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 61 B8 4C 01 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 00 8B 14 81 85 D2 74 4B 81 FA 8C DE 03 08 74 30 83 C0 17 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 4C 01 00 00 75 C3 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 89 F1 48 83 C4 20 5E E9 ?? ?? ?? ?? CC 56 57 48 83 EC 28",
+  "match": "0x140358270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140358270",
+  "kind": "func_start",
+  "names": [
+   "Game_PodiumBaseCutSceneScript_Shutdown"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140358270",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140358270.c",
+   "notes": "V4505 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

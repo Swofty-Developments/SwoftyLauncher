@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_WindowWin_Startup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439efdb0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1439efdb0.c;xref:0x1439dbcf3,0x143a06cc2,0x14589c8b8",
+  "notes": "cxx=NeWindowWin::startup; log channel WINDOW: 'NeWindowWin::startup: calling updateAspectRatio'"
+ },
+ "signature": {
+  "id": "core.window_win_startup",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 49 89 D6",
+  "match": "0x1439efdb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439efdb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_WindowWin_Startup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_WindowWin_Startup",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439efdb0.c;xref:0x1439dbcf3",
+   "notes": "V2003 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

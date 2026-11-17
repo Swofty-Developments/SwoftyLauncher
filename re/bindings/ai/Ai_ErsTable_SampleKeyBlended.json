@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_ErsTable_SampleKeyBlended",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14251b3e0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_ErsTable_SampleKeyBlended(void *ers_tables, uint32_t mode, uint32_t slot, float key, float t)",
+  "evidence": "decomp:re/decomp/14251b3e0.c;xref:0x14064919a,0x1406498f9,0x142946fa1,0x142947125,0x142948e79,0x14294930f,0x142949c36",
+  "notes": "mode < 5, slot < 4, else 0. k = slot + (mode 3 -> 4, mode 4 -> 8, else 0); curves c = vec [ers+0x70] stride 0x10 (+8 = ptr): mid = c[k+0xc] (bounds-checked), low = c[k], high = c[k+0x18] (no bounds check). Sample(curve, t) = linear interpolation of the uniform float array curve+0x18..+0x20 at fraction t (last value at the end). If key == mid.key (+4) returns Sample(mid, t); if key < mid.key blends low/mid, else mid/high, linearly in key (extrapolates). Callers Ai_Ers_DecidePushReasons (2) and 3 unnamed functions 0x142946d30 / 0x142948ca0 / 0x142949910. (corrected 2026-11-14: was 'returns the stepped (nearest lower) value' - it interpolates in t and in key; the 'Ai_ErsTable_SampleDelta' 0x14251b710 actually returns a value difference between two fractions) (renamed 2026-11-14 from Ai_ErsTable_SampleStep: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.ers_table_sample_step",
+  "section": ".xtls",
+  "pattern": "48 83 EC 18 C5 F8 29 34 24 C5 F8 57 C0 83 FA 04",
+  "match": "0x14251b3e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14251b3e0",
+  "kind": "func_start",
+  "names": [
+   "Ai_ErsTable_SampleKeyBlended"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x14251b3e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14251b3e0.c;xref:0x14064919a",
+   "notes": "V3399 table index param_3+{4 if mode3, 8 if mode4, 0}+0xc from vector at param_1+0x70 (16B slots), mode<5 sub<4, nearest-lower step index clamp; caller Ai_Ers_DecidePushReasons"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14251b3e0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14251b3e0-0x14251b70f;xref:0x14064919a,0x1406498f9,0x142946fa1,0x142947125,0x142948e79,0x14294930f,0x142949c36",
+   "notes": "V10609 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 7 call sites (2 in 0x1406487a0, 2 in 0x142946d30, 2 in 0x142948ca0, 1 in 0x142949910). 5 args (rcx, edx mode, r8d slot, xmm3 key, stack t). mode>4 / slot>3 -> 0; k = slot + (mode3 ? 4 : mode4 ? 8 : 0); mid = vec[+0x70][k+0xc] bounds-checked, high read as [k*0x10+0x188] = c[k+0x18] unchecked; samples curve+0x18..+0x20 and blends in key. Rename from SampleStep fits."
+  }
+ ],
+ "proofs": []
+}

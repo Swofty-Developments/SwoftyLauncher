@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkOSSession_HostMigratedNowHostWhileSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430fdfb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-OS-SESSION",
+  "notes": "named from its log messages (channel NETWORK-OS-SESSION): '[PUBLISH] Host migrated. We are now HOST while a session is active -> re-publishing session'"
+ },
+ "signature": {
+  "id": "game.network_os_session_host_migrated_now_host_while_session",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 8B 41 70 48 85 C0 74 71 83 78 08 00",
+  "match": "0x1430fdfb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430fdfb0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkOSSession_HostMigratedNowHostWhileSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1430fdfb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430fdfb0.c",
+   "notes": "V5728 Body matches the logged text/signature; vtable/indirect, no direct call site"
+  }
+ ],
+ "proofs": []
+}

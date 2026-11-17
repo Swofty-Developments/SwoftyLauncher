@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_EnterMyTeamCareer_Main",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143703d40",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/143703d40.c;xref:0x14370215a;xref:0x143702794",
+  "notes": "myteam-g1: enter_my_team_career transition (state +0xd78..+0x1218)."
+ },
+ "signature": {
+  "id": "ui.enter_my_team_career_main",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 48 89 D3 48 89 CE 48 8B 81 A0 0C 00 00",
+  "match": "0x143703d40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143703d40",
+  "kind": "func_start",
+  "names": [
+   "Ui_EnterMyTeamCareer_Main"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143703d40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143703d40.c;xref:0x14370215a",
+   "notes": "V10312 Start-HQ-flow message handler: picks enter_my_team_career or enter_team_hq, uses fade requests; calls 1437d1ce0."
+  }
+ ],
+ "proofs": []
+}

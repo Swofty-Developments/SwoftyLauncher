@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "FeTile_Construct_CareerItem",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141725380",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "HomeItem *FeTile_Construct_CareerItem(HomeItem *item, NeAllocator *alloc, const char *id)",
+  "evidence": "decomp:re/decomp/141725380.c;xref:0x1417416aa;decomp:re/decomp/14173df80.c",
+  "notes": "career item ctor shared by the Career menu and content tiles: vt_FeTile_ItemBase, +0x08 allocator, +0x10 id NeStr (the tile's route key), the VmPropHolder members, the career strings [0x2f] +0x178 (career kind), [0x30] +0x180 (content data group), [0x31] +0x188 (suffix) set empty and byte [0x32] +0x190 0. Case 6 allocates 0x1b8 (2025) / 0x1c8 (2026) items with it. Raised by native-1990 for the F1 1990 v2 third Career tile (doc:/mnt/work/.f1-1990/v2/third-tile.md)."
+ },
+ "signature": {
+  "id": "fe_tiles.construct_career_item",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D7 48 89 CE 48 C7 44 24 28 00 00 00 00",
+  "match": "0x141725380",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141725380",
+  "kind": "func_start",
+  "names": [
+   "FeTile_Construct_CareerItem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/career_content.cpp",
+   "addons/f1-1990/native/src/career_menu_ui.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-content",
+   "kind": "func",
+   "item": "FeTile_Construct_CareerItem",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/exe/std-content/decomp/141725380.c;decomp:work/exe/std-content/decomp/14173df80.c;xref:0x141740583,0x1417416aa;sig:fe_tiles.construct_career_item",
+   "notes": "V0903 Independent: 3 args, the third is the id C string (Ne_Make_StrFromCStr into item+0x10); +0x08 allocator, base vt_FeTile_ItemBase then the final vtable 0x145703eb0 (slot 4 0x141726340, slot 5 the router 0x141725620); +0x178/+0x180/+0x188 set to empty NeStr, byte +0x190 = 0, byte +0x148 = 0, bool holder vtable 0x14565f670 at +0x198. Two callers, both in FeTile_Build_List case 6 (0x141740583 2025 tile, 0x1417416aa 2026 tile; the row lists only the second). sigcheck: func_start 1 hit"
+  }
+ ],
+ "proofs": []
+}

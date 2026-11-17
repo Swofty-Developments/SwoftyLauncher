@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerEventsSequencer_SetAllEnabled",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c7a210",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c7a210.c;xref:0x140c71b7e",
+  "notes": "setAllEnabled(bool): sets loading +0x168, spawning +0x169, playback flags (setLoadingEnabled/setSpawningEnabled/setPlaybackEnabled logs) and requests a texture purgeAll(0) when enabling. Caller Game_Careereventssequencer_ResetState. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2534)"
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_set_all_enabled",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 74 01 00 00",
+  "match": "0x140c7a210",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c7a210",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerEventsSequencer_SetAllEnabled"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Game_CareerEventsSequencer_SetAllEnabled",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c7a210.c;xref:0x140c7a210",
+   "notes": "V2534 sets +0x168/+0x169/+0x16a, purgeAll(0) when enabling"
+  }
+ ],
+ "proofs": []
+}

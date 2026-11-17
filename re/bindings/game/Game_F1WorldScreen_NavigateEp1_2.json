@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldScreen_NavigateEp1_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b96540",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141b96540.c;xref:0x141c8ff08,0x145734040",
+  "notes": "UI command (vtable 0x145734040): entry point 1 (0x146066c74), resolves registry node this+0x10 (Vm_Link_RegistryNode) and pushes it through navigator [[this+0x28]+0x620] vcall +0x80 (mode 4). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2456)"
+ },
+ "signature": {
+  "id": "game.f1_world_screen_navigate_ep1_2",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 89 CE 4C 8B 71 28",
+  "match": "0x141b96540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b96540",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldScreen_NavigateEp1_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_F1WorldScreen_NavigateEp1_2",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141b96540.c;xref:0x141b96540",
+   "notes": "V2456 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_IntrosortDriverPtrsByKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140e0d000",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Sort_IntrosortDriverPtrsByKey(int64_t *first, int64_t *last, uint64_t depth, uint32_t reverse)",
+  "evidence": "decomp:re/decomp/140e0d000.c;xref:0x140d900ff;xref:0x140d91472;xref:0x140d9a907",
+  "notes": "myteam-g2: Introsort (insertion below 0x108 bytes, then partition) of pointers to driver records ordered by (u8@+0x50 << 14 | u16@+0x52) = driver key, optionally reversed. std::sort instantiation used when choosing drivers to approach."
+ },
+ "signature": {
+  "id": "core.sort_introsort_driver_ptrs_by_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 44 89 CB 48 89 D6",
+  "match": "0x140e0d000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140e0d000",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_IntrosortDriverPtrsByKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140e0d000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140e0d000.c",
+   "notes": "V9566 Introsort on driver pointers keyed by (u8@+0x50<<14 | u16@+0x52), insertion below 0x108 bytes, optional reverse."
+  }
+ ],
+ "proofs": []
+}

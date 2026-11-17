@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_AppendRecordField",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141116ac0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Sponsors_AppendRecordField(void **vec, void *rec)",
+  "evidence": "decomp:re/decomp/141116ac0.c;xref:0x1410fd9ec;xref:0x141115ac1",
+  "notes": "myteam-g2: Appends a 0x78-byte sponsor record to a vector (grow x1.5, move-construct strings via FUN_140ce3bb0); called while reading sponsor record fields (Sponsors_ReadRecordFields, Load_SponsorDefinition)."
+ },
+ "signature": {
+  "id": "career.sponsors_append_record_field",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 49 89 D6 48 89 CE 48 8B 49 10 48 89 CA 48 2B 56 08 48 C1 FA 03 48 B8 EF EE EE EE EE EE EE EE",
+  "match": "0x141116ac0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141116ac0",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_AppendRecordField"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x141116ac0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141116ac0.c;xref:0x1410fd9ec",
+   "notes": "V9659 Grow-by-1.5x vector push of 0x78-byte records (move via FUN_140ce3bb0)."
+  }
+ ],
+ "proofs": []
+}

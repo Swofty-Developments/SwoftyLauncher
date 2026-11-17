@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_FatalStub_ModelMaterial",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ef8380",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ef8380.c;xref:0x143d416d5,0x143d49507,0x143ef893e",
+  "notes": "Noreturn stub (call 0x145351784, int3) for the model material params hash map. Named callers: Render_Model_ValidateMaterialParams."
+ },
+ "signature": {
+  "id": "core.hash_map_fatal_stub_model_material",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 84 24 D0 00 00 00 48 C1 E0 04 48 03 83",
+  "match": "0x143d416d5",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143ef8380",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_FatalStub_ModelMaterial"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143ef8380",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ef8380.c;xref:0x143d416d5",
+   "notes": "V8163 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

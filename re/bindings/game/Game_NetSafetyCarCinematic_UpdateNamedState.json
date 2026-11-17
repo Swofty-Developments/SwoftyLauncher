@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetSafetyCarCinematic_UpdateNamedState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14362c4f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14362c4f0.c;xref:0x14362c023,0x145852d30",
+  "notes": "Host: sends a named SC cinematic state message {0x9d} (name at [this+0x28]) when its time value changes. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2786)"
+ },
+ "signature": {
+  "id": "game.net_safety_car_cinematic_update_named_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 7C 24 60 C5 F9 29 74 24 50 48 89 CE 48",
+  "match": "0x14362c4f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14362c4f0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetSafetyCarCinematic_UpdateNamedState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_NetSafetyCarCinematic_UpdateNamedState",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14362c4f0.c;xref:0x14362c4f0",
+   "notes": "V2786 msg {0x9d}, host gated confirmed"
+  }
+ ],
+ "proofs": []
+}

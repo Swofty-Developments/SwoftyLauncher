@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContracts_CalcBaseValues",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140db9300",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-DRIVER_CONTRACTS",
+  "notes": "named from its log messages (channel DRIVER_CONTRACTS): '*** Begin *** | Contract base values: driverStatId:%s, baseRating:%f, salaryStat:%f, signingBonusStat:%f, driverAge:%f, leverage:%f, isCounteroffer:%s | Contract calculation: successBase:%d, successLe'"
+ },
+ "signature": {
+  "id": "career.driver_contracts_calc_base_values",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 0B 00 00 C5 78 29 BC 24 A0 0B 00 00",
+  "match": "0x140db9300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140db9300",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContracts_CalcBaseValues"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140db9300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140db9300.c;xref:0x140db754b,0x140dbb87f",
+   "notes": "V4749 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140db9300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140db9300.c",
+   "notes": "V9095 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

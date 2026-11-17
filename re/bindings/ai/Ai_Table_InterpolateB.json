@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Table_InterpolateB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14068bb70",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_Table_InterpolateB(void *table, float a, float b, float (*getter)(void *cell, float, float), void *cur)",
+  "evidence": "decomp:re/decomp/14068bb70.c;xref:0x140606f19,0x140607064,0x14061937a,0x1406216fa,0x14063c20a,0x140651e3b,0x14065480e,0x140680f45,0x14068151f,0x1406815f2,0x1434be8cd,0x1434ccb00",
+  "notes": "Trilinear interpolation in an int-keyed 4-D table: flat index ((cur+0x58*dim198*dim1a0 + i1)*dim1a8 + i2)*dim1b0 + i3 with bracket pairs i1 cur+0x28/+0x30 (axis values table+0xb8, coord cur+4), i2 cur+0x38/+0x40 (table+0xe8, cur+8), i3 cur+0x48/+0x50 (table+0x118, cur+0xc); the 8 corner values come from getter(cells[table+0x30][idx], a, b) with de-duplication of equal indices; degenerate axes (equal bounds or equal values) pass the lower value through. Callers include Ai_BehaviourTestRetire_Update, Game_PitLane_UpdateLimitZones, Ai_TestGraph_EvalDistanceSpeedB, Ai_TestGraph_EvalAtSpeed and Ai_SpeedPlan_EvalAtDistance. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.table_interpolate_b",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC B0 00 00 00 C5 F8 29 BC 24 A0",
+  "match": "0x14068bb70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14068bb70",
+  "kind": "func_start",
+  "names": [
+   "Ai_Table_InterpolateB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14068bb70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14068bb70.c;xref:0x140607064,0x14061937a",
+   "notes": "V3576 strides +0x198,+0x1a0,+0x1a8,+0x1b0 with key fields +0x28..+0x58, linear interpolation; callers seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14068bb70",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14068bb70-0x14068bfad;xref:0x140606f19,0x140607064,0x14061937a,0x1406216fa,0x14063c20a,0x140651e3b,0x14065480e,0x140680f45,0x140681015,0x14068151f,0x1406815f2,0x1434be8cd",
+   "notes": "V10587 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 13 call sites (also 0x1434ccb00 in Game_PitLane_UpdateLimitZones). 5 args: rcx table, xmm1, xmm2, r9 getter (call rdi), cursor as 5th stack arg. Reads table +0x30/+0xb8/+0xe8/+0x118/+0x198/+0x1a0/+0x1a8/+0x1b0 and cursor +0x28..+0x58 as described. Note: caller name Ai_CarTable60_EvalAtClampedSpeed in the notes is stale (0x140606e60 is now Ai_Eval_ClampedTestSpeed_2)."
+  }
+ ],
+ "proofs": []
+}

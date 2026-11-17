@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Deformation_BuildTyreParticles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144109f80",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144109f80.c;xref:0x14465cb96,0x14465e157,0x14465e18e",
+  "notes": "(def, tyreIdx, splits, n, cfg*, flag) builds the tyre deformation particle graph (allocator +0x170, nodes +0x188, Car_Deformation_PushParticleSet). Callers: Car_TyreDeformation_SetTyre, Car_TyreDeformation_CreateTyreBody. (3 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "car.deformation_build_tyre_particles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 02 00 00 C5 78 29 AC 24",
+  "match": "0x144109f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144109f80",
+  "kind": "func_start",
+  "names": [
+   "Car_Deformation_BuildTyreParticles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x144109f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144109f80.c;xref:0x14465cb96",
+   "notes": "V6790 Allocator +0x170, nodes +0x188, PushParticleSet call confirmed."
+  }
+ ],
+ "proofs": []
+}

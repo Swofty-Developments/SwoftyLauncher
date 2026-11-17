@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePointsAward_ReadSaveData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143503310",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int f(void *award, void *save_in)",
+  "evidence": "decomp:re/decomp/143503310.c;xref:0x141229724",
+  "notes": "myteam-g1: Save reader of the same block plus resource_point_multipliers."
+ },
+ "signature": {
+  "id": "career.resource_points_award_read_save_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 02 00 00 C5 78 29 B4 24 30 02 00 00",
+  "match": "0x143503310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143503310",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePointsAward_ReadSaveData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143503310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143503310.c;xref:0x141229724",
+   "notes": "V10263 Reader of the same block incl. multiplier_saved_mask, contract_perk_multiplier, setting_multiplier and resource_point_multipliers."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Ai_Parse_BlockingConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14065dad0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Parse_BlockingConfig(void **slots, void *db_row)",
+  "evidence": "decomp:re/decomp/14065dad0.c;xref:0x14065dc68",
+  "notes": "Stores 16 DB cell pointers (0x1445a2cf0(row, key, 0)) into slots[0..15] = AiDriverConfig+0x40..+0xb8 (called with D+0x40 from Ai_Parse_DriverConfig 0x14065dc50; row = 'ai_driver_config' of 'default_driver', see 0x14249a4f0): start_blocking_intersection_time, start_blocking_maximum/minimum_time_to_corner, time_to_corner_for_end/start_merge_rate, end_blocking_time_to_corner_vs_offset, blocking_offset_from_car_behind, blocking_speed_differential, blocking_threat_time_modifier, blocking_variable_offset_fraction, fraction_of_follow_speed(_at_race_start), max_blocking_distance(_at_race_start), avoidance_decrease_rate, merge_back_to_racing_line (corrected 2026-11-14: source is ai_driver_config, not ai_vehicle_config; safe_blocking_distance(_at_race_start) is NOT here, it is handling-config +0x90/+0x98 from 0x1406828a0). No unique byte signature (body identical to sibling parsers apart from string offsets). L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.parse_blocking_config",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 48 89 F1 45 31 C0 E8 ?? ?? ?? ?? 48 89 87 C0 00",
+  "match": "0x14065dc68",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14065dad0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Parse_BlockingConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x14065dad0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14065dad0.c;xref:0x14065dc68",
+   "notes": "V7319 16 blocking.* fields stored; no safe blocking distance key (only max_blocking_distance); section name ai_vehicle_config comes from caller Ai_Parse_VehicleConfigGroups"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14065dad0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14065dad0-0x14065dc42;xref:0x14065dc68",
+   "notes": "V10568 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x14065dc68 in Ai_Parse_DriverConfig (rcx = cfg+0x40); the riprel hit 0x14075bd57 is not an instruction. 2 args (rcx slots, rdx row). 16 calls to 0x1445a2cf0 with the 16 blocking.* key strings, stored to slots +0x00..+0x78 confirmed."
+  }
+ ],
+ "proofs": []
+}

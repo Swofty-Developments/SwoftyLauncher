@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractNegotiationsHost_RegisterMessageHandlers_Alloc",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411415f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_ContractNegotiationsHost_RegisterMessageHandlers_Alloc(void *host)",
+  "evidence": "decomp:re/decomp/1411415f0.c;xref:0x1456c1570",
+  "notes": "myteam-g1: Registers MessageDriverContractChanged (14565e28c) and related handlers with heap functors on a driver-contract aware host (host+0x278 game, +0x5b0 listener vector, +0x458/+0x438 driver vectors) and refreshes cached state via 411395e0/4113ef50."
+ },
+ "signature": {
+  "id": "career.contract_negotiations_host_register_message_handlers_alloc",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 BC 24 50 01 00 00 C5 F8 29 B4 24 40 01 00 00 48 89 CE 48 8B 89 70 02 00 00",
+  "match": "0x1411415f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411415f0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractNegotiationsHost_RegisterMessageHandlers_Alloc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x1411415f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411415f0.c;xref:0x1456c1570;str:\"MessageDriverContractChanged\"",
+   "notes": "V9668 Five Ne_Subscribe_BusMessage calls (MessageDriverContractChanged, team_hq_exit, AttributeSetRecalculatedMessage, CustomisationAssignmentChanged, CROnlinePlayerSubstituted)."
+  }
+ ],
+ "proofs": []
+}

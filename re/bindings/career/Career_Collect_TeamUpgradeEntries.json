@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Collect_TeamUpgradeEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141223200",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t *Collect(void *mgr, uint32_t *out_vec, uint32_t team_key)",
+  "evidence": "decomp:re/decomp/141223200.c;xref:0x140a9f77e;xref:0x140aa413e;xref:0x140ab7086",
+  "notes": "myteam-g2: Walks the career's upgrade/part list (mgr+0x278 -> +0x2e0..0x2e8, stride 0x88), keeps entries whose team key (byte +0x58, ushort +0x5a) equals team_key into a temp pointer vector (alloc at mgr+0x210) and copies matching upgrade ids (via FUN_1424e0c80) to out. Used by Career_Purchase_UpgradesForSimulatedTeams and department upgrade counts. Read-only list builder."
+ },
+ "signature": {
+  "id": "career.collect_team_upgrade_entries",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D3 48 8B 81 10 02 00 00",
+  "match": "0x141223200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141223200",
+  "kind": "func_start",
+  "names": [
+   "Career_Collect_TeamUpgradeEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x141223200",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141223200.c;xref:0x140a9f77e",
+   "notes": "V9678 Walks +0x2e0..+0x2e8 of mgr+0x278 (stride 0x88), keeps entries with team key bytes +0x58/+0x5a, copies ids via 1424e0c80."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTransport_NeNetReliableAsyncSocket",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14405f260",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-TRANSPORT",
+  "notes": "named from its log messages (channel NETWORK-TRANSPORT): 'NeNetReliableAsyncSocket constructed with DTLS encryption provider'"
+ },
+ "signature": {
+  "id": "game.network_transport_ne_net_reliable_async_socket",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 48 89 D7 48 89 CE 48 8D 05",
+  "match": "0x14405f260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14405f260",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTransport_NeNetReliableAsyncSocket"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14405f260",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14405f260.c;xref:0x144057237",
+   "notes": "V6489 partial: better name Game_NetworkTransport_ReliableAsyncSocketInit; 10 KB ctor/setSocketParameters incl. DTLS/NULL encryption provider choice"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14405f260",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14405f260.c;xref:0x144057237",
+   "notes": "V7135 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

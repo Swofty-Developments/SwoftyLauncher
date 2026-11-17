@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_GameValue_GetNetWeeklyIncome",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140a9b3f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "float (void *ctx)",
+  "evidence": "decomp:re/decomp/140a9b3f0.c;xref:0x140a5bfee",
+  "notes": "myteam-g1: Game-value getter (used by sponsor goals/conditions): finds the career component, looks up the named stat net_weekly_income in its stat table (+0x290 hash, entries stride 0x18) and returns value/1000 as float. Read-only."
+ },
+ "signature": {
+  "id": "career.game_value_get_net_weekly_income",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 60 C5 F8 29 74 24 50 48 8B 41 08",
+  "match": "0x140a9b3f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140a9b3f0",
+  "kind": "func_start",
+  "names": [
+   "Career_GameValue_GetNetWeeklyIncome"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140a9b3f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140a9b3f0.c;str:\"net_weekly_income\"",
+   "notes": "V9485 Finds career component, looks up net_weekly_income in stat table (+0x290 hash, 0x18 stride), reads value, returns value/1000 as float."
+  }
+ ],
+ "proofs": []
+}

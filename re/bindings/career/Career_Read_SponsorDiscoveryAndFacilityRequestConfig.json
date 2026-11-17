@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Read_SponsorDiscoveryAndFacilityRequestConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cb77a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *cfg, void *xml_node)",
+  "evidence": "decomp:re/decomp/140cb77a0.c;xref:0x145686bb0",
+  "notes": "myteam-g1: Reads tuning values: base/current secondary-sponsor discovery chance attributes, min_days/max_days_trigger_facility_request and minimum_days_between_department_events (stored at cfg+0x36c..+0x3c8). Modders can tune how often facility requests and department events fire."
+ },
+ "signature": {
+  "id": "career.read_sponsor_discovery_and_facility_request_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 89 D3 48 89 CE E8",
+  "match": "0x140cb77a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb77a0",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_SponsorDiscoveryAndFacilityRequestConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140cb77a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb77a0.c;str:\"min_days_trigger_facility_request\"",
+   "notes": "V9518 Reads minimum_days_between_department_events, sponsor discovery chance attributes, min/max_days_trigger_facility_request."
+  }
+ ],
+ "proofs": []
+}

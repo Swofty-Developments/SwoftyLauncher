@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_RegisterRenderTargets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143544f30",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143544f30.c;xref:0x14014d26d",
+  "notes": "120 KB initialiser (15698 decomp lines) declaring renderer render targets / textures by name, e.g. aid://ego_package/rr_style_target_for_ml_export_in_nrd_mode.image, video_reel_staging_0, cubemap_gbuffer_depth_stencil_0, aid://vfx_package/volumeLightIBLDataRight.image (G-buffer, NRD denoiser, cubemaps, volumetric light, video reel). Single caller Game_Read_RendererGfxConfig. Addon: authoritative list of render target ids. Hypothesis on exact role."
+ },
+ "signature": {
+  "id": "render.gfx_register_render_targets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC F0 04 00 00 C5 78 29 9C 24 E0",
+  "match": "0x143544f30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143544f30",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_RegisterRenderTargets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x143544f30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143544f30.c;xref:0x14014d26d",
+   "notes": "V7590 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

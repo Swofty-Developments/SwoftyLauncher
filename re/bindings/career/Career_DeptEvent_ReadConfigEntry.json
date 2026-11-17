@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_ReadConfigEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141361440",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void FUN(void *out, void *cfg)",
+  "evidence": "decomp:re/decomp/141361440.c;xref:0x1456d8b70;xref:0x1456dd700",
+  "notes": "myteam-g1: Reads a single department_event config node (key lookups 0x1445a25c0/0x1445a28f0/0x1445a2cf0) into an event definition."
+ },
+ "signature": {
+  "id": "career.dept_event_read_config_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 08 00 00 C5 F8 29 B4 24 80 08 00 00 48 8B 81 C0 02 00 00 48 3B 81 C8 02 00 00 74 07 48 89 81 C8 02 00 00 48 8B 01 48 89 4C 24 28 48 8D B4 24 78 06 00 00",
+  "match": "0x141361440",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141361440",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_ReadConfigEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141361440",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141361440.c;xref:0x1456d8b70;xref:0x1456dd700",
+   "notes": "V9711 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

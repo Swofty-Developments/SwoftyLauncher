@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetFormationLap_HandleSessionState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143259830",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143259830.c;xref:0x14ffbdbc3",
+  "notes": "Client: receives the formation lap session state (msg+0x18 u32 -> +0x70, msg+0x1c -> +0x74), flags +0x71 on_formation_lap, +0x72 completed, +0x73 skipped (log [FORMATION_LAP] received). d8-verify: +0x74 ends up 1, overwriting the msg+0x1c byte | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2763)"
+ },
+ "signature": {
+  "id": "game.net_formation_lap_handle_session_state",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 83 79 08 02 0F 8C ?? ?? ?? ?? 0F B6",
+  "match": "0x143259830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143259830",
+  "kind": "func_start",
+  "names": [
+   "Game_NetFormationLap_HandleSessionState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_NetFormationLap_HandleSessionState",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143259830.c;xref:0x143259830",
+   "notes": "V2763 role>1 client; msg+0x18 u32 -> +0x70 (bytes 0x71..0x73 = flags), +0x74 ends = 1 (msg+0x1c byte overwritten) minor"
+  }
+ ],
+ "proofs": []
+}

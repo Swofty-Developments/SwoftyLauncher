@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamCustomisationOnboardingIncomplete_Check",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141981500",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *ctx)",
+  "evidence": "decomp:re/decomp/141981500.c;xref:0x14571f000",
+  "notes": "myteam-g1: Fires my_team_customisation_onboarding_incomplete when the player leaves customisation before finishing; touches onboarding blob."
+ },
+ "signature": {
+  "id": "career.my_team_customisation_onboarding_incomplete_check",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CE 48 8B 99 50 01 00 00",
+  "match": "0x141981500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141981500",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamCustomisationOnboardingIncomplete_Check"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141981500",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141981500.c;xref:0x14571f000",
+   "notes": "V9866 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

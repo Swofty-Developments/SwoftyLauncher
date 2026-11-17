@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MatchingProcessor_Complete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143088370",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=MatchingProcessor::complete; log channel NETWORK-MATCHING: 'MatchingProcessor::complete()'"
+ },
+ "signature": {
+  "id": "game.matching_processor_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 69",
+  "match": "0x143088370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143088370",
+  "kind": "func_start",
+  "names": [
+   "Game_MatchingProcessor_Complete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143088370",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143088370.c;xref:0x1409fc5e9",
+   "notes": "V5640 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}
