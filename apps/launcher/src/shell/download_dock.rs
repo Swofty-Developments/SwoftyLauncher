@@ -201,7 +201,7 @@ impl Shell {
                     Some(1.)
                 },
             )
-        } else if let Some((done, text)) = self.progress.clone() {
+        } else if let Some((done, text)) = self.overlays.progress.clone() {
             (download_title(1, 1, true), text, bar_fraction(Some(done)))
         } else {
             return None;

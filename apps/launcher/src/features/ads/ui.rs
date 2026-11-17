@@ -45,12 +45,12 @@ impl Shell {
     /// the window, so they hide while one is open.
     pub(crate) fn ads_covered(&self, window: &mut Window, cx: &mut App) -> bool {
         self.popover.is_some()
-            || self.tasks.is_some()
+            || self.overlays.tasks.is_some()
             || self.crashes.shown().is_some()
             || self.account.ban.is_some()
-            || self.moving.is_some()
-            || self.found_data.is_some()
-            || self.dropping
+            || self.overlays.moving.is_some()
+            || self.overlays.found_data.is_some()
+            || self.overlays.dropping
             || window.has_active_dialog(cx)
             || window.has_active_sheet(cx)
     }

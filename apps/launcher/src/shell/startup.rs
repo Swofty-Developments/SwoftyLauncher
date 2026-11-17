@@ -112,12 +112,6 @@ impl Shell {
             requests: None,
             console: None,
             developer: Default::default(),
-            progress: None,
-            tasks: None,
-            moving: None,
-            found_data: None,
-            dropping: false,
-            onboarding: None,
             reload_generation: 0,
             slow_logged: false,
             updates: crate::features::update::Updates::new(),
@@ -178,6 +172,7 @@ impl Shell {
                 _updates: updates,
                 _catalog: catalog,
             },
+            overlays: super::overlays::Overlays::default(),
         };
         shell.refresh_views(cx);
         match std::env::var("SWOFTY_LAUNCHER_OPEN_PAGE").as_deref() {

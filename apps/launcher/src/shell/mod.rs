@@ -14,6 +14,7 @@ mod launch_alerts;
 mod nav;
 pub(crate) mod notices;
 mod overflow;
+mod overlays;
 mod page;
 pub(crate) mod page_parts;
 mod play;
@@ -54,12 +55,6 @@ pub struct Shell {
     pub(crate) requests: Option<SystemTime>,
     pub(crate) console: Option<AnyWindowHandle>,
     pub(crate) developer: crate::features::developer::Developer,
-    pub(crate) progress: Option<(f32, String)>,
-    pub(crate) tasks: Option<crate::dialogs::tasks::TaskDialog>,
-    pub(crate) moving: Option<crate::dialogs::data_move::Moving>,
-    pub(crate) found_data: Option<crate::dialogs::found_data::FoundPrompt>,
-    pub(crate) dropping: bool,
-    pub(crate) onboarding: Option<crate::features::onboarding::Onboarding>,
     reload_generation: u64,
     slow_logged: bool,
     pub(crate) updates: crate::features::update::Updates,
@@ -91,6 +86,7 @@ pub struct Shell {
     pub(crate) crashes: crate::dialogs::crash::Crashes,
     pub(crate) layout: crate::shell::render::Layout,
     pub(crate) _background: crate::shell::startup::Background,
+    pub(crate) overlays: overlays::Overlays,
 }
 
 pub struct SliderSlot {

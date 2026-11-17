@@ -102,8 +102,8 @@ impl Render for Shell {
             Page::Settings => self.settings_page(p, cx),
             Page::Section(i) => self.section_page(i, p, cx),
         };
-        if self.dropping && !cx.has_active_drag() {
-            self.dropping = false;
+        if self.overlays.dropping && !cx.has_active_drag() {
+            self.overlays.dropping = false;
         }
         let has_sub = self.sub_nav(layout_width).is_some();
         let page = self.page_name();
@@ -114,8 +114,8 @@ impl Render for Shell {
             .on_key_down(cx.listener(|this, ev: &KeyDownEvent, window, cx| this.nav_key(ev, window, cx)))
             .size_full()
             .on_drag_move::<ExternalPaths>(cx.listener(|this, _, _, cx| {
-                if !this.dropping {
-                    this.dropping = true;
+                if !this.overlays.dropping {
+                    this.overlays.dropping = true;
                     cx.notify();
                 }
             }))
@@ -162,7 +162,7 @@ impl Render for Shell {
             .children(self.ban_overlay(p, cx))
             .children(self.data_move_overlay(p, cx))
             .children(self.found_data_overlay(p, cx))
-            .when(self.dropping, |d| d.child(self.drop_overlay(p)))
+            .when(self.overlays.dropping, |d| d.child(self.drop_overlay(p)))
             .children(self.ads.sweep());
         self.note_slow("render", page, started);
         tree

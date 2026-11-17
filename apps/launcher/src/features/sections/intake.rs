@@ -163,7 +163,7 @@ pub(super) fn import_all(
 
 impl Shell {
     pub(crate) fn drop_paths(&mut self, paths: Vec<PathBuf>, window: &mut Window, cx: &mut Context<Self>) {
-        self.dropping = false;
+        self.overlays.dropping = false;
         if paths.is_empty() {
             return;
         }
@@ -333,7 +333,7 @@ impl Shell {
     }
 
     pub(crate) fn follow_progress(&mut self, shared: Shared, cx: &mut Context<Self>) {
-        self.progress = shared.lock().ok().and_then(|p| p.clone());
+        self.overlays.progress = shared.lock().ok().and_then(|p| p.clone());
         cx.spawn(async move |this, cx| {
             loop {
                 cx.background_executor().timer(Duration::from_millis(100)).await;
@@ -341,7 +341,7 @@ impl Shell {
                 let done = now.is_none();
                 if this
                     .update(cx, |s, cx| {
-                        s.progress = now;
+                        s.overlays.progress = now;
                         cx.notify();
                     })
                     .is_err()
