@@ -1,6 +1,6 @@
 // Host-native unit test for the core's front-end tile list guard (native/src/core/guards/frontend/fe_tile_guard_logic.hpp): which
 // entrant-list slot arrays hold a label, which database answers are the miss pointer, how often a label is logged and
-// how the env switch parses. Built and run by native/test/run_fe_tile_guard_test.sh.
+// how the env switch parses. Built and run by native/test/run_tests.sh fe_tile_guard.
 
 #include "core/guards/frontend/fe_tile_guard_logic.hpp"
 

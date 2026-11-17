@@ -1,6 +1,6 @@
 // Host-native unit test for the minute summary lines of the core's profiler (native/src/core/diagnostics/perf_logic.hpp): the
 // VirtualQuery line, the process CPU line and the busiest probes with their call rates. Built and run by
-// native/test/run_perf_logic_test.sh.
+// native/test/run_tests.sh perf_logic.
 
 #include "core/diagnostics/perf_logic.hpp"
 

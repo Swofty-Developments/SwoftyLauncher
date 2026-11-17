@@ -1,5 +1,5 @@
 // Host unit test for the main menu logic (main_menu_logic.hpp): the row layout, the removed entries, the status
-// strip text, the home menu state file and the Time Trial warning rule. run_main_menu_test.sh builds and runs it.
+// strip text, the home menu state file and the Time Trial warning rule. native/test/run_tests.sh main_menu builds and runs it.
 #include "core/frontend/main_menu_logic.hpp"
 
 #include <cmath>

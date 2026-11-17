@@ -1,5 +1,5 @@
 // Host-native unit test for the core's AI line set guard (native/src/core/guards/ai/ai_line_set_logic.hpp).
-// Built and run by native/test/run_ai_line_set_test.sh.
+// Built and run by native/test/run_tests.sh ai_line_set.
 
 #include "core/guards/ai/ai_line_set_logic.hpp"
 
