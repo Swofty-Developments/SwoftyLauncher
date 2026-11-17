@@ -47,10 +47,6 @@
    "pattern": "E9 ?? ?? ?? ?? E9 E5 AF ?? ?? ?? ?? CC 07 24 0A",
    "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
   },
-  "Game_CheckPrivilegeTask_OnUpdate": {
-   "pattern": "E9 ?? ?? ?? ?? E9 05 1F 28 02 F7 33 57",
-   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours and its callers and vtable slots agree with the KB build."
-  },
   "Game_CreateSessionDlcSelectTab_BuildTiles": {
    "pattern": "48 8D BE 30 06 00 00 80 BE 70 07 00 00 00 74 0F 48 89 F9 E8 ?? ?? ?? ?? C6 86 70 07 00 00 00 48 8B 46 10 48 8D 50 08 48 85 C0 4C 8D 35 ?? ?? ?? ?? 49 0F 44 D6 4C 8D 05 ?? ?? CC 03 48 89 F9 E8 ?? ?? ?? ?? 48 8D 9E 50 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? 48 8D 9E D0 06 00 00 48 89 F9 E8 ?? ?? ?? ?? 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 20 4C 8D 05 ?? ?? ?? ?? 4C 8D 0D ?? ?? ?? ?? 48 89 D9 48 89 C2 E8 ?? ?? ?? ?? C6 44 24 30 00",
    "note": "The base pattern holds displacements or constants that moved on 1.0.145. They are wildcarded; the match is the same code as on the KB build."
@@ -2952,12 +2948,6 @@
   "Game_Championship_VirtualisePendingSessions": {
    "match": "0xbd45e0"
   },
-  "Game_CheckPrivilegeTask_OnUpdate": {
-   "match": "0x33727c0"
-  },
-  "Game_CheckPrivilegeTask_PrivilegeCheckTaskCallback": {
-   "match": "0x3372e00"
-  },
   "Game_Check_ReturnToGarageTimeLimit": {
    "match": "0x24ae250"
   },
@@ -4221,9 +4211,6 @@
   "Game_InstantRace_SetupTrackList": {
    "match": "0xba28b0"
   },
-  "Game_InviteManager_Cancel": {
-   "match": "0x30646d0"
-  },
   "Game_InviteManager_ChangeState": {
    "match": "0x3164140"
   },
@@ -4473,14 +4460,8 @@
   "Game_NetworkReady_SetRelevantSet": {
    "match": "0x2cf6240"
   },
-  "Game_NetworkSubsystem_ChangeMPMode": {
-   "match": "0x30ef8c0"
-  },
   "Game_NetworkSubsystem_SelectTitleConfig": {
    "match": "0x309b9b0"
-  },
-  "Game_NetworkSubsystem_UpdateKeyMaterial": {
-   "match": "0x320b3f0"
   },
   "Game_NetworkUI_StartRankedDivisionSearch": {
    "match": "0x30b23b0"
@@ -4586,9 +4567,6 @@
   },
   "Game_OptionsUI_ApplyFilterLevelCollectChanges": {
    "match": "0x1dbef30"
-  },
-  "Game_OsService_SubmitRequest": {
-   "match": "0x32be2a0"
   },
   "Game_PagedBuffer_Transfer": {
    "match": "0x45da410"
@@ -7229,9 +7207,6 @@
   },
   "Ne_PresenceNameResolverEADP_VectorGrow": {
    "match": "0x4138270"
-  },
-  "Ne_PresenceNameResolverFixed_AddName": {
-   "match": "0x412c8f0"
   },
   "Ne_PresenceNameResolverFixed_InsertName": {
    "match": "0x412c907"

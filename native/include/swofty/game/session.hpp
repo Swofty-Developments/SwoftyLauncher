@@ -82,6 +82,21 @@ static_assert(offsetof(GameWeatherSystem, forced_seed) == 0x1f14);
 static_assert(offsetof(GameWeatherSystem, weekend) == 0x1f18);
 static_assert(offsetof(GameWeatherSystem, dataset_dynamic) == 0x2f3a);
 
+struct InputRecord {
+    uint8_t _pad_0x0[0x4];
+    int32_t gear_request; // L2 experimental
+    uint8_t _pad_0x8[0x4];
+    float brake; // L2 experimental
+    float clutch; // L2 experimental
+    float steering; // L2 experimental
+    float throttle; // L2 experimental
+};
+static_assert(offsetof(InputRecord, gear_request) == 0x4);
+static_assert(offsetof(InputRecord, brake) == 0xc);
+static_assert(offsetof(InputRecord, clutch) == 0x10);
+static_assert(offsetof(InputRecord, steering) == 0x14);
+static_assert(offsetof(InputRecord, throttle) == 0x18);
+
 struct RedFlagSystem {
     uint8_t _pad_0x0[0x40];
     uint8_t state; // L2 experimental

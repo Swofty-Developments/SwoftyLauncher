@@ -1027,6 +1027,8 @@ inline constexpr fn<"Career_Adjust_RpDriverWallet", Career_Adjust_RpDriverWallet
 using Career_Adjust_RpTeamWallet_t = void(void *wallets, uint32_t team_key, int32_t delta);
 inline constexpr fn<"Career_Adjust_RpTeamWallet", Career_Adjust_RpTeamWallet_t> Career_Adjust_RpTeamWallet{}; // L2 experimental
 inline constexpr address<"Career_Apply_RnDChallengerIconsLayout"> Career_Apply_RnDChallengerIconsLayout{}; // L2 experimental
+using Career_Auction_ResolveAiOffer_t = void(void *self, void *teams, uint32_t a3, void *a4, bool a5, bool a6);
+inline constexpr fn<"Career_Auction_ResolveAiOffer", Career_Auction_ResolveAiOffer_t> Career_Auction_ResolveAiOffer{}; // L2 experimental
 inline constexpr address<"Career_Bank_ApplyTransactionToBalance"> Career_Bank_ApplyTransactionToBalance{}; // L2 experimental
 using Career_Bank_CollectLedgerEntriesInRange_t = void *(void *bank, void *out_vec, uint32_t team_key, uint32_t time_from, uint32_t time_to);
 inline constexpr fn<"Career_Bank_CollectLedgerEntriesInRange", Career_Bank_CollectLedgerEntriesInRange_t> Career_Bank_CollectLedgerEntriesInRange{}; // L2 experimental
@@ -1188,6 +1190,8 @@ inline constexpr fn<"Career_ContractOutro_OnExit", Career_ContractOutro_OnExit_t
 using Career_ContractOutro_OnUpdate_t = uint32_t *(void *state, uint32_t *link);
 inline constexpr fn<"Career_ContractOutro_OnUpdate", Career_ContractOutro_OnUpdate_t> Career_ContractOutro_OnUpdate{}; // L2 experimental
 inline constexpr address<"Career_ContractPerksVM_OnActivate"> Career_ContractPerksVM_OnActivate{}; // L2 experimental
+using Career_ContractRenewal_AiApproach_t = void(void *sys, const uint32_t *driver_key);
+inline constexpr fn<"Career_ContractRenewal_AiApproach", Career_ContractRenewal_AiApproach_t> Career_ContractRenewal_AiApproach{}; // L2 experimental
 using Career_ContractRenewal_AllSlotsMeetMinimum_t = uint64_t(void *comp);
 inline constexpr fn<"Career_ContractRenewal_AllSlotsMeetMinimum", Career_ContractRenewal_AllSlotsMeetMinimum_t> Career_ContractRenewal_AllSlotsMeetMinimum{}; // L2 experimental
 inline constexpr address<"Career_ContractRenewal_Deserialise"> Career_ContractRenewal_Deserialise{}; // L2 experimental
