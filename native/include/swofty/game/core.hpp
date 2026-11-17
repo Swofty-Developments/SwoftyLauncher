@@ -713,7 +713,6 @@ inline constexpr address<"Ne_RenderViewParams_InitDefaults"> Ne_RenderViewParams
 inline constexpr address<"Ne_ReplayBuffer_GetOldestValidPosition"> Ne_ReplayBuffer_GetOldestValidPosition{}; // L2 experimental
 inline constexpr address<"Ne_ReplayRecordable_ReadFrom"> Ne_ReplayRecordable_ReadFrom{}; // L2 experimental
 inline constexpr address<"Ne_ReplaySystem_ForceReset"> Ne_ReplaySystem_ForceReset{}; // L2 experimental
-inline constexpr address<"Ne_ReplaySystem_ResetSlot24"> Ne_ReplaySystem_ResetSlot24{}; // L2 experimental
 inline constexpr address<"Ne_Replay_SetState"> Ne_Replay_SetState{}; // L2 experimental
 inline constexpr address<"Ne_ResourceHandle_Init"> Ne_ResourceHandle_Init{}; // L2 experimental
 inline constexpr address<"Ne_ResourceMgr_ReleaseIfOwned"> Ne_ResourceMgr_ReleaseIfOwned{}; // L2 experimental

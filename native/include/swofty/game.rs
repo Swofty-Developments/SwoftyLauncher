@@ -10755,16 +10755,6 @@ pub mod bindings {
         kind: "func",
         status: Status::Experimental,
     };
-    pub const Game_GhostLapHandler_StartLeaderboardEntryWrite: Binding = Binding {
-        id: "Game_GhostLapHandler_StartLeaderboardEntryWrite",
-        kind: "func",
-        status: Status::Experimental,
-    };
-    pub const Game_GhostLapHandler_StartRemoteStorageDownload: Binding = Binding {
-        id: "Game_GhostLapHandler_StartRemoteStorageDownload",
-        kind: "func",
-        status: Status::Experimental,
-    };
     pub const Game_GhostLapHandler_StartRemoteStorageUpload: Binding = Binding {
         id: "Game_GhostLapHandler_StartRemoteStorageUpload",
         kind: "func",
@@ -10782,11 +10772,6 @@ pub mod bindings {
     };
     pub const Game_GhostLapsStorageSystem_Dtor: Binding = Binding {
         id: "Game_GhostLapsStorageSystem_Dtor",
-        kind: "func",
-        status: Status::Experimental,
-    };
-    pub const Game_GhostLapsStorageSystem_OnSessionEnter: Binding = Binding {
-        id: "Game_GhostLapsStorageSystem_OnSessionEnter",
         kind: "func",
         status: Status::Experimental,
     };
@@ -16097,11 +16082,6 @@ pub mod bindings {
     };
     pub const Ne_ReplaySystem_ForceReset: Binding = Binding {
         id: "Ne_ReplaySystem_ForceReset",
-        kind: "func",
-        status: Status::Experimental,
-    };
-    pub const Ne_ReplaySystem_ResetSlot24: Binding = Binding {
-        id: "Ne_ReplaySystem_ResetSlot24",
         kind: "func",
         status: Status::Experimental,
     };

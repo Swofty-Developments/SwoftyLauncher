@@ -783,13 +783,10 @@ inline constexpr address<"Game_GhostLapHandler_Dtor"> Game_GhostLapHandler_Dtor{
 inline constexpr address<"Game_GhostLapHandler_EvaluatePerformanceState"> Game_GhostLapHandler_EvaluatePerformanceState{}; // L2 experimental
 inline constexpr address<"Game_GhostLapHandler_FreeSessionRivalStorage"> Game_GhostLapHandler_FreeSessionRivalStorage{}; // L2 experimental
 inline constexpr address<"Game_GhostLapHandler_OnSessionRivalSearchCompleted"> Game_GhostLapHandler_OnSessionRivalSearchCompleted{}; // L2 experimental
-inline constexpr address<"Game_GhostLapHandler_StartLeaderboardEntryWrite"> Game_GhostLapHandler_StartLeaderboardEntryWrite{}; // L2 experimental
-inline constexpr address<"Game_GhostLapHandler_StartRemoteStorageDownload"> Game_GhostLapHandler_StartRemoteStorageDownload{}; // L2 experimental
 inline constexpr address<"Game_GhostLapHandler_StartRemoteStorageUpload"> Game_GhostLapHandler_StartRemoteStorageUpload{}; // L2 experimental
 inline constexpr address<"Game_GhostLapHandler_Update"> Game_GhostLapHandler_Update{}; // L2 experimental
 inline constexpr address<"Game_GhostLapsStorageSystem_Connect"> Game_GhostLapsStorageSystem_Connect{}; // L2 experimental
 inline constexpr address<"Game_GhostLapsStorageSystem_Dtor"> Game_GhostLapsStorageSystem_Dtor{}; // L2 experimental
-inline constexpr address<"Game_GhostLapsStorageSystem_OnSessionEnter"> Game_GhostLapsStorageSystem_OnSessionEnter{}; // L2 experimental
 inline constexpr address<"Game_GhostLapsStorageSystem_OnSessionExit"> Game_GhostLapsStorageSystem_OnSessionExit{}; // L2 experimental
 inline constexpr address<"Game_GhostLapsStorageSystem_OnSessionRestart"> Game_GhostLapsStorageSystem_OnSessionRestart{}; // L2 experimental
 inline constexpr address<"Game_GhostRivalFinder_Finish"> Game_GhostRivalFinder_Finish{}; // L2 experimental
