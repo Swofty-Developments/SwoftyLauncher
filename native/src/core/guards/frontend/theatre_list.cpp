@@ -57,11 +57,12 @@ constexpr const char *STEP_ALT = "site_Game_TheatreList_EntryStepAlt";
 constexpr const char *NO_SLOT_ALT = "site_Game_TheatreList_NoSlotAlt";
 constexpr const char *ROW_OFFSET = "site_Game_TheatreRows_RowOffset";
 
+namespace guards = swofty_core::guards;
 namespace tl = runtime::theatre_list;
 
 uintptr_t no_slot = 0, no_slot_alt = 0;
 bool rows_offered = false;
-std::atomic<int> skipped{0}, moved{0};
+guards::LogFirst<tl::LOG_FIRST> skipped{"skips"}, moved{"moves"};
 
 bool read_memory(uint64_t address, void *out, size_t n, void *)
 {
@@ -83,11 +84,10 @@ void skip(SwoftyContext *c, uintptr_t exit_at)
         return;
     c->rax = exit.rax;
     c->rip = exit.rip;
-    int n = ++skipped;
-    if (n > tl::LOG_FIRST)
+    auto line = skipped.note();
+    if (!line)
         return;
-    swofty::log("[theatre] a saved item names an owner that is not in the current list, so it has no save slot%s",
-                n == tl::LOG_FIRST ? " (further skips are not logged)" : "");
+    swofty::log("[theatre] a saved item names an owner that is not in the current list, so it has no save slot%s", line.tail);
 }
 
 void entry_step(SwoftyContext *c)
@@ -111,11 +111,9 @@ void row_offset(SwoftyContext *c)
     uint64_t index = tl::row_index(c->rdi, c->rbx, end);
     if (index == c->rdi)
         return;
-    int n = ++moved;
-    if (n <= tl::LOG_FIRST)
-        swofty::log("[theatre] saved item %llu goes in row %llu, after an item that has no row%s",
-                    (unsigned long long)c->rdi, (unsigned long long)index,
-                    n == tl::LOG_FIRST ? " (further moves are not logged)" : "");
+    if (auto line = moved.note())
+        swofty::log("[theatre] saved item %llu goes in row %llu, after an item that has no row%s", (unsigned long long)c->rdi,
+                    (unsigned long long)index, line.tail);
     c->rdi = index;
 }
 
@@ -145,8 +143,6 @@ const char *state(const char *mixin, bool offered_it)
         return "not offered";
     return runtime::core_mixins_active(mixin) ? "armed" : "did not install (see the [core] lines)";
 }
-
-namespace guards = swofty_core::guards;
 
 class TheatreListGuard final : public guards::Guard {
 public:

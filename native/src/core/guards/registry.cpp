@@ -37,7 +37,7 @@ bool env_off(const char *name, char (&value)[16], bool (*off_value)(const char *
     DWORD n = GetEnvironmentVariableA(name, value, sizeof value);
     if (!n || n >= sizeof value)
         return false;
-    return off_value ? off_value(value) : !strcmp(value, "0") || !strcmp(value, "off");
+    return off_value ? off_value(value) : switch_off(value);
 }
 
 std::vector<runtime::CoreMixins> Guard::offer()

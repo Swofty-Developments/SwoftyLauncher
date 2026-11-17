@@ -54,6 +54,7 @@ namespace {
 
 namespace mem = swofty::mem;
 namespace gc = runtime::garage_crew;
+namespace guards = swofty_core::guards;
 
 constexpr const char *MIXIN = "swofty_core.dll (garage crew guard)";
 constexpr const char *SITE = "site_Game_GarageCrew_SpawnVector";
@@ -67,12 +68,12 @@ constexpr const char *SCENE_TEST = "site_Game_GarageCrew_SceneTest";
 constexpr int LOG_FIRST = 8;
 constexpr uint64_t MODULE_VEHICLE_SCENE = 0xd0, MODULE_EQUIPMENT_SCENE = 0xe0;
 
-std::atomic<int> dropped{0};
+guards::LogFirst<LOG_FIRST> dropped{"drops"};
 std::vector<uint32_t> seen;
 uintptr_t setup_skip = 0;
 gc::SetupSkips setup_seen;
 uintptr_t scene_test = 0;
-std::atomic<int> scene_skips{0};
+guards::LogFirst<3> scene_skips{"ones"};
 
 struct Log {
     uint32_t garage;
@@ -101,10 +102,10 @@ void log_dropped(void *ctx, uint64_t record, uint32_t slot, gc::Drop why)
         if (k == key)
             return;
     seen.push_back(key);
-    int n = ++dropped;
-    if (n > LOG_FIRST)
+    auto line = dropped.note();
+    if (!line)
         return;
-    const char *tail = n == LOG_FIRST ? " (further drops are not logged)" : "";
+    const char *tail = line.tail;
     if (why == gc::Drop::no_template)
         swofty::log("[garage] garage %u: team %u car #%u (driver %u) has no crew template in the session; its crew is "
                     "not spawned, the car still races%s",
@@ -168,21 +169,17 @@ void scene_read(SwoftyContext *c)
 {
     if (!gc::scene_missing(c->rdi))
         return;
-    int n = ++scene_skips;
-    if (n <= 3) {
+    if (auto line = scene_skips.note()) {
         uint64_t vehicle = 0, equipment = 0;
         mem::read(c->rbp + MODULE_VEHICLE_SCENE, vehicle);
         mem::read(c->rbp + MODULE_EQUIPMENT_SCENE, equipment);
         swofty::log("[garage] the garage crew scene is missing for this track (garage crew scene 0x%llx, vehicle scene "
                     "0x%llx, equipment scene 0x%llx); no garage crew is shown%s",
-                    (unsigned long long)c->rdi, (unsigned long long)vehicle, (unsigned long long)equipment,
-                    n == 3 ? " (further ones are not logged)" : "");
+                    (unsigned long long)c->rdi, (unsigned long long)vehicle, (unsigned long long)equipment, line.tail);
     }
     c->rsi = 0;
     c->rip = scene_test;
 }
-
-namespace guards = swofty_core::guards;
 
 class CrewGuard final : public guards::SiteGuard {
 public:
