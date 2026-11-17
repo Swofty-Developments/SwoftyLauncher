@@ -188,7 +188,9 @@ CONTENT_WINDOWS = ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra', SDK, '-Iinc
 CONTENT = [
     Program('lower_tool', [Objects(['test/content/lower_tool.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_ENGINE]),
     Program('rows_tool', [Objects(['test/content/rows_tool.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_IDS, CONTENT_ENGINE]),
-    Program('rows_test', [Objects(['test/content/rows_test.cpp', 'src/core/apply/scheduler.cpp'], CONTENT_FLAGS + [SDK]),
+    Program('rows_test', [Objects(['test/content/rows_test.cpp', 'test/content/rows_test_packages.cpp',
+                                   'test/content/rows_test_teams.cpp', 'test/content/rows_test_slots.cpp',
+                                   'test/content/rows_test_career.cpp', 'src/core/apply/scheduler.cpp'], CONTENT_FLAGS + [SDK]),
                           CONTENT_IDS, CONTENT_ENGINE]),
     *[Program(test, [Objects([f'test/content/{test}.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_IDS, CONTENT_ENGINE])
       for test in ('vehicle_tower_test', 'package_id_test', 'id_pool_test', 'wear_test')],
