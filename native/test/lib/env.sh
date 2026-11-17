@@ -3,7 +3,7 @@
 # still lacks it, or when it is sourced from a shell rather than a script (which nix shell cannot rerun), it stops
 # with a message naming what is missing. It also sets PIN (tools/pin.sh).
 declare -A _swofty_package=([zig]=nixpkgs#zig [c++]=nixpkgs#gcc [ninja]=nixpkgs#ninja
-    [wine]=nixpkgs#wineWow64Packages.stable [xvfb-run]=nixpkgs#xvfb-run)
+    [wine]=nixpkgs#wineWow64Packages.stable [wineserver]=nixpkgs#wineWow64Packages.stable [xvfb-run]=nixpkgs#xvfb-run)
 _swofty_missing=() _swofty_packages=()
 for _swofty_tool in ${NEEDS:-zig}; do
     if ! command -v "$_swofty_tool" >/dev/null; then

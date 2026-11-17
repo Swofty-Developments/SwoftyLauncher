@@ -1,9 +1,10 @@
 #!/usr/bin/env bash
 set -euo pipefail
 # The Wine test. With no option every case runs in turn in one folder and one Wine prefix. --setup [DIR] builds
-# the fake games, the test addons and the prepared folders into DIR/base; --case NAME [DIR] then runs one case
-# in DIR/NAME, a fresh copy of DIR/base with a Wine prefix of its own, so cases can run side by side. --list
-# prints the case names. DIR defaults to native/build/wine-test.
+# the fake games, the test addons and the prepared folders into DIR/base and makes a Wine prefix there; --case
+# NAME [DIR] then runs one case in DIR/NAME, a fresh copy of DIR/base with a copy of that prefix of its own, so
+# cases can run side by side. The copy hard-links the prefix's program files (.dll, .exe and the like), which
+# Wine only reads. --list prints the case names. DIR defaults to native/build/wine-test.
 SELF=$(readlink -f "$0")
 cd "$(dirname "$SELF")"
 CASES=(modes crash acclim acclim_penalty ers_mode standings weekends teamhq activity setup_vm pairs fe_tiles ai_corner replay_grid garage_crew pit_slots leaderboard myteam_vehicle myteam_keep myteam_heal track_list ntpage int3 stages packed filled register)
@@ -11,7 +12,7 @@ if [[ ${1:-} == --list ]]; then
     printf '%s\n' "${CASES[@]}"
     exit 0
 fi
-NEEDS="zig wine xvfb-run"
+NEEDS="zig wine wineserver xvfb-run"
 . "$(dirname "$SELF")/lib/env.sh"
 MODE=all CASE=
 case ${1:-} in
@@ -1433,13 +1434,26 @@ all)
 setup)
     OUT=$OUT/base
     build
+    environment
+    rm -rf "$WINEPREFIX"
+    timeout 300 "${PIN[@]}" xvfb-run -a wine wineboot -i >/dev/null 2>&1 || { echo "run_wine_test.sh: wineboot -i failed" >&2; exit 1; }
+    timeout 60 wineserver -w
     ;;
 case)
     [[ " ${CASES[*]} " == *" $CASE "* ]] || { echo "run_wine_test.sh: there is no case $CASE" >&2; exit 2; }
     BASE=$OUT/base OUT=$OUT/$CASE
     [ -d "$BASE/game" ] || { echo "run_wine_test.sh: $BASE has no build; run --setup first" >&2; exit 2; }
     rm -rf "$OUT"
-    cp -a "$BASE" "$OUT"
+    mkdir "$OUT"
+    for f in "$BASE"/*; do
+        [[ $f == "$BASE/prefix" ]] || cp -a "$f" "$OUT/"
+    done
+    if [ -d "$BASE/prefix" ]; then
+        cp -a --link "$BASE/prefix" "$OUT/prefix"
+        find "$OUT/prefix" -type f -links +1 ! \( -iname '*.dll' -o -iname '*.exe' -o -iname '*.drv' -o -iname '*.sys' \
+            -o -iname '*.ocx' -o -iname '*.cpl' -o -iname '*.acm' -o -iname '*.ax' -o -iname '*.tlb' -o -iname '*.nls' \) \
+            -exec sh -c 'for f; do cp -p "$f" "$f.copy" && mv -f "$f.copy" "$f"; done' sh {} +
+    fi
     SG=$OUT/stages/game PK=$OUT/packed/game PP=$OUT/packed/plain
     environment
     if [[ $CASE != modes ]]; then
