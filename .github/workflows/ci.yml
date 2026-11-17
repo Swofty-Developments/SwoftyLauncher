@@ -22,16 +22,29 @@ jobs:
     permissions:
       pull-requests: read
     outputs:
-      rust: ${{ github.event_name != 'pull_request' || steps.filter.outputs.rust == 'true' }}
-      installer: ${{ github.event_name != 'pull_request' || steps.filter.outputs.installer == 'true' }}
-      native: ${{ github.event_name != 'pull_request' || steps.filter.outputs.native == 'true' }}
-      swofty-ui: ${{ github.event_name != 'pull_request' || steps.filter.outputs.swofty-ui == 'true' }}
-      docs: ${{ github.event_name != 'pull_request' || steps.filter.outputs.docs == 'true' }}
-      std: ${{ github.event_name != 'pull_request' || steps.filter.outputs.std == 'true' }}
-      compat: ${{ github.event_name != 'pull_request' || steps.filter.outputs.compat == 'true' }}
+      rust: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.rust == 'true' }}
+      installer: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.installer == 'true' }}
+      native: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.native == 'true' }}
+      swofty-ui: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.swofty-ui == 'true' }}
+      docs: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.docs == 'true' }}
+      std: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.std == 'true' }}
+      compat: ${{ steps.scope.outputs.all == 'true' || steps.filter.outputs.compat == 'true' }}
     steps:
+      # GitHub lists at most 3,000 of a pull request's files, in path order, so the filter would miss every area
+      # whose files come after the first 3,000 (a bulk change to re/bindings hides templates/ and tools/). A pull
+      # request that large runs every job, as a push does.
+      - name: Every area or the filter
+        id: scope
+        env:
+          FILES: ${{ github.event.pull_request.changed_files }}
+        run: |
+          if [ "$GITHUB_EVENT_NAME" != pull_request ] || [ "$FILES" -ge 3000 ]; then
+            echo "all=true" >> "$GITHUB_OUTPUT"
+            echo "every job runs ($GITHUB_EVENT_NAME, ${FILES:-0} changed files)"
+          fi
+
       - id: filter
-        if: github.event_name == 'pull_request'
+        if: steps.scope.outputs.all != 'true'
         uses: dorny/paths-filter@v4
         with:
           filters: |
@@ -242,6 +255,13 @@ jobs:
       # the compile and the run apart in the timings.
       - name: Build the tests
         run: cargo nextest run --workspace --profile ci --no-run
+
+      # rust-cache saves at the end of a job that succeeded, or of any job once CACHE_ON_FAILURE is true. Set
+      # here, a failing or cancelled test run still saves the finished build; a build that failed or was
+      # cancelled halfway saves nothing, which would otherwise sit under the exact key and never be completed.
+      - name: Keep the build if the tests fail
+        shell: bash
+        run: echo "CACHE_ON_FAILURE=true" >> "$GITHUB_ENV"
 
       # Every test of every binary in one pool (.config/nextest.toml), with the slow ones listed at the end.
       # The real-file round trips skip without F1_25_DIR; CI has no game files.
