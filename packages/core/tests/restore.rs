@@ -915,11 +915,13 @@ fn another_drive_links_the_game_folder_to_a_cache_that_survives_a_restore() {
     assert_eq!(std::fs::read_to_string(&cached).unwrap(), "db-B");
     assert_eq!(inst.verify().unwrap(), []);
 
+    // The core's state file is written again for each install with the same bytes, so its cached copy
+    // is kept.
     inst.apply(&plan).unwrap();
     assert_eq!(f.read(GVDB), "db-B");
     assert!(
         lines.borrow().iter().any(
-            |l| l == "installing: 6 linked (6 from the link cache: 1 copied into it, 5 reused), 0 copied"
+            |l| l == "installing: 6 linked (6 from the link cache: 0 copied into it, 6 reused), 0 copied"
         ),
         "{:?}",
         lines.borrow()
@@ -990,7 +992,7 @@ fn loose_addon_files_go_through_the_cache_on_one_drive_and_a_second_play_reuses_
     );
     assert!(
         lines.iter().any(
-            |l| l == "installing: 6 linked (4 from the link cache: 1 copied into it, 3 reused), 0 copied"
+            |l| l == "installing: 6 linked (4 from the link cache: 0 copied into it, 4 reused), 0 copied"
         ),
         "{lines:?}"
     );
