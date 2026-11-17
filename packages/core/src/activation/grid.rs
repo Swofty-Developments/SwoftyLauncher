@@ -5,8 +5,8 @@ use serde_json::{Value as Json, json};
 use swofty_formats::gvdb::Gvdb;
 use swofty_formats::pkg::{Node, Value};
 
+use crate::content::pkg_edit::{apply_edits, value_text};
 use crate::ops::PkgEdit;
-use crate::pkgedit::{apply_edits, value_text};
 use crate::{Error, Result};
 
 pub const GRID_LIST: &str = "entrants.entrant_lists.entrant_list_34";
@@ -133,7 +133,7 @@ pub fn room_of(layers: &[Node]) -> Room {
 }
 
 fn uid(code: &str, name: &str) -> String {
-    crate::baseline::hex(&Md5::digest(format!("grid:{code}:{name}").as_bytes()))
+    crate::game_folder::baseline::hex(&Md5::digest(format!("grid:{code}:{name}").as_bytes()))
 }
 
 pub fn extend(code: &str, layers: &mut [Node], cars: u32) -> Result<Option<Extension>> {

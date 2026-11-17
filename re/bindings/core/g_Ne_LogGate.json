@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "g_Ne_LogGate",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14604b4f0",
+  "type": "NeLogGate",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/140af0460.c;decomp:re/decomp/1406d4c80.c;xref:0x140af047c,0x140af048a,0x140af04a0,0x140af073c,0x140af0745,0x140af0864,0x14304d060,0x14304d064,0x1406fd51d,0x1431a4b26+12100",
+  "notes": "log channel gate read inline before Ne_Log_Thunk calls: byte [gate+0x5d4] == 1, then probe the u32 set (373 slots) from slot H%373 (folded into the code as an immediate) with step 13 + H%13 (double hashing, 13..25), mod 373, until the site's constant channel hash H (hit: call the logger), 0 (miss) or back at the start. H = channel-name hash (fn 0x14082f4a0). 734 distinct site hashes, more than the 373 slots. Zero-initialised (tail of .rsrc). Writers: 0x14304cee0 (from 0x1431a5efd) inserts the hashes of a trace_channels string list and sets the byte to 1; 0x1406fd500 and 0x1431a4b10 memset the set and clear the byte. A few sites are not gated (0x14119c4cc PROGRESS fatal path; 0x142f6d521; 0x1443d2362 behind gate fn 0x1406ab600). Step and writers corrected after V0016."
+ },
+ "signature": {
+  "id": "core.log_gate",
+  "section": ".xtls",
+  "pattern": "80 3D ?? ?? ?? ?? 01 75 74 B8 5F 01 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 52 81 FA CB 88 7C 7C",
+  "match": "0x140af047c",
+  "anchor": "0x11",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xe",
+   "len": 7
+  },
+  "target": "0x14604b4f0",
+  "kind": "data",
+  "names": [
+   "g_Ne_LogGate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "gamelog",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/gamelog/gamelog.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-17",
+   "verifier": "gamelog-verify",
+   "kind": "global",
+   "item": "g_Ne_LogGate",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140af0460.c;decomp:re/decomp/143132540.c;decomp:re/decomp/144091e50.c;decomp:re/decomp/1406ab600.c;decomp:re/decomp/14304cee0.c;xref:0x140af047c,0x143132554,0x144091e69,0x140174f55,0x1406ab601,0x14304d064",
+   "notes": "V0016 Confirmed: byte [0x14604bac4] tested first (cmp ==1 at 15042 sites, plus 586 movzx/test-bit0 and 131 cmp 0 forms); u32 set at 0x14604b4f0, 373 slots, start = H mod 373 folded as an imm (15259 of 15271 probe loops; the rest end on test eax,eax for H mod 373 == 0), slot 0 = miss, back at start = miss, H = per-site constant = channel-name hash (reverse djb2-xor 0x14082f4a0: GAME 0x7c7c88cb at 0x140af047c, NETWORK-ENTRANTS 0x869e8633 at 0x143132554, NETWORK-LAN 0xc7a05c55 at 0x144091e69), logger only on hit. DIFFERS: the step is not a constant +25. It is 13 + (H mod 13), range 13..25 (double hashing); all 15271 probe loops match. +25 only at sites like GAME (H mod 13 = 12); +19 at 0x14313257f and 0x144091e8f, +20 at 0x140174f82. The gate fn 0x1406ab600 and the inserter compute it as h - 13*(h/13) + 13. Notes are also wrong that no writer exists: 0x14304cee0 (called from 0x1431a5efd) hashes a trace_channels string array into the set (store 0x14304d060) and sets the enabled byte to 1 (0x14304d064); 0x1406fd500 and 0x1431a4b10 memset(gate,0,0x5d4) and set it to 0. Inline-gating exceptions: 0x14119c4cc (PROGRESS out-of-range fatal path, no gate at all), 0x142f6d521 (degenerate probe, no enabled test), 0x1443d2362 (wrapper called behind gate fn 0x1406ab600 at 0x1443c0a7e). I count 734 distinct probe hashes, not 689."
+  },
+  {
+   "date": "2026-10-17",
+   "verifier": "gamelog-verify",
+   "kind": "global",
+   "item": "g_Ne_LogGate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140af0460.c;decomp:re/decomp/143132540.c;decomp:re/decomp/144091e50.c;decomp:re/decomp/1406ab600.c;decomp:re/decomp/14304cee0.c;decomp:re/decomp/1406fd500.c;decomp:re/decomp/1431a4b10.c;xref:0x140af047c,0x143132554,0x144091e69,0x140174f55,0x1406ab601,0x14304d060,0x14304d064,0x1406fd522,0x1431a4b2b",
+   "notes": "V0020 Re-checked the corrected row against my own sweep: enabled byte at +0x5d4 tested first; 373-slot u32 set; start H mod 373 as an imm; step 13 + (H mod 13) in all 15271 probe loops; 0 = miss, wrap = miss; H = channel-name hash via 0x14082f4a0 (GAME, NETWORK-ENTRANTS, NETWORK-LAN recomputed); 734 distinct probe hashes; zero-fill tail of writable .rsrc (raw ends 0x145fb7c00); writers 0x14304cee0 (insert + byte=1), 0x1406fd500 and 0x1431a4b10 (memset 0x5d4 + byte=0); ungated exceptions as listed. sigcheck core.log_gate passes. Nits only: some sites test the byte as != 0 or bit0 rather than == 1 (same for a bool); 0x142f6d521 still needs a hash hit, it only lacks the enabled test; the evidence column joins the second xref token with a space instead of a semicolon. Supersedes V0016."
+  }
+ ],
+ "proofs": []
+}

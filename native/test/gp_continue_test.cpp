@@ -1,5 +1,5 @@
 // Host-native unit test for the core's Grand Prix continue F1 World car guard (native/src/core/guards/frontend/gp_continue_logic.hpp).
-// Built and run by native/test/run_gp_continue_test.sh.
+// Built and run by native/test/run_tests.sh gp_continue.
 
 #include "core/guards/frontend/gp_continue_logic.hpp"
 

@@ -2,9 +2,9 @@ use std::collections::{BTreeMap, BTreeSet};
 use std::io::Read;
 use std::path::Path;
 
-use crate::conflicts::Pair;
 use crate::install::LOADER_DIR;
 use crate::manifest::{AddonManifest, Category};
+use crate::profile::conflicts::Pair;
 use crate::session::SessionRecord;
 use crate::store::Store;
 
@@ -68,7 +68,7 @@ impl Evidence {
                 dirs.insert(0, game.join(LOADER_DIR));
             }
             if let Some(data) = data {
-                dirs.push(crate::crash_report::fallback_dir(data));
+                dirs.push(crate::diagnostics::crash_report::fallback_dir(data));
             }
             dirs.iter()
                 .map(|d| d.join(&name))
@@ -87,7 +87,7 @@ impl Evidence {
             .as_ref()
             .and_then(|e| e.crash_code.or(e.exit_code.map(|c| c as u32)))
             .or(session.exit_code.map(|c| c as u32));
-        let game_version = game.and_then(|g| crate::exe_version::read(&g.join(crate::GAME_EXE)));
+        let game_version = game.and_then(|g| crate::game_folder::exe_version::read(&g.join(crate::GAME_EXE)));
         let game_build = game.and_then(|g| crate::build_support::identity(&g.join(crate::GAME_EXE)));
         Self {
             loader,
@@ -106,7 +106,7 @@ impl Evidence {
     pub fn with_profile(mut self, store: &Store, addons: &BTreeMap<String, AddonManifest>) -> Self {
         self.builtin = addons
             .keys()
-            .filter(|id| store.is_builtin(id) || crate::order::is_pinned(id))
+            .filter(|id| store.is_builtin(id) || crate::profile::order::is_pinned(id))
             .cloned()
             .collect();
         self.versions = addons
@@ -127,7 +127,7 @@ impl Evidence {
                 .map(|a| a.id)
                 .collect();
         }
-        if let Some(report) = crate::conflicts::last(store, &profile) {
+        if let Some(report) = crate::profile::conflicts::last(store, &profile) {
             self.tracks = report
                 .order
                 .iter()

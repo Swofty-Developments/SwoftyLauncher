@@ -1884,7 +1884,7 @@ int api_set_car_number(uint32_t driver, int32_t want_number, uint32_t flags)
         career_ops::numbers::Plan np = career_ops::numbers::plan(view, key, want_number, flags & SWOFTY_NUMBER_SWAP);
         if (np.error != career_ops::numbers::Error::none) {
             summary = "refused: " + np.why;
-            r = np.error == career_ops::numbers::Error::taken ? SWOFTY_REFUSED : SWOFTY_ASSET_INVALID;
+            r = np.error == career_ops::numbers::Error::taken ? int(SWOFTY_REFUSED) : int(SWOFTY_ASSET_INVALID);
         } else if (np.unchanged) {
             summary = "already " + number_text(rows[np.row].rec.car_number);
         } else {

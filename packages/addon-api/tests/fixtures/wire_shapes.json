@@ -1,0 +1,109 @@
+{
+  "addons/swoftymod/db/core.json": {
+    "database_file": "d2588bdd80e9160c:31237",
+    "db_ops": "3c9746ecde9c6f3e:31081"
+  },
+  "addons/swoftymod/startup_intro/ops.json": {
+    "assets_file": "83a9863630c197ba:225"
+  },
+  "addons/swoftymod/swofty.json": {
+    "manifest": "782778414de3f585:1281"
+  },
+  "docs/native-charts-demo/swofty.json": {
+    "manifest": "c3c60b6310b763eb:439"
+  },
+  "native/test/content/classic-seasons/classic-seasons-2016/db/records.json": {
+    "database_file": "864253a790408c7c:123032",
+    "db_ops": "9794dc6bf29ad6b2:120845"
+  },
+  "native/test/content/classic-seasons/classic-seasons-2017/db/records.json": {
+    "database_file": "4f630db955b24dac:113724",
+    "db_ops": "62ee65569763f064:111735"
+  },
+  "native/test/content/classic-seasons/classic-seasons-2018/db/records.json": {
+    "database_file": "2ddfc920429b8b71:114373",
+    "db_ops": "3533cf7404b66ef9:112378"
+  },
+  "native/test/content/classic-seasons/classic-seasons-2019/db/records.json": {
+    "database_file": "8edb5183c3e37d3c:114694",
+    "db_ops": "4694b0ebe2a88ee8:112699"
+  },
+  "native/test/content/classic-seasons/classic-seasons-2020/db/records.json": {
+    "database_file": "b92a06c15fb09d2b:114062",
+    "db_ops": "67a78a0ca41b2cfd:112073"
+  },
+  "native/test/content/classic-seasons/classic-seasons-2021/db/records.json": {
+    "database_file": "29846f5950bb874a:113423",
+    "db_ops": "118cca575137d454:111440"
+  },
+  "native/test/content/classic-seasons/classic-seasons-2022/db/records.json": {
+    "database_file": "ed09f091101a63d5:114304",
+    "db_ops": "9aca12c0c42ce8e3:112309"
+  },
+  "native/test/content/classic-seasons/classic-seasons-2023/db/records.json": {
+    "database_file": "7455f54e782f6dd7:113645",
+    "db_ops": "a011bc025e6be7bd:111656"
+  },
+  "native/test/content/classic-seasons/classic-seasons-2024/db/records.json": {
+    "database_file": "4c75266337166490:110191",
+    "db_ops": "9c28532f9fdf1c74:108238"
+  },
+  "packages/sdk/std/registries/hud.element/examples/damage_panel_readouts.json": {
+    "hud_file": "8f85d3524c2b005c:693"
+  },
+  "packages/sdk/std/registries/hud.element/examples/halo_like.json": {
+    "hud_file": "57615ed7a648a355:985"
+  },
+  "packages/sdk/std/registries/hud.element/examples/must-fail/no-dial.json": {
+    "hud_file": "cc8a1c81b1c843c3:85"
+  },
+  "packages/sdk/std/registries/hud.element/examples/must-fail/unknown-kind.json": {
+    "hud_file": "e55825338324e229:81"
+  },
+  "templates/addon/db/example.json": {
+    "database_file": "fe5df42e3548849b:293",
+    "db_ops": "866f18bd9af0ff83:287"
+  },
+  "templates/addon/swofty.json": {
+    "manifest": "44281d49719d7fe5:1378"
+  },
+  "templates/addon/ui/example.pkgpatch.json": {
+    "pkg_patch": "68895a5973ede9fa:356"
+  },
+  "templates/hud-dial/registry/hud.json": {
+    "hud_file": "2bf3f9466074bc55:1277"
+  },
+  "templates/hud-dial/swofty.json": {
+    "manifest": "938f0863494fb87e:536"
+  },
+  "templates/hud-tower/registry/tower@1.1.json": {
+    "hud_file": "f22fe45067ee06a9:8490"
+  },
+  "templates/hud-tower/swofty.json": {
+    "manifest": "a54b42886f690a70:487"
+  },
+  "templates/launcher-addon/swofty.json": {
+    "manifest": "e31dda02dc207f24:649"
+  },
+  "templates/postfx-pass/swofty.json": {
+    "manifest": "247ed38e12966add:1282"
+  },
+  "templates/shader-pack/swofty.json": {
+    "manifest": "cadac99481d97d38:852"
+  },
+  "templates/std/car-physics/swofty.json": {
+    "manifest": "6ffc9a32976e8af8:425"
+  },
+  "templates/std/career-saves/swofty.json": {
+    "manifest": "49e57dc0e55166f7:430"
+  },
+  "templates/std/engine-sound/swofty.json": {
+    "manifest": "966053ce41b9cd44:474"
+  },
+  "templates/std/track/swofty.json": {
+    "manifest": "5182fc52a675caa6:435"
+  },
+  "templates/std/whatif/swofty.json": {
+    "manifest": "90b98477b7b36a8d:573"
+  }
+}

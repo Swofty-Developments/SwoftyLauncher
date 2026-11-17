@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Career_TeleResearchTypeName",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14071e6fa",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14071e470.c;xref:0x14071e6fa;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time;xref:0x1406db634,0x1406fdba0;decomp:re/decomp/140777ff0.c",
+  "notes": "lea rcx,[0x14564a0d0] ; mov rdx,[rcx+rax*8]: unbounded camel-case type name read in the UpgradeFittingChangedMessage telemetry handler 0x14071e470 (subscribed at 0x1406db634 and 0x1406fdba0; logs 'Player fitted upgraded part to driver'; queues the rnd_upgrade_finished event through 0x140777ff0), not a research-purchased report (the binding name keeps the old wording). eax = type, rbx = writer. rnd-tyres, type >= 19: rdx = its camel name, rcx = rbx, rip = the call"
+ },
+ "signature": {
+  "id": "career.tele_research_type_name",
+  "section": ".xtls",
+  "pattern": "0F B6 40 70 48 8D 0D ?? ?? ?? ?? 48 8B 14 C1",
+  "match": "0x14071e6f6",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14071e6fa",
+  "kind": "mid",
+  "expect": "48 8D 0D CF B9 F2 04",
+  "names": [
+   "site_Career_TeleResearchTypeName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_TeleResearchTypeName",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14071e470.c;xref:0x14071e6f6,0x14071e6fa,0x14071e701,0x14071e705,0x14071e708,0x1406db634,0x1406fdba0",
+   "notes": "V0034 site mechanics hold (lea rcx->0x14564a0d0 19-entry char* table, unbounded [rcx+rax*8], eax=[msg+0x10]+0x70 type, rbx=writer, call 0x14058eed0 next) but the report is misnamed: 0x14071e470 is the UpgradeFittingChangedMessage handler (subscribed at 0x1406db634/0x1406fdba0, logs 'Player fitted upgraded part to driver', queued via 0x140777ff0 rnd_upgrade_finished), not a research-purchased report"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_TeleResearchTypeName",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14071e470.c;decomp:re/decomp/140777ff0.c;xref:0x14071e6f6,0x14071e6fa,0x14071e701,0x14071e705,0x14071e708,0x1406db634,0x1406fdba0",
+   "notes": "V0155 re-verify of the relabel: 0x14071e470 is the UpgradeFittingChangedMessage handler (lea of it at 0x1406db634/0x1406fdba0 with key 0x14565e0e0), logs 'Player fitted upgraded part to driver', hands the record to 0x140777ff0 which queues 'rnd_upgrade_finished'; lea rcx->0x14564a0d0 unbounded 19-entry read, eax=type, rbx=writer, call next; supersedes V0034"
+  }
+ ],
+ "proofs": []
+}

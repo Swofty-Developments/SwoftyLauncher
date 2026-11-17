@@ -1332,6 +1332,18 @@
   "Ai_Handle_PitStateChanged_Thunk": {
    "pattern": "E9 ?? ?? ?? ?? 0F 8B 65 6C 1B FF E9 FB D8 B6 FF",
    "note": "A protector thunk; the pattern is its EA 1.0.145 bytes. It is the only thunk in its slot range whose body is the Steam 1.0.145 function (instruction match 0.93, the same 17 field offsets and constants)."
+  },
+  "Car_Differential_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 09 CB BC E9 4E 00 97 03",
+   "note": "A protector thunk; the pattern is its EA 1.0.145 bytes. It is at the same place relative to its neighbours (-0x7500, as Car_Write_Differential and Car_Write_FuelTank) and its jmp target starts with the KB build's function body."
+  },
+  "Car_FuelEcu_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? E9 35 02 65 01 0F 84 A6",
+   "note": "A protector thunk; the pattern is its EA 1.0.145 bytes. It is at the same place relative to its neighbours (-0x7500, as Car_Write_Differential and Car_Write_FuelTank) and its jmp target starts with the KB build's function body."
+  },
+  "Car_Read_Differential_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 36 05 43 0F 86 DB F2 34",
+   "note": "A protector thunk; the pattern is its EA 1.0.145 bytes. It is at the same place relative to its neighbours (-0x7500, as Car_Write_Differential and Car_Write_FuelTank) and its jmp target starts with the KB build's function body."
   }
  },
  "hints": {
@@ -1670,6 +1682,15 @@
   },
   "Ai_Handle_PitStateChanged_Thunk": {
    "match": "0x6b3b60"
+  },
+  "Car_Differential_Reset_Thunk": {
+   "match": "0x4676b10"
+  },
+  "Car_FuelEcu_Reset_Thunk": {
+   "match": "0x4687050"
+  },
+  "Car_Read_Differential_Thunk": {
+   "match": "0x46768f0"
   }
  },
  "unresolvable": {

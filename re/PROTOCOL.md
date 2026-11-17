@@ -111,7 +111,7 @@ A **verifier** is any agent other than the one who raised the item to its curren
 - **signatures:** `sigcheck.py` passes, and the target is the claimed function or instruction.
 - **db keys:** recompute `fnv1a64(path)` and find the immediate at a listed site.
 
-The verifier appends one `verify.tsv` row via `kb.py verify`: verdict `agree`, `disagree` or `partial`, with its own evidence tokens. On `disagree` the item is demoted to the highest level both sides accept, and the disagreement is written into the item's `notes` as `DISPUTE(Vnnn)` until the subsystem owner resolves it with new evidence (a new `verify` row). Nobody deletes `verify.tsv` rows.
+The verifier appends one `verify.tsv` row via `kb.py verify`: verdict `agree`, `disagree` or `partial`, with its own evidence tokens. On `disagree` the item is demoted to the highest level both sides accept, and the disagreement is written into the item's `notes` as `DISPUTE(Vnnn)` until the subsystem owner resolves it with new evidence (a new `verify` row). Nobody deletes `verify.tsv` rows. When the item a row is about is renamed to a different claim, retargeted or was never added, its `item` becomes `retired:<item>`, so the old verdict can never back a new item that reuses the name or address.
 
 ## 6. Concurrency
 
@@ -205,7 +205,7 @@ Rules:
 
 ## 11. Binding records
 
-A binding can live in one file instead of the shared tables: `re/bindings/<subsystem>/<Name>.json` holds its `functions.tsv` or `globals.tsv` row, its signature, the verify rows about it and the local proofs contributors ran on their own exe. `kb.py` merges records into every table it reads, so the levels, gates and lint rules above apply unchanged. `kb.py set` and `kb.py verify` on a record's item write into the record.
+A binding can live in one file instead of the shared tables: `re/bindings/<subsystem>/<Name>.json` holds its `functions.tsv` or `globals.tsv` row, its signature, the verify rows about it and the local proofs contributors ran on their own exe. `kb.py` merges records into every table it reads, so the levels, gates and lint rules above apply unchanged. `kb.py set` and `kb.py verify` on a record's item write into the record. Tools that read the tables without `kb.py` (the Ghidra scripts) read `kb.py export <dir>`; never read `re/db/functions.tsv`, `globals.tsv` or `signatures.json` directly.
 
 - `re/tools/binding.py new|verify|agree|check|status` is the contributor command; the page for addon authors is `docs/reference/addons/bindings.md`.
 - A record's `author` and every proof's and verify row's `by`/`verifier` is a GitHub login. The author never verifies their own record (§5).

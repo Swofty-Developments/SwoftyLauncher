@@ -1,15 +1,58 @@
 use crate::shell::notices::{Notification, Notify};
+use gpui_kit::component::slider::{SliderEvent, SliderState};
 use gpui_kit::*;
-use swofty_core::session::UiMode;
+use swofty_core::session::{Config, UI_SCALE_MAX, UI_SCALE_MIN, UiMode, clamp_ui_scale};
 
 use crate::shell::Shell;
 use crate::ui::theme::Palette;
 use swofty_i18n::tr;
 
+pub(crate) struct Scaling {
+    pub(crate) mode: Option<UiMode>,
+    pub(crate) percent: Option<u16>,
+    pub(crate) slider: Entity<SliderState>,
+    pub(crate) drag: Option<u16>,
+    _slider_changes: Subscription,
+}
+
+impl Scaling {
+    pub(crate) fn new(config: &Config, window: &mut Window, cx: &mut Context<Shell>) -> Self {
+        let percent = config.ui_scale_percent();
+        let slider = cx.new(|_| {
+            SliderState::new()
+                .min(f32::from(UI_SCALE_MIN))
+                .max(f32::from(UI_SCALE_MAX))
+                .step(1.)
+                .default_value(f32::from(percent.unwrap_or(100)))
+        });
+        let slider_changes = cx.subscribe_in(
+            &slider,
+            window,
+            |this, _, ev: &SliderEvent, window, cx| match ev {
+                SliderEvent::Change(v) => {
+                    this.scaling.drag = Some(clamp_ui_scale(v.start().round().max(0.) as u16));
+                    cx.notify();
+                }
+                SliderEvent::Release(v) => {
+                    this.scaling.drag = None;
+                    this.set_ui_scale(Some(clamp_ui_scale(v.start().round().max(0.) as u16)), window, cx);
+                }
+            },
+        );
+        Self {
+            mode: config.ui_mode,
+            percent,
+            slider,
+            drag: None,
+            _slider_changes: slider_changes,
+        }
+    }
+}
+
 impl Shell {
     pub(crate) fn start_ui_mode(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let mode = self.ui_mode.unwrap_or_default();
-        crate::ui::scale::apply(mode, self.ui_scale, window, cx);
+        let mode = self.scaling.mode.unwrap_or_default();
+        crate::ui::scale::apply(mode, self.scaling.percent, window, cx);
         if !self.store.config().needs_onboarding() {
             window.focus(&self.root_focus, cx);
             return;
@@ -23,8 +66,8 @@ impl Shell {
         let mut config = self.store.config();
         config.ui_mode = Some(mode);
         self.save_config_toast(&config, window, cx);
-        self.ui_mode = config.ui_mode;
-        crate::ui::scale::apply(mode, self.ui_scale, window, cx);
+        self.scaling.mode = config.ui_mode;
+        crate::ui::scale::apply(mode, self.scaling.percent, window, cx);
         cx.notify();
     }
 
@@ -32,12 +75,13 @@ impl Shell {
         let mut config = self.store.config();
         config.ui_scale = percent.map(swofty_core::session::clamp_ui_scale);
         self.save_config_toast(&config, window, cx);
-        self.ui_scale = config.ui_scale_percent();
-        self.ui_scale_drag = None;
-        let at = f32::from(self.ui_scale.unwrap_or(100));
-        self.ui_scale_slider
+        self.scaling.percent = config.ui_scale_percent();
+        self.scaling.drag = None;
+        let at = f32::from(self.scaling.percent.unwrap_or(100));
+        self.scaling
+            .slider
             .update(cx, |s, cx| s.set_value(at, window, cx));
-        crate::ui::scale::apply(config.ui_mode_or_default(), self.ui_scale, window, cx);
+        crate::ui::scale::apply(config.ui_mode_or_default(), self.scaling.percent, window, cx);
         cx.notify();
     }
 
@@ -56,7 +100,7 @@ impl Shell {
 
 impl Shell {
     pub(crate) fn scale_rescue(&self, p: Palette, cx: &mut Context<Self>) -> Option<Stateful<Div>> {
-        (self.ui_scale.is_some() && crate::ui::scale::current() < 0.6).then(|| {
+        (self.scaling.percent.is_some() && crate::ui::scale::current() < 0.6).then(|| {
             let f = crate::ui::scale::fixed;
             div()
                 .id("ui-scale-rescue")

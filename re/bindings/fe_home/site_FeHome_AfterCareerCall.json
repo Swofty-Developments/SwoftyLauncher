@@ -1,0 +1,49 @@
+{
+ "schema": 1,
+ "name": "site_FeHome_AfterCareerCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141742fd6",
+  "type": "code",
+  "level": "L3",
+  "subsystem": "fe_home",
+  "evidence": "doc:research/exe.md#3.4;decomp:work/exe/decomp/14173df80_home_buttons_build.c;trace:T000/run1:54",
+  "notes": "instruction after call FeHome_Add_CareerTile in the home block; r14 = TileList, r12b = Career index, r15 = running index; runtime: hit once per home build (r12=2, r15=1)"
+ },
+ "signature": {
+  "id": "fe_home.after_career_site",
+  "section": ".xtls",
+  "pattern": "45 8D 67 01 4C 89 F1 44 89 E2 E8 ?? ?? ?? ?? F6",
+  "match": "0x141742fc7",
+  "anchor": "0xf",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141742fd6",
+  "kind": "mid",
+  "expect": "F6 46 05 04 74",
+  "names": [
+   "site_FeHome_AfterCareerCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "exe-agent",
+    "how": "static"
+   },
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "T000/run1",
+    "how": "runtime scan, 1 hit"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/swofty_core.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

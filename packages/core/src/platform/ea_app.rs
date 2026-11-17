@@ -5,7 +5,9 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 
 use crate::GAME_EXE;
-use crate::compat::parse_reg_query;
+use crate::install::Source;
+use crate::platform::LaunchPlatform;
+use crate::platform::run_as_admin::parse_reg_query;
 use crate::session::COMPAT_LAYER;
 
 pub const MARKER: &str = "__Installer/installerdata.xml";
@@ -30,6 +32,35 @@ pub const DESKTOP_KEYS: &[&str] = &[
     r"HKLM\SOFTWARE\Electronic Arts\EA Desktop",
     r"HKLM\SOFTWARE\WOW6432Node\Electronic Arts\EA Desktop",
 ];
+
+/// The EA app, as a [`LaunchPlatform`].
+pub struct EaApp;
+
+impl LaunchPlatform for EaApp {
+    fn name(&self) -> &'static str {
+        "EA app"
+    }
+
+    fn source(&self) -> Source {
+        Source::EaApp
+    }
+
+    fn installed(&self, dir: &Path) -> bool {
+        dir.join(MARKER).is_file()
+    }
+
+    fn installs(&self) -> Vec<PathBuf> {
+        installs()
+    }
+
+    fn client_running(&self) -> bool {
+        running()
+    }
+
+    fn move_hint(&self) -> &'static str {
+        " with EA app > F1 25 > Manage > Move, not File Explorer"
+    }
+}
 
 pub fn is_install(dir: &Path) -> bool {
     dir.join(GAME_EXE).is_file() && dir.join(MARKER).is_file()
@@ -91,7 +122,7 @@ pub fn find_installs(
     });
     let mut out: Vec<PathBuf> = Vec::new();
     for dir in keyed.chain(uninstall).chain(folders) {
-        if is_install(&dir) && !out.iter().any(|o| crate::copies::same_dir(o, &dir)) {
+        if is_install(&dir) && !out.iter().any(|o| crate::game_folder::copies::same_dir(o, &dir)) {
             out.push(dir);
         }
     }
@@ -152,7 +183,7 @@ fn same_folder(a: &Path, b: &Path) -> bool {
             .trim_end_matches('\\')
             .to_lowercase()
     };
-    crate::copies::same_dir(a, b) || (cfg!(windows) && plain(a) == plain(b))
+    crate::game_folder::copies::same_dir(a, b) || (cfg!(windows) && plain(a) == plain(b))
 }
 
 /// An EA app copy in a folder the EA app has no record of: moved by hand,
@@ -203,7 +234,7 @@ pub fn moved(dir: &Path, recorded: &[PathBuf], is_install: impl Fn(&Path) -> boo
 fn reg_exe(args: &[&str]) -> Option<String> {
     let mut all = vec!["query"];
     all.extend_from_slice(args);
-    crate::compat::windows_tool("reg", &all).filter(|o| !o.trim().is_empty())
+    crate::platform::run_as_admin::windows_tool("reg", &all).filter(|o| !o.trim().is_empty())
 }
 
 #[cfg(windows)]
@@ -537,7 +568,7 @@ pub fn desktop_opener(handoff: &Handoff, elevated: bool) -> Option<(Command, boo
 }
 
 pub fn running() -> bool {
-    !crate::process::named(PROCESS).is_empty()
+    !crate::platform::process::named(PROCESS).is_empty()
 }
 
 /// The `user.reg` of the EA app's Wine prefix from the `launch.ea_prefix`
@@ -702,11 +733,11 @@ mod tests {
         };
         let rec = recorded(reg);
         assert_eq!(rec.len(), 1, "{rec:?}");
-        assert!(crate::copies::same_dir(&rec[0], &program_files));
+        assert!(crate::game_folder::copies::same_dir(&rec[0], &program_files));
         assert_eq!(moved(&program_files, &rec, is_install), None);
         let m = moved(&moved_to, &rec, is_install).unwrap();
         assert!(m.there);
-        assert!(crate::copies::same_dir(&m.recorded, &program_files));
+        assert!(crate::game_folder::copies::same_dir(&m.recorded, &program_files));
         let text = m.text();
         assert!(
             text.starts_with(&format!("The EA app has F1 25 in {}", m.recorded.display())),
@@ -886,7 +917,7 @@ mod tests {
         );
         let found = find_installs(|_| None, &library_dirs(&ini), is_install);
         assert_eq!(found.len(), 1);
-        assert!(crate::copies::same_dir(&found[0], &game));
+        assert!(crate::game_folder::copies::same_dir(&found[0], &game));
         assert!(find_installs(|_| None, &[root.join("missing")], is_install).is_empty());
         std::fs::remove_dir_all(&root).ok();
     }

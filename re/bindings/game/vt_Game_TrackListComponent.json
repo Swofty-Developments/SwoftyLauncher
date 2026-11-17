@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "vt_Game_TrackListComponent",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14568c1e0",
+  "type": "vtable[79]",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/140d1f350.c;decomp:re/decomp/140d012e0.c;decomp:re/decomp/140bc9360.c;decomp:re/decomp/1407b5c40.c;decomp:re/decomp/140bc9700.c;decomp:re/decomp/142e58f20.c;xref:0x140d1f571,0x140d01505,0x140cd24e0,0x1407b9ea0",
+  "notes": "TrackListComponent primary vtable, 79 slots (cxx=TrackListComponent; desc+8 names it, desc+0x10 = djb2 0x8e048f49), written by its constructor 0x140d1f350 (lea at 0x140d1f571), which also zeroes +0x290..+0x2a0 after the base 0x140aeb130. The derived ScheduleComponent (0x470 bytes, constructor 0x140d012e0, vtable 0x1456cdc80, desc 0x146063100) stores this vtable at 0x140d01505 as an inlined base step and then replaces it; it overrides slots 0, 2-5, 8, 10, 15, 16, 28, 29, 36, 39, 43, 47, 67, 70, 77 and 78, so of the slots below only 26 is shared: slot 5 0x140cd2610 returns k_Game_TrackListComponentDesc, slot 15 0x140bc8ab0 takes the season length data (+0x290, presets at +0xc0, default track list char* at +0xf8), slot 16 0x140bc8fb0 reads default_track_list (+0x298, empty string when the row lacks it) and event_list (+0x2a0) from a gamedb row and fills the calendar (+0x2a8 vector {alloc, begin +0x2b0, end +0x2b8, cap +0x2c0}, 0x28-byte entries {vtable 0x14568da60, u8 event stat id +8, activity +0x10, u32 +0x18, date +0x20}; count +0x2c8) from the career's dynamic event data (career +0xf58: entries +0xb8..+0xc0, 0x28 each {track list name, alloc, begin, end, cap}) under that key; slot 26 0x140bc9be0 (thunk to the protected .data1 body 0x1498b40f0) is the component vt+0xd0 that GameModeChampionship::begin 0x1407b5c40 calls on every career component (through 0x1407b9ea0) before season start 0x140ae35a0 builds the weekends from the calendar; slot 77 0x140bc9360 (component, index, keep): keys on +0x298 or, when it is null, (+0x290)+0xf8, and unless that list is sort_by_date keeps only the calendar entries whose event that list has, in its order; when it is, 0x140bc9700 sets each entry minute offset +0x18 = difftime(date, event list season start)/60 and sorts by it; then hands the calendar to the career registry (+0x1030 vt+0x60); slot 78 0x140bc9320 calls slot 77; GameModeChampionship::begin calls neither 77 nor 78. Entry dates (+0x20) are the mktime of each event row date_time (schedule.all_track_events, the Thursday of the stock weekend), read into the dynamic event data by 0x142e58f20; renamed from vt_Game_SeasonLengthComponent after V0995"
+ },
+ "signature": {
+  "id": "game.track_list_component",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 C5 F8 57 C0 C5 F8 11 86 90 02 00 00",
+  "match": "0x140d01505",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14568c1e0",
+  "kind": "data",
+  "names": [
+   "vt_Game_TrackListComponent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_wizard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-c",
+   "kind": "global",
+   "item": "vt_Game_TrackListComponent",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d1f350.c;decomp:re/decomp/140d012e0.c;decomp:re/decomp/140aeb130.c;decomp:re/decomp/140cd2610.c;decomp:re/decomp/140bc8ab0.c;decomp:re/decomp/140bc8fb0.c;decomp:re/decomp/140bc9be0.c;decomp:re/decomp/140bc9360.c;decomp:re/decomp/140bc9320.c;decomp:re/decomp/140bc9700.c;decomp:re/decomp/1407b5c40.c;decomp:re/decomp/1407b9ea0.c;decomp:re/decomp/142e58f20.c;xref:0x140d1f571,0x140d01505,0x140d01545,0x140cd24e0,0x140cd2640,0x1412cc0f6;sig:game.track_list_component",
+   "notes": "V1000 Re-checked the renamed row. 0x140d1f350 calls base 0x140aeb130 (which writes up to +0x288), stores 0x14568c1e0 at 0x140d1f571 and keeps it, then zeroes +0x290..+0x2a0 (0x140d1f58d) and returns. 0x140d012e0 stores it at 0x140d01505 and replaces it with 0x1456cdc80 at 0x140d01545, whose slot 5 returns desc 0x146063100 'ScheduleComponent'. A slot-by-slot compare of the two vtables gives exactly the overrides listed (0, 2-5, 8, 10, 15, 16, 28, 29, 36, 39, 43, 47, 67, 70, 77, 78), so slot 26 is the only shared slot among those named. 79 slots (qword 79 is 0). Slots 5, 15, 16, 26, 77 and 78 behave as described: slot 16 reads default_track_list (empty-string default) and event_list and fills the calendar through 0x140bc9d80; slot 26 is jmp .data1 0x1498b40f0, called as vt+0xd0 through 0x1407b9ea0 in GameModeChampionship::begin before 0x140ae35a0; slot 77's 0x141283f20 reads schedule.track_lists sort_by_date and 0x140bc9700 uses difftime 0x145347970 / 60; slot 78 jumps to vt+0x268. The signature still anchors on the ScheduleComponent constructor's inlined base store (0x140d01505), but it resolves to this vtable. sigcheck (--exe f1-modding/work/exe/F1_25.exe): one hit, target 0x14568c1e0"
+  }
+ ],
+ "proofs": []
+}

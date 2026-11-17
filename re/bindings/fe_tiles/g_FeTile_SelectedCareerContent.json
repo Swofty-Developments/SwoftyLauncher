@@ -1,0 +1,56 @@
+{
+ "schema": 1,
+ "name": "g_FeTile_SelectedCareerContent",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146066c42",
+  "type": "uint32_t",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "evidence": "decomp:re/decomp/141726620.c;xref:0x141726664",
+  "notes": "packed id (+0x04) of the customisation car group the career content tile selected (0x3fff0000 = none); written by the content tile presses 0x141726620 / 0x1417267e0 before the router; read by the customisation car lists and predicates (content-tiles-saves.md). Raised by native-1990 for the F1 1990 v2 third Career tile (doc:/mnt/work/.f1-1990/v2/third-tile.md)."
+ },
+ "signature": {
+  "id": "fe_tiles.selected_career_content",
+  "section": ".xtls",
+  "pattern": "8B 42 04 89 05 ?? ?? ?? ?? 48 89 F2",
+  "match": "0x141726661",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x3",
+   "len": 6
+  },
+  "target": "0x146066c42",
+  "kind": "data",
+  "names": [
+   "g_FeTile_SelectedCareerContent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/career_content.cpp",
+   "addons/f1-1990/native/src/career_menu_ui.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-content",
+   "kind": "global",
+   "item": "g_FeTile_SelectedCareerContent",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/exe/std-content/decomp/141726620.c;decomp:work/exe/std-content/decomp/1417267e0.c;xref:0x141726664,0x141726923;sig:fe_tiles.selected_career_content",
+   "notes": "V0908 Independent: uint32 written by 0x141726620 and 0x1417267e0 (0x3fff0000 first, then the chosen entry +0x04) right before the call to the router 0x141725620; 34 riprel refs (readers include 0x1416c76f0, 0x14172b2d0, 0x141739560, 0x14173dc00, 0x141a4c070); readers' meaning not re-derived. sigcheck: riprel data 1 hit"
+  }
+ ],
+ "proofs": []
+}

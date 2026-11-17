@@ -2,7 +2,7 @@
 
 use serde_json::{Value, json};
 
-use crate::builtin::CORE_ID;
+use crate::addons::builtin::CORE_ID;
 use crate::multiplayer::fingerprint::{Fingerprint, Source};
 
 pub const CORE: &str = "core";
@@ -49,7 +49,7 @@ mod tests {
     use semver::Version;
 
     use super::*;
-    use crate::baseline::Identity;
+    use crate::game_folder::baseline::Identity;
     use crate::multiplayer::fingerprint::AddonPrint;
 
     fn print(id: &str, source: Source, registry: Option<&str>) -> AddonPrint {

@@ -101,7 +101,7 @@ impl Shell {
             window.notify(Notification::error(tr("Close F1 25 before updating addons.")), cx);
             return;
         }
-        let building = self.build.clone();
+        let building = self.game.build.clone();
         let (held, updates): (Vec<Update>, Vec<Update>) = self
             .addon_updates()
             .into_iter()

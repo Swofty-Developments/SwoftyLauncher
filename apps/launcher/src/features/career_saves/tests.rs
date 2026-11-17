@@ -1,9 +1,9 @@
 use std::path::PathBuf;
 
-use swofty_core::vault::careers::{Brief, Row, Status};
-use swofty_core::vault::{self, Vault};
+use swofty_core::saves::vault::careers::{Brief, Row, Status};
+use swofty_core::saves::vault::{self, Vault};
 
-use swofty_core::launcher_saves::{self, Marker};
+use swofty_core::saves::launcher::{self as launcher_saves, Marker};
 
 use super::{
     Banner, Missing, SavesPage, awaiting_import, banner_from, build_saves, list, reason_label, steam_save_in,
@@ -311,7 +311,7 @@ fn no_careers_and_no_notice_means_no_banner() {
 
 #[test]
 fn mode_names_read_like_the_game() {
-    use swofty_core::vault::careers::mode_label;
+    use swofty_core::saves::vault::careers::mode_label;
     assert_eq!(mode_label(Some("driver_career")), "Driver Career");
     assert_eq!(mode_label(Some("my_team")), "My Team");
     assert_eq!(mode_label(Some("progressive")), "Progressive");
@@ -322,7 +322,7 @@ fn mode_names_read_like_the_game() {
 #[test]
 fn versions_and_places_read_short() {
     use super::{careers_held, season_round};
-    use swofty_core::vault::careers::listing;
+    use swofty_core::saves::vault::careers::listing;
     assert_eq!(careers_held(&vec![String::new(); 10]), "10 careers");
     let l = listing(
         &swofty_core::stdlib::careers::parse(
@@ -380,7 +380,7 @@ fn no_notice_when_the_import_copied_nothing_or_was_seen() {
 
 #[test]
 fn versions_read_in_plain_words() {
-    use swofty_core::vault::Reason;
+    use swofty_core::saves::vault::Reason;
     assert_eq!(reason_label(Reason::BeforeSession), "Before Play");
     assert_eq!(reason_label(Reason::Migrated), "Old backup");
     assert_eq!(reason_label(Reason::Imported), "Imported from Steam");
@@ -390,9 +390,9 @@ fn versions_read_in_plain_words() {
 
 #[test]
 fn an_imported_save_with_no_listing_gets_a_titled_placeholder() {
-    use swofty_core::vault::{Meta, Reason, Taken};
+    use swofty_core::saves::vault::{Meta, Reason, Taken};
     let d = data("imported");
-    let loc = swofty_core::vault::Location::launcher(&d, "default");
+    let loc = swofty_core::saves::vault::Location::launcher(&d, "default");
     std::fs::create_dir_all(&loc.dir).unwrap();
     std::fs::write(loc.dir.join("savegame@profile#NXDSMWW.BWW"), [1u8; 64]).unwrap();
     std::fs::write(loc.dir.join("savegame@profile#QKRHMYXE"), [2u8; 16]).unwrap();
@@ -422,8 +422,8 @@ fn the_fixed_columns_leave_room_at_the_narrowest_window() {
 #[test]
 fn restore_waits_for_what_is_running() {
     use super::short_block;
-    use swofty_core::vault::Layout;
-    let run = |game, steam| swofty_core::vault::restore::Running {
+    use swofty_core::saves::vault::Layout;
+    let run = |game, steam| swofty_core::saves::vault::restore::Running {
         game,
         steam,
         ea_app: false,

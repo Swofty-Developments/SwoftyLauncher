@@ -1,0 +1,75 @@
+{
+ "schema": 1,
+ "name": "k_Live_PitLaneSystemKey",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1460fb708",
+  "type": "uint8_t",
+  "level": "L2",
+  "subsystem": "live",
+  "evidence": "decomp:re/decomp/1434e2ea0.c;decomp:re/decomp/144500dc0.c;xref:0x145843d00,0x1434e782d,0x14021352b,0x1403c599e,0x1405fcda5,0x1406adcc4,0x1406b240b,0x1407f5a74,0x140803864,0x14080543d;pat:type-name-PitLaneSystem;xref:0x1405fcda2",
+  "notes": "registry key (address of the static type record; its +8 holds the name \"PitLaneSystem\", stored at 0x1434e782d); class vtable 0x145843d00 slot 0 = 0x1434e2ea0 returns it; pit lane system; per-car state records inline at +0x68"
+ },
+ "signature": {
+  "id": "live.pit_lane_system_key",
+  "section": ".xtls",
+  "pattern": "48 89 83 98 00 00 00 48 85 C0 0F 84 ?? ?? ?? ?? 48 8D 05",
+  "match": "0x1405fcd92",
+  "anchor": "0x13",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x10",
+   "len": 7
+  },
+  "target": "0x1460fb708",
+  "kind": "data",
+  "names": [
+   "k_Live_PitLaneSystemKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "osd-l1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/live/live_state.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vb",
+   "kind": "global",
+   "item": "k_Live_PitLaneSystemKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140811e10.c;xref:0x1434e782f",
+   "notes": "V8777 own check (disx + type record scan): static init at 0x1434e782f loads a string address and stores it at key+8; the string bytes are \"PitLaneSystem\". RelativeGapHelper.init stores registry[key] at +0xd0 (0x140811f1f). Slot-0 getter and registry-hash insert not re-derived"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-va",
+   "kind": "global",
+   "item": "k_Live_PitLaneSystemKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144500dc0.c;decomp:re/decomp/142cf5c00.c;decomp:re/decomp/142cfd6c0.c;xref:0x1406065a0,0x147fe1f90,0x142cfd8f0",
+   "notes": "V8739 own disx: type record +8 name string = 'PitLaneSystem' (static init store at 0x1434e7830); slot-0 0x1434e2ea0 = lea rax,[k_Live_PitLaneSystemKey] ret and qword at vtable 0x145843d00 == 0x1434e2ea0; consumer: UDP state+0xd210 = getter 0x1406065a0 (jmp 0x147fe1f90 leas this key + FindIndex); SyncLapData reads [[state+0xd210]+0x68+id*0x10]+4 (car_slots[id].state.state) and [state+0xd210]+0x48"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vd",
+   "kind": "sig",
+   "item": "live.pit_lane_system_key",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:live.pit_lane_system_key",
+   "notes": "V8905 sigcheck hits=1, anchor disassembled and resolve re-computed by hand to the claimed target; target is the first field of a static type record whose +8 name pointer (set at the init stores) points at the type-name string, e.g. pit_lane_system_key; the name strings were read from the exe for all 13 keys and match the k_Live_* names; consumers pass the key address to FindIndex (0x14030ffd0)"
+  }
+ ],
+ "proofs": []
+}

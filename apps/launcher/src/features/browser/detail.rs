@@ -2,16 +2,17 @@ use gpui_kit::component::{ActiveTheme, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::catalog::{self, Addon};
-use swofty_core::update::current_version;
+use swofty_core::updates::release::current_version;
 use swofty_i18n::{tr, trf, trn};
 
 use super::detail_cards::detail_about;
 use super::*;
 use crate::shell::Shell;
-use crate::shell::pages::{GUTTER, label, tag};
 use crate::ui::format;
 use crate::ui::scale::px;
 use crate::ui::theme::Palette;
+use crate::ui::tokens::space::GUTTER;
+use crate::ui::{label, tag};
 
 /// How many of `versions`, newest first, the Addons page shows before its older-versions toggle.
 pub(super) fn shown_versions(versions: &[&catalog::Version], installed: &semver::Version) -> usize {
@@ -182,7 +183,7 @@ impl Shell {
                 .text_size(px(12.))
                 .text_color(p.text_placeholder)
                 .hover(move |s| s.text_color(p.text_muted))
-                .child(crate::shell::pages::chevron(open, p))
+                .child(crate::ui::chevron(open, p))
                 .child(if open {
                     tr("Hide older versions").to_owned()
                 } else {

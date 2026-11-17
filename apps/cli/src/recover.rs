@@ -74,7 +74,7 @@ pub fn announce(store: &Store, g: &Game, lines: &[String], out: &dyn Fn(&str)) {
     for l in lines {
         out(&format!("  {l}"));
     }
-    let (report, _) = crate::doctor::report(store, Some(g));
+    let (report, _) = crate::commands::doctor::report(store, Some(g));
     for l in report {
         out(&format!("doctor: {l}"));
     }

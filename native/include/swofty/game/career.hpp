@@ -1022,6 +1022,8 @@ using Career_Add_SeasonWeekend_t = uint64_t(void *season, void *weekend);
 inline constexpr fn<"Career_Add_SeasonWeekend", Career_Add_SeasonWeekend_t> Career_Add_SeasonWeekend{}; // L2 experimental
 using Career_Add_TeamModifier_t = void(void *list, uint32_t key, float value);
 inline constexpr fn<"Career_Add_TeamModifier", Career_Add_TeamModifier_t> Career_Add_TeamModifier{}; // L2 experimental
+using Career_Add_TrackSetToSeason_t = void(void *doc, uint32_t index, const char *track_set_name);
+inline constexpr fn<"Career_Add_TrackSetToSeason", Career_Add_TrackSetToSeason_t> Career_Add_TrackSetToSeason{}; // L2 experimental
 using Career_Adjust_RpDriverWallet_t = void(void *wallets, uint32_t driver_key, int32_t delta);
 inline constexpr fn<"Career_Adjust_RpDriverWallet", Career_Adjust_RpDriverWallet_t> Career_Adjust_RpDriverWallet{}; // L2 experimental
 using Career_Adjust_RpTeamWallet_t = void(void *wallets, uint32_t team_key, int32_t delta);

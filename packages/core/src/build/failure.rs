@@ -45,16 +45,16 @@ pub fn named(store: &Store, game: &Path, e: Error) -> Error {
     }
     if let Ok(rest) = path.strip_prefix(game) {
         let file = rel(rest);
-        let version = crate::exe_version::read(&game.join(crate::GAME_EXE));
+        let version = crate::game_folder::exe_version::read(&game.join(crate::GAME_EXE));
         return Error::Other(match gone {
             true => format!(
                 "{file} is missing from the game folder; {}, then try again",
-                crate::stock::missing_fix(1, version.as_deref())
+                crate::game_folder::stock::missing_fix(1, version.as_deref())
             ),
             false => format!(
                 "{file} in the game folder is incomplete or damaged; verify the game files in Steam (open {}) \
                  or repair the game in the EA app, then try again",
-                crate::stock::STEAM_VERIFY_URL
+                crate::game_folder::stock::STEAM_VERIFY_URL
             ),
         });
     }

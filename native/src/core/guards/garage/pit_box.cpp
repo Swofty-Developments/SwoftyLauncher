@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -46,7 +47,7 @@ constexpr uintptr_t PROJECTION_FAILED = 2;
 namespace pb = runtime::pit_box;
 
 uintptr_t pose_false = 0;
-bool offered = false, settled = false, wanted = false;
+bool wanted = false;
 pb::Seen seen;
 
 constexpr const char *TYRE_MIXIN = "swofty_core.dll (race tyre change rule)";
@@ -75,59 +76,58 @@ void box_read(SwoftyContext *c)
     c->rip = pose_false;
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
+// Two guards in one core set: the race tyre change rule, then the box guard. The rule stays on when the box guard is
+// turned off.
+class PitBoxGuard final : public guards::Guard {
+public:
+    PitBoxGuard() : Guard(guards::CoreSetId::pit_box) {}
 
-std::vector<CoreMixins> pit_box_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char tv[16] = {};
-    DWORD tn = GetEnvironmentVariableA("SWOFTY_RACE_TYRE_RULE", tv, sizeof tv);
-    if (tn && tn < sizeof tv && (!strcmp(tv, "0") || !strcmp(tv, "off")))
-        swofty::log("[pit] race tyre change rule off (SWOFTY_RACE_TYRE_RULE=%s)", tv);
-    else if (!swofty::api->resolve(TYRE_CHANGE))
-        swofty::log("[pit] race tyre change rule off: this build does not resolve %s", TYRE_CHANGE);
-    else {
-        tyre_wanted = true;
-        out.push_back({TYRE_MIXIN, {{TYRE_CHANGE, SWOFTY_MIXIN_WRAP, 100, (void *)&change_entry, (void **)&orig_change}}});
+private:
+    void build(std::vector<runtime::CoreMixins> &out) override
+    {
+        char tv[16] = {};
+        DWORD tn = GetEnvironmentVariableA("SWOFTY_RACE_TYRE_RULE", tv, sizeof tv);
+        if (tn && tn < sizeof tv && (!strcmp(tv, "0") || !strcmp(tv, "off")))
+            swofty::log("[pit] race tyre change rule off (SWOFTY_RACE_TYRE_RULE=%s)", tv);
+        else if (!swofty::api->resolve(TYRE_CHANGE))
+            swofty::log("[pit] race tyre change rule off: this build does not resolve %s", TYRE_CHANGE);
+        else {
+            tyre_wanted = true;
+            out.push_back({TYRE_MIXIN, {{TYRE_CHANGE, SWOFTY_MIXIN_WRAP, 100, (void *)&change_entry, (void **)&orig_change}}});
+        }
+        char v[16] = {};
+        DWORD n = GetEnvironmentVariableA("SWOFTY_PIT_BOX_GUARD", v, sizeof v);
+        if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+            swofty::log("[pit] box guard off (SWOFTY_PIT_BOX_GUARD=%s)", v);
+            return;
+        }
+        pose_false = swofty::api->resolve(FALSE_);
+        if (!pose_false || !swofty::api->resolve(READ)) {
+            pose_false = 0;
+            swofty::log("[pit] box guard off: needs %s and %s, which this build does not resolve", READ, FALSE_);
+            return;
+        }
+        wanted = true;
+        out.push_back({MIXIN, {{READ, SWOFTY_MIXIN_SITE, 100, (void *)&box_read, nullptr}}});
     }
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_PIT_BOX_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[pit] box guard off (SWOFTY_PIT_BOX_GUARD=%s)", v);
-        return out;
-    }
-    pose_false = swofty::api->resolve(FALSE_);
-    if (!pose_false || !swofty::api->resolve(READ)) {
-        pose_false = 0;
-        swofty::log("[pit] box guard off: needs %s and %s, which this build does not resolve", READ, FALSE_);
-        return out;
-    }
-    wanted = true;
-    out.push_back({MIXIN, {{READ, SWOFTY_MIXIN_SITE, 100, (void *)&box_read, nullptr}}});
-    return out;
-}
 
-void pit_box_commit()
-{
-    if (!offered || settled)
-        return;
-    if (tyre_wanted)
-        swofty::log("[pit] race tyre change rule %s",
-                    core_mixins_active(TYRE_MIXIN) ? "armed: a box with race_tyre_change false keeps its tyres at race stops"
-                                                   : "did not install (see the [core] lines)");
-    if (!wanted) {
-        settled = true;
-        return;
+    void settle() override
+    {
+        if (tyre_wanted)
+            swofty::log("[pit] race tyre change rule %s",
+                        runtime::core_mixins_active(TYRE_MIXIN)
+                            ? "armed: a box with race_tyre_change false keeps its tyres at race stops"
+                            : "did not install (see the [core] lines)");
+        if (!wanted)
+            return;
+        swofty::log("[pit] box guard %s",
+                    runtime::core_mixins_active(MIXIN) ? "armed: a garage car without a pit box is left where it is"
+                                                       : "did not install (see the [core] lines)");
     }
-    settled = true;
-    swofty::log("[pit] box guard %s",
-                core_mixins_active(MIXIN) ? "armed: a garage car without a pit box is left where it is"
-                                          : "did not install (see the [core] lines)");
-}
+};
+
+PitBoxGuard guard;
 
 }

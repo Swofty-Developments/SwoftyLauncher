@@ -1,5 +1,5 @@
 // Host-native unit test for the core's fitted tyre model check (native/src/core/diagnostics/tyre_models_logic.hpp): which
-// models count as never placed, and the log lines built from them. Built and run by native/test/run_tyre_models_test.sh.
+// models count as never placed, and the log lines built from them. Built and run by native/test/run_tests.sh tyre_models.
 
 #include "core/diagnostics/tyre_models_logic.hpp"
 

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPerfViewModelSlotDtor",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142170fd1",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/142170f20.c;xref:0x142170fd1;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v071--the-pie-crash-at-career-load-slot-4-was-never-constructed",
+  "notes": "call Career_Destroy_RnDPieSlot(rcx = object + 0x6e0): first slot destroy in the class-B view model dtor"
+ },
+ "signature": {
+  "id": "career.rn_d_perf_view_model_slot_dtor",
+  "section": ".xtls",
+  "pattern": "48 8B 9E 68 06 00 00 48 85 DB 0F 84 ?? ?? ?? ?? 4C 8D B7 80 00 00 00 48 8D 8F E0 06 00 00 E8 ?? ?? ?? ?? 48 8D 8F C0 04 00 00",
+  "match": "0x142170fb3",
+  "anchor": "0x1e",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142170fd1",
+  "kind": "mid",
+  "expect": "E8 7A 46 DD FF",
+  "names": [
+   "site_Career_RnDPerfViewModelSlotDtor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_RnDPerfViewModelSlotDtor",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142170f20.c;xref:0x142170f35,0x142170fa3,0x142170fca,0x142170fd1,0x1420f509b,0x1420f5155,0x1420f5215",
+   "notes": "V0168 dtor stores vt 0x14575e300 at [rcx]; rdi = [this+0x670] pie object; E8 call 0x141f45650 with rcx = rdi+0x6e0, first slot destroy; 3 E8 callers; 5-byte window clean"
+  }
+ ],
+ "proofs": []
+}

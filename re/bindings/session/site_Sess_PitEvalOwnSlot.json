@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_PitEvalOwnSlot",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143691fbf",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/143691df0.c;xref:0x143691fa8,0x143691fbb,0x143691fc6,0x14369214a",
+  "notes": "In Sess_PitStrategy_EvaluateAgainstPitList: rcx = [[module+0x78]+0x148][own vehicle] just loaded at 0x143691fbb, read at +0x48/+0x50 by 0x143691fc6. A null slot faults there. The guard redirects to site_Sess_PitEvalReturnFalse."
+ },
+ "signature": {
+  "id": "session.pit_eval_own_slot",
+  "section": ".xtls",
+  "pattern": "49 8B 0C C8 44 33 88 B0 00 00 00 8B 69 48",
+  "match": "0x143691fbb",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143691fbf",
+  "kind": "mid",
+  "expect": "44 33 88 B0 00 00 00",
+  "names": [
+   "site_Sess_PitEvalOwnSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "pitguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/pit_slots.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-pit1",
+   "kind": "global",
+   "item": "0x143691fbf",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143691df0.c;xref:0x143691fbb,0x143691fc6",
+   "notes": "V3855 rcx holds the slot ptr (mov rcx,[r8+rcx*8] at fbb); null faults at fc6. hook window fbf..fc3 inside the 7-byte xor, no branch lands in it. target 14a reachable: same rsp, CS held since e1f, 14a leaves it at 14c"
+  }
+ ],
+ "proofs": []
+}

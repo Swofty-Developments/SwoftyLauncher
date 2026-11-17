@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Game_ErsNewLap_NextVehicle",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142518100",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1425180d0.c;xref:0x1425180fe,0x142518107",
+  "notes": "In Game_ErsSystem_HandleVehicleNewLap: add rax,8; cmp rax,r8; jne 0x1425180f0, the path of an entry whose vehicle id does not match (fall-through of je 0x14251810c at 0x1425180fe); continues the participant search or returns 0 at 0x142518109 after the last entry. Reads only rax (the entry slot) and r8 (vector end). The rip target of core's ERS new-lap guard; never hooked."
+ },
+ "signature": {
+  "id": "game.ers_new_lap_next_vehicle",
+  "section": ".xtls",
+  "pattern": "48 8B 41 30 4C 8B 41 38 4C 39 C0 74 2C 0F B6 52 10 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 4C 8B 08 4D 8B 49 28 41 38 91 E8 00 00 00 74 0C 48 83 C0 08 4C 39 C0",
+  "match": "0x1425180d0",
+  "anchor": "0x30",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142518100",
+  "kind": "mid",
+  "names": [
+   "site_Game_ErsNewLap_NextVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "lapguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/cars/ers_newlap.cpp"
+  ],
+  "expect": "48 83 C0 08 4C 39 C0",
+  "func_start": "0x1425180d0"
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-lapguard",
+   "kind": "global",
+   "item": "site_Game_ErsNewLap_NextVehicle",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1425180d0.c;xref:0x1425180fe,0x142518107;sig:game.ers_new_lap_next_vehicle",
+   "notes": "V1184 sigcheck --only game.ers_new_lap_next_vehicle: OK hits=1 match=0x1425180d0 target=0x142518100 (anchor 0x30, 57 bytes, no wildcards, expect 4883C008 4C39C0). Disasm: 0x142518100 add rax,8; 0x142518104 cmp rax,r8; 0x142518107 jne 0x1425180f0; fall-through 0x142518109 xor eax,eax; ret, so after the last entry it returns 0. Reached in the original code only as the fall-through of je 0x14251810c at 0x1425180fe (the non-matching entry path); no other branch in the function or in the .xtls rel32 scan targets it. It reads only rax and r8 and the flags come from its own add/cmp, so arriving from the lookup site with any r9/flags behaves the same as a non-matching entry (rdx/rcx preserved for the next iteration and the match path)."
+  }
+ ],
+ "proofs": []
+}

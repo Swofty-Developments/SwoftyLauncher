@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Car_BodyDamage_ImpulseScaleRead",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14465162e",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "car",
+  "evidence": "xref:0x14465162e",
+  "notes": "carlive 2026-10-29 (static, carlive-verify): vmulss xmm1,[rip+0x145bf68d0] (k_Car_BodyDamage_ImpulseScale) in Car_BodyDamage_OnCollision; mid sig because the prologue is not unique."
+ },
+ "signature": {
+  "id": "car.body_damage_impulse_scale_site",
+  "section": ".xtls",
+  "pattern": "C5 F2 59 0D ?? ?? ?? ?? C5 F8 28 E2",
+  "match": "0x14465162e",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14465162e",
+  "kind": "mid",
+  "expect": "C5 F2 59 0D",
+  "names": [
+   "site_Car_BodyDamage_ImpulseScaleRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "carlive-verify",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x14465162e",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x14465162e;decomp:re/decomp/1446512c0.c",
+   "notes": "V7422 bytes and enclosing function match"
+  }
+ ],
+ "proofs": []
+}

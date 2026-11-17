@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "k_Career_RnDDeptNameTable",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145755e58",
+  "type": "char*[4]",
+  "level": "L1",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141c85f70.c",
+  "notes": "4-entry dept code string table {aero,chassis,maintenance,engine}. Readers clamp the index < 4 (box grid @0x141c86c87 with g_Career_RnDOverviewSelectedDept; purchase back_pressed @0x141c8c158 with the panel dept). k_Career_RnDDeptColourTable follows it directly, so [4] reads colour[0]|colour[1] = 0xff3ec58dffeead00 as a char* -> crash. Fixed 4, no 5th slot."
+ },
+ "signature": {
+  "id": "career.rn_d_dept_name_table",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 4C 8B 04 C1 EB 07 4C 8D 05 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 50",
+  "match": "0x141c495e6",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145755e58",
+  "kind": "data",
+  "names": [
+   "k_Career_RnDDeptNameTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x145755e58",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x141c495e9",
+   "notes": "V7432 table content and refs match"
+  }
+ ],
+ "proofs": []
+}

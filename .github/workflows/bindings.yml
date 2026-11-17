@@ -3,7 +3,8 @@
 #
 # Pull requests come from forks and are untrusted. Nothing here runs code from the pull request:
 # - validate checks out the BASE branch, reads the PR's record files as git blobs into a scratch folder and
-#   runs the base branch's re/tools/binding.py over them as data. Its token is read-only and it uses no secrets.
+#   runs the base branch's re/tools/binding.py over them as data, including kb_lint's structural rules over the
+#   base plus those records. Its token is read-only and it uses no secrets.
 # - automerge never checks anything out. It lists the PR's files from the API itself, requires every one to be a
 #   record, and enables auto-merge pinned to the head commit that validate checked.
 name: bindings
@@ -163,3 +164,5 @@ jobs:
           persist-credentials: false
       - name: Every record still passes against the merged knowledge base
         run: python3 -I re/tools/binding.py check
+      - name: The knowledge base has no structural drift
+        run: python3 -I re/tools/kb_lint.py --structural

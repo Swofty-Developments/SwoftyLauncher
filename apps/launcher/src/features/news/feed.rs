@@ -136,7 +136,7 @@ pub(crate) fn image(dir: &Path, url: &str) -> Option<Arc<Image>> {
     let bytes = match std::fs::read(&path) {
         Ok(bytes) => bytes,
         Err(_) => {
-            let bytes = swofty_core::update::get(url, Some(TIMEOUT))
+            let bytes = swofty_core::updates::release::get(url, Some(TIMEOUT))
                 .ok()?
                 .with_config()
                 .limit(IMAGE_LIMIT)

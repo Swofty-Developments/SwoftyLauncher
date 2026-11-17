@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_TheatreList_NoSlotAlt",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bfc9c1",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/142bfc780.c;xref:0x142bfc99c,0x142bfc9b1",
+  "notes": "In Game_TheatreList_FindItemSaveSlot_Alt: add rsp,0x28; pop rbx; pop rbp; pop rdi; pop rsi; pop r12..r15; ret (0x142bfc9c1..0x142bfc9d1), the function's only exit and only ret, reached with rax 0 from the empty slot list and the no-match end of the slot scan, so null is the game's own no-slot answer (the row builder FUN_141f0bbd0 tests rax and returns false). The rip target of core's theatre saved list guard from site_Game_TheatreList_EntryStepAlt with rax set to 0; the frame there is the prologue frame. Never hooked. Same head pattern as the Alt step site, anchor 0x231. EA 0x2bf0f51. L2 2026-11-14 by owner re-career-teams."
+ },
+ "signature": {
+  "id": "game.theatre_list_no_slot_alt",
+  "section": ".xtls",
+  "pattern": "48 8B B9 C8 02 00 00 48 8B 49 40 48 69 DA A0 01 00 00 8B 44 1F 08",
+  "match": "0x142bfc790",
+  "anchor": "0x231",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bfc9c1",
+  "kind": "mid",
+  "names": [
+   "site_Game_TheatreList_NoSlotAlt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-14",
+    "by": "re-career-teams",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/theatre_list.cpp"
+  ],
+  "expect": "48 83 C4 28 5B"
+ },
+ "verify": [
+  {
+   "date": "2026-11-14",
+   "verifier": "kbverify-theatre-rows",
+   "kind": "global",
+   "item": "0x142bfc9c1",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bfc780.c;xref:0x142bfc99c,0x142bfc9b1;sig:game.theatre_list_no_slot_alt",
+   "notes": "V9293 Own capstone sweep: 0x142bfc9c1 add rsp,0x28 then pops rbx rbp rdi rsi r12 r13 r14 r15 and the only ret at 0x142bfc9d1; xor eax,eax at 0x142bfc997 then je 0x142bfc9c1 at 0x142bfc99c (empty slot list) and jmp 0x142bfc9c1 at 0x142bfc9b1 (scan without a match) reach it with rax 0, the game's own no-slot answer. EA 0x142bf0f51 same bytes (48 83 C4 28) and the same branch targets at +0x241."
+  }
+ ],
+ "proofs": []
+}

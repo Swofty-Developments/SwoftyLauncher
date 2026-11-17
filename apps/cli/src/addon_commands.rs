@@ -70,7 +70,7 @@ impl AddonCommands {
             registry,
             specs,
             namespaced,
-            developer: crate::dev::enabled(store),
+            developer: crate::commands::dev::enabled(store),
         }
     }
 
@@ -107,7 +107,7 @@ impl AddonCommands {
         }
         let entry = self.registry.get(id).context("addon is gone")?;
         let p = store.profile(profile)?;
-        let game = crate::build::game(store, None).ok();
+        let game = crate::commands::build::game(store, None).ok();
         let host = Host::new(store, id, &p, game.as_ref())?;
         let out = entry.addon.command(&host.cx(), &path, &input)?;
         if !out.is_empty() {

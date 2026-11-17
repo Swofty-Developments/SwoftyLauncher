@@ -46,7 +46,7 @@ pub fn boards_url() -> String {
 pub fn token(data: &Path, config: &Config) -> Option<String> {
     config
         .time_trial_boards
-        .then(|| crate::mpauth::load(data))
+        .then(|| crate::server::sign_in::load(data))
         .flatten()
         .map(|s| s.token)
 }

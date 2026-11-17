@@ -14,12 +14,12 @@ use std::path::{Path, PathBuf};
 use std::time::{Duration, SystemTime};
 
 use crate::GAME_EXE;
-use crate::baseline::sha256_file;
-use crate::compat::AdminLayer;
+use crate::diagnostics::launch::WINDOW;
+use crate::diagnostics::quarantine::{Carrier, Cause, PreferSource};
+use crate::game_folder::baseline::sha256_file;
 use crate::install::{PROXY, has_override};
-use crate::launch::WINDOW;
-use crate::process::{GameProcess, same_folder};
-use crate::quarantine::{Carrier, Cause, PreferSource};
+use crate::platform::process::{GameProcess, same_folder};
+use crate::platform::run_as_admin::AdminLayer;
 use crate::session::{LOADER_LOG, written_since};
 
 pub type Probe<T> = std::result::Result<T, String>;
@@ -252,7 +252,7 @@ pub fn collect(game: &Path, placed: Option<&str>, since: SystemTime, user_reg: O
             .map(|r| std::fs::read_to_string(r).is_ok_and(|t| has_override(&t))),
         ..Findings::default()
     };
-    let running = crate::process::game_processes();
+    let running = crate::platform::process::game_processes();
     platform::fill(&mut f, game, &running, since);
     let pids: Vec<u32> = running.iter().map(|g| g.pid).collect();
     let fresh = f.rotated && written_since(&log, since);
@@ -270,7 +270,7 @@ pub fn collect(game: &Path, placed: Option<&str>, since: SystemTime, user_reg: O
 pub fn attached(log: &str, running: &[u32], fresh: bool) -> Option<Attached> {
     let lines: Vec<&str> = log.lines().collect();
     let (at, pid) = lines.iter().enumerate().rev().find_map(|(i, l)| {
-        if crate::quarantine::attached(l) != Some(true) {
+        if crate::diagnostics::quarantine::attached(l) != Some(true) {
             return None;
         }
         let rest = &l[l.find("attached, pid ")? + "attached, pid ".len()..];
@@ -825,7 +825,7 @@ impl Findings {
             .iter()
             .find(|a| matches!(&a.shims, Ok(s) if !s.is_empty()))
             .map(|a| Carrier {
-                name: crate::ea_app::PROCESS.to_owned(),
+                name: crate::platform::ea_app::PROCESS.to_owned(),
                 exe: a.image.as_deref().map(tidy),
                 layers: Vec::new(),
             })
@@ -984,7 +984,7 @@ impl Findings {
         match &self.starter_layers {
             Some(found) if found.is_empty() => out.push(format!(
                 "compatibility settings on {} and the offline play stub: none",
-                crate::compat::STARTERS.join(", ")
+                crate::platform::run_as_admin::STARTERS.join(", ")
             )),
             Some(found) => out.extend(found.iter().map(|l| {
                 format!(
@@ -999,7 +999,7 @@ impl Findings {
         }
         for a in &self.ea_app {
             let pid = a.pid;
-            let name = crate::ea_app::PROCESS;
+            let name = crate::platform::ea_app::PROCESS;
             out.push(match &a.shims {
                 Ok(s) if s.is_empty() => format!("{name} pid {pid}: no Windows compatibility shims"),
                 Ok(s) => format!(
@@ -1219,7 +1219,7 @@ mod platform {
 #[cfg(windows)]
 mod platform {
     use super::*;
-    use crate::compat::windows_tool_within;
+    use crate::platform::run_as_admin::windows_tool_within;
 
     const SESSION_MANAGER: &str = r"SYSTEM\CurrentControlSet\Control\Session Manager";
     const EXEC_OPTIONS: &str =
@@ -1245,12 +1245,12 @@ mod platform {
             f.search = Some(search());
             f.exec_options = Some(exec_options());
             f.prefer_from = Some(prefer_from(&game.join(GAME_EXE)));
-            f.layers = Some(Ok(crate::compat::layers(&game.join(GAME_EXE))
+            f.layers = Some(Ok(crate::platform::run_as_admin::layers(&game.join(GAME_EXE))
                 .into_iter()
                 .map(|l| format!("{} ({})", l.layers.trim(), l.scope()))
                 .collect()));
-            f.starter_layers = Some(crate::compat::starter_layers(game));
-            f.ea_app = crate::process::named(crate::ea_app::PROCESS)
+            f.starter_layers = Some(crate::platform::run_as_admin::starter_layers(game));
+            f.ea_app = crate::platform::process::named(crate::platform::ea_app::PROCESS)
                 .iter()
                 .take(MAX_GAMES)
                 .map(|a| ea_app(a.pid, game, windows.as_deref()))

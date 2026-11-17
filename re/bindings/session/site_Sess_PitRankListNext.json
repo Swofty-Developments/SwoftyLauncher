@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_PitRankListNext",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143691d80",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/143691b40.c;xref:0x143691d77,0x143691d84,0x143691db4",
+  "notes": "Same sibling: loop advance (add rax,8; cmp rax,rcx; je 0x143691db8). Needs rax (list cursor), rcx (list end), ebp (count), xmm0 and xmm6."
+ },
+ "signature": {
+  "id": "session.pit_rank_list_next",
+  "section": ".xtls",
+  "pattern": "48 83 C0 08 48 39 C8 74 2F C5 FA 10 48 04",
+  "match": "0x143691d80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143691d80",
+  "kind": "mid",
+  "expect": "48 83 C0 08 48 39 C8",
+  "names": [
+   "site_Sess_PitRankListNext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "pitguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/pit_slots.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-pit1",
+   "kind": "global",
+   "item": "0x143691d80",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143691b40.c;xref:0x143691d77,0x143691d84,0x143691db4",
+   "notes": "V3862 loop advance uses only rax (+8) and rcx (end); skipping a record (ebp not incremented) is the same as the cmp esi,r8d adc 0 not counting; iterator intact"
+  }
+ ],
+ "proofs": []
+}

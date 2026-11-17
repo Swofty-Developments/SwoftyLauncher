@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_GrandPrixContinueVm_F1wCarCheck",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141bceaf2",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141bce150.c;xref:0x141bce1a5,0x141bce1b6,0x141bce5cf,0x141bce5ee,0x141bceae6,0x141bceaf9,0x141bce5fb",
+  "notes": "In Game_GrandPrixContinueVm_PressEntry (0x141bce150), the f1w_car_offline check: cmp [r8+0x580],rcx; jne 0x141bce5f4. Reached only through je 0x141bceae6 at 0x141bce5ee (offline, [[vm+0x280]+0x80]==0) and the null test at 0x141bceae9; no branch lands in 0x141bceaf3..0x141bceaf8. r8 = [vm+0x1388], the F1 World player component (non-null, 0x141bce5db); rcx = the first qword (vehicle category) of the GameSetupMode at [rax+0x2b0], rax = the entrants manager from vm vt+0x108 (0x141bce1b6), unchanged since 0x141bce5cf; rbx = the mode entity from vm vt+0xf8 (0x141bce1a5, or reloaded from [rsp+0x48] at 0x141bce5bd), whose vt+0x1d0 list the function walks at 0x141bceaa4. Equal falls through to the f1w_car_offline popup (0x141bceaff); the not-equal path 0x141bce5f4 writes rcx (lea rcx,[r14+0x18] at 0x141bce5fb) before reading it. Core's GP continue guard sets rcx to 0 when [r8+0x580] is not the category of the setup mode labelled f1_world, so the game's own jne takes the not-equal path. EA 0x141bc8f62 (function 0x141bc85c0, all 875 instructions identical)."
+ },
+ "signature": {
+  "id": "game.grand_prix_continue_vm_f1w_car_check",
+  "section": ".xtls",
+  "pattern": "0F 84 ?? ?? ?? ?? 49 39 88 80 05 00 00",
+  "match": "0x141bceaec",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141bceaf2",
+  "kind": "mid",
+  "expect": "49 39 88 80 05 00 00",
+  "names": [
+   "site_Game_GrandPrixContinueVm_F1wCarCheck"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "gpf1w",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/gp_continue_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "gpf1w-verify",
+   "kind": "global",
+   "item": "site_Game_GrandPrixContinueVm_F1wCarCheck",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x141bce150-0x141bceffd;xref:0x141bce1a5,0x141bce1b6,0x141bce1c5,0x141bce1cf,0x141bce1d5,0x141bce1e2,0x141bce5b0,0x141bce5bd,0x141bce5c7,0x141bce5cf,0x141bce5db,0x141bce5ee,0x141bceae6,0x141bceae9,0x141bceaf9,0x141bce5fb,0x141bce653,0x141bce659,0x141bce713,0x141bceaa4,0x141bc8f5c;sig:game.grand_prix_continue_vm_f1w_car_check",
+   "notes": "V9256 Re-derived all claims. 0xae6 has one pred (je at 0x5ee; 0xae1 is jmp) and 0x5cf is reached by jne 0x1cf (r8 from 0x1c5) or fall-through from 0x5b0 (r8 reloaded, rbx from [rsp+0x48] 0x5bd, rax from [rsp+0x120] spill of the vt+0x108 result 0x1d5/0x5c7); no r8/rax/rbx writes on 0x5cf->0x5ee->0xae6->0xaf2. rcx=[[rax+0x2b0]], both levels null-tested (0x5d6, 0xae9); r8 null-tested 0x5db. No branch in the function or any rel32 in .xtls targets 0xaf3..0xaf8; pattern unique in Steam exe and EA dump. Equal -> 0xaff f1w_car_offline popup (string at 0x145737ef0); not-equal 0x5f4 writes rcx at 0x5fb before reading. rbx at 0xaa4 is the same vt+0xf8 value (0x5f4->0x653->0x71d->0x777, or via [rsp+0x48] stored 0x659 reloaded 0x713). gp_continue_logic.hpp decide() returns skip only when car==setup!=0 and car!=f1_world, so cmp with forced rcx=0 is not-equal; gp_continue_guard.cpp (the register write) is not in the worktree, unverified. EA 0x141bc85c0: 875 insns, same mnemonics/operands/lengths, internal branch targets shift by -0x5b90, only rip/call displacements differ; hint 0x1bc8f5c+6 = 0x141bc8f62 cmp [r8+0x580],rcx."
+  }
+ ],
+ "proofs": []
+}

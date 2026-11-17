@@ -3,11 +3,11 @@ use swofty_formats::cube::Cube;
 use super::Built;
 use super::buildhash::BuildHash;
 use super::run::Run;
+use crate::addons::settings::{OnAddons, render_text};
+use crate::content::runtime_assets::{PostFxLive, PostFxPass, PostFxTexture, PostFxWhen, Runtime};
+use crate::content::shaders::BuildFiles;
 use crate::manifest::{AddonManifest, Binds, PassValue, PostFx, Strength, placeholders, relative_inside};
 use crate::profile::Profile;
-use crate::runtime::{PostFxLive, PostFxPass, PostFxTexture, PostFxWhen, Runtime};
-use crate::settings::{OnAddons, render_text};
-use crate::shaders::BuildFiles;
 use crate::{Error, Result};
 
 /// Grades the picture: the look of the last shader pack in load order, each addon's post-processing
@@ -21,7 +21,7 @@ pub(super) fn grade(
     look(run, built, hash, runtime)?;
     postfx_textures(run, hash, runtime)?;
     postfx_passes(run, built, hash, runtime)?;
-    let mut shader_files = crate::shaders::build_files(run.store, run.settings);
+    let mut shader_files = crate::content::shaders::build_files(run.store, run.settings);
     if !shader_files.files.is_empty() {
         runtime.enable("postfx");
     }
@@ -78,7 +78,7 @@ fn postfx_textures(run: Run, hash: &mut BuildHash, runtime: &mut Runtime) -> Res
                     hash.update(format!("postfx texture {} {file};", m.id));
                     hash.update(&png);
                     Some(
-                        crate::postfx::png_to_tex(&png)
+                        crate::content::postfx::png_to_tex(&png)
                             .map_err(|e| Error::Other(format!("{}: {file}: {e}", m.name)))?,
                     )
                 }
@@ -164,9 +164,13 @@ fn postfx_passes(run: Run, built: &mut Built, hash: &mut BuildHash, runtime: &mu
             "postfx {} {} {} {spec:?};",
             m.id, pass.shader, pass.order
         ));
-        let entry = crate::postfx::Entry::of(pass);
-        match crate::postfx::compile(&source, &run.store.addon_cache_dir(&m.id).join("postfx"), entry) {
-            Ok(crate::postfx::Compiled { dxil, .. }) => {
+        let entry = crate::content::postfx::Entry::of(pass);
+        match crate::content::postfx::compile(
+            &source,
+            &run.store.addon_cache_dir(&m.id).join("postfx"),
+            entry,
+        ) {
+            Ok(crate::content::postfx::Compiled { dxil, .. }) => {
                 hash.update(&dxil);
                 built.lines.push(format!(
                     "postfx: {}'s pass {label} runs as pass {} before the HUD ({} bytes of DXIL)",

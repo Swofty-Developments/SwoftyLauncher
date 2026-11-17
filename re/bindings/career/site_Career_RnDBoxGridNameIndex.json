@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDBoxGridNameIndex",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c86c8c",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141c85f70.c;xref:0x141c86c8c;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v050--the-5th-department-selection-flag-select_fifth_dept-default-on",
+  "notes": "movsx rax,al after the clamp (join target)"
+ },
+ "signature": {
+  "id": "career.rn_d_box_grid_name_index",
+  "section": ".xtls",
+  "pattern": "48 0F BE C0 48 8D 0D ?? ?? ?? ?? 48 8B 14 C1 48 C7 44 24 50 00 00 00 00",
+  "match": "0x141c86c8c",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c86c8c",
+  "kind": "mid",
+  "expect": "48 0F BE C0 48 8D 0D C1 F1 AC 03",
+  "names": [
+   "site_Career_RnDBoxGridNameIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "global",
+   "item": "site_Career_RnDBoxGridNameIndex",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c85f70.c;xref:0x141c86c89,0x141c86c8c,0x141c86c90",
+   "notes": "V0141 movsx rax,al is the fall-through after cmovae; 11B window (movsx + riprel lea of the name table, needs RIP fixup) clean"
+  }
+ ],
+ "proofs": []
+}

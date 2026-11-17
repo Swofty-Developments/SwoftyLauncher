@@ -21,8 +21,8 @@ pub const SESSION_EXES: &[&str] = &[GAME_EXE, "EAAntiCheat.GameServiceLauncher.e
 /// The programs that start F1 25, wherever they are installed. Windows hands
 /// a program's compatibility layers on to the programs it starts.
 pub const STARTERS: &[&str] = &[
-    crate::ea_app::PROCESS,
-    crate::ea_app::LAUNCHER_EXE,
+    crate::platform::ea_app::PROCESS,
+    crate::platform::ea_app::LAUNCHER_EXE,
     "swofty-launcher.exe",
 ];
 
@@ -395,7 +395,7 @@ pub fn write_blocked_text_for(game: &Path, windows: bool) -> String {
              can't add your mods there. Run Swofty Launcher as administrator, or move F1 25 to a \
              folder outside Program Files{}",
             game.display(),
-            crate::copies::move_hint(crate::install::Source::detect(game))
+            crate::game_folder::copies::move_hint(crate::install::Source::detect(game))
         )
     } else {
         format!(

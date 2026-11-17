@@ -29,7 +29,7 @@
 // Strings. Each group's strings are runtime string overrides (lang_override.cpp), set when the
 // group becomes active and cleared when it stops being active.
 //
-// The refs and the voices are core mixin sets of their own (manager.cpp), offered only once an addon
+// The refs and the voices are core mixin sets of their own (runtime/loader/mixin_manager.cpp), offered only once an addon
 // needs them: the refs after a swap, the voices after a mute, at the next mixin commit for a
 // registration from an addon's init and right after the ON_LOAD handlers for one made there. A game
 // where no addon swaps or mutes runs none of them, so an addon that wraps these functions itself

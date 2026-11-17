@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_Unk1418169f0TypeLabelJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141816ec6",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1418169f0.c;xref:0x141816ec6;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "join of the upgrade type switch in the upgrade card binder 0x1418169f0 (r8 = type suffix); target of the default-case redirect"
+ },
+ "signature": {
+  "id": "career.unk1418169f0_type_label_join",
+  "section": ".xtls",
+  "pattern": "48 8D 15 ?? ?? ?? ?? 48 8D 4C 24 40 E8 ?? ?? ?? ?? 4C 8B A6 A8 00 00 00",
+  "match": "0x141816ec6",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141816ec6",
+  "kind": "mid",
+  "expect": "48 8D 15 7C 72 06 04",
+  "names": [
+   "site_Career_Unk1418169f0TypeLabelJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_Unk1418169f0TypeLabelJoin",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418169f0.c;xref:0x141816ec6,0x141816ecd,0x141816ed2,0x141816e11",
+   "notes": "V0047 19 cases + default reach 0x141816ec6 lea rdx 'lng_rnd_%s' ; call 0x1441630f0; no branch into window"
+  }
+ ],
+ "proofs": []
+}

@@ -221,7 +221,7 @@ pub fn sync(
 }
 
 pub fn size(game: &Path) -> u64 {
-    crate::data_usage::dir_size(&dir(game))
+    crate::data::space::dir_size(&dir(game))
 }
 
 /// Deletes the cache; the bytes it held.
@@ -242,7 +242,10 @@ pub fn remove(game: &Path) -> u64 {
 }
 
 /// Whether `a` and `b` are on different volumes, when both are known.
-pub fn apart(a: Option<crate::disk::Volume>, b: Option<crate::disk::Volume>) -> Option<bool> {
+pub fn apart(
+    a: Option<crate::platform::disk::Volume>,
+    b: Option<crate::platform::disk::Volume>,
+) -> Option<bool> {
     Some(a?.id != b?.id)
 }
 
@@ -517,7 +520,7 @@ mod tests {
     #[test]
     fn volumes_are_compared_by_id() {
         let v = |id: &str| {
-            Some(crate::disk::Volume {
+            Some(crate::platform::disk::Volume {
                 id: id.into(),
                 name: id.into(),
             })

@@ -12,9 +12,10 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::model::*;
 use super::state::*;
-use crate::shell::pages::{GUTTER, badge};
 use crate::shell::{Page, Shell};
+use crate::ui::badge;
 use crate::ui::theme::{Palette, ScrollArea};
+use crate::ui::tokens::space::GUTTER;
 
 impl Shell {
     pub(super) fn mp_lobby(&mut self, p: Palette, cx: &mut Context<Self>) -> AnyElement {

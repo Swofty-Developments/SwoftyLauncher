@@ -9,8 +9,9 @@
                                   second contributor: your own proof plus an agree row (makes it experimental)
   binding.py check [FILE...]      the static checks CI runs (every record when no file is given)
   binding.py status               every record, its level, proofs, verifiers and what it still needs
-  binding.py unfold NAME... --author LOGIN
-                                  maintainer: move bindings from the shared tables into records
+  binding.py unfold [NAME...] [--table functions|globals] [--skip-unfit] --author LOGIN
+                                  maintainer: move bindings from the shared tables into records; rows that would
+                                  fail the record rules stay (named ones are an error unless --skip-unfit)
   binding.py ci --files FILES.json --head DIR --author LOGIN --out RESULT.json
                                   the pull request check (.github/workflows/bindings.yml)
 """
@@ -252,6 +253,15 @@ def cmd_unfold(a, db=None, root=None):
         sigdoc = json.load(f)
     sigs = {s['id']: s for s in sigdoc['signatures']}
     wanted = set(a.names)
+    whole = set()
+    for t in getattr(a, 'table', None) or ():
+        whole |= {r['name'] for r in tsv[t] if sigs.get(r['sig'], {}).get('names') == [r['name']]} - wanted
+    wanted |= whole
+    alone = bc.Knowledge.alone()
+    kept = []
+    verify_at = {}
+    for i, v in enumerate(tsv['verify']):
+        verify_at.setdefault((v['kind'], v['item']), []).append(i)
     moved = {'functions': set(), 'globals': set()}
     verify_keys, sig_ids, records, errs = set(), set(), [], []
     for t in ('functions', 'globals'):
@@ -266,7 +276,13 @@ def cmd_unfold(a, db=None, root=None):
             vk = 'func' if t == 'functions' else 'global'
             keys = {(vk, r['name']), (vk, r['addr']), ('sig', r['sig'])}
             rec = br.Record.create(r['name'], t, a.author or s['verified'][0]['by'], r, s)
-            rec.doc['verify'] = [{c: v[c] for c in cols['verify']} for v in tsv['verify'] if (v['kind'], v['item']) in keys]
+            rows = sorted(i for k in keys for i in verify_at.get(k, ()))
+            rec.doc['verify'] = [{c: tsv['verify'][i][c] for c in cols['verify']} for i in rows]
+            bad = bc.check_record(rec, alone)
+            if bad:
+                (kept.append((r['name'], bad[0])) if r['name'] in whole or getattr(a, 'skip_unfit', False) else
+                 errs.extend(f'{r["name"]}: {e}' for e in bad))
+                continue
             records.append(rec)
             moved[t].add(r['addr'])
             verify_keys |= keys
@@ -281,10 +297,12 @@ def cmd_unfold(a, db=None, root=None):
     remove_lines(os.path.join(db, 'verify.tsv'), lambda c: (c[2], c[3]) not in verify_keys)
     sigdoc['signatures'] = [s for s in sigdoc['signatures'] if s['id'] not in sig_ids]
     with open(os.path.join(db, 'signatures.json'), 'w') as f:
-        json.dump(sigdoc, f, indent=1)
-        f.write('\n')
-    br.Store.forget()
+        f.write(json.dumps(sigdoc, indent=1) + '\n')
+    if os.path.abspath(root) == os.path.abspath(br.RECORDS):
+        br.Store.forget()
     print(f'binding.py unfold: {sum(len(m) for m in moved.values())} binding(s) moved into {os.path.relpath(root)}')
+    for name, why in kept:
+        print(f'kept {name} in the tables: {why}')
 
 
 def read_tsv_at(db, table):
@@ -292,6 +310,24 @@ def read_tsv_at(db, table):
     with open(os.path.join(db, f'{table}.tsv')) as f:
         lines = [ln for ln in f.read().split('\n')[1:] if ln]
     return [dict(zip(cols, ln.split('\t'))) for ln in lines]
+
+
+def lint_with(changes):
+    """kb_lint's structural rules over the base branch plus these record files."""
+    import kb_lint
+    records = []
+    for path, data in changes:
+        try:
+            records.append(br.Record.from_bytes(data, path[len('re/bindings/'):]))
+        except br.RecordError:
+            continue
+    store = br.Store.get()
+    base = store.records
+    store.overlay(records)
+    try:
+        return [f'kb_lint: {e}' for e in kb_lint.KbLint(evidence_files=False, exe=False).run().E]
+    finally:
+        store.records = base
 
 
 def cmd_ci(a):
@@ -317,6 +353,11 @@ def cmd_ci(a):
             old = open(base, 'rb').read(br.MAX_BYTES + 1) if os.path.isfile(base) and not os.path.islink(base) else None
             changes.append((path, old, new))
         result = bc.classify(changes, a.author, bc.Knowledge(), kb.ROOT)
+        if result['verdict'] != 'fail':
+            lint_errors = lint_with([(path, new) for path, _, new in changes if new is not None])
+            if lint_errors:
+                result['verdict'] = 'fail'
+                result['errors'] += lint_errors
         if other:
             result['verdict'] = 'fail' if result['verdict'] == 'fail' else 'review'
             result['notes'].append(f'{len(other)} file(s) outside re/bindings/*/*.json: review needed')
@@ -366,7 +407,10 @@ def main(argv=None):
     p.add_argument('files', nargs='*')
     sp.add_parser('status')
     p = sp.add_parser('unfold')
-    p.add_argument('names', nargs='+')
+    p.add_argument('names', nargs='*')
+    p.add_argument('--table', action='append', choices=['functions', 'globals'],
+                   help='also move every row of this table that has a signature of its own')
+    p.add_argument('--skip-unfit', action='store_true', help='keep named rows that fail the record rules in the tables')
     p.add_argument('--author')
     p = sp.add_parser('ci')
     p.add_argument('--files', required=True)

@@ -7,7 +7,7 @@ use std::collections::{BTreeMap, BTreeSet, HashMap};
 use serde::{Deserialize, Serialize};
 use swofty_addon::manifest::Category;
 
-use crate::builtin::CORE_ID;
+use crate::addons::builtin::CORE_ID;
 use crate::profile::{Profile, ProfileAddon};
 
 pub const FILE: &str = "folders.json";

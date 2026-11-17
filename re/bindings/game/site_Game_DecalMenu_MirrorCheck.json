@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Game_DecalMenu_MirrorCheck",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ff7ee1",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141ff79b0.c;doc:re/research/sponsors.md#decal-editor",
+  "notes": "mov rcx,rsi; mov rdx,rbx before call 0x141ffdd40(screen, container). Game's disabled-Mirror branch at 0x141ff7f7b (menu+0x5cb, bytes 488b8e30050000 = mov rcx,[rsi+0x530]). [static L2 evidence in the doc; added at L1 for the lane owner to raise]"
+ },
+ "signature": {
+  "id": "game.decal_menu_mirror_check",
+  "section": ".xtls",
+  "pattern": "83 78 40 FF 0F 85 ?? ?? ?? ?? 48 89 F1 48 89 DA",
+  "match": "0x141ff7ed7",
+  "anchor": "0xa",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ff7ee1",
+  "kind": "mid",
+  "expect": "48 89 F1 48 89 DA",
+  "names": [
+   "site_Game_DecalMenu_MirrorCheck"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

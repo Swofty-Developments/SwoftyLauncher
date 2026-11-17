@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_SaveData_UnclaimedChild",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14364fef0",
+  "type": "code",
+  "level": "L3",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/14364f3a0.c;xref:0x14364fd58,0x14364fda1,0x14364fdc9;trace:T010/run2:86288;trace:T010/run4:86249;trace:T010/run3",
+  "notes": "In Game_SaveData_DeserialiseContainer, the join of the three exits of the registered-child match loop that found no child for the current child bag (empty child set 0x14364fd58, end of the set 0x14364fda1/0x14364fdc9; a match jumps to 0x143650032). Here rdi = the container, [rsp+0x88] = pointer to the current slot of the bag's 'containers' entry array (the property is *[rsp+0x88]), and the instruction reads retain_unknown (+0x100). The retain path that follows (0x14364ff0c) takes the value bag via property vt+0x38 and the name from Ne_StringTable_Lookup of the key hash."
+ },
+ "signature": {
+  "id": "game.save_data_unclaimed_child",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 0F B6 8F 00 01 00 00",
+  "match": "0x14364feeb",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14364fef0",
+  "kind": "mid",
+  "expect": "0F B6 8F 00 01 00 00",
+  "names": [
+   "site_Game_SaveData_UnclaimedChild"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "splicesaves",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/save_splice.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "splice-verify",
+   "kind": "global",
+   "item": "site_Game_SaveData_UnclaimedChild",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14364f3a0.c;xref:0x14364fd58,0x14364fda1,0x14364fdc9;xref:0x14364fe84,0x143650032;xref:0x14364f490,0x14364fd09,0x1436508e7,0x14364f9bd",
+   "notes": "V1112 Re-derived from disassembly of 0x14364f3a0. sigcheck game.save_data_unclaimed_child OK (1 hit, target 0x14364fef0). Instruction boundary; the only branches to it are 0x14364fd58 (child set count [rdi+0x170]==0), 0x14364fda1 (first slot scan reaches end [rdi+0x168]) and 0x14364fdc9 (iteration reaches end); preceding instruction 0x14364feeb is an unconditional jmp, so no fall-through; no branch anywhere (.xtls rel32/rel8 scan, .data1 rel32 scan) lands in 0x14364fef1..0x14364fef4. A match (cmp r14=FNV-1a64(node+0x10 name), [prop+type.vt20()]) leaves at 0x14364fe84 -> 0x143650032. rdi: written only from rcx at entry or reloaded from [rsp+0x38] (stored once at 0x14364f490); forward dataflow over the CFG gives rdi==container on every path into the site. [rsp+0x88] is written only at 0x14364fd09 (=containers bag+8, the entries array) and 0x1436508e7 (+=8 per child), so [[rsp+0x88]] is the current entry property of the 'containers' value (the 'containers' property is type-checked against k_Ne_PropertyType_Bag 0x146129de0 at 0x14364f9a3 and its value taken via vt+0x30 at 0x14364f9ba -> [rsp+0xc8]); the site itself does mov rsi,[rsp+0x88]; [rsi]->vt+0x38. No push/pop/rsp change between the prologue (sub rsp,0xf8) and the epilogue, so rsp at the site is the body rsp. Wording note: 'containers' is a bag-typed property whose entries are the child bags, not a list-typed (proplist) value."
+  }
+ ],
+ "proofs": []
+}

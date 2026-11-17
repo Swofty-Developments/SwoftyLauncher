@@ -1,4 +1,5 @@
 #include "core/guards/garage/garage_crew_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -66,7 +67,6 @@ constexpr const char *SCENE_TEST = "site_Game_GarageCrew_SceneTest";
 constexpr int LOG_FIRST = 8;
 constexpr uint64_t MODULE_VEHICLE_SCENE = 0xd0, MODULE_EQUIPMENT_SCENE = 0xe0;
 
-bool offered = false, settled = false, wanted = false;
 std::atomic<int> dropped{0};
 std::vector<uint32_t> seen;
 uintptr_t setup_skip = 0;
@@ -182,53 +182,41 @@ void scene_read(SwoftyContext *c)
     c->rip = scene_test;
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> garage_crew_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_GARAGE_CREW_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[garage] crew guard off (SWOFTY_GARAGE_CREW_GUARD=%s)", v);
-        return out;
+class CrewGuard final : public guards::SiteGuard {
+public:
+    CrewGuard()
+        : SiteGuard(guards::CoreSetId::garage_crew,
+                    {
+                        .set = MIXIN,
+                        .name = "[garage] crew guard",
+                        .env = "SWOFTY_GARAGE_CREW_GUARD",
+                        .needs = {SITE},
+                        .mixins = {{SITE, SWOFTY_MIXIN_SITE, 100, (void *)&spawn_vector, nullptr}},
+                        .armed = "a garage's crew is spawned for its first two cars; a third car is left without one",
+                    })
+    {
     }
-    if (!swofty::api->resolve(SITE)) {
-        swofty::log("[garage] crew guard off: needs %s, which this build does not resolve", SITE);
-        return out;
-    }
-    wanted = true;
-    CoreMixins set{MIXIN, {{SITE, SWOFTY_MIXIN_SITE, 100, (void *)&spawn_vector, nullptr}}};
-    setup_skip = swofty::api->resolve(SETUP_SKIP);
-    if (setup_skip && swofty::api->resolve(SETUP_SITE))
-        set.mixins.push_back({SETUP_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&setup_template, nullptr});
-    else
-        swofty::log("[garage] pit stops crew guard off: needs %s and %s, which this build does not resolve",
-                    SETUP_SITE, SETUP_SKIP);
-    scene_test = swofty::api->resolve(SCENE_TEST);
-    if (scene_test && swofty::api->resolve(SCENE_SITE))
-        set.mixins.push_back({SCENE_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&scene_read, nullptr});
-    else
-        swofty::log("[garage] crew scene guard off: needs %s and %s, which this build does not resolve", SCENE_SITE,
-                    SCENE_TEST);
-    out.push_back(set);
-    return out;
-}
 
-void garage_crew_commit()
-{
-    if (!offered || settled || !wanted)
-        return;
-    settled = true;
-    swofty::log("[garage] crew guard %s",
-                core_mixins_active(MIXIN)
-                    ? "armed: a garage's crew is spawned for its first two cars; a third car is left without one"
-                    : "did not install (see the [core] lines)");
-}
+private:
+    void extend(runtime::CoreMixins &set) override
+    {
+        setup_skip = swofty::api->resolve(SETUP_SKIP);
+        if (setup_skip && swofty::api->resolve(SETUP_SITE))
+            set.mixins.push_back({SETUP_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&setup_template, nullptr});
+        else
+            swofty::log("[garage] pit stops crew guard off: needs %s and %s, which this build does not resolve",
+                        SETUP_SITE, SETUP_SKIP);
+        scene_test = swofty::api->resolve(SCENE_TEST);
+        if (scene_test && swofty::api->resolve(SCENE_SITE))
+            set.mixins.push_back({SCENE_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&scene_read, nullptr});
+        else
+            swofty::log("[garage] crew scene guard off: needs %s and %s, which this build does not resolve", SCENE_SITE,
+                        SCENE_TEST);
+    }
+};
+
+CrewGuard guard;
 
 }

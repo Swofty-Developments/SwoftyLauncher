@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_TeamSelect_NumberResult",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141879cf2",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141879310.c;decomp:re/decomp/142458210.c;xref:0x141879cde,0x141879ce7,0x141879ced,0x141879cf2,0x141879cf5,0x141879cfa",
+  "notes": "Team Select carousel item builder 0x141879310: the movzx eax, al right after the call to Ent_Get_EntrantCarNumber_Thunk (0x141879ced; rcx = r15, the item's driver row, r12 when set (cmovne at 0x141879cde); rdx = [rsp+0x60]+0xc80; r8 = r13 the game mode; r9 = [rsp+0x60]+0xc58; 5th arg 1). al is the driver's number: or eax, 0x100 and the word goes to [rsp+0x6e] (number with its has-number bit). r15 still holds the row (callee-saved across the call)."
+ },
+ "signature": {
+  "id": "game.team_select_number_result",
+  "section": ".xtls",
+  "pattern": "0F B6 C0 0D 00 01 00 00 66 89 44 24 6E",
+  "match": "0x141879cf2",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141879cf2",
+  "kind": "mid",
+  "expect": "0F B6 C0 0D 00 01 00 00",
+  "names": [
+   "site_Game_TeamSelect_NumberResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "progressive-numbers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/progressive/native/src/ui/numbers.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "number-sites-verify",
+   "kind": "global",
+   "item": "site_Game_TeamSelect_NumberResult",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142458210.c;decomp:re/decomp/141879310.c;xref:0x1418799ac,0x1418799b3,0x1418799fd,0x141879a6a,0x141879cde,0x141879ce7,0x141879ced,0x141879cf2,0x141879cf5,0x141879cfa,0x141879cff,0x141879d71,0x141879d9d",
+   "notes": "V1193 Own capstone pass over .pdata 0x141879310-0x14187a483 (.xtls, linear decode ends exactly at the end): 0x141879cf2 is a boundary; 5-byte window covers movzx eax,al (0f b6 c0) + the first 2 bytes of or eax,0x100 (0d 00 01 00 00), no RIP-relative operand, no branch; no jmp/jcc/call in the function or rel32 in .xtls targets 0x141879cf2..0x141879cf6, no indirect jmp. r15 = row: cmovne r15,r12 at 0x141879cde, mov rcx,r15 at 0x141879ce7, no jump into 0x141879cdb..0x141879cfe, callee 0x14cab59d0 saves r15. Both candidate rows come from the pointer list filled by CareerSetupComponent+0x270 vt+0x1c8 (stack 0xd0..0xe0): r12 is matched on +0x52 u16/+0x50 u8 against a driver key global (0x1418799ac/0x1418799b3), r15 on team +0x5a/+0x58 with +0x80/+0x81, and r15 dword +0x50 is copied as the driver key at 0x141879a6a. Result use: eax = number|0x100 stored as word [rsp+0x6e]; eax is overwritten at 0x141879cff; [rsp+0x6e] is only referenced again by lea rax,[rsp+0x6e] at 0x141879d71, passed as the stack arg [rsp+0x30] of 0x142e0a530 at 0x141879d9d (the item consumer). Row layout as for the callee (EntrantRecord +0x50/+0x52, +0x83). Not shown here: that these list entries are elements of the game mode +0x2e0 vector (the field offsets match EntrantRecord; vt+0x1c8 not decompiled). sigcheck: 1 hit. EA dump: 1 hit at RVA 0x1874242 in .rdata, same 13 bytes (expect holds), same call setup (cmovne r15,r12; mov rcx,r15; mov r8,r13; call EA thunk 0x142451590), same function size 0x1173 and offset +0x9e2 in pdata 0x141873860; no override needed."
+  }
+ ],
+ "proofs": []
+}

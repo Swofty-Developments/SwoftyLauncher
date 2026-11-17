@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_UpgradeInitFakeDeptBranch",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143517e0c",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "pat:cmp-byte-rcx+0x72-4-jne;kb:subsystems/rnd_ui.md;decomp:re/decomp/143517d80.c;xref:0x143517e0c;doc:addons/rnd-tyres-thermal/native/HOOKS.md#the-fix-flag-instantiate_tyres_upgrades-default-on-install-time",
+  "notes": "In the per-instance reset 0x143517d80: cmp byte [rcx+0x72],4 ; jne 0x143517e4c. Department 4 takes the fall-through: one sentinel state entry {owner 0x3fff0000, day 0xffff, Invalid, enabled 0} and return. cmp byte [rcx+0x72],4 ; jne 0x143517e4c: rcx = upgrade instance"
+ },
+ "signature": {
+  "id": "career.upgrade_init_fake_dept_branch",
+  "section": ".xtls",
+  "pattern": "48 89 81 C8 00 00 00 80 79 72 04 75 3A",
+  "match": "0x143517e05",
+  "anchor": "0x7",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143517e0c",
+  "kind": "mid",
+  "expect": "80 79 72 04 75 3A",
+  "names": [
+   "site_Career_UpgradeInitFakeDeptBranch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_UpgradeInitFakeDeptBranch",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143517d80.c;xref:0x143517d89,0x143517e0c,0x143517e10,0x143517e20,0x143517e2d,0x143517e47",
+   "notes": "V0173 cmp byte [rcx+0x72],4; jne 0x143517e4c, rcx = instance (= rsi); fall-through writes 0xffff3fff0000 (owner 0x3fff0000, day 0xffff), state 5 (k_Career_UpgradeStateNameTable[5]='Invalid'), +9/+0xc = 0, then returns; 6-byte window clean"
+  }
+ ],
+ "proofs": []
+}

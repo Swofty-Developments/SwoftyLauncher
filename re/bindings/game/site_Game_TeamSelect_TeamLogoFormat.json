@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Game_TeamSelect_TeamLogoFormat",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418798a5",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141879310.c;decomp:re/decomp/141873a30.c;xref:0x141879893,0x141879897,0x14187989b,0x1418798a2,0x1418798a5,0x1418798b4",
+  "notes": "Driver Career Team Select carousel item builder 0x141879310 (called per team by the team list 0x141873a30): the call to Ne_Format_String (0x1441630f0) that builds the item's team logo key; rcx = r14 the NeStr** out, rdx = '#overrides.team_logos.driver_career_2024_team_select.%s' (lea at 0x14187989b), r8 = the team record's label C string (+0x18 of the vehicle context's team table entry, [ctx+0x2c8+kind*0x10]->+8[id]+8, loaded at 0x141879897). The result is handed to 0x1416864d0 (item -0xa8) right after. EA (re/db/builds/ea.json): EA 0x141873df5 calls Ne_Format_String EA 0x1441572e0 with the same format string and rcx/rdx/r8 setup; the containing function EA 0x141873860 is instruction-for-instruction Steam's; only the rel32 in expect differs (EA E8 E6 34 8E 02)."
+ },
+ "signature": {
+  "id": "game.team_select_team_logo_format",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 8F 58 FF FF FF",
+  "match": "0x1418798a5",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418798a5",
+  "kind": "mid",
+  "expect": "E8 46 98 8E 02",
+  "names": [
+   "site_Game_TeamSelect_TeamLogoFormat"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-26",
+    "by": "progressive-wizvis",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/progressive/native/src/ui/cards.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-26",
+   "verifier": "logo-sites-verify",
+   "kind": "global",
+   "item": "site_Game_TeamSelect_TeamLogoFormat",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141879310.c;decomp:re/decomp/1441630f0.c;xref:0x141879844,0x141879857,0x14187986d,0x14187987d,0x141879892,0x141879897,0x14187989b,0x1418798a2,0x1418798a5,0x1418798b4,0x14187a2ee;xref:0x1416864d0;str:0x14571948e;sig:game.team_select_team_logo_format",
+   "notes": "V1060 Checked from my own capstone sweep of the .pdata function 0x141879310-0x14187a483 (.xtls) and a fresh decomp. The linear sweep from the function start lands on 0x1418798a5, so it is an instruction boundary; the bytes are E8 46 98 8E 02, a 5-byte call to 0x1441630f0 (Ne_Format_String, .pdata 0x1441630f0-0x1441633d3). rcx = r14 (mov at 0x1418798a2), r14 = lea [rsp+0xa0] at 0x141879857 after [rsp+0xa0] = 0 at 0x141879844, and 0x141879868 first fills it with Ne_Make_StrFromCStr('...team_select.no_team'), which Ne_Format_String releases when it replaces *out. rdx = lea at 0x14187989b -> 0x14571948e (.xtext) = 23 6f 76 65 ... 2e 25 73 00 '#overrides.team_logos.driver_career_2024_team_select.%s', one % only, so r9 and the stack are not read. r8 = [rax+0x18] at 0x141879897, rax = [[ [rbx+0xc80] + byte[r13]*0x10 + 0x2c8 ] + 8] + word[r13+2]*0x10 + 8] (0x14187986d-0x141879892), as claimed. My scan of the same table walk (+0x2c8, +8, [id*0x10+8], +0x18) across .xtls finds +0x18 passed as %s/%hs elsewhere ('team_icon_selected_%s' 0x140dc757c, '...badges_broadcast.%hs' 0x1421abb70, log 'Calculating non linear mass for %s' 0x1435355a8), so it is a C string label. The call is unconditional here (no 0x3fff check, unlike the other two sites). Afterwards rdx = r14 goes to 0x1416864d0 (rcx = rdi-0xa8) at 0x1418798b4; 0x1416864d0 reads only the chars (+9) as a Vm_Resolve_RegistryNode path and binds the node into the holder; r14 is next reassigned at 0x141879a43 and [rsp+0xa0] is only released at 0x14187a2ee. So the result is used only as a string key. sigcheck: OK, one hit at 0x1418798a5, expect E8 46 98 8E 02. Note: the same format string is also built at 0x141a723e0 (in 0x141a71a00) and a %hs copy at 0x1421ac4b2 (in 0x1421a9060); this site does not cover those."
+  },
+  {
+   "date": "2026-10-27",
+   "verifier": "easites-verify",
+   "kind": "sig",
+   "item": "game.team_select_team_logo_format",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:game.team_select_team_logo_format;xref:0x1418798a5,0x141879310,0x1441630f0;pat:E8 ?? ?? ?? ?? 48 8D 8F 58 FF FF FF",
+   "notes": "V1148 EA overlay: the pattern matches EA .rdata once at 0x1873df5, which holds E8 E6 34 8E 02, a call to 0x1441572e0 (Ne_Format_String, identical to Steam 0x1441630f0). The containing EA function 0x141873860 is instruction-identical to Steam 0x141879310 (952 insns, site at +0x595 in both), with rcx = r14, rdx = the same overrides.team_logos.driver_career_2024_team_select.%s string and r8 = [entry+0x18] as on Steam."
+  }
+ ],
+ "proofs": []
+}

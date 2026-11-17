@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Game_CareerWizard_BackRoute",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14bc7ab4d",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141a2aa00.c;xref:0x14bc7ab4d,0x14bc9b4fd",
+  "notes": "career wizard step view models' base command handler (.data1 0x14bc7a8d0): on back it calls the view model's vt+0x90, pops the wizard (0x14386f1a0 on VM+0x270), then fires the route whose name C string rdx holds here (back, lea at 0x14bc7ab46) with Vm_Fire_Route in the view model's grouping; rsi = the view model (+0x270 the wizard state)"
+ },
+ "signature": {
+  "id": "game.career_wizard_back_route",
+  "section": ".data1",
+  "pattern": "E8 ?? ?? ?? ?? 48 C7 44 24 40 00 00 00 00 48 8D 15 ?? ?? ?? ?? 48 8D 7C 24 40 48 89 F9",
+  "match": "0x14bc7ab38",
+  "anchor": "0x15",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14bc7ab4d",
+  "kind": "mid",
+  "expect": "48 8D 7C 24 40",
+  "names": [
+   "site_Game_CareerWizard_BackRoute"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_wizard.cpp"
+  ],
+  "data1_reason": "the career wizard view models' shared command handler body lives only in .data1 (0x14bc7a8d0, reached through the thunk 0x141a21ec0 that each step's handler calls first)"
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-d",
+   "kind": "global",
+   "item": "site_Game_CareerWizard_BackRoute",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14bc7a8d0.c;decomp:re/decomp/141a21ec0.c;decomp:re/decomp/15196f970.c;xref:0x14bc7ab26,0x14bc7ab38,0x14bc7ab46,0x14bc7ab4d,0x14bc7ab5b,0x14bc7ab6d,0x141a21ec0,0x141a32603,0x14bc9b4fc;sig:game.career_wizard_back_route",
+   "notes": "V0980 Body 0x14bc7a8d0 (.pdata 0x14bc7a8d0-0x14bc7abde, .data1, reached by jmp thunk 0x141a21ec0, called first by 0x141a325e0 and the settings body 0x14bc9b4f0): rsi = rcx = the view model (0x14bc7a8e2). Command 0x493fe92b path: call [vt+0x90] (0x14bc7ab26), rcx = [rsi+0x270], call 0x14386f1a0 = jmp 0x15196f970 (pops a byte off the step stacks at +0xe0/+0xe8 and +0x100/+0x108) at 0x14bc7ab38, lea rdx -> 0x145735c14 = back at 0x14bc7ab46. The site 0x14bc7ab4d is the lea rdi,[rsp+0x40] (5 bytes) right after it, with rdx still the C string; then 0x1441974e0 makes the NeStr and 0x1442c0e20 Vm_Fire_Route(rcx = [rsi+0x28], rdx = rsi, r8 = &str, 0). sigcheck (.data1, data1_reason set): 1 hit at 0x14bc7ab38, target 0x14bc7ab4d"
+  }
+ ],
+ "proofs": []
+}

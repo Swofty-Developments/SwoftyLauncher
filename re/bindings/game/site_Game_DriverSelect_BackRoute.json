@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_DriverSelect_BackRoute",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a5e8eb",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141a5df70.c;xref:0x141a5e8eb",
+  "notes": "Choose Driver back (DriverCareerDriverSelectViewModel slot 10 handler 0x141a5df70): rdx = the route name C string screen_group_back (lea at 0x141a5e8e4) just before it is made an NeStr and fired with Vm_Fire_Route in the view model's grouping; rsi = the view model (+0x438 the wizard state)"
+ },
+ "signature": {
+  "id": "game.driver_select_back_route",
+  "section": ".xtls",
+  "pattern": "48 89 05 ?? ?? ?? ?? 48 C7 44 24 78 00 00 00 00 48 8D 15 ?? ?? ?? ?? 48 8D 7C 24 78 48 89 F9",
+  "match": "0x141a5e8d4",
+  "anchor": "0x17",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a5e8eb",
+  "kind": "mid",
+  "expect": "48 8D 7C 24 78",
+  "names": [
+   "site_Game_DriverSelect_BackRoute"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "wizard-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_wizard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-d",
+   "kind": "global",
+   "item": "site_Game_DriverSelect_BackRoute",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a5df70.c;xref:0x1457298f0,0x141a5df9f,0x141a5e0a7,0x141a5e8e4,0x141a5e8eb,0x141a5e8f9,0x141a5e90b;sig:game.driver_select_back_route",
+   "notes": "V0981 0x141a5df70 (.pdata 0x141a5df70-0x141a5f0a5, .xtls) has no rel32 callers; its only pointer is slot 10 (0x1457298f0) of vtable 0x1457298a0, whose slot 0 0x141b416d0 returns typeinfo 0x146068278 named DriverCareerDriverSelectViewModel (0x14572987b). rsi = rcx at 0x141a5df9f. Command 0x493fe92b (cmp at 0x141a5e0a7) goes to 0x141a5e51c, scans [[rsi+0x438]+0x100..+0x108] for step 0x1e (opens career_driver_details_discards_confirm instead), else joins at 0x141a5e8db: lea rdx -> 0x1457355f2 = screen_group_back at 0x141a5e8e4; site 0x141a5e8eb is the 5-byte lea rdi,[rsp+0x78]; then 0x1441974e0 makes the NeStr and Vm_Fire_Route 0x1442c0e20(rcx = [rsi+0x28], rdx = rsi, r8 = rdi, 0). sigcheck: 1 hit at 0x141a5e8d4, target 0x141a5e8eb"
+  }
+ ],
+ "proofs": []
+}

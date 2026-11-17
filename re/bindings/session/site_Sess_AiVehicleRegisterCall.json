@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_AiVehicleRegisterCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060314d",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/1405ff750.c;xref:0x14060314d;doc:research/grid24-cap.md#ai-vehicle-cap",
+  "notes": "call Sess_Recordable_Register(rcx=registry, rdx=name, r8=AIRecordable, r9d=id) inside the per-AI loop of Sess_Build_AiSystem. At the site: rdx = g_Sess_AiVehicleNameTable base + table[idx] (garbage for idx>=30), r8 = AIRecordable (0x18 bytes: +0x10 u8 idx, +0x11 u8 id), r9d = ebp = idx+0x3d, rbx = registry. One loop iteration per AI vehicle, idx 0..count-1, count = |[[ai+0x28]+0xc0] vec @+0x28| + |[[ai+0x28]+0xd8] vec @+0x30|. N30 crash: rbp=0x5b (idx 30) -> rdx=0x1aab98cd1.  Consumer: native/src/mods/grid_capacity (SWOFTY_REDIRECT) gives slots >=30 the name AIVehicle_<n> and spare ids 0x8a,0x87,0x7c,0x70,0x6b,0x3b,0x39,0x35,0x0e (r9 and AIRecordable+0x11); offline Wine harness native/src/mods/grid_capacity/test passes"
+ },
+ "signature": {
+  "id": "session.ai_vehicle_register_call",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B BC 24 58 08 00 00 48 85 FF",
+  "match": "0x14060314d",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14060314d",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Sess_AiVehicleRegisterCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "grid-cap",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/mods/grid_capacity/grid_capacity.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-17",
+   "verifier": "verify-ai30",
+   "kind": "global",
+   "item": "site_Sess_AiVehicleRegisterCall",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1405ff750.c;xref:0x14060314d,0x1406030c2,0x14060311a,0x140602fa5;sig:session.ai_vehicle_register_call",
+   "notes": "V0010 V-AI30 sigcheck --only passes (1 hit, match=target=0x14060314d, bytes E8 2E 9D FC 03 = call 0x1445cce80). Linear sweep of pdata func 0x1405ff750-0x140604275 is clean: the site is an insn boundary and no branch lands in 0x14060314e-0x140603151. At the call: rcx=rbx=[rsp+0x28] registry; rdx=rdi = movsxd [0x145634390+r13*4] (0x1406030c2) + lea 0x145634390 (0x14060311a); r8=r12 = 0x18-byte alloc (vt 0x145634640) with +8=this, +0x10=sil (u8 idx), +0x11=bpl (idx+0x3d) (stores at 0x140602fd6/0x140602fdb, only if the alloc is non-null); r9d=ebp=lea [r13+0x3d] (0x140602fa5), r13=movzx sil; 5th arg [rsp+0x20]=&holder at rsp+0x850 {allocator [rbx+8], 0x3980 object vt 0x145635390}. The body dereferences name[0] (cmp byte [rdi],0x23 at 0x154f07c22), so a bad name pointer faults there."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Car_SetupTuningApplied",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c13721",
+  "type": "code",
+  "level": "L3",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/140c11550.c;xref:0x140c13721,0x140c1372c;trace:T113/2026-10-28-gp:84;trace:T113/2026-10-28-gp:86",
+  "notes": "mov rax,[rdi+8] ; mov rcx,[rax+0x580] ; call 0x1446b1ba0 at the end of Car_Setup_ApplyTuning: every setup slider has been written (rdi = F1Tuning system CarLive+0x590, rsi = setup manager); the call recomputes the SuspensionSystem. A hook here can override the setup targets (Differential+0xec..+0xfc, CarSuspAxle +0x1650/+0x1654/+0x1664, BrakeECU+0x21d8..+0x2204, Engine+0x252c, Chassis+0x158, FuelTank+0x100) before the suspension recompute. Runtime 2026-10-28 (T113): one hit after every Car_Setup_ApplyTuning (68); bias 0.4 for every car, pressure 1.0 for the AI setup and 0.97 for the player car's own setup (id 19)."
+ },
+ "signature": {
+  "id": "car.setup_tuning_applied",
+  "section": ".xtls",
+  "pattern": "48 8B 47 08 48 8B 88 80 05 00 00 E8",
+  "match": "0x140c13721",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c13721",
+  "kind": "mid",
+  "expect": "48 8B 47 08 48 8B 88 80 05 00 00",
+  "names": [
+   "site_Car_SetupTuningApplied"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "global",
+   "item": "site_Car_SetupTuningApplied",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c11550.c;xref:0x140c13721,0x140c1372c;sig:car.setup_tuning_applied",
+   "notes": "V1253 0x140c13721 mov rax,[rdi+8]; mov rcx,[rax+0x580]; call 0x1446b1ba0. It sits right after the FuelTank+0x100 store and +0x10c bit clear (the last slider) and before the bus post that uses [rsi+0x20] (rsi = setupMgr). sigcheck passes."
+  }
+ ],
+ "proofs": []
+}

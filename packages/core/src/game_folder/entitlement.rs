@@ -12,8 +12,8 @@ use std::collections::BTreeMap;
 use std::path::{Path, PathBuf};
 use std::time::UNIX_EPOCH;
 
+use crate::game_folder::stock::{Depots, sha1_file};
 use crate::install::Source;
-use crate::stock::{Depots, sha1_file};
 use crate::{Error, GAME_EXE, Result, io_err, read_json, write_json};
 
 pub const STEAM_API: &str = "steam_api64.dll";
@@ -158,7 +158,7 @@ pub fn changed_files(data: &Path, dir: &Path, depots: &Depots) -> Result<Vec<Str
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::stock::Entry;
+    use crate::game_folder::stock::Entry;
     use sha1::{Digest, Sha1};
 
     fn scratch(name: &str) -> PathBuf {

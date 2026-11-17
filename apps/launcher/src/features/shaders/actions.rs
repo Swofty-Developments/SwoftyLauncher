@@ -5,7 +5,7 @@ use gpui_kit::component::WindowExt;
 use gpui_kit::component::button::ButtonVariant;
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
-use swofty_core::shaders::{self, ConfigRef};
+use swofty_core::content::shaders::{self, ConfigRef};
 use swofty_core::store::Store;
 use swofty_i18n::{tr, trf};
 

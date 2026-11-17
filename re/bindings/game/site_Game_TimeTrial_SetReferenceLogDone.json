@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_TimeTrial_SetReferenceLogDone",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14147bd9a",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/14147b720.c;xref:0x14147bc3c,0x14147bc53,0x14147bc8f,0x14147bd64,0x14147bd92",
+  "notes": "In Game_TimeTrial_SetReference: mov rcx,rsi; xor edx,edx; call 0x14147c0f0, the code after the GAME log line. Every closed-gate path lands here (jne at 0x14147bc3c, je at 0x14147bc53, jmp at 0x14147bc8f) with the same rsp as at site_Game_TimeTrial_SetReferenceLogBoard; it reads rsi and the frame only. The rip target of core's time trial reference log guard; never hooked."
+ },
+ "signature": {
+  "id": "game.time_trial_set_reference_log_done",
+  "section": ".xtls",
+  "pattern": "FF 50 38 48 89 F1 31 D2 E8 ?? ?? ?? ?? 48 8B 4E 30",
+  "match": "0x14147bd97",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14147bd9a",
+  "kind": "mid",
+  "expect": "48 89 F1 31 D2",
+  "names": [
+   "site_Game_TimeTrial_SetReferenceLogDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "ttrefnull",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/leaderboard_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "ttrefnull-verify",
+   "kind": "global",
+   "item": "0x14147bd9a",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14147b720.c;xref:0x14147bc3c,0x14147bc8f;sig:game.time_trial_set_reference_log_done",
+   "notes": "V9253 Static: the log block 0x14147bc94..0x14147bd99 has no push or sub; its two string handles (rsp+0x30, rsp+0x38) are taken and released inside it, so skipping it matches the closed-gate path."
+  }
+ ],
+ "proofs": []
+}

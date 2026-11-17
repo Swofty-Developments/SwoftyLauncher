@@ -57,7 +57,7 @@ jobs:
               - addons/builtins/**
               - tools/native-charts/**
               - addons/swoftymod/**
-              - re/db/functions.tsv
+              - re/db/function_names.tsv
               - tools/gamedb/catalog/**
             # The installer crate, its path dependencies (swofty-core, -addon, -formats, -sdk) and what they embed.
             installer:

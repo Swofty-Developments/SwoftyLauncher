@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwBool_GrassFlattening",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ce4308",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/143ce4210.c;xref:0x143ce4308",
+  "notes": "call Ne_Compare_StringNoCase(attr+0x50 value, \"true\") for the hardware-settings attribute 'grassFlattening' (name loaded at 0x143ce42c0) in reader 0x143ce4210; the reader stores (result == 0) as the bool; xanpavle.re-optimization redirects it to pin the value"
+ },
+ "signature": {
+  "id": "core.hw_bool_grass_flattening",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 85 C0 0F 94 C0 38 86 52 0C 00 00",
+  "match": "0x143ce4308",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ce4308",
+  "kind": "mid",
+  "expect": "E8",
+  "names": [
+   "site_Ne_HwBool_GrassFlattening"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwBool_GrassFlattening",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ce4210.c;xref:0x143ce4308,0x143ce42c0,0x143ce42f3,0x143ce4312;sig:core.hw_bool_grass_flattening",
+   "notes": "V0953 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'grassFlattening' from lea 0x143ce42c0, r8d 0x1f) at 0x143ce42f3; on 0 it sets rcx = [attr+0x50], rdx = \"true\" (0x145612a6a) and the E8 at 0x143ce4308 calls 0x14534d918 (.xtls, .pdata 0x143ce4210-0x143ce45cf). sete al; stored to this+0xc52 only when it differs, setting the dirty byte this+0xc51. sigcheck: one hit, target 0x143ce4308"
+  }
+ ],
+ "proofs": []
+}

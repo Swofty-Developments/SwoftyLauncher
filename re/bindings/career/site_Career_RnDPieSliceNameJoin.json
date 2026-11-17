@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPieSliceNameJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f482a0",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f48263,0x141f48275,0x141f48287;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v070--the-five-sector-development-potential-pie-folded-in",
+  "notes": "Career_Populate_RnDPieSlices: mov rbx,[rsp+0x40], join after the department-name switch; rdi = name (default case error_department), r14d = department code, read by lng_rnd_dept_%s, the VM child hash, Vm_Holder_SetCStr and the icon path"
+ },
+ "signature": {
+  "id": "career.rnd_pie_slice_name_join",
+  "section": ".xtls",
+  "pattern": "48 8B 5C 24 40 4C 8B A3 70 06 00 00",
+  "match": "0x141f482a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f482a0",
+  "kind": "mid",
+  "expect": "48 8B 5C 24 40",
+  "names": [
+   "site_Career_RnDPieSliceNameJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-c",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_fifth_pie.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDPieSliceNameJoin",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f48213,0x141f4821c,0x141f4822f,0x141f4823f,0x141f48251,0x141f48263,0x141f48275,0x141f48287,0x141f482a0,0x141f482b8,0x141f482e8,0x141f483a9,0x141f484e0,0x141f48a55",
+   "notes": "V0109 mov rbx,[rsp+0x40] (5B) is the join of the code switch (4 jmps + fallthrough from engine); rdi = name, default case error_department, r14d = code, read by lng_rnd_dept_%s, the djb2 child hash, Vm_Holder_SetCStr and (normal path) the icon args; note the default case is only reachable if the DeptGuard skip at 0x141f4821c (code>3 -> next) is bypassed, and rdi is replaced by shutdown/regulation before the icon on those state paths"
+  }
+ ],
+ "proofs": []
+}

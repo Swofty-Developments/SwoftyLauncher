@@ -1,0 +1,56 @@
+{
+ "schema": 1,
+ "name": "g_Sess_VehicleTable",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146ce86e0",
+  "type": "void *[]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/14152a9f0.c;xref:0x14152aa5b,0x140173e25;decomp:re/decomp/14152a9f0.c;xref:0x140173e25",
+  "notes": "Engine-wide live-vehicle pointer table, indexed by u8 vehicle id (read as [id*8 + 0x146ce86e0]). ~170 RIP-relative readers across the engine incl Game_GameModule_OnSessionEnter. Immediately preceded by g_Sess_VehicleCount (0x146ce86dc). Prime per-car-pool candidate for the >24 audit: capacity (fixed vs dynamic) and element type need a runtime read (flagged, no trace yet). ts-v1 signature for the test agent"
+ },
+ "signature": {
+  "id": "session.vehicle_table",
+  "section": ".xtls",
+  "pattern": "76 0E 48 8D 05 ?? ?? ?? ?? 4C 8B 3C D8",
+  "match": "0x140173e20",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x2",
+   "len": 7
+  },
+  "target": "0x146ce86e0",
+  "kind": "data",
+  "names": [
+   "g_Sess_VehicleTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/car_live.cpp",
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "std16-remerge2",
+   "kind": "global",
+   "item": "g_Sess_VehicleTable",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x14152aa58,0x14152aa5f,0x140173e22,0x140173e29;sig:session.vehicle_table",
+   "notes": "V2424 capstone on the KB exe: 170 rip-relative references, 169 lea and 1 mov; each indexes it as [table + id*8] with a u8 vehicle id right after a byte compare of the id against 0x146ce86dc (0x14152aa4c/0x14152aa58/0x14152aa5f in 0x14152a9f0, 0x140173e1a/0x140173e22/0x140173e29 in 0x1401717b0); the slot is null-checked, then read as the CarLive (+0x580, +0x120, +0x9f0c). sigcheck session.vehicle_table 1 hit, data target 0x146ce86e0."
+  }
+ ],
+ "proofs": []
+}

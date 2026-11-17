@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPieFocusJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f4aa4f",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f4a9c0.c;xref:0x141f4aa49;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v070--the-five-sector-development-potential-pie-folded-in",
+  "notes": "class-B department_focused handler: mov rax,[rsi+0x10], the common block right after the g_Career_RnDOverviewSelectedDept store (child node by djb2(rdi), focused department, highlight_pie_sector); needs rsi = this, rdi = department name; jump target only. Pattern starts at the class-B data load 0x141f4a9ca because 0x141f4a9cd..0x141f4aae3 is a byte clone of the class-A handler in 0x141f45d30"
+ },
+ "signature": {
+  "id": "career.rnd_pie_focus_join",
+  "section": ".xtls",
+  "pattern": "48 8B 02 48 8D 48 09 48 85 C0 48 8D 1D ?? ?? ?? ?? 48 0F 45 D9 48 8D 3D ?? ?? ?? ?? 48 89 D9 48 89 FA E8 ?? ?? ?? ?? 85 C0 74 4A 48 8D 3D ?? ?? ?? ?? 48 89 D9 48 89 FA E8 ?? ?? ?? ?? 85 C0 74 38 48 8D 3D ?? ?? ?? ?? 48 89 D9 48 89 FA E8 ?? ?? ?? ?? 85 C0 74 26 48 8D 3D ?? ?? ?? ?? 48 89 D9 48 89 FA E8 ?? ?? ?? ?? 85 C0 0F 85 ?? ?? ?? ?? B0 03 EB 0A 31 C0 EB 06 B0 01 EB 02 B0 02 88 05 ?? ?? ?? ?? 48 8B 46 10 48 8D 50 08",
+  "match": "0x141f4a9ca",
+  "anchor": "0x85",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f4aa4f",
+  "kind": "mid",
+  "names": [
+   "site_Career_RnDPieFocusJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-c",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_fifth_pie.cpp"
+  ],
+  "expect": "48 8B 46 10 48 8D 50 08"
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDPieFocusJoin",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f4a9c0.c;xref:0x141f4aa3d,0x141f4aa41,0x141f4aa45,0x141f4aa49,0x141f4aa4f,0x141f4aa76,0x141f4aaec,0x141f4ab5b,0x141f4ab84,0x141f4ab96,0x141f4ac2e",
+   "notes": "V0115 0x141f4aa4f mov rax,[rsi+0x10] is the insn right after the selected-dept store; block uses only rsi (this), rdi (name, djb2 child hash -> [[rsi+0x670]+0x40], highlight_pie_sector) and its own stack slots, writes rbx before use, exits via add rsp,0x60/pop rbx,rdi,rsi so the jumper must be in this frame; no branch targets it; 0x141f4a9cd..0x141f4aae3 matches class-A 0x141f4602d.. except 24 riprel disp bytes, pattern from 0x141f4a9ca is unique"
+  }
+ ],
+ "proofs": []
+}

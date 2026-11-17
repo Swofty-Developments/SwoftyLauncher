@@ -5,8 +5,9 @@ use std::path::{Path, PathBuf};
 
 use crate::GAME_EXE;
 use crate::install::Source;
+use crate::platform::steam::GameInstall;
+use crate::platform::{LaunchPlatform, for_source};
 use crate::session::Config;
-use crate::steam::GameInstall;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum Found {
@@ -25,7 +26,7 @@ pub struct GameCopy {
 
 impl GameCopy {
     pub fn version(&self) -> Option<String> {
-        crate::exe_version::read(&self.dir.join(GAME_EXE))
+        crate::game_folder::exe_version::read(&self.dir.join(GAME_EXE))
     }
 
     pub fn build_id(&self) -> Option<u64> {
@@ -34,21 +35,13 @@ impl GameCopy {
 }
 
 pub fn store_name(source: Source) -> &'static str {
-    match source {
-        Source::Steam => "Steam",
-        Source::EaApp => "EA app",
-        Source::Unknown => "Other",
-    }
+    for_source(source).map_or("Other", |p| p.name())
 }
 
 /// Where the player moves a copy out of Program Files, by the store it came
 /// from.
 pub fn move_hint(source: Source) -> &'static str {
-    match source {
-        Source::EaApp => " with EA app > F1 25 > Manage > Move, not File Explorer",
-        Source::Steam => " in Steam (Properties > Installed Files > Move install folder)",
-        Source::Unknown => "",
-    }
+    for_source(source).map_or("", |p| p.move_hint())
 }
 
 pub fn same_dir(a: &Path, b: &Path) -> bool {
@@ -90,8 +83,8 @@ pub fn gather(steam: Option<GameInstall>, ea: Vec<PathBuf>, added: &[PathBuf]) -
 
 pub fn discover(config: &Config) -> Vec<GameCopy> {
     gather(
-        crate::steam::find_game(),
-        crate::ea_app::installs(),
+        crate::platform::steam::find_game(),
+        crate::platform::EaApp.installs(),
         &config.games.added,
     )
 }
@@ -179,7 +172,11 @@ mod tests {
             std::fs::create_dir_all(d.join("__Installer")).unwrap();
             std::fs::write(d.join(GAME_EXE), b"MZ").unwrap();
             if ea {
-                std::fs::write(d.join(crate::ea_app::MARKER), "<contentID>1</contentID>").unwrap();
+                std::fs::write(
+                    d.join(crate::platform::ea_app::MARKER),
+                    "<contentID>1</contentID>",
+                )
+                .unwrap();
             }
             d
         }
@@ -262,7 +259,8 @@ mod tests {
             .map(|dir| {
                 set_active(&mut config, dir);
                 let c = active(&copies, &config).unwrap();
-                let id = crate::baseline::Identity::detect_cached(&data, &c.dir, c.build_id()).unwrap();
+                let id = crate::game_folder::baseline::Identity::detect_cached(&data, &c.dir, c.build_id())
+                    .unwrap();
                 (c.dir.clone(), c.source, c.build_id(), id.key())
             })
             .collect();

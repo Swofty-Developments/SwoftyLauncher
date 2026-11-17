@@ -5,7 +5,7 @@ use crate::shell::notices::Notification;
 use gpui_kit::*;
 use swofty_core::catalog::{self, Addon};
 use swofty_core::manifest::AddonManifest;
-use swofty_core::update::current_version;
+use swofty_core::updates::release::current_version;
 use swofty_i18n::{tr, trf};
 
 use super::*;
@@ -69,7 +69,7 @@ impl Shell {
         let Some(version) = addon.offered(&current_version()).cloned() else {
             return false;
         };
-        if self.build.as_ref().is_some_and(|b| b.holds(id)) {
+        if self.game.build.as_ref().is_some_and(|b| b.holds(id)) {
             self.browser
                 .toasts
                 .push(Notification::warning(crate::features::update::BUILDING));

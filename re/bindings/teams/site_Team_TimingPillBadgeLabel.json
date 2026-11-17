@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Team_TimingPillBadgeLabel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14176030b",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "teams",
+  "evidence": "decomp:re/decomp/141760020.c;xref:0x1417602e2,0x1417602f7,0x141760306,0x14176030b,0x141760316",
+  "notes": "Team_Set_TimingPillBadge: mov rdx,[r12+0x4d8] loads the team's timing_tower_texture_path C string that the next call (0x144197b50, append) adds after '#overrides.osd.timing_tower.team_badges_hud.' in the NeStr at rsp+0x20 (rdi). A MidHook here can swap rdx for another key; r12 = the team record. race HUD badge label load; a hook may replace rdx (the label) with a core-owned C string"
+ },
+ "signature": {
+  "id": "teams.timing_pill_badge_label",
+  "section": ".xtls",
+  "pattern": "49 8B 94 24 D8 04 00 00 48 89 F9 E8",
+  "match": "0x14176030b",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14176030b",
+  "kind": "mid",
+  "expect": "49 8B 94 24 D8 04 00 00",
+  "names": [
+   "site_Team_TimingPillBadgeLabel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-teams",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "team-v1",
+   "kind": "global",
+   "item": "site_Team_TimingPillBadgeLabel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141760020.c;xref:0x14176030b",
+   "notes": "V1578 Disassembly: 0x14176030b is mov rdx,[r12+0x4d8] (8 bytes, instruction boundary) between the append of '.' (0x144197b50 via UNK_14570c9c6 = \".\") and the append of the key; it only runs on the table 0/2, +0x58d == 0 branch. Table 1 (user team) never reaches it, it takes the entrant's custom badge path instead."
+  }
+ ],
+ "proofs": []
+}

@@ -12,8 +12,8 @@ use swofty_i18n::{tr, trf};
 use super::FieldModel;
 use super::detail::shown_value;
 use crate::shell::Shell;
-use crate::shell::pages::label;
 use crate::ui::Callout;
+use crate::ui::label;
 use crate::ui::theme::Palette;
 
 impl Shell {

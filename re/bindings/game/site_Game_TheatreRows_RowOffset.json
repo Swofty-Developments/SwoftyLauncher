@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_TheatreRows_RowOffset",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f0b9a6",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141f0b160.c;decomp:re/decomp/141f0eac0.c;decomp:re/decomp/141f0bbd0.c;xref:0x141f0b9a2,0x141f0b9ad,0x141f0ba13,0x141f0bbab",
+  "notes": "In Game_TheatreRows_GetRow: imul r14,rdi,0x4c8 (7 bytes, 4C 69 F7 C8 04 00 00) at the merge of the append path (mov rbx,[r13+0x110] at 0x141f0b99b) and the in-range path (ja 0x141f0b9a2 at 0x141f0b208), right after mov [rsp+0x30],edi stores the index as the row's slot_id value. rdi = the index, rbx = rows begin [r13+0x110], r13 = the rows holder (rows 0x4c8 bytes at [+0x110..+0x118]). r14 is the row offset every later read uses ([rbx+r14+0xd0/0xf0/0x110/0x130/0x150] and the return rbx+r14 at 0x141f0bbab); rdi is next written at 0x141f0b9e9 (mov edi,eax) and read only for the slot_id store before the site, so changing rdi at the site moves the row and keeps slot_id. The getter appends exactly one row when count <= index (cmp rax,rdi; ja at 0x141f0b205), so an index past count+0 reads past the rows: 1.9.40 crash at 0x141f0ba29 (rbx+r14+0xf0 with r14=0x4c8, rsi=0x41200000, 1 ms after the theatre no-slot line; batch-695). Core's theatre rows guard points rdi at the last row when rdi >= count. Not a branch target (all targets of 0x141f0b160..0x141f0bbcd listed by own capstone sweep: none in 0x141f0b9a7..0x141f0b9aa; 0x141f0b9a2 is the ja target). Pattern starts at the slot_id store (fn+0x842), anchor 4. EA: fn 0x1f04700, match 0x1f04f42, site 0x1f04f46, same bytes and same merge (decrypted dump F1_25.1789128892.110548.mem). L2 2026-11-14 by owner re-career-teams (theatre-list-guard-no-slot-followon)."
+ },
+ "signature": {
+  "id": "game.theatre_rows_row_offset",
+  "section": ".xtls",
+  "pattern": "89 7C 24 30 4C 69 F7 C8 04 00 00 4A 8B B4 33 D0 00 00 00",
+  "match": "0x141f0b9a2",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f0b9a6",
+  "kind": "mid",
+  "names": [
+   "site_Game_TheatreRows_RowOffset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-14",
+    "by": "re-career-teams",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/theatre_list.cpp"
+  ],
+  "expect": "4C 69 F7 C8 04 00 00"
+ },
+ "verify": [
+  {
+   "date": "2026-11-14",
+   "verifier": "kbverify-theatre-rows",
+   "kind": "global",
+   "item": "0x141f0b9a6",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f0b160.c;decomp:re/decomp/141f0eac0.c;xref:0x141f0b205,0x141f0b208,0x141f0b99b,0x141f0b9a2,0x141f0b9ad,0x141f0ba13,0x141f0bbab;sig:game.theatre_rows_row_offset",
+   "notes": "V9291 Own capstone sweep of Steam 0x141f0b160..0x141f0bbcd (564 insns, one ret at 0x141f0bbcd) and EA 0x141f04700..0x141f0516d (564 insns, one ret): 0x141f0b9a6 4C 69 F7 C8 04 00 00 imul r14,rdi,0x4c8 is an instruction boundary, not a branch target, no target inside it; 0x141f0b9a2 (mov [rsp+0x30],edi) is the ja target from 0x141f0b208 (count > index) and the fall-through after the append path reloads rbx=[r13+0x110] at 0x141f0b99b, so at the site rbx = rows begin, r13 = holder, rdi = index on both paths. Every row read after it uses rbx+r14 (0x141f0b9ad +0xd0, 0x141f0ba13 +0xf0, +0x110, +0x130, +0x150) and the return is rbx+r14 at 0x141f0bbab; edi is overwritten at 0x141f0b9e9 before any other use, so moving rdi at the site moves only the row while the slot_id value already stored at [rsp+0x30] stays the index. Ghidra decomp agrees: one append when count <= index, then lVar19 = index*0x4c8 with no bound check. Crash frame (1.9.40 case 1570786480169689171) rbx=0x346e9a900, r14=0x4c8, rsi=0x41200000 at 0x141f0ba29 fits index 1 with one row. sigcheck via sitereg: 1 hit at 0x141f0b9a2. EA pattern found once at RVA 0x1f04f42 in the decrypted dump, same bytes at the site."
+  }
+ ],
+ "proofs": []
+}

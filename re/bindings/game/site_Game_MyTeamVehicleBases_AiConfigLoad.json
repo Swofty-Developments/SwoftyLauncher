@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Game_MyTeamVehicleBases_AiConfigLoad",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1425082fa",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/142507810.c;xref:0x1425082f5,0x142508305;decomp:re/decomp/1445a2bd0.c",
+  "notes": "In Game_Load_MyTeamVehicleBases: lea rcx,[rsp+0x1a50]; mov rdx,r12 before call Sess_Load_VehicleAiConfig (0x142508305), right after Gdb_Find_RowByLabel(entrants.vehicles cursor rsp+0x2740, row r12 = rsp+0x2948, label r8 = [rsp+0xb8], found = null) at 0x1425082f5. The label is the save's file_name of this My Team vehicle base (chars at [rsp+0xb8]); [rsp+0x44] holds its saved stat_id u16 (packed: id = v & 0x3fff, set flag v >> 14), [rsp+0x30] the save's list container, [rsp+0x38] the base index. dil = 1 when the file_name read succeeded (ebp = 0), else 0 with ebp = 0x57/0x58. A label with no entrants.vehicles row leaves the row 'Invalid' with index [row+0x200] = -1 (Gdb_Find_RowByLabel miss path), and Sess_Load_VehicleAiConfig's first read Gdb_Get_FieldInt(row,'vehicle_package') returns the miss slot whose qword (0x08000f000800000e) faults at Sess_Load_VehicleAiConfig+0x2dd. No branch lands in 0x1425082fb..0x142508309. Hooked by core's My Team vehicle base guard."
+ },
+ "signature": {
+  "id": "game.myteam_vehicle_bases_ai_config_load",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 8C 24 50 1A 00 00 4C 89 E2 E8",
+  "match": "0x1425082f5",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425082fa",
+  "kind": "mid",
+  "expect": "48 8D 8C 24 50",
+  "names": [
+   "site_Game_MyTeamVehicleBases_AiConfigLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "myteam-guard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/myteam_vehicle_guard.cpp",
+   "native/src/core/guards/career/myteam_vehicle_keep.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "myteam-guard-verify",
+   "kind": "global",
+   "item": "0x1425082fa",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142507810.c;xref:0x1425082f5,0x142508305;sig:game.myteam_vehicle_bases_ai_config_load",
+   "notes": "V9256 Static: 0x1425082f5 call Gdb_Find_RowByLabel(rcx=rsp+0x2740 'entrants.vehicles'/'vehicle' cursor, rdx=r12=rsp+0x2948, r8=[rsp+0xb8], r9=0); 0x1425082fa lea rcx,[rsp+0x1a50] (8 bytes, rsp-relative) and 0x142508302 mov rdx,r12 feed call Sess_Load_VehicleAiConfig at 0x142508305. Linear sweep of 0x142507810..0x14250a6c0 finds no branch into 0x1425082fb..0x142508309. Gdb_Find_RowByLabel 0x1445a2bd0 miss path writes 'Invalid' at row+0 and row+0x100, -1 at row+0x200, 0 at row+0x204. 4m7rul minidump (crash-20261112-220457.dmp): row 0x66aee438 = 'Invalid'/'Invalid'/-1/0, [rsp+0xb8] -> 'myteam_mes_porsche_2026', [rsp+0x38] = 0. EA: pattern matches once at rva 0x2501675 of the 2026-10-22 dump (target 0x14250167a; Frontman's EA crash returns to 0x14250168a)."
+  }
+ ],
+ "proofs": []
+}

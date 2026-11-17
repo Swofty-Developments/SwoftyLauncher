@@ -1,6 +1,6 @@
 // Host-native unit test for the core's registered HUD leaf table (native/src/core/hud/hud_leaves_logic.hpp):
 // registration and type rules, change detection, group atomicity under the per-tick cap, deferral without
-// drops, rebuild resend and failed-leaf retry. Built and run by native/test/run_hud_leaves_test.sh.
+// drops, rebuild resend and failed-leaf retry. Built and run by native/test/run_tests.sh hud_leaves.
 
 #include "core/hud/hud_leaves_logic.hpp"
 

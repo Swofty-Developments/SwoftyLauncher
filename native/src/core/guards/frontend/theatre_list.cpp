@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -59,7 +60,7 @@ constexpr const char *ROW_OFFSET = "site_Game_TheatreRows_RowOffset";
 namespace tl = runtime::theatre_list;
 
 uintptr_t no_slot = 0, no_slot_alt = 0;
-bool offered = false, settled = false, rows_offered = false;
+bool rows_offered = false;
 std::atomic<int> skipped{0}, moved{0};
 
 bool read_memory(uint64_t address, void *out, size_t n, void *)
@@ -145,40 +146,40 @@ const char *state(const char *mixin, bool offered_it)
     return runtime::core_mixins_active(mixin) ? "armed" : "did not install (see the [core] lines)";
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
+class TheatreListGuard final : public guards::Guard {
+public:
+    TheatreListGuard() : Guard(guards::CoreSetId::theatre_list) {}
 
-std::vector<CoreMixins> theatre_list_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    if (guard_off())
-        return out;
-    no_slot = walk_site(STEP, NO_SLOT);
-    if (no_slot)
-        out.push_back({MIXIN, {{STEP, SWOFTY_MIXIN_SITE, 100, (void *)&entry_step, nullptr}}});
-    no_slot_alt = walk_site(STEP_ALT, NO_SLOT_ALT);
-    if (no_slot_alt)
-        out.push_back({MIXIN_ALT, {{STEP_ALT, SWOFTY_MIXIN_SITE, 100, (void *)&entry_step_alt, nullptr}}});
-    rows_offered = swofty::api->resolve(ROW_OFFSET) != 0;
-    if (rows_offered)
-        out.push_back({MIXIN_ROWS, {{ROW_OFFSET, SWOFTY_MIXIN_SITE, 100, (void *)&row_offset, nullptr}}});
-    else
-        swofty::log("[theatre] rows guard off: needs %s, which this build does not resolve", ROW_OFFSET);
-    return out;
-}
+private:
+    void build(std::vector<runtime::CoreMixins> &out) override
+    {
+        if (guard_off())
+            return;
+        no_slot = walk_site(STEP, NO_SLOT);
+        if (no_slot)
+            out.push_back({MIXIN, {{STEP, SWOFTY_MIXIN_SITE, 100, (void *)&entry_step, nullptr}}});
+        no_slot_alt = walk_site(STEP_ALT, NO_SLOT_ALT);
+        if (no_slot_alt)
+            out.push_back({MIXIN_ALT, {{STEP_ALT, SWOFTY_MIXIN_SITE, 100, (void *)&entry_step_alt, nullptr}}});
+        rows_offered = swofty::api->resolve(ROW_OFFSET) != 0;
+        if (rows_offered)
+            out.push_back({MIXIN_ROWS, {{ROW_OFFSET, SWOFTY_MIXIN_SITE, 100, (void *)&row_offset, nullptr}}});
+        else
+            swofty::log("[theatre] rows guard off: needs %s, which this build does not resolve", ROW_OFFSET);
+    }
 
-void theatre_list_commit()
-{
-    if (!offered || settled || (!no_slot && !no_slot_alt && !rows_offered))
-        return;
-    settled = true;
-    swofty::log("[theatre] list guard: recent list %s, saved list %s, rows %s; a saved item whose owner is gone has no "
-                "save slot and the next item takes its row",
-                state(MIXIN, no_slot), state(MIXIN_ALT, no_slot_alt), state(MIXIN_ROWS, rows_offered));
-}
+    void settle() override
+    {
+        if (!no_slot && !no_slot_alt && !rows_offered)
+            return;
+        swofty::log("[theatre] list guard: recent list %s, saved list %s, rows %s; a saved item whose owner is gone has no "
+                    "save slot and the next item takes its row",
+                    state(MIXIN, no_slot), state(MIXIN_ALT, no_slot_alt), state(MIXIN_ROWS, rows_offered));
+    }
+};
+
+TheatreListGuard guard;
 
 }

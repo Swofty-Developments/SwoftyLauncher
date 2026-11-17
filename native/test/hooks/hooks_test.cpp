@@ -2,7 +2,7 @@
 // kinds, selectors against synthetic contexts, context parts, fault isolation (a handler that throws is
 // the test's fault path), addon points and scopes, the per-fire log lines the test suite counts, a game
 // point installed on a function in this binary (first subscriber, last subscriber, late install, an
-// overwrite it yields to), and services' when ordering. run_hooks_test.sh builds and runs it.
+// overwrite it yields to), and services' when ordering. native/test/run_tests.sh hooks builds and runs it.
 #include "core/hooks/dispatch.hpp"
 #include "core/hooks/game_point.hpp"
 #include "core/hooks/payloads.hpp"

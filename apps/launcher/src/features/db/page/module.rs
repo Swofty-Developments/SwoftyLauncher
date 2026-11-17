@@ -24,7 +24,7 @@ impl Shell {
         };
         let detail_w = if self.db.row.is_some() { 396. } else { 0. };
         let moves_w = if swap_field(module).is_some() { 68. } else { 0. };
-        let room = self.content_width - 240. - detail_w - moves_w - NAME_W - 26.;
+        let room = self.layout.content_width - 240. - detail_w - moves_w - NAME_W - 26.;
         self.db.max_cols = ((room / 124.).floor() as usize).max(1);
         let slot = self.db.view.as_ref().filter(|v| v.module == id);
         let links: Vec<Button> = module
@@ -42,8 +42,8 @@ impl Shell {
                 module.summary.clone(),
             ))
             .children(links);
-        let notes_open = self.db.notes_open || !self.short;
-        let about = (self.short && !module.notes.is_empty()).then(|| {
+        let notes_open = self.db.notes_open || !self.layout.short;
+        let about = (self.layout.short && !module.notes.is_empty()).then(|| {
             h_flex()
                 .id("db-notes-toggle")
                 .gap(px(6.))

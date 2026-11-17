@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPiePopulateDeptGuard",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f48218",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "pat:cmp-r14d-3-ja;kb:subsystems/rnd_ui.md;decomp:re/decomp/141f48030.c;xref:0x141f48218;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v071--the-pie-crash-at-career-load-slot-4-was-never-constructed",
+  "notes": "Career_Populate_RnDPieSlices code guard cmp r14d,3 ; ja 0x141f48207; slot cap cmp r13d,4 @0x141f4821e; jump-table bound cmp r14d,3 @0x141f4822b. cmp r14d,3 ; ja 0x141f48207: r14d = dept code"
+ },
+ "signature": {
+  "id": "career.rn_d_pie_populate_dept_guard",
+  "section": ".xtls",
+  "pattern": "41 83 FE 03 77 E9 41 83 FD 04 0F 87",
+  "match": "0x141f48218",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f48218",
+  "kind": "mid",
+  "expect": "41 83 FE 03 77 E9",
+  "names": [
+   "site_Career_RnDPiePopulateDeptGuard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "site_Career_RnDPiePopulateDeptGuard",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f48213,0x141f48218,0x141f4821c,0x141f4821e,0x141f4822b,0x141f48231",
+   "notes": "V0160 cmp r14d,3; ja 0x141f48207 with r14d = movzx byte [rbp] (code from k_Career_UpgradeDeptCodeTable); slot cap cmp r13d,4 @0x141f4821e and table bound cmp r14d,3 @0x141f4822b as stated; 6-byte window, no branch inside"
+  }
+ ],
+ "proofs": []
+}

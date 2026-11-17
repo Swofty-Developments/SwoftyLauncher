@@ -56,6 +56,7 @@ bool learning(void *sc);
 bool arm_swapchain();
 bool arm_device();
 bool arm_srv_clamp();
+bool arm_rtas_guard();
 
 // While one is alive, arm_device and arm_swapchain share one throwaway probe
 // device: creating a D3D12 device takes about half a second on the main thread.

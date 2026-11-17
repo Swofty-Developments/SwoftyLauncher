@@ -44,6 +44,16 @@ pub struct Me {
     pub bio: Option<String>,
     #[serde(default)]
     pub display_mode: Option<String>,
+    /// Whether the launcher shows this user no ads: supporters, admins, Swofty
+    /// Launcher Support and addon creators. Servers without it leave it false.
+    #[serde(default)]
+    pub ad_free: bool,
+}
+
+impl Me {
+    pub fn sees_ads(&self) -> bool {
+        !(self.active || self.ad_free)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq, Eq, Deserialize)]
@@ -209,6 +219,14 @@ mod tests {
     fn expiry_reads_seconds_or_text() {
         assert_eq!(format_date(&json!(1_798_761_600)), "2027-01-01");
         assert_eq!(format_date(&json!("2027-03-04T00:00:00Z")), "2027-03-04");
+    }
+
+    #[test]
+    fn supporters_and_ad_free_users_see_no_ads() {
+        let me = |json: &str| serde_json::from_str::<Me>(json).unwrap().sees_ads();
+        assert!(me(r#"{"active":false}"#));
+        assert!(!me(r#"{"active":true}"#));
+        assert!(!me(r#"{"active":false,"ad_free":true}"#));
     }
 
     #[test]

@@ -8,8 +8,8 @@ use gpui_kit::component::slider::{Slider, SliderEvent, SliderState};
 use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
+use swofty_core::addons::settings::OnAddons;
 use swofty_core::manifest::{AddonManifest, AddonOption, Binds, OptionType};
-use swofty_core::settings::OnAddons;
 use swofty_i18n::{fill, tr};
 
 impl Shell {

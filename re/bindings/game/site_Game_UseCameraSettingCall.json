@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Game_UseCameraSettingCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142424bbd",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/142424860.c;decomp:re/decomp/1424192c0.c;xref:0x142424bc2,0x1424192c0",
+  "notes": "mov rcx,rsi before 'mov dl,0xf; call 0x1424192c0' in Game_Settings_OnUseCameraChanged (0x142424860, the settings.current_settings.use_camera.value string callback): r8d = camera enum 0..7 (FNV-1a lowercase of the string: nose_cam 1, nose_cam_alt 2, cockpit_cam 3, tv_pod 4, tv_pod_offset 5, near_chase 6, far_chase 7, other 0), r9b = secondary viewport flag, rsi = settings object. The call is the DifficultySystem setter for setting id 0xf. Static only: whether the in-race camera cycle reaches it is not proven."
+ },
+ "signature": {
+  "id": "game.use_camera_setting_call",
+  "section": ".xtls",
+  "pattern": "48 89 F1 B2 0F E8 ?? ?? ?? ?? 90 48 83 C4 70",
+  "match": "0x142424bbd",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142424bbd",
+  "kind": "mid",
+  "expect": "48 89 F1 B2 0F",
+  "names": [
+   "site_Game_UseCameraSettingCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "view-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/view_state.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

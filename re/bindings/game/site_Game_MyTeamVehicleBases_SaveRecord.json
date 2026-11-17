@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_MyTeamVehicleBases_SaveRecord",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1425070bf",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/142506f50.c;xref:0x1425070a7,0x1425070ae,0x1425070b9",
+  "notes": "In Game_Save_MyTeamVehicleBases: mov eax,[r14]; shl eax,0xe; or ax,[r14+2], the first read of the car being written, after r14 = [rbx+8] (0x1425070a7), the child bag call (0x1425070ae) and its error check (test ebp,ebp; jne at 0x1425070b9). Every field of the entry is read through r14 after this point in the iteration (file_name +0x70, display_name +0x2a0, display_description +0x3b8, engine +0xce9, base car +0xcf2/+0xcf4); r14 is not written again until the next iteration reloads it at 0x1425070a7. Reached only by fall-through from 0x1425070b9. Hooked by core's My Team vehicle keep, which points r14 at the original car's copy for a stock placeholder."
+ },
+ "signature": {
+  "id": "game.myteam_vehicle_bases_save_record",
+  "section": ".xtls",
+  "pattern": "8B 6C 24 38 85 ED 0F 85 ?? ?? ?? ?? 41 8B 06 C1 E0 0E 66 41 0B 46 02",
+  "match": "0x1425070b3",
+  "anchor": "0xc",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1425070bf",
+  "kind": "mid",
+  "expect": "41 8B 06 C1",
+  "names": [
+   "site_Game_MyTeamVehicleBases_SaveRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "myteam-keep",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/myteam_vehicle_keep.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "myteam-keep-verify",
+   "kind": "global",
+   "item": "0x1425070bf",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142506f50.c;decomp:re/decomp/140cdcdf0.c;xref:0x1425070a7,0x1425070ae,0x1425070b9;sig:game.myteam_vehicle_bases_save_record",
+   "notes": "V9276 Static: 0x1425070bf 41 8b 06 mov eax,[r14]; 0x1425070c2 c1 e0 0e shl eax,0xe; 0x1425070c5 66 41 0b 46 02 or ax,[r14+2]. The only way in is fall-through from 0x1425070b9 jne 0x142507007. sigcheck: hits=1, match 0x1425070b3, target 0x1425070bf. A linear sweep of 0x142506f50..0x14250780b finds no branch into 0x1425070bf..0x1425070c5 (the nearest target is 0x1425070a7) and no indirect jmp in the function. A whole-.xtls rel32 scan for 0x1425070bf..0x1425070c5 hits only 0x1405fe936, which sits inside mov [rdi+0x1f0],rax and is not a branch. The rel8 candidate 0x14250709a sits inside lea rdi,[rsp+0x58]. There are no abs64 or rva32 refs. r14 is not written from 0x1425070bf to the advance at 0x1425075e1..0x14250761b; the next write is 0x1425070a7. Reads through r14 in one iteration: dword +0 (bytes 0..3), word +2, xmm +0x70..+0x16f, +0x2a0..+0x39f and +0x3b8..+0x4b7, the pointer r14+0xce9 handed to the engine setter (any scalar up to 8 bytes ends by +0xcf0), byte +0xcf2 and word +0xcf4. The highest byte read is +0xcf5, below 0xcf6. 0x140cdcdf0's last copy is the qword at +0xcee (to +0xcf5) of a 0xd00 allocation, which matches a 0xcf6-byte record. The strings are read as inline chars, so a byte copy's stale ptr fields (+0x68/+0x298/+0x3b0 still pointing into the live car) are not used by this writer."
+  }
+ ],
+ "proofs": []
+}

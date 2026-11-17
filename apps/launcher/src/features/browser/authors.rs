@@ -18,11 +18,12 @@ use swofty_core::catalog::search::Query;
 use swofty_i18n::{tr, trf, trn};
 
 use super::*;
-use crate::shell::pages::{GUTTER, label, tag};
 use crate::shell::{Page, Shell};
 use crate::ui::format;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
+use crate::ui::tokens::space::GUTTER;
+use crate::ui::{label, tag};
 
 const MORE_SHOWN: usize = 4;
 const MORE_INSTALLED: usize = 3;
@@ -765,7 +766,7 @@ impl Shell {
 
     pub(super) fn creators_page(&self, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let creators = self.browser.all_creators();
-        let width = self.content_width;
+        let width = self.layout.content_width;
         let columns = ((width + GAP) / (CREATOR_W + GAP)).floor().max(1.) as usize;
         let card_w = ((width - GAP * (columns - 1) as f32) / columns as f32).floor() - 1.;
         let rows: Vec<AnyElement> = creators
@@ -978,7 +979,7 @@ impl Shell {
             first.then_with(|| x.name.to_lowercase().cmp(&y.name.to_lowercase()))
         });
         let count = addons.len();
-        let rows = self.card_rows(&addons, &Query::default(), self.content_width, p, cx);
+        let rows = self.card_rows(&addons, &Query::default(), self.layout.content_width, p, cx);
         let empty = (count == 0).then(|| {
             div()
                 .text_size(px(13.))
