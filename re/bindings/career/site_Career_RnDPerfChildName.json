@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDPerfChildName",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141894702",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1418914f0.c;xref:0x1418946f5;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v070--the-five-sector-development-potential-pie-folded-in",
+  "notes": "team performance publisher, department_performance loop: mov qword [rsp+0xe18],0x40; rax = department name (name table 0x14571bcc0 or error_department) about to be copied into the 0x40 child-name buffer at [rsp+0xe28] under department_performance; rbp = POINTER to the current code byte (code = byte [rbp])"
+ },
+ "signature": {
+  "id": "career.rnd_perf_child_name",
+  "section": ".xtls",
+  "pattern": "48 8B 04 C8 48 C7 84 24 18 0E 00 00 40 00 00 00",
+  "match": "0x1418946fe",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141894702",
+  "kind": "mid",
+  "expect": "48 C7 84 24 18 0E 00 00 40 00 00 00",
+  "names": [
+   "site_Career_RnDPerfChildName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-c",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_fifth_pie.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "site_Career_RnDPerfChildName",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1418914f0.c;xref:0x1418944b8,0x1418946e5,0x1418946f5,0x1418946fe,0x141894702,0x141894720,0x141894728",
+   "notes": "V0094 mov qword [rsp+0xe18],0x40 (12B, single insn), ja @0x1418946f5 to window start, rax = name (table 0x14571bcc0 or error_department) about to be copied into the 0x40 child-name buffer at [rsp+0xe28] under department_performance: right; but rbp is the pointer to the current code byte, not the code"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "global",
+   "item": "site_Career_RnDPerfChildName",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418914f0.c;xref:0x1418946e5,0x1418946ea,0x1418946f1,0x1418946fe,0x141894702,0x14189470e,0x141894716,0x141894728",
+   "notes": "V0198 sigcheck OK; 12-byte mov qword [rsp+0xe18],0x40 window clean (ja 0x141894702 lands on its start); rax = 0x14571bcc0[code] (cmp rcx,3; ja) or error_department; copied into 0x40 buffer at [rsp+0xe28] then hashed for Vm_GetOrCreate_ChildNode under the department_performance node; rbp = pointer to code byte"
+  }
+ ],
+ "proofs": []
+}

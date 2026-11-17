@@ -79,12 +79,29 @@ def notes_cxx(notes):
     return m.group(1) if m else None
 
 
+def split_proto(proto, name):
+    """(return type, parameter text) of `<ret> <name>(<params>)`; one regex per name would recompile thousands."""
+    s = proto.strip()
+    if '\n' in s or not s.endswith(')'):
+        return None
+    p = s.find(name, 1)
+    while p != -1:
+        if not (s[p - 1].isalnum() or s[p - 1] == '_'):
+            q = p + len(name)
+            while q < len(s) and s[q].isspace():
+                q += 1
+            if q < len(s) and s[q] == '(':
+                return s[:p].strip(), s[q + 1:-1]
+        p = s.find(name, p + 1)
+    return None
+
+
 def parse_proto(proto, name):
-    m = re.match(rf'^(.+?)\s*\b{re.escape(name)}\s*\((.*)\)$', proto.strip())
-    if not m or '(' in m.group(2):
+    m = split_proto(proto, name)
+    if not m or '(' in m[1]:
         return None
     params = []
-    raw = [x.strip() for x in m.group(2).split(',')] if m.group(2).strip() not in ('', 'void') else []
+    raw = [x.strip() for x in m[1].split(',')] if m[1].strip() not in ('', 'void') else []
     for k, p in enumerate(raw):
         if p == '...':
             if k != len(raw) - 1 or not params:
@@ -95,7 +112,7 @@ def parse_proto(proto, name):
         if not pm or not pm.group(1).strip():
             return None
         params.append((pm.group(1).strip(), pm.group(2)))
-    return m.group(1).strip(), params
+    return m[0], params
 
 
 def type_names(ctype):

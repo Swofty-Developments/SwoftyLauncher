@@ -108,6 +108,9 @@ def main():
     if existing and existing['name'] != a.name:
         print(f'note: 0x{va:x} is already {existing["name"]} in {table}.tsv; keeping that name')
         name = existing['name']
+    if existing and existing.get('_record'):
+        raise SystemExit(f'{name} is the binding record re/bindings/{existing["_record"]}; edit that file '
+                         '(its signature lives there), then run binding.py check')
 
     doc = json.load(open(SIGS))
     sid = a.id or f'{a.subsystem}.{snake(name)}'

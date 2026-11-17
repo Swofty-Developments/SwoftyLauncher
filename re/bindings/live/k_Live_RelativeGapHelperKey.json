@@ -1,0 +1,75 @@
+{
+ "schema": 1,
+ "name": "k_Live_RelativeGapHelperKey",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14604ea90",
+  "type": "uint8_t",
+  "level": "L2",
+  "subsystem": "live",
+  "evidence": "decomp:re/decomp/140821af0.c;decomp:re/decomp/144500dc0.c;decomp:re/decomp/142882980.c;xref:0x145649430,0x14097da85,0x140806a88,0x140821af3,0x140821bb3,0x14097daa0,0x140a3f024,0x14116522e,0x141172a58,0x1411733b8;pat:type-name-RelativeGapHelper;xref:0x14097da9d",
+  "notes": "registry key (address of the static type record; its +8 holds the name \"RelativeGapHelper\", stored at 0x14097da85); class vtable 0x145649430 slot 0 = 0x140821af0 returns it; race gap/interval system (Halo timing T); getter Live_Get_RelativeGapHelper"
+ },
+ "signature": {
+  "id": "live.relative_gap_helper_key",
+  "section": ".xtls",
+  "pattern": "C7 05 ?? ?? ?? ?? 59 12 82 F3 48 89 3D ?? ?? ?? ?? 48 89 35",
+  "match": "0x14097da8c",
+  "anchor": "0x14",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x11",
+   "len": 7
+  },
+  "target": "0x14604ea90",
+  "kind": "data",
+  "names": [
+   "k_Live_RelativeGapHelperKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "osd-l1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/live/live_state.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vb",
+   "kind": "global",
+   "item": "k_Live_RelativeGapHelperKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140811e10.c;xref:0x14097da87",
+   "notes": "V8776 own check (disx + type record scan): static init at 0x14097da87 loads a string address and stores it at key+8; the string bytes are \"RelativeGapHelper\". FUN_142882980 and the UDP init 142cf5c00 look the key up (state+0xd2e8). Slot-0 getter and registry-hash insert not re-derived"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-va",
+   "kind": "global",
+   "item": "k_Live_RelativeGapHelperKey",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144500dc0.c;decomp:re/decomp/142882980.c;decomp:re/decomp/142cfd6c0.c;xref:0x14288298b,0x142cf6018",
+   "notes": "V8736 own disx: type record +8 name string = 'RelativeGapHelper' (static init store at 0x14097da88); slot-0 0x140821af0 = lea rax,[k_Live_RelativeGapHelperKey] ret and qword at vtable 0x145649430 == 0x140821af0; consumer: UDP state init 0x142cf5c00 calls Live_Get_RelativeGapHelper (0x142882980: FindIndex(key) then slot value) into state+0xd2e8; SyncLapData then reads [state+0xd2e8]+0x30/+0x38 (entries_begin/end)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vd",
+   "kind": "sig",
+   "item": "live.relative_gap_helper_key",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:live.relative_gap_helper_key",
+   "notes": "V8897 sigcheck hits=1, anchor disassembled and resolve re-computed by hand to the claimed target; target is the first field of a static type record whose +8 name pointer (set at the init stores) points at the type-name string, e.g. relative_gap_helper_key; the name strings were read from the exe for all 13 keys and match the k_Live_* names; consumers pass the key address to FindIndex (0x14030ffd0)"
+  }
+ ],
+ "proofs": []
+}

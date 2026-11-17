@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_GarageSetups_EntryStep",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c22c43",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/140c22ad0.c;xref:0x140c22c47",
+  "notes": "In Game_GarageSetups_FindOwnerName: lea rcx,[rcx+r8*8] right after mov r9,[rcx+r8*8] in the entry walk loop (0x140c22c33..). r9 is the entry pointer the next instruction dereferences (mov r8,[r9+0x38] at 0x140c22c47, which faults on the end marker slot). Core's garage setup guard checks the entry chain is readable and otherwise continues at site_Game_GarageSetups_NotFound. rsp is unchanged since the prologue."
+ },
+ "signature": {
+  "id": "game.garage_setups_entry_step",
+  "section": ".xtls",
+  "pattern": "4E 8B 0C C1 4A 8D 0C C1 4D 8B 41 38",
+  "match": "0x140c22c3f",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c22c43",
+  "kind": "mid",
+  "expect": "4A 8D 0C C1 4D 8B 41 38",
+  "names": [
+   "site_Game_GarageSetups_EntryStep"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "c22c47",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/garage_setup.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "kbverify-garagesetup",
+   "kind": "global",
+   "item": "0x140c22c43",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c22ad0.c;xref:0x140c22c47;sig:game.garage_setups_entry_step",
+   "notes": "V8611 sigcheck --only OK hits=1 match=0x140c22c3f target=0x140c22c43. Disassembly: 0x140c22c3f mov r9,[rcx+r8*8]; 0x140c22c43 lea rcx,[rcx+r8*8] (4 bytes); 0x140c22c47 mov r8,[r9+0x38] faults. r9 is live at the site. No branch targets c44..c46 (targets in loop are c30,c33,c5f,b26). Patch window c43..c47 ends on an instruction boundary."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Game_DecalMenu_DuplicateFreeSlotCheck",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ff7dd8",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141ff79b0.c;doc:re/research/sponsors.md#decal-editor",
+  "notes": "mov edx,eax; xor dl,1: al = result of 0x14142a6d0 'no free slot'; al = 1 greys Duplicate with lng_decal_editor_no_free_slots. [static L2 evidence in the doc; added at L1 for the lane owner to raise]"
+ },
+ "signature": {
+  "id": "game.decal_menu_duplicate_free_slot_check",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 89 C2 80 F2 01 4C 8D 3D",
+  "match": "0x141ff7dd3",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ff7dd8",
+  "kind": "mid",
+  "expect": "89 C2 80 F2 01",
+  "names": [
+   "site_Game_DecalMenu_DuplicateFreeSlotCheck"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

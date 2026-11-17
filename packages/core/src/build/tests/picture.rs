@@ -243,7 +243,7 @@ fn the_template_shader_pack_builds() {
 
 #[test]
 fn the_template_postfx_pass_compiles_into_the_build() {
-    if loader_dir().is_some() || crate::postfx::dxc().is_none() {
+    if loader_dir().is_some() || crate::content::postfx::dxc().is_none() {
         return;
     }
     let root = std::env::temp_dir().join(format!("swofty-build-postfx-{}", std::process::id()));
@@ -335,7 +335,7 @@ fn the_template_postfx_pass_compiles_into_the_build() {
 
 #[test]
 fn shader_effects_and_the_active_config_build_into_the_loader_plan() {
-    if loader_dir().is_some() || crate::postfx::dxc().is_none() {
+    if loader_dir().is_some() || crate::content::postfx::dxc().is_none() {
         return;
     }
     let root = std::env::temp_dir().join(format!("swofty-build-shaders-effects-{}", std::process::id()));
@@ -350,7 +350,7 @@ fn shader_effects_and_the_active_config_build_into_the_loader_plan() {
         user_reg: None,
     };
     let store = Store::new(root.join("data"));
-    crate::shaders::tests::addon(
+    crate::content::shaders::tests::addon(
         &store,
         "t.look",
         "",
@@ -360,7 +360,7 @@ fn shader_effects_and_the_active_config_build_into_the_loader_plan() {
         )],
         true,
     );
-    let library = crate::shaders::catalog(&store).effects.len();
+    let library = crate::content::shaders::catalog(&store).effects.len();
     assert!(library > 1);
     let built = build(&store, "default", &game).unwrap();
     let read = |rel: &str| std::fs::read(&built.plan.loader[&format!("swofty/{rel}")]).unwrap();
@@ -410,7 +410,7 @@ fn shader_effects_and_the_active_config_build_into_the_loader_plan() {
         again.buildhash, built.buildhash,
         "the live serial is not part of the hash"
     );
-    crate::shaders::set_toggle_key(&store, "F9").unwrap();
+    crate::content::shaders::set_toggle_key(&store, "F9").unwrap();
     assert_ne!(
         build(&store, "default", &game).unwrap().buildhash,
         built.buildhash
@@ -420,7 +420,7 @@ fn shader_effects_and_the_active_config_build_into_the_loader_plan() {
 
 #[test]
 fn a_config_with_errors_builds_with_a_warning_and_shaders_off() {
-    if loader_dir().is_some() || crate::postfx::dxc().is_none() {
+    if loader_dir().is_some() || crate::content::postfx::dxc().is_none() {
         return;
     }
     let root = std::env::temp_dir().join(format!("swofty-build-shaders-bad-{}", std::process::id()));
@@ -435,9 +435,9 @@ fn a_config_with_errors_builds_with_a_warning_and_shaders_off() {
         user_reg: None,
     };
     let store = Store::new(root.join("data"));
-    let r = crate::shaders::create(&store, "Broken", Some("[no_such_effect]\n")).unwrap();
+    let r = crate::content::shaders::create(&store, "Broken", Some("[no_such_effect]\n")).unwrap();
     let mut p = store.profile("default").unwrap();
-    crate::shaders::set_active(&store, &mut p, Some(r)).unwrap();
+    crate::content::shaders::set_active(&store, &mut p, Some(r)).unwrap();
     let built = build(&store, "default", &game).unwrap();
     assert!(
         !built.plan.loader.keys().any(|k| k.starts_with("swofty/shaders/")),
@@ -459,13 +459,13 @@ fn a_config_with_errors_builds_with_a_warning_and_shaders_off() {
 fn the_vanilla_profile_builds_no_shader_files() {
     let store =
         Store::new(std::env::temp_dir().join(format!("swofty-build-shaders-vanilla-{}", std::process::id())));
-    let files = crate::shaders::build_files(&store, &crate::profile::Profile::vanilla());
+    let files = crate::content::shaders::build_files(&store, &crate::profile::Profile::vanilla());
     assert!(files.files.is_empty() && files.line.is_none() && files.warnings.is_empty());
 }
 
 #[test]
 fn a_v2_postfx_addon_builds_live_slots_textures_and_toggles() {
-    if loader_dir().is_some() || crate::postfx::dxc().is_none() {
+    if loader_dir().is_some() || crate::content::postfx::dxc().is_none() {
         return;
     }
     let root = std::env::temp_dir().join(format!("swofty-build-postfx2-{}", std::process::id()));

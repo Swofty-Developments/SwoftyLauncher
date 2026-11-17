@@ -1,0 +1,74 @@
+{
+ "schema": 1,
+ "name": "site_Game_SaveData_ContainersDone",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143651cbc",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/143651030.c;xref:0x143651bde,0x143651ca3,0x143651c2e,0x143651c50",
+  "notes": "In Game_SaveData_SerialiseContainer_2, the join after the 'containers' block: the loop end (0x143651ca3) and every failed write of that block (jne from 0x143651bde, 0x143651c2e, 0x143651c50, ...) come here with the code in [r12]. EA (re/db/builds/ea.json): EA 0x143641ebc in the same EA function 0x143641230 with Steam's frame, so the splice's redirect after a failed write finds [rsp+0x30], [rsp+0x38] and r12 as on Steam; only the cmp disp32 in expect differs (EA 80 3D 41 F9 B3 02 01, the flag at the 0x135d40 data shift of g_Ne_LogGate)."
+ },
+ "signature": {
+  "id": "game.save_data_containers_done",
+  "section": ".xtls",
+  "pattern": "80 3D ?? ?? ?? ?? 01 4C 8B 4C 24 30",
+  "match": "0x143651cbc",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143651cbc",
+  "kind": "mid",
+  "expect": "80 3D 01 9E 9F 02 01",
+  "names": [
+   "site_Game_SaveData_ContainersDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "splicesaves",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/save_splice.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "splice-verify",
+   "kind": "global",
+   "item": "site_Game_SaveData_ContainersDone",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143651030.c;xref:0x143651ab2,0x143651aba,0x143651b49,0x143651b6b,0x143651ba5,0x143651bde,0x143651c2e,0x143651c50,0x143651ca3,0x143651e3f;xref:0x143651cc3,0x143651cc8,0x143651d22,0x143651d39",
+   "notes": "V1115 sigcheck game.save_data_containers_done OK (target 0x143651cbc, anchor 0). Instruction boundary; nothing lands in +1..+4. Its 10 predecessors: 0x143651ab2 (child vector empty: containers block skipped entirely, [r12]=result of the preceding [rsp+0x78]->vt+0x48 call), 0x143651aba (that call failed), 0x143651b49 ('containers' name write failed), 0x143651b6b (bag type id write failed), 0x143651ba5 (codec vt+0x18 version write failed), 0x143651bde (count write failed), 0x143651c2e / 0x143651c50 (child name / child type id write failed), 0x143651ca3 (loop finished), 0x143651e3f (recursive child failed, after [r12+0x10] is set at 0x143651e24). Each failure path stores the code with mov [r12],eax right before the jne. The join reads only frame slots ([rsp+0x30] for the log, [rsp+0x38]/[rsp+0x88] to free the vector), r12 (returned), and restores callee-saved regs and xmm6 from the stack; eax and the other volatile/callee-saved registers are dead or overwritten before use. State at 0x143651be4 equals state at the 0x143651bde jne except eax/flags and [r12], so setting dword [r12] non-zero and jumping from 0x143651be4 to 0x143651cbc is equivalent to the game's own count-write-failure path (the game also leaves [r12+8]/[r12+0x10] untouched on that path). Also note [r12]=0 + jump here equals the normal loop-end path. Claim is accurate but not exhaustive: the join is also reached when there are no children and on the pre-block failure."
+  },
+  {
+   "date": "2026-10-27",
+   "verifier": "easites-verify",
+   "kind": "sig",
+   "item": "game.save_data_containers_done",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "sig:game.save_data_containers_done;xref:0x143651cbc,0x143651ba5,0x143651bde,0x143651030,0x14364fef0,0x14364f3a0;pat:80 3D ?? ?? ?? ?? 01 4C 8B 4C 24 30",
+   "notes": "V1150 EA overlay: the pattern matches EA .rdata once at 0x3641ebc, which holds 80 3D 41 F9 B3 02 01 (cmp of the flag at 0x146181804, the same -0x135d40 data shift as the lea that follows), at +0xc8c of the identical EA 0x143641230 as Steam's 0x143651cbc, followed by the same [rsp+0x30]/[rsp+0x38] reads. The shared frames also hold: ContainersCount resolves at EA 0x143641dbf (+0xb8f, as on Steam), and UnclaimedChild at EA 0x1436400f0 is at +0xb50 of EA DeserialiseContainer 0x14363f5a0, which is instruction-identical to Steam 0x14364f3a0 (1602 insns), so [rsp+0x88] and rdi hold the same values."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-saves1",
+   "kind": "global",
+   "item": "site_Game_SaveData_ContainersDone",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143651030.c;xref:0x143651ca3,0x143651cb9,0x143651c7a,0x14365850c,0x150b16391",
+   "notes": "V3858 Own disasm: 0x143651cbc is the join after the containers block (jmp from loop end 0x143651ca3 and fall-through from the vt+0x48 call at 0x143651cb9), r12=result (mov r12,rdx at 0x143651052). Function is recursive (self call 0x143651c7a) so the site fires per container node; is_root filter keeps the profile root only. Profile root enters only via Game_SaveData_SerialiseTimed from the .data1 profile save 0x150b16391 (straight-line, one call, no loop in 0x150b16310) -> once per profile write, inline on the thread running the save. Other SerialiseTimed callers (0x1429ce6d0, 0x142c47107, 0x1430a6cef, 0x1433597fa) serialise slot/replay/championship containers, not the root. Fires before the stream is flushed to disk."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_CareerEventsSequencerPlayerDriverJoin",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c73119",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/140c71e80.c;decomp:re/decomp/140c808e0.c;xref:0x140c730b2,0x140c730e1,0x140c730ea,0x140c73114,0x140c73119",
+  "notes": "mov byte [rbx+0x5e4],1 in Game_CareerEventsSequencer_Initialise (+0x1299): the return address of the call to Game_CareerEventResourceManager_AddDriverMorphData at 0x140c73114 and the game's own join for a player entrant that is not found: je 0x140c73119 at 0x140c730b2 (empty entrant list), 0x140c730e1 (null result) and 0x140c730ea (search ran to the end) all skip the lookup and the call. Resuming here from site_Game_CareerEventsSequencerPlayerDriver skips only mov r8,rax and the call: no push, pop or rsp change between the sites, the call's return value is never read, and the callee-saved registers (r12 = record + 0x50, r15 = the entrants system, rbx) keep the values the call preserves; the code from the join on already runs with arbitrary volatile registers on the three je paths. AddDriverMorphData itself returns with no effect when Ent_EntrantsSystem_FindDriverHead finds no head (je 0x140c80a02 at 0x140c80970), so the skip leaves the resource manager as a player with no head would, apart from its verbose log line. No branch lands at 0x140c73112..0x140c73118 (linear sweep of 0x140c71e80..0x140c74008 and a rel8/rel32 scan of 0x140c60000..0x140c90000). Resume target of the sequencer player driver guard; not hooked or patched."
+ },
+ "signature": {
+  "id": "game.career_events_sequencer_player_driver_join",
+  "section": ".xtls",
+  "pattern": "49 89 C0 E8 ?? ?? ?? ?? C6 83 E4 05 00 00 01",
+  "match": "0x140c73111",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c73119",
+  "kind": "mid",
+  "names": [
+   "site_Game_CareerEventsSequencerPlayerDriverJoin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "seqmate",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/sequencer_records_guard.cpp"
+  ],
+  "expect": "C6 83 E4 05"
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "seqplayer-verify",
+   "kind": "global",
+   "item": "0x140c73119",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140c71e80-0x140c74008,0x140c808e0-0x140c80a0e;xref:0x140c730b2,0x140c730e1,0x140c730ea,0x140c73104,0x140c73114,0x140c73119,0x140c73127,0x140c7312f,0x140c73131,0x140c73136,0x140c7318d,0x140c80962,0x140c80970,0x140c80a02;sig:game.career_events_sequencer_player_driver_join",
+   "notes": "V9283 Blind re-derivation on d873a1c8. 0x140c73119 = C6 83 E4 05 00 00 01 mov byte [rbx+0x5e4],1, +0x1299 in .pdata 0x140c71e80..0x140c74008, instruction boundary in a clean linear sweep, return address of call 0x140c808e0 at 0x140c73114. Direct branches to it: je at 0x140c730b2 (empty list), 0x140c730e1 (null result), 0x140c730ea (search reached end); none to 0x140c73111 and none into 0x140c73112..0x140c73118 (sweep plus raw rel scan 0x140c60000..0x140c90000, no indirect jumps in the function). Between 0x140c73104 and 0x140c73119 only mov rcx,[rsp+0x38]; mov rdx,r15; mov r8,rax; call: no push/pop/rsp change, so skipping mov r8,rax and the call leaves rsp and all callee-saved registers exactly as after the call. From 0x140c73119: rbx and r14 read (callee-saved), r12 rewritten at 0x140c73127 from [rsp+0x1c0], rax/rcx/rdx written first (0x140c73131/36/54), r8-r11, r13, r15, rsi, rdi, rbp untouched on the straight line; the jne target 0x140c7318d writes rax before use; the three je paths reach the join with unrelated volatile values, so nothing there can depend on the call's result or volatiles. AddDriverMorphData returns via je 0x140c80a02 (epilogue add rsp,0x140; pop rbx/rdi/rsi; ret) at 0x140c80970 when 0x14246d700 returns 0, after the verbose log at 0x140c8095d, as claimed. sigcheck OK hits=1 match=0x140c73111 target=0x140c73119."
+  }
+ ],
+ "proofs": []
+}

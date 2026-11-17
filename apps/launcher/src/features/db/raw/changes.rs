@@ -12,8 +12,8 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::hex;
 use crate::shell::Shell;
-use crate::shell::pages::label;
 use crate::ui::SectionHead;
+use crate::ui::label;
 use crate::ui::theme::{Palette, palette};
 
 use super::*;
@@ -302,17 +302,20 @@ impl Shell {
                             .child(new),
                     ),
             )
-            .when_some(origin.filter(|_| self.content_width >= 1100.), |d, origin| {
-                d.child(
-                    div()
-                        .w(px(170.))
-                        .flex_shrink_0()
-                        .text_size(px(12.))
-                        .text_color(p.text_muted)
-                        .truncate()
-                        .child(origin),
-                )
-            })
+            .when_some(
+                origin.filter(|_| self.layout.content_width >= 1100.),
+                |d, origin| {
+                    d.child(
+                        div()
+                            .w(px(170.))
+                            .flex_shrink_0()
+                            .text_size(px(12.))
+                            .text_color(p.text_muted)
+                            .truncate()
+                            .child(origin),
+                    )
+                },
+            )
             .child(
                 Button::new(SharedString::from(format!("db-change-revert-{key:x}")))
                     .ghost()

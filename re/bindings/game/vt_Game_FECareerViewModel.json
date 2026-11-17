@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "vt_Game_FECareerViewModel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457385b0",
+  "type": "vtable[19]",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141a499c0.c;decomp:re/decomp/141a482f0.c;decomp:re/decomp/141a48b10.c;xref:0x14164bb66,0x145738600,0x145738618;pat:class-name-strings-FECareerViewModel-fe_career;decomp:re/decomp/141649f80.c;xref:0x14164bb69",
+  "notes": "cxx=game::FECareerViewModel, the fe_career screen (Driver Career / My Team / ... tiles). Loaded by the screen factory 0x141649f80 (lea at 0x14164bb65) after the tile-screen base ctor 0x141a482f0. Slot 10 (0x145738600) = 0x141bad660, jmp thunk to .data1 0x14be38920: if vt+0x90(vm) (busy) logs and returns, else tail-jumps Game_TileScreen_HandleCommand_Thunk 0x141a499c0 (vm, cmd, data). Slot 13 (0x145738618) = 0x141bad580 -> .data1 0x14be23db0, which calls the tile build 0x141a48b10 (TileList at vm+0x2c8, FeTile_Build_List, site_FeTile_PopulateLoop). Sibling: vt_Game_CareerDLCSelectViewModel 0x145738430 (slot 10 0x141bad270) for fe_career_dlc_select; generic tile screens use 0x145734720 (slot 10 0x141a499c0). ts-v1 signature for the test agent (V1497 agree)"
+ },
+ "signature": {
+  "id": "game.fe_career_view_model",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 49 89 07 48 8D 05 ?? ?? ?? ?? 49 89 87 60 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 87 68 02 00 00 48 8D 05 ?? ?? ?? ?? 49 89 87 98 02 00 00 66 41 C7 87 A8 03 00 00 00 01",
+  "match": "0x14164bb66",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457385b0",
+  "kind": "data",
+  "names": [
+   "vt_Game_FECareerViewModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "ts-v1",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/testing/agent/agent.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ts-v1",
+   "kind": "global",
+   "item": "0x1457385b0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141649f80.c;xref:0x14164bb69,0x1442a95db",
+   "notes": "V1497 ts-v1: vtable read from the exe (slot 0 0x141e080d0 ...); referenced by the screen factory 0x141649f80 (lea 0x14164bb69) and one other function 0x1442a8cb0. Class identity (FECareerViewModel) rests on the factory's class-name string, not re-derived; the tile list at vm+0x2c8 is the populate loop's list. Agrees as a vtable of the fe_career screen."
+  }
+ ],
+ "proofs": []
+}

@@ -4,6 +4,8 @@
 Every C++ file under src/core is a translation unit of swofty_core.dll unless CORE_EXCLUDE names it, so a new
 source file needs no build change. Each translation unit compiles to its own object under <builddir>/obj with a
 depfile, so ninja rebuilds exactly what an edit touches and reruns a compile whose command line changed.
+swofty_core.dll links its objects in the order tools/core_link_order.txt gives, which is also the order their static
+initializers run in.
 """
 
 import argparse
@@ -38,6 +40,15 @@ def sources(root, exts):
             if name.endswith(exts):
                 found.append(os.path.relpath(os.path.join(dirpath, name), NATIVE))
     return found
+
+
+def link_order(objects):
+    listed = [line.strip() for line in open(os.path.join(NATIVE, 'tools/core_link_order.txt'))
+              if line.strip() and not line.startswith('#')]
+    gone = [src for src in listed if src not in objects]
+    if gone:
+        sys.exit(f'build_graph.py: tools/core_link_order.txt names sources that are not built: {gone}')
+    return [objects[src] for src in listed] + [objects[src] for src in sorted(set(objects) - set(listed))]
 
 
 def q(args):
@@ -110,25 +121,24 @@ def main():
     loader = [g.compile('cc', 'src/loader/version.c', loader_flags)]
     g.build([f'{a.builddir}/version.dll'], 'link_c', loader + ['src/loader/version.def'], warn)
 
-    third_party = [g.compile('cxx', f'{SAFETYHOOK}/safetyhook.cpp', ['-O2', f'-I{SAFETYHOOK}'])]
-    third_party.append(g.compile('cc', f'{SAFETYHOOK}/Zydis.c', ['-O2', f'-I{SAFETYHOOK}']))
+    core_flags = warn + a.define + ['-Isrc', '-I$sdk'] + game + ['-Iinclude', f'-I{SAFETYHOOK}', f'-I{ZSTD}', '$strip']
+    objects = {f'{SAFETYHOOK}/safetyhook.cpp': g.compile('cxx', f'{SAFETYHOOK}/safetyhook.cpp', ['-O2', f'-I{SAFETYHOOK}'])}
+    objects[f'{SAFETYHOOK}/Zydis.c'] = g.compile('cc', f'{SAFETYHOOK}/Zydis.c', ['-O2', f'-I{SAFETYHOOK}'])
     for sub in ('common', 'compress', 'decompress'):
         for src in sources(f'{ZSTD}/{sub}', ('.c',)):
-            third_party.append(g.compile('cc', src, ZSTD_FLAGS + [f'-I{ZSTD}']))
-
-    core_flags = warn + a.define + ['-Isrc', '-I$sdk'] + game + ['-Iinclude', f'-I{SAFETYHOOK}', f'-I{ZSTD}', '$strip']
-    core = []
-    for src in sources('src/core', ('.cpp',)):
+            objects[src] = g.compile('cc', src, ZSTD_FLAGS + [f'-I{ZSTD}'])
+    core_sources = sources('src/core', ('.cpp',))
+    for src in core_sources:
         if src in CORE_EXCLUDE:
             continue
         if src in SEH_SOURCES:
-            core.append(g.compile('cxx', src, warn + ['-fms-extensions', '-Isrc'] + SEH_SOURCES[src]))
+            objects[src] = g.compile('cxx', src, warn + ['-fms-extensions', '-Isrc'] + SEH_SOURCES[src])
         else:
-            core.append(g.compile('cxx', src, core_flags))
-    missing = (CORE_EXCLUDE | set(SEH_SOURCES)) - set(sources('src/core', ('.cpp',)))
+            objects[src] = g.compile('cxx', src, core_flags)
+    missing = (CORE_EXCLUDE | set(SEH_SOURCES)) - set(core_sources)
     if missing:
         sys.exit(f'build_graph.py: listed sources that no longer exist: {sorted(missing)}')
-    g.build([f'{a.builddir}/swofty_core.dll'], 'link_cxx', core + third_party, warn)
+    g.build([f'{a.builddir}/swofty_core.dll'], 'link_cxx', link_order(objects), warn)
 
     gamelog = [g.compile('cxx', 'src/gamelog/gamelog.cpp', warn + ['-fms-extensions', '-Isrc', '-I$sdk', '-Iinclude', '$strip'])]
     g.build([f'{a.builddir}/swofty_gamelog.dll'], 'link_cxx', gamelog, warn)

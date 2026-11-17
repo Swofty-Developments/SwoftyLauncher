@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_VirtualSession_EstimateTail",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f6cba8",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/142f6c8e0.dis;pat:disasm-0x142f6c8e0-0x142f6cbd3;xref:0x142f6c9e4,0x142f6cba4,0x142f6cba8,0x142f6cbd3;sig:session.virtual_session_estimate_tail",
+  "notes": "In Sess_VirtualSession_EstimateLapTime: vmovaps xmm0,xmm6 at the shared epilogue (the jns 0x142f6cba8 at 0x142f6c9e4 for a session whose rules entry skips the estimate lands here). xmm6 holds the incoming lap time (param xmm3) and is only rewritten at 0x142f6cba4, so returning from here hands back the caller's own lap time. rsp is unchanged since the prologue (no push after sub rsp,0x88), the xmm6-9 and gprs are restored from the stack. Rip target of core's estimate lap time guard; never hooked. Needs L2 promotion by the session owner."
+ },
+ "signature": {
+  "id": "session.virtual_session_estimate_tail",
+  "section": ".xtls",
+  "pattern": "C5 F8 28 F0 C5 F8 28 C6 C5 F8 28 74 24 40",
+  "match": "0x142f6cba4",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f6cba8",
+  "kind": "mid",
+  "expect": "C5 F8 28 C6 C5 F8 28 74 24 40",
+  "names": [
+   "site_Sess_VirtualSession_EstimateTail"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-10",
+    "by": "elt-guard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/session/estimate_laptime_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-10",
+   "verifier": "elt-verify",
+   "kind": "global",
+   "item": "site_Sess_VirtualSession_EstimateTail",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f6c8e0.dis;xref:0x142f6c9e4,0x142f6cba4,0x142f6cba8,0x142f6cbd3;sig:session.virtual_session_estimate_tail",
+   "notes": "V8734 own disasm: xmm6 = xmm3 (lap time) at 142f6c907, only rewritten at 142f6cba4; calls in between (ca4a [rax+0xc8], 142e60e00) are Win64 callee-saved for xmm6. From ca96 nothing on the stack is pending (the call at ca9b has not been issued; sub rsp,0x88 at c8e8 with no later push/pop or rsp change, all calls balanced), so rsp equals the tail's rsp. cba8 vmovaps xmm0,xmm6 returns the lap time, then xmm6-9 reload from [rsp+0x40..0x70], add rsp,0x88, pop rbx,rbp,rdi,rsi,r14,r15, ret: callee-saved registers are restored from the frame so unset rdi/r14/xmm8/xmm9 are harmless. cba8 is also the jns target at c9e4 (existing no-estimate path) so it is a normal return. Site is a continue target only, never patched. sigcheck: 1 hit match 0x142f6cba4 target 0x142f6cba8."
+  }
+ ],
+ "proofs": []
+}

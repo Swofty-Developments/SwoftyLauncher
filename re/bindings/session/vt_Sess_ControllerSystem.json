@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_ControllerSystem",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1458824a0",
+  "type": "vtable[54]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/143897f40.c;decomp:re/decomp/14389bc50.c;xref:0x143897fc6,0x1438d2a57,0x1458824f8,0x145882560,0x1458825a0,0x145882620",
+  "notes": "The vehicle controller system (owns the per-car ControllerSet list at +0x30/+0x38). Primary vtable: slot 2 (+0x10) 0x143899750 resolves dependencies, slot 11 (+0x58) 0x14389bc50 builds all sets, slot 14 (+0x70) 0x14389c8f0 stops (thunk to .data1 0x1519de8a0), slot 24 (+0xc0) 0x143899f30 destroys all sets, slot 32 (+0x100) 0x14389a120 applies each car's active input record. A second base (sub-object at system+0x20, so its +0x10/+0x18 are the system's +0x30/+0x38, its vtable starts at 0x1458825d0 (slot 0 0x1438d2be0)) carries the recordable interface: 0x14389ce30 writes every set's flags and mode, 0x14389ceb0 reads them back, 0x14389d370 (Car_Physics_ResettleVehicles_Thunk) resettles human cars; those are the flashback frame hooks. The class has no .pdata entry for the AI/human update calls; see vt_Sess_AiController."
+ },
+ "signature": {
+  "id": "session.controller_system",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 06 48 8D 05 ?? ?? ?? ?? 48 89 46 20 48 89 7E 28 48 8B 07",
+  "match": "0x143897fc3",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1458824a0",
+  "kind": "data",
+  "names": [
+   "vt_Sess_ControllerSystem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "osd-vd",
+   "kind": "global",
+   "item": "0x1458824a0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14389bc50.c;decomp:re/decomp/143899f30.c;decomp:re/decomp/14389a120.c;xref:0x143897fc3,0x1438d2a54,0x1458824f8,0x145882560,0x1458825a0",
+   "notes": "V8895 own: lea 0x143897fc3+7+0x1fea4d6=0x1458824a0 stored [rsi] and [rcx] at 0x1438d2a54; vtable dump: slot0 0x1438d2a30, slot2 0x143899750 (Init), slot11 0x14389bc50 (BuildSets, creates ControllerSet per vehicle, sets sets_built=1), slot24 0x143899f30 (DestroySets), slot32 0x14389a120 (ApplyInputs: tests +0x364/+0x365, walks sets[] with human_controller vt+0x10). CORRECTION made by osd-vd: the stop thunk 0x14389c8f0 is slot 14 (+0x70 at 0x145882510), not slot 18 (slot 18 = 0x14028daa0); the second base's vtable starts at 0x1458825d0 (slot0 0x1438d2be0), not 0x1458825d8. Notes edited in place; address/class/other slots stand"
+  }
+ ],
+ "proofs": []
+}

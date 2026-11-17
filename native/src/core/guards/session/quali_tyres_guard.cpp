@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -57,7 +58,7 @@ Closest *orig_closest = nullptr;
 std::atomic<uint8_t> g_mask{0};
 const uint32_t *g_session = nullptr;
 std::atomic<int> refused{0};
-bool offered = false, settled = false, wanted = false;
+bool wanted = false;
 std::mutex line_mu;
 std::string last_line;
 
@@ -131,6 +132,51 @@ bool turned_off()
     return false;
 }
 
+namespace guards = swofty_core::guards;
+
+class QualiTyresGuard final : public guards::Guard {
+public:
+    QualiTyresGuard() : Guard(guards::CoreSetId::quali_tyres) {}
+
+private:
+    bool ready() const override { return swofty_core::apply::content::any_quali_tyres(); }
+
+    void build(std::vector<runtime::CoreMixins> &out) override
+    {
+        if (turned_off())
+            return;
+        uintptr_t session = swofty::api->resolve(SESSION_TYPE);
+        if (!session) {
+            swofty::log("[tyres] qualifying tyre hooks off: needs %s, which this build does not resolve", SESSION_TYPE);
+            return;
+        }
+        g_session = reinterpret_cast<const uint32_t *>(session);
+        wanted = true;
+        if (swofty::api->resolve(ALLOWED))
+            out.push_back({MIXIN_ALLOWED, {{ALLOWED, SWOFTY_MIXIN_WRAP, 100, (void *)&allowed, (void **)&orig_allowed}}});
+        if (swofty::api->resolve(CLASS_RULE))
+            out.push_back({MIXIN_CLASS, {{CLASS_RULE, SWOFTY_MIXIN_WRAP, 100, (void *)&class_rule, (void **)&orig_class}}});
+        if (swofty::api->resolve(CLOSEST))
+            out.push_back({MIXIN_CLOSEST, {{CLOSEST, SWOFTY_MIXIN_WRAP, 100, (void *)&closest, (void **)&orig_closest}}});
+        if (out.empty()) {
+            wanted = false;
+            swofty::log("[tyres] qualifying tyre hooks off: this build resolves none of %s, %s, %s", ALLOWED, CLASS_RULE, CLOSEST);
+        }
+    }
+
+    void settle() override
+    {
+        if (!wanted)
+            return;
+        swofty::log("[tyres] qualifying tyre hooks: set usable %s, session tag check %s, set choice %s",
+                    runtime::core_mixins_active(MIXIN_ALLOWED) ? "armed" : "not installed",
+                    runtime::core_mixins_active(MIXIN_CLASS) ? "armed" : "not installed",
+                    runtime::core_mixins_active(MIXIN_CLOSEST) ? "armed" : "not installed");
+    }
+};
+
+QualiTyresGuard guard;
+
 }
 
 namespace runtime {
@@ -144,45 +190,6 @@ void quali_tyres_box(uint8_t mask, const std::string &line)
         return;
     last_line = line;
     swofty::log("[tyres] %s%s", line.c_str(), mask && !wanted ? "; not applied (the qualifying tyre hooks are not offered)" : "");
-}
-
-std::vector<CoreMixins> quali_tyres_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready() || !swofty_core::apply::content::any_quali_tyres())
-        return out;
-    offered = true;
-    if (turned_off())
-        return out;
-    uintptr_t session = swofty::api->resolve(SESSION_TYPE);
-    if (!session) {
-        swofty::log("[tyres] qualifying tyre hooks off: needs %s, which this build does not resolve", SESSION_TYPE);
-        return out;
-    }
-    g_session = reinterpret_cast<const uint32_t *>(session);
-    wanted = true;
-    if (swofty::api->resolve(ALLOWED))
-        out.push_back({MIXIN_ALLOWED, {{ALLOWED, SWOFTY_MIXIN_WRAP, 100, (void *)&allowed, (void **)&orig_allowed}}});
-    if (swofty::api->resolve(CLASS_RULE))
-        out.push_back({MIXIN_CLASS, {{CLASS_RULE, SWOFTY_MIXIN_WRAP, 100, (void *)&class_rule, (void **)&orig_class}}});
-    if (swofty::api->resolve(CLOSEST))
-        out.push_back({MIXIN_CLOSEST, {{CLOSEST, SWOFTY_MIXIN_WRAP, 100, (void *)&closest, (void **)&orig_closest}}});
-    if (out.empty()) {
-        wanted = false;
-        swofty::log("[tyres] qualifying tyre hooks off: this build resolves none of %s, %s, %s", ALLOWED, CLASS_RULE, CLOSEST);
-    }
-    return out;
-}
-
-void quali_tyres_commit()
-{
-    if (!offered || settled || !wanted)
-        return;
-    settled = true;
-    swofty::log("[tyres] qualifying tyre hooks: set usable %s, session tag check %s, set choice %s",
-                core_mixins_active(MIXIN_ALLOWED) ? "armed" : "not installed",
-                core_mixins_active(MIXIN_CLASS) ? "armed" : "not installed",
-                core_mixins_active(MIXIN_CLOSEST) ? "armed" : "not installed");
 }
 
 }

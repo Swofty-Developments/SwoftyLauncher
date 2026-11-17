@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -32,12 +33,13 @@ namespace {
 namespace mem = swofty::mem;
 
 constexpr const char *MIXIN = "swofty_core.dll (team record slots)";
+constexpr const char *INSERT_CALL = "site_Team_LoadInsertCall";
+constexpr const char *INSERTED = "site_Team_LoadInserted";
 constexpr size_t RECORD_SIZE = 0x768;
 
 std::atomic<uintptr_t> database_set{0};
 std::atomic<uint32_t> last_key{0};
 std::atomic<int> stored{0};
-bool offered = false, settled = false, wanted = false;
 
 std::function<void(uint16_t, uint8_t *)> &inserted_hook()
 {
@@ -83,6 +85,20 @@ void inserted(SwoftyContext *c)
         h(team_slots::stat_of(key), reinterpret_cast<uint8_t *>(c->rax));
 }
 
+namespace guards = swofty_core::guards;
+
+guards::SiteGuard guard{guards::CoreSetId::team_slots,
+                        {
+                            .set = MIXIN,
+                            .name = "[teams] team record slots",
+                            .env = "SWOFTY_TEAM_SLOTS",
+                            .needs = {INSERT_CALL, INSERTED},
+                            .mixins = {
+                                        {INSERT_CALL, SWOFTY_MIXIN_SITE, 100, (void *)&insert_call, nullptr},
+                                        {INSERTED, SWOFTY_MIXIN_SITE, 100, (void *)&inserted, nullptr}},
+                            .armed = "loaded team records are reachable for dressing",
+                        }};
+
 }
 
 namespace runtime {
@@ -99,40 +115,6 @@ void team_record_inserted(std::function<void(uint16_t, uint8_t *)> fn)
 {
     std::lock_guard g(hook_mu());
     inserted_hook() = std::move(fn);
-}
-
-std::vector<CoreMixins> team_slots_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_TEAM_SLOTS", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[teams] team record slots off (SWOFTY_TEAM_SLOTS=%s)", v);
-        return out;
-    }
-    if (!swofty::api->resolve("site_Team_LoadInsertCall") || !swofty::api->resolve("site_Team_LoadInserted")) {
-        swofty::log("[teams] team record slots off: needs site_Team_LoadInsertCall and site_Team_LoadInserted, which this "
-                    "build does not resolve");
-        return out;
-    }
-    wanted = true;
-    out.push_back({MIXIN,
-                   {{"site_Team_LoadInsertCall", SWOFTY_MIXIN_SITE, 100, (void *)&insert_call, nullptr},
-                    {"site_Team_LoadInserted", SWOFTY_MIXIN_SITE, 100, (void *)&inserted, nullptr}}});
-    return out;
-}
-
-void team_slots_commit()
-{
-    if (!wanted || settled)
-        return;
-    settled = true;
-    swofty::log("[teams] team record slots %s",
-                core_mixins_active(MIXIN) ? "armed: loaded team records are reachable for dressing"
-                                          : "did not install (see the [core] lines)");
 }
 
 }

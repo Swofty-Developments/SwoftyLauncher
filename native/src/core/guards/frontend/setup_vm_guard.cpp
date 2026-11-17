@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/frontend/setup_vm_logic.hpp"
 
@@ -112,7 +113,4 @@ void setup()
 
 }
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("setup screen car guard", setup);
-}
+SWOFTY_HOOK_GUARD(setup_vm, "setup screen car guard", setup)

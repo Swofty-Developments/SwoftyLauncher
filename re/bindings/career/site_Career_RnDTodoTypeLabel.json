@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDTodoTypeLabel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c80be4",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141c80600.c;xref:0x141c80be4,0x141c80c06;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "cmp rax,0x12 ; ja 0x141c80c06: head of the inlined upgrade type switch in the R&D completion entry 0x141c80600 (rax = type). Placing the hook on the head instead of the default 0x141c80c06 (lea r8,[\"INVALID UPGRADE\"]) is a choice: a redirect from the head leaves every register as the default path does (only the jump-table dispatch writes rax/rcx), and the join (lea rdx,[fmt] ; lea rcx,[buf] ; call Ne_Format_String) reads only r8. rnd-tyres sets r8 = its type suffix for 19..22 and jumps to the join; other types fall through"
+ },
+ "signature": {
+  "id": "career.rn_d_todo_type_label",
+  "section": ".xtls",
+  "pattern": "48 8B 86 90 06 00 00 0F B6 40 70 48 83 F8 12 77 1C",
+  "match": "0x141c80bd9",
+  "anchor": "0xb",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c80be4",
+  "kind": "mid",
+  "expect": "48 83 F8 12 77 1C",
+  "names": [
+   "site_Career_RnDTodoTypeLabel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_RnDTodoTypeLabel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c80600.c;xref:0x141c80bd9,0x141c80be0,0x141c80be4,0x141c80be8,0x141c80c06",
+   "notes": "V0064 mov rax,[rsi+0x690] ; movzx eax,[rax+0x70] ; cmp rax,0x12 ; ja 0x141c80c06 head; default lea r8 'INVALID UPGRADE'; function uses lng_todo_completion_date. Note: 'no unique signature' rationale inaccurate, harmless"
+  }
+ ],
+ "proofs": []
+}

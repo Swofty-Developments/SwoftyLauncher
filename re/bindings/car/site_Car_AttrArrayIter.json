@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "site_Car_AttrArrayIter",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143514c50",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/143514670.c;xref:0x143514c50",
+  "notes": "mov rax,[r12+0x1960] (attribute count) in Car_Fit_UpgradesToRating write-back. r12 = per-car performance vehicle (CarPerfVehicle), r14 = effect-def being fitted; next insns: imul rbp,rax,0xc40 (stride) then lea rbx,[r12+0xd10] (array base). Behaviour-hook point to read/override a car's fitted performance during R&D apply"
+ },
+ "signature": {
+  "id": "car.attr_array_iter_site",
+  "section": ".xtls",
+  "pattern": "49 8B 84 24 60 19 00 00 48 85 C0 74 E3",
+  "match": "0x143514c50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143514c50",
+  "kind": "mid",
+  "expect": "49 8B 84 24",
+  "names": [
+   "site_Car_AttrArrayIter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "car-re"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Career_TeamHqAdvanceTrackLoad",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419b47ab",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1419b4390.c;decomp:re/decomp/142e60e00.c;xref:0x1419b445f,0x1419b4464,0x1419b47ab",
+  "notes": "mov rax,[r14+0x30] in Career_TeamHqAdvance_BuildTrackNode (4 bytes; the window with the lea rcx,[rax+8] after it is 8 bytes; no branch lands inside). r14 = Game_TrackData_GetTrack(system, record, query) from the call at 0x1419b445f (mov r14,rax at 0x1419b4464): 0 when no TrackDataSet matches the career's mode, season and format; or xor r14d,r14d at 0x1419b44e5 when rbx (the TrackDataRecord) is 0. rbx = the TrackDataRecord, byte [rbx+1] = its track statId, live and unchanged here. The code after the load is lea rcx,[rax+8]; test rax,rax; cmovz rcx,r13 (r13 = k_Vm_EmptyNodeHandle, lea at 0x1419b44f6): the game's own empty-handle path. Crash: ACCESS_VIOLATION reading 0x30 at F1_25.exe+0x19b47ab with r14 = 0 and rbx a record whose byte +1 is 6 (Progressive on Classic Seasons 2016, Team HQ entry 0.3 s in). Core's guard sets rax = 0, rcx = r13 and resumes at 0x1419b47ba. L1: subsystem career is owned by career-re, which has to raise it to L2."
+ },
+ "signature": {
+  "id": "career.team_hq_advance_track_load",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 46 30 48 8D 48 08",
+  "match": "0x1419b47a6",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419b47ab",
+  "kind": "mid",
+  "expect": "49 8B 46 30 48 8D 48 08",
+  "names": [
+   "site_Career_TeamHqAdvanceTrackLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-02",
+    "by": "teamhq-track",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/teamhq_track_guard.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

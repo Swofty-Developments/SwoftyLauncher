@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_GhostlapTrace_RivalLogBoard",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141482fb7",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141482d60.c;xref:0x141482ea1",
+  "notes": "In Game_GhostlapTrace_OnRivalFromLeaderboardDownloadRequested: mov rax,[rsi+0x20278] that starts the GHOSTLAP-TRACE log line '%s() Ghost requested from for user: %s, leaderboard: %s' (format 0x1456e7e72), reached only when g_Ne_LogGate is enabled and holds the GHOSTLAP-TRACE hash 0x252d6753 (je at 0x141482ea1). rsi = the Time Trial presenter (param_1[0x404f] in the decompile, the class of Game_TimeTrial_SetReference); +0x20278 is the reference's board, 0 when no board is listed. The next instruction mov rax,[rax+0x40] reads the board name with no null check. 7-byte patch window, no branch lands inside it. Core's time trial reference log guard continues at site_Game_GhostlapTrace_RivalLogDone for a null board."
+ },
+ "signature": {
+  "id": "game.ghostlap_trace_rival_log_board",
+  "section": ".xtls",
+  "pattern": "C3 48 8B 86 78 02 02 00 48 8B 40 40",
+  "match": "0x141482fb6",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141482fb7",
+  "kind": "mid",
+  "expect": "48 8B 86 78 02",
+  "names": [
+   "site_Game_GhostlapTrace_RivalLogBoard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "ttrefnull",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/leaderboard_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "ttrefnull-verify",
+   "kind": "global",
+   "item": "0x141482fb7",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141482d60.c;xref:0x141482ea1;sig:game.ghostlap_trace_rival_log_board",
+   "notes": "V9254 Static: disassembled 0x141482e68..0x141483000. mov rsi,rcx at entry 0x141482d73; fb7 is only the je target at 0x141482ea1; no branch lands in 0x141482fb8..0x141482fbd."
+  }
+ ],
+ "proofs": []
+}

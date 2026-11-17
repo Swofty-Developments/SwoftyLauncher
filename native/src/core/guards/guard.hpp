@@ -52,14 +52,39 @@ private:
     Commit commit_;
 };
 
-// True when the environment variable is set to 0 or off; `value` gets what it holds.
-bool env_off(const char *name, char (&value)[16]);
+// True when the environment variable holds a value `off_value` accepts (by default 0 or off); `value` gets what
+// it holds.
+bool env_off(const char *name, char (&value)[16], bool (*off_value)(const char *) = nullptr);
+
+// A guard the core offers once its code is ready (and ready() holds) and settles once, after the first install
+// pass that follows the offer.
+class Guard : public CoreSet {
+public:
+    using CoreSet::CoreSet;
+
+    std::vector<runtime::CoreMixins> offer() final;
+    void commit() final;
+
+protected:
+    virtual bool ready() const { return true; }
+    // Adds the guard's mixin sets to `out`; a guard that turns itself off logs why and adds none.
+    virtual void build(std::vector<runtime::CoreMixins> &out) = 0;
+    // Logs what installed.
+    virtual void settle() = 0;
+
+private:
+    bool offered_ = false, settled_ = false;
+};
 
 // A binding a guard's handlers need the address of, resolved before the guard's sites.
 struct Keep {
     const char *binding;
     uintptr_t *address;
 };
+
+// Resolves every keep into its address, then (when all resolved) the needs that are not keeps, in order, until one
+// fails. On a failure every keep's address is zeroed.
+bool resolve(const std::vector<Keep> &keeps, const std::vector<const char *> &needs);
 
 struct SiteGuardSpec {
     // The core mixin set's name, as the [core] lines print it.
@@ -80,27 +105,57 @@ struct SiteGuardSpec {
     bool settles_when_off = false;
 };
 
-// A guard made of site, wrap or patch mixins on game code: it is offered once the code is ready, unless its variable
-// turns it off or a binding it needs does not resolve, and logs whether its mixins installed once they settle.
-class SiteGuard : public CoreSet {
+// A guard made of site, wrap or patch mixins on game code, in one mixin set: it is off when its variable says so or
+// a binding it needs does not resolve, and logs whether its mixins installed once they settle (lines.hpp).
+class SiteGuard : public Guard {
 public:
     SiteGuard(CoreSetId id, SiteGuardSpec spec);
 
-    std::vector<runtime::CoreMixins> offer() override;
-    void commit() override;
+    const SiteGuardSpec &spec() const { return spec_; }
 
 protected:
     // A further condition, checked once the bindings resolve; a guard that refuses logs why.
     virtual bool admit() { return true; }
+    // Adds optional mixins to the set before it is offered.
+    virtual void extend(runtime::CoreMixins &) {}
 
-    const SiteGuardSpec &spec() const { return spec_; }
-    bool active() const;
+    bool wanted() const { return wanted_; }
 
 private:
-    bool resolve();
+    void build(std::vector<runtime::CoreMixins> &out) override;
+    void settle() override;
 
     SiteGuardSpec spec_;
-    bool offered_ = false, settled_ = false, wanted_ = false;
+    bool wanted_ = false;
 };
 
+// A guard that hooks game code through safetyhook itself: its setup runs once the game code is ready
+// (runtime::when_code_ready, under `what`). Hook guards are armed in HookGuardId order.
+class HookGuard {
+public:
+    HookGuard(HookGuardId id, const char *what, void (*setup)());
+    HookGuard(const HookGuard &) = delete;
+    HookGuard &operator=(const HookGuard &) = delete;
+
+    HookGuardId id() const { return id_; }
+    const char *what() const { return what_; }
+    void arm() const;
+
+private:
+    HookGuardId id_;
+    const char *what_;
+    void (*setup_)();
+};
+
+// Arms the next registered hook guard in HookGuardId order. Each hook guard adds one SDK on-load entry that calls it
+// (SWOFTY_HOOK_GUARD), so the core still registers one on-load mixin per hook guard and the order the guards arm in
+// does not depend on which translation unit's entry the SDK lists first.
+void arm_next_hook_guard();
+
 }
+
+#define SWOFTY_HOOK_GUARD(id, what, setup)                                                                                       \
+    namespace {                                                                                                                  \
+    const ::swofty_core::guards::HookGuard hook_guard{::swofty_core::guards::HookGuardId::id, what, setup};                      \
+    }                                                                                                                            \
+    SWOFTY_ON_LOAD { ::swofty_core::guards::arm_next_hook_guard(); }

@@ -6,10 +6,10 @@ use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
 use std::collections::{BTreeSet, HashMap, HashSet};
 use std::time::Instant;
-use swofty_core::conflicts::Report;
-use swofty_core::folders::Key;
 use swofty_core::manifest::Category;
-use swofty_core::order;
+use swofty_core::profile::conflicts::Report;
+use swofty_core::profile::folders::Key;
+use swofty_core::profile::order;
 use swofty_i18n::tr;
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord, Hash)]
@@ -72,7 +72,10 @@ impl Facet {
 
 /// Addons that load first, in this order: SwoftyMod, then Simplified for Swofty.
 /// They make up Built In, and nothing is placed above them.
-pub(super) const PINNED: [&str; 2] = [swofty_core::builtin::CORE_ID, swofty_core::managed::ID];
+pub(super) const PINNED: [&str; 2] = [
+    swofty_core::addons::builtin::CORE_ID,
+    swofty_core::updates::managed::ID,
+];
 
 #[derive(Clone, PartialEq)]
 pub(super) enum AddonListItem {

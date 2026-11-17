@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Sess_ScForceReturn",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145853950",
+  "type": "vtable[10]",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "pat:sc-condition-name;xref:0x1435fb3db;decomp:re/decomp/1435f81a0.c",
+  "notes": "SC condition 'Force Return', slot 2 update 0x143633800."
+ },
+ "signature": {
+  "id": "session.sc_force_return",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? 48 89 08 C5 F8 11 40 50 C5 F8 11 40 40 48 89 7C 24 20 4C 89 74 24 28 48 89 44 24 30 48 8D 54 24 20 48 89 D9 E8 ?? ?? ?? ?? 4C 8B 74 24 30 4D 85 F6 74 20 4C 8B 7C 24 28 4D 85 FF 74 16 49 8B 06 4C 89 F1 31 D2 FF 10 49 8B 07 4C 89 F9 4C 89 F2 FF 50 38 48 8B",
+  "match": "0x1435fb3db",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145853950",
+  "kind": "data",
+  "names": [
+   "vt_Sess_ScForceReturn"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x145853950",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1435fb3de;decomp:re/decomp/1435f81a0.c",
+   "notes": "V7463 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

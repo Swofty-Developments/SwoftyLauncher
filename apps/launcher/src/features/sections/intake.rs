@@ -10,16 +10,16 @@ use gpui_kit::component::button::{Button, ButtonVariant, ButtonVariants};
 use gpui_kit::component::{Icon, WindowExt, h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
-use swofty_core::import::{self, Route};
+use swofty_core::addons::import::{self, Route};
+use swofty_core::addons::registry::Registry;
 use swofty_core::profile::Profile;
-use swofty_core::registry::Registry;
 use swofty_core::store::Store;
 use swofty_i18n::{tr, trf, trn};
 
 use super::*;
 use crate::services::game::Install;
-use crate::shell::pages::badge;
 use crate::shell::{Page, Shell};
+use crate::ui::badge;
 use crate::ui::theme::Palette;
 
 // When each installed addon's folder last changed, by addon id.
@@ -170,7 +170,7 @@ impl Shell {
         let store = self.store.clone();
         let registry = self.library.registry.clone();
         let profile = self.library.profile.clone();
-        let install = self.install.clone();
+        let install = self.game.install.clone();
         let shared: Shared = Arc::new(Mutex::new(Some((
             0.,
             trf!(
@@ -227,7 +227,7 @@ impl Shell {
                 if !unclaimed.is_empty() {
                     s.show_not_addons(&unclaimed, window, cx);
                 }
-                s.rediscover = true;
+                s.game.rediscover = true;
                 s.reload(cx);
                 if let Some(id) = fresh.first() {
                     s.show_addon(id, cx);

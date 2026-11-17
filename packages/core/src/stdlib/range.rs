@@ -42,7 +42,7 @@ impl Range {
     }
 
     pub fn matches(&self, v: &Version) -> bool {
-        crate::version::satisfies(&self.req, v)
+        crate::addons::version::satisfies(&self.req, v)
     }
 
     pub fn is_any(&self) -> bool {

@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "site_Game_AcclimPenalty_Entry",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1429a0620",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/1429a0620.c;xref:0x1457b4268,0x142953220",
+  "notes": "Entry of Game_PracticeTrackAcclimatisation_FlagCurrentTarget (a leaf with no .pdata entry, so the signature carries func_start): rcx = the programme, nothing pushed yet, the next three instructions load the target index +0x328 and the targets vector begin +0x350 and scale the index, and 0x1429a0634 reads entry+0xc4. The pattern is the whole 0x27-byte body. Core's track acclimatisation penalty guard reads +0x350/+0x358 here and, when they are equal, continues at site_Game_AcclimPenalty_Return. EA 0x1429999a0."
+ },
+ "signature": {
+  "id": "game.acclim_penalty_entry",
+  "section": ".xtls",
+  "pattern": "8B 91 28 03 00 00 48 8B 81 50 03 00 00 48 69 CA 70 03 00 00 83 BC 08 C4 00 00 00 00 74 08 C6 84 08 62 03 00 00 01 C3",
+  "match": "0x1429a0620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429a0620",
+  "kind": "mid",
+  "names": [
+   "site_Game_AcclimPenalty_Entry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "acclimpenalty",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/tracks/track_acclim.cpp"
+  ],
+  "expect": "8B 91 28 03 00 00",
+  "func_start": "0x1429a0620"
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "verify-acclimpenalty",
+   "kind": "global",
+   "item": "site_Game_AcclimPenalty_Entry",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429a0620.c;xref:0x1429a0620,0x1429a0626,0x1429a062d;sig:game.acclim_penalty_entry",
+   "notes": "V1605 sigcheck --only game.acclim_penalty_entry: OK hits=1 match=0x1429a0620 target=0x1429a0620 (anchor 0, 39 bytes, no wildcards, expect 8B9128030000, func_start 0x1429a0620). At the site rcx = the programme (the delegate's mov rcx from its own rcx, then call [rax+0x1a8]) and [rsp] = the return address 0x142953226; nothing is pushed in the body. A 5-byte patch covers mov edx,[rcx+0x328] (6 bytes), a 14-byte patch the first three instructions (20 bytes, to 0x1429a0634); none is rip-relative or a branch, and no branch lands in 0x1429a0621..0x1429a0634. Reading +0x350 and +0x358 from rcx here is the empty check the class's other slots make (Start 0x1429a06e1, thunks 0x1429a5b70/0x1429a5b90, 0x1429998d1, 0x1429a102a). EA dump: the pattern matches once at 0x1429999a0."
+  }
+ ],
+ "proofs": []
+}

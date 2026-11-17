@@ -4,7 +4,7 @@ use std::path::{Path, PathBuf};
 use swofty_formats::gvdb::Gvdb;
 
 use super::GVDB;
-use crate::baseline::{Baseline, Objects};
+use crate::game_folder::baseline::{Baseline, Objects};
 use crate::install::Game;
 use crate::{Error, Result};
 
@@ -73,6 +73,6 @@ pub(super) fn check_originals(data: &Path, game: &Game) -> Result<()> {
     if missing.is_empty() {
         return Ok(());
     }
-    crate::setup::redo(data)?;
-    Err(Error::Other(crate::setup::backups_missing(&missing)))
+    crate::game_folder::setup::redo(data)?;
+    Err(Error::Other(crate::game_folder::setup::backups_missing(&missing)))
 }

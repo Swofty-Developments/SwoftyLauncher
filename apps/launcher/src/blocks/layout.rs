@@ -95,7 +95,7 @@ impl Shell {
         let items = t.items.iter().map(|item| {
             let on = active.as_deref() == Some(item.id.as_str());
             let control = format!("{}/{}/{}:{}", at.addon, at.section, t.id, item.id);
-            let busy = self.busy.contains(&control);
+            let busy = self.addon_views.busy.contains(&control);
             let fg = if item.disabled {
                 p.text_placeholder
             } else if on {

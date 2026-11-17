@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_StandingsWeekendTrackDone",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14181e4dc",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14181d700.c;xref:0x14181e19b,0x14181e481,0x14181e48e,0x14181e4dc",
+  "notes": "test rbx,rbx; je 0x14181e53e in Career_Standings_BuildWeekendNode: the null-checked track path (rbx = the round's TrackDataRecord or 0) that the je at 0x14181e19b takes when byte [r12+0x4a] is clear; also reached from 0x14181e481 and 0x14181e48e and as the fall-through of 0x14181e4d7. Reads rbx, r12 and the frame only, and rbx is reloaded at 0x14181e571 before any later use. The rip target of core's standings guard; never hooked."
+ },
+ "signature": {
+  "id": "career.standings_weekend_track_done",
+  "section": ".xtls",
+  "pattern": "48 85 DB 74 5D 41 80 7C 24 49 00 74 55",
+  "match": "0x14181e4dc",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14181e4dc",
+  "kind": "mid",
+  "expect": "48 85 DB 74 5D",
+  "names": [
+   "site_Career_StandingsWeekendTrackDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "career-re",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/standings_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "verify-standings",
+   "kind": "global",
+   "item": "site_Career_StandingsWeekendTrackDone",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14181d700.c;xref:0x14181e19b,0x14181e481,0x14181e48e;sig:career.standings_weekend_track_done",
+   "notes": "V2195 sigcheck --only career.standings_weekend_track_done: OK hits=1 match=0x14181e4dc target=0x14181e4dc (anchor 0, expect 4885DB745D). Disasm: 0x14181e4dc test rbx,rbx; je 0x14181e53e; cmp byte [r12+0x49],0; je 0x14181e53e; mov rax,[rbx+0x128], so the path checks rbx before any read through it. Branches to it: je at 0x14181e19b (the [r12+0x4a]==0 path, entered with the same registers and frame as the guarded site, since the cmp/je pair writes only flags), 0x14181e481 and 0x14181e48e, plus the fall-through of the call at 0x14181e4d7; the .xtls rel32 scan finds no other. Past 0x14181e53e rbx is reloaded (lea rbx,[rsp+0x1b8] at 0x14181e571/0x14181e5a2/0x14181e5b4) before use, so resuming here with rbx 0 is the game's own no-record path. EA: pattern matches once in the dump's .rdata at 0x141818a2c (same offset from the function start as Steam)."
+  }
+ ],
+ "proofs": []
+}

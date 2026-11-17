@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -62,7 +63,7 @@ constexpr const char *SAVE = "site_Career_ScheduleComponent_TrackListSave";
 namespace tl = runtime::track_list_guard;
 
 uintptr_t next_row = 0;
-bool offered = false, settled = false, guarded = false, logging = false;
+bool guarded = false, logging = false;
 std::mutex lock;
 tl::Load load;
 std::vector<uintptr_t> matches;
@@ -153,53 +154,51 @@ bool env_off()
     return true;
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
+class TrackListGuard final : public guards::Guard {
+public:
+    TrackListGuard() : Guard(guards::CoreSetId::track_list_guard) {}
 
-std::vector<CoreMixins> track_list_guard_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    if (!env_off()) {
-        next_row = swofty::api->resolve(NEXT_ROW);
-        if (!next_row || !swofty::api->resolve(PUSH)) {
-            next_row = 0;
-            swofty::log("[saves] career calendar track list guard off: needs %s and %s, which this build does not resolve", PUSH, NEXT_ROW);
+private:
+    void build(std::vector<runtime::CoreMixins> &out) override
+    {
+        if (!env_off()) {
+            next_row = swofty::api->resolve(NEXT_ROW);
+            if (!next_row || !swofty::api->resolve(PUSH)) {
+                next_row = 0;
+                swofty::log("[saves] career calendar track list guard off: needs %s and %s, which this build does not resolve", PUSH, NEXT_ROW);
+            } else {
+                guarded = true;
+                out.push_back({MIXIN, {{PUSH, SWOFTY_MIXIN_SITE, 100, (void *)&track_list_push, nullptr}}});
+            }
+        }
+        std::vector<SwoftyMixin> sites;
+        if (swofty::api->resolve(ENTRY_DONE))
+            sites.push_back({ENTRY_DONE, SWOFTY_MIXIN_SITE, 100, (void *)&track_list_entry_done, nullptr});
+        if (swofty::api->resolve(SAVE))
+            sites.push_back({SAVE, SWOFTY_MIXIN_SITE, 100, (void *)&track_list_save, nullptr});
+        if (sites.empty()) {
+            swofty::log("[saves] custom_track_list count lines off: needs %s or %s, which this build does not resolve", ENTRY_DONE, SAVE);
         } else {
-            guarded = true;
-            out.push_back({MIXIN, {{PUSH, SWOFTY_MIXIN_SITE, 100, (void *)&track_list_push, nullptr}}});
+            logging = true;
+            out.push_back({LOG_MIXIN, std::move(sites)});
         }
     }
-    std::vector<SwoftyMixin> sites;
-    if (swofty::api->resolve(ENTRY_DONE))
-        sites.push_back({ENTRY_DONE, SWOFTY_MIXIN_SITE, 100, (void *)&track_list_entry_done, nullptr});
-    if (swofty::api->resolve(SAVE))
-        sites.push_back({SAVE, SWOFTY_MIXIN_SITE, 100, (void *)&track_list_save, nullptr});
-    if (sites.empty()) {
-        swofty::log("[saves] custom_track_list count lines off: needs %s or %s, which this build does not resolve", ENTRY_DONE, SAVE);
-    } else {
-        logging = true;
-        out.push_back({LOG_MIXIN, std::move(sites)});
-    }
-    return out;
-}
 
-void track_list_guard_commit()
-{
-    if (!offered || settled)
-        return;
-    settled = true;
-    if (guarded) {
-        guarded = core_mixins_active(MIXIN);
-        swofty::log("[saves] career calendar track list guard %s",
-                    guarded ? "armed: each stored custom_track_list entry loads one event instead of every event with its id"
-                            : "did not install (see the [core] lines)");
+    void settle() override
+    {
+        if (guarded) {
+            guarded = runtime::core_mixins_active(MIXIN);
+            swofty::log("[saves] career calendar track list guard %s",
+                        guarded ? "armed: each stored custom_track_list entry loads one event instead of every event with its id"
+                                : "did not install (see the [core] lines)");
+        }
+        if (logging && !runtime::core_mixins_active(LOG_MIXIN))
+            swofty::log("[saves] custom_track_list count lines did not install (see the [core] lines)");
     }
-    if (logging && !core_mixins_active(LOG_MIXIN))
-        swofty::log("[saves] custom_track_list count lines did not install (see the [core] lines)");
-}
+};
+
+TrackListGuard guard;
 
 }

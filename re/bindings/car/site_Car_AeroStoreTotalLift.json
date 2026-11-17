@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Car_AeroStoreTotalLift",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446ddf0d",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/1446dceb0.c;xref:0x1446ddf0d;kb:subsystems/car.md#f1aero",
+  "notes": "vmovss [rdi+0x19e4], xmm0: total lift (body front+rear + both wing terms) x density x speed term. Live (T115 snapshot, not traced here): about 0 parked, -7720 at speed for the player car (a force, sign negative = downforce)."
+ },
+ "signature": {
+  "id": "car.aero_store_total_lift",
+  "section": ".xtls",
+  "pattern": "C5 AA 59 C0 C5 FA 11 87 E4 19 00 00",
+  "match": "0x1446ddf09",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446ddf0d",
+  "kind": "mid",
+  "expect": "C5 FA 11 87 E4 19 00 00",
+  "names": [
+   "site_Car_AeroStoreTotalLift"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "global",
+   "item": "site_Car_AeroStoreTotalLift",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446dceb0.c;xref:0x1446ddf0d",
+   "notes": "V1297 vmovss [rdi+0x19e4],xmm0. xmm0 = front [+0x19f0] + rear [+0x19ec] body terms plus the front wing term (wing_open +0x19a8 x c + 1) x +0x19b8 x (1 - +0x199c) and rear wing term x +0x19c4 x (1 - +0x1998), times xmm7 and xmm10 (density/speed). Readers 0x1446cab04, 0x1446cac48."
+  }
+ ],
+ "proofs": []
+}

@@ -1,7 +1,7 @@
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{Disableable, h_flex, v_flex};
 use gpui_kit::*;
-use swofty_core::vault::{self};
+use swofty_core::saves::vault::{self};
 use swofty_i18n::{tr, trf};
 
 use super::labels::list;

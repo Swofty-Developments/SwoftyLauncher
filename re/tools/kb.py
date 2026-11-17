@@ -10,6 +10,8 @@
   kb.py --agent A verify <kind> <item> agree|disagree|partial "<evidence>" ["notes"]
   kb.py --agent A test-new "<question>"               allocate re/tests/T###.md
   kb.py --agent A import <rows.tsv> <table>           add rows not yet present (ghidra_export output)
+  kb.py export <dir>                                  every table with the binding records merged in, plus structs/
+  kb.py function-names                                rewrite re/db/function_names.tsv (crash symbols for the apps)
 Tables: functions globals db_keys strings_anchors subsystems verify
 functions, globals and verify also hold the rows of the binding records under re/bindings (binding_record.py).
 """
@@ -94,6 +96,31 @@ def read_tsv(table):
     return rows, errs
 
 
+FUNCTION_NAMES = os.path.join(DB, 'function_names.tsv')
+
+
+def function_names_text(rows=None):
+    """addr and name of every function, tables and records together, by address: the crash symbols the launcher and
+    the CLI embed. Generated; kb.py rewrites it on every functions write."""
+    rows = read_table('functions')[0] if rows is None else rows
+    return 'addr\tname\n' + ''.join(f'{r["addr"]}\t{r["name"]}\n' for r in sorted(rows, key=lambda r: int(r['addr'], 16)))
+
+
+def write_function_names():
+    text = function_names_text()
+    try:
+        with open(FUNCTION_NAMES) as f:
+            if f.read() == text:
+                return False
+    except OSError:
+        pass
+    tmp = f'{FUNCTION_NAMES}.{os.getpid()}.tmp'
+    with open(tmp, 'w') as f:
+        f.write(text)
+    os.replace(tmp, FUNCTION_NAMES)
+    return True
+
+
 def write_table(table, rows):
     """Base rows go to <table>.tsv; rows that came from a binding record go back into that record."""
     records = [r for r in rows if r.get('_record')]
@@ -119,6 +146,8 @@ def write_table(table, rows):
         for r in rows:
             f.write('\t'.join(r[c] for c in cols) + '\n')
     os.replace(tmp, p)
+    if table == 'functions':
+        write_function_names()
 
 
 def row_key(table, r):
@@ -526,6 +555,39 @@ def cmd_import(a):
     print(f'imported {added}, skipped {skipped} (invalid or already present; fix and add them by hand)')
 
 
+def cmd_export(a):
+    """One folder with every table as kb.py reads it (re/db plus re/bindings) and the structs, for tools outside
+    Python such as the Ghidra scripts. Each file is replaced atomically, so concurrent exports are safe."""
+    import shutil
+    os.makedirs(os.path.join(a.dir, 'structs'), exist_ok=True)
+
+    def put(name, text):
+        p = os.path.join(a.dir, name)
+        tmp = f'{p}.{os.getpid()}.tmp'
+        with open(tmp, 'w') as f:
+            f.write(text)
+        os.replace(tmp, p)
+
+    for t, (cols, key) in TABLES.items():
+        rows, _ = read_table(t)
+        if key and key[0] == 'addr':
+            rows = sorted(rows, key=lambda r: int(r['addr'], 16))
+        elif key:
+            rows = sorted(rows, key=lambda r: tuple(r[k] for k in key))
+        put(f'{t}.tsv', '\t'.join(cols) + '\n' + ''.join('\t'.join(r[c] for c in cols) + '\n' for r in rows))
+    put('signatures.json', json.dumps(load_signatures(), indent=1) + '\n')
+    src = os.path.join(DB, 'structs')
+    keep = {f for f in os.listdir(src) if f.endswith('.h')}
+    for f in sorted(keep):
+        tmp = os.path.join(a.dir, 'structs', f'{f}.{os.getpid()}.tmp')
+        shutil.copyfile(os.path.join(src, f), tmp)
+        os.replace(tmp, os.path.join(a.dir, 'structs', f))
+    for f in os.listdir(os.path.join(a.dir, 'structs')):
+        if f.endswith('.h') and f not in keep:
+            os.remove(os.path.join(a.dir, 'structs', f))
+    print(f'exported {len(TABLES)} tables, signatures.json and {len(keep)} structs to {a.dir}')
+
+
 def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--agent', default=os.environ.get('RE_AGENT'))
@@ -541,12 +603,15 @@ def main():
     p = sp.add_parser('verify'); p.add_argument('kind'); p.add_argument('item'); p.add_argument('verdict'); p.add_argument('evidence'); p.add_argument('notes', nargs='?')
     p = sp.add_parser('test-new'); p.add_argument('question')
     p = sp.add_parser('import'); p.add_argument('file'); p.add_argument('table', choices=['functions', 'globals'])
+    p = sp.add_parser('export'); p.add_argument('dir')
+    sp.add_parser('function-names')
     a = ap.parse_args()
-    if a.cmd not in ('get', 'find') and not a.agent:
+    if a.cmd not in ('get', 'find', 'export', 'function-names') and not a.agent:
         raise SystemExit('--agent NAME (or RE_AGENT) is required for writes')
     {'add': cmd_add, 'set': cmd_set, 'get': cmd_get, 'find': cmd_find, 'claim': cmd_claim,
      'release': lambda x: cmd_claim(x, True), 'note': cmd_note, 'verify': cmd_verify, 'test-new': cmd_test_new,
-     'import': cmd_import}[a.cmd](a)
+     'import': cmd_import, 'export': cmd_export,
+     'function-names': lambda a: print('function_names.tsv ' + ('rewritten' if write_function_names() else 'unchanged'))}[a.cmd](a)
 
 
 if __name__ == '__main__':

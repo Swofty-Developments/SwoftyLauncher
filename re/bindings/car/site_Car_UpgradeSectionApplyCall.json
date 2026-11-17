@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "site_Car_UpgradeSectionApplyCall",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14474335b",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "car",
+  "evidence": "decomp:re/decomp/144742c70.c;xref:0x14474335b,0x144743363",
+  "notes": "mov rax,[rcx] ; lea rdx,[rsp+0x58] ; call [rax+8] in Car_Upgrades_ApplyToVehicle: per-section apply of one radUpgrade block. rcx = CarLive system (component) whose type name matched the block section, [rsp+0x58] = the section node, g_Car_UpgradeLerp (0x145faa650) already = perc, g_Car_UpgradeLerpActive (0x146ce88a0) = perc != 1. A hook here can change the lerp per system before the reader runs (the game resets both globals at 0x144743366)."
+ },
+ "signature": {
+  "id": "car.upgrade_section_apply_call",
+  "section": ".xtls",
+  "pattern": "88 05 ?? ?? ?? ?? 48 8B 01 48 8D 54 24 58",
+  "match": "0x144743355",
+  "anchor": "0x6",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14474335b",
+  "kind": "mid",
+  "expect": "48 8B 01 48 8D 54 24 58",
+  "names": [
+   "site_Car_UpgradeSectionApplyCall"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "car-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "global",
+   "item": "site_Car_UpgradeSectionApplyCall",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144742c70.c;xref:0x14474335b,0x144743363;sig:car.upgrade_section_apply_call",
+   "notes": "V1254 mov rax,[rcx]; lea rdx,[rsp+0x58]; call [rax+8], with rcx = systems[i] of the container (r13+r12*8+0x20) after the section-name compare. Both globals are set just before (0x144743346, 0x144743355) and reset just after (0x144743366, 0x144743370). sigcheck passes."
+  }
+ ],
+ "proofs": []
+}

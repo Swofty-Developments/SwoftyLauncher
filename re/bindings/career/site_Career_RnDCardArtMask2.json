@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDCardArtMask2",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141818524",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/1418169f0.c;xref:0x141818524;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-card-art-setting-tyres_card_art-db-default-on",
+  "notes": "lea r9,rnd_part_mask before Ne_Format_String(rcx,%s.%s.%s,r8=pkg,r9,[rsp+0x20]=frame)"
+ },
+ "signature": {
+  "id": "career.rn_d_card_art_mask2",
+  "section": ".xtls",
+  "pattern": "4C 8D 0D ?? ?? ?? ?? 4C 89 F9 E8 ?? ?? ?? ?? 48 8B 84 24 C0 00 00 00 48 8D 50 09 48 85 C0 48 0F 44 D5 4C 8D 05 ?? ?? ?? ?? 4C 89 F1 45 31 C9 E8 ?? ?? ?? ?? 48 8D 8E A0 02 00 00",
+  "match": "0x141818524",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141818524",
+  "kind": "mid",
+  "expect": "4C 8D 0D 8D 83 EF 03",
+  "names": [
+   "site_Career_RnDCardArtMask2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "global",
+   "item": "site_Career_RnDCardArtMask2",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418169f0.c;xref:0x141818511,0x141818518,0x14181851d,0x141818524,0x14181852e",
+   "notes": "V0132 lea r9 rnd_part_mask before Ne_Format_String(rcx=r15 after, fmt, r8=[rbx+0x660], [rsp+0x20]=rdi instance name); 7B window clean"
+  }
+ ],
+ "proofs": []
+}

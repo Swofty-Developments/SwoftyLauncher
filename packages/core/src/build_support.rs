@@ -61,7 +61,7 @@ pub fn check(exe: &Path) -> Support {
         None => Support::Unreadable,
         Some(t) if is_supported(meta.len(), t) => Support::Supported,
         Some(_) => Support::Unsupported {
-            version: crate::exe_version::read(exe),
+            version: crate::game_folder::exe_version::read(exe),
         },
     };
     seen.get_or_insert_with(HashMap::new)

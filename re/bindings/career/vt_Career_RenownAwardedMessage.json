@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "vt_Career_RenownAwardedMessage",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14568c150",
+  "type": "vtable[2]",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/140fc5470.c;decomp:re/decomp/140f98cb0.c;decomp:re/decomp/140f97c20.c;decomp:re/decomp/140c3b350.c;xref:0x140c3b66f,0x140fc54d3,0x140f98302,0x140ce40d3;doc:addons/career-editor/protocol/economy.md#renown-my-team",
+  "notes": "vtable of MessageRAwarded (slot 1 0x140ce40d0 returns 'MessageRAwarded' 0x14565f6a3). Message 0x18 bytes: +8 ptr 0, +0x10 u32 team key (u8 kind, u16 stat id at +0x12), +0x14 f32 renown. Posted by the MyTeamRenownReward grant 0x140fc5470 ('Gives %.2f renown to the team immediately'); each per-team RF object subscribes in its ctor 0x140f97c20 with handler 0x140f98cb0, which adds the amount to obj+4 (renown points), posts the tier-up message and re-evaluates renown grants"
+ },
+ "signature": {
+  "id": "career.renown_awarded_message",
+  "section": ".xtls",
+  "pattern": "4C 8D 3D ?? ?? ?? ?? 48 8D 7C 24 28 EB 4C 0F 1F 00",
+  "match": "0x140c3b66f",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x14568c150",
+  "kind": "data",
+  "names": [
+   "vt_Career_RenownAwardedMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-econ",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/economy.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "global",
+   "item": "vt_Career_RenownAwardedMessage",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc5470.c;decomp:re/decomp/140f98cb0.c;decomp:re/decomp/140f97c20.c;xref:0x140fc5470,0x140f982f4,0x140f98302,0x140ce40d0",
+   "notes": "V0273 vtable[2] {0x140ce4020 dtor, 0x140ce40d0 -> \"MessageRAwarded\" 0x14565f6a3}; +0x10 next class. 0x140fc5470 (slot 2 of MyTeamRenownReward vtbl 0x1456b1aa0) posts {vt,+8 0,+0x10 inst+0x18 team key,+0x14 def+0x58 f32}; ctor 0x140f97c20 subscribes 0x140f98cb0 via 0x143987810 with key 0x14565f6a3; handler matches +0x10 u8/+0x12 u16 to obj+0/+2, adds +0x14 to obj+4, posts 0x1456b0708 on tier-up, re-evaluates grants"
+  }
+ ],
+ "proofs": []
+}

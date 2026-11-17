@@ -1,0 +1,56 @@
+{
+ "schema": 1,
+ "name": "g_Game_OptionsStore",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x146079258",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/14315d880.c;xref:0x14315daa9",
+  "notes": "Options store singleton pointer. +0x270 the option map Game_OptionsStore_FindOption searches; an option object: vtable +0x10 get index(this, out), +0x18 set index(this, int); value entries 0x50 bytes from opt[0x10] to opt[0x11]; a value's game name holder at entry+0x38 (obfuscated, decoded with k_Game_OptionValueKey), its display name at *(entry+0)+0x10."
+ },
+ "signature": {
+  "id": "game.options_store_global",
+  "section": ".xtls",
+  "pattern": "48 8B 35 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 44 24 40 48 8D 8E 70 02 00 00 48 8D 54 24 40 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 86 88 02 00 00 48 3B 86 90 02 00 00 0F 84 EB 00 00 00",
+  "match": "0x14315daa9",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x146079258",
+  "kind": "data",
+  "names": [
+   "g_Game_OptionsStore"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "mp-carcat",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/car_category.cpp",
+   "native/src/core/boxes/box_options.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "verify-mp-carcat",
+   "kind": "global",
+   "item": "g_Game_OptionsStore",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315d880.c;xref:0x14315daa9;sig:game.options_store_global",
+   "notes": "V1160 Re-checked: mov rsi,[0x146079258] then lea rcx,[rsi+0x270] into the lookup. Same-session verify pass."
+  }
+ ],
+ "proofs": []
+}

@@ -325,6 +325,11 @@ class Store:
     def forget(cls):
         cls._cache.clear()
 
+    def overlay(self, records):
+        """Add or replace records in this process only, to lint a pull request's records with the base branch's."""
+        mine = {r.relpath for r in records}
+        self.records = sorted([r for r in self.records if r.relpath not in mine] + list(records), key=lambda r: r.relpath)
+
     def table_rows(self, table):
         if table == 'verify':
             rows = [{**v, '_line': f'bindings/{r.relpath}', '_record': r.relpath} for r in self.records

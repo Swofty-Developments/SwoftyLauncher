@@ -22,7 +22,7 @@ use super::lock::Lock;
 use super::manifest::{Clash, Need, RegistryManifest, Target};
 use super::range::version;
 use crate::manifest::AddonManifest;
-use crate::resolver::Lacking;
+use crate::profile::resolver::Lacking;
 
 /// The CLI's exit code when the dependency check stops Play.
 pub const STOP_EXIT: u8 = 3;

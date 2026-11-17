@@ -3,12 +3,123 @@ use std::collections::{BTreeMap, BTreeSet};
 use swofty_formats::gvdb::Gvdb;
 
 use super::run::Run;
-use super::{GVDB, original, stock_max_ids};
-use crate::install::Game;
+use super::{Built, GVDB, original, stock_max_ids};
+use crate::addons::settings::OnAddons;
+use crate::install::{Game, Plan};
 use crate::manifest::{AddonManifest, OptionType};
 use crate::profile::Profile;
-use crate::settings::OnAddons;
+use crate::profile::conflicts::Report;
+use crate::profile::resolver::resolve;
+use crate::row_ids::Overrides;
+use crate::stdlib::deps::Std;
 use crate::store::Store;
+use crate::{Error, Result};
+
+/// The profile a build is of, as the build reads it: its addons on in load order, their options and
+/// registry data, and a room launch's lent settings.
+pub(super) struct Start {
+    pub settings: Profile,
+    pub order: Vec<String>,
+    pub on: OnAddons,
+    pub std16: BTreeMap<String, Std>,
+    /// A room launch's lent load order and option values, with how many places and values they changed.
+    pub lent: Option<((usize, usize), Overrides)>,
+    pub built: Built,
+}
+
+impl Start {
+    /// Leaves out the addons on that can't be read, resolves the load order, and stops a profile whose
+    /// standard library dependencies fail.
+    pub fn read(
+        store: &Store,
+        profile: &str,
+        game: &Game,
+        addons: &BTreeMap<String, AddonManifest>,
+    ) -> Result<Self> {
+        let mut p = store.profile(profile)?;
+        let mut skipped = Vec::new();
+        for u in store.unreadable_addons() {
+            if !addons.contains_key(&u.id) && p.enabled().any(|id| id == u.id) {
+                p.set_enabled(&u.id, false)?;
+                skipped.push(format!("{} is left out: it {}", u.name, u.reason));
+            }
+        }
+        let lent_settings = crate::row_ids::lent().map(|o| (p.lend(&o), o));
+        let resolved = resolve(&p, addons)?;
+        let mut on = OnAddons::new(resolved.order.iter().filter_map(|id| addons.get(id)));
+        let std16 = match p.is_vanilla() {
+            true => BTreeMap::new(),
+            false => crate::stdlib::deps::read_all(store, addons),
+        };
+        let deps = crate::stdlib::deps::for_order(profile, &resolved.order, addons, &std16);
+        if let Some(stop) = deps.stop_text() {
+            return Err(Error::Dependencies(stop));
+        }
+        skipped.extend(trackless_options(
+            store,
+            game,
+            &p,
+            &resolved.order,
+            addons,
+            &mut on,
+        ));
+        let mut built = Built {
+            order: resolved.order.clone(),
+            warnings: skipped
+                .into_iter()
+                .chain(resolved.warnings.iter().cloned())
+                .collect(),
+            plan: Plan {
+                profile: profile.into(),
+                ..Plan::default()
+            },
+            ..Built::default()
+        };
+        if let Some(((ordered, values), lent)) = &lent_settings
+            && (*ordered > 0 || *values > 0)
+        {
+            built.lines.push(format!(
+                "launch: using the host's load order and {values} option value(s) for {} addon(s)",
+                lent.order
+                    .iter()
+                    .chain(lent.options.keys())
+                    .collect::<BTreeSet<_>>()
+                    .len()
+            ));
+        }
+        built
+            .warnings
+            .extend(deps.of(crate::stdlib::deps::Level::Warn).map(|f| f.line()));
+        built.lines.extend(
+            deps.of(crate::stdlib::deps::Level::Hint)
+                .map(|f| format!("registry: {}", f.line())),
+        );
+        built
+            .lines
+            .extend(deps.notes.iter().map(|n| format!("registry: {n}")));
+        Ok(Self {
+            order: resolved.order,
+            settings: p,
+            on,
+            std16,
+            lent: lent_settings,
+            built,
+        })
+    }
+}
+
+/// The conflict report a build starts from: none yet, for the addons on in the profile.
+pub(super) fn report(run: Run) -> Report {
+    Report {
+        profile: run.profile.into(),
+        built_at: crate::profile::conflicts::now(),
+        pairs: Vec::new(),
+        order: run.settings.enabled().map(str::to_owned).collect(),
+        stock_removals: BTreeMap::new(),
+        kept_lists: BTreeMap::new(),
+        waits: Vec::new(),
+    }
+}
 
 /// Turns off, in `on`, each toggle that is on whose rows add a round at a track the build doesn't hold, and
 /// says so: the game won't start with a race weekend at a track it has no row for.

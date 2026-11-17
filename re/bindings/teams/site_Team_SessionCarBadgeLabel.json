@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Team_SessionCarBadgeLabel",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141774ebe",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "teams",
+  "evidence": "decomp:re/decomp/1417726c0.c;xref:0x141774e9d,0x141774eaa,0x141774eb9,0x141774ebe,0x141774ec5",
+  "notes": "Team_Build_SessionCars: mov rdx,[r14+0x4d8] loads the team's timing_tower_texture_path that the following append (0x144197b50) adds after '#overrides.osd.timing_tower.team_badges_broadcast.' in the NeStr at rsp+0x70 (rbx), the car's team_logo_texture. r14 = the team record. race HUD badge label load; a hook may replace rdx (the label) with a core-owned C string"
+ },
+ "signature": {
+  "id": "teams.session_car_badge_label",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 96 D8 04 00 00",
+  "match": "0x141774eb9",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141774ebe",
+  "kind": "mid",
+  "expect": "49 8B 96 D8 04 00 00",
+  "names": [
+   "site_Team_SessionCarBadgeLabel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-teams",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "team-v1",
+   "kind": "global",
+   "item": "site_Team_SessionCarBadgeLabel",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417726c0.c;xref:0x141774ebe",
+   "notes": "V1579 Disassembly: 0x141774ebe is mov rdx,[r14+0x4d8] (7 bytes) after the append of the array prefix, before the append of the key at 0x141774ec8; r14 = team record."
+  }
+ ],
+ "proofs": []
+}

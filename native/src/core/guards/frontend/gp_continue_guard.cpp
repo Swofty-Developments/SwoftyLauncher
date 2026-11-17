@@ -1,4 +1,5 @@
 #include "core/guards/frontend/gp_continue_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -52,7 +53,7 @@ constexpr uintptr_t MAX_SETUP_MODES = 256;
 namespace gc = runtime::gp_continue;
 namespace mem = swofty::mem;
 
-bool offered = false, settled = false, car_bound = false, warning_bound = false;
+bool car_bound = false, warning_bound = false;
 std::mutex log_lock;
 gc::Press last_press;
 int lines = 0;
@@ -128,51 +129,51 @@ void warning_check(SwoftyContext *c)
     check(c, gc::Check::offline_warning, c->rax, c->r14, entity);
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
+class ContinueGuard final : public guards::Guard {
+public:
+    ContinueGuard() : Guard(guards::CoreSetId::gp_continue) {}
 
-std::vector<CoreMixins> gp_continue_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_GP_F1W_CHECK_GUARD", v, sizeof v);
-    if (n && n < sizeof v && gc::switch_off(v)) {
-        swofty::log("[gp] continue F1 World car guard off (SWOFTY_GP_F1W_CHECK_GUARD=%s)", v);
-        return out;
+private:
+    void build(std::vector<runtime::CoreMixins> &out) override
+    {
+        char v[16] = {};
+        DWORD n = GetEnvironmentVariableA("SWOFTY_GP_F1W_CHECK_GUARD", v, sizeof v);
+        if (n && n < sizeof v && gc::switch_off(v)) {
+            swofty::log("[gp] continue F1 World car guard off (SWOFTY_GP_F1W_CHECK_GUARD=%s)", v);
+            return;
+        }
+        car_bound = swofty::api->resolve(CAR_SITE) != 0;
+        warning_bound = swofty::api->resolve(WARNING_SITE) != 0;
+        std::vector<SwoftyMixin> sites;
+        if (car_bound)
+            sites.push_back({CAR_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&car_check, nullptr});
+        if (warning_bound)
+            sites.push_back({WARNING_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&warning_check, nullptr});
+        if (sites.empty()) {
+            swofty::log("[gp] continue F1 World car guard off: needs %s and %s, which this build does not resolve", CAR_SITE,
+                        WARNING_SITE);
+            return;
+        }
+        out.push_back({MIXIN, std::move(sites)});
     }
-    car_bound = swofty::api->resolve(CAR_SITE) != 0;
-    warning_bound = swofty::api->resolve(WARNING_SITE) != 0;
-    std::vector<SwoftyMixin> sites;
-    if (car_bound)
-        sites.push_back({CAR_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&car_check, nullptr});
-    if (warning_bound)
-        sites.push_back({WARNING_SITE, SWOFTY_MIXIN_SITE, 100, (void *)&warning_check, nullptr});
-    if (sites.empty()) {
-        swofty::log("[gp] continue F1 World car guard off: needs %s and %s, which this build does not resolve", CAR_SITE,
-                    WARNING_SITE);
-        return out;
-    }
-    out.push_back({MIXIN, std::move(sites)});
-    return out;
-}
 
-void gp_continue_commit()
-{
-    if (!offered || settled || !(car_bound || warning_bound))
-        return;
-    settled = true;
-    if (!core_mixins_active(MIXIN))
-        swofty::log("[gp] continue F1 World car guard did not install (see the [core] lines)");
-    else if (car_bound && warning_bound)
-        swofty::log("[gp] continue F1 World car guard armed: Grand Prix Continue asks to go online only for a save on the "
-                    "F1 World car");
-    else
-        swofty::log("[gp] continue F1 World car guard armed on %s only (see the [core] lines)",
-                    car_bound ? "the f1w_car_offline check" : "the offline warning");
-}
+    void settle() override
+    {
+        if (!(car_bound || warning_bound))
+            return;
+        if (!runtime::core_mixins_active(MIXIN))
+            swofty::log("[gp] continue F1 World car guard did not install (see the [core] lines)");
+        else if (car_bound && warning_bound)
+            swofty::log("[gp] continue F1 World car guard armed: Grand Prix Continue asks to go online only for a save on the "
+                        "F1 World car");
+        else
+            swofty::log("[gp] continue F1 World car guard armed on %s only (see the [core] lines)",
+                        car_bound ? "the f1w_car_offline check" : "the offline warning");
+    }
+};
+
+ContinueGuard guard;
 
 }

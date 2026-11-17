@@ -5,17 +5,18 @@ use swofty_formats::gvdb::Gvdb;
 
 use super::buildhash::BuildHash;
 use super::failure::loader_missing;
+use super::inputs::Inputs;
 use super::run::Run;
-use super::{Built, GVDB, original, source_dir};
+use super::{Built, GVDB, Pipeline, original, source_dir};
 use crate::activation::place::{
     LayerWorld, PlaceInput, SLOTS, missing_worlds, place, room_for, slot_asset_group, slot_file, track_group,
 };
-use crate::activation::ui::{MapUi, plan_lists};
+use crate::activation::ui::{Kept, MapUi, build_ui, plan_lists};
 use crate::asset::{AssetOp, GroupOp, Op, Origin, TrackOp};
-use crate::baseline::{Baseline, sha256_opt};
+use crate::content::track_package::{TrackPackage, Unusable};
+use crate::game_folder::baseline::{Baseline, sha256_opt};
+use crate::game_folder::placed::Placed;
 use crate::install::Game;
-use crate::map::{TrackPackage, Unusable};
-use crate::placed::Placed;
 use crate::planner::{Kind, Planner, Route, Target};
 use crate::stdlib::deps::Std;
 use crate::store::Store;
@@ -32,7 +33,7 @@ pub fn track_packages(store: &Store, ops: Vec<Op>) -> Result<TrackPackages> {
             continue;
         };
         let dir = source.resolve(&source_dir(store, &op.origin.addon, source.root))?;
-        let pkg = match crate::map::read_package(&dir) {
+        let pkg = match crate::content::track_package::read_package(&dir) {
             Ok(pkg) => pkg,
             Err(why) => {
                 left_out.push((op.origin, why));
@@ -393,7 +394,11 @@ pub(super) fn track_files(
             .cloned()
             .collect(),
         added,
-        edits: built.plan.loader.get(crate::runtime::ASSETS_FILE).cloned(),
+        edits: built
+            .plan
+            .loader
+            .get(crate::content::runtime_assets::ASSETS_FILE)
+            .cloned(),
     };
     let mut warnings = Vec::new();
     if let Err(e) = crate::activation::facts::write(&store.root, &scan) {
@@ -435,4 +440,34 @@ pub(super) fn left_over(store: &Store, game: &Game, rel: &str) -> bool {
     };
     let stock = Baseline::load_or_new(&store.root, &game.identity).is_ok_and(|b| b.files.contains_key(rel));
     !stock && sha256_opt(&game.dir.join(rel)).ok().flatten().as_deref() == Some(p.sha256.as_str())
+}
+
+impl Pipeline<'_, '_> {
+    /// Builds the menu pictures of the kept tracks; the result is the menu resources the build keeps
+    /// over an addon's own, by the tracks they belong to.
+    pub(super) fn track_menus(&mut self, inputs: &Inputs) -> Result<Kept> {
+        let (run, built, caches) = (self.run, &mut self.built, &mut self.caches);
+        let store = run.store;
+        let resolve = |rel: &str| run.original(rel);
+        let ui_maps = inputs.tracks.ui_maps();
+        let mut menu_kept = Kept::new();
+        if !ui_maps.is_empty() {
+            let ui = build_ui(&ui_maps, &resolve, &store.root.join("cache/menus"))?;
+            caches.push(ui.dir.clone());
+            menu_kept = ui.kept;
+            built
+                .warnings
+                .extend(ui.notes.iter().map(|n| format!("menus: {n}")));
+            for (code, lists) in &ui.lists {
+                built.lines.push(format!(
+                    "{code}: menu pictures in {} list(s), minimap and track-select scenes",
+                    lists.len()
+                ));
+            }
+            for (rel, src) in ui.replaced {
+                built.replace(rel, src)?;
+            }
+        }
+        Ok(menu_kept)
+    }
 }

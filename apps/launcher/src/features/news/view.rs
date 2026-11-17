@@ -1,10 +1,10 @@
 use super::feed::{Post, format_date};
 use super::markdown::{Block, SITE, Span, safe_url};
 use super::state::{NewsPane, NewsRow, STACK_BELOW, StackedRow};
-use crate::shell::pages::GUTTER;
 use crate::shell::{Page, Shell};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, ScrollArea};
+use crate::ui::tokens::space::GUTTER;
 use gpui_kit::assets::IconName;
 use gpui_kit::component::button::{Button, ButtonVariants};
 use gpui_kit::component::{ActiveTheme, Disableable, h_flex, v_flex};
@@ -317,8 +317,8 @@ impl Shell {
             .label(tr("Refresh"))
             .disabled(self.news.fetching)
             .on_click(cx.listener(|this, _, _, cx| this.fetch_news(cx)));
-        let stacked = self.content_width < STACK_BELOW;
-        let side = (self.content_width * 0.32).clamp(260., 380.);
+        let stacked = self.layout.content_width < STACK_BELOW;
+        let side = (self.layout.content_width * 0.32).clamp(260., 380.);
         let side = self.ad_rail_width().map_or(side, |w| side.max(w));
         let show_banner = !self.is_card_dismissed(crate::ui::discord::BANNER_CARD_ID);
         self.news_scroll.sync(&self.news, short, stacked, show_banner);

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ne_HwBool_TrackHeatHaze",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14015adcc",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/14015aa00.c;xref:0x14015adcc",
+  "notes": "call Ne_Compare_StringNoCase(attr+0x50 value, \"true\") for the hardware-settings attribute 'trackHeatHaze' (name loaded at 0x14015ad83) in reader 0x14015aa00; the reader stores (result == 0) as the bool; xanpavle.re-optimization redirects it to pin the value"
+ },
+ "signature": {
+  "id": "core.hw_bool_track_heat_haze",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 85 C0 0F 94 C3 80 3D ?? ?? ?? ?? 01 75 71 B9 E9 00 00 00 48 8D 15 ?? ?? ?? ?? 0F 1F 44 00 00 44 8B 04 8A 45 85 C0 74 57 41 81 F8 BD 01 D3 06 74 32 83 C1 12 4C 69 C1 43 43 66 5F 49 C1 E8 20 41 89 C9 45 29 C1 41 D1 E9 45 01 C1 41 C1 E9 08 45 69 C1 75 01 00 00 44 29 C1 81 F9 E9 00 00 00 75 BE EB 1C 45 31 C0 85 C0 41 0F 94 C0 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 88 9E 46 0B 00 00",
+  "match": "0x14015adcc",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14015adcc",
+  "kind": "mid",
+  "names": [
+   "site_Ne_HwBool_TrackHeatHaze"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "reopt-025",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ],
+  "expect": "E8"
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "reopt-025-verify",
+   "kind": "global",
+   "item": "site_Ne_HwBool_TrackHeatHaze",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14015aa00.c;xref:0x14015adcc,0x14015ad83,0x14015adb7,0x14015ae50;sig:core.hw_bool_track_heat_haze",
+   "notes": "V0950 Loop over the element attribute vector (+0x50..+0x58): 0x14534da24(attr+0x18 name, rbx = 'trackHeatHaze' from lea 0x14015ad83, r8d 0x1f) at 0x14015adb7; on 0 it sets rcx = [attr+0x50], rdx = \"true\" (0x145612a6a) and the E8 at 0x14015adcc calls 0x14534d918 (.xtls, .pdata 0x14015aa00-0x14015b3a7). sete bl keeps (result == 0); stored to this+0xb46 at 0x14015ae50 (the log calls it heatHazeEnable). sigcheck: one hit, target 0x14015adcc"
+  }
+ ],
+ "proofs": []
+}

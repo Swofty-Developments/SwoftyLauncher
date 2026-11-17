@@ -1,7 +1,7 @@
 // Host-native unit test for the Game_Vfx_UpdateWheelTyreInstance entry probe (native/src/core/diagnostics/session_job_probe_logic.hpp):
 // the size verdicts the game's unsigned loop test turns into a hang, the armed window (on at a session's entry, off at
 // its deadline, after StateSession updates and at the value cap), the lock-free dedupe under 8 threads, that the logic
-// has no mutex, and the log and [warning] lines. Built and run by native/test/run_session_job_probe_test.sh.
+// has no mutex, and the log and [warning] lines. Built and run by native/test/run_tests.sh session_job_probe.
 
 #include "core/diagnostics/session_job_probe_logic.hpp"
 

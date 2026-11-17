@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Game_TileListSelect_ChildStep",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143838fd0",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/143838d90.c;xref:0x143838fd0,0x143838fd3,0x143838fe8,0x143839055",
+  "notes": "In Game_TileList_ApplyBoundSelection (0x143838d90): mov rdi,[r15]; mov r14,[rdi+0x30] (7 bytes, 49 8B 3F 4C 8B 77 30), the head of the child walk; the only branch to it is jne 0x143838fd0 at 0x143839055 (next child), the first pass falls through from 0x143838fca. r15 = the cursor into the children [widget+0x130..+0x138] (r12 = the end), [rsp+0x50] = the widget, [rsp+0x48] = the pointer to the new handle; rdi and r14 are written here before any read and the component walk at 0x143838fe8 reads [r14] with no null test, so a child whose component array [child+0x30] is 0 faults there (F1_25.exe+0x3838fe8, 'reading 0x0', 8 reports from Choose Driver). Core's tile list select guard skips such a child at site_Game_TileListSelect_ChildNext. Own capstone sweep of 0x143838d90..0x143839165 (254 insns, one ret): no branch target in 0x143838fd1..0x143838fd6. EA 0x143826210 (match 0x38261f5), function 0x143825fd0 instruction for instruction the same."
+ },
+ "signature": {
+  "id": "game.tile_list_select_child_step",
+  "section": ".xtls",
+  "pattern": "4C 8D 2D ?? ?? ?? ?? 48 8D 35 ?? ?? ?? ?? 48 8D 2D ?? ?? ?? ?? 66 0F 1F 44 00 00 49 8B 3F 4C 8B 77 30 EB 0F",
+  "match": "0x143838fb5",
+  "anchor": "0x1b",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143838fd0",
+  "kind": "mid",
+  "names": [
+   "site_Game_TileListSelect_ChildStep"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-14",
+    "by": "re-career-teams",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/frontend/tile_list_select_guard.cpp"
+  ],
+  "expect": "49 8B 3F 4C 8B 77 30"
+ },
+ "verify": [
+  {
+   "date": "2026-11-14",
+   "verifier": "kbverify-choose-driver",
+   "kind": "global",
+   "item": "0x143838fd0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143838d90.c;xref:0x143838fca,0x143838fd0,0x143838fd3,0x143838fe8,0x143839055;sig:game.tile_list_select_child_step",
+   "notes": "V9301 Own capstone sweep of Steam 0x143838d90..0x143839165 (254 insns, one ret at 0x143839165) and EA 0x143825fd0..0x1438263a5 (254 insns, one ret): 0x143838fd0 49 8B 3F mov rdi,[r15] and 0x143838fd3 4C 8B 77 30 mov r14,[rdi+0x30] are instruction boundaries; the only jump to 0x143838fd0 is jne at 0x143839055, none lands in 0x143838fd1..0x143838fd6; pushes only in the prologue and pops only after 0x143839155, so rsp at the site is the prologue frame (+0x58). r14 = 0, rdi = the child and r15/r12 inside [widget+0x130..+0x138] match the GDPika crash registers at 0x143838fe8 (rdi 0x20599e60, r14 0, r12 end). Pattern matches once on Steam (0x143838fb5) and once on the EA dump (RVA 0x38261f5) with the same 7 bytes at +0x1b."
+  }
+ ],
+ "proofs": []
+}

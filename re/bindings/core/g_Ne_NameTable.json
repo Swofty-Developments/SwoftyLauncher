@@ -1,0 +1,83 @@
+{
+ "schema": 1,
+ "name": "g_Ne_NameTable",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14618ce08",
+  "type": "void *",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/1403bbda0.c;decomp:re/decomp/143660a60.c;xref:0x1403bbdc9",
+  "notes": "Pointer to the engine-wide interned name table (renamed from g_Ne_SequenceNameTable after V2164): *(table+0x08) is an array of 0x10-byte entries, +0x00 the name (char*), +0x08 its djb2 hash, filled by the interning call 0x143a3d780 and read by 473 references in 178 .xtls functions. Any interned name's u32 index selects its entry; a sequence resource keeps its name's index at resource+0x38 (negative = none). Game_PitStopLogic_NeSequenceClipTargetImpl reads an event's name through it, and the sequence instance creator (thunk 0x143660a60, log SequenceSpawn 'createInstance [%s]') the resource's name, both between the lock calls 0x1449e2298 / 0x1449e22bc on 0x14618ce18."
+ },
+ "signature": {
+  "id": "core.sequence_name_table",
+  "section": ".xtls",
+  "pattern": "49 8B 78 08 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? 8B 07 85 C0 0F 88 ?? ?? ?? ?? 48 8B 0D",
+  "match": "0x1403bbdaf",
+  "anchor": "0x1d",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x1a",
+   "len": 7
+  },
+  "target": "0x14618ce08",
+  "kind": "data",
+  "names": [
+   "g_Ne_NameTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "rules",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-pit",
+   "kind": "global",
+   "item": "0x14618ce08",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1403bbda0.c;decomp:re/decomp/143660a60.c;decomp:re/decomp/143a3d780.c;decomp:re/decomp/1403c06a0.c;xref:0x1403bbdc9,0x150c2cc6e,0x143a3d8c1,0x143a3d978,0x1403c0d73",
+   "notes": "V2164 Blind re-derive at 073dcf0f. Agreed: address, type void * (a pointer load: mov rcx,[rip] at 0x1403bbdc9, then [rcx+8]), sig, and the layout: *(g+8) is an array of 0x10-byte entries with +0x00 the char* name, indexed by a u32 id, negative = none. Both readers named in the row read it between 0x1449e2298/0x1449e22bc on 0x14618ce18: Game_PitStopLogic_NeSequenceClipTargetImpl reads the event id *[event+8], and createInstance 0x143660a60 -> 0x150c2cbe0 reads resource+0x38 (log SequenceSpawn createInstance [%s]). Wrong: the name and the sequence-only scope. It is the engine-wide interned name table. 0x143a3d780 (Game_Get_ModelNodeId, the generic name intern per V1054/V1076) djb2-hashes any C string and looks it up under 0x14618ce18. On a miss it takes the write lock 0x1449e2290, copies the string into the arena 0x14618ce20 and appends {char *name, u32 djb2} to the vector g+8..g+0x10 (capacity g+0x18, allocator g+0x00), returning the index as the id. There are 473 riprel refs in 178 .xtls functions plus 39 in .data1, covering scene names, model nodes and detachable parts as well as sequences. Sequence resources hold two ids into it: +0x38, and +0x3c, which Sess_PitStopUpdateJob_Update reads at 0x1403c0d4c. Suggested: name it g_Ne_NameTable and describe it as the global interned name table (id -> name); the entry's +0x08 is the u32 djb2 hash."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-pit",
+   "kind": "sig",
+   "item": "core.sequence_name_table",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/1403bbda0.c;xref:0x1403bbdc9",
+   "notes": "V2165 sigcheck --exe --only on d873a1c8: one match in .xtls at 0x1403bbdaf (mov rdi,[r8+8]; lea rcx,[rip] lock 0x14618ce18; call 0x1449e2298; mov eax,[rdi]; test; js; mov rcx,[rip]); riprel insn +0x1a = 0x1403bbdc9 (mov rcx, qword [rip+0x5dd1038], len 7), disp at +0x1d, resolves to 0x14618ce08 = the globals row address; kind data, names g_Ne_SequenceNameTable. The id and names should follow the rename suggested on the globals row."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-pit2",
+   "kind": "global",
+   "item": "0x14618ce08",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403bbda0.c;decomp:re/decomp/143660a60.c;decomp:re/decomp/143a3d780.c;decomp:re/decomp/15207fd20.c;decomp:re/decomp/143660b60.c;xref:0x1403bbdc9,0x15207fd91,0x143a3d780",
+   "notes": "V2168 Blind re-derive at aa966ecc. 473 riprel references in .xtls, all loads (420 into rcx, 52 rax, 1 r12), in 178 .pdata functions, as claimed; .data1 adds 38 loads and the only store, 0x15207fd91 in 0x15207fd20 (plaintext here), which under lock 0x14618ce18 allocates the 0x20-byte table {allocator, begin, end, capacity} and stores it; no absolute pointers to the global. 0x143a3d780 hashes djb2 (seed 0x1505, x33+c) and appends 0x10-byte entries {char *name, u32 hash} at table+0x08 in both the grow and in-place paths, returning (end-begin)/0x10-1 as the id. 0x1403bbda0 reads *(table+0x08)+idx*0x10 for the event name (idx from param_3+0x08, sign-tested) between 0x1449e2298 and 0x1449e22bc on 0x14618ce18; 0x143660a60 (body 0x150c2cbe0) does the same for resource+0x38 under SequenceSpawn 'createInstance [%s]' and hands the resource to ctor 0x143660b60, which stores it at instance+0x08. Type void * fits. Extra: Sess_PitStopUpdateJob_Update also reads it for a second index at resource+0x3c (cases 6/7/0xe/0xf, digits after the third char parsed). Nit: the signature id still says sequence_name_table after the rename."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "kbverify-pit2",
+   "kind": "sig",
+   "item": "core.sequence_name_table",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;decomp:re/decomp/1403bbda0.c;xref:0x1403bbdc9",
+   "notes": "V2169 sigcheck --exe --only on d873a1c8: one match in .xtls at 0x1403bbdaf inside Game_PitStopLogic_NeSequenceClipTargetImpl; the instruction at +0x1a (0x1403bbdc9) is mov rcx,[rip+0x5dd1038] and its disp32 at +0x1d resolves to 0x14618ce08 = g_Ne_NameTable."
+  }
+ ],
+ "proofs": []
+}

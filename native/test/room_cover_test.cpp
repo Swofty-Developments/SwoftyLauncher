@@ -1,5 +1,5 @@
 // Host-native unit test for the room launch cover (native/src/core/hud/room_cover_logic.hpp).
-// Built and run by native/test/run_events_test.sh.
+// Built and run by native/test/run_tests.sh room_cover.
 
 #include "core/hud/room_cover_logic.hpp"
 

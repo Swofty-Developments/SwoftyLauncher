@@ -2,7 +2,7 @@
 // HQ answer and the component poll go in, the career events come out of settle(). The clock is a
 // plain millisecond value. The Driver Career sequence is the one a real run logged: components say
 // driver_career before Team HQ opens, then StateTeamHQ -> StateTeamHQUpdate Updating, then the Team
-// HQ answer "not My Team". run_events_test.sh builds and runs it.
+// HQ answer "not My Team". native/test/run_tests.sh career_state builds and runs it.
 #include "core/career/career_state.hpp"
 
 #include <cstdio>

@@ -1,0 +1,43 @@
+{
+ "schema": 1,
+ "name": "site_Game_DecalCatalogue_DesignEntry",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141fe637a",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/141fe5a10.c;doc:re/research/sponsors.md#catalogue",
+  "notes": "mov rbp,[rax+0xc8]: non-career per-design branch, same roles. [static L2 evidence in the doc; added at L1 for the lane owner to raise]"
+ },
+ "signature": {
+  "id": "game.decal_catalogue_design_entry",
+  "section": ".xtls",
+  "pattern": "48 8B A8 C8 00 00 00 48 85 ED 0F 84",
+  "match": "0x141fe637a",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fe637a",
+  "kind": "mid",
+  "expect": "48 8B A8 C8 00 00 00",
+  "names": [
+   "site_Game_DecalCatalogue_DesignEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-05",
+    "by": "sponsor-studio",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "jonniedesigns.sponsor-base"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

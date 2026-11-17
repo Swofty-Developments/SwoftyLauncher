@@ -42,11 +42,11 @@ re/
 | tool | use |
 |---|---|
 | `binding.py` | add a binding as one file under `bindings/`: `new`, `verify` (proof on your exe), `agree`, `check` (what CI runs), `status`, `unfold` |
-| `kb.py` | the only writer of `db/*.tsv`: `add`, `set` (`col=`, `col+=`), `get`, `find`, `claim`/`release`, `note`, `verify`, `test-new`, `import` |
-| `kb_lint.py` | schema, uniqueness, naming, evidence rules per level, cross-references, struct layouts, exe string bytes; prints KB counts |
+| `kb.py` | the only writer of `db/*.tsv`: `add`, `set` (`col=`, `col+=`), `get`, `find`, `claim`/`release`, `note`, `verify`, `test-new`, `import`; `export <dir>` writes every table with the binding records merged in, for tools outside Python |
+| `kb_lint.py` | schema, uniqueness, naming, evidence rules per level, cross-references, struct layouts, exe string bytes; prints KB counts. `--structural` runs only the rules that need no decomp files and no exe (what CI runs) |
 | `sigcheck.py` | every signature unique on the KB build, target resolved and re-checked, hook sites on instruction boundaries; `--exe new.exe` for a game update, `--make <va> --kind mid` for a new candidate, `--sigs file` to test candidates |
 | `decomp` | Ghidra decompile through the slot pool with the KB applied (`RE_GHIDRA_POOL`, `RE_GHIDRA_XMX`, `RE_GHIDRA_PROJECT`) |
-| `ghidra_apply [dir]` | apply functions/globals/structs/protos/comments to one project, or to every slot and clone |
+| `ghidra_apply [dir]` | apply functions/globals/structs/protos/comments to one project, or to every slot and clone. The Ghidra tools read `ghidra/kb`, which `ghidra_lib.sh` refreshes with `kb.py export` (`RE_KB=<dir>` reads another folder) |
 | `ghidra_export <dir> <out.tsv>` | names typed in Ghidra that the KB lacks, as L0 rows for `kb.py import` |
 | `ghidra_clone <name>` | a private persistent project for one agent |
 | `trace_build.py` | authoring trace configs (hooks by signature id) → runtime `swofty/trace.json` |

@@ -17,7 +17,7 @@ pub const FILE: &str = "swofty/state.json";
 pub fn text(data: &Path) -> String {
     let mut text = serde_json::to_string_pretty(&serde_json::json!({
         "version": 1,
-        "state_dir": crate::paths::game_folder_view(data),
+        "state_dir": crate::data::paths::game_folder_view(data),
     }))
     .expect("serialisable");
     text.push('\n');

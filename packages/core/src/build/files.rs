@@ -1,12 +1,14 @@
 use std::collections::{BTreeMap, BTreeSet};
 use std::path::PathBuf;
 
+use super::archives::Archives;
+use super::inputs::Inputs;
 use super::tracks::left_over;
-use super::{Built, source_dir};
+use super::{Built, Pipeline, source_dir};
 use crate::activation::ers::{self, ErsMap};
 use crate::activation::handling::{self, HandlingMap};
 use crate::asset::{AssetOp, FileOp, Op, Origin};
-use crate::baseline::Baseline;
+use crate::game_folder::baseline::Baseline;
 use crate::install::Game;
 use crate::manifest::relative_inside;
 use crate::store::Store;
@@ -132,4 +134,28 @@ pub(super) fn put_files(
             .push(format!("mipmaps: {mips} mip file(s) go in the game folder"));
     }
     Ok(())
+}
+
+impl Pipeline<'_, '_> {
+    pub(super) fn place_files(
+        &mut self,
+        inputs: &Inputs,
+        archives: Archives,
+        ers_maps: &[ErsMap],
+    ) -> Result<()> {
+        let Archives {
+            file_ops,
+            mipmaps,
+            built_over,
+        } = archives;
+        put_files(
+            &mut self.built,
+            self.run.store,
+            self.run.game,
+            mipmaps,
+            file_ops,
+            &built_over,
+            (ers_maps, &inputs.handling_maps),
+        )
+    }
 }

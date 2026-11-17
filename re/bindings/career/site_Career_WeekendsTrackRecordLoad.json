@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_WeekendsTrackRecordLoad",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14181b859",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14181b3a0.c;xref:0x14181b37b",
+  "notes": "mov rax,[rax+0x2c0] in Career_Weekends_BuildResultNodes, 7 bytes, no branch lands inside it. rax = the round's TrackDataRecord: items[track*0x10+8] of TrackDataSystem +0x28 ([[param_1+0x40]+0xf58], the CareerEntity TrackDataSystem), track = movzx edi, byte [Weekend+0x278] (edi stays live), Weekend from vt+0x158 of the career's entrant list. rax is 0 when the track's item is empty, as for Paul Ricard (stat id 1) which F1 25 does not ship, and the instruction faults reading 0x2c0 at F1_25.exe+0x181b859 (R&D table, Team HQ). The next instructions (lea rcx,[rax+8]; test rax,rax; cmovz rcx,rbp) already take rax 0 to the empty node handle. Core resumes at +7 with rax 0 and rdi = track. Crash 1571544543059382333 (AnakinGTI, My Team season 2 Team HQ): rdi=0x54 is past the track list, the stale item's record held a wild node pointer 0x1110000000 and lea rcx,[rax+8]; mov rax,[rcx] at 0x14181b87a faulted. Core also resumes with rax 0 for a track id past the list ([[r14+0x40]+0xf58] +0x28/+0x30, 16-byte items), an unreadable record +0x2c0 or an unreadable node first word."
+ },
+ "signature": {
+  "id": "career.weekends_track_record_load",
+  "section": ".xtls",
+  "pattern": "48 8B 44 08 08 48 8B 80 C0 02 00 00 48 8D 48 08 48 85 C0",
+  "match": "0x14181b854",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14181b859",
+  "kind": "mid",
+  "expect": "48 8B 80 C0 02 00 00",
+  "names": [
+   "site_Career_WeekendsTrackRecordLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "rnd-track-guard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/standings_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "rnd-track-guard",
+   "kind": "global",
+   "item": "site_Career_WeekendsTrackRecordLoad",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14181b3a0.c;xref:0x14181b859;sig:career.weekends_track_record_load",
+   "notes": "Crash reports n31s (V4xMerstappen, Team HQ) and n34q (Alexandr_Khavrov, R&D table): rax=0 at 0x14181b859, rdi=1 (rcx=0x10 = track 1 << 4), the preceding bytes mov rax,[rax+rcx+8] from TrackDataSystem items. The code after the site tests rax, so resuming at +7 with rax 0 is the game's own empty-node path."
+  }
+ ],
+ "proofs": []
+}

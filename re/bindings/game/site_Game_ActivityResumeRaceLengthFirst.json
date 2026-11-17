@@ -1,0 +1,45 @@
+{
+ "schema": 1,
+ "name": "site_Game_ActivityResumeRaceLengthFirst",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1519488a9",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/143867ff0.c;xref:0x1438682e5",
+  "notes": "mov r14d,[rax] (3 bytes) in the .data1 race length text body 0x151948840 (Game_Championship_RaceLengthName_Body): rax = the return of 0x140bc9ef0 (rcx = the ui variable group returned by virtual +0x10 of the ui variable table at championship +0x1030, dl = 2), which is 0 when the group is the invalid ui variable, as when the log says 'Track [miami] is not found in game mode tracklist[<invalid/ui-variable>]' (a 2016 Progressive career resuming at a Miami round). Crash: ACCESS_VIOLATION reading 0x0 at F1_25.exe+0x119488a9, stack ReportCareerActivityResume+0x2fa < OnSaveSlotLoaded+0x288. Core resumes at site_Game_ActivityResumeRaceLengthReturn with rsi, the body's default text 'full'. L1."
+ },
+ "signature": {
+  "id": "game.activity_resume_race_length_first",
+  "section": ".data1",
+  "pattern": "E8 ?? ?? ?? ?? 44 8B 30 48 89 F9 B2 01",
+  "match": "0x1519488a4",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1519488a9",
+  "kind": "mid",
+  "expect": "44 8B 30 48 89 F9",
+  "names": [
+   "site_Game_ActivityResumeRaceLengthFirst"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-02",
+    "by": "activity-resume",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/activity_resume_guard.cpp"
+  ],
+  "func_start": "0x151948840",
+  "data1_reason": "the race length text body is a .data1 body (thunk 0x14386b1d0, called from Game_ActivitiesUIDeeplinkManager_ReportCareerActivityResume at 0x1438682e5); no .xtls site sees the ui variable group before it is read"
+ },
+ "verify": [],
+ "proofs": []
+}

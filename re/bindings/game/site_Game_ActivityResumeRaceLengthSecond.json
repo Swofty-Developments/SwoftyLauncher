@@ -1,0 +1,45 @@
+{
+ "schema": 1,
+ "name": "site_Game_ActivityResumeRaceLengthSecond",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1519488b6",
+  "type": "code",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "decomp:re/decomp/143867ff0.c;xref:0x1438682e5",
+  "notes": "mov ebp,[rax] (2 bytes) in the .data1 race length text body 0x151948840, the second read of the ui variable group (0x140bc9ef0 with dl = 1) after the read at site_Game_ActivityResumeRaceLengthFirst; same null group. Core resumes at site_Game_ActivityResumeRaceLengthReturn. L1."
+ },
+ "signature": {
+  "id": "game.activity_resume_race_length_second",
+  "section": ".data1",
+  "pattern": "E8 ?? ?? ?? ?? 8B 28 48 89 F9 31 D2",
+  "match": "0x1519488b1",
+  "anchor": "0x5",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1519488b6",
+  "kind": "mid",
+  "expect": "8B 28 48 89 F9",
+  "names": [
+   "site_Game_ActivityResumeRaceLengthSecond"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-02",
+    "by": "activity-resume",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/activity_resume_guard.cpp"
+  ],
+  "func_start": "0x151948840",
+  "data1_reason": "the race length text body is a .data1 body (thunk 0x14386b1d0, called from Game_ActivitiesUIDeeplinkManager_ReportCareerActivityResume at 0x1438682e5); no .xtls site sees the ui variable group before it is read"
+ },
+ "verify": [],
+ "proofs": []
+}

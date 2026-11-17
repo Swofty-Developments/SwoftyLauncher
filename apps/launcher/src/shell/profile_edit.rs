@@ -8,7 +8,7 @@ use swofty_core::saves::SavesWarning;
 use swofty_i18n::{tr, trf};
 
 use super::Shell;
-use super::dialogs::saves_alert;
+use super::launch_alerts::saves_alert;
 
 impl Shell {
     pub(crate) fn saves_warning(&self, id: &str, of: Option<SavesWarning>) -> Option<SavesWarning> {
@@ -156,10 +156,13 @@ impl Shell {
     }
 
     pub(crate) fn switch_profile(&mut self, name: &str, window: &mut Window, cx: &mut Context<Self>) {
-        if !self.use_profiles && name != self.library.profile.name && self.library.profile.name != VANILLA {
+        if !self.prefs.use_profiles
+            && name != self.library.profile.name
+            && self.library.profile.name != VANILLA
+        {
             return;
         }
-        self.play_pending.cancel();
+        self.launching.play_pending.cancel();
         if let Err(e) = self.store.set_active_profile(name) {
             crate::app::app_log::action("switch profile").failed(&e);
             window.notify(Notification::error(e.to_string()), cx);

@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_WeekendObjectiveType",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14295c6b3",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14295c0a0.c;xref:0x14295c6b3;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v090--the-tyres-upgrade-types-setting-tyres_upgrade_types-default-on-install-time",
+  "notes": "movzx edx,byte [rdx+0x70] ; cmp edx,0x13: type of an Available upgrade instance (rdx) before bts r15d,edx into the std::bitset<19> of discount types; >= 19 jumps to the bitset throw 0x14295cf89. rnd-tyres sends types 19..22 to the next instance (rip)"
+ },
+ "signature": {
+  "id": "career.weekend_objective_type",
+  "section": ".xtls",
+  "pattern": "75 E1 0F B6 52 70 83 FA 13 72 D4 E9",
+  "match": "0x14295c6b1",
+  "anchor": "0x2",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14295c6b3",
+  "kind": "mid",
+  "expect": "0F B6 52 70 83 FA 13",
+  "names": [
+   "site_Career_WeekendObjectiveType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-a",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_upgrade_types.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-1",
+   "kind": "global",
+   "item": "site_Career_WeekendObjectiveType",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14295c0a0.c;xref:0x14295c6a5,0x14295c6ac,0x14295c6b3,0x14295c6b7,0x14295c6ba,0x14295c6bc,0x14295cf89",
+   "notes": "V0077 rdx = instance, [[rdx+0xc8]-8]==1 (Available per state table) ; movzx edx,[rdx+0x70] ; cmp edx,0x13 ; jb bts r15d (0x7ffff = bitset<19>) else jmp 0x14295cf89 -> 0x142a02140 'invalid bitset position'; no branch into window"
+  }
+ ],
+ "proofs": []
+}

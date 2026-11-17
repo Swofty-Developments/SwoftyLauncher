@@ -737,7 +737,7 @@ impl Shell {
 
     fn db_game_export_to(&mut self, pick: Pick, file: String, window: &mut Window, cx: &mut Context<Self>) {
         let store = self.store.clone();
-        let Some(game) = crate::features::sections::game(&store, self.install.as_ref()) else {
+        let Some(game) = crate::features::sections::game(&store, self.game.install.as_ref()) else {
             window.notify(
                 Notification::error(tr("F1 25 was not found.")).title(tr("Export failed")),
                 cx,

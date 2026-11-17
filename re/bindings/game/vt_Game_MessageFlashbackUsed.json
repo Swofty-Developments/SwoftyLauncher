@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "vt_Game_MessageFlashbackUsed",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1457d4030",
+  "type": "vtable",
+  "level": "L1",
+  "subsystem": "game",
+  "evidence": "xref:0x142da2a3a;doc:re/db/subsystems/game.md",
+  "notes": "fb-verify C5 (agent flashback): cxx=MessageFlashbackUsed (getName vt+8 0x142c88930); posted once per flashback by Sess_ViewInstantReplay_Update @0x142da2a3a via Ne_Post_BusMessageQueued (+0x10 = flashbacks free, agent). Related: MessageOnJumpInReplay (getName 0x1445e3750, posted by Ne_ReplaySystem_OnJumpIn), MessagePitStateChangedByRewind (getName 0x1434e4940, posted @0x1434ce597 in a 27-iteration loop of the stream reader 0x1434ce470)"
+ },
+ "signature": {
+  "id": "game.message_flashback_used",
+  "section": ".xtls",
+  "pattern": "48 8D 15 ?? ?? ?? ?? 48 89 54 24 40 88 44 24 50 48 8B 49 08 48 8D 54 24 40 E8 ?? ?? ?? ?? 41 C6",
+  "match": "0x142da2a3a",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x1457d4030",
+  "kind": "data",
+  "names": [
+   "vt_Game_MessageFlashbackUsed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "fb-verify",
+   "kind": "global",
+   "item": "vt_Game_MessageFlashbackUsed",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142da2a3a",
+   "notes": "V1805 C5 getName 0x142c88930"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "fb-verify",
+   "kind": "global",
+   "item": "vt_Game_MessageFlashbackUsed",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142da2a3a",
+   "notes": "V3936 C5 getName 0x142c88930"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lg0-verify",
+   "kind": "global",
+   "item": "0x1457d4030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x142da2a3d;decomp:re/decomp/142da2760.c",
+   "notes": "V7439 name/class, slots and refs match"
+  }
+ ],
+ "proofs": []
+}

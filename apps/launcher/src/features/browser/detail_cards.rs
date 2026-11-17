@@ -4,16 +4,16 @@ use gpui_kit::component::{h_flex, v_flex};
 use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_core::catalog::Addon;
-use swofty_core::update::current_version;
+use swofty_core::updates::release::current_version;
 use swofty_i18n::{tr, trf, trn};
 
 use super::{day, since};
 use crate::shell::Shell;
-use crate::shell::pages::{label, stat};
 use crate::ui::format;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
 use crate::ui::{Callout, ProgressBar};
+use crate::ui::{label, stat};
 
 pub(super) fn detail_about(a: &Addon, mono: &SharedString, p: Palette) -> Div {
     let description = if a.description.trim().is_empty() {

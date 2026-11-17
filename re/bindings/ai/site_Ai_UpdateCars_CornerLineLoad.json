@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Ai_UpdateCars_CornerLineLoad",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14064069e",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "ai",
+  "evidence": "decomp:re/decomp/14063e370.c;decomp:re/decomp/14066e830.c;xref:0x14064068d,0x140640693,0x1406406a9;xref:0x14064068d,0x140640693,0x1406406a9;decomp:re/decomp/14066e830.c",
+  "notes": "mov rax,[rax+rdi*8+0xb8] in Ai_Job_UpdateCarsParallel (+0x232e), 8 bytes, no branch lands inside it. rsi = the car's gap evaluation result (pbVar5+0x60 or +0xb0, the later Ai_Overtake_EvaluateGap results), rax = [rsi+8] = the next corner start line Ai_TrackLine_FindNextCornerStart stored (0 when the route's corner start table has no usable entry ahead; result+0x4b stays 1), rdi = car index ([rbx+0x178]). The preceding cmp byte [rsi+0x4b],0 / je tests only the valid flag, so rax 0 faults reading 0xb8 (jonno_aus, local.adelaide-skeleton, 1.7.5; Nordschleife r71b). The next instructions test rax and take 0x1406409be, the game's own no-corner-line path. Core's AI corner guard sends rax 0 there. Raise to L2 needs ai-re.  ai-re L2 2026-11-01: independent decomp and disasm; 14066e830 writes result+8=0 on its break exits and at its tail, so rax from mov rax,[rsi+8] can be 0 and the load at +0xb8 faults; the null test on the next insn is too late. CORRECTION 2026-11-16 (engine-re racing-line round, static): result+8 holds the next BRAKE LINE (lane+0x498 = channel 1 = brake_line elements, 0xc8 bytes, type 1), not a corner start; +0xb8+route*8 is a per-route field of that element. The guard logic is unaffected; only the wording corner start is wrong. edited by engine-re with --force 2026-11-16 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.update_cars_corner_line_load",
+  "section": ".xtls",
+  "pattern": "48 8B 84 F8 B8 00 00 00 48 85 C0 0F 84",
+  "match": "0x14064069e",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14064069e",
+  "kind": "mid",
+  "expect": "48 8B 84 F8 B8 00 00 00",
+  "names": [
+   "site_Ai_UpdateCars_CornerLineLoad"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "ai-corner",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/ai/ai_corner_guard.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-01",
+   "verifier": "verify-ai-corner",
+   "kind": "global",
+   "item": "site_Ai_UpdateCars_CornerLineLoad",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14063e370.c;decomp:re/decomp/14066e830.c;xref:0x140640693,0x14064069e,0x1406406a9",
+   "notes": "V8620 verify-ai-corner own decomp+disasm: 0x140640693 mov rax,[rsi+8]; 0x14064069e mov rax,[rax+rdi*8+0xb8] is the first deref; 14066e830 stores param_1+8=0 at its tail (line 208, reached by break and loop exhaustion), so rax 0 faults there and the test at 0x1406406a6 is too late."
+  }
+ ],
+ "proofs": []
+}

@@ -10,7 +10,7 @@ impl Shell {
         self.saves.loading = true;
         let generation = self.saves.generation;
         let store = self.store.clone();
-        let install = self.install.clone();
+        let install = self.game.install.clone();
         let name = self.library.profile.name.clone();
         let game_running = self.saves.game_running;
         cx.spawn(async move |this, cx| {

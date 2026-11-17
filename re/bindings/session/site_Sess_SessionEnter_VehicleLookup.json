@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_SessionEnter_VehicleLookup",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14098f717",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/14098f400.c;xref:0x14098f712,0x14098f71a;decomp:re/decomp/14243fd10.c",
+  "notes": "In Sess_Build_SessionVehicleClassLists: test rax,rax; je 0x14098f6ff right after call Sess_ResolveEntityHandle (0x14098f712) in the walk of the session entrants. rax = the entrant's vehicle (0 when the entrants system has none for the handle), rsi = the EntrantRecord (vehicle handle u32 at +0x5c: kind byte at +0, stat id u16 at +2), rbx = the entrants system, rdi = list holder +0x18 ([rdi+8] the first entrant, r12 = [rdi+0x10] the end). Only the loop's own je reaches it; rax is consumed by the test and the class read at 0x14098f71c. This is the first vehicle lookup of the session-enter class build, ahead of the unchecked one in 0x142458710 (0x142458792). Hooked by core's My Team vehicle heal, which rebuilds a missing kind-1 (custom) vehicle here and returns it in rax."
+ },
+ "signature": {
+  "id": "session.session_enter_vehicle_lookup",
+  "section": ".xtls",
+  "pattern": "48 89 D9 E8 ?? ?? ?? ?? 48 85 C0 74 E3 48 0F BE 88 EA 0C 00 00",
+  "match": "0x14098f70f",
+  "anchor": "0x8",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14098f717",
+  "kind": "mid",
+  "expect": "48 85 C0 74",
+  "names": [
+   "site_Sess_SessionEnter_VehicleLookup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "myteam-heal",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/career/myteam_vehicle_heal.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "myteam-heal-verify",
+   "kind": "global",
+   "item": "0x14098f717",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14098f400.c;decomp:re/decomp/14243fd10.c;xref:0x14098f712,0x14098f71a;sig:session.session_enter_vehicle_lookup",
+   "notes": "V9267 Static: 0x14098f70b lea rdx,[rsi+0x5c]; 0x14098f70f mov rcx,rbx; 0x14098f712 call 0x14243fd10; 0x14098f717 test rax,rax (48 85 C0); 0x14098f71a je 0x14098f6ff (add rsi,0x88; cmp rsi,r12; je 0x14098f736 else loop to 0x14098f70b); 0x14098f71c movsx rcx,byte [rax+0xcea], then 0x14098f724 mov eax,-1 overwrites rax. rdi = holder at 0x14098f699, add rdi,0x18 at 0x14098f6cd before the loop, so [rdi+8] = [holder+0x20] = first entrant and [rdi+0x10] = [holder+0x28] = r12 = end; rbx = [rbp+0x28] (entrants system), rsi = EntrantRecord, neither written in the loop body. Linear sweep of 0x14098f400..0x14098fa9a: no branch lands in 0x14098f713..0x14098f71b; the loop's branches go to 0x14098f6ff, 0x14098f70b, 0x14098f736. 0x14098f717 is reached only by fall-through from the call (the row's 'only the loop's own je reaches it' is loose wording). Binary-wide rel32 scan for 0x14098f717..0x14098f71b: two false positives (0x140a29e2b is jmp 0x140a29488, 0x14010d281 is inside mov rdx,[rsp+0x88]); no absolute refs. sigcheck: OK hits=1 match=0x14098f70f target=0x14098f717; the pattern wildcards the call rel32."
+  }
+ ],
+ "proofs": []
+}

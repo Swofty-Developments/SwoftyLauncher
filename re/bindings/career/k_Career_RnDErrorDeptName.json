@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "k_Career_RnDErrorDeptName",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14587e10d",
+  "type": "char[17]",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f4825c,0x1418946be,0x1418946ea,0x141894deb;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v070--the-five-sector-development-potential-pie-folded-in",
+  "notes": "\"error_department\": the name every department-name switch defaults to for codes >= 4"
+ },
+ "signature": {
+  "id": "career.rn_d_error_dept_name",
+  "section": ".xtls",
+  "pattern": "EB 4D 48 C7 44 24 50 00 00 00 00 48 8D 3D",
+  "match": "0x141f48251",
+  "anchor": "0xe",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xb",
+   "len": 7
+  },
+  "target": "0x14587e10d",
+  "kind": "data",
+  "names": [
+   "k_Career_RnDErrorDeptName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-c",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_fifth_pie.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-2",
+   "kind": "global",
+   "item": "k_Career_RnDErrorDeptName",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f48030.c;xref:0x141f4825c,0x14174dba8,0x14174ee4e,0x1417f876a,0x1418946be,0x1419bf574,0x141c77ebc,0x141c837bd,0x141c88600,0x141f3d6b0",
+   "notes": "V0116 bytes at 0x14587e10d = error_department + NUL (17), preceded by the NUL of error_status, so char[17] at a string start; 51 riprel refs, every dept-name selection read here uses it as the fallback (codes >3; in Career_Bind_UpgradeCard part types >18, in the perks title unknown name hash); sig riprel at 0x141f48251+0xb resolves to it"
+  }
+ ],
+ "proofs": []
+}

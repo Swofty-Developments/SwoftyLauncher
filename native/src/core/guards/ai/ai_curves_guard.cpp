@@ -1,4 +1,5 @@
 #include "core/guards/ai/ai_curves_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -86,7 +87,4 @@ void setup()
 
 }
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("ai team curves guard", setup);
-}
+SWOFTY_HOOK_GUARD(ai_curves, "ai team curves guard", setup)

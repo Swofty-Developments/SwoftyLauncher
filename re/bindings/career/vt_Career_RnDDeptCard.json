@@ -1,0 +1,55 @@
+{
+ "schema": 1,
+ "name": "vt_Career_RnDDeptCard",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145740250",
+  "type": "vtable",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "pat:card-ctor-0x141c7aac0;kb:subsystems/rnd_ui.md#box;decomp:re/decomp/141c7aac0.c;xref:0x141c7ab2d;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v061--the-develop-upgrade-screen-for-the-tyres-upgrades",
+  "notes": "R&D department card (0x950 bytes, Career_Construct_RnDDeptCard); +0x6d8 dept, +0x6bc team, +0x688 Upgrades, +0x268 card VM node. vtable stored by Career_Construct_RnDDeptCard (lea rax at 0x141c7ab2d)"
+ },
+ "signature": {
+  "id": "career.rn_d_dept_card",
+  "section": ".xtls",
+  "pattern": "4D 89 C8 49 89 C1 E8 ?? ?? ?? ?? 48 8D 05",
+  "match": "0x141c7ab22",
+  "anchor": "0xe",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0xb",
+   "len": 7
+  },
+  "target": "0x145740250",
+  "kind": "data",
+  "names": [
+   "vt_Career_RnDDeptCard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "global",
+   "item": "vt_Career_RnDDeptCard",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c7aac0.c;xref:0x141c7ab2d,0x141e87ece,0x141c8613f,0x141c861e3,0x141c7abc6,0x141c7b5e7,0x141c7b646,0x141c7dc12",
+   "notes": "V0192 stored at [card] by Career_Construct_RnDDeptCard (lea 0x141c7ab2d) and by 0x141e87ec0; 4 allocations with edx=0x950 before the ctor calls; +0x6d8 = dept byte (ctor arg, indexes the dept colour table at 0x141c7dc12), +0x6bc = owner/team id (init 0x3fff0000, set 0x141c7b5e7), +0x688 = Upgrades picked by owner (0x141c7b646, rcx to 0x1435188d0), +0x268 = sub-object passed as the tab node"
+  }
+ ],
+ "proofs": []
+}

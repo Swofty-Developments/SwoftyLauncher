@@ -9,7 +9,6 @@ mod shell;
 mod ui;
 
 use app::{app_log, chart_demo, dialog_keys, fonts};
-use shell::pages;
 use ui::theme;
 
 use gpui_kit::component::{TitleBar, v_flex};
@@ -20,7 +19,7 @@ fn main() {
         chart_demo::run();
         return;
     }
-    swofty_core::data_move::recover_at_start();
+    swofty_core::data::relocate::recover_at_start();
     app_log::start();
     app_log::step("starting the app runtime");
     let app = gpui_kit::application().with_assets(gpui_kit::assets::AllAssets);
@@ -110,7 +109,7 @@ impl Render for Launcher {
                     .items_center()
                     .justify_center()
                     .gap(px(20.))
-                    .child(pages::wordmark(220.))
+                    .child(ui::wordmark(220.))
                     .child(swofty_i18n::tr("Loading your launcher…")),
             )
             .into_any_element()

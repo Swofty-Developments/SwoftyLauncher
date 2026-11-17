@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "site_Ai_ScFollowFlagCmp",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140642faf",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "ai",
+  "evidence": "decomp:re/decomp/1406427e0.c;decomp:re/decomp/143608160.c;xref:0x140642faf,0x140642f7a",
+  "notes": "code site in the AI line/look-ahead update 0x1406427e0 (single caller lea 0x1405ee5b7): 'cmp byte [r8+0x108], 2; setne r8b' reads the safety-car deployment type ([[x+0x10]+0xe0]+0x108, 1 = SC, 2 = VSC, set by Sess_Set_SafetyCarDeploymentType). Decompile line 1799: when not VSC and participant flags +0x33 bit 1 (following the SC), or own flags +0x164 / +0x35 bit 0x10, the car skips the normal look-ahead target (FUN_1405fbfd0) - the follow-the-SC branch. (used by vmknolle sc-unlapping to let lapped cars pass) L2 2026-11-14 (engine-re AI round): disassembly checked: 0x140642f7a mov r8,[r9+0xe0] then 0x140642faf cmp byte [r8+0x108],2 / setne r8b; +0x108 is the deployment-type byte written by the SafetyCarDeployment handler 0x143608160 (1 SC, 2 VSC, cleared on resume). The containing job 0x1406427e0 (stored as a job function by lea 0x1405ee5b7) stays L1 as a whole; this site claim only needs the compare and its operand. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) Note (verifier ai-verify 2026-11-14): the 1 = SC / 2 = VSC meaning of +0x108 is consistent with the handler but not separately proven here; the site claim only needs the compare against 2."
+ },
+ "signature": {
+  "id": "ai.sc_follow_flag_cmp",
+  "section": ".xtls",
+  "pattern": "41 0F 94 C1 41 80 B8 08 01 00 00 02",
+  "match": "0x140642fab",
+  "anchor": "0x4",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140642faf",
+  "kind": "mid",
+  "expect": "41 80 B8 08 01 00 00 02",
+  "names": [
+   "site_Ai_ScFollowFlagCmp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-f",
+   "kind": "global",
+   "item": "0x140642faf",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_f/decomp/1406427e0.c;xref:0x140642faf,0x143608271,0x14360827a",
+   "notes": "V1189 site 'cmp byte [r8+0x108],2; setne' where r8=[[ctx+0x10]+0xe0]; +0x108 is written only from the messages::SafetyCarDeployment handler 0x143608160 (msg byte +0x1c, 2->1 upgrade), so it is the SC deployment type; result feeds decompile line 1799 (with +0x33 bit1, +0x35&0x10, +0x164) deciding whether FUN_1405fbfd0 normal look-ahead is skipped - fits the SC-follow flag compare"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "global",
+   "item": "0x140642faf",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own disasm 0x1406427e0,0x143608160;xref:0x140642f66,0x140642f7a,0x140642faf,0x1405ee5b7,0x143608271",
+   "notes": "V10683 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 0x140642faf cmp byte [r8+0x108],2 / setne r8b; r8 = [r9+0xe0] (0x140642f7a), r9 = [r13+0x10] (0x140642f66). +0x108 is written in 0x143608160 only on SafetyCarDeployment messages: eDeployed stores the message type byte (0x14360827a) or 1 when type 1 arrives while 2 is set (0x143608271), eResumeRace stores 0 (0x143608295). Single ref to 0x1406427e0 = lea at 0x1405ee5b7 in 0x1405ee110. The 1=SC / 2=VSC meaning is consistent (VSC upgraded to SC), not separately proven by me."
+  }
+ ],
+ "proofs": []
+}

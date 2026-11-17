@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Career_RnDCardColourPick0",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14180eb3d",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "career",
+  "evidence": "decomp:re/decomp/14180e910.c;xref:0x14180eb3d;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v061--the-develop-upgrade-screen-for-the-tyres-upgrades",
+  "notes": "mov [rsp+0x30],eax after eax = k_Career_RnDCardColourTable[r14] (r12b <= 5, else -1); ja target"
+ },
+ "signature": {
+  "id": "career.rn_d_card_colour_pick0",
+  "section": ".xtls",
+  "pattern": "89 44 24 30 48 8B 9F 90 01 00 00 48 85 DB",
+  "match": "0x14180eb3d",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14180eb3d",
+  "kind": "mid",
+  "expect": "89 44 24 30 48 8B 9F 90 01 00 00",
+  "names": [
+   "site_Career_RnDCardColourPick0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-3",
+   "kind": "global",
+   "item": "site_Career_RnDCardColourPick0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14180e910.c;xref:0x14180eb27,0x14180eb2c,0x14180eb30,0x14180eb39,0x14180ea93",
+   "notes": "V0121 mov eax,-1; cmp r12b,5; ja 0x14180eb3d; eax=[0x14571bce0+r14*4] with r14=movsx r12b (r12b=byte stack arg [rsp+0xf0]); site is the ja target; 11B window (2 insns) clean"
+  }
+ ],
+ "proofs": []
+}

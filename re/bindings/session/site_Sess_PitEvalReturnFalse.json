@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "site_Sess_PitEvalReturnFalse",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14369214a",
+  "type": "code",
+  "level": "L2",
+  "subsystem": "session",
+  "evidence": "decomp:re/decomp/143691df0.c;xref:0x143691f93,0x143691fa2,0x143692144,0x14369214c",
+  "notes": "Same function: xor ebx,ebx then leave the critical section 0x1461012f8 and return bl & 1 = false. The critical section is held from the entry call at 0x143691e1f on every path."
+ },
+ "signature": {
+  "id": "session.pit_eval_return_false",
+  "section": ".xtls",
+  "pattern": "4D 39 E7 0F 85 ?? ?? ?? ?? 31 DB 48 8B 0D",
+  "match": "0x143692141",
+  "anchor": "0x9",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14369214a",
+  "kind": "mid",
+  "expect": "31 DB 48 8B 0D",
+  "names": [
+   "site_Sess_PitEvalReturnFalse"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-31",
+    "by": "pitguard",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/guards/garage/pit_slots.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-pit1",
+   "kind": "global",
+   "item": "0x14369214a",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143691df0.c;xref:0x143691fa2,0x14369214c",
+   "notes": "V3856 xor ebx,ebx then Leave 14c, bl&1=false; epilogue restores callee-saved from stack; existing je fa2->14a proves the path is entered from the same state"
+  }
+ ],
+ "proofs": []
+}

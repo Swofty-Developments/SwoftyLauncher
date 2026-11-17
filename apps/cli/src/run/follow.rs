@@ -8,7 +8,7 @@ use swofty_core::{GAME_EXE, STEAM_APP_ID};
 
 use crate::output::say;
 
-const KB: &str = include_str!("../../../../re/db/functions.tsv");
+const KB: &str = include_str!("../../../../re/db/function_names.tsv");
 
 pub(crate) struct Follower {
     path: PathBuf,

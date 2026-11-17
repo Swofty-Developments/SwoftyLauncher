@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "vt_Ne_ParticleEffectComponent",
+ "table": "globals",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145a90b10",
+  "type": "vtable[16]",
+  "level": "L2",
+  "subsystem": "core",
+  "evidence": "decomp:re/decomp/1444d1840.c;xref:0x1444d184c,0x1444e059f",
+  "notes": "NeParticleEffectComponent vtable (class name and 'NeParticleEffectComponent::event_stop' directly before it; slot 0 = its destructor 0x1444d1840 which stores it at 0x1444d184c; also stored at 0x1444e059f). NOT a render model component - vmknolle wet-track binds it as vt_Render_ModelComponent; the binding name is misleading. (used by vmknolle wet-track)"
+ },
+ "signature": {
+  "id": "core.ne_particle_effect_component_vtable",
+  "section": ".xtls",
+  "pattern": "48 8D 05 ?? ?? ?? ?? 48 89 01 48 8D 59 40 48 8B 51 40 48 89 51 48 48 85 D2 74 0A 48 8B 4E 38 48 8B 01 FF 50 38 C5 F8 57 C0 C5 F8 11 03 48 C7 43 10 00 00 00 00 85 FF 74 47",
+  "match": "0x1444d184c",
+  "anchor": "0x3",
+  "resolve": {
+   "kind": "riprel",
+   "insn": "0x0",
+   "len": 7
+  },
+  "target": "0x145a90b10",
+  "kind": "data",
+  "names": [
+   "vt_Ne_ParticleEffectComponent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-e",
+   "kind": "global",
+   "item": "0x145a90b10",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_e/decomp/1444d1840.c;decomp:work/verify_e/decomp/1444e0570.c;xref:0x1444d184c,0x1444e059f",
+   "notes": "V1090 literals 'NeParticleEffectComponent' and 'NeParticleEffectComponent::event_stop' directly precede the vt; slot0 1444d1840 = deleting dtor storing it, 1444e0570 allocs 0x58 and stores it (create); 16 code slots then strings"
+  }
+ ],
+ "proofs": []
+}
