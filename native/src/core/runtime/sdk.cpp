@@ -4,7 +4,6 @@
 
 #include <mutex>
 
-#include "core/diagnostics/perf.hpp"
 
 std::string settings_addon(const void *from, std::string &dll);
 
@@ -257,38 +256,13 @@ const json::Value &sdk()
     return doc;
 }
 
-void ready()
+bool close_asset_registrations()
 {
-    {
-        std::lock_guard<std::mutex> g(lock);
-        if (!opened)
-            return;
-        opened = false;
-    }
-    assets_setup();
-    resources_setup();
-    gamedb_setup();
-    dbread_setup();
-    overlay_setup();
-    lang_override_setup();
-    events_setup();
-    hud_setup();
-    focus_setup();
-    // postfx only observes barriers, and grade replaces some batches, so postfx subscribes first.
-    postfx_setup();
-    grade_setup();
-    srv_clamp_setup();
-    live_setup();
-    telemetry_setup();
-    placed_record_setup();
-    net_trace_setup();
-    udp_ids_setup();
-    local_tiles_setup();
-    session_host_ready();
-    testagent_setup();
-    direct_start_setup();
-    load_stall_setup();
-    perf::start();
+    std::lock_guard<std::mutex> g(lock);
+    if (!opened)
+        return false;
+    opened = false;
+    return true;
 }
 
 }
