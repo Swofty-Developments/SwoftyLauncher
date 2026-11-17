@@ -401,7 +401,7 @@ The passes run between the game's picture and its HUD. The HUD and the menus dra
 
 The passes run once a frame, at the first of these the frame reaches:
 
-- While the HUD reads the finished picture, as when paused: the first barrier of the HUD's list that reads the back buffer. The first frame after the reads stop, as on a resume, runs no passes.
+- While the HUD reads the finished picture, as when paused: the first barrier of the HUD's list that reads the back buffer. In the first frame without a read, as on a resume or when the HUD skips a frame on track, the passes wait for a read that still comes and otherwise run at the later places below: after the list that closes the step, before the list that takes the back buffer to the HUD, or at `Present`. Where the game's own frames close the core's frames (no `Present` to fall back on) and the core sees neither list, that frame runs no passes.
 - Otherwise, inside the game's own command list, at the step where it keeps a copy of the picture without the HUD.
 - Where the game ends that list inside the step: in the list that closes the step, where it has the back buffer bound as its render target (`path=in-list (split step)` in the trace). That list can draw the rest of the picture first. The passes wait for it, also when the game submits the first list before it records the closing one.
 - Where the list that closes the step does not have the back buffer bound: in a list of the core's own, submitted right after the closing list (`path=between (after the list that closed the step)`).
@@ -423,8 +423,8 @@ When the passes stop and when they run again, the log says so with the reason, a
 ```text
 [postfx] the passes stopped at frame 48211: the shader toggle key turned them off, key B (view tv_pod, flags -, serial 12)
 [postfx] the passes run again at frame 48440, in-list, after 229 frame(s) without them: the shader toggle key turned them off (view tv_pod, flags -, serial 12)
-[postfx] the passes stopped at frame 51873: the HUD read the picture a frame before and not in this one (pause latch) (view tv_pod, flags -, serial 12)
-[postfx] the passes run again at frame 51874, in-list, after 1 frame(s) without them: the HUD read the picture a frame before and not in this one (pause latch) (view tv_pod, flags -, serial 12)
+[postfx] the passes stopped at frame 51873: the game submitted no picture list (view unknown, flags menu, serial 12)
+[postfx] the passes run again at frame 51874, in-list (split step), after 1 frame(s) without them: the game submitted no picture list (view unknown, flags menu, serial 12)
 ```
 
 XeSS frame generation (`libxess_fg.dll`) presents the game's frames and its own generated ones through `Present1`, on its own thread. Its swapchain is made even with frame generation off. On it, and while no `Present` reaches the core's hooks, a frame is one frame the game draws: it starts where the game submits the list that draws into its next back buffer. `swofty_frame` and `swofty_frametime` count those frames. The minute's line counts them too:

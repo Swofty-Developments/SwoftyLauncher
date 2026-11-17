@@ -176,44 +176,75 @@ static bool over_the_hud(const std::vector<Ran> &ran)
     return false;
 }
 
-// Frames of one race through HudRead the way postfx.cpp's barrier hook drives it: reads(f) is whether the HUD's list
-// of frame f reads the finished picture, hud_first(f) whether that list is recorded before the list with the
-// HUD-less step. Per frame, how often the passes ran, and which frames ran them at the HUD's read.
+// Frames of one race through HudRead the way postfx.cpp drives it: reads(f) is whether the HUD's list of frame f
+// reads the finished picture, hud_first(f) whether that list is recorded before the list with the HUD-less step,
+// read_late(f) whether it is recorded only after the picture's list is submitted, open(f) whether the picture's list
+// ends with the HUD-less step still open, and hud_seen(f) whether the core sees the HUD's list take the back buffer
+// out of render target. The picture's submission places the passes or leaves them waiting (picture_wait); waiting
+// passes run before the HUD's list, or at Present without it. held is the 1.9.64 gate: the submission held off
+// while the read held. Per frame, how often the passes ran and where they ran last.
+enum ReadAt : uint8_t { AT_NONE, AT_STEP, AT_READ, AT_PICTURE, AT_BEFORE_HUD, AT_PRESENT };
+
 struct ReadSim {
     bool (*reads)(unsigned f) = nullptr;
     bool (*hud_first)(unsigned f) = nullptr;
+    bool (*read_late)(unsigned f) = nullptr;
+    bool (*open)(unsigned f) = nullptr;
+    bool (*hud_seen)(unsigned f) = nullptr;
+    bool game_frames = false, held = false;
     unsigned frames = 400;
     std::vector<unsigned> runs;
     std::vector<bool> at_read;
+    std::vector<ReadAt> at;
 
     void run()
     {
         HudRead latch;
         runs.assign(frames, 0);
         at_read.assign(frames, false);
+        at.assign(frames, AT_NONE);
         for (unsigned f = 0; f < frames; f++) {
-            unsigned now = 100 + f, placed_at = LONG_AGO;
+            unsigned now = 100 + f;
+            BackPlace p;
+            auto ran = [&](ReadAt where) {
+                runs[f]++;
+                at[f] = where;
+                at_read[f] = at_read[f] || where == AT_READ;
+            };
+            p.drawn(now);
             auto read = [&] {
-                if (!reads(f) || placed_lately(now, placed_at))
+                if (!reads(f) || placed_lately(now, p.placed_at))
                     return;
                 latch.read(now);
-                placed_at = now;
-                runs[f]++;
-                at_read[f] = true;
+                p.place(now);
+                ran(AT_READ);
             };
             auto step = [&] {
-                if (latch.holds(now) || placed_lately(now, placed_at))
+                if (latch.holds(now) || !p.fresh)
                     return;
-                placed_at = now;
-                runs[f]++;
+                p.place(now);
+                ran(AT_STEP);
             };
-            if (hud_first && hud_first(f)) {
+            bool late = read_late && read_late(f);
+            if (!late && hud_first && hud_first(f))
                 read();
-                step();
-            } else {
-                step();
+            step();
+            if (!late && !(hud_first && hud_first(f)))
                 read();
+            if (held ? !latch.holds(now) : !latch.read_in(now)) {
+                PictureWait w = picture_wait(open && open(f), !held && latch.latch(now), game_frames);
+                if (p.picture_submitted(now, w.open, w.may_defer) == END_BETWEEN)
+                    ran(AT_PICTURE);
             }
+            if (late)
+                read();
+            if (!hud_seen || hud_seen(f)) {
+                if (p.target_left(now, true))
+                    ran(AT_BEFORE_HUD);
+                p.moved(false);
+            }
+            if (!game_frames && p.presented(now))
+                ran(AT_PRESENT);
         }
     }
 };
@@ -319,34 +350,40 @@ int main()
         CHECK(closed.picture_submitted(65, false, true) == END_BETWEEN && !closed.target_left(65, true));
     }
     {
-        // After a pause the passes are back on the second frame. 1.9.52 held the HUD's read for 30 frames, so the
-        // picture went 30 frames without them after every pause, flashback and menu over the race.
+        // After a pause the passes stay on. 1.9.52 held the HUD's read for 30 frames, so the picture went 30 frames
+        // without them after every pause, flashback and menu over the race; 1.9.64 went one frame without them (the
+        // latch), which now runs them before the HUD's list.
         ReadSim sim;
         sim.reads = [](unsigned f) { return f >= 100 && f < 200; };
         for (int order = 0; order < 3; order++) {
             sim.hud_first = order == 0   ? nullptr
                             : order == 1 ? +[](unsigned) { return true; }
                                          : +[](unsigned f) { return rnd(f, 7) % 2 == 0; };
-            sim.run();
-            unsigned without = 0, doubled = 0, left_the_read = 0;
-            bool taken = false;
-            for (unsigned f = 0; f < sim.frames; f++) {
-                without += sim.runs[f] == 0;
-                doubled += sim.runs[f] > 1;
-                left_the_read += f < 200 && taken && !sim.at_read[f];
-                taken |= sim.at_read[f];
+            for (bool held : {true, false}) {
+                sim.held = held;
+                sim.run();
+                unsigned without = 0, doubled = 0, left_the_read = 0;
+                bool taken = false;
+                for (unsigned f = 0; f < sim.frames; f++) {
+                    without += sim.runs[f] == 0;
+                    doubled += sim.runs[f] > 1;
+                    left_the_read += f < 200 && taken && !sim.at_read[f];
+                    taken |= sim.at_read[f];
+                }
+                // the list with the HUD-less step recorded first every frame never leaves the passes to the read
+                CHECK(taken == (order != 0));
+                CHECK(without == (taken && held ? 1u : 0u));
+                CHECK(sim.runs[200] == (taken && held ? 0u : 1u) && sim.runs[201] == 1);
+                CHECK(!taken || held || sim.at[200] == AT_BEFORE_HUD);
+                CHECK(doubled == 0);
+                // once the read runs the passes it stays the one place they run while the HUD reads every frame
+                CHECK(left_the_read == 0);
             }
-            // the list with the HUD-less step recorded first every frame never leaves the passes to the read
-            CHECK(taken == (order != 0) && without == (taken ? 1u : 0u));
-            CHECK(sim.runs[200] == (taken ? 0u : 1u) && sim.runs[201] == 1);
-            CHECK(doubled == 0);
-            // once the read runs the passes it stays the one place they run while the HUD reads every frame
-            CHECK(left_the_read == 0);
         }
     }
     {
-        // A screen whose HUD reads the picture every other frame, or every tenth: no frame runs the passes twice,
-        // and no more go without them than under the 30-frame hold (every frame without a read did).
+        // A screen whose HUD reads the picture every other frame, or every tenth: no frame runs the passes twice or
+        // goes without them (1.9.64 left out every frame after a read without one).
         for (unsigned every : {2u, 3u, 10u, 31u}) {
             static unsigned period;
             period = every;
@@ -355,20 +392,69 @@ int main()
             for (bool first : {false, true}) {
                 sim.hud_first = first ? +[](unsigned) { return true; } : nullptr;
                 sim.run();
-                unsigned without = 0, doubled = 0, unread = 0;
+                unsigned without = 0, doubled = 0;
                 for (unsigned f = 1; f < sim.frames; f++) {
                     without += sim.runs[f] == 0;
                     doubled += sim.runs[f] > 1;
-                    unread += f % period != 0 && f % period < 31;
                 }
-                CHECK(doubled == 0 && without <= unread);
-                CHECK(every < 3 || without < unread);
+                CHECK(doubled == 0 && without == 0);
             }
         }
         HudRead h;
-        CHECK(!h.holds(0) && !h.holds(5000));
+        CHECK(!h.holds(0) && !h.holds(5000) && !h.latch(0) && !h.read_in(0));
         h.read(0u - 1);
         CHECK(h.holds(0u - 1) && h.holds(0) && !h.holds(1));
+        CHECK(h.read_in(0u - 1) && !h.latch(0u - 1) && !h.read_in(0) && h.latch(0) && !h.latch(1));
+        CHECK(!picture_wait(false, false, false).open && !picture_wait(false, false, false).may_defer);
+        CHECK(picture_wait(true, false, false).open && picture_wait(true, false, false).may_defer);
+        CHECK(picture_wait(true, false, true).open && !picture_wait(true, false, true).may_defer);
+        for (bool step_open : {false, true})
+            for (bool game_frames : {false, true})
+                CHECK(picture_wait(step_open, true, game_frames).open &&
+                      picture_wait(step_open, true, game_frames).may_defer);
+    }
+    {
+        // A race: the HUD reads the picture every frame but skips one now and then (12 times in two minutes of a
+        // real one). 1.9.64 left every such frame without the passes; now each runs them once, before the HUD's
+        // list, or at Present when the core does not see that list. Only while the game's own frames close the
+        // passes' frames (no Present to fall back on) does a frame whose HUD's list the core misses still go
+        // without them. Every order of recording, with the HUD's list recorded after the picture's submission too:
+        // never twice, and every other frame runs them where 1.9.64 did.
+        static auto skips = [](unsigned f) { return f > 2 && rnd(f, 3) % 150 == 0; };
+        ReadSim sim;
+        sim.frames = 3600;
+        sim.reads = [](unsigned f) { return !skips(f); };
+        unsigned skipped = 0;
+        for (unsigned f = 3; f < sim.frames; f++)
+            skipped += skips(f) && !skips(f - 1);
+        CHECK(skipped >= 12);
+        for (unsigned bits = 0; bits < 32; bits++) {
+            sim.hud_first = bits & 1 ? +[](unsigned) { return true; } : +[](unsigned f) { return rnd(f, 5) % 2 == 0; };
+            sim.read_late = bits & 2 ? +[](unsigned f) { return rnd(f, 11) % 3 == 0; } : nullptr;
+            sim.open = bits & 4 ? +[](unsigned f) { return rnd(f, 13) % 2 == 0; } : nullptr;
+            sim.hud_seen = bits & 8 ? +[](unsigned) { return false; } : nullptr;
+            sim.game_frames = bits & 16;
+            sim.held = true;
+            sim.run();
+            std::vector<unsigned> held_runs = sim.runs;
+            std::vector<ReadAt> held_at = sim.at;
+            sim.held = false;
+            sim.run();
+            unsigned held_without = 0, without = 0, doubled = 0, latched = 0, moved = 0, wrong_place = 0;
+            bool lost = sim.hud_seen && sim.game_frames;
+            ReadAt fallback = sim.hud_seen ? AT_PRESENT : AT_BEFORE_HUD;
+            for (unsigned f = 3; f < sim.frames; f++) {
+                held_without += held_runs[f] == 0;
+                without += sim.runs[f] == 0;
+                doubled += sim.runs[f] > 1 || held_runs[f] > 1;
+                bool latch = skips(f) && !skips(f - 1);
+                latched += latch && held_runs[f] == 0 && sim.runs[f] == 1;
+                wrong_place += latch && sim.runs[f] == 1 && sim.at[f] != fallback;
+                moved += !latch && (sim.runs[f] != held_runs[f] || sim.at[f] != held_at[f]);
+            }
+            CHECK(doubled == 0 && moved == 0 && held_without == skipped);
+            CHECK(lost ? without == skipped && latched == 0 : without == 0 && latched == skipped && wrong_place == 0);
+        }
     }
     {
         // A step that stayed open past its frame (no Present closed it) no longer waits, and a new use of the back

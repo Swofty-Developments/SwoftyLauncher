@@ -264,18 +264,39 @@ inline bool placed_lately(unsigned now, unsigned at)
 // The HUD's read of the finished picture, which the game makes while paused and under panels over the race: the
 // passes run at that read. A frame's lists are recorded in parallel, so the list with the HUD-less step cannot
 // tell whether the HUD's list of the same frame reads the picture; while the read holds, the step leaves the passes
-// to it. It holds for the frame of a read and the one after, so the first frame without a read is the only one
-// that goes without the passes when the reads stop.
+// to it. It holds for the frame of a read and the one after. The submission of the picture's list comes after the
+// lists recorded before it, so it knows whether the HUD read the picture in this frame yet: when it did, the passes
+// ran there. In the frame after a read without one so far (the latch), the HUD's list may still read the picture,
+// so the submission leaves the passes waiting for it (BackPlace): a read that comes places them, and without one they
+// run at the fallbacks, so the first frame without a read keeps them too. Either way the back buffer is placed once.
 struct HudRead {
     unsigned at = LONG_AGO;
 
     void read(unsigned now) { at = now; }
     bool holds(unsigned now) const { return now - at <= 1; }
+    // The HUD read the picture in frame now itself.
+    bool read_in(unsigned now) const { return at == now; }
+    // A read of the frame before holds the in-list places off and none came in this frame yet.
+    bool latch(unsigned now) const { return holds(now) && !read_in(now); }
 };
 
 // What the submission of a picture's list does with a fresh back buffer: nothing (the passes were placed), the
 // passes between the game's lists right after it, or wait for the list that closes the HUD-less step.
 enum PictureEnd : uint8_t { END_NONE, END_BETWEEN, END_DEFER };
+
+// What the submission of a picture's list asks BackPlace::picture_submitted. When the list ends with the HUD-less
+// copy still in UAV, the passes wait for the step's closing list while a Present can still fall back (not
+// game_frames), and otherwise run right after the list. In the HUD read's latch (HudRead::latch) they always wait:
+// running them right after the list would take the place of a read the HUD's list still makes in this frame, and
+// with it the hold that keeps the read the one place on track. Without a Present to fall back on, a latch frame
+// whose HUD's list the core does not see goes without them, as every latch frame did before.
+struct PictureWait {
+    bool open = false, may_defer = false;
+};
+inline PictureWait picture_wait(bool step_open, bool latch, bool game_frames)
+{
+    return {step_open || latch, latch || (step_open && !game_frames)};
+}
 
 // Where one back buffer's passes go in a frame. It is fresh from the barrier that makes it a render target until
 // the passes are placed on it. A picture's list can end inside the HUD-less step; the list that closes the step
