@@ -1,6 +1,6 @@
 //! Where the shell shows its ad slots: under the news page's release notes, a
-//! banner over the Discover cards and the Online boards, the side column of an
-//! addon's page, and a floating video while the game builds and starts.
+//! banner over the Discover cards and under the Online filters, the side column
+//! of an addon's page, and a floating video while the game builds and starts.
 //! Signed-in supporters see none. `SWOFTY_ADS_VIDEO=1` shows the video without
 //! pressing Play.
 

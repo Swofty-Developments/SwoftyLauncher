@@ -603,9 +603,6 @@ impl Shell {
         }
         let crumbs = self.crumb_bar(p, cx);
         let banner = self.sign_in_banner(p, cx);
-        let ad = self
-            .ad_banner(crate::ads::Unit::Online, self.content_width - 56., p)
-            .map(|ad| div().px(px(28.)).pb(px(10.)).child(ad));
         let body = match self.online.trail.current().clone() {
             Screen::Landing => self.online_landing(p, cx),
             Screen::Season(id) => self.online_season(&id, p, cx),
@@ -617,7 +614,6 @@ impl Shell {
             .size_full()
             .child(crumbs)
             .children(banner)
-            .children(ad)
             .child(v_flex().flex_1().min_h_0().child(body))
             .into_any_element()
     }

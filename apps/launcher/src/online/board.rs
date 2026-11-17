@@ -79,6 +79,7 @@ impl Shell {
         });
         let header = self.board_header(&page, p, cx);
         let filters = self.filter_chips(p, cx);
+        let ad = self.ad_banner(crate::ads::Unit::Online, self.content_width - 56., p);
         let pinned = page
             .mine
             .clone()
@@ -120,6 +121,7 @@ impl Shell {
             .gap(px(16.))
             .child(header)
             .child(filters)
+            .children(ad)
             .children(watch)
             .child(panel(p).child(head).children(pinned).children(body))
             .children(more)
