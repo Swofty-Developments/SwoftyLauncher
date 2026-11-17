@@ -3,6 +3,7 @@
 #include <atomic>
 #include <chrono>
 #include <cstdio>
+#include <future>
 #include <string>
 #include <thread>
 #include <vector>
@@ -44,50 +45,52 @@ void an_ask_during_a_write_writes_again()
 {
     ReportQueue q;
     std::vector<std::string> written;
-    std::atomic<bool> writing{false}, stop{false};
+    std::atomic<int> writing{0};
+    std::atomic<bool> finish{false};
     std::thread writer([&] {
-        std::string when;
-        while (!stop) {
-            if (!q.take_for(5ms, when))
-                continue;
-            writing = true;
-            std::this_thread::sleep_for(30ms);
+        for (int i = 0; i < 2; i++) {
+            std::string when = q.take();
+            writing++;
+            while (!finish)
+                std::this_thread::yield();
             written.push_back(when);
-            writing = false;
         }
     });
     q.want("first");
-    while (!writing)
+    while (writing < 1)
         std::this_thread::yield();
     q.want("second");
     q.want("third");
-    std::this_thread::sleep_for(150ms);
-    stop = true;
+    finish = true;
     writer.join();
-    check(written.size() == 2, "an ask made while a write runs gives exactly one more write");
+    std::string more;
     check(written.size() == 2 && written[0] == "first" && written[1] == "third",
-          "the write after it is as of the newest ask");
+          "an ask made while a write runs gives one more write, as of the newest ask");
+    check(!q.take_for(10ms, more), "and nothing after it");
 }
 
 void the_asker_never_waits_for_a_write()
 {
     ReportQueue q;
-    std::atomic<bool> stop{false};
+    std::atomic<bool> writing{false}, finish{false};
     std::thread writer([&] {
-        std::string when;
-        while (!stop)
-            if (q.take_for(5ms, when))
-                std::this_thread::sleep_for(100ms);
+        q.take();
+        writing = true;
+        while (!finish)
+            std::this_thread::yield();
     });
     q.want("a");
-    std::this_thread::sleep_for(10ms);
-    auto t0 = std::chrono::steady_clock::now();
-    for (int i = 0; i < 100; i++)
-        q.want("b");
-    double ms = std::chrono::duration<double, std::milli>(std::chrono::steady_clock::now() - t0).count();
-    stop = true;
+    while (!writing)
+        std::this_thread::yield();
+    auto asks = std::async(std::launch::async, [&] {
+        for (int i = 0; i < 100; i++)
+            q.want("b");
+    });
+    bool returned = asks.wait_for(10s) == std::future_status::ready;
+    finish = true;
     writer.join();
-    check(ms < 20, "asking while a write runs returns at once");
+    asks.wait();
+    check(returned, "asking while a write runs returns without waiting for it");
 }
 
 }
