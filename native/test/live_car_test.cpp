@@ -39,20 +39,15 @@ int main()
         CHECK(!SIGNALS[s].in_game);
 
     {
-        live_car::Fields none = live_car::fields_of(false, false), ea = live_car::fields_of(false, true),
-                         steam = live_car::fields_of(true, true);
+        namespace bp = runtime::build_proof;
+        live_car::Fields none = live_car::fields_of(bp::Build::unknown), ea = live_car::fields_of(bp::Build::ea),
+                         steam = live_car::fields_of(bp::Build::kb), port = live_car::fields_of(bp::Build::steam_1_0_145);
         CHECK(!none.table && !none.wetness && !none.surface && !none.orient && !none.angvel && !none.wheels && !none.drs);
         CHECK(ea.table && ea.drs);
         CHECK(!ea.wetness && !ea.surface && !ea.orient && !ea.angvel && !ea.wheels);
         CHECK(steam.table && steam.wetness && steam.surface && steam.orient && steam.angvel && steam.wheels && steam.drs);
-        CHECK(!live_car::fields_of(true, false).table);
-        live_car::Fields port = live_car::fields_of(false, true, 1794312636u),
-                         unknown = live_car::fields_of(false, true, 0x12345678u);
         CHECK(port.table && port.drs && port.wheels && port.wetness);
         CHECK(!port.surface && !port.orient && !port.angvel);
-        CHECK(unknown.table && !unknown.wheels && !unknown.wetness && !unknown.surface);
-        CHECK(!live_car::fields_of(false, false, 1794312636u).wheels);
-        CHECK(live_car::fields_of(true, true, 1794312636u).surface);
     }
 
     if (failures)

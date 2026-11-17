@@ -14,8 +14,8 @@
 #include "core/apply/content/race_fuel.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/registry/table.hpp"
-#include "core/hooks/car_builds.hpp"
 #include "core/hooks/car_live.hpp"
+#include "core/hooks/car_proofs.hpp"
 #include "core/hooks/car_profile.hpp"
 #include "core/hooks/context.hpp"
 #include "core/hooks/core_events.hpp"
@@ -507,9 +507,7 @@ void setup()
     e.flow_thread = on_flow_thread;
     e.enabled = [] { return runtime::enabled("events", nullptr); };
     e.row_ready = row_ready;
-    if (!runtime::same_build()) {
-        swofty::log("[cars] live car operations off: the field offsets are the KB build's and this is not that build");
-    } else {
+    if (runtime::holds(car_proofs::OPERATIONS)) {
         e.table = swofty::api->resolve("g_Sess_VehicleTable");
         e.count = swofty::api->resolve("g_Sess_VehicleCount");
         if (!e.table || !e.count)
@@ -636,11 +634,8 @@ void declare_car_points(Table &t)
 
 void arm_car_points()
 {
-    uint32_t stamp = runtime::pe_timestamp();
-    if (!(car_builds::features_of(stamp, runtime::same_build()) & car_builds::POINTS)) {
-        swofty::log("[cars] car points off: build %u has no proven car hook sites", stamp);
+    if (!runtime::holds(car_proofs::POINTS))
         return;
-    }
     g_built->keep(true);
     g_built->install(false, "the core");
     g_reset->keep(true);
@@ -693,7 +688,7 @@ namespace runtime {
 std::vector<CoreMixins> car_levers_mixins()
 {
     std::vector<CoreMixins> out;
-    if (g_levers_offered || !code_ready() || !same_build())
+    if (g_levers_offered || !code_ready() || !holds(swofty_core::hooks::car_proofs::LEVERS))
         return out;
     g_levers_offered = true;
     std::vector<SwoftyMixin> mixins;
