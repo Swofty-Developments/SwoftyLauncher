@@ -689,6 +689,7 @@
   "Old backup": "이전 백업",
   "On": "켬",
   "Online": "온라인",
+  "Online sessions aren't available: {why}": "온라인 세션을 사용할 수 없습니다: {why}",
   "Only {free} free on the drive with your addons and saves: installing or building addons may fail.": "애드온과 세이브가 있는 드라이브의 여유 공간이 {free}뿐입니다: 애드온 설치나 빌드가 실패할 수 있습니다.",
   "Only {free} free on {drive}, and F1 25 needs {need} to start.": "{drive}의 여유 공간은 {free}뿐이며, F1 25를 시작하려면 {need}의 공간이 필요합니다.",
   "Only {free} free on {drive}. F1 25 won't start with less than {need} free there.": "{drive}의 여유 공간이 {free}뿐입니다. 여유 공간이 {need} 미만이면 F1 25가 시작되지 않습니다.",

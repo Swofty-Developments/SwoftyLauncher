@@ -203,6 +203,19 @@ pub(crate) fn exit_notice(host: bool) -> &'static str {
     }
 }
 
+/// What the page shows in place of its list while the session module isn't loaded: the sentence the last
+/// load failed with, kept while another load runs, gone once one succeeds.
+pub(crate) fn refusal(shown: Option<String>, loaded: bool, failed: Option<String>) -> Option<String> {
+    if loaded {
+        return None;
+    }
+    failed.or(shown)
+}
+
+pub(crate) fn refusal_text(why: &str) -> String {
+    trf!("Online sessions aren't available: {why}", why = why)
+}
+
 /// One member's state as the room lists it: what their game is doing. Only a game in the lobby counts as joined.
 pub(crate) fn member_word(m: &MemberState) -> (&'static str, Tone) {
     if !m.connected {
@@ -308,6 +321,7 @@ pub(crate) struct Multiplayer {
     rooms: Vec<RoomSummary>,
     rooms_loaded: bool,
     rooms_error: Option<String>,
+    refused: Option<String>,
     rooms_at: Option<Instant>,
     rooms_polling: bool,
     digest: Option<String>,
@@ -354,6 +368,7 @@ impl Multiplayer {
             rooms: Vec::new(),
             rooms_loaded: false,
             rooms_error: None,
+            refused: None,
             rooms_at: None,
             rooms_polling: false,
             digest: None,
@@ -440,6 +455,14 @@ impl Shell {
             m.rooms_at = None;
             m.game_at = None;
             m.digest = None;
+        }
+        let refused = refusal(m.refused.clone(), diag::is_loaded(), diag::unavailable());
+        if refused != m.refused {
+            if refused.is_none() {
+                m.rooms_at = None;
+            }
+            m.refused = refused;
+            cx.notify();
         }
         if let Some(session) = &m.session {
             let state = session.state();
@@ -999,7 +1022,13 @@ impl Shell {
                     .disabled(self.mp_page.form)
                     .on_click(cx.listener(|this, _, window, cx| this.mp_open_form(window, cx))),
             );
-        let rooms: AnyElement = if !self.mp_page.rooms_loaded && self.mp_page.rooms_error.is_none() {
+        let rooms: AnyElement = if let Some(why) = &self.mp_page.refused {
+            div()
+                .text_size(px(13.))
+                .text_color(p.text_muted)
+                .child(refusal_text(why))
+                .into_any_element()
+        } else if !self.mp_page.rooms_loaded && self.mp_page.rooms_error.is_none() {
             div()
                 .text_size(px(13.))
                 .text_color(p.text_muted)
@@ -1766,7 +1795,8 @@ mod tests {
 
     use super::{
         GameState, RoomContent, RoomStatus, Start, Tone, addon_checks, card_addons, content_check,
-        content_word, exit_leaves, exit_notice, joined, member_word, missing, restart_ok_text, room_meta,
+        content_word, exit_leaves, exit_notice, joined, member_word, missing, refusal, refusal_text,
+        restart_ok_text, room_meta,
     };
 
     fn status(screen: Screen) -> GameStatus {
@@ -1973,6 +2003,27 @@ mod tests {
         );
         assert_eq!(exit_notice(false), "F1 25 closed, so you left the room.");
         assert_eq!(exit_notice(true), "F1 25 closed, so your room closed.");
+    }
+
+    #[test]
+    fn the_servers_refusal_shows_until_a_load_succeeds() {
+        let beta = || Some("needs the beta role".to_owned());
+        assert_eq!(refusal(None, false, None), None);
+        assert_eq!(refusal(None, false, beta()), beta());
+        assert_eq!(
+            refusal(beta(), false, None),
+            beta(),
+            "kept while another load runs"
+        );
+        assert_eq!(
+            refusal(beta(), false, Some("not signed in".into())),
+            Some("not signed in".into())
+        );
+        assert_eq!(refusal(beta(), true, None), None);
+        assert_eq!(
+            refusal_text("needs the beta role"),
+            "Online sessions aren't available: needs the beta role"
+        );
     }
 
     #[test]
