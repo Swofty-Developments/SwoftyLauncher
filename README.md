@@ -2,7 +2,7 @@
 
 A launcher and mod loader for F1 25 on Windows and Linux. Addons change the game's data and engine, mods and community tracks drop onto the Mods page, and profiles keep separate setups.
 
-![The launcher's Addons page with SwoftyMod, Team Simplified, Custom Grid Size and an AlphaTauri livery addon](docs/public/screenshots/hero-launcher.png)
+![The launcher's Home page with the Swofty Launcher 1.9 news post, the Discord server banner and the changelogs](docs/public/screenshots/hero-launcher.png)
 
 ## Features
 

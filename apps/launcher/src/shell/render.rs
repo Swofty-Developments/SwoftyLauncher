@@ -6,7 +6,7 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::time::Instant;
 
-use super::{Page, Shell};
+use super::{Page, PlayState, Shell};
 
 impl Render for Shell {
     fn render(&mut self, window: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
@@ -14,8 +14,28 @@ impl Render for Shell {
         self.painted = Instant::now();
         let p = palette(cx);
         if let Some(wizard) = self.onboarding_view(p, cx) {
+            self.ads.hide_all();
             return wizard;
         }
+        let state = self.play_state();
+        if self
+            .ads
+            .game(matches!(state, PlayState::Running | PlayState::Elsewhere(_)))
+        {
+            cx.spawn(async move |this, cx| {
+                cx.background_executor().timer(crate::ads::RELEASE_AFTER).await;
+                this.update(cx, |this, cx| {
+                    if this.ads.release_for_game() {
+                        cx.notify();
+                    }
+                })
+                .ok();
+            })
+            .detach();
+        }
+        let covered = self.ads_covered(window, cx);
+        self.ads.begin(covered);
+        let ad_video = self.ad_video(&state, p, cx);
         let wide = window.viewport_size().width > px(1500.);
         let short = window.viewport_size().height < px(760.);
         self.short = short;
@@ -120,12 +140,14 @@ impl Render for Shell {
             .children(self.update_bar(p))
             .children(self.scale_rescue(p, cx))
             .child(self.play_bar(p, wide, cx))
+            .children(ad_video)
             .children(self.task_dialog(p, window, cx))
             .children(self.crash_overlay(p, cx))
             .children(self.ban_overlay(p, cx))
             .children(self.data_move_overlay(p, cx))
             .children(self.found_data_overlay(p, cx))
-            .when(self.dropping, |d| d.child(self.drop_overlay(p)));
+            .when(self.dropping, |d| d.child(self.drop_overlay(p)))
+            .children(self.ads.sweep());
         self.note_slow("render", page, started);
         tree
     }

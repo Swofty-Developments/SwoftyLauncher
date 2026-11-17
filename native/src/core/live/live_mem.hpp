@@ -50,6 +50,7 @@ enum Group : unsigned {
     G_SPECTATE_GAP,
     G_BUS_EVENTS,
     G_DRIVER_NAMES,
+    G_BADGE_RENDER,
     G_COUNT
 };
 
@@ -71,7 +72,7 @@ inline const char *group_name(Group g)
                                                "classification", "timing", "pit",       "penalties",    "tyres",
                                                "flags",       "controllers", "spectator", "mode",       "badges",
                                                "track",       "pit lane", "track name", "spectator gap", "bus events",
-                                               "driver names"};
+                                               "driver names", "rendered badges"};
     return names[g];
 }
 

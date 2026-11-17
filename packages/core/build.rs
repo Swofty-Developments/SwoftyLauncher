@@ -45,6 +45,8 @@ const UNRELATED: &[&str] = &[
 const DATA: &[&str] = &[
     "../../addons/swoftymod/swofty.json",
     "../../addons/swoftymod/db/core.json",
+    "../../addons/swoftymod/startup_intro/ops.json",
+    "../../addons/swoftymod/startup_intro/cm_f1_sting.bk2",
     "../../tools/gamedb/catalog/keys.tsv.gz",
     "../../tools/gamedb/catalog/tables.tsv",
     "../../tools/uicatalog/catalog.json",

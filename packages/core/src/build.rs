@@ -18,7 +18,9 @@ use crate::asset::{
     AssetOp, FileKind, FileOp, GroupOp, ItemOp, LangOp, Op, OpFile, Origin, Root, Source, TrackOp,
 };
 use crate::baseline::{Baseline, Objects, hex, sha256_file, sha256_opt};
-use crate::builtin::{CORE_DB, CORE_ID, LOADER_ENV, core_db_ops, loader_dir, loader_files};
+use crate::builtin::{
+    CORE_DB, CORE_ID, CORE_INTRO, LOADER_ENV, core_db_ops, loader_dir, loader_files, stage_intro,
+};
 use crate::conflicts::Report;
 use crate::dbedit::driver_manager;
 use crate::erpbuild::{ErpBuild, Held, Resized, SliceMerge, reads, unsupported, writes};
@@ -365,6 +367,25 @@ fn render_file(
     let doc = render_doc(path, m, p, on)?;
     hasher.update(serde_json::to_vec(&doc).expect("serialisable"));
     OpFile::from_value(doc, kind).map_err(json_at(path))
+}
+
+/// The core's startup intro ops, empty while the `startup_intro` setting is off. The
+/// video is staged in the core's cache folder, which the `file.put` reads.
+fn core_intro(
+    store: &Store,
+    m: &AddonManifest,
+    p: &Profile,
+    on: &OnAddons,
+    hasher: &mut Sha256,
+) -> Result<OpFile> {
+    let mut doc = serde_json::from_str(CORE_INTRO).expect("the built-in intro ops are JSON");
+    render_ops(&mut doc, m, p, on)?;
+    let file = OpFile::from_value(doc, FileKind::Assets).expect("the built-in intro ops are valid");
+    hasher.update(serde_json::to_vec(&file).expect("serialisable"));
+    if !file.ops.is_empty() {
+        stage_intro(&store.addon_cache_dir(CORE_ID))?;
+    }
+    Ok(file)
 }
 
 /// One of an addon's op files as a build reads it, with its option
@@ -1268,6 +1289,10 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
         if id == CORE_ID {
             hasher.update(CORE_DB);
             files.push((FileKind::Database, core_db_ops()));
+            let intro = core_intro(store, m, &p, &on, &mut hasher)?;
+            if !intro.ops.is_empty() {
+                files.push((FileKind::Assets, intro));
+            }
         }
         for (kind, rel) in m.operations.op_files() {
             if package.is_some() && kind == FileKind::Database {
@@ -2636,7 +2661,7 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
     }
     built.settings = Some(session);
     let mut changes = planner.changes();
-    let planned = planner.finish();
+    let mut planned = planner.finish();
     for op in planned.runtime {
         let resolve = |op: &Op, s: &Source| Ok(s.resolve(&source_dir(store, &op.origin.addon, s.root))?);
         runtime.push(op, &resolve)?;
@@ -2669,6 +2694,14 @@ pub(crate) fn build_as(store: &Store, profile: &str, game: &Game, checking: bool
             built.lines.push(format!("{}: {c}", name(id)));
         }
     }
+    for c in &mut planned.conflicts {
+        if matches!(&c.target, Target::File(f) if f == crate::builtin::CORE_INTRO_CACHED)
+            || matches!(&c.target, Target::String { key, .. } if key == crate::builtin::CORE_INTRO_SUBTITLE)
+        {
+            c.overridden.retain(|o| o.addon != CORE_ID);
+        }
+    }
+    planned.conflicts.retain(|c| !c.overridden.is_empty());
     let records = planned
         .conflicts
         .iter()
@@ -3984,6 +4017,78 @@ mod tests {
             }],
         }
         .to_bytes()
+    }
+
+    #[test]
+    fn the_core_ships_the_startup_intro_and_a_later_addon_replaces_it() {
+        if loader_dir().is_some() {
+            return;
+        }
+        let root = std::env::temp_dir().join(format!("swofty-build-intro-{}", std::process::id()));
+        std::fs::remove_dir_all(&root).ok();
+        let dir = root.join("game");
+        std::fs::create_dir_all(dir.join("game_package/gamedatabases")).unwrap();
+        std::fs::write(dir.join(crate::GAME_EXE), "exe").unwrap();
+        let records = vec![swofty_formats::gvdb::Record::new(
+            "entrants.teams._team_instancecount_",
+            0,
+            "0",
+        )];
+        std::fs::write(dir.join(GVDB), swofty_formats::gvdb::Gvdb { records }.to_bytes()).unwrap();
+        let game = Game {
+            identity: Identity::detect(&dir, Some(1)).unwrap(),
+            dir: dir.clone(),
+            user_reg: None,
+        };
+        let store = Store::new(root.join("data"));
+        let video = "videos/cm_f1_sting.bk2";
+        let staged = store.addon_cache_dir(CORE_ID).join(video);
+
+        let built = build(&store, "default", &game).unwrap();
+        assert_eq!(std::fs::read(&staged).unwrap(), crate::builtin::CORE_INTRO_VIDEO);
+        let put = |b: &Built| b.plan.data.get(video).or(b.plan.added.get(video)).cloned();
+        assert_eq!(put(&built), Some(staged));
+        assert!(built.conflicts.is_empty());
+
+        let src = root.join("src");
+        std::fs::create_dir_all(&src).unwrap();
+        std::fs::write(
+            src.join("swofty.json"),
+            r#"{ "schema_version": 1, "id": "t.video", "name": "Video", "version": "1.0.0", "author": "t",
+                 "compat": { "game": "f1_25" }, "operations": { "files": [{ "source": "v.bk2", "target": "videos/cm_f1_sting.bk2" }], "assets": ["t.json"] } }"#,
+        )
+        .unwrap();
+        std::fs::write(
+            src.join("t.json"),
+            r#"{ "schema_version": 1, "ops": [{ "op": "lang.set", "language": "*", "key": "lng_subtitle_ea_sports_intro", "value": "MINE" }] }"#,
+        )
+        .unwrap();
+        std::fs::write(src.join("v.bk2"), "mine").unwrap();
+        store.install_addon(&src).unwrap();
+        store
+            .update_profile("default", |p| p.set_enabled("t.video", true))
+            .unwrap();
+        let replaced = build(&store, "default", &game).unwrap();
+        assert!(replaced.conflicts.is_empty(), "{:?}", replaced.conflicts);
+        let mine = put(&replaced).unwrap();
+        assert_eq!(std::fs::read(mine).unwrap(), b"mine");
+
+        store
+            .update_profile("default", |p| p.set_enabled("t.video", false))
+            .unwrap();
+        store
+            .update_profile("default", |p| {
+                p.set_option(
+                    &crate::builtin::core_manifest(),
+                    "startup_intro",
+                    serde_json::json!(false),
+                )
+                .map(|_| ())
+            })
+            .unwrap();
+        let off = build(&store, "default", &game).unwrap();
+        assert_eq!(put(&off), None);
+        std::fs::remove_dir_all(&root).ok();
     }
 
     #[test]

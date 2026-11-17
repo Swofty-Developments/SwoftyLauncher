@@ -10,6 +10,8 @@ use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use swofty_i18n::{tr, trn};
 
+const RAIL_W: f32 = 190.;
+
 impl Shell {
     pub(crate) fn online_season(&mut self, id: &str, p: Palette, cx: &mut Context<Self>) -> AnyElement {
         let page = match self.online.seasons.get(id) {
@@ -57,6 +59,9 @@ impl Shell {
         let header = self.season_header(&page.season, p);
         let bar = self.track_filter_bar(&page.tracks, &filter, me.is_some(), p, cx);
         let rail = self.season_rail(id, p, cx);
+        let main_width =
+            self.content_width - 56. - 20. - RAIL_W - if wide { 20. + super::landing::RIGHT_W } else { 0. };
+        let ad = self.ad_banner(crate::ads::Unit::Online, main_width, p);
         let empty = rows.is_empty() && custom_rows.is_empty();
         let (narrow_ranking, side_ranking) = if wide {
             (None, Some(ranking))
@@ -95,6 +100,7 @@ impl Shell {
             .gap(px(14.))
             .child(header)
             .child(bar)
+            .children(ad)
             .children(nothing)
             .when(!rows.is_empty(), |d| d.child(panel(p).children(rows)))
             .when(!custom_rows.is_empty(), |d| {
@@ -138,7 +144,7 @@ impl Shell {
             _ => vec![None; recents.len()],
         };
         v_flex()
-            .w(px(190.))
+            .w(px(RAIL_W))
             .flex_shrink_0()
             .h_full()
             .scroll_y("online-rail")

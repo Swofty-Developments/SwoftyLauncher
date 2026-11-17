@@ -64,6 +64,8 @@ impl Shell {
         self.online_rank_ensure("all", cx);
         let ranking = self.rank_column("all", tr("GLOBAL RANKING"), &mut items, p, cx);
         self.online.items = items;
+        let left_width = self.content_width - 56. - if wide { 20. + RIGHT_W } else { 0. };
+        let ad = self.ad_banner(crate::ads::Unit::Online, left_width, p);
         let left = v_flex()
             .gap(px(10.))
             .child(h_flex().h(px(34.)).items_center().child(self.tt_category_bar(
@@ -72,6 +74,7 @@ impl Shell {
                 p,
                 cx,
             )))
+            .children(ad)
             .child(section_title(tr("SEASONS"), p))
             .child(panel(p).children(seasons));
         if wide {

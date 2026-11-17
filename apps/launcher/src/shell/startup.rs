@@ -115,6 +115,8 @@ impl Shell {
         let mp = Self::start_account(&store, cx);
         Self::watch_multiplayer(window, cx);
         let root = store.root.clone();
+        let ads = crate::ads::Ads::start(window, &root);
+        let window_moved = cx.observe_window_bounds(window, |this, _, _| this.ads.moved());
         let mut shell = Self {
             library,
             store,
@@ -212,6 +214,9 @@ impl Shell {
             _shaders_events: shaders_events,
             tools: Default::default(),
             settings: Default::default(),
+            ads,
+            ad_video: None,
+            _window_moved: window_moved,
             _console_closed: console_closed,
             _poll: poll,
             _live: live,
@@ -395,6 +400,7 @@ impl Shell {
                     let allowed = s.mp.as_ref().is_some_and(|m| m.allowed);
                     s.mp_apply_check(refreshed, allowed, cx);
                     s.sync_avatar(cx);
+                    s.sync_support(cx);
                 })
                 .ok();
                 let data = this

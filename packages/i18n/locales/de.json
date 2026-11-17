@@ -1,5 +1,6 @@
 {
   "_language": "Deutsch",
+  "Advertisement": "Werbung",
   "\nTurned on in {profile}": "\nAktiviert in {profile}",
   "\n{changes} aren't in it; save, then export again to include them.": "\n{changes} sind nicht enthalten; speichere und exportiere erneut, um sie aufzunehmen.",
   "\n{count} skipped:": "\n{count} übersprungen:",
@@ -936,7 +937,8 @@
   "Storage": "Speicher",
   "Support": "Unterstützen",
   "Supporters": "Unterstützer",
-  "Supporting a free and open-source launcher with no ads": "Unterstützung für einen kostenlosen Open-Source-Launcher ohne Werbung",
+  "Supporting a free and open-source launcher": "Unterstützung für einen kostenlosen Open-Source-Launcher",
+  "No ads in the launcher": "Keine Werbung im Launcher",
   "Switch away from {vanilla} to use addons": "Wechsle weg von {vanilla}, um Addons zu nutzen",
   "Switch the copy of F1 25 Play uses": "Die von „Spielen“ genutzte F1 25-Kopie wechseln",
   "Switch to it": "Dorthin wechseln",

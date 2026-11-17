@@ -1,5 +1,6 @@
 {
   "_language": "Português (Brasil)",
+  "Advertisement": "Publicidade",
   "\nTurned on in {profile}": "\nAtivado em {profile}",
   "\n{changes} aren't in it; save, then export again to include them.": "\n{changes} não estão incluídas; salve e exporte de novo para incluí-las.",
   "\n{count} skipped:": "\n{count} ignorados:",
@@ -936,7 +937,8 @@
   "Storage": "Armazenamento",
   "Support": "Apoiar",
   "Supporters": "Apoiadores",
-  "Supporting a free and open-source launcher with no ads": "Apoiar um launcher gratuito, de código aberto e sem anúncios",
+  "Supporting a free and open-source launcher": "Apoiar um launcher gratuito e de código aberto",
+  "No ads in the launcher": "Sem anúncios no launcher",
   "Switch away from {vanilla} to use addons": "Saia de {vanilla} para usar complementos",
   "Switch the copy of F1 25 Play uses": "Trocar a cópia do F1 25 que o Jogar usa",
   "Switch to it": "Mudar para ela",

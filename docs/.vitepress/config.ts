@@ -166,6 +166,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
           {
             text: "Releases",
             items: [
+              { text: "1.9.61", link: "/releases/1.9.61" },
               { text: "1.9.60", link: "/releases/1.9.60" },
               { text: "1.9.59", link: "/releases/1.9.59" },
               { text: "1.9.58", link: "/releases/1.9.58" },
@@ -547,6 +548,7 @@ export default defineConfigWithTheme<DocsThemeConfig>({
               { text: "A year pack", link: "/make/year-pack", icon: "file" },
               { text: "A career mode", link: "/make/career", icon: "file" },
               { text: "A HUD element", link: "/make/hud-element", icon: "file" },
+              { text: "A startup video", link: "/make/startup-video", icon: "file" },
               { text: "Your own system", link: "/make/own-system", icon: "file" },
               { text: "Moving a 1.5 addon to the registry", link: "/make/migrate", icon: "file" },
               { text: "Moving Project Halo onto the std lib", link: "/make/halo-migration", icon: "file" },

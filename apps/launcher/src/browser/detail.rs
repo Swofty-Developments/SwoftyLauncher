@@ -228,6 +228,7 @@ impl Shell {
             .w(px(SIDE_W))
             .flex_shrink_0()
             .gap(px(16.))
+            .children(self.ad_addon(SIDE_W, p))
             .children(self.published_by(listed, p, cx))
             .children(self.more_from(listed, p, cx))
             .child(self.browser_versions(a, installed.as_ref(), loading, &mono, p));

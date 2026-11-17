@@ -2,6 +2,7 @@
 
 mod addons;
 mod admin_needed;
+mod ads;
 mod app_log;
 mod avatar;
 mod ban;

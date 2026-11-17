@@ -658,13 +658,43 @@ static void test_badge()
     live.update(2.0);
     CHECK(live.read_team_badge(1, out, sizeof out) && !std::strcmp(out, "ferrari_2026"));
     CHECK(!live.read_team_badge(2, out, sizeof out));
+    char path[96];
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "#overrides.osd.timing_tower.team_badges_hud.ferrari_2026"));
+    CHECK(!live.read_team_badge_texture(1, path, 40) && !path[0]);
+    CHECK(!live.read_team_badge_texture(2, path, sizeof path));
     a.put<uint8_t>(rec + L::badge::record_render, 1);
     CHECK(!live.read_team_badge(1, out, sizeof out));
+    uintptr_t badge = ents + L::badge::entrant_stride + L::badge::entrant_badge;
+    a.put<uint32_t>(badge, (7u << 16) | 0);
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_ePreLoaded 7"));
+    a.put<uint32_t>(badge, (12u << 16) | 0x5500 | 2);
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_eNetworkReplicated 12"));
+    a.put<uint32_t>(badge, (L::badge::badge_none << 16) | 0);
+    CHECK(live.read_team_badge_texture(1, path, sizeof path) &&
+          !std::strcmp(path, "eaid://ui_package/art/textures/render_badge_default.tga"));
+    a.put<uint32_t>(badge, (7u << 16) | 3);
+    CHECK(!live.read_team_badge_texture(1, path, sizeof path));
+    a.put<uint32_t>(badge, (7u << 16) | 0);
+    Gates off = Gates::all();
+    off.on[G_BADGE_RENDER] = false;
+    Live plain(w.mem(), w.s, off);
+    plain.update(2.0);
+    CHECK(!plain.read_team_badge_texture(1, path, sizeof path));
+    a.put<uint8_t>(rec + L::badge::record_render, 0);
+    CHECK(plain.read_team_badge_texture(1, path, sizeof path));
+    a.put<uint8_t>(rec + L::badge::record_render, 1);
+    a.put<uint32_t>(ents + L::badge::entrant_stride + L::badge::entrant_team, (3u << 16) | L::badge::my_team_kind);
+    a.put<uint32_t>(badge, (4u << 16) | 1);
+    CHECK(!live.read_team_badge(1, out, sizeof out) && !live.read_team_badge_texture(1, path, sizeof path));
+    a.put<uint32_t>(ents + L::badge::entrant_stride + L::badge::entrant_team, (3u << 16) | 0);
     a.put<uint8_t>(rec + L::badge::record_render, 0);
     CHECK(live.read_team_badge(1, out, sizeof out));
     a.put<uint32_t>(w.s.vehicle_count, 0);
     live.update(3.0);
-    CHECK(!live.active() && !live.read_team_badge(1, out, sizeof out));
+    CHECK(!live.active() && !live.read_team_badge(1, out, sizeof out) && !live.read_team_badge_texture(1, path, sizeof path));
 }
 
 static void test_utf8_prefix()
@@ -1036,7 +1066,7 @@ static void test_build_gate()
 
     CHECK(proof_for(1789118616u) == &KB_BUILD && proof_for(1789128892u) == &EA_BUILD && !proof_for(1234u) && !proof_for(0));
     CHECK(EA_BUILD.progress_from_manager == 0x2a0 && KB_BUILD.progress_from_manager == L::progress::from_manager);
-    CHECK(EA_BUILD.groups == (ALL_GROUPS & ~bit(G_DRIVER_NAMES)) && KB_BUILD.groups == ALL_GROUPS);
+    CHECK(EA_BUILD.groups == (ALL_GROUPS & ~(bit(G_DRIVER_NAMES) | bit(G_BADGE_RENDER))) && KB_BUILD.groups == ALL_GROUPS);
 
     World ea(EA_BUILD.progress_from_manager);
     Sites ea_sites = ea.s;

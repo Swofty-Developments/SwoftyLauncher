@@ -1,5 +1,6 @@
 {
   "_language": "한국어",
+  "Advertisement": "광고",
   "\nTurned on in {profile}": "\n{profile}에서 켜짐",
   "\n{changes} aren't in it; save, then export again to include them.": "\n{changes}은(는) 포함되지 않았습니다. 저장한 후 다시 내보내면 포함됩니다.",
   "\n{count} skipped:": "\n{count}개 건너뜀:",
@@ -936,7 +937,8 @@
   "Storage": "저장 공간",
   "Support": "후원",
   "Supporters": "후원자",
-  "Supporting a free and open-source launcher with no ads": "광고 없는 무료 오픈 소스 런처 후원",
+  "Supporting a free and open-source launcher": "무료 오픈 소스 런처 후원",
+  "No ads in the launcher": "런처 광고 없음",
   "Switch away from {vanilla} to use addons": "애드온을 사용하려면 {vanilla}에서 전환하세요",
   "Switch the copy of F1 25 Play uses": "플레이가 사용할 F1 25 사본 전환",
   "Switch to it": "전환하기",

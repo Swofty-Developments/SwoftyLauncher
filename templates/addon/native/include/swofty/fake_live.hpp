@@ -34,7 +34,7 @@ public:
         std::memset(present_, 0, sizeof present_);
         table_ = {SWOFTY_LIVE_VERSION, &Live::t_available, &Live::t_session, &Live::t_car, &Live::t_subject,
                   &Live::t_turn,       &Live::t_track_turns, &Live::t_badge, &Live::t_seq,
-                  &Live::t_driver_name};
+                  &Live::t_driver_name, &Live::t_badge_texture};
     }
 
     ~Live() { uninstall(); }
@@ -109,8 +109,9 @@ public:
     void set_turns(const std::vector<SwoftyLiveTurn> &turns) { turns_ = turns; }
     void set_badge(uint32_t vehicle, const std::string &key) { badges_[vehicle] = key; }
     void set_driver_name(uint32_t vehicle, const std::string &name) { names_[vehicle] = name; }
-    // Answer as a core with table version 1 (no driver_name member) does.
+    // Answer as an older core does: version 1 has no driver_name member, version 2 no team_badge_texture member.
     void set_table_version(uint32_t v) { table_.version = v; }
+    void set_badge_texture(uint32_t vehicle, const std::string &path) { textures_[vehicle] = path; }
     void advance() { frame_++; }
 
 private:
@@ -208,6 +209,22 @@ private:
         return SWOFTY_ASSET_OK;
     }
 
+    static int t_badge_texture(uint32_t vehicle, char *path, uint32_t cap)
+    {
+        if (!t_available())
+            return SWOFTY_ASSET_UNAVAILABLE;
+        auto it = current()->textures_.find(vehicle);
+        std::string s;
+        if (it != current()->textures_.end())
+            s = it->second;
+        else if (auto key = current()->badges_.find(vehicle); key != current()->badges_.end())
+            s = "#overrides.osd.timing_tower.team_badges_hud." + key->second;
+        if (s.empty() || s.size() + 1 > cap)
+            return SWOFTY_ASSET_UNAVAILABLE;
+        std::memcpy(path, s.c_str(), s.size() + 1);
+        return SWOFTY_ASSET_OK;
+    }
+
     static int t_seq(uint64_t *frame)
     {
         if (!t_available())
@@ -222,7 +239,7 @@ private:
     SwoftyLiveCar cars_[SWOFTY_LIVE_MAX_CARS];
     bool present_[SWOFTY_LIVE_MAX_CARS];
     std::vector<SwoftyLiveTurn> turns_;
-    std::map<uint32_t, std::string> badges_;
+    std::map<uint32_t, std::string> badges_, textures_;
     std::map<uint32_t, std::string> names_;
     SwoftyLive table_;
 };
