@@ -1,0 +1,438 @@
+use std::collections::{BTreeMap, BTreeSet};
+use std::path::{Path, PathBuf};
+
+use swofty_formats::gvdb::Gvdb;
+
+use super::buildhash::BuildHash;
+use super::failure::loader_missing;
+use super::run::Run;
+use super::{Built, GVDB, original, source_dir};
+use crate::activation::place::{
+    LayerWorld, PlaceInput, SLOTS, missing_worlds, place, room_for, slot_asset_group, slot_file, track_group,
+};
+use crate::activation::ui::{MapUi, plan_lists};
+use crate::asset::{AssetOp, GroupOp, Op, Origin, TrackOp};
+use crate::baseline::{Baseline, sha256_opt};
+use crate::install::Game;
+use crate::map::{TrackPackage, Unusable};
+use crate::placed::Placed;
+use crate::planner::{Kind, Planner, Route, Target};
+use crate::stdlib::deps::Std;
+use crate::store::Store;
+use crate::{Error, Result, io_err};
+
+pub type TrackPackages = (Vec<(PathBuf, TrackPackage, Origin)>, Vec<(Origin, Unusable)>);
+
+/// The packages `track.add` ops add, and the ones a build leaves out.
+pub fn track_packages(store: &Store, ops: Vec<Op>) -> Result<TrackPackages> {
+    let mut out: Vec<(PathBuf, TrackPackage, Origin)> = Vec::new();
+    let mut left_out = Vec::new();
+    for op in ops {
+        let AssetOp::Track(TrackOp::Add { source }) = op.op else {
+            continue;
+        };
+        let dir = source.resolve(&source_dir(store, &op.origin.addon, source.root))?;
+        let pkg = match crate::map::read_package(&dir) {
+            Ok(pkg) => pkg,
+            Err(why) => {
+                left_out.push((op.origin, why));
+                continue;
+            }
+        };
+        if let Some((_, _, first)) = out.iter().find(|(_, p, _)| p.track_code == pkg.track_code) {
+            return Err(Error::Map(match first.addon == op.origin.addon {
+                true => format!("track {} is added twice by {}", pkg.track_code, first.addon),
+                false => format!(
+                    "track {} is added by both {} and {}; turn one of them off on the Addons page",
+                    pkg.track_code, first.addon, op.origin.addon
+                ),
+            }));
+        }
+        out.push((dir, pkg, op.origin));
+    }
+    Ok((out, left_out))
+}
+
+/// The tracks a build adds.
+pub(super) struct Tracks {
+    /// Each track package kept, with its folder and the origin of the op that adds it, in load order.
+    pub kept: Vec<(PathBuf, TrackPackage, Origin)>,
+    /// The slot each kept track takes, when tracks go in slots rather than in asset groups of their own.
+    pub slots: Vec<Option<&'static str>>,
+    /// The addons whose track records add their rows in game.
+    pub recorded: BTreeSet<String>,
+    /// The codes of the tracks left out that no kept track stands for.
+    left_codes: Vec<String>,
+}
+
+impl Tracks {
+    /// The tracks the ops and track records add, less the ones the game's track lists have no room for,
+    /// each left-out one with a warning.
+    pub fn fit(
+        run: Run,
+        planner: &mut Planner,
+        built: &mut Built,
+        std16: &mut BTreeMap<String, Std>,
+    ) -> Result<Self> {
+        let store = run.store;
+        let (mut tracks, mut left_out) = track_packages(store, planner.take_tracks())?;
+        let recorded = crate::tracks::with_records(run.order, std16);
+        let (more, unusable) = crate::tracks::record_packages(store, run.order, std16, &tracks);
+        tracks.extend(more);
+        left_out.extend(unusable);
+        if crate::tracks::may_fill_track_lists(tracks.len()) {
+            let path = run.original(GVDB);
+            let shipped = Gvdb::parse(&std::fs::read(&path).map_err(io_err(&path))?)?;
+            let listed = crate::tracks::ListedTracks::of(&shipped);
+            let (kept, full) = crate::tracks::fit_track_lists(&listed, tracks, &recorded);
+            tracks = kept;
+            let names: Vec<String> = full
+                .iter()
+                .map(|((_, pkg, origin), _)| {
+                    let addon = run.name(&origin.addon);
+                    match pkg.display_name() == addon {
+                        true => addon,
+                        false => format!("{} ({addon})", pkg.display_name()),
+                    }
+                })
+                .collect();
+            for (((_, pkg, _), _), name) in full.iter().zip(&names) {
+                if !tracks.iter().any(|(_, p, _)| p.track_code == pkg.track_code) {
+                    planner.leave_out_track(&pkg.track_code, name);
+                }
+            }
+            built
+                .warnings
+                .extend(crate::tracks::track_lists_full_warning(&listed, &names));
+            built.track_limit = crate::tracks::TrackLimit::new(
+                &listed,
+                names.clone(),
+                full.iter()
+                    .map(|((_, _, origin), _)| origin.addon.clone())
+                    .collect(),
+            );
+            left_out.extend(full.into_iter().map(|((_, _, origin), why)| (origin, why)));
+        }
+        crate::tracks::keep_track_folders(store, &tracks, std16);
+        for (origin, why) in &left_out {
+            let name = run.name(&origin.addon);
+            built
+                .warnings
+                .push(crate::tracks::left_out_line(&name, &origin.addon, why));
+            planner.add_lenient(&origin.addon, &name);
+        }
+        let left_codes = left_out
+            .iter()
+            .filter_map(|(_, why)| why.code.as_deref())
+            .filter(|c| !tracks.iter().any(|(_, p, _)| p.track_code == *c))
+            .map(str::to_owned)
+            .collect();
+        Ok(Self {
+            kept: tracks,
+            slots: Vec::new(),
+            recorded,
+            left_codes,
+        })
+    }
+
+    /// Gives each track its slot when asset groups aren't served at runtime; the slots are few.
+    pub fn take_slots(&mut self, planner: &Planner, exe_dir: Option<&Path>, loader: bool) -> Result<()> {
+        let natural = planner.route(Kind::Group) == Route::Runtime;
+        if !natural && self.kept.len() > SLOTS.len() {
+            if !loader {
+                return Err(Error::Other(loader_missing(exe_dir)));
+            }
+            return Err(Error::Map(format!(
+                "at most {} tracks can be enabled at once",
+                SLOTS.len()
+            )));
+        }
+        self.slots = (0..self.kept.len())
+            .map(|i| (!natural).then(|| SLOTS[i]))
+            .collect();
+        Ok(())
+    }
+
+    pub fn left_codes(&self) -> Vec<&str> {
+        self.left_codes.iter().map(String::as_str).collect()
+    }
+
+    pub fn is_empty(&self) -> bool {
+        self.kept.is_empty()
+    }
+
+    pub fn hash(&self, hash: &mut BuildHash) -> Result<()> {
+        hash.update(crate::activation::db::REGISTRY_JSON);
+        for (dir, pkg, _) in &self.kept {
+            hash.json(pkg);
+            let erp = dir.join(&pkg.erp);
+            let meta = std::fs::metadata(&erp).map_err(io_err(&erp))?;
+            hash.update(format!("{}|{:?}", meta.len(), meta.modified().ok()));
+        }
+        Ok(())
+    }
+
+    /// The kept tracks that ship menu pictures, each with the asset group it loads in.
+    pub fn ui_maps(&self) -> Vec<MapUi<'_>> {
+        self.kept
+            .iter()
+            .zip(&self.slots)
+            .filter(|((_, pkg, _), _)| pkg.ui.is_some())
+            .map(|((dir, pkg, _), slot)| MapUi {
+                pkg,
+                dir,
+                asset_group: match slot {
+                    Some(slot) => slot_asset_group(slot),
+                    None => track_group(&pkg.track_code, &pkg.track_code),
+                },
+            })
+            .collect()
+    }
+
+    /// Places each kept track's archive and world files in the plan, and registers its asset groups.
+    pub fn place(
+        &self,
+        run: Run,
+        worlds: &[LayerWorld],
+        grid: u32,
+        planner: &mut Planner,
+        built: &mut Built,
+        caches: &mut Vec<PathBuf>,
+    ) -> Result<()> {
+        let (store, game) = (run.store, run.game);
+        for ((dir, pkg, origin), slot) in self.kept.iter().zip(&self.slots) {
+            let slot_original = slot.map(|s| run.original(&slot_file(s)));
+            let track_worlds = missing_worlds(worlds, &pkg.track_code, |group| {
+                planner.last_writer(&[Target::Group(group.to_owned())]).is_some()
+            });
+            let cars = room_for(&track_worlds, grid);
+            let placement = place(
+                &PlaceInput {
+                    pkg,
+                    dir,
+                    game: &game.dir,
+                    slot: slot.zip(slot_original.as_deref()),
+                    cars,
+                    worlds: &track_worlds,
+                },
+                &store.root.join("cache/maps").join(&pkg.track_code),
+            )?;
+            caches.push(placement.dir.clone());
+            let at = match slot {
+                Some(slot) => format!("slot {slot}"),
+                None => placement.archive.clone(),
+            };
+            built.lines.push(format!(
+                "{}: track archive goes in {at}; {} texture(s) use its own mip files",
+                pkg.track_code, placement.mips
+            ));
+            if !placement.groups.is_empty() {
+                built.lines.push(format!(
+                    "{}: {} asset group(s) registered in game",
+                    pkg.track_code,
+                    placement.groups.len()
+                ));
+            }
+            for group in placement.groups {
+                planner.push(Op {
+                    op: AssetOp::Group(GroupOp::Register {
+                        group,
+                        erp: Some(placement.archive.clone()),
+                        erps: Vec::new(),
+                        deps: Vec::new(),
+                        template: None,
+                    }),
+                    origin: origin.clone(),
+                });
+            }
+            if let Some(g) = &placement.grid {
+                built.lines.push(format!(
+                    "{}: world extended from {} to {} grid slots, {} to {} garages and {} to {} pit boxes for {cars} cars",
+                    pkg.track_code,
+                    g.before.grid_slots,
+                    g.after.grid_slots,
+                    g.before.garages,
+                    g.after.garages,
+                    g.before.pit_boxes,
+                    g.after.pit_boxes
+                ));
+            }
+            for (alias, to) in &placement.aliases {
+                built
+                    .lines
+                    .push(format!("{}: world {alias} stands in with {to}", pkg.track_code));
+            }
+            if !placement.repaired.is_empty() {
+                built.lines.push(format!(
+                    "{}: {}",
+                    pkg.track_code,
+                    crate::erpbuild::repaired_note(pkg.display_name(), &placement.repaired)
+                ));
+            }
+            if !placement.spaced.is_empty() {
+                built.lines.push(format!(
+                    "{}: {}",
+                    pkg.track_code,
+                    crate::activation::ailine::fixed_note(pkg.display_name(), &placement.spaced)
+                ));
+            }
+            built
+                .warnings
+                .extend(placement.notes.iter().map(|n| format!("{}: {n}", pkg.track_code)));
+            let (left, replaced): (Vec<_>, Vec<_>) = placement
+                .replaced
+                .into_iter()
+                .partition(|(rel, _)| left_over(store, game, rel));
+            for (rel, src) in replaced {
+                built.replace(rel, src)?;
+            }
+            for (rel, src) in placement.added.into_iter().chain(left) {
+                if built.plan.added.insert(rel.clone(), src).is_some() {
+                    return Err(Error::Map(format!("{rel} is placed by two tracks")));
+                }
+            }
+        }
+        Ok(())
+    }
+}
+
+/// The menu UI lists the build makes a track record's pictures for: its rows come from the core
+/// at boot, so the core points their `TrackTextures` at those pictures from the facts file.
+pub(super) fn record_ui_lists(
+    ui_maps: &[MapUi],
+    tracks: &Tracks,
+    resolve: &dyn Fn(&str) -> PathBuf,
+    warnings: &mut Vec<String>,
+) -> crate::activation::ui::Lists {
+    let codes: BTreeSet<&str> = tracks
+        .kept
+        .iter()
+        .filter(|(_, _, o)| tracks.recorded.contains(&o.addon))
+        .map(|(_, p, _)| p.track_code.as_str())
+        .collect();
+    let maps: Vec<MapUi> = ui_maps
+        .iter()
+        .filter(|m| codes.contains(m.pkg.track_code.as_str()))
+        .map(|m| MapUi {
+            pkg: m.pkg,
+            dir: m.dir,
+            asset_group: m.asset_group.clone(),
+        })
+        .collect();
+    if maps.is_empty() {
+        return Default::default();
+    }
+    match plan_lists(&maps, resolve) {
+        Ok((lists, _)) => lists,
+        Err(e) => {
+            warnings.push(format!(
+                "tracks: the record tracks' menu pictures can't be planned: {e}"
+            ));
+            Default::default()
+        }
+    }
+}
+
+/// Writes `$DATA/registry/track-facts.json` and `older-tracks.json` for a build of a profile with
+/// addons. A file that can't be written is a warning; the build stands.
+pub(super) fn track_files(
+    store: &Store,
+    game: &Game,
+    built: &mut Built,
+    tracks: &Tracks,
+    record_ui: &crate::activation::ui::Lists,
+) {
+    let (slots, recorded) = (&tracks.slots, &tracks.recorded);
+    if built.plan.is_vanilla() {
+        return;
+    }
+    let file = |rel: &str| {
+        built
+            .plan
+            .data
+            .get(rel)
+            .or_else(|| built.plan.added.get(rel))
+            .cloned()
+            .unwrap_or_else(|| original(&store.root, game, rel))
+    };
+    let placed_archive = |code: &str, slot: Option<&str>| match slot {
+        Some(s) => slot_file(s),
+        None => crate::activation::place::track_file(code),
+    };
+    let added: Vec<crate::activation::facts::Added> = tracks
+        .kept
+        .iter()
+        .zip(slots)
+        .map(|((dir, pkg, origin), slot)| crate::activation::facts::Added {
+            code: pkg.track_code.clone(),
+            shipped: dir.join(&pkg.erp),
+            placed: file(&placed_archive(&pkg.track_code, *slot)),
+            base: recorded
+                .contains(&origin.addon)
+                .then(|| pkg.activation.base_track().map(str::to_owned))
+                .flatten(),
+            ui_lists: match recorded.contains(&origin.addon) {
+                true => record_ui
+                    .get(&pkg.track_code)
+                    .map(|l| l.iter().cloned().collect())
+                    .unwrap_or_default(),
+                false => Vec::new(),
+            },
+        })
+        .collect();
+    let scan = crate::activation::facts::Scan {
+        profile: &built.plan.profile,
+        db: file(GVDB),
+        game: &game.dir,
+        file: &file,
+        placed: built
+            .plan
+            .data
+            .keys()
+            .chain(built.plan.added.keys())
+            .cloned()
+            .collect(),
+        added,
+        edits: built.plan.loader.get(crate::runtime::ASSETS_FILE).cloned(),
+    };
+    let mut warnings = Vec::new();
+    if let Err(e) = crate::activation::facts::write(&store.root, &scan) {
+        warnings.push(format!(
+            "tracks: {} could not be written: {e}",
+            crate::activation::facts::FILE
+        ));
+    }
+    let older: Vec<(&str, &TrackPackage)> = tracks
+        .kept
+        .iter()
+        .filter(|(_, _, o)| !recorded.contains(&o.addon))
+        .map(|(_, pkg, o)| (o.addon.as_str(), pkg))
+        .collect();
+    let written = crate::tracks::write_older(
+        &store.root,
+        &built.plan.profile,
+        &older,
+        &original(&store.root, game, GVDB),
+        &file(GVDB),
+    );
+    if let Err(e) = written {
+        warnings.push(format!(
+            "tracks: {} could not be written: {e}",
+            crate::tracks::OLDER_FILE
+        ));
+    }
+    built.warnings.extend(warnings);
+}
+
+/// A file an earlier session created that still holds exactly what it wrote
+/// is a leftover to clear, not a game file to replace.
+pub(super) fn left_over(store: &Store, game: &Game, rel: &str) -> bool {
+    let Ok(placed) = Placed::load(&store.root) else {
+        return false;
+    };
+    let Some(p) = placed.get(rel).filter(|p| !p.replaced) else {
+        return false;
+    };
+    let stock = Baseline::load_or_new(&store.root, &game.identity).is_ok_and(|b| b.files.contains_key(rel));
+    !stock && sha256_opt(&game.dir.join(rel)).ok().flatten().as_deref() == Some(p.sha256.as_str())
+}
