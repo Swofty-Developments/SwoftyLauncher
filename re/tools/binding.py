@@ -252,6 +252,9 @@ def cmd_unfold(a, db=None, root=None):
         sigdoc = json.load(f)
     sigs = {s['id']: s for s in sigdoc['signatures']}
     wanted = set(a.names)
+    verify_at = {}
+    for i, v in enumerate(tsv['verify']):
+        verify_at.setdefault((v['kind'], v['item']), []).append(i)
     moved = {'functions': set(), 'globals': set()}
     verify_keys, sig_ids, records, errs = set(), set(), [], []
     for t in ('functions', 'globals'):
@@ -266,7 +269,8 @@ def cmd_unfold(a, db=None, root=None):
             vk = 'func' if t == 'functions' else 'global'
             keys = {(vk, r['name']), (vk, r['addr']), ('sig', r['sig'])}
             rec = br.Record.create(r['name'], t, a.author or s['verified'][0]['by'], r, s)
-            rec.doc['verify'] = [{c: v[c] for c in cols['verify']} for v in tsv['verify'] if (v['kind'], v['item']) in keys]
+            rows = sorted(i for k in keys for i in verify_at.get(k, ()))
+            rec.doc['verify'] = [{c: tsv['verify'][i][c] for c in cols['verify']} for i in rows]
             records.append(rec)
             moved[t].add(r['addr'])
             verify_keys |= keys
@@ -281,8 +285,7 @@ def cmd_unfold(a, db=None, root=None):
     remove_lines(os.path.join(db, 'verify.tsv'), lambda c: (c[2], c[3]) not in verify_keys)
     sigdoc['signatures'] = [s for s in sigdoc['signatures'] if s['id'] not in sig_ids]
     with open(os.path.join(db, 'signatures.json'), 'w') as f:
-        json.dump(sigdoc, f, indent=1)
-        f.write('\n')
+        f.write(json.dumps(sigdoc, indent=1) + '\n')
     br.Store.forget()
     print(f'binding.py unfold: {sum(len(m) for m in moved.values())} binding(s) moved into {os.path.relpath(root)}')
 
@@ -303,11 +306,13 @@ def lint_with(changes):
             records.append(br.Record.from_bytes(data, path[len('re/bindings/'):]))
         except br.RecordError:
             continue
-    br.Store.get().overlay(records)
+    store = br.Store.get()
+    base = store.records
+    store.overlay(records)
     try:
         return [f'kb_lint: {e}' for e in kb_lint.KbLint(evidence_files=False, exe=False).run().E]
     finally:
-        br.Store.forget()
+        store.records = base
 
 
 def cmd_ci(a):

@@ -9,6 +9,7 @@ request changes with the base branch and decides whether the change may merge wi
   review   anything else
 """
 import json, os, re, sys
+from collections.abc import Mapping
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 sys.path.insert(0, HERE)
@@ -37,6 +38,28 @@ WANT_SIG_KIND = {'func': ('func_start', 'call'), 'site': ('mid',), 'call': ('mid
                  'data': ('data',)}
 
 
+class Without(Mapping):
+    """A read-only view of a dict without the entries drop(key, value) names."""
+
+    def __init__(self, base, drop):
+        self.base, self.drop = base, drop
+
+    def __getitem__(self, key):
+        v = self.base[key]
+        if self.drop(key, v):
+            raise KeyError(key)
+        return v
+
+    def __contains__(self, key):
+        return key in self.base and not self.drop(key, self.base[key])
+
+    def __iter__(self):
+        return (key for key, v in self.base.items() if not self.drop(key, v))
+
+    def __len__(self):
+        return sum(1 for _ in self)
+
+
 class Knowledge:
     """The base branch's knowledge base: names, addresses, signatures, builds and the subsystem table."""
 
@@ -45,7 +68,7 @@ class Knowledge:
         sigdoc = kb.load_signatures()
         self.build = sigdoc['build']
         self.signatures = {s['id']: s for s in sigdoc['signatures']}
-        self.patterns = {(s['section'], s['pattern']): s['id'] for s in sigdoc['signatures']}
+        self.patterns = {pattern_key(s): s['id'] for s in sigdoc['signatures']}
         self.targets = {}
         for s in sigdoc['signatures']:
             self.targets.setdefault((s['kind'], str(s['target']).lower()), s['id'])
@@ -68,20 +91,24 @@ class Knowledge:
                     self.builds.setdefault(sha, f[:-5])
 
     def without(self, record):
-        """Forget the record's own entries, so a record is never its own conflict."""
+        """Forget the record's own entries, so a record is never its own conflict. The views cost nothing to make."""
         if record is None:
             return self
         k = Knowledge.__new__(Knowledge)
         k.__dict__ = dict(self.__dict__)
         mine = record.relpath
-        k.names = {n: v for n, v in self.names.items() if v[1] != mine}
-        k.verified = {key: v for key, v in self.verified.items() if v != mine}
-        k.addrs = {t: {a: v for a, v in m.items() if v[1] != mine} for t, m in self.addrs.items()}
         sid = record.signature['id'] if isinstance(record.signature, dict) else None
-        k.signatures = {i: s for i, s in self.signatures.items() if i != sid}
-        k.patterns = {p: i for p, i in self.patterns.items() if i != sid}
-        k.targets = {t: i for t, i in self.targets.items() if i != sid}
+        k.names = Without(self.names, lambda key, v: v[1] == mine)
+        k.verified = Without(self.verified, lambda key, v: v == mine)
+        k.addrs = {t: Without(m, lambda key, v: v[1] == mine) for t, m in self.addrs.items()}
+        k.signatures = Without(self.signatures, lambda key, v: key == sid)
+        k.patterns = Without(self.patterns, lambda key, v: v == sid)
+        k.targets = Without(self.targets, lambda key, v: v == sid)
         return k
+
+
+MAX_ANCHOR = 0x1000
+MAX_EXPECT = 32
 
 
 def pattern_errors(text):
@@ -97,6 +124,16 @@ def pattern_errors(text):
     if pat and (pat[0] is None or pat[-1] is None):
         errs.append('starts or ends with a wildcard')
     return errs, pat
+
+
+def pattern_key(sig):
+    """Two signatures of one kind that match the same bytes and resolve the same way find the same address."""
+    try:
+        anchor = br.number(sig['anchor'])
+    except (ValueError, TypeError):
+        anchor = sig['anchor']
+    resolve = tuple(sorted((k, str(v)) for k, v in sig['resolve'].items())) if isinstance(sig['resolve'], dict) else ()
+    return sig['section'], ' '.join(sig['pattern'].upper().split()), anchor, resolve, sig['kind']
 
 
 def signature_errors(sig, row, table, name, kb_build):
@@ -124,8 +161,8 @@ def signature_errors(sig, row, table, name, kb_build):
         res = {k: (v if k == 'kind' else br.number(v)) for k, v in sig['resolve'].items()}
     except (ValueError, TypeError):
         return errs + ['signature.anchor and resolve offsets must be numbers']
-    if not 0 <= anchor < 256:
-        errs.append('signature.anchor must be inside the first 256 bytes of the match')
+    if not 0 <= anchor < MAX_ANCHOR:
+        errs.append(f'signature.anchor must be inside the first {MAX_ANCHOR} bytes after the match')
     kind = res.get('kind')
     if kind not in ('addr', 'rel32', 'riprel') or set(res) - {'kind', 'insn', 'len'}:
         errs.append('signature.resolve.kind must be addr, rel32 or riprel with only insn and len')
@@ -155,8 +192,8 @@ def signature_errors(sig, row, table, name, kb_build):
         except ValueError as e:
             want = None
             errs.append(f'signature.expect {e}')
-        if want is not None and (None in want or not 0 < len(want) <= 16):
-            errs.append('signature.expect must be 1 to 16 concrete bytes')
+        if want is not None and (None in want or not 0 < len(want) <= MAX_EXPECT):
+            errs.append(f'signature.expect must be 1 to {MAX_EXPECT} concrete bytes')
         elif want:
             for i, b in enumerate(want):
                 p = pat[anchor + i] if anchor + i < len(pat) else None
@@ -222,8 +259,8 @@ def check_record(record, knowledge, relpath=None):
         errs.append(f'{row["addr"]} is already {knowledge.addrs[record.table][row["addr"]][0]} in {record.table}')
     if sig['id'] in knowledge.signatures:
         errs.append(f'signature id {sig["id"]} is already used')
-    if (sig['section'], sig['pattern']) in knowledge.patterns:
-        errs.append(f'signature.pattern is the same as {knowledge.patterns[(sig["section"], sig["pattern"])]}')
+    if pattern_key(sig) in knowledge.patterns:
+        errs.append(f'signature.pattern, anchor and resolve are the same as {knowledge.patterns[pattern_key(sig)]}')
     if (sig['kind'], sig['target']) in knowledge.targets:
         errs.append(f'{sig["target"]} already has the {sig["kind"]} signature {knowledge.targets[(sig["kind"], sig["target"])]}')
     vkind = 'func' if record.table == 'functions' else 'global'
@@ -232,8 +269,8 @@ def check_record(record, knowledge, relpath=None):
             errs.append(f'verify.tsv already has rows about {key[0]} {key[1]}; a new record cannot inherit them')
     for i, v in enumerate(record.verify):
         errs += [f'verify[{i}]: {e}' for e in kb.validate_row('verify', v)]
-        if v['kind'] != vkind or v['item'] not in (record.name, row['addr']):
-            errs.append(f'verify[{i}] must be about {vkind} {record.name}')
+        if (v['kind'], v['item']) not in ((vkind, record.name), (vkind, row['addr']), ('sig', sig['id'])):
+            errs.append(f'verify[{i}] must be about {vkind} {record.name} or sig {sig["id"]}')
         if v['verdict'] == 'agree' and v['verifier'] == record.author:
             errs.append(f'verify[{i}]: the author cannot verify their own binding (PROTOCOL.md §5)')
     errs += proof_errors(record, knowledge.builds, knowledge.build)
@@ -356,6 +393,6 @@ def seen_with(knowledge, record):
     k.addrs = {t: dict(m) for t, m in knowledge.addrs.items()}
     k.addrs[record.table][row['addr']] = (record.name, record.relpath)
     k.signatures = {**knowledge.signatures, sig['id']: sig}
-    k.patterns = {**knowledge.patterns, (sig['section'], sig['pattern']): sig['id']}
+    k.patterns = {**knowledge.patterns, pattern_key(sig): sig['id']}
     k.targets = {**knowledge.targets, (sig['kind'], sig['target']): sig['id']}
     return k

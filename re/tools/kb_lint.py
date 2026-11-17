@@ -17,6 +17,11 @@ FIELD_RE = re.compile(r'^\s*/\*\s*0x([0-9a-fA-F]+)\s*\*/\s*([^;]+);\s*//\s*(L[0-
 DECL_RE = re.compile(r'^(?P<type>[A-Za-z_][A-Za-z0-9_]*(?:\s+[A-Za-z_][A-Za-z0-9_]*)*?)\s*(?P<ptr>\**)\s*(?P<name>[A-Za-z_][A-Za-z0-9_]*)\s*(?:\[(?P<cnt>[^\]]+)\])?$')
 
 
+def read_text(path):
+    with open(path) as f:
+        return f.read()
+
+
 TOKEN_START = re.compile(r'^(?:' + '|'.join(kb.TOKEN_KINDS) + r'):\S')
 
 
@@ -38,7 +43,9 @@ def field_evidence(rest):
 def parse_struct(path):
     s = {'file': path, 'name': None, 'subsystem': None, 'size': None, 'size_level': None, 'size_ev': '', 'fields': [], 'errors': []}
     in_body = False
-    for n, line in enumerate(open(path), 1):
+    with open(path) as f:
+        lines = f.read().split('\n')
+    for n, line in enumerate(lines, 1):
         t = line.strip()
         m = re.match(r'^//\s*(struct|subsystem|size|notes):\s*(.*)$', t)
         if m and not in_body:
@@ -146,7 +153,7 @@ class KbLint:
             md = os.path.join(kb.DB, 'subsystems', f'{sid}.md')
             if not os.path.exists(md):
                 self.E.append(f'subsystems/{sid}.md missing')
-            elif '\n## Inbox' not in open(md).read():
+            elif '\n## Inbox' not in read_text(md):
                 self.W.append(f'subsystems/{sid}.md has no "## Inbox" section')
 
     def check_tokens(self, where, level, ev):
@@ -288,7 +295,7 @@ class KbLint:
     def check_tests(self):
         for f in sorted(os.listdir(os.path.join(kb.RE, 'tests'))):
             if re.match(r'^T\d{3}\.md$', f):
-                txt = open(os.path.join(kb.RE, 'tests', f)).read()
+                txt = read_text(os.path.join(kb.RE, 'tests', f))
                 for h in ('## Question', '## Hypothesis', '## Build', '## Trace config', '## User steps',
                           '## Expected log lines', '## Result'):
                     if h not in txt:
