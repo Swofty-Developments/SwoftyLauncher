@@ -5,7 +5,7 @@
 // globals, the car list and the slot/owner/handle checks, decoding and re-encoding (the key is kept, the
 // plain half changes), range refusals (steering lock, differential, fuel over capacity, NaN), writes off
 // the flow thread, a car without a system, and cars::live::cars/get/set/scale/is_ai through the table.
-// run_car_live_test.sh builds and runs it.
+// native/test/run_tests.sh car_live builds and runs it.
 #include "core/hooks/car_live.hpp"
 #include "core/hooks/player_facts.hpp"
 

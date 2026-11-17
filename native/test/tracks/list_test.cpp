@@ -1,6 +1,6 @@
 // Host test for list.hpp: the calendar first by venue (with ? and | venues and dropped rounds), "More tracks" in base
 // order with per_package order and offered, left-out reasons, the [tracks] box line and the catalog JSON.
-// run_track_lists_test.sh builds and runs it.
+// native/test/run_tests.sh track_lists builds and runs it.
 #include "fixture.hpp"
 
 int main()
