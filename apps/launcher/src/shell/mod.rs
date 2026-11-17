@@ -46,7 +46,6 @@ pub struct Shell {
     pub(crate) notch_beside: bool,
     pub(crate) root_focus: FocusHandle,
     pub(crate) profiles_open: bool,
-    pub(crate) layout_width: f32,
     pub(crate) online: crate::features::online::Online,
     pub(crate) library: Library,
     pub(crate) open_addon: Option<String>,
@@ -66,8 +65,6 @@ pub struct Shell {
     slow_logged: bool,
     pub(crate) updates: crate::features::update::Updates,
     pub(crate) blocks: crate::blocks::Blocks,
-    pub(crate) content_width: f32,
-    pub(crate) short: bool,
     pub(crate) ticking: bool,
     painted: Instant,
     pub(crate) dock: crate::shell::download_dock::Dock,
@@ -102,6 +99,7 @@ pub struct Shell {
     pub(crate) addon_views: crate::features::sections::AddonViews,
     pub(crate) scaling: crate::shell::ui_mode::Scaling,
     pub(crate) crashes: crate::dialogs::crash::Crashes,
+    pub(crate) layout: crate::shell::render::Layout,
 }
 
 pub struct SliderSlot {

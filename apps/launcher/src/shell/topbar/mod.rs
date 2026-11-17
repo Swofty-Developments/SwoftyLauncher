@@ -203,7 +203,7 @@ impl Shell {
             return;
         };
         let links = self
-            .sub_nav(self.layout_width)
+            .sub_nav(self.layout.window_width)
             .map(|s| s.flat())
             .unwrap_or_default();
         let moved = match key {

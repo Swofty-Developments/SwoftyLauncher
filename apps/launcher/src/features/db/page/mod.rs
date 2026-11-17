@@ -66,7 +66,7 @@ impl Shell {
             .child(tr("DB Editor"));
         let line = self.db_header_line(p, cx);
         let actions = self.db_header_actions(cx);
-        if self.content_width < NARROW {
+        if self.layout.content_width < NARROW {
             return v_flex()
                 .px(px(GUTTER))
                 .pt(px(22.))

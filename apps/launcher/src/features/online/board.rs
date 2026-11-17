@@ -23,7 +23,7 @@ impl Shell {
             Some((_, Load::Ready(page))) => page.clone(),
         };
         let mut items: Vec<Target> = Vec::new();
-        let sectors = self.content_width >= 900.;
+        let sectors = self.layout.content_width >= 900.;
         let best = best_sectors(&page.rows, 3);
         let leader = page.rows.first().map_or(0, |r| r.time_ms);
         let me = self.account.display_name();
@@ -79,7 +79,11 @@ impl Shell {
         });
         let header = self.board_header(&page, p, cx);
         let filters = self.filter_chips(p, cx);
-        let ad = self.ad_banner(crate::features::ads::Unit::Online, self.content_width - 56., p);
+        let ad = self.ad_banner(
+            crate::features::ads::Unit::Online,
+            self.layout.content_width - 56.,
+            p,
+        );
         let pinned = page
             .mine
             .clone()
@@ -107,7 +111,7 @@ impl Shell {
                     .child(head_cell(66., "S2", p))
                     .child(head_cell(66., "S3", p))
             })
-            .when(self.content_width >= 1100., |d| {
+            .when(self.layout.content_width >= 1100., |d| {
                 d.child(head_cell(130., "CAR", p))
             })
             .child(head_cell(84., "DATE", p))
@@ -322,7 +326,7 @@ impl Shell {
                         .child(t.map(sector_time).unwrap_or_else(|| "-".into()))
                 }))
             })
-            .when(self.content_width >= 1100., |d| {
+            .when(self.layout.content_width >= 1100., |d| {
                 d.child(
                     div()
                         .w(px(130.))

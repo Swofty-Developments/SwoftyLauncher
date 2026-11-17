@@ -91,7 +91,7 @@ impl Shell {
                     .into_any_element()
             })
             .collect();
-        let width = self.content_width;
+        let width = self.layout.content_width;
         let mut search_bar = None;
         let mut footer = view.footer.clone().map(|f| {
             div()
@@ -382,7 +382,7 @@ impl Shell {
                             let at = At {
                                 addon,
                                 section,
-                                width: (self.content_width - 80.).max(240.),
+                                width: (self.layout.content_width - 80.).max(240.),
                                 nested: false,
                                 fill: false,
                             };

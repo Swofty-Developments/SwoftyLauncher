@@ -317,8 +317,8 @@ impl Shell {
             .label(tr("Refresh"))
             .disabled(self.news.fetching)
             .on_click(cx.listener(|this, _, _, cx| this.fetch_news(cx)));
-        let stacked = self.content_width < STACK_BELOW;
-        let side = (self.content_width * 0.32).clamp(260., 380.);
+        let stacked = self.layout.content_width < STACK_BELOW;
+        let side = (self.layout.content_width * 0.32).clamp(260., 380.);
         let side = self.ad_rail_width().map_or(side, |w| side.max(w));
         let show_banner = !self.is_card_dismissed(crate::ui::discord::BANNER_CARD_ID);
         self.news_scroll.sync(&self.news, short, stacked, show_banner);

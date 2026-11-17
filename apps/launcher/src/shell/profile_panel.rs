@@ -28,7 +28,7 @@ impl Shell {
     }
 
     pub(crate) fn profiles_shown(&self) -> bool {
-        self.profiles_open && self.layout_width / crate::ui::scale::current() >= SIDEBAR_MIN_LAYOUT
+        self.profiles_open && self.layout.window_width / crate::ui::scale::current() >= SIDEBAR_MIN_LAYOUT
     }
 
     pub(crate) fn profiles_width(&self) -> f32 {

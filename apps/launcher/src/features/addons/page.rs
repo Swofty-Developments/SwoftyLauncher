@@ -184,7 +184,7 @@ impl Shell {
         let pending = self.pending_note(p);
         let saves = self.saves_banner(false, p, cx);
         let tracks = self.tracks_note(p, cx);
-        let split = self.content_width >= SPLIT_AT;
+        let split = self.layout.content_width >= SPLIT_AT;
         let selected = self.open_addon.clone().filter(|id| {
             self.library
                 .listed()

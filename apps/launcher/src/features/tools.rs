@@ -402,7 +402,7 @@ impl Shell {
     }
 
     pub(crate) fn tools_page(&mut self, p: Palette, window: &Window, cx: &mut Context<Self>) -> AnyElement {
-        let content = self.content_width;
+        let content = self.layout.content_width;
         let card = (content * 0.53).clamp(560., 640.).min(content).floor();
         let art = ((card - 2.) * 9. / 16.)
             .min(f32::from(window.viewport_size().height) - 460.)

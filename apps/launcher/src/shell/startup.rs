@@ -94,7 +94,6 @@ impl Shell {
             notch_beside: false,
             root_focus: cx.focus_handle(),
             profiles_open: true,
-            layout_width: 1440.,
             online: crate::features::online::Online::new(&root),
             open_addon: None,
             mp_page: crate::features::multiplayer::Multiplayer::new(window, cx),
@@ -113,8 +112,6 @@ impl Shell {
             slow_logged: false,
             updates: crate::features::update::Updates::new(),
             blocks: crate::blocks::Blocks::default(),
-            content_width: 900.,
-            short: false,
             ticking: false,
             painted: Instant::now(),
             dock: crate::shell::download_dock::Dock::default(),
@@ -166,6 +163,11 @@ impl Shell {
             addon_views: crate::features::sections::AddonViews::default(),
             scaling,
             crashes: crate::dialogs::crash::Crashes::default(),
+            layout: crate::shell::render::Layout {
+                window_width: 1440.,
+                content_width: 900.,
+                short: false,
+            },
         };
         shell.refresh_views(cx);
         match std::env::var("SWOFTY_LAUNCHER_OPEN_PAGE").as_deref() {

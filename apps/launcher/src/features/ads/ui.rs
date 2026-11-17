@@ -106,7 +106,8 @@ impl Shell {
 
     /// Whether `unit` fits in the page header, centred between the title and the buttons.
     pub(crate) fn ad_header_room(&self, unit: Unit) -> bool {
-        self.content_width * crate::ui::scale::current() >= f32::from(unit.size().width) + 2. * HEADER_SIDE
+        self.layout.content_width * crate::ui::scale::current()
+            >= f32::from(unit.size().width) + 2. * HEADER_SIDE
     }
 
     /// `unit` for the middle of the page header, when it fits there.

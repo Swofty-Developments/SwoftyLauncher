@@ -160,7 +160,7 @@ impl Shell {
         } else {
             trn(shown.len(), "{count} addon", "{count} addons")
         };
-        let width = self.content_width - FILTERS_W - 20.;
+        let width = self.layout.content_width - FILTERS_W - 20.;
         let ad = (!self.ad_header_room(crate::features::ads::Unit::Discover))
             .then(|| self.ad_banner(crate::features::ads::Unit::Discover, width - GUTTER, p))
             .flatten();
