@@ -38,4 +38,4 @@ When `SWOFTY_DATA_DIR` is set, the installer shows that folder. On Windows a mov
 cargo build --release -p swofty-launcher-installer
 ```
 
-CI builds both executables on every push (`Installer` job, artifacts `installer-Linux` and `installer-Windows`). The files in this folder are those artifacts, renamed: `SwoftyLauncherInstaller.exe` is the Windows build, `SwoftyLauncherInstaller-linux.zip` holds the Linux build as `SwoftyLauncherInstaller`, and `SwoftyLauncherInstaller.zip` holds both.
+CI builds both executables on every push (the `Installer` job on a pull request and the release build on main, artifacts `installer-Linux` and `installer-Windows`). The files in this folder are those artifacts, renamed: `SwoftyLauncherInstaller.exe` is the Windows build, `SwoftyLauncherInstaller-linux.zip` holds the Linux build as `SwoftyLauncherInstaller`, and `SwoftyLauncherInstaller.zip` holds both.
