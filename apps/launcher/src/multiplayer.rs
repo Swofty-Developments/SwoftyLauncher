@@ -1610,6 +1610,13 @@ impl Shell {
                                     .filter(|_| !m.leaving)
                                     .map(|h| div().text_size(px(13.)).text_color(p.text_muted).child(h)),
                             )
+                            .children(
+                                st.problem
+                                    .as_ref()
+                                    .and_then(|problem| problem.detail.clone())
+                                    .filter(|_| !m.leaving)
+                                    .map(|d| div().text_size(px(13.)).text_color(p.text_muted).child(d)),
+                            )
                             .children(reopen.is_some().then(|| {
                                 div()
                                     .text_size(px(13.))
@@ -1814,8 +1821,8 @@ mod tests {
     use std::collections::HashSet;
 
     use swofty_core::multiplayer::types::{
-        GameStatus, MemberStage, MemberState, Phase, PrintMatch, RelayStatus, Role, RoomAddon, RoomAddons,
-        RoomSummary, Screen, SessionState, User,
+        GameStatus, MemberStage, MemberState, Phase, PrintMatch, Problem, RelayStatus, Role, RoomAddon,
+        RoomAddons, RoomSummary, Screen, SessionState, User,
     };
 
     use super::{
@@ -1823,6 +1830,24 @@ mod tests {
         content_word, exit_leaves, exit_notice, joined, member_word, missing, refusal, refusal_text,
         restart_ok_text, room_meta,
     };
+
+    #[test]
+    fn a_problem_reads_with_or_without_its_detail() {
+        let read = |json: &str| serde_json::from_str::<Problem>(json).unwrap();
+        assert_eq!(
+            read(r#"{"text":"Simplified doesn't match the host's.","retry":false}"#).detail,
+            None
+        );
+        let said = read(
+            r#"{"text":"Simplified doesn't match the host's.","retry":false,"detail":"Its build step made more."}"#,
+        );
+        assert_eq!(said.detail.as_deref(), Some("Its build step made more."));
+        assert!(
+            !serde_json::to_string(&read(r#"{"text":"x","retry":true}"#))
+                .unwrap()
+                .contains("detail")
+        );
+    }
 
     fn status(screen: Screen) -> GameStatus {
         GameStatus {
