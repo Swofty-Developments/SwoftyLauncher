@@ -2,7 +2,7 @@ use std::path::{Path, PathBuf};
 use std::process::{Child, Command, ExitStatus};
 use std::time::{Duration, Instant, SystemTime};
 
-use anyhow::{Result, bail};
+use anyhow::Result;
 use swofty_core::install::{Game, PROXY};
 use swofty_core::launch;
 use swofty_core::loader_check;
@@ -90,7 +90,7 @@ pub(crate) fn play(
                         std::fs::remove_file(&link).and_then(|_| std::os::unix::fs::symlink(game, &link))?;
                     }
                 }
-                Ok(_) => bail!(
+                Ok(_) => anyhow::bail!(
                     "{} exists and is not the game link; remove it and try again",
                     link.display()
                 ),
