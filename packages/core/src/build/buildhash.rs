@@ -13,6 +13,23 @@ use crate::manifest::AddonManifest;
 use crate::store::Store;
 use crate::{Result, io_err};
 
+/// Sources at most this big are stamped by their bytes: build hooks rewrite small generated files on every
+/// build, which moves their modified time without changing them.
+const CONTENT_STAMP_MAX: u64 = 1 << 20;
+
+/// What a source contributes to the build hash: a small file's digest, else its size and modified time. A
+/// folder is its files, which the caller stamps one by one.
+fn source_stamp(path: &Path, meta: &std::fs::Metadata) -> Result<Vec<u8>> {
+    if meta.is_dir() {
+        return Ok(b"dir".to_vec());
+    }
+    if meta.len() <= CONTENT_STAMP_MAX {
+        let data = std::fs::read(path).map_err(io_err(path))?;
+        return Ok(format!("{}|sha256 {}", data.len(), hex(&Sha256::digest(&data))).into_bytes());
+    }
+    Ok(format!("{}|{:?}", meta.len(), meta.modified().ok()).into_bytes())
+}
+
 /// The digest of everything a build reads; two builds with the same hash make the same overlay.
 pub(super) struct BuildHash(Sha256);
 
@@ -58,13 +75,13 @@ impl BuildHash {
             let path = src.resolve(&super::source_dir(store, addon, src.root))?;
             if !stamps.contains_key(&path) {
                 let meta = std::fs::metadata(&path).map_err(io_err(&path))?;
-                let mut stamp = format!("{}|{:?}", meta.len(), meta.modified().ok()).into_bytes();
+                let mut stamp = source_stamp(&path, &meta)?;
                 if meta.is_dir() {
                     for (rel, p) in loader_files(&path)? {
                         let meta = std::fs::metadata(&p).map_err(io_err(&p))?;
-                        stamp.extend_from_slice(
-                            format!("{rel}|{}|{:?}", meta.len(), meta.modified().ok()).as_bytes(),
-                        );
+                        stamp.extend_from_slice(rel.as_bytes());
+                        stamp.extend_from_slice(b"|");
+                        stamp.extend_from_slice(&source_stamp(&p, &meta)?);
                     }
                 }
                 stamps.insert(path.clone(), stamp);
