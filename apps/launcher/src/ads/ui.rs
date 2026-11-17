@@ -1,8 +1,9 @@
 //! Where the shell shows its ad slots: under the news page's release notes, a
 //! banner over the Discover cards and under the Online filters, the side column
 //! of an addon's page, and a floating video while the game builds and starts.
-//! Signed-in supporters see none. `SWOFTY_ADS_VIDEO=1` shows the video without
-//! pressing Play, even while [`VIDEO_LIVE`] is off.
+//! Signed-in supporters, admins, Swofty Launcher Support and addon creators,
+//! as the server's support status says, see none. `SWOFTY_ADS_VIDEO=1` shows
+//! the video without pressing Play, even while [`VIDEO_LIVE`] is off.
 
 use super::Unit;
 use crate::scale::{Hit, px};
@@ -55,10 +56,9 @@ impl Shell {
             || window.has_active_sheet(cx)
     }
 
-    /// Signed-in supporters see no ads, and nobody signed in does until their
-    /// support is known.
+    /// Nobody signed in sees ads until their support status is known.
     pub(crate) fn ads_allowed(&self) -> bool {
-        self.ads.on() && (self.mp.is_none() || matches!(&self.support.me, Load::Ready(me) if !me.active))
+        self.ads.on() && (self.mp.is_none() || matches!(&self.support.me, Load::Ready(me) if me.sees_ads()))
     }
 
     /// Fetches the signed-in user's support once per sign-in, which decides their ads.
