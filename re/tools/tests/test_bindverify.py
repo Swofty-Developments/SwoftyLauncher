@@ -184,6 +184,28 @@ class Synthetic(unittest.TestCase):
         self.assertEqual([i for i, _ in odd], ['Fn_Thunk'])
         self.assertIn('thunk body', odd[0][1])
 
+    def test_compare_reads_an_override_at_a_caller_by_the_code_it_reaches(self):
+        stub = b'\x48\x83\xEC\x28\xE8\x00\x01\x00\x00\xCC\xCC\xCC\xCC\xCC\xCC\xCC'
+        other = bytes(range(16))
+        caller = b'\x49\x8B\x4C\x24\x50\xE8' + struct.pack('<i', 0x800 - 0x30A) + b'\x48\x8B\x5C\x24\x30\x90'
+
+        def build(at_stub):
+            code = page((0x2F0, bytes(range(140, 156))), (0x300, caller), (0x310, bytes(range(120, 136))),
+                        (0x800, at_stub))
+            return self.image(pe({'.xtls': (0x1000, CODE, code)}))
+        ref_d = doc(binding('Fn'))
+        ref_d['bindings'][0]['pattern'] = '48 83 EC 28 E8 ?? ?? ?? ?? CC CC CC'
+        ea_b = binding('Fn', pattern='49 8B 4C 24 50 E8 ?? ?? ?? ?? 48 8B 5C 24 30', anchor=6,
+                       resolve={'kind': 'rel32', 'insn': 5})
+        ref = self.image(pe({'.xtls': (0x1000, CODE, page((0x500, bytes(range(60, 76))), (0x510, stub),
+                                                          (0x520, bytes(range(80, 96)))))}))
+        ref_res = bindverify.verify(ref, ref_d)
+        same, moved = build(stub), build(other)
+        self.assertEqual(bindverify.compare(ref, ref_d, ref_res, same, doc(ea_b), bindverify.verify(same, doc(ea_b))), [])
+        odd = bindverify.compare(ref, ref_d, ref_res, moved, doc(ea_b), bindverify.verify(moved, doc(ea_b)))
+        self.assertEqual([i for i, _ in odd], ['Fn'])
+        self.assertIn('code at the target', odd[0][1])
+
 
 def resolves(r, method, hinted):
     if r['id'] in hinted:

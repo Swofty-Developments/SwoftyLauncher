@@ -521,7 +521,9 @@ def compare(ref_img, ref_doc, ref_results, img, doc, results, context=0.4, calle
     """Flag bindings that resolve on both builds but probably not to the same place. A pattern made of protector
     filler can match once elsewhere, so the bytes around the match (outside the pattern) and, for a call, the
     callee's first bytes must look like the reference build's. Around a protector thunk the filler differs per
-    build, so there the relocated bodies the two thunks jump to must look alike instead."""
+    build, so there the relocated bodies the two thunks jump to must look alike instead. An override pattern can sit
+    somewhere else than the reference pattern, at a caller for instance, so for a code target with an override the
+    first bytes of the code at the two targets may stand in for the bytes around the match."""
     ref = {b['id']: (b, r) for b, r in zip(ref_doc['bindings'], ref_results)}
     out = []
     for b, r in zip(doc['bindings'], results):
@@ -542,7 +544,11 @@ def compare(ref_img, ref_doc, ref_results, img, doc, results, context=0.4, calle
         else:
             around = max(similarity(img.read(m - 16, 16), ref_img.read(rm - 16, 16)),
                          similarity(img.read(m + n, 16), ref_img.read(rm + rn, 16)))
-            if around < context:
+            if around < context and b['pattern'] != rb['pattern'] and b['kind'] in ('func', 'site'):
+                code = similarity(img.read(follow_jumps(img, t), 16), ref_img.read(follow_jumps(ref_img, rt), 16))
+                if code < context:
+                    why.append(f'bytes around the match look {around:.2f} alike and the code at the target {code:.2f}')
+            elif around < context:
                 why.append(f'bytes around the match look {around:.2f} alike')
         if ref_img.readable(rt, 5) and ref_img.mem[rt] == 0xE8:
             if not (img.readable(t, 5) and img.mem[t] == 0xE8):
