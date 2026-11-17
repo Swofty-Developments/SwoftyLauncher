@@ -30,7 +30,7 @@ use swofty_core::{GAME_EXE, STEAM_APP_ID, steam};
 
 use crate::time::{now_secs, stamp};
 
-const KB: &str = include_str!("../../../re/db/functions.tsv");
+const KB: &str = include_str!("../../../../re/db/functions.tsv");
 
 #[derive(Args)]
 pub struct RunArgs {
@@ -2531,7 +2531,7 @@ mod tests {
         let before = LogMark::read(&log);
         std::fs::write(
             dir.join(format!("steam-{STEAM_APP_ID}.log")),
-            include_str!("../../../packages/core/tests/fixtures/steam-run-process-731.txt"),
+            include_str!("../../../../packages/core/tests/fixtures/steam-run-process-731.txt"),
         )
         .unwrap();
         std::fs::write(dir.join("exit_code"), "1\n").unwrap();
