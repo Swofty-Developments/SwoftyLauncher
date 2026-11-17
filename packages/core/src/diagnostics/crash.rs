@@ -361,7 +361,7 @@ mod tests {
     #[test]
     fn finds_a_process_proton_could_not_start() {
         let mut scan = LogScan::default();
-        for line in include_str!("../tests/fixtures/steam-run-process-731.txt").lines() {
+        for line in include_str!("../../tests/fixtures/steam-run-process-731.txt").lines() {
             scan.feed(line);
         }
         let failure = scan.start_failure.expect("run_process failure");

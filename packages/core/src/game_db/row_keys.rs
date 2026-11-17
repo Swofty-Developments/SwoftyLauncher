@@ -6,7 +6,7 @@ use flate2::read::GzDecoder;
 
 use crate::ops::{ANY_SHAPE, FieldNames};
 
-const BUILTIN: &[u8] = include_bytes!("activation/row_keys.txt.gz");
+const BUILTIN: &[u8] = include_bytes!("../activation/row_keys.txt.gz");
 
 #[derive(Debug, Default)]
 pub struct RowKeys {

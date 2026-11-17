@@ -7,10 +7,11 @@ use crate::manifest::AddonManifest;
 use crate::{Result, io_err};
 
 pub use swofty_addon::CORE_ID;
-pub const CORE_MANIFEST: &str = include_str!("../../../addons/swoftymod/swofty.json");
-pub const CORE_DB: &str = include_str!("../../../addons/swoftymod/db/core.json");
-pub const CORE_INTRO: &str = include_str!("../../../addons/swoftymod/startup_intro/ops.json");
-pub const CORE_INTRO_VIDEO: &[u8] = include_bytes!("../../../addons/swoftymod/startup_intro/cm_f1_sting.bk2");
+pub const CORE_MANIFEST: &str = include_str!("../../../../addons/swoftymod/swofty.json");
+pub const CORE_DB: &str = include_str!("../../../../addons/swoftymod/db/core.json");
+pub const CORE_INTRO: &str = include_str!("../../../../addons/swoftymod/startup_intro/ops.json");
+pub const CORE_INTRO_VIDEO: &[u8] =
+    include_bytes!("../../../../addons/swoftymod/startup_intro/cm_f1_sting.bk2");
 pub const CORE_INTRO_CACHED: &str = "videos/cm_f1_sting.bk2";
 pub const CORE_INTRO_SUBTITLE: &str = "lng_subtitle_ea_sports_intro";
 pub const CORE_MODE: &str = "swofty_f1";

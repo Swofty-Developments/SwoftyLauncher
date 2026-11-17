@@ -1,3 +1,8 @@
+pub mod conflicts;
+pub mod folders;
+pub mod order;
+pub mod resolver;
+
 use std::collections::BTreeMap;
 
 use serde::{Deserialize, Serialize};

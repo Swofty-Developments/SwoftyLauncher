@@ -3,7 +3,7 @@
 use std::path::{Path, PathBuf};
 
 /// The pass contract, on the include path of every pass as `swofty/postfx.hlsli`.
-pub const HEADER: &str = include_str!("../../sdk/include/swofty/postfx.hlsli");
+pub const HEADER: &str = include_str!("../../../sdk/include/swofty/postfx.hlsli");
 /// The shader model passes compile to.
 pub const PROFILE: &str = swofty_shaders::PROFILE;
 

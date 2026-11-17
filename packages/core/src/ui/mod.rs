@@ -3,6 +3,7 @@ pub mod career_select;
 pub mod catalog;
 pub mod check;
 pub mod era;
+pub mod home_menu;
 pub mod home_rows;
 pub mod hub;
 pub mod icons;
