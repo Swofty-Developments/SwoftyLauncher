@@ -10,9 +10,7 @@
 
 #include "core/diagnostics/perf.hpp"
 #include "core/frontend/ui/screen_loader.hpp"
-
-bool ui_vm_attach(const std::string &screen);
-bool ui_vm_ready();
+#include "core/frontend/ui_vm.hpp"
 
 namespace ui {
 

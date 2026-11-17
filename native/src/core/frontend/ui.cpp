@@ -10,8 +10,7 @@
 #include "core/runtime/hook_errors.hpp"
 #include "core/runtime/json.hpp"
 #include "core/frontend/ui/screen_loader.hpp"
-
-bool ui_vm_init(uintptr_t module_base, const std::wstring &swofty_dir);
+#include "core/frontend/ui_vm.hpp"
 
 namespace ui {
 

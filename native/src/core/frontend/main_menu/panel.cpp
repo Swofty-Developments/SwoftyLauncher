@@ -2,6 +2,7 @@
 
 #include "core/frontend/main_menu/context.hpp"
 #include "core/frontend/main_menu_logic.hpp"
+#include "core/frontend/ui_vm.hpp"
 #include "core/runtime/json.hpp"
 
 #include <algorithm>
@@ -18,8 +19,6 @@
 namespace runtime {
 int overlay_image(const std::string &id, const std::string &path, uint32_t *width, uint32_t *height);
 }
-
-bool ui_vm_set_path(const std::string &path, int type, const void *value);
 
 namespace runtime::main_menu {
 

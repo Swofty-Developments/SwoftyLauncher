@@ -17,6 +17,7 @@
 #include "core/diagnostics/perf.hpp"
 #include "core/hud/text_entry.hpp"
 #include "core/frontend/popup/message_system.hpp"
+#include "core/frontend/ui_vm.hpp"
 
 // Message popups (NeUIMessageSystem). The game raises every popup the same way: construct a message
 // by its UIMD id (Ui_Message_Construct, 0x1442d9bf0: system, out handle, fixed-capacity id string,
@@ -47,7 +48,6 @@
 // sub_message attributes and a fixed msg_duration per id, so a toast picks the id nearest its duration.
 
 std::string settings_addon(const void *from, std::string &dll);
-void *ui_vm_message_system();
 
 namespace popup {
 

@@ -10,6 +10,7 @@
 
 #include "core/frontend/addon_page.hpp"
 #include "core/frontend/name_hash.hpp"
+#include "core/frontend/ui_vm.hpp"
 #include "core/frontend/vm_string.hpp"
 
 namespace swofty::ui {
