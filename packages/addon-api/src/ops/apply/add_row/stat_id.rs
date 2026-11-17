@@ -33,7 +33,7 @@ pub(super) fn added_holder(
 }
 
 // What picks the stat_id of the row add-row adds as `{path}.{row}_{n}`.
-pub(super) struct Ids<'a> {
+pub(super) struct StatIdPicker<'a> {
     pub(super) db: &'a Db<'a>,
     pub(super) names: &'a dyn FieldNames,
     pub(super) path: &'a str,
@@ -46,7 +46,7 @@ pub(super) struct Ids<'a> {
     pub(super) label: Option<&'a str>,
 }
 
-impl Ids<'_> {
+impl StatIdPicker<'_> {
     fn later(&self, id: i64) -> bool {
         self.names.reserved(self.path, self.row, id) || stat_id_unusable(self.path, self.row, id)
     }
@@ -64,7 +64,7 @@ impl Ids<'_> {
     // The next id above the table's highest, or the lowest free one when that passes the ceiling.
     // A moved id, and any id under the ceiling, passes over the ids later addons set on their rows.
     pub(super) fn next(&self) -> Result<(i64, Option<String>)> {
-        let Ids {
+        let StatIdPicker {
             db,
             names,
             path,
@@ -105,7 +105,7 @@ impl Ids<'_> {
     // it (so a fresh install gives a save from then its ids back); a full table takes back an id kept for
     // an addon the build leaves out.
     pub(super) fn give(&self) -> Result<(i64, Option<String>)> {
-        let Ids {
+        let StatIdPicker {
             db,
             names,
             path,

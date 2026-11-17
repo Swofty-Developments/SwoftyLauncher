@@ -5,7 +5,7 @@ use std::collections::BTreeMap;
 use swofty_formats::gvdb::{Record, instance_count_path};
 use swofty_formats::hash::fnv1a64;
 
-use self::stat_id::{Ids, added_holder};
+use self::stat_id::{StatIdPicker, added_holder};
 use crate::ops::apply::walk::{Walk, walk};
 use crate::ops::apply::{AddedRow, Cx};
 use crate::ops::db_ops::{CopyMode, StatIdMode};
@@ -211,7 +211,7 @@ pub(crate) fn add_row(db: &mut Db, names: &dyn FieldNames, cx: &mut Cx, op: AddR
         .iter()
         .find(|r| r.key == dst.field("_metadata_"))
         .map(|r| r.text().into_owned());
-    let ids = Ids {
+    let ids = StatIdPicker {
         db,
         names,
         path: &path,
