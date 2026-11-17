@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Game_TrackSpline_FindSegmentAtDistance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14067a040",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_TrackSpline_FindSegmentAtDistance(void *spline, float distance)",
+  "evidence": "decomp:re/decomp/14067a040.c;xref:0x14299ae98,0x14299b19c,0x142d14aec,0x142d1777e,0x142d1cdae,0x142d22c3e,0x142d3cf13,0x1436178a6",
+  "notes": "Finds the spline segment containing lap distance (xmm1): the last segment's +0xb0 is the lap length; closed loops (+0x88 set) wrap with fmod, open ones clamp to [0, length]; bucket = u16 table inline at +0x90 indexed by (int)(d * +0x8c); then walks the segment pointer vector +0x18..+0x20 until seg+0xb4 <= d <= seg+0xb0 (+0xb4 = segment start, +0xb0 = segment end; corrected per V3572/V4003), returns 0 past the end. 8 call sites (vehicle placement rulesets, formation-lap parking check). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.track_spline_find_segment_at_distance",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE 80 B9 88 00",
+  "match": "0x14067a040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14067a040",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackSpline_FindSegmentAtDistance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14067a040",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14067a040.c;xref:0x142d14aec,0x142d1777e",
+   "notes": "V3572 fmod wrap when +0x88 set, u16 bucket table +0x90 scaled by +0x8c, walks segments from +0x18 vector all as claimed; but segment bounds are reversed: loop tests value < [seg+0xb4] || [seg+0xb0] < value so +0xb4 is the start and +0xb0 the end. Callers seen"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14067a040",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14067a040.c;xref:0x142d14aec,0x142d1777e",
+   "notes": "V4003 fmod wrap when +0x88 set, u16 bucket table +0x90 scaled by +0x8c, walks segments from +0x18 vector all as claimed; but segment bounds are reversed: loop tests value < [seg+0xb4] || [seg+0xb0] < value so +0xb4 is the start and +0xb0 the end. Callers seen"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x14067a040",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14067a040.c;xref:0x142d14aec,0x142d1777e",
+   "notes": "V4094 bucket u16 table +0x90 scaled +0x8c, segments +0x18 (+0xb0/+0xb4), fmod wrap +0x88, 4 named callers confirmed"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x14067a040",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14067a040-0x14067a11a;xref:0x14299ae98,0x1436178a6",
+   "notes": "V10389 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 8 rel32 callers by my scan. len = [[spline+0x20]-8]+0xb0; +0x88 set -> fmod (0x1453556a4) + len if negative, else clamp [0,len]; bucket u16 [spline + (int)(d*[+0x8c])*2 + 0x90]; walk [+0x18]..[+0x20] until seg+0xb4 <= d <= seg+0xb0; past end returns 0."
+  }
+ ],
+ "proofs": []
+}

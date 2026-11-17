@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Issue_Warning",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143572a00",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Issue_Warning(void *rules, uint8_t *incident, uint32_t reason)",
+  "evidence": "decomp:re/decomp/143572a00.c;xref:0x14356b6f8,0x14356bd7d,0x14356d755,0x143571ad1,0x143573712",
+  "notes": "Issue a warning (penalty kind 5) for infringement record param_2 (byte car at +0, lap +9, +0x14 extra) with reason param_3. Records it (0x1435668e0 kind 5). Reason 0x16 (22): posts bus msg 0x14584ec18 (kind word 0x1605) and, for a local human car (participant +0x30 bit 0 and +0x32 bit 0x20), shows the HUD warning (HUD object [rules+0x1c18]+0xa0 +0x1100 = 0x16, UI event 0x145849803). Other reasons: books it (0x143573400 kind 5), posts msg 0x14584ec18 (kind 5, reason), and for reasons 7..9 shows the HUD warning with that reason. Callers 0x14356b6f8, 0x14356bd7d, 0x14356d755 and tail jumps 0x143571ad1, 0x143573712. (used by vmknolle track-limits)"
+ },
+ "signature": {
+  "id": "session.issue_warning",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 81 EC 88 00 00 00 44 89 C3 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x143572a00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143572a00",
+  "kind": "func_start",
+  "names": [
+   "Sess_Issue_Warning"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "func",
+   "item": "0x143572a00",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_c/decomp/143572a00.c;xref:0x14356b6f8,0x14356bd7d,0x14356d755,0x143571ad1,0x143573712",
+   "notes": "V1046 logs 'Car %d WARNING' (RULES), records penalty type 5 (warning) with reason arg3 via 0x1435668e0/0x143573400, posts event 0x14584ec18, reason 0x16 path triggers 'DSQ_Warning', 7-9 'CornerCutting', 3-4 'Collisions' audio; (rules, incident*, reason) matches"
+  }
+ ],
+ "proofs": []
+}

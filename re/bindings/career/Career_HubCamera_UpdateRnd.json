@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_HubCamera_UpdateRnd",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140b7a780",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t FUN(longlong *camera_state)",
+  "evidence": "decomp:re/decomp/140b7a780.c;xref:0x140b7a5c1;xref:0x140c7524c;xref:0x140c7674d",
+  "notes": "myteam-g1: Team HQ camera logic for career_hub_camera_rnd: looks up the camera node, picks the first R&D entry of the active slot (slot < 2) and caches it in camera_state[3]/[4]."
+ },
+ "signature": {
+  "id": "career.hub_camera_update_rnd",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 70 49 89 CF",
+  "match": "0x140b7a780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140b7a780",
+  "kind": "func_start",
+  "names": [
+   "Career_HubCamera_UpdateRnd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140b7a780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140b7a780.c;str:\"career_hub_camera_rnd\"",
+   "notes": "V9489 Looks up career_hub_camera_rnd node, for slot<2 takes first element of vector at slot obj+0x2a0 and caches in state[3]/[4], then updates camera."
+  }
+ ],
+ "proofs": []
+}

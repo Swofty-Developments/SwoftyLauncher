@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UiAttacher_DoAttachChild",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144218810",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name doAttachChild (class from the log channel); log channel UI_ATTACHER: '%s'"
+ },
+ "signature": {
+  "id": "game.ui_attacher_do_attach_child",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 CE 8B 41 14",
+  "match": "0x144218810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144218810",
+  "kind": "func_start",
+  "names": [
+   "Game_UiAttacher_DoAttachChild"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144218810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144218810.c;xref:0x14321d00b",
+   "notes": "V6571 size=901; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

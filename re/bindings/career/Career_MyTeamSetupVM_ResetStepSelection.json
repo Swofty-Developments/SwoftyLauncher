@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamSetupVM_ResetStepSelection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422668b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *vm_ctx, uint64_t step)",
+  "evidence": "decomp:re/decomp/1422668b0.c;xref:0x142264abd;xref:0x142282305;xref:0x1422829d0",
+  "notes": "myteam-g2: If the setup record step flag (0x14606d340 + step) is clear, resets the selection through the VM object vtable (+0xa0 / +0x98), re-initialises the static setup record and re-registers the setup key through Ne_RobinHoodMap_U64_FindIndex. Used by SetStep / FocusSelection / RefreshSelection."
+ },
+ "signature": {
+  "id": "career.my_team_setup_vm_reset_step_selection",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 85 C9 74 7E",
+  "match": "0x1422668b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422668b0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamSetupVM_ResetStepSelection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422668b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422668b0.c;xref:0x142264abd",
+   "notes": "V10063 Checks step flag byte at 0x14606d340+step, calls vtable +0xa0/+0x98, re-inits static record; matches."
+  }
+ ],
+ "proofs": []
+}

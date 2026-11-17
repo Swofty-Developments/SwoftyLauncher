@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_Elem48_AdjustHeap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ee82f0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ee82f0.c;xref:0x143ee81dc",
+  "notes": "Insertion/partition step for 48-byte elements (key at +0 qword pair, field +0x1c). Callers Ne_Sort_Introsort_Elem48. vq1-verify partial/disagree"
+ },
+ "signature": {
+  "id": "core.sort_elem48_insertion_step",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 4D 8D 50 FF 4D 89 D3 49",
+  "match": "0x143ee82f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ee82f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_Elem48_AdjustHeap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143ee82f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143ee82f0.c;xref:0x143ee81dc",
+   "notes": "V8362 Ne_Sort_Elem48_AdjustHeap: sift-down with children 2i+1/2i+2 (heap adjust), not insertion/partition"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_RttView_SetViewMatrices",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c38a40",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c38a40.c;xref:0x140183b4e",
+  "notes": "Copies four 16-byte-row matrices (param_2[0..3] = 4x4 float matrix) into ctx+0xf0..+0x12f plus derived fields (274 lines). Callers Game_ThumbnailTask_Update, 0x143c38993, 0x142fae62d, 0x140183b4e. Hypothesis: view/projection setup for render-to-texture."
+ },
+ "signature": {
+  "id": "render.rtt_view_set_view_matrices",
+  "section": ".xtls",
+  "pattern": "48 83 EC 78 C5 78 29 64 24 60 C5 78 29 5C 24 50 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 C5 F8 28 02 C5 F8 28 4A 10 C5 F8 28 52 20 C5 F8 28 5A 30 C5 F8 29 89 00 01 00 00",
+  "match": "0x143c38a40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c38a40",
+  "kind": "func_start",
+  "names": [
+   "Render_RttView_SetViewMatrices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c38a40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c38a40.c;xref:0x140183b4e",
+   "notes": "V7866 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

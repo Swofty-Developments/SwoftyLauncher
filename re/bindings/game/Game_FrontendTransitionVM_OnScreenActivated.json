@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendTransitionVM_OnScreenActivated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141bb7bf0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_FrontendTransitionVM_OnScreenActivated(void *vm)",
+  "evidence": "str:s_cfg_UISkipFirstTimeBoot;decomp:re/decomp/141bb7bf0.c;xref:0x141bb8270,0x141bb8271",
+  "notes": "Vtable slot 0x68 (onScreenActivated position) of the frontend transition VM vtable 0x1457391a0 (pointer 0x145739208), whose slot 0x50 is FeFlow_TransitionVM_OnCommand (cxx game::FrontendTransitionViewModel); the FeFlow_ prefix of that sibling would also fit. Binds user_swap_pending, activity_invite, has_played_first_boot_slideshow, has_played_fbs_just_now, beta_enabled (Vm_Set_Bool 0x140975db0 / Vm_NodeSet_Bool 0x140973e20), posts a bus message, checks Game_Network_MOXSessionGeneric 0x143083570. Setting: reads the Ne_Get_FeatureFlags 0x1413ca0d0 qword, then UI.skipFirstTimeBoot via Ne_Get_SettingBool on [vm+0x2a8]+0x18, default 0. Only if feature bit 54 is set and skipFirstTimeBoot is 0 it looks up first_boot_slideshow_played in the set at [vm+0x2c8]+0x228 (0x14096b0b0) and writes found/not-found into the bool node [vm+0x2e8]+0x68; with skipFirstTimeBoot = 1 that node is left untouched (first-boot slideshow not requested). hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.frontend_transition_vm_on_screen_activated",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F8 29 B4 24 80 01 00 00 48 89 CE 48 8D B9 68 02 00 00",
+  "match": "0x141bb7bf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141bb7bf0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendTransitionVM_OnScreenActivated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-1",
+   "kind": "func",
+   "item": "0x141bb7bf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141bb7bf0.c;xref:0x145739208",
+   "notes": "V9326 Slot +0x68 of the vtable right after class string \"FrontendTransitionViewModel\" (neighbour FeFlow_TransitionVM_OnCommand); on activation creates bindings user_swap_pending, activity_invite, has_played_first_boot_slideshow, has_played_fbs_just_now, reads UI.skipFirstTimeBoot and beta_enabled; arity matches."
+  }
+ ],
+ "proofs": []
+}

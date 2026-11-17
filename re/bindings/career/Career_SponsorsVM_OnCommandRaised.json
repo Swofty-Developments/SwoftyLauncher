@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorsVM_OnCommandRaised",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423f54b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm, void **cmd",
+  "evidence": "decomp:re/decomp/1423f54b0.c;xref:0x1423f6747;xref:0x145787a00",
+  "notes": "myteam-g1: Command hash switch for the sponsors page (sponsor_name selection, discover); neighbour of Career_TeamHqVM_DiscoverSponsorCommand."
+ },
+ "signature": {
+  "id": "career.sponsors_vm_on_command_raised",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC F8 00 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 5D 86 FC 33",
+  "match": "0x1423f54b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423f54b0",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorsVM_OnCommandRaised"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423f54b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423f54b0.c",
+   "notes": "V10205 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_FileStream_ResolveWritePath",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439997d0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439997d0.c;xref:0x143998eaa",
+  "notes": "763-byte path helper with static TLS and Ne_Crt_StrchrSse (finds separators). Callers Render_FileStream_OpenWrite (0x143998eaa), 0x14399990d. Hypothesis."
+ },
+ "signature": {
+  "id": "render.file_stream_resolve_write_path",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 50 01 00 00 48 89 CF FF 15",
+  "match": "0x1439997d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439997d0",
+  "kind": "func_start",
+  "names": [
+   "Render_FileStream_ResolveWritePath"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1439997d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439997d0.c;xref:0x143998eaa",
+   "notes": "V8493 GetFileAttributesA + 14532a9bc separator search (0x5c) path helper; callers OpenWrite + self"
+  }
+ ],
+ "proofs": []
+}

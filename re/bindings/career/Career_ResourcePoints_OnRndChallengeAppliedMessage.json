@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_OnRndChallengeAppliedMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14122a0a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ResourcePoints_OnRndChallengeAppliedMessage(void *rp, void *msg)",
+  "evidence": "decomp:re/decomp/14122a0a0.c;xref:0x141226fe4;xref:0x141227828",
+  "notes": "myteam-g2: RP message handler (likely rnd_challenge_applied_message): checks the message tag matches rp+0x628, looks up msg key (u64 at +0x10) in the challenge map at (rp+0x610)+0x290, reads the challenge team key (+0xae) and enabled byte (+0xb2), converts msg+0x18 via FUN_145358828 to an int and credits the team wallet (rp+0x528) in per-team mode."
+ },
+ "signature": {
+  "id": "career.resource_points_on_rnd_challenge_applied_message",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 C5 F8 29 74 24 20 48 8B 99 10 06 00 00",
+  "match": "0x14122a0a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14122a0a0",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePoints_OnRndChallengeAppliedMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14122a0a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14122a0a0.c;xref:0x141226fe4;xref:0x141227828",
+   "notes": "V9685 Strcmp tag check, float-to-int and Adjust_RpTeamWallet callee match the claim."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCar_ReadMaxRedFlags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436382f0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436382f0.c;xref:0x143649e66,0x15099fa26,0x145854030",
+  "notes": "rules.safety_car.logic.conditions.deployment_frequency.<race length>.max_red_flag_deployments_allowed (DB: 3/5 laps 0, 10/15 laps 1, 25-35% 1, 50% 2, 100% 3)."
+ },
+ "signature": {
+  "id": "session.safety_car_read_max_red_flags",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 48 89 CE 48 BA FC A2 18 91 80 B8 EA 46",
+  "match": "0x1436382f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436382f0",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCar_ReadMaxRedFlags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-b",
+   "kind": "func",
+   "item": "Sess_SafetyCar_ReadMaxRedFlags",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436382f0.c;xref:0x1436382f0",
+   "notes": "V1839 key max_red_flag_deployments_allowed, same race-length table"
+  }
+ ],
+ "proofs": []
+}

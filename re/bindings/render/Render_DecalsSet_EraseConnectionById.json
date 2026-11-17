@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_DecalsSet_EraseConnectionById",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c6bc20",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c6bc20.c;xref:0x143c7905b",
+  "notes": "Erases one connection record keyed by a u64 id from the decals-set plugin maps: FNV-1a over the 8 id bytes, bucket mask this+0xa8 / sub-map +0x60, intrusive list nodes (key at node+0x10), releases the refcounted object (vcall +0/+8), stores result code (0 ok, 2 not found, 0xe invalid) into a TLS error slot plus a small backtrace ring (0x146107830). Caller Ne_CustomisationDecalsSetPlugin_CloseConnection. Hypothesis on exact container role."
+ },
+ "signature": {
+  "id": "render.decals_set_erase_connection_by_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 4C 24 28 4C",
+  "match": "0x143c6bc20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c6bc20",
+  "kind": "func_start",
+  "names": [
+   "Render_DecalsSet_EraseConnectionById"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c6bc20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c6bc20.c;xref:0x143c7905b",
+   "notes": "V7883 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

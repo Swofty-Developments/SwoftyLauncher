@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Read_AlongsideConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14065da00",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Read_AlongsideConfig(AiDriverConfig *cfg, void *row_key)",
+  "evidence": "decomp:re/decomp/14065da00.c;xref:0x14065dc5c",
+  "notes": "Stores 8 game-DB node pointers (Gdb_Get_FieldInt 0x1445a2cf0(row_key, name, 0)) into the alongside group at the start of AiDriverConfig: +0x00 alongside.off_target_angle_interpolation, +0x08 alongside.steering_understeer_offset, +0x10 alongside.steering_understeer_slip_max_throttle, +0x18 alongside.trailbrake_speed_reduction_scalar, +0x20 alongside.speed_difference_for_limited_zone_yielding, +0x28 alongside.yield_overtake_rate, +0x30 alongside.min_presence_within_buffer, +0x38 alongside.offset_limiter_to_vehicle_blend_graph (stores 0x14065da1e..0x14065dab7). Only caller 0x14065dc50 calls it first with the same cfg/row (0x14065dc5c), then blocking at cfg+0x40. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.read_alongside_config",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 06 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 46 08 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 46 10 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 46 18 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 46 20 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 46 28 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 46 30 48 8D 15 ?? ?? ?? ?? 48 89 F9 45 31 C0 E8 ?? ?? ?? ?? 48 89 46 38 48 83 C4 28",
+  "match": "0x14065da00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14065da00",
+  "kind": "func_start",
+  "names": [
+   "Ai_Read_AlongsideConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x14065da00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14065da00.c;xref:0x65dc5c",
+   "notes": "V4712 string/behaviour in decomp matches name"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14065da00",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14065da00-0x14065dac2;xref:0x14065dc5c",
+   "notes": "V10549 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 2 args; 8 Gdb_Get_FieldInt 0x1445a2cf0 results stored at cfg+0x00..+0x38 in exactly the claimed key order (stores 0x14065da1e..0x14065dab7). Only caller 0x14065dc5c."
+  }
+ ],
+ "proofs": []
+}

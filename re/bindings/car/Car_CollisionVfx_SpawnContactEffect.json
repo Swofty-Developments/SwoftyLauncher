@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_CollisionVfx_SpawnContactEffect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144705fc0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144705fc0.c;xref:0x14470471e,0x144705ab4",
+  "notes": "Spawns collision VFX for contact on car part param_3 with contact matrix param_4: double-buffered effect slots (+0x36fb8, 0xf70 each), per-part emitters +0x6b0[part], emits through 0x143b021e0. Callers: Car_CollisionVfx_OnContact."
+ },
+ "signature": {
+  "id": "car.collision_vfx_spawn_contact_effect",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 78 29 BC 24 E0 00 00 00 C5 78 29 B4 24 D0 00 00 00 C5 78 29 AC 24 C0 00 00 00 C5 78 29 A4 24 B0 00 00 00 C5 78 29 9C 24 A0 00 00 00 C5 78 29 94 24 90 00 00 00 C5 78 29 8C 24 80 00 00 00 C5 79",
+  "match": "0x144705fc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144705fc0",
+  "kind": "func_start",
+  "names": [
+   "Car_CollisionVfx_SpawnContactEffect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144705fc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144705fc0.c;xref:0x14470471e",
+   "notes": "V3727 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

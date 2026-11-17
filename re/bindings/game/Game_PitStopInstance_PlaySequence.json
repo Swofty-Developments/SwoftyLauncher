@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitStopInstance_PlaySequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403b36a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403b36a0.c;xref:0x1403b1f01,0x1403b1f1c,0x1403b1f37,0x1403b1f52,0x1403b1f6d,0x1403b8151,0x1403bf4b0",
+  "notes": "cxx=PitStopInstance::playSequence; log channel -: 'RAW: PitStopInstance::playSequence %d %s' L2 2026-11-14 (engine-re round 2): decomp read; 7 reference(s) (0x1403b1f01, 0x1403b1f1c, 0x1403b1f37, 0x1403b1f52, 0x1403b1f6d, 0x1403b8151, ...); the body itself references 'PITSTOP_INSTANCE' / 'RAW: PitStopInstance::playSequence %d %s' / 'RAW: PitStopInstance::playSequence %d %s failed'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_stop_instance_play_sequence",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 80 79 64 00",
+  "match": "0x1403b36a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403b36a0",
+  "kind": "func_start",
+  "names": [
+   "Game_PitStopInstance_PlaySequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403b36a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403b36a0.c;xref:0x3b1f01",
+   "notes": "V4620 string/behaviour in decomp matches name"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1403b36a0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1403b36a0-0x1403b3b99;xref:0x1403b1f01,0x1403b1f1c,0x1403b1f37,0x1403b1f52,0x1403b1f6d,0x1403b8151,0x1403bf4b0",
+   "notes": "V10456 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 7 call sites (5 in 0x1403ad360, 0x1403b8151 in 0x1403b77c0, 0x1403bf4b0 in 0x1403bc300). PITSTOP_INSTANCE RAW: PitStopInstance::playSequence %d %s (+failed). 2 args."
+  }
+ ],
+ "proofs": []
+}

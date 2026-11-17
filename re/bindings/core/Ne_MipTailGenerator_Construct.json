@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_MipTailGenerator_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d38f00",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143d38f00.c;xref:0x1401047a8",
+  "notes": "cxx=NeMipTailGenerator::NeMipTailGenerator; log channel MIPTAIL: 'NeMipTailGenerator::NeMipTailGenerator: this %x m_forPlanarReflections %d '"
+ },
+ "signature": {
+  "id": "core.mip_tail_generator_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 4C 89 CF 4C 89 C3 48 89 CE C7 44 24 20 06 00 00 00 E8 ?? ?? ?? ?? 48 8D 05 ?? ?? ?? ?? 48 89 06 4C 8D AE 68 05 00 00",
+  "match": "0x143d38f00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d38f00",
+  "kind": "func_start",
+  "names": [
+   "Ne_MipTailGenerator_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_MipTailGenerator_Construct",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d38f00.c;xref:0x1401047a8",
+   "notes": "V2059 constructor parsing xml attrs (stencilSrc, stencilDst, source, target, forPlanarReflections, face, miniEngine, convolve); log ok"
+  }
+ ],
+ "proofs": []
+}

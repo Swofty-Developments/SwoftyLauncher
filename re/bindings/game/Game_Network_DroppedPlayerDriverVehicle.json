@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_DroppedPlayerDriverVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14323c7d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): 'Dropped player(%s) with driver(%s) / vehicle(%d).'"
+ },
+ "signature": {
+  "id": "game.network_dropped_player_driver_vehicle",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 20 01 00 00 4C 89 C7",
+  "match": "0x14323c7d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14323c7d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_DroppedPlayerDriverVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14323c7d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14323c7d0.c;xref:0x14323e25e",
+   "notes": "V6043 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

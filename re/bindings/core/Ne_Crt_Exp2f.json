@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Exp2f",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145354ae0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/145354ae0.c;xref:0x14039aa80,0x1446cd9a0",
+  "notes": "CRT exp2f-style: classifies x (0x145348338), handles inf/0, computes via x*ln2 and ldexp scaling (0x1453548a8). Callers: Car_Visual_UpdateRenderState, Car_PadAssist_DriftAssist, Car_Input_SmsSteer. Exact variant (exp2f vs powf helper) HYPOTHESIS."
+ },
+ "signature": {
+  "id": "core.crt_exp2f",
+  "section": ".xtls",
+  "pattern": "F3 0F 11 44 24 08 48 83 EC 38 0F 29 74 24 20 0F",
+  "match": "0x145354ae0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145354ae0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Exp2f"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x145354ae0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/145354ae0.c;xref:0x14039b273",
+   "notes": "V3759 classify + ldexp-style scaling, callers match; Hypothesis label supported"
+  }
+ ],
+ "proofs": []
+}

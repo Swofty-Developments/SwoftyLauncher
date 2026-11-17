@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Loader_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d4a480",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d4a480.c;xref:0x142d4a395",
+  "notes": "Session loader per-frame update (tail jmp from 0x142d4a320): drives the load state machine - track asset setup, frontend scene preload, RTTCharacter / RTTVehicle, cutscene prep (Game_CutsceneManager_IsPreparingScenes / WaitTextureStreaming), grid player shot cutscene, calls 0x142d4c140 / 0x142d4d040; toggles ThumbnailSystem reason 0 on/off around the load."
+ },
+ "signature": {
+  "id": "session.loader_update",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 48 89 CE 80 B9 1B 01",
+  "match": "0x142d4a480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d4a480",
+  "kind": "func_start",
+  "names": [
+   "Sess_Loader_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Sess_Loader_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/42d4a480.c;xref:None",
+   "notes": "V3239 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

@@ -2,7 +2,7 @@
  "schema": 1,
  "name": "FeFlow_StateIntro_OnUpdate",
  "table": "functions",
- "author": "ts3b",
+ "author": "kb-import",
  "row": {
   "addr": "0x1436da4d0",
   "level": "L1",

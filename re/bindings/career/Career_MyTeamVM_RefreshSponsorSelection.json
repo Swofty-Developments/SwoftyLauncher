@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamVM_RefreshSponsorSelection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422703e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int (void *vm)",
+  "evidence": "decomp:re/decomp/1422703e0.c;xref:0x14226a069;xref:0x14226c364",
+  "notes": "myteam-g2: Refreshes the sponsor selection in the My Team VM: walks the sponsor list object at vm+0x2948, uses Ne_Ref_GetListElementOrEmpty and Vm_Resolve_RegistryNode (UNK_14570baf7 paths), copies the setup config (140ce3d50) and recomputes the perk sum (140c31790). UI-side; the selection is committed elsewhere."
+ },
+ "signature": {
+  "id": "career.my_team_vm_refresh_sponsor_selection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 48 89 CF 48 8B 89 48 29 00 00",
+  "match": "0x1422703e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422703e0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamVM_RefreshSponsorSelection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422703e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422703e0.c;xref:0x14226a069",
+   "notes": "V10068 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

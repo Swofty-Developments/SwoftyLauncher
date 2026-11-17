@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ChallengeEvent_HandleCommand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a841a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141a841a0.c;xref:0x14572b510",
+  "notes": "Challenge-event tab VM command handler: lng_passive_goals / lng_weekly_goals, tutorial_shown, goto_upsell_screen, show_weekly_gp, show_esports_event, show_safety_rating. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3069)"
+ },
+ "signature": {
+  "id": "game.challenge_event_handle_command",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 68 4C 89 C7 48 89 D3 48 89 CE 80 3D",
+  "match": "0x141a841a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a841a0",
+  "kind": "func_start",
+  "names": [
+   "Game_ChallengeEvent_HandleCommand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Game_ChallengeEvent_HandleCommand",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a841a0.c;xref:0x14572b510",
+   "notes": "V3069 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

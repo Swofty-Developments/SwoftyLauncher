@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SharedPtr_ReleaseB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d80580",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d80580.c;xref:0x142d801c7",
+  "notes": "Same std::shared_ptr release pattern as 0x142d804a0 (control block this+8, uses +8, weak +0xc, vtable +0 dispose, +8 destroy). Called from Sess_PreLights_OnStateEnter."
+ },
+ "signature": {
+  "id": "core.shared_ptr_release_b",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 8B 71 08 48 85 F6 74 23 F0 FF 4E 08 75 1D 48 8B 06 48 89 F1 FF 10 F0 FF 4E 0C 75 0F 48 8B 06 48 89 F1 48 83 C4 20 5E 48 FF 60 08 90 48 83 C4 20 5E C3 CC CC CC CC CC CC CC CC E9 ?? ?? ?? ?? 1D CC 0F",
+  "match": "0x142d80580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d80580",
+  "kind": "func_start",
+  "names": [
+   "Ne_SharedPtr_ReleaseB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d80580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d80580.c;xref:0x142d801c7",
+   "notes": "V3629 same shared_ptr release body as 0x142d804a0; caller Sess_PreLights_OnStateEnter"
+  }
+ ],
+ "proofs": []
+}

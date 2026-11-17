@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "FeTile_CareerDefaultItem_Populate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417264c0",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "void FeTile_CareerDefaultItem_Populate(HomeItem *item, void *node, uint32_t a7)",
+  "evidence": "decomp:re/decomp/1417264c0.c;xref:0x145704010;decomp:re/decomp/14173df80.c",
+  "notes": "Career menu 2025 content tile (career_default_content, vtable 0x145703ff0 slot +0x20, item set in FeTile_Build_List case 6 at 0x14174058b): FeTile_ItemBase_Populate, then Vm_Set_Bool(g_Vm_Registry, button_node.node+8, is_dlc_content, item+0x148), title lng_career_default_content and its description. The template fe_tile_button_default binds enabled (bool) on the same node. Raised by native-1990 for the F1 1990 Career menu (doc:/mnt/work/.f1-1990/addon/native-requests.md#N6). Clone of the other content tile populate: the signature starts in the bytes before the function."
+ },
+ "signature": {
+  "id": "fe_tiles.career_default_item_populate",
+  "section": ".xtls",
+  "pattern": "48 89 F1 48 83 C4 20 5E 48 FF A0 98 00 00 00 CC 56 57 53 48 83 EC 50",
+  "match": "0x1417264b0",
+  "anchor": "0x10",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417264c0",
+  "kind": "func_start",
+  "names": [
+   "FeTile_CareerDefaultItem_Populate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/career_content.cpp",
+   "addons/f1-1990/native/src/career_menu_ui.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-content",
+   "kind": "func",
+   "item": "FeTile_CareerDefaultItem_Populate",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/exe/std-content/decomp/1417264c0.c;xref:0x145704010;sig:fe_tiles.career_default_item_populate",
+   "notes": "V0905 Confirmed: vtable 0x145703ff0 slot 4 (+0x20, abs ref 0x145704010), 3 args passed to FeTile_ItemBase_Populate, then 0x1407d07a0(item+0x158,0), Vm_Set_Bool is_dlc_content on button_node.node+8, title/description lng_career_default_content(_description). Differs: the is_dlc_content value pointer is item+0x190 (lea r9,[rsi+0x190] at 0x1417264fb; the ctor byte [0x32], set to 1 for the 2026 tile), not item+0x148; +0x148 receives the return of vtable slot +0xa0 (mov [rsi+0x148],al at 0x1417264e9). Fix the notes and re-verify. sigcheck: func_start 1 hit (pattern starts before the function)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_ScriptValue_GetFloat",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14399ff40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14399ff40.c;xref:0x14023ba78,0x14025144a",
+  "notes": "Data value accessor: if value object +0x20 exists returns its vcall +0x28 result, otherwise records error code 5 (type mismatch) in the TLS error chain. Callers: Game_CutsceneContext_ParseSceneContext, Game_DataDrivenCutSceneScript_CreateComponents, Sess_Parse_BenchmarkConfig."
+ },
+ "signature": {
+  "id": "core.script_value_get_float",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 8B 49 20 48 85 C9 74 10 48 8B 01 48 8B 40 28 48 83",
+  "match": "0x14399ff40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14399ff40",
+  "kind": "func_start",
+  "names": [
+   "Ne_ScriptValue_GetFloat"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14399ff40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14399ff40.c;xref:0x14023ba78",
+   "notes": "V3607 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_PitCrewTrainingConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14102b110",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: pit_crew_training.mini_game, pit_crew_training.mini_game.AR_objects.sounds.%s, pit_crew_training.mini_game.AR_objects.voice_over.%s'"
+ },
+ "signature": {
+  "id": "game.read_pit_crew_training_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 0B 00 00 C5 78 29 BC 24 C0 0B 00 00",
+  "match": "0x14102b110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14102b110",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_PitCrewTrainingConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "sp-verify",
+   "kind": "func",
+   "item": "Game_Read_PitCrewTrainingConfig",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14102b110.c;xref:0x14102c6b1",
+   "notes": "V1711 claim 9"
+  }
+ ],
+ "proofs": []
+}

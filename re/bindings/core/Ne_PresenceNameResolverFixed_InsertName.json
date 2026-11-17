@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_PresenceNameResolverFixed_InsertName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144136030",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144136030.c;xref:0x14412a337",
+  "notes": "Hash insert of a name record into the fixed resolver map (probe FUN_1441361b0, rehash 0x144136850). Caller Ne_PresenceNameResolverFixed_AddName."
+ },
+ "signature": {
+  "id": "core.presence_name_resolver_fixed_insert_name",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 85 F6 0F 84 ?? ?? ?? ?? 48 C7",
+  "match": "0x14412a337",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x144136030",
+  "kind": "func_start",
+  "names": [
+   "Ne_PresenceNameResolverFixed_InsertName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x144136030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144136030.c;xref:0x14412a337",
+   "notes": "V8169 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

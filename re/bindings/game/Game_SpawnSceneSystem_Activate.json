@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SpawnSceneSystem_Activate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140380d70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=SpawnSceneSystem::activate; log channel ACTOR: 'SpawnSceneSystem::activate failed to get NeActorSceneDataResource from scene name %s'"
+ },
+ "signature": {
+  "id": "game.spawn_scene_system_activate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC A0 02 00 00",
+  "match": "0x140380d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140380d70",
+  "kind": "func_start",
+  "names": [
+   "Game_SpawnSceneSystem_Activate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140380d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140380d70.c",
+   "notes": "V4563 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

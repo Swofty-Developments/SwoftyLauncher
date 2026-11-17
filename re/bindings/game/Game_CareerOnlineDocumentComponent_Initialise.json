@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CareerOnlineDocumentComponent_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fcd6b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_CareerOnlineDocumentComponent_Initialise(void *self, void *ctx, void *components)",
+  "evidence": "str:s_cfg_CareerOnlineKickFailingSynchronisation;decomp:re/decomp/140fcd6b0.c;xref:0x140fcd735,0x140fcd802,0x140fcd803,0x1456b28b8",
+  "notes": "Vtable slot +0x78 of the derived vtable 0x1456b2840 (CareerOnlineDocumentComponent, see Game_OnlineDocumentSubComponent_Ctor 0x140fcd3b0); reached only through the pointer at 0x1456b28b8. Calls 0x140bb3790 first, binds the component 0x1460609c8 from self+0x270 into self+0x398 (missing -> errno 0x16), allocates 0x160 bytes and constructs the sync object 'Career document, host data' (0x1430950d0) into self+0x2b8 (an old one is destroyed with 0x143103c20), wires its callbacks with ctx self: +0xd0 Game_CareerOnlineDocumentComponent_SyncGetDocumentHash 0x140fcdad0, +0xf0 Game_CareerOnlineDocumentComponent_SyncSendDocumentData 0x140fce030, +0x110 0x140fce150, +0xe0 0x140fce1b0. Career.Online.KickFailingSynchronisation (lea 0x140fcd802) -> Ne_Get_SettingBool 0x143a43b90 on *(self+0x290)+0x200, default 0 -> sync object +0x34. Then caches option 'career_type' (Game_OptionsStore_FindOption 0x142b5dfd0, 0x140310f00 into self+0x3b8) and looks up the service key 0x14604ec78 in the components map (Ne_RobinHoodMap_U64_FindIndex 0x14030ffd0) into self+0x3d8. Returns 0 on success, 0x16 (errno trace) when a dependency is missing. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.career_online_document_component_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 4C 89 C7 48 89 CE E8",
+  "match": "0x140fcd6b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fcd6b0",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerOnlineDocumentComponent_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-1",
+   "kind": "func",
+   "item": "0x140fcd6b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fcd6b0.c;xref:0x1456b28b8",
+   "notes": "V9322 Vtable slot (+0x78) of the vtable directly after the class string \"CareerOnlineDocumentComponent\"; resolves a service, creates the \"Career document, host data\" object and installs 4 callbacks, reads bool Career.Online.KickFailingSynchronisation (default 0) into doc+0x34, looks up components from the map (param_3); returns 0 on success or 0x16 (EINVAL); 3 args, uint32 return fine."
+  }
+ ],
+ "proofs": []
+}

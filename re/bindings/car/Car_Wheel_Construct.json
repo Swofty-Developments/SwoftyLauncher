@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_Wheel_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446af9c0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "void *Car_Wheel_Construct(void *wheel, void *car)",
+  "evidence": "doc:re/db/subsystems/car.md",
+  "notes": "Writes qword 0x3f80000000000000 at wheel+0x8c (1446af9ff/a09): tyre water 0.0, wetness-grip scale wheel+0x90 = 1.0; +0x94 blister 0; wheel+0 = wheel+0x10 = car (wx-verify claim 10) | findings from PR #471 by vogtmarcel07-cloud; independent check 2026-10-28 by wx-verify: agree"
+ },
+ "signature": {
+  "id": "car.wheel_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 44 89 CF 4C 89 C3",
+  "match": "0x1446af9c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446af9c0",
+  "kind": "func_start",
+  "names": [
+   "Car_Wheel_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "wx-verify",
+   "kind": "func",
+   "item": "Car_Wheel_Construct",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1446af9ff,0x1446afa09",
+   "notes": "V1645 wx-verify: movabs 0x3f80000000000000 -> [rcx+0x8c]"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "wx-verify",
+   "kind": "func",
+   "item": "Car_Wheel_Construct",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1446af9ff,0x1446afa09",
+   "notes": "V3891 wx-verify: movabs 0x3f80000000000000 -> [rcx+0x8c]"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446af9c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446af9c0.c;xref:0x144753318",
+   "notes": "V6814 Stores car at +0/+0x10, qword 0x3f80000000000000 at +0x8c confirmed."
+  }
+ ],
+ "proofs": []
+}

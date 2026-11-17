@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamCarCustomisation_GetVideoWallContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416cbf50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_MyTeamCarCustomisation_GetVideoWallContext(void *self)",
+  "evidence": "decomp:re/decomp/1416cbf50.c;xref:0x141a138f9;xref:0x141fd312f;xref:0x141fd3369",
+  "notes": "myteam-g2: Resolves the current customisation context (ui_menu_data.customisation.context) and the VideoWall to use, via self+0x20 -> +0x238 -> +0x260/0x280. Used by livery sponsor toggle and decal editor pages."
+ },
+ "signature": {
+  "id": "game.my_team_car_customisation_get_video_wall_context",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC A8 00 00 00 48 89 CE 48 8B 49 20",
+  "match": "0x1416cbf50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416cbf50",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamCarCustomisation_GetVideoWallContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416cbf50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416cbf50.c;xref:0x141a138f9;xref:0x141fd312f",
+   "notes": "V9760 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamStageTags_SetFromState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a233d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *ctx)",
+  "evidence": "decomp:re/decomp/141a233d0.c;xref:0x14bc82190",
+  "notes": "myteam-g1: Maps My_Team / Seasonal / Setup / Stop_Time stage strings onto the career state (ctx+0x2a8)."
+ },
+ "signature": {
+  "id": "career.my_team_stage_tags_set_from_state",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 48 8B 02 48 85 C0",
+  "match": "0x141a233d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a233d0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamStageTags_SetFromState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141a233d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a233d0.c;xref:0x14bc82190",
+   "notes": "V9918 Message-hash dispatcher that sets/clears tags My_Team, My_Team_Setup, My_Team_Seasonal, My_Team_Stop_Time on state at ctx+0x2a8 (142e6f060 flag 1/0) and posts enable_input."
+  }
+ ],
+ "proofs": []
+}

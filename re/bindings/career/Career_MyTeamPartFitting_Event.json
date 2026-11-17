@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamPartFitting_Event",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c610e0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void f(void *ctx)",
+  "evidence": "decomp:re/decomp/141c610e0.c;xref:0x141c5fc32",
+  "notes": "myteam-g1: Posts my_team_part_fitting event (player fits a part)."
+ },
+ "signature": {
+  "id": "career.my_team_part_fitting_event",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 8B 81 38 03 00 00",
+  "match": "0x141c610e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c610e0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamPartFitting_Event"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c610e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141c610e0.c;xref:0x141c5fc32",
+   "notes": "V9980 Queues the my_team_part_fitting masked-tutorial trigger (tutorial_grouping, Tutorial Added to Queue, ONBOARDING); not a gameplay part-fitting event."
+  }
+ ],
+ "proofs": []
+}

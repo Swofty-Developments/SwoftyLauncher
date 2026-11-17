@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_Gfx2Renderer_RenderFrame",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b77ea0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b77ea0.c;xref:0x144478911",
+  "notes": "Render thread frame (~5.2k lines, caller 0x144478911): waitForMainFinish, NeGfx2TextureManager sortJob/resourceUpdateJob, render list/plugin/preRender jobs, RtLodAndVisibility/RtSubmit/RfgSubmit job systems, build+execute command lists; logs on RTT 'zero items to render on an RTT pass %s, possible camera frustum vis culled'. Addon: per-frame render hook point. d5-verify: only skimmed (very large); weak verdict"
+ },
+ "signature": {
+  "id": "core.gfx2_renderer_render_frame",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 A8 1A 00",
+  "match": "0x143b77ea0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b77ea0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Gfx2Renderer_RenderFrame"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_Gfx2Renderer_RenderFrame",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b77ea0.c;xref:0x144478911",
+   "notes": "V2547 large render-thread frame function; not fully re-verified"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_Gfx2Renderer_RenderFrame",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b77ea0.c;xref:0x144478911",
+   "notes": "V3971 large render-thread frame function; not fully re-verified"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143b77ea0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b77ea0.c;xref:0x144478911",
+   "notes": "V4081 waitForMainFinish, RtLodAndVisibility, zero items to render strings confirmed; weak verdict as in claim; caller site 0x144478911"
+  }
+ ],
+ "proofs": []
+}

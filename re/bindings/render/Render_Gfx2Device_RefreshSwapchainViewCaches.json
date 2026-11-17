@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_RefreshSwapchainViewCaches",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439dd170",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439dd170.c;xref:0x1439c9aa8",
+  "notes": "Clears six FNV-1a keyed caches (offsets 0x2c0..0x3e0) via 1439dd490/dd6d0/ddd20 when swapchain buffers are resized. Callers Render_Gfx2Device_ResizeSwapchainBuffers. Hypothesis: RTV/descriptor caches. vq0-verify partial/disagree"
+ },
+ "signature": {
+  "id": "render.gfx2_device_clear_swapchain_caches",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 D3 48 89 CE 0F B6 C3",
+  "match": "0x1439dd170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439dd170",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_RefreshSwapchainViewCaches"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1439dd170",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1439dd170.c;xref:0x1439c9aa8",
+   "notes": "V8503 FNV-1a hash of 64-bit key then updates cached view formats in three caches (+0x2c0,+0x310,+0x3b0) and re-creates views; three not six, not a clear; better name Render_Gfx2Device_RefreshSwapchainViewCaches"
+  }
+ ],
+ "proofs": []
+}

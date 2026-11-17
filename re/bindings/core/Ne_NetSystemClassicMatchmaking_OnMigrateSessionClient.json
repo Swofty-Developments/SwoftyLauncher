@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSystemClassicMatchmaking_OnMigrateSessionClient",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14406a540",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSystemClassicMatchmaking_OnMigrateSessionClient;xref:0x14406a5fb;decomp:re/decomp/14406a540.c",
+  "notes": "cxx=neon::NeNetSystemClassicMatchmaking::onMigrateSessionClient; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_system_classic_matchmaking_on_migrate_session_client",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 D6 48 89 CF 80 3D",
+  "match": "0x14406a540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14406a540",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSystemClassicMatchmaking_OnMigrateSessionClient"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetSystemClassicMatchmaking_OnMigrateSessionClient",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14406a540.c;xref:0x143c680f7",
+   "notes": "V2080 own pretty string; if state==2 calls transport vtable +0xc8"
+  }
+ ],
+ "proofs": []
+}

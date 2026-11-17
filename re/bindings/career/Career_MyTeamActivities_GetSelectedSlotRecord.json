@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamActivities_GetSelectedSlotRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142325170",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void* (void *menu, void *out_shared, void *selection)",
+  "evidence": "decomp:re/decomp/142325170.c;xref:0x14231a633;xref:0x14231a7b5;xref:0x14231b8a8",
+  "notes": "myteam-g2: Returns (as a ref-counted pointer pair in out) the slot record at menu+0x3e8 vector index (selection+0x230 int - 1); -1 when the selection node is invalid. Shared by MenuMain, BuildList, Refresh and UpdateSlot."
+ },
+ "signature": {
+  "id": "career.my_team_activities_get_selected_slot_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 4C 89 C7 48 89 D6 49 8B 00",
+  "match": "0x142325170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142325170",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamActivities_GetSelectedSlotRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142325170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142325170.c;xref:0x14231a633",
+   "notes": "V10134 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

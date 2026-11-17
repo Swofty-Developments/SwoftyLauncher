@@ -1,6 +1,8 @@
 #pragma once
 #include "core/frontend/view_state.hpp"
+#include "core/render/postfx/active_logic.hpp"
 #include "core/render/postfx/pass.hpp"
+#include "core/render/postfx/plan_logic.hpp"
 
 #include <windows.h>
 

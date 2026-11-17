@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Record_DriverMove",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d8f1f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Record_DriverMove(void *renewal, uint32_t driver, uint32_t old_team, uint32_t new_team, uint8_t reason)",
+  "evidence": "decomp:re/decomp/140d8f1f0.c;xref:0x140d9085e,0x140d90981,0x140d91f3b,0x140d95ec4;doc:addons/career-editor/protocol/drivers.md#op-driversswap",
+  "notes": "CareerDriverContractRenewalComponent: appends a driverMoveData entry {u32 driver, u32 old team, u32 new team, u8 reason, u32 weekend (vfunc +0x108 of [self+0x270]), u16 day ([[self+0x2a0]+0x2b0]>>5)/45} to the vector at self+0x3a8 (alloc)/+0x3b0/+0x3b8/+0x3c0 (0x18 stride, same keys the deserialiser 0x140d848f0 reads), then posts the driver-move bus message (vtable 0x145696d40, also posted at 0x140d76f68.. by the Driver Career contracts manager) so the market, contracts and UI listeners see the move. Career_Sign_DriverToTeam calls it before every Career_Set_EntrantData_Thunk (reason 0 for the incoming driver, 3 for a benched one)"
+ },
+ "signature": {
+  "id": "career.record_driver_move",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 44 89 CF 44 89 C3",
+  "match": "0x140d8f1f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d8f1f0",
+  "kind": "func_start",
+  "names": [
+   "Career_Record_DriverMove"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-drivers",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/drivers.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "func",
+   "item": "Career_Record_DriverMove",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8f1f0.c;xref:0x140d8fdd5,0x140d9085e,0x140d95ec4,0x140d8f05d",
+   "notes": "V0280 args rcx,edx,r8d,r9d,[rsp+0xd0] byte as in proto. Entry {+0 driver,+4 old,+8 new,+0xc u8 reason,+0x10 [self+0x270]->vtbl+0x108(),+0x14 u16 [[self+0x2a0]+0x2b0]/1440}; vector alloc +0x3a8 / begin +0x3b0 / end +0x3b8 / cap +0x3c0, 0x18 stride; posts vt 0x145696d40 with the entry at +0x10 (also posted at 0x140d76f68 in 0x140d766b0). 13 call sites in Career_Sign_DriverToTeam; reason 1/2 also used"
+  }
+ ],
+ "proofs": []
+}

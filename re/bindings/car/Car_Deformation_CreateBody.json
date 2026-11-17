@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Deformation_CreateBody",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440cc1f0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440cc1f0.c;xref:0x14465d5b9",
+  "notes": "Deformation manager (shared pool for particle-based tyre deformation): creates a deformable body (alloc 0x240 from allocator [mgr[0]+0x118], vtable 0x145a5adb0) for desc param_2 (node graph ptr desc+0x40, id desc+0x54); body+0x1d0 = id, +0x1d8 = mgr, +0x1e0/+0x1e8 = node graph; identity matrices, default floats 0.99 (+0x22c), 0.1 (+0x238). Pushes (alloc,body) pair into mgr vector +0x10..+0x20 under CS mgr+0xa90, logs DEFORMATION 'There are now %I64u deformable bodies.'. Returns ENOMEM-style 0xc in TLS errno when desc has no node graph. Caller 0x14465d3a0 (per-car tyre deformation setup, which then calls Car_Deformation_AcquireParticles). Addon: hook to count/inspect per-tyre deformable bodies. | #587: L2 by lead-authorised promotion for lane owner car-re (independent agree V2310)"
+ },
+ "signature": {
+  "id": "car.deformation_create_body",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 83 7A 40",
+  "match": "0x1440cc1f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440cc1f0",
+  "kind": "func_start",
+  "names": [
+   "Car_Deformation_CreateBody"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Car_Deformation_CreateBody",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440cc1f0.c;xref:0x14465d3a0",
+   "notes": "V2310 Verified: 0x240 alloc, desc+0x40 node graph null -> errno 0xc, floats 0.99 at +0x22c and 0.1 at +0x238, CS mgr+0xa90."
+  }
+ ],
+ "proofs": []
+}

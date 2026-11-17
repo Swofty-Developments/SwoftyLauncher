@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432d9420",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432d9420.c;xref:0x145835d48",
+  "notes": "F1OS task-system manager (vtable 0x145835c80) slot 25 per-frame tick: skips while the online state singleton 0x14604ecc8 (+100 == 4) is set and the session (+0xd8, +0x750) is not active; if tasks are queued (+0x50..+0x58) runs queue maintenance 0x1432d92b0, picks the head of the run list +0x70 as current (+0x88/+0x90 ref-counted), calls Game_F1osTasksystem_InternalStartTask 0x1432d9780; when it reports done logs '%s is ended' / 'shutting down %s' on F1OS-TASKSYSTEM, calls task vfunc +0x40 (shutdown) and removes it with 0x1432dc0a0. Addon: central hook point to watch every online task's lifetime. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3307)"
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_update",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 C5 F8 29 74 24 50 48 89 CE 48 8B 41 38 48",
+  "match": "0x1432d9420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432d9420",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1osTasksystem_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432d9420.c;xref:0x1432d9420",
+   "notes": "V3307 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

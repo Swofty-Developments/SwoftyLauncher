@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NeUgc_StartUpdateItemCallingSteamUGC",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14415e160",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NeUgc",
+  "notes": "named from its log messages (channel NeUgc): 'startUpdateItem - calling SteamUGC()->StartItemUpdate(), publishedFileId=%I64u'"
+ },
+ "signature": {
+  "id": "game.ne_ugc_start_update_item_calling_steam_ugc",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 88 00 00 00 48 89 CE 48 8D 0D",
+  "match": "0x14415e160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14415e160",
+  "kind": "func_start",
+  "names": [
+   "Game_NeUgc_StartUpdateItemCallingSteamUGC"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14415e160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14415e160.c;xref:0x14415c6ef",
+   "notes": "V6561 size=4881; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

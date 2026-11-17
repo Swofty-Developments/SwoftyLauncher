@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Game_Teleport_VehicleImmediate_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14473db90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Teleport_VehicleImmediate_Thunk(void *car, const char *tag, void *prev_mtx, float *mtx, float dt, uint32_t flags)",
+  "evidence": "decomp:re/decomp/1434be940.c;decomp:re/decomp/14473db90.c;xref:0x1434beef3,0x1437ac9d4",
+  "notes": "jmp-wrapper around FUN_14473dcc0 (vehicle teleport request, log channel VEHICLE_TELEPORT_REQUEST): forwards (car, tag, previous transform, new transform, dt float, flags) unchanged, then if car+0x9f08 != 0 posts a placement message (vtable 0x145c05320, payload car+0xe8) to the bus at [0x14618b3b8]+8. Name kept for signatures.json; per verify-a nothing in the body blends - arg 5 is a time delta. The hash-table loop over 0x14604b4f0 only logs (flags&3, dt > 1/30 s, !(flags&0x40)). Callers: 0x1434beef3 (Game_PitLane_MoveDownSpline) and 0x1437ac9d4. | L1 until an independent verify (no agree row); car-re reading: blended pit lane placement stub (was Game_Place_VehicleBlend_Thunk)."
+ },
+ "signature": {
+  "id": "game.place_vehicle_blend_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 26 52 0F 8C ?? ?? ?? ?? 21 67 E8",
+  "match": "0x14473db90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14473db90",
+  "kind": "func_start",
+  "names": [
+   "Game_Teleport_VehicleImmediate_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-a",
+   "kind": "func",
+   "item": "0x14473db90",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_a/decomp/14473db90.c;xref:0x1434beef3,0x1437ac9d4",
+   "notes": "V1022 wrapper: when flags&3 and !(flags&0x40) and arg5>1/30 logs 'VEHICLE_TELEPORT_REQUEST ... velocity updates upon car placement ... your time delta is only %f', calls placement core 0x14473dcc0 with all args, then posts a message if car+0x9f08. Caller 0x1434beef3 ('PitLaneMovementManager::moveDownSpline') passes (car, caller-name, previous transform, new transform, dt, 0x1900). Differs: arg5 is a time delta not a speed, p3 is the previous transform; 'Blend' is not evidenced - it is placement with velocity derived over dt"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-d",
+   "kind": "func",
+   "item": "0x14473db90",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_d/decomp/14473db90.c;decomp:work/verify_d/decomp2/14473dcc0.c;decomp:work/verify_d/decomp2/1437ac650.c;xref:0x1434beef3,0x1437ac9d4",
+   "notes": "V1063 6-arg proto matches, but it is the IMMEDIATE teleport path: wraps 14473dcc0 (log 'teleportInternal %p...' with flags FadeVelocityToZero/Implicit*), then posts msg if car+0x9f08; nothing blends - 'Blend' is misleading (alternative to the queued Car::teleportRequest 14473d810); arg0 is the Car (same ptr Game_Place_Vehicle gets)"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-e",
+   "kind": "func",
+   "item": "0x14473db90",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_e/decomp/14473db90.c;decomp:work/verify_e/decomp/1434be940.c;xref:0x1434beef3,0x1437ac9d4",
+   "notes": "V1078 5-byte jmp into obfuscated copy that calls Game_Teleport_Vehicle(0x14473dcc0) with the same 6 args (car,tag,prev_mtx,mtx,dt,flags) then posts an event if car+0x9f08; caller 1434be940 picks it over queued Game_Place_Vehicle(priority 3) -> name/arity agree; differs: return is void in decomp (no value produced/used), proto says uint64_t"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "bind6-verify",
+   "kind": "func",
+   "item": "Game_Teleport_VehicleImmediate_Thunk",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1555b8a20.c;xref:0x1434beef3",
+   "notes": "V1769 blind re-check: jmp stub into .data1 body 0x1555b8a20 -> FUN_14473dcc0, 6 args unchanged; 2 callers"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_SendBlackFlagTimerToOsd",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435752b0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-RULES;decomp:re/decomp/1435752b0.c;xref:0x14356b065",
+  "notes": "Log channel RULES: 'sendBlackFlagTimerMessageToOSD %d %d timer'"
+ },
+ "signature": {
+  "id": "session.rules_send_black_flag_timer_to_osd",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 80 FA FF 0F 84",
+  "match": "0x1435752b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435752b0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_SendBlackFlagTimerToOsd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_Rules_SendBlackFlagTimerToOsd",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435752b0.c;xref:0x14356b065",
+   "notes": "V1845 RULES 'sendBlackFlagTimerMessageToOSD %d %d timer' hold"
+  }
+ ],
+ "proofs": []
+}

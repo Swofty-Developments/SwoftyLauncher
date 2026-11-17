@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_RestoreLongLivedParticles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b0e6c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b0e6c0.c;xref:0x143b08fa8,0x143b092b1,0x143b0978b",
+  "notes": "Replay restore of long-lived particles from a record (this: count at [0], key list from +4 (key = effectId<<16 | emitterId, 0xffffffff end), 0x68-byte particle states from +0x808): finds emitter by id (effect list at rec+0x858e90; emitter def+0x54 / emitter+0), allocates a slot (0x143af8490), writes state (0x143af4710), advances position by velocity*param_2 (dt), sets live bit masks. Logs 'emitter for long lived particle not found'. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2308)"
+ },
+ "signature": {
+  "id": "game.particles_restore_long_lived_particles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 8B 81 98",
+  "match": "0x143b0e6c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b0e6c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_RestoreLongLivedParticles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Game_Particles_RestoreLongLivedParticles",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b0e6c0.c;xref:0x143b0e6c0",
+   "notes": "V2308 Verified: key effectId<<16|emitterId, 0x68-byte states at +0x808, effect list +0x858e90, slot alloc 0x143af8490, state write 0x143af4710, pos += vel*dt."
+  }
+ ],
+ "proofs": []
+}

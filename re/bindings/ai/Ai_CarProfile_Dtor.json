@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Ai_CarProfile_Dtor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1405ed4d0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_CarProfile_Dtor(void *profile)",
+  "evidence": "decomp:re/decomp/1405ed4d0.c;xref:0x140602d2d,0x140613bc1,0x1406596bf,0x142e8258e,0x1438a490f",
+  "notes": "Destroys a 0xa0-byte block of FIVE MSVC std::strings at +0x00, +0x20, +0x40, +0x60, +0x80 (size/cap pairs at +0x10/+0x18 ... +0x90/+0x98): when cap >= 0x10 frees the heap buffer through the global allocator 0x14618b130 (vtbl +0xe0 owns?, +0x38 free), then resets size 0, cap 0xf, first byte 0. Each of the 5 callers pairs it with Ai_CarProfile_ResolveNames 0x140614210 on the same stack object (e.g. Sess_Loader_CollectVehicleAssetGroups 0x140612d96 -> 0x140613bc1, Ai_Build_DriverProfiles 0x14065959e -> 0x1406596bf). (corrected 2026-11-14: was three strings +0x40/+0x60/+0x80; callers were listed as Ai_Drafting_GetTargetValue / Ai_BehaviourTestRetire_Update - real callers are Sess_Build_AiSystem, Sess_Loader_CollectVehicleAssetGroups, Ai_Build_DriverProfiles, 0x142e82020, Sess_Ai_BuildVehicleRecords.) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.car_profile_dtor",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B 7C 24 60 49 89 5F 38 41 C7",
+  "match": "0x140602d2d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1405ed4d0",
+  "kind": "func_start",
+  "names": [
+   "Ai_CarProfile_Dtor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1405ed4d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1405ed4d0.c;xref:0x140602d2d",
+   "notes": "V3424 Dtor frees FIVE std::strings (+0,+0x20,+0x40,+0x60,+0x80) not three; callers actually Sess_Build_AiSystem, Sess_Loader_CollectVehicleAssetGroups, Ai_Build_DriverProfiles, 0x142e82020, 0x1438a0e00 - Ai_Drafting_GetTargetValue and Ai_BehaviourTestRetire_Update are not callers"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1405ed4d0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1405ed4d0-0x1405ed964;xref:0x140602d2d,0x140613bc1,0x1406596bf,0x142e8258e,0x1438a490f",
+   "notes": "V10539 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Five std::string resets (cap=0xf stores at +0x18/+0x38/+0x58/+0x78/+0x98, frees via allocator vtbl +0xe0/+0x38). 1 arg. Exactly 5 callers 0x140602d2d/0x140613bc1/0x1406596bf/0x142e8258e/0x1438a490f; 0x140612a80 and 0x140658ac0 pass the same stack object they gave to 0x140614210."
+  }
+ ],
+ "proofs": []
+}

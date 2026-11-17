@@ -2,6 +2,7 @@
 
 #include "core/diagnostics/perf.hpp"
 #include "core/frontend/view_state.hpp"
+#include "core/hud/hardware_settings.hpp"
 #include "core/hud/hud_guard.hpp"
 #include "core/runtime/runtime.hpp"
 
@@ -97,20 +98,14 @@ bool frame_gen_on()
 {
     static ULONGLONG checked;
     static bool on = true;
-    static std::wstring hardware_settings;
+    static std::wstring path;
     ULONGLONG now = GetTickCount64();
     if (checked && now - checked < 2000)
         return on;
     checked = now;
-    if (hardware_settings.empty()) {
-        wchar_t docs[MAX_PATH] = {};
-        using GetFolder = HRESULT(WINAPI *)(HWND, int, HANDLE, DWORD, LPWSTR);
-        HMODULE shell = LoadLibraryW(L"shell32.dll");
-        auto get = shell ? reinterpret_cast<GetFolder>(GetProcAddress(shell, "SHGetFolderPathW")) : nullptr;
-        if (get && SUCCEEDED(get(nullptr, 0x0005, nullptr, 0, docs)))
-            hardware_settings = std::wstring(docs) + L"\\My Games\\F1 25\\hardwaresettings\\hardware_settings_config.xml";
-    }
-    on = hud::guard::fg_setting(runtime::read_file(hardware_settings, size_t(1) << 20)).on();
+    if (path.empty())
+        path = hardware_settings::path();
+    on = hardware_settings::frame_gen(path).on();
     return on;
 }
 

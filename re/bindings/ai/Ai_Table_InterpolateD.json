@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Table_InterpolateD",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14068fd10",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_Table_InterpolateD(void *table, float x, float (*cell_eval)(void *cell, float x), float *key)",
+  "evidence": "decomp:re/decomp/14068fd10.c;xref:0x14060d79b,0x1405f7b0f,0x14064e3d0,0x14065196e,0x1406519d9,0x142f5c165",
+  "notes": "3-axis table of cell pointers (table+0x10): leading exact index key+0x30 (stride +0xb0), bilinear on axis A (values +0x38, indices key+0x10/+0x18, position key[0]) and axis B (values +0x68, indices key+0x20/+0x28, position key[1]), stride +0xb8; corner cells evaluated with cell_eval(cell, x) (one float, xmm1), duplicates reused. Returns the float. Callers: Ai_Calc_SpeedForRadius (tail jmp), Ai_Update_DriverTick, 0x14064d6b0 (call site 0x14064e3d0; corrected 2026-11-14: was listed as a function), Ai_Build_SpeedProfileAhead (2x), Ai_SuggestedGear_ComputeForZone. L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.table_interpolate_d",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 4C 89 CE C5 78",
+  "match": "0x14068fd10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14068fd10",
+  "kind": "func_start",
+  "names": [
+   "Ai_Table_InterpolateD"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14068fd10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14068fd10.c;xref:0x14060d79b",
+   "notes": "V3578 2-axis lookup, strides +0xb0/+0xb8, data +0x10, interpolation; callers Ai_Calc_AwarenessTest etc seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14068fd10",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14068fd10-0x14068ff65;xref:0x1405f7b0f,0x14060d79b,0x14064e3d0,0x14065196e,0x1406519d9,0x142f5c165",
+   "notes": "V10572 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Refs: jmp 0x14060d79b (Ai_Calc_SpeedForRadius), calls 0x1405f7b0f, 0x14064e3d0 (in 0x14064d6b0), 0x14065196e/0x1406519d9 (Ai_Build_SpeedProfileAhead), 0x142f5c165 (Ai_SuggestedGear_ComputeForZone). 4 args (rcx, xmm1, r8 cell_eval called as call r8, r9 key). Stride +0xb0 * key+0x30, axes +0x38/+0x68, stride +0xb8 confirmed."
+  }
+ ],
+ "proofs": []
+}

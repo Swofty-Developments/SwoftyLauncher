@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Car_UpdateLateralLimitMargins",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060a600",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Car_UpdateLateralLimitMargins(uint8_t *margins, float dt, void *ai_car_record)",
+  "evidence": "decomp:re/decomp/14060a600.c;xref:0x1405f67b0",
+  "notes": "(m, dt, R) with R = AiCarRecord. Margin w = [R+0x38]+0x30 + [R+0x20]+0xc4 * curve([R+0x230]+0xc0)(|[R+0x40]+0x160|) (handling_config buffer_space slot). Segment s = [[R+0x40]+0x108] + [[R+0x40]+0x178]*0xa70. Three cases: (a) ([R+0x50]+0x18 & 0x3000)==0x1000 and no flags: target left = min(0, w + s+0x950 / s+0x908 ...), right = max(0, s+0x954 - w / s+0x90c - w) clamped by s+4, written to m+0x2c/+0x30 and copied to m+0x34/+0x3c; (b) mode == global 0x146048424 or speed [R+0x38]+0x3c < 0.1: all four from [R+0x10]+0xa8/+0xb4; (c) otherwise targets m+0x2c/+0x30 from s+0x900/+0x948 (+8/+0xc or +0x1c/+0x20 by [R+0x10]+0x12d) clamped to [R+0x10]+0xa8/+0xb4 (or [R+0x30]+0x6c), and the smoothed outputs m+0x34/+0x3c move toward them by at most dt*max([R+0x10]+0xb0/+0xbc, curves [R+0x230]+0x3a0/+0x3b0). Caller: Ai_Update_DriverTick (misnamed per-car update). L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.car_update_lateral_limit_margins",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 C5 78 29 5C 24 60 C5 78 29",
+  "match": "0x14060a600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14060a600",
+  "kind": "func_start",
+  "names": [
+   "Ai_Car_UpdateLateralLimitMargins"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14060a600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14060a600.c;xref:0x1405f67b0",
+   "notes": "V3535 same curve sampling as 0x14060a480 plus dt smoothing; Ai_Read_GeneralSettings_3 caller seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14060a600",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14060a600-0x14060ab52;xref:0x1405f67b0",
+   "notes": "V10543 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x1405f67b0 (in 0x1405f5dd0). 3 args: rcx margins (stores +0x2c/+0x30/+0x34/+0x3c), xmm1 dt (read on the smoothing path 0x14060aa3f/0x14060aab2), r8 AiCarRecord. Margin uses [[R+0x230]+0xc0] curve at |[[R+0x40]+0x160]| and [[R+0x20]+0xc4] (0x14060a65f/0x14060a675), segment stride 0xa70 at [R+0x40]+0x108/+0x178."
+  }
+ ],
+ "proofs": []
+}

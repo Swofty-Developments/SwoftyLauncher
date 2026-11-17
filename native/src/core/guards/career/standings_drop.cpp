@@ -1,5 +1,7 @@
-#include "core/runtime/runtime.hpp"
 #include "core/guards/career/standings_drop_logic.hpp"
+#include "core/guards/guard.hpp"
+#include "core/guards/lines.hpp"
+#include "core/runtime/runtime.hpp"
 
 #include <windows.h>
 
@@ -37,6 +39,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace sd = runtime::standings_drop;
 
@@ -217,38 +220,35 @@ void recompute_hook(void *standings, char mode)
     recount(reinterpret_cast<uintptr_t>(standings), best);
 }
 
-bool armed = false, arm_failed = false;
-
-bool arm()
-{
-    if (armed)
+class DropGuard final : public guards::OnDemandGuard {
+protected:
+    bool install() override
+    {
+        char v[16];
+        if (guards::env_off("SWOFTY_STANDINGS_DROP", v)) {
+            swofty::log("%s", guards::lines::off("[career] dropped scores", "SWOFTY_STANDINGS_DROP", v).c_str());
+            return false;
+        }
+        uintptr_t recompute = runtime::find(S_RECOMPUTE, "career", "career"),
+                  cmp = runtime::find(S_COMPARE, "career", "career");
+        if (!recompute || !cmp) {
+            swofty::log("[career] dropped scores: not hooked: %s%s", recompute ? "" : "recompute ", cmp ? "" : "compare");
+            return false;
+        }
+        compare = reinterpret_cast<Compare_t *>(cmp);
+        auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(recompute),
+                                                reinterpret_cast<void *>(&recompute_hook));
+        if (!h) {
+            swofty::log("[career] dropped scores: the hook failed");
+            return false;
+        }
+        h_recompute = std::move(*h);
+        swofty::log("[career] dropped scores armed (hook at base+0x%llx), first rule set", (unsigned long long)recompute);
         return true;
-    if (arm_failed)
-        return false;
-    arm_failed = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_STANDINGS_DROP", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[career] dropped scores off (SWOFTY_STANDINGS_DROP=%s)", v);
-        return false;
     }
-    uintptr_t recompute = runtime::find(S_RECOMPUTE, "career", "career"), cmp = runtime::find(S_COMPARE, "career", "career");
-    if (!recompute || !cmp) {
-        swofty::log("[career] dropped scores: not hooked: %s%s", recompute ? "" : "recompute ", cmp ? "" : "compare");
-        return false;
-    }
-    compare = reinterpret_cast<Compare_t *>(cmp);
-    auto h = safetyhook::InlineHook::create(reinterpret_cast<void *>(recompute), reinterpret_cast<void *>(&recompute_hook));
-    if (!h) {
-        swofty::log("[career] dropped scores: the hook failed");
-        return false;
-    }
-    h_recompute = std::move(*h);
-    armed = true;
-    arm_failed = false;
-    swofty::log("[career] dropped scores armed (hook at base+0x%llx), first rule set", (unsigned long long)recompute);
-    return true;
-}
+};
+
+DropGuard guard;
 
 }
 
@@ -256,7 +256,7 @@ namespace runtime {
 
 int standings_drop_set(const std::string &data_group, uint32_t best)
 {
-    if (best && !arm())
+    if (best && !guard.arm())
         return SWOFTY_ASSET_LATE;
     std::lock_guard<std::mutex> hold(rules_lock);
     if (best)

@@ -1,0 +1,42 @@
+{
+ "schema": 1,
+ "name": "FeTile_CareerDefaultItem_GetAction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141726620",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "Action *FeTile_CareerDefaultItem_GetAction(HomeItem *item, Action *out)",
+  "evidence": "decomp:re/decomp/141726620.c;xref:0x145704018",
+  "notes": "2025 tile press (vtable 0x145703ff0 slot +0x28): picks the first content entry with byte +0x58 == 0 from [0x146064df0]+0x230..+0x238 (0x60 stride), writes its id to 0x146066c42 (0x3fff0000 when none) and routes through the wizard router 0x141725620 into out. Raised by native-1990 for the F1 1990 Career menu (doc:/mnt/work/.f1-1990/addon/native-requests.md#N6)."
+ },
+ "signature": {
+  "id": "fe_tiles.career_default_item_get_action",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 D6 48 8B 05 ?? ?? ?? ?? 48 8B 90 30 02 00 00",
+  "match": "0x141726620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141726620",
+  "kind": "func_start",
+  "names": [
+   "FeTile_CareerDefaultItem_GetAction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/career_menu_ui.cpp"
+  ]
+ },
+ "verify": [],
+ "proofs": []
+}

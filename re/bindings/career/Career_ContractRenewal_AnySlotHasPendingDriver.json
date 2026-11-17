@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_AnySlotHasPendingDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d98c50",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint8_t Career_ContractRenewal_AnySlotHasPendingDriver(void *comp)",
+  "evidence": "decomp:re/decomp/140d98c50.c;xref:0x140d8c24d;xref:0x140d8e67d;xref:0x140d8fc4d",
+  "notes": "myteam-g2: Scans the 0x58-byte slots at (comp+0x278)+0x2e0..; for slots with flag 0x10 it looks up the pending driver (+0x50 or +0x58 depending on a team flag) in the lists at comp+0x368 / +0x348 and ORs driver count != 0. Returns true if any slot already has a pending driver."
+ },
+ "signature": {
+  "id": "career.contract_renewal_any_slot_has_pending_driver",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 8B 81 78 02 00 00 48 8B 98 E0 02 00 00",
+  "match": "0x140d98c50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d98c50",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_AnySlotHasPendingDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d98c50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d98c50.c",
+   "notes": "V9543 Logic right (flag 0x10, lists +0x368/+0x348, ORs count!=0) but slots are 0x88 bytes apart, not 0x58."
+  }
+ ],
+ "proofs": []
+}

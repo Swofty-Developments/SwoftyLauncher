@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_RollingStart_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143032330",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143032330.c",
+  "notes": "RollingStartSystem (MessageRollingStart*, rollingStartDistance)."
+ },
+ "signature": {
+  "id": "game.rolling_start_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 C4 E2 79 18 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C4 E2 79 18 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 FA 10 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C4 E2 79 18 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 FB 12 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F8 28 05 ?? ?? ?? ?? C5 F8 29 05 ?? ?? ?? ?? C5 F9 6F 05 2E 67 5A 02",
+  "match": "0x143032330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143032330",
+  "kind": "func_start",
+  "names": [
+   "Game_RollingStart_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x143032330",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/143032330.c",
+   "notes": "V4174 NOT a RollingStart update: ~1000-line static initializer (listed in the exe init-function table at 0x145d31d18) registering system/type names (UnlockMethod*, AutoResetToTrackSystem, mute_vehicle_bus, RollingStartSystem, VehicleDamageSystem, VehicleLapTimesSystem ...); the byte=1 writes to 0x146081080..94 at 0x1430326e0..703 are just part of it. Better name: Game_StaticInit_SystemTypeNames_B (sibling of 0x142b77fa0)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x143032330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143032330.c",
+   "notes": "V6932 1029 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

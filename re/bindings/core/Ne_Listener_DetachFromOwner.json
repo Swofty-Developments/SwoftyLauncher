@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Listener_DetachFromOwner",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14421a5f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14421a5f0.c;xref:0x140821e81,0x140cce1aa",
+  "notes": "(listener) Removes listener from owner list [listener[1]]+0x120..+0x128 (memmove, shrink) and frees/clears it; trace if not found. 96 callers (generic listener/handle destructor), incl. Sess_Loader_RequestTrackUnload."
+ },
+ "signature": {
+  "id": "core.listener_detach_from_owner",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 8D 05 ?? ?? ?? ?? 48 89",
+  "match": "0x14421a5f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14421a5f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Listener_DetachFromOwner"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14421a5f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14421a5f0.c;xref:0x140821e81",
+   "notes": "V3652 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

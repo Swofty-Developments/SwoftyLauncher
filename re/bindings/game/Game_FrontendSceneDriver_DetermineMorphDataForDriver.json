@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneDriver_DetermineMorphDataForDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14289d9b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name determineMorphDataForDriver (class from the log channel); log channel FRONTEND_SCENE_DRIVER: 'determineMorphDataForDriver [%p]'"
+ },
+ "signature": {
+  "id": "game.frontend_scene_driver_determine_morph_data_for_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 F8 29 B4 24 60 01 00 00 4D 89 CC 4D 89 C6",
+  "match": "0x14289d9b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14289d9b0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneDriver_DetermineMorphDataForDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x14289d9b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14289d9b0.c;xref:0x1428ef0c1",
+   "notes": "V5117 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

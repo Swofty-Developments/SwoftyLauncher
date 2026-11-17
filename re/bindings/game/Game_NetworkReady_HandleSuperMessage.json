@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkReady_HandleSuperMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143226a90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name handleSuperMessage (class from the log channel); log channel NETWORK-READY: '%s: MESSAGE: paused(%d, %.3f secs) SuperReady(%d) at time(%+1.3f) for time(%+1.3f)'"
+ },
+ "signature": {
+  "id": "game.network_ready_handle_super_message",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 59 B8 5E 00 00 00",
+  "match": "0x143226a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143226a90",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkReady_HandleSuperMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143226a90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143226a90.c;xref:0x14a7e3f80",
+   "notes": "V5960 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

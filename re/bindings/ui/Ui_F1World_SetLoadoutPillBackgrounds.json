@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_SetLoadoutPillBackgrounds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141af4160",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_F1World_SetLoadoutPillBackgrounds(void *self, void *card)",
+  "evidence": "decomp:re/decomp/141af4160.c;xref:0x141aed884;xref:0x141b92180",
+  "notes": "myteam-g2: Sets the pill background overrides #overrides.f1_world.loadout_pill_bg[loadout_pill_positive] / [loadout_pill_negative] for the card stats. F1 World (not My Team) UI."
+ },
+ "signature": {
+  "id": "ui.f1_world_set_loadout_pill_backgrounds",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 49 89 D1",
+  "match": "0x141af4160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141af4160",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_SetLoadoutPillBackgrounds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141af4160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141af4160.c;xref:0x141aed884;xref:0x141b92180",
+   "notes": "V9942 Sets loadout_pill_bg overrides [loadout_pill_positive]/[loadout_pill_negative]."
+  }
+ ],
+ "proofs": []
+}

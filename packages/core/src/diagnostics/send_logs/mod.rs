@@ -337,8 +337,8 @@ impl Bundle {
             entries: Vec::new(),
             skipped: Vec::new(),
         };
-        if let Some(account) = crate::server::sign_in::load(&store.root) {
-            crate::multiplayer::client::know_secret(&account.token);
+        if let Some(account) = crate::online::server::sign_in::load(&store.root) {
+            crate::online::multiplayer::client::know_secret(&account.token);
         }
         match std::fs::read(store.config_path()) {
             Ok(data) => {
@@ -414,7 +414,7 @@ impl Bundle {
             c.file("game/careers/index.json".into(), &careers, None);
         }
         if let Some(game) = &report.game.dir {
-            let status = game.join(crate::multiplayer::client::GAME_STATUS_FILE);
+            let status = game.join(crate::online::multiplayer::client::GAME_STATUS_FILE);
             if status.is_file() {
                 c.file("game/netplay.json".into(), &status, None);
             }
@@ -435,8 +435,9 @@ impl Bundle {
         if let Some(room) = &report.room {
             let mut room = room.clone();
             redact_json(&mut room);
-            let text =
-                crate::multiplayer::client::scrub(&serde_json::to_string_pretty(&room).unwrap_or_default());
+            let text = crate::online::multiplayer::client::scrub(
+                &serde_json::to_string_pretty(&room).unwrap_or_default(),
+            );
             c.push("multiplayer/session.json".into(), text.into_bytes(), None);
         }
         let fallback = store.root.join(LOADER_FALLBACK);
@@ -468,14 +469,18 @@ impl Bundle {
             let name = file_name(&log);
             let redact = name
                 .starts_with("multiplayer")
-                .then_some(crate::multiplayer::client::scrub as fn(&str) -> String);
+                .then_some(crate::online::multiplayer::client::scrub as fn(&str) -> String);
             c.file(format!("state/{name}"), &log, redact);
         }
-        for print in crate::multiplayer::client::newest_prints(&store.root, PRINTS_SENT) {
+        for print in crate::online::multiplayer::client::newest_prints(&store.root, PRINTS_SENT) {
             c.file(
-                format!("{}/{}", crate::multiplayer::client::PRINTS_DIR, file_name(&print)),
+                format!(
+                    "{}/{}",
+                    crate::online::multiplayer::client::PRINTS_DIR,
+                    file_name(&print)
+                ),
                 &print,
-                Some(crate::multiplayer::client::scrub_json as fn(&str) -> String),
+                Some(crate::online::multiplayer::client::scrub_json as fn(&str) -> String),
             );
         }
         c.ea_diagnostics();

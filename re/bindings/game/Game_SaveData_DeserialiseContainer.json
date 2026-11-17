@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_SaveData_DeserialiseContainer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14364f3a0",
+  "level": "L3",
+  "subsystem": "game",
+  "proto": "int *Game_SaveData_DeserialiseContainer(SaveDataContainer *self, int *result, void *bag, uint8_t reset_on_error, uint64_t groups)",
+  "evidence": "pat:log-channel-SaveGame;decomp:re/decomp/14364f3a0.c;xref:0x143650066,0x150b20d82;kb:subsystems/game.md#save-containers;trace:T010/run2:86315;trace:T010/run4:86256;trace:T010/run3",
+  "notes": "named from its log messages (channel SaveGame). Recursive container deserialise: returns result (code at +0, name hash at +8/+0x10); empty bag skips; group check (groups & (self+0xc8 ^ self+0xd0)); self->vt+0x18 on the own bag; then the bag's 'containers' list: each child bag is matched to a registered child by FNV-1a64 of its name (child set at self+0x138, entries at +0x160..+0x170) and recursed. An unmatched child bag is DROPPED unless the obfuscated bool retain_unknown (self+0x100 byte, +0x108 key; true when byte != key&1, read 0x14364fef0/0x14364fef7) is true: then it copies the bag (0x143931350) into a node named by the string table lookup 0x14392a8b0 of the bag hash and inserts it in the retained map self+0x190 (count +0x1c8, ++ at 0x14365089b); a duplicate name fails with 0x58. The map is cleared on entry (0x143682780 at 0x14364f935). Callers: itself (0x143650066) and the .data1 root load 0x150b20d82 (after Game_SaveData_ResetContainer at 0x150b20d63)."
+ },
+ "signature": {
+  "id": "game.save_data_deserialise_container",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 44 88 4C 24 37",
+  "match": "0x14364f3a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14364f3a0",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveData_DeserialiseContainer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "keepsaves-verify",
+   "kind": "func",
+   "item": "Game_SaveData_DeserialiseContainer",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14364f3a0.c;decomp:re/decomp/143682780.c;decomp:re/decomp/143931730.c;decomp:re/decomp/143932a40.c;decomp:re/decomp/14392a0c0.c;decomp:re/decomp/14392a8b0.c;decomp:re/decomp/143934620.c;decomp:re/decomp/14364bb50.c;xref:0x143650066,0x150b20d82;xref:0x14364f45c,0x14364f471,0x14364f603,0x14364fe4e,0x14364fe80,0x14364fef0,0x14364fef7,0x14364ff06,0x14364ff3f,0x14364ff82,0x14364ff8c,0x14365089b,0x143650a53;xref:0x143932a74,0x143933236,0x143934bb8,0x143934d00,0x143934d69,0x143933397,0x14364c3c2,0x14364c552,0x14364c49c,0x14364c64f;imm:0xcbf29ce484222325;imm:0x100000001b3",
+   "notes": "V1105 Re-derived from the code. Proto fits: rcx self (rdi), rdx result (r13, returned in rax at 0x143650d25), r8 bag, r9b byte saved at [rsp+0x37], and the 5th arg groups read from [rsp+0x160]. The self-call at 0x143650066 passes all five. A rel32 and RIP-relative scan of .xtls and .data1, plus an abs-qword scan, finds only two references: the self-call 0x143650066 and the .data1 call 0x150b20d82 (in 0x150b20c50). Flow: an empty bag (word [bag+0x10]==0, je at 0x14364f45c) returns OK. Otherwise ClearRetained(self+0x190) runs at 0x14364f471; 0x143682780 frees each node's bag and zeroes map+0x38, which is +0x1c8. So the clear happens on entry for any non-empty bag but not for an empty one, which serialise never produces because it always writes uid and version or removes the node. After the uid, version and data checks it calls vt+0x18 (0x14364f603) on the data bag, then looks up containers; a missing list is OK. For each child bag it walks the registered-child map at +0x160 (entry+0x10 name, entry+0x58 child). It FNV-1a64s the name, also registering it via 0x14392a0c0 at 0x14364fe4e, and compares the hash with the bag's stored key hash (cmp r14,[rbx+rax] at 0x14364fe80). On a match it recurses. With no match it reads byte +0x100 and u64 +0x108 (0x14364fef0, 0x14364fef7) and skips the bag when (key&1)==byte (je 0x1436508c0 at 0x14364ff06, eax=0, so the next bag). Otherwise it copies the bag (0x143931350 at 0x14364ff3f) and names a node with 0x14392a8b0 on the table 0x146129740 (loaded at 0x14364ff82) for the key hash, into a 0x40-byte inline buffer, so names over 63 chars truncate. It inserts the node into the map at +0x190 (slots +0x1b8, ctrl +0x1c0, name FNV times the seed at +0x1b0) and increments +0x1c8 (0x14365089b or 0x143650a53). Not in the claim: registered children whose +0x110/+0x118 bool is true and whose group matches are required, and a missing one fails the node with 0x50. A duplicate retained name fails with 0x58. A node that is never visited, such as an optional child absent from the loaded save, keeps its retained map from the previous load, because the clear only runs inside this function. SAFETY CLAIM CONFIRMED. 0x14392a8b0 is a locked hash-to-string lookup that returns entry+8, or 0. 0x143932a40 calls 0x143931730(bag,name) at 0x143932a74, which FNV-hashes the name and calls 0x14392a0c0 on 0x146129740; it calls 0x14392a0c0 again at 0x143933236 for the new key. 0x14392a0c0 inserts an allocated copy (strlen+1) when the hash is absent, so the stored name is owned and does not dangle. 0x143934620 adds every entry through 0x143932a40: the bag type at 0x143934bb8, type 0x146129cf0 at 0x143934d00, and all others via 0x143933320, which calls it at 0x143933397 (a type with no handler takes the errno path and adds nothing). Nested bags recurse through reader vt+0x10. 0x14364bb50 builds the reader with vtable 0x14568e060 (0x14364c3c2, 0x14364c552), and that vtable's slot +0x10 is 0x143934620 itself. So every key at every depth of a save read by 0x14364bb50 (calls 0x14364c49c, 0x14364c64f) is registered before deserialisation, and unknown child container names resolve."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14364f3a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14364f3a0.c;xref:0x143650066",
+   "notes": "V6106 name/log string and function size match the code; strings verified via cstr"
+  }
+ ],
+ "proofs": []
+}

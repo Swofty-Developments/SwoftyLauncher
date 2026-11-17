@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_PitLane_ExitLimitZone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434d07b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1434d07b0.c;xref:0x142f73559,0x1434d1ee8,0x15041bdd2,0x150472b5f",
+  "notes": "Log channel PITLANE: 'PitLaneSystem::vehicleExitPitLaneLimitZone(%d:%s)' | 'PitLaneSystem::vehicleExitPitLaneLimitZoneInternal(%d)  - setController(Human, AI_FOR_PIT_LANE' L2 2026-11-14 (engine-re round 2): decomp read; 4 reference(s) (0x142f73559, 0x1434d1ee8, 0x15041bdd2, 0x150472b5f); the body itself references 'PITLANE' / 'PitLaneSystem::vehicleExitPitLaneLimitZone(%d:%s)' / 'PitLaneSystem::vehicleExitPitLaneLimitZoneInternal(%d)  - setController(Human, AI_FOR_PIT_LANE'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.pit_lane_exit_limit_zone",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 89 D3 48 89 CE",
+  "match": "0x1434d07b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434d07b0",
+  "kind": "func_start",
+  "names": [
+   "Game_PitLane_ExitLimitZone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x1434d07b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434d07b0.c;xref:0x142f7355a",
+   "notes": "V6032 name and description match body; log string/pretty name present"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1434d07b0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1434d07b0-0x1434d0b8f;xref:0x142f73559,0x1434d1ee8,0x15041bdd2,0x150472b5f",
+   "notes": "V10513 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 4 refs (call 0x142f73559, jmp 0x1434d1ee8, jcc 0x15041bdd2, call 0x150472b5f). vehicleExitPitLaneLimitZone(Internal) + setController(Human, AI_FOR_PIT_LANE)."
+  }
+ ],
+ "proofs": []
+}

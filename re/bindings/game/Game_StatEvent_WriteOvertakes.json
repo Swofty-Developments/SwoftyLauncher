@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteOvertakes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14378a4b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-STATEVENT",
+  "notes": "named from its log messages (channel STATEVENT): 'Executing EventWriteOvertakes with [%d] StatisticDataProviders registered. | Executing EventWriteOvertakes [%d / %d] | StatisticDataProvider with index [%d] is disabled'"
+ },
+ "signature": {
+  "id": "game.stat_event_write_overtakes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 07 00 00 48 89 CE 48 8B 41 08",
+  "match": "0x14378a4b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14378a4b0",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteOvertakes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x14378a4b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14378a4b0.c;xref:0x143789f2b",
+   "notes": "V6257 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

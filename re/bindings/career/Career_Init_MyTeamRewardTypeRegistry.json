@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Init_MyTeamRewardTypeRegistry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc0940",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void)",
+  "evidence": "decomp:re/decomp/140fc0940.c;xref:0x145d31780",
+  "notes": "myteam-g1: Static initialiser registering reward/component type names: MyTeamActivityReward, MyTeamCashReward(+Definition), MyTeamDriverFocusReward(+Definition), MyTeamFacilitiesComponent. Generic registry code."
+ },
+ "signature": {
+  "id": "career.init_my_team_reward_type_registry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 03 00 00 C5 F8 29 B4 24 90 03 00 00 C4 E2 79 18 05",
+  "match": "0x140fc0940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc0940",
+  "kind": "func_start",
+  "names": [
+   "Career_Init_MyTeamRewardTypeRegistry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fc0940",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc0940.c;xref:0x145d31780;str:\"MyTeamFacilitiesComponent\"",
+   "notes": "V9611 Static init registering MyTeamActivityReward, MyTeamCashReward(+Definition), MyTeamDriverFocusReward(+Definition), MyTeamFacilitiesComponent etc."
+  }
+ ],
+ "proofs": []
+}

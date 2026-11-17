@@ -1,5 +1,8 @@
 #pragma once
-#include "core/render/postfx_logic.hpp"
+#include "core/render/postfx/descriptor_logic.hpp"
+#include "core/render/postfx/effect_logic.hpp"
+#include "core/render/postfx/texture_logic.hpp"
+#include "core/render/postfx/view_logic.hpp"
 
 #include <windows.h>
 

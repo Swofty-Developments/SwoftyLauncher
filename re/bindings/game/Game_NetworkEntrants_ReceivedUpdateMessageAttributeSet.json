@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_ReceivedUpdateMessageAttributeSet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431239f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
+  "notes": "named from its log messages (channel NETWORK-ENTRANTS): '%s: Received an update message for attribute set with key %u.'"
+ },
+ "signature": {
+  "id": "game.network_entrants_received_update_message_attribute_set",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 78 29 94 24 10 01 00 00",
+  "match": "0x1431239f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431239f0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_ReceivedUpdateMessageAttributeSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431239f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1431239f0.c;xref:0x14febcec2",
+   "notes": "V5838 726-line handleAttributeSetUpdate (logged sig), lead-player ignore branch etc. Better: Game_AttributeSetReplicationManager_HandleAttributeSetUpdate"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1431239f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431239f0.c",
+   "notes": "V6992 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

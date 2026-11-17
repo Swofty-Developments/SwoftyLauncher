@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkLeagues_RequestStartNextLeagueEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143171480",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-LEAGUES",
+  "notes": "named from its log messages (channel NETWORK-LEAGUES): 'Request to start next League event for %s'"
+ },
+ "signature": {
+  "id": "game.network_leagues_request_start_next_league_event",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 48 85 D2 74 75",
+  "match": "0x143171480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143171480",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkLeagues_RequestStartNextLeagueEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143171480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143171480.c;xref:0x141d45b2a",
+   "notes": "V5832 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

@@ -36,7 +36,7 @@
    }
   ],
   "used_by": [
-   "native/src/core/frontend/main_menu.cpp"
+   "native/src/core/frontend/main_menu/navigation.cpp"
   ]
  },
  "verify": [

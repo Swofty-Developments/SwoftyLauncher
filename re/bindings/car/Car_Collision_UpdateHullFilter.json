@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Collision_UpdateHullFilter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14464dbe0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14464dbe0.c;xref:0x14464c65d,0x15532f6c3",
+  "notes": "Selects collision filter values (statics 0x146ce8994/0x146ce8998) from car state (+0x120, +0x124, +0x9f0c, +0x9f10, +0x9f29) and applies them to the hull bodies (Ne_PhysWorld_UpdateBodyBroadphase / CommitBody). Hypothesis. Caller: Car_Collision_BuildHullShapes. (2 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "car.collision_update_hull_filter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 48 8B 41 08",
+  "match": "0x14464dbe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14464dbe0",
+  "kind": "func_start",
+  "names": [
+   "Car_Collision_UpdateHullFilter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x14464dbe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14464dbe0.c;xref:0x14464c65d",
+   "notes": "V6799 Filter statics 0x146ce8994/8998 selected from car fields, UpdateBodyBroadphase/CommitBody confirmed."
+  }
+ ],
+ "proofs": []
+}

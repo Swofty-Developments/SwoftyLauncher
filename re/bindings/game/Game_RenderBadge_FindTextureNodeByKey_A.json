@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_RenderBadge_FindTextureNodeByKey_A",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140feecc0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140feecc0.c;xref:0x140feeb34,0x1416e56f0",
+  "notes": "Map RB-tree lower_bound on key at this+0x250 over tree this+0x218; throws invalid map<K, T> key when absent. Callers Game_RenderBadgeViewModel_InitJob/SetTexture."
+ },
+ "signature": {
+  "id": "game.render_badge_find_texture_node_by_key_a",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 40 18 89 84 24 88 01 00 00 48",
+  "match": "0x140feeb34",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140feecc0",
+  "kind": "func_start",
+  "names": [
+   "Game_RenderBadge_FindTextureNodeByKey_A"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x140feecc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140feecc0.c;xref:0x140feeb34",
+   "notes": "V8070 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

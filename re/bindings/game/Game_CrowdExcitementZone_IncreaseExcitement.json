@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CrowdExcitementZone_IncreaseExcitement",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1413f1f30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CROWD_EXCITEMENT",
+  "notes": "Log channel CROWD_EXCITEMENT: 'trigger %s' | 'Zone : %u - CrowdExcitementZone::increaseExcitement excitementChanged %s' | 'Zone : %u - Too small excitement gain to trigger event gain: %f) %s' | 'CrowdExcitementZone::excitementChanged %p %s from %d'"
+ },
+ "signature": {
+  "id": "game.crowd_excitement_zone_increase_excitement",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 C5 F8 29 74 24 50 44 89 C7 C5 F8 28 F1",
+  "match": "0x1413f1f30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1413f1f30",
+  "kind": "func_start",
+  "names": [
+   "Game_CrowdExcitementZone_IncreaseExcitement"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1413f1f30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1413f1f30.c;xref:0x1413f3c1e",
+   "notes": "V4794 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

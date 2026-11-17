@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RaceStrategy_BuildRedFlagStints",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436a1230",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436a1230.c;xref:0x14369c80e,0x14369fc59",
+  "notes": "Red-flag strategy list builder: copies stint vector (+0xd0..+0xd8, stride 0x38), current lap from Game_VehicleProgressSystem_GetLapProgress, current tyre set (+0x9c68/+0x9c98, stride 0x6c), wear max of 4 wheels, simulates with Car_TyreWear_SimulateStint and Sess_Strategy_TyreClassTimeLoss; flags +0x268 mask 0x100000062. Called by Sess_RaceStrategy_RedFlagRecompute. (2 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.race_strategy_build_red_flag_stints",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 B4 24 A0 00 00 00 4C 89 CE 4C 89 C7 48 89",
+  "match": "0x1436a1230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436a1230",
+  "kind": "func_start",
+  "names": [
+   "Sess_RaceStrategy_BuildRedFlagStints"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1436a1230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436a1230.c;xref:0x14369c80e",
+   "notes": "V6773 Callees and mask 0x100000062 confirmed."
+  }
+ ],
+ "proofs": []
+}

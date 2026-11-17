@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Update_RnDDepartmentPips",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14174de70",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void *Update(void *vm)",
+  "evidence": "decomp:re/decomp/14174de70.c;xref:0x141c603da",
+  "notes": "myteam-g2: Sets 12 department pip colours (offsets 0x20..0xf00 step 0x1a0) via Ui_Rnd_SetDepartmentPipColourB. UI only."
+ },
+ "signature": {
+  "id": "ui.update_rn_ddepartment_pips",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE E8 ?? ?? ?? ?? 4C 8D 6E 20",
+  "match": "0x14174de70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14174de70",
+  "kind": "func_start",
+  "names": [
+   "Ui_Update_RnDDepartmentPips"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14174de70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14174de70.c;xref:0x141c603da",
+   "notes": "V9779 Only 10 calls to Ui_Rnd_SetDepartmentPipColourB (offsets 0x20,0x1e0,0x380,0x520,0x6c0,0x860,0xa20,0xbc0,0xd60,0xf00), not 12; step not constant."
+  }
+ ],
+ "proofs": []
+}

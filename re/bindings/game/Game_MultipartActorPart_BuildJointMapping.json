@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MultipartActorPart_BuildJointMapping",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401cce60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=MultipartActorPart::buildJointMapping; log channel MULTI_PART_ACTOR: 'MultipartActorPart::buildJointMapping inMyJointName %s inBaseJointName %s jointCount %d baseJointCount %d'"
+ },
+ "signature": {
+  "id": "game.multipart_actor_part_build_joint_mapping",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 83 EC 28 48 8D 6C 24 20 4C 89 C6",
+  "match": "0x1401cce60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401cce60",
+  "kind": "func_start",
+  "names": [
+   "Game_MultipartActorPart_BuildJointMapping"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401cce60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401cce60.c",
+   "notes": "V4364 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

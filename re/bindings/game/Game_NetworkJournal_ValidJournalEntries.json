@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkJournal_ValidJournalEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143148760",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-JOURNAL",
+  "notes": "named from its log messages (channel NETWORK-JOURNAL): 'Valid Journal Entries: '"
+ },
+ "signature": {
+  "id": "game.network_journal_valid_journal_entries",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 4C 8D 25",
+  "match": "0x143148760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143148760",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkJournal_ValidJournalEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143148760",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143148760.c;xref:0x14fe3e887",
+   "notes": "V5964 Logged text is SendValidEntriesMessage... ; sends list of valid journal guid entries. Better: Game_NetworkJournal_SendValidEntriesMessage"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143148760",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143148760.c",
+   "notes": "V6994 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

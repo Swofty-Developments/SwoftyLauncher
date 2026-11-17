@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Pool_ReleaseVirtualBlock",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14396cd50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14396cd50.c;xref:0x14396a1ac",
+  "notes": "Pool bookkeeping with log 'Performance issue: virtually releasing the same me...' (SPAM category), function-static TLS. 1091 bytes. Callers Ne_Pool_ComputeBlockRange (0x14396d396), 0x14396a1ac."
+ },
+ "signature": {
+  "id": "core.pool_release_virtual_block",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C7 48 89 D6 48 89",
+  "match": "0x14396cd50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14396cd50",
+  "kind": "func_start",
+  "names": [
+   "Ne_Pool_ReleaseVirtualBlock"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x14396cd50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14396cd50.c;xref:0x14396a1ac",
+   "notes": "V8485 atomic exchange spin on slot, SPAM log Performance issue: virtually releasing the same me, Sleep(0); callers ComputeBlockRange + 1"
+  }
+ ],
+ "proofs": []
+}

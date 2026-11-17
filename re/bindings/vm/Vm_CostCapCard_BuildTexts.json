@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_CostCapCard_BuildTexts",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418ae240",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/1418ae240.c;xref:0x1418b8a63;xref:0x145714500",
+  "notes": "myteam-g1: Builds the cost cap summary texts: calls Career_CostCap_FindTeamInfo for previous (season-1) and current season and FUN_140c9a490, computes overspend percent = (a-b)/b*100 and cash delta, fills localised lng_cost_cap_overspend, lng_cost_cap_points, lng_cost_cap_spending_reduction, lng_cost_cap_cash_change with PERCENTAGE/CASH/NUM/STARTCASH/ENDCASH tokens."
+ },
+ "signature": {
+  "id": "vm.cost_cap_card_build_texts",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 98 01 00 00 48 83 79 40 00",
+  "match": "0x1418ae240",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418ae240",
+  "kind": "func_start",
+  "names": [
+   "Vm_CostCapCard_BuildTexts"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1418ae240",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418ae240.c;xref:0x1418b8a63",
+   "notes": "V9832 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

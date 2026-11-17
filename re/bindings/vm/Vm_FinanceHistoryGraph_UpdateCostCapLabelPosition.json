@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_FinanceHistoryGraph_UpdateCostCapLabelPosition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ef4030",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t (void *vm, uint32_t y_pos)",
+  "evidence": "decomp:re/decomp/141ef4030.c;xref:0x141ef349e",
+  "notes": "myteam-g1: Sends the update_cost_cap_label_position event to the UI graph with the new label y position."
+ },
+ "signature": {
+  "id": "vm.finance_history_graph_update_cost_cap_label_position",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE C5 FA 11 4C 24 24",
+  "match": "0x141ef4030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ef4030",
+  "kind": "func_start",
+  "names": [
+   "Vm_FinanceHistoryGraph_UpdateCostCapLabelPosition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141ef4030",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141ef4030.c;xref:0x141ef349e",
+   "notes": "V10011 Dispatches update_cost_cap_label_position event."
+  }
+ ],
+ "proofs": []
+}

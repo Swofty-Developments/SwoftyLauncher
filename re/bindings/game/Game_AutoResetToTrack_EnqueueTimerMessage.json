@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_AutoResetToTrack_EnqueueTimerMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430236d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430236d0.c;xref:0x142f01cff",
+  "notes": "Posts a typed message (0x58-byte record reserved through function-static TLS list Ne_Tls_GetValue(0x1461089d0)) on the message bus [param_1+0x68]. Callers Game_AutoResetToTrack_StartTimer, Game_AutoResetToTrack_FireDeferred. Hypothesis (auto reset to track after leaving the circuit). vp5-verify partial/disagree"
+ },
+ "signature": {
+  "id": "game.auto_reset_to_track_post_timer_message",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 87 B0 00 00 00 8B 48 30 48",
+  "match": "0x142f01cff",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1430236d0",
+  "kind": "func_start",
+  "names": [
+   "Game_AutoResetToTrack_EnqueueTimerMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x1430236d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430236d0.c;xref:0x142f01cff",
+   "notes": "V8112 Better name Game_AutoResetToTrack_EnqueueTimerMessage: if flag +0x68 clear returns error 0x58 (code not size); else under CS +0x98 allocs 0x18-byte node (vtable 145800df0) into list +0x58/+0x60 and SetEvent +0x90; no 0x58-byte record or bus at +0x68"
+  }
+ ],
+ "proofs": []
+}

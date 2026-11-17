@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Collision_Dispatch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14473f8e0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14473f8e0.c;doc:re/db/subsystems/car.md",
+  "notes": "Collision report dispatch (agent collide): impulse report+0x50, world impulse > 5 event 0x1456353f0, car-car event 0x1456353e0, 15 listeners car+0x9db8; hook for g-based impact effects (damage/FFB/events only)"
+ },
+ "signature": {
+  "id": "car.collision_dispatch",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 78 29 94 24 F0 00 00 00 C5 78 29 8C 24 E0 00 00 00 C5 78 29 84 24 D0 00 00 00 C5 F8 29 BC 24 C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 C5 FA 10 42",
+  "match": "0x14473f8e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14473f8e0",
+  "kind": "func_start",
+  "names": [
+   "Car_Collision_Dispatch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x14473f8e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14473f8e0.c",
+   "notes": "V4149 collision dispatch with listeners; not re-read in depth, low-confidence agree (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

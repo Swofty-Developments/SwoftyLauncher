@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteRnDAndFacilityUpgrades",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14372ef80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14372ef80.c;xref:0x143720e82,0x143749416",
+  "notes": "EventWriteFittedRnDUpgrade (+PercentageOfRnDUpgradesFitted, Rushed/Successful), FacilityUpgradesBoughtByPlayer, TotalFacilityUpgradesCompleted; uses Career_Query_EnabledUpgrades, Career_Is_MyTeamGameMode_Thunk. Iterates the registered StatisticDataProviders (skips disabled ones) and writes stat keys built from GameplayModeId/SectionId/DriverStatId/IsInTeamCareer etc. Addon: listen to these stat/achievement events (career/progression telemetry) or add own stat keys. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2503)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_rn_d_and_facility_upgrades",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 0E 00 00 48",
+  "match": "0x14372ef80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14372ef80",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteRnDAndFacilityUpgrades"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_StatEvent_WriteRnDAndFacilityUpgrades",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14372ef80.c;xref:0x14372ef80",
+   "notes": "V2503 FittedRnDUpgrade, PercentageOfRnDUpgradesFitted, Rushed/Successful, FacilityUpgradesBoughtByPlayer, TotalFacilityUpgradesCompleted"
+  }
+ ],
+ "proofs": []
+}

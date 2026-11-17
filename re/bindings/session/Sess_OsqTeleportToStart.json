@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_OsqTeleportToStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d68a80",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d68a80.c;xref:0x142d68cec",
+  "notes": "one-shot qualifying: Game_Teleport_Vehicle(car, 'OSQTeleportToStart', [car+0x558]+0x190, target, 1/60, 0x800), then clampToSingleLap 0x1446034b0 per car."
+ },
+ "signature": {
+  "id": "session.osq_teleport_to_start",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 D7 48 89 CE 48 8B 81 98 0C 00 00",
+  "match": "0x142d68a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d68a80",
+  "kind": "func_start",
+  "names": [
+   "Sess_OsqTeleportToStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-b",
+   "kind": "func",
+   "item": "Sess_OsqTeleportToStart",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d68a80.c;xref:0x142d68cec",
+   "notes": "V1864 args +0x558+0x190, 1/60 (0x3c888889), 0x800 and 1446034b0 all hold"
+  }
+ ],
+ "proofs": []
+}

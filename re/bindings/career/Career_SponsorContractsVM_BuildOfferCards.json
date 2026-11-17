@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorContractsVM_BuildOfferCards",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423d7c80",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/1423d7c80.c;xref:0x145786718",
+  "notes": "myteam-g1: Builds sponsor_contract_offer_card / _current_card / _new_card and my_team_sponsor_renewal_list for the sponsor contracts screen."
+ },
+ "signature": {
+  "id": "career.sponsor_contracts_vm_build_offer_cards",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 02 00 00 C5 F8 29 B4 24 00 02 00 00 48 89 CE 48 8B 41 10",
+  "match": "0x1423d7c80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423d7c80",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorContractsVM_BuildOfferCards"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423d7c80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423d7c80.c;str:\"sponsor_contract_offer_card\"",
+   "notes": "V10183 offer_%d, current/new card, my_team_sponsor_renewal_list all present."
+  }
+ ],
+ "proofs": []
+}

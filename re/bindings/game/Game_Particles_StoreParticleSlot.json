@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_StoreParticleSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143af41a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143af41a0.c;xref:0x143af45f1,0x143b0e637",
+  "notes": "SoA particle batch -> AoS snapshot for slot param_2 (replay store): pos +0x20/+0x60/+0xa0, velocity +0xe0/+0x120/+0x160 (trace 'odd velocity in store' if |v|>=10000), plus fields +0x1a0..+0x5b0 and alive/flag masks +4/+6. Addon: replay/particle state capture. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2892)"
+ },
+ "signature": {
+  "id": "game.particles_store_particle_slot",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 44 89 CD 4C 89 C6",
+  "match": "0x143af41a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143af41a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_StoreParticleSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_Particles_StoreParticleSlot",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143af41a0.c;xref:0x143af41a0",
+   "notes": "V2892 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

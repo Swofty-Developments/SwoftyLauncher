@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_BuildFileEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141432f00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141432f00.c;xref:0x141432e4e",
+  "notes": "Allocates a 0x20-byte block via allocator and builds a decal file entry list (vector of 16-byte records, copy of param_3), optional flag param_4. Callers 0x141432ca0, Game_CustomisationDecals_OpenFile. Hypothesis."
+ },
+ "signature": {
+  "id": "game.customisation_decals_build_file_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 44 88 4C 24 27 4C",
+  "match": "0x141432f00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141432f00",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_BuildFileEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x141432f00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141432f00.c;xref:0x141432e4e",
+   "notes": "V8040 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

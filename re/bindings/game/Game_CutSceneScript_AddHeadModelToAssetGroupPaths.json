@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CutSceneScript_AddHeadModelToAssetGroupPaths",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140234b80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=CutSceneScript::addHeadModelToAssetGroupPaths; log channel CUTSCENE_ASSETS: 'CutSceneScript::addHeadModelToAssetGroupPaths head [%s][%s][%s]'"
+ },
+ "signature": {
+  "id": "game.cut_scene_script_add_head_model_to_asset_group_paths",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 48 01 00 00 89 D0 25 FF 00 FF FF",
+  "match": "0x140234b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140234b80",
+  "kind": "func_start",
+  "names": [
+   "Game_CutSceneScript_AddHeadModelToAssetGroupPaths"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140234b80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140234b80.c",
+   "notes": "V4438 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_DeclareActivePresence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430ef6c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name declareActivePresence (class from the log channel); log channel NETWORK: 'declareActivePresence(%s) from %s'  LAN branch reads #lead_player.settings.lan_name (or the NetSub+0x3c8 +0x6b4 override) and adds it for its user through Ne_PresenceNameResolverFixed_AddName at 0x1430efa54 (decomp:re/decomp/1430ef6c0.c)"
+ },
+ "signature": {
+  "id": "game.network_declare_active_presence",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 03 00 00 C5 F8 29 B4 24 10 03 00 00 49 89 D5 48 89 CF",
+  "match": "0x1430ef6c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430ef6c0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_DeclareActivePresence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430ef6c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430ef6c0.c;xref:0x1406a5ee3",
+   "notes": "V5386 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

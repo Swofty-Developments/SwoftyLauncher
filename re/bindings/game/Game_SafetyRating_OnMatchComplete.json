@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SafetyRating_OnMatchComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c6f690",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-SAFETY_RATING",
+  "notes": "Log channel SAFETY_RATING: 'Lead player's safety rating went from %u to %u on match completion.'"
+ },
+ "signature": {
+  "id": "game.safety_rating_on_match_complete",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 80 B9 88 03 00 00 00",
+  "match": "0x142c6f690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c6f690",
+  "kind": "func_start",
+  "names": [
+   "Game_SafetyRating_OnMatchComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c6f690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c6f690.c;xref:0x142c6ec0e",
+   "notes": "V5054 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

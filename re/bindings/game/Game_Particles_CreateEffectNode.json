@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_CreateEffectNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b02910",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b02910.c;xref:0x143b05c66,0x143b084c0,0x143b08930",
+  "notes": "Allocates a 0xf0-byte particle effect scene node (vtables 0x1458b7fd8/0x1458b7ff0, allocator mgr+0x857aa8, owner mgr+0x857ae0) for spawn desc param_2 (effect name inline at +0x4c.., +0x48 -> node+0xb4), djb2 hash of the name at node+0xb0, loads the effect (0x143af7160) -> effect at node+0xc0 with emitters +0x80..+0x88 (stride 0x180, def at emitter+0x160); resets emitters. param_3 -> emitter+0xec bit 0x80; param_4 (car-attached) -> emitter+0xec bits 12..19 = param_5 (car index) and def+0xb70/+0xb74 = 1e7/-1e9 (no distance cull). Logs PARTICLES 'Couldn't create effect '%s'!'. Called by Render_Particles_ApplySpawns and Game_Particles_UpdateManager. Addon: the spawn entry point to fire any named effect. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2307)"
+ },
+ "signature": {
+  "id": "game.particles_create_effect_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 44",
+  "match": "0x143b02910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b02910",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_CreateEffectNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Game_Particles_CreateEffectNode",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b02910.c;xref:0x143b02910",
+   "notes": "V2307 Verified: 0xf0 alloc, vtables, djb2 hash (0x1505,*33) at +0xb0, name hash arg +0x48 -> +0xb4, effect +0xc0, emitter+0xec bit0x80 and bits12..19, def+0xb70/+0xb74."
+  }
+ ],
+ "proofs": []
+}

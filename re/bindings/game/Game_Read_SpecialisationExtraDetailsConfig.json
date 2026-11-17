@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_SpecialisationExtraDetailsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142355020",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: specialisation_extra_details.diagram.code_commercial_point, specialisation_extra_details.diagram.code_dot_point, specialisation_extra_details.diagram.code_engineering_point, specialisation_extra_details.diagram.code_stewardship_point'"
+ },
+ "signature": {
+  "id": "game.read_specialisation_extra_details_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 02 00 00 C5 78 29 94 24 20 02 00 00 C5 78 29 8C 24 10 02 00 00 C5 78 29 84 24 00 02 00 00 C5 F8 29 BC 24 F0 01 00 00 C5 F8 29 B4 24 E0 01 00 00 49 89 CF 48 8B 81 88 02 00 00",
+  "match": "0x142355020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142355020",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_SpecialisationExtraDetailsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x142355020",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142355020.c",
+   "notes": "V5268 2348-line owner-perks specialisation node update (OwnerPerksNodeUpdated, levels, points, stewardship/engineering/commercial, team card); extra_details diagram keys minor. Better Game_OwnerPerks_UpdateSpecialisationNode (vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x142355020",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142355020.c",
+   "notes": "V7292 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

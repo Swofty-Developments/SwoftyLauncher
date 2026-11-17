@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_OnGainRateStatChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412275f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_ResourcePoints_OnGainRateStatChanged(void *rp)",
+  "evidence": "decomp:re/decomp/1412275f0.c;xref:0x141227246;xref:0x1412272a7",
+  "notes": "myteam-g2: Callback for the ai_resource_gain_rate / player_resource_gain_rate stat listeners (KB). Iterates the changed-stat id set (rp+0x5c0), finds the member by id (+0x52/+0x50), reads its entry list and writes the new gain rate FUN_14122b200(rp, member_key) into each entry's field +0x28 (0x30-byte entries). Hook: change FUN_14122b200 or the +0x28 floats to change RP income rate."
+ },
+ "signature": {
+  "id": "career.resource_points_on_gain_rate_stat_changed",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 48 8B 89 70 02 00 00 48 8B 01 FF 90 A8 00 00 00",
+  "match": "0x1412275f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412275f0",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePoints_OnGainRateStatChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x1412275f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412275f0.c;xref:0x141227246;xref:0x1412272a7;str:\"player_resource_gain_rate\"",
+   "notes": "V9014 Iterates the id set at rp+0x5c0, matches members by short +0x52 / byte +0x50, does two hash lookups and writes FUN_14122b200(rp, member key) into field +0x28 of each 0x30-stride entry. Registration site at 0x141227246 sits right beside the string player_resource_gain_rate."
+  }
+ ],
+ "proofs": []
+}

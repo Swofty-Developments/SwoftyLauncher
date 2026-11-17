@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionUI_TriggerSocialGP",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430b2360",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionUI::triggerSocialGP; log channel NETWORK-UI: 'void network::GameSessionUI::triggerSocialGP(SocialGPEventSetupDelegate) | %s: already joining an event, ignore the duplicate request'"
+ },
+ "signature": {
+  "id": "game.game_session_ui_trigger_social_gp",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1430b2360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430b2360",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionUI_TriggerSocialGP"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430b2360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b2360.c;xref:0x14258d271",
+   "notes": "V5349 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

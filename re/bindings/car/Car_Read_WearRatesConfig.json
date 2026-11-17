@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Read_WearRatesConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411cb150",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: engine_management.driver_wear_radriver_wear_rateMisconductMessag, q.world.create, wear_rates.ai_pq_max, wear_rates.ai_pq_min, wear_rates.ai_race_max, wear_rates.ai_race_min, wear_rates.human_max, wear_rates.human_min'"
+ },
+ "signature": {
+  "id": "car.read_wear_rates_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 0B 00 00",
+  "match": "0x1411cb150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411cb150",
+  "kind": "func_start",
+  "names": [
+   "Car_Read_WearRatesConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1411cb150",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1411cb150.c;xref:0x149d48d17",
+   "notes": "V4652 claimed wear_rates.* / engine_management keys are not in the body (claim text garbled); body has random_component_swap_chance, component_percentage, gearbox_percentage, driver, season; better Car_Read_ComponentSwapConfig"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1411cb150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411cb150.c",
+   "notes": "V7189 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_CheckCompoundClassRule",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e88730",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "bool Car_Tyre_CheckCompoundClassRule(const void *set)",
+  "evidence": "decomp:re/decomp/142e88730.c;xref:0x142e88653,0x142e8e564,0x142e8e729,0x14f3da310;sig:car.tyre_check_compound_class_rule",
+  "notes": "The mode-0 session tag check of a 0x6c-byte tyre set record (rcx = set, returns al, 1 usable): flags +9 & 9 (damaged / handed back) refuse; g_Sess_TyreRulesActive 0 or tag +0x00 == 0 allow; in practice 1-4 a tag 1-4 is allowed; in qualifying 5-9 a tag 5-9 is allowed (tag 7 with flag bit2 only up to session 6); in races 15-17 a tag 5..14 (qualifying / shootout), the race's own tag or a race tag without flag bit2 is allowed. So stock races accept qualifying-tagged sets. Callers: Car_Tyre_IsCompoundAllowed 0x142e88652, Sess_TyreAllocation_SwapSets (2), and the least-worn set picker body 0x14f3da1d0 (.data1, call at 0x14f3da310) used by Sess_Tyres_ClosestAvailableCompound. Wrapped by swofty_core (qualifying tyres per box)."
+ },
+ "signature": {
+  "id": "car.tyre_check_compound_class_rule",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 0F B6 49 09 F6 C1 09",
+  "match": "0x142e88730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e88730",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_CheckCompoundClassRule"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142e88730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e88730.c;xref:0x142e88652",
+   "notes": "V7561 strings/offsets/constants and callers match decomp"
+  },
+  {
+   "date": "2026-11-15",
+   "verifier": "verify-quali-b",
+   "kind": "func",
+   "item": "Car_Tyre_CheckCompoundClassRule",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e88730.c;xref:0x142e88652,0x142e8e563,0x142e8e728,0x14f3da310,0x14f3ccea2,0x14f3d17c3,0x14f3da983;xref:0x150dc4d2a,0x142a3ba51;imm:0x6c;pat:no rel32 call/jmp into 0x142e88731-0x142e8873f",
+   "notes": "V10709 Re-derived from disx: rsi=rcx only arg; flags byte+9 &9 ->0; 0x1460806c8==0 ->1; tag 0 ->1; sess 1..4 & tag 1..4 ->1; sess 5..9 & tag 5..9 -> 1 unless tag==7 && flags&4 && sess<7; sess 15..17: target race tag from 0x140b03110 lookups on 0x146080690 (15/16/17), then tag 5..14 ->1 (0x142e887f8 lea r8d,[rcx-5]; cmp 0xa; jb al=1) = races accept quali/shootout-tagged sets CONFIRMED; tag==target ->1; tag 15..17: ==sess ->1, flags&4 ->0, else 1; else 0. Not in claim: sess 10..14 (and other unmatched combos) return 0 for every nonzero tag; 3 extra .data1 callers. Caller 0x14f3da310: rcx=r15+r12, r12=idx*0x6c, preceded by test [r15+r12+9],9. set+0x04 = option 0..4 supported: 0x150dc4d2a mov edi,[rcx+rax+4] (rax=idx*0x6c) returned, 0x142a3ba51 cmp eax,4 ja (-1 none falls out). Entry: push rsi,push rdi,sub rsp,38,mov rsi,rcx,movzx ecx,[rcx+9],test cl,9 end exactly at 0x740; no RIP-relative or branch inside; first targets 0x742/0x744 outside. Safe for entry wrap."
+  }
+ ],
+ "proofs": []
+}

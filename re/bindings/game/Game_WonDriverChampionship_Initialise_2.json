@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_WonDriverChampionship_Initialise_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c92be0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140c92be0.c;xref:0x145685b10",
+  "notes": "Second championship-win cutscene initialise (vtable slot 0x145685b10, menu/career variant): won_driver_championship_2020 (+_bgnd), garage_light_rig_qual_championship_2018, FENG; additionally disables world actor proxies via Game_WorldActorProxy_RequestSetDisabled. WARN setGarageLocation failed like the other garage scenes. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2828)"
+ },
+ "signature": {
+  "id": "game.won_driver_championship_initialise_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 78 29 84 24 B0 01 00 00 C5 F8 29 BC 24 A0 01 00 00 C5 F8 29 B4 24 90 01 00 00 48 89",
+  "match": "0x140c92be0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c92be0",
+  "kind": "func_start",
+  "names": [
+   "Game_WonDriverChampionship_Initialise_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Game_WonDriverChampionship_Initialise_2",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c92be0.c;xref:0x140c92be0",
+   "notes": "V2828 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

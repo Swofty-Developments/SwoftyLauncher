@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VfxManager_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14337aa20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14337aa20.c;xref:0x14583d608",
+  "notes": "Module slot 3 of vt 0x14583d5f0: creates 'VFX_jobs' queue with default job policy and registers about 20 VFX job handlers (0x1433812b0..0x143381e30). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3243)"
+ },
+ "signature": {
+  "id": "game.vfx_manager_initialise",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 80 B9 88 00 00 00 00 0F 84",
+  "match": "0x14337aa20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14337aa20",
+  "kind": "func_start",
+  "names": [
+   "Game_VfxManager_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_VfxManager_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/4337aa20.c;xref:None",
+   "notes": "V3243 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

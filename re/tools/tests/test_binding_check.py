@@ -1,4 +1,5 @@
 import contextlib, copy, io, json, os, shutil, subprocess, sys, tempfile, unittest
+from unittest import mock
 
 TOOLS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, TOOLS)
@@ -208,6 +209,109 @@ class CheckRecord(Base):
         self.assertTrue(any('the record says' in e for e in self.errors(m)))
 
 
+class EngineBoundaries(Base):
+    """The record rules an auto-merged record is held to, at the edge of what the core accepts."""
+
+    def signature_errors(self, mutate):
+        d = as_new(self.doc)
+        mutate(d['signature'])
+        d['row']['addr'] = d['signature']['target']
+        return bc.signature_errors(d['signature'], d['row'], d['table'], d['name'], self.knowledge.build['sha256'])
+
+    def at_anchor(self, anchor):
+        def m(s):
+            s['anchor'] = anchor
+            s['target'] = hex(int(s['match'], 16) + br.number(anchor))
+        return m
+
+    def test_anchor_stops_at_256_bytes_after_the_match(self):
+        self.assertEqual(self.signature_errors(self.at_anchor('0xff')), [])
+        for bad in ('0x100', '0x28f', '0x1000', '-0x1', '0x' + 'f' * 40):
+            errs = self.signature_errors(self.at_anchor(bad))
+            self.assertIn('signature.anchor must be inside the first 256 bytes after the match', errs, bad)
+
+    def test_anchor_that_is_not_a_number(self):
+        def m(s):
+            s['anchor'] = '1e3'
+        self.assertEqual(self.signature_errors(m), ['signature.anchor and resolve offsets must be numbers'])
+
+    def test_expect_stops_at_16_concrete_bytes(self):
+        head = 'E8 11 22 33 44 C5 FA 5C FE'
+        def expect(n):
+            def m(s):
+                s['expect'] = ' '.join([head] + ['90'] * (n - 9))
+            return m
+        self.assertEqual(self.signature_errors(expect(16)), [])
+        self.assertIn('signature.expect must be 1 to 16 concrete bytes', self.signature_errors(expect(17)))
+
+    def test_expect_takes_no_wildcard(self):
+        def m(s):
+            s['expect'] = 'E8 ??'
+        self.assertIn('signature.expect must be 1 to 16 concrete bytes', self.signature_errors(m))
+
+    def with_existing_pattern(self):
+        k = bc.Knowledge.__new__(bc.Knowledge)
+        k.__dict__ = dict(self.fresh.__dict__)
+        k.patterns = {**self.fresh.patterns, bc.pattern_key(self.doc['signature']): 'session.existing'}
+        return k
+
+    def record_errors(self, mutate, knowledge):
+        d = as_new(self.doc)
+        mutate(d['signature'])
+        d['row']['addr'] = d['signature']['target']
+        d['proofs'] = [make_proof(d, AUTHOR)]
+        return bc.check_record(br.Record(d, SAMPLE), knowledge, 're/bindings/' + SAMPLE)
+
+    def test_a_respelled_pattern_is_still_the_same_scan(self):
+        dup = 'signature.pattern, anchor and resolve are the same as session.existing'
+        k = self.with_existing_pattern()
+        respell = {
+            'single wildcards': lambda s: s.update(pattern=s['pattern'].replace('??', '?')),
+            'lowercase and spacing': lambda s: s.update(pattern='  ' + s['pattern'].lower().replace(' ', '   ') + ' '),
+            'decimal anchor': lambda s: s.update(anchor='3'),
+            'padded anchor': lambda s: s.update(anchor='0x003'),
+        }
+        for why, m in respell.items():
+            errs = self.record_errors(m, k)
+            self.assertIn(dup, errs, why)
+
+    def test_the_same_pattern_with_another_anchor_is_another_binding(self):
+        errs = self.record_errors(self.at_anchor('0x8'), self.with_existing_pattern())
+        self.assertFalse(any('are the same as' in e for e in errs), errs)
+
+    def test_resolve_offsets_compare_as_numbers(self):
+        s = dict(self.doc['signature'], resolve={'kind': 'rel32', 'insn': '0x2'})
+        for same in ('2', '0x02', 2):
+            self.assertEqual(bc.pattern_key(s), bc.pattern_key(dict(s, resolve={'kind': 'rel32', 'insn': same})))
+        self.assertNotEqual(bc.pattern_key(s), bc.pattern_key(dict(s, resolve={'kind': 'rel32', 'insn': '0x3'})))
+        self.assertNotEqual(bc.pattern_key(s), bc.pattern_key(dict(s, kind='call')))
+
+    def sig_row(self, item, by='contributor-b'):
+        return {**agree_row(self.doc, by), 'kind': 'sig', 'item': item}
+
+    def test_verify_rows_may_be_about_the_records_own_signature_only(self):
+        own = self.doc['signature']['id']
+        def ok(d):
+            d['verify'] = [self.sig_row(own)]
+        def other(d):
+            d['verify'] = [self.sig_row('session.other_signature')]
+        def selfie(d):
+            d['verify'] = [self.sig_row(own, by=AUTHOR)]
+        check = CheckRecord.errors
+        self.assertEqual(check(self, ok), [])
+        self.assertIn(f'verify[0] must be about global {self.doc["name"]} or sig {own}', check(self, other))
+        self.assertTrue(any('cannot verify their own' in e for e in check(self, selfie)))
+
+    def test_an_agree_about_the_signature_does_not_export_the_binding(self):
+        import bindgen
+        gate = bindgen.Gate.__new__(bindgen.Gate)
+        gate.verdicts = {('sig', self.doc['signature']['id']): ('agree', 'V1')}
+        gate.passed = set()
+        row = self.doc['row']
+        status, _ = gate('L2', row['evidence'], [('global', self.doc['name']), ('global', row['addr'])])
+        self.assertIsNone(status)
+
+
 class Classify(Base):
     def run_classify(self, changes, author=AUTHOR, root=None):
         return bc.classify(changes, author, self.fresh, root or self.empty)
@@ -323,13 +427,17 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
         import argparse, binding, kb
         re_dir = os.path.dirname(TOOLS)
         tmp = tempfile.mkdtemp()
+        cache = os.path.join(tmp, 'records-cache.json')
+        if os.path.exists(br.CACHE):
+            shutil.copy(br.CACHE, cache)
         try:
             def gen(root, out):
                 tools = os.path.join(root, 're', 'tools')
                 return subprocess.Popen([sys.executable, os.path.join(tools, 'bindgen.py'), '--no-exe', '--json',
                                          os.path.join(out, 'bindings.json'), '--symbols', os.path.join(out, 'symbols.tsv'),
                                          '--include', os.path.join(out, 'include'), '--rust', os.path.join(out, 'game.rs')],
-                                        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE)
+                                        stdout=subprocess.DEVNULL, stderr=subprocess.PIPE,
+                                        env={**os.environ, 'SWOFTY_RECORD_CACHE': cache})
 
             def finish(proc, out):
                 _, err = proc.communicate()
@@ -355,7 +463,7 @@ class UnfoldKeepsBindgenOutput(unittest.TestCase):
                 return root
 
             def unfold(root, names):
-                with contextlib.redirect_stdout(io.StringIO()):
+                with contextlib.redirect_stdout(io.StringIO()), mock.patch.dict(os.environ, {'SWOFTY_RECORD_CACHE': cache}):
                     binding.cmd_unfold(argparse.Namespace(names=names, author='kb-import', skip_unfit=True),
                                        db=os.path.join(root, 're', 'db'), root=os.path.join(root, 're', 'bindings'))
 

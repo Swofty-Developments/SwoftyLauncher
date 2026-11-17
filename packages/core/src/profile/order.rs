@@ -75,6 +75,300 @@ impl Problem {
     }
 }
 
+/// A profile's load order, checked against the installed addons. `pinned` says which addons stay
+/// where they are: the built-in and launcher-managed ones.
+#[derive(Clone, Copy)]
+pub struct ProfileOrder<'a> {
+    profile: &'a Profile,
+    installed: &'a BTreeMap<String, AddonManifest>,
+    pinned: &'a dyn Fn(&str) -> bool,
+}
+
+impl<'a> ProfileOrder<'a> {
+    pub fn new(
+        profile: &'a Profile,
+        installed: &'a BTreeMap<String, AddonManifest>,
+        pinned: &'a dyn Fn(&str) -> bool,
+    ) -> Self {
+        Self {
+            profile,
+            installed,
+            pinned,
+        }
+    }
+
+    pub fn problems(&self) -> Vec<Problem> {
+        let Self {
+            profile,
+            installed,
+            pinned,
+        } = *self;
+        let on = enabled_ids(profile);
+        let place: BTreeMap<&str, usize> = on.iter().enumerate().map(|(i, id)| (*id, i)).collect();
+        let mut out = Vec::new();
+        for id in &on {
+            let Some(m) = installed.get(*id) else {
+                continue;
+            };
+            let at = place[*id];
+            let movable = !pinned(id);
+            let mut push = |other: &str, kind| {
+                out.push(Problem {
+                    addon: (*id).to_owned(),
+                    other: other.to_owned(),
+                    kind,
+                });
+            };
+            for r in &m.requires {
+                match (place.get(r.id.as_str()), installed.get(&r.id)) {
+                    (None, Some(_)) => push(&r.id, Kind::Off),
+                    (None, None) => push(&r.id, Kind::Missing),
+                    (Some(_), None) => push(&r.id, Kind::Missing),
+                    (Some(_), Some(dep)) if !crate::addons::version::satisfies(&r.version, &dep.version) => {
+                        push(
+                            &r.id,
+                            Kind::Version {
+                                wanted: r.version.to_string(),
+                                found: dep.version.to_string(),
+                            },
+                        )
+                    }
+                    (Some(&dep_at), Some(_)) if movable && dep_at > at => push(&r.id, Kind::Below),
+                    _ => {}
+                }
+            }
+            for pat in m.load_after.iter().filter(|_| movable) {
+                for (other, &other_at) in &place {
+                    let listed_requirement = m.requires.iter().any(|r| r.id == *other);
+                    if *other != *id && !listed_requirement && glob_match(pat, other) && other_at > at {
+                        push(other, Kind::Below);
+                    }
+                }
+            }
+            for c in m.conflicts.iter().filter(|c| c.touches.is_none()) {
+                for other in place.keys().filter(|o| **o != *id && glob_match(&c.id, o)) {
+                    push(other, Kind::Conflict);
+                }
+            }
+        }
+        out
+    }
+
+    pub fn from_report(&self, report: &crate::profile::conflicts::Report) -> Vec<Problem> {
+        let Self { profile, pinned, .. } = *self;
+        let at: BTreeMap<&str, usize> = profile.enabled().enumerate().map(|(i, id)| (id, i)).collect();
+        learned_waits(profile, report, pinned)
+            .into_iter()
+            .filter(|w| at[w.other.as_str()] > at[w.addon.as_str()])
+            .collect()
+    }
+
+    pub fn careers(&self, list: &[crate::stdlib::careers::Career]) -> Vec<Problem> {
+        let Self {
+            profile, installed, ..
+        } = *self;
+        if profile.is_vanilla() {
+            return Vec::new();
+        }
+        let order: Vec<String> = profile.enabled().map(str::to_owned).collect();
+        let mut out = Vec::new();
+        for c in list.iter().filter(|c| !c.is_gone()) {
+            if c.profile.as_deref().is_some_and(|p| p != profile.name) {
+                continue;
+            }
+            let label = match c.label.is_empty() {
+                true => c.career.clone(),
+                false => c.label.clone(),
+            };
+            for a in &c.addons {
+                let range = a
+                    .need
+                    .as_deref()
+                    .and_then(|n| crate::stdlib::range::Range::parse(n).ok())
+                    .unwrap_or_else(crate::stdlib::range::Range::any);
+                let why = match installed.get(&a.id) {
+                    None => Kind::Missing,
+                    Some(_) if !order.contains(&a.id) => Kind::Off,
+                    Some(m) if !range.matches(&m.version) => Kind::Version {
+                        wanted: range.to_string(),
+                        found: m.version.to_string(),
+                    },
+                    Some(_) => continue,
+                };
+                out.push(Problem {
+                    addon: a.id.clone(),
+                    other: c.career.clone(),
+                    kind: Kind::Career {
+                        label: label.clone(),
+                        why: Box::new(why),
+                    },
+                });
+            }
+        }
+        out
+    }
+
+    pub fn clashes(&self, is_track: &dyn Fn(&str) -> bool) -> Vec<Problem> {
+        let Self {
+            profile, installed, ..
+        } = *self;
+        let rules: Vec<ClashRule> = serde_json::from_str(CLASHES).unwrap_or_default();
+        let on: Vec<&str> = enabled_ids(profile);
+        let says = |id: &str, what: &str| match what {
+            "track" => is_track(id),
+            key => {
+                let name = installed
+                    .get(id)
+                    .map(|m| m.name.to_lowercase())
+                    .unwrap_or_default();
+                id.to_lowercase().contains(key) || name.contains(key)
+            }
+        };
+        let mut out = Vec::new();
+        for r in &rules {
+            for a in on.iter().filter(|id| says(id, &r.a)) {
+                for b in on.iter().filter(|id| **id != *a && says(id, &r.b)) {
+                    out.push(Problem {
+                        addon: (*a).to_owned(),
+                        other: (*b).to_owned(),
+                        kind: Kind::Clash { why: r.why.clone() },
+                    });
+                }
+            }
+        }
+        out
+    }
+
+    /// Orders the profile so every addon loads below what it needs, the way the
+    /// Addons page will gather it: an addon that its folder would pull above a
+    /// requirement leaves the folder.
+    pub fn plan_fix(
+        &self,
+        learned: &[Problem],
+        place: &dyn Fn(&str) -> Option<Key>,
+    ) -> std::result::Result<FixPlan, FixError> {
+        let Self {
+            profile,
+            installed,
+            pinned,
+        } = *self;
+        let current: Vec<String> = profile.addons.iter().map(|a| a.id.clone()).collect();
+        if profile.is_vanilla() {
+            return Ok(FixPlan {
+                order: current,
+                ejected: Vec::new(),
+                moved: 0,
+            });
+        }
+        let slots: Vec<usize> = profile
+            .addons
+            .iter()
+            .enumerate()
+            .filter(|(_, a)| (a.enabled || a.id == CORE_ID) && installed.contains_key(&a.id))
+            .map(|(i, _)| i)
+            .collect();
+        let ids: Vec<String> = slots.iter().map(|&i| current[i].clone()).collect();
+        let before = requirements(&ids, installed, learned, pinned);
+        let permutation = topological(&ids, &before, pinned)?;
+        let mut candidate = current.clone();
+        for (slot, &o) in slots.iter().zip(&permutation) {
+            candidate[*slot] = ids[o].clone();
+        }
+        let edges: Vec<(&str, &str)> = before
+            .iter()
+            .enumerate()
+            .flat_map(|(i, deps)| deps.iter().map(move |&d| (i, d)))
+            .map(|(i, d)| (ids[i].as_str(), ids[d].as_str()))
+            .collect();
+        let mut ejected: Vec<(String, Key)> = Vec::new();
+        let order = loop {
+            let placed = |id: &str| match ejected.iter().any(|(e, _)| e == id) {
+                true => None,
+                false => place(id),
+            };
+            let regrouped = crate::profile::folders::flatten(&crate::profile::folders::group(
+                candidate.iter().cloned(),
+                placed,
+            ));
+            let at: BTreeMap<&str, usize> = regrouped
+                .iter()
+                .enumerate()
+                .map(|(i, id)| (id.as_str(), i))
+                .collect();
+            let mut offenders: BTreeSet<&str> = BTreeSet::new();
+            for (a, d) in &edges {
+                if at[a] < at[d] && !pinned(a) && placed(a).is_some_and(|k| k != Key::BuiltIn) {
+                    offenders.insert(a);
+                }
+            }
+            if offenders.is_empty() {
+                break regrouped;
+            }
+            let leaving: Vec<(String, Key)> = offenders
+                .into_iter()
+                .filter_map(|a| place(a).map(|k| (a.to_owned(), k)))
+                .collect();
+            ejected.extend(leaving);
+        };
+        let moved = order.iter().zip(&current).filter(|(a, b)| a != b).count();
+        Ok(FixPlan {
+            order,
+            ejected,
+            moved,
+        })
+    }
+
+    pub fn diagnose(
+        &self,
+        report: Option<&crate::profile::conflicts::Report>,
+        careers_list: &[crate::stdlib::careers::Career],
+        is_track: &dyn Fn(&str) -> bool,
+        place: &dyn Fn(&str) -> Option<Key>,
+    ) -> Diagnosis {
+        let Self {
+            profile,
+            installed,
+            pinned,
+        } = *self;
+        if profile.is_vanilla() {
+            return Diagnosis::empty();
+        }
+        let mut found = self.problems();
+        let mut learned = Vec::new();
+        if let Some(r) = report {
+            found.extend(self.from_report(r));
+            learned = learned_waits(profile, r, pinned);
+        }
+        let fix = match self.plan_fix(&learned, place) {
+            Err(e) => FixState::Blocked(e),
+            Ok(plan) => {
+                let mut after = profile.clone();
+                crate::profile::folders::reorder(&mut after, &plan.order, &|_| false);
+                let still = ProfileOrder::new(&after, installed, pinned).problems();
+                let unhonoured: Vec<Problem> = learned
+                    .iter()
+                    .filter(|w| !wait_holds(&after, w))
+                    .cloned()
+                    .collect();
+                found.retain(|p| !unhonoured.contains(p));
+                let clears: BTreeSet<&str> = found
+                    .iter()
+                    .filter(|p| p.fixable_by_reorder())
+                    .map(|p| p.addon.as_str())
+                    .collect();
+                let leftover = still.iter().any(|p| p.kind == Kind::Below);
+                match plan.moved > 0 && !clears.is_empty() && !leftover {
+                    true => FixState::Ready(plan.clone(), clears.len()),
+                    false => FixState::Nothing,
+                }
+            }
+        };
+        found.extend(self.careers(careers_list));
+        found.extend(self.clashes(is_track));
+        Diagnosis { problems: found, fix }
+    }
+}
+
 fn glob_match(pattern: &str, id: &str) -> bool {
     match pattern.strip_suffix('*') {
         Some(prefix) => id.starts_with(prefix),
@@ -91,72 +385,6 @@ fn enabled_ids(profile: &Profile) -> Vec<&str> {
         true => Vec::new(),
         false => profile.enabled().collect(),
     }
-}
-
-pub fn problems(
-    profile: &Profile,
-    installed: &BTreeMap<String, AddonManifest>,
-    pinned: &dyn Fn(&str) -> bool,
-) -> Vec<Problem> {
-    let on = enabled_ids(profile);
-    let place: BTreeMap<&str, usize> = on.iter().enumerate().map(|(i, id)| (*id, i)).collect();
-    let mut out = Vec::new();
-    for id in &on {
-        let Some(m) = installed.get(*id) else {
-            continue;
-        };
-        let at = place[*id];
-        let movable = !pinned(id);
-        let mut push = |other: &str, kind| {
-            out.push(Problem {
-                addon: (*id).to_owned(),
-                other: other.to_owned(),
-                kind,
-            });
-        };
-        for r in &m.requires {
-            match (place.get(r.id.as_str()), installed.get(&r.id)) {
-                (None, Some(_)) => push(&r.id, Kind::Off),
-                (None, None) => push(&r.id, Kind::Missing),
-                (Some(_), None) => push(&r.id, Kind::Missing),
-                (Some(_), Some(dep)) if !crate::addons::version::satisfies(&r.version, &dep.version) => push(
-                    &r.id,
-                    Kind::Version {
-                        wanted: r.version.to_string(),
-                        found: dep.version.to_string(),
-                    },
-                ),
-                (Some(&dep_at), Some(_)) if movable && dep_at > at => push(&r.id, Kind::Below),
-                _ => {}
-            }
-        }
-        for pat in m.load_after.iter().filter(|_| movable) {
-            for (other, &other_at) in &place {
-                let listed_requirement = m.requires.iter().any(|r| r.id == *other);
-                if *other != *id && !listed_requirement && glob_match(pat, other) && other_at > at {
-                    push(other, Kind::Below);
-                }
-            }
-        }
-        for c in m.conflicts.iter().filter(|c| c.touches.is_none()) {
-            for other in place.keys().filter(|o| **o != *id && glob_match(&c.id, o)) {
-                push(other, Kind::Conflict);
-            }
-        }
-    }
-    out
-}
-
-pub fn from_report(
-    profile: &Profile,
-    report: &crate::profile::conflicts::Report,
-    pinned: &dyn Fn(&str) -> bool,
-) -> Vec<Problem> {
-    let at: BTreeMap<&str, usize> = profile.enabled().enumerate().map(|(i, id)| (id, i)).collect();
-    learned_waits(profile, report, pinned)
-        .into_iter()
-        .filter(|w| at[w.other.as_str()] > at[w.addon.as_str()])
-        .collect()
 }
 
 fn learned_waits(
@@ -181,52 +409,6 @@ fn learned_waits(
         .collect()
 }
 
-pub fn careers(
-    profile: &Profile,
-    installed: &BTreeMap<String, AddonManifest>,
-    list: &[crate::stdlib::careers::Career],
-) -> Vec<Problem> {
-    if profile.is_vanilla() {
-        return Vec::new();
-    }
-    let order: Vec<String> = profile.enabled().map(str::to_owned).collect();
-    let mut out = Vec::new();
-    for c in list.iter().filter(|c| !c.is_gone()) {
-        if c.profile.as_deref().is_some_and(|p| p != profile.name) {
-            continue;
-        }
-        let label = match c.label.is_empty() {
-            true => c.career.clone(),
-            false => c.label.clone(),
-        };
-        for a in &c.addons {
-            let range = a
-                .need
-                .as_deref()
-                .and_then(|n| crate::stdlib::range::Range::parse(n).ok())
-                .unwrap_or_else(crate::stdlib::range::Range::any);
-            let why = match installed.get(&a.id) {
-                None => Kind::Missing,
-                Some(_) if !order.contains(&a.id) => Kind::Off,
-                Some(m) if !range.matches(&m.version) => Kind::Version {
-                    wanted: range.to_string(),
-                    found: m.version.to_string(),
-                },
-                Some(_) => continue,
-            };
-            out.push(Problem {
-                addon: a.id.clone(),
-                other: c.career.clone(),
-                kind: Kind::Career {
-                    label: label.clone(),
-                    why: Box::new(why),
-                },
-            });
-        }
-    }
-    out
-}
-
 #[derive(Debug, Clone, serde::Deserialize)]
 struct ClashRule {
     a: String,
@@ -235,38 +417,6 @@ struct ClashRule {
 }
 
 const CLASHES: &str = include_str!("order_clashes.json");
-
-pub fn clashes(
-    profile: &Profile,
-    installed: &BTreeMap<String, AddonManifest>,
-    is_track: &dyn Fn(&str) -> bool,
-) -> Vec<Problem> {
-    let rules: Vec<ClashRule> = serde_json::from_str(CLASHES).unwrap_or_default();
-    let on: Vec<&str> = enabled_ids(profile);
-    let says = |id: &str, what: &str| match what {
-        "track" => is_track(id),
-        key => {
-            let name = installed
-                .get(id)
-                .map(|m| m.name.to_lowercase())
-                .unwrap_or_default();
-            id.to_lowercase().contains(key) || name.contains(key)
-        }
-    };
-    let mut out = Vec::new();
-    for r in &rules {
-        for a in on.iter().filter(|id| says(id, &r.a)) {
-            for b in on.iter().filter(|id| **id != *a && says(id, &r.b)) {
-                out.push(Problem {
-                    addon: (*a).to_owned(),
-                    other: (*b).to_owned(),
-                    kind: Kind::Clash { why: r.why.clone() },
-                });
-            }
-        }
-    }
-    out
-}
 
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub struct FixPlan {
@@ -380,82 +530,6 @@ fn topological(
     Ok(order)
 }
 
-/// Orders the profile so every addon loads below what it needs, the way the
-/// Addons page will gather it: an addon that its folder would pull above a
-/// requirement leaves the folder.
-pub fn plan_fix(
-    profile: &Profile,
-    installed: &BTreeMap<String, AddonManifest>,
-    learned: &[Problem],
-    pinned: &dyn Fn(&str) -> bool,
-    place: &dyn Fn(&str) -> Option<Key>,
-) -> std::result::Result<FixPlan, FixError> {
-    let current: Vec<String> = profile.addons.iter().map(|a| a.id.clone()).collect();
-    if profile.is_vanilla() {
-        return Ok(FixPlan {
-            order: current,
-            ejected: Vec::new(),
-            moved: 0,
-        });
-    }
-    let slots: Vec<usize> = profile
-        .addons
-        .iter()
-        .enumerate()
-        .filter(|(_, a)| (a.enabled || a.id == CORE_ID) && installed.contains_key(&a.id))
-        .map(|(i, _)| i)
-        .collect();
-    let ids: Vec<String> = slots.iter().map(|&i| current[i].clone()).collect();
-    let before = requirements(&ids, installed, learned, pinned);
-    let permutation = topological(&ids, &before, pinned)?;
-    let mut candidate = current.clone();
-    for (slot, &o) in slots.iter().zip(&permutation) {
-        candidate[*slot] = ids[o].clone();
-    }
-    let edges: Vec<(&str, &str)> = before
-        .iter()
-        .enumerate()
-        .flat_map(|(i, deps)| deps.iter().map(move |&d| (i, d)))
-        .map(|(i, d)| (ids[i].as_str(), ids[d].as_str()))
-        .collect();
-    let mut ejected: Vec<(String, Key)> = Vec::new();
-    let order = loop {
-        let placed = |id: &str| match ejected.iter().any(|(e, _)| e == id) {
-            true => None,
-            false => place(id),
-        };
-        let regrouped = crate::profile::folders::flatten(&crate::profile::folders::group(
-            candidate.iter().cloned(),
-            placed,
-        ));
-        let at: BTreeMap<&str, usize> = regrouped
-            .iter()
-            .enumerate()
-            .map(|(i, id)| (id.as_str(), i))
-            .collect();
-        let mut offenders: BTreeSet<&str> = BTreeSet::new();
-        for (a, d) in &edges {
-            if at[a] < at[d] && !pinned(a) && placed(a).is_some_and(|k| k != Key::BuiltIn) {
-                offenders.insert(a);
-            }
-        }
-        if offenders.is_empty() {
-            break regrouped;
-        }
-        let leaving: Vec<(String, Key)> = offenders
-            .into_iter()
-            .filter_map(|a| place(a).map(|k| (a.to_owned(), k)))
-            .collect();
-        ejected.extend(leaving);
-    };
-    let moved = order.iter().zip(&current).filter(|(a, b)| a != b).count();
-    Ok(FixPlan {
-        order,
-        ejected,
-        moved,
-    })
-}
-
 #[derive(Debug, Clone, PartialEq, Eq)]
 pub enum FixState {
     Nothing,
@@ -482,54 +556,6 @@ impl Diagnosis {
         let ordered = self.problems.iter().any(Problem::fixable_by_reorder);
         !ordered || matches!(self.fix, FixState::Ready(..) | FixState::Blocked(_))
     }
-}
-
-#[allow(clippy::too_many_arguments)]
-pub fn diagnose(
-    profile: &Profile,
-    installed: &BTreeMap<String, AddonManifest>,
-    report: Option<&crate::profile::conflicts::Report>,
-    careers_list: &[crate::stdlib::careers::Career],
-    is_track: &dyn Fn(&str) -> bool,
-    pinned: &dyn Fn(&str) -> bool,
-    place: &dyn Fn(&str) -> Option<Key>,
-) -> Diagnosis {
-    if profile.is_vanilla() {
-        return Diagnosis::empty();
-    }
-    let mut found = problems(profile, installed, pinned);
-    let mut learned = Vec::new();
-    if let Some(r) = report {
-        found.extend(from_report(profile, r, pinned));
-        learned = learned_waits(profile, r, pinned);
-    }
-    let fix = match plan_fix(profile, installed, &learned, pinned, place) {
-        Err(e) => FixState::Blocked(e),
-        Ok(plan) => {
-            let mut after = profile.clone();
-            crate::profile::folders::reorder(&mut after, &plan.order, &|_| false);
-            let still = problems(&after, installed, pinned);
-            let unhonoured: Vec<Problem> = learned
-                .iter()
-                .filter(|w| !wait_holds(&after, w))
-                .cloned()
-                .collect();
-            found.retain(|p| !unhonoured.contains(p));
-            let clears: BTreeSet<&str> = found
-                .iter()
-                .filter(|p| p.fixable_by_reorder())
-                .map(|p| p.addon.as_str())
-                .collect();
-            let leftover = still.iter().any(|p| p.kind == Kind::Below);
-            match plan.moved > 0 && !clears.is_empty() && !leftover {
-                true => FixState::Ready(plan.clone(), clears.len()),
-                false => FixState::Nothing,
-            }
-        }
-    };
-    found.extend(careers(profile, installed, careers_list));
-    found.extend(clashes(profile, installed, is_track));
-    Diagnosis { problems: found, fix }
 }
 
 fn wait_holds(profile: &Profile, w: &Problem) -> bool {
@@ -579,7 +605,8 @@ pub fn lines(profile: &Profile, installed: &BTreeMap<String, AddonManifest>) -> 
             .get(id)
             .map_or_else(|| id.to_owned(), |m| m.name.clone())
     };
-    problems(profile, installed, &is_pinned)
+    ProfileOrder::new(profile, installed, &is_pinned)
+        .problems()
         .iter()
         .map(|p| format!("{}: {}", name(&p.addon), p.line(&name)))
         .collect()
@@ -626,7 +653,8 @@ mod tests {
     }
 
     fn kinds(p: &Profile) -> Vec<(String, String, Kind)> {
-        problems(p, &installed(), &is_pinned)
+        ProfileOrder::new(p, &installed(), &is_pinned)
+            .problems()
             .into_iter()
             .map(|x| (x.addon, x.other, x.kind))
             .collect()
@@ -636,8 +664,12 @@ mod tests {
     fn a_dependency_below_is_reported() {
         let p = profile(&["cs.2016", "cs.base"]);
         assert_eq!(kinds(&p), [("cs.2016".into(), "cs.base".into(), Kind::Below)]);
-        assert!(!problems(&p, &installed(), &is_pinned)[0].blocks_play());
-        assert!(problems(&profile(&["cs.base", "cs.2016"]), &installed(), &is_pinned).is_empty());
+        assert!(!ProfileOrder::new(&p, &installed(), &is_pinned).problems()[0].blocks_play());
+        assert!(
+            ProfileOrder::new(&profile(&["cs.base", "cs.2016"]), &installed(), &is_pinned)
+                .problems()
+                .is_empty()
+        );
     }
 
     #[test]
@@ -647,7 +679,7 @@ mod tests {
         assert_eq!(kinds(&p), [("cs.2016".into(), "cs.base".into(), Kind::Off)]);
         let mut gone = installed();
         gone.remove("cs.base");
-        let found = problems(&profile(&["cs.2016"]), &gone, &is_pinned);
+        let found = ProfileOrder::new(&profile(&["cs.2016"]), &gone, &is_pinned).problems();
         assert_eq!(found[0].kind, Kind::Missing);
         assert!(found[0].blocks_play());
     }
@@ -692,11 +724,13 @@ mod tests {
             }],
             ..Default::default()
         };
-        let mut found = problems(&p, &all, &is_pinned);
-        found.extend(from_report(&p, &report, &is_pinned));
+        let mut found = ProfileOrder::new(&p, &all, &is_pinned).problems();
+        found.extend(ProfileOrder::new(&p, &BTreeMap::new(), &is_pinned).from_report(&report));
         assert!(found.is_empty(), "{found:?}");
         let before = ids(&p).join(",");
-        let plan = plan_fix(&p, &all, &found, &is_pinned, &no_place).unwrap();
+        let plan = ProfileOrder::new(&p, &all, &is_pinned)
+            .plan_fix(&found, &no_place)
+            .unwrap();
         assert_eq!(plan.moved, 0);
         assert_eq!(plan.order.join(","), before);
         let plan = crate::profile::resolver::resolve(&p, &all).unwrap();
@@ -716,8 +750,16 @@ mod tests {
     fn nothing_is_reported_for_addons_that_are_off_or_in_vanilla() {
         let mut p = profile(&["cs.2016"]);
         p.set_enabled("cs.2016", false).unwrap();
-        assert!(problems(&p, &installed(), &is_pinned).is_empty());
-        assert!(problems(&Profile::vanilla(), &installed(), &is_pinned).is_empty());
+        assert!(
+            ProfileOrder::new(&p, &installed(), &is_pinned)
+                .problems()
+                .is_empty()
+        );
+        assert!(
+            ProfileOrder::new(&Profile::vanilla(), &installed(), &is_pinned)
+                .problems()
+                .is_empty()
+        );
     }
 
     #[test]
@@ -748,7 +790,7 @@ mod tests {
             r#"{"careers":[{"career":"k1","label":"My Classic","addons":[{"id":"cs.base"},{"id":"cs.2016","need":">=1.0.0"},{"id":"gone.addon"}]}]}"#,
         );
         let p = profile(&["cs.2016"]);
-        let found = careers(&p, &installed(), &list);
+        let found = ProfileOrder::new(&p, &installed(), &is_pinned).careers(&list);
         let kinds: Vec<(&str, Option<&Kind>)> = found
             .iter()
             .map(|x| match &x.kind {
@@ -780,14 +822,18 @@ mod tests {
             m("t.mugello", ""),
         ]);
         let p = profile(&["f.f2012", "t.mugello", "cs.base"]);
-        let found = clashes(&p, &all, &|id| id.starts_with("t."));
+        let found = ProfileOrder::new(&p, &all, &is_pinned).clashes(&|id| id.starts_with("t."));
         assert_eq!(found.len(), 1);
         assert_eq!(
             (found[0].addon.as_str(), found[0].other.as_str()),
             ("f.f2012", "t.mugello")
         );
         assert_eq!(found[0].severity(), Severity::Amber);
-        assert!(clashes(&profile(&["f.f2012", "cs.base"]), &all, &|_| false).is_empty());
+        assert!(
+            ProfileOrder::new(&profile(&["f.f2012", "cs.base"]), &all, &is_pinned)
+                .clashes(&|_| false)
+                .is_empty()
+        );
     }
 
     fn no_place(_: &str) -> Option<Key> {
@@ -805,7 +851,9 @@ mod tests {
     #[test]
     fn fix_moves_only_what_the_dependencies_need() {
         let mut p = profile(&["cs.2016", "track.a", "cs.base", "c.grid", "track.b"]);
-        let plan = plan_fix(&p, &installed(), &[], &is_pinned, &no_place).unwrap();
+        let plan = ProfileOrder::new(&p, &installed(), &is_pinned)
+            .plan_fix(&[], &no_place)
+            .unwrap();
         assert!(plan.moved > 0 && plan.ejected.is_empty());
         apply(&mut p, &plan);
         let order = ids(&p);
@@ -813,13 +861,15 @@ mod tests {
         assert!(at("cs.base") < at("cs.2016"));
         assert!(at("track.a") < at("c.grid") && at("track.b") < at("c.grid"));
         assert!(
-            problems(&p, &installed(), &is_pinned)
+            ProfileOrder::new(&p, &installed(), &is_pinned)
+                .problems()
                 .iter()
                 .all(|x| x.kind != Kind::Below)
         );
         let fine = profile(&["cs.base", "cs.2016"]);
         assert_eq!(
-            plan_fix(&fine, &installed(), &[], &is_pinned, &no_place)
+            ProfileOrder::new(&fine, &installed(), &is_pinned)
+                .plan_fix(&[], &no_place)
                 .unwrap()
                 .moved,
             0
@@ -831,7 +881,9 @@ mod tests {
         let mut p = profile(&["cs.2016", "track.a", "cs.base"]);
         p.set_enabled("track.a", false).unwrap();
         let off_at = ids(&p).iter().position(|x| *x == "track.a").unwrap();
-        let plan = plan_fix(&p, &installed(), &[], &is_pinned, &no_place).unwrap();
+        let plan = ProfileOrder::new(&p, &installed(), &is_pinned)
+            .plan_fix(&[], &no_place)
+            .unwrap();
         apply(&mut p, &plan);
         assert_eq!(ids(&p)[off_at], "track.a");
     }
@@ -845,7 +897,9 @@ mod tests {
             m("x.c", r#","requires":[{"id":"x.a"}]"#),
         ]);
         let p = profile(&["x.a", "x.b", "x.c"]);
-        let err = plan_fix(&p, &all, &[], &is_pinned, &no_place).unwrap_err();
+        let err = ProfileOrder::new(&p, &all, &is_pinned)
+            .plan_fix(&[], &no_place)
+            .unwrap_err();
         assert_eq!(err.members(), ["x.a", "x.b"]);
         assert_eq!(err.turn_off(), Some("x.b"));
         let text = err.to_string();
@@ -876,24 +930,30 @@ mod tests {
         let mut p = profile(&["f.a", "f.c", "f.b"]);
         let place = folder_of(&["f.a", "f.c"]);
         assert_eq!(
-            diagnose(&p, &all, None, &[], &|_| false, &is_pinned, &place)
+            ProfileOrder::new(&p, &all, &is_pinned)
+                .diagnose(None, &[], &|_| false, &place)
                 .problems
                 .len(),
             1
         );
-        let plan = plan_fix(&p, &all, &[], &is_pinned, &place).unwrap();
+        let plan = ProfileOrder::new(&p, &all, &is_pinned)
+            .plan_fix(&[], &place)
+            .unwrap();
         assert_eq!(plan.ejected, [("f.c".to_owned(), Key::Own("f".into()))]);
         apply(&mut p, &plan);
         let after = |id: &str| (id != "f.c").then(|| place(id)).flatten();
         crate::profile::folders::arrange(&mut p, after);
         assert!(
-            problems(&p, &all, &is_pinned)
+            ProfileOrder::new(&p, &all, &is_pinned)
+                .problems()
                 .iter()
                 .all(|x| x.kind != Kind::Below)
         );
-        let again = plan_fix(&p, &all, &[], &is_pinned, &after).unwrap();
+        let again = ProfileOrder::new(&p, &all, &is_pinned)
+            .plan_fix(&[], &after)
+            .unwrap();
         assert_eq!((again.moved, again.ejected.len()), (0, 0));
-        let d = diagnose(&p, &all, None, &[], &|_| false, &is_pinned, &after);
+        let d = ProfileOrder::new(&p, &all, &is_pinned).diagnose(None, &[], &|_| false, &after);
         assert!(d.problems.is_empty(), "{:?}", d.problems);
         assert_eq!(d.fix, FixState::Nothing);
     }
@@ -910,7 +970,8 @@ mod tests {
         let mut p = profile(&["f.a", "f.b", "f.c"]);
         crate::profile::folders::arrange(&mut p, &place);
         assert!(
-            problems(&p, &all, &is_pinned)
+            ProfileOrder::new(&p, &all, &is_pinned)
+                .problems()
                 .iter()
                 .any(|x| x.kind == Kind::Below)
         );
@@ -939,7 +1000,7 @@ mod tests {
         all.extend([m(crate::updates::managed::ID, "")]);
         let p = profile(&[crate::updates::managed::ID, "track.a"]);
         let report = pinned_report(&p, crate::updates::managed::ID, "track.a");
-        let d = diagnose(&p, &all, Some(&report), &[], &|_| false, &is_pinned, &no_place);
+        let d = ProfileOrder::new(&p, &all, &is_pinned).diagnose(Some(&report), &[], &|_| false, &no_place);
         assert!(d.problems.is_empty(), "{:?}", d.problems);
         assert_eq!(d.fix, FixState::Nothing);
     }
@@ -949,13 +1010,10 @@ mod tests {
         let p = profile(&["cs.base", "c.grid"]);
         let mut report = pinned_report(&p, "c.grid", "cs.base");
         report.waits.clear();
-        let d = diagnose(
-            &p,
-            &installed(),
+        let d = ProfileOrder::new(&p, &installed(), &is_pinned).diagnose(
             Some(&report),
             &[],
             &|_| false,
-            &is_pinned,
             &no_place,
         );
         assert!(d.problems.is_empty());
@@ -976,13 +1034,10 @@ mod tests {
     fn waits_put_the_waiter_below_what_it_waits_on() {
         let mut p = profile(&["c.grid", "cs.base"]);
         let report = pinned_report(&p, "c.grid", "cs.base");
-        let d = diagnose(
-            &p,
-            &installed(),
+        let d = ProfileOrder::new(&p, &installed(), &is_pinned).diagnose(
             Some(&report),
             &[],
             &|_| false,
-            &is_pinned,
             &no_place,
         );
         assert_eq!(d.problems[0].kind, Kind::Waits);
@@ -996,20 +1051,21 @@ mod tests {
             order: vec![],
             ..report
         };
-        assert!(from_report(&p, &stale, &is_pinned).is_empty());
+        assert!(
+            ProfileOrder::new(&p, &BTreeMap::new(), &is_pinned)
+                .from_report(&stale)
+                .is_empty()
+        );
     }
 
     #[test]
     fn learned_orders_that_would_make_a_cycle_are_dropped() {
         let p = profile(&["cs.base", "cs.2016"]);
         let report = pinned_report(&p, "cs.base", "cs.2016");
-        let d = diagnose(
-            &p,
-            &installed(),
+        let d = ProfileOrder::new(&p, &installed(), &is_pinned).diagnose(
             Some(&report),
             &[],
             &|_| false,
-            &is_pinned,
             &no_place,
         );
         assert!(d.problems.is_empty(), "{:?}", d.problems);
@@ -1021,9 +1077,9 @@ mod tests {
         let mut all = installed();
         all.extend([m("c.needy", r#","requires":[{"id":"gone.addon"}]"#)]);
         let p = profile(&["cs.2016", "c.grid", "cs.base", "track.a", "c.needy"]);
-        let d = diagnose(&p, &installed(), None, &[], &|_| false, &is_pinned, &no_place);
+        let d = ProfileOrder::new(&p, &installed(), &is_pinned).diagnose(None, &[], &|_| false, &no_place);
         assert!(matches!(d.fix, FixState::Ready(_, 2)), "{:?}", d.fix);
-        let d = diagnose(&p, &all, None, &[], &|_| false, &is_pinned, &no_place);
+        let d = ProfileOrder::new(&p, &all, &is_pinned).diagnose(None, &[], &|_| false, &no_place);
         assert!(d.problems.iter().any(|x| x.kind == Kind::Missing));
         assert!(matches!(d.fix, FixState::Ready(_, 2)), "{:?}", d.fix);
         assert!(d.actionable());
@@ -1037,7 +1093,7 @@ mod tests {
             m("x.b", r#","requires":[{"id":"x.a"}]"#),
         ]);
         let p = profile(&["x.a", "x.b"]);
-        let d = diagnose(&p, &all, None, &[], &|_| false, &is_pinned, &no_place);
+        let d = ProfileOrder::new(&p, &all, &is_pinned).diagnose(None, &[], &|_| false, &no_place);
         assert!(matches!(d.fix, FixState::Blocked(_)));
         assert!(d.actionable());
     }
@@ -1223,13 +1279,10 @@ mod tests {
             let pinned = |id: &str| w.pinned.contains(id);
             let report = waits(&w.profile, &mut rng);
             let place = |id: &str| w.places.get(id).cloned().flatten();
-            let diag = diagnose(
-                &w.profile,
-                &w.installed,
+            let diag = ProfileOrder::new(&w.profile, &w.installed, &pinned).diagnose(
                 Some(&report),
                 &[],
                 &|_| false,
-                &pinned,
                 &place,
             );
             assert!(diag.actionable(), "seed {seed}");
@@ -1241,7 +1294,9 @@ mod tests {
                     diag.fix
                 );
                 assert!(
-                    plan_fix(&w.profile, &w.installed, &[], &pinned, &place).is_err(),
+                    ProfileOrder::new(&w.profile, &w.installed, &pinned)
+                        .plan_fix(&[], &place)
+                        .is_err(),
                     "seed {seed}"
                 );
                 assert_eq!(w.profile, before);
@@ -1274,13 +1329,10 @@ mod tests {
                 waits: report.waits.clone(),
                 ..Default::default()
             };
-            let again = diagnose(
-                &w.profile,
-                &w.installed,
+            let again = ProfileOrder::new(&w.profile, &w.installed, &pinned).diagnose(
                 Some(&report),
                 &[],
                 &|_| false,
-                &pinned,
                 &after,
             );
             assert!(
@@ -1292,7 +1344,9 @@ mod tests {
                 report.waits
             );
             assert_eq!(again.fix, FixState::Nothing, "seed {seed}");
-            let twice = plan_fix(&w.profile, &w.installed, &learned, &pinned, &after).unwrap();
+            let twice = ProfileOrder::new(&w.profile, &w.installed, &pinned)
+                .plan_fix(&learned, &after)
+                .unwrap();
             assert_eq!((twice.moved, twice.ejected.len()), (0, 0), "seed {seed}");
             let k = before.addons.iter().filter(|a| pinned(&a.id)).count();
             assert_eq!(
@@ -1333,13 +1387,10 @@ mod tests {
             let report = waits(&w.profile, &mut rng);
             let pinned = |id: &str| w.pinned.contains(id);
             let place = |id: &str| w.places.get(id).cloned().flatten();
-            let d = diagnose(
-                &w.profile,
-                &w.installed,
+            let d = ProfileOrder::new(&w.profile, &w.installed, &pinned).diagnose(
                 Some(&report),
                 &[],
                 &|_| false,
-                &pinned,
                 &place,
             );
             assert!(d.actionable(), "seed {seed}");

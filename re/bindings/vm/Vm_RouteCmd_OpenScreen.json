@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_RouteCmd_OpenScreen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143889310",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143889310.c;xref:0x14588a618",
+  "notes": "route-command executor shape (self, NeStr **err_out, cmd): 'No screen called %u exists' on a missing screen, else calls Vm_Open_Screen 0x144182660; siblings with 'No screen called %hs exists': 0x144181e70 0x144183060 0x144183de0 0x144185500 0x144186240"
+ },
+ "signature": {
+  "id": "vm.route_cmd_open_screen",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4D 89 C7 48",
+  "match": "0x143889310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143889310",
+  "kind": "func_start",
+  "names": [
+   "Vm_RouteCmd_OpenScreen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143889310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143889310.c",
+   "notes": "V6364 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

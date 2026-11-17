@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UnrankedMatching_OnSessionLobby",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315e990",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=UnrankedMatching::onSessionLobby; log channel NETWORK-MATCHING: 'virtual void network::UnrankedMatching::onSessionLobby() | %s'"
+ },
+ "signature": {
+  "id": "game.unranked_matching_on_session_lobby",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC C8 00 00 00 C5 79 7F 8C 24 B0 00 00 00",
+  "match": "0x14315e990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315e990",
+  "kind": "func_start",
+  "names": [
+   "Game_UnrankedMatching_OnSessionLobby"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14315e990",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315e990.c",
+   "notes": "V5769 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

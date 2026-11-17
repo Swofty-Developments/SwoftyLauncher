@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_FillSessionContext",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14077bb90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14077bb90.c;xref:0x1406fc87b,0x1406fcf3b",
+  "notes": "Fills analytics event record param_2 with session context: mode/session-type names (tables 0x145660708/0x145660740/0x145660788), weather ('dynamic' or type), time of day ('unknown_tod'), forecast accuracy ('forcast_reliable'/'forcast_unreliable'/'unknown_value'), track/team names (0x14604bbe0); fields +0xc0..+0xf8. Uses Sess_Get_PlayerVehicleIndex. 185 callers (ElasticSearch reporter modules, Game_AdaptiveAi_RecordSessionFinished, Game_Telemetry_SendFormationLapFault)."
+ },
+ "signature": {
+  "id": "game.analytics_fill_session_context",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 07 00 00 44",
+  "match": "0x14077bb90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14077bb90",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_FillSessionContext"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14077bb90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14077bb90.c;xref:0x140713711,0x140717bd1",
+   "notes": "V3590 strings dynamic, unknown_tod, forcast_reliable, forcast_unreliable, unknown_value present; calls Sess_Get_PlayerVehicleIndex (FUN_1400fa590); 185 xrefs"
+  }
+ ],
+ "proofs": []
+}

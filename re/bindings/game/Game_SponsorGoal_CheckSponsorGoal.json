@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SponsorGoal_CheckSponsorGoal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411090c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=SponsorGoal::checkSponsorGoal; log channel SPONSORS: 'SponsorGoal::checkSponsorGoal has no condition on it. Name : %s'"
+ },
+ "signature": {
+  "id": "game.sponsor_goal_check_sponsor_goal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 02 00 00 C5 78 29 84 24 00 02 00 00",
+  "match": "0x1411090c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411090c0",
+  "kind": "func_start",
+  "names": [
+   "Game_SponsorGoal_CheckSponsorGoal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1411090c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411090c0.c;xref:0x1401090ba",
+   "notes": "V4592 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

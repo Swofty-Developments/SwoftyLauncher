@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_SponsorCard_SetAmountDisplayPositive",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141682d00",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t (void *card, uint64_t amount)",
+  "evidence": "decomp:re/decomp/141682d00.c;xref:0x142262c3a;xref:0x14226b5e9;xref:0x14226e1d4",
+  "notes": "myteam-g2: Sets the transaction-style amount row of a card: calls Vm_FinanceTransactionRow_SetIcon(card+0x20, amount) (income icon for positive) and writes the formatted amount string into the VM string node at card+0x3c0. Display only."
+ },
+ "signature": {
+  "id": "vm.sponsor_card_set_amount_display_positive",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 89 D7 48 89 CE 48 83 C1 20",
+  "match": "0x141682d00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141682d00",
+  "kind": "func_start",
+  "names": [
+   "Vm_SponsorCard_SetAmountDisplayPositive"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141682d00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141682d00.c;xref:0x142262c3a;xref:0x14226b5e9",
+   "notes": "V9743 Calls SetIcon with +amount and writes string node at +0x3c0."
+  }
+ ],
+ "proofs": []
+}

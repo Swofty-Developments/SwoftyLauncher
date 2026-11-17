@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Sort_SponsorEntries_AdjustHeap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424d6f90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *base, int64_t hole, uint64_t len, void *val, void *ctx",
+  "evidence": "decomp:re/decomp/1424d6f90.c;xref:0x1424d6f1b;xref:0x1424d6f67",
+  "notes": "myteam-g1: Library code: std adjust_heap for 16-byte sponsor list entries with career-aware comparator (ctx+0x630)."
+ },
+ "signature": {
+  "id": "game.sort_sponsor_entries_adjust_heap",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4C 89 4C 24 48",
+  "match": "0x1424d6f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424d6f90",
+  "kind": "func_start",
+  "names": [
+   "Game_Sort_SponsorEntries_AdjustHeap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1424d6f90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424d6f90.c",
+   "notes": "V10217 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

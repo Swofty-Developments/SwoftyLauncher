@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PodiumParcFerme_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140370460",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140370460.c;xref:0x1455f8370",
+  "notes": "Podium parc ferme initialise (vt slot 0x1455f8370): ParcFerme location, mirrored false, podium_filler_car, podium_vehicle1st/2nd/3rd, driver_placed_first/second/third, podium_filler_01. INIT pattern: setLocation(loc,0x140241330) -> spawnScene(0x14023f920/0x14023ef30) -> script+0x53c start offset=0 -> advanceStartTimeOffset(0x1402405c0) per scene -> bind actors(+0x58..+0x60) to scenes(+0x78..+0x80) under crit sec +0x118, anim scene mgr +0x50 -> post 0x140236880. Params flags: +0x190 params name, +0x1de useHQChars, +0x1df castNightShadows, +0x1e0 skipFrustumCulling, +0x1e1 preWarmTextures, +0x1e8 mirrored. Addon: replace top-3 cars/drivers in the parc ferme podium shot. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3159)"
+ },
+ "signature": {
+  "id": "game.podium_parc_ferme_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 07 00 00 C5 F8 29 B4 24 A0 07 00 00 48 89 CE 48",
+  "match": "0x140370460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140370460",
+  "kind": "func_start",
+  "names": [
+   "Game_PodiumParcFerme_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d13-verify",
+   "kind": "func",
+   "item": "Game_PodiumParcFerme_Initialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140370460.c;xref:0x1455f8370",
+   "notes": "V3159 role/offsets/strings confirmed in decomp (INIT pattern calls thunks 140240410/140240700 -> alt copy 147562600 of advanceStartTimeOffset)"
+  }
+ ],
+ "proofs": []
+}

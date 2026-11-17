@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RacingFFBEffectDirectInput_UpdateDeviceEffects",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f2690",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=RacingFFBEffectDirectInput::updateDeviceEffects; log channel FFB_DEBUG: 'RacingFFBEffectDirectInput::updateDeviceEffects FORCEFEEDBACK %f, %f, %f, %f'"
+ },
+ "signature": {
+  "id": "game.racing_ffb_effect_direct_input_update_device_effects",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 CE 48 8B 89 E0 01 00 00",
+  "match": "0x1446f2690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f2690",
+  "kind": "func_start",
+  "names": [
+   "Game_RacingFFBEffectDirectInput_UpdateDeviceEffects"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f2690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f2690.c",
+   "notes": "V6843 updateDeviceEffects strings confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

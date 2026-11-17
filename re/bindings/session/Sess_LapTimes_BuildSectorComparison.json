@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_LapTimes_BuildSectorComparison",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f2ec70",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f2ec70.c;xref:0x142f2d835,0x142f3244e",
+  "notes": "(lapTimes, vehIdx): for current sector (veh+0x39) collects valid lap records (200 entries x 200 bytes at lap block+0x40, valid if value!=0 and flag) for the reference driver (+0xbf table per mode 0x145803c38) and sorts them (0x14098d560); clears +0xcb. Callers: Sess_LapTimes_OnNewSector, Sess_LapTimes_OnSectorReceived."
+ },
+ "signature": {
+  "id": "session.lap_times_build_sector_comparison",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 06 00 00",
+  "match": "0x142f2ec70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f2ec70",
+  "kind": "func_start",
+  "names": [
+   "Sess_LapTimes_BuildSectorComparison"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f2ec70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f2ec70.c;xref:0x142f2d835,0x142f3244e",
+   "notes": "V3724 Sector byte (+0x39) of lap record, 200x200-byte lap records at +0x40 with XOR value !=0 and flag compare, ref driver table at +0xbf per difficulty (0x145803c38), sort 14098d560, clears +0xcb."
+  }
+ ],
+ "proofs": []
+}

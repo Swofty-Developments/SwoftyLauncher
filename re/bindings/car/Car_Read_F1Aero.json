@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Read_F1Aero",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446c8560",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446c8560.c;xref:0x145bfc380;kb:subsystems/car.md#f1aero",
+  "notes": "F1Aero data vtable 0x145bfc370 slot 2 (Read). Reads every F1Aero key by name with Game_Read_VtfFloat / Car_Assets_FindSpline / Car_Assets_FindUInt and stores CarObfFloat pairs at data offset X (= system offset X+0x18, structs/CarF1Aero.h): BodyDragCoeffMin (alias m_aero_cd_min) data+0x1710, BodyDragCoeffMax +0x1720, front/rear cl maps +0x10..+0x40/+0x120..+0x150, ride-height clamps +0x90..+0xc0, slipstream scales +0xd0..+0x110, m_aero_wing_* +0x170..+0x1a0, 8 splines (0x2a8 each) from +0x1b0, Front/RearCoeffLiftMultiplier +0x16f0/+0x1700, wing CoL/CoD +0x1740..+0x1800, damage mults +0x1810/+0x1820, DRS +0x1830..+0x1870, drag offsets/coeffs +0x1890..+0x18c0, brake duct/radiator +0x18d0..+0x1930, AdjustableFrontWing bool +0x1940. Missing keys keep the current value; Upgrade blocks replay through the same reader with op scaling (Game_Read_VtfFloat)."
+ },
+ "signature": {
+  "id": "car.override_f1_aero",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 48 89 D7 48 89 CE 8B 81 10 17 00 00",
+  "match": "0x1446c8560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446c8560",
+  "kind": "func_start",
+  "names": [
+   "Car_Read_F1Aero"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "func",
+   "item": "Car_Read_F1Aero",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446c8560.c;xref:0x145bfc380",
+   "notes": "V1284 Vtable 0x145bfc370 slot 2. Re-derived the key to data offset map: BodyDragCoeffMin/m_aero_cd_min +0x1710, Max +0x1720, front cl +0x10..+0x40, ride-height max/min front/rear +0x90/+0xa0/+0xb0/+0xc0, slipstream +0xd0..+0x110, rear cl +0x120..+0x150, wing front/rear drag/force +0x170.., 8 splines from +0x1b0, Front/RearCoeffLiftMultiplier +0x16f0/+0x1700, Num wing settings +0x1730/+0x17a0, damage mults +0x1810/+0x1820, DRS +0x1830..+0x1870, drag offsets +0x1890..+0x18c0, ducts/radiator +0x18d0..+0x1930, AdjustableFrontWing +0x1940."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446c8560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446c8560.c",
+   "notes": "V6825 Reader (63 Game_Read_VtfFloat, XOR stores), m_aero_cd_min fallback confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

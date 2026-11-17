@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSurfacePack_ProcessRenderResources",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437a9180",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name processRenderResources (class from the log channel); log channel GameSurfacePack: 'processRenderResources(): Processing surfaces' insertions (% I64u)'"
+ },
+ "signature": {
+  "id": "game.game_surface_pack_process_render_resources",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 F8 29 B4 24 F0 01 00 00 48 89 CE 48 8B 89 80 84 01 00",
+  "match": "0x1437a9180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437a9180",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSurfacePack_ProcessRenderResources"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1437a9180",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437a9180.c;xref:0x14015d03b",
+   "notes": "V6251 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

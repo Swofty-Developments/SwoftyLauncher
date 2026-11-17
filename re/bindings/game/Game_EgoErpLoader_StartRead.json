@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EgoErpLoader_StartRead",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a6b870",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name startRead (class from the log channel); log channel EGO_ERP_LOADER: 'startRead - read \"%s\"'"
+ },
+ "signature": {
+  "id": "game.ego_erp_loader_start_read",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 44 89 CD",
+  "match": "0x143a6b870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a6b870",
+  "kind": "func_start",
+  "names": [
+   "Game_EgoErpLoader_StartRead"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143a6b870",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a6b870.c;xref:0x143a68d77",
+   "notes": "V6438 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

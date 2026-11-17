@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_CareerWizard_ResetItemWidgets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14386d350",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_CareerWizard_ResetItemWidgets(void *wizard)",
+  "evidence": "decomp:re/decomp/14386d350.c;xref:0x1416d9f8d;xref:0x1416da37d;xref:0x141725d05",
+  "notes": "myteam-g2: Like ReleaseItemWidgets but also sets the widget id short at node+0x1c to 0xffff after func 1428dbb80 release; used by the My Team career wizard init and season-length step."
+ },
+ "signature": {
+  "id": "ui.career_wizard_reset_item_widgets",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 8B 81 D0 00 00 00",
+  "match": "0x14386d350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14386d350",
+  "kind": "func_start",
+  "names": [
+   "Ui_CareerWizard_ResetItemWidgets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14386d350",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14386d350.c;xref:0x1416d9f8d",
+   "notes": "V10330 Walks list at +0xd0/+0x50, releases via 1428dbb80 and sets short +0x1c to 0xffff."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Vr_RefreshDevice",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439e9fb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-VR",
+  "notes": "named from its log messages (channel VR): 'device refresh rate = %f | Recommended Width and Height = %d x %d'"
+ },
+ "signature": {
+  "id": "game.vr_refresh_device",
+  "section": ".xtls",
+  "pattern": "55 41 56 56 57 53 48 83 EC 40 48 8D 6C 24 40",
+  "match": "0x1439e9fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439e9fb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Vr_RefreshDevice"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1439e9fb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439e9fb0.c",
+   "notes": "V6396 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

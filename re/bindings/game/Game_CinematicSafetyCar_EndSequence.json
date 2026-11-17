@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_CinematicSafetyCar_EndSequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143610c50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143610c50.c;xref:0x142d844ce,0x142d6e9b3",
+  "notes": "(this) If VR transition object this+0x110 exists and not done (+0x49): allocates a callback (0x143610da0, this) and runs Game_Vr_ExecuteTransition(...,1,...); else restores racing camera (0x144533ed0 on [this+0x20], +0x98), shows HUD again (Game_CinematicSafetyCar_HideHud counterpart), may request crossfade. Callers Sess_PreRace_OnStateExit, Sess_IntroVideo_OnVideoDoneFadeIn. Hypothesis: end of cinematic sequence (grid / SC intro)."
+ },
+ "signature": {
+  "id": "game.cinematic_safety_car_end_sequence",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 08 01 00 00 48 89 CE 48 8B B9 10",
+  "match": "0x143610c50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143610c50",
+  "kind": "func_start",
+  "names": [
+   "Game_CinematicSafetyCar_EndSequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143610c50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143610c50.c;xref:0x142d844ce",
+   "notes": "V3822 VR-transition branch (this+0x110, +0x49 flag, callback 143610da0, Game_Vr_ExecuteTransition 1438ac4f0) and camera restore (144533ed0 on [this+0x20], +0x98) verified, but the HUD step calls 143610f90 which is Game_CinematicSafetyCar_HideHud itself (adds hide reason 9, log 'HUD hide reason added'), not a 'show again' counterpart."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x143610c50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143610c50.c;xref:0x142d844ce",
+   "notes": "V4030 VR-transition branch (this+0x110, +0x49 flag, callback 143610da0, Game_Vr_ExecuteTransition 1438ac4f0) and camera restore (144533ed0 on [this+0x20], +0x98) verified, but the HUD step calls 143610f90 which is Game_CinematicSafetyCar_HideHud itself (adds hide reason 9, log 'HUD hide reason added'), not a 'show again' counterpart."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143610c50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143610c50.c;xref:0x142d6e9b3,0x142d844ce",
+   "notes": "V4044 +0x110 transition obj, +0x49 done flag, callback 0x143610da0, 0x144533ed0 on [this+0x20]; callers confirmed"
+  }
+ ],
+ "proofs": []
+}

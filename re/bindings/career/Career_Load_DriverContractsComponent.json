@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Load_DriverContractsComponent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140da6700",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint32_t Career_Load_DriverContractsComponent(void *comp, uint64_t save_node, uint64_t version)",
+  "evidence": "decomp:re/decomp/140da6700.c;xref:0x145692348",
+  "notes": "myteam-g1: Reader counterpart (1730 lines): rebuilds decidedDriverContracts / pendingDriverContracts, the four driver lists at comp+0x7d0/0x790/0x7b0/0x7f0 and the 0x68-byte contract slot array at comp+0x4dc (count +0x6f0). Best hook to inspect or rewrite pending/decided driver contracts when a My Team save loads. CORRECTION(V8992): Loader confirmed: pending list at +0x790, lastSeasonsSignings +0x7f0, decided +0x7b0, slot count +0x6f0 with 0x68-byte entries. Offset +0x7d0 does not appear anywhere in the function, so the four-list claim is only three proven."
+ },
+ "signature": {
+  "id": "career.load_driver_contracts_component",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 01 00 00 C5 F9 7F BC 24 F0 00 00 00 C5 F8 29 B4 24 E0 00 00 00 4C 89 44 24 40",
+  "match": "0x140da6700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140da6700",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_DriverContractsComponent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x140da6700",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140da6700.c;xref:0x145692348;str:\"pendingDriverContracts\";str:\"decidedDriverContracts\";str:\"lastSeasonsSignings\";str:\"driver_slots\"",
+   "notes": "V8992 Loader confirmed: pending list at +0x790, lastSeasonsSignings +0x7f0, decided +0x7b0, slot count +0x6f0 with 0x68-byte entries. Offset +0x7d0 does not appear anywhere in the function, so the four-list claim is only three proven."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140da6700",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140da6700.c;str:\"pendingDriverContracts\"",
+   "notes": "V9548 Loader confirmed with +0x790/+0x7b0/+0x7f0 and slot count +0x6f0; +0x7d0 and slot array +0x4dc do not appear in this function."
+  }
+ ],
+ "proofs": []
+}

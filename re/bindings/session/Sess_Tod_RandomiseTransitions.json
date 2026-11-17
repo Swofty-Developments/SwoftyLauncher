@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Tod_RandomiseTransitions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14461ea90",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-WEATHER_LOGIC;decomp:re/decomp/14461ea90.c;xref:0x1552606d7,0x155260803",
+  "notes": "Log channel WEATHER_LOGIC: 'TimeOfDaySystem::generateRandomStartDelayAndDurationVariations Assigning random duration to %u transition(s)...'"
+ },
+ "signature": {
+  "id": "session.time_of_day_randomise_transitions",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 78 29 AC 24 F0 01 00 00",
+  "match": "0x14461ea90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14461ea90",
+  "kind": "func_start",
+  "names": [
+   "Sess_Tod_RandomiseTransitions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb5-verify",
+   "kind": "func",
+   "item": "Sess_Tod_RandomiseTransitions",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14461ea90.c;xref:0x1552606d7,0x155260803",
+   "notes": "V1984 lea 0x14461eb79 -> generateRandomStartDelay... string"
+  }
+ ],
+ "proofs": []
+}

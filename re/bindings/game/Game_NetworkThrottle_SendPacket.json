@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkThrottle_SendPacket",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144070f00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name sendPacket (class from the log channel); log channel NETWORK-THROTTLE: '%s: failed to send packet, error %s, data(%02x.%02x.%02x.%02x...) size(%d bytes) connectionId(%d).'"
+ },
+ "signature": {
+  "id": "game.network_throttle_send_packet",
+  "section": ".xtls",
+  "pattern": "55 41 57 41 56 41 55 41 54 56 57 53 48 83 EC 28 48 8D 6C 24 20 48 89 CE",
+  "match": "0x144070f00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144070f00",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkThrottle_SendPacket"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144070f00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144070f00.c;xref:0x144065b36",
+   "notes": "V6502 size=1931; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

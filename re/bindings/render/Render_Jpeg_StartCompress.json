@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Jpeg_StartCompress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449d463c",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1449d463c.c;xref:0x14379cf7e",
+  "notes": "libjpeg jpeg_start_compress(cinfo, write_all_tables): state check 100, optional table suppress reset, dest init (vcall +0x20/+0x10), master prep, next_scanline (+0x144) = 0, state 0x65/0x66. Caller Game_ThumbnailSystem_RequestAndWriteScreenshot."
+ },
+ "signature": {
+  "id": "render.jpeg_start_compress",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 57 48 83 EC 20 83 79 24 64 40 8A",
+  "match": "0x1449d463c",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449d463c",
+  "kind": "func_start",
+  "names": [
+   "Render_Jpeg_StartCompress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1449d463c",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449d463c.c;xref:0x14379cf7e",
+   "notes": "V7710 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

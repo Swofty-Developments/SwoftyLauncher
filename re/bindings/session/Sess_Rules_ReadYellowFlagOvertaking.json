@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_ReadYellowFlagOvertaking",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435b9a70",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435b9a70.c;xref:0x14584d4c0",
+  "notes": "rules.flags.overtaking_under_yellow_flag.<no_safety_car|full_safety_car|virtual_safety_car|formation_lap_safety_car>."
+ },
+ "signature": {
+  "id": "session.rules_read_yellow_flag_overtaking",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC C0 00 00 00 48 BF BB 3B ED 78 B0 2D CE DC",
+  "match": "0x1435b9a70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435b9a70",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_ReadYellowFlagOvertaking"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-b",
+   "kind": "func",
+   "item": "Sess_Rules_ReadYellowFlagOvertaking",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435b9a70.c;xref:0x1435b9a70",
+   "notes": "V1826 4 type names match"
+  }
+ ],
+ "proofs": []
+}

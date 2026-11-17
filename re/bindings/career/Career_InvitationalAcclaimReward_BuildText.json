@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_InvitationalAcclaimReward_BuildText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14177f880",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/14177f880.c;xref:0x14177f548",
+  "notes": "myteam-g1: Builds lng_invitational_driver_acclaim_reward text for invitational event rewards."
+ },
+ "signature": {
+  "id": "career.invitational_acclaim_reward_build_text",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 30 04 00 00 80 B9 CB 04 00 00 00",
+  "match": "0x14177f880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14177f880",
+  "kind": "func_start",
+  "names": [
+   "Career_InvitationalAcclaimReward_BuildText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14177f880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14177f880.c;xref:0x14177f548",
+   "notes": "V9784 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Game_Load_TrackDatabaseFull",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e4c640",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Load_TrackDatabaseFull(void *records_vec, void *db, void *a3, void *a4, void *a5)",
+  "evidence": "decomp:re/decomp/142e4c640.c;xref:0x142e5b8fe;kb:subsystems/tracks.md#stat-ids",
+  "notes": "was Game_Read_ERSSettingsConfig (named from 3 of its many DB keys; renamed 2026-11-14 to the name signature game.read_ers_settings_config already lists). The tracks table loader (log 'TrackManager' 'Adding track with fileName [%s]'): only caller Sess_Load_TrackDatabase 0x142e58f20 (call 0x142e5b8fe, rcx = TrackDataSystem+0x20 from lea 0x142e5b8e5). Walks tracks.Track rows, reads statId (low byte -> record +0x01), instanceName (-> record +0xd0 char *), fileName, baseTrack, trackMirrored, is_reverse_track, is_short_version, track_resource, numberOfCorners, proportion_around_track_considered_race_start, track_title / track_select_title, TrackFuelSettings, ERSSettings.deployFactor/harvestFactor/hotlapFactor, builds a local 0xd08 TrackDataRecord and stores it with Trk_TrackData_AddRecord 0x142e57740 (call 0x142e55dfb). 5th argument: the caller stores [rsp+0x20] = [rsp+0x110] (0x142e5b8f1) and the body reads it at 0x142e4c950 (mov rdx,[rsp+0x3cd0]); proto fixed per V10370. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_ers_settings_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 3C 00 00",
+  "match": "0x142e4c640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e4c640",
+  "kind": "func_start",
+  "names": [
+   "Game_Load_TrackDatabaseFull"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e4c640",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e4c640.c;xref:0x142e5b8fe",
+   "notes": "V5490 7437-line track database loader (tracks table: fileName, gp_long_name, weather, aero_bias, crowd colours, TrackManager Adding track); ERSSettings keys are only part; better Game_Load_TrackDatabase"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142e4c640",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e4c640.c;xref:0x142e5b8fe",
+   "notes": "V6904 7437 decomp lines, strings match current name"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142e4c640",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142e4c640-0x142e5773e;xref:0x142e5b8fe",
+   "notes": "V10370 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Role and rename agree: tracks.Track loader (strings statId, instanceName, fileName, baseTrack, trackMirrored, is_reverse_track, is_short_version, track_resource, numberOfCorners, proportion_around_track_considered_race_start, ERSSettings.deploy/harvest/hotlapFactor, TrackFuelSettings, ~90 keys), log TrackManager / Adding track with fileName [%s] (0x142e55dd0) then call 0x142e57740 at 0x142e55dfb with rcx=[rsp+0x670] (arg1) and rdx=rsi=rsp+0x700 = the local record ([rsp+0x700]=1, [rsp+0x701]=statId low byte at 0x142e53c3f/0x142e53c4d). Only caller 0x142e5b8fe in 0x142e58f20, rcx = lea [rdi+0x20] (0x142e5b8e5). Many fields read, so Game_Load_TrackDatabaseFull fits. DIFFERENCE: proto arity. The caller also stores a 5th argument ([rsp+0x20] = [rsp+0x110], 0x142e5b8f1) and the body reads it at 0x142e4c950 (mov rdx,[rsp+0x3cd0] = frame 0x3c68 + 8 pushes + ret + 0x20). Proto lists 4 args; needs a 5th (void *a5)."
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142e4c640",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142e4c640-0x142e5773e;xref:0x142e5b8fe",
+   "notes": "V10532 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Re-check of V10370: proto now has 5 args (records_vec, db, a3, a4, a5), matching caller store [rsp+0x20] at 0x142e5b8f1 and body read 0x142e4c950; rcx = TrackDataSystem+0x20 (lea 0x142e5b8e5). Fixed."
+  }
+ ],
+ "proofs": []
+}

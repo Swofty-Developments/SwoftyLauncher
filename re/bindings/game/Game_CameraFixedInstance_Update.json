@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CameraFixedInstance_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140208810",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=CameraFixedInstance::update; log channel WARN: 'CameraFixedInstance::update failed to find scene %s - please report nicely to JohnS'"
+ },
+ "signature": {
+  "id": "game.camera_fixed_instance_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 78 29 8C 24 F0 01 00 00 C5 78 29 84 24 E0 01 00 00 C5 F8 29 BC 24 D0 01 00 00 C5 F8 29 B4 24 C0 01 00 00 80 79 38 00",
+  "match": "0x140208810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140208810",
+  "kind": "func_start",
+  "names": [
+   "Game_CameraFixedInstance_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x140208810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140208810.c",
+   "notes": "V4054 CameraFixedInstance::update + WARN failed to find scene string confirmed; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

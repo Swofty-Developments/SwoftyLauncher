@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Renderer_WaitRenderSignal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b86e00",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b86e00.c;xref:0x143b799b7,0x143b79acd",
+  "notes": "Waits for the render job signal (Ne_JobSignal_WaitWithTimeout) after kicking device vcall +0x18 at renderer+0x2230, with TLS-guarded static init; loops until done. Callers Ne_Gfx2Renderer_RenderFrame and 0x143b87480. Hypothesis."
+ },
+ "signature": {
+  "id": "render.gfx2_renderer_wait_render_signal",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 49 89 D6 48 89 CE 48 8B",
+  "match": "0x143b86e00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b86e00",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Renderer_WaitRenderSignal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143b86e00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b86e00.c;xref:0x143b799b7",
+   "notes": "V7789 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

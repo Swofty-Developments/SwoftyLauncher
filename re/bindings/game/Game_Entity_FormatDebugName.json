@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Entity_FormatDebugName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430674a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430674a0.c;xref:0x140fdb872",
+  "notes": "Formats an entity id for logs: 'entity%003u', 'null-%u', '[presence(%s), hash(%llu)]' depending on flag bits 0x10000000/0x30000000. Callers Game_CareerOnlineManager_AddPendingPlayerDesc and Game_CareerOnlineManagerComponent_UpdateEntrantsWithSubstitutes (not graphics)."
+ },
+ "signature": {
+  "id": "game.entity_format_debug_name",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC 10 01 00 00 44 8B 49 48 41 F7 C1 00",
+  "match": "0x1430674a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430674a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Entity_FormatDebugName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1430674a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430674a0.c;xref:0x140fdb872",
+   "notes": "V7572 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

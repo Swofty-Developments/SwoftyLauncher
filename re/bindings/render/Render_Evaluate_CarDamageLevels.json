@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Evaluate_CarDamageLevels",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f17170",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f17170.c",
+  "notes": "damage level per part group for the renderer (cases 0..10: wheels, front wing, sidepods/mirrors, floor/bargeboards, rear wing = mean of rearwing_bl/br/top, diffuser)."
+ },
+ "signature": {
+  "id": "render.evaluate_car_damage_levels",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 C5 F8 29 74 24 20 41 80 F8 0A",
+  "match": "0x142f17170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f17170",
+  "kind": "func_start",
+  "names": [
+   "Render_Evaluate_CarDamageLevels"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f17170",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f17170.c;xref:0x142694ce7",
+   "notes": "V5589 verified switch 0..10, rear wing mean of bl/br/third part; wheel/front cases not individually decoded"
+  }
+ ],
+ "proofs": []
+}

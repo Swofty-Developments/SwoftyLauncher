@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneCustomObject_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14288d8f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14288d8f0.c;xref:0x1457a8f60",
+  "notes": "Custom object asset state machine (vtable slot 0x1457a8f60): startSpawning/finishSpawning/startDespawning/finishDespawning/rebuildObject. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2961)"
+ },
+ "signature": {
+  "id": "game.frontend_scene_custom_object_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 48 89 CF 48",
+  "match": "0x14288d8f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14288d8f0",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneCustomObject_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_FrontendSceneCustomObject_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14288d8f0.c;xref:0x1457a8f60",
+   "notes": "V2961 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

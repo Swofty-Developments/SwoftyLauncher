@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Bind_TopLevelFacilityHeader",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144251f40",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Bind(void *vm, void *a, void *src, void *dst)",
+  "evidence": "decomp:re/decomp/144251f40.c;xref:0x141a591f2;xref:0x141c45b62;xref:0x141c71732",
+  "notes": "myteam-g2: Populates the top-level facility header nodes (offsets 0x20..0x98 = bool/handles) with Vm_Set_Bool; calls FUN_144251a30/14433d0d0. UI only."
+ },
+ "signature": {
+  "id": "ui.bind_top_level_facility_header",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 4D 89 CE 49 89 D4 48 89 CE",
+  "match": "0x144251f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144251f40",
+  "kind": "func_start",
+  "names": [
+   "Ui_Bind_TopLevelFacilityHeader"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x144251f40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144251f40.c;xref:0x141a591f2",
+   "notes": "V10352 Strings screen_group, headers, left/right_tooltip_visible; header node setup."
+  }
+ ],
+ "proofs": []
+}

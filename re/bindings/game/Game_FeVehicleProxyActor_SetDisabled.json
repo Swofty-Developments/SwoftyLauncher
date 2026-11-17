@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FeVehicleProxyActor_SetDisabled",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403c37a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name setDisabled (class from the log channel); log channel FeVehicleProxyActor: 'setDisabled %s %s'"
+ },
+ "signature": {
+  "id": "game.fe_vehicle_proxy_actor_set_disabled",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 0A 01 00 00",
+  "match": "0x1403c37a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403c37a0",
+  "kind": "func_start",
+  "names": [
+   "Game_FeVehicleProxyActor_SetDisabled"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403c37a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403c37a0.c",
+   "notes": "V4650 string/behaviour in decomp matches name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

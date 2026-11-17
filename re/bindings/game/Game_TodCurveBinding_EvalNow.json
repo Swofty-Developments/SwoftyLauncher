@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TodCurveBinding_EvalNow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14029c310",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "float(TodCurveBinding*)",
+  "evidence": "decomp:re/decomp/14029c310.c;decomp:re/decomp/14029c310.c;xref:0x14013663f,0x140361329,0x140ad31d4,0x141059ced,0x14479608d",
+  "notes": "current value of a TimeOfDay curve binding: binding+0 == 0 -> constant +0x10; otherwise (under owner+0x268 lock) resolves the curve (0x14029c3f0, cached by owner+0x270 version) and samples it (0x14029c560) at the owner's day fraction (mode +0x28 == 1: owner+0x90; else (owner+0x68 + owner+0x70) * owner+0x80 / max(owner+0x84, 0.01), x24 when owner+0x22). 77 callers; ws+0x3f0a38 (track wetness) and the rain intensity bindings go through it. A WRAP filtered by binding address overrides one weather value. (vmknolle wet-track)  | engine-re 2026-11-14 (L2-ready): binding = TodCurveBinding, binding.owner = TimeOfDayClock (0x288 records at TimeOfDaySystem+0x2c8): no curve -> constant +0x10; else under the clock lock +0x268: x = mode 1 ? clock+0x90 : clamp01((clock.time_a + time_b) * time_scale / max(clock.length, 0.01)), x *= 24 when clock+0x22, sample 0x14029c560. 109 call sites.  raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.tod_curve_binding_eval_now",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 C5 F8 29 74 24 20 48 89 CF 48 83 39 00 74 37 BE 68 02",
+  "match": "0x14029c310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14029c310",
+  "kind": "func_start",
+  "names": [
+   "Game_TodCurveBinding_EvalNow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14029c310",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14029c310.c",
+   "notes": "V4483 Mechanism matches (const vs curve sample, lock, mode, x24); caller count off: ~108 rel32 call refs not 77; vtable/indirect not checked"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "wx-verify",
+   "kind": "func",
+   "item": "0x14029c310",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14029c310-0x14029c3ee;xref:0x14479608d,0x14013663f",
+   "notes": "V9442 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans). 109 call/jmp sites by my rel32 scan (row text says 77 and later 109; 109 is right). [b+0]==0 or resolve 0x14029c3f0 failing -> constant b+0x10. Under lock clock+0x268 (0x1449e2298/0x1449e22bc): mode b+0x28==1 -> clock+0x90, else clamp01((clock+0x68 + clock+0x70)*clock+0x80 / max(clock+0x84, 0.01)), x24.0 when clock+0x22 (0x14547b600 = 24.0), sample 0x14029c560. Proto float(binding*) matches."
+  }
+ ],
+ "proofs": []
+}

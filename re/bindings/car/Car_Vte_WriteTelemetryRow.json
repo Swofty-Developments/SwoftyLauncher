@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Vte_WriteTelemetryRow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144739180",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144739180.c",
+  "notes": "VTESystem (vtable 0x145c03550 slot 4) row writer for telemetry_data.csv: Time, CarId, DriverId, TeamId, laps, position, lap time, pace, position XYZ, tyre compound/age/deg, pit/DRS/ERS flags, track/weather state, temps, speed, steering, throttle, g-forces, engine power, MGU-K power, brake balance, ride heights, per-wheel slip angle/slip ratio/lateral force/longitudinal force (RL,RR,FL,FR), front wing, gap, wake % CLF/CLR/CD. Wheels: car (+0x20 of VTE) -> SuspensionSystem +0x580 -> wheels +0x70 RL, +0x78 RR, +0x80 FL, +0x88 FR; per wheel +0x3b0 slip angle, +0x3b4 slip ratio, +0x3c0 lateral force, +0x3c4 longitudinal force (order from the CSV header)."
+ },
+ "signature": {
+  "id": "car.vte_write_telemetry_row",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 03 00 00 C5 78 29 BC 24 80 03 00 00 C5 78 29 B4 24 70 03 00 00 C5 78 29 AC 24 60 03 00 00 C5 78 29 A4 24 50 03 00 00 C5 78 29 9C 24 40 03 00 00 C5 78 29 94 24 30 03 00 00 C5 78 29 8C 24 20 03 00 00 C5 78 29 84 24 10 03 00 00 C5 F8 29 BC 24 00 03 00 00 C5 F8 29 B4 24 F0 02 00 00 80 B9 80 D4 00 00 00",
+  "match": "0x144739180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144739180",
+  "kind": "func_start",
+  "names": [
+   "Car_Vte_WriteTelemetryRow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x144739180",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144739180.c",
+   "notes": "V6625 vtable 0x145c03550 slot 4 = 0x144739180 verified; header and printf row match; wheels [car+0x20]->+0x580->+0x70/78/80/88 (RL RR FL FR), +0x3b0 slip angle,+0x3b4 slip ratio,+0x3c0 lat,+0x3c4 long; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

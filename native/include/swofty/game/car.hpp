@@ -453,6 +453,7 @@ static_assert(offsetof(CarTurbo, car) == 0x8);
 static_assert(offsetof(CarTurbo, max_boost) == 0x2d8);
 
 inline constexpr address<"Car_Assets_CreateSystemForPerformanceMode"> Car_Assets_CreateSystemForPerformanceMode{}; // L3 stable
+inline constexpr address<"Car_BrakeEcu_ApplyBias"> Car_BrakeEcu_ApplyBias{}; // L2 experimental
 inline constexpr address<"Car_Build_VtfComponents"> Car_Build_VtfComponents{}; // L2 experimental
 inline constexpr address<"Car_Chassis_Build"> Car_Chassis_Build{}; // L3 stable
 using Car_Create_DetachablePart_t = void *(void *part_manager, void **cb, uint32_t *name_id, int32_t *params, float k);
@@ -465,17 +466,21 @@ inline constexpr address<"Car_Deformation_ReleaseParticles"> Car_Deformation_Rel
 inline constexpr address<"Car_Deformation_ReservePool"> Car_Deformation_ReservePool{}; // L2 experimental
 using Car_DetachablePart_Update_t = bool(void *part, float dt);
 inline constexpr fn<"Car_DetachablePart_Update", Car_DetachablePart_Update_t> Car_DetachablePart_Update{}; // L2 experimental
+inline constexpr address<"Car_Differential_Reset_Thunk"> Car_Differential_Reset_Thunk{}; // L2 experimental
 inline constexpr address<"Car_Engine_ComputeDerived_Thunk"> Car_Engine_ComputeDerived_Thunk{}; // L2 experimental
 using Car_FrontWing_Init_t = void(void *front_wing, char reset);
 inline constexpr fn<"Car_FrontWing_Init", Car_FrontWing_Init_t> Car_FrontWing_Init{}; // L2 experimental, game::FrontWing
 inline constexpr address<"Car_FrontWing_OnCollision"> Car_FrontWing_OnCollision{}; // L2 experimental
+inline constexpr address<"Car_FuelEcu_Reset_Thunk"> Car_FuelEcu_Reset_Thunk{}; // L2 experimental
 inline constexpr address<"Car_FuelEcu_SetMode_Thunk"> Car_FuelEcu_SetMode_Thunk{}; // L2 experimental
+inline constexpr address<"Car_FuelTank_StepBurn"> Car_FuelTank_StepBurn{}; // L2 experimental
 inline constexpr address<"Car_Load_Vtf"> Car_Load_Vtf{}; // L2 experimental
 inline constexpr address<"Car_Model_BindCockpitNodes"> Car_Model_BindCockpitNodes{}; // L2 experimental
 inline constexpr address<"Car_Physics_PostVehicleUpdate"> Car_Physics_PostVehicleUpdate{}; // L2 experimental
 using Car_PitStop_ApplyTyreAndWingVisuals_t = void(void *car_visual, float a2, bool a3);
 inline constexpr fn<"Car_PitStop_ApplyTyreAndWingVisuals", Car_PitStop_ApplyTyreAndWingVisuals_t> Car_PitStop_ApplyTyreAndWingVisuals{}; // L2 experimental
 inline constexpr address<"Car_Powertrain_Step"> Car_Powertrain_Step{}; // L2 experimental
+inline constexpr address<"Car_Read_Differential_Thunk"> Car_Read_Differential_Thunk{}; // L2 experimental
 inline constexpr address<"Car_Read_Engine"> Car_Read_Engine{}; // L2 experimental
 inline constexpr address<"Car_Read_F1Aero"> Car_Read_F1Aero{}; // L2 experimental
 inline constexpr address<"Car_Read_F1Assists"> Car_Read_F1Assists{}; // L2 experimental
@@ -497,12 +502,14 @@ inline constexpr address<"Car_Tuning_SetFinalDrive"> Car_Tuning_SetFinalDrive{};
 inline constexpr address<"Car_TyreSystem_PitstopComplete"> Car_TyreSystem_PitstopComplete{}; // L2 experimental
 using Car_Tyre_CheckCompoundClassRule_t = bool(const void *set);
 inline constexpr fn<"Car_Tyre_CheckCompoundClassRule", Car_Tyre_CheckCompoundClassRule_t> Car_Tyre_CheckCompoundClassRule{}; // L2 experimental
+inline constexpr address<"Car_Tyre_ComputeGripMultiplier"> Car_Tyre_ComputeGripMultiplier{}; // L2 experimental
 inline constexpr address<"Car_Tyre_GripScale"> Car_Tyre_GripScale{}; // L2 experimental
 using Car_Tyre_IsCompoundAllowed_t = bool(const void *set);
 inline constexpr fn<"Car_Tyre_IsCompoundAllowed", Car_Tyre_IsCompoundAllowed_t> Car_Tyre_IsCompoundAllowed{}; // L2 experimental
 inline constexpr address<"Car_Tyre_MagicFormula"> Car_Tyre_MagicFormula{}; // L2 experimental
 using Car_Tyre_SetWearFactor_t = void(void *tyre_component, bool apply_set, uint16_t force);
 inline constexpr fn<"Car_Tyre_SetWearFactor", Car_Tyre_SetWearFactor_t> Car_Tyre_SetWearFactor{}; // L2 experimental
+inline constexpr address<"Car_Tyre_Step"> Car_Tyre_Step{}; // L2 experimental
 inline constexpr address<"Car_Tyre_UpdateWear"> Car_Tyre_UpdateWear{}; // L2 experimental
 inline constexpr address<"Car_TyresPitstopComplete_ForCarPair"> Car_TyresPitstopComplete_ForCarPair{}; // L2 experimental
 inline constexpr address<"Car_Tyres_ApplyStateToCarPair"> Car_Tyres_ApplyStateToCarPair{}; // L2 experimental
@@ -516,6 +523,8 @@ inline constexpr address<"Car_Write_Engine"> Car_Write_Engine{}; // L2 experimen
 inline constexpr address<"Car_Write_FuelTank"> Car_Write_FuelTank{}; // L2 experimental
 inline constexpr address<"Car_Write_GearBox"> Car_Write_GearBox{}; // L2 experimental
 inline constexpr address<"Car_Write_Turbo"> Car_Write_Turbo{}; // L2 experimental
+inline constexpr data<"g_Car_FfbForceWetMultiple", float> g_Car_FfbForceWetMultiple{}; // L2 experimental
+inline constexpr data<"g_Car_FfbFrictionWetMultiple", float> g_Car_FfbFrictionWetMultiple{}; // L2 experimental
 inline constexpr site<"site_Car_AeroStoreRearDownforce"> site_Car_AeroStoreRearDownforce{}; // L2 experimental
 inline constexpr site<"site_Car_AeroStoreTotalDrag"> site_Car_AeroStoreTotalDrag{}; // L2 experimental
 inline constexpr site<"site_Car_AeroStoreTotalLift"> site_Car_AeroStoreTotalLift{}; // L2 experimental

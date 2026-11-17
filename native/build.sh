@@ -25,8 +25,7 @@ DIST=dist${VARIANT:+-$VARIANT}
 OUT=build${VARIANT:+/$VARIANT}
 
 SDK=../packages/sdk/include
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
-command -v taskset >/dev/null || PIN=()
+. tools/pin.sh
 mkdir -p build "$OUT"
 rm -rf "$DIST"
 mkdir -p "$DIST/swofty/addons/core"
@@ -57,7 +56,7 @@ EOF
 python3 tools/build_graph.py --builddir "$OUT" --out "$OUT/build.ninja" --sdk "$SDK" \
     --cc "zig cc -target x86_64-windows-gnu" --cxx "zig c++ -target x86_64-windows-gnu -std=c++23" \
     "${DEFS[@]/#/--define=}" --game-include "${GAME_INCLUDE:-}"
-"${PIN[@]}" ninja -f "$OUT/build.ninja" ${NINJA_JOBS:+-j "$NINJA_JOBS"}
+"${PIN[@]}" ninja -f "$OUT/build.ninja" -j "${NINJA_JOBS:-$SWOFTY_JOBS}"
 
 cp "$OUT/version.dll" "$DIST/version.dll"
 cp "$OUT/swofty_core.dll" "$DIST/swofty/addons/core/swofty_core.dll"

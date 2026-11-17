@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqRender_ResolveServices",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14199cc00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14199cc00.c;xref:0x1422be89d,0x14232ac2f",
+  "notes": "Called from Career_TeamHqAdvanceVM_Initialise and 0x14232aa50: resolves service keys 0x146080b30 -> this+0x38 and 0x146080ad0 -> this+0x40 from registry param_3, gets UI data nodes 0x146063100 / 0x14605b2e8 -> +0x48/+0x50, then sets ThumbnailSystem ([this+0x38]+0x20) reason 0 bit. Returns 0. Addon: pattern to look up the ThumbnailSystem service. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3203)"
+ },
+ "signature": {
+  "id": "career.team_hq_render_resolve_services",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 54 24 28 4C 89 C1 E8 ?? ?? ?? ?? 48 C1 E0 04 48 03 47 18 48 3B 47 20 0F 84 ?? ?? ?? ?? 48 8B 40 08 48 89 46 38 48 85 C0 0F 84 ?? ?? ?? ?? 48 8D 05",
+  "match": "0x14199cc00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14199cc00",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqRender_ResolveServices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Career_TeamHqRender_ResolveServices",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/4199cc00.c;xref:None",
+   "notes": "V3203 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

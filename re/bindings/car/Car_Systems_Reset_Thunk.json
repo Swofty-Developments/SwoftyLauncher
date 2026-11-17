@@ -1,0 +1,64 @@
+{
+ "schema": 1,
+ "name": "Car_Systems_Reset_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447426c0",
+  "level": "L3",
+  "subsystem": "car",
+  "proto": "void(void *loader, uint32_t arg)",
+  "evidence": "decomp:re/decomp/1447426c0.c;decomp:re/decomp/1555bdf80.c;decomp:re/decomp/14f824410.c;xref:0x142f44d09,0x14f824536;trace:T120/2026-10-28-gp:81;trace:T120/2026-10-28-gp:125",
+  "notes": "thunk=0x1555bdf80. loader = CarLive+0x4a0 {+8 vehicle_asset, +0x10 systems container}. Body re-runs Car_Assets_CreateSystemForPerformanceMode(vehicle_asset, systems) (every VTF section re-read into the existing systems), clears the 0x28-stride vector at loader+0x20..+0x28 and walks the systems again. Called by Car_Reset_VehicleSystems 0x142f44c30 per vehicle id (never for 0xff) and per car by the all-vehicles reset 0x14f824410 (via jmp 0x142f445d0) at 0x14f824536 (corrected per V1270) Runtime 2026-10-28 (T120): reached from both callers, 0x142f44d09 (per vehicle) and 0x14f824536 (all vehicles)."
+ },
+ "signature": {
+  "id": "car.systems_reset_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? A5 0F 8B ?? ?? ?? ?? E9",
+  "match": "0x1447426c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447426c0",
+  "kind": "func_start",
+  "names": [
+   "Car_Systems_Reset_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "std-cars-live",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/hooks/car_live.cpp"
+  ],
+  "func_start": "0x1555bdf80"
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v1",
+   "kind": "func",
+   "item": "Car_Systems_Reset_Thunk",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1447426c0.c;decomp:re/decomp/1555bdf80.c;decomp:re/decomp/14f824410.c;xref:0x142f44d09,0x14f824536",
+   "notes": "V1270 Body role right (jmp 0x1555bdf80: CreateSystemForPerformanceMode([l+8],[l+0x10]), vt[0](e,0) over the 0x28-stride vector at +0x20..+0x28 then end=begin, then system vt+0x30(arg) and vt+0x18 over all systems). Wrong detail: '(0xff = all)': Car_Reset_VehicleSystems never calls it for 0xff; the all-vehicles reset is the .data1 function 0x14f824410 (via jmp 0x142f445d0) which calls this thunk per car at 0x14f824536, a caller missing from the row."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "carlive-fv-b",
+   "kind": "sig",
+   "item": "car.systems_reset_thunk",
+   "claimed": "-",
+   "verdict": "agree",
+   "evidence": "pat:sigcheck-hits-1;xref:0x1447426c0,0x1555bdf80,0x142f44d08,0x1555bdf96",
+   "notes": "V2421 sigcheck OK hits=1 match=0x1447426c0 target=same; bytes at 0x1447426c0 are E9 jmp 0x1555bdf80 (5-byte thunk), kind func_start and func_start 0x1555bdf80 are the jmp body; body calls CreateSystemForPerformanceMode([rcx+8],[rcx+0x10]) then resets loader entries and systems = Car_Systems_Reset; sole caller 0x142f44d08 passes car+0x4a0. Trailing pattern bytes lie past the thunk (neighbouring bytes), unique but not part of the function."
+  }
+ ],
+ "proofs": []
+}

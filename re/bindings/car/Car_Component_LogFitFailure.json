@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Component_LogFitFailure",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144662060",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-VEHICLE_COMPONENT",
+  "notes": "named from its log messages (channel VEHICLE_COMPONENT): '- | FAILED component name: %s, part: %s, model: %s, proxy %s'"
+ },
+ "signature": {
+  "id": "car.component_log_fit_failure",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 48 89 CF 48 8B 41 10",
+  "match": "0x144662060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144662060",
+  "kind": "func_start",
+  "names": [
+   "Car_Component_LogFitFailure"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144662060",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144662060.c;xref:0x14465422f",
+   "notes": "V6735 0xfc3 body builds part proxies (?model/?render, loosepart, nightshadows, mirror generators), failure log is one branch; called from Car_Create_DetachablePart. Better: Car_Component_CreateFitProxy"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x144662060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144662060.c;xref:0x14465422f",
+   "notes": "V7248 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

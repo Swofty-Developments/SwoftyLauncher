@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Handle_HideRnDPanel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422d5e50",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Handle_HideRnDPanel(void * self,void * a2)",
+  "evidence": "decomp:re/decomp/1422d5e50.c;xref:0x1422cf0c6;xref:0x1422d61b3",
+  "notes": "myteam-g1: Handles hide_rnd_panel."
+ },
+ "signature": {
+  "id": "career.handle_hide_rn_dpanel",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 48 8B 42 18",
+  "match": "0x1422d5e50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422d5e50",
+  "kind": "func_start",
+  "names": [
+   "Career_Handle_HideRnDPanel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422d5e50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422d5e50.c;xref:0x1422cf0c6",
+   "notes": "V10090 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

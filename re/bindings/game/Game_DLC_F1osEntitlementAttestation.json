@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DLC_F1osEntitlementAttestation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14078f9c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-DLC",
+  "notes": "named from its log messages (channel DLC): 'F1OS entitlement attestation requested.'"
+ },
+ "signature": {
+  "id": "game.dlc_f1os_entitlement_attestation",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 0C 00 00 C5 F8 29 B4 24 00 0C 00 00 48 89 CF B1 01",
+  "match": "0x14078f9c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14078f9c0",
+  "kind": "func_start",
+  "names": [
+   "Game_DLC_F1osEntitlementAttestation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x14078f9c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14078f9c0.c",
+   "notes": "V4287 log/string match decomp"
+  }
+ ],
+ "proofs": []
+}

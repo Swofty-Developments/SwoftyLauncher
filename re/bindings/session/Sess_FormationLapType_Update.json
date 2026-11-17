@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_FormationLapType_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d60950",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d60950.c;doc:re/db/subsystems/session.md;xref:0x1457df258",
+  "notes": "warmup-static (agent warmup, unverified): SessionStateFormationLapType onUpdate (vt 0x1457df210; init 0x142d60790 stores FLL at st+0xdb0): routes [0x146cb2288] (run the formation lap) only if A && !FLL+0x42, else [0x146cb228c]"
+ },
+ "signature": {
+  "id": "session.formation_lap_type_update",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D6 48 8B B9 B0 0D 00 00 48 89 F9 E8 ?? ?? ?? ?? 89 C3 48 89 F9 E8 ?? ?? ?? ?? 08",
+  "match": "0x142d60950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d60950",
+  "kind": "func_start",
+  "names": [
+   "Sess_FormationLapType_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-b",
+   "kind": "func",
+   "item": "Sess_FormationLapType_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d60950.c;xref:0x1457df258",
+   "notes": "V1863 slot9; 2288 only if (A||B)&&!+0x42&&A else 228c; init stores +0xdb0 (via thunk 14e97dc90)"
+  }
+ ],
+ "proofs": []
+}

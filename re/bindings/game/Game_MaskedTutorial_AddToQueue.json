@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MaskedTutorial_AddToQueue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e689c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-ONBOARDING",
+  "notes": "named from its log messages (channel ONBOARDING): 'Masked Tutorial System: Tutorial Added to Queue'"
+ },
+ "signature": {
+  "id": "game.masked_tutorial_add_to_queue",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 08 00 00 80 79 33 00",
+  "match": "0x142e689c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e689c0",
+  "kind": "func_start",
+  "names": [
+   "Game_MaskedTutorial_AddToQueue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e689c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e689c0.c;xref:0x14199fe49",
+   "notes": "V5508 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

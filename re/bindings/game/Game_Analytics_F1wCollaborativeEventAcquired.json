@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_F1wCollaborativeEventAcquired",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14075b850",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-TELEMETRY",
+  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: f1w collaborative event acquired'"
+ },
+ "signature": {
+  "id": "game.analytics_f1w_collaborative_event_acquired",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 70 48 89 D3",
+  "match": "0x14075b850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14075b850",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_F1wCollaborativeEventAcquired"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x14075b850",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14075b850.c",
+   "notes": "V4267 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

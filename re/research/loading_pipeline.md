@@ -124,10 +124,10 @@ late (about 16 ms per step at 60 fps). The QPC timers are wall-clock.
 
 ### 1.3 The title screen and what `title_skip.cpp` does
 
-`FeFlow_StateIntro_OnUpdate` 0x1436da4d0 (slot 9 of `vt_Sess_Intro` 0x14585bff0) is the title's flow state. Round 3 moved its
-row, signature (`fe_flow.state_intro_on_update`, the same pattern `title_skip.cpp` uses) and verify row (V1486, ts-v1, agree)
-out of the shared tables into `re/bindings/fe_flow/FeFlow_StateIntro_OnUpdate.json` with `binding.py unfold`, and added a
-second proof on the KB exe (load-game: one scan match at 0x1436da4d0, sigcheck passed). It stays L1 and not exported until its
+`FeFlow_StateIntro_OnUpdate` 0x1436da4d0 (slot 9 of `vt_Sess_Intro` 0x14585bff0) is the title's flow state. Its row,
+signature (`fe_flow.state_intro_on_update`, the same pattern `title_skip.cpp` uses) and verify row (V1486, ts-v1, agree) are
+the record `re/bindings/fe_flow/FeFlow_StateIntro_OnUpdate.json` (the bindings lane's import), with a second proof on the
+KB exe from this lane (`binding.py verify --by load-game`: one scan match at 0x1436da4d0, sigcheck passed). It stays L1 and not exported until its
 subsystem owner raises it with L2 evidence (`binding.py status`). From the record and `native/src/core/testing/title_skip.cpp`:
 
 1. It stays (`g_Game_FlowLinkStay`) until the title's sync point (state+0xcd0, `Vm_SyncPoint_IsComplete` 0x1442626c0) has
@@ -346,7 +346,7 @@ Ranked by likely seconds saved per load, then by safety. "Saved" is an upper bou
 ## 3. The game setting override table
 
 Code: `native/src/core/loading/game_settings.cpp` and `game_settings_logic.hpp`, registered as the core set `loading` in
-`native/src/core/guards/registry.cpp`; host test `native/test/game_settings_test.cpp` (Unit `game_settings` in
+`native/src/core/runtime/loader/core_sets.cpp`; host test `native/test/game_settings_test.cpp` (Unit `game_settings` in
 `native/test/manifest.py`, `native/test/run_tests.sh game_settings`).
 
 - One row per forced setting: `{feature, setting name, type, forced value bits, effect}`. Types: bool, u32, i32, float. One

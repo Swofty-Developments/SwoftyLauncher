@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_VideoManager_PlayIntervalFrames",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f90e70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f90e70.c;xref:0x143f93901,0x1444b3bdc",
+  "notes": "play interval video '%s' with start/end frame (u32 param_3/param_4). Callers dispatcher 0x143f93901, 0x1444b3bdc, 0x1546096d9. Returns 0x16 if handle unknown."
+ },
+ "signature": {
+  "id": "core.video_manager_play_interval_frames",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE 48 8B 89 A0 00 00",
+  "match": "0x143f90e70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f90e70",
+  "kind": "func_start",
+  "names": [
+   "Ne_VideoManager_PlayIntervalFrames"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_VideoManager_PlayIntervalFrames",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f90e70.c;xref:0x143f93901",
+   "notes": "V2555 u32 param_3/param_4 frames"
+  }
+ ],
+ "proofs": []
+}

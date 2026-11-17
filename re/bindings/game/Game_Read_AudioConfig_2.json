@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_AudioConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443e6db0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: audio.addDoppler, audio.event.%02I64u, audio.param.%02I64u, audio.playImmediately, audio.playOutsideTrackOnly'"
+ },
+ "signature": {
+  "id": "game.read_audio_config_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D7 48 89 4C 24 20",
+  "match": "0x1443e6db0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443e6db0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_AudioConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1443e6db0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1443e6db0.c",
+   "notes": "V6597 better name Game_Audio_ResolveEventParamKeys: no Ne_Get_Setting: entity component FindComponent + Wwise id from string for audio.event/param keys (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1443e6db0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443e6db0.c",
+   "notes": "V7209 name fits, facts hold; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

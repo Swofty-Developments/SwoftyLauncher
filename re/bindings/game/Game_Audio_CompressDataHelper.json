@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Audio_CompressDataHelper",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14403bbb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name compressDataHelper (class from the log channel); log channel AUDIO: 'compressDataHelper: compressing %d bytes failed, error '%s''"
+ },
+ "signature": {
+  "id": "game.audio_compress_data_helper",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F9 29 B4 24 80 00 00 00 48 89 CE C5 FB 10 02",
+  "match": "0x14403bbb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14403bbb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Audio_CompressDataHelper"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14403bbb0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14403bbb0.c;xref:0x14e6f2e63",
+   "notes": "V6421 partial: better name Game_NetworkVoice_UpdateLocalMicrophone; per-frame mic buffering, noise gate, createCompressedVoicePacket, end-of-play packet"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14403bbb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14403bbb0.c;xref:0x14e6f2e63",
+   "notes": "V7094 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

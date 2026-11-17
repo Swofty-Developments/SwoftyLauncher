@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLapHandler_CancelTasks",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f90ee0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f90ee0.c;xref:0x142f90d20,0x142f91dd0",
+  "notes": "GhostLapHandler::cancelTasks (GHOSTLAP-TRACE, handler id [this+0x58]+0x28). Clears remote-task queue [this+0x520]+0x30..+0x50 and cancels leaderboard tasks whose id matches this+0x1d0 in the online task list ([this+0x10]+0x478)+0x40; also logs deallocateSessionRivalStorage. Addon: abort pending ghost download/upload before swapping ghosts. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2361)"
+ },
+ "signature": {
+  "id": "game.ghost_lap_handler_cancel_tasks",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 CE 80 3D",
+  "match": "0x142f90ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f90ee0",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLapHandler_CancelTasks"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d3-verify",
+   "kind": "func",
+   "item": "Game_GhostLapHandler_CancelTasks",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f90ee0.c;xref:0x142f90d20",
+   "notes": "V2361 queue [this+0x520]+0x30 cleared; task ids this+0x1d0/+0x1d4 matched against list ([this+0x10]+0x478)+0x40; result blocks reset (0x3a-0x4e idx)."
+  }
+ ],
+ "proofs": []
+}

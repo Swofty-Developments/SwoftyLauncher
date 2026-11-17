@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_BindingTable_AddOrUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a3f2a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a3f2a0.c;xref:0x140393eb0",
+  "notes": "(table, uint category, value, int id, uint prio): updates the entry with id in category list (0x143a3e9c0, flag prio>0x4f) or allocates a 0x30 entry from allocator g 0x14627ceb8 and appends it (grow 0x143a3eec0). Caller: Car_Model_BindCockpitNodes."
+ },
+ "signature": {
+  "id": "core.binding_table_add_or_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 44 89 CD 4C 89 C3 89 D7",
+  "match": "0x143a3f2a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a3f2a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_BindingTable_AddOrUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143a3f2a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143a3f2a0.c;xref:0x1401f2c6a",
+   "notes": "V3619 body matches; also called by Game_Actor_CreateAnimationBinding (claim lists only Car_Model_BindCockpitNodes)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143a3f2a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143a3f2a0.c;xref:0x1401f2c6a",
+   "notes": "V4008 body matches; also called by Game_Actor_CreateAnimationBinding (claim lists only Car_Model_BindCockpitNodes)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143a3f2a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a3f2a0.c;xref:0x1401f2c6a,0x1401f2c8d",
+   "notes": "V4070 caller Car_Model_BindCockpitNodes confirmed (16 sites)"
+  }
+ ],
+ "proofs": []
+}

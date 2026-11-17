@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Surface_LookupVehicleEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437ce000",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1437ce000.c;xref:0x142f47f10",
+  "notes": "(ctx, out[2], carIdx) If ctx+4000 (0xfa0) is null: lazily seeds an MT19937 (624 words at 0x146108c00, seed from QPC ms) and returns a random pair; else name [[ctx+0xf70]+0xb0+car*8]+0xa18 is matched (strcmp) against list +0x270..+0x278 (stride 0x18) returning the pair, default +0x258/+0x260. Called from Car_Surface_SampleAt. Hypothesis."
+ },
+ "signature": {
+  "id": "car.surface_lookup_vehicle_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 D6 48 8B 99 A0 0F",
+  "match": "0x1437ce000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437ce000",
+  "kind": "func_start",
+  "names": [
+   "Car_Surface_LookupVehicleEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x1437ce000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1437ce000.c;xref:0x142f47f10",
+   "notes": "V3836 ctx+4000 null seeds an MT19937 (0x270 words) from QPC and returns random pair; else [[ctx+0xf70]+0xb0+car*8]+0xa18 matched against list +0x270 stride 0x18, default +0x258/+0x260."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CameraCollection_FindByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144538e90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144538e90.c;xref:0x1406ae77c",
+  "notes": "CameraCollection::find(name): case-insensitive djb2 hash (seed 0x1505, h*33+lower(c)) of name, walks camera sets this+0x10..+0x18, per set entries +0x40..+0x48 stride 0x28 {camera, def, ...}, match def+0x70 == hash, returns camera or 0 + CAMERA warning Could not find camera (%s). Caller 0x1406ae650 passes [X+0x38]+0x70 and spectator_default_1; 12+ callers. Addon: KEY lookup to get any named TV/replay/onboard camera object (then Game_Camera_SetForViewport). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2345)"
+ },
+ "signature": {
+  "id": "game.camera_collection_find_by_name",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 4C 8B 41 10 48 8B 49 18",
+  "match": "0x144538e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144538e90",
+  "kind": "func_start",
+  "names": [
+   "Game_CameraCollection_FindByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d2-verify",
+   "kind": "func",
+   "item": "Game_CameraCollection_FindByName",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144538e90.c;xref:0x1406ae77c",
+   "notes": "V2345 djb2 seed 0x1505 *33 lowercase, sets this+0x10..0x18, entries +0x40..+0x48 stride 0x28, def+0x70 hash; callers e.g. 0x1406ae77c,0x140b7a79c"
+  }
+ ],
+ "proofs": []
+}

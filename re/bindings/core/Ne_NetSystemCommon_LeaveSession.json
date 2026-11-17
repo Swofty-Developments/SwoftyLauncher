@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSystemCommon_LeaveSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144062c40",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSystemCommon_LeaveSession;xref:0x144062d1e;decomp:re/decomp/144062c40.c",
+  "notes": "cxx=neon::NeNetSystemCommon::leaveSession; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_system_common_leave_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC E8 04 00 00 C5 F8 29 B4 24 D0 04 00 00 44 89 CD 44",
+  "match": "0x144062c40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144062c40",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSystemCommon_LeaveSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetSystemCommon_LeaveSession",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144062c40.c;xref:0x140bb4c98",
+   "notes": "V2071 own pretty string; host/client/disconnecting branches, changeState Disconnecting inlined"
+  }
+ ],
+ "proofs": []
+}

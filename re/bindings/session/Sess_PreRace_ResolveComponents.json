@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_PreRace_ResolveComponents",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d80950",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "int Sess_PreRace_ResolveComponents(void *state, void *serviceProvider, void *componentMap)",
+  "evidence": "str:s_cfg_EnvArtModeEnabled;decomp:re/decomp/142d80950.c;xref:0x142d80c02,0x142d80c03,0x1457e1290",
+  "notes": "Slot 6 of vt_Sess_PreRace 0x1457e1260 (pointer 0x1457e1290), cxx=SessionStatePreRace; dependency resolution before the state runs. Calls 0x142c758a0, gets the config provider 0x146cb8278 into +0xdb0, then map components 0x146079b08 +0xdc0, 0x146064d70 +0xdc8, 0x146cc3ac0 +0xdd0, 0x146cc3ae0 +0xdd8, 0x146044990 +0xde0, 0x146080d28 +0xde8, 0x146100c68 +0xdf0, 0x146100c88 +0xdf8 and getters 0x1406ad0f0 +0xe00, 0x140606720 +0xe08, 0x14079ecf0 +0xe18, optional 0x1406b2680 +0xe10 (when [0x14618caa0]+0x161); missing -> errno 0x16, return 0x16. Reads EnvArtMode.enabled (Ne_Get_SettingBool 0x143a43b90, node [[+0xdb0]+0x18], default 0): when ON returns 0 without resolving the cutscene manager; when OFF resolves type 0x1460447a8 into +0xdb8 (the cutscene manager source used by Sess_PreRace_PlayGridPlayerShotCutscene) and returns 0. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "session.pre_race_resolve_components",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C6 48 89 D3 48 89 CF E8 ?? ?? ?? ?? 48 8B 03 48 8D 15 ?? ?? ?? ?? 48 89 D9 FF 50 28 48 89 87 B0 0D 00 00",
+  "match": "0x142d80950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d80950",
+  "kind": "func_start",
+  "names": [
+   "Sess_PreRace_ResolveComponents"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-2",
+   "kind": "func",
+   "item": "0x142d80950",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d80950.c;xref:0x1457e1290;str:0x1457e78fc",
+   "notes": "V9347 Vtable slot of 'SessionStatePreRace' (string before vtable; neighbours Sess_PreRaceGridState_OnEnter, Sess_PreRace_Update): resolves registry + component-map systems into +0xdb0..+0xe18, returns 0x16 on a missing one, reads bool 'EnvArtMode.enabled' (default false) and only when off resolves one more system into +0xdb8; returns 0. 3 args match."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_CECreate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430b2190",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name CECreate (class from the log channel); log channel NETWORK: '%s failed : Banned'"
+ },
+ "signature": {
+  "id": "game.network_ce_create",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 44 89 C3 48 89 D7 48 89 CE E8",
+  "match": "0x1430b2190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430b2190",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_CECreate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430b2190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b2190.c;xref:0x14258d47c",
+   "notes": "V5348 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

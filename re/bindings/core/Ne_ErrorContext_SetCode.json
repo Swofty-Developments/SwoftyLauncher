@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_ErrorContext_SetCode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f9e160",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f9e160.c;xref:0x140380883",
+  "notes": "Sets error code param_2 on all thread-local error context nodes (TLS list 0x1461089d0) and records the caller via RtlCaptureStackBackTrace into a 5-entry ring (0x146107830). Returns code. 15 callers."
+ },
+ "signature": {
+  "id": "core.error_context_set_code",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 89 D6 8B 05 ?? ?? ?? ?? 8B",
+  "match": "0x143f9e160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f9e160",
+  "kind": "func_start",
+  "names": [
+   "Ne_ErrorContext_SetCode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x143f9e160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f9e160.c;xref:0x140380883",
+   "notes": "V7593 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

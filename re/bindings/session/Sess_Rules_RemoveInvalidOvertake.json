@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_RemoveInvalidOvertake",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435990e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-RULES;decomp:re/decomp/1435990e0.c;xref:0x14584bf18",
+  "notes": "Log channel RULES: 'Removing invalid overtake' | 'Ignoring Car To Car Collision Illegal Overtake Between Vehicles: %d and %d because they are different performance classes'"
+ },
+ "signature": {
+  "id": "session.rules_remove_invalid_overtake",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 79 29 A4 24 30 01 00 00",
+  "match": "0x1435990e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435990e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_RemoveInvalidOvertake"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_Rules_RemoveInvalidOvertake",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435990e0.c;xref:0x14565ce2f",
+   "notes": "V1857 RULES strings 'Removing invalid overtake' and different performance classes message present"
+  }
+ ],
+ "proofs": []
+}

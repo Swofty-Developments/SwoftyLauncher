@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContracts_BuildDriverContractQuote",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140dbb690",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *DriverContractsMyTeamComponent_BuildQuote(void *comp, void *out16, uint32_t driver_key)",
+  "evidence": "decomp:re/decomp/140dbb690.c;xref:0x140c4aeab;xref:0x140c52f26;xref:0x140d8b831",
+  "notes": "myteam-g2: Looks up driver_key in comp+0x490 (stride 0x68 entries, count comp+0x6f0), else asks the career root (comp+0x278 vtbl+0x90) and builds a contract quote struct (calls Career_DriverContracts_CalcBaseValues). Used by auction/renewal/market affordability checks; hook to change what a driver asks for."
+ },
+ "signature": {
+  "id": "career.driver_contracts_build_driver_contract_quote",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC A0 00 00 00 44 89 C3 48 89 D6",
+  "match": "0x140dbb690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140dbb690",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContracts_BuildDriverContractQuote"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140dbb690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140dbb690.c",
+   "notes": "V9553 Looks up driver in list at +0x490 (0x68 stride, count +0x6f0), else vcall +0x90 on root and builds quote via 140db9300 (KB CalcBaseValues)."
+  }
+ ],
+ "proofs": []
+}

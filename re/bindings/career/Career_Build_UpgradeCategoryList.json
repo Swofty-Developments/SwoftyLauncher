@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_UpgradeCategoryList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14295c0a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Build_UpgradeCategoryList(void * self)",
+  "evidence": "decomp:re/decomp/14295c0a0.c;xref:0x14d6057e8",
+  "notes": "myteam-g1: Builds upgrade_categories list per car part, via Career_Query_EnabledUpgrades."
+ },
+ "signature": {
+  "id": "career.build_upgrade_category_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 B8 18 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 89 CE",
+  "match": "0x14295c0a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14295c0a0",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_UpgradeCategoryList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x14295c0a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14295c0a0.c",
+   "notes": "V10237 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

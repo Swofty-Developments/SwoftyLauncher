@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Sess_RaceStrategy_GetCurrentTyreSet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143699ef0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143699ef0.c;xref:0x14369deb4",
+  "notes": "Returns the car's current tyre set record: car tyre data +0x9c68 (sets, stride 0x28) indexed by +0x9c98-0x6c (set idx) and -0x68 (sub idx, stride 0x6c); fallback +0x9c98-0x70. (1 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.race_strategy_get_current_tyre_set",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 89 C5 48 8B 46 10 48 8B 80 A8",
+  "match": "0x14369deb4",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143699ef0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RaceStrategy_GetCurrentTyreSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x143699ef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143699ef0.c;xref:0x14369deb4",
+   "notes": "V7367 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}

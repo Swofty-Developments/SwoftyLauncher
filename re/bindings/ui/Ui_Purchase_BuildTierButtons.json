@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Purchase_BuildTierButtons",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ba7c70",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void Ui_Purchase_BuildTierButtons(void *popup, void *item)",
+  "evidence": "decomp:re/decomp/142ba7c70.c;xref:0x140a87006;xref:0x140a870b6;xref:0x140a87166",
+  "notes": "myteam-g2: Builds the purchase tier buttons for a shop item (892 lines of hash/array code); called on purchase popup init and refresh. UI only."
+ },
+ "signature": {
+  "id": "ui.purchase_build_tier_buttons",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 0C 00 00 C5 F8 29 B4 24 10 0C 00 00",
+  "match": "0x142ba7c70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ba7c70",
+  "kind": "func_start",
+  "names": [
+   "Ui_Purchase_BuildTierButtons"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142ba7c70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142ba7c70.c",
+   "notes": "V10247 No strings; calls time/localtime and several unknown helpers; purchase tier buttons cannot be confirmed from the code."
+  }
+ ],
+ "proofs": []
+}

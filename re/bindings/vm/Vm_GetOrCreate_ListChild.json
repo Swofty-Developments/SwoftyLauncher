@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Vm_GetOrCreate_ListChild",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442b30e0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void **Vm_GetOrCreate_ListChild(void *registry, void *parent, const uint32_t *hash)",
+  "evidence": "decomp:re/decomp/1442b30e0.c;decomp:re/decomp/14083c270.c;decomp:re/decomp/141a6e980.c;xref:0x141a6edab,0x1407ccb41,0x1407d2c11,0x14173e42b+288",
+  "notes": "List-node twin of Vm_GetOrCreate_ChildNode (0x1442b2bf0), same shape: registry, the parent node's handle payload (node+8) and a pointer to the child's djb2 name hash; returns a pointer to the child's node handle. It looks the hash up through 0x14429db40 when the parent is an object node (parent vt+0x28) or 0x1442b1130 when it is a list (vt+0x10). An existing child is returned only when it is a list node (child vt+0x10); when a child with that hash exists but is not a list, it returns k_Vm_EmptyNodeHandle and creates nothing. Only when no child has the hash does it create one with 0x1442b2f70(*registry, parent, hash, 0, -1), which allocates 0x80 bytes, installs the list-node vtable 0x145a6ff90 (vt+0x10 true, vt+0x28 false) and appends (0x1442b32b0, list parent) or inserts by key (0x1442b3770, object parent). Vm_GetOrCreate_ChildNode instead keeps object children (vt+0x28) and creates with 0x1442b2a50. FeTile_Build_EraTiles creates the view model's tiles list (hash 0x106d8746 = djb2 tiles) with it at 0x141a6edab under the root node *(vm+0x10)+8 and assigns the handle into vm+0x698 (0x1442bc170 at 0x141a6ee10); FeTile_Add_EraTile then adds the select_tile_<n> object children with Vm_GetOrCreate_ChildNode, and the F1TS tile_spawner (dataContext @tiles) spawns one box per child. 292 rel32 callers in .xtls, plus 13 calls and 2 jmps from .data1 (V1012)."
+ },
+ "signature": {
+  "id": "vm.get_or_create_list_child",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 48 89 CB 48 8B 0A 48 85 C9 74 20",
+  "match": "0x1442b30e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442b30e0",
+  "kind": "func_start",
+  "names": [
+   "Vm_GetOrCreate_ListChild"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-23",
+    "by": "era-picker",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/era_picker.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-23",
+   "verifier": "verify-era-picker",
+   "kind": "func",
+   "item": "Vm_GetOrCreate_ListChild",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442b30e0.c;decomp:re/decomp/1442b2bf0.c;decomp:re/decomp/1442b2f70.c;decomp:re/decomp/141a6e980.c;xref:0x141a6edab,0x141a6ee10,0x1407ccb41,0x1407d2c11,0x14173e42b;sig:vm.get_or_create_list_child",
+   "notes": "V1012 I checked a fresh decompile and the disassembly of 0x1442b30e0 (.pdata 0x1442b30e0-0x1442b3189). Args: rcx is the registry, and only *registry is used, passed as the allocator to 0x1442b2f70. rdx points to the parent's handle payload (*rdx = parent node). r8 points to a uint32 hash, dereferenced once (mov ebp,[r8]). It returns a pointer to a node handle, so the 3 args and the void** return match. Logic: a null parent gives k_Vm_EmptyNodeHandle (0x146ca0e90). If parent vt+0x28 is true (object), it looks the child up with 0x14429db40(rdx=parent, r8d=hash). Else if parent vt+0x10 is true (list), it uses 0x1442b1130. Otherwise it gets the empty handle. If the looked-up handle's node is null, it creates one with 0x1442b2f70(*registry, parent, hash, 0, -1). If a child exists, it returns it only when child vt+0x10 is true (cmovne); otherwise it returns k_Vm_EmptyNodeHandle. Wording correction: an existing child that is not a list node is not replaced. The function returns the empty handle for it, and 0x1442b2f70 runs only when no child with that hash exists. 0x1442b2f70 allocates 0x80 bytes through the allocator's vt+0x18 and installs vtable 0x145a6ff90. That vtable's vt+0x10 is mov al,1 and its vt+0x28 is xor eax,eax, so it creates list nodes. It then appends with 0x1442b32b0 (list parent) or does a keyed insert with 0x1442b3770 (object parent), and returns node+8. 0x1442b2bf0 is the same template but keeps vt+0x28 children and creates through 0x1442b2a50, so 'list-node twin' holds. Call site in FeTile_Build_EraTiles: r14 = vm+0x698 (0x141a6ed3f), rdx = *(vm+0x10)+8 or the empty handle, r8 points to the 'tiles' string (0x14570bb17) during the path-character scan. The dword 0x106d8746 goes to rsp+0x60 and its address is passed in r8; I recomputed djb2('tiles') = 0x106d8746. The call is at 0x141a6edab. The result is copied into a stack handle and assigned into vm+0x698 by 0x1442bc170(r14, temp) at 0x141a6ee10, and the temp is then released through 0x1442b3d70. Callers: 292 rel32 calls in .xtls, which matches the row. There are also 13 calls and 2 jmps from .data1 that the row does not mention. sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

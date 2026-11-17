@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Result_RequestVehicleStatus_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c21610",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-SESSION-RESULT;decomp:re/decomp/142c21610.c;xref:0x142c1fb7e,0x142c20745",
+  "notes": "named from its log messages (channel SESSION-RESULT): 'Vehicle %d requested status %s.%s' sb2-verify-a: the log string is inlined in a large per-vehicle progress/lap update (setUnmodifiedProgressLap, TyreSystem warning)"
+ },
+ "signature": {
+  "id": "session.result_request_vehicle_status_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 C5 78 29 94 24 10 02 00 00 C5 78 29 8C 24 00 02 00 00 C5 78 29 84 24 F0 01 00 00 C5 F8 29 BC 24 E0 01 00 00 C5 F8 29 B4 24 D0 01 00 00 38 15",
+  "match": "0x142c21610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c21610",
+  "kind": "func_start",
+  "names": [
+   "Sess_Result_RequestVehicleStatus_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-a",
+   "kind": "func",
+   "item": "Sess_Result_RequestVehicleStatus_2",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142c21610.c;xref:0x142c1fb7e",
+   "notes": "V1882 log string present (eRetired/eActive variants) but function is a large per-vehicle progress/lap update (setUnmodifiedProgressLap, TyreSystem warning); RequestVehicleStatus is only an inlined log"
+  }
+ ],
+ "proofs": []
+}

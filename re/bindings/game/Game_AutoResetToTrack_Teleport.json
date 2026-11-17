@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_AutoResetToTrack_Teleport",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f032b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f032b0.c;xref:0x142eff7a4,0x142f003c9",
+  "notes": "AutoResetToTrackSystem: setController(vehicle, AI, RESET_TO_TRACK) and teleports the car back ('Teleporting vehicle %d. Progress when left the track was …'). L2 2026-11-14 (engine-re round 2): decomp read; 2 reference(s) (0x142eff7a4, 0x142f003c9); the body itself references 'AUTO_RESET_TO_TRACK' / 'Teleporting vehicle %d. Progress when left the track was %0.4f. Time when left is %0.4f. New pro'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.auto_reset_to_track_teleport",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC B0 00 00 00 C5 78 29 84 24 A0 00 00 00 C5 F8 29 BC 24 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 CF 0F B6 5A 10",
+  "match": "0x142f032b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f032b0",
+  "kind": "func_start",
+  "names": [
+   "Game_AutoResetToTrack_Teleport"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x142f032b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f032b0.c;xref:0x142f03332,0x142f0371b",
+   "notes": "V4166 AUTO_RESET_TO_TRACK log 'Teleporting vehicle %d. Progress when left the track was ...'; call 0x14389cc90 (thunk) with r9d=0xf at 0x142f03332 and 0x142f0371b (r8d=1); thunk body in .data1 not read; callers are vtable/data (op0d/op05 refs are false positives)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142f032b0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142f032b0-0x142f03889;xref:0x142eff7a4,0x142f003c9",
+   "notes": "V10523 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Refs lea 0x142eff7a4 / 0x142f003c9. Teleporting vehicle %d. Progress when left... log, Game_Set_VehicleController_Thunk 0x14389cc90. 2 args."
+  }
+ ],
+ "proofs": []
+}

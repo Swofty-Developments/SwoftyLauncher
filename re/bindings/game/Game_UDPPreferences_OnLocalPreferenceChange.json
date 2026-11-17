@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UDPPreferences_OnLocalPreferenceChange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143238f30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143238f30.c;xref:0x14305c2d9",
+  "notes": "UDPPreferences::onLocalPreferenceChange(value): stores the UDP telemetry preference +0x20; if active sends UDPPreferences message {grp 0x11,id 0x74: machine id, pref u32, showPlayerName byte +0x24} (reliable 1) and posts the local UDPPreferencesChanged bus msg (0x1433142f0). Addon: UDP telemetry restricted/public setting replicated to other players. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2759)"
+ },
+ "signature": {
+  "id": "game.u_d_p_preferences_on_local_preference_change",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 44 8B 49 20 41 39 D1 0F 84",
+  "match": "0x143238f30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143238f30",
+  "kind": "func_start",
+  "names": [
+   "Game_UDPPreferences_OnLocalPreferenceChange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_UDPPreferences_OnLocalPreferenceChange",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143238f30.c;xref:0x143238f30",
+   "notes": "V2759 msg {0x11,0x74} (machine id, pref +0x20, byte +0x24) rel 1 if +8!=0, then bus msg via 1433142f0 confirmed"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_PitStop_ApplyTyreAndWingVisuals",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403b77c0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void Car_PitStop_ApplyTyreAndWingVisuals(void *car_visual, float a2, bool a3)",
+  "evidence": "decomp:re/decomp/1403b77c0.c;xref:0x1403b7574,0x143251e85",
+  "notes": "(carVisual, float in xmm1, bool in r8b; per V10457): swaps tyre models (Game_TyreSystem_SwapTyreModel) and positions replacement front-wing props 'Replacement_FW_Prop1/2' via node matrices; may start pit-stop sequence (Game_PitStopInstance_PlaySequence). Callers: Car_Tyres_ApplyStateToCarPair, Game_Network_ApplyInitialPitAndGridState. L2 2026-11-14 (engine-re round 2): decomp read; 2 reference(s) (0x1403b7574, 0x143251e85); the body itself references 'Replacement_FW_Prop1' / 'Replacement_FW_Prop2'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "car.pit_stop_apply_tyre_and_wing_visuals",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 50 01 00 00 C5 F8",
+  "match": "0x1403b77c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403b77c0",
+  "kind": "func_start",
+  "names": [
+   "Car_PitStop_ApplyTyreAndWingVisuals"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x1403b77c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403b77c0.c;xref:0x1403b7574,0x143251e85",
+   "notes": "V3527 strings Replacement_FW_Prop1/2 present; calls FUN_1403b8400 (Game_TyreSystem_SwapTyreModel) and FUN_1403b36a0 (Game_PitStopInstance_PlaySequence); both named callers seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1403b77c0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1403b77c0-0x1403b8171;xref:0x1403b7574,0x143251e85",
+   "notes": "V10457 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 2 callers (Car_Tyres_ApplyStateToCarPair 0x1403b7574, Game_Network_ApplyInitialPitAndGridState 0x143251e85). Calls Game_TyreSystem_SwapTyreModel 0x1403b8400, Replacement_FW_Prop1/2, playSequence 0x1403b36a0 (0x1403b8151). Correction: arg2 is a float in xmm1 (callers vmovaps xmm1; body vmovaps xmm6,xmm1), arg3 byte r8; so (carVisual, float, bool)."
+  }
+ ],
+ "proofs": []
+}

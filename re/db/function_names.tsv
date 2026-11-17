@@ -4957,6 +4957,7 @@ addr	name
 0x142d56fa0	Sess_InGame_OnStateExitHideHud
 0x142d573e0	Sess_Complete_Update
 0x142d57d10	Career_Decide_ContractNegotiation
+0x142d58600	Sess_DelayOnLoadingScreen_ParseParams
 0x142d586c0	Sess_DelayOnLoadingScreen_Update
 0x142d59300	Sess_Doughnut_SetWinnerText
 0x142d59920	Sess_DoughnutSequence_Enter
@@ -7773,6 +7774,7 @@ addr	name
 0x143a42f10	Ne_Map_FindOrDefaultWithErrorContext
 0x143a43240	Ne_Get_SettingU32
 0x143a43b90	Ne_Get_SettingBool
+0x143a43ea0	Ne_Get_SettingDouble
 0x143a44090	Ne_Config_GetFloatOrDefault
 0x143a44280	Ne_Config_GetStringWithDefault
 0x143a44700	Ne_Config_GetString

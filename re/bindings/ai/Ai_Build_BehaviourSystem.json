@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Build_BehaviourSystem",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1405f11b0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Build_BehaviourSystem(void *ai_ctl)",
+  "evidence": "decomp:re/decomp/1405f11b0.c;xref:0x140604742",
+  "notes": "Builds the per-car AI behaviour system. In S=[ctl+0x10] pushes BehaviourRace (0x208 B, vt 0x145634ae0), BehaviourRetire (0x145634bd0), BehaviourRecovery (0x145634b60), BehaviourDoughnutCelebration (0x145634a70) into S+0x10, each initialised from DB table \"ai.behaviour_system.behaviours\" (row = name, vtbl +0x30). BehaviourRace list A +0x1d0: 18 evaluators (vt 0x145634fc0..0x1456387b0, slot 2 calls 0x14065e650); list B +0x1f0: 11 entries vt 0x145635080..0x145635260 (0x145635080 slot 1 = Ai_Apply_TetherSpeedCap 0x140669790). Then ~30 BehaviourTest* objects into [S+0x30] slots (e.g. Alongside 0x145634cb0, Block 0x145634de0, OffsetVariation, HumanAttemptingDivebomb, CedePosition, SpaceSeeking via 0x140655580 at +0x100). Ends by setting game-mode flags on [ctl+0x20]/[ctl+0x28]. (corrected 2026-11-14: was \"fixed list of speed modifiers\"; vtables 0x145635000/030/060 are not stored; list-B adds are unconditional, per-tick use not shown here.) (renamed 2026-11-14 from Ai_Build_SpeedModifiers: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.build_speed_modifiers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 04 00 00 C5 F8 29 BC 24 60 04 00 00 C5 F8 29 B4 24 50 04 00 00 48 89 CE 48 8B 49 40",
+  "match": "0x1405f11b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1405f11b0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Build_BehaviourSystem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1405f11b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1405f11b0.c;xref:0x604742",
+   "notes": "V4677 builds a long list (~29+ vtables, 0x145634fc0..0x145635260 etc), not 7; claimed 0x145635000/030/060 are wrong (code has 0x145635020/050/080); 0x145635080,b0,e0,110 right; name ok"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1405f11b0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1405f11b0-0x1405f5aa1;xref:0x140604742",
+   "notes": "V10540 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only call 0x140604742 (in 0x140604280); 1 arg. Builds behaviours (lea vt 0x145634ae0 BehaviourRace at 0x1405f127d, lists +0x1d0/+0x1f0 init), string ai.behaviour_system..., calls 0x140655580 at 0x1405f4d6a and stores the result at [[r13+0x30]+0x100] (0x1405f4d73). Rename from Ai_Build_SpeedModifiers fits."
+  }
+ ],
+ "proofs": []
+}

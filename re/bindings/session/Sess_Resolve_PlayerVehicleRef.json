@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Resolve_PlayerVehicleRef",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416cc480",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1416cc480.c;xref:0x141844cc6,0x14186e489",
+  "notes": "Returns the player's vehicle ref (0x3fff0000 = none): first from the active game-mode component (session +0x88->+0x260, component list +0x238..+0x240) via 0x141443700, else from entity param_3 component 0x146064e78 field +0x1b8. Callers Sess_Loader_StartFrontendAssetLoad, Game_SessionResults_PopulateTable, Game_ResultsContainerVM_OnActivate, Career_StateTeamHq_OnStateEnter."
+ },
+ "signature": {
+  "id": "session.resolve_player_vehicle_ref",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 CE C7 01 00 00 FF",
+  "match": "0x1416cc480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416cc480",
+  "kind": "func_start",
+  "names": [
+   "Sess_Resolve_PlayerVehicleRef"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x1416cc480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416cc480.c;xref:0x142d47a8f,0x141844cc6,0x141d33edf,0x1436ffbd7",
+   "notes": "V3373 init 0x3fff0000; session+0x88->+0x260 component, list +0x238..+0x240 with call 0x141443700; else entity param_3 comp 0x146064e78 field +0x1b8; 4 named callers confirmed"
+  }
+ ],
+ "proofs": []
+}

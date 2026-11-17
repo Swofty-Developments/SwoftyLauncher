@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_ShowMaxUpgradeLevelWarning",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b91ab0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/141b91ab0.c;xref:0x145733f30",
+  "notes": "myteam-g1: UI binding code; lng_warn_card_max_upgrade_level_reached. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.f1_world_show_max_upgrade_level_warning",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 48 89 CE 48 8B 79 08",
+  "match": "0x141b91ab0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b91ab0",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_ShowMaxUpgradeLevelWarning"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141b91ab0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141b91ab0.c;xref:0x145733f30",
+   "notes": "V9953 Handler that shows the max-upgrade-level warning: lng_warn_card_max_upgrade_level_reached, calls ClearBoundFlag, MaxUpgradeLevelWarning update, pill backgrounds."
+  }
+ ],
+ "proofs": []
+}

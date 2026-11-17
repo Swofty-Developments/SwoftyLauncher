@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamActivities_OnActivityPressed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14231c710",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-MY_TEAM_ACTIVITIES",
+  "notes": "named from its log messages (channel MY_TEAM_ACTIVITIES): 'Function: activityPressed'"
+ },
+ "signature": {
+  "id": "game.my_team_activities_on_activity_pressed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D6 48 89 CB 48 8D 81 A8 08 00 00",
+  "match": "0x14231c710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14231c710",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamActivities_OnActivityPressed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x14231c710",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14231c710.c;xref:0x142319d18",
+   "notes": "V5266 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

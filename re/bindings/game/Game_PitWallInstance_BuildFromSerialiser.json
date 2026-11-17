@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PitWallInstance_BuildFromSerialiser",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403d0bd0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=PitWallInstance::buildFromSerialiser; log channel TRACE: 'RAW: PitWallInstance::buildFromSerialiser failed unable to find script %s'"
+ },
+ "signature": {
+  "id": "game.pit_wall_instance_build_from_serialiser",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 C5 78 29 84 24 40 02 00 00 C5 F8 29 BC 24 30 02 00 00 C5 F8 29 B4 24 20 02 00 00 48 8B 41 38",
+  "match": "0x1403d0bd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403d0bd0",
+  "kind": "func_start",
+  "names": [
+   "Game_PitWallInstance_BuildFromSerialiser"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403d0bd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403d0bd0.c;xref:0x3d054d",
+   "notes": "V4659 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

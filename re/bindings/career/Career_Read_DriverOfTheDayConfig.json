@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Read_DriverOfTheDayConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14112f600",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: driver_of_the_day.points_for_clean_drive, driver_of_the_day.points_for_fastest_lap, driver_of_the_day.points_per_overtake, driver_of_the_day.points_per_position_above_grid_pos'. Game DB values: points_for_clean_drive 4, points_for_fastest_lap 6, points_per_overtake 2, points_per_position_above_grid_pos 2."
+ },
+ "signature": {
+  "id": "career.read_driver_of_the_day_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 48 89 CE 8B B9 90 02 00 00",
+  "match": "0x14112f600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14112f600",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_DriverOfTheDayConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14112f600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14112f600.c",
+   "notes": "V4607 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x14112f600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14112f600.c",
+   "notes": "V9159 Reads the four driver_of_the_day.* DB keys into +0x290..+0x29c; the quoted default values were not verified."
+  }
+ ],
+ "proofs": []
+}

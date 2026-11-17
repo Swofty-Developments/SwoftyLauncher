@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Libpng_Warning",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447a0590",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447a0590.c;xref:0x142bd44a6",
+  "notes": "libpng warning callback: formats 'libpng warning: %s'. Callers 0x142bd41a0 and Game_ThumbnailSystem_RequestAndWriteScreenshot (png_warning paths)."
+ },
+ "signature": {
+  "id": "core.libpng_warning",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 D6 31 C0 48 85 C9 0F 84",
+  "match": "0x1447a0590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447a0590",
+  "kind": "func_start",
+  "names": [
+   "Ne_Libpng_Warning"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1447a0590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447a0590.c;xref:0x142bd44a6",
+   "notes": "V7703 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

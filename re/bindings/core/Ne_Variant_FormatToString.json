@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Variant_FormatToString",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1442ba0b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1442ba0b0.c;xref:0x1401a45d1",
+  "notes": "Switch on a type tag (1..9, jump table 0x145a85ce8) that formats the variant payload into a string object (uses 0x1441ee1b0). 774 bytes, 10 callers incl. Ne_String_AssignWithMode and Ne_InternedString_Manage. Hypothesis: variant/value to string conversion."
+ },
+ "signature": {
+  "id": "core.variant_format_to_string",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 68 8B 01 FF C8 83 F8 08 0F 87",
+  "match": "0x1442ba0b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1442ba0b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Variant_FormatToString"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1442ba0b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1442ba0b0.c;xref:0x1401a45d1",
+   "notes": "V8389 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

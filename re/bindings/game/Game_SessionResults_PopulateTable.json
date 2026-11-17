@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionResults_PopulateTable",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141835390",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141835390.c;xref:0x141d2ef45,0x141d3295b,0x1422a84ca",
+  "notes": "Large (6k lines) session results table builder (callers 0x141d2e620, results container 0x141d30070, Game_SessionResultsStandardViewModel_OnTabActivated): title/header_%d, p1/p2 split-screen result icons, ranked division icons, position delta up/down/same, featured_driver, lng_winner / lng_results_plus_lap(s) / lng_fastest, crossplay AI icon; requests thumbnails reason 0. Addon: where every results row string is formatted. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3201)"
+ },
+ "signature": {
+  "id": "game.session_results_populate_table",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 C8 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29 9C 24 B0 11",
+  "match": "0x141835390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141835390",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionResults_PopulateTable"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_SessionResults_PopulateTable",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/41835390.c;xref:None",
+   "notes": "V3201 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

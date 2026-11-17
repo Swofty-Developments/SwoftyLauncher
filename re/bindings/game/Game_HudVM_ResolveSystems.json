@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_HudVM_ResolveSystems",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d5d910",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_HudVM_ResolveSystems(void *self, void *registry, void *systemMap)",
+  "evidence": "str:s_cfg_DebugOSDDisplayFPSonSpeedo;decomp:re/decomp/141d5d910.c;xref:0x141d5dc26,0x141d5dc27",
+  "notes": "Vtable slot 0x88 shared by three VM vtables 0x1456f57e0, 0x1456f58a0, 0x145749360 (pointers 0x1456f5868, 0x1456f5928, 0x1457493e8), no direct calls. Init/bind step: resolves systems by key through registry vt+0x28 (keys 0x14604ec98 -> self+0x18, 0x146106aa8 -> +0x20, 0x146cb8218 -> +0x68), looks up entries in the robin-hood map r8 (Ne_RobinHoodMap_U64_FindIndex 0x14030ffd0; k_Live_PitLaneSystemKey and others -> +0x28..+0x50) and fills +0x58..+0xc0 from getters; any missing system pushes error 0x16 (Ne_ErrorTrace_PushRing 0x143919b50) and returns 0x16, else 0. Setting: object from registry key g_Game_JoinRequestOwnerKey 0x146cb8278 (that KB name looks too narrow: the object has a config node at +0x18), DebugOSD.DisplayFPSonSpeedo via Ne_Get_SettingBool, default 0, written straight to self+0xead. Class name (HUD/speedo VM) inferred from the setting and the race systems it binds. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.hud_vm_resolve_systems",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C3 48 89 D6 48 89 CF 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 F1 FF 50 28 48 89 47 18",
+  "match": "0x141d5d910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141d5d910",
+  "kind": "func_start",
+  "names": [
+   "Game_HudVM_ResolveSystems"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-2",
+   "kind": "func",
+   "item": "0x141d5d910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141d5d910.c;xref:0x1456f5868,0x1456f5928,0x1457493e8;str:0x1456f6c80",
+   "notes": "V9342 Shared base slot of three view-model vtables (race LCD / speedo screen VMs, e.g. RaceLCDScreenViewModel): resolves ~25 systems from registry (vtbl+0x28 lookups) and component map (FUN_14030ffd0 + getters), on failure returns 0x16 (EINVAL with errno trace), then reads bool 'DebugOSD.DisplayFPSonSpeedo' (default = current field +0xead) and returns 0. 'HudVM' class is plausible (in-race display VM); 3 args match."
+  }
+ ],
+ "proofs": []
+}

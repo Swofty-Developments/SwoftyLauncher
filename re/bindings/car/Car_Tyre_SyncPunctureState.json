@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_SyncPunctureState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e88840",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e88840.c;xref:0x142dfec08,0x142e92fa8",
+  "notes": "(tyreState, vehicle) For the tyre model of vehicle [+0x580]+0x70: compares the wanted punctured flag (tyreState+0x14 + idx*0xc) with the live state (+0x20 bits 1/2) and calls Car_Puncture_Add or Car_Puncture_Remove (target [[+0x10]+0xd8]+0x3f70); repeated for each wheel. Callers Sess_RedFlagStrategyCalc_Update, Game_Tyres_Deserialise, Car_Tyre_SetWearFactor."
+ },
+ "signature": {
+  "id": "car.tyre_sync_puncture_state",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 83 C6",
+  "match": "0x142e88840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e88840",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_SyncPunctureState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e88840",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e88840.c;xref:0x142dfec08,0x142e92fa8,0x142ea2a13",
+   "notes": "V3675 Per wheel (+0x70,+0x78..) compares param+0x14+idx*0xc vs +0x20 bits, calls puncture add (14464e200)/remove (14464e3a0) on [[+0x10]+0xd8]+0x3f70; callers match."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Misconduct_HandBackIllegalOvertake",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14359a640",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-Misconduct;decomp:re/decomp/14359a640.c;xref:0x140a1222c,0x14359a1bb,0x14359dd65,0x1435b4084",
+  "notes": "Log channel Misconduct: 'HandBackIllegalOvertake - Duplicate Watched Incident Ignored.'"
+ },
+ "signature": {
+  "id": "session.misconduct_hand_back_illegal_overtake",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 7C 24 60 C5 F9 29 74 24 50 48 8B 41 08",
+  "match": "0x14359a640",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14359a640",
+  "kind": "func_start",
+  "names": [
+   "Sess_Misconduct_HandBackIllegalOvertake"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-b",
+   "kind": "func",
+   "item": "Sess_Misconduct_HandBackIllegalOvertake",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14359a640.c;xref:0x14359a640",
+   "notes": "V1928 Misconduct channel + duplicate string confirmed"
+  }
+ ],
+ "proofs": []
+}

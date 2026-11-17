@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SponsorGoal_FindIntGameValue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14111a960",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=SponsorGoal::findIntGameValue; log channel SPONSORS: 'SponsorGoal::findIntGameValue has no valid condition component'"
+ },
+ "signature": {
+  "id": "game.sponsor_goal_find_int_game_value",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 8B B9 18 01 00 00",
+  "match": "0x14111a960",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14111a960",
+  "kind": "func_start",
+  "names": [
+   "Game_SponsorGoal_FindIntGameValue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14111a960",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14111a960.c;xref:0x1410f7a61",
+   "notes": "V4598 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

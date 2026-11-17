@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Input_InternActionName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a860a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a860a0.c;xref:0x14039f5ab,0x14039f5fe",
+  "notes": "Interns an input action name (param_2) in the lazily created global pool 0x14628fbe0 and stores the handle in *param_1 (0 for empty). Used with Gesture, Talk, Menu Accept. Callers: Car_Visual_UpdateRenderState, Game_TalkingPoints_UpdateBroadcastFades."
+ },
+ "signature": {
+  "id": "core.input_intern_action_name",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 C7 01 00 00 00 00 48 85 D2 74",
+  "match": "0x143a860a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a860a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Input_InternActionName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143a860a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a860a0.c;xref:0x14039f5ab",
+   "notes": "V3627 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

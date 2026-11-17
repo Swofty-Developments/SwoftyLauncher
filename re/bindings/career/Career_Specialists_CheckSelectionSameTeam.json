@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Specialists_CheckSelectionSameTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412dcbd0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t (void *spec)",
+  "evidence": "decomp:re/decomp/1412dcbd0.c;xref:0x1412de030;xref:0x1412de51e;xref:0x1412df0f7",
+  "notes": "myteam-g2: Resolves the selected specialist type name (lower-cased FNV-1a hash compared with 0x2b3b9a8f4b87e201 / 0xbc6029119599398 for the special cases) and then checks the two selected drivers: returns whether both belong to the same team (team field +0x58/+0x5a of the contracts from spec+0x270 vtbl +0x1c8). Used by the specialist set-objective/set-primary handlers (medium confidence)."
+ },
+ "signature": {
+  "id": "career.specialists_check_selection_same_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 48 83 B9 E8 03 00 00 00",
+  "match": "0x1412dcbd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412dcbd0",
+  "kind": "func_start",
+  "names": [
+   "Career_Specialists_CheckSelectionSameTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1412dcbd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412dcbd0.c;xref:0x1412de030;xref:0x1412de51e",
+   "notes": "V9710 FNV-1a lower-case hash compare and team compare of two selected drivers (+0x58/+0x5a) match."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CarDecals_AcquireDecalSetById",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14385b6a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14385b6a0.c;xref:0x1420006e6",
+  "notes": "Looks up id param_2+0xdc in the table at global 0x146080c20 (+0x128..+0x130, 16-byte {int* key, refcounted obj}); if found atomically bumps refcount (+0xc) and returns a handle built with Ne_Make_StrFromCStr + 0x1441974e0. Only caller Game_CarDecals_BuildList. Hypothesis."
+ },
+ "signature": {
+  "id": "game.car_decals_acquire_decal_set_by_id",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 8B 82 DC 00",
+  "match": "0x14385b6a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14385b6a0",
+  "kind": "func_start",
+  "names": [
+   "Game_CarDecals_AcquireDecalSetById"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x14385b6a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14385b6a0.c;xref:0x1420006e6",
+   "notes": "V7600 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

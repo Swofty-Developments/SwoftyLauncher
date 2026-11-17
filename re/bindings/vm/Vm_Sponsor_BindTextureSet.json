@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Sponsor_BindTextureSet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e33ef0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t Vm_Sponsor_BindTextureSet(void *vm, void *sponsor_card, uint64_t a3, void *a4)",
+  "evidence": "decomp:re/decomp/142e33ef0.c;xref:0x141cbee2e;xref:0x141cbf4e3;xref:0x141f067c4",
+  "notes": "myteam-g2: Fills the textures list / has_texture flags of a sponsor card from the sponsor definition (logo textures). UI view-model, 600 lines of byte-wise hash-map lookups; used by SponsorRenewalDetailsVM_Build, SponsorsVM_Refresh and Vm_SponsorContractOffer_Bind."
+ },
+ "signature": {
+  "id": "vm.sponsor_bind_texture_set",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 E8 69 00 00",
+  "match": "0x142e33ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e33ef0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Sponsor_BindTextureSet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142e33ef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e33ef0.c",
+   "notes": "V10251 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

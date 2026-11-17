@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_ApplyBlackFlag",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14356ac30",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14356ac30.c;xref:0x14356af7d",
+  "notes": "(rules, vehicle u8, force). If the car's bit is set in rules+0x1d08 (DSQ mask) and its entry flags (+0x32 & 0xa0) == 0x20: result record (rules+0x1c68 -> +0x148[id]) -> eDisqualified reason 6 (0x605) and commit. Otherwise if force or the black-flag deadline rules+0x1d10+i*4 (seconds, -1 = none) has passed: Sess_Result_RequestStatus(5, 6) + commit, deadline reset to -1; else sends the OSD black flag timer (log RULES 'sendBlackFlagTimerMessageToOSD %d %d timer', 0x142a50140 msg 0x11/0x2c). Callers Sess_Rules_DisqualifyForPenaltyPoints 0x14356b85d, 0x1505b7147. Addon: DSQ / black flag path; rules+0x1d08 is the DSQ bitmask read by every ruleset. d1-verify-b correction: reason-0x605 disqualify path only when entry+0x30 bit0 == 0; deadline/black-flag timer path is bit0 == 1; deadline array rules+0x1d10 has 2 slots (index 0/1), not per car"
+ },
+ "signature": {
+  "id": "session.rules_apply_black_flag",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 58 C5 F8 29 74 24 40 80",
+  "match": "0x14356ac30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14356ac30",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_ApplyBlackFlag"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Sess_Rules_ApplyBlackFlag",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14356ac30.c;xref:0x14356b85d",
+   "notes": "V2304 Holds: DSQ mask rules+0x1d08, flags 0x32&0xa0==0x20, 0x605 reason, RequestStatus(5,6), OSD msg 0x11/0x2c. Corrections: eDisqualified 0x605 branch only when entry+0x30 bit0==0; the deadline/black-flag-timer branch is the entry+0x30 bit0==1 branch; deadline array rules+0x1d10 has 2 slots indexed 0/1 (0/1 from a lookup), not per car i*4."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Sess_Rules_ApplyBlackFlag",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14356ac30.c;xref:0x14356b85d",
+   "notes": "V3968 Holds: DSQ mask rules+0x1d08, flags 0x32&0xa0==0x20, 0x605 reason, RequestStatus(5,6), OSD msg 0x11/0x2c. Corrections: eDisqualified 0x605 branch only when entry+0x30 bit0==0; the deadline/black-flag-timer branch is the entry+0x30 bit0==1 branch; deadline array rules+0x1d10 has 2 slots indexed 0/1 (0/1 from a lookup), not per car i*4."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x14356ac30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14356ac30.c;xref:0x14356b85d",
+   "notes": "V4184 DSQ mask rules+0x1d08 and entry flags (+0x32 & 0xa0)==0x20 -> result record rules+0x1c68->+0x148[id], status 0x605 (eDisqualified); deadline rules+0x1d10+i*4 (-1 none) -> Sess_Result_RequestStatus(5,6) + ChangeVehicleStatus; RULES log 'sendBlackFlagTimerMessageToOSD %d %d timer'; Game_Hud_QueueMessage(…,0x11,0x2c) at line 200 (inlined/tail-jumped from 0x14356b065 jmp 0x1435752b0); caller Sess_Rules_DisqualifyForPenaltyPoints"
+  }
+ ],
+ "proofs": []
+}

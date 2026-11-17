@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverProfileTabVM_OnTabActivated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c564a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141c564a0.c;xref:0x14573f008",
+  "notes": "Tab-VM slot 19 (onTabActivated) of vt 0x14573ef70: binds driver / legacy_driver / car_number / stats / in_team_career_mode / helmet_texture / show_abbreviated_name, requests thumbnails reason 0. Addon: driver profile tab data paths. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3212)"
+ },
+ "signature": {
+  "id": "game.driver_profile_tab_v_m_on_tab_activated",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 01 00 00 C5 F8 29 B4 24 D0 01 00 00 48 89 CE 0F",
+  "match": "0x141c564a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c564a0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverProfileTabVM_OnTabActivated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_DriverProfileTabVM_OnTabActivated",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/41c564a0.c;xref:None",
+   "notes": "V3212 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

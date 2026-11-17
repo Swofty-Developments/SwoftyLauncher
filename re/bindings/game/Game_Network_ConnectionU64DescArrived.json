@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_ConnectionU64DescArrived",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14409b980",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): '[TRANSPORT] connection(%d) u64[%llu] desc(%s) arrived.'"
+ },
+ "signature": {
+  "id": "game.network_connection_u64_desc_arrived",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 89 CF 4C 89 C6 89 D3",
+  "match": "0x14409b980",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14409b980",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_ConnectionU64DescArrived"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14409b980",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14409b980.c",
+   "notes": "V6533 size=247; strings, callees and callers match claim (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

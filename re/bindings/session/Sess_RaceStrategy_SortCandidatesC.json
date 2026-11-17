@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RaceStrategy_SortCandidatesC",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436bc410",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436bc410.c;xref:0x143698a33,0x14369d326,0x1436bc569",
+  "notes": "Introsort variant (third record type) used by Sess_RaceStrategy_UpdateVehicle. (4 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.race_strategy_sort_candidates_c",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 D6 48 89 CF 48 89 D0 48 29 C8 48 3D 9C 03",
+  "match": "0x1436bc410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436bc410",
+  "kind": "func_start",
+  "names": [
+   "Sess_RaceStrategy_SortCandidatesC"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1436bc410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436bc410.c;xref:0x14369d326",
+   "notes": "V6778 Introsort variant on 0x1c records keyed by flag byte; purpose unverified."
+  }
+ ],
+ "proofs": []
+}

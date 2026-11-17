@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_TerrainResource_GetMaterialResourcel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c23fd0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143c23fd0.c;xref:0x143deed81",
+  "notes": "cxx=NeTerrainResource::getMaterialResourcel; log channel ART_FAIL: '[ART ISSUE] ... NeTerrainResource::getMaterialResourcel failed to find [%s]'"
+ },
+ "signature": {
+  "id": "core.terrain_resource_get_material_resourcel",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 89 D6 48 89 CF 45 84 C0",
+  "match": "0x143c23fd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c23fd0",
+  "kind": "func_start",
+  "names": [
+   "Ne_TerrainResource_GetMaterialResourcel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_TerrainResource_GetMaterialResourcel",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c23fd0.c;xref:0x143deed81",
+   "notes": "V2048 returns material resource by index from list at +0x80 with refcount touch; ART_FAIL log when missing"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Chkstk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144c897d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144c897d0.c;xref:0x140199cd0,0x1401a5b10",
+  "notes": "MSVC __chkstk stack probe (touches guard pages down to rsp-rax). Emitted in every function with big frames."
+ },
+ "signature": {
+  "id": "core.crt_chkstk",
+  "section": ".xtls",
+  "pattern": "48 83 EC 10 4C 89 14 24 4C 89 5C 24 08 4D 33 DB",
+  "match": "0x144c897d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144c897d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Chkstk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144c897d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144c897d0.c;xref:0x14001767d",
+   "notes": "V3748 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

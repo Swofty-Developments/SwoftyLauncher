@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_RenownIncreasedPopup_SetLevelNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142099870",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *popup, int level)",
+  "evidence": "decomp:re/decomp/142099870.c;xref:0x14209636f;xref:0x142096c36;xref:0x1420972d5",
+  "notes": "myteam-g2: Sets the int VM nodes of the renown increased popup: nodes at popup+8 and +0x28 get 0, node at +0x48 gets level (Ne_Property_SetS32IfChanged, type checked). UI only."
+ },
+ "signature": {
+  "id": "vm.renown_increased_popup_set_level_nodes",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 89 54 24 2C C7 44 24 28 00 00 00 00",
+  "match": "0x142099870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142099870",
+  "kind": "func_start",
+  "names": [
+   "Vm_RenownIncreasedPopup_SetLevelNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142099870",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142099870.c;xref:0x14209636f",
+   "notes": "V10047 Three int nodes at +8,+0x28 (0) and +0x48 (level) set with type check; matches."
+  }
+ ],
+ "proofs": []
+}

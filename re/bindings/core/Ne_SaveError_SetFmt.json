@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveError_SetFmt",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436593b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436593b0.c;xref:0x1436585ac,0x14365860c",
+  "notes": "SAVE error helper, no format args: sets Ne errno = param_1 (TLS list + errno trace ring 0x146107830), logs fmt on SAVE, returns code. Callers: Ne_SaveSystem_Enumerate, Ne_SaveSystem_BuildSaveInfoList ('Remote storage file count is zero!'), SelectAndLoad/SelectAndDelete, ProcessSerialiserActions ('Failed to encrypt data!', 'Failed to generate hmac!'), save/load completion tail calls. Addon: hook to catch Steam-cloud/encrypt failures."
+ },
+ "signature": {
+  "id": "core.save_error_set_fmt",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 40 08 00 00 89 CE 48 8D 44 24 40 48 C7 44 24 30 00 08 00 00 48 89 44 24 38 C6 44 24 40 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 48 8D 4C 24",
+  "match": "0x1436593b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436593b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveError_SetFmt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveError_SetFmt",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436593b0.c;xref:0x1436593b0",
+   "notes": "V2545 param_1 = code stored to errno list and trace ring (5 entries x16 bytes), logs on SAVE"
+  }
+ ],
+ "proofs": []
+}

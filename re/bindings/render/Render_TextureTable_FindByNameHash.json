@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_TextureTable_FindByNameHash",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439fe470",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439fe470.c;xref:0x144719bd5",
+  "notes": "FNV-1a 64 hash of a C-string name (param_2, null -> 0), then probes the texture table of the renderer ([[param_1+0x20]+0x20]+0x678/0x680) and returns the matching entry. Caller Render_Skidmarks_CreateTextureSrv. Hypothesis on the table."
+ },
+ "signature": {
+  "id": "render.texture_table_find_by_name_hash",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? 48 8B 4C 24 30 48 85 C9 74 04",
+  "match": "0x144719bd5",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1439fe470",
+  "kind": "func_start",
+  "names": [
+   "Render_TextureTable_FindByNameHash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x1439fe470",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439fe470.c;xref:0x144719bd5",
+   "notes": "V8242 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

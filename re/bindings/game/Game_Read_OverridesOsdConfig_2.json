@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_OverridesOsdConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14151fcc0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.osd.practice_target_icons.ers_icon, overrides.osd.practice_target_icons.fuel_icon, overrides.osd.practice_target_icons.score_icon, overrides.osd.practice_target_icons.tyre_icon'"
+ },
+ "signature": {
+  "id": "game.read_overrides_osd_config_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 80 B9 58 04 00 00 00",
+  "match": "0x14151fcc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14151fcc0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_OverridesOsdConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x14151fcc0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14151fcc0.c",
+   "notes": "V4882 50 KB practice-target icon/VM builder (perfect/good wear, fuel, ers management strings, reset_targets), not only key reads. Better: Hud_Build_PracticeTargetIcons (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x14151fcc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14151fcc0.c",
+   "notes": "V7216 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

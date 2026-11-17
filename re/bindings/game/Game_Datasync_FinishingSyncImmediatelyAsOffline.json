@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Datasync_FinishingSyncImmediatelyAsOffline",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431041a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-DATASYNC",
+  "notes": "named from its log messages (channel DATASYNC): '[%s] Finishing sync immediately as we are offline or ignoring sync'"
+ },
+ "signature": {
+  "id": "game.datasync_finishing_sync_immediately_as_offline",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 F8 29 B4 24 D0 00 00 00 8B 41 24 FF C8",
+  "match": "0x1431041a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431041a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Datasync_FinishingSyncImmediatelyAsOffline"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x1431041a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1431041a0.c;xref:0x140fd2dee",
+   "notes": "V5740 498-line sync start: generates cookie, sends start messages as sender/receiver; offline finish is one branch. Better: Game_Datasync_StartSyncSession"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1431041a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431041a0.c;xref:0x140fd2dee",
+   "notes": "V6987 facts verified (strings, size, caller)"
+  }
+ ],
+ "proofs": []
+}

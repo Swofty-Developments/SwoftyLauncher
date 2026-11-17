@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_Create_StartEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14263e370",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14263e370.c;xref:0x14263e358",
+  "notes": "F1OS ServerMethodOperation 'StartEvent' factory create: construction is out-of-line (op ctor called first, returns {allocator, op}); this is the body called by the 0x20-byte factory wrapper at 0x14263e350 (factory slot +0x10); request args built in the out-of-line ctor/functor; then syncs spinner type op+0x1e8 from the factory (default 6) and, when the op is running and not suspended, moves the busy-spinner count [op+0x108]+0x40+type*4 to the new type (TOP_LEVEL_UI start/stopBusySpinner log) and restarts it via 0x14079c940(ctl,type,-1.0f). F1 World collectables/events/goals family. Addon: hook to read/patch StartEvent request args before onStart. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3268)"
+ },
+ "signature": {
+  "id": "game.f1os_create_start_event",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 D6 48 89 CF 4C 8D 49 50 48 8D 4C 24 30 4C 89 C2 E8 ?? ?? ?? ?? 48 8B 5C 24 38 44 8B 8B E8 01 00 00 8B 87 C8 00 00 00",
+  "match": "0x14263e370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14263e370",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_Create_StartEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1os_Create_StartEvent",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14263e370.c;xref:0x14263e370",
+   "notes": "V3268 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

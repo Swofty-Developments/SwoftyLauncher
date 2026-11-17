@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkThrottle_UpdateStats",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440762d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name updateStats (class from the log channel); log channel NETWORK-THROTTLE: '%s: max_queue_bytes: %d, max_packet_count: %d, max_large_packet_count: %d, m_largestPacketSize: %d, m_maxAllocatePerSecond: %d'"
+ },
+ "signature": {
+  "id": "game.network_throttle_update_stats",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 C5 F9 29 74 24 50",
+  "match": "0x1440762d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440762d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkThrottle_UpdateStats"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1440762d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440762d0.c;xref:0x1440761bb",
+   "notes": "V6506 size=722; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

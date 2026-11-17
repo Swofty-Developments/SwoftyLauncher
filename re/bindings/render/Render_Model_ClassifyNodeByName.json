@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Model_ClassifyNodeByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d4a730",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d4a730.c;xref:0x14069c729,0x1429ab8a0,0x14446b4b4",
+  "notes": "Classifies a model/node by name strings: SkinnedActor, wheel, LoosePart, front, nosecone, 'Layer car', 'Layer safe', TrackInformationSystem; returns layer/flag mask (e.g. 0x10000). Callers: Game_ModelProxyList_Resolve, Game_TimeAttackGates_CreateGateModel, Game_TrackInformationSystem_Update, Render_ModelComponent_Load. Addon: how models are put on car/safe render layers. Named callers: Game_ModelProxyList_Resolve, Game_TimeAttackGates_CreateGateModel, Game_TrackInformationSystem_Update, Render_ModelComponent_Load."
+ },
+ "signature": {
+  "id": "render.model_classify_node_by_name",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 4C 89 C6 48 89 CF 48 85",
+  "match": "0x143d4a730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d4a730",
+  "kind": "func_start",
+  "names": [
+   "Render_Model_ClassifyNodeByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d4a730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d4a730.c;xref:0x14069c729",
+   "notes": "V7918 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

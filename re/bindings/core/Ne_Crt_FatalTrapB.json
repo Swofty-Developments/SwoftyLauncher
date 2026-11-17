@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_FatalTrapB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145349d28",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/145349d28.c;xref:0x140189b8b,0x14018a238",
+  "notes": "CRT noreturn stub: calls 0x14534a050 and 0x145349d58 with zeros then int3. Used as the tail of many invalid-argument throw paths."
+ },
+ "signature": {
+  "id": "core.crt_fatal_trap_b",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 48 83 64 24 20 00 45 33 C9 45 33 C0 33 D2 33 C9 E8 ?? ?? ?? ?? 48 83 64",
+  "match": "0x145349d28",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145349d28",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_FatalTrapB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x145349d28",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/145349d28.c;xref:0x140189b8b",
+   "notes": "V7715 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

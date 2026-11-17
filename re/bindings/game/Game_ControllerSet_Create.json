@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_ControllerSet_Create",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438968e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CONTROLLER_SET",
+  "notes": "named from its log messages (channel CONTROLLER_SET): 'ControllerSet(%d / %s) : created%s%s.'"
+ },
+ "signature": {
+  "id": "game.controller_set_create",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 4C 24 38 4C 89 44 24 40",
+  "match": "0x1438968e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438968e0",
+  "kind": "func_start",
+  "names": [
+   "Game_ControllerSet_Create"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "re-ai",
+   "kind": "func",
+   "item": "0x1438968e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438968e0.c;xref:0x14389be42,0x14389c004",
+   "notes": "V1506 Constructor of ControllerSet (0x60 bytes): +0 allocator, +8 byte 1, +0x10 = initialMode ^ rnd, +0x18 qword (rnd low dword, second rnd high), +0x20 human controller (made when arg6 != 0: 0x40 object, vtable 0x145882170), +0x28 AI controller (always made: 0x28 object, vtable 0x145882150), +0x30 flags = 0, +0x34 vehicle byte, +0x38.. copied args. Mode = dword[+0x10] ^ dword[+0x18]: 0 HUMAN, 1 AI, anything else INVALID."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x1438968e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438968e0.c;xref:0x14389be41",
+   "notes": "V6366 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

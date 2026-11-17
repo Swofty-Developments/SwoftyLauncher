@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Read_UpgradesLostNotificationSeason",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143537e10",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "int Career_Read_UpgradesLostNotificationSeason(void * self,uint64_t a2,uint64_t a3)",
+  "evidence": "decomp:re/decomp/143537e10.c;xref:0x1412407e3",
+  "notes": "myteam-g1: Reads last_upgrades_lost_notification_season / error_department."
+ },
+ "signature": {
+  "id": "career.read_upgrades_lost_notification_season",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4C 89 44 24 48 49 89 D5",
+  "match": "0x143537e10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143537e10",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_UpgradesLostNotificationSeason"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143537e10",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143537e10.c;xref:0x1412407e3",
+   "notes": "V10297 Reader also covers error_department, watched_day/shutdown fields and last_dev_day_before_first_weekend."
+  }
+ ],
+ "proofs": []
+}

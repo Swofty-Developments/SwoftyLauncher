@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineServerLogInTask_SetFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14336b030",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14336b030.c;xref:0x14583c328",
+  "notes": "OnlineServerLogInTask override of slot 17 (base Game_F1osTask_SetFinished 0x1432c1cf0): state +0x1b8=2, applies 'Network.ForceMPMode' MP mode change (0x1430ed330), marks finished, then walks the task-system run list (+0x70..+0x78) and for each task whose vfunc +0x50 is true calls Game_F1osTasksystem_IgnoringBecauseTaskAlready 0x1432dc910 with code 5 'log_in_aborted'; clears error flag +0x48 and name/strings +0x50/+0x80. Addon: shows which queued tasks are dropped when log-in ends. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3317)"
+ },
+ "signature": {
+  "id": "game.online_server_log_in_task_set_finished",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE C6 81 B8",
+  "match": "0x14336b030",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14336b030",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineServerLogInTask_SetFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_OnlineServerLogInTask_SetFinished",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14336b030.c;xref:0x14336b030",
+   "notes": "V3317 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

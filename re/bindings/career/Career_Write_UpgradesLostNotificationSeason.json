@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Write_UpgradesLostNotificationSeason",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143537920",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "int Career_Write_UpgradesLostNotificationSeason(void * self,uint64_t *a2)",
+  "evidence": "decomp:re/decomp/143537920.c;xref:0x14123f400",
+  "notes": "myteam-g1: Writes last_upgrades_lost_notification_season."
+ },
+ "signature": {
+  "id": "career.write_upgrades_lost_notification_season",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 54 24 48 48 89 4C 24 38",
+  "match": "0x143537920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143537920",
+  "kind": "func_start",
+  "names": [
+   "Career_Write_UpgradesLostNotificationSeason"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143537920",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143537920.c;xref:0x14123f400",
+   "notes": "V10296 Also writes error_department and per-department watched_research/develop/fit days, shutdown and last_dev_day_before_first_weekend, not only last_upgrades_lost_notification_season."
+  }
+ ],
+ "proofs": []
+}

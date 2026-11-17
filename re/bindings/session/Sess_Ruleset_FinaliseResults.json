@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Ruleset_FinaliseResults",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d2ee50",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-RULESET;decomp:re/decomp/142d2ee50.c;xref:0x1457dc0c8",
+  "notes": "Log channel RULESET: 'finalised results, sorting...'"
+ },
+ "signature": {
+  "id": "session.ruleset_finalise_results",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 48 89 D7 48 89 CE 48 8B 89 00 03 00 00",
+  "match": "0x142d2ee50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d2ee50",
+  "kind": "func_start",
+  "names": [
+   "Sess_Ruleset_FinaliseResults"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-a",
+   "kind": "func",
+   "item": "Sess_Ruleset_FinaliseResults",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d2ee50.c;xref:0x142d2ee50",
+   "notes": "V1890 RULESET 'finalised results, sorting...' present; no direct caller found"
+  }
+ ],
+ "proofs": []
+}

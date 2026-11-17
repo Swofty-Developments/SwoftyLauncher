@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCarTether_UpdateVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14360b230",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14360b230.c;xref:0x14360c26b,0x14360dd57",
+  "notes": "(tether, bool) For the participant (id [+0x18]+0x58+0xe8) gets lap progress (Game_VehicleProgressSystem_GetLapProgress on g 0x1460fe6b0: lap +0x18 ^ +0x20, +0x68/+0x70), session time and tether constants (0x146ce66b8, 0x146ce666c) and updates the tether distance/speed target (calls a .data1 thunk). Callers Sess_SafetyCarTether_Update, Game_NetworkSafetyCarTether_OnPlayerDriverChanged."
+ },
+ "signature": {
+  "id": "session.safety_car_tether_update_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 79 29 44 24 70 C5 F8 29",
+  "match": "0x14360b230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14360b230",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCarTether_UpdateVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x14360b230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14360b230.c;xref:0x14360c26b,0x14360dd57",
+   "notes": "V3819 Participant id [+0x18]+0x58+0xe8, lap progress from global 1460fe6b0 (lap +0x18^+0x20, +0x28, +0x68/+0x70), session time, constants 146ce66b8/146ce666c, stores +0x50/+0x54/+0x58/+0x5c/+0x4c, .data1 thunk 1507edef0."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FacilityHeads_RegisterCommandMessages",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14025aeb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void f(void *facility_head_mgr)",
+  "evidence": "decomp:re/decomp/14025aeb0.c;xref:0x14120bedf;xref:0x1455ede60",
+  "notes": "myteam-g1: Big setup that registers the facility-head cutscene command messages (MessageSummonFacilityHead, MessageDismissCurrentFacilityHead, MessagePlayVOOnSummonedFacilityHead, MessageStopCurrentVOForCurrentFacilityHead) and clears/rebuilds the internal maps at +0x58..+0x98."
+ },
+ "signature": {
+  "id": "game.facility_heads_register_command_messages",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 03 00 00 48 89 CE 48 83 C1 58",
+  "match": "0x14025aeb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14025aeb0",
+  "kind": "func_start",
+  "names": [
+   "Game_FacilityHeads_RegisterCommandMessages"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x14025aeb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14025aeb0.c;str:\"MessageSummonFacilityHead\"",
+   "notes": "V9457 Registers MessageSummonFacilityHead/PlayVOOnSummonedFacilityHead/DismissCurrentFacilityHead/StopCurrentVOForCurrentFacilityHead plus dept_head_walk_on/idle/walk_off; maps at +0x60..+0x98 touched."
+  }
+ ],
+ "proofs": []
+}

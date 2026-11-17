@@ -1,5 +1,6 @@
 #include "core/guards/career/rnd_suppliers_logic.hpp"
 #include "core/guards/guard.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -39,10 +40,6 @@
 // into the trees of a team whose vehicle uses that engine.
 //
 // SWOFTY_RND_SUPPLIER_GUARD=0 turns it off.
-
-namespace runtime {
-std::string hook_error(const safetyhook::InlineHook::Error &e);
-}
 
 namespace {
 

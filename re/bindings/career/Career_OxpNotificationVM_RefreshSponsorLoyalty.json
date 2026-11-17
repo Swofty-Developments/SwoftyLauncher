@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OxpNotificationVM_RefreshSponsorLoyalty",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ce5a80",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/141ce5a80.c;xref:0x145744320",
+  "notes": "myteam-g1: Per notification (type-hash compare) builds the lng_op_oxp_titlesponsorloyaltyincreased / lng_op_oxp_secondarysponsorloyaltyincreased text for the OXP notification list."
+ },
+ "signature": {
+  "id": "career.oxp_notification_vm_refresh_sponsor_loyalty",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 06 00 00 C5 F8 29 B4 24 40 06 00 00 48 89 CE 80 B9 D0 02 00 00 00",
+  "match": "0x141ce5a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ce5a80",
+  "kind": "func_start",
+  "names": [
+   "Career_OxpNotificationVM_RefreshSponsorLoyalty"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141ce5a80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141ce5a80.c;xref:0x145744320",
+   "notes": "V10004 Builds lng_op_oxp_titlesponsorloyaltyincreased / secondary text with oxp icon overrides for the notification list."
+  }
+ ],
+ "proofs": []
+}
