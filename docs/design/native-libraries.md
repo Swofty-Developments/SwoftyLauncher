@@ -104,7 +104,7 @@ the texture is multiplied by a tint (`0xffffffff` for none).
 You can call `on_paint`, `remove` and `load_image` at any time. Draw calls, though, are valid only
 inside a paint callback, using that callback's `paint` handle.
 
-The core's D3D12 and DXGI hooks live in one layer, `native/src/core/d3d12_hooks.{hpp,cpp}`. Features
+The core's D3D12 and DXGI hooks live in one layer, `native/src/core/render/d3d12_hooks.hpp` and `native/src/core/render/d3d12/`. Features
 subscribe to it instead of hooking the same entry points:
 
 | Call | Does |
