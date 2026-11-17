@@ -1,4 +1,5 @@
 #include "core/guards/session/replay_grid_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -53,7 +54,6 @@ namespace {
 constexpr const char *MIXIN = "swofty_core.dll (replay recorder grid guard)";
 constexpr const char *SITE = "site_Ne_ReplayAfterRecord";
 
-bool offered = false, settled = false;
 runtime::replay_grid::Tally tally, grown_tally, read_tally;
 runtime::replay_grid::Emptied emptied;
 bool classes_checked = false, classes_ok = false;
@@ -301,41 +301,21 @@ void setup_read()
         swofty::log("[replay] read guard armed: a recordable with no stored state keeps its current state when a replay is read");
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> replay_grid_guard_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_REPLAY_GRID_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[replay] recorder grid guard off (SWOFTY_REPLAY_GRID_GUARD=%s)", v);
-        return out;
-    }
-    if (!swofty::api->resolve(SITE)) {
-        swofty::log("[replay] recorder grid guard off: needs %s, which this build does not resolve", SITE);
-        return out;
-    }
-    out.push_back({MIXIN, {{SITE, SWOFTY_MIXIN_SITE, 100, (void *)&after_record, nullptr}}});
-    return out;
-}
-
-void replay_grid_guard_commit()
-{
-    if (!offered || settled)
-        return;
-    settled = true;
-    swofty::log("[replay] recorder grid guard %s",
-                core_mixins_active(MIXIN) ? "armed: a recordable whose state outgrows its holder gets a larger holder"
-                                          : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::replay_grid_guard,
+                        {
+                            .set = MIXIN,
+                            .name = "[replay] recorder grid guard",
+                            .env = "SWOFTY_REPLAY_GRID_GUARD",
+                            .needs = {SITE},
+                            .mixins = {{SITE, SWOFTY_MIXIN_SITE, 100, (void *)&after_record, nullptr}},
+                            .armed = "a recordable whose state outgrows its holder gets a larger holder",
+                            .settles_when_off = true,
+                        }};
 
 }
+
 
 SWOFTY_ON_LOAD
 {
