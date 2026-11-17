@@ -1,15 +1,21 @@
 #include "core/render/d3d12_hooks.hpp"
-#include "core/hud/hud_guard.hpp"
-#include "core/live/live_car.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/frontend/view_state.hpp"
+#include "core/hud/hud_guard.hpp"
+#include "core/render/postfx/back_buffer_views.hpp"
+#include "core/render/postfx/capture.hpp"
+#include "core/render/postfx/depth_copy.hpp"
+#include "core/render/postfx/gpu.hpp"
+#include "core/render/postfx/pass.hpp"
+#include "core/render/postfx/report.hpp"
+#include "core/render/postfx/resource_watch.hpp"
+#include "core/render/postfx/rules.hpp"
 #include "core/render/postfx_logic.hpp"
 #include "core/runtime/runtime.hpp"
-#include "core/frontend/view_state.hpp"
 
 #include <swofty/mixin.hpp>
 
 #include <d3d12.h>
-#include <d3dcompiler.h>
 
 #include <algorithm>
 #include <array>
@@ -60,69 +66,16 @@ bool settings_state(const std::string &addon, const std::string &option, size_t 
 
 namespace {
 
-using SerializeRootFn = HRESULT(WINAPI *)(const D3D12_ROOT_SIGNATURE_DESC *, D3D_ROOT_SIGNATURE_VERSION, ID3DBlob **,
-                                          ID3DBlob **);
+using namespace postfx;
 
 constexpr wchar_t TONEMAP_NAME[] = L"eaid://ego_package/tonemap_output.image";
 constexpr wchar_t BACKBUFFER_NAME[] = L"BackBuffer";
 constexpr wchar_t HUDLESS_NAME[] = L"eaid://ego_package/hudless_backbuffer.image";
 constexpr wchar_t DEPTH_NAME[] = L"eaid://ego_package/gbuffer_depth_stencil.image";
 constexpr wchar_t UI_PREFIX[] = L"eaid://ui_package/";
-constexpr UINT MIP_STEPS = 512;
-// A pass's descriptor table: t0 the picture, t1 depth, t2..t9 its inputs, t10 its data (DATA_AT), u0 its
-// output (TABLE - 1). DATA_MAX bytes of data at most a pass, DATA_ALIGN apart in a slot's upload buffer.
-constexpr UINT FRAMES = 8, MAX_PASSES = 64, CONSTANTS = postfx::CONSTANT_COUNT, BUDGET_FRAMES = 120, INPUTS = 8,
-               DATA_AT = 2 + INPUTS, TABLE = DATA_AT + 2, DATA_MAX = 64 * 1024, DATA_ALIGN = 256;
-constexpr D3D12_RESOURCE_STATES HOME = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-constexpr D3D12_RESOURCE_STATES READ_STATES =
-    D3D12_RESOURCE_STATE_PIXEL_SHADER_RESOURCE | D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
 using postfx::IN_NONE;
 using postfx::IN_ORIGINAL;
 using postfx::IN_PREVIOUS;
-
-struct Live {
-    UINT slot;
-    std::string option;
-};
-
-struct Pass {
-    std::string addon, addon_id, name, shader, enabled;
-    std::vector<uint8_t> dxil;
-    float options[postfx::SLOTS] = {};
-    std::vector<Live> live;
-    int inputs[INPUTS] = {IN_NONE, IN_NONE, IN_NONE, IN_NONE, IN_NONE, IN_NONE, IN_NONE, IN_NONE};
-    UINT n_inputs = 0;
-    int output = -1;
-    UINT threads[2] = {8, 8};
-    postfx::When when;
-    double budget_ms = 1.5;
-    ID3D12PipelineState *pso = nullptr;
-    bool off = false, on = true, ruled_off = false;
-    const char *why = nullptr;
-    double ms_sum = 0, ms_peak = 0;
-    unsigned ms_frames = 0, over = 0;
-    int inst = -1;
-    std::string effect, label;
-};
-
-struct Tex {
-    std::string name, file;
-    double scale = 1;
-    UINT width = 0, height = 0;
-    DXGI_FORMAT format = DXGI_FORMAT_R16G16B16A16_FLOAT;
-    bool persistent = false;
-    uint32_t mips = 1;
-    ID3D12Resource *res = nullptr, *upload = nullptr;
-    UINT w = 0, h = 0;
-    std::string pixels;
-    bool clear = false, uploaded = false;
-};
-
-struct Toggle {
-    std::string addon_id, addon, option, key;
-    int vk = 0;
-    bool down = false, off = false;
-};
 
 struct Mark {
     bool tonemap = false, ui = false, left_rt = false, closes = false;
@@ -134,23 +87,6 @@ struct Mark {
     std::string order;
 };
 
-struct Slot {
-    ID3D12CommandAllocator *alloc = nullptr;
-    ID3D12GraphicsCommandList *list = nullptr;
-    ID3D12Fence *fence = nullptr;
-    UINT64 fence_value = 0;
-    bool pending = false;
-    ULONGLONG armed_at = 0;
-    UINT passes = 0;
-    int pass_of[MAX_PASSES] = {};
-    ID3D12Resource *depth = nullptr;
-    postfx::Written<ID3D12Resource, DXGI_FORMAT> views[MAX_PASSES * TABLE];
-    unsigned views_made = 0;
-    // The passes' data this slot ran with: an upload buffer, mapped while it lives.
-    ID3D12Resource *data = nullptr;
-    uint8_t *data_at = nullptr;
-    UINT data_cap = 0;
-};
 
 // The core's textures for one picture size: each slot's working set, last frame's result, and the
 // addons' persistent textures and images.
@@ -175,156 +111,12 @@ struct Frame {
     unsigned prev_frame = 0;
 };
 
-struct Retired {
-    std::vector<IUnknown *> objects;
-    UINT64 after = 0;
-};
-
-// One presented frame, for SWOFTY_POSTFX_TRACE.
-struct Trace {
-    const char *path = "none", *why = nullptr;
-    postfx::Idle tried = postfx::IDLE_NONE;
-    bool picture = false;
-    unsigned runs = 0, ran = 0, live = 0;
-    std::string skipped;
-    ID3D12Resource *back = nullptr;
-    view::State view;
-};
-// The resources the barrier hook watches, read without the lock. Writers hold the lock; readers only
-// load. A key keeps its slot and erase only clears its bits, so lookups never walk over tombstones.
-// The game names short-lived UI resources all the time, so once half the slots hold keys the writer
-// copies the live keys into a new table and publishes it, which keeps probe runs short. A replaced
-// table is freed a few seconds later, long after any reader that loaded it has returned.
-class PtrSet {
-    size_t mask;
-    std::unique_ptr<std::atomic<uintptr_t>[]> key;
-    std::unique_ptr<std::atomic<uint8_t>[]> on;
-    size_t used = 0, live = 0;
-
-    size_t hash(uintptr_t k) const { return size_t((k * 0x9E3779B97F4A7C15ull) >> 40) & mask; }
-
-    size_t find(uintptr_t k, bool claim)
-    {
-        for (size_t i = hash(k), n = 0; n <= mask; i = (i + 1) & mask, n++) {
-            uintptr_t v = key[i].load(std::memory_order_acquire);
-            if (v == k)
-                return i;
-            if (v == 0) {
-                if (!claim)
-                    return mask + 1;
-                key[i].store(k, std::memory_order_release);
-                used++;
-                return i;
-            }
-        }
-        return mask + 1;
-    }
-
-public:
-    explicit PtrSet(size_t n) : mask(n - 1), key(new std::atomic<uintptr_t>[n]()), on(new std::atomic<uint8_t>[n]()) {}
-
-    uint8_t get(const void *p) const
-    {
-        uintptr_t k = uintptr_t(p);
-        for (size_t i = hash(k), n = 0; n <= mask; i = (i + 1) & mask, n++) {
-            uintptr_t v = key[i].load(std::memory_order_acquire);
-            if (v == k)
-                return on[i].load(std::memory_order_acquire);
-            if (v == 0)
-                return 0;
-        }
-        return 0;
-    }
-    size_t size() const { return mask + 1; }
-    size_t count() const { return live; }
-    bool half_full() const { return used * 2 >= mask + 1; }
-    void set(const void *p, uint8_t bits)
-    {
-        size_t i = find(uintptr_t(p), bits != 0);
-        if (i > mask)
-            return;
-        uint8_t was = on[i].load(std::memory_order_relaxed);
-        live += (!was && bits) - (was && !bits);
-        on[i].store(bits, std::memory_order_release);
-    }
-    template <class F> void each(F f) const
-    {
-        for (size_t i = 0; i <= mask; i++) {
-            uintptr_t k = key[i].load(std::memory_order_relaxed);
-            uint8_t b = on[i].load(std::memory_order_relaxed);
-            if (k && b)
-                f(reinterpret_cast<const void *>(k), b);
-        }
-    }
-};
-
-enum : uint8_t { W_TONEMAP = 1, W_BACK = 2, W_HUDLESS = 4, W_UI = 8, W_DEPTH = 16 };
-
-// The few resources the passes key on and the game's many UI images live in separate tables, so UI
-// churn can never push the tonemap or the back buffers out. Freed resources leave dead slots behind,
-// so once half a table's slots are taken it is rebuilt from its live keys, at least four times as
-// large as they are; a lookup for an unwatched resource, nearly every barrier, stays a probe or two.
-template <size_t MIN> class Table {
-    std::atomic<PtrSet *> cur{new PtrSet(MIN)};
-    std::vector<std::pair<PtrSet *, ULONGLONG>> retired;
-    const char *what;
-    size_t told = MIN;
-
-public:
-    explicit Table(const char *name) : what(name) {}
-
-    uint8_t get(const void *p) const { return cur.load(std::memory_order_acquire)->get(p); }
-
-    void put(const void *p, uint8_t bits)
-    {
-        PtrSet *w = cur.load(std::memory_order_relaxed);
-        if (!bits || !w->half_full()) {
-            w->set(p, bits);
-            return;
-        }
-        size_t n = MIN;
-        while (n < (w->count() + 1) * 4)
-            n *= 2;
-        auto *fresh = new PtrSet(n);
-        w->each([&](const void *k, uint8_t b) {
-            if (k != p)
-                fresh->set(k, b);
-        });
-        fresh->set(p, bits);
-        if (n > told) {
-            told = n;
-            swofty::log("[postfx] the %s table grew to %zu slots for %zu live resource(s)", what, n, fresh->count());
-        }
-        cur.store(fresh, std::memory_order_release);
-        ULONGLONG now = GetTickCount64();
-        std::erase_if(retired, [&](const std::pair<PtrSet *, ULONGLONG> &r) {
-            if (now - r.second < 5000)
-                return false;
-            delete r.first;
-            return true;
-        });
-        retired.emplace_back(w, now);
-    }
-};
-
-Table<256> key_watched("key resource");
-Table<4096> ui_watched("UI");
-
-uint8_t watched_bits(const void *p)
-{
-    return key_watched.get(p) | ui_watched.get(p);
-}
-
-void watch(const void *p, uint8_t bits)
-{
-    key_watched.put(p, uint8_t(bits & ~W_UI));
-    ui_watched.put(p, uint8_t(bits & W_UI));
-}
+ResourceWatch watched;
 
 std::recursive_mutex lock;
-std::vector<Pass> passes;
-std::vector<Tex> textures;
-std::vector<Toggle> toggles;
+std::vector<RenderPass> passes;
+std::vector<PassTexture> textures;
+std::vector<AddonToggle> toggles;
 bool uses_previous, legacy_previous;
 size_t legacy_passes, legacy_textures;
 std::vector<postfx::EffectDecl> effects;
@@ -336,21 +128,13 @@ FILETIME active_at{};
 ULONGLONG active_checked;
 bool active_told, shaders_off, shader_key_down;
 int shader_vk;
-std::string clip_dir;
 ID3D12Resource *depth_res;
 D3D12_RESOURCE_STATES depth_state;
 bool depth_logged;
 std::unordered_map<ID3D12Resource *, std::wstring> names;
 std::unordered_map<ID3D12GraphicsCommandList *, Mark> marks;
-unsigned order_left, final_left, final_at;
-struct FinalProbe {
-    ID3D12Resource *rb = nullptr;
-    unsigned frame = 0, land = 0;
-    bool pending = false;
-};
-FinalProbe finals[256];
-D3D12_PLACED_SUBRESOURCE_FOOTPRINT final_fp;
-UINT final_w, final_h;
+unsigned order_left;
+BurstProbe burst;
 // Each back buffer's use for one frame: fresh from the barrier that makes it a render target until the
 // passes run on it, the frame they last ran on it, and the depth buffer as the picture's list left it.
 // The lists of a frame are recorded in parallel, so the list that draws the rest of a split picture can
@@ -366,18 +150,7 @@ struct BackUse {
     unsigned seen = 0;
 };
 BackUse back_uses[6];
-// The back buffers' render target views by descriptor address, and the latest views made, so a view
-// made before its back buffer was named is still found. A list that binds one of them draws into that
-// back buffer: the game sometimes ends the picture's list inside the HUD-less step and draws the rest
-// of the picture in the next list, and that list closes the step with the back buffer bound.
-struct ViewAt {
-    std::atomic<SIZE_T> at{0};
-    std::atomic<ID3D12Resource *> res{nullptr};
-};
-ViewAt back_views[32], recent_views[64];
-std::atomic<unsigned> recent_next;
-std::atomic<SIZE_T> views_lo{SIZE_T(-1)}, views_hi{0};
-void pin_view(SIZE_T at, ID3D12Resource *res);
+BackBufferViews back_views;
 unsigned back_seen;
 postfx::HudRead hud_read;
 
@@ -413,11 +186,8 @@ BackUse &back_use(ID3D12Resource *b)
 bool diag_done, killed, broken, warned_busy, hudless_logged, saw_back, tonemap_named, state_armed;
 std::wstring off_file, trace_file, swofty_root_dir;
 
-ID3D12Device *device;
-ID3D12RootSignature *root;
-ID3D12PipelineState *mip_pso;
-UINT levels_of(const Tex &t);
-bool make_mip_pso();
+GpuContext gpu;
+UINT levels_of(const PassTexture &t);
 Slot slots[FRAMES];
 // Counts the times the core made its heap or textures, so slots know their descriptor tables are old.
 unsigned textures_made;
@@ -426,7 +196,7 @@ ID3D12QueryHeap *queries;
 ID3D12Resource *query_readback;
 double ticks_per_ms;
 Frame frame;
-std::vector<Retired> retired;
+RetireQueue retired;
 std::atomic<bool> fg_on{true};
 ULONGLONG started, last_check, live_at, frame_at;
 std::atomic<ULONGLONG> present_at;
@@ -440,36 +210,11 @@ constexpr const wchar_t *INTERESTING[] = {L"tonemap", L"output", L"final", L"hud
                                           L"display", L"post", L"lut", L"bloom", L"exposure"};
 std::vector<std::wstring> named_seen;
 
-struct Stats {
-    unsigned presented = 0, in_list = 0, split_step = 0, between = 0, after_close = 0, before_hud = 0, at_present = 0,
-             without = 0,
-             doubled = 0, ui_together = 0, unknown_state = 0, busy = 0, deferred = 0, dropped = 0;
-    unsigned generated = 0, runs = 0, unplaced = 0;
-    unsigned copied = 0, hud_read = 0, no_previous = 0, prev_gap = 0, onoff_untold = 0, idle[postfx::IDLE_COUNT] = {};
-};
-Stats stats;
-unsigned stat_lines, onoff_lines;
-ULONGLONG stat_at, stat_from;
-postfx::OnOff onoff;
-Trace trace;
-unsigned trace_left, trace_present;
+FrameReport report;
 ULONGLONG trace_checked;
 
-std::string capture_dir, burst_dir;
-ID3D12Resource *capture_rb[2];
-D3D12_PLACED_SUBRESOURCE_FOOTPRINT capture_fp;
-ULONGLONG capture_next, capture_checked;
-unsigned captures;
-std::wstring capture_file;
-bool capture_asked, capture_pending, capture_now;
-UINT64 capture_fence;
-int capture_slot = -1;
-
-void release(IUnknown *p)
-{
-    if (p)
-        p->Release();
-}
+PictureCapture capture;
+ClipRecorder clip;
 
 std::string name_of(ID3D12Resource *r)
 {
@@ -490,157 +235,39 @@ bool killed_now()
     return killed;
 }
 
-DXGI_FORMAT view_format(DXGI_FORMAT f)
-{
-    switch (f) {
-    case DXGI_FORMAT_R8G8B8A8_UNORM:
-    case DXGI_FORMAT_R8G8B8A8_UNORM_SRGB:
-    case DXGI_FORMAT_R8G8B8A8_TYPELESS:
-        return DXGI_FORMAT_R8G8B8A8_UNORM;
-    case DXGI_FORMAT_R10G10B10A2_UNORM:
-    case DXGI_FORMAT_R10G10B10A2_TYPELESS:
-        return DXGI_FORMAT_R10G10B10A2_UNORM;
-    case DXGI_FORMAT_R16G16B16A16_FLOAT:
-    case DXGI_FORMAT_R16G16B16A16_TYPELESS:
-        return DXGI_FORMAT_R16G16B16A16_FLOAT;
-    case DXGI_FORMAT_R11G11B10_FLOAT:
-        return DXGI_FORMAT_R11G11B10_FLOAT;
-    default:
-        return DXGI_FORMAT_UNKNOWN;
-    }
-}
 
-UINT format_kind(DXGI_FORMAT view)
-{
-    return view == DXGI_FORMAT_R10G10B10A2_UNORM ? 1 : view == DXGI_FORMAT_R16G16B16A16_FLOAT ? 2 : 0;
-}
-
-ID3D12Resource *buffer(D3D12_HEAP_TYPE type, UINT64 size, D3D12_RESOURCE_STATES state)
-{
-    D3D12_HEAP_PROPERTIES heap{};
-    heap.Type = type;
-    D3D12_RESOURCE_DESC bd{};
-    bd.Dimension = D3D12_RESOURCE_DIMENSION_BUFFER;
-    bd.Width = size;
-    bd.Height = 1;
-    bd.DepthOrArraySize = 1;
-    bd.MipLevels = 1;
-    bd.SampleDesc.Count = 1;
-    bd.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
-    ID3D12Resource *r = nullptr;
-    return SUCCEEDED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &bd, state, nullptr, IID_PPV_ARGS(&r)))
-               ? r
-               : nullptr;
-}
-
-ID3D12Resource *texture(UINT w, UINT h, DXGI_FORMAT f, bool uav, UINT mips = 1)
-{
-    D3D12_RESOURCE_DESC td{};
-    td.Dimension = D3D12_RESOURCE_DIMENSION_TEXTURE2D;
-    td.Width = w;
-    td.Height = h;
-    td.DepthOrArraySize = 1;
-    td.MipLevels = UINT16(mips);
-    td.Format = f;
-    td.SampleDesc = {1, 0};
-    td.Flags = uav ? D3D12_RESOURCE_FLAG_ALLOW_UNORDERED_ACCESS : D3D12_RESOURCE_FLAG_NONE;
-    D3D12_HEAP_PROPERTIES heap{};
-    heap.Type = D3D12_HEAP_TYPE_DEFAULT;
-    ID3D12Resource *r = nullptr;
-    return SUCCEEDED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &td, HOME, nullptr, IID_PPV_ARGS(&r)))
-               ? r
-               : nullptr;
-}
-
-void transition(ID3D12GraphicsCommandList *list, ID3D12Resource *r, D3D12_RESOURCE_STATES from,
-                D3D12_RESOURCE_STATES to)
-{
-    if (from == to || !r)
-        return;
-    D3D12_RESOURCE_BARRIER b{};
-    b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    b.Transition.pResource = r;
-    b.Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-    b.Transition.StateBefore = from;
-    b.Transition.StateAfter = to;
-    d3d12hooks::barrier_original(list, 1u, &b);
-}
-
-bool make_root()
-{
-    auto serialize =
-        reinterpret_cast<SerializeRootFn>(GetProcAddress(GetModuleHandleA("d3d12.dll"), "D3D12SerializeRootSignature"));
-    if (!serialize)
-        return false;
-    D3D12_DESCRIPTOR_RANGE ranges[3]{};
-    ranges[0].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_SRV;
-    ranges[0].NumDescriptors = DATA_AT + 1;
-    ranges[0].OffsetInDescriptorsFromTableStart = 0;
-    ranges[1].RangeType = D3D12_DESCRIPTOR_RANGE_TYPE_UAV;
-    ranges[1].NumDescriptors = 1;
-    ranges[1].OffsetInDescriptorsFromTableStart = TABLE - 1;
-    D3D12_ROOT_PARAMETER params[2]{};
-    params[0].ParameterType = D3D12_ROOT_PARAMETER_TYPE_32BIT_CONSTANTS;
-    params[0].Constants.Num32BitValues = CONSTANTS;
-    params[0].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-    params[1].ParameterType = D3D12_ROOT_PARAMETER_TYPE_DESCRIPTOR_TABLE;
-    params[1].DescriptorTable.NumDescriptorRanges = 2;
-    params[1].DescriptorTable.pDescriptorRanges = ranges;
-    params[1].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-    D3D12_STATIC_SAMPLER_DESC samplers[4]{};
-    for (UINT i = 0; i < 4; i++) {
-        samplers[i].Filter = i % 2 == 0 ? D3D12_FILTER_MIN_MAG_MIP_LINEAR : D3D12_FILTER_MIN_MAG_MIP_POINT;
-        samplers[i].AddressU = samplers[i].AddressV = samplers[i].AddressW =
-            i < 2 ? D3D12_TEXTURE_ADDRESS_MODE_CLAMP : D3D12_TEXTURE_ADDRESS_MODE_WRAP;
-        samplers[i].MaxLOD = D3D12_FLOAT32_MAX;
-        samplers[i].ShaderRegister = i;
-        samplers[i].ShaderVisibility = D3D12_SHADER_VISIBILITY_ALL;
-    }
-    D3D12_ROOT_SIGNATURE_DESC rd{};
-    rd.NumParameters = 2;
-    rd.pParameters = params;
-    rd.NumStaticSamplers = 4;
-    rd.pStaticSamplers = samplers;
-    ID3DBlob *blob = nullptr, *err = nullptr;
-    HRESULT hr = serialize(&rd, D3D_ROOT_SIGNATURE_VERSION_1, &blob, &err);
-    if (SUCCEEDED(hr))
-        hr = device->CreateRootSignature(0, blob->GetBufferPointer(), blob->GetBufferSize(), IID_PPV_ARGS(&root));
-    release(blob);
-    release(err);
-    return SUCCEEDED(hr);
-}
 
 // The device comes from the game's resource, never from the queue: a queue can be Streamline's proxy,
 // whose device makes proxy command lists that the hooked ExecuteCommandLists cannot take.
 bool init(ID3D12Resource *res)
 {
-    if (FAILED(res->GetDevice(IID_PPV_ARGS(&device))))
+    if (FAILED(res->GetDevice(IID_PPV_ARGS(&gpu.device))))
         return false;
-    if (!make_root()) {
+    if (!gpu.make_root()) {
         swofty::log("[postfx] could not make the passes' root signature; post-processing is off");
         return false;
     }
-    make_mip_pso();
+    gpu.make_mip_pso();
     for (auto &s : slots) {
-        if (FAILED(device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&s.fence))) ||
-            FAILED(device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&s.alloc))) ||
-            FAILED(device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, s.alloc, nullptr, IID_PPV_ARGS(&s.list))))
+        if (FAILED(gpu.device->CreateFence(0, D3D12_FENCE_FLAG_NONE, IID_PPV_ARGS(&s.fence))) ||
+            FAILED(gpu.device->CreateCommandAllocator(D3D12_COMMAND_LIST_TYPE_DIRECT, IID_PPV_ARGS(&s.alloc))) ||
+            FAILED(gpu.device->CreateCommandList(0, D3D12_COMMAND_LIST_TYPE_DIRECT, s.alloc, nullptr, IID_PPV_ARGS(&s.list))))
             return false;
         s.list->Close();
     }
     D3D12_QUERY_HEAP_DESC qd{};
     qd.Type = D3D12_QUERY_HEAP_TYPE_TIMESTAMP;
     qd.Count = FRAMES * MAX_PASSES * 2;
-    if (SUCCEEDED(device->CreateQueryHeap(&qd, IID_PPV_ARGS(&queries))))
-        query_readback = buffer(D3D12_HEAP_TYPE_READBACK, qd.Count * 8, D3D12_RESOURCE_STATE_COPY_DEST);
+    if (SUCCEEDED(gpu.device->CreateQueryHeap(&qd, IID_PPV_ARGS(&queries))))
+        query_readback = gpu.buffer(D3D12_HEAP_TYPE_READBACK, qd.Count * 8, D3D12_RESOURCE_STATE_COPY_DEST);
     for (auto &p : passes) {
         if (p.inst >= 0)
             continue;
         D3D12_COMPUTE_PIPELINE_STATE_DESC pd{};
-        pd.pRootSignature = root;
+        pd.pRootSignature = gpu.root;
         pd.CS.pShaderBytecode = p.dxil.data();
         pd.CS.BytecodeLength = p.dxil.size();
-        HRESULT hr = device->CreateComputePipelineState(&pd, IID_PPV_ARGS(&p.pso));
+        HRESULT hr = gpu.device->CreateComputePipelineState(&pd, IID_PPV_ARGS(&p.pso));
         if (FAILED(hr)) {
             p.off = true;
             swofty::log("[postfx] %s's pass %s is off: its pipeline could not be made (0x%08lx)", p.addon.c_str(),
@@ -663,23 +290,10 @@ void read_frequency(ID3D12CommandQueue *q)
 
 void retire(std::vector<IUnknown *> objects)
 {
-    std::erase(objects, nullptr);
-    if (!objects.empty())
-        retired.push_back({std::move(objects), UINT64(frame_count) + 2 * FRAMES});
+    retired.retire(std::move(objects), frame_count);
 }
 
-void free_retired()
-{
-    std::erase_if(retired, [&](Retired &r) {
-        if (frame_count < r.after)
-            return false;
-        for (auto *o : r.objects)
-            o->Release();
-        return true;
-    });
-}
-
-bool read_tex_file(Tex &t)
+bool read_tex_file(PassTexture &t)
 {
     std::string bytes = runtime::read_file(runtime::under_swofty(t.file), size_t(64) << 20);
     uint32_t head[4] = {};
@@ -709,10 +323,10 @@ bool make_heaps()
     D3D12_DESCRIPTOR_HEAP_DESC cd = hd;
     cd.NumDescriptors = UINT(textures.size()) * (FRAMES + 1) + 1;
     cd.Flags = D3D12_DESCRIPTOR_HEAP_FLAG_NONE;
-    if (FAILED(device->CreateDescriptorHeap(&hd, IID_PPV_ARGS(&frame.heap))) ||
-        FAILED(device->CreateDescriptorHeap(&cd, IID_PPV_ARGS(&frame.cpu))))
+    if (FAILED(gpu.device->CreateDescriptorHeap(&hd, IID_PPV_ARGS(&frame.heap))) ||
+        FAILED(gpu.device->CreateDescriptorHeap(&cd, IID_PPV_ARGS(&frame.cpu))))
         return false;
-    frame.stride = device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
+    frame.stride = gpu.device->GetDescriptorHandleIncrementSize(D3D12_DESCRIPTOR_HEAP_TYPE_CBV_SRV_UAV);
     return true;
 }
 
@@ -737,7 +351,7 @@ bool make_frame(const D3D12_RESOURCE_DESC &d)
     frame.view = view;
     UINT w = UINT(d.Width), h = d.Height;
     if (uses_previous)
-        frame.prev = texture(w, h, view, false);
+        frame.prev = gpu.texture(w, h, view, false);
     for (auto &t : textures) {
         if (!t.file.empty() && t.res)
             continue;
@@ -747,7 +361,7 @@ bool make_frame(const D3D12_RESOURCE_DESC &d)
         if (!t.persistent && t.file.empty())
             continue;
         old.push_back(t.res);
-        t.res = texture(t.w, t.h, t.format, t.file.empty(), levels_of(t));
+        t.res = gpu.texture(t.w, t.h, t.format, t.file.empty(), levels_of(t));
         t.clear = t.file.empty();
         if (!t.res) {
             swofty::log("[postfx] texture %s (%ux%u, format %d) could not be made; post-processing is off",
@@ -758,25 +372,18 @@ bool make_frame(const D3D12_RESOURCE_DESC &d)
     retire(std::move(old));
     if ((uses_previous && !frame.prev) || !make_heaps())
         return false;
-    if (!capture_dir.empty() && !capture_pending) {
-        retire({capture_rb[0], capture_rb[1]});
-        UINT rows = 0;
-        UINT64 row_bytes = 0, total = 0;
-        device->GetCopyableFootprints(&d, 0, 1, 0, &capture_fp, &rows, &row_bytes, &total);
-        for (auto &r : capture_rb)
-            r = buffer(D3D12_HEAP_TYPE_READBACK, total, D3D12_RESOURCE_STATE_COPY_DEST);
-    }
+    capture.remake(gpu, d, retired, frame_count);
     swofty::log("[postfx] passes run on the game's %llux%u picture (format %d) with %zu texture(s) of their own",
                 (unsigned long long)d.Width, d.Height, int(d.Format), textures.size());
     return true;
 }
 
-UINT levels_of(const Tex &t)
+UINT levels_of(const PassTexture &t)
 {
     return t.file.empty() ? postfx::mip_levels(t.w, t.h, t.mips) : 1;
 }
 
-bool shared(const Tex &t)
+bool shared(const PassTexture &t)
 {
     return t.persistent || !t.file.empty();
 }
@@ -789,14 +396,14 @@ bool ensure_work(int k)
         return true;
     textures_made++;
     UINT w = UINT(frame.desc.Width), h = frame.desc.Height;
-    wk.orig = texture(w, h, frame.view, false);
-    wk.pic[0] = texture(w, h, frame.view, true);
-    wk.pic[1] = texture(w, h, frame.view, true);
+    wk.orig = gpu.texture(w, h, frame.view, false);
+    wk.pic[0] = gpu.texture(w, h, frame.view, true);
+    wk.pic[1] = gpu.texture(w, h, frame.view, true);
     wk.tex.assign(textures.size(), nullptr);
     bool ok = wk.orig && wk.pic[0] && wk.pic[1];
     for (size_t i = 0; i < textures.size() && ok; i++)
         if (!shared(textures[i]))
-            ok = (wk.tex[i] = texture(textures[i].w, textures[i].h, textures[i].format, true, levels_of(textures[i]))) != nullptr;
+            ok = (wk.tex[i] = gpu.texture(textures[i].w, textures[i].h, textures[i].format, true, levels_of(textures[i]))) != nullptr;
     wk.clear = true;
     if (!ok)
         swofty::log("[postfx] the working textures of slot %d could not be made; post-processing is off", k);
@@ -818,30 +425,6 @@ D3D12_GPU_DESCRIPTOR_HANDLE gpu_at(ID3D12DescriptorHeap *h, UINT i)
     return {h->GetGPUDescriptorHandleForHeapStart().ptr + UINT64(i) * frame.stride};
 }
 
-void srv(ID3D12Resource *r, DXGI_FORMAT f, D3D12_CPU_DESCRIPTOR_HANDLE at, UINT first = 0, UINT count = 0)
-{
-    D3D12_SHADER_RESOURCE_VIEW_DESC sv{};
-    sv.Format = f;
-    sv.ViewDimension = D3D12_SRV_DIMENSION_TEXTURE2D;
-    sv.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    sv.Texture2D.MostDetailedMip = first;
-    sv.Texture2D.MipLevels = count ? count : r ? UINT(r->GetDesc().MipLevels) : 1;
-    device->CreateShaderResourceView(r, &sv, at);
-}
-
-// A raw view (ByteAddressBuffer) of bytes [offset, offset + size) of the buffer r; without r, a null view
-// that reads 0.
-void data_srv(ID3D12Resource *r, UINT offset, UINT size, D3D12_CPU_DESCRIPTOR_HANDLE at)
-{
-    D3D12_SHADER_RESOURCE_VIEW_DESC sv{};
-    sv.Format = DXGI_FORMAT_R32_TYPELESS;
-    sv.ViewDimension = D3D12_SRV_DIMENSION_BUFFER;
-    sv.Shader4ComponentMapping = D3D12_DEFAULT_SHADER_4_COMPONENT_MAPPING;
-    sv.Buffer.FirstElement = offset / 4;
-    sv.Buffer.NumElements = r ? std::max(1u, (size + 3) / 4) : 1;
-    sv.Buffer.Flags = D3D12_BUFFER_SRV_FLAG_RAW;
-    device->CreateShaderResourceView(r, &sv, at);
-}
 
 // The bytes each addon's code gave one of its passes (SwoftyCorePostfxSetData). Every frame a pass reads the latest
 // as t10, from its slot's own upload buffer.
@@ -863,7 +446,7 @@ void pack_data(Slot &s, const std::vector<int> &live, std::vector<UINT> &offsets
     std::vector<const std::string *> found(live.size(), nullptr);
     UINT total = 0;
     for (size_t i = 0; i < live.size(); i++) {
-        const Pass &p = passes[size_t(live[i])];
+        const RenderPass &p = passes[size_t(live[i])];
         const std::string *b = pass_data.find(postfx::DataStore::key(p.addon_id, p.name));
         if (!b || b->empty())
             continue;
@@ -886,7 +469,7 @@ void pack_data(Slot &s, const std::vector<int> &live, std::vector<UINT> &offsets
         bd.Layout = D3D12_TEXTURE_LAYOUT_ROW_MAJOR;
         ID3D12Resource *b = nullptr;
         void *at = nullptr;
-        if (FAILED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &bd, D3D12_RESOURCE_STATE_GENERIC_READ,
+        if (FAILED(gpu.device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &bd, D3D12_RESOURCE_STATE_GENERIC_READ,
                                                    nullptr, IID_PPV_ARGS(&b))) ||
             FAILED(b->Map(0, nullptr, &at))) {
             release(b);
@@ -913,81 +496,27 @@ void pack_data(Slot &s, const std::vector<int> &live, std::vector<UINT> &offsets
     }
 }
 
-void uav(ID3D12Resource *r, DXGI_FORMAT f, D3D12_CPU_DESCRIPTOR_HANDLE at, UINT mip = 0)
-{
-    D3D12_UNORDERED_ACCESS_VIEW_DESC uv{};
-    uv.Format = f;
-    uv.ViewDimension = D3D12_UAV_DIMENSION_TEXTURE2D;
-    uv.Texture2D.MipSlice = mip;
-    device->CreateUnorderedAccessView(r, nullptr, &uv, at);
-}
-
-void transition_level(ID3D12GraphicsCommandList *list, ID3D12Resource *r, UINT level, D3D12_RESOURCE_STATES from,
-                      D3D12_RESOURCE_STATES to)
-{
-    D3D12_RESOURCE_BARRIER b{};
-    b.Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-    b.Transition.pResource = r;
-    b.Transition.Subresource = level;
-    b.Transition.StateBefore = from;
-    b.Transition.StateAfter = to;
-    d3d12hooks::barrier_original(list, 1u, &b);
-}
 
 UINT mip_steps_used;
-
-bool make_mip_pso()
-{
-    HMODULE compiler = LoadLibraryA("d3dcompiler_47.dll");
-    auto compile = compiler ? reinterpret_cast<pD3DCompile>(GetProcAddress(compiler, "D3DCompile")) : nullptr;
-    if (!compile) {
-        swofty::log("[postfx] d3dcompiler_47.dll!D3DCompile is unavailable; mipmapped textures keep only their first level");
-        return false;
-    }
-    static const char hlsl[] =
-        "Texture2D<float4> src:register(t2);RWTexture2D<float4> dst:register(u0);"
-        "[numthreads(8,8,1)]void CS(uint3 id:SV_DispatchThreadID){uint w,h;dst.GetDimensions(w,h);"
-        "if(id.x>=w||id.y>=h)return;uint sw,sh;src.GetDimensions(sw,sh);int2 m=int2(sw,sh)-1;int2 b=int2(id.xy)*2;"
-        "dst[id.xy]=0.25*(src.Load(int3(min(b,m),0))+src.Load(int3(min(b+int2(1,0),m),0))"
-        "+src.Load(int3(min(b+int2(0,1),m),0))+src.Load(int3(min(b+int2(1,1),m),0)));}";
-    ID3DBlob *code = nullptr, *err = nullptr;
-    HRESULT hr = compile(hlsl, sizeof hlsl - 1, nullptr, nullptr, nullptr, "CS", "cs_5_0", 0, 0, &code, &err);
-    if (err) {
-        if (FAILED(hr))
-            swofty::log("[postfx] mip downsample: %.*s", int(err->GetBufferSize()),
-                        static_cast<const char *>(err->GetBufferPointer()));
-        err->Release();
-    }
-    if (SUCCEEDED(hr) && code) {
-        D3D12_COMPUTE_PIPELINE_STATE_DESC pd{};
-        pd.pRootSignature = root;
-        pd.CS = {code->GetBufferPointer(), code->GetBufferSize()};
-        hr = device->CreateComputePipelineState(&pd, IID_PPV_ARGS(&mip_pso));
-    }
-    release(code);
-    if (FAILED(hr))
-        swofty::log("[postfx] the mip downsample pipeline could not be made (0x%08lx); mipmapped textures keep only their first level", hr);
-    return SUCCEEDED(hr);
-}
 
 // Fills levels 1.. of r from level 0, which the caller has left in HOME: each level is written as a UAV, then
 // moved to HOME before the next one reads it.
 void build_mips(ID3D12GraphicsCommandList *l, ID3D12Resource *r, DXGI_FORMAT f, UINT w, UINT h, UINT levels, int k)
 {
-    if (!mip_pso || levels < 2)
+    if (!gpu.mip_pso || levels < 2)
         return;
-    l->SetPipelineState(mip_pso);
+    l->SetPipelineState(gpu.mip_pso);
     for (UINT level = 1; level < levels; level++) {
         if (mip_steps_used >= MIP_STEPS)
             return;
         UINT at = mip_base() + (UINT(k) * MIP_STEPS + mip_steps_used++) * TABLE;
         for (UINT i = 0; i < 2 + INPUTS; i++)
             if (i == 2)
-                srv(r, f, cpu_at(frame.heap, at + i), level - 1, 1);
+                gpu.srv(r, f, cpu_at(frame.heap, at + i), level - 1, 1);
             else
-                srv(nullptr, f, cpu_at(frame.heap, at + i));
-        data_srv(nullptr, 0, 0, cpu_at(frame.heap, at + DATA_AT));
-        uav(r, f, cpu_at(frame.heap, at + TABLE - 1), level);
+                gpu.srv(nullptr, f, cpu_at(frame.heap, at + i));
+        gpu.data_srv(nullptr, 0, 0, cpu_at(frame.heap, at + DATA_AT));
+        gpu.uav(r, f, cpu_at(frame.heap, at + TABLE - 1), level);
         postfx::Size to = postfx::mip_size(w, h, level);
         transition_level(l, r, level, HOME, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         l->SetComputeRootDescriptorTable(1, gpu_at(frame.heap, at));
@@ -996,139 +525,11 @@ void build_mips(ID3D12GraphicsCommandList *l, ID3D12Resource *r, DXGI_FORMAT f, 
     }
 }
 
-DXGI_FORMAT depth_view(DXGI_FORMAT f)
-{
-    switch (f) {
-    case DXGI_FORMAT_R24G8_TYPELESS:
-        return DXGI_FORMAT_R24_UNORM_X8_TYPELESS;
-    case DXGI_FORMAT_R32G8X24_TYPELESS:
-        return DXGI_FORMAT_R32_FLOAT_X8X24_TYPELESS;
-    case DXGI_FORMAT_R32_TYPELESS:
-        return DXGI_FORMAT_R32_FLOAT;
-    case DXGI_FORMAT_R16_TYPELESS:
-        return DXGI_FORMAT_R16_UNORM;
-    default:
-        return DXGI_FORMAT_UNKNOWN;
-    }
-}
 
-// The depth buffer as the game leaves each of its passes that write it. On track the passes run in the
-// HUD's list, which never moves the depth buffer, so its state there is unknown; instead the core copies
-// the buffer right before the game's own barrier that takes it out of DEPTH_WRITE, where its state is
-// that barrier's StateBefore, exactly (copy_depth). The last copy of a frame holds the frame's finished
-// depth. The copy rests in NON_PIXEL_SHADER_RESOURCE, and passes read it wherever the place they run
-// leaves no readable depth of its own.
-std::atomic<ID3D12Resource *> depth_copy;
-std::atomic<unsigned> depth_copy_frame;  // frame_count when a copy was last recorded
-std::atomic<unsigned> depth_copy_until;  // copies are made until this frame: passes ran without readable depth
-constexpr unsigned DEPTH_COPY_FRAMES = 120;
-ID3D12Resource *depth_copy_of;           // the game's buffer the copy matches, compared, not held; under lock
-D3D12_RESOURCE_DESC depth_copy_desc;
-bool depth_copy_logged, depth_copy_failed;
+DepthCopy depth_copy;
 
-// The copy for the game's depth buffer src, made or remade when the game's buffer changed. Under lock.
-ID3D12Resource *depth_copy_for(ID3D12Resource *src, const D3D12_RESOURCE_DESC &d)
-{
-    ID3D12Resource *have = depth_copy.load(std::memory_order_acquire);
-    const D3D12_RESOURCE_DESC &h = depth_copy_desc;
-    if (have && depth_copy_of == src && h.Width == d.Width && h.Height == d.Height && h.Format == d.Format &&
-        h.MipLevels == d.MipLevels && h.DepthOrArraySize == d.DepthOrArraySize)
-        return have;
-    if (!device || depth_copy_failed)
-        return nullptr;
-    D3D12_RESOURCE_DESC cd = d;
-    cd.Flags &= ~D3D12_RESOURCE_FLAG_DENY_SHADER_RESOURCE;
-    D3D12_HEAP_PROPERTIES heap{};
-    heap.Type = D3D12_HEAP_TYPE_DEFAULT;
-    ID3D12Resource *r = nullptr;
-    if (FAILED(device->CreateCommittedResource(&heap, D3D12_HEAP_FLAG_NONE, &cd,
-                                               D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE, nullptr,
-                                               IID_PPV_ARGS(&r)))) {
-        depth_copy_failed = true;
-        swofty::log("[postfx] could not make a copy of the game's depth buffer (%llux%u, format %d); passes read "
-                    "depth only where the game leaves it readable",
-                    static_cast<unsigned long long>(d.Width), d.Height, int(d.Format));
-        return nullptr;
-    }
-    retire({depth_copy.exchange(r, std::memory_order_acq_rel)});
-    depth_copy_of = src;
-    depth_copy_desc = d;
-    if (!depth_copy_logged) {
-        depth_copy_logged = true;
-        swofty::log("[postfx] the core copies the game's depth buffer (%llux%u, format %d) where the game stops "
-                    "writing it, for passes that run where it isn't readable",
-                    static_cast<unsigned long long>(d.Width), d.Height, int(d.Format));
-    }
-    return r;
-}
 
-void write_ppm(const std::string &path, const uint8_t *src, UINT pitch, UINT w, UINT h, DXGI_FORMAT view)
-{
-    std::string out = "P6\n" + std::to_string(w) + " " + std::to_string(h) + "\n255\n";
-    size_t at = out.size();
-    out.resize(at + size_t(w) * h * 3);
-    for (UINT y = 0; y < h; y++)
-        for (UINT x = 0; x < w; x++) {
-            uint32_t v;
-            memcpy(&v, src + size_t(y) * pitch + size_t(x) * 4, 4);
-            uint8_t *o = reinterpret_cast<uint8_t *>(&out[at + (size_t(y) * w + x) * 3]);
-            if (view == DXGI_FORMAT_R10G10B10A2_UNORM) {
-                o[0] = uint8_t((v & 1023) >> 2), o[1] = uint8_t(((v >> 10) & 1023) >> 2), o[2] = uint8_t(((v >> 20) & 1023) >> 2);
-            } else {
-                o[0] = uint8_t(v), o[1] = uint8_t(v >> 8), o[2] = uint8_t(v >> 16);
-            }
-        }
-    runtime::write_file(runtime::wide(path), out);
-}
-
-void land_capture()
-{
-    if (!capture_pending || capture_slot < 0 || slots[capture_slot].pending ||
-        slots[capture_slot].fence->GetCompletedValue() < capture_fence)
-        return;
-    capture_pending = false;
-    if (frame.view != DXGI_FORMAT_R8G8B8A8_UNORM && frame.view != DXGI_FORMAT_R10G10B10A2_UNORM)
-        return;
-    const char *which[2] = {"before", "after"};
-    for (int i = 0; i < 2; i++) {
-        uint8_t *mapped = nullptr;
-        if (!capture_rb[i] || FAILED(capture_rb[i]->Map(0, nullptr, reinterpret_cast<void **>(&mapped))))
-            continue;
-        char file[64];
-        snprintf(file, sizeof file, "\\postfx-%02u-%s.ppm", captures, which[i]);
-        write_ppm(capture_dir + file, mapped + capture_fp.Offset, capture_fp.Footprint.RowPitch, UINT(frame.desc.Width),
-                  frame.desc.Height, frame.view);
-        D3D12_RANGE none{0, 0};
-        capture_rb[i]->Unmap(0, &none);
-    }
-    swofty::log("[postfx] wrote the picture before and after the passes to %s\\postfx-%02u-{before,after}.ppm",
-                capture_dir.c_str(), captures);
-    captures++;
-}
-
-// The mean colour and saturation of a picture read back to the CPU, over a grid of its middle.
-void grid_mean(const uint8_t *src, UINT pitch, UINT w, UINT h, DXGI_FORMAT f, double out[4])
-{
-    double r = 0, g = 0, bl = 0, sat = 0;
-    unsigned n = 0;
-    for (UINT y = h / 8; y < h * 7 / 10; y += std::max(1u, h / 40))
-        for (UINT x = w / 10; x < w * 9 / 10; x += std::max(1u, w / 64)) {
-            uint32_t v;
-            memcpy(&v, src + size_t(y) * pitch + size_t(x) * 4, 4);
-            double c[3];
-            if (f == DXGI_FORMAT_R10G10B10A2_UNORM)
-                c[0] = (v & 1023) / 1023.0, c[1] = ((v >> 10) & 1023) / 1023.0, c[2] = ((v >> 20) & 1023) / 1023.0;
-            else
-                c[0] = (v & 255) / 255.0, c[1] = ((v >> 8) & 255) / 255.0, c[2] = ((v >> 16) & 255) / 255.0;
-            double mx = std::max(c[0], std::max(c[1], c[2])), mn = std::min(c[0], std::min(c[1], c[2]));
-            r += c[0], g += c[1], bl += c[2], sat += mx > 0 ? (mx - mn) / mx : 0;
-            n++;
-        }
-    n = std::max(n, 1u);
-    out[0] = r / n, out[1] = g / n, out[2] = bl / n, out[3] = sat / n;
-}
-
-std::string describe(const Pass &p)
+std::string describe(const RenderPass &p)
 {
     return p.inst >= 0 ? postfx::pass_title(active.name, p.effect, p.label, p.name) : p.addon + "'s pass " + p.name;
 }
@@ -1145,7 +546,7 @@ void read_times(Slot &s)
     for (UINT i = 0; i < s.passes; i++) {
         if (size_t(s.pass_of[i]) >= passes.size())
             continue;
-        Pass &p = passes[size_t(s.pass_of[i])];
+        RenderPass &p = passes[size_t(s.pass_of[i])];
         uint64_t a = t[base + i * 2], b = t[base + i * 2 + 1];
         if (b < a)
             continue;
@@ -1210,15 +611,15 @@ int pick_slot()
     if (!warned_busy)
         swofty::log("[postfx] every one of the %u slots is in flight; passes skip frames until one is free", FRAMES);
     warned_busy = true;
-    stats.busy++;
-    trace.tried = postfx::IDLE_BUSY;
-    trace.why = postfx::idle_text(trace.tried);
+    report.stats.busy++;
+    report.trace.tried = postfx::IDLE_BUSY;
+    report.trace.why = postfx::idle_text(report.trace.tried);
     return -1;
 }
 
 bool addon_off(const std::string &id)
 {
-    return std::any_of(toggles.begin(), toggles.end(), [&](const Toggle &t) { return t.off && t.addon_id == id; });
+    return std::any_of(toggles.begin(), toggles.end(), [&](const AddonToggle &t) { return t.off && t.addon_id == id; });
 }
 
 ID3D12PipelineState *effect_pso(const std::string &path)
@@ -1232,10 +633,10 @@ ID3D12PipelineState *effect_pso(const std::string &path)
         swofty::log("[shaders] %s %s", path.c_str(), bytes.empty() ? "has no DXIL" : "is not a DXIL container");
     else {
         D3D12_COMPUTE_PIPELINE_STATE_DESC pd{};
-        pd.pRootSignature = root;
+        pd.pRootSignature = gpu.root;
         pd.CS.pShaderBytecode = bytes.data();
         pd.CS.BytecodeLength = bytes.size();
-        HRESULT hr = device->CreateComputePipelineState(&pd, IID_PPV_ARGS(&pso));
+        HRESULT hr = gpu.device->CreateComputePipelineState(&pd, IID_PPV_ARGS(&pso));
         if (FAILED(hr))
             swofty::log("[shaders] the pipeline of %s could not be made (0x%08lx)", path.c_str(), hr);
     }
@@ -1260,7 +661,7 @@ std::vector<int> live_passes(const view::State &v, unsigned *idle = nullptr)
     if (shaders_off)
         return live;
     auto consider = [&](size_t i) {
-        Pass &p = passes[i];
+        RenderPass &p = passes[i];
         if (p.inst >= 0 && !p.pso && !p.off) {
             p.pso = effect_pso(p.shader);
             if (!p.pso)
@@ -1281,8 +682,8 @@ std::vector<int> live_passes(const view::State &v, unsigned *idle = nullptr)
                             : !p.on                 ? postfx::IDLE_OPTION
                             : addon_off(p.addon_id) ? postfx::IDLE_ADDON_KEY
                                                     : postfx::IDLE_VIEW);
-        if (!p.off && trace_left)
-            trace.skipped += (trace.skipped.empty() ? "" : ", ") + p.name + " (" + why + ")";
+        if (!p.off && report.tracing())
+            report.trace.skipped += (report.trace.skipped.empty() ? "" : ", ") + p.name + " (" + why + ")";
     };
     for (size_t i = legacy_passes; i < passes.size() && live.size() < MAX_PASSES; i++)
         consider(i);
@@ -1306,14 +707,14 @@ ID3D12Resource *input_res(int in, int k, DXGI_FORMAT &f)
     return nullptr;
 }
 
-void upload(ID3D12GraphicsCommandList *l, Tex &t)
+void upload(ID3D12GraphicsCommandList *l, PassTexture &t)
 {
     D3D12_RESOURCE_DESC d = t.res->GetDesc();
     D3D12_PLACED_SUBRESOURCE_FOOTPRINT fp{};
     UINT rows = 0;
     UINT64 row_bytes = 0, total = 0;
-    device->GetCopyableFootprints(&d, 0, 1, 0, &fp, &rows, &row_bytes, &total);
-    if (!t.upload && !(t.upload = buffer(D3D12_HEAP_TYPE_UPLOAD, total, D3D12_RESOURCE_STATE_GENERIC_READ)))
+    gpu.device->GetCopyableFootprints(&d, 0, 1, 0, &fp, &rows, &row_bytes, &total);
+    if (!t.upload && !(t.upload = gpu.buffer(D3D12_HEAP_TYPE_UPLOAD, total, D3D12_RESOURCE_STATE_GENERIC_READ)))
         return;
     uint8_t *mapped = nullptr;
     if (FAILED(t.upload->Map(0, nullptr, reinterpret_cast<void **>(&mapped))))
@@ -1338,163 +739,21 @@ void upload(ID3D12GraphicsCommandList *l, Tex &t)
     t.upload = nullptr;
 }
 
-constexpr UINT CLIP_W = 1280, CLIP_H = 720, CLIP_RING = 4, CLIP_DELAY = 6;
-
-struct ClipEntry {
-    ID3D12Resource *rb = nullptr;
-    int slot = -1;
-    unsigned land = 0, index = 0;
-    bool pending = false;
-};
-
-ClipEntry clip_ring[CLIP_RING];
-D3D12_PLACED_SUBRESOURCE_FOOTPRINT clip_fp;
-UINT clip_w, clip_h;
-DXGI_FORMAT clip_view;
-unsigned clip_left, clip_issued, clip_written;
-bool clip_running;
-std::wstring clip_file;
-
-bool clip_busy()
-{
-    return clip_left || std::any_of(std::begin(clip_ring), std::end(clip_ring), [](const ClipEntry &e) { return e.pending; });
-}
-
-// A free readback entry for this frame's picture while a clip is being captured; none when the ring is
-// full, so the frame is not stalled and the capture tries again on the next one.
-ClipEntry *clip_begin(const D3D12_RESOURCE_DESC &d, int k)
-{
-    if (!clip_left)
-        return nullptr;
-    if (frame.view != DXGI_FORMAT_R8G8B8A8_UNORM && frame.view != DXGI_FORMAT_R10G10B10A2_UNORM) {
-        swofty::log("[shaders] clip: the picture has format %d, which the capture does not take; clip stopped",
-                    int(frame.view));
-        clip_left = 0;
-        return nullptr;
-    }
-    if (!clip_ring[0].rb || clip_w != d.Width || clip_h != d.Height) {
-        std::vector<IUnknown *> old;
-        for (auto &e : clip_ring) {
-            old.push_back(e.rb);
-            e = {};
-        }
-        retire(std::move(old));
-        UINT rows = 0;
-        UINT64 row_bytes = 0, total = 0;
-        device->GetCopyableFootprints(&d, 0, 1, 0, &clip_fp, &rows, &row_bytes, &total);
-        for (auto &e : clip_ring)
-            if (!(e.rb = buffer(D3D12_HEAP_TYPE_READBACK, total, D3D12_RESOURCE_STATE_COPY_DEST))) {
-                swofty::log("[shaders] clip: the readback buffers could not be made; clip stopped");
-                clip_left = 0;
-                return nullptr;
-            }
-        clip_w = UINT(d.Width);
-        clip_h = d.Height;
-    }
-    for (auto &e : clip_ring)
-        if (!e.pending) {
-            e.pending = true;
-            e.slot = k;
-            e.land = frame_count + CLIP_DELAY;
-            e.index = clip_issued++;
-            clip_left--;
-            clip_view = frame.view;
-            return &e;
-        }
-    return nullptr;
-}
-
-void clip_copy(ID3D12GraphicsCommandList *l, ID3D12Resource *back, const ClipEntry &e)
-{
-    D3D12_TEXTURE_COPY_LOCATION rb{}, from{};
-    rb.pResource = e.rb;
-    rb.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-    rb.PlacedFootprint = clip_fp;
-    from.pResource = back;
-    from.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-    l->CopyTextureRegion(&rb, 0, 0, 0, &from, nullptr);
-}
-
-void clip_write(const uint8_t *src, UINT pitch, unsigned index)
-{
-    std::vector<uint8_t> rgb(size_t(clip_w) * clip_h * 3), out(size_t(CLIP_W) * CLIP_H * 3);
-    for (UINT y = 0; y < clip_h; y++)
-        for (UINT x = 0; x < clip_w; x++) {
-            uint32_t v;
-            memcpy(&v, src + size_t(y) * pitch + size_t(x) * 4, 4);
-            uint8_t *o = &rgb[(size_t(y) * clip_w + x) * 3];
-            if (clip_view == DXGI_FORMAT_R10G10B10A2_UNORM) {
-                o[0] = uint8_t((v & 1023) >> 2), o[1] = uint8_t(((v >> 10) & 1023) >> 2), o[2] = uint8_t(((v >> 20) & 1023) >> 2);
-            } else {
-                o[0] = uint8_t(v), o[1] = uint8_t(v >> 8), o[2] = uint8_t(v >> 16);
-            }
-        }
-    postfx::box_scale_rgb(rgb.data(), clip_w, clip_h, out.data(), CLIP_W, CLIP_H);
-    std::string file = "P6\n" + std::to_string(CLIP_W) + " " + std::to_string(CLIP_H) + "\n255\n";
-    file.append(reinterpret_cast<const char *>(out.data()), out.size());
-    char name[48];
-    snprintf(name, sizeof name, "\\clip-%08u.ppm", index);
-    runtime::write_file(runtime::wide(clip_dir + name), file);
-}
-
-// Writes the frames whose readback the GPU has finished, a few frames after they were copied.
-void clip_land()
-{
-    for (auto &e : clip_ring) {
-        if (!e.pending || frame_count < e.land || slots[e.slot].pending ||
-            slots[e.slot].fence->GetCompletedValue() < slots[e.slot].fence_value)
-            continue;
-        e.pending = false;
-        uint8_t *mapped = nullptr;
-        if (!e.rb || FAILED(e.rb->Map(0, nullptr, reinterpret_cast<void **>(&mapped))))
-            continue;
-        clip_write(mapped + clip_fp.Offset, clip_fp.Footprint.RowPitch, e.index);
-        D3D12_RANGE none{0, 0};
-        e.rb->Unmap(0, &none);
-        clip_written++;
-    }
-    if (clip_running && !clip_busy()) {
-        clip_running = false;
-        swofty::log("[shaders] clip: wrote %u frame(s) to %s", clip_written, clip_dir.c_str());
-    }
-}
-
-void clip_start(unsigned frames)
-{
-    if (clip_busy())
-        return;
-    CreateDirectoryW(runtime::wide(clip_dir).c_str(), nullptr);
-    clip_left = frames ? std::min(frames, 6000u) : 240u;
-    clip_issued = clip_written = 0;
-    clip_running = true;
-    swofty::log("[shaders] clip: writing the next %u frame(s) that run passes to %s", clip_left, clip_dir.c_str());
-}
-
-void capture_copy(ID3D12GraphicsCommandList *l, ID3D12Resource *back, int which)
-{
-    D3D12_TEXTURE_COPY_LOCATION rb{}, from{};
-    rb.pResource = capture_rb[which];
-    rb.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-    rb.PlacedFootprint = capture_fp;
-    from.pResource = back;
-    from.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-    l->CopyTextureRegion(&rb, 0, 0, 0, &from, nullptr);
-}
 
 // Records this frame's passes at w into slot k's tables. Returns false when nothing was recorded.
 bool record(const Where &w, int k)
 {
-    if (!device && !init(w.back)) {
+    if (!gpu.device && !init(w.back)) {
         broken = true;
         return false;
     }
-    if (device->GetDeviceRemovedReason() != S_OK) {
+    if (gpu.device->GetDeviceRemovedReason() != S_OK) {
         broken = true;
         swofty::log("[postfx] the GPU device was removed; post-processing is off");
         return false;
     }
-    land_capture();
-    free_retired();
+    capture.land(slots, frame.desc, frame.view);
+    retired.free(frame_count);
     Slot &s = slots[k];
     postfx::hold(s.depth, w.depth);
     read_times(s);
@@ -1516,33 +775,25 @@ bool record(const Where &w, int k)
     }
     Work &wk = frame.work[k];
     view::State v = view::current();
-    trace.view = v;
+    report.trace.view = v;
     unsigned idle = 0;
     std::vector<int> live = live_passes(v, &idle);
-    trace.live = unsigned(live.size());
+    report.trace.live = unsigned(live.size());
     if (live.empty()) {
-        trace.tried = postfx::idle_of_passes(idle);
-        trace.why = postfx::idle_text(trace.tried);
+        report.trace.tried = postfx::idle_of_passes(idle);
+        report.trace.why = postfx::idle_text(report.trace.tried);
         return false;
     }
     d3d12hooks::ListState saved;
     if (w.game && !d3d12hooks::list_state(w.list, saved)) {
-        stats.unknown_state++;
-        trace.tried = postfx::IDLE_LIST_STATE;
-        trace.why = postfx::idle_text(trace.tried);
+        report.stats.unknown_state++;
+        report.trace.tried = postfx::IDLE_LIST_STATE;
+        report.trace.why = postfx::idle_text(report.trace.tried);
         return false;
     }
     ID3D12GraphicsCommandList *l = w.list;
     ULONGLONG now = GetTickCount64();
-    if (!capture_dir.empty() && now - capture_checked >= 1000) {
-        capture_checked = now;
-        if (GetFileAttributesW(capture_file.c_str()) != INVALID_FILE_ATTRIBUTES) {
-            DeleteFileW(capture_file.c_str());
-            capture_asked = true;
-        }
-    }
-    capture_now = !capture_dir.empty() && !capture_pending && capture_rb[0] && capture_rb[1] &&
-                  (capture_asked || (captures < 6 && ran_total && now >= capture_next));
+    capture.arm(now, ran_total);
     if (frame.prev_serial != v.serial) {
         frame.prev_valid = false;
         for (auto &t : textures)
@@ -1550,35 +801,35 @@ bool record(const Where &w, int k)
     }
     bool had_previous = frame.prev && frame.prev_valid && frame.prev_serial == v.serial;
     bool has_previous = had_previous && frame_count - frame.prev_frame <= 1;
-    stats.no_previous += !has_previous;
-    stats.prev_gap += had_previous && !has_previous;
+    report.stats.no_previous += !has_previous;
+    report.stats.prev_gap += had_previous && !has_previous;
     UINT pw = UINT(d.Width), ph = d.Height;
 
-    ClipEntry *clip = clip_begin(d, k);
+    ClipRecorder::Entry *clip_entry = clip.begin(gpu, d, k, frame.view, retired, frame_count);
     transition(l, w.back, w.back_state, D3D12_RESOURCE_STATE_COPY_SOURCE);
     transition(l, wk.orig, HOME, D3D12_RESOURCE_STATE_COPY_DEST);
     l->CopyResource(wk.orig, w.back);
-    if (clip)
-        clip_copy(l, w.back, *clip);
-    if (capture_now)
-        capture_copy(l, w.back, 0);
+    if (clip_entry)
+        clip.copy(l, w.back, *clip_entry);
+    if (capture.armed())
+        capture.copy(l, w.back, 0);
     transition(l, wk.orig, D3D12_RESOURCE_STATE_COPY_DEST, HOME);
     for (auto &t : textures)
         if (!t.file.empty() && !t.uploaded && t.res)
             upload(l, t);
-    l->SetComputeRootSignature(root);
+    l->SetComputeRootSignature(gpu.root);
     l->SetDescriptorHeaps(1, &frame.heap);
     mip_steps_used = 0;
     UINT clear_at = FRAMES * MAX_PASSES * TABLE, ntex = UINT(textures.size());
     for (size_t i = 0; i < textures.size(); i++) {
-        Tex &t = textures[i];
+        PassTexture &t = textures[i];
         bool own = !shared(t);
         ID3D12Resource *r = tex_of(i, k);
         if (!r || !(own ? wk.clear : t.clear))
             continue;
         UINT at = own ? ntex * (1 + UINT(k)) + UINT(i) : UINT(i);
-        uav(r, t.format, cpu_at(frame.heap, clear_at + at));
-        uav(r, t.format, cpu_at(frame.cpu, at));
+        gpu.uav(r, t.format, cpu_at(frame.heap, clear_at + at));
+        gpu.uav(r, t.format, cpu_at(frame.cpu, at));
         transition(l, r, HOME, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         const float zero[4] = {};
         l->ClearUnorderedAccessViewFloat(gpu_at(frame.heap, clear_at + at), cpu_at(frame.cpu, at), r, zero, 0, nullptr);
@@ -1626,9 +877,7 @@ bool record(const Where &w, int k)
     // only while passes keep running in such places (depth_copy_until).
     bool depth_copied = false;
     if (!depth) {
-        depth_copy_until.store(frame_count + DEPTH_COPY_FRAMES, std::memory_order_relaxed);
-        ID3D12Resource *dc = depth_copy.load(std::memory_order_acquire);
-        if (dc && frame_count - depth_copy_frame.load(std::memory_order_relaxed) <= 2) {
+        if (ID3D12Resource *dc = depth_copy.fresh(frame_count)) {
             D3D12_RESOURCE_DESC dd = dc->GetDesc();
             depth = dc;
             depth_fmt = depth_view(dd.Format);
@@ -1650,7 +899,7 @@ bool record(const Where &w, int k)
     pack_data(s, live, data_offsets, data_sizes);
     size_t live_i = 0;
     for (int index : live) {
-        Pass &p = passes[size_t(index)];
+        RenderPass &p = passes[size_t(index)];
         UINT data_size = data_sizes[live_i], data_offset = data_offsets[live_i];
         live_i++;
         ID3D12Resource *out = p.output < 0 ? wk.pic[next] : tex_of(size_t(p.output), k);
@@ -1660,7 +909,7 @@ bool record(const Where &w, int k)
         auto *view = &s.views[s.passes * TABLE];
         auto put_srv = [&](UINT i, ID3D12Resource *r, DXGI_FORMAT f) {
             if (postfx::rewrite(view[i], r, f))
-                srv(r, f, cpu_at(frame.heap, at + i));
+                gpu.srv(r, f, cpu_at(frame.heap, at + i));
         };
         put_srv(0, cur, frame.view);
         put_srv(1, depth, depth_fmt);
@@ -1670,14 +919,14 @@ bool record(const Where &w, int k)
             put_srv(2 + i, r, f);
         }
         if (data_size) {  // written every frame: the bytes move within the buffer
-            data_srv(s.data, data_offset, data_size, cpu_at(frame.heap, at + DATA_AT));
+            gpu.data_srv(s.data, data_offset, data_size, cpu_at(frame.heap, at + DATA_AT));
             view[DATA_AT] = {};
         } else if (postfx::rewrite(view[DATA_AT], static_cast<ID3D12Resource *>(nullptr), DXGI_FORMAT_UNKNOWN)) {
-            data_srv(nullptr, 0, 0, cpu_at(frame.heap, at + DATA_AT));
+            gpu.data_srv(nullptr, 0, 0, cpu_at(frame.heap, at + DATA_AT));
         }
         c[postfx::DATA_SIZE_AT] = data_size;
         if (postfx::rewrite(view[TABLE - 1], out, of))
-            uav(out, of, cpu_at(frame.heap, at + TABLE - 1));
+            gpu.uav(out, of, cpu_at(frame.heap, at + TABLE - 1));
         transition(l, out, HOME, D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
         c[0] = ow;
         c[1] = oh;
@@ -1714,8 +963,8 @@ bool record(const Where &w, int k)
         l->CopyResource(w.back, cur);
         transition(l, w.back, D3D12_RESOURCE_STATE_COPY_DEST, D3D12_RESOURCE_STATE_COPY_SOURCE);
     }
-    if (capture_now)
-        capture_copy(l, w.back, 1);
+    if (capture.armed())
+        capture.copy(l, w.back, 1);
     transition(l, w.back, D3D12_RESOURCE_STATE_COPY_SOURCE, w.back_state);
     if (w.hudless && cur != wk.orig && fg_on.load()) {
         D3D12_RESOURCE_DESC hd = w.hudless->GetDesc();
@@ -1742,20 +991,15 @@ bool record(const Where &w, int k)
 
     s.pending = true;
     s.armed_at = now;
-    if (capture_now) {
-        capture_pending = true;
-        capture_asked = false;
-        capture_slot = k;
-        capture_next = now + 10000;
-    }
-    trace.runs++;
-    stats.runs++;
-    trace.ran = s.passes;
-    trace.path = w.path;
-    trace.back = w.back;
-    trace.why = nullptr;
+    capture.ran(k, now);
+    report.trace.runs++;
+    report.stats.runs++;
+    report.trace.ran = s.passes;
+    report.trace.path = w.path;
+    report.trace.back = w.back;
+    report.trace.why = nullptr;
     if (++ran_total == 1) {
-        capture_next = now + 30000;
+        capture.first_run(now);
         swofty::log("[postfx] the picture now goes through %u pass(es) before the HUD, %s", s.passes,
                     w.game ? "inside the game's list at its HUD-less step" : "in a list between the game's lists");
     }
@@ -1767,7 +1011,7 @@ bool record(const Where &w, int k)
 bool run_between(ID3D12CommandQueue *q, ID3D12Resource *back, D3D12_RESOURCE_STATES state, ID3D12Resource *hudless,
                  D3D12_RESOURCE_STATES hudless_state, const char *path)
 {
-    if (!device && !init(back)) {
+    if (!gpu.device && !init(back)) {
         broken = true;
         return false;
     }
@@ -1795,8 +1039,7 @@ bool run_between(ID3D12CommandQueue *q, ID3D12Resource *back, D3D12_RESOURCE_STA
     d3d12hooks::exec_original(q, 1u, one);
     q->Signal(s.fence, ++s.fence_value);
     s.pending = false;
-    if (capture_slot == k)
-        capture_fence = s.fence_value;
+    capture.signalled(k, s.fence_value);
     return true;
 }
 
@@ -1851,16 +1094,14 @@ void on_setname(ID3D12Object *o, LPCWSTR name)
     perf::Scope p(probe);
     auto *res = reinterpret_cast<ID3D12Resource *>(o);
     std::lock_guard<std::recursive_mutex> g(lock);
-    if (watched_bits(res)) {
+    if (watched.bits(res)) {
         names.erase(res);
-        watch(res, 0);
+        watched.watch(res, 0);
     }
     drop_depths(wcscmp(name, DEPTH_NAME) == 0 ? res : nullptr, res);
     bool tonemap = wcscmp(name, TONEMAP_NAME) == 0, back = wcscmp(name, BACKBUFFER_NAME) == 0;
     if (back)
-        for (auto &v : recent_views)
-            if (v.res.load(std::memory_order_relaxed) == res)
-                pin_view(v.at.load(std::memory_order_relaxed), res);
+        back_views.named(res);
     uint8_t bits = (tonemap ? W_TONEMAP : 0) | (back ? W_BACK : 0) | (wcscmp(name, HUDLESS_NAME) == 0 ? W_HUDLESS : 0) |
                    (wcscmp(name, DEPTH_NAME) == 0 ? W_DEPTH : 0) |
                    (wcsncmp(name, UI_PREFIX, wcslen(UI_PREFIX)) == 0 ? W_UI : 0);
@@ -1877,7 +1118,7 @@ void on_setname(ID3D12Object *o, LPCWSTR name)
     if (interesting(name))
         log_named(o, name);
     if (bits)
-        watch(res, bits);
+        watched.watch(res, bits);
 }
 
 // While the game reads the finished picture for its HUD (paused, panels over the race), that read is the one
@@ -1913,55 +1154,19 @@ void unmark(ID3D12GraphicsCommandList *list)
     }
 }
 
-void pin_view(SIZE_T at, ID3D12Resource *res)
-{
-    if (!at)
-        return;
-    for (auto &v : back_views)
-        if (v.at.load(std::memory_order_relaxed) == at) {
-            v.res.store(res, std::memory_order_relaxed);
-            return;
-        }
-    if (!res)
-        return;
-    for (auto &v : back_views) {
-        SIZE_T none = 0;
-        if (v.at.compare_exchange_strong(none, at)) {
-            v.res.store(res, std::memory_order_relaxed);
-            SIZE_T lo = views_lo.load(std::memory_order_relaxed), hi = views_hi.load(std::memory_order_relaxed);
-            while (at < lo && !views_lo.compare_exchange_weak(lo, at))
-                ;
-            while (at > hi && !views_hi.compare_exchange_weak(hi, at))
-                ;
-            return;
-        }
-    }
-}
-
 void on_create_rtv(ID3D12Resource *res, D3D12_CPU_DESCRIPTOR_HANDLE at)
 {
-    ViewAt &r = recent_views[recent_next.fetch_add(1, std::memory_order_relaxed) % 64];
-    r.at.store(at.ptr, std::memory_order_relaxed);
-    r.res.store(res, std::memory_order_relaxed);
-    pin_view(at.ptr, res && (watched_bits(res) & W_BACK) ? res : nullptr);
+    back_views.created(res, at, watched);
 }
 
-// The picture and the HUD draw into the back buffer as the first render target. Binds of anything else
-// fall outside the back buffers' views and return at the range check.
+// The picture and the HUD draw into the back buffer as the first render target.
 void on_render_targets(ID3D12GraphicsCommandList *list, UINT n, const D3D12_CPU_DESCRIPTOR_HANDLE *rtvs, BOOL)
 {
     if (!n || !rtvs)
         return;
-    SIZE_T at = rtvs[0].ptr;
-    if (at < views_lo.load(std::memory_order_relaxed) || at > views_hi.load(std::memory_order_relaxed))
-        return;
-    for (auto &v : back_views)
-        if (v.at.load(std::memory_order_relaxed) == at) {
-            if (ID3D12Resource *res = v.res.load(std::memory_order_relaxed))
-                if (Side *s = side_marks.find(list, true))
-                    s->bound.store(res, std::memory_order_relaxed);
-            return;
-        }
+    if (ID3D12Resource *res = back_views.bound(rtvs[0].ptr))
+        if (Side *s = side_marks.find(list, true))
+            s->bound.store(res, std::memory_order_relaxed);
 }
 
 // Takes a list's side marks into its Mark m. A depth barrier makes the Mark when the list has none, as
@@ -2001,58 +1206,10 @@ bool mark_aside(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
         const D3D12_RESOURCE_BARRIER &b = barriers[i];
         if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION)
             continue;
-        uint8_t c = watched_bits(b.Transition.pResource);
+        uint8_t c = watched.bits(b.Transition.pResource);
         postfx::note(*s, marked, (c & W_DEPTH) != 0, (c & W_UI) != 0, b.Transition.pResource, b.Transition.StateAfter);
     }
     return true;
-}
-
-// Before the game records a barrier batch that takes its depth buffer out of DEPTH_WRITE: copies the
-// buffer into depth_copy, from the state the barrier names as its StateBefore, and puts it back in that
-// state, so the game's barrier then runs as it would have. Whole-resource, unsplit barriers in direct
-// lists only; one copy per batch.
-void copy_depth(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BARRIER *barriers)
-{
-    for (UINT i = 0; i < n; i++) {
-        const D3D12_RESOURCE_BARRIER &b = barriers[i];
-        if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION || !(watched_bits(b.Transition.pResource) & W_DEPTH) ||
-            b.Flags != D3D12_RESOURCE_BARRIER_FLAG_NONE ||
-            b.Transition.Subresource != D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES ||
-            !(b.Transition.StateBefore & D3D12_RESOURCE_STATE_DEPTH_WRITE) ||
-            (b.Transition.StateAfter & D3D12_RESOURCE_STATE_DEPTH_WRITE))
-            continue;
-        if (list->GetType() != D3D12_COMMAND_LIST_TYPE_DIRECT)
-            return;
-        ID3D12Resource *src = b.Transition.pResource;
-        D3D12_RESOURCE_DESC d = src->GetDesc();
-        if (d.Dimension != D3D12_RESOURCE_DIMENSION_TEXTURE2D || d.SampleDesc.Count != 1 ||
-            depth_view(d.Format) == DXGI_FORMAT_UNKNOWN)
-            return;
-        ID3D12Resource *copy;
-        {
-            std::lock_guard<std::recursive_mutex> g(lock);
-            copy = depth_copy_for(src, d);
-        }
-        if (!copy)
-            return;
-        D3D12_RESOURCE_BARRIER to[2]{}, back[2]{};
-        for (auto *t : {to, back})
-            for (int j = 0; j < 2; j++) {
-                t[j].Type = D3D12_RESOURCE_BARRIER_TYPE_TRANSITION;
-                t[j].Transition.Subresource = D3D12_RESOURCE_BARRIER_ALL_SUBRESOURCES;
-            }
-        to[0].Transition.pResource = back[0].Transition.pResource = src;
-        to[0].Transition.StateBefore = back[0].Transition.StateAfter = b.Transition.StateBefore;
-        to[0].Transition.StateAfter = back[0].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_SOURCE;
-        to[1].Transition.pResource = back[1].Transition.pResource = copy;
-        to[1].Transition.StateBefore = back[1].Transition.StateAfter = D3D12_RESOURCE_STATE_NON_PIXEL_SHADER_RESOURCE;
-        to[1].Transition.StateAfter = back[1].Transition.StateBefore = D3D12_RESOURCE_STATE_COPY_DEST;
-        d3d12hooks::barrier_original(list, 2u, to);
-        list->CopyResource(copy, src);
-        d3d12hooks::barrier_original(list, 2u, back);
-        depth_copy_frame.store(frame_count, std::memory_order_relaxed);
-        return;
-    }
 }
 
 // Marks what each game list does with the watched resources. At the HUD-less step (the HUD-less copy
@@ -2067,13 +1224,13 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
     uint8_t seen = 0;
     for (UINT i = 0; i < n; i++)
         if (barriers[i].Type == D3D12_RESOURCE_BARRIER_TYPE_TRANSITION)
-            seen |= watched_bits(barriers[i].Transition.pResource);
+            seen |= watched.bits(barriers[i].Transition.pResource);
     if (!seen)
         return false;
     static const uint32_t marking = perf::probe("core", "postfx ResourceBarrier (watched)");
     perf::Scope m_scope(marking);
-    if ((seen & W_DEPTH) && device && frame_count <= depth_copy_until.load(std::memory_order_relaxed))
-        copy_depth(list, n, barriers);
+    if ((seen & W_DEPTH) && gpu.device && depth_copy.wanted(frame_count))
+        depth_copy.record(list, n, barriers, gpu, watched, lock, retired, frame_count);
     if (!(seen & (W_TONEMAP | W_BACK | W_HUDLESS)) && mark_aside(list, n, barriers, seen & W_DEPTH))
         return false;
     std::lock_guard<std::recursive_mutex> g(lock);
@@ -2086,7 +1243,7 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
         const D3D12_RESOURCE_BARRIER &b = barriers[i];
         if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION)
             continue;
-        uint8_t c = watched_bits(b.Transition.pResource);
+        uint8_t c = watched.bits(b.Transition.pResource);
         moves_back |= (c & W_BACK) != 0;
         if ((c & W_HUDLESS) && (b.Transition.StateBefore & D3D12_RESOURCE_STATE_UNORDERED_ACCESS) &&
             b.Flags == D3D12_RESOURCE_BARRIER_FLAG_NONE) {
@@ -2097,46 +1254,8 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
             (b.Transition.StateAfter & READ_STATES) && b.Flags == D3D12_RESOURCE_BARRIER_FLAG_NONE && !leaving)
             leaving = b.Transition.pResource;
     }
-    if (final_left && device) {
-        for (UINT i = 0; i < n; i++) {
-            const D3D12_RESOURCE_BARRIER &b = barriers[i];
-            if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION || !(watched_bits(b.Transition.pResource) & W_BACK) ||
-                b.Transition.StateBefore != D3D12_RESOURCE_STATE_RENDER_TARGET || b.Transition.StateAfter != 0)
-                continue;
-            ID3D12Resource *shown = b.Transition.pResource;
-            FinalProbe &fp = finals[final_at % 256];
-            if (fp.pending)
-                break;
-            D3D12_RESOURCE_DESC d = shown->GetDesc();
-            if (!fp.rb) {
-                D3D12_RESOURCE_DESC box = d;
-                box.Width = final_w = UINT(d.Width) * 8 / 10;
-                box.Height = final_h = d.Height * 6 / 10;
-                UINT rows = 0;
-                UINT64 row_bytes = 0, total = 0;
-                device->GetCopyableFootprints(&box, 0, 1, 0, &final_fp, &rows, &row_bytes, &total);
-                fp.rb = buffer(D3D12_HEAP_TYPE_READBACK, total, D3D12_RESOURCE_STATE_COPY_DEST);
-            }
-            if (!fp.rb)
-                break;
-            transition(list, shown, D3D12_RESOURCE_STATE_RENDER_TARGET, D3D12_RESOURCE_STATE_COPY_SOURCE);
-            D3D12_TEXTURE_COPY_LOCATION to{}, from{};
-            to.pResource = fp.rb;
-            to.Type = D3D12_TEXTURE_COPY_TYPE_PLACED_FOOTPRINT;
-            to.PlacedFootprint = final_fp;
-            from.pResource = shown;
-            from.Type = D3D12_TEXTURE_COPY_TYPE_SUBRESOURCE_INDEX;
-            D3D12_BOX src{UINT(d.Width) / 10, d.Height / 8, 0, UINT(d.Width) / 10 + final_w, d.Height / 8 + final_h, 1};
-            list->CopyTextureRegion(&to, 0, 0, 0, &from, &src);
-            transition(list, shown, D3D12_RESOURCE_STATE_COPY_SOURCE, D3D12_RESOURCE_STATE_RENDER_TARGET);
-            fp.pending = true;
-            fp.frame = frame_count;
-            fp.land = frame_count + 60;
-            final_at++;
-            final_left--;
-            break;
-        }
-    }
+    if (burst.active() && gpu.device)
+        burst.record(list, n, barriers, gpu, watched, frame_count);
     // The game records a frame's lists in parallel, so the core cannot tell at one place whether another
     // place of the same frame runs the passes too. On track the game reads the finished picture once
     // per frame for its HUD, as the first back buffer barrier of the HUD's list (or the first one that
@@ -2177,7 +1296,7 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
         }
         if (w.back) {
             back_use(w.back).place.place(frame_count);
-            if (!device && !init(w.back)) {
+            if (!gpu.device && !init(w.back)) {
                 broken = true;
                 return false;
             }
@@ -2187,9 +1306,9 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
                     m = &mark_of(list);
                 m->slot = k;
                 m->ran_back = w.back;
-                stats.in_list++;
-                stats.split_step += split_step;
-                stats.hud_read += at_read;
+                report.stats.in_list++;
+                report.stats.split_step += split_step;
+                report.stats.hud_read += at_read;
                 if (order_left) {
                     char at[24];
                     snprintf(at, sizeof at, " [PASSES@%04x]", unsigned(uintptr_t(w.back) & 0xffff));
@@ -2203,7 +1322,7 @@ bool on_barrier(ID3D12GraphicsCommandList *list, UINT n, const D3D12_RESOURCE_BA
         if (b.Type != D3D12_RESOURCE_BARRIER_TYPE_TRANSITION)
             continue;
         ID3D12Resource *r = b.Transition.pResource;
-        uint8_t c = watched_bits(r);
+        uint8_t c = watched.bits(r);
         bool tonemap = c & W_TONEMAP, back = c & W_BACK, depth = c & W_DEPTH;
         if (!m) {
             if (!tonemap && !back && !depth && !(c & W_HUDLESS))
@@ -2274,7 +1393,7 @@ void on_reset(ID3D12GraphicsCommandList *list)
             BackUse &u = back_use(it->second.ran_back);
             u.place.unplace();
         }
-        stats.dropped++;
+        report.stats.dropped++;
     }
     unmark(list);
 }
@@ -2325,7 +1444,7 @@ void on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d3d
             }
             if (m.slot >= 0 && signals < FRAMES)
                 signal[signals++] = m.slot;
-            trace.picture |= m.tonemap;
+            report.trace.picture |= m.tonemap;
             if (m.tonemap && !diag_done) {
                 log_diag(reinterpret_cast<ID3D12GraphicsCommandList *>(lists[i]), m);
                 diag_done = true;
@@ -2344,9 +1463,9 @@ void on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d3d
                 back_use(m.target).place.moved(m.state == D3D12_RESOURCE_STATE_RENDER_TARGET);
             if (m.tonemap && m.slot < 0 && split == n && !hud_reads() && !killed_now() && !passes.empty()) {
                 if (m.ui) {
-                    stats.ui_together++;
-                    trace.tried = postfx::IDLE_UI_TOGETHER;
-                    trace.why = postfx::idle_text(trace.tried);
+                    report.stats.ui_together++;
+                    report.trace.tried = postfx::IDLE_UI_TOGETHER;
+                    report.trace.why = postfx::idle_text(report.trace.tried);
                 } else if (m.target && m.state == D3D12_RESOURCE_STATE_RENDER_TARGET) {
                     // The picture is in the back buffer. A list that ends with the HUD-less step still open
                     // leaves the passes to the list that closes the step, which may draw the rest of the
@@ -2355,7 +1474,7 @@ void on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d3d
                     bool open = m.hudless && (m.hudless_state & D3D12_RESOURCE_STATE_UNORDERED_ACCESS);
                     bool may_defer = open && !frame_clock.game_frames(GetTickCount64(), started);
                     postfx::PictureEnd end = back_use(m.target).place.picture_submitted(frame_count, open, may_defer);
-                    stats.deferred += end == postfx::END_DEFER;
+                    report.stats.deferred += end == postfx::END_DEFER;
                     if (end == postfx::END_BETWEEN) {
                         split = i;
                         res = m.target;
@@ -2418,9 +1537,9 @@ void on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d3d
                             before        ? "between (before the list that takes the back buffer to the HUD)"
                             : after_close ? "between (after the list that closed the step)"
                                           : "between")) {
-                stats.between++;
-                stats.after_close += after_close;
-                stats.before_hud += before;
+                report.stats.between++;
+                report.stats.after_close += after_close;
+                report.stats.before_hud += before;
             }
         };
         if (!before)
@@ -2443,8 +1562,7 @@ void on_exec(ID3D12CommandQueue *q, UINT n, ID3D12CommandList *const *lists, d3d
                 Slot &s = slots[done[i]];
                 queue->Signal(s.fence, ++s.fence_value);
                 s.pending = false;
-                if (capture_slot == done[i])
-                    capture_fence = s.fence_value;
+                capture.signalled(done[i], s.fence_value);
             }
         });
     }
@@ -2503,16 +1621,16 @@ void refresh_live()
 }
 
 
-void drop_textures(std::vector<IUnknown *> &dead, Tex &t)
+void drop_textures(std::vector<IUnknown *> &dead, PassTexture &t)
 {
     dead.push_back(t.res);
     dead.push_back(t.upload);
     t.res = t.upload = nullptr;
 }
 
-Tex fresh_texture(const postfx::PlanTex &pt)
+PassTexture fresh_texture(const postfx::PlanTex &pt)
 {
-    Tex t;
+    PassTexture t;
     t.name = pt.name;
     t.file = pt.decl.file;
     t.scale = pt.decl.scale;
@@ -2534,12 +1652,12 @@ bool fit_frame()
 {
     UINT w = UINT(frame.desc.Width), h = frame.desc.Height;
     for (size_t i = legacy_textures; i < textures.size(); i++) {
-        Tex &t = textures[i];
+        PassTexture &t = textures[i];
         postfx::Size sz = postfx::texture_size(t.scale, t.width, t.height, w, h);
         t.w = sz.w;
         t.h = sz.h;
         if (shared(t) && !t.res) {
-            t.res = texture(t.w, t.h, t.format, t.file.empty(), levels_of(t));
+            t.res = gpu.texture(t.w, t.h, t.format, t.file.empty(), levels_of(t));
             t.clear = t.file.empty();
             if (!t.res)
                 return false;
@@ -2549,11 +1667,11 @@ bool fit_frame()
         if (!wk.orig)
             continue;
         for (size_t i = 0; i < textures.size(); i++)
-            if (!shared(textures[i]) && !wk.tex[i] && !(wk.tex[i] = texture(textures[i].w, textures[i].h, textures[i].format, true, levels_of(textures[i]))))
+            if (!shared(textures[i]) && !wk.tex[i] && !(wk.tex[i] = gpu.texture(textures[i].w, textures[i].h, textures[i].format, true, levels_of(textures[i]))))
                 return false;
         wk.clear = true;
     }
-    if (uses_previous && !frame.prev && !(frame.prev = texture(w, h, frame.view, false)))
+    if (uses_previous && !frame.prev && !(frame.prev = gpu.texture(w, h, frame.view, false)))
         return false;
     retire({frame.heap, frame.cpu});
     frame.heap = frame.cpu = nullptr;
@@ -2573,7 +1691,7 @@ void install_plan(postfx::Plan next)
         return;
     }
     std::vector<int> from = postfx::reuse_textures(plan, next);
-    std::vector<Tex> old_tex(std::make_move_iterator(textures.begin() + long(legacy_textures)),
+    std::vector<PassTexture> old_tex(std::make_move_iterator(textures.begin() + long(legacy_textures)),
                              std::make_move_iterator(textures.end()));
     std::vector<std::vector<ID3D12Resource *>> old_own(FRAMES);
     for (UINT k = 0; k < FRAMES; k++)
@@ -2607,7 +1725,7 @@ void install_plan(postfx::Plan next)
     }
     retire(std::move(dead));
     for (auto &pp : next.passes) {
-        Pass p;
+        RenderPass p;
         p.inst = pp.instance;
         const postfx::PlanInstance &pi = next.instances[size_t(pp.instance)];
         p.addon_id = pi.decl->addon;
@@ -2635,292 +1753,8 @@ void install_plan(postfx::Plan next)
     }
 }
 
-struct RuleLog {
-    bool on = false;
-    ULONGLONG since = 0;
-    unsigned count = 0;
-};
+RuleDriver rule_driver;
 
-postfx::RuleEngine rule_engine;
-std::vector<RuleLog> rule_log;
-ULONGLONG rules_loaded_at, rules_minute_at;
-LARGE_INTEGER rules_clock{};
-std::atomic<unsigned> pending_events[postfx::SIGNAL_COUNT];
-std::atomic<bool> in_session{false};
-bool rules_live;
-live_car::LiveCar live_now;
-bool live_ok;
-ULONGLONG live_trace_checked, live_trace_until, live_trace_line_at;
-int live_trace_surface[4] = {-2, -2, -2, -2};
-
-std::string rule_name(size_t i)
-{
-    const postfx::RuleSpec &r = active.rules[i];
-    return r.name.empty() ? "#" + std::to_string(r.order) : r.name;
-}
-
-std::string describe_cond(const postfx::RuleCond &c, const postfx::Signals &sig)
-{
-    const postfx::SignalInfo &info = postfx::SIGNALS[c.signal];
-    std::string id(info.id), unit(info.unit);
-    char buf[96];
-    if (c.op == postfx::OP_IS && c.signal == postfx::S_CAR_SURFACE) {
-        std::string_view name;
-        for (int w : sig.wheel)
-            if (w >= 0 && w < 32 && (c.mask >> w & 1)) {
-                name = postfx::signal_value_name(c.signal, size_t(w));
-                break;
-            }
-        std::snprintf(buf, sizeof buf, " = %.*s, %d wheel%s", int(name.size()), name.data(), c.wheels,
-                      c.wheels == 1 ? "" : "s");
-        return id + buf;
-    }
-    if (c.op == postfx::OP_IS) {
-        std::string_view name = postfx::signal_value_name(c.signal, size_t(sig.num[c.signal]));
-        std::snprintf(buf, sizeof buf, " = %.*s", int(name.size()), name.data());
-        return id + buf;
-    }
-    if (info.kind == postfx::SK_NUMBER) {
-        std::snprintf(buf, sizeof buf, " = %.3g%s%s", sig.num[c.signal], unit.empty() ? "" : " ", unit.c_str());
-        return id + buf;
-    }
-    if (info.kind == postfx::SK_EVENT && sig.n_events[c.signal] && sig.magnitude[c.signal][0] != 0) {
-        std::snprintf(buf, sizeof buf, " = %.3g%s%s", sig.magnitude[c.signal][0], unit.empty() ? "" : " ", unit.c_str());
-        return id + buf;
-    }
-    return id;
-}
-
-std::string describe_rule(size_t i, const postfx::Signals &sig)
-{
-    const postfx::RuleSpec &r = active.rules[i];
-    std::string out;
-    if (r.has_ramp)
-        return describe_cond({r.ramp_signal, postfx::OP_ABOVE}, sig);
-    for (auto &c : r.when)
-        out += (out.empty() ? "" : ", ") + describe_cond(c, sig);
-    return out;
-}
-
-void rules_reset()
-{
-    rule_engine.reset(active.rules, plan);
-    rule_log.assign(active.rules.size(), RuleLog{});
-    rules_loaded_at = GetTickCount64();
-    rules_minute_at = rules_loaded_at + 120000;
-    rules_clock = {};
-    rules_live = false;
-    for (auto &r : active.rules) {
-        auto car_signal = [](int sg) {
-            return (sg >= postfx::S_CAR_SPEED && sg <= postfx::S_CAR_SURFACE) || sg == postfx::S_SESSION_WETNESS ||
-                   sg == postfx::S_CAR_WETNESS;
-        };
-        rules_live |= r.has_ramp && car_signal(r.ramp_signal);
-        for (auto &c : r.when)
-            rules_live |= car_signal(c.signal);
-    }
-    for (auto &n : pending_events)
-        n.store(0);
-    for (auto &p : passes)
-        if (p.inst >= 0)
-            p.ruled_off = false;
-    for (size_t i = 0; i < active.rules.size(); i++) {
-        const postfx::RuleSpec &r = active.rules[i];
-        int unread = r.has_ramp && !postfx::SIGNALS[r.ramp_signal].in_game ? r.ramp_signal : -1;
-        for (auto &c : r.when)
-            if (unread < 0 && !postfx::SIGNALS[c.signal].in_game)
-                unread = c.signal;
-        if (unread >= 0)
-            swofty::log("[shaders] rule \"%s\": %.*s isn't read in game yet; it never fires", rule_name(i).c_str(),
-                        int(postfx::SIGNALS[unread].id.size()), postfx::SIGNALS[unread].id.data());
-    }
-}
-
-std::string surface_label(int game_id)
-{
-    int v = postfx::surface_value(game_id);
-    if (v < 0)
-        return "none";
-    return std::string(postfx::signal_value_name(postfx::S_CAR_SURFACE, size_t(v)));
-}
-
-void live_trace_tick(ULONGLONG now)
-{
-    if (now - live_trace_checked >= 1000) {
-        live_trace_checked = now;
-        std::wstring file = swofty_root_dir + L"shaders\\live.trace";
-        if (GetFileAttributesW(file.c_str()) != INVALID_FILE_ATTRIBUTES) {
-            std::string text = runtime::read_file(file, 64);
-            DeleteFileW(file.c_str());
-            unsigned secs = unsigned(std::strtoul(text.c_str(), nullptr, 10));
-            live_trace_until = now + 1000ull * std::min(secs ? secs : 30u, 3600u);
-            live_trace_line_at = 0;
-            for (int &s : live_trace_surface)
-                s = -2;
-            swofty::log("[shaders] live car trace for %u s", secs ? secs : 30u);
-        }
-    }
-}
-
-bool live_trace_on(ULONGLONG now)
-{
-    return live_trace_until && now < live_trace_until;
-}
-
-void live_trace_line(ULONGLONG now, const live_car::LiveCar &c)
-{
-    bool changed = false;
-    for (int i = 0; i < 4; i++)
-        if (live_trace_surface[i] != c.surface[i]) {
-            changed = true;
-            live_trace_surface[i] = c.surface[i];
-        }
-    if (!changed && now - live_trace_line_at < 1000)
-        return;
-    live_trace_line_at = now;
-    const uint8_t *r = c.surface;
-    swofty::log("[shaders] live car: speed=%.1f km/h gear=%d rpm=%.0f/%.0f thr=%.2f brk=%.2f steer=%.2f g=%.2f/%.2f "
-                "surface=FL:%s FR:%s RL:%s RR:%s (raw %d %d %d %d) player=%d ai=%d wetness=%.3f wheels_wet=%.3f",
-                c.speed_kmh, c.gear, c.rpm, c.max_rpm, c.throttle, c.brake, c.steer, c.g_lateral, c.g_long,
-                surface_label(r[0]).c_str(), surface_label(r[1]).c_str(), surface_label(r[2]).c_str(),
-                surface_label(r[3]).c_str(), r[0], r[1], r[2],
-                r[3], c.player, c.ai ? 1 : 0, c.has_wetness ? double(c.wetness) : -1.0,
-                c.has_wheel_wetness ? double(c.wheel_wetness) : -1.0);
-}
-
-void live_frame(ULONGLONG now)
-{
-    live_trace_tick(now);
-    bool tracing = live_trace_on(now);
-    live_ok = false;
-    if (!rules_live && !tracing)
-        return;
-    live_ok = live_car::read(live_now);
-    if (tracing && live_ok)
-        live_trace_line(now, live_now);
-    else if (tracing && now - live_trace_line_at >= 1000) {
-        live_trace_line_at = now;
-        swofty::log("[shaders] live car: no player car; wetness=%.3f", live_now.has_wetness ? double(live_now.wetness) : -1.0);
-    }
-}
-
-void rules_frame(const view::State &v, ULONGLONG now)
-{
-    if (!rule_engine.rules())
-        return;
-    LARGE_INTEGER t, freq;
-    QueryPerformanceCounter(&t);
-    QueryPerformanceFrequency(&freq);
-    double ms = rules_clock.QuadPart ? double(t.QuadPart - rules_clock.QuadPart) * 1000.0 / double(freq.QuadPart) : 0.0;
-    rules_clock = t;
-    postfx::Signals sig;
-    if (v.valid && v.kind >= 1 && v.kind <= 6)
-        sig.set(postfx::S_VIEW_CAMERA, v.kind - 1);
-    sig.set(postfx::S_VIEW_REPLAY, (v.flags & view::REPLAY) != 0);
-    sig.set(postfx::S_VIEW_PAUSED, (v.flags & view::PAUSED) != 0);
-    sig.set(postfx::S_VIEW_PHOTO, (v.flags & view::PHOTO) != 0);
-    sig.set(postfx::S_VIEW_MENU, !in_session.load(std::memory_order_relaxed));
-    sig.set(postfx::S_VIEW_CUTSCENE, (v.flags & view::CUTSCENE) != 0);
-    sig.set(postfx::S_VIEW_SPECTATING, (v.flags & view::SPECTATING) != 0);
-    if (live_ok && rules_live) {
-        const live_car::LiveCar &c = live_now;
-        if (c.has_speed)
-            sig.set(postfx::S_CAR_SPEED, c.speed_kmh);
-        if (c.has_rpm)
-            sig.set(postfx::S_CAR_RPM, std::clamp(double(c.rpm) / double(c.max_rpm), 0.0, 1.0));
-        if (c.has_gear)
-            sig.set(postfx::S_CAR_GEAR, c.gear);
-        if (c.has_pedals) {
-            sig.set(postfx::S_CAR_THROTTLE, c.throttle);
-            sig.set(postfx::S_CAR_BRAKE, c.brake);
-        }
-        if (c.has_steer)
-            sig.set(postfx::S_CAR_STEER, c.steer);
-        if (c.has_g) {
-            sig.set(postfx::S_CAR_G_LATERAL, c.g_lateral);
-            sig.set(postfx::S_CAR_G_LONG, c.g_long);
-        }
-        if (c.has_surface) {
-            int w[4];
-            for (int i = 0; i < 4; i++)
-                w[i] = postfx::surface_value(c.surface[i]);
-            sig.set_surface(w);
-        }
-    }
-    if (rules_live && live_now.has_wetness)
-        sig.set(postfx::S_SESSION_WETNESS, live_now.wetness);
-    if (live_ok && rules_live && live_now.has_wheel_wetness)
-        sig.set(postfx::S_CAR_WETNESS, live_now.wheel_wetness);
-    for (int s : {postfx::S_SESSION_START, postfx::S_RACE_START, postfx::S_SESSION_LAP, postfx::S_SESSION_END}) {
-        unsigned n = pending_events[s].exchange(0);
-        for (unsigned i = 0; i < n && i < postfx::Signals::MAX_EVENTS; i++)
-            sig.add_event(s);
-    }
-    rule_engine.step(sig, ms);
-    for (auto &p : passes)
-        if (p.inst >= 0 && size_t(p.inst) < plan.instances.size()) {
-            memcpy(p.options, rule_engine.options(size_t(p.inst)), sizeof p.options);
-            p.ruled_off = rule_engine.off(size_t(p.inst));
-        }
-    bool early = now - rules_loaded_at < 60000;
-    for (size_t i = 0; i < rule_log.size(); i++) {
-        const auto &st = rule_engine.state(i);
-        RuleLog &l = rule_log[i];
-        if (!st.changed)
-            continue;
-        if (st.on) {
-            l.since = now;
-            if (!early)
-                l.count++;
-            else
-                swofty::log("[shaders] rule \"%s\" on (%s)", rule_name(i).c_str(), describe_rule(i, sig).c_str());
-        } else if (early) {
-            swofty::log("[shaders] rule \"%s\" off after %.1f s", rule_name(i).c_str(), double(now - l.since) / 1000.0);
-        }
-    }
-    if (now >= rules_minute_at) {
-        rules_minute_at += 60000;
-        for (size_t i = 0; i < rule_log.size(); i++) {
-            if (rule_log[i].count)
-                swofty::log("[shaders] rule \"%s\": %u time(s) on in the last 60 s", rule_name(i).c_str(), rule_log[i].count);
-            rule_log[i].count = 0;
-        }
-    }
-}
-
-bool player_car(int64_t index)
-{
-    static uintptr_t table = 0, count = 0;
-    static bool tried = false;
-    if (!tried) {
-        tried = true;
-        if (runtime::verified_build() && swofty::api) {
-            table = swofty::api->resolve("g_Sess_VehicleTable");
-            count = swofty::api->resolve("g_Sess_VehicleCount");
-        }
-        if (!table || !count)
-            swofty::log("[shaders] session.lap is not read: the vehicle table does not resolve, so the player's car "
-                        "cannot be told from the AI's");
-    }
-    if (!table || !count || index < 0 || index >= 26)
-        return false;
-    auto *n = reinterpret_cast<const uint32_t *>(count);
-    auto *const *cars = reinterpret_cast<uint8_t *const *>(table);
-    if (!runtime::readable(n, 4) || !runtime::readable(cars, 8 * 26) || uint64_t(index) >= *n)
-        return false;
-    const uint8_t *car = cars[index];
-    return car && runtime::readable(car, 0x130) && car[0x124] == 0;
-}
-
-void on_rule_event(const SwoftyEvent *ev, void *user)
-{
-    int s = int(reinterpret_cast<intptr_t>(user));
-    if (s == postfx::S_SESSION_LAP && !player_car(ev->a))
-        return;
-    if (s == postfx::S_SESSION_START || s == postfx::S_SESSION_END)
-        in_session.store(s == postfx::S_SESSION_START, std::memory_order_relaxed);
-    pending_events[s].fetch_add(1);
-}
 
 void on_flow_frame(double, void *);
 
@@ -2933,17 +1767,7 @@ void subscribe_rule_events()
     if (!ev->on_frame || ev->on_frame(on_flow_frame, nullptr, &frame_token) != SWOFTY_ASSET_OK)
         swofty::log("[postfx] the game's flow tick is not read: while no Present reaches the core, the toggle keys and "
                     "live settings wait for one");
-    struct Feed {
-        const char *event;
-        int signal;
-    };
-    for (Feed f : {Feed{SWOFTY_EVENT_SESSION_START, postfx::S_SESSION_START},
-                   Feed{SWOFTY_EVENT_RACE_START, postfx::S_RACE_START}, Feed{SWOFTY_EVENT_LAP, postfx::S_SESSION_LAP},
-                   Feed{SWOFTY_EVENT_SESSION_END, postfx::S_SESSION_END}}) {
-        uint32_t token = 0;
-        if (ev->subscribe(f.event, on_rule_event, reinterpret_cast<void *>(intptr_t(f.signal)), &token) != SWOFTY_ASSET_OK)
-            swofty::log("[shaders] %s is not read: the core's events are off", f.event);
-    }
+    rule_driver.subscribe(ev);
 }
 
 void apply_active(postfx::ActiveSpec next)
@@ -2955,7 +1779,7 @@ void apply_active(postfx::ActiveSpec next)
     shader_vk = postfx::key_code(next.toggle_key);
     install_plan(std::move(p));
     active = std::move(next);
-    rules_reset();
+    rule_driver.reset(active, plan, passes);
     swofty::log("[shaders] config \"%s\" (serial %llu): %zu effect(s), %zu pass(es), toggle key %s", active.name.c_str(),
                 (unsigned long long)active.serial, n_effects, n_passes,
                 shader_vk ? active.toggle_key.c_str() : "none");
@@ -3017,19 +1841,6 @@ void poll_toggles()
     shader_key_down = raw;
 }
 
-void log_trace()
-{
-    if (!trace_left)
-        return;
-    trace_left--;
-    swofty::log("[postfx] trace present=%u f=%u path=%s runs=%u passes=%u/%u view=%s flags=%s valid=%d serial=%u fg=%s "
-                "back=%p%s%s%s%s",
-                trace_present++, frame_count, trace.path, trace.runs, trace.ran, trace.live,
-                std::string(postfx::view_text(trace.view.kind)).c_str(), postfx::flag_text(trace.view.flags).c_str(),
-                int(trace.view.valid), trace.view.serial, fg_on.load() ? "on" : "off", static_cast<void *>(trace.back),
-                trace.why ? " why=" : "", trace.why ? trace.why : "", trace.skipped.empty() ? "" : " skipped=",
-                trace.skipped.c_str());
-}
 
 void check_trace_file(ULONGLONG now)
 {
@@ -3044,81 +1855,23 @@ void check_trace_file(ULONGLONG now)
         order_left = lists ? lists : 200;
         swofty::log("[postfx] logging the barrier order of the next %u list(s) that draw the picture", order_left);
     }
-    if (!clip_dir.empty() && GetFileAttributesW(clip_file.c_str()) != INVALID_FILE_ATTRIBUTES) {
-        std::string text = runtime::read_file(clip_file, 64);
-        DeleteFileW(clip_file.c_str());
-        clip_start(unsigned(std::strtoul(text.c_str(), nullptr, 10)));
-    }
-    std::wstring burst_file = swofty_root_dir + L"postfx.burst";
-    if (GetFileAttributesW(burst_file.c_str()) != INVALID_FILE_ATTRIBUTES && !final_left) {
-        std::string text = runtime::read_file(burst_file, 64);
-        DeleteFileW(burst_file.c_str());
-        unsigned frames = unsigned(std::strtoul(text.c_str(), nullptr, 10));
-        final_left = std::min(frames ? frames : 60u, 240u);
-        swofty::log("[postfx] burst: reading back the next %u frame(s) as the game hands them to Present", final_left);
-    }
+    clip.check_file();
+    burst.check_file(swofty_root_dir);
     if (GetFileAttributesW(trace_file.c_str()) == INVALID_FILE_ATTRIBUTES)
         return;
     std::string text = runtime::read_file(trace_file, 64);
     DeleteFileW(trace_file.c_str());
     unsigned frames = unsigned(std::strtoul(text.c_str(), nullptr, 10));
-    trace_left = frames ? frames : 600;
-    swofty::log("[postfx] tracing the next %u presented frame(s)", trace_left);
+    report.trace_next(frames ? frames : 600);
+    swofty::log("[postfx] tracing the next %u presented frame(s)", frames ? frames : 600);
 }
 
-void final_land()
-{
-    for (auto &fp : finals) {
-        if (!fp.pending || frame_count < fp.land)
-            continue;
-        fp.pending = false;
-        uint8_t *mapped = nullptr;
-        if (FAILED(fp.rb->Map(0, nullptr, reinterpret_cast<void **>(&mapped))))
-            continue;
-        double m[4];
-        grid_mean(mapped + final_fp.Offset, final_fp.Footprint.RowPitch, final_w, final_h, frame.view, m);
-        if (!burst_dir.empty()) {
-            char file[64];
-            snprintf(file, sizeof file, "\\final-%08u.ppm", fp.frame);
-            write_ppm(burst_dir + file, mapped + final_fp.Offset, final_fp.Footprint.RowPitch, final_w, final_h,
-                      frame.view);
-        }
-        D3D12_RANGE none{0, 0};
-        fp.rb->Unmap(0, &none);
-        swofty::log("[postfx] burst f=%u mean=%.4f,%.4f,%.4f sat=%.4f", fp.frame, m[0], m[1], m[2], m[3]);
-    }
-}
 
-// Why the frame that closes went without the passes, counted, and one line when they stop and when they run again
-// (postfx::ONOFF_LINES a count line at most; the count line says how many were left out).
 void note_idle()
 {
     if (passes.empty())
         return;
-    postfx::Idle why = postfx::IDLE_NONE;
-    if (!trace.runs) {
-        why = postfx::idle_reason({killed, shaders_off, hud_reads(), trace.picture, trace.tried});
-        stats.idle[why]++;
-    }
-    postfx::OnOff::Change c = onoff.frame(trace.runs > 0, frame_count, why);
-    if (c == postfx::OnOff::SAME)
-        return;
-    if (onoff_lines >= postfx::ONOFF_LINES) {
-        stats.onoff_untold++;
-        return;
-    }
-    onoff_lines++;
-    view::State v = view::current();
-    std::string view = std::string(postfx::view_text(v.kind)), flags = postfx::flag_text(v.flags);
-    if (c == postfx::OnOff::STOPPED)
-        swofty::log("[postfx] the passes stopped at frame %u: %s%s%s (view %s, flags %s, serial %u)", frame_count,
-                    postfx::idle_text(why), why == postfx::IDLE_KEY ? ", key " : "",
-                    why == postfx::IDLE_KEY ? active.toggle_key.c_str() : "", view.c_str(), flags.c_str(), v.serial);
-    else
-        swofty::log("[postfx] the passes run again at frame %u, %s, after %u frame(s) without them: %s (view %s, "
-                    "flags %s, serial %u)",
-                    frame_count, trace.path, frame_count - onoff.off_at, postfx::idle_text(onoff.why), view.c_str(),
-                    flags.c_str(), v.serial);
+    report.note_idle(killed, shaders_off, hud_reads(), frame_count, active.toggle_key);
 }
 
 // The frame closes: the passes' frame clock, its trace line and its counts.
@@ -3128,13 +1881,13 @@ void end_frame(ULONGLONG now)
     frame_at = now;
     note_idle();
     frame_count++;
-    stats.presented++;
-    stats.without += trace.runs == 0;
-    stats.doubled += trace.runs > 1;
-    final_land();
-    clip_land();
-    log_trace();
-    trace = Trace{};
+    report.stats.presented++;
+    report.stats.without += report.trace.runs == 0;
+    report.stats.doubled += report.trace.runs > 1;
+    burst.land(frame_count, frame.view);
+    clip.land(slots, frame_count);
+    report.log_trace(frame_count, fg_on.load());
+    report.trace = FrameReport::Trace{};
 }
 
 // The toggle keys, the live settings, the shader config and the rules.
@@ -3143,8 +1896,8 @@ void tick(ULONGLONG now)
     check_trace_file(now);
     poll_toggles();
     check_active(now, false);
-    live_frame(now);
-    rules_frame(view::current(), now);
+    rule_driver.live_frame(now, swofty_root_dir);
+    rule_driver.frame(view::current(), now, active, plan, passes);
     if (now - live_at >= 250) {
         live_at = now;
         refresh_live();
@@ -3153,49 +1906,7 @@ void tick(ULONGLONG now)
 
 void stat_line(ULONGLONG now)
 {
-    if (now < stat_at)
-        return;
-    bool game_frames = frame_clock.game_frames(now, started), told = false;
-    unsigned secs = unsigned((now - stat_from + 500) / 1000);
-    const unsigned *idle = stats.idle;
-    if (stat_at && game_frames && !passes.empty()) {
-        told = true;
-        swofty::log("[postfx] %s: %u real frame(s), %u pass run(s), %u skipped in the last %u s (%u in the game's list, "
-                    "%u between its lists, %u with the GPU behind); %u Present(s) from frame generation; %u run(s) "
-                    "without the frame before's result (%u after a frame gap); %u on/off line(s) left out",
-                    stats.generated ? "xess fg" : "no present", stats.presented, stats.runs, stats.unplaced, secs,
-                    stats.in_list, stats.between, stats.busy, stats.generated, stats.no_previous, stats.prev_gap,
-                    stats.onoff_untold);
-    } else if (stat_at && ran_total) {
-        told = true;
-        swofty::log("[postfx] last %u s: %u frame(s) presented; passes ran in the game's list on %u (%u at the HUD's "
-                    "read of the picture, %u in a split step's closing list), between its lists on %u (%u after a "
-                    "split step's closing list, %u before the list that takes the back buffer to the HUD) and at "
-                    "Present, over the HUD, on %u (%u on a frame generation swapchain's copy of the frame); %u picture "
-                    "list(s) left the HUD-less step to a later list; %u "
-                    "recorded into lists the game reset unsubmitted; %u without passes (%u toggle key, %u "
-                    "swofty/postfx.off, %u after the HUD's last read of the picture, %u every pass off: %u budget or "
-                    "pipeline, %u rule, %u option, %u addon key, %u view, %u mixed; %u with the picture and the HUD "
-                    "in one list, %u with list state from before the hooks, %u with the GPU behind, %u with no "
-                    "picture list, %u with no place in the frame's lists); %u frame(s) ran them twice; %u run(s) "
-                    "without the frame before's result (%u after a frame gap); %u on/off line(s) left out",
-                    secs, stats.presented, stats.in_list, stats.hud_read, stats.split_step, stats.between,
-                    stats.after_close, stats.before_hud, stats.at_present, stats.copied, stats.deferred, stats.dropped,
-                    stats.without,
-                    idle[postfx::IDLE_KEY], idle[postfx::IDLE_KILL], idle[postfx::IDLE_HUD_READ],
-                    idle[postfx::IDLE_PASS_OFF] + idle[postfx::IDLE_RULE] + idle[postfx::IDLE_OPTION] +
-                        idle[postfx::IDLE_ADDON_KEY] + idle[postfx::IDLE_VIEW] + idle[postfx::IDLE_PASSES],
-                    idle[postfx::IDLE_PASS_OFF], idle[postfx::IDLE_RULE], idle[postfx::IDLE_OPTION],
-                    idle[postfx::IDLE_ADDON_KEY], idle[postfx::IDLE_VIEW], idle[postfx::IDLE_PASSES],
-                    idle[postfx::IDLE_UI_TOGETHER], idle[postfx::IDLE_LIST_STATE], idle[postfx::IDLE_BUSY],
-                    idle[postfx::IDLE_NO_PICTURE], idle[postfx::IDLE_UNPLACED], stats.doubled, stats.no_previous,
-                    stats.prev_gap, stats.onoff_untold);
-    }
-    stat_lines += told;
-    stat_from = now;
-    stat_at = now + postfx::stat_window_ms(stat_lines);
-    stats = Stats{};
-    onoff_lines = 0;
+    report.stat_line(now, frame_clock.game_frames(now, started), !passes.empty(), ran_total);
 }
 
 // The frame generation module that presents frames of its own on a swapchain (postfx::presents_own_frames): the
@@ -3237,7 +1948,7 @@ void present_fallback(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known)
         if (direct && own->place.presented(frame_count) &&
             run_between(known->queue, shown, D3D12_RESOURCE_STATE_PRESENT, nullptr, D3D12_RESOURCE_STATE_COMMON,
                         "at Present"))
-            stats.at_present++;
+            report.stats.at_present++;
     } else {
         D3D12_RESOURCE_DESC a = shown->GetDesc(), b = waiting->back->GetDesc();
         bool same_shape = a.Width == b.Width && a.Height == b.Height && a.Format == b.Format;
@@ -3253,12 +1964,12 @@ void present_fallback(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known)
                         : same_shape ? "run on that copy"
                                      : "do not run on that copy, which has another size or format");
         if (direct &&
-            postfx::shown_is_waiting(generating, trace.runs, frame_count, waiting->place.opened_at, same_shape) &&
+            postfx::shown_is_waiting(generating, report.trace.runs, frame_count, waiting->place.opened_at, same_shape) &&
             waiting->place.presented(frame_count) &&
             run_between(known->queue, shown, D3D12_RESOURCE_STATE_PRESENT, nullptr, D3D12_RESOURCE_STATE_COMMON,
                         "at Present (the swapchain's copy)")) {
-            stats.at_present++;
-            stats.copied++;
+            report.stats.at_present++;
+            report.stats.copied++;
         }
     }
     shown->Release();
@@ -3279,7 +1990,7 @@ void on_present(IDXGISwapChain3 *sc, const d3d12hooks::Swapchain *known, void *c
     present_at.store(now, std::memory_order_relaxed);
     std::string by = own_frames_by(known, caller);
     bool generated = !by.empty();
-    stats.generated += generated;
+    report.stats.generated += generated;
     if (frame_clock.present(now, generated, started)) {
         present_fallback(sc, known);
         end_frame(now);
@@ -3302,7 +2013,7 @@ void game_frame(const void *was, ULONGLONG now)
 {
     for (auto &u : back_uses)
         if (was && u.back == was && !postfx::placed_lately(frame_count, u.place.placed_at))
-            stats.unplaced++;
+            report.stats.unplaced++;
     end_frame(now);
     stat_line(now);
 }
@@ -3344,7 +2055,7 @@ bool load_passes()
 {
     const json::Value &cfg = runtime::config();
     for (auto &e : cfg["postfx_textures"].a) {
-        Tex t;
+        PassTexture t;
         t.name = e["name"].str();
         t.file = e["file"].str();
         if (e["scale"].type == json::Value::Num)
@@ -3364,7 +2075,7 @@ bool load_passes()
         textures.push_back(std::move(t));
     }
     for (auto &e : cfg["postfx"].a) {
-        Pass p;
+        RenderPass p;
         p.addon = e["addon"].str("an addon");
         p.addon_id = e["addon_id"].str();
         p.name = e["name"].str("pass");
@@ -3419,7 +2130,7 @@ bool load_passes()
         passes.push_back(std::move(p));
     }
     for (auto &e : cfg["postfx_toggles"].a) {
-        Toggle t;
+        AddonToggle t;
         t.addon_id = e["addon_id"].str();
         t.option = e["option"].str();
         t.addon = t.addon_id;
@@ -3442,7 +2153,7 @@ void passes_listed()
     std::lock_guard<std::recursive_mutex> g(lock);
     std::lock_guard<std::mutex> d(data_lock);
     pass_data.listed([](const std::string &k) {
-        for (const Pass &p : passes)
+        for (const RenderPass &p : passes)
             if (postfx::DataStore::key(p.addon_id, p.name) == k)
                 return true;
         return false;
@@ -3480,17 +2191,15 @@ void postfx_setup()
     check_active(GetTickCount64(), true);
     subscribe_rule_events();
     if (GetEnvironmentVariableA("SWOFTY_POSTFX_CAPTURE", v, sizeof v) && v[0]) {
-        capture_dir = v;
-        capture_file = swofty_root() + L"postfx.capture";
+        capture.configure(v, swofty_root() + L"postfx.capture");
     }
     if (GetEnvironmentVariableA("SWOFTY_POSTFX_CLIP", v, sizeof v) && v[0]) {
-        clip_dir = v;
-        clip_file = swofty_root() + L"postfx.clip";
+        clip.configure(v, swofty_root() + L"postfx.clip");
     }
     if (GetEnvironmentVariableA("SWOFTY_POSTFX_BURST_DUMP", v, sizeof v) && v[0])
-        burst_dir = v;
+        burst.configure(v);
     if (GetEnvironmentVariableA("SWOFTY_POSTFX_TRACE", v, sizeof v) && v[0])
-        trace_left = unsigned(std::strtoul(v, nullptr, 10));
+        report.trace_next(unsigned(std::strtoul(v, nullptr, 10)));
     if (GetEnvironmentVariableA("SWOFTY_POSTFX_ORDER", v, sizeof v) && v[0])
         order_left = unsigned(std::strtoul(v, nullptr, 10));
     refresh_live();
@@ -3514,7 +2223,7 @@ void postfx_setup()
     if (!d3d12hooks::arm_swapchain())
         swofty::log("[postfx] the swapchain hooks did not arm; toggle keys, live settings and traces are off");
     swofty::log("[postfx] %zu pass(es) and %zu texture(s) wait for the game's picture%s%s", passes.size(),
-                textures.size(), capture_dir.empty() ? "" : "; captures go to ", capture_dir.c_str());
+                textures.size(), capture.dir().empty() ? "" : "; captures go to ", capture.dir().c_str());
 }
 
 }
@@ -3579,7 +2288,7 @@ extern "C" __declspec(dllexport) int SwoftyCorePostfxSetData(const char *addon_i
     bool known = false, running = false;
     {
         std::lock_guard<std::recursive_mutex> g(lock);
-        for (const Pass &p : passes)
+        for (const RenderPass &p : passes)
             if (p.addon_id == addon_id && p.name == pass) {
                 known = true;
                 running = running ||

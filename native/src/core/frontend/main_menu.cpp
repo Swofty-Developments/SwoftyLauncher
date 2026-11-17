@@ -31,7 +31,7 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value);
 
 // The main menu in rows. FeTile_Build_List's home case adds the stock tiles in order: Braking Point, Career,
 // F1 The Movie, F1 World, the challenge tile, a divider, Local Multiplayer, League Racing, Player Hub, Theatre.
-// site_FeHome_AfterCareerCall (swofty_core.cpp) runs right after the Career tile and calls add_tiles, which adds
+// site_FeHome_AfterCareerCall (home_tiles.cpp) runs right after the Career tile and calls add_tiles, which adds
 // Grand Prix and Time Trial as two copies of the F1 World item (their own id, title and description over the
 // stock populate), Split Screen as the stock Local Multiplayer item with its own title (its route opens the
 // game's Local Multiplayer list, the lone Splitscreen tile), the challenge tile when the game builds it, Theatre,
