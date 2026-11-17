@@ -79,10 +79,12 @@ the installer and the release builds keep no Rust cache.
 ## First run of the bindings workflow
 
 `bindings.yml` runs on `pull_request_target`, which uses main's copy of the workflow, so it first runs once it
-is on main. Check it once with three pull requests from a fork, then delete the test record.
+is on main. Check it once with four pull requests from a fork, then delete the test records.
 
 1. Settings: General → Allow auto-merge; a ruleset on `main` that requires a pull request and the CI checks
-   with no bypass; the label `bindings: auto-merge`.
+   with no bypass; the label `bindings: auto-merge`. Actions → General → the approval rule for fork pull
+   request workflows decides whether a maintainer must approve `ci.yml` on a new contributor's pull request
+   before its checks run; `bindings.yml` runs either way.
 2. Pull request A, one valid record. On a machine with the game, `binding.py new` then `binding.py verify
    --exe … --by <fork owner>` for an address the knowledge base lacks; push only that file. Expected: `validate`
    passes with "Binding check: auto" in its summary, `automerge` adds the label and enables auto-merge, and

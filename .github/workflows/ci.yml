@@ -263,6 +263,13 @@ jobs:
         shell: bash
         run: echo "CACHE_ON_FAILURE=true" >> "$GITHUB_ENV"
 
+      # A hosted Windows runner has 4 cores, and most of its test time is spent waiting on files and processes
+      # (the summed test time is 1433 s against 225 s on Linux), so it runs twice as many tests at once.
+      - name: More tests at once on a hosted Windows runner
+        if: runner.os == 'Windows' && runner.environment == 'github-hosted'
+        shell: bash
+        run: echo "NEXTEST_TEST_THREADS=8" >> "$GITHUB_ENV"
+
       # Every test of every binary in one pool (.config/nextest.toml), with the slow ones listed at the end.
       # The real-file round trips skip without F1_25_DIR; CI has no game files.
       - name: Test
@@ -449,23 +456,12 @@ jobs:
       - name: RE tools unit tests
         run: python3 -m unittest discover -s re/tools/tests
 
-      # The native scripts pin their compilers to the maintainer's healthy cores (taskset -c 2-7,...),
-      # which leaves two of a hosted runner's four. This shim drops the pin and runs the command as is.
-      - name: Use every runner core
-        run: |
-          mkdir -p "$RUNNER_TEMP/bin"
-          cat > "$RUNNER_TEMP/bin/taskset" <<'EOF'
-          #!/bin/sh
-          [ "$1" = -c ] && shift 2
-          exec "$@"
-          EOF
-          chmod +x "$RUNNER_TEMP/bin/taskset"
-          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
-
       # The native tests run side by side, and the stock xvfb-run -a can give two calls started together the
       # same display. This one takes the next display number from a counter under a lock.
       - name: Give every xvfb-run its own display
         run: |
+          mkdir -p "$RUNNER_TEMP/bin"
+          echo "$RUNNER_TEMP/bin" >> "$GITHUB_PATH"
           cat > "$RUNNER_TEMP/bin/xvfb-run" <<'EOF'
           #!/bin/bash
           while [ "${1:-}" = -a ] || [ "${1:-}" = --auto-servernum ]; do shift; done
