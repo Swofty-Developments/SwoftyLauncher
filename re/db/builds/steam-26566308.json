@@ -578,6 +578,18 @@
     "kind": "rel32",
     "insn": 3
    }
+  },
+  "Car_Differential_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 84 8F CA BB 0F 8C 99 C5",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours (+0x2870, as Car_Write_Differential and Car_Write_FuelTank), its one vtable slot is at the same place relative to the KB build's (+0x21c0) and its jmp target starts with the same prologue as on the KB build."
+  },
+  "Car_FuelEcu_Reset_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 9F 06 66 0F 82 F8 30 90",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours (+0x2870, as Car_Write_Differential and Car_Write_FuelTank), its one vtable slot is at the same place relative to the KB build's (+0x21c0) and its jmp target starts with the same prologue as on the KB build."
+  },
+  "Car_Read_Differential_Thunk": {
+   "pattern": "E9 ?? ?? ?? ?? 71 EE F5 6E E0 C2 D9 FE",
+   "note": "The bytes after the protector thunk's jmp are build-specific filler. The thunk is at the same place relative to its neighbours (+0x2870, as Car_Write_Differential and Car_Write_FuelTank), its one vtable slot is at the same place relative to the KB build's (+0x21c0) and its jmp target starts with the same prologue as on the KB build."
   }
  },
  "hints": {
@@ -893,6 +905,9 @@
   "Car_DetachablePart_Update": {
    "match": "0x466af40"
   },
+  "Car_Differential_Reset_Thunk": {
+   "match": "0x4680880"
+  },
   "Car_Engine_ComputeDerived_Thunk": {
    "match": "0x2973e80"
   },
@@ -901,6 +916,9 @@
   },
   "Car_FrontWing_OnCollision": {
    "match": "0x4662630"
+  },
+  "Car_FuelEcu_Reset_Thunk": {
+   "match": "0x4690dc0"
   },
   "Car_FuelEcu_SetMode_Thunk": {
    "match": "0x4710a12"
@@ -919,6 +937,9 @@
   },
   "Car_Powertrain_Step": {
    "match": "0x46e4b00"
+  },
+  "Car_Read_Differential_Thunk": {
+   "match": "0x4680660"
   },
   "Car_Read_Engine": {
    "match": "0x4687ef0"
