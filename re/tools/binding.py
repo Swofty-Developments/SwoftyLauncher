@@ -294,6 +294,22 @@ def read_tsv_at(db, table):
     return [dict(zip(cols, ln.split('\t'))) for ln in lines]
 
 
+def lint_with(changes):
+    """kb_lint's structural rules over the base branch plus these record files."""
+    import kb_lint
+    records = []
+    for path, data in changes:
+        try:
+            records.append(br.Record.from_bytes(data, path[len('re/bindings/'):]))
+        except br.RecordError:
+            continue
+    br.Store.get().overlay(records)
+    try:
+        return [f'kb_lint: {e}' for e in kb_lint.KbLint(evidence_files=False, exe=False).run().E]
+    finally:
+        br.Store.forget()
+
+
 def cmd_ci(a):
     """Classify a pull request. --files is the GitHub API file list; --head holds the PR's copies of the binding
     records it touches (written by the workflow from git blobs, never executed). Everything else comes from this
@@ -317,6 +333,11 @@ def cmd_ci(a):
             old = open(base, 'rb').read(br.MAX_BYTES + 1) if os.path.isfile(base) and not os.path.islink(base) else None
             changes.append((path, old, new))
         result = bc.classify(changes, a.author, bc.Knowledge(), kb.ROOT)
+        if result['verdict'] != 'fail':
+            lint_errors = lint_with([(path, new) for path, _, new in changes if new is not None])
+            if lint_errors:
+                result['verdict'] = 'fail'
+                result['errors'] += lint_errors
         if other:
             result['verdict'] = 'fail' if result['verdict'] == 'fail' else 'review'
             result['notes'].append(f'{len(other)} file(s) outside re/bindings/*/*.json: review needed')

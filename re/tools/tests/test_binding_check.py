@@ -145,6 +145,13 @@ class CheckRecord(Base):
             d['row']['addr'] = taken
         self.assertTrue(any('is already' in e for e in self.errors(m)))
 
+    def test_cannot_inherit_old_verify_rows(self):
+        k = bc.Knowledge.__new__(bc.Knowledge)
+        k.__dict__ = dict(self.fresh.__dict__)
+        k.verified = {**self.fresh.verified, ('global', self.doc['name']): None}
+        errs = bc.check_record(br.Record(as_new(self.doc), SAMPLE), k, 're/bindings/' + SAMPLE)
+        self.assertTrue(any('cannot inherit' in e for e in errs), errs)
+
     def test_pattern_rules(self):
         def short(d):
             d['signature']['pattern'] = 'E8 ?? ?? ?? ??'
@@ -288,6 +295,16 @@ class CiCommand(Base):
             self.assertIn(code, (0, 1))
         finally:
             shutil.rmtree(tmp)
+
+
+class CiLint(Base):
+    def test_ci_lints_the_pull_requests_records_with_the_base(self):
+        import binding
+        d = as_new(self.doc)
+        d['row']['evidence'] = 'xref:0x1436a3b74 decomp:x'
+        errs = binding.lint_with([('re/bindings/' + SAMPLE, raw(d))])
+        self.assertTrue(any('malformed' in e for e in errs), errs)
+        self.assertEqual(binding.lint_with([('re/bindings/' + SAMPLE, raw(self.doc))]), [])
 
 
 class UnfoldKeepsBindgenOutput(unittest.TestCase):

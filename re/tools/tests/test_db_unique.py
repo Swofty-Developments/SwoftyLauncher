@@ -31,5 +31,11 @@ class UniqueKeys(unittest.TestCase):
         self.assertEqual(binding.check_paths([]), [])
 
 
+    def test_structural_lint_is_clean(self):
+        import kb_lint
+        lint = kb_lint.KbLint(evidence_files=False, exe=False).run()
+        self.assertEqual(lint.E, [])
+
+
 if __name__ == "__main__":
     unittest.main()

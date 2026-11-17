@@ -54,6 +54,9 @@ class Knowledge:
             for r in kb.read_table(t)[0]:
                 self.names[r['name']] = (t, r.get('_record'))
                 self.addrs[t][r['addr']] = (r['name'], r.get('_record'))
+        self.verified = {}
+        for v in kb.read_table('verify')[0]:
+            self.verified.setdefault((v['kind'], v['item']), v.get('_record'))
         self.builds = {self.build['sha256']: 'KB build'}
         bdir = os.path.join(kb.DB, 'builds')
         for f in sorted(os.listdir(bdir)) if os.path.isdir(bdir) else ():
@@ -72,6 +75,7 @@ class Knowledge:
         k.__dict__ = dict(self.__dict__)
         mine = record.relpath
         k.names = {n: v for n, v in self.names.items() if v[1] != mine}
+        k.verified = {key: v for key, v in self.verified.items() if v != mine}
         k.addrs = {t: {a: v for a, v in m.items() if v[1] != mine} for t, m in self.addrs.items()}
         sid = record.signature['id'] if isinstance(record.signature, dict) else None
         k.signatures = {i: s for i, s in self.signatures.items() if i != sid}
@@ -223,6 +227,9 @@ def check_record(record, knowledge, relpath=None):
     if (sig['kind'], sig['target']) in knowledge.targets:
         errs.append(f'{sig["target"]} already has the {sig["kind"]} signature {knowledge.targets[(sig["kind"], sig["target"])]}')
     vkind = 'func' if record.table == 'functions' else 'global'
+    for key in ((vkind, record.name), (vkind, row['addr'])):
+        if key in knowledge.verified:
+            errs.append(f'verify.tsv already has rows about {key[0]} {key[1]}; a new record cannot inherit them')
     for i, v in enumerate(record.verify):
         errs += [f'verify[{i}]: {e}' for e in kb.validate_row('verify', v)]
         if v['kind'] != vkind or v['item'] not in (record.name, row['addr']):
