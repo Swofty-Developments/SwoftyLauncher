@@ -1,6 +1,6 @@
 use std::collections::{BTreeMap, HashSet};
 
-use crate::ops::db::IdFrom;
+use crate::ops::db_ops::IdFrom;
 
 pub trait FieldNames {
     fn fields(&self, table: &str, row: &str) -> Option<Vec<String>>;
