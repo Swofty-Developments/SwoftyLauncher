@@ -5,6 +5,7 @@
 #include "core/frontend/main_menu.hpp"
 #include "core/frontend/main_menu_logic.hpp"
 #include "core/frontend/tile_list.hpp"
+#include "core/frontend/vm_string.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/runtime/runtime.hpp"
 
@@ -50,9 +51,9 @@ void mod_populate(HomeItem *item, void *node, uint32_t a7)
     }
     void *reg = *g_Vm_Registry, *parent = vm_node + 8;
     uint8_t no = 0;
-    tile_list::set_string(reg, parent, "title", TITLE);
+    vm::set_string(reg, parent, "title", TITLE);
     Vm_Set_Bool(reg, parent, "title_localised", &no, 1);
-    tile_list::set_string(reg, parent, "description", DESCRIPTION);
+    vm::set_string(reg, parent, "description", DESCRIPTION);
     Vm_Set_Bool(reg, parent, "description_localised", &no, 1);
     swofty::log("[core] populate #%u item=%p node=%p a7=%u vm=%p: title='%s' description set, localised=false", call,
                 item, node, a7, vm_node, TITLE);

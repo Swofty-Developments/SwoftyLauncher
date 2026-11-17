@@ -10,6 +10,7 @@
 
 #include "core/frontend/addon_page.hpp"
 #include "core/frontend/name_hash.hpp"
+#include "core/frontend/vm_string.hpp"
 
 namespace swofty::ui {
 
@@ -253,10 +254,7 @@ bool ViewModel::set_text(const char *prop, const char *utf8)
     void *parent = parent_of(*this, prop, leaf);
     if (!parent)
         return false;
-    NeStr *s = nullptr;
-    Ne_Make_StrFromCStr(&s, utf8, 0, 0);
-    Vm_Set_String(*g_Vm_Registry, parent, leaf.c_str(), &s, 1);
-    Ne_Make_StrFromCStr(&s, nullptr, 0, 0);
+    vm::set_string(*g_Vm_Registry, parent, leaf.c_str(), utf8);
     return true;
 }
 
@@ -308,13 +306,9 @@ bool ui_vm_set_path(const std::string &path, int type, const void *value)
         return false;
     void *parent = static_cast<uint8_t *>(*node) + 8;
     switch (type) {
-    case 0: {
-        NeStr *s = nullptr;
-        Ne_Make_StrFromCStr(&s, static_cast<const char *>(value), 0, 0);
-        Vm_Set_String(reg, parent, leaf.c_str(), &s, 1);
-        Ne_Make_StrFromCStr(&s, nullptr, 0, 0);
+    case 0:
+        vm::set_string(reg, parent, leaf.c_str(), static_cast<const char *>(value));
         return true;
-    }
     case 1: {
         uint8_t v = *static_cast<const int32_t *>(value) != 0;
         Vm_Set_Bool(reg, parent, leaf.c_str(), &v, 1);
