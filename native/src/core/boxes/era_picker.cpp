@@ -657,7 +657,7 @@ void parse_list_entry(int *ordinal, const void *row_key, void *list, void *regis
 }
 
 // The row of entrants.entrant_lists labelled `label` that the game did not load: the build's virtual-list step puts
-// those rows at VIRTUAL_BASE and up (packages/core/src/virtual_lists.rs, BASE).
+// those rows at VIRTUAL_BASE and up (packages/core/src/game_db/virtual_lists.rs, BASE).
 constexpr int64_t VIRTUAL_BASE = 10000;
 std::string virtual_row(const char *label)
 {
