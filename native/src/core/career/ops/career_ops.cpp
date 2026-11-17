@@ -1,3 +1,4 @@
+#include "core/runtime/pages.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/registry/table.hpp"
 
@@ -132,15 +133,7 @@ template <class T> T rdv(uintptr_t a, T def = T{})
 
 bool writable(uintptr_t p, size_t n)
 {
-    MEMORY_BASIC_INFORMATION mbi{};
-    if (VirtualQuery(reinterpret_cast<const void *>(p), &mbi, sizeof mbi) != sizeof mbi)
-        return false;
-    if (mbi.State != MEM_COMMIT || (mbi.Protect & PAGE_GUARD))
-        return false;
-    DWORD w = PAGE_READWRITE | PAGE_WRITECOPY | PAGE_EXECUTE_READWRITE | PAGE_EXECUTE_WRITECOPY;
-    if (!(mbi.Protect & w))
-        return false;
-    return p + n <= reinterpret_cast<uintptr_t>(mbi.BaseAddress) + mbi.RegionSize;
+    return runtime::pages::writable_in_region(p, n);
 }
 
 int post(void *msg)
