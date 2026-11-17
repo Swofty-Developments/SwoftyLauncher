@@ -213,6 +213,9 @@ fn a_session_moves_the_replaced_files_aside_and_the_rollback_renames_them_back()
         let original = f.snapshot();
         #[cfg(unix)]
         let before = [GVDB, UI, TWIN].map(|rel| inode(&f.game.join(rel)));
+        // Held open so a freed original keeps its inode number and a later file cannot be given it.
+        #[cfg(unix)]
+        let _held = [GVDB, UI, TWIN].map(|rel| std::fs::File::open(f.game.join(rel)).unwrap());
         f.installed(&game);
         assert_eq!(f.read(UI), "ui-modded");
         assert_eq!(f.read(TWIN), "twin-modded");
