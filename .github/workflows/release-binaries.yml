@@ -42,12 +42,9 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      # Only a run on main saves; a tag's own cache would be of no use to the next tag. GTK and WebKitGTK are
-      # for the swofty-ads helper, which hosts the launcher's ad slots on Linux.
+      # No Rust cache: on an EC2 runner a cold release build takes about as long as restoring one. GTK and
+      # WebKitGTK are for the swofty-ads helper, which hosts the launcher's ad slots on Linux.
       - uses: ./.github/actions/setup-rust
-        with:
-          cache: release
-          save: ${{ github.ref == 'refs/heads/main' }}
 
       # The binaries the release ships, not the installer or the addon template.
       # The log server "Send Logs to Developers" uploads to; without it the button is disabled.
@@ -106,11 +103,8 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
-      # Only a run on main saves; a tag's own cache would be of no use to the next tag.
+      # No Rust cache: on an EC2 runner a cold release build takes about as long as restoring one.
       - uses: ./.github/actions/setup-rust
-        with:
-          cache: release
-          save: ${{ github.ref == 'refs/heads/main' }}
 
       # Only the two binaries the release ships, not the installer or the addon template.
       # The log server "Send Logs to Developers" uploads to; without it the button is disabled.

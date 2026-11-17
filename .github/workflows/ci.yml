@@ -190,8 +190,8 @@ jobs:
 
       - run: cargo fmt --all --check
 
-  # Clippy runs beside the tests rather than before them, on hosted runners even for main: it is never the
-  # longest job, and its check-only build has a cache of its own.
+  # Clippy runs beside the tests rather than before them, on hosted runners even for main and without a Rust
+  # cache: it is never the longest job (four to five minutes from cold).
   clippy:
     name: Clippy (${{ matrix.os }})
     needs: changes
@@ -206,9 +206,6 @@ jobs:
       - uses: actions/checkout@v7
 
       - uses: ./.github/actions/setup-rust
-        with:
-          cache: clippy
-          save: true
 
       # The launcher and the installer are not default members; --workspace reaches them too.
       - run: cargo clippy --workspace --all-targets -- -D warnings
@@ -323,7 +320,7 @@ jobs:
         run: python3 -m unittest discover -s tools/compat/tests -t tools/compat
 
   # Clippy lints the installer on both systems; this job builds the release binary people test. On main the
-  # release build makes it instead (release-binaries.yml), from the release cache.
+  # release build makes it instead (release-binaries.yml).
   installer:
     name: Installer (${{ matrix.os }})
     needs: changes
@@ -338,11 +335,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
 
-      # The release cache main's release build saves, which holds the installer's dependencies too.
       - uses: ./.github/actions/setup-rust
         with:
-          cache: release
-          save: true
           system-libraries: false
 
       - name: Build
