@@ -8,9 +8,11 @@ systemctl disable --now unattended-upgrades.service apt-daily.timer apt-daily-up
 
 dpkg --add-architecture i386
 apt-get update
+# Every package a job asks apt-install.sh for, so no job installs anything at run time: the Rust and release
+# builds' GPUI, GTK and WebKitGTK libraries, and on the native image Wine and Xvfb.
 apt-get install -y build-essential pkg-config git curl unzip zip zstd jq python3 python3-venv python3-pip \
   libssl-dev libfontconfig-dev libfreetype-dev libwayland-dev libxkbcommon-dev libxkbcommon-x11-dev \
-  libx11-xcb-dev libxcb1-dev libvulkan-dev
+  libx11-xcb-dev libxcb1-dev libvulkan-dev libgtk-3-dev libwebkit2gtk-4.1-dev
 if [ "@WINE@" = 1 ]; then
   apt-get install -y wine64 wine xvfb
 fi

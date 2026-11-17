@@ -1,9 +1,14 @@
 # EC2 runners
 
-A push to main runs the native job, the Rust jobs and the release builds on EC2 spot instances, account
-532818875494. The `ec2` job in `ci.yml` starts one instance per job with `launch.sh`. Each instance registers
-a just-in-time runner with a random label, takes that one job and terminates. `cleanup.sh` terminates
-whatever a cancelled run left behind. Pull requests, and any launch that fails, run on the hosted runners.
+A push to main runs the native job, the Rust test jobs and the release builds on EC2 spot instances, account
+532818875494. The `ec2` job in `ci.yml` starts one instance per job with `launch.sh`, only for the areas the
+change touches. Each instance registers a just-in-time runner with a random label, takes that one job and
+terminates. `cleanup.sh` terminates whatever a cancelled run left behind. Formatting and Clippy always run on
+hosted runners. Pull requests, and any launch that fails, run on the hosted runners.
+
+Pull requests from branches of this repository (never forks) use the instances too when the repository
+variable `EC2_PULL_REQUESTS` is `true`. That needs the role below to trust the `pull_request` subject first;
+until then the role refuses the request and the jobs fall back to the hosted runners.
 
 `launch.sh` tries the regions in `regions` in order: ap-south-2 (Hyderabad, the cheapest), ap-south-1
 (Mumbai), ap-southeast-5 (Malaysia), ap-southeast-2 (Sydney). Each has a 300 vCPU spot limit; a run takes
@@ -36,7 +41,10 @@ The images use the hosted runners' paths (`/home/runner/work`, `/home/runner/.ca
 `bake-linux.sh` or `bake-windows.ps1` as user data, images the instance when it powers off, keeps the two
 newest images of that kind and copies the new one to the other regions with `copy.sh`. `launch.sh` takes the
 newest in each region. Rebake after a `rust-toolchain.toml` bump to keep the toolchain
-preinstalled, and every few months for a current runner.
+preinstalled, after a change to the packages `bake-linux.sh` installs, and every few months for a current
+runner. The Linux images carry every package a job asks `apt-install.sh` for, so on them the script returns
+without running apt; a package missing from the image is installed at run time, which is slower and depends
+on the regional archive mirror.
 
 ## AWS resources
 

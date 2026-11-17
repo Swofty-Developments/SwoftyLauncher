@@ -1,0 +1,19 @@
+# cargo-nextest runs every test of every binary in one pool, each in its own process, instead of one test
+# binary after another as cargo test does. CI runs `cargo nextest run --workspace --profile ci`; doc tests
+# still run through `cargo test --doc`.
+
+[profile.default]
+# A test still running after 60 s is reported as slow, and stopped after 5 minutes so a hang fails the run.
+slow-timeout = { period = "60s", terminate-after = 5 }
+
+[profile.ci]
+fail-fast = false
+# No retries: a flaky test is a bug to fix, not to hide. Name one here with an override only while it is.
+retries = 0
+status-level = "slow"
+final-status-level = "slow"
+failure-output = "immediate-final"
+slow-timeout = { period = "60s", terminate-after = 5 }
+
+[profile.ci.junit]
+path = "junit.xml"
