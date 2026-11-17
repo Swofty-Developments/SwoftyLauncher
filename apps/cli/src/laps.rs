@@ -14,7 +14,7 @@ use swofty_core::timetrial::queue::{Entry, Folder, Limits, Queue, unix_now};
 use swofty_core::timetrial::upload::{self, Watcher};
 use swofty_core::timetrial::{self, token};
 
-use crate::run::say;
+use crate::output::say;
 
 #[derive(Subcommand)]
 pub enum LapsCommand {

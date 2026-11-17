@@ -15,7 +15,9 @@ use swofty_core::recovery::Scope;
 use swofty_core::steam_client;
 use swofty_core::store::Store;
 
-use crate::run::{StageFile, StopPhase, ending, say, session_stop};
+use crate::output::say;
+use crate::signals::{StopPhase, ending, session_stop};
+use crate::steam::StageFile;
 
 const APP_START_TIMEOUT: Duration = Duration::from_secs(90);
 // A link handed over while the EA app is still starting can be dropped:
