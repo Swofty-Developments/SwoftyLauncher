@@ -3,8 +3,8 @@
 use serde::Deserialize;
 use serde_json::{Value, json};
 
-use crate::timetrial::api::{Api, ApiError};
-use crate::timetrial::boards::Rows;
+use crate::online::timetrial::api::{Api, ApiError};
+use crate::online::timetrial::boards::Rows;
 
 pub const BIO_MAX: usize = 140;
 pub const FALLBACK_URL: &str = "https://donate.swofty.net/";

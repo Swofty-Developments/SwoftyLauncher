@@ -14,11 +14,11 @@ use super::fingerprint::{self, Fingerprint};
 use super::types::{FixStep, GameStatus, RoomSettings, RoomSummary, SessionState};
 use crate::catalog::{self, Addon};
 use crate::game_folder::baseline::Identity;
-use crate::modules::library::{Hooks, Library};
-use crate::modules::{self, Unavailable};
+use crate::online::modules::library::{Hooks, Library};
+use crate::online::modules::{self, Unavailable};
+use crate::online::timetrial::api::Api;
 use crate::profile::Profile;
 use crate::store::Store;
-use crate::timetrial::api::Api;
 
 /// The module's name on the server and the ABI this launcher speaks to it.
 pub const MODULE: &str = "mp-launcher";

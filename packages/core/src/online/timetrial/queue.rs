@@ -467,7 +467,7 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::timetrial::swlap::sample;
+    use crate::online::timetrial::swlap::sample;
 
     fn dir(name: &str) -> PathBuf {
         let d = std::env::temp_dir().join(format!("swofty-ttq-{name}-{}", std::process::id()));

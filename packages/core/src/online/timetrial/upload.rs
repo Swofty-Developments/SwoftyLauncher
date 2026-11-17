@@ -401,7 +401,7 @@ mod tests {
     }
 
     use super::*;
-    use crate::timetrial::api::Uploaded;
+    use crate::online::timetrial::api::Uploaded;
 
     #[test]
     fn the_nonce_is_asked_for_three_times_quickly_and_then_once_a_minute() {
@@ -438,7 +438,11 @@ mod tests {
         std::fs::remove_dir_all(&root).ok();
         let [_, laps] = laps_dirs(&root.join("data"), &root.join("game"));
         std::fs::create_dir_all(&laps).unwrap();
-        std::fs::write(laps.join("a.swlap"), crate::timetrial::swlap::sample(1, true)).unwrap();
+        std::fs::write(
+            laps.join("a.swlap"),
+            crate::online::timetrial::swlap::sample(1, true),
+        )
+        .unwrap();
         let r = sweep(
             &root.join("data"),
             Some(&root.join("game")),
@@ -463,10 +467,18 @@ mod tests {
         assert_eq!(new, data.join("laps"));
         assert_eq!(old, game.join("swofty").join("laps"));
         std::fs::create_dir_all(&new).unwrap();
-        std::fs::write(new.join("a.swlap"), crate::timetrial::swlap::sample(1, true)).unwrap();
+        std::fs::write(
+            new.join("a.swlap"),
+            crate::online::timetrial::swlap::sample(1, true),
+        )
+        .unwrap();
         assert!(has_laps(&data, &game));
         std::fs::create_dir_all(&old).unwrap();
-        std::fs::write(old.join("b.swlap"), crate::timetrial::swlap::sample(2, true)).unwrap();
+        std::fs::write(
+            old.join("b.swlap"),
+            crate::online::timetrial::swlap::sample(2, true),
+        )
+        .unwrap();
         let r = sweep(&data, Some(&game), None, None, None, &mut |_| {});
         assert_eq!((r.uploaded, r.waiting), (0, 2));
         assert!(!new.join("a.swlap").exists() && !old.join("b.swlap").exists());

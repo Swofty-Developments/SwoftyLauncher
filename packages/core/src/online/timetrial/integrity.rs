@@ -13,7 +13,7 @@ use ring::signature::{ED25519, UnparsedPublicKey};
 use serde::Deserialize;
 
 use crate::game_folder::baseline::sha256_bytes;
-use crate::timetrial::api::Api;
+use crate::online::timetrial::api::Api;
 
 /// The addon id the module loads under. It is not a user addon: no profile, addon list or fingerprint has it.
 pub const PLUGIN_ID: &str = "swofty.integrity";
@@ -203,7 +203,7 @@ pub fn place(
     loader: &mut std::collections::BTreeMap<String, PathBuf>,
     plugins: &mut Vec<String>,
 ) {
-    crate::modules::place_file(PLUGIN_ID, DLL, &module.dll, loader, plugins);
+    crate::online::modules::place_file(PLUGIN_ID, DLL, &module.dll, loader, plugins);
 }
 
 #[cfg(test)]

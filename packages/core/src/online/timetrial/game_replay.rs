@@ -370,9 +370,9 @@ mod tests {
     use serde_json::json;
 
     use super::*;
-    use crate::timetrial::api::{Boards, Meta, Uploaded};
-    use crate::timetrial::queue::{Folder, Limits};
-    use crate::timetrial::swlap::sample;
+    use crate::online::timetrial::api::{Boards, Meta, Uploaded};
+    use crate::online::timetrial::queue::{Folder, Limits};
+    use crate::online::timetrial::swlap::sample;
 
     struct Root(PathBuf);
 
