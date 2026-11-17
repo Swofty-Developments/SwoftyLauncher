@@ -12,7 +12,8 @@
 // Renders every SiteGuard's off, needs and settle lines and every MidHookSpec guard's off, hook failure and armed lines
 // from its spec in the guard sources, through the same functions the guards log with (core/guards/lines.hpp), and
 // compares them with guard_lines/expected.txt: the lines the guards logged before they became specs
-// (guard_lines/extract.py writes it from the sources before each change).
+// (guard_lines/extract.py writes it from the sources before each change), and guard_lines/added.txt: the lines of the
+// guards written as specs from the start, by hand.
 
 namespace lines = swofty_core::guards::lines;
 
@@ -252,6 +253,8 @@ std::map<std::string, Expected> expected_lines(const std::filesystem::path &path
     std::ifstream in(path);
     std::string line, stem;
     while (std::getline(in, line)) {
+        if (line.empty() || line.front() == '#')
+            continue;
         if (line.size() > 2 && line.front() == '[' && line.back() == ']') {
             stem = line.substr(1, line.size() - 2);
             continue;
@@ -283,8 +286,15 @@ int main(int argc, char **argv)
 {
     std::filesystem::path guards = argc > 1 ? argv[1] : "../src/core/guards";
     std::filesystem::path expected_path = argc > 2 ? argv[2] : "guard_lines/expected.txt";
+    std::filesystem::path added_path = argc > 3 ? argv[3] : "guard_lines/added.txt";
     auto expected = expected_lines(expected_path, false);
     auto expected_hooks = expected_lines(expected_path, true);
+    for (bool hooks : {false, true})
+        for (auto &[stem, e] : expected_lines(added_path, hooks)) {
+            auto &into = hooks ? expected_hooks : expected;
+            expect(!into.count(stem), stem + " is pinned in one of expected.txt and added.txt, not both");
+            into[stem] = e;
+        }
     std::map<std::string, Spec> specs, hook_specs;
     for (auto &entry : std::filesystem::recursive_directory_iterator(guards))
         if (entry.path().extension() == ".cpp") {
@@ -321,7 +331,7 @@ int main(int argc, char **argv)
         }
     }
     for (auto &[stem, s] : specs)
-        expect(expected.count(stem), stem + " (" + s.file + ") has its starting lines in expected.txt");
+        expect(expected.count(stem), stem + " (" + s.file + ") has its lines in expected.txt or added.txt");
 
     expect(!expected_hooks.empty(), "expected.txt lists hook guards");
     for (auto &[stem, e] : expected_hooks) {
@@ -338,11 +348,11 @@ int main(int argc, char **argv)
         check(lines::armed(s.name, s.armed), e.armed, "armed");
     }
     for (auto &[stem, s] : hook_specs)
-        expect(expected_hooks.count(stem), stem + " (" + s.file + ") has its starting lines in expected.txt");
+        expect(expected_hooks.count(stem), stem + " (" + s.file + ") has its lines in expected.txt or added.txt");
 
     if (failures)
         return 1;
-    std::printf("guard lines: %zu SiteGuards and %zu MidHookSpec guards log the lines they logged before their specs\n",
-                expected.size(), expected_hooks.size());
+    std::printf("guard lines: %zu SiteGuards and %zu MidHookSpec guards log the lines pinned for them\n", expected.size(),
+                expected_hooks.size());
     return 0;
 }
