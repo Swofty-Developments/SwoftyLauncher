@@ -271,6 +271,9 @@ CAR_LIVE = [Program(t, [Objects([f'test/hooks/{t}.cpp'], ['-Isrc', '-std=c++23',
 FAST_FAIL = [Program('fast_fail_test', [Objects(['test/fast_fail_test.cpp'], ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra',
                                                                               '-Wno-nullability-completeness'])])]
 
+SCAN = [Program('scan_test', [Objects(['test/scan_test.cpp'], ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra',
+                                                               '-Wno-nullability-completeness'])])]
+
 
 def each(*programs):
     return ['lib/each.sh'] + [f'{{out}}/{p}' for p in programs]
@@ -336,7 +339,7 @@ SCRIPTS = [
     Script('core_sites_exported', 'Core site names exported (host-only)', ['bash', 'native/test/run_core_sites_exported_test.sh']),
     Script('garage_placement', 'Garage placement and crew poses', ['bash', 'native/test/run_garage_placement_test.sh']),
     Script('garage_crew_sites', 'Garage crew guard sites export test', ['bash', 'native/test/run_garage_crew_sites_test.sh']),
-    Script('scan', 'Pattern scan and scan cache unit test', ['bash', 'native/test/run_scan_test.sh'], wine=True),
+    Script('scan', 'Pattern scan and scan cache unit test', ['bash', 'native/test/run_scan_test.sh', '{out}'], programs=SCAN),
     Script('pin', 'CPU pin plan (CI, taskset, affinity, job count)', ['bash', 'native/test/pin_test.sh']),
     Script('std_templates', 'Standard library templates', ['python3', 'tools/std/templates.py']),
 ]

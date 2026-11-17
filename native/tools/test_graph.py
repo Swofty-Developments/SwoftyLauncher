@@ -99,7 +99,7 @@ def main():
         '  command = $hostcxx $ldflags -o $out $in',
         '  description = LINK $out',
         'rule run',
-        '  command = test/lib/run_one.sh $name $dir $cwd $cmd',
+        '  command = test/lib/run_one.sh $name $kind $dir $cwd $cmd',
         '  description = TEST $name',
         'rule stamp',
         '  command = touch $out',
@@ -173,7 +173,7 @@ def main():
         implicit = ' | ' + ' '.join(built) if built else ''
         after = ' || ' + ' '.join(f'{b}/{x}/ok' for x in s.after) if s.after else ''
         lines.append(f'build {d}/ok: run always{implicit}{after}')
-        lines += [f'  name = {s.name}', f'  dir = {dir_abs}', f'  cwd = {s.cwd}',
+        lines += [f'  name = {s.name}', f'  kind = {"wine" if s.wine else "host"}', f'  dir = {dir_abs}', f'  cwd = {s.cwd}',
                   f'  cmd = {quote([part.replace("{out}", dir_abs) for part in s.command])}']
         lines.append(f'build {s.name}: phony {d}/ok')
         done = ranked(s.name, f'{d}/ok', 1 if s.programs else PRIORITY)
@@ -192,7 +192,7 @@ def main():
         lines.append(f'build {exe}: link_{u.compiler} {exe}.o')
         inputs = [os.path.normpath(os.path.join('test', x)) for x in u.args if os.path.isfile(os.path.join(NATIVE, 'test', x))]
         lines.append(f'build {d}/ok: run {exe}' + (' | ' + ' '.join(inputs) if inputs else ''))
-        lines += [f'  name = {u.name}', f'  dir = {os.path.abspath(os.path.join(NATIVE, d))}', '  cwd = test',
+        lines += [f'  name = {u.name}', '  kind = host', f'  dir = {os.path.abspath(os.path.join(NATIVE, d))}', '  cwd = test',
                   f'  cmd = {quote([os.path.abspath(os.path.join(NATIVE, exe))] + u.args)}']
         lines.append(f'build {u.name}: phony {d}/ok')
         host.append(f'{d}/ok')

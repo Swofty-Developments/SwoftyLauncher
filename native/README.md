@@ -128,7 +128,7 @@ Runs the binding resolver over a synthetic packed image under Wine: deferral, th
 native/test/run_scan_test.sh
 ```
 
-Checks the loader's scan against a byte-by-byte scan and the scan cache format on the host. With `work/exe/F1_25.exe` and a built `native/dist/`, it also checks that every binding matches at its KB address and has exactly one hit there, and prints the scan timings.
+Checks the loader's scan against a byte-by-byte scan and the scan cache format on the host. With `work/exe/F1_25.exe` and a built `native/dist/`, it also checks that every binding matches at its KB address and has exactly one hit there, and prints the scan timings. It is a host test: `run_tests.sh scan` builds and runs it, and it takes no game lock.
 
 ```sh
 native/test/run_log_fallback_test.sh
