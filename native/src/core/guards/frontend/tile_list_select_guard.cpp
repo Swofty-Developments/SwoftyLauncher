@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -57,7 +58,7 @@ using Push = void(void *widget, void *child);
 
 uintptr_t next_child = 0;
 Push *orig_push = nullptr;
-bool offered = false, settled = false, push_offered = false;
+bool push_offered = false;
 std::atomic<int> skipped{0};
 std::atomic<int> push_skipped{0};
 
@@ -148,45 +149,43 @@ bool guard_off()
     return false;
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
+class TileListSelectGuard final : public guards::Guard {
+public:
+    TileListSelectGuard() : Guard(guards::CoreSetId::tile_list_select) {}
 
-std::vector<CoreMixins> tile_list_select_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    if (guard_off())
-        return out;
-    next_child = swofty::api->resolve(NEXT);
-    if (!next_child || !swofty::api->resolve(STEP)) {
-        next_child = 0;
-        swofty::log("[tile-list] select guard off: needs %s and %s, which this build does not resolve", STEP, NEXT);
-    } else {
-        out.push_back({MIXIN, {{STEP, SWOFTY_MIXIN_SITE, 100, (void *)&child_step, nullptr}}});
+private:
+    void build(std::vector<runtime::CoreMixins> &out) override
+    {
+        if (guard_off())
+            return;
+        next_child = swofty::api->resolve(NEXT);
+        if (!next_child || !swofty::api->resolve(STEP)) {
+            next_child = 0;
+            swofty::log("[tile-list] select guard off: needs %s and %s, which this build does not resolve", STEP, NEXT);
+        } else {
+            out.push_back({MIXIN, {{STEP, SWOFTY_MIXIN_SITE, 100, (void *)&child_step, nullptr}}});
+        }
+        if (!swofty::api->resolve(PUSH)) {
+            swofty::log("[tile-list] push guard off: needs %s, which this build does not resolve", PUSH);
+        } else {
+            push_offered = true;
+            out.push_back({PUSH_MIXIN, {{PUSH, SWOFTY_MIXIN_WRAP, 100, (void *)&push_child_selection, (void **)&orig_push}}});
+        }
     }
-    if (!swofty::api->resolve(PUSH)) {
-        swofty::log("[tile-list] push guard off: needs %s, which this build does not resolve", PUSH);
-    } else {
-        push_offered = true;
-        out.push_back({PUSH_MIXIN, {{PUSH, SWOFTY_MIXIN_WRAP, 100, (void *)&push_child_selection, (void **)&orig_push}}});
-    }
-    return out;
-}
 
-void tile_list_select_commit()
-{
-    if (!offered || settled)
-        return;
-    settled = true;
-    if (next_child)
-        swofty::log("[tile-list] select guard %s; a tile with no components is skipped when a list moves its selection",
-                    core_mixins_active(MIXIN) ? "armed" : "did not install (see the [core] lines)");
-    if (push_offered)
-        swofty::log("[tile-list] push guard %s; a focused tile with no components is not written to a list's selection",
-                    core_mixins_active(PUSH_MIXIN) ? "armed" : "did not install (see the [core] lines)");
-}
+    void settle() override
+    {
+        if (next_child)
+            swofty::log("[tile-list] select guard %s; a tile with no components is skipped when a list moves its selection",
+                        runtime::core_mixins_active(MIXIN) ? "armed" : "did not install (see the [core] lines)");
+        if (push_offered)
+            swofty::log("[tile-list] push guard %s; a focused tile with no components is not written to a list's selection",
+                        runtime::core_mixins_active(PUSH_MIXIN) ? "armed" : "did not install (see the [core] lines)");
+    }
+};
+
+TileListSelectGuard guard;
 
 }

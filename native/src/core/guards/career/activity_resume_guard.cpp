@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/career/activity_resume_logic.hpp"
 
@@ -100,7 +101,4 @@ void setup()
 
 }
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("activity resume guard", setup);
-}
+SWOFTY_HOOK_GUARD(activity_resume, "activity resume guard", setup)

@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -36,7 +37,6 @@ constexpr const char *HASH = "site_Sess_AiRecords_NameHash";
 
 namespace se = runtime::session_enter;
 
-bool offered = false, settled = false, offered_ok = false;
 se::Skips skips;
 se::Memo memo;
 constexpr uint64_t SLOW_US = 5000;
@@ -74,39 +74,16 @@ void name_hash(SwoftyContext *c)
                 skips.last(n) ? " (further fixes are not logged)" : "");
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> session_enter_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_SESSION_ENTER_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[session] enter guard off (SWOFTY_SESSION_ENTER_GUARD=%s)", v);
-        return out;
-    }
-    if (!swofty::api->resolve(HASH)) {
-        swofty::log("[session] enter guard off: needs %s, which this build does not resolve", HASH);
-        return out;
-    }
-    offered_ok = true;
-    out.push_back({MIXIN, {{HASH, SWOFTY_MIXIN_SITE, 100, (void *)&name_hash, nullptr}}});
-    return out;
-}
-
-void session_enter_commit()
-{
-    if (!offered || settled || !offered_ok)
-        return;
-    settled = true;
-    swofty::log("[session] enter guard %s",
-                core_mixins_active(MIXIN) ? "armed: a car that no AI asset group lists borrows an entry for its AI record"
-                                          : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::session_enter,
+                        {
+                            .set = MIXIN,
+                            .name = "[session] enter guard",
+                            .env = "SWOFTY_SESSION_ENTER_GUARD",
+                            .needs = {HASH},
+                            .mixins = {{HASH, SWOFTY_MIXIN_SITE, 100, (void *)&name_hash, nullptr}},
+                            .armed = "a car that no AI asset group lists borrows an entry for its AI record",
+                        }};
 
 }

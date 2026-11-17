@@ -1,4 +1,5 @@
 #include "core/diagnostics/load_stall_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 #include "core/guards/engine/watchdog_grace_logic.hpp"
 
@@ -37,9 +38,10 @@ namespace {
 namespace wg = runtime::watchdog_grace;
 
 constexpr const char *MIXIN = "swofty_core.dll (boot watchdog grace)";
+constexpr const char *KILL_PATH = "site_Ne_WatchdogKillPath";
+constexpr const char *KILL_SKIP = "site_Ne_WatchdogKillSkip";
 
 uintptr_t kill_skip = 0;
-bool offered = false, settled = false;
 std::mutex lock;
 wg::Flows flows;
 std::atomic<uint64_t> mirror_entering{0}, mirror_updating{0};
@@ -125,53 +127,32 @@ void kill_path(SwoftyContext *c)
                     elapsed, where.name, j.state == 1 ? "Entering" : "Updating", wg::kCapMs);
 }
 
+namespace guards = swofty_core::guards;
+
+guards::SiteGuard guard{guards::CoreSetId::watchdog_grace,
+                        {
+                            .set = MIXIN,
+                            .name = "[core] boot watchdog grace",
+                            .env = "SWOFTY_BOOT_WATCHDOG_GRACE",
+                            .keeps = {{KILL_SKIP, &kill_skip}},
+                            .needs = {KILL_PATH, KILL_SKIP},
+                            .mixins = {{KILL_PATH, SWOFTY_MIXIN_SITE, 100, (void *)&kill_path, nullptr}},
+                            .armed = "the game's watchdog kill is held for up to 180 s while a flow is in Entering or recently Updating",
+                        }};
+
 }
 
 namespace runtime {
 
 void watchdog_flow(uint32_t hash, uint32_t to, const char *name)
 {
-    if (!offered || !kill_skip)
+    if (!kill_skip)
         return;
     std::lock_guard<std::mutex> g(lock);
     flows.flow(hash, to, GetTickCount64(), name);
     wg::Latest l = flows.latest();
     mirror_entering.store(l.entering);
     mirror_updating.store(l.updating);
-}
-
-std::vector<CoreMixins> watchdog_grace_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_BOOT_WATCHDOG_GRACE", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[core] boot watchdog grace off (SWOFTY_BOOT_WATCHDOG_GRACE=%s)", v);
-        return out;
-    }
-    kill_skip = swofty::api->resolve("site_Ne_WatchdogKillSkip");
-    if (!kill_skip || !swofty::api->resolve("site_Ne_WatchdogKillPath")) {
-        kill_skip = 0;
-        swofty::log("[core] boot watchdog grace off: needs site_Ne_WatchdogKillPath and site_Ne_WatchdogKillSkip, which "
-                    "this build does not resolve");
-        return out;
-    }
-    out.push_back({MIXIN, {{"site_Ne_WatchdogKillPath", SWOFTY_MIXIN_SITE, 100, (void *)&kill_path, nullptr}}});
-    return out;
-}
-
-void watchdog_grace_commit()
-{
-    if (!offered || settled || !kill_skip)
-        return;
-    settled = true;
-    swofty::log("[core] boot watchdog grace %s",
-                core_mixins_active(MIXIN)
-                    ? "armed: the game's watchdog kill is held for up to 180 s while a flow is in Entering or recently Updating"
-                    : "did not install (see the [core] lines)");
 }
 
 }

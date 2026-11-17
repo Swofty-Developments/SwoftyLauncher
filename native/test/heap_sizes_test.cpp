@@ -1,6 +1,6 @@
 // Host-native unit test for the core's heap size table (native/src/core/guards/engine/heap_sizes_logic.hpp): which stock heap each
 // factory site recognises, the size it picks from the machine and the heap's env var, the name read from the plain
-// factory's frame and the log lines. Built and run by native/test/run_heap_sizes_test.sh.
+// factory's frame and the log lines. Built and run by native/test/run_tests.sh heap_sizes.
 
 #include "core/guards/engine/heap_sizes_logic.hpp"
 

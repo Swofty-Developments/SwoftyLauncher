@@ -37,8 +37,8 @@ pub fn of(kind: Kind, id: &str, track: bool) -> &'static str {
     match (kind, id) {
         (Kind::Map, _) => "#overrides.settings.swofty_addons.track",
         (Kind::Addon, _) if track => "#overrides.settings.swofty_addons.track",
-        (Kind::Addon, crate::builtin::CORE_ID) => "#overrides.settings.swofty_addons.swoftymod",
-        (Kind::Addon, crate::managed::ID) => "#overrides.settings.swofty_addons.simplified",
+        (Kind::Addon, crate::addons::builtin::CORE_ID) => "#overrides.settings.swofty_addons.swoftymod",
+        (Kind::Addon, crate::updates::managed::ID) => "#overrides.settings.swofty_addons.simplified",
         (Kind::Addon | Kind::Mod, _) => "#overrides.settings.swofty_addons.addon",
     }
 }
@@ -133,8 +133,14 @@ mod tests {
     #[test]
     fn swoftymod_simplified_and_tracks_have_their_own_icons_and_the_rest_the_box() {
         let slice = |kind, id, track| of(kind, id, track).rsplit('.').next().unwrap();
-        assert_eq!(slice(Kind::Addon, crate::builtin::CORE_ID, false), "swoftymod");
-        assert_eq!(slice(Kind::Addon, crate::managed::ID, false), "simplified");
+        assert_eq!(
+            slice(Kind::Addon, crate::addons::builtin::CORE_ID, false),
+            "swoftymod"
+        );
+        assert_eq!(
+            slice(Kind::Addon, crate::updates::managed::ID, false),
+            "simplified"
+        );
         assert_eq!(slice(Kind::Addon, "rk.ai-special-liveries", false), "addon");
         assert_eq!(slice(Kind::Addon, "", false), "addon");
         assert_eq!(slice(Kind::Addon, "track.mugello", true), "track");
@@ -142,13 +148,13 @@ mod tests {
         assert_eq!(slice(Kind::Mod, "a.mod", false), "addon");
         for k in [Kind::Addon, Kind::Map, Kind::Mod] {
             for track in [false, true] {
-                let icon = of(k, crate::builtin::CORE_ID, track);
+                let icon = of(k, crate::addons::builtin::CORE_ID, track);
                 assert!(
                     icon.starts_with(&format!("#overrides.settings.{LIST}.")),
                     "{icon}"
                 );
                 assert!(
-                    SLICES.contains(&slice(k, crate::builtin::CORE_ID, track)),
+                    SLICES.contains(&slice(k, crate::addons::builtin::CORE_ID, track)),
                     "{icon}"
                 );
             }

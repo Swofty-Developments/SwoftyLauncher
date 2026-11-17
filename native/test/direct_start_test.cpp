@@ -1,5 +1,5 @@
 // Host-native unit test for the core's direct start (native/src/core/testing/direct_start_logic.hpp).
-// Built and run by native/test/run_direct_start_test.sh.
+// Built and run by native/test/run_tests.sh direct_start.
 
 #include "core/testing/direct_start_logic.hpp"
 

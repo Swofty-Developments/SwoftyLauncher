@@ -32,7 +32,7 @@ use sha2::{Digest, Sha256};
 pub use locate::{Layout, Location};
 pub use retention::Policy;
 
-use crate::baseline::{hex, sha256_file};
+use crate::game_folder::baseline::{hex, sha256_file};
 use crate::{Error, Result, io_err};
 
 pub const DIR: &str = "career-vault";
@@ -440,7 +440,7 @@ pub fn folder_listing(dir: &Path) -> String {
     let list: Vec<String> = files
         .iter()
         .map(|(name, len, secs)| {
-            let s = crate::save_backup::stamp(*secs);
+            let s = crate::saves::backup::stamp(*secs);
             format!(
                 "{name} {len} bytes {}-{}-{} {}:{}:{} UTC",
                 &s[0..4],
@@ -456,7 +456,7 @@ pub fn folder_listing(dir: &Path) -> String {
 }
 
 pub fn human(secs: i64) -> String {
-    let s = crate::save_backup::stamp(secs);
+    let s = crate::saves::backup::stamp(secs);
     format!(
         "{}-{}-{} {}:{} UTC",
         &s[0..4],
@@ -743,7 +743,7 @@ impl Vault {
     }
 
     fn unique_id(&self, at: i64, reason: Reason) -> String {
-        let base = format!("{}-{}", crate::save_backup::stamp(at), reason.slug());
+        let base = format!("{}-{}", crate::saves::backup::stamp(at), reason.slug());
         let mut id = base.clone();
         let mut n = 2;
         while self.snapshots_dir().join(format!("{id}.json")).exists() {
@@ -851,7 +851,7 @@ impl Vault {
         let careers_ref = self.store_index();
         let s = Snapshot {
             id: self.unique_id(now, meta.reason),
-            created: crate::save_backup::stamp(now),
+            created: crate::saves::backup::stamp(now),
             at: now,
             reason: meta.reason,
             session_id: meta.session_id,
@@ -1218,7 +1218,7 @@ impl Vault {
     }
 
     /// Copy a migrated `save-backups/` backup in as a snapshot.
-    fn import(&self, b: &crate::save_backup::Backup, loc: &Location) -> Result<String> {
+    fn import(&self, b: &crate::saves::backup::Backup, loc: &Location) -> Result<String> {
         let _lock = self.lock()?;
         let mut entries = Vec::new();
         for f in &b.manifest.files {
@@ -1244,10 +1244,10 @@ impl Vault {
             });
         }
         entries.sort_by(|a, b| a.name.cmp(&b.name));
-        let at = crate::save_backup::parse_stamp(&b.manifest.created).unwrap_or_else(now);
+        let at = crate::saves::backup::parse_stamp(&b.manifest.created).unwrap_or_else(now);
         let s = Snapshot {
             id: self.unique_id(at, Reason::Migrated),
-            created: crate::save_backup::stamp(at),
+            created: crate::saves::backup::stamp(at),
             at,
             reason: Reason::Migrated,
             session_id: None,

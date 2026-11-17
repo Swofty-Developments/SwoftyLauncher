@@ -1,3 +1,4 @@
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -45,7 +46,6 @@ constexpr const char *RANK_END = "site_Sess_PitRankEpilogue";
 constexpr size_t RECORD_VEHICLE = 0xc4;
 
 uintptr_t eval_next = 0, eval_false = 0, rank_next = 0, rank_end = 0;
-bool offered = false, settled = false, wanted = false;
 ps::Seen seen;
 
 const char *where_of(ps::Site s)
@@ -112,51 +112,21 @@ void rank_list_slot(SwoftyContext *c)
     c->rip = rank_next;
 }
 
-}
+namespace guards = swofty_core::guards;
 
-namespace runtime {
-
-std::vector<CoreMixins> pit_slots_mixins()
-{
-    std::vector<CoreMixins> out;
-    if (offered || !code_ready())
-        return out;
-    offered = true;
-    char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_PIT_SLOT_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
-        swofty::log("[pit] slot guard off (SWOFTY_PIT_SLOT_GUARD=%s)", v);
-        return out;
-    }
-    eval_next = swofty::api->resolve(EVAL_NEXT);
-    eval_false = swofty::api->resolve(EVAL_FALSE);
-    rank_next = swofty::api->resolve(RANK_NEXT);
-    rank_end = swofty::api->resolve(RANK_END);
-    if (!eval_next || !eval_false || !rank_next || !rank_end || !swofty::api->resolve(EVAL_OWN) ||
-        !swofty::api->resolve(EVAL_LIST) || !swofty::api->resolve(RANK_OWN) || !swofty::api->resolve(RANK_LIST)) {
-        eval_next = eval_false = rank_next = rank_end = 0;
-        swofty::log("[pit] slot guard off: needs %s, %s, %s, %s, %s, %s, %s and %s, which this build does not resolve",
-                    EVAL_OWN, EVAL_LIST, EVAL_NEXT, EVAL_FALSE, RANK_OWN, RANK_LIST, RANK_NEXT, RANK_END);
-        return out;
-    }
-    wanted = true;
-    out.push_back({MIXIN,
-                   {{EVAL_OWN, SWOFTY_MIXIN_SITE, 100, (void *)&eval_own_slot, nullptr},
-                    {EVAL_LIST, SWOFTY_MIXIN_SITE, 100, (void *)&eval_list_slot, nullptr},
-                    {RANK_OWN, SWOFTY_MIXIN_SITE, 100, (void *)&rank_own_slot, nullptr},
-                    {RANK_LIST, SWOFTY_MIXIN_SITE, 100, (void *)&rank_list_slot, nullptr}}});
-    return out;
-}
-
-void pit_slots_commit()
-{
-    if (!offered || settled || !wanted)
-        return;
-    settled = true;
-    swofty::log("[pit] slot guard %s",
-                core_mixins_active(MIXIN)
-                    ? "armed: a pit list car without a race slot is skipped, and a car without one makes no pit decision"
-                    : "did not install (see the [core] lines)");
-}
+guards::SiteGuard guard{guards::CoreSetId::pit_slots,
+                        {
+                            .set = MIXIN,
+                            .name = "[pit] slot guard",
+                            .env = "SWOFTY_PIT_SLOT_GUARD",
+                            .keeps = {{EVAL_NEXT, &eval_next}, {EVAL_FALSE, &eval_false}, {RANK_NEXT, &rank_next}, {RANK_END, &rank_end}},
+                            .needs = {EVAL_OWN, EVAL_LIST, EVAL_NEXT, EVAL_FALSE, RANK_OWN, RANK_LIST, RANK_NEXT, RANK_END},
+                            .mixins = {
+                                        {EVAL_OWN, SWOFTY_MIXIN_SITE, 100, (void *)&eval_own_slot, nullptr},
+                                        {EVAL_LIST, SWOFTY_MIXIN_SITE, 100, (void *)&eval_list_slot, nullptr},
+                                        {RANK_OWN, SWOFTY_MIXIN_SITE, 100, (void *)&rank_own_slot, nullptr},
+                                        {RANK_LIST, SWOFTY_MIXIN_SITE, 100, (void *)&rank_list_slot, nullptr}},
+                            .armed = "a pit list car without a race slot is skipped, and a car without one makes no pit decision",
+                        }};
 
 }

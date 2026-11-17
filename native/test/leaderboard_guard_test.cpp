@@ -1,7 +1,7 @@
 // Host-native unit test for the core's Time Trial leaderboard guards (native/src/core/guards/frontend/leaderboard_guard_logic.hpp):
 // when a missing board, child list model, reference board or reference list leaderboard is skipped, how often the skip
 // is logged, and how the env switches parse.
-// Built and run by native/test/run_leaderboard_guard_test.sh.
+// Built and run by native/test/run_tests.sh leaderboard_guard.
 
 #include "core/guards/frontend/leaderboard_guard_logic.hpp"
 

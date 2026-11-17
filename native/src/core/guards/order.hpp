@@ -1,0 +1,221 @@
+#pragma once
+
+#include <array>
+#include <cstddef>
+#include <cstdint>
+#include <string_view>
+
+// The order the core offers and settles its own mixin sets in. The commit pass offers every set in CoreSetId order
+// (each becomes one core addon, installed or dropped on its own, in that order) and then settles them in
+// COMMIT_ORDER, which logs each guard's armed line. Every set registers under its id, so the order never depends on
+// which translation unit's static objects are built first.
+//
+// HookGuardId is the order the guards that hook through safetyhook on their own are armed in (when_code_ready).
+
+namespace swofty_core::guards {
+
+enum class CoreSetId : uint8_t {
+    save_sandbox,
+    career_content,
+    characters,
+    wizard,
+    tile_route,
+    era,
+    tt_guard,
+    career_alias,
+    car_category,
+    save_splice,
+    ers_newlap,
+    ers_mode,
+    car_levers,
+    garage_crew,
+    garage_placement,
+    pit_slots,
+    pit_box,
+    garage_slots,
+    chassis_registry,
+    standings_guard,
+    ai_corner_guard,
+    replay_grid_guard,
+    fe_tile_guard,
+    myteam_vehicle_guard,
+    myteam_vehicle_heal,
+    myteam_vehicle_keep,
+    tyre_slots,
+    tyre_models,
+    track_acclim,
+    audio_queue,
+    loading,
+    heap_sizes,
+    team_slots,
+    track_select,
+    leaderboard_guard,
+    lap_host,
+    thrustmaster_lcd,
+    estimate_laptime,
+    red_flag_recompute,
+    quali_tyres,
+    box_grid,
+    gp_continue,
+    track_list_guard,
+    watchdog_grace,
+    garage_setup,
+    theatre_list,
+    tile_list_select,
+    session_enter,
+    ai_line_set,
+    count,
+};
+
+constexpr size_t CORE_SET_COUNT = size_t(CoreSetId::count);
+
+constexpr std::array<std::string_view, CORE_SET_COUNT> CORE_SET_NAMES = {
+    "save_sandbox",
+    "career_content",
+    "characters",
+    "wizard",
+    "tile_route",
+    "era",
+    "tt_guard",
+    "career_alias",
+    "car_category",
+    "save_splice",
+    "ers_newlap",
+    "ers_mode",
+    "car_levers",
+    "garage_crew",
+    "garage_placement",
+    "pit_slots",
+    "pit_box",
+    "garage_slots",
+    "chassis_registry",
+    "standings_guard",
+    "ai_corner_guard",
+    "replay_grid_guard",
+    "fe_tile_guard",
+    "myteam_vehicle_guard",
+    "myteam_vehicle_heal",
+    "myteam_vehicle_keep",
+    "tyre_slots",
+    "tyre_models",
+    "track_acclim",
+    "audio_queue",
+    "loading",
+    "heap_sizes",
+    "team_slots",
+    "track_select",
+    "leaderboard_guard",
+    "lap_host",
+    "thrustmaster_lcd",
+    "estimate_laptime",
+    "red_flag_recompute",
+    "quali_tyres",
+    "box_grid",
+    "gp_continue",
+    "track_list_guard",
+    "watchdog_grace",
+    "garage_setup",
+    "theatre_list",
+    "tile_list_select",
+    "session_enter",
+    "ai_line_set",
+};
+
+constexpr std::string_view core_set_name(CoreSetId id) { return CORE_SET_NAMES[size_t(id)]; }
+
+// garage_placement has no settle step.
+constexpr std::array<CoreSetId, CORE_SET_COUNT - 1> COMMIT_ORDER = {
+    CoreSetId::save_sandbox,
+    CoreSetId::tile_route,
+    CoreSetId::career_content,
+    CoreSetId::characters,
+    CoreSetId::wizard,
+    CoreSetId::era,
+    CoreSetId::tt_guard,
+    CoreSetId::career_alias,
+    CoreSetId::car_category,
+    CoreSetId::save_splice,
+    CoreSetId::ers_newlap,
+    CoreSetId::lap_host,
+    CoreSetId::ers_mode,
+    CoreSetId::car_levers,
+    CoreSetId::standings_guard,
+    CoreSetId::fe_tile_guard,
+    CoreSetId::myteam_vehicle_guard,
+    CoreSetId::myteam_vehicle_heal,
+    CoreSetId::myteam_vehicle_keep,
+    CoreSetId::ai_corner_guard,
+    CoreSetId::replay_grid_guard,
+    CoreSetId::watchdog_grace,
+    CoreSetId::tyre_slots,
+    CoreSetId::tyre_models,
+    CoreSetId::garage_crew,
+    CoreSetId::pit_slots,
+    CoreSetId::pit_box,
+    CoreSetId::garage_slots,
+    CoreSetId::chassis_registry,
+    CoreSetId::track_acclim,
+    CoreSetId::audio_queue,
+    CoreSetId::loading,
+    CoreSetId::heap_sizes,
+    CoreSetId::team_slots,
+    CoreSetId::track_select,
+    CoreSetId::leaderboard_guard,
+    CoreSetId::thrustmaster_lcd,
+    CoreSetId::estimate_laptime,
+    CoreSetId::red_flag_recompute,
+    CoreSetId::box_grid,
+    CoreSetId::quali_tyres,
+    CoreSetId::gp_continue,
+    CoreSetId::track_list_guard,
+    CoreSetId::garage_setup,
+    CoreSetId::theatre_list,
+    CoreSetId::tile_list_select,
+    CoreSetId::session_enter,
+    CoreSetId::ai_line_set,
+};
+
+constexpr bool settles(CoreSetId id) { return id != CoreSetId::garage_placement; }
+
+constexpr size_t commit_rank(CoreSetId id)
+{
+    for (size_t i = 0; i < COMMIT_ORDER.size(); i++)
+        if (COMMIT_ORDER[i] == id)
+            return i;
+    return COMMIT_ORDER.size();
+}
+
+// The guards that hook game code through safetyhook themselves, in the order they are armed (when_code_ready): the
+// order their sources link in (tools/core_link_order.txt), which is the order their SDK on-load entries run in.
+enum class HookGuardId : uint8_t {
+    activity_resume,
+    sequencer_records,
+    race_retirement,
+    teammate_pairs,
+    setup_vm,
+    teamhq_track,
+    ai_curves,
+    replay_read,
+    rnd_suppliers,
+    gp_weekend_track,
+    count,
+};
+
+constexpr size_t HOOK_GUARD_COUNT = size_t(HookGuardId::count);
+
+constexpr std::array<std::string_view, HOOK_GUARD_COUNT> HOOK_GUARD_NAMES = {
+    "activity_resume",
+    "sequencer_records",
+    "race_retirement",
+    "teammate_pairs",
+    "setup_vm",
+    "teamhq_track",
+    "ai_curves",
+    "replay_read",
+    "rnd_suppliers",
+    "gp_weekend_track",
+};
+
+constexpr std::string_view hook_guard_name(HookGuardId id) { return HOOK_GUARD_NAMES[size_t(id)]; }
+
+}

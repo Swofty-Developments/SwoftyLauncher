@@ -1,4 +1,5 @@
 #include "core/guards/session/race_retirement_logic.hpp"
+#include "core/guards/guard.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -163,7 +164,4 @@ void setup()
 
 }
 
-SWOFTY_ON_LOAD
-{
-    runtime::when_code_ready("race retirement driver guard", setup);
-}
+SWOFTY_HOOK_GUARD(race_retirement, "race retirement driver guard", setup)

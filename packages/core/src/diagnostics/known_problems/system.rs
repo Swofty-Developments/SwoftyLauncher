@@ -1,4 +1,4 @@
-use crate::launch::LOW_DISK;
+use crate::diagnostics::launch::LOW_DISK;
 
 use super::Diagnosis;
 use super::crash_record::Fatal;

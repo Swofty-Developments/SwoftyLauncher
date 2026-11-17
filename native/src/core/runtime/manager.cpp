@@ -2,30 +2,24 @@
 #include <windows.h>
 #include <algorithm>
 #include <array>
-#include <atomic>
-#include <bcrypt.h>
-#include <cmath>
-#include <cstdarg>
 #include <cstdio>
 #include <mutex>
 #include <string>
-#include <unordered_map>
 #include <utility>
 #include <vector>
-#include "loader/data_folder.h"
-#include "Zydis.h"
-#include "core/runtime/json.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/runtime/hook_errors.hpp"
+#include "core/runtime/loader/bindings.hpp"
+#include "core/runtime/loader/code_encryption.hpp"
+#include "core/runtime/loader/hook_pool.hpp"
+#include "core/runtime/loader/host_api.hpp"
+#include "core/runtime/loader/image.hpp"
+#include "core/runtime/loader/mixins.hpp"
+#include "core/runtime/loader/resolve_locks.hpp"
+#include "core/runtime/loader/scanner.hpp"
 #include "safetyhook.hpp"
-#include "core/runtime/scan_cache.hpp"
-#include "core/frontend/view_state.hpp"
+#include "core/guards/install.hpp"
 #include "swofty_api.h"
-
-void crash_attach(SwoftyApi *a, const std::wstring &dir);
-void crash_game_hooks();
-void settings_attach(SwoftyApi *a, const std::wstring &dir);
-int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
-int settings_watch(const char *id, SwoftySettingFn fn, void *user);
 
 namespace runtime {
 const SwoftyAssets *assets_table();
@@ -45,103 +39,8 @@ struct CoreMixins {
 };
 std::vector<CoreMixins> career_mixins();
 const SwoftyCareerContent *career_content_table();
-std::vector<CoreMixins> career_content_mixins();
-void career_content_commit();
 const SwoftyEra *era_table();
 const SwoftyRegistry *registry_table();
-std::vector<CoreMixins> era_mixins();
-void era_commit();
-std::vector<CoreMixins> tt_guard_mixins();
-void tt_guard_commit();
-std::vector<CoreMixins> career_alias_mixins();
-void career_alias_commit();
-std::vector<CoreMixins> car_category_mixins();
-void car_category_commit();
-std::vector<CoreMixins> save_splice_mixins();
-void save_splice_commit();
-std::vector<CoreMixins> save_sandbox_mixins();
-void save_sandbox_commit();
-std::vector<CoreMixins> ers_newlap_mixins();
-void ers_newlap_commit();
-std::vector<CoreMixins> ers_mode_mixins();
-void ers_mode_commit();
-std::vector<CoreMixins> car_levers_mixins();
-void car_levers_commit();
-std::vector<CoreMixins> standings_guard_mixins();
-void standings_guard_commit();
-std::vector<CoreMixins> fe_tile_guard_mixins();
-void fe_tile_guard_commit();
-std::vector<CoreMixins> myteam_vehicle_guard_mixins();
-void myteam_vehicle_guard_commit();
-std::vector<CoreMixins> myteam_vehicle_heal_mixins();
-void myteam_vehicle_heal_commit();
-std::vector<CoreMixins> myteam_vehicle_keep_mixins();
-void myteam_vehicle_keep_commit();
-std::vector<CoreMixins> ai_corner_guard_mixins();
-void ai_corner_guard_commit();
-std::vector<CoreMixins> replay_grid_guard_mixins();
-void replay_grid_guard_commit();
-std::vector<CoreMixins> watchdog_grace_mixins();
-void watchdog_grace_commit();
-std::vector<CoreMixins> tyre_slots_mixins();
-void tyre_slots_commit();
-std::vector<CoreMixins> tyre_models_mixins();
-void tyre_models_commit();
-std::vector<CoreMixins> garage_crew_mixins();
-std::vector<CoreMixins> garage_placement_mixins();
-std::vector<CoreMixins> pit_slots_mixins();
-void garage_crew_commit();
-void pit_slots_commit();
-std::vector<CoreMixins> pit_box_mixins();
-void pit_box_commit();
-std::vector<CoreMixins> garage_slots_mixins();
-void garage_slots_commit();
-std::vector<CoreMixins> chassis_registry_mixins();
-void chassis_registry_commit();
-std::vector<CoreMixins> track_acclim_mixins();
-void track_acclim_commit();
-std::vector<CoreMixins> audio_queue_mixins();
-void audio_queue_commit();
-std::vector<CoreMixins> heap_sizes_mixins();
-void heap_sizes_commit();
-std::vector<CoreMixins> track_select_mixins();
-void track_select_commit();
-std::vector<CoreMixins> team_slots_mixins();
-void team_slots_commit();
-std::vector<CoreMixins> leaderboard_guard_mixins();
-std::vector<CoreMixins> lap_host_mixins();
-void lap_host_commit();
-void leaderboard_guard_commit();
-std::vector<CoreMixins> thrustmaster_lcd_mixins();
-void thrustmaster_lcd_commit();
-std::vector<CoreMixins> estimate_laptime_mixins();
-std::vector<CoreMixins> gp_continue_mixins();
-void gp_continue_commit();
-void estimate_laptime_commit();
-std::vector<CoreMixins> red_flag_recompute_mixins();
-void red_flag_recompute_commit();
-std::vector<CoreMixins> box_grid_mixins();
-void box_grid_commit();
-std::vector<CoreMixins> quali_tyres_mixins();
-void quali_tyres_commit();
-std::vector<CoreMixins> track_list_guard_mixins();
-void track_list_guard_commit();
-std::vector<CoreMixins> garage_setup_mixins();
-void garage_setup_commit();
-std::vector<CoreMixins> theatre_list_mixins();
-void theatre_list_commit();
-std::vector<CoreMixins> tile_list_select_mixins();
-void tile_list_select_commit();
-std::vector<CoreMixins> session_enter_mixins();
-std::vector<CoreMixins> ai_line_set_mixins();
-void ai_line_set_commit();
-void session_enter_commit();
-std::vector<CoreMixins> characters_mixins();
-std::vector<CoreMixins> wizard_mixins();
-std::vector<CoreMixins> tile_route_mixins();
-void characters_commit();
-void wizard_commit();
-void tile_route_commit();
 std::string load_stage();
 void career_setup();
 void popup_setup();
@@ -166,51 +65,14 @@ const SwoftyServices *table();
 void report_missing();
 }
 
+
+using namespace runtime::loader;
+
 namespace {
 
 static_assert(sizeof(SwoftyContext) == sizeof(safetyhook::Context64));
 static_assert(offsetof(SwoftyContext, r12) == offsetof(safetyhook::Context64, r12));
 static_assert(offsetof(SwoftyContext, rip) == offsetof(safetyhook::Context64, rip));
-
-struct Trace {
-    const char *method = "-";
-    int matches = -1, verified = -1;
-    long long match = -1, site = -1;
-    std::string reason;
-};
-
-struct Binding {
-    std::string id, kind, status, section, pattern, rkind;
-    std::vector<uint8_t> expect;
-    long long anchor = 0, insn = 0, len = 0, rva = -1, slots = 0, match = -1;
-    bool resolved = false;
-    uintptr_t addr = 0;
-    std::string sa_string = {};
-    long long sa_func_rva = -1, sa_func_off = 0;
-    bool sa_durable = false;
-    std::string unresolvable = {};
-    bool deferred = false;
-    Trace tr = {};
-};
-
-struct Mixin {
-    std::string target;
-    uint32_t kind;
-    int32_t priority;
-    void *handler;
-    void **orig;
-    uintptr_t addr = 0;
-};
-
-struct Addon {
-    std::string name;
-    std::vector<Mixin> mixins;
-    bool active = true;
-    bool core = false;
-    bool waiting = false, late = false, hit_deferred = false;
-    SwoftyAddonInitFn reinit = nullptr;
-    HMODULE module = nullptr;
-};
 
 struct Handler {
     size_t addon;
@@ -242,56 +104,14 @@ struct Mark {
 constexpr size_t MAX_SITES = 256;
 constexpr size_t SITE_CHAIN_ROOM = 32;
 
-SwoftyApi *api;
-uintptr_t base;
-bool same_build;
-std::vector<Binding> bindings;
-std::unordered_map<std::string, size_t> binding_index;
-std::string bindings_file = "bindings.json";
-struct ScanHit {
-    uintptr_t at;
-    int hits;
-};
-std::unordered_map<std::string, ScanHit> scans;
-std::unordered_map<std::string, uintptr_t> anchor_funcs;
-bool kb_first = true;
-int (*loader_scan)(const char *, const char *, uintptr_t *);
-scancache::Cache scan_cache;
-std::wstring scan_cache_path, cache_dir;
-const char *cache_name = "swofty\\cache";
-bool scan_cache_on;
-std::unordered_map<std::string, std::string> section_alias;
-SRWLOCK scan_lock = SRWLOCK_INIT;
-json::Value session;
-bool have_session;
 std::vector<Addon> addons;
 Addon *current;
 size_t settled;
 std::vector<Held> held;
 Mark mark;
 bool closed;
-
-constexpr double ENCRYPTED = 7.5, PLAIN = 6.5;
-constexpr int RETRIES = 8;
-constexpr DWORD RETRY_MS = 1000;
-bool packed;
-std::string build_tag = "unknown";
-long long exe_stamp, exe_bytes = -1;
-std::string exe_sha = "-";
-struct SectionRead {
-    double entropy;
-    DWORD at;
-};
-std::unordered_map<std::string, SectionRead> section_reads;
-std::recursive_mutex commit_lock, resolve_lock;
-volatile LONG retries_started;
-bool unreported;
-std::atomic<bool> code_plain;
-struct CodeTask {
-    std::string what;
-    void (*fn)();
-};
-std::vector<CodeTask> code_tasks;
+json::Value session;
+bool have_session;
 
 std::vector<safetyhook::InlineHook> inline_hooks;
 std::vector<std::string> inline_names;
@@ -327,306 +147,11 @@ const char *kind_name(uint32_t k)
     return k < 7 ? names[k] : "?";
 }
 
-unsigned long long rva(uintptr_t a)
-{
-    return a - base;
-}
-
 std::string utf8(const wchar_t *w)
 {
     char buf[MAX_PATH * 3] = {};
     WideCharToMultiByte(CP_UTF8, 0, w, -1, buf, sizeof buf - 1, nullptr, nullptr);
     return buf;
-}
-
-std::string read_file(const std::wstring &path)
-{
-    std::string out;
-    if (FILE *f = _wfopen(path.c_str(), L"rb")) {
-        char buf[65536];
-        for (size_t n; (n = fread(buf, 1, sizeof buf, f));)
-            out.append(buf, n);
-        fclose(f);
-    }
-    return out;
-}
-
-std::string select_bindings(const std::wstring &dir, long long stamp, std::string &chosen)
-{
-    WIN32_FIND_DATAW fd;
-    HANDLE h = FindFirstFileW((dir + L"bindings*.json").c_str(), &fd);
-    std::string match_text, default_text, first_text;
-    std::wstring match_name, first_name;
-    int candidates = 0;
-    if (h != INVALID_HANDLE_VALUE) {
-        do {
-            if (fd.dwFileAttributes & FILE_ATTRIBUTE_DIRECTORY)
-                continue;
-            std::string text = read_file(dir + fd.cFileName);
-            json::Value d;
-            if (!json::parse(text, d) || d["build"].type == json::Value::Null)
-                continue;
-            candidates++;
-            if (first_text.empty())
-                first_text = text, first_name = fd.cFileName;
-            if (!_wcsicmp(fd.cFileName, L"bindings.json"))
-                default_text = text;
-            if (match_text.empty() && (long long)d["build"]["pe_timestamp"].num() == stamp)
-                match_text = text, match_name = fd.cFileName;
-        } while (FindNextFileW(h, &fd));
-        FindClose(h);
-    }
-    if (!match_text.empty()) {
-        chosen = utf8(match_name.c_str());
-        api->log("[core] bindings: %d set(s) present, selected %s by PE timestamp %lld", candidates, chosen.c_str(), stamp);
-        return match_text;
-    }
-    if (!default_text.empty()) {
-        chosen = "bindings.json";
-        api->log("[core] bindings: %d set(s) present, none match PE timestamp %lld; using bindings.json", candidates,
-                 stamp);
-        return default_text;
-    }
-    chosen = first_name.empty() ? "bindings.json" : utf8(first_name.c_str());
-    if (candidates)
-        api->log("[core] bindings: %d set(s) present, none match PE timestamp %lld and no bindings.json; using %s",
-                 candidates, stamp, chosen.c_str());
-    return first_text;
-}
-
-std::vector<uint8_t> hex_bytes(const std::string &s)
-{
-    std::vector<uint8_t> out;
-    for (const char *p = s.c_str(); *p;) {
-        char *end;
-        long v = strtol(p, &end, 16);
-        if (end == p)
-            break;
-        out.push_back((uint8_t)v);
-        p = end;
-    }
-    return out;
-}
-
-const IMAGE_SECTION_HEADER *section_of(uintptr_t a)
-{
-    auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(base + reinterpret_cast<const IMAGE_DOS_HEADER *>(base)->e_lfanew);
-    auto s = IMAGE_FIRST_SECTION(nt);
-    for (int i = 0; i < nt->FileHeader.NumberOfSections; i++, s++)
-        if (a - (base + s->VirtualAddress) < (s->Misc.VirtualSize ? s->Misc.VirtualSize : s->SizeOfRawData))
-            return s;
-    return nullptr;
-}
-
-bool section_named(uintptr_t a, const std::string &name)
-{
-    auto s = section_of(a);
-    return s && name.size() <= 8 && !strncmp(reinterpret_cast<const char *>(s->Name), name.c_str(), 8);
-}
-
-bool is_code(uintptr_t a)
-{
-    auto s = section_of(a);
-    return s && (s->Characteristics & IMAGE_SCN_MEM_EXECUTE) && !(s->Characteristics & IMAGE_SCN_MEM_WRITE);
-}
-
-uint8_t byte_at(uintptr_t a)
-{
-    return *reinterpret_cast<const uint8_t *>(a);
-}
-
-size_t insn_span(uintptr_t a, size_t min)
-{
-    ZydisDecoder d;
-    ZydisDecoderInit(&d, ZYDIS_MACHINE_MODE_LONG_64, ZYDIS_STACK_WIDTH_64);
-    size_t n = 0;
-    while (n < min) {
-        ZydisDecodedInstruction i;
-        if (!ZYAN_SUCCESS(ZydisDecoderDecodeInstruction(&d, nullptr, reinterpret_cast<void *>(a + n), 15, &i)))
-            return std::max(n, min);
-        n += i.length;
-    }
-    return n;
-}
-
-uintptr_t unresolved(const Binding &b, const char *why)
-{
-    api->log("[core] binding %s: %s", b.id.c_str(), why);
-    return 0;
-}
-
-const IMAGE_NT_HEADERS *nt_headers()
-{
-    return reinterpret_cast<const IMAGE_NT_HEADERS *>(base + reinterpret_cast<const IMAGE_DOS_HEADER *>(base)->e_lfanew);
-}
-
-bool page_readable(uintptr_t p, size_t n)
-{
-    MEMORY_BASIC_INFORMATION m{};
-    if (!VirtualQuery(reinterpret_cast<void *>(p), &m, sizeof m) || m.State != MEM_COMMIT ||
-        !(m.Protect & 0xEE) || (m.Protect & (PAGE_GUARD | PAGE_NOACCESS)))
-        return false;
-    return p + n <= reinterpret_cast<uintptr_t>(m.BaseAddress) + m.RegionSize;
-}
-
-template <class F> void each_committed(uintptr_t lo, uintptr_t hi, F fn)
-{
-    for (uintptr_t a = lo; a < hi;) {
-        MEMORY_BASIC_INFORMATION m{};
-        if (!VirtualQuery(reinterpret_cast<void *>(a), &m, sizeof m))
-            break;
-        uintptr_t next = reinterpret_cast<uintptr_t>(m.BaseAddress) + m.RegionSize;
-        if (next > hi)
-            next = hi;
-        if (next <= a)
-            break;
-        if (m.State == MEM_COMMIT && (m.Protect & 0xEE) && !(m.Protect & (PAGE_GUARD | PAGE_NOACCESS)))
-            fn(a, next - a);
-        a = next;
-    }
-}
-
-uintptr_t section_end(const IMAGE_SECTION_HEADER *s)
-{
-    return base + s->VirtualAddress + (s->Misc.VirtualSize ? s->Misc.VirtualSize : s->SizeOfRawData);
-}
-
-uintptr_t locate_string(const std::string &str)
-{
-    std::string want = str;
-    want.push_back('\0');
-    auto nt = nt_headers();
-    auto s = IMAGE_FIRST_SECTION(nt);
-    uintptr_t hit = 0;
-    int hits = 0;
-    for (int i = 0; i < nt->FileHeader.NumberOfSections && hits < 2; i++, s++) {
-        DWORD ch = s->Characteristics;
-        if (!(ch & IMAGE_SCN_MEM_READ) || (ch & IMAGE_SCN_MEM_EXECUTE))
-            continue;
-        each_committed(base + s->VirtualAddress, section_end(s), [&](uintptr_t p, size_t n) {
-            if (n < want.size())
-                return;
-            const uint8_t *lo = reinterpret_cast<const uint8_t *>(p), *last = lo + n - want.size();
-            for (const uint8_t *q = lo; q <= last;) {
-                const uint8_t *f = reinterpret_cast<const uint8_t *>(memchr(q, want[0], last - q + 1));
-                if (!f)
-                    break;
-                if (!memcmp(f, want.data(), want.size()) && hits++ == 0)
-                    hit = reinterpret_cast<uintptr_t>(f);
-                q = f + 1;
-            }
-        });
-    }
-    return hits == 1 ? hit : 0;
-}
-
-uintptr_t func_base_of(uintptr_t site)
-{
-    struct RtFunc {
-        uint32_t begin, end, unwind;
-    };
-    auto nt = nt_headers();
-    auto &dir = nt->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXCEPTION];
-    if (!dir.VirtualAddress || dir.Size < sizeof(RtFunc))
-        return 0;
-    auto *fn = reinterpret_cast<const RtFunc *>(base + dir.VirtualAddress);
-    size_t n = dir.Size / sizeof(RtFunc), lo = 0, hi = n;
-    uint32_t r = static_cast<uint32_t>(site - base);
-    while (lo < hi) {
-        size_t mid = (lo + hi) / 2;
-        if (fn[mid].begin <= r)
-            lo = mid + 1;
-        else
-            hi = mid;
-    }
-    if (lo && fn[lo - 1].begin <= r && r < fn[lo - 1].end)
-        return base + fn[lo - 1].begin;
-    return 0;
-}
-
-uintptr_t anchor_func(const std::string &str)
-{
-    auto cached = anchor_funcs.find(str);
-    if (cached != anchor_funcs.end())
-        return cached->second;
-    uintptr_t sVA = locate_string(str), fbase = 0;
-    bool conflict = false;
-    long long sites = 0;
-    if (sVA) {
-        auto nt = nt_headers();
-        auto s = IMAGE_FIRST_SECTION(nt);
-        for (int i = 0; i < nt->FileHeader.NumberOfSections && !conflict; i++, s++) {
-            DWORD ch = s->Characteristics;
-            if (!(ch & IMAGE_SCN_MEM_EXECUTE) || !(ch & IMAGE_SCN_MEM_READ) || (ch & IMAGE_SCN_MEM_WRITE))
-                continue;
-            each_committed(base + s->VirtualAddress, section_end(s), [&](uintptr_t p, size_t n) {
-                if (n < 4)
-                    return;
-                for (uintptr_t q = p, last = p + n - 4; q <= last; q++) {
-                    if (q + 4 + *reinterpret_cast<const int32_t *>(q) != sVA)
-                        continue;
-                    uintptr_t f = func_base_of(q);
-                    if (!f)
-                        continue;
-                    sites++;
-                    if (!fbase)
-                        fbase = f;
-                    else if (fbase != f)
-                        conflict = true;
-                }
-            });
-        }
-    }
-    uintptr_t out = (conflict || !sites) ? 0 : fbase;
-    anchor_funcs[str] = out;
-    return out;
-}
-
-uintptr_t apply_match(const Binding &b, uintptr_t match, const char **why)
-{
-    uintptr_t at = match + b.anchor, target = at, i = match + b.insn;
-    if (b.rkind == "rel32" || b.rkind == "riprel") {
-        if (!page_readable(std::min(at, i), (at > i ? at - i : i - at) + 16)) {
-            *why = "anchor offset is not mapped on this build";
-            return 0;
-        }
-    }
-    if (b.rkind == "rel32") {
-        bool branch = (byte_at(i) == 0xE8 || byte_at(i) == 0xE9) && at == i + 1;
-        bool jcc = byte_at(i) == 0x0F && (byte_at(i + 1) & 0xF0) == 0x80 && at == i + 2;
-        if (!branch && !jcc) {
-            *why = "anchor is not the rel32 of a call or jump";
-            return 0;
-        }
-        target = at + 4 + *reinterpret_cast<const int32_t *>(at);
-    } else if (b.rkind == "riprel") {
-        if (b.anchor <= b.insn || b.anchor + 4 > b.insn + b.len) {
-            *why = "anchor is not inside the RIP-relative instruction";
-            return 0;
-        }
-        target = i + b.len + *reinterpret_cast<const int32_t *>(at);
-    } else if (b.rkind != "addr") {
-        *why = "unknown resolve kind";
-        return 0;
-    }
-    if (!b.expect.empty() &&
-        (!page_readable(at, b.expect.size()) || memcmp(reinterpret_cast<const void *>(at), b.expect.data(), b.expect.size()))) {
-        *why = "expect bytes differ";
-        return 0;
-    }
-    bool code = b.kind == "func" || b.kind == "site" || b.kind == "call";
-    auto own = section_of(target);
-    bool own_exec_site = (b.kind == "site" || b.kind == "call") && own && (own->Characteristics & IMAGE_SCN_MEM_EXECUTE) &&
-                         section_named(target, b.section);
-    if (code ? !is_code(target) && !own_exec_site : !own) {
-        *why = code ? "target is not in read-only code" : "target is outside the exe";
-        return 0;
-    }
-    if (same_build && b.rva >= 0 && rva(target) != (unsigned long long)b.rva) {
-        *why = "target differs from the KB build";
-        return 0;
-    }
-    return target;
 }
 
 const std::vector<uint8_t> *hooked_range(uintptr_t a, uintptr_t &start)
@@ -641,672 +166,6 @@ const std::vector<uint8_t> *hooked_range(uintptr_t a, uintptr_t &start)
         if (a - w.first < w.second.size())
             return start = w.first, &w.second;
     return nullptr;
-}
-
-bool bytes_at(const Binding &b, uintptr_t at, bool &under)
-{
-    auto pat = scancache::tokens(b.pattern);
-    under = false;
-    if (pat.empty() || !page_readable(at, pat.size()))
-        return false;
-    for (size_t k = 0; k < pat.size(); k++) {
-        uintptr_t start = 0;
-        auto orig = hooked_range(at + k, start);
-        under |= orig != nullptr;
-        uint8_t v = orig ? (*orig)[at + k - start] : byte_at(at + k);
-        if (pat[k] >= 0 && v != pat[k])
-            return false;
-    }
-    return true;
-}
-
-uintptr_t match_under_hooks(const Binding &b)
-{
-    if (!same_build || b.rva < 0 || b.rkind != "addr")
-        return 0;
-    uintptr_t at = base + b.rva - b.anchor;
-    bool under = false;
-    return bytes_at(b, at, under) && under ? at : 0;
-}
-
-uintptr_t kb_match(const Binding &b)
-{
-    if (!kb_first || !same_build || b.match < 0 || b.pattern.empty())
-        return 0;
-    uintptr_t at = base + b.match;
-    bool under = false;
-    if (!section_named(at, b.section) || !bytes_at(b, at, under)) {
-        api->log("[core] binding %s: the pattern does not match at the KB address 0x%llx; scanning %s", b.id.c_str(),
-                 (unsigned long long)at, b.section.c_str());
-        return 0;
-    }
-    if (under && b.rkind != "addr")
-        return 0;
-    if (under)
-        api->log("[core] binding %s: its bytes carry an installed hook; the pattern matches the bytes under it at the KB "
-                 "address 0x%llx", b.id.c_str(), (unsigned long long)at);
-    return at;
-}
-
-int core_scan(const char *section, const char *pattern, uintptr_t *out);
-
-const IMAGE_SECTION_HEADER *section_by_name(const std::string &name)
-{
-    auto nt = nt_headers();
-    auto s = IMAGE_FIRST_SECTION(nt);
-    for (int i = 0; i < nt->FileHeader.NumberOfSections; i++, s++)
-        if (name.size() <= 8 && !strncmp(reinterpret_cast<const char *>(s->Name), name.c_str(), 8))
-            return s;
-    return nullptr;
-}
-
-const IMAGE_SECTION_HEADER *code_section()
-{
-    auto nt = nt_headers();
-    auto s = IMAGE_FIRST_SECTION(nt);
-    const IMAGE_SECTION_HEADER *exec = nullptr;
-    for (int i = 0; i < nt->FileHeader.NumberOfSections; i++, s++) {
-        DWORD c = s->Characteristics;
-        if ((c & IMAGE_SCN_MEM_EXECUTE) && (c & IMAGE_SCN_MEM_READ) && !(c & IMAGE_SCN_MEM_WRITE))
-            return s;
-        if ((c & IMAGE_SCN_MEM_EXECUTE) && !exec)
-            exec = s;
-    }
-    return exec;
-}
-
-double page_entropy(uintptr_t p)
-{
-    if (!page_readable(p, 0x1000))
-        return -1;
-    unsigned long cnt[256] = {0};
-    auto b = reinterpret_cast<const uint8_t *>(p);
-    for (int i = 0; i < 0x1000; i++)
-        cnt[b[i]]++;
-    double h = 0;
-    for (int i = 0; i < 256; i++)
-        if (cnt[i]) {
-            double pr = cnt[i] / 4096.0;
-            h -= pr * std::log2(pr);
-        }
-    return h;
-}
-
-double section_entropy(const IMAGE_SECTION_HEADER *s)
-{
-    uintptr_t start = base + s->VirtualAddress;
-    size_t size = s->Misc.VirtualSize ? s->Misc.VirtualSize : s->SizeOfRawData;
-    double sum = 0;
-    int ok = 0;
-    for (int k = 0; k < 16; k++) {
-        size_t off = size > 16 * 0x1000 ? (size_t)((double)k / 16 * (double)(size - 0x1000)) & ~(size_t)0xfff
-                                        : (size_t)k * 0x1000;
-        if (k && off + 0x1000 > size)
-            break;
-        double e = page_entropy(start + off);
-        if (e >= 0)
-            ok++, sum += e;
-    }
-    return ok ? sum / ok : -1;
-}
-
-const char *reads(double e)
-{
-    return e < 0 ? "unreadable" : e > ENCRYPTED ? "encrypted" : e > PLAIN ? "partly encrypted" : "decrypted";
-}
-
-/* Bulk decryption only goes one way, so a section seen decrypted is not sampled again; an encrypted one is
-   resampled at most every 50 ms because addon inits ask for many bindings in a row. */
-double section_now(const std::string &name)
-{
-    auto s = section_by_name(name);
-    if (!s)
-        return -1;
-    DWORD now = GetTickCount();
-    auto it = section_reads.find(name);
-    if (it != section_reads.end() && ((it->second.entropy >= 0 && it->second.entropy <= PLAIN) || now - it->second.at < 50))
-        return it->second.entropy;
-    double e = section_entropy(s);
-    section_reads[name] = {e, now};
-    return e;
-}
-
-bool page_encrypted(uintptr_t a)
-{
-    double e = page_entropy(a & ~uintptr_t(0xfff));
-    return e < 0 || e > ENCRYPTED;
-}
-
-bool in_exec(uintptr_t a)
-{
-    auto s = section_of(a);
-    return s && (s->Characteristics & IMAGE_SCN_MEM_EXECUTE);
-}
-
-bool guarded(const Binding &b)
-{
-    auto s = packed ? section_by_name(b.section) : nullptr;
-    return s && (s->Characteristics & IMAGE_SCN_MEM_EXECUTE);
-}
-
-uintptr_t resolve_by_pattern(Binding &b, const char **why, bool *at_kb)
-{
-    Trace &t = b.tr;
-    uintptr_t match = kb_match(b);
-    *at_kb = match != 0;
-    if (kb_first && same_build && b.match >= 0)
-        t.match = t.site = b.match, t.verified = match ? 1 : 0;
-    if (match) {
-        t.method = "hint", t.matches = 1;
-        uintptr_t target = apply_match(b, match, why);
-        t.verified = target != 0;
-        return target;
-    }
-    auto key = b.section + '|' + b.pattern;
-    auto hit = scans.find(key);
-    if (hit == scans.end()) {
-        int hits = core_scan(b.section.c_str(), b.pattern.c_str(), &match);
-        hit = scans.emplace(key, ScanHit{match, hits}).first;
-    }
-    match = hit->second.at;
-    t.matches = hit->second.hits;
-    bool under = false;
-    if (!match && (match = match_under_hooks(b))) {
-        under = true;
-        api->log("[core] binding %s: its bytes carry an installed hook; the pattern matches the bytes under it at the KB "
-                 "address 0x%llx", b.id.c_str(), (unsigned long long)match);
-    }
-    if (!match) {
-        *why = "signature did not match exactly once";
-        return 0;
-    }
-    t.method = under ? "hint" : "scan";
-    t.match = t.site = rva(match);
-    uintptr_t target = apply_match(b, match, why);
-    t.verified = target != 0;
-    return target;
-}
-
-uintptr_t resolve_by_anchor(Binding &b, const char **why)
-{
-    if (b.sa_string.empty()) {
-        *why = "no string anchor";
-        return 0;
-    }
-    uintptr_t f = anchor_func(b.sa_string);
-    if (!f) {
-        *why = "string anchor did not locate a unique function";
-        return 0;
-    }
-    if (b.tr.site < 0)
-        b.tr.site = rva(f + b.sa_func_off);
-    if (same_build && b.sa_func_rva >= 0 && rva(f) != (unsigned long long)b.sa_func_rva) {
-        *why = "string anchor function differs from the KB build";
-        return 0;
-    }
-    return apply_match(b, f + b.sa_func_off, why);
-}
-
-/* One order for every build: the set's verified hint, then a section scan, then the string anchor. A set
-   entry without a pattern is the old per-build format and can only use its string anchor. */
-uintptr_t resolve_binding(Binding &b)
-{
-    b.tr = {};
-    if (!b.unresolvable.empty()) {
-        b.tr.reason = "unresolvable: " + b.unresolvable;
-        api->log("[core] binding %s: the set marks it unresolvable on this build (%s)", b.id.c_str(), b.unresolvable.c_str());
-        return 0;
-    }
-    std::string missing;
-    const char *pw = "signature did not match exactly once", *aw = "no string anchor";
-    uintptr_t target = 0;
-    const char *method = "";
-    bool kb = false, legacy = b.pattern.empty();
-    if (legacy) {
-        pw = "the set gives no pattern (legacy format)";
-    } else if (!section_by_name(b.section)) {
-        missing = "section " + b.section + " is not in this exe";
-        pw = missing.c_str();
-    } else if ((target = resolve_by_pattern(b, &pw, &kb))) {
-        method = kb ? "pattern at the KB address" : "pattern";
-    }
-    if (!target && !b.sa_string.empty() && (target = resolve_by_anchor(b, &aw))) {
-        method = legacy ? "string anchor (legacy set entry, no pattern)" : "string anchor (pattern fell back)";
-        b.tr.method = legacy ? "anchor" : "anchor-fallback";
-        b.tr.match = -1, b.tr.verified = -1;
-    }
-    if (!target) {
-        b.tr.method = "-";
-        b.tr.reason = b.sa_string.empty() ? std::string(pw) : std::string("pattern: ") + pw + "; string anchor: " + aw;
-        if (b.sa_string.empty())
-            return unresolved(b, pw);
-        api->log("[core] binding %s: unresolved (pattern: %s; string anchor: %s)", b.id.c_str(), pw, aw);
-        return 0;
-    }
-    if (legacy)
-        b.tr.reason = "legacy set entry without a pattern";
-    api->log("[core] bind %s -> 0x%llx (base+0x%llx), %s %s via %s", b.id.c_str(), (unsigned long long)target,
-             rva(target), b.kind.c_str(), b.status.c_str(), method);
-    return target;
-}
-
-void settle(Binding &b, uintptr_t addr)
-{
-    b.addr = addr, b.resolved = true, b.deferred = false;
-}
-
-void defer(Binding &b, const std::string &why, bool final)
-{
-    scans.erase(b.section + '|' + b.pattern);
-    for (auto it = anchor_funcs.begin(); it != anchor_funcs.end();)
-        it = it->second ? std::next(it) : anchor_funcs.erase(it);
-    if (final) {
-        b.tr.method = "-";
-        b.tr.reason = why + "; still so at the last retry, so it fails closed";
-        if (b.tr.site < 0 && b.match >= 0)
-            b.tr.site = b.match;
-        api->log("[core] binding %s: %s", b.id.c_str(), b.tr.reason.c_str());
-        return settle(b, 0);
-    }
-    b.tr = {};
-    b.tr.reason = why;
-    b.addr = 0, b.resolved = false, b.deferred = true;
-}
-
-/* A packed build's code reads encrypted until the game decrypts it, so its bindings wait for that instead of
-   resolving to garbage: the section must read decrypted, and a resolved site's own page too. A pattern that
-   fails while some of the section still reads encrypted is retried later, not given up. */
-void attempt(Binding &b, bool final)
-{
-    if (!guarded(b) || !b.unresolvable.empty())
-        return settle(b, resolve_binding(b));
-    char why[200];
-    double e = section_now(b.section);
-    if (e < 0 || e > ENCRYPTED) {
-        snprintf(why, sizeof why, "code section %s reads %s (entropy %.2f)", b.section.c_str(), reads(e), e < 0 ? 0 : e);
-        b.tr = {};
-        return defer(b, why, final);
-    }
-    uintptr_t target = resolve_binding(b);
-    if (target) {
-        uintptr_t m = b.tr.match >= 0 ? base + b.tr.match : 0;
-        uintptr_t bad = m && page_encrypted(m) ? m : in_exec(target) && page_encrypted(target) ? target : 0;
-        if (!bad)
-            return settle(b, target);
-        snprintf(why, sizeof why, "the page at base+0x%llx still reads encrypted", rva(bad));
-        return defer(b, why, final);
-    }
-    bool partly = e > PLAIN || (b.tr.site >= 0 && page_encrypted(base + b.tr.site));
-    if (!partly)
-        return settle(b, 0);
-    snprintf(why, sizeof why, "code section %s reads %s (entropy %.2f): ", b.section.c_str(), reads(e), e);
-    defer(b, why + b.tr.reason, final);
-}
-
-std::string quoted(const std::string &s)
-{
-    std::string out;
-    for (char c : s) {
-        if (c == '"' || c == '\\')
-            out += '\\';
-        out += c == '\r' || c == '\n' ? ' ' : c;
-    }
-    return out;
-}
-
-std::string hex_rva(long long v)
-{
-    char buf[24];
-    snprintf(buf, sizeof buf, "0x%llx", v);
-    return v < 0 ? "-" : buf;
-}
-
-std::string site_bytes(long long site)
-{
-    std::string out;
-    for (int i = 0; i < 32; i++) {
-        uintptr_t a = base + site + i, start = 0;
-        if (!page_readable(a, 1))
-            break;
-        auto orig = hooked_range(a, start);
-        char h[4];
-        snprintf(h, sizeof h, "%s%02X", i ? " " : "", orig ? (*orig)[a - start] : byte_at(a));
-        out += h;
-    }
-    return out;
-}
-
-void report(const char *pass)
-{
-    unreported = false;
-    size_t done = 0, waiting = 0, failed = 0;
-    for (auto &b : bindings) {
-        const Trace &t = b.tr;
-        bool ok = b.resolved && b.addr;
-        const char *result = b.deferred ? "deferred" : ok ? "resolved" : "unresolved";
-        (b.deferred ? waiting : ok ? done : failed)++;
-        std::string line = "[bind] id=" + b.id + " build=" + build_tag + " pass=" + pass + " result=" + result +
-                           " method=" + (ok ? t.method : "-") + " matches=" +
-                           (b.deferred || t.matches < 0 ? "-" : std::to_string(t.matches)) +
-                           " rva=" + (ok ? hex_rva((long long)rva(b.addr)) : "-") +
-                           " match=" + (b.deferred ? "-" : hex_rva(t.match)) +
-                           " verified=" + (b.deferred || t.verified < 0 ? "-" : t.verified ? "yes" : "no") +
-                           " reason=\"" + quoted(t.reason) + "\"";
-        if (!ok && !b.deferred)
-            line += " site=" + hex_rva(t.site) + " site_bytes=\"" + (t.site >= 0 ? site_bytes(t.site) : "") + "\"";
-        else
-            line += " site_bytes=\"\"";
-        api->log("%s", line.c_str());
-    }
-    api->log("[bind] summary build=%s pass=%s resolved=%zu deferred=%zu unresolved=%zu total=%zu pe_timestamp=%lld "
-             "size=%lld sha256=%s",
-             build_tag.c_str(), pass, done, waiting, failed, bindings.size(), exe_stamp, exe_bytes, exe_sha.c_str());
-}
-
-std::string exe_sha256(const std::wstring &exe, const std::wstring &cache)
-{
-    WIN32_FILE_ATTRIBUTE_DATA fa{};
-    if (!GetFileAttributesExW(exe.c_str(), GetFileExInfoStandard, &fa))
-        return "-";
-    char key[96];
-    snprintf(key, sizeof key, "%lld\t%llu\t%lld\t", exe_bytes,
-             ((unsigned long long)fa.ftLastWriteTime.dwHighDateTime << 32) | fa.ftLastWriteTime.dwLowDateTime, exe_stamp);
-    std::string kept = read_file(cache);
-    if (!kept.compare(0, strlen(key), key) && kept.size() >= strlen(key) + 64)
-        return kept.substr(strlen(key), 64);
-    HMODULE bc = LoadLibraryW(L"bcrypt.dll");
-    auto open = reinterpret_cast<decltype(&BCryptOpenAlgorithmProvider)>(GetProcAddress(bc, "BCryptOpenAlgorithmProvider"));
-    auto create = reinterpret_cast<decltype(&BCryptCreateHash)>(GetProcAddress(bc, "BCryptCreateHash"));
-    auto data = reinterpret_cast<decltype(&BCryptHashData)>(GetProcAddress(bc, "BCryptHashData"));
-    auto finish = reinterpret_cast<decltype(&BCryptFinishHash)>(GetProcAddress(bc, "BCryptFinishHash"));
-    auto destroy = reinterpret_cast<decltype(&BCryptDestroyHash)>(GetProcAddress(bc, "BCryptDestroyHash"));
-    auto close = reinterpret_cast<decltype(&BCryptCloseAlgorithmProvider)>(GetProcAddress(bc, "BCryptCloseAlgorithmProvider"));
-    BCRYPT_ALG_HANDLE alg = nullptr;
-    BCRYPT_HASH_HANDLE h = nullptr;
-    if (!open || !create || !data || !finish || !destroy || !close || open(&alg, BCRYPT_SHA256_ALGORITHM, nullptr, 0))
-        return "-";
-    HANDLE f = CreateFileW(exe.c_str(), GENERIC_READ, FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE, nullptr,
-                           OPEN_EXISTING, FILE_FLAG_SEQUENTIAL_SCAN, nullptr);
-    bool ok = f != INVALID_HANDLE_VALUE && !create(alg, &h, nullptr, 0, nullptr, 0, 0);
-    std::vector<uint8_t> buf(size_t(4) << 20);
-    for (DWORD got = 0; ok && ReadFile(f, buf.data(), DWORD(buf.size()), &got, nullptr) && got;)
-        ok = !data(h, buf.data(), got, 0);
-    uint8_t digest[32];
-    ok = ok && !finish(h, digest, sizeof digest, 0);
-    if (h)
-        destroy(h);
-    close(alg, 0);
-    if (f != INVALID_HANDLE_VALUE)
-        CloseHandle(f);
-    if (!ok)
-        return "-";
-    std::string hex;
-    for (uint8_t c : digest) {
-        char x[3];
-        snprintf(x, sizeof x, "%02x", c);
-        hex += x;
-    }
-    if (FILE *o = _wfopen(cache.c_str(), L"wb")) {
-        fprintf(o, "%s%s\n", key, hex.c_str());
-        fclose(o);
-    }
-    return hex;
-}
-
-int core_scan(const char *section, const char *pattern, uintptr_t *out)
-{
-    if (out)
-        *out = 0;
-    if (!scan_cache_on || !section || !pattern)
-        return loader_scan(section, pattern, out);
-    uint64_t known = 0;
-    AcquireSRWLockShared(&scan_lock);
-    bool have = scan_cache.find(section, pattern, known);
-    ReleaseSRWLockShared(&scan_lock);
-    if (have) {
-        auto pat = scancache::tokens(pattern);
-        uintptr_t at = base + known;
-        if (section_named(at, section) && page_readable(at, pat.size()) &&
-            scancache::matches(reinterpret_cast<const uint8_t *>(at), pat)) {
-            api->log("scan %s [%s] -> 1 hit at 0x%llx (base+0x%llx), the address cached for this exe", section, pattern,
-                     (unsigned long long)at, (unsigned long long)known);
-            if (out)
-                *out = at;
-            return 1;
-        }
-    }
-    uintptr_t at = 0;
-    int hits = loader_scan(section, pattern, &at);
-    AcquireSRWLockExclusive(&scan_lock);
-    scan_cache.found(section, pattern, hits, hits == 1 ? rva(at) : 0);
-    ReleaseSRWLockExclusive(&scan_lock);
-    if (out && hits == 1)
-        *out = at;
-    return hits;
-}
-
-/* The key names the exe by fields that stay put while it runs: a packer may rewrite section flags, sizes or
-   the image base in memory, and the decrypted-stage scans must still be found by the next launch. */
-void read_section_map(const json::Value &doc, const std::string &file)
-{
-    const auto &given = doc["sections"].type == json::Value::Obj ? doc["sections"] : doc["build"]["sections"];
-    for (auto &[from, to] : given.o)
-        if (to.type == json::Value::Str && from != to.s && section_by_name(to.s))
-            section_alias[from] = to.s;
-    const char *source = "the set's section map";
-    std::unordered_map<std::string, size_t> uses;
-    for (auto &b : bindings)
-        uses[b.section]++;
-    auto top = std::max_element(uses.begin(), uses.end(), [](auto &x, auto &y) { return x.second < y.second; });
-    if (section_alias.empty() && !bindings.empty() && !uses.count(".xtls") && top != uses.end()) {
-        auto s = section_by_name(top->first);
-        if (s && (s->Characteristics & IMAGE_SCN_MEM_EXECUTE))
-            section_alias[".xtls"] = top->first, source = "inferred: no binding of the set scans .xtls";
-    }
-    for (auto &[from, to] : section_alias)
-        api->log("[core] %s: scans of %s by core code and addons go to %s on this build (%s)", file.c_str(),
-                 from.c_str(), to.c_str(), source);
-}
-
-uint64_t exe_key()
-{
-    auto nt = nt_headers();
-    auto &fh = nt->FileHeader;
-    auto &oh = nt->OptionalHeader;
-    uint64_t k = scancache::fnv64(&fh.Machine, sizeof fh.Machine);
-    k = scancache::fnv64(&fh.NumberOfSections, sizeof fh.NumberOfSections, k);
-    k = scancache::fnv64(&fh.TimeDateStamp, sizeof fh.TimeDateStamp, k);
-    k = scancache::fnv64(&oh.AddressOfEntryPoint, sizeof oh.AddressOfEntryPoint, k);
-    k = scancache::fnv64(&oh.SizeOfImage, sizeof oh.SizeOfImage, k);
-    k = scancache::fnv64(&oh.CheckSum, sizeof oh.CheckSum, k);
-    k = scancache::fnv64(&exe_bytes, sizeof exe_bytes, k);
-    auto s = IMAGE_FIRST_SECTION(nt);
-    for (int i = 0; i < fh.NumberOfSections; i++, s++) {
-        k = scancache::fnv64(s->Name, sizeof s->Name, k);
-        k = scancache::fnv64(&s->VirtualAddress, sizeof s->VirtualAddress, k);
-        k = scancache::fnv64(&s->SizeOfRawData, sizeof s->SizeOfRawData, k);
-        k = scancache::fnv64(&s->PointerToRawData, sizeof s->PointerToRawData, k);
-    }
-    return k;
-}
-
-std::string section_name(const IMAGE_SECTION_HEADER *s)
-{
-    char n[9] = {};
-    if (s)
-        memcpy(n, s->Name, 8);
-    return n;
-}
-
-/* A scan of encrypted bytes matches garbage or nothing, so on a packed build it is refused while its section
-   reads encrypted, and a hit on a page that still does is dropped. An addon init that hit one is called again
-   once the code decrypts, as for a deferred binding. */
-bool scan_refused(const char *section, const char *pattern, uintptr_t hit)
-{
-    char why[160];
-    if (!hit) {
-        auto s = section ? section_by_name(section) : code_section();
-        if (!s || !(s->Characteristics & IMAGE_SCN_MEM_EXECUTE))
-            return false;
-        double e = section_now(section_name(s));
-        if (e >= 0 && e <= ENCRYPTED)
-            return false;
-        snprintf(why, sizeof why, "%s reads %s (entropy %.2f)", section_name(s).c_str(), reads(e), e < 0 ? 0 : e);
-    } else {
-        if (!in_exec(hit) || !page_encrypted(hit))
-            return false;
-        snprintf(why, sizeof why, "its hit at base+0x%llx is on a page that still reads encrypted", rva(hit));
-    }
-    if (current)
-        current->hit_deferred = true;
-    api->log("[core] scan %s [%s]%s%s refused: %s on this packed build; nothing resolves in encrypted code",
-             section ? section : "<exec>", pattern, current ? " for " : "", current ? current->name.c_str() : "", why);
-    return true;
-}
-
-/* Core code and addons written for Steam scan Steam's section names; the set's section map sends them to this
-   build's section. Bindings already name their own build's section and scan without the map. */
-int api_scan(const char *section, const char *pattern, uintptr_t *out)
-{
-    auto it = section ? section_alias.find(section) : section_alias.end();
-    const char *real = it == section_alias.end() ? section : it->second.c_str();
-    if (!packed)
-        return core_scan(real, pattern, out);
-    std::lock_guard<std::recursive_mutex> g(resolve_lock);
-    if (out)
-        *out = 0;
-    uintptr_t at = 0;
-    if (scan_refused(real, pattern, 0))
-        return 0;
-    int hits = core_scan(real, pattern, &at);
-    if (hits == 1 && scan_refused(real, pattern, at))
-        return 0;
-    if (out)
-        *out = at;
-    return hits;
-}
-
-const std::wstring &caches(const std::wstring &dir)
-{
-    if (!cache_dir.empty())
-        return cache_dir;
-    cache_dir = dir + L"..\\..\\cache\\";
-    CreateDirectoryW(cache_dir.c_str(), nullptr);
-    HANDLE probe = CreateFileW((cache_dir + L"write-test.tmp").c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS,
-                               FILE_ATTRIBUTE_TEMPORARY | FILE_FLAG_DELETE_ON_CLOSE, nullptr);
-    if (probe != INVALID_HANDLE_VALUE) {
-        CloseHandle(probe);
-        return cache_dir;
-    }
-    DWORD error = GetLastError();
-    wchar_t folder[MAX_PATH * 2];
-    if (!swofty_data_folder(folder, MAX_PATH * 2)) {
-        api->log("[core] caches: the game can't create files in swofty\\cache (error %lu) and LOCALAPPDATA is not set; "
-                 "the scan and exe hash caches are not kept",
-                 error);
-        return cache_dir;
-    }
-    std::wstring data = folder;
-    CreateDirectoryW(data.c_str(), nullptr);
-    CreateDirectoryW((data += L"\\cache").c_str(), nullptr);
-    CreateDirectoryW((data += L"\\game").c_str(), nullptr);
-    cache_dir = data + L"\\";
-    cache_name = "%LOCALAPPDATA%\\Swofty\\cache\\game";
-    api->log("[core] caches: the game can't create files in swofty\\cache (error %lu); the scan and exe hash caches "
-             "are in %s",
-             error, cache_name);
-    return cache_dir;
-}
-
-void open_scan_cache(SwoftyApi *a, const std::wstring &dir)
-{
-    loader_scan = a->scan;
-    a->scan = api_scan;
-    char v[16] = {0};
-    if (GetEnvironmentVariableA("SWOFTY_RESOLVE", v, sizeof v) && !_stricmp(v, "scan")) {
-        kb_first = false;
-        api->log("[core] binding resolution: SWOFTY_RESOLVE=scan, every pattern is scanned and the scan cache is off");
-        return;
-    }
-    uint64_t key = exe_key();
-    scan_cache_path = caches(dir) + L"scan-cache.tsv";
-    std::string text = read_file(scan_cache_path);
-    if (text.empty()) {
-        scan_cache.parse("", key);
-        api->log("[core] scan cache: none yet for this exe (key %016llx); patterns found by a scan are kept in "
-                 "%s\\scan-cache.tsv", (unsigned long long)key, cache_name);
-    } else if (!scan_cache.parse(text, key)) {
-        api->log("[core] scan cache: %s\\scan-cache.tsv belongs to another exe; starting over (key %016llx)", cache_name,
-                 (unsigned long long)key);
-    } else {
-        api->log("[core] scan cache: %zu address(es) for this exe (key %016llx), each checked against the pattern before use",
-                 scan_cache.rva.size(), (unsigned long long)key);
-    }
-    scan_cache_on = true;
-}
-
-void save_scan_cache()
-{
-    AcquireSRWLockExclusive(&scan_lock);
-    std::string text;
-    size_t n = scan_cache.rva.size();
-    if (scan_cache_on && scan_cache.dirty)
-        text = scan_cache.serialize(), scan_cache.dirty = false;
-    ReleaseSRWLockExclusive(&scan_lock);
-    if (text.empty())
-        return;
-    std::wstring tmp = scan_cache_path + L".tmp";
-    HANDLE f = CreateFileW(tmp.c_str(), GENERIC_WRITE, 0, nullptr, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, nullptr);
-    DWORD w = 0;
-    bool ok = f != INVALID_HANDLE_VALUE && WriteFile(f, text.data(), DWORD(text.size()), &w, nullptr) && w == text.size();
-    if (f != INVALID_HANDLE_VALUE)
-        CloseHandle(f);
-    ok = ok && MoveFileExW(tmp.c_str(), scan_cache_path.c_str(), MOVEFILE_REPLACE_EXISTING);
-    if (!ok)
-        DeleteFileW(tmp.c_str());
-    if (ok)
-        api->log("[core] scan cache: %zu address(es) saved to %s\\scan-cache.tsv", n, cache_name);
-    else
-        api->log("[core] scan cache: writing %s\\scan-cache.tsv failed (%zu address(es) kept for this session)",
-                 cache_name, n);
-}
-
-Binding *find_binding(const std::string &id)
-{
-    auto it = binding_index.find(id);
-    return it == binding_index.end() ? nullptr : &bindings[it->second];
-}
-
-uintptr_t api_resolve(const char *id)
-{
-    std::lock_guard<std::recursive_mutex> g(resolve_lock);
-    const char *name = id ? id : "(null)";
-    Binding *b = find_binding(id ? id : "");
-    if (!b) {
-        if (current)
-            api->log("[core] addon %s needs %s, which %s does not list: this loader is older than the addon, or %s is "
-                     "not an exported binding",
-                     current->name.c_str(), name, bindings_file.c_str(), name);
-        else
-            api->log("[core] no binding %s in %s", name, bindings_file.c_str());
-        return 0;
-    }
-    if (!b->resolved) {
-        bool was = b->deferred;
-        attempt(*b, false);
-        unreported |= was && !b->deferred;
-    }
-    if (b->deferred) {
-        if (current) {
-            current->hit_deferred = true;
-            api->log("[core] addon %s needs %s, which waits for its code to decrypt (%s)", current->name.c_str(), name,
-                     b->tr.reason.c_str());
-        }
-        return 0;
-    }
-    if (!b->addr && current)
-        api->log("[core] addon %s needs %s, which does not resolve on this build", current->name.c_str(), name);
-    return b->addr;
 }
 
 bool same_dll(const std::string &decl, const std::string &dll)
@@ -1361,42 +220,6 @@ int api_register(const SwoftyMixin *m, size_t n)
     return 1;
 }
 
-void *api_fields(const void *obj, size_t size)
-{
-    struct Key {
-        const void *obj;
-        HMODULE mod;
-        bool operator==(const Key &) const = default;
-    };
-    struct Hash {
-        size_t operator()(const Key &k) const { return std::hash<const void *>()(k.obj) ^ (uintptr_t)k.mod; }
-    };
-    static std::unordered_map<Key, std::pair<size_t, void *>, Hash> table;
-    static SRWLOCK lock = SRWLOCK_INIT;
-    HMODULE mod = nullptr;
-    GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                       reinterpret_cast<LPCWSTR>(__builtin_return_address(0)), &mod);
-    void *out = nullptr;
-    size_t held = 0;
-    AcquireSRWLockExclusive(&lock);
-    auto it = table.find({obj, mod});
-    if (!size) {
-        if (it != table.end())
-            free(it->second.second), table.erase(it);
-    } else if (it == table.end()) {
-        out = calloc(1, size);
-        table[{obj, mod}] = {size, out};
-    } else if (it->second.first == size) {
-        out = it->second.second;
-    } else {
-        held = it->second.first;
-    }
-    ReleaseSRWLockExclusive(&lock);
-    if (held)
-        api->log("[core] fields(%p, %zu): this addon already keeps %zu bytes on that object", obj, size, held);
-    return out;
-}
-
 void drop(size_t i, const char *fmt, const char *a = "", const char *b = "", const char *c = "")
 {
     if (!addons[i].active)
@@ -1414,10 +237,10 @@ void check_targets(size_t i)
         uint32_t k = SWOFTY_MIXIN_KIND(m.kind), arg = SWOFTY_MIXIN_ARG(m.kind);
         if (k == SWOFTY_MIXIN_ON_LOAD)
             continue;
-        Binding *b = find_binding(m.target);
+        Binding *b = bindings().find(m.target);
         if (!b)
-            return drop(i, "needs %s, which %s does not list", m.target.c_str(), bindings_file.c_str());
-        m.addr = api_resolve(m.target.c_str());
+            return drop(i, "needs %s, which %s does not list", m.target.c_str(), bindings().file().c_str());
+        m.addr = resolve_for_addon(m.target.c_str());
         if (b->deferred) {
             addons[i].waiting = true;
             continue;
@@ -1568,7 +391,7 @@ bool write_bytes(uintptr_t at, const void *data, size_t n)
 {
     DWORD old;
     auto p = reinterpret_cast<void *>(at);
-    if (!VirtualProtect(p, n, in_exec(at) ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE, &old))
+    if (!VirtualProtect(p, n, image().in_exec(at) ? PAGE_EXECUTE_READWRITE : PAGE_READWRITE, &old))
         return false;
     auto b = reinterpret_cast<const uint8_t *>(p);
     written.push_back({at, std::vector<uint8_t>(b, b + n)});
@@ -1606,143 +429,7 @@ void chain(const Group &g, void *last)
             *g.handlers[i].m->orig = i + 1 < g.handlers.size() ? g.handlers[i + 1].m->handler : last;
 }
 
-/* Hooks reach their trampolines with a 5-byte jump, so the trampolines must sit within 2 GB of the code.
-   The loader reserves a pool next to the image at attach (SwoftyLoaderHookPool); the core commits it and
-   hands it to safetyhook's global allocator, which serves every later trampoline and stub from it. On a
-   build whose core loads at the window stage the game has used the address space around the image by
-   then, and every site and short wrap failed with no memory in range. */
-std::shared_ptr<safetyhook::Allocator> hook_allocator;
-uintptr_t hook_pool;
-
-void adopt_hook_pool(void (*loader_fn)())
-{
-    hook_allocator = safetyhook::Allocator::global();
-    HMODULE loader = nullptr;
-    GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                       reinterpret_cast<LPCWSTR>(loader_fn), &loader);
-    auto take = loader ? reinterpret_cast<int (*)(uintptr_t *, size_t *)>(
-                             reinterpret_cast<void *>(GetProcAddress(loader, "SwoftyLoaderHookPool")))
-                       : nullptr;
-    uintptr_t at = 0;
-    size_t size = 0;
-    if (!take || !take(&at, &size)) {
-        api->log("[core] hook pool: %s; trampolines come from safetyhook's own search near each hook",
-                 take ? "the loader reserved none at attach" : "this loader reserves none");
-        return;
-    }
-    if (!VirtualAlloc(reinterpret_cast<void *>(at), size, MEM_COMMIT, PAGE_EXECUTE_READWRITE)) {
-        api->log("[core] hook pool: committing %zu KB at 0x%llx failed, error %lu; trampolines come from "
-                 "safetyhook's own search near each hook", size >> 10, (unsigned long long)at, GetLastError());
-        VirtualFree(reinterpret_cast<void *>(at), 0, MEM_RELEASE);
-        return;
-    }
-    hook_allocator->adopt(reinterpret_cast<uint8_t *>(at), size);
-    hook_pool = at;
-    long long off = (long long)(at - base);
-    api->log("[core] hook pool: %zu KB at 0x%llx (base%s0x%llx), reserved at loader attach; hook trampolines and "
-             "stubs come from it", size >> 10, (unsigned long long)at, off < 0 ? "-" : "+",
-             (unsigned long long)(off < 0 ? -off : off));
-}
-
-std::string target_bytes(uintptr_t at)
-{
-    std::string s;
-    char b[4];
-    for (int i = 0; i < 16; i++) {
-        snprintf(b, sizeof b, i ? " %02X" : "%02X", reinterpret_cast<const uint8_t *>(at)[i]);
-        s += b;
-    }
-    return s;
-}
-
-std::string where(const uint8_t *ip)
-{
-    char b[48];
-    uintptr_t a = reinterpret_cast<uintptr_t>(ip);
-    if (a >= base)
-        snprintf(b, sizeof b, "base+0x%llx", rva(a));
-    else
-        snprintf(b, sizeof b, "0x%llx", (unsigned long long)a);
-    return b;
-}
-
-const char *alloc_error(safetyhook::Allocator::Error e)
-{
-    return e == safetyhook::Allocator::Error::NO_MEMORY_IN_RANGE ? "no free memory within 2 GB of the target"
-                                                                  : "VirtualAlloc failed";
-}
-
-void dump_free_regions_near(uintptr_t target)
-{
-    static bool dumped;
-    if (dumped)
-        return;
-    dumped = true;
-    SYSTEM_INFO si;
-    GetSystemInfo(&si);
-    uintptr_t lo = target > 0x80000000ULL ? target - 0x80000000ULL : (uintptr_t)si.lpMinimumApplicationAddress;
-    uintptr_t hi = target + 0x80000000ULL;
-    int regions = 0, slots = 0, shown = 0;
-    unsigned long long biggest = 0;
-    for (uintptr_t p = lo & ~(uintptr_t)0xFFF; p < hi;) {
-        MEMORY_BASIC_INFORMATION m;
-        if (!VirtualQuery(reinterpret_cast<void *>(p), &m, sizeof m)) {
-            api->log("[core]   VirtualQuery failed at 0x%llx, error %lu", (unsigned long long)p, GetLastError());
-            break;
-        }
-        uintptr_t next = (uintptr_t)m.BaseAddress + m.RegionSize;
-        if (m.State == MEM_FREE) {
-            uintptr_t first = (p + 0xFFFF) & ~(uintptr_t)0xFFFF;
-            int n = first < next ? (int)((next - first) >> 16) : 0;
-            regions++;
-            slots += n;
-            biggest = m.RegionSize > biggest ? m.RegionSize : biggest;
-            if (shown < 16) {
-                api->log("[core]   free 0x%llx..0x%llx (%llu KB, %d whole 64 KB slot(s))", (unsigned long long)p,
-                         (unsigned long long)next, (unsigned long long)(m.RegionSize >> 10), n);
-                shown++;
-            }
-        }
-        p = next > p ? next : p + si.dwPageSize;
-    }
-    api->log("[core]   within 2 GB of 0x%llx: %d free region(s), %d whole 64 KB slot(s), largest %llu KB; hook pool %s",
-             (unsigned long long)target, regions, slots, biggest >> 10, hook_pool ? "adopted" : "none");
-}
-
 } // namespace
-
-namespace runtime {
-
-std::string hook_error(const safetyhook::InlineHook::Error &e)
-{
-    using E = safetyhook::InlineHook::Error;
-    switch (e.type) {
-    case E::BAD_ALLOCATION:
-        return std::string("the trampoline did not allocate: ") + alloc_error(e.allocator_error);
-    case E::FAILED_TO_DECODE_INSTRUCTION:
-        return "the instruction at " + where(e.ip) + " does not decode";
-    case E::SHORT_JUMP_IN_TRAMPOLINE:
-        return "a short jump at " + where(e.ip) + " sits in the relocated bytes";
-    case E::IP_RELATIVE_INSTRUCTION_OUT_OF_RANGE:
-        return "the ip-relative instruction at " + where(e.ip) + " cannot be relocated that far";
-    case E::UNSUPPORTED_INSTRUCTION_IN_TRAMPOLINE:
-        return "the instruction at " + where(e.ip) + " cannot be relocated";
-    case E::FAILED_TO_UNPROTECT:
-        return "the page at " + where(e.ip) + " did not unprotect";
-    case E::NOT_ENOUGH_SPACE:
-        return "not enough room for the jump at " + where(e.ip);
-    }
-    return "unknown InlineHook error " + std::to_string((int)e.type);
-}
-
-std::string hook_error(const safetyhook::MidHook::Error &e)
-{
-    if (e.type == safetyhook::MidHook::Error::BAD_ALLOCATION)
-        return std::string("the stub did not allocate: ") + alloc_error(e.allocator_error);
-    return hook_error(e.inline_hook_error);
-}
-
-} // namespace runtime
 
 namespace {
 
@@ -1752,14 +439,14 @@ const char *failed(std::string why, const Group &g, bool allocation)
 {
     install_error = std::move(why) + "; bytes at the target: " + target_bytes(g.addr);
     if (allocation)
-        dump_free_regions_near(g.addr);
+        hook_pool().dump_free_regions_near(g.addr);
     return install_error.c_str();
 }
 
 const char *install(Group &g)
 {
     void *first = g.handlers[0].m->handler;
-    if (packed && g.kind != SWOFTY_MIXIN_VTABLE && page_encrypted(g.addr))
+    if (code().packed() && g.kind != SWOFTY_MIXIN_VTABLE && code().page_encrypted(g.addr))
         return "the code there still reads encrypted";
     switch (g.kind) {
     case SWOFTY_MIXIN_WRAP: {
@@ -1800,7 +487,7 @@ const char *install(Group &g)
         auto stub = safetyhook::Allocator::global()->allocate_near({reinterpret_cast<uint8_t *>(g.addr)}, 14);
         if (!stub) {
             install_error = std::string("the jump stub did not allocate: ") + alloc_error(stub.error());
-            dump_free_regions_near(g.addr);
+            hook_pool().dump_free_regions_near(g.addr);
             return install_error.c_str();
         }
         uint8_t jmp[14] = {0xFF, 0x25};
@@ -1812,7 +499,7 @@ const char *install(Group &g)
         return write_bytes(g.addr + 1, &rel, 4) ? nullptr : "VirtualProtect failed";
     }
     case SWOFTY_MIXIN_PATCH: {
-        auto *b = find_binding(g.handlers[0].m->target);
+        auto *b = bindings().find(g.handlers[0].m->target);
         if (memcmp(reinterpret_cast<const void *>(g.addr), b->expect.data(), b->expect.size()))
             return "bytes changed since resolve";
         return write_bytes(g.addr, first, g.span) ? nullptr : "VirtualProtect failed";
@@ -1836,7 +523,7 @@ bool install_all(std::vector<Group> &groups)
             return false;
         }
         api->log("[core] %s %s at 0x%llx (base+0x%llx) installed: %s", kind_name(g.kind), target.c_str(),
-                 (unsigned long long)g.addr, rva(g.addr), owners(g).c_str());
+                 (unsigned long long)g.addr, image().rva(g.addr), owners(g).c_str());
     }
     return true;
 }
@@ -1855,65 +542,13 @@ void add_core_sets(std::vector<runtime::CoreMixins> sets)
 size_t offer_core_sets()
 {
     size_t before = addons.size();
-    for (auto *sets : {runtime::save_sandbox_mixins, runtime::career_content_mixins, runtime::characters_mixins, runtime::wizard_mixins,
-                       runtime::tile_route_mixins, runtime::era_mixins, runtime::tt_guard_mixins, runtime::career_alias_mixins, runtime::car_category_mixins,
-                       runtime::save_splice_mixins, runtime::ers_newlap_mixins, runtime::ers_mode_mixins, runtime::car_levers_mixins,
-                       runtime::garage_crew_mixins, runtime::garage_placement_mixins, runtime::pit_slots_mixins, runtime::pit_box_mixins, runtime::garage_slots_mixins, runtime::chassis_registry_mixins, runtime::standings_guard_mixins, runtime::ai_corner_guard_mixins, runtime::replay_grid_guard_mixins, runtime::fe_tile_guard_mixins, runtime::myteam_vehicle_guard_mixins, runtime::myteam_vehicle_heal_mixins, runtime::myteam_vehicle_keep_mixins, runtime::tyre_slots_mixins, runtime::tyre_models_mixins, runtime::track_acclim_mixins,
-                       runtime::audio_queue_mixins, runtime::heap_sizes_mixins, runtime::team_slots_mixins, runtime::track_select_mixins,
-                       runtime::leaderboard_guard_mixins, runtime::lap_host_mixins, runtime::thrustmaster_lcd_mixins, runtime::estimate_laptime_mixins, runtime::red_flag_recompute_mixins, runtime::quali_tyres_mixins, runtime::box_grid_mixins, runtime::gp_continue_mixins, runtime::track_list_guard_mixins, runtime::watchdog_grace_mixins, runtime::garage_setup_mixins, runtime::theatre_list_mixins, runtime::tile_list_select_mixins, runtime::session_enter_mixins, runtime::ai_line_set_mixins})
-        add_core_sets(sets());
+    swofty_core::guards::offer_core_sets(add_core_sets);
     return addons.size() - before;
 }
 
 void settle_core_sets()
 {
-    runtime::save_sandbox_commit();
-    runtime::tile_route_commit();
-    runtime::career_content_commit();
-    runtime::characters_commit();
-    runtime::wizard_commit();
-    runtime::era_commit();
-    runtime::tt_guard_commit();
-    runtime::career_alias_commit();
-    runtime::car_category_commit();
-    runtime::save_splice_commit();
-    runtime::ers_newlap_commit();
-    runtime::lap_host_commit();
-    runtime::ers_mode_commit();
-    runtime::car_levers_commit();
-    runtime::standings_guard_commit();
-    runtime::fe_tile_guard_commit();
-    runtime::myteam_vehicle_guard_commit();
-    runtime::myteam_vehicle_heal_commit();
-    runtime::myteam_vehicle_keep_commit();
-    runtime::ai_corner_guard_commit();
-    runtime::replay_grid_guard_commit();
-    runtime::watchdog_grace_commit();
-    runtime::tyre_slots_commit();
-    runtime::tyre_models_commit();
-    runtime::garage_crew_commit();
-    runtime::pit_slots_commit();
-    runtime::pit_box_commit();
-    runtime::garage_slots_commit();
-    runtime::chassis_registry_commit();
-    runtime::track_acclim_commit();
-    runtime::audio_queue_commit();
-    runtime::heap_sizes_commit();
-    runtime::team_slots_commit();
-    runtime::track_select_commit();
-    runtime::leaderboard_guard_commit();
-    runtime::thrustmaster_lcd_commit();
-    runtime::estimate_laptime_commit();
-    runtime::red_flag_recompute_commit();
-    runtime::box_grid_commit();
-    runtime::quali_tyres_commit();
-    runtime::gp_continue_commit();
-    runtime::track_list_guard_commit();
-    runtime::garage_setup_commit();
-    runtime::theatre_list_commit();
-    runtime::tile_list_select_commit();
-    runtime::session_enter_commit();
-    runtime::ai_line_set_commit();
+    swofty_core::guards::commit_core_sets();
 }
 
 void extend_held(Held &h, const Group &g)
@@ -1936,7 +571,7 @@ void extend_held(Held &h, const Group &g)
     }
     Group all{h.kind, h.addr, h.span, h.handlers};
     api->log("[core] %s %s at 0x%llx (base+0x%llx) chained onto the one installed earlier (%zu handler(s) before): %s",
-             kind_name(h.kind), g.handlers[0].m->target.c_str(), (unsigned long long)h.addr, rva(h.addr), old,
+             kind_name(h.kind), g.handlers[0].m->target.c_str(), (unsigned long long)h.addr, image().rva(h.addr), old,
              owners(all).c_str());
 }
 
@@ -1989,14 +624,6 @@ bool waits(bool core)
         if (a.active && (a.waiting || a.reinit) && (!core || a.core))
             return true;
     return false;
-}
-
-size_t deferred_count()
-{
-    size_t n = 0;
-    for (auto &b : bindings)
-        n += b.deferred;
-    return n;
 }
 
 void drop_module(HMODULE m)
@@ -2053,195 +680,9 @@ void late_install(size_t *count)
             run_on_load(i), addons[i].late = false;
 }
 
-void settle_core_sets();
-size_t offer_core_sets();
-
-/* Core and addon scans name Steam's .xtls; the set's section map sends it to this build's code section. */
-std::string game_code()
-{
-    auto it = section_alias.find(".xtls");
-    if (it != section_alias.end())
-        return it->second;
-    return section_by_name(".xtls") ? ".xtls" : section_name(code_section());
-}
-
-bool code_decrypted(double &e)
-{
-    e = section_now(game_code());
-    return e >= 0 && e <= PLAIN;
-}
-
-/* Setups that scan or hook game code without bindings wait for the whole code section, not a page, to read
-   decrypted: a setup that ran on half-decrypted code would give up for good on what is still encrypted. */
-size_t run_code_tasks(const char *pass, bool final)
-{
-    double e;
-    if (code_tasks.empty() || (!code_decrypted(e) && !final))
-        return 0;
-    bool ok = e >= 0 && e <= PLAIN;
-    auto tasks = std::move(code_tasks);
-    code_tasks.clear();
-    for (auto &t : tasks) {
-        if (!ok) {
-            api->log("[core] %s: not set up; %s still reads %s (entropy %.2f) at the last retry, so it fails closed",
-                     t.what.c_str(), game_code().c_str(), reads(e), e < 0 ? 0 : e);
-            continue;
-        }
-        api->log("[core] %s: %s reads decrypted (entropy %.2f) at the %s pass; setting it up now", t.what.c_str(),
-                 game_code().c_str(), e, pass);
-        t.fn();
-        runtime::stage_catch_up();
-    }
-    return tasks.size();
-}
-
-void late_pass(const char *pass, bool final)
-{
-    std::lock_guard<std::recursive_mutex> c(commit_lock);
-    std::lock_guard<std::recursive_mutex> r(resolve_lock);
-    size_t before = deferred_count();
-    if (!before && !waits(false) && code_tasks.empty()) {
-        if (unreported)
-            report(pass);
-        return;
-    }
-    section_reads.clear();
-    std::vector<std::string> seen;
-    std::string sampled;
-    for (auto &b : bindings)
-        if (b.deferred && std::find(seen.begin(), seen.end(), b.section) == seen.end()) {
-            seen.push_back(b.section);
-            double e = section_now(b.section);
-            char one[96];
-            snprintf(one, sizeof one, "%s%s entropy %.2f (%s)", sampled.empty() ? "" : ", ", b.section.c_str(),
-                     e < 0 ? 0 : e, reads(e));
-            sampled += one;
-        }
-    for (auto &b : bindings)
-        if (b.deferred)
-            attempt(b, final);
-    reinit_pass(final);
-    offer_core_sets();
-    size_t count[7] = {};
-    late_install(count);
-    if (!waits(true)) {
-        runtime::career_setup();
-        settle_core_sets();
-    }
-    size_t setups = run_code_tasks(pass, final);
-    if (!waits(false))
-        closed = true;
-    size_t after = deferred_count(), installed = 0;
-    for (size_t k : count)
-        installed += k;
-    if (after == before && !final && !installed && !setups && strcmp(pass, "window")) {
-        api->log("[core] %s pass: %zu binding(s) and %zu setup(s) still wait for their code to decrypt (%s)", pass, after,
-                 code_tasks.size(), sampled.c_str());
-        return;
-    }
-    api->log("[core] %s pass: %s; %zu binding(s) came out of deferral, %zu still deferred; installed %zu wrap(s), %zu site(s), "
-             "%zu vtable slot(s), %zu redirect(s), %zu patch(es)%s",
-             pass, sampled.c_str(), before - after, after, count[SWOFTY_MIXIN_WRAP], count[SWOFTY_MIXIN_SITE],
-             count[SWOFTY_MIXIN_VTABLE], count[SWOFTY_MIXIN_REDIRECT], count[SWOFTY_MIXIN_PATCH],
-             waits(false) ? "; some addons still wait" : "");
-    report(pass);
-    save_scan_cache();
-}
-
-bool pending()
-{
-    std::lock_guard<std::recursive_mutex> c(commit_lock);
-    return deferred_count() || waits(false) || !code_tasks.empty();
-}
-
-/* Standard library 1.6: once every addon has loaded (the window-stage commit, and on a packed build the
-   last deferred addon's init too, or the retries giving up), the core arms the game hook points, reports
-   undefined points and missing services, and fires game.boot, outside commit_lock. */
-std::atomic<bool> std16_window{false}, std16_settled{false};
-
-void std16_settle(bool force)
-{
-    if (!std16_window.load() || std16_settled.load() || (!force && pending()))
-        return;
-    if (std16_settled.exchange(true))
-        return;
-    swofty_core::hooks::window_stage();
-    swofty_core::services::report_missing();
-}
-
-DWORD WINAPI retry_worker(LPVOID)
-{
-    for (int n = 1; n <= RETRIES && pending(); n++) {
-        Sleep(RETRY_MS);
-        char pass[16];
-        snprintf(pass, sizeof pass, "stage:%d", n);
-        late_pass(pass, n == RETRIES);
-        std16_settle(false);
-    }
-    std16_settle(true);
-    return 0;
-}
-
-void start_retries()
-{
-    if (InterlockedExchange(&retries_started, 1))
-        return;
-    api->log("[core] bindings: %zu binding(s) and %zu setup(s) still wait for their code to decrypt; retrying every %lu "
-             "ms, %d time(s), then they fail closed",
-             deferred_count(), code_tasks.size(), (unsigned long)RETRY_MS, RETRIES);
-    if (HANDLE t = CreateThread(nullptr, 0, retry_worker, nullptr, 0, nullptr)) {
-        CloseHandle(t);
-    } else {
-        late_pass("stage:1", true);
-        std16_settle(true);
-    }
-}
-
-void bind_stage(int stage)
-{
-    if (stage != SWOFTY_STAGE_WINDOW)
-        return;
-    late_pass("window", false);
-    if (pending())
-        start_retries();
-    std16_settle(false);
-}
-
 }
 
 namespace runtime {
-
-/* Core setups that scan or hook game code without a binding run now, or on a packed build whose code still
-   reads encrypted, at the first stage pass that reads it decrypted (the retries bound it like bindings). */
-void when_code_ready(const char *what, void (*fn)())
-{
-    std::lock_guard<std::recursive_mutex> c(commit_lock);
-    {
-        std::lock_guard<std::recursive_mutex> r(resolve_lock);
-        double e = 0;
-        if (packed && !code_decrypted(e)) {
-            code_tasks.push_back({what, fn});
-            api->log("[core] %s waits: %s reads %s (entropy %.2f) on this packed build; it is set up once that code "
-                     "decrypts",
-                     what, game_code().c_str(), reads(e), e < 0 ? 0 : e);
-            return;
-        }
-    }
-    fn();
-    runtime::stage_catch_up();
-}
-
-/* Lazy lookups ask this before caching a miss, so a miss on code that still reads encrypted is tried again. */
-bool code_ready()
-{
-    if (!packed || code_plain.load(std::memory_order_acquire))
-        return true;
-    std::lock_guard<std::recursive_mutex> r(resolve_lock);
-    double e;
-    if (code_decrypted(e))
-        code_plain.store(true, std::memory_order_release);
-    return code_plain.load(std::memory_order_acquire);
-}
 
 bool core_mixins_active(const char *name)
 {
@@ -2270,23 +711,11 @@ std::string core_code_owner(uintptr_t addr)
     return {};
 }
 
-/* Standard library 1.6 game hook points: the addon whose raw overwrite targets a function, and what
-   already sits on a function's first bytes when a point installs while the game runs. */
 namespace runtime {
-
-std::string build_distribution()
-{
-    return build_tag;
-}
-
-std::string build_exe_sha()
-{
-    return exe_sha;
-}
 
 std::string mixin_overwrite_on(const std::string &binding, uintptr_t at)
 {
-    std::lock_guard<std::recursive_mutex> c(commit_lock);
+    std::lock_guard<std::recursive_mutex> c(commit_lock());
     for (auto &a : addons)
         if (a.active && !a.core)
             for (auto &m : a.mixins)
@@ -2297,7 +726,7 @@ std::string mixin_overwrite_on(const std::string &binding, uintptr_t at)
 
 size_t addon_load_index(uint64_t module)
 {
-    std::lock_guard<std::recursive_mutex> c(commit_lock);
+    std::lock_guard<std::recursive_mutex> c(commit_lock());
     for (size_t i = 0; i < addons.size(); i++)
         if (module && reinterpret_cast<uint64_t>(addons[i].module) == module)
             return i + 1;
@@ -2306,7 +735,7 @@ size_t addon_load_index(uint64_t module)
 
 std::string mixin_occupying(uintptr_t at)
 {
-    std::lock_guard<std::recursive_mutex> c(commit_lock);
+    std::lock_guard<std::recursive_mutex> c(commit_lock());
     for (size_t i = 0; i < inline_hooks.size(); i++)
         if (inline_hooks[i].target_address() == at)
             return "the wrap on " + inline_names[i];
@@ -2324,85 +753,60 @@ std::string mixin_occupying(uintptr_t at)
 
 }
 
-extern "C" __declspec(dllexport) int SwoftyCoreAttach(SwoftyApi *a)
+namespace runtime::loader {
+
+Addon *current_addon()
 {
-    api = a;
-    base = a->module_base();
-    adopt_hook_pool(reinterpret_cast<void (*)()>(a->module_base));
-    wchar_t path[MAX_PATH] = {};
-    HMODULE self = nullptr;
-    GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
-                       reinterpret_cast<LPCWSTR>(&SwoftyCoreAttach), &self);
-    GetModuleFileNameW(self, path, MAX_PATH);
-    std::wstring dir(path);
-    dir.resize(dir.find_last_of(L'\\') + 1);
-    crash_attach(a, dir);
-    settings_attach(a, dir);
-    perf::attach();
-    auto nt = reinterpret_cast<const IMAGE_NT_HEADERS *>(base + reinterpret_cast<const IMAGE_DOS_HEADER *>(base)->e_lfanew);
-    long long running_stamp = (long long)nt->FileHeader.TimeDateStamp;
-    std::string chosen = "bindings.json";
-    json::Value doc;
-    if (!json::parse(select_bindings(dir, running_stamp, chosen), doc))
-        api->log("[core] %ls%s missing or unreadable; no binding will resolve", dir.c_str(), chosen.c_str());
-    bindings_file = chosen;
-    for (auto &j : doc["bindings"].a) {
-        Binding b{j["id"].str(), j["kind"].str(), j["status"].str(), j["section"].str(), j["pattern"].str(),
-                  j["resolve"]["kind"].str("addr"), hex_bytes(j["expect"].str()), j["anchor"].num(),
-                  j["resolve"]["insn"].num(), j["resolve"]["len"].num(), j["rva"].num(-1), j["slots"].num(),
-                  j["match"].num(-1)};
-        const auto &sa = j["string_anchor"];
-        if (sa.type == json::Value::Obj) {
-            b.sa_string = sa["string"].str();
-            b.sa_func_rva = sa["func_rva"].num(-1);
-            b.sa_func_off = sa["func_offset"].num();
-            b.sa_durable = sa["durable"].b;
+    return current;
+}
+
+const std::vector<uint8_t> *original_bytes_at(uintptr_t a, uintptr_t &start)
+{
+    return hooked_range(a, start);
+}
+
+uintptr_t resolve_for_addon(const char *id)
+{
+    std::lock_guard<std::recursive_mutex> g(resolve_lock());
+    const char *name = id ? id : "(null)";
+    Binding *b = bindings().find(id ? id : "");
+    if (!b) {
+        if (current)
+            api->log("[core] addon %s needs %s, which %s does not list: this loader is older than the addon, or %s is "
+                     "not an exported binding",
+                     current->name.c_str(), name, bindings().file().c_str(), name);
+        else
+            api->log("[core] no binding %s in %s", name, bindings().file().c_str());
+        return 0;
+    }
+    if (!b->resolved) {
+        bool was = b->deferred;
+        bindings().attempt(*b, false);
+        if (was && !b->deferred)
+            bindings().note_reported_change();
+    }
+    if (b->deferred) {
+        if (current) {
+            current->hit_deferred = true;
+            api->log("[core] addon %s needs %s, which waits for its code to decrypt (%s)", current->name.c_str(), name,
+                     b->tr.reason.c_str());
         }
-        if (b.status == "unresolvable")
-            b.unresolvable = j["reason"].str("the set gives no reason");
-        binding_index[b.id] = bindings.size();
-        bindings.push_back(std::move(b));
+        return 0;
     }
-    same_build = doc["build"]["pe_timestamp"].num() == running_stamp;
-    size_t anchored = 0, durable = 0, placed = 0, legacy = 0, unresolvable = 0;
-    for (auto &b : bindings) {
-        if (!b.sa_string.empty())
-            anchored++, durable += b.sa_durable;
-        placed += b.match >= 0 && !b.pattern.empty();
-        legacy += b.pattern.empty();
-        unresolvable += !b.unresolvable.empty();
-    }
-    std::string dist = doc["build"]["distribution"].str();
-    for (auto &c : dist)
-        c = char(tolower((unsigned char)c));
-    build_tag = dist == "steam" ? "steam" : dist == "ea app" || dist == "ea" ? "ea" : "unknown";
-    read_section_map(doc, chosen);
-    api->log("[core] %s: %zu binding(s) for build %.16s, %s; %zu string-anchored (%zu build-agnostic), pattern first",
-             chosen.c_str(), bindings.size(), doc["build"]["sha256"].str("?").c_str(),
-             same_build ? "this exe (rva checked)" : "a different exe (patterns are scanned)", anchored, durable);
-    if (legacy)
-        api->log("[core] %s: %zu binding(s) carry no pattern (legacy set format); they resolve by string anchor only",
-                 chosen.c_str(), legacy);
-    if (unresolvable)
-        api->log("[core] %s: %zu binding(s) are marked unresolvable on this build and are skipped", chosen.c_str(),
-                 unresolvable);
-    long long kb_size = doc["build"]["size"].num(-1), exe_size = -1;
-    wchar_t exe[MAX_PATH] = {};
-    WIN32_FILE_ATTRIBUTE_DATA fa{};
-    if (GetModuleFileNameW(nullptr, exe, MAX_PATH) && GetFileAttributesExW(exe, GetFileExInfoStandard, &fa))
-        exe_size = (long long)(((unsigned long long)fa.nFileSizeHigh << 32) | fa.nFileSizeLow);
-    exe_stamp = running_stamp, exe_bytes = exe_size;
-    open_scan_cache(a, dir);
-    if (kb_first && same_build && kb_size > 0 && exe_size != kb_size) {
-        kb_first = false;
-        api->log("[core] binding resolution: the exe is %lld bytes and the KB build %lld; the KB addresses are not used, "
-                 "every pattern is scanned", exe_size, kb_size);
-    }
-    if (kb_first && same_build)
-        api->log("[core] binding resolution: %zu of %zu pattern(s) carry their KB address; each is checked there first and "
-                 "scanned only when the bytes differ", placed, bindings.size());
+    if (!b->addr && current)
+        api->log("[core] addon %s needs %s, which does not resolve on this build", current->name.c_str(), name);
+    return b->addr;
+}
+
+int register_addon_mixins(const SwoftyMixin *m, size_t n)
+{
+    return api_register(m, n);
+}
+
+void read_mixin_manifest(const std::wstring &dir)
+{
     std::wstring session_path = dir + L"..\\..\\session.json";
-    std::string text = read_file(session_path);
+    std::string text = read_whole_file(session_path);
     have_session = !text.empty();
     if (have_session && !json::parse(text, session)) {
         api->log("[core] session.json unreadable; every mixin registration is refused");
@@ -2410,57 +814,11 @@ extern "C" __declspec(dllexport) int SwoftyCoreAttach(SwoftyApi *a)
     }
     api->log(have_session ? "[core] session.json: mixins not declared there are refused"
                           : "[core] no session.json; mixins are not checked against a manifest");
-    a->resolve = api_resolve;
-    a->register_mixins = api_register;
-    a->fields = api_fields;
-    a->setting = settings_get;
-    a->watch_setting = settings_watch;
-    a->assets = runtime::assets_table();
-    a->events = runtime::events_table();
-    a->overlay = runtime::overlay_table();
-    a->telemetry = runtime::telemetry_table();
-    a->db = runtime::db_table();
-    a->storage = runtime::storage_table();
-    a->career = runtime::career_table();
-    a->popup = runtime::popup_table();
-    a->lang = runtime::lang_table();
-    a->career_content = runtime::career_content_table();
-    a->characters = runtime::characters_table();
-    a->career_wizard = runtime::wizard_table();
-    a->era = runtime::era_table();
-    a->registry = runtime::registry_table();
-    a->hooks = swofty_core::hooks::table();
-    a->services = swofty_core::services::table();
-    a->version = SWOFTY_API_VERSION;
-    add_core_sets(runtime::career_mixins());
-    exe_sha = exe_sha256(exe, caches(dir) + L"exe-sha256.tsv");
-    const auto &said = doc["build"]["packed"];
-    auto cs = section_by_name(game_code());
-    double ce = cs ? section_entropy(cs) : -1;
-    packed = said.type == json::Value::Bool ? said.b : ce > ENCRYPTED;
-    char cname[9] = {};
-    if (cs)
-        memcpy(cname, cs->Name, 8);
-    api->log("[core] build %s: %s (%s); code section %s entropy %.2f, reads %s", build_tag.c_str(),
-             packed ? "packed" : "not packed", said.type == json::Value::Bool ? "the set says so" : "measured at init",
-             cname, ce < 0 ? 0 : ce, reads(ce));
-    {
-        std::lock_guard<std::recursive_mutex> g(resolve_lock);
-        for (auto &b : bindings)
-            if (!b.resolved && !b.deferred)
-                attempt(b, false);
-        report("init");
-    }
-    save_scan_cache();
-    runtime::when_code_ready("crash: Ne_ReportMemoryError hook", crash_game_hooks);
-    if (packed)
-        runtime::on_stage(bind_stage);
-    return 1;
 }
 
-extern "C" __declspec(dllexport) int SwoftyCoreInit(const wchar_t *name, SwoftyAddonInitFn init)
+int init_addon(const wchar_t *name, SwoftyAddonInitFn init)
 {
-    std::lock_guard<std::recursive_mutex> c(commit_lock);
+    std::lock_guard<std::recursive_mutex> c(commit_lock());
     addons.push_back({utf8(name), {}, true});
     current = &addons.back();
     GetModuleHandleExW(GET_MODULE_HANDLE_EX_FLAG_FROM_ADDRESS | GET_MODULE_HANDLE_EX_FLAG_UNCHANGED_REFCOUNT,
@@ -2469,7 +827,7 @@ extern "C" __declspec(dllexport) int SwoftyCoreInit(const wchar_t *name, SwoftyA
     if (!r) {
         current->mixins.clear();
         drop_module(current->module);
-        if (packed && current->hit_deferred) {
+        if (code().packed() && current->hit_deferred) {
             current->reinit = init;
             api->log("[core] addon %s: its init needs code that still reads encrypted (a binding or a scan); "
                      "SwoftyAddonInit runs again once that code decrypts",
@@ -2483,53 +841,64 @@ extern "C" __declspec(dllexport) int SwoftyCoreInit(const wchar_t *name, SwoftyA
     return r;
 }
 
-static int commit_pass()
+void add_core_mixin_sets(std::vector<runtime::CoreMixins> sets)
 {
-    std::lock_guard<std::recursive_mutex> c(commit_lock);
-    offer_core_sets();
-    size_t from = settled;
-    size_t count[7] = {};
-    install_pass(from, count);
-    if (!waits(true))
-        runtime::career_setup();
-    if (!from)
-        runtime::when_code_ready("popup: message system hook", runtime::popup_setup);
-    if (!from)
-        runtime::when_code_ready("mfd: development switch", runtime::mfd_setup);
-    if (!from)
-        runtime::when_code_ready("view state hooks", view::setup);
-    if (!waits(true))
-        settle_core_sets();
-    for (size_t i = from; i < settled; i++)
-        run_on_load(i);
-    if (offer_core_sets()) {
-        api->log("[core] commit: installing the core mixin sets that registrations at load asked for");
-        install_pass(settled, count);
-    }
-    if (!waits(true))
-        settle_core_sets();
-    closed = (from || runtime::load_stage() != "early") && !waits(false);
-    if (!from)
-        runtime::when_code_ready("runtime setup (assets, resources, gamedb, dbread, overlay, lang, events, hud, telemetry)",
-                                 runtime::ready);
+    add_core_sets(std::move(sets));
+}
+
+size_t offer_core_mixin_sets()
+{
+    return offer_core_sets();
+}
+
+void settle_core_mixin_sets()
+{
+    settle_core_sets();
+}
+
+size_t settled_addons()
+{
+    return settled;
+}
+
+size_t active_addons_from(size_t from, size_t *total)
+{
     size_t active = 0;
     for (size_t i = from; i < addons.size(); i++)
         active += addons[i].active;
-    api->log("[core] commit: %zu of %zu mixin addon(s) active; %zu wrap(s), %zu site(s), %zu vtable slot(s), %zu "
-             "redirect(s), %zu patch(es)",
-             active, addons.size() - from, count[SWOFTY_MIXIN_WRAP], count[SWOFTY_MIXIN_SITE], count[SWOFTY_MIXIN_VTABLE],
-             count[SWOFTY_MIXIN_REDIRECT], count[SWOFTY_MIXIN_PATCH]);
-    save_scan_cache();
-    if (pending() && runtime::load_stage() != "early")
-        start_retries();
-    if (from || runtime::load_stage() != "early")
-        std16_window = true;
-    return (int)active;
+    *total = addons.size() - from;
+    return active;
 }
 
-extern "C" __declspec(dllexport) int SwoftyCoreCommit(void)
+void install_addons(size_t from, size_t *count)
 {
-    int active = commit_pass();
-    std16_settle(false);
-    return active;
+    install_pass(from, count);
+}
+
+void run_addons_on_load(size_t from)
+{
+    for (size_t i = from; i < settled; i++)
+        run_on_load(i);
+}
+
+bool addons_wait(bool core_only)
+{
+    return waits(core_only);
+}
+
+void reinit_deferred_addons(bool final)
+{
+    reinit_pass(final);
+}
+
+void install_late_addons(size_t *count)
+{
+    late_install(count);
+}
+
+void close_mixins(bool done)
+{
+    closed = done;
+}
+
 }
