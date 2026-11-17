@@ -14,7 +14,14 @@ use swofty_core::timetrial::queue::{Entry, Folder, Limits, Queue, unix_now};
 use swofty_core::timetrial::upload::{self, Watcher};
 use swofty_core::timetrial::{self, token};
 
+use crate::commands::{Execute, Invocation};
 use crate::console::output::say;
+
+impl Execute for LapsCommand {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        command(&invocation.store, &invocation.profile, self)
+    }
+}
 
 #[derive(Subcommand)]
 pub enum LapsCommand {

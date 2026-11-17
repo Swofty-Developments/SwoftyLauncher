@@ -10,10 +10,17 @@ mod tests;
 use std::path::PathBuf;
 use std::process::ExitCode;
 
+use crate::commands::{Execute, Invocation};
 use anyhow::Result;
 use clap::Args;
 use swofty_core::session::DEFAULT_WINEDEBUG;
 use swofty_core::store::Store;
+
+impl Execute for RunArgs {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        run(&invocation.store, &invocation.profile, self)
+    }
+}
 
 pub(crate) use follow::{Follow, symbols};
 

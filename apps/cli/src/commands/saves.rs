@@ -12,7 +12,14 @@ use swofty_core::vault::{
     self, Checked, Location, Meta, Notice, Reason, Snapshot, Taken, Vault, migrate, watch,
 };
 
+use crate::commands::{Execute, Invocation};
 use crate::console::output::say;
+
+impl Execute for SavesCommand {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        command(&invocation.store, self)
+    }
+}
 
 #[derive(Subcommand)]
 pub enum SavesCommand {

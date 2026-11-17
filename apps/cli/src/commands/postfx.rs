@@ -1,10 +1,17 @@
 use std::path::{Path, PathBuf};
 use std::process::ExitCode;
 
+use crate::commands::{Execute, Invocation};
 use anyhow::{Context, Result, bail};
 use clap::Subcommand;
 use swofty_core::manifest::{AddonManifest, MANIFEST_FILE};
 use swofty_core::postfx;
+
+impl Execute for PostfxCommand {
+    fn execute(self, _: &Invocation) -> Result<ExitCode> {
+        command(self)
+    }
+}
 
 #[derive(Subcommand)]
 pub enum PostfxCommand {

@@ -3,12 +3,27 @@ use std::path::PathBuf;
 use std::process::ExitCode;
 use std::sync::Arc;
 
+use crate::commands::{Execute, Invocation};
 use anyhow::{Result, anyhow, bail};
-use clap::Subcommand;
+use clap::{Args, Subcommand};
 use swofty_core::dbedit::package::{self, Package};
 use swofty_core::dbedit::{Catalog, Edits, NodeId, NodeKind, RowCopy, deps, driver_manager, modules};
 use swofty_core::manifest::Category;
 use swofty_core::store::Store;
+
+#[derive(Args)]
+pub(crate) struct DbArgs {
+    #[arg(long, help = crate::GAME_HELP)]
+    pub(crate) game: Option<PathBuf>,
+    #[command(subcommand)]
+    pub(crate) cmd: DbCommand,
+}
+
+impl Execute for DbArgs {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        command(&invocation.store, &invocation.profile, self.game, self.cmd)
+    }
+}
 
 #[derive(Subcommand)]
 pub enum DbCommand {

@@ -3,7 +3,9 @@ use std::process::ExitCode;
 use std::sync::atomic::{AtomicBool, AtomicU64, Ordering};
 use std::time::{Duration, Instant};
 
+use crate::commands::{Execute, Invocation};
 use anyhow::{Context, Result, bail};
+use clap::Args;
 use swofty_core::baseline::DepotHashes;
 use swofty_core::build::{ADDONS_DIR, GVDB};
 use swofty_core::busy::{self, Busy, Step};
@@ -18,6 +20,69 @@ use swofty_core::timetrial::integrity::{self, Module};
 use swofty_core::{GAME_EXE, steam};
 use swofty_formats::erp::Erp;
 use swofty_formats::gvdb::Gvdb;
+
+#[derive(Args)]
+pub(crate) struct BuildArgs {
+    #[arg(long, help = crate::GAME_HELP)]
+    pub(crate) game: Option<PathBuf>,
+    #[arg(
+        long,
+        help = "Also list every side-data finding of add-row copies: known lookups, matches to review, matches in other game areas and acknowledged ones"
+    )]
+    pub(crate) side_data: bool,
+}
+#[derive(Args)]
+pub(crate) struct ConflictsArgs {
+    #[arg(long, help = "Build the profile without installing it and show its conflicts")]
+    pub(crate) check: bool,
+    #[arg(long, help = crate::GAME_HELP)]
+    pub(crate) game: Option<PathBuf>,
+}
+#[derive(Args)]
+pub(crate) struct ApplyArgs {
+    #[arg(long, help = crate::GAME_HELP)]
+    pub(crate) game: Option<PathBuf>,
+}
+#[derive(Args)]
+pub(crate) struct VerifyArgs {
+    #[arg(long)]
+    pub(crate) game: Option<PathBuf>,
+}
+#[derive(Args)]
+pub(crate) struct RestoreArgs {
+    #[arg(long)]
+    pub(crate) game: Option<PathBuf>,
+}
+
+impl Execute for BuildArgs {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        build(&invocation.store, &invocation.profile, self.game, self.side_data)
+    }
+}
+
+impl Execute for ConflictsArgs {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        conflicts(&invocation.store, &invocation.profile, self.check, self.game)
+    }
+}
+
+impl Execute for ApplyArgs {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        apply(&invocation.store, &invocation.profile, self.game)
+    }
+}
+
+impl Execute for VerifyArgs {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        verify(&invocation.store, self.game)
+    }
+}
+
+impl Execute for RestoreArgs {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        restore(&invocation.store, self.game)
+    }
+}
 const REPAIR_TIMEOUT: Duration = Duration::from_secs(20);
 pub const UI_ERPS: &[&str] = &[
     "2025_asset_groups/ui_package/flow_frontend.erp",

@@ -1,9 +1,17 @@
 use std::path::PathBuf;
 
+use crate::commands::{Execute, Invocation};
 use anyhow::{Context, Result};
 use clap::Subcommand;
+use std::process::ExitCode;
 use swofty_core::manifest::Binds;
 use swofty_core::store::Store;
+
+impl Execute for SettingsCommand {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        command(&invocation.store, &invocation.profile, self).map(|()| ExitCode::SUCCESS)
+    }
+}
 
 #[derive(Subcommand)]
 pub(crate) enum SettingsCommand {

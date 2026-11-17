@@ -4,10 +4,17 @@
 use std::path::PathBuf;
 use std::process::ExitCode;
 
+use crate::commands::{Execute, Invocation};
 use anyhow::{Context, Result};
 use clap::Subcommand;
 use swofty_core::hud::{self, GameStock};
 use swofty_core::store::Store;
+
+impl Execute for HudCommand {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        command(&invocation.store, self)
+    }
+}
 
 #[derive(Subcommand)]
 pub enum HudCommand {

@@ -5,10 +5,18 @@
 
 use std::path::PathBuf;
 
+use crate::commands::{Execute, Invocation};
 use anyhow::{Context, Result, bail};
 use clap::Subcommand;
+use std::process::ExitCode;
 use swofty_core::offline::{self, Artifacts};
 use swofty_core::store::Store;
+
+impl Execute for OfflineCommand {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        command(&invocation.store, self).map(|()| ExitCode::SUCCESS)
+    }
+}
 
 #[derive(Subcommand)]
 pub enum OfflineCommand {

@@ -6,7 +6,15 @@ use swofty_core::saves::SavesWarning;
 use swofty_core::store::Store;
 
 use crate::commands::registry;
+use crate::commands::{Execute, Invocation};
 use crate::console::prompt;
+use std::process::ExitCode;
+
+impl Execute for AddonsCommand {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        command(&invocation.store, &invocation.profile, self).map(|()| ExitCode::SUCCESS)
+    }
+}
 
 #[derive(Subcommand)]
 pub(crate) enum AddonsCommand {

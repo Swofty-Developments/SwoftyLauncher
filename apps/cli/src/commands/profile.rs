@@ -2,7 +2,15 @@ use anyhow::{Result, bail};
 use clap::Subcommand;
 use swofty_core::store::Store;
 
+use crate::commands::{Execute, Invocation};
 use crate::console::prompt;
+use std::process::ExitCode;
+
+impl Execute for ProfileCommand {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        command(&invocation.store, self).map(|()| ExitCode::SUCCESS)
+    }
+}
 
 #[derive(Subcommand)]
 pub(crate) enum ProfileCommand {

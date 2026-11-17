@@ -6,11 +6,19 @@
 
 use std::path::PathBuf;
 
+use crate::commands::{Execute, Invocation};
 use anyhow::{Result, bail};
 use clap::Subcommand;
+use std::process::ExitCode;
 use swofty_core::install::Source;
 use swofty_core::setup;
 use swofty_core::store::Store;
+
+impl Execute for SetupCommand {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        command(&invocation.store, self).map(|()| ExitCode::SUCCESS)
+    }
+}
 
 #[derive(Subcommand)]
 pub enum SetupCommand {

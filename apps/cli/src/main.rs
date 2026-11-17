@@ -15,11 +15,11 @@ use clap::{FromArgMatches, Parser, Subcommand};
 use swofty_core::store::Store;
 
 use crate::addon_commands::AddonCommands;
+use crate::commands::{Execute, Invocation};
 use crate::commands::{
     addons, build, db, dev, doctor, game, hud, laps, logs, offline, postfx, profile, registry, run, saves,
-    settings, setup, shaders, testing, update,
+    settings, setup, shaders, steam, testing, update,
 };
-use crate::stores::steam;
 
 #[derive(Parser)]
 #[command(
@@ -48,41 +48,19 @@ enum Command {
     #[command(about = "Launch F1 25 modded and offline, streaming logs; use as the Steam launch option")]
     Run(run::RunArgs),
     #[command(about = "Resolve the profile and build its overlay")]
-    Build {
-        #[arg(long, help = GAME_HELP)]
-        game: Option<PathBuf>,
-        #[arg(
-            long,
-            help = "Also list every side-data finding of add-row copies: known lookups, matches to review, matches in other game areas and acknowledged ones"
-        )]
-        side_data: bool,
-    },
+    Build(build::BuildArgs),
     #[command(about = "Show which addons override which in the profile's last build")]
-    Conflicts {
-        #[arg(long, help = "Build the profile without installing it and show its conflicts")]
-        check: bool,
-        #[arg(long, help = GAME_HELP)]
-        game: Option<PathBuf>,
-    },
+    Conflicts(build::ConflictsArgs),
     #[command(
         about = "Build the profile and install it into the game folder (database, tracks); swofty restore undoes it"
     )]
-    Apply {
-        #[arg(long, help = GAME_HELP)]
-        game: Option<PathBuf>,
-    },
+    Apply(build::ApplyArgs),
     #[command(about = "Report drift from the baseline and check the game files parse and round-trip")]
-    Verify {
-        #[arg(long)]
-        game: Option<PathBuf>,
-    },
+    Verify(build::VerifyArgs),
     #[command(
         about = "Put the game folder and prefix back to the baseline: roll back journals, remove additions"
     )]
-    Restore {
-        #[arg(long)]
-        game: Option<PathBuf>,
-    },
+    Restore(build::RestoreArgs),
     #[command(
         subcommand,
         alias = "mods",
@@ -104,22 +82,11 @@ enum Command {
     #[command(subcommand, about = "List and delete profiles")]
     Profile(profile::ProfileCommand),
     #[command(about = "Browse the game database and edit DB Editor addons")]
-    Db {
-        #[arg(long, help = GAME_HELP)]
-        game: Option<PathBuf>,
-        #[command(subcommand)]
-        cmd: db::DbCommand,
-    },
+    Db(db::DbArgs),
     #[command(
         about = "Summarise a previous session's logs and crashes; `logs send` sends your logs to the developers"
     )]
-    Logs {
-        #[command(subcommand)]
-        action: Option<LogsCommand>,
-        dir: Option<PathBuf>,
-        #[arg(long, env = "SWOFTY_EXE_COPY")]
-        exe: Option<PathBuf>,
-    },
+    Logs(logs::LogsArgs),
     #[command(about = "Report what was discovered: Steam, the game, Proton, the launch option and the store")]
     Doctor,
     #[command(
@@ -130,13 +97,7 @@ enum Command {
     #[command(
         about = "Show whether Steam is running and signed in; --start starts it and waits, as Play does"
     )]
-    Steam {
-        #[arg(
-            long,
-            help = "Start Steam if it's closed and wait up to 90 s for it to sign in"
-        )]
-        start: bool,
-    },
+    Steam(steam::SteamArgs),
     #[command(
         subcommand,
         about = "Shader configs and effects: list, edit, check and choose the profile's config"
@@ -180,18 +141,7 @@ enum Command {
     #[command(about = "List every career in the career index, the profile that started it and what it needs")]
     Careers,
     #[command(about = "Check for a new release and install it into this copy")]
-    Update {
-        #[arg(long, help = "Only report whether a new release is available")]
-        check: bool,
-    },
-}
-
-#[derive(Subcommand)]
-enum LogsCommand {
-    #[command(
-        about = "Send the launcher and game logs to the developers on Discord, with your username and what went wrong"
-    )]
-    Send(logs::send::SendArgs),
+    Update(update::UpdateArgs),
 }
 
 fn main() -> ExitCode {
@@ -267,40 +217,46 @@ fn run_cli(store: &Store, mut args: Vec<OsString>) -> Result<ExitCode> {
 }
 
 fn dispatch(store: &Store, cli: Cli) -> Result<ExitCode> {
-    let store = store.clone();
-    let named = cli.profile.clone();
-    let profile = cli.profile.unwrap_or_else(|| store.active_profile());
-    match cli.command {
-        Command::Run(args) => run::run(&store, &profile, args),
-        Command::Build { game, side_data } => build::build(&store, &profile, game, side_data),
-        Command::Conflicts { check, game } => build::conflicts(&store, &profile, check, game),
-        Command::Apply { game } => build::apply(&store, &profile, game),
-        Command::Verify { game } => build::verify(&store, game),
-        Command::Restore { game } => build::restore(&store, game),
-        Command::Addons(cmd) => addons::command(&store, &profile, cmd).map(|_| ExitCode::SUCCESS),
-        Command::Offline(cmd) => offline::command(&store, cmd).map(|_| ExitCode::SUCCESS),
-        Command::Setup(cmd) => setup::command(&store, cmd).map(|_| ExitCode::SUCCESS),
-        Command::Settings(cmd) => settings::command(&store, &profile, cmd).map(|_| ExitCode::SUCCESS),
-        Command::Profile(cmd) => profile::command(&store, cmd).map(|_| ExitCode::SUCCESS),
-        Command::Db { game, cmd } => db::command(&store, &profile, game, cmd),
-        Command::Logs {
-            action: Some(LogsCommand::Send(args)),
-            ..
-        } => logs::send::send(&store, args),
-        Command::Logs { dir, exe, .. } => logs::summarise(&store, dir, exe),
-        Command::Doctor => doctor::doctor(&store),
-        Command::Game(cmd) => game::command(&store, cmd).map(|_| ExitCode::SUCCESS),
-        Command::Saves(cmd) => saves::command(&store, cmd),
-        Command::Laps(cmd) => laps::command(&store, &profile, cmd),
-        Command::Steam { start } => steam::check(&store, start),
-        Command::Postfx(cmd) => postfx::command(cmd),
-        Command::Shaders(cmd) => shaders::command(&store, &profile, cmd),
-        Command::Test(cmd) => testing::command(&store, named.as_deref(), &profile, cmd),
-        Command::Dev(cmd) => dev::command(&store, &profile, cmd),
-        Command::Update { check } => update::update(check),
-        Command::Registry(cmd) => registry::command(&store, &profile, cmd),
-        Command::Hud(cmd) => hud::command(&store, cmd),
-        Command::Careers => registry::careers(&store, &profile).map(|_| ExitCode::SUCCESS),
+    let invocation = Invocation {
+        store: store.clone(),
+        profile: cli.profile.clone().unwrap_or_else(|| store.active_profile()),
+        named_profile: cli.profile,
+    };
+    cli.command.execute(&invocation)
+}
+
+impl Execute for Command {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        match self {
+            Command::Run(args) => args.execute(invocation),
+            Command::Build(args) => args.execute(invocation),
+            Command::Conflicts(args) => args.execute(invocation),
+            Command::Apply(args) => args.execute(invocation),
+            Command::Verify(args) => args.execute(invocation),
+            Command::Restore(args) => args.execute(invocation),
+            Command::Addons(cmd) => cmd.execute(invocation),
+            Command::Offline(cmd) => cmd.execute(invocation),
+            Command::Setup(cmd) => cmd.execute(invocation),
+            Command::Settings(cmd) => cmd.execute(invocation),
+            Command::Profile(cmd) => cmd.execute(invocation),
+            Command::Db(args) => args.execute(invocation),
+            Command::Logs(args) => args.execute(invocation),
+            Command::Doctor => doctor::doctor(&invocation.store),
+            Command::Game(cmd) => cmd.execute(invocation),
+            Command::Saves(cmd) => cmd.execute(invocation),
+            Command::Laps(cmd) => cmd.execute(invocation),
+            Command::Steam(args) => args.execute(invocation),
+            Command::Postfx(cmd) => cmd.execute(invocation),
+            Command::Shaders(cmd) => cmd.execute(invocation),
+            Command::Test(cmd) => cmd.execute(invocation),
+            Command::Dev(cmd) => cmd.execute(invocation),
+            Command::Update(args) => args.execute(invocation),
+            Command::Registry(cmd) => cmd.execute(invocation),
+            Command::Hud(cmd) => cmd.execute(invocation),
+            Command::Careers => {
+                registry::careers(&invocation.store, &invocation.profile).map(|()| ExitCode::SUCCESS)
+            }
+        }
     }
 }
 
@@ -321,6 +277,7 @@ mod tests {
     use super::*;
     use crate::addon_commands::{absolute_paths, command_at, command_input, forward_mods, namespaced};
     use crate::commands::addons::AddonsCommand;
+    use crate::commands::logs::{LogsArgs, LogsCommand};
 
     #[test]
     fn an_error_says_its_os_message_once() {
@@ -383,26 +340,26 @@ mod tests {
     #[test]
     fn logs_takes_a_session_folder_or_send() {
         let parse = |args: &[&str]| Cli::try_parse_from(os(args)).map(|c| c.command);
-        let Ok(Command::Logs {
+        let Ok(Command::Logs(LogsArgs {
             action: None, dir, ..
-        }) = parse(&["swofty", "logs", "/tmp/s1"])
+        })) = parse(&["swofty", "logs", "/tmp/s1"])
         else {
             panic!("logs <dir>");
         };
         assert_eq!(dir, Some(PathBuf::from("/tmp/s1")));
         assert!(matches!(
             parse(&["swofty", "logs"]),
-            Ok(Command::Logs {
+            Ok(Command::Logs(LogsArgs {
                 action: None,
                 dir: None,
                 ..
-            })
+            }))
         ));
-        let Ok(Command::Logs {
+        let Ok(Command::Logs(LogsArgs {
             action: Some(LogsCommand::Send(a)),
             dir: None,
             ..
-        }) = parse(&[
+        })) = parse(&[
             "swofty",
             "logs",
             "send",
@@ -419,18 +376,18 @@ mod tests {
             (Some("swofty"), Some("it crashed"))
         );
         assert_eq!(a.dry_run, None);
-        let Ok(Command::Logs {
+        let Ok(Command::Logs(LogsArgs {
             action: Some(LogsCommand::Send(a)),
             ..
-        }) = parse(&["swofty", "logs", "send", "--dry-run"])
+        })) = parse(&["swofty", "logs", "send", "--dry-run"])
         else {
             panic!("--dry-run");
         };
         assert_eq!(a.dry_run, Some(None));
-        let Ok(Command::Logs {
+        let Ok(Command::Logs(LogsArgs {
             action: Some(LogsCommand::Send(a)),
             ..
-        }) = parse(&["swofty", "logs", "send", "--name", "x1", "--dry-run", "out.zip"])
+        })) = parse(&["swofty", "logs", "send", "--name", "x1", "--dry-run", "out.zip"])
         else {
             panic!("--dry-run <zip>");
         };

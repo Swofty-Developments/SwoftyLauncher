@@ -1,9 +1,23 @@
 use std::process::ExitCode;
 use std::sync::Mutex;
 
+use crate::commands::{Execute, Invocation};
 use anyhow::{Result, bail};
+use clap::Args;
 use swofty_core::launcher::Progress;
 use swofty_core::update::{self, Install};
+
+#[derive(Args)]
+pub(crate) struct UpdateArgs {
+    #[arg(long, help = "Only report whether a new release is available")]
+    pub(crate) check: bool,
+}
+
+impl Execute for UpdateArgs {
+    fn execute(self, _: &Invocation) -> Result<ExitCode> {
+        update(self.check)
+    }
+}
 
 struct Printer(Mutex<(i32, String)>);
 

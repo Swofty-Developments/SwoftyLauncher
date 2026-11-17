@@ -1,5 +1,5 @@
 use std::path::{Path, PathBuf};
-use std::process::{Command, ExitCode, Stdio};
+use std::process::{Command, Stdio};
 use std::time::{Duration, Instant};
 
 use anyhow::Result;
@@ -137,7 +137,7 @@ pub(crate) fn ensure_steam(store: &Store, game: &Path, opted_out: bool) -> Resul
     Ok(())
 }
 
-fn bring_up_steam(store: &Store, game: Option<&Path>) -> Result<()> {
+pub(crate) fn bring_up_steam(store: &Store, game: Option<&Path>) -> Result<()> {
     let starter = steam_starter(game);
     let stage = StageFile(store.root.join(steam_client::STAGE_FILE));
     let ready = steam_client::ensure(
@@ -175,31 +175,6 @@ fn bring_up_steam(store: &Store, game: Option<&Path>) -> Result<()> {
         );
     }
     Ok(())
-}
-
-/// `swofty steam`: what the launch sees, and with `start`, the same start
-/// and wait as Play, without launching the game.
-pub fn check(store: &Store, start: bool) -> Result<ExitCode> {
-    if start {
-        bring_up_steam(store, None)?;
-        return Ok(ExitCode::SUCCESS);
-    }
-    let status = steam_client::status();
-    say("steam", &format!("detected: {status}"));
-    if let Some(g) = swofty_core::steam::find_game() {
-        say(
-            "steam",
-            &match swofty_core::steam::busy(&g) {
-                Some(state) => format!("F1 25: Steam is {state} its files"),
-                None => "F1 25: Steam isn't changing its files".to_owned(),
-            },
-        );
-    }
-    Ok(if status.state.usable() {
-        ExitCode::SUCCESS
-    } else {
-        ExitCode::FAILURE
-    })
 }
 
 pub(crate) fn steam_launch_args(mode: LaunchMode) -> Vec<String> {

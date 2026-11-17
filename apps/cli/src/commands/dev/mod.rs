@@ -15,7 +15,14 @@ use serde_json::Value;
 use swofty_core::manifest::{AddonManifest, MANIFEST_FILE};
 use swofty_core::store::Store;
 
+use crate::commands::{Execute, Invocation};
 use lock::{LOCK_FILE, Lock};
+
+impl Execute for DevCommand {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        command(&invocation.store, &invocation.profile, self)
+    }
+}
 
 pub const SDK_ENV: &str = "SWOFTY_SDK_DIR";
 pub const RECORDER_ENV: &str = "SWOFTY_RECORDER_DIR";

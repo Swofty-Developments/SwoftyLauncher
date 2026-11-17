@@ -34,7 +34,19 @@ use swofty_core::testsuite::sandbox::{self, RunDir, RunOptions};
 use swofty_core::testsuite::session;
 use swofty_core::testsuite::suite::{self, Env, Kind, Selector, Suite, Test};
 
+use crate::commands::{Execute, Invocation};
 use crate::time::{now_secs, stamp};
+
+impl Execute for TestCommand {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        command(
+            &invocation.store,
+            invocation.named_profile.as_deref(),
+            &invocation.profile,
+            self,
+        )
+    }
+}
 
 #[derive(Subcommand)]
 pub enum TestCommand {

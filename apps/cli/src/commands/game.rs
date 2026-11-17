@@ -1,8 +1,16 @@
 use std::path::PathBuf;
 
+use crate::commands::{Execute, Invocation};
 use anyhow::{Context, Result};
 use clap::Subcommand;
+use std::process::ExitCode;
 use swofty_core::store::Store;
+
+impl Execute for GameCommand {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        command(&invocation.store, self).map(|()| ExitCode::SUCCESS)
+    }
+}
 
 #[derive(Subcommand)]
 pub(crate) enum GameCommand {

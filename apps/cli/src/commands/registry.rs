@@ -5,6 +5,7 @@
 use std::collections::BTreeMap;
 use std::process::ExitCode;
 
+use crate::commands::{Execute, Invocation};
 use anyhow::Result;
 use clap::Subcommand;
 use swofty_core::ops::IdFrom;
@@ -12,6 +13,12 @@ use swofty_core::row_ids;
 use swofty_core::stdlib::deps::{self, Level};
 use swofty_core::stdlib::{careers, reports};
 use swofty_core::store::Store;
+
+impl Execute for RegistryCommand {
+    fn execute(self, invocation: &Invocation) -> Result<ExitCode> {
+        command(&invocation.store, &invocation.profile, self)
+    }
+}
 
 #[derive(Subcommand)]
 pub enum RegistryCommand {
