@@ -1,5 +1,6 @@
 #include "core/runtime/pages.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 #include "core/registry/table.hpp"
 
 #include <swofty/game.hpp>
@@ -31,8 +32,6 @@
 #include "core/career/ops/lineup.hpp"
 #include "core/career/ops/ops_api.hpp"
 #include "core/career/ops/tables.hpp"
-
-std::string settings_addon(const void *from, std::string &dll);
 
 // The core's career operations (standard library 1.6, SwoftyCareerOps): apply_lineup, set_driver_ratings and
 // swap_drivers, (table version 2) report_season, which the career snapshots answer (snapshots/runtime.cpp), and

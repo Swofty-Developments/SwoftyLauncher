@@ -1,4 +1,5 @@
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 #include "core/runtime/resolve.hpp"
 
 #include <swofty/game.hpp>
@@ -14,8 +15,6 @@
 
 #include "core/career/career_content_logic.hpp"
 #include "core/registry/older.hpp"
-
-std::string settings_addon(const void *from, std::string &dll);
 
 // Extra career contents (swofty/career_content.hpp). An addon registers a content from its init;
 // the core then owns everything the stock code would refuse for it:

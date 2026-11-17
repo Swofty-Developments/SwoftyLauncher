@@ -4,10 +4,10 @@
 #include "core/frontend/view_state.hpp"
 #include "core/runtime/lifecycle.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 void crash_attach(SwoftyApi *a, const std::wstring &dir);
 void crash_game_hooks();
-void settings_attach(SwoftyApi *a, const std::wstring &dir);
 
 namespace swofty_core::apply::content {
 void encode_logos_ahead();

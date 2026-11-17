@@ -1,4 +1,5 @@
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -46,7 +47,6 @@
 // The launcher adds swofty_toast_<seconds> to hud_messages.uimsg: literal (localise false) message and
 // sub_message attributes and a fixed msg_duration per id, so a toast picks the id nearest its duration.
 
-std::string settings_addon(const void *from, std::string &dll);
 void *ui_vm_message_system();
 bool ui_vm_set_path(const std::string &path, int type, const void *value);
 uintptr_t ui_vm_node_token(const std::string &path);

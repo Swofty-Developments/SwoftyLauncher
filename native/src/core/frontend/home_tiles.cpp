@@ -6,10 +6,9 @@
 #include "core/frontend/main_menu_logic.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 using namespace swofty::game;
-
-bool settings_command(uint32_t hash);
 
 #if defined(SWOFTY_NO_MOD_SETTINGS)
 #define SWOFTY_MOD_SETTINGS_MODE "compiled out (diagnostic build: no site hook, no tile)"

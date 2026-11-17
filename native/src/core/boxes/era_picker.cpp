@@ -2,9 +2,7 @@
 
 #include "core/runtime/resolve.hpp"
 #include "core/runtime/runtime.hpp"
-
-std::string settings_addon(const void *from, std::string &dll);
-int settings_get(const char *id, uint32_t type, SwoftySettingValue *out);
+#include "core/runtime/settings.hpp"
 
 // Era picker addon row (swofty/era.hpp). The Grand Prix, Time Trial and split-screen category picker
 // (the DynamicEraSelectTabViewModel, VM dynamic_era_select) shows its stock boxes in the VM tiles list;

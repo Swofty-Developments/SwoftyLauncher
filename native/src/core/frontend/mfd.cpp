@@ -1,4 +1,5 @@
 #include "core/runtime/runtime.hpp"
+#include "core/runtime/settings.hpp"
 
 #include <safetyhook.hpp>
 #include <swofty/mem.hpp>
@@ -11,9 +12,6 @@
 // djb2(panel group), djb2(panel) or -1, activate), as the damage auto-open does for car_damage_panel. The
 // system's per-frame update takes the system as its only argument, so a wrap on it records the system and
 // runs development opens on the update's own thread.
-
-size_t settings_mfd_rows();
-bool settings_mfd_step(size_t row, int dir);
 
 namespace {
 
