@@ -46,6 +46,13 @@ int main()
         CHECK(!ea.wetness && !ea.surface && !ea.orient && !ea.angvel && !ea.wheels);
         CHECK(steam.table && steam.wetness && steam.surface && steam.orient && steam.angvel && steam.wheels && steam.drs);
         CHECK(!live_car::fields_of(true, false).table);
+        live_car::Fields port = live_car::fields_of(false, true, 1794312636u),
+                         unknown = live_car::fields_of(false, true, 0x12345678u);
+        CHECK(port.table && port.drs && port.wheels && port.wetness);
+        CHECK(!port.surface && !port.orient && !port.angvel);
+        CHECK(unknown.table && !unknown.wheels && !unknown.wetness && !unknown.surface);
+        CHECK(!live_car::fields_of(false, false, 1794312636u).wheels);
+        CHECK(live_car::fields_of(true, true, 1794312636u).surface);
     }
 
     if (failures)
