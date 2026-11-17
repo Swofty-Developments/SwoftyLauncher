@@ -6,7 +6,7 @@ use gpui_kit::component::{Icon, h_flex, v_flex};
 use gpui_kit::*;
 
 use crate::shell::Shell;
-use crate::shell::pages::label;
+use crate::shell::page_parts::label;
 use crate::ui::theme::Palette;
 
 impl Shell {

@@ -906,7 +906,7 @@ impl Shell {
             .bg(p.chrome)
             .border_t_1()
             .border_color(p.border_variant)
-            .child(crate::shell::pages::game_art(56., 56.).m(px(8.)))
+            .child(crate::shell::page_parts::game_art(56., 56.).m(px(8.)))
             .child(
                 h_flex()
                     .flex_1()

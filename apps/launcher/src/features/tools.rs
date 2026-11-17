@@ -18,7 +18,7 @@ use gpui_kit::*;
 use serde::Deserialize;
 use swofty_core::app_control::Block;
 
-use crate::shell::pages::GUTTER;
+use crate::shell::page_parts::GUTTER;
 use crate::shell::{Page, Shell};
 use crate::ui::Card;
 use crate::ui::theme::{Palette, scrollbar_x};

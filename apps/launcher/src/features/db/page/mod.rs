@@ -13,7 +13,7 @@ use swofty_i18n::{tr, trf};
 
 use super::{LinkState, Load, Nav};
 use crate::shell::Shell;
-use crate::shell::pages::GUTTER;
+use crate::shell::page_parts::GUTTER;
 use crate::ui::theme::Palette;
 
 pub(super) const ROW_H: f32 = 40.;

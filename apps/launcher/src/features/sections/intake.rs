@@ -18,7 +18,7 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::*;
 use crate::services::game::Install;
-use crate::shell::pages::badge;
+use crate::shell::page_parts::badge;
 use crate::shell::{Page, Shell};
 use crate::ui::theme::Palette;
 

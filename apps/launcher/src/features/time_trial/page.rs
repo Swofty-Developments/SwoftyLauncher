@@ -10,7 +10,7 @@ use swofty_i18n::{tr, trf};
 use super::moderation::flag;
 use super::state::{Load, Pick, View};
 use crate::shell::Shell;
-use crate::shell::pages::GUTTER;
+use crate::shell::page_parts::GUTTER;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, ScrollArea};
 use crate::ui::{EmptyState, selectable_row};

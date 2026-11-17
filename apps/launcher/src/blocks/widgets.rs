@@ -7,7 +7,7 @@ use swofty_core::view::{Cell, Field, Pill, Table, Tone};
 
 use super::*;
 use crate::features::sections::{icon, tone};
-use crate::shell::pages::label;
+use crate::shell::page_parts::label;
 use crate::ui::colour_picker::hsla_of;
 use crate::ui::theme::Palette;
 

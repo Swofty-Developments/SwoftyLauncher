@@ -21,7 +21,7 @@ use swofty_core::store::Store;
 use swofty_i18n::{tr, trf};
 use swofty_shaders::Catalog;
 
-use crate::shell::pages::GUTTER;
+use crate::shell::page_parts::GUTTER;
 use crate::ui::PageHeader;
 use crate::ui::theme::{Palette, palette};
 

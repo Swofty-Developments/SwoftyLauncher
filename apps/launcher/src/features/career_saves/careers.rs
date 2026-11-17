@@ -8,7 +8,7 @@ use swofty_i18n::{tr, trf};
 use super::labels::listed_later;
 use super::state::{Entry, Imported, SavesView};
 use crate::shell::Shell;
-use crate::shell::pages::label;
+use crate::shell::page_parts::label;
 use crate::ui::format::ago_since as ago;
 use crate::ui::scale::px;
 use crate::ui::theme::Palette;

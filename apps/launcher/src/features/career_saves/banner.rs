@@ -7,7 +7,7 @@ use swofty_i18n::tr;
 
 use super::banner_data::Kind;
 use crate::shell::Shell;
-use crate::shell::pages::GUTTER;
+use crate::shell::page_parts::GUTTER;
 use crate::ui::Callout;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;

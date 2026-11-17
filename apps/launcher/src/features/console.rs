@@ -17,7 +17,7 @@ use swofty_core::store::Store;
 use swofty_i18n::{tr, trn};
 
 use crate::shell::Shell;
-use crate::shell::pages::badge;
+use crate::shell::page_parts::badge;
 use crate::shell::play_bar::link;
 use crate::ui::theme::{Palette, palette};
 

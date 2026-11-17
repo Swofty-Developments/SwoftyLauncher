@@ -8,7 +8,7 @@ use swofty_i18n::{tr, trf, trn};
 use super::detail_cards::detail_about;
 use super::*;
 use crate::shell::Shell;
-use crate::shell::pages::{GUTTER, label, tag};
+use crate::shell::page_parts::{GUTTER, label, tag};
 use crate::ui::format;
 use crate::ui::scale::px;
 use crate::ui::theme::Palette;
@@ -182,7 +182,7 @@ impl Shell {
                 .text_size(px(12.))
                 .text_color(p.text_placeholder)
                 .hover(move |s| s.text_color(p.text_muted))
-                .child(crate::shell::pages::chevron(open, p))
+                .child(crate::shell::page_parts::chevron(open, p))
                 .child(if open {
                     tr("Hide older versions").to_owned()
                 } else {

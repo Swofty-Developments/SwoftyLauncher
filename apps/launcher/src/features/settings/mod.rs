@@ -13,7 +13,7 @@ use gpui_kit::*;
 use swofty_core::data_usage::Usage;
 use swofty_i18n::tr;
 
-use crate::shell::pages::GUTTER;
+use crate::shell::page_parts::GUTTER;
 use crate::shell::{Page, Shell};
 use crate::ui::form::side_nav_item;
 use crate::ui::theme::Palette;

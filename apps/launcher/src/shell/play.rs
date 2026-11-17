@@ -8,7 +8,7 @@ use swofty_core::install::Source;
 use swofty_core::recovery::Blocked;
 use swofty_core::session::{LaunchMode, SessionRecord};
 
-use super::dialogs::note_notification;
+use super::launch_alerts::note_notification;
 use super::{PlayState, Shell};
 use swofty_i18n::{tr, trf};
 

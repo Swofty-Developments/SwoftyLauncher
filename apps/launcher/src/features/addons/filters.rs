@@ -2,7 +2,7 @@ use super::model::{Facet, Group, State};
 use crate::services::library::Type;
 use crate::services::library::{AddonItem, Source};
 use crate::shell::Shell;
-use crate::shell::pages::label;
+use crate::shell::page_parts::label;
 use crate::ui::facet::{FILTERS_W, facet_row};
 use crate::ui::scale::px;
 use crate::ui::theme::{Palette, SCROLLBAR_GAP, ScrollArea};

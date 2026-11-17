@@ -1,4 +1,4 @@
-use crate::shell::pages::avatar;
+use crate::shell::page_parts::avatar;
 use crate::ui::scale::{Hit, fixed, px};
 use crate::ui::theme::Palette;
 use gpui_kit::assets::IconName;

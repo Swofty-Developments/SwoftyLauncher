@@ -2,7 +2,7 @@ use super::drag::{Dragged, drop_mark};
 use super::model::{AddonListItem, anchor};
 use crate::services::library::AddonItem;
 use crate::shell::Shell;
-use crate::shell::pages::{badge, label};
+use crate::shell::page_parts::{badge, label};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, palette};
 use gpui_kit::assets::IconName;

@@ -10,7 +10,7 @@ use swofty_i18n::tr;
 
 use super::*;
 use crate::shell::Shell;
-use crate::shell::pages::{TRACK, label};
+use crate::shell::page_parts::{TRACK, label};
 use crate::ui::facet::{FILTERS_W, facet_row};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, SCROLLBAR_GAP, ScrollArea};

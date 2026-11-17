@@ -15,7 +15,7 @@ use super::tiles::landing_rows;
 use super::*;
 use crate::services::library::Type;
 use crate::shell::Shell;
-use crate::shell::pages::{GUTTER, tile};
+use crate::shell::page_parts::{GUTTER, tile};
 use crate::ui::facet::FILTERS_W;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;

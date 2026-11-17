@@ -10,7 +10,7 @@ use swofty_core::shaders::{ConfigEntry, ConfigRef};
 use swofty_i18n::tr;
 
 use super::{ShadersView, list_width};
-use crate::shell::pages::{label, tag};
+use crate::shell::page_parts::{label, tag};
 use crate::ui::selectable_row;
 use crate::ui::theme::{Palette, ScrollArea};
 

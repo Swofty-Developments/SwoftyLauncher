@@ -12,7 +12,7 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::model::*;
 use super::state::*;
-use crate::shell::pages::{GUTTER, badge};
+use crate::shell::page_parts::{GUTTER, badge};
 use crate::shell::{Page, Shell};
 use crate::ui::theme::{Palette, ScrollArea};
 

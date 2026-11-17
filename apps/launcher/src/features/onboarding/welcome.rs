@@ -6,7 +6,7 @@ use gpui_kit::*;
 use swofty_i18n::tr;
 
 use super::Step;
-use crate::shell::pages::logo;
+use crate::shell::page_parts::logo;
 use crate::ui::scale::px;
 use crate::ui::theme::Palette;
 

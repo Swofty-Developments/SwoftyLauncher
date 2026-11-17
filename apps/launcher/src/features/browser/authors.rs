@@ -18,7 +18,7 @@ use swofty_core::catalog::search::Query;
 use swofty_i18n::{tr, trf, trn};
 
 use super::*;
-use crate::shell::pages::{GUTTER, label, tag};
+use crate::shell::page_parts::{GUTTER, label, tag};
 use crate::shell::{Page, Shell};
 use crate::ui::format;
 use crate::ui::scale::{Hit, px};

@@ -8,7 +8,7 @@ use swofty_core::saves::SavesWarning;
 use swofty_i18n::{tr, trf};
 
 use super::Shell;
-use super::dialogs::saves_alert;
+use super::launch_alerts::saves_alert;
 
 impl Shell {
     pub(crate) fn saves_warning(&self, id: &str, of: Option<SavesWarning>) -> Option<SavesWarning> {

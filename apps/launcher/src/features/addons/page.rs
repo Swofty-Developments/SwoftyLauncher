@@ -1,6 +1,6 @@
 use super::SPLIT_AT;
 use crate::shell::notices::{Notification, Notify};
-use crate::shell::pages::{GUTTER, label};
+use crate::shell::page_parts::{GUTTER, label};
 use crate::shell::{Page, Shell};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;

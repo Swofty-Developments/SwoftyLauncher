@@ -11,7 +11,7 @@ use swofty_i18n::{tr, trf, trn};
 use swofty_shaders::{Effect, Origin, Param, ParamKind, Value};
 
 use super::ShadersView;
-use crate::shell::pages::{label, tag};
+use crate::shell::page_parts::{label, tag};
 use crate::ui::theme::{Palette, ScrollArea};
 
 /// The effect library's page in the launcher docs.

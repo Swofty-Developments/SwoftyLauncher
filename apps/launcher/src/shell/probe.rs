@@ -11,7 +11,7 @@ use swofty_core::quarantine;
 use swofty_core::recovery::{self, Blocked};
 use swofty_core::session::SessionRecord;
 
-use super::dialogs::{show_launch_failed, show_mods_blocked};
+use super::launch_alerts::{show_launch_failed, show_mods_blocked};
 use super::{Page, Shell};
 use swofty_i18n::{tr, trf, trn};
 

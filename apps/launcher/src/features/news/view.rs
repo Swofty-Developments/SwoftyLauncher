@@ -1,7 +1,7 @@
 use super::feed::{Post, format_date};
 use super::markdown::{Block, SITE, Span, safe_url};
 use super::state::{NewsPane, NewsRow, STACK_BELOW, StackedRow};
-use crate::shell::pages::GUTTER;
+use crate::shell::page_parts::GUTTER;
 use crate::shell::{Page, Shell};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, ScrollArea};

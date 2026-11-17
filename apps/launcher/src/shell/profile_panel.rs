@@ -1,5 +1,5 @@
 use crate::services::library::ProfileItem;
-use crate::shell::pages::avatar;
+use crate::shell::page_parts::avatar;
 use crate::shell::{Page, PlayState, Shell};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::{Palette, ScrollArea};

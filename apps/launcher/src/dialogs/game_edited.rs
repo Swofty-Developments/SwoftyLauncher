@@ -11,7 +11,7 @@ use swofty_core::install::Source;
 use swofty_core::recovery::Blocked;
 use swofty_core::stock;
 
-use crate::shell::pages::{game_art, label};
+use crate::shell::page_parts::{game_art, label};
 use crate::shell::{Page, Shell};
 use crate::ui::discord::{BLURPLE, INVITE, LOGO};
 use crate::ui::theme::{Palette, palette};

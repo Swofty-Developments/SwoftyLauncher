@@ -1,4 +1,4 @@
-use crate::shell::pages::{logo, wordmark};
+use crate::shell::page_parts::{logo, wordmark};
 use crate::ui::scale::{Hit, fixed};
 use crate::ui::theme::Palette;
 use gpui_kit::assets::IconName;

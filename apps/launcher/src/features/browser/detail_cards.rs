@@ -9,7 +9,7 @@ use swofty_i18n::{tr, trf, trn};
 
 use super::{day, since};
 use crate::shell::Shell;
-use crate::shell::pages::{label, stat};
+use crate::shell::page_parts::{label, stat};
 use crate::ui::format;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;

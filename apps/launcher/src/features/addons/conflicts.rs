@@ -3,7 +3,7 @@ use super::row::stock_removals_text;
 use crate::services::library::AddonItem;
 use crate::shell::Shell;
 use crate::shell::notices::{Notification, Notify};
-use crate::shell::pages::{chevron, label};
+use crate::shell::page_parts::{chevron, label};
 use crate::ui::format::{ago_since, title_case};
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;

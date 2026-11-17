@@ -3,7 +3,7 @@ use gpui_kit::component::v_flex;
 use gpui_kit::*;
 
 use super::tokens::{space, text};
-use crate::shell::pages::badge;
+use crate::shell::page_parts::badge;
 use crate::ui::scale::px;
 use crate::ui::theme::palette;
 

@@ -21,7 +21,7 @@ use swofty_core::store::Store;
 use crate::dialogs::game_edited::discord_link;
 use crate::services::game::Install;
 use crate::shell::Shell;
-use crate::shell::pages::{game_art, label};
+use crate::shell::page_parts::{game_art, label};
 use crate::ui::Callout;
 use crate::ui::theme::{Palette, palette};
 use swofty_i18n::{tr, trf};

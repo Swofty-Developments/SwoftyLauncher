@@ -80,7 +80,12 @@ impl Render for Shell {
                 Some(dev) => v_flex()
                     .size_full()
                     .child(div().flex_1().min_h_0().child(self.tools_page(p, window, cx)))
-                    .child(div().px(px(crate::shell::pages::GUTTER)).pb(px(16.)).child(dev))
+                    .child(
+                        div()
+                            .px(px(crate::shell::page_parts::GUTTER))
+                            .pb(px(16.))
+                            .child(dev),
+                    )
                     .into_any_element(),
                 None => self.tools_page(p, window, cx),
             },

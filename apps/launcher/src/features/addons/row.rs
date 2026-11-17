@@ -1,7 +1,7 @@
 use super::drag::{Dragged, Dragging, NESTED};
 use crate::services::library::{AddonItem, Source, Type};
 use crate::shell::Shell;
-use crate::shell::pages::{addon_icon, badge, logo, track_badge};
+use crate::shell::page_parts::{addon_icon, badge, logo, track_badge};
 use crate::ui::facet::checkbox;
 use crate::ui::scale::{Hit, px};
 use crate::ui::theme::Palette;
@@ -203,7 +203,7 @@ impl Shell {
             h_flex()
                 .gap(px(10.))
                 .items_center()
-                .child(crate::shell::pages::tag(tr("Shader config"), p))
+                .child(crate::shell::page_parts::tag(tr("Shader config"), p))
                 .child(
                     Button::new(SharedString::from(format!("open-shaders-{id}")))
                         .ghost()

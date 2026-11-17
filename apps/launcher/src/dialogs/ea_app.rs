@@ -9,7 +9,7 @@ use swofty_core::ea_app::Moved;
 use swofty_core::install::EA_APP_SEEN;
 
 use crate::shell::Shell;
-use crate::shell::pages::{game_art, logo};
+use crate::shell::page_parts::{game_art, logo};
 use crate::ui::discord::invite_button;
 use crate::ui::theme::{Palette, palette};
 use swofty_i18n::{tr, trf};

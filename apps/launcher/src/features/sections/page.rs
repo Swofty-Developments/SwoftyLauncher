@@ -13,7 +13,7 @@ use super::*;
 use crate::blocks::{At, caps, eyebrow, search_id};
 use crate::services::library::{AddonIcon, SectionItem};
 use crate::shell::Shell;
-use crate::shell::pages::{GUTTER, badge, chevron, fact, names, stat, tag, tile};
+use crate::shell::page_parts::{GUTTER, badge, chevron, fact, names, stat, tag, tile};
 use crate::ui::scroll::SmoothScroll;
 use crate::ui::theme::Palette;
 
