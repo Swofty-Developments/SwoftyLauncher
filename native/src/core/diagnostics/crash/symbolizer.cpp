@@ -14,17 +14,6 @@ namespace crash {
 constinit ModuleMap modules{};
 constinit SymbolTable symbol_table{};
 
-bool readable(uintptr_t a, size_t n)
-{
-    for (uintptr_t p = a & ~0xfffull; p < a + n; p += 0x1000) {
-        MEMORY_BASIC_INFORMATION m;
-        if (!VirtualQuery(reinterpret_cast<void *>(p), &m, sizeof m) || m.State != MEM_COMMIT ||
-            (m.Protect & (PAGE_GUARD | PAGE_NOACCESS)) || !(m.Protect & 0xEE))
-            return false;
-    }
-    return true;
-}
-
 const char *code_name(DWORD c)
 {
     switch (c) {
