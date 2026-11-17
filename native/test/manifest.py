@@ -193,7 +193,9 @@ CONTENT_WINDOWS = ['-Isrc', '-std=c++23', '-O2', '-Wall', '-Wextra', SDK, '-Iinc
 CONTENT = [
     Program('lower_tool', [Objects(['test/content/lower_tool.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_ENGINE]),
     Program('rows_tool', [Objects(['test/content/rows_tool.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_IDS, CONTENT_ENGINE]),
-    Program('rows_test', [Objects(['test/content/rows_test.cpp', 'src/core/apply/scheduler.cpp'], CONTENT_FLAGS + [SDK]),
+    Program('rows_test', [Objects(['test/content/rows_test.cpp', 'test/content/rows_test_packages.cpp',
+                                   'test/content/rows_test_teams.cpp', 'test/content/rows_test_slots.cpp',
+                                   'test/content/rows_test_career.cpp', 'src/core/apply/scheduler.cpp'], CONTENT_FLAGS + [SDK]),
                           CONTENT_IDS, CONTENT_ENGINE]),
     *[Program(test, [Objects([f'test/content/{test}.cpp'], CONTENT_FLAGS + [SDK]), CONTENT_IDS, CONTENT_ENGINE])
       for test in ('vehicle_tower_test', 'package_id_test', 'id_pool_test', 'wear_test')],
@@ -350,6 +352,8 @@ SCRIPTS = [
     Script('garage_crew_sites', 'Garage crew guard sites export test', ['bash', 'native/test/run_garage_crew_sites_test.sh']),
     Script('scan', 'Pattern scan and scan cache unit test', ['bash', 'native/test/run_scan_test.sh', '{out}'], programs=SCAN),
     Script('pin', 'CPU pin plan (CI, taskset, affinity, job count)', ['bash', 'native/test/pin_test.sh']),
+    Script('wineserver', 'Wine test wineserver lookup (beside wine, lib folders, versions)',
+           ['bash', 'native/test/wineserver_test.sh']),
     Script('std_templates', 'Standard library templates', ['python3', 'tools/std/templates.py']),
     Script('loading_report', 'Loading report on synthetic loader.log runs', ['python3', '-I', 'native/test/loading_report_test.py']),
 ]
