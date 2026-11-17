@@ -1,11 +1,11 @@
-use std::collections::{HashMap, HashSet};
+mod errors;
 
-use swofty_formats::gvdb::{Gvdb, Record, instance_count_path};
 use swofty_formats::hash::{fnv1a64, fnv1a64_from};
 
-use crate::ops::apply::Cx;
-use crate::ops::field_names::FieldNames;
-use crate::ops::stat_ids::{StatIds, stat_id_field};
+use self::errors::NO_ROW;
+pub use self::errors::{Selector, ids_exhausted, no_row, no_row_selectors};
+use crate::ops::game_db::Db;
+use crate::ops::stat_ids::stat_id_field;
 use crate::{Error, Result};
 
 #[derive(Debug, Clone, PartialEq)]
@@ -47,140 +47,6 @@ pub(crate) struct Row {
 impl Row {
     pub(crate) fn field(&self, field: &str) -> u64 {
         self.base.key(&format!(".{field}"))
-    }
-}
-
-pub(crate) struct Db<'a> {
-    pub(crate) gvdb: &'a mut Gvdb,
-    pub(crate) index: HashMap<u64, usize>,
-    pub(crate) removed: Vec<usize>,
-    pub(crate) added_rows: HashSet<String>,
-    pub(crate) moved: HashMap<(String, String), String>,
-    pub(crate) ties: std::cell::RefCell<Vec<String>>,
-    // Bumped by every write, so a cached read of the records knows when it is stale.
-    pub(crate) generation: u64,
-    pub(crate) stat_ids: std::cell::RefCell<HashMap<(String, String), StatIds>>,
-}
-
-impl<'a> Db<'a> {
-    pub(crate) fn new(gvdb: &'a mut Gvdb) -> Self {
-        let mut index = HashMap::with_capacity(gvdb.records.len());
-        for (i, r) in gvdb.records.iter().enumerate() {
-            index.entry(r.key).or_insert(i);
-        }
-        Self {
-            gvdb,
-            index,
-            removed: Vec::new(),
-            added_rows: HashSet::new(),
-            moved: HashMap::new(),
-            ties: std::cell::RefCell::new(Vec::new()),
-            generation: 0,
-            stat_ids: std::cell::RefCell::new(HashMap::new()),
-        }
-    }
-
-    pub(crate) fn stat_ids(
-        &self,
-        names: &dyn FieldNames,
-        table: &str,
-        row: &str,
-        rows: usize,
-    ) -> std::cell::RefMut<'_, StatIds> {
-        std::cell::RefMut::map(self.stat_ids.borrow_mut(), |all| {
-            let ids = all
-                .entry((table.to_owned(), row.to_owned()))
-                .or_insert_with(|| StatIds::read(self, names, table, row, rows));
-            if ids.generation != self.generation || ids.ids.len() != rows {
-                *ids = StatIds::read(self, names, table, row, rows);
-            }
-            ids
-        })
-    }
-
-    // Adds the row `name`, the table's `rows`th, to its cached ids, when nothing but that row's writes
-    // came since generation `before`.
-    pub(crate) fn row_added(
-        &self,
-        names: &dyn FieldNames,
-        table: &str,
-        row: &str,
-        rows: usize,
-        name: &str,
-        before: u64,
-    ) {
-        let mut all = self.stat_ids.borrow_mut();
-        let Some(ids) = all.get_mut(&(table.to_owned(), row.to_owned())) else {
-            return;
-        };
-        if ids.generation != before || ids.ids.len() != rows {
-            return;
-        }
-        let key = fnv1a64(format!("{name}.{}", stat_id_field(table, row)));
-        let id = self.text(key).and_then(|v| v.trim().parse::<i64>().ok());
-        ids.push(names, key, id, true);
-        ids.generation = self.generation;
-    }
-
-    pub(crate) fn drain_ties(&self, cx: &mut Cx) -> Result<()> {
-        for tie in self.ties.take() {
-            if cx.strict {
-                return Err(Error::Resolve(format!("{tie} (strict)")));
-            }
-            if !cx.report.warnings.contains(&tie) {
-                cx.report.warnings.push(tie);
-            }
-        }
-        Ok(())
-    }
-
-    pub(crate) fn remove(&mut self, key: u64) -> bool {
-        self.generation += 1;
-        match self.index.remove(&key) {
-            Some(i) => {
-                self.removed.push(i);
-                true
-            }
-            None => false,
-        }
-    }
-
-    pub(crate) fn finish(self) {
-        if self.removed.is_empty() {
-            return;
-        }
-        let removed: HashSet<usize> = self.removed.into_iter().collect();
-        let mut i = 0;
-        self.gvdb.records.retain(|_| {
-            i += 1;
-            !removed.contains(&(i - 1))
-        });
-    }
-
-    pub(crate) fn get(&self, key: u64) -> Option<&Record> {
-        self.index.get(&key).map(|&i| &self.gvdb.records[i])
-    }
-
-    pub(crate) fn get_mut(&mut self, key: u64) -> Option<&mut Record> {
-        self.generation += 1;
-        self.index.get(&key).map(|&i| &mut self.gvdb.records[i])
-    }
-
-    pub(crate) fn text(&self, key: u64) -> Option<String> {
-        self.get(key).map(|r| r.text().into_owned())
-    }
-
-    pub(crate) fn push(&mut self, record: Record) {
-        self.generation += 1;
-        self.index.insert(record.key, self.gvdb.records.len());
-        self.gvdb.records.push(record);
-    }
-
-    pub(crate) fn instance_count(&self, table: &str, row: &str) -> Option<usize> {
-        self.text(fnv1a64(instance_count_path(table, row)))?
-            .trim()
-            .parse()
-            .ok()
     }
 }
 
@@ -273,87 +139,6 @@ fn select_row(
         n if first_wins => Ok((hits.remove(0), n)),
         n => Err(n),
     }
-}
-
-const NO_ROW: &str = "no row matches";
-
-/// Whether `e` is a selector that matched no row, which a row added later can fix.
-pub fn no_row(e: &Error) -> bool {
-    matches!(e, Error::Resolve(m) if m.contains(&format!(": {NO_ROW}")))
-}
-
-/// A selector segment of a path: it picks the row `{table}.{row}_{i}` whose `field` is `want`.
-#[derive(Debug, Clone, PartialEq, Eq)]
-pub struct Selector {
-    pub table: String,
-    pub row: String,
-    pub field: String,
-    pub want: String,
-}
-
-impl Selector {
-    /// The key of row `i`'s `field`.
-    pub fn field_key(&self, i: usize) -> u64 {
-        row_name(&Base::Path(self.table.clone()), i, &self.row).key(&format!(".{}", self.field))
-    }
-
-    /// The key of the table's row count; `None` for a table of numbered rows, which has none.
-    pub fn count_key(&self) -> Option<u64> {
-        (!self.row.is_empty()).then(|| fnv1a64(instance_count_path(&self.table, &self.row)))
-    }
-}
-
-/// The selector segments of a [`no_row`] error's path, in order, ending with the one that matched no row.
-/// A segment after another selector has its table from the error, so only the failing one comes after one.
-pub fn no_row_selectors(e: &Error) -> Vec<Selector> {
-    let Error::Resolve(m) = e else {
-        return Vec::new();
-    };
-    let Some((upto, scope)) = m.split_once(&format!(": {NO_ROW}")) else {
-        return Vec::new();
-    };
-    let upto = upto.rsplit(": ").next().unwrap_or(upto);
-    let resolved = scope.strip_prefix(" in ").and_then(|s| s.rsplit_once('.'));
-    let mut out = Vec::new();
-    let mut plain = Some(String::new());
-    let mut rest = Some(upto);
-    while let Some(p) = rest {
-        let Ok((seg, tail)) = first_segment(p) else {
-            return Vec::new();
-        };
-        rest = tail;
-        let Some((field, want)) = seg.select else {
-            if let Some(path) = plain.as_mut() {
-                if !path.is_empty() {
-                    path.push('.');
-                }
-                path.push_str(seg.name);
-            }
-            continue;
-        };
-        let (table, row) = match (rest, resolved, plain.take()) {
-            (None, Some((table, row)), _) => (table.to_owned(), row.to_owned()),
-            (_, _, Some(path)) if path.is_empty() => (seg.name.to_owned(), String::new()),
-            (_, _, Some(path)) => (path, seg.name.to_owned()),
-            (_, _, None) => continue,
-        };
-        if table.starts_with('{') {
-            continue;
-        }
-        out.push(Selector {
-            table,
-            row,
-            field: field.to_owned(),
-            want: want.to_owned(),
-        });
-    }
-    out
-}
-
-/// Whether `e` is an `add-row` that found no free `stat_id` in the vehicle or team table, up to the highest the game reads.
-pub fn ids_exhausted(e: &Error) -> bool {
-    matches!(e, Error::Resolve(m)
-        if m.contains(": entrants.vehicles has no free stat_id") || m.contains(": entrants.teams has no free stat_id"))
 }
 
 pub(crate) fn resolve_path(db: &Db, path: &str) -> Result<Base> {
