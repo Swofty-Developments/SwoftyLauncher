@@ -70,7 +70,7 @@ src/core/assets/resources.cpp
 src/core/assets/gamedb.cpp
 src/core/assets/overlay.cpp
 src/core/events/events.cpp
-src/core/hud/hud.cpp
+src/core/hud/overlay.cpp
 src/core/testing/focus.cpp
 src/core/render/d3d12/subscribers.cpp
 src/core/render/d3d12/swapchain_hooks.cpp
