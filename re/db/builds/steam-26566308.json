@@ -4085,12 +4085,6 @@
   "Game_GhostLapHandler_OnSessionRivalSearchCompleted": {
    "match": "0x2f9fdf0"
   },
-  "Game_GhostLapHandler_StartLeaderboardEntryWrite": {
-   "match": "0x2fa2ff0"
-  },
-  "Game_GhostLapHandler_StartRemoteStorageDownload": {
-   "match": "0x2fa28b0"
-  },
   "Game_GhostLapHandler_StartRemoteStorageUpload": {
    "match": "0x2fa6370"
   },
@@ -4102,9 +4096,6 @@
   },
   "Game_GhostLapsStorageSystem_Dtor": {
    "match": "0x2f932b0"
-  },
-  "Game_GhostLapsStorageSystem_OnSessionEnter": {
-   "match": "0x2f98470"
   },
   "Game_GhostLapsStorageSystem_OnSessionExit": {
    "match": "0x2f993a0"
@@ -7291,9 +7282,6 @@
   },
   "Ne_ReplaySystem_ForceReset": {
    "match": "0x45d8350"
-  },
-  "Ne_ReplaySystem_ResetSlot24": {
-   "match": "0x45d8050"
   },
   "Ne_Replay_SetState": {
    "match": "0x45d84b0"
