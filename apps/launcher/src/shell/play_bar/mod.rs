@@ -108,8 +108,8 @@ impl Shell {
                 .child(s)
                 .into_any_element()
         };
-        let Some(i) = &self.install else {
-            let (title, line) = if self.detected {
+        let Some(i) = &self.game.install else {
+            let (title, line) = if self.game.detected {
                 (tr("F1 25 not found"), tr("Not in Steam or the EA app"))
             } else {
                 ("F1 25", tr("Looking for the game…"))
@@ -137,8 +137,8 @@ impl Shell {
             .child(muted(mode))
             .into_any_element();
         let shell = cx.entity().downgrade();
-        let copies = self.copies.clone();
-        let missing = self.missing_copies.clone();
+        let copies = self.game.copies.clone();
+        let missing = self.game.missing_copies.clone();
         let active = i.dir.clone();
         Button::new("game-switcher")
             .ghost()
@@ -315,7 +315,7 @@ impl Shell {
             }
             PlayState::Restoring => row.child(dot(p.warning)).child(tr("Restoring the game files…")),
             PlayState::Building => {
-                let Some(b) = &self.build else {
+                let Some(b) = &self.game.build else {
                     return row;
                 };
                 let text = match self.cancelling {
@@ -372,7 +372,7 @@ impl Shell {
                 let open =
                     link("crash-log", tr("Open logs"), p).on_click(move |_, _, cx| cx.open_with_system(&dir));
                 let dismiss = link("dismiss", tr("Dismiss"), p).on_click(cx.listener(|this, _, _, cx| {
-                    this.dismissed = this.session.as_ref().map(|s| s.dir.clone());
+                    this.dismissed = this.game.session.as_ref().map(|s| s.dir.clone());
                     cx.notify();
                 }));
                 if let Some(Err(failure)) = ending {
@@ -435,7 +435,7 @@ impl Shell {
             PlayState::Checking => row.text_color(p.text_muted).child(tr("Checking conflicts…")),
             PlayState::Preparing => row.child(dot(p.warning)).child(tr("Checking addons…")),
             PlayState::Ready => {
-                if let Some(n) = self.install.as_ref().and_then(|i| {
+                if let Some(n) = self.game.install.as_ref().and_then(|i| {
                     crate::shell::play_bar::unsupported_build::notice(&i.dir.join(swofty_core::GAME_EXE))
                 }) {
                     return row
@@ -492,7 +492,7 @@ impl Shell {
                         )
                         .child(link("saves-dismiss", tr("Dismiss"), p).on_click(cx.listener(
                             |this, _, _, cx| {
-                                this.dismissed = this.session.as_ref().map(|s| s.dir.clone());
+                                this.dismissed = this.game.session.as_ref().map(|s| s.dir.clone());
                                 cx.notify();
                             },
                         )));
@@ -535,7 +535,7 @@ impl Shell {
         ) {
             return None;
         }
-        let install = self.install.as_ref()?;
+        let install = self.game.install.as_ref()?;
         let blocked = swofty_core::build_support::blocked(&install.dir.join(swofty_core::GAME_EXE));
         let line = crate::shell::play_bar::save_area::line(
             &self.library.profile,
@@ -582,7 +582,7 @@ impl Shell {
         let shell = cx.entity().downgrade();
         let vr = self.launch_mode().is_vr();
         let start_store = self.start_store;
-        let start_label = match self.install.as_ref().map(|i| i.source) {
+        let start_label = match self.game.install.as_ref().map(|i| i.source) {
             Some(Source::EaApp) => tr("Start the EA app automatically"),
             _ => tr("Start Steam automatically"),
         };

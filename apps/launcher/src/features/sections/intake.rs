@@ -170,7 +170,7 @@ impl Shell {
         let store = self.store.clone();
         let registry = self.library.registry.clone();
         let profile = self.library.profile.clone();
-        let install = self.install.clone();
+        let install = self.game.install.clone();
         let shared: Shared = Arc::new(Mutex::new(Some((
             0.,
             trf!(
@@ -227,7 +227,7 @@ impl Shell {
                 if !unclaimed.is_empty() {
                     s.show_not_addons(&unclaimed, window, cx);
                 }
-                s.rediscover = true;
+                s.game.rediscover = true;
                 s.reload(cx);
                 if let Some(id) = fresh.first() {
                     s.show_addon(id, cx);

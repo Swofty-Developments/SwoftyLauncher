@@ -187,7 +187,7 @@ impl Shell {
                         .on_click(cx.listener(|this, _, _, cx| this.mp_leave(cx)))
                 }
             });
-        let running = !self.processes.is_empty();
+        let running = !self.game.processes.is_empty();
         let reopen = (st.problem.is_some()
             && state.launch.is_some()
             && running

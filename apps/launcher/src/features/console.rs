@@ -273,7 +273,7 @@ impl Console {
                     let game = c
                         .shell
                         .upgrade()
-                        .and_then(|s| s.read(cx).install.as_ref().map(|i| i.dir.clone()));
+                        .and_then(|s| s.read(cx).game.install.as_ref().map(|i| i.dir.clone()));
                     (c.store.clone(), game, c.feeds.each_mut().map(|f| f.tail.take()))
                 }) else {
                     break;

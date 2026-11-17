@@ -498,7 +498,7 @@ impl Shell {
             self.mp
                 .as_ref()
                 .map(|s| swofty_core::timetrial::api::Api::new(&s.token)),
-            self.install.as_ref(),
+            self.game.install.as_ref(),
         ) else {
             return;
         };

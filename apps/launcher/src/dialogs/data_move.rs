@@ -77,10 +77,10 @@ impl Shell {
             return Some(tr("Your addons and saves are already moving").to_owned());
         }
         let skip_game = cfg!(debug_assertions) && std::env::var_os("SWOFTY_DEBUG_MOVE_TO").is_some();
-        if !skip_game && (!self.processes.is_empty() || swofty_core::process::game_running()) {
+        if !skip_game && (!self.game.processes.is_empty() || swofty_core::process::game_running()) {
             return Some(tr("Close F1 25 before moving your addons and saves").to_owned());
         }
-        if self.build.is_some() || Busy::live(&self.store.root).is_some() {
+        if self.game.build.is_some() || Busy::live(&self.store.root).is_some() {
             return Some(tr("Wait for the build to finish before moving your addons and saves").to_owned());
         }
         if let Some(why) = launch_refusal(&self.play_state()) {
@@ -130,10 +130,11 @@ impl Shell {
     fn plan_data_move(&mut self, picked: PathBuf, window: &mut Window, cx: &mut Context<Self>) {
         let to = data_move::choose(&picked);
         let games: Vec<PathBuf> = self
+            .game
             .copies
             .iter()
             .map(|c| c.dir.clone())
-            .chain(self.install.as_ref().map(|i| i.dir.clone()))
+            .chain(self.game.install.as_ref().map(|i| i.dir.clone()))
             .collect();
         let location = Location::find(install_folder(), games);
         cx.spawn_in(window, async move |this, cx| {

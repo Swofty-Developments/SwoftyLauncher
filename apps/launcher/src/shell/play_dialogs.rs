@@ -64,12 +64,12 @@ impl Shell {
     }
 
     pub(crate) fn restore_game_folder(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(install) = self.install.clone() else {
+        let Some(install) = self.game.install.clone() else {
             return;
         };
         let store = self.store.clone();
         self.notice = None;
-        self.blocked = None;
+        self.game.blocked = None;
         self.game_edited = None;
         self.restoring = true;
         cx.spawn_in(window, async move |this, cx| {
@@ -130,7 +130,7 @@ impl Shell {
     }
 
     pub(crate) fn confirm_stop(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) else {
+        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             return;
         };
         let data = self.store.root.clone();

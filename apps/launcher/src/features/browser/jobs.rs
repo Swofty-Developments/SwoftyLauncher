@@ -69,7 +69,7 @@ impl Shell {
         let Some(version) = addon.offered(&current_version()).cloned() else {
             return false;
         };
-        if self.build.as_ref().is_some_and(|b| b.holds(id)) {
+        if self.game.build.as_ref().is_some_and(|b| b.holds(id)) {
             self.browser
                 .toasts
                 .push(Notification::warning(crate::features::update::BUILDING));

@@ -133,7 +133,7 @@ impl Shell {
             return;
         }
         self.addons.checking = true;
-        let (store, install) = (self.store.clone(), self.install.clone());
+        let (store, install) = (self.store.clone(), self.game.install.clone());
         let profile = self.library.profile.name.clone();
         cx.spawn_in(window, async move |this, cx| {
             let result = cx

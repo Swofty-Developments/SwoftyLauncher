@@ -295,7 +295,7 @@ impl Shell {
                     })),
                 p,
             ),
-            Load::Idle if !self.detected => self.db_loading(tr("Looking for F1 25…"), p),
+            Load::Idle if !self.game.detected => self.db_loading(tr("Looking for F1 25…"), p),
             Load::Idle => self.empty(
                 IconName::Database,
                 tr("F1 25 not found"),

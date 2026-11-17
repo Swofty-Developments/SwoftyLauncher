@@ -48,7 +48,7 @@ impl Shell {
                 })
             })
             .collect();
-        let start_label = match self.install.as_ref().map(|i| i.source) {
+        let start_label = match self.game.install.as_ref().map(|i| i.source) {
             Some(Source::EaApp) => tr("Start the EA app automatically"),
             _ => tr("Start Steam automatically"),
         };

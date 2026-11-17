@@ -730,7 +730,7 @@ impl Shell {
     /// The one-time setup, opened by Play until it is done. Finishing it
     /// presses Play again.
     pub(crate) fn open_setup(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let Some(install) = self.install.clone() else {
+        let Some(install) = self.game.install.clone() else {
             return;
         };
         let shell = cx.entity().downgrade();

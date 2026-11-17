@@ -432,7 +432,7 @@ impl Shell {
             })
             .collect::<Vec<_>>()
             .join(", ");
-        match self.install.as_ref().and_then(|i| i.build_id) {
+        match self.game.install.as_ref().and_then(|i| i.build_id) {
             _ if man.compat.game_builds.is_empty() => (tr("Works with any game version").to_owned(), p.text),
             Some(b) if man.compat.accepts_build(b) => {
                 (tr("Works with this game version").to_owned(), p.success)

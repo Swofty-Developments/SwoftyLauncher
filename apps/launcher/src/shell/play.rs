@@ -16,10 +16,10 @@ const SESSION_MODULE_WAIT: std::time::Duration = std::time::Duration::from_milli
 
 impl Shell {
     pub(crate) fn play_state(&self) -> PlayState {
-        if self.owners.contains(&Owner::Active) {
+        if self.game.owners.contains(&Owner::Active) {
             return PlayState::Running;
         }
-        if self.build.is_some() {
+        if self.game.build.is_some() {
             return PlayState::Building;
         }
         if self.play_pending.is_active() {
@@ -35,19 +35,19 @@ impl Shell {
         if self.restoring {
             return PlayState::Restoring;
         }
-        if !self.detected {
+        if !self.game.detected {
             return PlayState::Detecting;
         }
-        if let Some(owner) = self.owners.first() {
+        if let Some(owner) = self.game.owners.first() {
             return PlayState::Elsewhere(owner.clone());
         }
-        if self.install.is_none() {
+        if self.game.install.is_none() {
             return PlayState::NotInstalled;
         }
         if self.addons.checking {
             return PlayState::Checking;
         }
-        match &self.session {
+        match &self.game.session {
             Some(s)
                 if s.crashed()
                     && self.dismissed.as_ref() != Some(&s.dir)
@@ -75,7 +75,7 @@ impl Shell {
         if self.data_move_locked() || self.play_pending.is_active() {
             return false;
         }
-        let Some(install) = self.install.clone() else {
+        let Some(install) = self.game.install.clone() else {
             return false;
         };
         if install.source == Source::EaApp && self.ea_app_warn_pending() {
@@ -138,8 +138,8 @@ impl Shell {
     ) -> bool {
         crate::app::app_log::note(&checked.timings.line());
         let stale = self.library.profile.name != checked.profile
-            || self.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
-        let Some(install) = self.install.clone().filter(|_| !stale) else {
+            || self.game.install.as_ref().map(|i| &i.dir) != Some(&checked.game);
+        let Some(install) = self.game.install.clone().filter(|_| !stale) else {
             crate::app::app_log::note("[play] dropped: the profile or game copy changed during the checks");
             return false;
         };
@@ -161,11 +161,11 @@ impl Shell {
             return false;
         }
         self.notice = None;
-        self.blocked = None;
+        self.game.blocked = None;
         self.game_edited = None;
         Blocked::clear(&self.store.root).ok();
         self.seen.blocked = game::blocked_at(&self.store.root).unwrap_or(0.0);
-        self.dismissed = self.session.as_ref().map(|s| s.dir.clone());
+        self.dismissed = self.game.session.as_ref().map(|s| s.dir.clone());
         for note in &checked.notes {
             window.notify(note_notification(note), cx);
         }
@@ -227,7 +227,7 @@ impl Shell {
     }
 
     pub(crate) fn saves_refused(&self) -> Option<&SessionRecord> {
-        self.session.as_ref().filter(|s| {
+        self.game.session.as_ref().filter(|s| {
             s.exit_code == Some(swofty_core::launcher_saves::EXIT)
                 && self.dismissed.as_ref() != Some(&s.dir)
                 && s.ended.is_some_and(|e| game::now_secs() - e < 1800.0)
@@ -259,13 +259,13 @@ impl Shell {
             window.notify(Notification::error(e.to_string()), cx);
             return;
         }
-        if let Some(copy) = self.copies.iter().find(|c| c.dir == dir) {
-            self.install = Some(copy.clone());
+        if let Some(copy) = self.game.copies.iter().find(|c| c.dir == dir) {
+            self.game.install = Some(copy.clone());
             crate::app::app_log::set_game(Some(&copy.dir));
         }
-        self.attribute();
+        self.game.attribute();
         self.notice = None;
-        self.rediscover = true;
+        self.game.rediscover = true;
         self.reload(cx);
     }
 }

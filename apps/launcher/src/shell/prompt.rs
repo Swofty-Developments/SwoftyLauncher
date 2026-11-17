@@ -27,7 +27,7 @@ pub struct Prompt {
 
 impl Shell {
     pub(crate) fn locate_game(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        let adding = !self.copies.is_empty();
+        let adding = !self.game.copies.is_empty();
         self.prompt(
             Prompt {
                 title: if adding { tr("Add another folder") } else { tr("Locate F1 25") },
@@ -126,7 +126,7 @@ impl Shell {
                         Ok(message) => {
                             shell
                                 .update(cx, |s, cx| {
-                                    s.rediscover = true;
+                                    s.game.rediscover = true;
                                     s.reload(cx)
                                 })
                                 .ok();

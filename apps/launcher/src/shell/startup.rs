@@ -132,14 +132,6 @@ impl Shell {
             layout_width: 1440.,
             online: crate::features::online::Online::new(&root),
             open_addon: None,
-            install: None,
-            copies: Vec::new(),
-            missing_copies: Vec::new(),
-            detected: false,
-            rediscover: true,
-            processes: Vec::new(),
-            owners: Vec::new(),
-            session: None,
             mp,
             mp_busy: false,
             ban: None,
@@ -154,11 +146,9 @@ impl Shell {
             notice: None,
             play_anyway: false,
             play_pending: play_checks::Pending::default(),
-            blocked: None,
             game_edited: None,
             seen,
             restoring: false,
-            build: None,
             cancelling: false,
             sliders: HashMap::new(),
             requests: None,
@@ -222,6 +212,18 @@ impl Shell {
             _live: live,
             _updates: updates,
             _catalog: catalog,
+            game: crate::shell::probe::GameWatch {
+                install: None,
+                copies: Vec::new(),
+                missing_copies: Vec::new(),
+                detected: false,
+                rediscover: true,
+                processes: Vec::new(),
+                owners: Vec::new(),
+                session: None,
+                build: None,
+                blocked: None,
+            },
         };
         shell.refresh_views(cx);
         match std::env::var("SWOFTY_LAUNCHER_OPEN_PAGE").as_deref() {
@@ -331,7 +333,7 @@ impl Shell {
             loop {
                 let Ok((store, rediscover, seen, profile, banner_due, saves_open)) =
                     this.update(cx, |s, _| {
-                        let r = std::mem::take(&mut s.rediscover);
+                        let r = std::mem::take(&mut s.game.rediscover);
                         let profile = s.library.profile.name.clone();
                         let due = r || s.saves.banner_profile != profile || game::banner_stale();
                         (
@@ -367,7 +369,7 @@ impl Shell {
         let rediscover = cx.spawn(async move |this, cx| {
             loop {
                 cx.background_executor().timer(Duration::from_secs(10)).await;
-                if this.update(cx, |s, _| s.rediscover = true).is_err() {
+                if this.update(cx, |s, _| s.game.rediscover = true).is_err() {
                     break;
                 }
             }
@@ -405,7 +407,7 @@ impl Shell {
                 .ok();
                 let data = this
                     .update(cx, |s, _| {
-                        (s.store.clone(), s.install.as_ref().map(|i| i.dir.clone()))
+                        (s.store.clone(), s.game.install.as_ref().map(|i| i.dir.clone()))
                     })
                     .ok();
                 if let Some((store, game)) = data {

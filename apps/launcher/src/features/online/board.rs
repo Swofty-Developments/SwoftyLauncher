@@ -389,7 +389,7 @@ impl Shell {
         game_replay: bool,
         cx: &mut Context<Self>,
     ) -> Button {
-        let known = self.install.is_some();
+        let known = self.game.install.is_some();
         let id = lap_id.to_owned();
         Button::new(SharedString::from(key.to_owned()))
             .outline()

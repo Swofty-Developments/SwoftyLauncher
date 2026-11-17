@@ -3,7 +3,10 @@ use crate::dialogs::game_edited::Edited;
 use crate::services::game::{self, Copies, Install, Owner, Probe};
 use crate::shell::notices::{Notification, Notify};
 use gpui_kit::*;
+use std::path::PathBuf;
 use std::time::{Duration, Instant};
+use swofty_core::busy::Busy;
+use swofty_core::process::GameProcess;
 use swofty_core::quarantine;
 use swofty_core::recovery::{self, Blocked};
 use swofty_core::session::SessionRecord;
@@ -11,6 +14,41 @@ use swofty_core::session::SessionRecord;
 use super::dialogs::{show_launch_failed, show_mods_blocked};
 use super::{Page, Shell};
 use swofty_i18n::{tr, trf, trn};
+
+pub(crate) struct GameWatch {
+    pub(crate) install: Option<Install>,
+    pub(crate) copies: Vec<Install>,
+    pub(crate) missing_copies: Vec<PathBuf>,
+    pub(crate) detected: bool,
+    pub(crate) rediscover: bool,
+    pub(crate) processes: Vec<GameProcess>,
+    pub(crate) owners: Vec<Owner>,
+    pub(crate) session: Option<SessionRecord>,
+    pub(crate) build: Option<Busy>,
+    pub(crate) blocked: Option<Blocked>,
+}
+
+impl GameWatch {
+    /// The copy addon panels work with: the one a running game belongs to,
+    /// else the one Play uses.
+    pub(crate) fn panel_install(&self) -> Option<Install> {
+        self.owners
+            .iter()
+            .find_map(|o| match o {
+                Owner::Other(i) => Some(i.clone()),
+                _ => None,
+            })
+            .or_else(|| self.install.clone())
+    }
+
+    pub(crate) fn attribute(&mut self) {
+        self.owners = self
+            .processes
+            .iter()
+            .map(|g| game::owner(g, self.install.as_ref(), &self.copies))
+            .collect();
+    }
+}
 
 /// Times shown as "5 min ago" stay current without a repaint every probe.
 const REPAINT: Duration = Duration::from_secs(30);
@@ -41,7 +79,11 @@ impl Shell {
     }
 
     pub(super) fn apply_probe(&mut self, mut probe: Probe, window: &mut Window, cx: &mut Context<Self>) {
-        let before = (self.requests, self.processes.clone(), self.session.clone());
+        let before = (
+            self.requests,
+            self.game.processes.clone(),
+            self.game.session.clone(),
+        );
         let was_live = self.launch.is_some();
         self.requests = probe.requests;
         let root = self.store.root.clone();
@@ -63,7 +105,7 @@ impl Shell {
         }
         self.announce_reports(&probe, window, cx);
         self.apply_install(probe.install.take(), probe.merged, cx);
-        if self.cancelling && probe.busy.is_none() && self.build.is_some() {
+        if self.cancelling && probe.busy.is_none() && self.game.build.is_some() {
             self.cancelling = false;
             window.notify(
                 Notification::info(tr(
@@ -73,17 +115,22 @@ impl Shell {
                 cx,
             );
         }
-        self.build = probe.busy.take();
-        self.processes = std::mem::take(&mut probe.processes);
+        self.game.build = probe.busy.take();
+        self.game.processes = std::mem::take(&mut probe.processes);
         self.sync_shaders(false, cx);
-        self.attribute();
+        self.game.attribute();
         self.finish_launch(&probe);
         self.watch_session(probe.session.as_ref(), cx);
-        self.session = probe.session;
+        self.game.session = probe.session;
         self.db_poll(cx);
         let live = was_live || self.launch.is_some();
         if live
-            || before != (self.requests, self.processes.clone(), self.session.clone())
+            || before
+                != (
+                    self.requests,
+                    self.game.processes.clone(),
+                    self.game.session.clone(),
+                )
             || self.painted.elapsed() >= REPAINT
         {
             cx.notify();
@@ -121,7 +168,7 @@ impl Shell {
             .filter(|_| probe.blocked_at.is_some_and(|at| at > self.seen.blocked))
         {
             self.seen.blocked = probe.blocked_at.expect("blocked file timestamp");
-            self.blocked = Some(b.clone());
+            self.game.blocked = Some(b.clone());
             self.game_edited = Some(Edited::Leftovers(b.clone()));
             self.show_game_edited(window, cx);
         }
@@ -138,12 +185,13 @@ impl Shell {
 
     fn apply_install(&mut self, found: Option<Copies>, merged: bool, cx: &mut Context<Self>) {
         if let Some(found) = found {
-            let changed = !self.detected || self.install != found.active || self.copies != found.all;
-            self.install = found.active;
-            crate::app::app_log::set_game(self.install.as_ref().map(|i| i.dir.as_path()));
-            self.copies = found.all;
-            self.missing_copies = found.missing;
-            self.detected = true;
+            let changed =
+                !self.game.detected || self.game.install != found.active || self.game.copies != found.all;
+            self.game.install = found.active;
+            crate::app::app_log::set_game(self.game.install.as_ref().map(|i| i.dir.as_path()));
+            self.game.copies = found.all;
+            self.game.missing_copies = found.missing;
+            self.game.detected = true;
             if self.page == Page::Careers && (changed || merged) {
                 self.refresh_saves_in_background(cx);
             }
@@ -160,24 +208,24 @@ impl Shell {
 
     fn finish_launch(&mut self, probe: &Probe) {
         if let Some(launch) = self.launch.as_mut() {
-            launch.saw_game |= self.owners.iter().any(|o| !matches!(o, Owner::Other(_)));
+            launch.saw_game |= self.game.owners.iter().any(|o| !matches!(o, Owner::Other(_)));
             launch.stage = probe.launch_stage.clone();
             if let Some(ok) = launch.finished() {
                 if !ok && !launch.saw_game {
-                    self.blocked = Blocked::read(&self.store.root);
+                    self.game.blocked = Blocked::read(&self.store.root);
                     let refused = probe
                         .mods_blocked
                         .as_ref()
                         .is_some_and(|r| r.stage == quarantine::Stage::BeforeLaunch && r.at >= launch.at);
                     let not_stock = probe.not_stock.as_ref().filter(|r| r.at >= launch.at).map(|r| {
-                        crate::dialogs::game_edited::notice(r, self.install.as_ref().map(|i| i.source))
+                        crate::dialogs::game_edited::notice(r, self.game.install.as_ref().map(|i| i.source))
                     });
                     let failed = probe
                         .launch_failed
                         .as_ref()
                         .filter(|f| f.at >= launch.at)
                         .map(|f| f.headline().to_owned());
-                    self.notice = Some(match &self.blocked {
+                    self.notice = Some(match &self.game.blocked {
                         _ if refused => {
                             tr("an antivirus removed mod files, so F1 25 was not started").to_owned()
                         }
@@ -216,7 +264,7 @@ impl Shell {
         {
             let session = s.clone();
             let crashed = s.crashed();
-            let game_dir = self.install.as_ref().map(|i| i.dir.clone());
+            let game_dir = self.game.install.as_ref().map(|i| i.dir.clone());
             let store = self.store.clone();
             let fresh = s.ended.is_some_and(|e| game::now_secs() - e < crash::FRESH_SECS);
             self.crash = Some((s.dir.clone(), Ok(String::new())));
@@ -262,25 +310,5 @@ impl Shell {
             })
             .detach();
         }
-    }
-
-    /// The copy addon panels work with: the one a running game belongs to,
-    /// else the one Play uses.
-    pub(crate) fn panel_install(&self) -> Option<Install> {
-        self.owners
-            .iter()
-            .find_map(|o| match o {
-                Owner::Other(i) => Some(i.clone()),
-                _ => None,
-            })
-            .or_else(|| self.install.clone())
-    }
-
-    pub(super) fn attribute(&mut self) {
-        self.owners = self
-            .processes
-            .iter()
-            .map(|g| game::owner(g, self.install.as_ref(), &self.copies))
-            .collect();
     }
 }

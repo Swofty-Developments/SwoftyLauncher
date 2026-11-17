@@ -148,7 +148,7 @@ impl Shell {
         let library = &self.library;
         let registry = library.registry.clone();
         let profile = library.profile.clone();
-        let install = self.panel_install();
+        let install = self.game.panel_install();
         let open = self.open_section();
         let keys: HashSet<String> = library.sections.iter().map(section_key).collect();
         if self.views_profile != profile.name {
@@ -156,7 +156,7 @@ impl Shell {
             self.views.clear();
         }
         self.views.retain(|k, _| keys.contains(k));
-        let prefetch = self.detected;
+        let prefetch = self.game.detected;
         let sections: Vec<(String, String, bool)> = library
             .sections
             .iter()
@@ -279,7 +279,7 @@ impl Shell {
         self.ticking = true;
         let store = self.store.clone();
         let profile = self.library.profile.clone();
-        let install = self.panel_install();
+        let install = self.game.panel_install();
         let (addon, section) = (s.addon.clone(), s.spec.id.clone());
         cx.spawn(async move |this, cx| {
             let failed = cx
@@ -342,7 +342,7 @@ impl Shell {
         };
         let store = self.store.clone();
         let profile = self.library.profile.clone();
-        let install = self.panel_install();
+        let install = self.game.panel_install();
         let (addon, section) = (addon.to_owned(), section.to_owned());
         let feed = crate::dialogs::tasks::Feed::default();
         let sink = crate::dialogs::tasks::Sink(feed.clone());

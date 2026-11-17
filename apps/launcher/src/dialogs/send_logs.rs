@@ -434,9 +434,9 @@ impl Render for SendLogs {
 impl Shell {
     pub(crate) fn send_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let game = GameInfo {
-            dir: self.install.as_ref().map(|i| i.dir.clone()),
-            build_id: self.install.as_ref().and_then(|i| i.build_id),
-            version: self.install.as_ref().and_then(|i| i.exe_version.clone()),
+            dir: self.game.install.as_ref().map(|i| i.dir.clone()),
+            build_id: self.game.install.as_ref().and_then(|i| i.build_id),
+            version: self.game.install.as_ref().and_then(|i| i.exe_version.clone()),
         };
         let store = self.store.clone();
         let form = cx.new(|cx| SendLogs::new(store, game, window, cx));

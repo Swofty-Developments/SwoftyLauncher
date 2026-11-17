@@ -513,7 +513,7 @@ impl Shell {
         };
         let shell = cx.entity().downgrade();
         let p = palette(cx);
-        let repair = repair(self.install.as_ref().map_or(Source::Steam, |i| i.source));
+        let repair = repair(self.game.install.as_ref().map_or(Source::Steam, |i| i.source));
         window.open_alert_dialog(cx, move |alert, window, _| {
             let (shell, edited) = (shell.clone(), edited.clone());
             let vh = f32::from(window.viewport_size().height);

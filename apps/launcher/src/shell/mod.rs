@@ -1,6 +1,6 @@
 use crate::dialogs::crash::CrashView;
 use crate::dialogs::game_edited::Edited;
-use crate::services::game::{Install, Launch, Owner};
+use crate::services::game::Launch;
 use crate::services::library::Library;
 use crate::services::play_checks;
 use crate::shell::notices::Notification;
@@ -10,11 +10,8 @@ use std::collections::{BTreeSet, HashMap, HashSet};
 use std::path::PathBuf;
 use std::sync::Arc;
 use std::time::{Instant, SystemTime};
-use swofty_core::busy::Busy;
 use swofty_core::crash::StartFailure;
-use swofty_core::process::GameProcess;
-use swofty_core::recovery::Blocked;
-use swofty_core::session::{SessionRecord, UiMode};
+use swofty_core::session::UiMode;
 use swofty_core::store::Store;
 use swofty_core::view::View;
 use swofty_i18n::{tr, trf};
@@ -65,14 +62,6 @@ pub struct Shell {
     pub(crate) online: crate::features::online::Online,
     pub(crate) library: Library,
     pub(crate) open_addon: Option<String>,
-    pub(crate) install: Option<Install>,
-    pub(crate) copies: Vec<Install>,
-    pub(crate) missing_copies: Vec<PathBuf>,
-    pub(crate) detected: bool,
-    pub(crate) rediscover: bool,
-    pub(crate) processes: Vec<GameProcess>,
-    pub(crate) owners: Vec<Owner>,
-    pub(crate) session: Option<SessionRecord>,
     pub(crate) mp: Option<swofty_core::mpauth::Session>,
     pub(crate) mp_busy: bool,
     pub(crate) ban: Option<swofty_core::mpauth::Ban>,
@@ -88,11 +77,9 @@ pub struct Shell {
     pub(crate) notice: Option<String>,
     play_anyway: bool,
     play_pending: play_checks::Pending,
-    pub(crate) blocked: Option<Blocked>,
     pub(crate) game_edited: Option<Edited>,
     pub(crate) seen: Seen,
     pub(crate) restoring: bool,
-    pub(crate) build: Option<Busy>,
     pub(crate) cancelling: bool,
     pub(crate) sliders: HashMap<String, SliderSlot>,
     pub(crate) requests: Option<SystemTime>,
@@ -162,6 +149,7 @@ pub struct Shell {
     _live: Task<()>,
     _updates: Task<()>,
     _catalog: Task<()>,
+    pub(crate) game: crate::shell::probe::GameWatch,
 }
 
 pub struct SliderSlot {

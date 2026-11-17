@@ -88,7 +88,7 @@ impl Shell {
         }
         self.settings.measuring = true;
         let root = self.store.root.clone();
-        let game = self.install.as_ref().map(|i| i.dir.clone());
+        let game = self.game.install.as_ref().map(|i| i.dir.clone());
         cx.spawn(async move |this, cx| {
             let (usage, prunable, cache) = cx
                 .background_executor()
@@ -125,7 +125,7 @@ impl Shell {
     }
 
     pub(crate) fn confirm_clear_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if !self.processes.is_empty() {
+        if !self.game.processes.is_empty() {
             window.notify(
                 Notification::error(tr("Close F1 25 first: it may still be writing its session log")),
                 cx,
@@ -158,11 +158,11 @@ impl Shell {
     }
 
     pub(crate) fn settings_clear_cache(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if !self.processes.is_empty() {
+        if !self.game.processes.is_empty() {
             window.notify(Notification::error(tr("Close F1 25 first")), cx);
             return;
         }
-        let Some(game) = self.install.as_ref().map(|i| i.dir.clone()) else {
+        let Some(game) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             return;
         };
         self.settings.clearing = true;
@@ -193,7 +193,7 @@ impl Shell {
     }
 
     fn settings_clear_logs(&mut self, window: &mut Window, cx: &mut Context<Self>) {
-        if !self.processes.is_empty() {
+        if !self.game.processes.is_empty() {
             window.notify(
                 Notification::error(tr("Close F1 25 first: it may still be writing its session log")),
                 cx,

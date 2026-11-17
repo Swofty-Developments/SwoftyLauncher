@@ -95,10 +95,11 @@ impl Shell {
             return;
         }
         let games: Vec<PathBuf> = self
+            .game
             .copies
             .iter()
             .map(|c| c.dir.clone())
-            .chain(self.install.as_ref().map(|i| i.dir.clone()))
+            .chain(self.game.install.as_ref().map(|i| i.dir.clone()))
             .collect();
         let location = Location::find(install_folder(), games);
         let installs: Vec<PathBuf> = install_folder().into_iter().collect();
@@ -143,10 +144,11 @@ impl Shell {
             prompt.stage = Stage::Switching;
         }
         let games: Vec<PathBuf> = self
+            .game
             .copies
             .iter()
             .map(|c| c.dir.clone())
-            .chain(self.install.as_ref().map(|i| i.dir.clone()))
+            .chain(self.game.install.as_ref().map(|i| i.dir.clone()))
             .collect();
         let location = Location::find(install_folder(), games);
         let installs: Vec<PathBuf> = install_folder().into_iter().collect();

@@ -98,14 +98,14 @@ impl Shell {
         let Some(ask) = session.state().launch else {
             return;
         };
-        if self.mp_page.launch_seen == ask.seq || self.launch.is_some() || self.build.is_some() {
+        if self.mp_page.launch_seen == ask.seq || self.launch.is_some() || self.game.build.is_some() {
             return;
         }
-        if !self.processes.is_empty() || self.restoring {
+        if !self.game.processes.is_empty() || self.restoring {
             return;
         }
         self.mp_page.closing = None;
-        if let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) {
+        if let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) {
             diag::forget_status(&dir);
         }
         let row_ids = match &ask.row_ids {
@@ -169,19 +169,19 @@ impl Shell {
     }
 
     pub(super) fn mp_watch_game(&mut self, cx: &mut Context<Self>) {
-        let busy = self.launch.is_some() || self.build.is_some() || self.restoring;
+        let busy = self.launch.is_some() || self.game.build.is_some() || self.restoring;
         let m = &mut self.mp_page;
         if m.session.is_none() {
             return;
         }
-        if !self.processes.is_empty() && m.launch_seen != 0 && m.closing.is_none() {
+        if !self.game.processes.is_empty() && m.launch_seen != 0 && m.closing.is_none() {
             m.game_seen = true;
         }
-        if m.closing.is_some() && self.processes.is_empty() {
+        if m.closing.is_some() && self.game.processes.is_empty() {
             m.closing = None;
         }
         let over = m.state.as_ref().is_some_and(|s| s.phase.is_over());
-        if over || m.leaving || !exit_leaves(m.game_seen, !self.processes.is_empty(), busy) {
+        if over || m.leaving || !exit_leaves(m.game_seen, !self.game.processes.is_empty(), busy) {
             return;
         }
         let host = m.state.as_ref().is_some_and(|s| s.host);
@@ -194,10 +194,11 @@ impl Shell {
     }
 
     pub(super) fn mp_close_game(&mut self, window: &mut Window, cx: &mut Context<Self>) -> bool {
-        let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) else {
+        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             return true;
         };
         let pids: Vec<u32> = self
+            .game
             .processes
             .iter()
             .filter(|g| g.is_in(&dir))
@@ -227,10 +228,10 @@ impl Shell {
     }
 
     pub(super) fn mp_play(&mut self, start: Start, window: &mut Window, cx: &mut Context<Self>) {
-        let dir = self.install.as_ref().map(|i| i.dir.clone());
+        let dir = self.game.install.as_ref().map(|i| i.dir.clone());
         let running = dir
             .as_ref()
-            .is_some_and(|d| self.processes.iter().any(|g| g.is_in(d)));
+            .is_some_and(|d| self.game.processes.iter().any(|g| g.is_in(d)));
         if !running {
             self.mp_begin(start, window, cx);
             return;
@@ -348,12 +349,12 @@ impl Shell {
     }
 
     pub(super) fn mp_poll_game(&mut self, cx: &mut Context<Self>) {
-        let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) else {
+        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             self.mp_page.game = None;
             self.mp_page.game_at = Some(Instant::now());
             return;
         };
-        let running = !self.processes.is_empty();
+        let running = !self.game.processes.is_empty();
         self.mp_page.game_polling = true;
         cx.spawn(async move |this, cx| {
             let status = cx
@@ -408,7 +409,7 @@ impl Shell {
     }
 
     pub(super) fn mp_read_digest(&mut self, cx: &mut Context<Self>) {
-        let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) else {
+        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             return;
         };
         let (store, profile) = (self.store.clone(), self.library.profile.name.clone());
@@ -436,7 +437,7 @@ impl Shell {
             Some(state) if self.mp_page.session.is_some() => state.game.as_ref(),
             _ => self.mp_page.game.as_ref(),
         };
-        GameState::of(!self.processes.is_empty(), status)
+        GameState::of(!self.game.processes.is_empty(), status)
     }
 
     pub(super) fn mp_start(&mut self, start: Start, cx: &mut Context<Self>) {
@@ -446,7 +447,7 @@ impl Shell {
         let Some(token) = self.mp.as_ref().map(|m| m.token.clone()) else {
             return;
         };
-        let Some(dir) = self.install.as_ref().map(|i| i.dir.clone()) else {
+        let Some(dir) = self.game.install.as_ref().map(|i| i.dir.clone()) else {
             self.mp_page.error = Some("F1 25 was not found. Locate it from the play bar first.".into());
             cx.notify();
             return;
