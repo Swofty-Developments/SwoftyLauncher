@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Save_PendingDriverContract",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c5ab20",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "int Career_Save_PendingDriverContract(void *contract, void *save_node)",
+  "evidence": "decomp:re/decomp/140c5ab20.c;xref:0x145682c50",
+  "notes": "myteam-g1: Writer for the pending_driver_contract save block: adds fields from contract+0x292 (u16), +0x294 (u16), +0x3e4, a list of pending entries (vector +0x4f0..+0x4f8, 0x30 bytes each: packed driver key (u16 team/idx), value at +0x20, optional second key) and +0x458. Save-game format of one pending driver contract negotiation."
+ },
+ "signature": {
+  "id": "career.save_pending_driver_contract",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D6 48 89 CB 48 C7 44 24 30 00 00 00 00",
+  "match": "0x140c5ab20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c5ab20",
+  "kind": "func_start",
+  "names": [
+   "Career_Save_PendingDriverContract"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c5ab20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c5ab20.c;str:\"pending_driver_contract\"",
+   "notes": "V9502 Writer for pending_driver_contract with offsets +0x292,+0x294,+0x3e4 and vector +0x4f0..+0x4f8 (plus team_handlers etc. strings); +0x458 does not appear in this function."
+  }
+ ],
+ "proofs": []
+}

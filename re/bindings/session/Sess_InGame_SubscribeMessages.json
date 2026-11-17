@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_InGame_SubscribeMessages",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d63c60",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d63c60.c;xref:0x142d55bd0,0x142d67304",
+  "notes": "Subscribes the in-game state to bus messages: MessageVehicleTerminallyDamaged (0x142d66c50), MessageCheckpointSaved (0x142d66c70), MessagePlayerVehiclePulledOverAfterMechanicalFailure (0x142d66d90), RedFlagStatusChangedMessage (Sess_InGame_OnRedFlagStatus), MessagePausedRewindTutorialStarted (0x142d66dc0), MessageRewindOnboardingTutorialEnded (0x142d66dd0). Callers Sess_State_EnterOnTrackCommon, Sess_InGame_OnRedFlagStatus."
+ },
+ "signature": {
+  "id": "session.in_game_subscribe_messages",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 80 B9 10 10 00 00 00 0F 85",
+  "match": "0x142d63c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d63c60",
+  "kind": "func_start",
+  "names": [
+   "Sess_InGame_SubscribeMessages"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d63c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d63c60.c;xref:0x142d55bd0,0x142d67304",
+   "notes": "V3616 six message strings; handler pointers 0x142d66c50/c70/d90/dc0/dd0 (+db0 red flag) loaded via lea; callers Sess_State_EnterOnTrackCommon, Sess_InGame_OnRedFlagStatus (+InGameRace_Update)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Ruleset_RetireVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d2f120",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d2f120.c;xref:0x1457dc010",
+  "notes": "Base ruleset (vt 0x1457dbef0) slot +0x120: online lobby leaver -> DNF; requires the progress flag (0x142f0c7f0([rs+0x330], id) +0xa0^+0xa8 bit 0); inactive -> NC 4, DSQ mask [rs+0x340]+0x1d08 -> DSQ 6, else eRetired; tail-jumps into Sess_PQRuleset_RetireVehicle 0x142d2f440 for part of the work. d1-verify-a CORRECTION (no plain else-eRetired): online leavers -> DNF (status 4, reason 1 or 9); inactive car -> NC (6, reason 4); DSQ-mask car -> DSQ (5, reason 6); remaining active car -> eFinished (3, reason 2) if rs+0x2e8 == 0, else DNF via 0x142ccf600 reason 9/10; no tail jump into PQRuleset_RetireVehicle seen"
+ },
+ "signature": {
+  "id": "session.ruleset_retire_vehicle",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D6 48 89 CF 48 8B 81 20 03 00 00",
+  "match": "0x142d2f120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d2f120",
+  "kind": "func_start",
+  "names": [
+   "Sess_Ruleset_RetireVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-a",
+   "kind": "func",
+   "item": "Sess_Ruleset_RetireVehicle",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142d2f120.c;xref:0x1457dbef0",
+   "notes": "V2294 Leaver branch (lobby +0x8c==0: DNF 4/1; ==1: DNF 4/9) and progress-flag gate confirmed; inactive -> NC (6, reason 4), DSQ mask -> 5/6 confirmed. But the 'else eRetired' is wrong: remaining active car -> eFinished (3/2) if rs+0x2e8==0, else DNF via 142ccf600 reason 9/10; state != 2 -> no change. No tail-jump into PQ RetireVehicle seen in decomp."
+  }
+ ],
+ "proofs": []
+}

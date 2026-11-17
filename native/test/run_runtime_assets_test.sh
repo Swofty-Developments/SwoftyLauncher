@@ -8,7 +8,6 @@ NEEDS="zig wine xvfb-run"
 DIST=${DIST:-dist}
 OUT=${1:-$PWD/../build/wine-runtime-assets}
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 rm -rf "$OUT/game"
 mkdir -p "$OUT/game"
 

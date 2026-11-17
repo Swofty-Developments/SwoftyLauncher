@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Info_ResolutionRestrictionRequired",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14401b2a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=Info::resolutionRestrictionRequired; log channel WINDOW: 'Info::resolutionRestrictionRequired: desired resolution %dx%d fullscreen=%d, restrictionRequired=%d'"
+ },
+ "signature": {
+  "id": "game.info_resolution_restriction_required",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 49 89 CF 48 89 54 24 48",
+  "match": "0x14401b2a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14401b2a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Info_ResolutionRestrictionRequired"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14401b2a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14401b2a0.c;xref:0x14401b25c",
+   "notes": "V6375 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

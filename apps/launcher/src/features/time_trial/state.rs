@@ -1,8 +1,8 @@
 use gpui_kit::component::input::{InputEvent, InputState};
 use gpui_kit::*;
-use swofty_core::timetrial::api::Api;
-use swofty_core::timetrial::barred::{self, Barred};
-use swofty_core::timetrial::boards::{Group, Row, Run, RunBoard};
+use swofty_core::online::timetrial::api::Api;
+use swofty_core::online::timetrial::barred::{self, Barred};
+use swofty_core::online::timetrial::boards::{Group, Row, Run, RunBoard};
 use swofty_i18n::{tr, trf};
 
 use crate::shell::Shell;
@@ -164,7 +164,7 @@ impl TtPage {
         let Load::Ready(rows) = &self.rows else {
             return Vec::new();
         };
-        swofty_core::timetrial::boards::by_driver(rows, &self.query)
+        swofty_core::online::timetrial::boards::by_driver(rows, &self.query)
     }
 }
 
@@ -214,7 +214,9 @@ impl Shell {
         cx.spawn(async move |this, cx| {
             let got = cx
                 .background_executor()
-                .spawn(async move { barred::current(&data, swofty_core::timetrial::queue::unix_now()) })
+                .spawn(
+                    async move { barred::current(&data, swofty_core::online::timetrial::queue::unix_now()) },
+                )
                 .await;
             this.update(cx, |s, cx| {
                 if let Some(list) = got {

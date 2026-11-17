@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_ContractUpdate_OnUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436c1e00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint32_t *Career_ContractUpdate_OnUpdate(void *state, uint32_t *link)",
+  "evidence": "decomp:re/decomp/1436c1e00.c;xref:0x14585a358",
+  "notes": "Update onUpdate (slot +0x48): with +0xd5a clear (or +0xd5b set) returns the continue link once +0xd58 is set (the screen signed), else stay. Raised by native-1990 with --force in the career lane (owner career-re), approved by the developer on 2026-10-21 for the private F1 1990 build (doc:/mnt/work/.f1-1990/addon/native-requests.md#N1)."
+ },
+ "signature": {
+  "id": "career.contract_update_on_update",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 48 89 D6 48 89 CF 80 B9 5A 0D 00 00 00",
+  "match": "0x1436c1e00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436c1e00",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractUpdate_OnUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/contract_skip.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-a",
+   "kind": "func",
+   "item": "Career_ContractUpdate_OnUpdate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436c1e00.c;decomp:re/decomp/1436c1110.c;xref:0x14585a358;sig:career.contract_update_on_update",
+   "notes": "V0977 Vtable 0x14585a310 slot +0x48 (abs ptr 0x14585a358, no rel32 callers). With +0xd5a clear or +0xd5b set: continue link [0x146cb2284] once +0xd58 is set (0x1436c1110 sets it on MessageContractNegotiationFinished), else stay [0x146cb2280]. Not in the notes: with both components and +0xd5b clear, it returns continue when component +0xd60 has +0x290 == 5 (after calling 0x140d7b530 or 0x140d766b0), else stay. Proto matches. sigcheck: 1 hit"
+  }
+ ],
+ "proofs": []
+}

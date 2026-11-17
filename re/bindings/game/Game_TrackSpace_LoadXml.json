@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TrackSpace_LoadXml",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445eb600",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1445eb600.c;xref:0x145bf1500",
+  "notes": "TrackSpace XML loader (vt slot 0x145bf1500, 5282 decomp lines): rootnode Trackspace -> VolumeList (Volume point1..point4, Gates/Gate, sector_1..3, pit, Start/End), TrackSpaceSpline, AiSpline, TrackspaceMarkup -> MarkupList -> MarkupElement (SplineName, Attributes/Attribute name/type/value; property keys focuscar_name, carbehind_name, woosh_type, template_name, chance_blowout, radius_modifier, cull_distance, transition_duration, screen_culling). Logs TRACKSPACE 'Loading TrackSpace Markup Element: %s (%s)', 'Volume type \"%s\" is invalid!', 'Volume remap overlap detected at dist %f...', 'Recalculating volume length: oldLength %f, newLength %f...'. Track modding: the parser that reads the TrackSpace data a custom track ships. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2317)"
+ },
+ "signature": {
+  "id": "game.track_space_load_xml",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 C8 80 00",
+  "match": "0x1445eb600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445eb600",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackSpace_LoadXml"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Game_TrackSpace_LoadXml",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445eb600.c;xref:0x145bf1500",
+   "notes": "V2317 Log strings (Volume remap overlap, Recalculating volume length, TrackspaceMarkup, focuscar_name, screen_culling) all present in the exe; large XML loader consistent."
+  }
+ ],
+ "proofs": []
+}

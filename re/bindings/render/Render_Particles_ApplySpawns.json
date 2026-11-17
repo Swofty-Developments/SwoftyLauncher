@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_ApplySpawns",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b05a50",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "pat:log-channel-PARTICLES",
+  "notes": "named from its log messages (channel PARTICLES): 'perform %d spawns and %d destroys and %d tints | trying to create an effect %s in a slot %04x where we have one already, ignoring (maybe we skipped a delete in replays?)'"
+ },
+ "signature": {
+  "id": "render.particles_apply_spawns",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE B8 01 00 00 00",
+  "match": "0x143b05a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b05a50",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_ApplySpawns"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143b05a50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b05a50.c;xref:0x143b07cb9",
+   "notes": "V6461 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

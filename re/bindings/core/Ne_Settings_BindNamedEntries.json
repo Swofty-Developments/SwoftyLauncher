@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Settings_BindNamedEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14398a2b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14398a2b0.c;xref:0x143567a5d",
+  "notes": "(table, name, path) Name/strcmp-driven registration into a list (+0x58 count++), trace on null name (498 lines). Called from Sess_RuleManager_Initialise. Hypothesis."
+ },
+ "signature": {
+  "id": "core.settings_bind_named_entries",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 48 85 D2 74 7C",
+  "match": "0x14398a2b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14398a2b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Settings_BindNamedEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14398a2b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14398a2b0.c;xref:0x143567a5d",
+   "notes": "V3603 sorted-tree insert of (name,path), strings <=0x40, count +0x58; sole caller Sess_RuleManager_Initialise confirmed (Hypothesis supported)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Format_SponsorNameTokens",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141884d50",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *out, void *src, const char *key, void *ctx",
+  "evidence": "decomp:re/decomp/141884d50.c;xref:0x141d3d1b3;xref:0x141d3dca9",
+  "notes": "myteam-g1: Loc token filler adding SPONSORNAME, SPONSORNAME_SECONDARY, SPONSORNAME_TITLE (lng_sponsor_%s) to a text-format context."
+ },
+ "signature": {
+  "id": "career.format_sponsor_name_tokens",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 F8 10 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 BC 24 E0 10 00 00",
+  "match": "0x141884d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141884d50",
+  "kind": "func_start",
+  "names": [
+   "Career_Format_SponsorNameTokens"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141884d50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141884d50.c;xref:0x141d3d1b3",
+   "notes": "V9830 1709-line token resolver covering DRIVERNAME, RIVALNAME, CURRENTTEAMNAME, RANDOMTEAMNAME, TRACKNAME, CHAMPIONSHIPLEADER, TEAMMATE too; sponsor names only part of it"
+  }
+ ],
+ "proofs": []
+}

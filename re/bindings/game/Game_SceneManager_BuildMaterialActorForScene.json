@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SceneManager_BuildMaterialActorForScene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401e9150",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=SceneManager::buildMaterialActorForScene; log channel ACTOR: 'SceneManager::buildMaterialActorForScene : MaterialActor[%s][%d] | setWorldObjectId %p Failed to find %p | SceneManager::buildWorldActorForScene : WorldActor[%s][%d] | setWorldObjectId %p Found %p %s '"
+ },
+ "signature": {
+  "id": "game.scene_manager_build_material_actor_for_scene",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 A8 85 00 00",
+  "match": "0x1401e9150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401e9150",
+  "kind": "func_start",
+  "names": [
+   "Game_SceneManager_BuildMaterialActorForScene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x1401e9150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401e9150.c",
+   "notes": "V4384 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

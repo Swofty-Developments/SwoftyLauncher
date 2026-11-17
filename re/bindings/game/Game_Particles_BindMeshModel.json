@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_BindMeshModel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b133f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b133f0.c;xref:0x143b12c07,0x143b12ca7,0x143b12d47,0x143b12de7,0x143b12e87",
+  "notes": "Mesh-particle model slot setup (slot param_6, LOD pair param_7*2/+1 from model list param_5+8 stride 0x28): destroys old instance this+0xe38[slot], creates a 0xb8-byte model instance (0x143c48600) from the two LODs; rejects skinned models ('did not expect (or support) skin nodes on model %s', name this+0x98[slot]); stores first node matching 0x1463f8680 in this+0x1438[slot] and 2*bounding radius in [this+0x90][slot]. Called by several small per-type wrappers 0x143b12ba0.. (debris/mesh particles). Addon: custom debris meshes must be unskinned. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2309)"
+ },
+ "signature": {
+  "id": "game.particles_bind_mesh_model",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 4D 89 CE 4C 89 C3",
+  "match": "0x143b133f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b133f0",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_BindMeshModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Game_Particles_BindMeshModel",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b133f0.c;xref:0x143b133f0",
+   "notes": "V2309 Verified: LOD pair idx*2/+1 stride 0x28, old instance +0xe38[slot] destroyed, 0xb8 alloc, skin check (vector +0x60..0x68) rejects, node +0x1438[slot], diameter into [+0x90][slot]."
+  }
+ ],
+ "proofs": []
+}

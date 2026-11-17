@@ -274,7 +274,7 @@ static void cache_tests()
     d.found(".xtls", "48 8B 05", 0, 0);
     expect(!d.find(".xtls", "48 8B 05", v), "cache: a scan with no single hit drops the entry");
     uint8_t hdr[] = {1, 2, 3};
-    expect(scancache::fnv64(hdr, 3) != scancache::fnv64(hdr, 2), "cache: the exe key covers every header byte");
+    expect(runtime::fnv64(hdr, 3) != runtime::fnv64(hdr, 2), "cache: the exe key covers every header byte");
 }
 
 struct Image {

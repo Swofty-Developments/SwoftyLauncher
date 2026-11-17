@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_RenderDriverNameViewModel_PushBackResourceGroup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141d7cff0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141d7cff0.c;xref:0x141d7c20f",
+  "notes": "317-line builder of driver-name render view-model nodes. Callers Game_RenderDriverNameViewModel_CreateDriverRoot (3 sites). Hypothesis. vp5-verify partial/disagree"
+ },
+ "signature": {
+  "id": "game.render_driver_name_view_model_build_nodes",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 89 BC 24 80 00 00 00 48 8B 84 24 88 00 00 00 48 85 C0 74 46 48 8B",
+  "match": "0x141d7c20f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x141d7cff0",
+  "kind": "func_start",
+  "names": [
+   "Game_RenderDriverNameViewModel_PushBackResourceGroup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x141d7cff0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141d7cff0.c;xref:0x141d7c20f",
+   "notes": "V8092 Better name Game_RenderDriverNameViewModel_PushBackResourceGroup: vector push_back with 1.5x growth of 0xc0-byte elements of six intrusive resource handles (vtable 145612e48), not a node builder"
+  }
+ ],
+ "proofs": []
+}

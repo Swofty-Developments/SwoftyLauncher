@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Ne_Format_String",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441630f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int64_t Ne_Format_String(NeStr **out, const char *fmt, ...)",
+  "evidence": "xref:0x1407ad10a,0x1407adb96,0x1407adf2d,0x1407ae07b,0x140ad902c,0x140bdf2fe,0x140c92b23,0x140c92b39+1016;doc:research/exe.md#3.2;decomp:re/decomp/1441630f0.c;decomp:re/decomp/14388ab80.c;decomp:re/decomp/141c85f70.c;xref:0x1441630f0;doc:addons/rnd-tyres-thermal/native/HOOKS.md#v030--the-live-5th-box-shipped-box-only-pie-deferred",
+  "notes": "sprintf into a NeStr: formats with the static CRT vsprintf (options|1) into a 0x200 stack buffer, allocates a refcounted NeStr from g_Ne_DefaultAllocator (or keeps *out when the text is unchanged), releases the old *out, returns the length. The neon UI route actions return their errors through it into a NeStr out-parameter instead of logging them: 'Screen %hs failed to open because of %d' (0x144181e70), 'Failed to find screen %u ...' / '%hs ...' (vtable slot +0x128 of the route-action classes: 0x144189590, 0x14418a070, 0x14418a520, 0x14418c5f0, 0x14418be30, 0x14418c210), \"Can't Find Screen with target name [%s]\" (0x143888540). Adders call it with 'button_%d'. printf-style format into *out"
+ },
+ "signature": {
+  "id": "core.format_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 48 02 00 00 48 89 D7",
+  "match": "0x1441630f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441630f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Format_String"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-17",
+   "verifier": "gamelog-verify",
+   "kind": "func",
+   "item": "Ne_Format_String",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441630f0.c;decomp:re/decomp/144181e70.c;decomp:re/decomp/14418be30.c;xref:0x1441820a9,0x1441820e1,0x14418c134+1021",
+   "notes": "V0015 rcx to rsi (out), rdx to rdi (fmt) then r9 of CRT vsprintf (opts|1, 0x200 zeroed stack buffer); r8/r9 home-spilled as va_list; result clamped to -1 on error, movsxd into rax (int64 return). If *out has the same length and strcmp==0 it returns early keeping *out; else allocates a NeStr via g_Ne_DefaultAllocator vtbl+0x18 (refcount word +4 = 1, len/flags +6, chars +9, hash +0 = 33*h+c from 5381), lock-decrements the old (*out) refcount, frees at 0 via vtbl+0x38, stores *out. 0x144181e70 and 0x14418be30 pass their 2nd arg (rdx to rsi to rcx) as out with No screen called %hs exists / Screen %hs failed to open because of %d / Failed to find screen %hs..., and return it. 1024 E8 sites in .xtls, 14 in .data1. Proto arity matches."
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "func",
+   "item": "Ne_Format_String",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441630f0.c;xref:0x1441820a9,0x143888b83,0x1441898ae,0x141f482bb",
+   "notes": "V0188 CRT vsprintf (options|1) into a 0x200 stack buffer; keeps *out when length and text are unchanged, else allocates a NeStr via g_Ne_DefaultAllocator vt+0x18, releases the old *out via vt+0x38, returns the length; the cited error-string users at 0x1441820a9, 0x143888b83, 0x1441898ae confirmed; 1024 E8 callers in .xtls; proto matches"
+  }
+ ],
+ "proofs": []
+}

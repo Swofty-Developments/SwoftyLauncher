@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PracticeProgrammes_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142962f10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142962f10.c;xref:0x142964b0a,0x142967d7b",
+  "notes": "Practice programmes init: reads '%s.heat_map_settings.*' colours (bad/good/excellent, float variants, blend flag) and '%s.programmes' rows from the game DB (Gdb_Find_RowByLabel, 'restrictions' field), resolves the player vehicle (Sess_Get_PlayerVehicleIndex), car upgrade mass (Car_Upgrades_CalcNonLinearMass), subscribes MessageVehicleEnteredGarage. Addon: programme definitions / heat map colours come from the DB here. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2470)"
+ },
+ "signature": {
+  "id": "game.practice_programmes_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 05 00 00 C5 78 29 84 24 90 05 00 00 C5 F8 29 BC 24 80 05 00 00 C5 F8 29 B4 24 70 05 00 00 80 B9",
+  "match": "0x142962f10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142962f10",
+  "kind": "func_start",
+  "names": [
+   "Game_PracticeProgrammes_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_PracticeProgrammes_Init",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142962f10.c;xref:0x142962f10",
+   "notes": "V2470 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

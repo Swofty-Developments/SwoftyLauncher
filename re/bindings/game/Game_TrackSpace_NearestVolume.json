@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TrackSpace_NearestVolume",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445f37b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "Volume*(TrackSpaceGrid*, const float pos[4])",
+  "evidence": "decomp:re/decomp/1445f37b0.c;xref:0x14020979d,0x1403c2d00,0x1403d6825,0x1403daeab,0x1405fefba,0x1405ff236,0x140a0259c,0x140a0d74b,0x142437820,0x142c770a1,0x14357d18a,0x1436178e9,0x1445b7788",
+  "notes": "like Game_TrackSpace_FindVolume but clamps pos into the grid box (vmaxss against grid+0x68 / +0x70) first and returns the cell's volume nearest to pos by distance to volume+0x10 (volumes grid+0x88, 0x140 each); when the cell has no volume list it falls back to a nearest-centre scan over ALL volumes grid+0x88..+0x90, so it never returns 0 while volumes exist. 21 call sites, 13 listed. Agreed by lb22-verify. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.track_space_nearest_volume",
+  "section": ".xtls",
+  "pattern": "48 83 EC 18 C5 F8 29 34 24 C5 F8 28 02 C5 FA 10",
+  "match": "0x1445f37b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445f37b0",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackSpace_NearestVolume"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x1445f37b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1445f37b0.c;xref:0x14020979d",
+   "notes": "V6699 clamps to grid box, nearest by distance to volume+0x10 verified"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1445f37b0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1445f37b0-0x1445f3acd;xref:0x14020979d,0x1445b7788",
+   "notes": "V10387 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 21 rel32 call sites by my scan. Clamps x to [g+0x68,g+0x6c] and z to [g+0x70,g+0x74] (vmaxss + vcmpltss/blend), same cell math, nearest by |vol+0x10 - pos| (vdpps+vsqrtss). Addition: when the cell lookup fails it scans all volumes [g+0x88]..[g+0x90] (/0x140) for the nearest (0x1445f38f9)."
+  }
+ ],
+ "proofs": []
+}

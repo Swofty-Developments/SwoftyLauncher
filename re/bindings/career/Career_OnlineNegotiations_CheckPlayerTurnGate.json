@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_CheckPlayerTurnGate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ffc6e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_OnlineNegotiations_CheckPlayerTurnGate(void *neg)",
+  "evidence": "decomp:re/decomp/140ffc6e0.c;xref:0x140d81b7f;xref:0x14166f170;xref:0x14166f3d8",
+  "notes": "myteam-g1: Gate in the online contract negotiation flow: returns 1 if the lead-player check (140ffec40/ffed70) passes or local-turn test 140ffcd80 is true, otherwise the result of 140ffc990. Also writes a debug telemetry line (ONLINE_CONTRACT_NEGOTIATIONS/V, true/false) via 1406d4c80 when logging is on."
+ },
+ "signature": {
+  "id": "career.online_negotiations_check_player_turn_gate",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 48 89 CE E8 ?? ?? ?? ?? 84 C0",
+  "match": "0x140ffc6e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffc6e0",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_CheckPlayerTurnGate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140ffc6e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ffc6e0.c;xref:0x140d81b7f;str:\"ONLINE_CONTRACT_NEGOTIATIONS/V\"",
+   "notes": "V9631 Gate returning 1 on lead-player/local-turn tests else 140ffc990, with debug log ONLINE_CONTRACT_NEGOTIATIONS/V isOnlyOnePlayerParticipatingInNegotiations - %s."
+  }
+ ],
+ "proofs": []
+}

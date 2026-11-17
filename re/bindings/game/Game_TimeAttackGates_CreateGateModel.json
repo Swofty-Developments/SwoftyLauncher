@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TimeAttackGates_CreateGateModel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1429ab800",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1429ab800.c;xref:0x1429a2901,0x1429a2989",
+  "notes": "Creates a 0x140-byte model instance for a 'TA_Gate' (time attack gate) from proxy resource param_3+4 (resolver param_2 vtbl+8), transform param_3[0..3], hash 0x54d4a917d6ed16c. Called 4x from 0x1429a25e0. Addon: spawn time-trial gate models. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2877)"
+ },
+ "signature": {
+  "id": "game.time_attack_gates_create_gate_model",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC A0 00 00 00 4C 89 C7",
+  "match": "0x1429ab800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429ab800",
+  "kind": "func_start",
+  "names": [
+   "Game_TimeAttackGates_CreateGateModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_TimeAttackGates_CreateGateModel",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429ab800.c;xref:0x1429ab800",
+   "notes": "V2877 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

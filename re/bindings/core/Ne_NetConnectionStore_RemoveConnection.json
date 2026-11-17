@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetConnectionStore_RemoveConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14405bb30",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14405bb30.c;xref:0x144094d06,0x1440a1355",
+  "notes": "removeConnectionFromStore(ConnectionInfo): store entries [this+8]+8, stride 400 (count byte this+0x18); entry +8 conn id, +0x10 addr type (1 = ip/port at +0x14/+0x18, 2 = string +0x30); frees the matching entry (0x14405b7b0)."
+ },
+ "signature": {
+  "id": "core.net_connection_store_remove_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 31 F6 48 83",
+  "match": "0x14405bb30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14405bb30",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetConnectionStore_RemoveConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Ne_NetConnectionStore_RemoveConnection",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14405bb30.c;xref:0x14405bb30",
+   "notes": "V2635 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

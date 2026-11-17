@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RenderGraph_AllocNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bddd60",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bddd60.c;xref:0x143bab7bd,0x143bab824,0x143baf1e3",
+  "notes": "Lock-free bump allocation (cmpxchg on +0x20, 8-byte aligned, +0x80 block) of a render-graph node, falling back to heap; 19 callers in render pass setup. Named callers: Ne_PostProcessXGenerator_Copy_Render. vp3-verify partial/disagree"
+ },
+ "signature": {
+  "id": "core.render_graph_alloc_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 49 89 D6 48 89 CF 48 8B",
+  "match": "0x143bddd60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bddd60",
+  "kind": "func_start",
+  "names": [
+   "Ne_RenderGraph_AllocNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bddd60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143bddd60.c;xref:0x143bab7bd",
+   "notes": "V7823 Ne_RenderGraph_AllocNode: lock-free 8-aligned bump alloc of a 0x80 block confirmed, but on arena overflow it fatals (swi 3), there is no heap fallback"
+  }
+ ],
+ "proofs": []
+}

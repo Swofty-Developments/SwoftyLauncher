@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UITooltipStack_NeUIToolTipStackScreenAttempted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144276860",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-UI_TOOLTIP_STACK",
+  "notes": "named from its log messages (channel UI_TOOLTIP_STACK): 'The NeUIToolTipStack[% hs] on the screen[% hs] attempted to unregister.'"
+ },
+ "signature": {
+  "id": "game.ui_tooltip_stack_ne_ui_tool_tip_stack_screen_attempted",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 44 00 00 00",
+  "match": "0x144276860",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144276860",
+  "kind": "func_start",
+  "names": [
+   "Game_UITooltipStack_NeUIToolTipStackScreenAttempted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144276860",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144276860.c;xref:0x144276a62",
+   "notes": "V6575 size=364; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

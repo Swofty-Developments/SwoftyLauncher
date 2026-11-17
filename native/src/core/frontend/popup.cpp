@@ -14,9 +14,10 @@
 #include <vector>
 
 #include "core/frontend/game_message_log_logic.hpp"
-#include "core/hud/hud_leaves_logic.hpp"
 #include "core/diagnostics/perf.hpp"
 #include "core/hud/text_entry.hpp"
+#include "core/frontend/popup/message_system.hpp"
+#include "core/frontend/ui_vm.hpp"
 
 // Message popups (NeUIMessageSystem). The game raises every popup the same way: construct a message
 // by its UIMD id (Ui_Message_Construct, 0x1442d9bf0: system, out handle, fixed-capacity id string,
@@ -47,10 +48,10 @@
 // sub_message attributes and a fixed msg_duration per id, so a toast picks the id nearest its duration.
 
 std::string settings_addon(const void *from, std::string &dll);
-void *ui_vm_message_system();
-bool ui_vm_set_path(const std::string &path, int type, const void *value);
-uintptr_t ui_vm_node_token(const std::string &path);
-uintptr_t ui_vm_epoch();
+
+namespace popup {
+
+MessageSystem messages;
 
 namespace {
 
@@ -72,69 +73,13 @@ constexpr const uint8_t CONSTRUCT_HEAD[] = {0x41, 0x57, 0x41, 0x56, 0x56, 0x57, 
 constexpr const char *OWN_ID = "swofty_message", *FALLBACK_ID = "beta_motd";
 constexpr size_t MAX_QUEUED = 8, MAX_TEXT = 4000;
 
-struct FixedId {
-    const void *vt;
-    uint64_t cap;
-    char *data;
-    char buf[128];
-};
-
-struct Handle {
-    void *sys;
-    void *msg;
-};
-
-struct Callback {
-    void *fn;
-    void *ctx;
-};
-
-using Construct_t = Handle *(void *sys, Handle *out, FixedId *id, Callback *cb, const char *a5, uint64_t a6);
-using SetAttr_t = bool(Handle *h, const char *name, void **value, uint32_t flags, const char *a5);
-using Release_t = void(Handle *h);
-using MakeStr_t = uint32_t(void **out, const char *s, uint32_t flags, uintptr_t len);
-
-struct Request {
-    std::string title, body, by;
-};
-
-struct Toast {
-    std::string text, detail, icon, by;
-    unsigned seconds;
-};
-
-struct Set {
-    std::string path, text, by;
-    int type;
-    int32_t number;
-};
-
 constexpr const char *ICONS[] = {"generic",  "diagonal",           "black",       "checkpoint",
                                  "chequered", "fast_lap",           "formation_lap", "pp_icon",
                                  "red",      "safety_car",         "virtual_safety_car",
                                  "virtual_safety_car_green", "flag_rival_won"};
-constexpr const char *SET_PREFIXES[] = {"ui_menu_data.hud_", "view_model_data.hud.", "view_model_data.hud_"};
-constexpr size_t MAX_SETS = 512;
 
 constexpr unsigned TOAST_SECONDS[] = {2, 3, 4, 5, 6, 8, 10, 12, 15, 20, 30};
-constexpr size_t MAX_TOASTS = 8, MAX_TOAST_TEXT = 200;
 
-uintptr_t a_construct, a_set_attr, a_release, a_make_str;
-const void *id_vt;
-safetyhook::InlineHook h_construct;
-std::atomic<void *> sys;
-std::atomic<bool> live, own_missing;
-std::mutex queue_lock;
-std::deque<Request> queue;
-std::atomic<size_t> pending, toasts_pending;
-std::deque<Toast> toasts;
-std::atomic<bool> toast_missing;
-std::deque<Set> sets;
-std::atomic<size_t> sets_pending;
-std::atomic<uint32_t> sets_dropped;
-runtime::hud_leaves::Table leaf_table;
-std::mutex game_messages_lock;
-runtime::game_message_log::Seen game_messages;
 thread_local bool opening;
 
 uintptr_t rel32(uintptr_t at)
@@ -142,7 +87,47 @@ uintptr_t rel32(uintptr_t at)
     return at + 4 + *reinterpret_cast<const int32_t *>(at);
 }
 
-void log_game_message(const char *name, bool built)
+Handle *construct_hook(void *s, Handle *out, FixedId *id, Callback *cb, const char *a5, uint64_t a6)
+{
+    return messages.constructed(s, out, id, cb, a5, a6);
+}
+
+unsigned toast_seconds(float want)
+{
+    unsigned best = TOAST_SECONDS[0];
+    for (unsigned n : TOAST_SECONDS)
+        if (std::fabs(float(n) - want) < std::fabs(float(best) - want))
+            best = n;
+    return best;
+}
+
+int api_show(const char *title, const char *body)
+{
+    return messages.enqueue(title ? title : "", body ? body : "", who(__builtin_return_address(0)));
+}
+
+const SwoftyPopup table = {api_available, api_show};
+
+}
+
+int api_available()
+{
+    return messages.live && runtime::enabled("popup", nullptr);
+}
+
+std::string who(const void *from)
+{
+    std::string dll, id = settings_addon(from, dll);
+    return id.empty() ? (dll.empty() ? std::string("swofty_core") : dll) : id;
+}
+
+int api_toast(const char *text, const char *detail, float seconds, const char *icon)
+{
+    return messages.toast_enqueue(text ? text : "", detail ? detail : "", seconds, icon ? icon : "",
+                         who(__builtin_return_address(0)));
+}
+
+void MessageSystem::log_game_message(const char *name, bool built)
 {
     bool first, last;
     {
@@ -155,7 +140,7 @@ void log_game_message(const char *name, bool built)
                     last ? " (further messages are not logged)" : "");
 }
 
-Handle *construct_hook(void *s, Handle *out, FixedId *id, Callback *cb, const char *a5, uint64_t a6)
+Handle *MessageSystem::constructed(void *s, Handle *out, FixedId *id, Callback *cb, const char *a5, uint64_t a6)
 {
     void *was = sys.exchange(s);
     if (was != s)
@@ -180,7 +165,7 @@ Handle *construct_hook(void *s, Handle *out, FixedId *id, Callback *cb, const ch
     return r;
 }
 
-bool make_id(FixedId &id, const char *name)
+bool MessageSystem::make_id(FixedId &id, const char *name)
 {
     id.vt = id_vt;
     id.cap = sizeof id.buf;
@@ -188,14 +173,14 @@ bool make_id(FixedId &id, const char *name)
     return snprintf(id.buf, sizeof id.buf, "%s", name) > 0;
 }
 
-bool set(Handle &h, const char *name, const std::string &text)
+bool MessageSystem::set(Handle &h, const char *name, const std::string &text)
 {
     void *s = nullptr;
     reinterpret_cast<MakeStr_t *>(a_make_str)(&s, text.c_str(), 0, 0);
     return reinterpret_cast<SetAttr_t *>(a_set_attr)(&h, name, &s, 0, nullptr);
 }
 
-Handle open(void *s, const char *name)
+Handle MessageSystem::open(void *s, const char *name)
 {
     Handle h{};
     FixedId id{};
@@ -208,7 +193,7 @@ Handle open(void *s, const char *name)
     return h;
 }
 
-void show(void *s, const Request &r)
+void MessageSystem::show(void *s, const Request &r)
 {
     Handle h = own_missing ? Handle{} : open(s, OWN_ID);
     bool own = h.msg != nullptr;
@@ -231,16 +216,7 @@ void show(void *s, const Request &r)
                 ok ? "" : " (an attribute was refused; the popup may show empty text)");
 }
 
-unsigned toast_seconds(float want)
-{
-    unsigned best = TOAST_SECONDS[0];
-    for (unsigned n : TOAST_SECONDS)
-        if (std::fabs(float(n) - want) < std::fabs(float(best) - want))
-            best = n;
-    return best;
-}
-
-void show_toast(void *s, const Toast &t)
+void MessageSystem::show_toast(void *s, const Toast &t)
 {
     char id[32];
     snprintf(id, sizeof id, "swofty_toast_%u", t.seconds);
@@ -260,18 +236,7 @@ void show_toast(void *s, const Toast &t)
                 t.icon.c_str(), t.text.c_str(), ok ? "" : " (an attribute was refused; the toast may show empty text)");
 }
 
-int api_available()
-{
-    return live && runtime::enabled("popup", nullptr);
-}
-
-std::string who(const void *from)
-{
-    std::string dll, id = settings_addon(from, dll);
-    return id.empty() ? (dll.empty() ? std::string("swofty_core") : dll) : id;
-}
-
-int enqueue(std::string t, std::string b, const std::string &by)
+int MessageSystem::enqueue(std::string t, std::string b, const std::string &by)
 {
     if (t.empty() && b.empty()) {
         swofty::log("[popup] show by %s refused: empty title and body", by.c_str());
@@ -302,14 +267,7 @@ int enqueue(std::string t, std::string b, const std::string &by)
     return SWOFTY_ASSET_OK;
 }
 
-int api_show(const char *title, const char *body)
-{
-    return enqueue(title ? title : "", body ? body : "", who(__builtin_return_address(0)));
-}
-
-const SwoftyPopup table = {api_available, api_show};
-
-int toast_enqueue(std::string text, std::string detail, float seconds, std::string icon, const std::string &by)
+int MessageSystem::toast_enqueue(std::string text, std::string detail, float seconds, std::string icon, const std::string &by)
 {
     if (text.empty()) {
         swofty::log("[hud] toast by %s refused: empty text", by.c_str());
@@ -342,197 +300,7 @@ int toast_enqueue(std::string text, std::string detail, float seconds, std::stri
     return SWOFTY_ASSET_OK;
 }
 
-int api_toast(const char *text, const char *detail, float seconds, const char *icon)
-{
-    return toast_enqueue(text ? text : "", detail ? detail : "", seconds, icon ? icon : "",
-                         who(__builtin_return_address(0)));
-}
-
-int set_enqueue(std::string path, int type, std::string text, int32_t number, const std::string &by)
-{
-    if (!path.empty() && path[0] == '#')
-        path.erase(0, 1);
-    bool listed = std::any_of(std::begin(SET_PREFIXES), std::end(SET_PREFIXES),
-                              [&](const char *p) { return path.rfind(p, 0) == 0 && path.size() > strlen(p); });
-    if (!listed || path.find_first_of(" []") != std::string::npos || path.back() == '.' || type < 0 || type > 2) {
-        swofty::log("[hud] set by %s refused: '%.120s' is not a hud_* leaf (ui_menu_data.hud_*, view_model_data.hud*)",
-                    by.c_str(), path.c_str());
-        return SWOFTY_ASSET_INVALID;
-    }
-    if (!api_available())
-        return SWOFTY_ASSET_UNAVAILABLE;
-    int registered = leaf_table.type_of(path);
-    if (registered >= 0 && registered != type) {
-        swofty::log("[hud] set by %s refused: '%.120s' is registered as type %d, not %d", by.c_str(), path.c_str(),
-                    registered, type);
-        return SWOFTY_ASSET_INVALID;
-    }
-    if (text.size() > MAX_TOAST_TEXT)
-        text.resize(MAX_TOAST_TEXT);
-    std::lock_guard<std::mutex> g(queue_lock);
-    for (auto &q : sets)
-        if (q.path == path) {
-            q = {path, std::move(text), by, type, number};
-            return SWOFTY_ASSET_OK;
-        }
-    if (sets.size() >= MAX_SETS) {
-        swofty::log("[hud] set queue full (%zu); dropping the oldest, from %s", sets.size(), sets.front().by.c_str());
-        sets.pop_front();
-        sets_dropped++;
-    }
-    sets.push_back({std::move(path), std::move(text), by, type, number});
-    sets_pending = sets.size();
-    return SWOFTY_ASSET_OK;
-}
-
-int api_set(const char *path, uint32_t type, const void *value)
-{
-    std::string by = who(__builtin_return_address(0));
-    if (!path || !value)
-        return SWOFTY_ASSET_INVALID;
-    if (type == 0)
-        return set_enqueue(path, 0, static_cast<const char *>(value), 0, by);
-    return set_enqueue(path, int(type), "", *static_cast<const int32_t *>(value), by);
-}
-
-void apply_set(const Set &q)
-{
-    bool ok = q.type == 0 ? ui_vm_set_path(q.path, 0, q.text.c_str()) : ui_vm_set_path(q.path, q.type, &q.number);
-    static std::atomic<int> told;
-    if (!ok || told.fetch_add(1) < 16)
-        swofty::log("[hud] set %s by %s: %s = %s%s", ok ? "applied" : "failed", q.by.c_str(), q.path.c_str(),
-                    q.type == 0 ? ("\"" + q.text.substr(0, 60) + "\"").c_str() : std::to_string(q.number).c_str(),
-                    ok ? "" : " (the parent node did not resolve)");
-}
-
-int leaves_register(const SwoftyHudLeaf *leaves, uint32_t n, uint32_t *ids)
-{
-    std::string by = who(__builtin_return_address(0));
-    if (!leaves || !ids)
-        return SWOFTY_ASSET_INVALID;
-    if (!api_available())
-        return SWOFTY_ASSET_UNAVAILABLE;
-    int rc = SWOFTY_ASSET_OK;
-    for (uint32_t i = 0; i < n; i++) {
-        ids[i] = ~0u;
-        if (!leaves[i].path || leaves[i].size < offsetof(SwoftyHudLeaf, text_cap) + sizeof(uint32_t)) {
-            rc = SWOFTY_ASSET_INVALID;
-            continue;
-        }
-        std::string path = leaves[i].path;
-        if (!path.empty() && path[0] == '#')
-            path.erase(0, 1);
-        if (leaf_table.register_leaf(path, leaves[i].type, leaves[i].text_cap, by, ids[i]) != runtime::hud_leaves::OK) {
-            swofty::log("[hud] leaf registration by %s refused: '%.120s' (type %u) is not a hud_* leaf or is already "
-                        "registered with another type",
-                        by.c_str(), path.c_str(), leaves[i].type);
-            rc = SWOFTY_ASSET_INVALID;
-        }
-    }
-    static std::atomic<bool> first{true};
-    if (first.exchange(false) || n > 64)
-        swofty::log("[hud] %u leaves registered by %s (%zu in the table)", n, by.c_str(), leaf_table.size());
-    return rc;
-}
-
-int leaves_set(const uint32_t *ids, const void *const *values, uint32_t n)
-{
-    if (!ids || !values)
-        return SWOFTY_ASSET_INVALID;
-    return leaf_table.set(ids, values, n) == runtime::hud_leaves::OK ? SWOFTY_ASSET_OK : SWOFTY_ASSET_INVALID;
-}
-
-int leaves_begin()
-{
-    leaf_table.begin();
-    return SWOFTY_ASSET_OK;
-}
-
-int leaves_end()
-{
-    leaf_table.end();
-    return SWOFTY_ASSET_OK;
-}
-
-uint32_t leaves_generation()
-{
-    return leaf_table.generation();
-}
-
-int leaves_stats(SwoftyHudStats *out)
-{
-    if (!out || out->size < offsetof(SwoftyHudStats, applied_last_tick) + sizeof(uint32_t))
-        return SWOFTY_ASSET_INVALID;
-    auto s = leaf_table.stats();
-    SwoftyHudStats full{sizeof(SwoftyHudStats), s.applied_last_tick, s.queued, sets_dropped.load(), s.registered,
-                        s.cap_per_tick, s.failed, s.generation, s.resyncs, uint32_t(sets_pending.load())};
-    memcpy(out, &full, std::min<size_t>(out->size, sizeof full));
-    return SWOFTY_ASSET_OK;
-}
-
-const SwoftyHud hud_table = {SWOFTY_HUD_VERSION, api_available, api_toast, api_set,        leaves_register,
-                             leaves_set,        leaves_begin, leaves_end,   leaves_generation, leaves_stats};
-
-struct EpochWatch {
-    uintptr_t epoch = 0;
-    std::vector<std::string> parents;
-    std::vector<uintptr_t> tokens;
-    size_t next = 0, known = 0;
-};
-
-void leaves_watch(uint64_t now)
-{
-    static EpochWatch w;
-    static uint64_t next_check;
-    if (!leaf_table.size() || now < next_check)
-        return;
-    next_check = now + 250;
-    if (w.known != leaf_table.size()) {
-        w.known = leaf_table.size();
-        w.parents = leaf_table.parents();
-        w.tokens.assign(w.parents.size(), 0);
-        w.epoch = ui_vm_epoch();
-        w.next = 0;
-    }
-    bool rebuilt = false;
-    uintptr_t e = ui_vm_epoch();
-    if (e != w.epoch) {
-        if (w.epoch)
-            rebuilt = true;
-        w.epoch = e;
-    }
-    for (size_t k = 0; k < 4 && !w.parents.empty(); k++) {
-        size_t i = w.next++ % w.parents.size();
-        uintptr_t t = ui_vm_node_token(w.parents[i]);
-        if (w.tokens[i] && t != w.tokens[i])
-            rebuilt = true;
-        if (t)
-            w.tokens[i] = t;
-    }
-    if (rebuilt) {
-        swofty::log("[hud] view model rebuilt (generation %u); re-sending %zu leaves", leaf_table.generation() + 1,
-                    leaf_table.size());
-        leaf_table.rebuilt();
-        w.tokens.assign(w.parents.size(), 0);
-    }
-}
-
-bool apply_leaf(const runtime::hud_leaves::Leaf &l)
-{
-    perf::Pause game;
-    bool ok = l.type == 0 ? ui_vm_set_path(l.path, 0, l.want_text.c_str()) : ui_vm_set_path(l.path, int(l.type), &l.want_num);
-    static std::atomic<int> told;
-    if (!ok && !l.failed && told.fetch_add(1) < 16)
-        swofty::log("[hud] leaf %s by %s did not resolve yet (the parent node is missing); retrying", l.path.c_str(),
-                    l.by.c_str());
-    return ok;
-}
-
-unsigned toast_test_every;
-uint64_t toast_test_next;
-unsigned toast_test_count;
-
-void toast_test_tick()
+void MessageSystem::toast_test_tick()
 {
     if (!toast_test_every)
         return;
@@ -547,112 +315,15 @@ void toast_test_tick()
     toast_enqueue(text, detail, 4.0f, icon, "SWOFTY_TOAST_TEST");
 }
 
-std::string set_test_text;
-uint64_t set_test_next;
-std::vector<Set> dev_sets;
-
-void set_test_tick()
+void MessageSystem::setup()
 {
-    if (set_test_text.empty())
-        return;
-    uint64_t now = GetTickCount64();
-    if (now < set_test_next)
-        return;
-    set_test_next = now + 5000;
-    if (set_test_text.size() > 2 && set_test_text[1] == ':') {
-        size_t at = 0;
-        while (at < set_test_text.size()) {
-            size_t end = set_test_text.find(';', at);
-            std::string item = set_test_text.substr(at, end == std::string::npos ? std::string::npos : end - at);
-            at = end == std::string::npos ? set_test_text.size() : end + 1;
-            size_t eq = item.find('=');
-            if (item.size() < 3 || item[1] != ':' || eq == std::string::npos)
-                continue;
-            int type = item[0] == 'b' ? 1 : item[0] == 'i' ? 2 : 0;
-            std::string value = item.substr(eq + 1);
-            set_enqueue(item.substr(2, eq - 2), type, value, type ? int32_t(atoi(value.c_str())) : 0,
-                        "SWOFTY_HUD_SET_TEST");
-        }
-        return;
-    }
-    int32_t off = 0;
-    set_enqueue("ui_menu_data.hud_lap_number_visible", 1, "", off, "SWOFTY_HUD_SET_TEST");
-    set_enqueue("ui_menu_data.hud_lap_description_loc_tag", 1, "", off, "SWOFTY_HUD_SET_TEST");
-    set_enqueue("ui_menu_data.hud_lap_description_string", 0, set_test_text, 0, "SWOFTY_HUD_SET_TEST");
-    set_enqueue("ui_menu_data.hud_total_lap_count_visible", 1, "", off, "SWOFTY_HUD_SET_TEST");
-    set_enqueue("ui_menu_data.hud_top_left_position_visible", 1, "", off, "SWOFTY_HUD_SET_TEST");
-}
-
-void dev_set_parse(const std::string &spec)
-{
-    size_t at = 0;
-    while (at < spec.size()) {
-        size_t end = spec.find(';', at);
-        std::string item = spec.substr(at, end == std::string::npos ? std::string::npos : end - at);
-        at = end == std::string::npos ? spec.size() : end + 1;
-        size_t eq = item.find('=');
-        if (item.size() < 3 || item[1] != ':' || eq == std::string::npos)
-            continue;
-        Set q{item.substr(2, eq - 2), item.substr(eq + 1), "SWOFTY_HUD_DEV_SET", 0, 0};
-        q.type = item[0] == 'b' ? 1 : item[0] == 'i' ? 2 : 0;
-        if (q.type)
-            q.number = int32_t(atoi(q.text.c_str()));
-        dev_sets.push_back(q);
-        swofty::log("[hud] SWOFTY_HUD_DEV_SET: %s = %s every 5 s (dev switch, any path)", q.path.c_str(), q.text.c_str());
-    }
-}
-
-void dev_set_tick()
-{
-    static uint64_t next;
-    if (dev_sets.empty())
-        return;
-    uint64_t now = GetTickCount64();
-    if (now < next)
-        return;
-    next = now + 5000;
-    for (auto &q : dev_sets)
-        apply_set(q);
-}
-
-}
-
-extern "C" __declspec(dllexport) const SwoftyHud *SwoftyCoreHud(void)
-{
-    return &hud_table;
-}
-
-namespace runtime {
-
-const SwoftyPopup *popup_table()
-{
-    return &table;
-}
-
-int popup_show(const std::string &title, const std::string &body, const std::string &by)
-{
-    return enqueue(title, body, by);
-}
-
-int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by, const std::string &icon)
-{
-    return toast_enqueue(text, detail, seconds, icon, by);
-}
-
-void hud_rebuilt()
-{
-    leaf_table.rebuilt();
-}
-
-void popup_setup()
-{
-    if (!enabled("popup", "popup")) {
+    if (!runtime::enabled("popup", "popup")) {
         swofty::log("[popup] feature off; popup.show reports unavailable");
         return;
     }
     uintptr_t base = swofty::api->module_base();
-    uintptr_t motd = find(S_MOTD, "message system", "popup");
-    a_release = find(S_RELEASE, "message system", "popup");
+    uintptr_t motd = runtime::find(S_MOTD, "message system", "popup");
+    a_release = runtime::find(S_RELEASE, "message system", "popup");
     if (motd) {
         id_vt = reinterpret_cast<const void *>(motd + MOTD_VT_END + *reinterpret_cast<const int32_t *>(motd + MOTD_VT_DISP));
         a_construct = rel32(motd + MOTD_CONSTRUCT);
@@ -681,60 +352,15 @@ void popup_setup()
         toast_test_next = GetTickCount64() + uint64_t(toast_test_every) * 1000;
         swofty::log("[hud] SWOFTY_TOAST_TEST: a test toast every %us", toast_test_every);
     }
-    char dev[512] = {};
-    if (GetEnvironmentVariableA("SWOFTY_HUD_DEV_SET", dev, sizeof dev) && dev[0])
-        dev_set_parse(dev);
-    char lap[128] = {};
-    if (GetEnvironmentVariableA("SWOFTY_HUD_SET_TEST", lap, sizeof lap) && lap[0]) {
-        set_test_text = lap;
-        if (lap[1] == ':')
-            swofty::log("[hud] SWOFTY_HUD_SET_TEST: writes %s through set every 5 s", lap);
-        else
-            swofty::log("[hud] SWOFTY_HUD_SET_TEST: the lap counter shows \"%s\", lap totals and the top-left position "
-                        "tower hide (set every 5 s)",
-                        lap);
-    }
+    hud_data.read_switches();
     swofty::log("[popup] setup: live; construct base+0x%llx, set attribute base+0x%llx, release base+0x%llx, id vtable "
                 "base+0x%llx",
                 (unsigned long long)(a_construct - base), (unsigned long long)(a_set_attr - base),
                 (unsigned long long)(a_release - base), (unsigned long long)(uintptr_t(id_vt) - base));
 }
 
-bool typing(const char *what)
+void MessageSystem::tick()
 {
-    if (!text_entry::state.active(GetTickCount64()))
-        return false;
-    if (what && text_entry::state.first_suppression())
-        swofty::log("[popup] %s ignored: a text box has focus", what);
-    return true;
-}
-
-void popup_tick()
-{
-    toast_test_tick();
-    set_test_tick();
-    dev_set_tick();
-    if (leaf_table.size()) {
-        static const uint32_t leaf_probe = perf::probe("core", "hud leaves");
-        perf::Scope p(leaf_probe);
-        uint64_t now = GetTickCount64();
-        leaves_watch(now);
-        leaf_table.drain(now, apply_leaf);
-    }
-    if (sets_pending.load(std::memory_order_relaxed)) {
-        std::deque<Set> now_sets;
-        {
-            std::lock_guard<std::mutex> g(queue_lock);
-            now_sets.swap(sets);
-            sets_pending = 0;
-        }
-        static const uint32_t set_probe = perf::probe("core", "hud set");
-        perf::Scope p(set_probe);
-        for (auto &q : now_sets) {
-            perf::Pause game;
-            apply_set(q);
-        }
-    }
     if (!pending.load(std::memory_order_relaxed) && !toasts_pending.load(std::memory_order_relaxed))
         return;
     void *s = sys.load();
@@ -766,6 +392,48 @@ void popup_tick()
         perf::Pause game;
         show_toast(s, t);
     }
+}
+
+}
+
+namespace runtime {
+
+const SwoftyPopup *popup_table()
+{
+    return &popup::table;
+}
+
+int popup_show(const std::string &title, const std::string &body, const std::string &by)
+{
+    return popup::messages.enqueue(title, body, by);
+}
+
+int hud_toast(const std::string &text, const std::string &detail, float seconds, const std::string &by, const std::string &icon)
+{
+    return popup::messages.toast_enqueue(text, detail, seconds, icon, by);
+}
+
+void hud_rebuilt()
+{
+    popup::hud_data.leaf_table.rebuilt();
+}
+
+void popup_setup() { popup::messages.setup(); }
+
+bool typing(const char *what)
+{
+    if (!text_entry::state.active(GetTickCount64()))
+        return false;
+    if (what && text_entry::state.first_suppression())
+        swofty::log("[popup] %s ignored: a text box has focus", what);
+    return true;
+}
+
+void popup_tick()
+{
+    popup::messages.toast_test_tick();
+    popup::hud_data.tick();
+    popup::messages.tick();
 }
 
 }

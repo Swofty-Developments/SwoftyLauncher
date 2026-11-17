@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Sess_TyreCompoundClasses_SortEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ef0450",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ef0450.c;xref:0x142e9cdc1",
+  "notes": "Introsort/insertion sort instantiation (threshold 0x210 bytes) over 16-byte entries keyed by the first byte of the pointed record; used while loading tyre compound classes. Caller Sess_Load_TyreCompoundClasses."
+ },
+ "signature": {
+  "id": "session.tyre_compound_classes_sort_entries",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 57 E0 49 8B 4F D8 49 89 D0",
+  "match": "0x142e9cdc1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142ef0450",
+  "kind": "func_start",
+  "names": [
+   "Sess_TyreCompoundClasses_SortEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x142ef0450",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ef0450.c;xref:0x142e9cdc1",
+   "notes": "V8110 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

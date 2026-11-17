@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnLobbyMigratedClient",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144099090",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onLobbyMigratedClient (class from the log channel); log channel NETWORK: '%s() : success. lobbyId(%llu)'"
+ },
+ "signature": {
+  "id": "game.network_on_lobby_migrated_client",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC F0 00 00 00 C5 F8 29 B4 24 E0 00 00 00 44 89 C3",
+  "match": "0x144099090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144099090",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnLobbyMigratedClient"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144099090",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144099090.c;xref:0x14409a263",
+   "notes": "V6530 size=881; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

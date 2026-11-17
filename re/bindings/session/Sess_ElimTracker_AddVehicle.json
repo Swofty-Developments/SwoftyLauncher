@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ElimTracker_AddVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431936f0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1431936f0.c;xref:0x142d25f71,0x142d26702",
+  "notes": "Elimination tracker: adds vehicle param_2 (index at +8) to the inline list this+0x1e0 (16-byte entries, count +0x380) unless present, mirrors the list into +0x30 (count +0x1d0), sets done flag +0x390 and recalculates (0x143193820); returns +0x390. Callers Sess_ElimRuleset_FinaliseResults, Sess_ElimRuleset_RetireVehicle."
+ },
+ "signature": {
+  "id": "session.elim_tracker_add_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 48 8D 81 E0 01 00",
+  "match": "0x1431936f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431936f0",
+  "kind": "func_start",
+  "names": [
+   "Sess_ElimTracker_AddVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x1431936f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431936f0.c;xref:0x142d25f71,0x142d26702",
+   "notes": "V3758 Adds id (param_2+8) to list +0x1e0 (16-byte entries, count +0x380) unless present, mirrors into +0x30/+0x1d0 when [this+8]<2, sets +0x390=1, calls 143193820, returns +0x390."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Deserialise_Upgrades",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143536000",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:per-tree-0x143524c20-find-by-node-hash;xref:0x14123fbb0;kb:subsystems/rnd_ui.md#instances",
+  "notes": "Save load of the Upgrades model. Per tree 0x143524c20 finds each instance by its node hash (+0x58) and REPLACES its state history with no department guard; 0x143523fd0 serialises every instance. A save written while an instance held the dept-4 sentinel restores the sentinel over a fixed init."
+ },
+ "signature": {
+  "id": "career.deserialise_upgrades",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4D 89 C6 48 89 D3 48 89 CF 4C 8D B9",
+  "match": "0x143536000",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143536000",
+  "kind": "func_start",
+  "names": [
+   "Career_Deserialise_Upgrades"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143536000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143536000.c;xref:0x14123fbb0",
+   "notes": "V6083 per-tree 0x143524c20 (looks up upgrades node, hash +0x58) verified; no dept guard seen; 0x143523fd0 serialise claim not checked"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x143536000",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143536000.c;xref:0x14123fbb0;str:\"upgrades\";str:\"supplier_history\"",
+   "notes": "V9242 Calls 0x143524c20 per tree, which matches instances by node hash at +0x58 and has no department check; the serialiser 0x143523fd0 is a separate function not called here."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EventObjectives_OnTargetPositionDone",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1417fcce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1417fcce0.c;xref:0x14b9323f6,0x14b939453",
+  "notes": "Completion callback (only lea refs): sets param_1+0x10 = 1 and REMOVES HUD hide reasons 11 and 12 (player 0), republishing after each. Addon: shows the HUD again after the story/event objective overlays. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2667)"
+ },
+ "signature": {
+  "id": "game.event_objectives_on_target_position_done",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 C6 41 10 01 8B 05 ?? ?? ?? ?? 8B 0D",
+  "match": "0x1417fcce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1417fcce0",
+  "kind": "func_start",
+  "names": [
+   "Game_EventObjectives_OnTargetPositionDone"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Game_EventObjectives_OnTargetPositionDone",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1417fcce0.c;xref:0x1417fcce0",
+   "notes": "V2667 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  }
+ ],
+ "proofs": []
+}

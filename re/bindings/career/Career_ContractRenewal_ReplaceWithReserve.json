@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_ReplaceWithReserve",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d8ecd0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-CONTRACT_RENEWAL",
+  "notes": "named from its log messages (channel CONTRACT_RENEWAL): 'Replace new drivers old position. Team : %s - Driver %s replaced with reserve driver %s '"
+ },
+ "signature": {
+  "id": "career.contract_renewal_replace_with_reserve",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 41 8B 00",
+  "match": "0x140d8ecd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d8ecd0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_ReplaceWithReserve"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d8ecd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8ecd0.c;xref:0x140d77701,0x140d8f6a2",
+   "notes": "V4701 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d8ecd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8ecd0.c",
+   "notes": "V9077 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

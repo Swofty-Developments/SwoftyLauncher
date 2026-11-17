@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeam_MainMenu",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142403a60",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/142403a60.c;xref:0x1457887a8",
+  "notes": "myteam-g1: Main my_team menu handler."
+ },
+ "signature": {
+  "id": "ui.my_team_main_menu",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 F8 29 B4 24 40 01 00 00 48 89 CE 80 3D ?? ?? ?? ?? 00",
+  "match": "0x142403a60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142403a60",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeam_MainMenu"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142403a60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142403a60.c;str:\"markdown_elements\"",
+   "notes": "V10209 Strings my_team, markdown_elements, spawn_articles, list_entry_%d: looks like the My Team landing/articles list view rather than a generic main menu handler."
+  }
+ ],
+ "proofs": []
+}

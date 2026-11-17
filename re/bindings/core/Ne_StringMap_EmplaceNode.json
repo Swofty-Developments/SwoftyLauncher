@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_StringMap_EmplaceNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144348a20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144348a20.c;xref:0x142d55b80,0x142d81270",
+  "notes": "(map, out iterator, key, value): takes a node from the free list (+8, refill 0x144349170), constructs it as a string object (vtable 0x145613550, inline cap 0x40) and inserts into hash buckets (+0x28, count +0x30); out = {bucket ptr, index, inserted}. Callers: Sess_State_EnterOnTrackCommon, Sess_PreRaceGridState_OnEnter."
+ },
+ "signature": {
+  "id": "core.string_map_emplace_node",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 4C 24 20 48 8D 54 24 28 E8",
+  "match": "0x1407bed0d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x144348a20",
+  "kind": "func_start",
+  "names": [
+   "Ne_StringMap_EmplaceNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x144348a20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144348a20.c;xref:0x142d55e46,0x142d81c31",
+   "notes": "V3485 free-list node (refill 0x144349170), copies key 0x48B from param_3+0x18, value *param_4 at +0x58, vtable 0x145613550 then 0x145613548, inserts via 0x144348b50, out={bucket,idx,inserted}; callers confirmed"
+  }
+ ],
+ "proofs": []
+}

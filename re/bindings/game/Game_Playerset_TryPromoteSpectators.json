@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Playerset_TryPromoteSpectators",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140997490",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name tryPromoteSpectators (class from the log channel); log channel PLAYERSET: '%s'"
+ },
+ "signature": {
+  "id": "game.playerset_try_promote_spectators",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 80 79 28 00",
+  "match": "0x140997490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140997490",
+  "kind": "func_start",
+  "names": [
+   "Game_Playerset_TryPromoteSpectators"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140997490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140997490.c",
+   "notes": "V4349 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

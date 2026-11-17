@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_CustomisationDecalsSetPlugin_CloseConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c78fd0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143c78fd0.c;xref:0x1458e7c90",
+  "notes": "cxx=NeCustomisationDecalsSetPlugin::closeConnection; log channel CUSTOMISATION_DECALS: ' NeCustomisationDecalsSetPlugin::closeConnection, %p, %p'"
+ },
+ "signature": {
+  "id": "core.customisation_decals_set_plugin_close_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 4D 89 C6",
+  "match": "0x143c78fd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c78fd0",
+  "kind": "func_start",
+  "names": [
+   "Ne_CustomisationDecalsSetPlugin_CloseConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_CustomisationDecalsSetPlugin_CloseConnection",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c78fd0.c;xref:0x1458e7c90",
+   "notes": "V2054 log, releases via FUN_143c6bc20, frees connection record; vtable slot"
+  }
+ ],
+ "proofs": []
+}

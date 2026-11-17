@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_RendererGfxConfig_3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1443cc250",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: Renderer.Gfx.SSGI, Renderer.Gfx.WIN.uploadHeapSize, Renderer.Gfx.clearColour, Renderer.Gfx.d3DDebugMuteFilters, Renderer.Gfx.d3dDebugBreakOnCorruption, Renderer.Gfx.d3dDebugBreakOnError, Renderer.Gfx.d3dDebugBreakOnInfo, Renderer.Gfx.d3dDebugBreakOnMessage, Renderer.Gfx.'"
+ },
+ "signature": {
+  "id": "game.read_renderer_gfx_config_3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 48 02 00 00 89 D3 48 89 CE",
+  "match": "0x1443cc250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1443cc250",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_RendererGfxConfig_3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1443cc250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1443cc250.c;xref:0x1443c088d",
+   "notes": "V6592 size=9565; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

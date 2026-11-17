@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_MultipleWarningsPenalty_ReceiveData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435b6780",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-MULTIPLE_WARNINGS_PENALTY_MESSAGE;decomp:re/decomp/1435b6780.c;xref:0x1435b6824,0x1435b685b",
+  "notes": "Log channel MULTIPLE_WARNINGS_PENALTY_MESSAGE: 'Recieving Data for Vehicle %d Num Warnings: %d Time Saved Extending Track Limits %.2f' engine-re 2026-10-30: network receive copies msg+0x10 (u8 vehicle, u32 warnings, f32 time saved) into this+0x68[vehicle] (12-byte record, see 0x1435b5bc0); same this as the send handler sl-verify: the message is also mirrored into a second vector at this+0x88; stock warnings-per-penalty [0x145f965b0] = 3"
+ },
+ "signature": {
+  "id": "session.multiple_warnings_penalty_receive_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D7 48 89 CE 4C 8D 72 10",
+  "match": "0x1435b6780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435b6780",
+  "kind": "func_start",
+  "names": [
+   "Sess_MultipleWarningsPenalty_ReceiveData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sl-verify",
+   "kind": "func",
+   "item": "Sess_MultipleWarningsPenalty_ReceiveData",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435b6780.c;decomp:re/decomp/1435b5bc0.c",
+   "notes": "V1819 bounds-checked 12-byte record at vec+0x68; also mirrors into second vector at +0x88; %0x145f965b0 (file value 3)"
+  }
+ ],
+ "proofs": []
+}

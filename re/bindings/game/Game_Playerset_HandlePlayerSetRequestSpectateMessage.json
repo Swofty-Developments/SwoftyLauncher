@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Playerset_HandlePlayerSetRequestSpectateMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14316a360",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name handlePlayerSetRequestSpectateMessage (class from the log channel); log channel PLAYERSET: '%s(%d).'"
+ },
+ "signature": {
+  "id": "game.playerset_handle_player_set_request_spectate_message",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 75 58 B8 6D 01 00 00",
+  "match": "0x14316a360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14316a360",
+  "kind": "func_start",
+  "names": [
+   "Game_Playerset_HandlePlayerSetRequestSpectateMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14316a360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14316a360.c;xref:0x143169099",
+   "notes": "V5810 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Vm_Update_FlowStateMachine",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144423ce0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "-",
+  "evidence": "xref:0x144424e27;doc:research/ui-native.md#9",
+  "notes": "flow state-machine update; logs 'State [%s] onUpdate returned LinkRoute [name,hash]' (0x144424e27); recursive frame in the swofty_mod_0 crash stack (StateOnlineFrontend -> StateLaunch -> StateExit after a missing-screen route)"
+ },
+ "signature": {
+  "id": "vm.flow_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 C5 F8 29 B4 24 40 02 00 00 C5 F9 28 F2",
+  "match": "0x144423ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144423ce0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Update_FlowStateMachine"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-18",
+    "by": "events",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/events/events.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144423ce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144423ce0.c;xref:0x142ceae66",
+   "notes": "V6601 size=8363; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

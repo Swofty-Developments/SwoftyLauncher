@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_Get_RpWallet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435086c0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Get_RpWallet(void *wallets, uint64_t *out, uint32_t driver_key)",
+  "evidence": "decomp:re/decomp/1435086c0.c;decomp:re/decomp/1414c5f80.c;xref:0x1414c6251,0x141241d7d,0x14124331c;doc:addons/career-editor/protocol/economy.md#resource-points-both-modes",
+  "notes": "wallets = ResourcePointsComponent+0x4a8 {+0 entity, +8 u8 mode (0 per driver, 1 per team)}; mode 1 maps the driver key to its team key via the entity entrants (+0x2e0, 0x88 each, +0x50 driver key, +0x58 team key); writes the 8 bytes at entry+4 {i32 value, u8 locked} or 0. The player card shows 1000000 when locked"
+ },
+ "signature": {
+  "id": "career.get_rp_wallet",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 89 D0 48 89 CA 0F B6 49 08",
+  "match": "0x1435086c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435086c0",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_RpWallet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-econ",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/economy.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "func",
+   "item": "Career_Get_RpWallet",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435086c0.c;decomp:re/decomp/140d6c8c0.c;decomp:re/decomp/1414c5f80.c;xref:0x140d6c8ed,0x1414c6250,0x141241d7d",
+   "notes": "V0291 callers pass ResourcePointsComponent+0x4a8 (0x140d6c8d9: [comp+0x130]+0x4a8, comp+0x130 from ResourcePointsComponentDesc get at 0x140d6c846); mode +8; mode 1 maps via entrants +0x50/+0x58 to the team map (seed +0xb0), mode 0 driver map (seed +0x48); *out = 8 bytes at entry+4 or 0; callers show 0xf4240 when +0x2c locked"
+  }
+ ],
+ "proofs": []
+}

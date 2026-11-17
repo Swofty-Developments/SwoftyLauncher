@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Update_MyTeamActivitiesMainMenu",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423183f0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Update(void *menu, int mode)",
+  "evidence": "decomp:re/decomp/1423183f0.c;xref:0x14231451c;xref:0x142317c2b;xref:0x14231a536",
+  "notes": "myteam-g2: Builds/refreshes the main My Team activities menu tiles (child nodes, Ne_Format_String, sets bools); menu+0x270/0x3f0/0x410 state, +0x898/+0x8a0 pointers. UI only."
+ },
+ "signature": {
+  "id": "ui.update_my_team_activities_main_menu",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 49 89 CE 48 8B 81 E8 03 00 00",
+  "match": "0x1423183f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423183f0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Update_MyTeamActivitiesMainMenu"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1423183f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423183f0.c;xref:0x14231451c",
+   "notes": "V10113 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

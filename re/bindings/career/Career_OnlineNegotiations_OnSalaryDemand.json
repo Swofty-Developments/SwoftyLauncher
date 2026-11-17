@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_OnSalaryDemand",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ff4190",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
+  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'Player demanded sallary, success: %d'"
+ },
+ "signature": {
+  "id": "career.online_negotiations_on_salary_demand",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 72",
+  "match": "0x140ff4190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ff4190",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_OnSalaryDemand"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140ff4190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff4190.c;xref:0x140ff2486,0x140ff570c",
+   "notes": "V4848 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x140ff4190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff4190.c;str:\"Player demanded sallary, success: %d\"",
+   "notes": "V9120 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

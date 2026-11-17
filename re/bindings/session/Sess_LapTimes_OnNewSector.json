@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_LapTimes_OnNewSector",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f2d360",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-LAPTIMES;decomp:re/decomp/142f2d360.c;xref:0x142f2bf2a,0x142f2caa0",
+  "notes": "Log channel LAPTIMES: 'VehicleLapTimesSystem::onVehicleNewSector() - v(%d, %s), s(%d) - teleported' | 'VehicleLapTimesSystem::onVehicleNewSector() - v(%d, %s), s(%d) - sector recorded'"
+ },
+ "signature": {
+  "id": "session.lap_times_on_new_sector",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC C8 00 00 00 0F B6 72 10",
+  "match": "0x142f2d360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f2d360",
+  "kind": "func_start",
+  "names": [
+   "Sess_LapTimes_OnNewSector"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_LapTimes_OnNewSector",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f2d360.c;xref:0x142f2d360",
+   "notes": "V1901 log strings confirmed by disassembly lea refs inside function"
+  }
+ ],
+ "proofs": []
+}

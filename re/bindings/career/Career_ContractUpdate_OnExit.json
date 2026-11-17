@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_ContractUpdate_OnExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436c1fc0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ContractUpdate_OnExit(void *state)",
+  "evidence": "decomp:re/decomp/1436c1fc0.c;xref:0x14585a360",
+  "notes": "Update onExit (slot +0x50): closes the screen when +0xc88 is set, returns 1 only when the state phase +0xc18 is 1 (else the exit is retried). Raised by native-1990 with --force in the career lane (owner career-re), approved by the developer on 2026-10-21 for the private F1 1990 build (doc:/mnt/work/.f1-1990/addon/native-requests.md#N1)."
+ },
+ "signature": {
+  "id": "career.contract_update_on_exit",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CF 48 8B 81 60 0D 00 00",
+  "match": "0x1436c1fc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436c1fc0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractUpdate_OnExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/contract_skip.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-a",
+   "kind": "func",
+   "item": "Career_ContractUpdate_OnExit",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436c1fc0.c;decomp:re/decomp/1436c01c0.c;xref:0x14585a360;sig:career.contract_update_on_exit",
+   "notes": "V0976 Vtable 0x14585a310 slot +0x50 (abs ptr 0x14585a360; the rel32 hit at 0x140dd9bad is a byte coincidence). Resets component +0xd60 (+0x290 = 0, list ends, +0x308) when its +0x290 == 5 or +0xd5b is set; when +0xc88 is set calls 0x14416cf60 (if +0xc98), 0x1436c01c0(state,0) and 0x144426ce0(state,0) and clears +0xd58/+0xc88/+0xd5b. Returns 1 only when +0xc18 == 1 (and, with +0xd38 clear and +0xc98 set, [+0xc98]+0x48 == 0), else 0. Proto fits. sigcheck: 1 hit"
+  }
+ ],
+ "proofs": []
+}

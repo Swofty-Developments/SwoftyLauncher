@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSessionLAN_OnCreateMigratedSessionFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14408de10",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/14408de10.c;xref:0x14408dcf6",
+  "notes": "cxx=NeNetSessionLAN::onCreateMigratedSessionFinished; log channel NETWORK-MIGRATION: 'NeNetSessionLAN::onCreateMigratedSessionFinished'"
+ },
+ "signature": {
+  "id": "core.net_session_lan_on_create_migrated_session_finished",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6D",
+  "match": "0x14408de10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14408de10",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSessionLAN_OnCreateMigratedSessionFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_NetSessionLAN_OnCreateMigratedSessionFinished",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14408de10.c;xref:0x14408de10",
+   "notes": "V2108 Logs then invokes stored callback (+0x90/+0x98) and clears it"
+  }
+ ],
+ "proofs": []
+}

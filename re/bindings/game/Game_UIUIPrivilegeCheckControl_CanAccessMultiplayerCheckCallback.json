@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UIUIPrivilegeCheckControl_CanAccessMultiplayerCheckCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143823fb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_UI_UIPrivilegeCheckControl_CanAccessMultiplayerCheckCallback;xref:0x143824049",
+  "notes": "cxx=game::UI::UIPrivilegeCheckControl::canAccessMultiplayerCheckCallback; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.u_i_u_i_privilege_check_control_can_access_multiplayer_check_callback",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC F8 00 00 00 4D 89 CE 44",
+  "match": "0x143823fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143823fb0",
+  "kind": "func_start",
+  "names": [
+   "Game_UIUIPrivilegeCheckControl_CanAccessMultiplayerCheckCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143823fb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143823fb0.c;xref:0x1438230e3",
+   "notes": "V6303 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_MultipleWarningsPenalty_SendData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435b5bc0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-MULTIPLE_WARNINGS_PENALTY_MESSAGE;decomp:re/decomp/1435b5bc0.c;xref:0x1435b6d57;doc:re/db/subsystems/session.md",
+  "notes": "Log channel MULTIPLE_WARNINGS_PENALTY_MESSAGE: 'Sending Data for Vehicle %d' | tl-verify L4: penalty every N warnings: count % [0x145f965b0] == 0 (N = key 0xe86e820306367474 = 3, loaded 0x1435b6d57 by reader 0x1435b6c60, store 0x1435b6e20), kind byte 0x145f965b4; only events +0x2c == 5 with reason +0x2d in mask 0x3e000380, car flag 0x20, session types 0xf..0x11; second accumulator of positive time gain (threshold float 0x145f965b8, kind 0x145f965bc) live access (engine-re 2026-10-30, static): handler of bus message 'penalty_issued_message' (subscribed in 0x143589fb0 at 0x14358b73b, delegate {fn, this}); this = MultipleWarningsPenalty object (0xb0 bytes, vtable 0x14584d1f0) = [MisconductManager+0x178]; MisconductManager (vtable 0x1458035f0, ctor 0x143589fb0) is embedded at +0x410 of the 0x7b8-byte game component (vtable 0x1457f6250, ctor 0x142f24900) stored at game+0x2b8 (0x1407e780e). this+0x08 = settings block 0x145f965a0; this+0x10 = penalty issuer (rcx of 0x1435909a0); this+0x68/+0x70 = vector of 12-byte per-vehicle records indexed by vehicle id: +0 u8 vehicle, +4 u32 warning count, +8 f32 time saved extending track limits (sum of max(0, event+0x20)); this+0x28 = second 12-byte vector, +4 = penalties issued from warnings (skipped while -1). Live knobs (.data, writable): 0x145f965b0 u32 warnings per penalty (stock 3; 0 = never), 0x145f965b4 u8 penalty kind (index into u32 table 0x1460fd780), 0x145f965b8 f32 time-saved threshold, 0x145f965bc u8 kind for that; penalty record sent with reason 0x2e. Reset a car's counter: write 0 to +4 (and +8)."
+ },
+ "signature": {
+  "id": "session.multiple_warnings_penalty_send_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 8B 41 08",
+  "match": "0x1435b5bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435b5bc0",
+  "kind": "func_start",
+  "names": [
+   "Sess_MultipleWarningsPenalty_SendData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "tl-verify",
+   "kind": "func",
+   "item": "Sess_MultipleWarningsPenalty_SendData",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x1435b6d57",
+   "notes": "V1787 L4"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "tl-verify",
+   "kind": "func",
+   "item": "Sess_MultipleWarningsPenalty_SendData",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x1435b6d57",
+   "notes": "V1813 L4"
+  }
+ ],
+ "proofs": []
+}

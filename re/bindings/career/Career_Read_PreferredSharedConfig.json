@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Read_PreferredSharedConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f6c2f0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: preferred_shared.age_baseline, preferred_shared.f1_setup_mode, preferred_shared.max_overall' CORRECTION(V9101): Reads preferred_shared.age_baseline/f1_setup_mode/max_overall but the 78KB function also reads setup_data, weight, stat, attribute_action_base, attribute_action_apathy_mult, attribute_action_recovery_mult; a broader preferred/setup config reader."
+ },
+ "signature": {
+  "id": "career.read_preferred_shared_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 08 00 00 C5 F8 29 BC 24 70 08 00 00 C5 F8 29 B4 24 60 08 00 00 48 89 D6",
+  "match": "0x140f6c2f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f6c2f0",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_PreferredSharedConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140f6c2f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f6c2f0.c",
+   "notes": "V4785 log/pretty strings and body checked in decomp; vtable/indirect callers"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140f6c2f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140f6c2f0.c",
+   "notes": "V9101 Reads preferred_shared.age_baseline/f1_setup_mode/max_overall but the 78KB function also reads setup_data, weight, stat, attribute_action_base, attribute_action_apathy_mult, attribute_action_recovery_mult; a broader preferred/setup config reader."
+  }
+ ],
+ "proofs": []
+}

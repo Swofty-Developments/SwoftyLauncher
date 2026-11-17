@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_TeamHqMenu_SetItemValueById",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141871390",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void Ui_TeamHqMenu_SetItemValueById(void *menu, int32_t item_id, int32_t value)",
+  "evidence": "decomp:re/decomp/141871390.c;xref:0x141c44d83;xref:0x141c44f97;xref:0x1422d682c",
+  "notes": "myteam-g2: Finds the menu item by id (stride 0x18) and updates its bound text/value (menu+0x38, +0x298). UI only."
+ },
+ "signature": {
+  "id": "ui.team_hq_menu_set_item_value_by_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 89 D7 48 8B 41 10",
+  "match": "0x141871390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141871390",
+  "kind": "func_start",
+  "names": [
+   "Ui_TeamHqMenu_SetItemValueById"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x141871390",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141871390.c;xref:0x141c44d83",
+   "notes": "V9825 finds item by id (stride 0x18) and updates tab node; the int value param_3 is only matched against item ids, no clear value write proven"
+  }
+ ],
+ "proofs": []
+}

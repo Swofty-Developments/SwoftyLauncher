@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PhysWorld_CommitCompoundBodies",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440c24a0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440c24a0.c;xref:0x142bc8779,0x1440c8582",
+  "notes": "(world, compound, applyOffset): under world lock +0x10e8 walks body list compound+0x360 (next +0x118), commits dirty bodies (flag 4 @+0x170), recomputes bounds via shape-type table 0x145f98830, optional translation offset, updates broadphase and both contact caches (+0x1130/+0x1138). Callers: Ne_PhysBody_SetLinearVelocity and 7 others."
+ },
+ "signature": {
+  "id": "core.phys_world_commit_compound_bodies",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 D7 48 89 CE 45 84 C0",
+  "match": "0x1440c24a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440c24a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PhysWorld_CommitCompoundBodies"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1440c24a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1440c24a0.c;xref:0x142bc8779",
+   "notes": "V3641 body matches (lock +0x10e8, list +0x360, flag 4 @+0x170, table 0x145f98830); SetLinearVelocity does NOT call it; real callers include Car_TyreDamage_Update"
+  }
+ ],
+ "proofs": []
+}

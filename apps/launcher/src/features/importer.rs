@@ -27,7 +27,7 @@ impl Shell {
 
     /// The section the current page shows: an addon page or the Simplified Importer.
     pub(crate) fn open_section(&self) -> Option<usize> {
-        match self.page {
+        match self.navigation.page {
             Page::Section(i) => Some(i),
             Page::Importer => self.importer_section(),
             _ => None,
@@ -188,7 +188,7 @@ impl Shell {
 
     /// Switches to Addons and highlights `id` there.
     pub(crate) fn show_addon(&mut self, id: &str, cx: &mut Context<Self>) {
-        self.highlight = Some((id.to_owned(), Instant::now()));
+        self.navigation.highlight = Some((id.to_owned(), Instant::now()));
         self.go(Page::Addons, cx);
     }
 }

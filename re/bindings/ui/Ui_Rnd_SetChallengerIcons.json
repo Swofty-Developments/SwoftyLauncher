@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Rnd_SetChallengerIcons",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a62670",
+  "level": "L1",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/141a62670.c;xref:0x145729bf8",
+  "notes": "myteam-g1: UI binding code; rnd_challenger_icons. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_set_challenger_icons",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 04 00 00 C5 F8 29 B4 24 90 04 00 00 49 89 CC 48 81 C1 A0 02 00 00",
+  "match": "0x141a62670",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a62670",
+  "kind": "func_start",
+  "names": [
+   "Ui_Rnd_SetChallengerIcons"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141a62670",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141a62670.c;xref:0x145729bf8",
+   "notes": "V9926 Large builder of the challenger entries list (entries, entry_selection, select_available, advance_available, unlock_description_to_display, lng_locked_until_end_of_season); icon override is only part of it."
+  }
+ ],
+ "proofs": []
+}

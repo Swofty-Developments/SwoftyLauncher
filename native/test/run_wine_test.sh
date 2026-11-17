@@ -23,7 +23,6 @@ OUT=${1:-$PWD/../build/wine-test}
 ITEMS=
 grep -qa '\[items\] ownership check hooked' ../dist/swofty/addons/core/swofty_core.dll && ITEMS=1
 export ZIG_GLOBAL_CACHE_DIR=$PWD/../build/zig-cache ZIG_LOCAL_CACHE_DIR=$PWD/../build/zig-cache
-PIN=(taskset -c 2-7,10,11,14-31 nice -n 10)
 build() {
 # wine cmd /c reports the game process's own exit code; a bare wine launch can exit 0 when a thread the server kills at termination exits last
 rm -rf "$OUT/game" "$OUT/stages" "$OUT/packed" "$OUT/filled"

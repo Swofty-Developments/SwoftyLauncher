@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Event_ResetWithErrorTrace",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14391d010",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14391d010.c;xref:0x140226c6f",
+  "notes": "ResetEvent wrapper; on failure (ERROR_INVALID_HANDLE =6) sets code 3 in per-thread trace records and logs return address into ring 0x146107830. 73 callers incl. Game_CutsceneManager_Update, Game_CompressedSave_GetNextAction."
+ },
+ "signature": {
+  "id": "core.event_reset_with_error_trace",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 46 78 4A 8B 4C 38 08 4C 01",
+  "match": "0x140226c6f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14391d010",
+  "kind": "func_start",
+  "names": [
+   "Ne_Event_ResetWithErrorTrace"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x14391d010",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14391d010.c;xref:0x140226c6f",
+   "notes": "V8237 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_InputMapper_IsActionPressed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441162f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1441162f0.c;xref:0x14039caa7,0x14039d2d4",
+  "notes": "Input mapper query for action hash *param_2: skips well-known hashes in table 0x146ca4aa0, finds the binding (0x144434690) and returns its pressed-edge flag (+0xd5) via 0x143aa1060. Used with actions Gesture, Talk, Menu Accept. Callers: Car_Visual_UpdateRenderState, Game_TalkingPoints_UpdateBroadcastFades."
+ },
+ "signature": {
+  "id": "core.input_mapper_is_action_pressed",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B 5C 24 40 84 C0 75 1F 49 8B",
+  "match": "0x14039caa7",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1441162f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_InputMapper_IsActionPressed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1441162f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441162f0.c;xref:0x14039caa7,0x140ac7b0f",
+   "notes": "V3479 skips hashes in table 0x146ca4aa0, finds binding via 0x144434690, edge flag +0xd5 via 0x143aa1060; callers Car_Visual_UpdateRenderState, Game_TalkingPoints_UpdateBroadcastFades confirmed"
+  }
+ ],
+ "proofs": []
+}

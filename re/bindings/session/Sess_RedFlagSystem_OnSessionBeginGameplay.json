@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlagSystem_OnSessionBeginGameplay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143586820",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint64_t(RedFlagSystem*)",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/143586820.c;xref:0x143585b9b,0x143586504",
+  "notes": "MessageSessionBeginGameplay subscriber (thunk into .data1): only while a red flag is active (+0x40): 0x143587b40, restart lap +0x118 = leader lap (rounded), +0x120 = session time now."
+ },
+ "signature": {
+  "id": "session.red_flag_system_on_session_begin_gameplay",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? A3 E9 66 62 80 00 FA 91 14 C0 0F",
+  "match": "0x143586820",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143586820",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlagSystem_OnSessionBeginGameplay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-a",
+   "kind": "func",
+   "item": "Sess_RedFlagSystem_OnSessionBeginGameplay",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143586820.c;xref:0x143585b9b",
+   "notes": "V1851 thunk to 150604fa0; +0x40 gate, call 143587b40, +0x118 = rounded leader lap, +0x120 = clock of [+0x158]+0x230"
+  }
+ ],
+ "proofs": []
+}

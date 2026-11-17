@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_CreateOnlineServiceTask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14095d500",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14095d500.c;xref:0x14565b7b8",
+  "notes": "Virtual (entry at 0x14565b7b8) factory: allocates a 0xa8-byte online service task (base vtable 0x145832500, logs 'Creating online service task %s'; final vtable 0x14565b920, game ctx 0x1460c4a30 at +0xa0), wraps it in a ref-counted holder (vtable 0x14565b980) and queues it on the F1OS task system via 0x1432c2f70 with functor 0x14565b9a0. Addon: model for queuing own tasks on the task system. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3254)"
+ },
+ "signature": {
+  "id": "game.f1os_create_online_service_task",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B 79 08 48 8B 07 BA A8",
+  "match": "0x14095d500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14095d500",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_CreateOnlineServiceTask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1os_CreateOnlineServiceTask",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14095d500.c;xref:0x14095d500",
+   "notes": "V3254 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Format_LoyaltyRewardIncomeText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14385b900",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t* (uint64_t *out, int64_t *alloc, int64_t *loc, int64_t *args)",
+  "evidence": "decomp:re/decomp/14385b900.c;xref:0x141f078dc;xref:0x1423f3b3e;xref:0x1423f9787",
+  "notes": "myteam-g1: Localisation formatter for lng_loyalty_reward_income: rounds the float income argument and formats it as currency."
+ },
+ "signature": {
+  "id": "vm.format_loyalty_reward_income_text",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 50 01 00 00 4C 89 CB",
+  "match": "0x14385b900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14385b900",
+  "kind": "func_start",
+  "names": [
+   "Vm_Format_LoyaltyRewardIncomeText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14385b900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14385b900.c;xref:0x141f078dc",
+   "notes": "V10327 Uses lng_loyalty_reward_income and the amount formatter 1441ebbd0."
+  }
+ ],
+ "proofs": []
+}

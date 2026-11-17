@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Reset_OnTrackRuntimeState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d60f30",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d60f30.c;xref:0x142d56523,0x142d5f103",
+  "notes": "Session on-track reset: clears VM bool node [this+0xdf8], sets +0xc90 = g 0x146cb2280, posts two bus messages (0x1457e63f8, 0x1456f84c0), resets object +0xda8 (0x142f44750), zeroes +0xe68/+0xe6b, clears bits of +0xcc9, sets +0xe6c = 2.0f. Callers: Sess_State_EnterOnTrackCommon, Sess_Session_ResetForRestart, Sess_Start_VehiclesInGarages."
+ },
+ "signature": {
+  "id": "session.reset_on_track_runtime_state",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE C6 44 24 28 00 48 8B B9 F8 0D",
+  "match": "0x142d60f30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d60f30",
+  "kind": "func_start",
+  "names": [
+   "Sess_Reset_OnTrackRuntimeState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d60f30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d60f30.c;xref:0x142d56523,0x142d5f103,0x142d69403",
+   "notes": "V3564 clears bool node +0xdf8, +0xc90=g 0x146cb2280, two bus messages (0x1457e63f8, 0x1456f84c0), 0x142f44750(+0xda8), +0xe68=0,+0xe6b=0, +0xcc9&=0xfc, +0xe6c=0x40000000 (2.0f); 3 named callers"
+  }
+ ],
+ "proofs": []
+}

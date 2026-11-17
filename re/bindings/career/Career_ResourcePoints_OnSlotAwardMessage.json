@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_OnSlotAwardMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141229d60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ResourcePoints_OnSlotAwardMessage(void *rp, void *msg)",
+  "evidence": "decomp:re/decomp/141229d60.c;xref:0x141226499;xref:0x141227715",
+  "notes": "myteam-g2: RP message handler: msg+0x10 byte = member slot (-1 ignored), msg+0x18 int amount, msg+0x1c byte flag. Finds the team member with matching slot byte (stride 0x88, +0x82) in the member vector and calls FUN_143506050({rp+0x278, rp+0x590}, member key (+0x50), amount, flag) to credit RP via the rate-aware path. Level 1: which of the 6 RP messages is not proven."
+ },
+ "signature": {
+  "id": "career.resource_points_on_slot_award_message",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 D6 48 89 CF 48 8B 89 70 02 00 00",
+  "match": "0x141229d60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141229d60",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePoints_OnSlotAwardMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x141229d60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141229d60.c;xref:0x141226499",
+   "notes": "V9683 Handler: byte msg+0x10 slot (-1 ignored), amount msg+0x18, flag +0x1c; finds member (stride 0x88, +0x82) and calls FUN_143506050 with member +0x50."
+  }
+ ],
+ "proofs": []
+}

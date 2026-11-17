@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLaps_WriteLeaderboard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fa7190",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-GHOSTLAP-TRACE",
+  "notes": "named from its log messages (channel GHOSTLAP-TRACE): '%s(#%d, %s, %s, %d ms) | %s(#%d) : no active presence. | %s(#%d) : leaderboard write failed. | Debounce: %d %+1.2fs | %s(#%d) : leaderboard has no UGC data. | %s(#%d) : leaderboard entry has a corrupt'"
+ },
+ "signature": {
+  "id": "game.ghost_laps_write_leaderboard",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 48 02 00 00 4C 89 CB",
+  "match": "0x142fa7190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fa7190",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLaps_WriteLeaderboard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fa7190",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142fa7190.c;xref:0x142fa1488",
+   "notes": "V5705 Completion handler (fn name onLeaderboardEntryWrite); better Game_GhostLaps_OnLeaderboardEntryWrite"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142fa7190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fa7190.c;xref:0x142fa1488",
+   "notes": "V6927 482 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

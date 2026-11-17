@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqMyTeamVM_StopAdvancing",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142331650",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142331650.c;xref:0x14232fd4a",
+  "notes": "My Team stop-advance: logs 'Stopping, day', RequestStop + Stopped, stop_advancing UI command, unlocks view state. Called from OnCommandRaised. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3094)"
+ },
+ "signature": {
+  "id": "career.team_hq_my_team_v_m_stop_advancing",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 48 89 CE 80 3D ?? ?? ?? ?? 01 75 7F B8 AA 00 00 00 48 8D 0D ?? ?? ?? ?? 66 90 8B 14 81 85 D2 74 6A 81 FA DB A2 77 1A 74 30 83 C0 13 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D AA 00 00 00 75 C3 EB 32 48 8B 86 60 03",
+  "match": "0x142331650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142331650",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqMyTeamVM_StopAdvancing"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_TeamHqMyTeamVM_StopAdvancing",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142331650.c;xref:14232e580",
+   "notes": "V3094 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_CarbonDamage_RegisterImpactCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f1b2b0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-CARBON_DAMAGE",
+  "notes": "Log channel CARBON_DAMAGE: 'registerImpactCallback for vehicle %d'"
+ },
+ "signature": {
+  "id": "car.carbon_damage_register_impact_callback",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 40 01 00 00 C5 78 29 BC 24 30 01 00 00",
+  "match": "0x142f1b2b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f1b2b0",
+  "kind": "func_start",
+  "names": [
+   "Car_CarbonDamage_RegisterImpactCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f1b2b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f1b2b0.c",
+   "notes": "V5596 Per-vehicle impact handler: accumulates impulse (+0x44), lazily registers callback 0x142f13de0 once, then runs damage maths (275 lines); better Car_CarbonDamage_OnVehicleImpact"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f1b2b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f1b2b0.c",
+   "notes": "V6911 275 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Release_RnDSlotNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416a00f0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Release_RnDSlotNodes(void *self)",
+  "evidence": "decomp:re/decomp/1416a00f0.c;xref:0x1419aa773;xref:0x1419b0991;xref:0x1419c9af3",
+  "notes": "myteam-g2: Long destructor (792 lines) that releases dozens of view-model nodes (Vm_Release_Node) and sub-vectors of the R&D upgrade slot / perf panel. Pure teardown, no state change."
+ },
+ "signature": {
+  "id": "vm.release_rn_dslot_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 80 B9 28 03 00 00 00",
+  "match": "0x1416a00f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416a00f0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Release_RnDSlotNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416a00f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416a00f0.c;xref:0x1419aa773;xref:0x1419b0991",
+   "notes": "V9753 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

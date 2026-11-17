@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_InstantRace_Launch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ba2190",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-INSTANT_RACE",
+  "notes": "named from its log messages (channel INSTANT_RACE): 'Active Save Slot ID = %d before launching instant race | Active Save Slot ID = %d after launching instant race'"
+ },
+ "signature": {
+  "id": "game.instant_race_launch",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 CF 48 8B 81 78 02 00 00",
+  "match": "0x140ba2190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ba2190",
+  "kind": "func_start",
+  "names": [
+   "Game_InstantRace_Launch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140ba2190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ba2190.c",
+   "notes": "V4447 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

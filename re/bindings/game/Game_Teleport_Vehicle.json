@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Teleport_Vehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14473dcc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Teleport_Vehicle(void *car, const char *name, float *prev_mtx, float *new_mtx, float dt, uint32_t flags)",
+  "evidence": "decomp:re/decomp/14473dcc0.c;xref:0x142d68cec,0x142f347aa,0x142f63f4b,0x1437ac96b,0x144606c14,0x1446445ec,0x1555b8b0f",
+  "notes": "Car teleport internal (immediate path; wrapped by Game_Teleport_VehicleImmediate_Thunk, 7 direct callers incl. 0x142d68cec InGamePQ, 0x142f347aa, 0x142f63f4b, 0x1437ac96b, 0x144606c14, 0x1446445ec). Args (car, tag, prev_mtx, mtx, dt, flags). Flags: bit 0x800 clear -> car+0x9f08 = 1 (the wrapper then posts the placement message), bit 12 -> car+0x9f09; flags&3 with dt > 1/30 s adds 0x40 (no velocity carry). Sets the physics actor pose ([[car+0x558]+0x340]+0x18 via 0x1440c17c0 / 0x1440c2290 / 0x1440c2080) from the two matrices and advances each wheel's spin angle by dt * rate (+0x188) modulo 2*pi (0x40c90fdb). (used by vmknolle practice-start, race-start grid placement) | merged note: teleportInternal (log VEHICLE_TELEPORT); matrix at [car+0x558]+0x190; flags 0x40 ZeroVelocity, 0x80 FadeVelocityToZero, 0x01|0x02 implicit velocity, 0x04 wheel rates, 0x08 transmission, 0x10 steering, 0x20 suspension (0x3f ImplicitAll), 0x800 Includes-Progress (no actual teleport, car+0x9f08 = 0), bit 12 -> car+0x9f09; zero translation row implies ZeroVelocity. Callers: OSQTeleportToStart (0x800), VehiclePlacementSystem (0x8540, same matrix twice), FeaturedEventSystem (0x1003f), DataSet (0x40), Reset Vehicle. (used by the vmknolle addons practice-start)"
+ },
+ "signature": {
+  "id": "game.teleport_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 78 29 BC 24 B0 01 00 00 C5 78 29 B4 24 A0 01 00 00 C5 78 29 AC 24 90 01 00 00 C5 78 29 A4 24 80 01 00 00 C5 78 29 9C 24 70 01 00 00 C5 78 29 94 24 60 01 00 00 C5 78 29 8C 24 50 01 00 00 C5 78 29 84 24 40 01 00 00 C5 F8 29 BC 24 30 01 00 00 C5 F8 29 B4 24 20 01 00 00 4C 89 CF",
+  "match": "0x14473dcc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14473dcc0",
+  "kind": "func_start",
+  "names": [
+   "Game_Teleport_Vehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-f",
+   "kind": "func",
+   "item": "0x14473dcc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_f/decomp/14473dcc0.c;xref:0x142d68cec,0x142f347aa,0x142f63f4b,0x1437ac96b,0x144606c14,0x1446445ec,0x1555b8b0f",
+   "notes": "V1186 logs VEHICLE_TELEPORT 'teleportInternal %p %p [%d] %s prevMatrix ... new ... deltaTime %f flags' with p2=name string (lea at 0x142d68ce5), p3/p4 = 4x4 matrices (row 3 = translation), p5 float dt, p6 flag bits (0x800 Actual-Teleport, 0x40 ZeroVelocity); writes car state +0x9f08/+0x9f09; 6-arg proto matches"
+  }
+ ],
+ "proofs": []
+}

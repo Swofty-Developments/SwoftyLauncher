@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleMechanicalManager_BuildVehicleStateMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143242a70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VehicleMechanicalManager::buildVehicleStateMessage; log channel NETWORK-MECHANICAL/V: 'void network::VehicleMechanicalManager::buildVehicleStateMessage(racing::vehicleInstance::Id, const VehicleState &, const VehicleState *) | %s: vehicle(%s) Built Packet ||%s%s%s%s%s%s|%s'"
+ },
+ "signature": {
+  "id": "game.vehicle_mechanical_manager_build_vehicle_state_message",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 02 00 00 C5 78 29 A4 24 C0 02 00 00",
+  "match": "0x143242a70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143242a70",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleMechanicalManager_BuildVehicleStateMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x143242a70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143242a70.c;xref:0x14323cc21",
+   "notes": "V5749 name and description match body; log string/pretty name present"
+  }
+ ],
+ "proofs": []
+}

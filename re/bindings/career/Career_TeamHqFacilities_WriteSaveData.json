@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqFacilities_WriteSaveData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140de9280",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int f(void *facilities, void *save_out)",
+  "evidence": "decomp:re/decomp/140de9280.c;xref:0x1456958d0",
+  "notes": "myteam-g1: Save-game serialiser counterpart: writes shutdown_facilities from the vector at +0x2b8/+0x2c0."
+ },
+ "signature": {
+  "id": "career.team_hq_facilities_write_save_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 78 29 84 24 90 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 48 89 D6 48 89 CF 48 8B 1A",
+  "match": "0x140de9280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140de9280",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqFacilities_WriteSaveData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140de9280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140de9280.c;str:\"shutdown_facilities\"",
+   "notes": "V9559 Writes shutdown_facilities from vector +0x2b8..+0x2c0."
+  }
+ ],
+ "proofs": []
+}

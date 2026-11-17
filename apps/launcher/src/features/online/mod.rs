@@ -498,7 +498,7 @@ impl Shell {
             self.account
                 .session
                 .as_ref()
-                .map(|s| swofty_core::timetrial::api::Api::new(&s.token)),
+                .map(|s| swofty_core::online::timetrial::api::Api::new(&s.token)),
             self.game.install.as_ref(),
         ) else {
             return;
@@ -511,7 +511,7 @@ impl Shell {
             let done = cx
                 .background_executor()
                 .spawn(async move {
-                    swofty_core::timetrial::game_replay::add(
+                    swofty_core::online::timetrial::game_replay::add(
                         &api,
                         &swofty_core::data::paths::data_dir(),
                         &lap,
@@ -528,7 +528,7 @@ impl Shell {
                         crate::app::app_log::action("add a lap's replay to the game").failed(&e);
                         (
                             false,
-                            if e == swofty_core::timetrial::game_replay::NO_REPLAY {
+                            if e == swofty_core::online::timetrial::game_replay::NO_REPLAY {
                                 swofty_i18n::tr("This lap has no game replay").to_owned()
                             } else {
                                 e

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_BindCardInfo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141706a50",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_F1World_BindCardInfo(void *self, void *card_ref, void *bindings)",
+  "evidence": "decomp:re/decomp/141706a50.c;xref:0x141708ae6;xref:0x14170a5f2;xref:0x141af4fab",
+  "notes": "myteam-g2: Writes the card binding fields card_type_enum, card_type, tech_level, mods, title, description, rarity_enum, rarity, rarity_colour and entry_%d for an F1 World card. UI only; used when a card can be upgraded or loadout upgrade textures are set."
+ },
+ "signature": {
+  "id": "ui.f1_world_bind_card_info",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 D3 48 89 CE 48 8D 05",
+  "match": "0x141706a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141706a50",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_BindCardInfo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141706a50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141706a50.c;xref:0x141708ae6;xref:0x14170a5f2",
+   "notes": "V9771 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Collision_CarToCar",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14467c280",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-VEHICLE_COLLISION",
+  "notes": "Log channel VEHICLE_COLLISION: 'Car to Car %p %p, time %f'"
+ },
+ "signature": {
+  "id": "car.collision_car_to_car",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 78 29 AC 24 50 01 00 00 C5 78 29 A4 24 40 01 00 00 C5 78 29 9C 24 30 01 00 00 C5 78 29 94 24 20 01 00 00 C5 78 29 8C 24 10 01 00 00 C5 78 29 84 24 00 01 00 00 C5 F8 29 BC 24 F0 00 00 00 C5 F8 29 B4 24 E0 00 00 00 80 3D ?? ?? ?? ?? 00",
+  "match": "0x14467c280",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14467c280",
+  "kind": "func_start",
+  "names": [
+   "Car_Collision_CarToCar"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14467c280",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14467c280.c;xref:0x14462fed4",
+   "notes": "V6743 body handles both Car to world and Car to Car contacts (VEHICLE_COLLISION_WORLD(_DETAIL) + VEHICLE_COLLISION(_DETAIL), Mass Factors, Car_Collision_Dispatch); registered by lea in Car_Parse_Chassis. Better: Car_Collision_OnContact"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14467c280",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14467c280.c;xref:0x14462fed4",
+   "notes": "V7250 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

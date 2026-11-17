@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLapsStorageSystem_Connect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f93400",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f93400.c;xref:0x1457fd170",
+  "notes": "GhostLapsStorageSystem vtable slot 2 connect: resolves dependent systems via service lookup 0x14030ffd0 into +0x228..+0x268 (+0x230 online/leaderboard system with +0x478 task list, +0x250 session owner [+0x88]+0x260 = session, +0x268 settings, +0x240/+0x248 storage), allocates 0x268-byte local ghost save/load object (ctor 0x142f8bf50) at +0x270. Addon: get the storage system and its sub-system pointers. d3-verify: +0x228/+0x238 come from a vcall on param_2; also allocates a 0x68-byte object at +0x288 | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2363)"
+ },
+ "signature": {
+  "id": "game.ghost_laps_storage_system_connect",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 48 89 D3 48 89 CE 80 3D",
+  "match": "0x142f93400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f93400",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLapsStorageSystem_Connect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d3-verify",
+   "kind": "func",
+   "item": "Game_GhostLapsStorageSystem_Connect",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f93400.c;xref:0x1457fd170",
+   "notes": "V2363 vtable slot 2; +0x228/+0x238 from param_2 vcall +0x28 (not 14030ffd0), +0x230/+0x250/+0x258/+0x260/+0x268/+0x240/+0x248 via 14030ffd0; allocs 0x268 obj ctor 142f8bf50 -> +0x270; also allocs 0x68 object -> +0x288 (unmentioned)."
+  }
+ ],
+ "proofs": []
+}

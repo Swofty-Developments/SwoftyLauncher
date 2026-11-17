@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PostProcessXGenerator_Copy_Render",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bc10f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143bc10f0.c;xref:0x140135eb3,0x143bc10da,0x143bc2d13,0x143d8d9da",
+  "notes": "cxx=NePostProcessXGenerator_Copy::updateCrossFade; log channel CROSSFADE: 'NePostProcessXGenerator_Copy::updateCrossFade m_crossFadeTakeSnapshot %s m_crossFadeInProgress %s m_cbData.crossFadePosition %f' cb2-verify-a: Copy generator main render pass (CopyOpaque, ClearAlphaMask, GenerateAlphaMask, CopyWithAlphaMask); crossfade log is a side effect"
+ },
+ "signature": {
+  "id": "core.post_process_x_generator_copy_update_cross_fade",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 03 00 00 C5 78 29 B4 24 40 03 00 00 C5 78 29 AC 24 30 03 00 00 C5 78 29 A4 24 20 03 00 00 C5 78 29 9C 24 10 03 00 00 C5 78 29 94 24 00 03 00 00 C5 78 29 8C 24 F0 02 00 00 C5 78 29 84 24 E0 02 00 00 C5 F8 29 BC 24 D0 02 00 00 C5 F8 29 B4 24 C0 02 00 00 4C 89 CF 4D 89 C6",
+  "match": "0x143bc10f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bc10f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PostProcessXGenerator_Copy_Render"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143bc10f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bc10f0.c",
+   "notes": "V4082 CopyOpaque, ClearAlphaMask, updateCrossFade strings confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

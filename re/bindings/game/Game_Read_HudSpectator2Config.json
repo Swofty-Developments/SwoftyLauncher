@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_Read_HudSpectator2Config",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c1e530",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: content.pit_strategy, content.tyre_performance, hud_spectator_2.content.bottom_right, hud_spectator_2.content.driver_list_panel, hud_spectator_2.content.focused_driver_panel, hud_spectator_2.content.spectator_menu_panel'"
+ },
+ "signature": {
+  "id": "game.read_hud_spectator2_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 4C 89 C3 48 89 D7",
+  "match": "0x141c1e530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c1e530",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_HudSpectator2Config"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

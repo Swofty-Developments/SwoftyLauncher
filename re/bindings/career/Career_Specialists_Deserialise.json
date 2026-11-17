@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Specialists_Deserialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412db360",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-SPECIALISTS",
+  "notes": "named from its log messages (channel SPECIALISTS): 'deserialiseSaveDataContainer - Cadence being set for driver %s to %d'"
+ },
+ "signature": {
+  "id": "career.specialists_deserialise",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 D6",
+  "match": "0x1412db360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412db360",
+  "kind": "func_start",
+  "names": [
+   "Career_Specialists_Deserialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1412db360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412db360.c;xref:0x1412eb7ce",
+   "notes": "V4735 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x1412db360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412db360.c;str:\"deserialiseSaveDataContainer - Cadence being set for driver \"",
+   "notes": "V9173 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

@@ -4,6 +4,7 @@
 #include "core/apply/content/logo_array.hpp"
 #include "core/apply/content/png_straight.hpp"
 #include "core/apply/content/uidb.hpp"
+#include "core/runtime/hashing.hpp"
 
 #include <algorithm>
 #include <atomic>
@@ -60,36 +61,11 @@ struct SliceCache {
     bool on() const { return get && put; }
 };
 
-inline uint64_t fnv(const void *p, size_t n, uint64_t h)
-{
-    const unsigned char *b = static_cast<const unsigned char *>(p);
-    for (size_t i = 0; i < n; i++)
-        h = (h ^ b[i]) * 0x100000001b3ull;
-    return h;
-}
-
-inline uint64_t mix(const void *p, size_t n)
-{
-    uint64_t h = 0x9e3779b97f4a7c15ull ^ n;
-    const unsigned char *b = static_cast<const unsigned char *>(p);
-    size_t i = 0;
-    for (; i + 8 <= n; i += 8) {
-        uint64_t v;
-        std::memcpy(&v, b + i, 8);
-        h ^= v * 0xff51afd7ed558ccdull;
-        h = (h << 31 | h >> 33) * 0xc4ceb9fe1a85ec53ull;
-    }
-    for (; i < n; i++)
-        h = (h ^ b[i]) * 0x100000001b3ull;
-    h ^= h >> 33;
-    return h * 0xff51afd7ed558ccdull;
-}
-
 inline std::string source_of(const std::string &png)
 {
     char out[64];
-    std::snprintf(out, sizeof out, "%016llx%016llx-%zx", (unsigned long long)fnv(png.data(), png.size(), 0xcbf29ce484222325ull),
-                  (unsigned long long)mix(png.data(), png.size()), png.size());
+    std::snprintf(out, sizeof out, "%016llx%016llx-%zx", (unsigned long long)runtime::fnv64(png.data(), png.size()),
+                  (unsigned long long)runtime::mix64(png.data(), png.size()), png.size());
     return out;
 }
 
@@ -105,7 +81,7 @@ inline std::string info_name(const std::string &source)
 
 inline std::string sealed(const std::string &bytes)
 {
-    uint64_t sum = mix(bytes.data(), bytes.size());
+    uint64_t sum = runtime::mix64(bytes.data(), bytes.size());
     std::string out = "SLC1";
     out.append(reinterpret_cast<const char *>(&sum), 8);
     return out + bytes;
@@ -117,7 +93,7 @@ inline bool unseal(const std::string &stored, std::string &bytes)
         return false;
     uint64_t sum;
     std::memcpy(&sum, stored.data() + 4, 8);
-    if (mix(stored.data() + 12, stored.size() - 12) != sum)
+    if (runtime::mix64(stored.data() + 12, stored.size() - 12) != sum)
         return false;
     bytes.assign(stored, 12, std::string::npos);
     return true;

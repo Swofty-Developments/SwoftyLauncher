@@ -1,0 +1,16 @@
+name: Set up ninja
+description: >
+  Ninja 1.12.1 on PATH, checked against its release archive's SHA-256. native/build.sh runs its compile graph and
+  native/test/run_tests.sh its test graph with it; every job in ci.yml and release.yml that runs either starts here.
+
+runs:
+  using: composite
+  steps:
+    - shell: bash
+      run: |
+        curl -fsSL --retry 5 -o "$RUNNER_TEMP/ninja.zip" https://github.com/ninja-build/ninja/releases/download/v1.12.1/ninja-linux.zip
+        echo "6f98805688d19672bd699fbbfa2c2cf0fc054ac3df1f0e6a47664d963d530255  $RUNNER_TEMP/ninja.zip" | sha256sum -c -
+        mkdir -p "$RUNNER_TEMP/ninja"
+        python3 -m zipfile -e "$RUNNER_TEMP/ninja.zip" "$RUNNER_TEMP/ninja"
+        chmod +x "$RUNNER_TEMP/ninja/ninja"
+        echo "$RUNNER_TEMP/ninja" >> "$GITHUB_PATH"

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SessionExit_OnStateEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d5bb70",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d5bb70.c;xref:0x1457dea80",
+  "notes": "SessionStateExit vslot 8 (onStateEnter; vt 0x1457dea40, class-name string right before the vt). Clears st+0xdb0 flag, calls own vslot 0x58, optional HUD flag (+0xc98 obj +0x214 |= 4), resets ReplaySystem st+0xd60 (if flagged), posts bus message vt 0x1457e63b8 (queued), disables progress replication (st+0xcb8 +0x4f1 = 0, log NETWORK PROGRESS REPLICATION DISABLED). Returns 1."
+ },
+ "signature": {
+  "id": "session.session_exit_on_state_enter",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 CE C6 81 B0 0D",
+  "match": "0x142d5bb70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d5bb70",
+  "kind": "func_start",
+  "names": [
+   "Sess_SessionExit_OnStateEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d2-verify",
+   "kind": "func",
+   "item": "Sess_SessionExit_OnStateEnter",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d5bb70.c;xref:0x1457dea80",
+   "notes": "V2341 vtable slot 8 -> 142d5bb70 confirmed; +0xdb0 clear, HUD flag, ReplaySystem +0xd60 reset, bus msg vt 1457e63b8, progress replication +0xcb8+0x4f1"
+  }
+ ],
+ "proofs": []
+}

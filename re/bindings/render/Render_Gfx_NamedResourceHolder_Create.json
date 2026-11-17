@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_NamedResourceHolder_Create",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bfc180",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bfc180.c;xref:0x143bfc094,0x14f953c3e",
+  "notes": "Allocates a 0x70-byte holder (allocator vcall +0x18, vtable 0x1458c2000) and stores the resource name as a small string (Ne_String_Reserve + Ne_Get_CStrLen, copy). Caller Render_Gfx_AllocAndTrackResource. Hypothesis."
+ },
+ "signature": {
+  "id": "render.gfx_named_resource_holder_create",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4D 89 CE 4D 89 C7 48 89 D7 48 89 CE",
+  "match": "0x143bfc180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bfc180",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_NamedResourceHolder_Create"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143bfc180",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bfc180.c;xref:0x143bfc094",
+   "notes": "V8329 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

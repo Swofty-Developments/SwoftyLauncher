@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Flow_TempLOGCallingStateFrontendWorld",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436d64a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FLOW/V",
+  "notes": "named from its log messages (channel FLOW/V): 'TEMP_LOG: Calling StateFrontendWorld::onStateEnter. INTERRUPT:%d'"
+ },
+ "signature": {
+  "id": "game.flow_temp_log_calling_state_frontend_world",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 48 89 CE 8B 0D",
+  "match": "0x1436d64a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436d64a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Flow_TempLOGCallingStateFrontendWorld"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436d64a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1436d64a0.c",
+   "notes": "V6127 2735-byte StateFrontendWorld::onStateEnter (defineSubTasks log, load_frontend_world, FINISHED log), not just a TEMP_LOG. Better: Game_StateFrontendWorld_OnStateEnter. (no direct call site; vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1436d64a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436d64a0.c",
+   "notes": "V7093 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_LiveryAssignVM_OnActivate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141fd31a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141fd31a0.c;xref:0x145763998,0x141a4ab33,0x1420027ca",
+  "notes": "Slot 13 of vt 0x145763930 (also called by Game_CarCustomisation_SetupWritableCamera and 0x141a4aab0): livery assignment (assignment_list, tabs.current_tab, eLivery), subscribes MessageItemUnlocked, goto_store_allowed / can_select / inputAllow / showTabTooltips; thumbnails reason 0. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3227)"
+ },
+ "signature": {
+  "id": "game.livery_assign_v_m_on_activate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 02 00 00 48 89 CE 48 8B 89 A0 02 00",
+  "match": "0x141fd31a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fd31a0",
+  "kind": "func_start",
+  "names": [
+   "Game_LiveryAssignVM_OnActivate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d14-verify",
+   "kind": "func",
+   "item": "Game_LiveryAssignVM_OnActivate",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/41fd31a0.c;xref:None",
+   "notes": "V3227 offsets, vtable slot/callers, strings and calls checked in decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

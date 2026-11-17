@@ -1,5 +1,6 @@
 #include "core/career/career_ui.hpp"
 #include "core/registry/older.hpp"
+#include "core/runtime/loader/core_sets.hpp"
 
 #include <atomic>
 #include <mutex>
@@ -595,5 +596,7 @@ void characters_commit()
     if (any)
         swofty::log("[characters] setup: character refs %s, voices %s", state(ref), state(voice));
 }
+
+static loader::FunctionSet characters_core_set{loader::CoreSetId::characters, characters_mixins, characters_commit};
 
 }

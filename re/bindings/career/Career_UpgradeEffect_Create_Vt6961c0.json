@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_UpgradeEffect_Create_Vt6961c0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140df5c60",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *FUN(void **out_ref, void *allocator, void *unused, void *cfg_node)",
+  "evidence": "decomp:re/decomp/140df5c60.c;xref:0x145695d88",
+  "notes": "myteam-g1: Config-driven factory for an upgrade-effect object (vtable 0x1456961c0, allocs 0x138-0x148 bytes): reads upgrade_department, maps the department name by FNV-1a (lowercased) hash to index 0..5 (stored at +0x120) and one int param at +0x140."
+ },
+ "signature": {
+  "id": "career.upgrade_effect_create_vt6961c0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4D 89 CE 4C 89 C3 48 89 D7 48 89 CE 48 8D 15 ?? ?? ?? ?? 4C 89 C9",
+  "match": "0x140df5c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140df5c60",
+  "kind": "func_start",
+  "names": [
+   "Career_UpgradeEffect_Create_Vt6961c0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140df5c60",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140df5c60.c;str:\"upgrade_department\"",
+   "notes": "V9564 Right idea (upgrade_department hashed with FNV-1a 64 to index 0..5 stored at +0x120, vtable 0x1456961c0), but alloc is 0x140 and the single param is a bool enable at +0x138, not an int at +0x140."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_AllSlotsMeetMinimum",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d98d80",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ContractRenewal_AllSlotsMeetMinimum(void *comp)",
+  "evidence": "decomp:re/decomp/140d98d80.c;xref:0x140d8c2df;xref:0x140d9923c;xref:0x140d992d3",
+  "notes": "myteam-g2: For every slot with flag 0x10 compares the pending driver count against comp+0x2f4 / +0x2f8 (min required) and returns 1 only if all slots satisfy it. Used to decide if more approaches are needed."
+ },
+ "signature": {
+  "id": "career.contract_renewal_all_slots_meet_minimum",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 8B 81 78 02 00 00 48 8B B8 E0 02 00 00",
+  "match": "0x140d98d80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d98d80",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_AllSlotsMeetMinimum"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d98d80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d98d80.c",
+   "notes": "V9544 For flag-0x10 slots compares pending count against comp+0x2f4/+0x2f8; returns 1 only if all satisfy."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SunOverride_Activate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409a1a10",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-SunOverrideComponent",
+  "notes": "named from its log messages (channel SunOverrideComponent): 'activate %p | %p SunOverrideComponent::activate GameWeatherSystem::registerSunOverrideData %s | %p SunOverrideComponent::activate weatherOverride %s'"
+ },
+ "signature": {
+  "id": "game.sun_override_activate",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 CE 80 3D ?? ?? ?? ?? 01 75 62 B8 E3 00 00 00",
+  "match": "0x1409a1a10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409a1a10",
+  "kind": "func_start",
+  "names": [
+   "Game_SunOverride_Activate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1409a1a10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409a1a10.c",
+   "notes": "V4363 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

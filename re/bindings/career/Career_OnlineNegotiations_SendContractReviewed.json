@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_SendContractReviewed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141002330",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
+  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'Process contract reviewed sent'"
+ },
+ "signature": {
+  "id": "career.online_negotiations_send_contract_reviewed",
+  "section": ".xtls",
+  "pattern": "48 83 EC 48 48 B8 12 00 00 00 C8 00 00 00",
+  "match": "0x141002330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141002330",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_SendContractReviewed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141002330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141002330.c;xref:0x141000346",
+   "notes": "V4544 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x141002330",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141002330.c;str:\"Process contract reviewed sent\"",
+   "notes": "V9131 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameInputModule_Populating",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a7b130",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameInputModule::Populating; log channel INPUT: 'GameInputModule::Populating UIDB for device:%s / %s'"
+ },
+ "signature": {
+  "id": "game.game_input_module_populating",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 4C 89 C6 48 89 D7 48 89 CB 4C 8B 35",
+  "match": "0x142a7b130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a7b130",
+  "kind": "func_start",
+  "names": [
+   "Game_GameInputModule_Populating"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a7b130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a7b130.c;xref:0x14da3acdb",
+   "notes": "V4971 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

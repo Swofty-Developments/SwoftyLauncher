@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Write_Differential",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14467daa0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14467daa0.c;xref:0x145bfa058",
+  "notes": "VTF Differential: DriveType, RearPowerProportion, DiffRearNoEffect/FullEffect/MaxLockingTorque, DiffMidCornerGForce, DiffGForceBlendSlope, RampDifferential. Correction: this is the serialiser (component data vtable slot 3): it writes the section back as XML through the writer object's vtable (+0x28 begin element, +0x68 attribute, +0x78 end, +0x98 comment); the field list above is what it writes. The reader is slot 2 (Game_Read_VtfFloat by name, values stored XOR-obfuscated). | car-b: data vtable slot 3 (vtable entry 0x145bfa058). Capstone cross-check: it reads the same data offsets the paired Car_Read_ function writes (differences only in vector internals, derived fields and ERS TrackSettings, which are not written back), so the struct offsets in the car-b structs hold for both"
+ },
+ "signature": {
+  "id": "car.parse_differential",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 D6 48 89 CF 48 8B 02",
+  "match": "0x14467daa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14467daa0",
+  "kind": "func_start",
+  "names": [
+   "Car_Write_Differential"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v4",
+   "kind": "func",
+   "item": "Car_Write_Differential",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14467daa0.c;xref:0x145bfa058",
+   "notes": "V1240 Serialiser: begin 'Differential' via writer vt+0x28, values via +0x68/+0x58/+0x70, ends via +0x78. Emits exactly DriveType, RearPowerProportion, DiffRearNoEffect/FullEffect/MaxLockingTorque, DiffMidCornerGForce, DiffGForceBlendSlope, RampDifferential. Only ref: data vt 0x145bfa040 +0x18."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14467daa0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14467daa0.c",
+   "notes": "V6745 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

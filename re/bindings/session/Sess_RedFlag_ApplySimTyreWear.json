@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlag_ApplySimTyreWear",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f6af90",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f6af90.c;xref:0x142f662d3,0x142f666ab",
+  "notes": "Applies simulated tyre wear in red-flag unlap: takes the 4 tyre wear values (+0xc/+0x18/+0x24/+0x30 of the current set), shifts them so the worst equals this+0xb58 and clamps to 0..1. Callers: Sess_RedFlag_SimulateUnlapLaps."
+ },
+ "signature": {
+  "id": "session.red_flag_apply_sim_tyre_wear",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 C5 F8 29 7C 24 10 C5 F8 29 34 24 48 8B 41 20 48",
+  "match": "0x142f6af90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f6af90",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlag_ApplySimTyreWear"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f6af90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f6af90.c;xref:0x142f662d3,0x142f671d0",
+   "notes": "V3750 Tyre-wear shift (4 values +0xc/+0x18/+0x24/+0x30, worst -> +0xb58, clamp 0..1) correct, but it also clamps/writes a car energy/fuel value ([car+0x540]+0x100, from +0xb60) and increments a per-car counter when mode==1; name covers only tyre wear."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiationsB_OnNegotiationsFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1410015e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1410015e0.c;xref:0x140fff146,0x141003928",
+  "notes": "Second event family: logs 'Negotiations finished' and sends the network message. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3040)"
+ },
+ "signature": {
+  "id": "career.online_negotiations_b_on_negotiations_finished",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 58 B8 24 01 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 36 81 FA 48 A7 DF 44 74 41 83",
+  "match": "0x1410015e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1410015e0",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiationsB_OnNegotiationsFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_OnlineNegotiationsB_OnNegotiationsFinished",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1410015e0.c;xref:0x1410015e0",
+   "notes": "V3040 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

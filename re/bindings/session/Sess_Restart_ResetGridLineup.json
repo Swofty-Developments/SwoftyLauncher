@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Restart_ResetGridLineup",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140a12530",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140a12530.c;xref:0x14080ce88",
+  "notes": "(sys): on session restart resets player/grid line-up state: clears 0x2000 bytes at 0x146058348, stops audio 'stop_grid_line_up_parking_radar', re-targets player vehicle (Sess_Get_PlayerVehicleIndex), resets job queue +0xc30. Caller: Sess_Restart_SessionSystems."
+ },
+ "signature": {
+  "id": "session.restart_reset_grid_lineup",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE C7 81 F8 10 00 00",
+  "match": "0x140a12530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140a12530",
+  "kind": "func_start",
+  "names": [
+   "Sess_Restart_ResetGridLineup"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140a12530",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140a12530.c;xref:0x14080ce88",
+   "notes": "V3833 memset 0x2000 bytes at 0x146058348, string 'stop_grid_line_up_parking_radar', job queue reset; caller Sess_Restart_SessionSystems seen"
+  }
+ ],
+ "proofs": []
+}

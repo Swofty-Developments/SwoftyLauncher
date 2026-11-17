@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLaps_SavePersonalBest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fa31e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-GHOSTLAP-TRACE",
+  "notes": "named from its log messages (channel GHOSTLAP-TRACE): '%s(#%d) : failed to serialise personal best. | %s(#%d, %d) | %s(#%d, %d) : performanceState is (%s). | %s(#%d) : personal best laptime (%d ms) is not better than current(%d ms). | %s(#%d) : memory sto'"
+ },
+ "signature": {
+  "id": "game.ghost_laps_save_personal_best",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 49 89 D6",
+  "match": "0x142fa31e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fa31e0",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLaps_SavePersonalBest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142fa31e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fa31e0.c;xref:0x142f98c89",
+   "notes": "V5702 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

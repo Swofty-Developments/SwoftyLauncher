@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Get_OwnerPerkByIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14101ad60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void* (void *owner_setup, void *out_shared, int index)",
+  "evidence": "decomp:re/decomp/14101ad60.c;xref:0x14101b16a;xref:0x14205bc89;xref:0x14205ccd4",
+  "notes": "myteam-g2: Returns the owner perk record at position index of the current owner background: finds the owner entry (list at owner_setup+0x3f8->+0x298, 0x30 stride) for the active key, reads its u32 id vector, and looks the id up in the perk list at owner_setup+0x2e8 (shared_ptr pairs). Used by OwnerBackgroundVM and the upgrade screen."
+ },
+ "signature": {
+  "id": "career.get_owner_perk_by_index",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 44 89 C3",
+  "match": "0x14101ad60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14101ad60",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_OwnerPerkByIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x14101ad60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14101ad60.c;xref:0x14101b16a",
+   "notes": "V9636 Owner entry list (+0x3f8 -> +0x298, 0x30 stride, key +0x2b0), copies its u32 id vector, then looks ids up in the perk list; plausible as claimed."
+  }
+ ],
+ "proofs": []
+}

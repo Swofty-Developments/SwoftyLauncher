@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_TyreDamageMonitor_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f15ce0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "ulonglong(void *monitor)",
+  "evidence": "decomp:re/decomp/142f15ce0.c",
+  "notes": "Tyre damage monitor (log channel TYRE_DAMAGE_MONITOR). Copies the maximum number of concurrent punctures (monitor+0xf74) into the vehicle tyre state; logs 'Set the maximum number of concurrent punctures to %d.'."
+ },
+ "signature": {
+  "id": "car.tyre_damage_monitor_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 C7 81 20 0C 00 00 00 00 00 00",
+  "match": "0x142f15ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f15ce0",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreDamageMonitor_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f15ce0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f15ce0.c;xref:0x142f1584a",
+   "notes": "V5587 Not an Update: rebuilds per-vehicle 0x70-byte slot table (count +0xc20) then copies max punctures +0xf74 and logs; better Car_TyreDamageMonitor_RebuildVehicleSlots"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f15ce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f15ce0.c;xref:0x142f1584a",
+   "notes": "V6910 265 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

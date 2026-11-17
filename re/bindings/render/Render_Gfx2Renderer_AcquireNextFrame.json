@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Renderer_AcquireNextFrame",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b7f890",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b7f890.c;xref:0x143b799a8,0x143c792f7",
+  "notes": "Triple-buffer step: frame index at ctx+0x70 advances modulo 3, picks swapchain slot (+0x10 + idx*8), calls Render_Gfx2_AcquireBackbuffer, records error code into TLS error list and the 10-entry error ring (0x146107830) with caller address; sets ok flag +0x28. Callers Ne_Gfx2Renderer_RenderFrame, Render_DDGISystem_Render."
+ },
+ "signature": {
+  "id": "render.gfx2_renderer_acquire_next_frame",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 CE 48 8B 59 08 8B 43",
+  "match": "0x143b7f890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b7f890",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Renderer_AcquireNextFrame"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143b7f890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b7f890.c;xref:0x143b799a8",
+   "notes": "V7779 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

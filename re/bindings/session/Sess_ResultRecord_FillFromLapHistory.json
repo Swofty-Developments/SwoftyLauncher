@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ResultRecord_FillFromLapHistory",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c7c050",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c7c050.c;xref:0x142d3dfcf,0x142f6801f",
+  "notes": "Fills a result record from the car lap history (200 laps x 200 bytes, XOR-protected): best valid lap (sort 0x14098cb70), best lap time and number, total time (param_3 or history +0x9c60) and lap count, all XOR-encoded. Callers: Sess_ChallengeRuleset_FinaliseResults, Sess_Progress_SyncResultRecord."
+ },
+ "signature": {
+  "id": "session.result_record_fill_from_lap_history",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 78 06 00 00 4C 89 C3 48",
+  "match": "0x142c7c050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c7c050",
+  "kind": "func_start",
+  "names": [
+   "Sess_ResultRecord_FillFromLapHistory"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142c7c050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c7c050.c;xref:0x142d3dfcf,0x142f6801f",
+   "notes": "V3492 200 records x 200 bytes (40000 loop), valid-lap filter, sort 0x14098cb70, total time param_3 or history +0x9c60, XOR-encoded fields; callers Sess_ChallengeRuleset_FinaliseResults and Sess_Progress_SyncResultRecord"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PressInterview_SendFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fd4a90",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-PRESS_INTERVIEWS",
+  "notes": "named from its log messages (channel PRESS_INTERVIEWS): 'Press interview finished network message sent'"
+ },
+ "signature": {
+  "id": "game.press_interview_send_finished",
+  "section": ".xtls",
+  "pattern": "48 83 EC 48 48 B8 12 00 00 00 9E 00 00 00",
+  "match": "0x140fd4a90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fd4a90",
+  "kind": "func_start",
+  "names": [
+   "Game_PressInterview_SendFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140fd4a90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fd4a90.c;xref:0x140fd45c6,0x140fd5080",
+   "notes": "V4824 log/pretty strings and body checked in decomp"
+  }
+ ],
+ "proofs": []
+}

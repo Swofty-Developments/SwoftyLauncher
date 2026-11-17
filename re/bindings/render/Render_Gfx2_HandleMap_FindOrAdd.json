@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_HandleMap_FindOrAdd",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bda160",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bda160.c;xref:0x14014054c,0x14014075f",
+  "notes": "unordered_map find-or-insert keyed by u64 using FNV-1a 64 (basis 0xcbf29ce484222325); key 0 returns -1; throws invalid hash bucket count / unordered_map/set too long; interns via StringPool. Used from many render setup functions (0x143bab0a0, 0x143bafd80, 0x143bcbb30...). Hypothesis: render resource/pipeline name-hash to handle map."
+ },
+ "signature": {
+  "id": "render.gfx2_handle_map_find_or_add",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 02 00 00 4D",
+  "match": "0x143bda160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bda160",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_HandleMap_FindOrAdd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bda160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bda160.c;xref:0x14014054c",
+   "notes": "V7810 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

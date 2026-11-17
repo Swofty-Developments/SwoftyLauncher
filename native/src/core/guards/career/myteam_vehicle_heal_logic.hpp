@@ -34,13 +34,6 @@ constexpr size_t MAX_SLOTS = 0x4000;
 constexpr size_t MAX_ENTRANTS = 0x1000;
 constexpr size_t LOG_IDS = 32;
 
-inline bool switch_off(const char *value)
-{
-    if (!value)
-        return false;
-    return value[0] == '0' && value[1] == 0 ? true : value[0] == 'o' && value[1] == 'f' && value[2] == 'f' && value[3] == 0;
-}
-
 inline uint8_t kind(uint32_t handle)
 {
     return static_cast<uint8_t>(handle & 0xff);

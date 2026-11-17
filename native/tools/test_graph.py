@@ -4,20 +4,25 @@
 Each Unit compiles to an object with a depfile and links to one executable; its run is a target whose output is
 <builddir>/<name>/ok, so ninja reruns a unit test only when its executable or an input file changed. A Script
 reruns every time, since ninja cannot see what it runs, after its Programs are built into <builddir>/<name>. Objects
-compile once under <builddir>/obj for every Program that lists them with the same target and flags. `test` is
+compile once under <builddir>/obj for every Program that lists them with the same target and flags. A Program with a
+`when` condition the host does not meet (`sanitizers`: the host compiler links -fsanitize=address,undefined) is left
+out, and its script runs without it. `test` is
 every host test, `test-wine` every Wine test, and each test's name and each group is a target of its own.
 
 Ninja starts first the edges with the longest chain of edges behind them. A unit's compile has two (its link and its
 run), and the run of a script without programs, which takes longest, has none, so PRIORITY stamp edges follow each
 such run and one follows the run of a script with programs: those scripts start first, then their programs' compiles,
-then the units.
+then the units. A Program of kind 'obj' has a stamp edge in place of a link, so its compile is not left with the
+units.
 """
 
 import argparse
 import hashlib
 import os
 import shlex
+import subprocess
 import sys
+import tempfile
 
 NATIVE = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, os.path.join(NATIVE, 'test'))
@@ -32,6 +37,15 @@ PRIORITY = 4
 
 def quote(args):
     return ' '.join(shlex.quote(a) for a in args)
+
+
+def host_has(cxx, flags):
+    with tempfile.TemporaryDirectory() as d:
+        try:
+            return subprocess.run([cxx, '-x', 'c++', *flags, '-o', os.path.join(d, 'probe'), '-'], input=b'int main(){}',
+                                  capture_output=True).returncode == 0
+        except OSError:
+            return False
 
 
 def main():
@@ -77,8 +91,16 @@ def main():
         'rule link_program',
         '  command = zig $driver -target $target $ldflags -o $out $in',
         '  description = LINK $out',
+        'rule cxx_host',
+        '  command = $hostcxx $flags -MD -MF $out.d -c $in -o $out',
+        '  description = CXX $in',
+        '  depfile = $out.d',
+        '  deps = gcc',
+        'rule link_host',
+        '  command = $hostcxx $ldflags -o $out $in',
+        '  description = LINK $out',
         'rule run',
-        '  command = test/lib/run_one.sh $name $dir $cwd $cmd',
+        '  command = test/lib/run_one.sh $name $kind $dir $cwd $cmd',
         '  description = TEST $name',
         'rule stamp',
         '  command = touch $out',
@@ -89,6 +111,7 @@ def main():
     ]
 
     names, host, wine, table, groups, compiled = set(), [], [], [], {}, {}
+    available = {'': True, 'sanitizers': host_has(a.host_cxx, ['-fsanitize=address,undefined'])}
 
     def claim(name):
         if name in names or name in RESERVED:
@@ -96,7 +119,10 @@ def main():
         names.add(name)
 
     def compile_into(path, objects, source):
-        rule = 'cxx_program' if source.endswith('.cpp') else 'cc_program'
+        if objects.target == manifest.HOST:
+            rule = 'cxx_host'
+        else:
+            rule = 'cxx_program' if source.endswith('.cpp') else 'cc_program'
         if not os.path.isfile(os.path.join(NATIVE, source)):
             sys.exit(f'test_graph.py: {source} is missing')
         lines.extend([f'build {path}: {rule} {source}', f'  target = {objects.target}', f'  flags = {quote(objects.flags)}'])
@@ -118,14 +144,17 @@ def main():
             if len(p.objects) != 1 or len(p.objects[0].sources) != 1:
                 sys.exit(f'test_graph.py: {out} is an object, so it compiles one source')
             compile_into(out, p.objects[0], p.objects[0].sources[0])
-            return out
+            lines.extend([f'build {out}.built: stamp {out}', f'  name = {p.out}'])
+            return f'{out}.built'
         targets = {o.target for o in p.objects}
         if len(targets) != 1:
             sys.exit(f'test_graph.py: {out} mixes targets {sorted(targets)}')
         inputs = [path for o in p.objects for path in shared_objects(o)]
         cxx = any(source.endswith('.cpp') for o in p.objects for source in o.sources)
-        lines.extend([f'build {out}: link_program {" ".join(inputs)}', f'  target = {targets.pop()}',
-                      f'  driver = {"c++" if cxx else "cc"}', f'  ldflags = {"-shared" if p.kind == "dll" else ""}'])
+        target = targets.pop()
+        ldflags = quote((['-shared'] if p.kind == 'dll' else []) + p.ldflags)
+        lines.extend([f'build {out}: {"link_host" if target == manifest.HOST else "link_program"} {" ".join(inputs)}',
+                      f'  target = {target}', f'  driver = {"c++" if cxx else "cc"}', f'  ldflags = {ldflags}'])
         return out
 
     def ranked(name, ok, stamps):
@@ -139,11 +168,14 @@ def main():
         claim(s.name)
         d = f'{b}/{s.name}'
         dir_abs = os.path.abspath(os.path.join(NATIVE, d))
-        built = [program(d, p) for p in s.programs]
+        for p in s.programs:
+            if p.when not in available:
+                sys.exit(f'test_graph.py: {s.name}: {p.out} builds when {p.when!r}, which is not a condition')
+        built = [program(d, p) for p in s.programs if available[p.when]]
         implicit = ' | ' + ' '.join(built) if built else ''
         after = ' || ' + ' '.join(f'{b}/{x}/ok' for x in s.after) if s.after else ''
         lines.append(f'build {d}/ok: run always{implicit}{after}')
-        lines += [f'  name = {s.name}', f'  dir = {dir_abs}', f'  cwd = {s.cwd}',
+        lines += [f'  name = {s.name}', f'  kind = {"wine" if s.wine else "host"}', f'  dir = {dir_abs}', f'  cwd = {s.cwd}',
                   f'  cmd = {quote([part.replace("{out}", dir_abs) for part in s.command])}']
         lines.append(f'build {s.name}: phony {d}/ok')
         done = ranked(s.name, f'{d}/ok', 1 if s.programs else PRIORITY)
@@ -152,7 +184,7 @@ def main():
         (wine if s.wine else host).append(done)
         table.append((s.name, 'wine' if s.wine else 'host', s.title))
 
-    for u in manifest.UNITS + manifest.ZIG_UNITS:
+    for u in manifest.UNITS:
         claim(u.name)
         if not os.path.isfile(os.path.join(NATIVE, u.source)):
             sys.exit(f'test_graph.py: {u.source} is missing')
@@ -162,7 +194,7 @@ def main():
         lines.append(f'build {exe}: link_{u.compiler} {exe}.o')
         inputs = [os.path.normpath(os.path.join('test', x)) for x in u.args if os.path.isfile(os.path.join(NATIVE, 'test', x))]
         lines.append(f'build {d}/ok: run {exe}' + (' | ' + ' '.join(inputs) if inputs else ''))
-        lines += [f'  name = {u.name}', f'  dir = {os.path.abspath(os.path.join(NATIVE, d))}', '  cwd = test',
+        lines += [f'  name = {u.name}', '  kind = host', f'  dir = {os.path.abspath(os.path.join(NATIVE, d))}', '  cwd = test',
                   f'  cmd = {quote([os.path.abspath(os.path.join(NATIVE, exe))] + u.args)}']
         lines.append(f'build {u.name}: phony {d}/ok')
         host.append(f'{d}/ok')

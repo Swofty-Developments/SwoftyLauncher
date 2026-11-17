@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_PostFx_InitCopySharpenShaders",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bc5fb0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bc5fb0.c;xref:0x143bc47c3,0x143bc4844",
+  "notes": "Initialises the final-copy postfx generator: looks up shader permutations via 0x1439b33a0(shaderset,\"default\",name): sdr2hdr, apply_unsharp_mask, crossfade_grab, crossfade_blend, and *_with_aces_transform / *_with_aces_optimised_transform variants, generate_alphamask, copy_2d_opaque_ps, copy_2d_alphamask_ps, copy_2d_opaque_srgb_ps, copy_2d_alphamask_srgb_ps. Defaults: sharpen 0.1 (0x3dcccccd), 1.2 (0x3f99999a). param_2[2] = HDR flag (sdr2hdr vs unsharp). Callers Game_PostFx_CreateMotionBloomLensFlare, Game_Rtt_CreateScenes. Addon: names of final image sharpen/ACES/crossfade shaders."
+ },
+ "signature": {
+  "id": "render.post_fx_init_copy_sharpen_shaders",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 B8 00 00 00 00",
+  "match": "0x143bc5fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bc5fb0",
+  "kind": "func_start",
+  "names": [
+   "Render_PostFx_InitCopySharpenShaders"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bc5fb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bc5fb0.c;xref:0x143bc47c3",
+   "notes": "V7804 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

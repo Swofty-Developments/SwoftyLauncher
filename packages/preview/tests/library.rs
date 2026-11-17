@@ -159,5 +159,11 @@ fn all_library_effects_together_stay_under_a_frame() {
         eprintln!("{adapter} renders on the CPU; the frame time is not checked");
         return;
     }
+    if cfg!(debug_assertions) {
+        eprintln!(
+            "an unoptimised build; the frame time is checked only in an optimised one (cargo test --release)"
+        );
+        return;
+    }
     assert!(ms < 33.0, "{ms} ms per frame");
 }

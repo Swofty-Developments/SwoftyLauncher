@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Load_AudioBundle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144528310",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144528310.c;imm:0x145be7cab",
+  "notes": "loads <audio dir>/bundles/<name>.bdl (format %s/bundles/%s). No magic or version check: header version at +0x04, section offset at +0x10; version > 0x73 reads +0x38/+0x3c (and +0x40 unless 0x74) for the part flags, else flags 3 (engine, exhaust). Stock bundles are 0x77 (0x76 for the AMG cars); the F1 25 Engine Sound Pack bundles are 0x6a"
+ },
+ "signature": {
+  "id": "game.load_audio_bundle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 02 00 00 C5 F8 29 B4 24 50 02 00 00 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D6",
+  "match": "0x144528310",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144528310",
+  "kind": "func_start",
+  "names": [
+   "Game_Load_AudioBundle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144528310",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144528310.c;xref:0x14451c6b1",
+   "notes": "V6676 version +4, 0x73 threshold, +0x38/+0x3c/+0x40 verified"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_ViewReplay_EnterPhotoMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d9eb90",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d9eb90.c;xref:0x142da2c71,0x142da6b52",
+  "notes": "(state) If photo mode is allowed (0x142bda550 on +0xdc0): sets replay state 5 (Ne_Replay_SetState on [+0xd60], CS +0xb0), pauses time scale, loads 'asset_groups/ego_package/photo_mode/photo_mode.assetgroup' when not already (+0x394/+0x395) and enables Game_PhotoModeMotion_Enable. Callers Sess_ViewInstantReplay_Update, ViewTerminalReplay enter."
+ },
+ "signature": {
+  "id": "session.view_replay_enter_photo_mode",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 89 C0 0D 00 00",
+  "match": "0x142d9eb90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d9eb90",
+  "kind": "func_start",
+  "names": [
+   "Sess_ViewReplay_EnterPhotoMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d9eb90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d9eb90.c;xref:0x142da2c71,0x142da6b52",
+   "notes": "V3716 gate 0x142bda550(+0xdc0); replay state 5 via 0x1445d5c40 under CS +0xb0; timescale zeroed; loads asset_groups/ego_package/photo_mode/photo_mode.assetgroup once (+0x394/+0x395) with callback 0x142bdaa20 (PhotoModeMotion_Enable); callers ok"
+  }
+ ],
+ "proofs": []
+}

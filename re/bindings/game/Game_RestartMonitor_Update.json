@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RestartMonitor_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143228f50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=RestartMonitor::update; log channel NETWORK: 'void network::RestartMonitor::update() | %s forceSessionRestartTransition processing'"
+ },
+ "signature": {
+  "id": "game.restart_monitor_update",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 48 89 CE 83 79 08 01",
+  "match": "0x143228f50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143228f50",
+  "kind": "func_start",
+  "names": [
+   "Game_RestartMonitor_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143228f50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143228f50.c;xref:0x14305f96b",
+   "notes": "V6004 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

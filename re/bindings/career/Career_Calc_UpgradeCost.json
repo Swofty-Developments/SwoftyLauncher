@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Calc_UpgradeCost",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143525b60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int32_t Career_Calc_UpgradeCost(void *list, void *inst, void *mods, uint32_t option)",
+  "evidence": "decomp:re/decomp/143525b60.c;xref:0x143525b60;doc:addons/rnd-tyres-thermal/native/HOOKS.md#test-price-flag-tyres_test_price-default-on--temporary",
+  "notes": "Research/development cost of one upgrade instance for an option (option & 6 picks cost_to_develop): base cost x team cost-scale modifiers + per-owned + event percent. Only eax is written; callers compare it signed (cmp eax,ebp ; jg at 0x143532b86)."
+ },
+ "signature": {
+  "id": "career.calc_upgrade_cost",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC A0 00 00 00 C5 78 29 84 24 90 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 44 89 CF",
+  "match": "0x143525b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143525b60",
+  "kind": "func_start",
+  "names": [
+   "Career_Calc_UpgradeCost"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "tyres-b",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/rnd-tyres-thermal/native/src/rnd_departments.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-4",
+   "kind": "func",
+   "item": "Career_Calc_UpgradeCost",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143525b60.c;xref:0x143525b89,0x143525b95,0x14351df3c,0x14351e0bf,0x143532b81,0x143532b86,0x1435338e2",
+   "notes": "V0181 Role and the 4 params right: rcx list (passed to 0x1435260b0), rdx inst (base cost +0x5c/+0x60 picked by option&6, state-dependent scaling), r8 mods (8-byte entries at +8..+0x10), r9d option bits; 4 E8 callers. Off: return type. Every return path writes eax only and callers read eax with a signed compare (cmp eax,ebp; jg at 0x143532b86), so expect int32_t, not uint64_t"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "tyres-verify-5",
+   "kind": "func",
+   "item": "Career_Calc_UpgradeCost",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143525b60.c;xref:0x14351df3c,0x14351e0bf,0x143532b81,0x143532b86,0x1435338e2,0x1435338e7,0x14352605a,0x14352607b",
+   "notes": "V0219 sigcheck OK, entry window and jump table 0x14584fe48 clean; 4 args match, base = inst+0x5c or +0x60 by option&6, mods vector kinds 3/0x13 scale, 0x14 percent, 10 x owned count; eax only (vcvttss2si eax / mov eax,[inst+0x90|0xa4]); 4 callers, two compare signed (jg at 0x143532b88, 0x1435338e9), two return it"
+  }
+ ],
+ "proofs": []
+}

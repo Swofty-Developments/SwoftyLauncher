@@ -203,6 +203,7 @@ impl Host {
 #[derive(Default)]
 pub(crate) struct Ads {
     host: Option<Rc<RefCell<Host>>>,
+    pub(crate) video: Option<crate::features::ads::AdVideo>,
 }
 
 impl Ads {
@@ -224,7 +225,10 @@ impl Ads {
             paused: false,
             game_since: None,
         }));
-        Self { host: Some(host) }
+        Self {
+            host: Some(host),
+            video: None,
+        }
     }
 
     /// Off while paused, so pages lay out as if there were no ads.

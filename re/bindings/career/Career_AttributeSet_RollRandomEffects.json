@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_AttributeSet_RollRandomEffects",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c981f0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_AttributeSet_RecomputeStatValues(void *attr_set)",
+  "evidence": "decomp:re/decomp/140c981f0.c;xref:0x140db0926;xref:0x140db6c9b;xref:0x140dbb668",
+  "notes": "myteam-g2: Rebuilds the cached stat values of a My Team attribute set: collects active stat records (0x78-byte, active flag at +0x70) from set+8..+0x10, drops released effect refs (+0x38..+0x40), re-sums effect contributions per stat id (8-byte id/float pairs, clamped via vmaxss/vminss), and runs the change callbacks (FUN_140c993c0). Called after contracts link/progress, i.e. sponsor and driver contract effects feed stats through here. Hook: after calling it, modified stat floats take effect. DISPUTE(V9017) role per verifier: Not a deterministic recompute. The object holds a seeded RNG (counter +0x98, seed words from +0xa8, state size 0x270): it filters candidate effect templates by requirements, then loops up to param_1+0x80 times picking a random candidate (rng modulo count), applying it via FUN_140c95990 and adding per-stat id/float pairs clamped to [-1,1], then fires callbacks FUN_140c993c0. Better role: random effect-roll/regenerate for a stat set; the +0x70 active flag, 0x78 stride and +0x38..0x40 ref release parts of the claim do exist."
+ },
+ "signature": {
+  "id": "career.attribute_set_roll_random_effects",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 78 29 8C 24 10 01 00 00 C5 78 29 84 24 00 01 00 00 C5 F8 29 BC 24 F0 00 00 00 C5 F8 29 B4 24 E0 00 00 00 48 8B B9 A0 00 00 00",
+  "match": "0x140c981f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c981f0",
+  "kind": "func_start",
+  "names": [
+   "Career_AttributeSet_RollRandomEffects"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x140c981f0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/140c981f0.c;xref:0x140db0926;xref:0x140db6c9b",
+   "notes": "V9017 Not a deterministic recompute. The object holds a seeded RNG (counter +0x98, seed words from +0xa8, state size 0x270): it filters candidate effect templates by requirements, then loops up to param_1+0x80 times picking a random candidate (rng modulo count), applying it via FUN_140c95990 and adding per-stat id/float pairs clamped to [-1,1], then fires callbacks FUN_140c993c0. Better role: random effect-roll/regenerate for a stat set; the +0x70 active flag, 0x78 stride and +0x38..0x40 ref release parts of the claim do exist."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c981f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c981f0.c",
+   "notes": "V9508 Name RollRandomEffects fits but the role text is wrong: it is a seeded random roll (counter +0x98, seed +0xa8, loop up to +0x80 times, applies via FUN_140c95990, clamps, fires FUN_140c993c0), not a deterministic recompute."
+  }
+ ],
+ "proofs": []
+}

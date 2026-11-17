@@ -148,7 +148,7 @@ impl SendLogs {
             name: name.clone(),
             message,
             game: self.game.clone(),
-            room: swofty_core::multiplayer::client::snapshot(),
+            room: swofty_core::online::multiplayer::client::snapshot(),
         };
         let sending = send_logs::available();
         self._work = Some(cx.spawn_in(window, async move |this, cx| {

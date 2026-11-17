@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_ViewPlayerCard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14412afb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name viewPlayerCard (class from the log channel); log channel NETWORK: '%s(%llu / '%s')'"
+ },
+ "signature": {
+  "id": "game.network_view_player_card",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC F0 00 00 00 0F B6 1A",
+  "match": "0x14412afb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14412afb0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_ViewPlayerCard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14412afb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14412afb0.c",
+   "notes": "V6553 size=420; strings, callees and callers match claim (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

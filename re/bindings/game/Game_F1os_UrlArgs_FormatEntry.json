@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_UrlArgs_FormatEntry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144440020",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144440020.c;xref:0x1408251b4",
+  "notes": "Formats one URL/query argument into a temporary string (vtable 0x145612eb8): if *param_2 == 1 increments counter +0x38 and formats with template 0x145a95088, if 0 formats with template 0x145a94fea and the value at param_2+0x28; uses Ne_Get_CStrLen / Ne_String_Reserve. 104 call sites (Game_F1os_OnStart_*). Hypothesis."
+ },
+ "signature": {
+  "id": "game.f1os_url_args_format_entry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 BC 24 A0 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 D7 48 89 CE 48",
+  "match": "0x144440020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144440020",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_UrlArgs_FormatEntry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144440020",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144440020.c;xref:0x1408251b4",
+   "notes": "V7674 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "FePopup_Broadcast_Notifications",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143885700",
+  "level": "L1",
+  "subsystem": "fe_popup",
+  "proto": "undefined8(longlong ui_conn_mgr,double *dt)",
+  "evidence": "decomp:re/decomp/143885700.c;str:s_UIConnectionManager_BroadcastNotifications;pat:inlined-region-of-0x143883040",
+  "notes": "cxx=game::UIConnectionManager::broadcastNotifications; KB addr is mid-function (true pdata entry is 0x143883040); broadcasts connection/notification state to listeners (mgr+0xd8..+0xe0); TOP_LEVEL_UI log; L1 inlined region"
+ },
+ "signature": {
+  "id": "fe_popup.broadcast_notifications",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D7 48 89 CE 80 B9 81",
+  "match": "0x143885700",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143885700",
+  "kind": "func_start",
+  "names": [
+   "FePopup_Broadcast_Notifications"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143885700",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143885700.c",
+   "notes": "V6362 function entry per pdata is 0x143885700 (not mid-function; 0x143883040 has no pdata entry); signature (mgr, dt): connection-state tick with fake reconnect timeout, online state change, broadcastNotifications. Better Game_UIConnectionManager_Update; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143885700",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143885700.c",
+   "notes": "V7129 current FePopup_ prefix wrong; UIConnectionManager::update (TOP_LEVEL_UI) -> Game_UIConnectionManager_Update; facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

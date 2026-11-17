@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Career_Sign_DriverToTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d8fcb0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_Sign_DriverToTeam(void *renewal, uint32_t driver, uint32_t *offer, uint8_t flag, uint32_t replaced_driver)",
+  "evidence": "decomp:re/decomp/140d8fcb0.c;xref:0x140c49554,0x140c4a362,0x140d8fbc5,0x140d99cd0,0x140d9a38d,0x140ff5249;doc:addons/career-editor/protocol/drivers.md#op-driversswap",
+  "notes": "DISPUTE(V0294). The game's immediate signing (AI renewal 0x140d99210 'Add new driver' / 'Replace old RESERVE driver', auctions 0x140c49310, online negotiation 0x140ff5180). offer is a 0x2c-byte contract record (+0 new team key; +0xc u16 day = clock/1440 and +0xe = flag are written; offer[0..10] is copied into the driver contract in [renewal+0x290]+0x298, setting +0x2c, posting 0x145696e60). It first calls 0x140d8ecd0(renewal, offer, &driver): when the incoming driver sits on another team it backfills his old seat with that team's first reserve (vehicle +0x5e none, +0x80 >= 2): Career_Record_DriverMove(reserve, old team, incoming team, 2) and Career_Set_EntrantData_Thunk(reserve, incoming vehicle, pos|0x100); with no reserve it returns 0 and Sign returns without signing. With replaced_driver set it then records/sets the incoming driver (reason 0) and benches the replaced one (reason 3). The old team does not lose the seat when it has a reserve (wording per V0294). drivers.cpp does not call it"
+ },
+ "signature": {
+  "id": "career.sign_driver_to_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 45",
+  "match": "0x140d8fcb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d8fcb0",
+  "kind": "func_start",
+  "names": [
+   "Career_Sign_DriverToTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "func",
+   "item": "Career_Sign_DriverToTeam",
+   "claimed": "L2",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/140d8fcb0.c;decomp:re/decomp/140d8ecd0.c;xref:0x140d8fdd5,0x140d9085e,0x140d90967,0x140d90bdb",
+   "notes": "V0294 Proto meaning error: offer is not a const team-key pointer. The function writes offer+0xc (u16 day = clock/1440) and offer+0xe (= flag) and copies offer[0..10] (0x2c bytes) into the driver contract in [renewal+0x290]+0x298 (sets +0x2c), posting 0x145696e60; a caller passing a 4-byte key overflows. Also a behaviour gap: it first calls 0x140d8ecd0(renewal, offer, &driver), which (when the incoming driver sits on another team) backfills his old seat with that teams first reserve (vehicle +0x5e none, +0x80 >= 2): Record_DriverMove(reserve, old team, incoming team, 2) and Set_EntrantData(reserve, incoming vehicle, pos|0x100); if no reserve exists it returns 0 and Sign returns without signing. Corrected proto: \"void (void *renewal, uint32_t driver, uint32_t *offer /* 0x2c-byte contract record, +0 new team key, +0xc/+0xe written */, uint8_t flag /* stored at offer+0xe */, uint32_t replaced_driver)\"; the old team does not lose the seat when it has a reserve"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140d8fcb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8fcb0.c;xref:0x140c49553,0x140c4a361",
+   "notes": "V4707 checked: calls 0x140d8ecd0 first, +0xc day=clock/1440, +0xe flag, +0x2c set, 0x145696e60; callers renewal/auction/online; claim text truncated"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140d8fcb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d8fcb0.c",
+   "notes": "V9079 Calls 140d8ecd0 first, writes flag at +0xe, sets +0x2c=1 on the driver contract, uses reserve test +0x5e/+0x80>=2; matches the signing role (log strings Add new driver etc.)."
+  }
+ ],
+ "proofs": []
+}

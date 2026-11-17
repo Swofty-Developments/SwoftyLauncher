@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_ContractTeamSelect_OnEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436c46d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_ContractTeamSelect_OnEnter(void *state)",
+  "evidence": "decomp:re/decomp/1436c46d0.c;xref:0x14585a6a0",
+  "notes": "TeamSelect onEnter (vtable slot +0x40, abs ptr 0x14585a6a0). flow state StateDriverCareerContractNegotiationsTeamSelect (name string 0x14585a5b0, vtable 0x14585a660; the same layout as the Intro vtable 0x14585a470, whose slot +0x40 is Career_ContractIntro_OnEnter): the team select step of the Driver Career contract negotiation, entered after ContractNegotiationsDecision when the player's contract ends (before Intro, Update and Outro); it is absent from the start-of-career flow. It stores the online negotiation controller (component desc 0x146060840) at state+0xd70 and the contracts manager at +0xd78, sets +0xd69 (both present) and +0xd6a (0x140d80860 of the manager), and on its first pass (+0xc9c clear) builds the team select screen, sets +0xc9c = 1 and clears the selection flag +0xc98; returns 1 once entered. Raised by laneS (Progressive Career follow mode skips this screen)."
+ },
+ "signature": {
+  "id": "game.contract_team_select_on_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CE 48 8B 81 80 0C 00 00",
+  "match": "0x1436c46d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436c46d0",
+  "kind": "func_start",
+  "names": [
+   "Game_ContractTeamSelect_OnEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-26",
+    "by": "laneS",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/progressive/native/src/ui/follow.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-26",
+   "verifier": "laneS-verify2",
+   "kind": "func",
+   "item": "Game_ContractTeamSelect_OnEnter",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436c46d0.c;decomp:re/decomp/1437c1990.c;xref:0x14585a6a0,0x1437b42d0,0x1437c21bd,0x1489c3983",
+   "notes": "V1085 Only reference is the abs pointer 0x14585a6a0 = vtable 0x14585a660 slot +0x40 (no rel32 call/lea in .xtls, .xtext or .data1). Vtable tie: slot +0 0x1437b42d0 returns type record 0x146101c88, which 0x1437c1990 fills at 0x1437c21bd with name 0x14585a5b0 StateDriverCareerContractNegotiationsTeamSelect, hash 0x9026d1fd; factory 0x1489c38f0 allocates 0xd80 and stores the vtable at 0x1489c3983; same slot-0 pattern for Intro (0x1437b3dd0 -> 0x146101c48 -> ...Intro, onEnter at +0x40 of 0x14585a470) and Outro (vtable 0x14585a530, 0x1436c3330 at +0x40). Disasm: [rdi+0x1030]->vfunc+0x10 with desc 0x146060840 -> +0xd70, desc 0x14605c0d8 (k_Career_DriverCareerContractsManagerComponentDesc) -> +0xd78, +0xd69 = both nonzero, +0xd6a = 0x140d80860(manager) or 0; if +0xc9c clear builds the screen (posts enter_driver_career_team_select FlowChangeSubTask, StateActivatingSubTask) then +0xc9c=1, dword +0xc98=0. Returns mov eax,edi: 1 (dil=1 at 0x1436c53d3) only when +0xc9a set, +0xc18==3, [+0xc90]+0x20==0 and +0xc9b set, else 0; one arg (rcx). Proto and role agree; return is effectively a 0/1 eax."
+  }
+ ],
+ "proofs": []
+}

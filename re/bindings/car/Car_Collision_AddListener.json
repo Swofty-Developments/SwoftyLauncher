@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Car_Collision_AddListener",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144651f90",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144651f90.c;xref:0x14462afd1;doc:re/db/subsystems/car.md",
+  "notes": "(agent plank) thunk -> 0x155339950 (.data1): AddListener(listenerList, {fn, ctx}); used by Car_Chassis_Build for 0x144705380; route for addon contact listeners"
+ },
+ "signature": {
+  "id": "car.collision_add_listener",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 75 68 B8 21",
+  "match": "0x142f1b5a1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x144651f90",
+  "kind": "func_start",
+  "names": [
+   "Car_Collision_AddListener"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x144651f90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144651f90.c;xref:0x142f1b5a1",
+   "notes": "V7417 jmp thunk to 0x155339950 confirmed, 9 callers incl Car_Chassis_Build; target is .data1 black box so AddListener role is call-pattern only"
+  }
+ ],
+ "proofs": []
+}

@@ -1,6 +1,18 @@
 use gpui_kit::*;
+use std::time::Instant;
 
 use super::{Page, Shell};
+
+/// Which page is open, where keyboard focus is in the tabs, and what the top bar has open.
+pub(crate) struct Navigation {
+    pub(crate) page: Page,
+    pub(crate) cursor: Option<super::tabs::Cursor>,
+    pub(crate) popover: Option<super::topbar::Popover>,
+    pub(crate) profiles_open: bool,
+    pub(crate) open_addon: Option<String>,
+    /// The addon the Addons page highlights, and since when.
+    pub(crate) highlight: Option<(String, Instant)>,
+}
 
 impl Shell {
     pub(crate) fn cancel_scroll(&self) {
@@ -12,12 +24,12 @@ impl Shell {
     }
 
     pub(crate) fn open_page(&mut self, page: Page, cx: &mut Context<Self>) {
-        if self.page != page {
+        if self.navigation.page != page {
             self.cancel_scroll();
         }
         self.db_page_change(page, cx);
-        let was = self.page;
-        self.page = page;
+        let was = self.navigation.page;
+        self.navigation.page = page;
         if page == Page::Online {
             self.online_enter(cx);
         }
@@ -31,7 +43,7 @@ impl Shell {
             self.tt_open(cx);
         }
         if page == Page::Support {
-            self.support_open(cx);
+            crate::features::support::SupportPage::open(self, cx);
         }
         if let Some(i) = self.open_section().filter(|i| !self.section_loaded(*i)) {
             self.fetch_views(Some(i), cx);

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Vte_SortReportEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144769c90",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144769c90.c;xref:0x14473bbaf,0x14476a274,0x14476a299",
+  "notes": "Introsort of 16-byte entries by u32 at +8 (descending). Caller: Car_Vte_WriteSessionReport. (4 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "car.vte_sort_report_entries",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D7 48 89 CE 48 89",
+  "match": "0x144769c90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144769c90",
+  "kind": "func_start",
+  "names": [
+   "Car_Vte_SortReportEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x144769c90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144769c90.c;xref:0x14473bbaf",
+   "notes": "V6636 introsort (threshold 0x210 bytes = 33x16B), key u32@+8 compared with ja/jbe in insertion step -> descending; caller Car_Vte_WriteSessionReport"
+  }
+ ],
+ "proofs": []
+}

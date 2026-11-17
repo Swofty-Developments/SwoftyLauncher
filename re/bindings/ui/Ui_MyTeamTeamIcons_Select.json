@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_MyTeamTeamIcons_Select",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a2c490",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/141a2c490.c;xref:0x145727df8",
+  "notes": "myteam-g1: Team icon selection screen: lng_my_team_team_icons_subtitle and per-icon descriptions (konnersport, zenith)."
+ },
+ "signature": {
+  "id": "ui.my_team_team_icons_select",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 48 89 CE E8 ?? ?? ?? ?? 48 8B 46 10",
+  "match": "0x141a2c490",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a2c490",
+  "kind": "func_start",
+  "names": [
+   "Ui_MyTeamTeamIcons_Select"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141a2c490",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a2c490.c;xref:0x145727df8",
+   "notes": "V9924 Team icon selection screen with team_icon_none/konnersport/zenith and lng_my_team_team_icons_subtitle; also driver career variant strings."
+  }
+ ],
+ "proofs": []
+}

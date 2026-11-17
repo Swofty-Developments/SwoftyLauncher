@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_WinnerSequence_IsPlayerWinner",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142daaf70",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142daaf70.c;xref:0x142daaa97",
+  "notes": "(state) Player car = Sess_Get_PlayerVehicleIndex(state+0xdc0, 0); returns true if result row [[state+0xcb0]+0x148 + car*8] has status +0x19 == 3 (finished) and +0x18 == 7. Called from Sess_WinnerSequence_Enter."
+ },
+ "signature": {
+  "id": "session.winner_sequence_is_player_winner",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CF 48 8B 89 C0 0D 00 00",
+  "match": "0x142daaf70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142daaf70",
+  "kind": "func_start",
+  "names": [
+   "Sess_WinnerSequence_IsPlayerWinner"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142daaf70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142daaf70.c;xref:0x142daaa97",
+   "notes": "V3719 car=Sess_Get_PlayerVehicleIndex(state+0xdc0,0); row [[state+0xcb0]+0x148+car*8], +0x19==3 and +0x18==7; caller Sess_WinnerSequence_Enter"
+  }
+ ],
+ "proofs": []
+}

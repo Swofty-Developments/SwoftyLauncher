@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_FormationLapStartLights_OnStateEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d5fd60",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d5fd60.c;xref:0x1457df190",
+  "notes": "SessionStateFormationLapStartLights vslot 8 (onStateEnter; vt 0x1457df150; also called from 0x142d3fd37). Clears HUD hide reasons (0x14604e900/904), CrowdSystem limitCrowdExcitement off, clears fade reasons; once (st+0xdf0): unless a formation-lap condition holds, clears grid data st+0xde8, resets ReplaySystem st+0xd60 + Ne_Replay_SetState(0) and posts message 0x1457e4ba8 - the replay buffer starts at the start lights. Posts 0x1456f84c0 at the end. Addon: replay start point of a race."
+ },
+ "signature": {
+  "id": "session.formation_lap_start_lights_on_state_enter",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 50 C5 F8 29 74 24 40 48 89 CE 8B",
+  "match": "0x142d5fd60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d5fd60",
+  "kind": "func_start",
+  "names": [
+   "Sess_FormationLapStartLights_OnStateEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d2-verify",
+   "kind": "func",
+   "item": "Sess_FormationLapStartLights_OnStateEnter",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d5fd60.c;xref:0x1457df190",
+   "notes": "V2342 vtable slot 8 confirmed; HUD hide reasons 14604e900/904, once-flag +0xdf0, grid data +0xde8, ReplaySystem +0xd60 reset+setState(0,1)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DriverContracts_IsDriverInAgeRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d82400",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "bool Check(void *comp, uint8_t *team_key, uint16_t slot, char flag)",
+  "evidence": "decomp:re/decomp/140d82400.c;xref:0x140c581a1;xref:0x140d79692;xref:0x140d796a9",
+  "notes": "myteam-g2: Finds team entry (comp[0x97], stride 0x30, field +0xc != -1 = has contract), then compares a driver's value (+0x18) against calendar-derived min/max (Career_Calc_CalendarEntryStartMinutes via comp[0x9d]+0x2d8+0x290, /1440 = days) and a driver hash map (comp[0xd2..]); returns whether the driver fits. Read-only filter for AutoContracts / retirement."
+ },
+ "signature": {
+  "id": "career.driver_contracts_is_driver_in_age_range",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 44 88 4C 24 29",
+  "match": "0x140d82400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d82400",
+  "kind": "func_start",
+  "names": [
+   "Career_DriverContracts_IsDriverInAgeRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d82400",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d82400.c",
+   "notes": "V9535 Structure right (team entry +0xc != -1, calendar-derived min/max days via 0x5b05b06 divide, driver hash comp[0xd2..]) but compares a ushort at +0x18 to the range; age is a guess."
+  }
+ ],
+ "proofs": []
+}

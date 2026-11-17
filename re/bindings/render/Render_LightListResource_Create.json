@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_LightListResource_Create",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c04150",
+  "level": "L2",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c04150.c;xref:0x1458c2540",
+  "notes": "Resource factory (vtable slot 0x1458c2540) for LightList resources: allocates a 0xb0 object (vtbl 0x1458c2260) and parses chunks LightList-TriangleList(_v0/_v1/_v2/_color/_normal/_area/ReGIR).buffer, MeshList, LightGridTileMap.surface, LightGrid(.AliasTable).buffer; unknown chunk ids trace 'Unknown chunk id %i. Old file format?'. Track modding: emissive light-list resources in track ERPs. | #587: L2 by lead-authorised promotion for lane owner overlay (independent agree V2896)"
+ },
+ "signature": {
+  "id": "render.light_list_resource_create",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 F8 29 B4 24 00 01 00 00 4C 89 CB 48 89 D7 48 8B",
+  "match": "0x143c04150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c04150",
+  "kind": "func_start",
+  "names": [
+   "Render_LightListResource_Create"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Render_LightListResource_Create",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c04150.c;xref:0x143c04150",
+   "notes": "V2896 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

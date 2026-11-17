@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TrackIr_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ab0cb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-HEADTRACKING",
+  "notes": "named from its log messages (channel HEADTRACKING): 'Rotation : NPPitch = %.1f, NPYaw = %.1f, NPRoll = %.1f Translation : NPX = %.1f, NPY = %.1f, NPZ = %.1f Information NPStatus = %d, Frame = %d | NP_RegisterWindowHandle : Error!! Check the TrackIR app '"
+ },
+ "signature": {
+  "id": "game.track_ir_update",
+  "section": ".xtls",
+  "pattern": "56 48 81 EC A0 01 00 00 C5 78 29 BC 24 90 01 00 00",
+  "match": "0x143ab0cb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ab0cb0",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackIr_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143ab0cb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ab0cb0.c",
+   "notes": "V6455 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

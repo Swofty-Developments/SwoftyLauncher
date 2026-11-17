@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Contract_WriteSaveData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c996a0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "int (void *contract, void *json)",
+  "evidence": "decomp:re/decomp/140c996a0.c;xref:0x140da4b20;xref:0x1410ffeea",
+  "notes": "myteam-g2: Save writer of a contract record: writes two scalar fields (+0xa70 and +0x98, named UNK_14565f19b / UNK_14568633f) and then two child objects via FUN_140c94130 (contract+0x20 and, if present, contract+0x50). Used by the driver contracts component and the sponsors writer (contract_provider / active_contract / next_contract)."
+ },
+ "signature": {
+  "id": "career.contract_write_save_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 D7 48 89 CE 48 C7 44 24 20 00 00 00 00 4C 8B 35",
+  "match": "0x140c996a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c996a0",
+  "kind": "func_start",
+  "names": [
+   "Career_Contract_WriteSaveData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c996a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c996a0.c;str:\"random_seed\"",
+   "notes": "V9509 Fields are random_seed (+0xa70) and reroll_count (+0x98), children default_contract (+0x20) and fallback_contract (+0x50) via FUN_140c94130, plus a counteroffers array."
+  }
+ ],
+ "proofs": []
+}

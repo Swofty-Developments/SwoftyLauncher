@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_PostFx_InitTonemapper",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bc9370",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bc9370.c;xref:0x143bc42cf,0x143d85433",
+  "notes": "Tonemap/resolve postfx init (750 lines): creates ToneMap Adaptation buffer and shader permutations: blend_lut_cs, update_lut_cs, cube_update_lut_cs, update_aces_lut_cs, update_aces_sdr_lut_cs, eye_adaptation, eye_adaptation_rtt, tonemap_and_resolve (+_hdr, _aces, _disabled, _export_exr, _depth_enabled, _tint_bloom, rtt_tonemap_and_resolve). Callers Game_PostFx_CreateMotionBloomLensFlare, Game_Rtt_CreateScenes. Addon: full list of tonemap/LUT/exposure shader names."
+ },
+ "signature": {
+  "id": "render.post_fx_init_tonemapper",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 BC 24 20 01 00 00 C5 F8 29 B4 24 10 01 00 00 48 89 CE 48 B9 53 EC",
+  "match": "0x143bc9370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bc9370",
+  "kind": "func_start",
+  "names": [
+   "Render_PostFx_InitTonemapper"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143bc9370",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bc9370.c;xref:0x143bc42cf",
+   "notes": "V7807 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

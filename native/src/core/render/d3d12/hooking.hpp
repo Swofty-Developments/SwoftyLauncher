@@ -1,4 +1,6 @@
 #pragma once
+#include "core/render/com.hpp"
+
 #include <windows.h>
 
 #include <d3d12.h>
@@ -7,12 +9,7 @@
 
 namespace d3d12hooks {
 
-template <class T> void release(T *&p)
-{
-    if (p)
-        p->Release();
-    p = nullptr;
-}
+using com::release;
 
 // The hook is made disabled and moved into its slot before it goes live, so a detour never runs while the
 // slot it calls the original through is still empty.

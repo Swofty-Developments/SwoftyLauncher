@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_Rnd_CalcUpgradeTypeProgress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143526260",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "float Game_Rnd_CalcUpgradeTypeProgress(void *const *instances, uint8_t type, uint8_t state, const void *meta)",
+  "evidence": "decomp:re/decomp/143526260.c;xref:0x141238f2d,0x141238fdd,0x1411cd6da",
+  "notes": "R&D progress of one upgrade type: instances is an array of UpgradeInstance pointers (count at +0xc00); returns clamp01(sum of weighting (+0x64) of the type's (+0x70) instances whose last state (*(states_end +0xc8) - 8) == state / sum of weighting of all the type's instances x the type's scale (meta: vector at +0x08..+0x10 of 0x20-byte {type +0, scale +0x1c}, default 1)), plus for types 11..17 the same ratio of type 0x12 (Upgrade All Durability) x its scale. Called by the vehicle upgrade fill 0x141238cb0 (state 3, per type), the power-unit wear range 0x1411cc850 and many UI sites. Called Career_Calc_UpgradeTypeProgress in the rnd lane's design (rnd-design.md §4); in the open game lane. Raised by native-1990 for N12 (doc:/mnt/work/.f1-1990/addon/native-requests.md#N12)"
+ },
+ "signature": {
+  "id": "game.rnd_calc_upgrade_type_progress",
+  "section": ".xtls",
+  "pattern": "56 57 53 B8 20 18 00 00 E8 ?? ?? ?? ?? 48 29 C4",
+  "match": "0x143526260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143526260",
+  "kind": "func_start",
+  "names": [
+   "Game_Rnd_CalcUpgradeTypeProgress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/quali_engine.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-c",
+   "kind": "func",
+   "item": "Game_Rnd_CalcUpgradeTypeProgress",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143526260.c;decomp:re/decomp/141238cb0.c;decomp:re/decomp/1411cc850.c;xref:0x141238f2d,0x141238fdd,0x1411cd6da,0x1411d41c9,0x141f5399c,0x143535457;sig:game.rnd_calc_upgrade_type_progress",
+   "notes": "V0995 V0990 Confirmed: count at instances+0xc00, type +0x70, weighting +0x64, last state *(*(inst+0xc8)-8). Result = sum(weighting of the type's instances in that state) / sum(weighting of all the type's instances) x the type's scale (meta +0x08..+0x10, 0x20 stride, type +0, scale +0x1c, default 1). For type-0xb < 7 it adds the same ratio for type 0x12 x its scale, and the result is clamped to [0,1]. Registers rcx, dl, r8b, r9 match the proto. The enum name table at 0x14564a0d0 runs EnginePower=0 ... RearDownforce=10, the per-component Durability types 11-17 and UpgradeAllDurability=18 (0x12). 38 rel32 call sites in 8 functions (0x1411cc850, 0x1411d3e40, 0x141238cb0 x2, 0x141f532b0, 0x1435352a0, 0x1435d1ff0, 0x1435d2780, 0x1435d2900). sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1AMPRuleset_FixupOnFinalLapStatus",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d29c60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=F1AMPRuleset::fixupOnFinalLapStatus; log channel F1-ARCADE-MP: 'F1AMPRuleset::fixupOnFinalLapStatus()'"
+ },
+ "signature": {
+  "id": "game.f1_amp_ruleset_fixup_on_final_lap_status",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 DB 00 00 00",
+  "match": "0x142d29c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d29c60",
+  "kind": "func_start",
+  "names": [
+   "Game_F1AMPRuleset_FixupOnFinalLapStatus"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d29c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d29c60.c",
+   "notes": "V5378 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

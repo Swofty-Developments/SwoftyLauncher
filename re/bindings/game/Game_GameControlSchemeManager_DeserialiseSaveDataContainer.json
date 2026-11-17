@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameControlSchemeManager_DeserialiseSaveDataContainer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a69b20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameControlSchemeManager::deserialiseSaveDataContainer; log channel INPUT: 'GameControlSchemeManager::deserialiseSaveDataContainer - \"control_schemes\" list is missing, must be old format save data, continue anyway'"
+ },
+ "signature": {
+  "id": "game.game_control_scheme_manager_deserialise_save_data_container",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 48 89 54 24 48",
+  "match": "0x142a69b20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a69b20",
+  "kind": "func_start",
+  "names": [
+   "Game_GameControlSchemeManager_DeserialiseSaveDataContainer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a69b20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a69b20.c",
+   "notes": "V4950 name/strings/body match; log-based claim holds for this function size (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

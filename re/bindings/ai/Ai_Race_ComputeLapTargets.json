@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ai_Race_ComputeLapTargets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1405f9a60",
+  "level": "L1",
+  "subsystem": "ai",
+  "proto": "void Ai_Race_ComputeLapTargets(void *self, uint8_t *car_ctx)",
+  "evidence": "decomp:re/decomp/1405f9a60.c;xref:0x1405f5ef4,0x1405f6104",
+  "notes": "(self, car) where car[0] = vehicle index, car+0x28 lap state (int laps +0x20, frac +0x10, +0x140/+0x144 floats), car+0x38 resource data (+8 amount, +0xc factor, +0x10 reserve*5, +0x18/+0x1c/+0x20 three per-lap rates, +0x3c speed). If [car+0x28]+0x140 > 2.0 stores lap progress to self+0xc. Computes three budget ratios ratio_i = clamp(amount*factor - 5*reserve) / (self+0x10 * rate_i * (self+8 laps - progress)) into self+0x14, +0x18, +0x1c. Then selects a mode 0..3 written to self+0x28 and *[car+0x48]: forced from [car+0x30]+0xb4 when [car+0x30]+0xb8 set, or from a component vcall when [car+0x50]+0x18 bit 0x1000, else from ratio thresholds (1.0/1.05/1.2/1.4) via 0x1405fb2f0; the mode is always snapped to an allowed one using the per-car table [[self]+0x50]+car*0x20+0x28..+0x34 (4 ints). (corrected 2026-11-14: outputs are ratios at +0x14/+0x18/+0x1c and a 0..3 mode, not \"targets at +0xc, +0x14 and following\".) KEPT L1 2026-11-14 (engine-re AI round): data flow is clear, but whether the resource is fuel (mix modes) or ERS (deploy modes) cannot be proven without the car+0x38 struct; a better name would be Ai_Select_ResourceMode once that is known. edited by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.race_compute_lap_targets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 D6 48",
+  "match": "0x1405f9a60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1405f9a60",
+  "kind": "func_start",
+  "names": [
+   "Ai_Race_ComputeLapTargets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x1405f9a60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1405f9a60.c;xref:0x1405f5ef4",
+   "notes": "V3531 remaining laps (this+8) minus progress (+0x20 int + +0x10 frac) with car data +0x38 (+8,+0xc,+0x10,+0x18/0x1c/0x20 rates) -> targets at +0xc,+0x14,...; caller seen"
+  }
+ ],
+ "proofs": []
+}

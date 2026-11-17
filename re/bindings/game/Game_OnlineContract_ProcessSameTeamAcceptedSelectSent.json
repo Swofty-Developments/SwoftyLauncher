@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineContract_ProcessSameTeamAcceptedSelectSent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1410026e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
+  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'Process same team accepted select sent'"
+ },
+ "signature": {
+  "id": "game.online_contract_process_same_team_accepted_select_sent",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 C6 81 08 03 00 00 01 48 B8 12 00 00 00 C7 00 00 00",
+  "match": "0x1410026e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1410026e0",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineContract_ProcessSameTeamAcceptedSelectSent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1410026e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1410026e0.c;xref:0x1410007c6",
+   "notes": "V4549 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

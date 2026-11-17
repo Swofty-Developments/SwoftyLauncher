@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2Device_ResolveHandle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439d9cb0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439d9cb0.c;xref:0x14015e013",
+  "notes": "Under CS +0x2668 looks up a 64-bit handle via FNV-1a 64 hash (0xcbf29ce484222325, prime 0x100000001b3) in the table at +0x3aa8 and fills descriptors (+0xca0..+0xcb8, +0x3f60..). Callers: Game_PhotoModeHelper_CaptureFrame and 0x14015d720. Hypothesis on result type."
+ },
+ "signature": {
+  "id": "render.gfx2_device_resolve_handle",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 0D ?? ?? ?? ?? 48 8D 96 E8 04 00 00 E8",
+  "match": "0x14015e013",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1439d9cb0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2Device_ResolveHandle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x1439d9cb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439d9cb0.c;xref:0x14015e013",
+   "notes": "V8124 CS +0x2668 and FNV-1a64 ok; note lock at +0x3aa8 and hash map fields at +0x3f60..+0x3f94"
+  }
+ ],
+ "proofs": []
+}

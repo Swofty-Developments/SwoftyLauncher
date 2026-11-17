@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StateFTUE_OnStateInterrupt",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436d8150",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=StateFTUE::onStateInterrupt; log channel FADE_REQUESTS: 'TEMP_LOG: StateFTUE::onStateInterrupt:%d CONSUMING: %d'"
+ },
+ "signature": {
+  "id": "game.state_ftue_on_state_interrupt",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 D6 80 B9 90 0C 00 00 00",
+  "match": "0x1436d8150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436d8150",
+  "kind": "func_start",
+  "names": [
+   "Game_StateFTUE_OnStateInterrupt"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436d8150",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1436d8150.c",
+   "notes": "V6130 Name/function right (StateFTUE::onStateInterrupt), but claimed channel FADE_REQUESTS is wrong: the TEMP_LOG CONSUMING line is channel FLOW. (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

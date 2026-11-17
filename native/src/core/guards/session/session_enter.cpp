@@ -35,12 +35,13 @@ namespace {
 constexpr const char *MIXIN = "swofty_core.dll (session enter guard)";
 constexpr const char *HASH = "site_Sess_AiRecords_NameHash";
 
+namespace guards = swofty_core::guards;
 namespace se = runtime::session_enter;
 
-se::Skips skips;
+guards::LogFirst<se::LOG_FIRST> skips{"fixes"};
 se::Memo memo;
 constexpr uint64_t SLOW_US = 5000;
-int slow_logged = 0;
+guards::LogFirst<se::LOG_FIRST> slow_logged;
 
 bool read_memory(uint64_t address, void *out, size_t n, void *)
 {
@@ -57,8 +58,7 @@ void name_hash(SwoftyContext *c)
     QueryPerformanceCounter(&t1);
     QueryPerformanceFrequency(&hz);
     uint64_t us = static_cast<uint64_t>(t1.QuadPart - t0.QuadPart) * 1000000 / static_cast<uint64_t>(hz.QuadPart);
-    if (us >= SLOW_US && slow_logged < se::LOG_FIRST) {
-        slow_logged++;
+    if (us >= SLOW_US && slow_logged.note()) {
         swofty::log("[session] name hash decision took %llu us (memo %d hits, %d misses)", (unsigned long long)us, memo.hits,
                     memo.misses);
     }
@@ -66,15 +66,12 @@ void name_hash(SwoftyContext *c)
         return;
     uint64_t hash = c->r13;
     c->r13 = f.key;
-    int n = skips.note();
-    if (!skips.logged(n))
+    auto line = skips.note();
+    if (!line)
         return;
     swofty::log("[session] vehicle slot %u (hash %llx) is in no AI asset group; using %llx for its AI record%s", f.index,
-                (unsigned long long)hash, (unsigned long long)f.key,
-                skips.last(n) ? " (further fixes are not logged)" : "");
+                (unsigned long long)hash, (unsigned long long)f.key, line.tail);
 }
-
-namespace guards = swofty_core::guards;
 
 guards::SiteGuard guard{guards::CoreSetId::session_enter,
                         {

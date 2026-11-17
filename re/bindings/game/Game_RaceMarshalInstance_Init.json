@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RaceMarshalInstance_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403c2920",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403c2920.c",
+  "notes": "finds the marshal's track position (TrackSpace 0x1445f3630/0x1445f37b0/0x1445f3ad0 -> lap fraction, marshal zone) and the track side, loads script RaceMarshall_FaceLeft or RaceMarshall_FaceRight (0x143662b90)."
+ },
+ "signature": {
+  "id": "game.race_marshal_instance_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 C7 81 90 00 00 00 00 00 00 00",
+  "match": "0x1403c2920",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403c2920",
+  "kind": "func_start",
+  "names": [
+   "Game_RaceMarshalInstance_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1403c2920",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403c2920.c;xref:0x3d3369",
+   "notes": "V4638 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

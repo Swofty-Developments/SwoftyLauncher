@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDResearchUpgradeCard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c76b60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Build_RnDResearchUpgradeCard(int64_t *self,int64_t *a2)",
+  "evidence": "decomp:re/decomp/141c76b60.c;xref:0x141c75772;xref:0x141c758b5",
+  "notes": "myteam-g1: Builds research_upgrades_card_with_info and research_upgrades_category_row; prints \"INVALID UPGRADE\" for bad ids, lng_rnd_supplier_category for supplier parts."
+ },
+ "signature": {
+  "id": "career.build_rn_dresearch_upgrade_card",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 88 19 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 F8 29 B4 24 70 19 00 00 49 89 CD",
+  "match": "0x141c76b60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c76b60",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDResearchUpgradeCard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c76b60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c76b60.c;xref:0x141c75772;xref:0x141c758b5",
+   "notes": "V9989 Research upgrade card/category rows with INVALID UPGRADE, supplier category, pips."
+  }
+ ],
+ "proofs": []
+}

@@ -1,7 +1,7 @@
 // Host unit test for car.profile (car_profile.hpp) on fake cars: the F1 1990 race engine and AI quali DLLs as one
 // record, scope (session types, ai_only and player_only, car indices, identity-needing selectors), priority order,
 // extra live field paths, re-evaluation dropping the old layers, and the record parsing.
-// run_car_live_test.sh builds and runs it.
+// native/test/run_tests.sh car_live builds and runs it.
 #include "core/hooks/car_profile.hpp"
 
 #include <cmath>

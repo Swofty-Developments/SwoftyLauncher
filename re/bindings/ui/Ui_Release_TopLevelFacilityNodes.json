@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Release_TopLevelFacilityNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b6ccf0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Release(void **nodes)",
+  "evidence": "decomp:re/decomp/141b6ccf0.c;xref:0x141a590c3;xref:0x141b41483;xref:0x141c45a33",
+  "notes": "myteam-g2: Releases a block of ~25 VM node handles (Vm_Release_Node); cleanup for top-level facility selection."
+ },
+ "signature": {
+  "id": "ui.release_top_level_facility_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 CE 48 8B 79 68",
+  "match": "0x141b6ccf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b6ccf0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Release_TopLevelFacilityNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141b6ccf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141b6ccf0.c;xref:0x141a590c3;xref:0x141b41483",
+   "notes": "V9952 Releases a block of VM node handles via Vm_Release_Node with vtable reset; cleanup helper."
+  }
+ ],
+ "proofs": []
+}

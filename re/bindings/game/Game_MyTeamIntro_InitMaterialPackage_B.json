@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamIntro_InitMaterialPackage_B",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140266170",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void f(void)",
+  "evidence": "decomp:re/decomp/140266170.c;xref:0x1455eff30",
+  "notes": "myteam-g1: Sibling of the intro material package init (same shape, another f1_my_team_int* material set)."
+ },
+ "signature": {
+  "id": "game.my_team_intro_init_material_package_b",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 89 CE 48 8B 05 ?? ?? ?? ?? 48 8B 80 A0 00 00 00",
+  "match": "0x140266170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140266170",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamIntro_InitMaterialPackage_B"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140266170",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140266170.c;str:\"VideoModuleQueue\"",
+   "notes": "V9463 Same multi-package video/material queueing as 140265930 (takes param_1, omits the FUN_140238af0 call), not only the My Team package."
+  }
+ ],
+ "proofs": []
+}

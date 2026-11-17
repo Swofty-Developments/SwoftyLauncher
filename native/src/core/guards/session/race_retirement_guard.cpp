@@ -1,5 +1,6 @@
 #include "core/guards/session/race_retirement_logic.hpp"
 #include "core/guards/guard.hpp"
+#include "core/runtime/hook_errors.hpp"
 #include "core/runtime/runtime.hpp"
 
 #include <windows.h>
@@ -12,10 +13,6 @@
 #include <cstring>
 #include <mutex>
 #include <string>
-
-namespace runtime {
-std::string hook_error(const safetyhook::MidHook::Error &e);
-}
 
 // Race retirement driver guard (re/db/globals.tsv site_Sess_InGameRaceRetirementDriver).
 //
@@ -41,6 +38,7 @@ std::string hook_error(const safetyhook::MidHook::Error &e);
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 namespace rr = runtime::race_retirement;
 
@@ -132,8 +130,7 @@ void retirement_driver(safetyhook::Context &c)
 void setup()
 {
     char v[16] = {};
-    DWORD n = GetEnvironmentVariableA("SWOFTY_RACE_RETIREMENT_GUARD", v, sizeof v);
-    if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+    if (guards::env_off("SWOFTY_RACE_RETIREMENT_GUARD", v)) {
         swofty::log("[race] retirement driver guard off (SWOFTY_RACE_RETIREMENT_GUARD=%s)", v);
         return;
     }

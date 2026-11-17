@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleLapTimesSystem_OnHostMigrated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f2fee0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VehicleLapTimesSystem::onHostMigrated; log channel LAPTIMES: 'VehicleLapTimesSystem::onHostMigrated() - Re-Sending Last Seen Sector Crossings'"
+ },
+ "signature": {
+  "id": "game.vehicle_lap_times_system_on_host_migrated",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 75 69",
+  "match": "0x142f2fee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f2fee0",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleLapTimesSystem_OnHostMigrated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f2fee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f2fee0.c",
+   "notes": "V5610 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

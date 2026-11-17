@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamActivities_UpdateSelectionFlags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14231b0e0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint64_t (void *menu)",
+  "evidence": "decomp:re/decomp/14231b0e0.c;xref:0x14231a646;xref:0x14231bf48;xref:0x14231f971",
+  "notes": "myteam-g2: Walks the slot list at menu+0x400->+0x130..0x138 comparing each slot index (+0x1f0 int) with the selected one (+0x210 int) and sets the VM bool node at +0x170 for every slot (true on the selected one), then dispatches UI event UNK_14577f3c1 via Ne_UiEvent_DispatchByName. Pure UI."
+ },
+ "signature": {
+  "id": "career.my_team_activities_update_selection_flags",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 48 8B 81 98 08 00 00",
+  "match": "0x14231b0e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14231b0e0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamActivities_UpdateSelectionFlags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14231b0e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14231b0e0.c;xref:0x14231a646",
+   "notes": "V10118 Logic matches (selected vs per-slot int, bool at +0x170, event dispatch) but the per-slot int is at +0x190, not +0x1f0."
+  }
+ ],
+ "proofs": []
+}

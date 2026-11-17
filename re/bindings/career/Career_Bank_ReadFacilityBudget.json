@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bank_ReadFacilityBudget",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c70a70",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int (void *facility_budget, void *json_obj, uint64_t flags)",
+  "evidence": "decomp:re/decomp/140c70a70.c;xref:0x140c709d4",
+  "notes": "myteam-g1: Reader for the facility_budget JSON: ratios[] (type,ratio), key_upgrade_multiplier, overspend_multiplier_graph, cost_cap_fraction_engineering_cutoff, cost_cap_fraction_workforce_cutoff, workforce_increase_fraction, workforce_decrease_fraction. Same layout as the writer in Career_Bank_WriteBudgetData."
+ },
+ "signature": {
+  "id": "career.bank_read_facility_budget",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4D 89 C4 49 89 D7",
+  "match": "0x140c70a70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c70a70",
+  "kind": "func_start",
+  "names": [
+   "Career_Bank_ReadFacilityBudget"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140c70a70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c70a70.c;str:\"key_upgrade_multiplier\";str:\"cost_cap_fraction_workforce_cutoff\"",
+   "notes": "V8976 All listed keys read in order: ratios[] (type, ratio), key_upgrade_multiplier +0x48, overspend_multiplier_graph +0x50, cutoffs +0xd8/+0xdc, workforce fractions +0xe0/+0xe4. Consistent with the writer's +0x90/+0x98 offsets when embedded at budget+0x48."
+  }
+ ],
+ "proofs": []
+}

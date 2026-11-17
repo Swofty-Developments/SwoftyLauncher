@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_WindowWin_MonitorEnumProc",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439fd4d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1439fd4d0.c;xref:0x1439efd74",
+  "notes": "cxx=NeWindowWin::monitorEnumProc; log channel SMOKETEST_DEBUG: 'NeWindowWin::monitorEnumProc: hMonitor=%p %dx%d, pos=(%d,%d)'"
+ },
+ "signature": {
+  "id": "core.window_win_monitor_enum_proc",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4D 85 C9 0F 84",
+  "match": "0x1439fd4d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439fd4d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_WindowWin_MonitorEnumProc"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_WindowWin_MonitorEnumProc",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439fd4d0.c;xref:0x1439efd74",
+   "notes": "V2010 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

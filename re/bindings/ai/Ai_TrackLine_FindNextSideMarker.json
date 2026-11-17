@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_TrackLine_FindNextSideMarker",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14066e4e0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_TrackLine_FindNextSideMarker(void *result, float car_dist, float query_dist, void *spline_data, int route_idx)",
+  "evidence": "decomp:re/decomp/14066e4e0.c;decomp:re/decomp/14067d510.c;xref:0x14066decf",
+  "notes": "was Ai_TrackLine_FindNextBrakeLine (renamed 2026-11-16: lane+0x490 is channel 0, not brake lines; brake lines are +0x498). Only caller Ai_Overtake_EvaluateGap (0x14066decf). First entry of lane+0x490 (type-0 markers, vtable 0x145638c70, created by Game_AiRoute_BuildGraph at every corner start / corner end gate and where the gate side byte flips, +0x28 = side byte) with key > query -> result+0x00; accepted only if its gate distance lies between the corner start (result+0x20) and corner end (result+0x18) gates; result+0x30 = marker - car distance, else 0 / 1e38. What the side byte means (two differences of [gate+0x88] waypoint lengths +0x8/+0xc/+0x10) is not decoded. L2 2026-11-16 (engine-re racing-line round): decomp read, claims checked against the disassembly, refs from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1; blind verifier agreed. raised by engine-re with --force 2026-11-16 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.track_line_find_next_brake_line",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 FA C5 F8 28",
+  "match": "0x14066e4e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14066e4e0",
+  "kind": "func_start",
+  "names": [
+   "Ai_TrackLine_FindNextSideMarker"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x14066e4e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14066e4e0.c;xref:0x14066decf",
+   "notes": "V4090 route+0x490 table, result+0, per-car line +0x18->+0x60/+0x70 -> +0x40 -> 0xb0/0xb4 confirmed"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "triage-verify",
+   "kind": "func",
+   "item": "0x14066e4e0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own re/tools/decomp read on the KB build;xref:0x14066decf",
+   "notes": "V10743 Own read. Reads only the table at lane+0x490 (channel 0, type-0 side markers created in Game_AiRoute_BuildGraph at gate+0xc8: vtable store, +0x20 = 0, +0x18 = gate, +0x28 side byte, 0x14067ebf2/0x14067ed76/0x14067eed1). Brake line was wrong, SideMarker agrees."
+  }
+ ],
+ "proofs": []
+}

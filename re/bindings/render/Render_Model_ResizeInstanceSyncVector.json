@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Model_ResizeInstanceSyncVector",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143e83ef0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143e83ef0.c;xref:0x143c49a43",
+  "notes": "Loops over instance buffer slots (+0x18/+0x38) calling 1403118b0 sync release. Caller Render_Model_BuildPerInstanceBuffers. vq1-verify partial/disagree"
+ },
+ "signature": {
+  "id": "render.model_release_per_instance_buffers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 89 D3 48 89 CE 48 8B 41 08 4C 8B 61",
+  "match": "0x143e83ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143e83ef0",
+  "kind": "func_start",
+  "names": [
+   "Render_Model_ResizeInstanceSyncVector"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143e83ef0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143e83ef0.c;xref:0x143c49a43",
+   "notes": "V8356 Render_Model_ResizeInstanceSyncVector: resizes 0x10-byte entry vector, releases removed entries via Ne_Sync_ReleaseWithErrorTrace"
+  }
+ ],
+ "proofs": []
+}

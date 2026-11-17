@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDPurchasePanel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c8a080",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:vtable-0x145740ac0-slot-0x30;kb:subsystems/rnd_ui.md#back",
+  "notes": "LaptopRnDUpgradePurchaseViewModel build (vtable 0x145740ac0 +0x30): finds the instance by upgrade_hash_name via Career_Query_EnabledUpgrades and copies byte [u+0x72] to panel+0x6e8; calls Career_Update_RnDPurchasePanel @0x141c8bb58."
+ },
+ "signature": {
+  "id": "career.build_rn_d_purchase_panel",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 0C 00 00 C5 F8 29 B4 24 A0 0C 00 00 48 89 CE 48 8B 81 50 06",
+  "match": "0x141c8a080",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c8a080",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDPurchasePanel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141c8a080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c8a080.c",
+   "notes": "V4956 name/description match decomp: strings and callees consistent (vtable/indirect, no direct call site)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141c8a080",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c8a080.c;xref:0x141c8a54e;xref:0x141c8bb58",
+   "notes": "V9193 Calls the enabled-upgrades query at 0x141c8a54e, copies byte [r8+0x72] to [rsi+0x6e8] at 0x141c8a5bb, and calls the update at 0x141c8bb58."
+  }
+ ],
+ "proofs": []
+}

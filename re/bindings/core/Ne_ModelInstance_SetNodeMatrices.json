@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ne_ModelInstance_SetNodeMatrices",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d3d8e0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d3d8e0.c;xref:0x14039aa80,0x1403d7320",
+  "notes": "(inst, mats, uint first, uint count, int node, char flag): writes count matrices for node (node < [[inst+0xd0]+0x48] u16, per-node slots inst+0xd8) and marks transforms dirty (+0x128=2, +300 |= 8, +0x13c &= ~0x10). Callers: Car_Visual_UpdateRenderState, frontend scene car/driver, customisation decals."
+ },
+ "signature": {
+  "id": "core.model_instance_set_node_matrices",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 38 43 8D 04 01 44 0F B6 91 D8 00",
+  "match": "0x143d3d8e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d3d8e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_ModelInstance_SetNodeMatrices"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143d3d8e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143d3d8e0.c;xref:0x1401a842c",
+   "notes": "V3632 node path SETS +0x13c |= 0x10 (claim says &= ~0x10, which is only in the other path); +0x128=2 and +300|=8 match"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x143d3d8e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143d3d8e0.c;xref:0x1401a842c",
+   "notes": "V4011 node path SETS +0x13c |= 0x10 (claim says &= ~0x10, which is only in the other path); +0x128=2 and +300|=8 match"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x143d3d8e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d3d8e0.c;xref:0x1401a842c,0x1401a9b7f",
+   "notes": "V4091 callers Car_Visual_UpdateRenderState, ApplySuitDecals, ApplyHelmetDecals confirmed among 104 sites"
+  }
+ ],
+ "proofs": []
+}

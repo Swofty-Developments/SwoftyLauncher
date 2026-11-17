@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeedSystem_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c17ba0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_F1DataFeedSystem_Init(void *self, void *serviceProvider, void *componentMap)",
+  "evidence": "str:s_cfg_F1DataFeedConfigEnabled;decomp:re/decomp/142c17ba0.c;xref:0x142c1803d,0x142c1803e,0x1457cf940",
+  "notes": "Slot 2 of the vtable at 0x1457cf930 (pointer 0x1457cf940; string F1DataFeedSystem directly before it, cxx=F1DataFeedSystem probable). Resolves about 35 components/services (map keys 0x14604ed28, 0x146ce8ae0, 0x146096aa8, 0x146080d28; provider types 0x146cb8278 config -> +0x40, 0x14604ec98, 0x146cb8018, 0x146cb8258, 0x146106aa8, 0x146cb8238, 0x14607bfb0, 0x146ce8aa0; plus getters such as Live_Get_RelativeGapHelper) into +0x20..+0x160, error 0x16 when one is missing. Reads F1DataFeed.configEnabled (Ne_Get_SettingBool 0x143a43b90, node [[+0x40]+0x18], default 0) into byte +0x19b5; if false returns 0 with the feed disabled. If true allocates the feed objects (0xce8 via 0x142c18620 -> +0x170, three 0x2f0 via 0x142c18b70 -> +0x178/+0x180/+0x188, started with 0x142c18c60), resets state (+0x18e610, +0x18b430, +0x19b6 = 1, +0x19b4 = 0, memset +0x18e0d0 0x4c8), creates two 0x88 senders (0x142c18e70, ports from +0x18e0b0/+0x18e0c0) into +0x90/+0x98 and continues setup (0x142c18f50, 0x142cb8950). hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.f1_data_feed_system_init",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC B0 00 00 00 4C 89 C6",
+  "match": "0x142c17ba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c17ba0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeedSystem_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-1",
+   "kind": "func",
+   "item": "0x142c17ba0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c17ba0.c;xref:0x1457cf940",
+   "notes": "V9330 Vtable slot of class after string \"F1DataFeedSystem\"; looks up components in the map (param_3) and services via param_2 vtable +0x28, stores them, reads F1DataFeed.configEnabled and starts \"f1_data_feed_bkg_load_thread\"; returns 0 or EINVAL; arity matches."
+  }
+ ],
+ "proofs": []
+}

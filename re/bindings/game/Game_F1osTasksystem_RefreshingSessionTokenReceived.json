@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_RefreshingSessionTokenReceived",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14336b390",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-F1OS-TASKSYSTEM",
+  "notes": "named from its log messages (channel F1OS-TASKSYSTEM): 'Refreshing the session token received %s from the server. Logging out'"
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_refreshing_session_token_received",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 38 48 89 D6 4C 8B 32 4D 85 F6",
+  "match": "0x14336b390",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14336b390",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_RefreshingSessionTokenReceived"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb16-verify",
+   "kind": "func",
+   "item": "0x14336b390",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14336b390.c",
+   "notes": "V5987 Better name Game_OnlineServerLogInTask_HandleSessionTokenRefresh: 2KB handler: on refresh response retries login or logs out (triggerLogout, ForceMPMode, interrupt queue, eInterruptErrorOnlineServices); the logging-out message is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14336b390",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14336b390.c",
+   "notes": "V7061 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

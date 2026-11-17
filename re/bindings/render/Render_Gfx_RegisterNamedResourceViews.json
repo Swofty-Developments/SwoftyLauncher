@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_RegisterNamedResourceViews",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401456e0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401456e0.c;xref:0x14014e5eb",
+  "notes": "15 KB initialiser registering named textures/SRV/UAV slots: sss_diffusion_profiles_tex, g_carMonitorSRV, ui_package/steeringScreenMip0 (car dash/steering screen RTT), mirror_gbuffer_surface_v (mirror G-buffer). Callers Game_Read_RendererGfxConfig, 0x140163960, 0x1401707a0. Addon: names of car monitor / mirror / SSS textures."
+ },
+ "signature": {
+  "id": "render.gfx_register_named_resource_views",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 03 00 00 C5 78 29 8C 24 70 03 00 00 C5 78 29 84 24 60 03 00 00 C5 F8 29",
+  "match": "0x1401456e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401456e0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_RegisterNamedResourceViews"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1401456e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401456e0.c;xref:0x14014e5eb",
+   "notes": "V7954 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

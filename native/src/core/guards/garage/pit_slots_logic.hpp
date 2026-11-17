@@ -1,5 +1,7 @@
 #pragma once
 
+#include "core/guards/skips.hpp"
+
 #include <cstddef>
 #include <cstdint>
 
@@ -11,7 +13,7 @@ constexpr uintptr_t LOWEST_POINTER = 0x10000;
 
 enum class Site : uint8_t { eval_own, eval_list, rank_own, rank_list };
 
-enum class Log : uint8_t { none, line, last };
+using Log = swofty_core::guards::Say;
 
 inline bool usable(uintptr_t slot)
 {
@@ -33,7 +35,7 @@ struct Seen {
             keys[count++] = key;
         if (logged >= LOG_FIRST)
             return Log::none;
-        return ++logged == LOG_FIRST ? Log::last : Log::line;
+        return swofty_core::guards::say(++logged, LOG_FIRST);
     }
 };
 

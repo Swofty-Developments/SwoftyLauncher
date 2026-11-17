@@ -1,4 +1,6 @@
 #pragma once
+#include "core/runtime/hashing.hpp"
+
 #include <algorithm>
 #include <cstdint>
 #include <cstdio>
@@ -12,14 +14,6 @@ namespace scancache {
 
 constexpr int SCHEMA = 1;
 constexpr const char *MAGIC = "swofty-scan-cache";
-
-inline uint64_t fnv64(const void *p, size_t n, uint64_t h = 0xcbf29ce484222325ull)
-{
-    auto b = static_cast<const uint8_t *>(p);
-    for (size_t i = 0; i < n; i++)
-        h = (h ^ b[i]) * 0x100000001b3ull;
-    return h;
-}
 
 inline std::vector<int> tokens(const std::string &pattern)
 {

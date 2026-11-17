@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Set_RnDNodeRefB",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14180c9b0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Set(void *out, void *a, void *b, void *c)",
+  "evidence": "decomp:re/decomp/14180c9b0.c;xref:0x141c4aa11;xref:0x141c5eb8a;xref:0x141c75eba",
+  "notes": "myteam-g2: Sets VM node ref (Vm_Set_NodeRef) from three handles then releases temps (field +0xc). UI only."
+ },
+ "signature": {
+  "id": "ui.set_rn_dnode_ref_b",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 C5 F8 29 74 24 50 4C 89 CF 48 89 CE 4C 89 09",
+  "match": "0x14180c9b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14180c9b0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Set_RnDNodeRefB"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14180c9b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14180c9b0.c;xref:0x141c4aa11;xref:0x141c5eb8a",
+   "notes": "V9795 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

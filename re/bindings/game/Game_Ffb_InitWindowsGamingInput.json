@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ffb_InitWindowsGamingInput",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f6ad0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FFB",
+  "notes": "named from its log messages (channel FFB): 'isWindows10=%d | Failed to load \"%s\" | Failed find function \"%s\" in \"%s\" | Failed to get WindowsGamingInput interface pointer'"
+ },
+ "signature": {
+  "id": "game.ffb_init_windows_gaming_input",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 01 00 00 48 89 CE 48 8D 05",
+  "match": "0x1446f6ad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f6ad0",
+  "kind": "func_start",
+  "names": [
+   "Game_Ffb_InitWindowsGamingInput"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f6ad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f6ad0.c",
+   "notes": "V6855 Load wrapper DLL and interface strings confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

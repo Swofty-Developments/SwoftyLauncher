@@ -7,8 +7,6 @@ pub mod ea_app;
 pub mod process;
 pub mod run_as_admin;
 pub mod steam;
-pub mod steam_client;
-pub mod vdf;
 
 use std::path::{Path, PathBuf};
 #[cfg(any(windows, test))]
@@ -22,6 +20,7 @@ use crate::install::Source;
 
 pub use ea_app::EaApp;
 pub use steam::Steam;
+pub use steam::{client as steam_client, vdf};
 
 /// A store that installs F1 25 and starts it for the player.
 pub trait LaunchPlatform: Sync {

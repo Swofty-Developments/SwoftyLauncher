@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1os_F1WorldTask_Reset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14273d530",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14273d530.c;xref:0x14579ded8",
+  "notes": "Virtual (slot ref 0x14579ded8) of the F1 World online-service task (log F1W-OS): clears fatal flag +0x1e0, cancels the current request +0xc0 (entry+0x14 = 0x306, result 0x14273ea20), stops busy spinner type 7 (counter [+0x1d0]+0x5c, TOP_LEVEL_UI log), releases shared ptr +0x118/+0x120, clears +0x128/+0x12d, cleanup 0x14273d680; if +0x70 set, posts deferred callback 0x14273db70 via 0x143988350 (else records a debug backtrace). Addon: observe F1 World task resets and cancelled requests. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3271)"
+ },
+ "signature": {
+  "id": "game.f1os_f1_world_task_reset",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE C6 81 E8 02 00 00 00",
+  "match": "0x14273d530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14273d530",
+  "kind": "func_start",
+  "names": [
+   "Game_F1os_F1WorldTask_Reset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1os_F1WorldTask_Reset",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14273d530.c;xref:0x14579ded8",
+   "notes": "V3271 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

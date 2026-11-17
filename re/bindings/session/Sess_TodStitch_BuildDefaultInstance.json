@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_TodStitch_BuildDefaultInstance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144616da0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144616da0.c;xref:0x14461e41c,0x14461e629",
+  "notes": "(ctx, instance, ...): builds the '%s/default' parameter path for an instance and fills defaults ('default', '/%s'). Caller: Sess_Tod_StitchWeatherScenario."
+ },
+ "signature": {
+  "id": "session.tod_stitch_build_default_instance",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 50 02 00 00 4C 89 CB",
+  "match": "0x144616da0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144616da0",
+  "kind": "func_start",
+  "names": [
+   "Sess_TodStitch_BuildDefaultInstance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144616da0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144616da0.c;xref:0x14461e41c",
+   "notes": "V3676 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

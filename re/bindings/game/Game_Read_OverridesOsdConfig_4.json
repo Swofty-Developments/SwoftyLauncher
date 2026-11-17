@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_OverridesOsdConfig_4",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f781e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: overrides.osd.change_strategy_icons.damage, overrides.osd.change_strategy_icons.high_tyre_wear, overrides.osd.change_strategy_icons.low_tyre_wear, overrides.osd.change_strategy_icons.tyre_wear_danger, overrides.osd.change_strategy_icons.tyre_wear_puncture, overrides.osd.'"
+ },
+ "signature": {
+  "id": "game.read_overrides_osd_config_4",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 83 FA 05 0F 87 ?? ?? ?? ?? 48 89 CE",
+  "match": "0x142f781e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f781e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_OverridesOsdConfig_4"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f781e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f781e0.c;xref:0x142f7dd01",
+   "notes": "V5658 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

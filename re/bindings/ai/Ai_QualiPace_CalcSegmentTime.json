@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Ai_QualiPace_CalcSegmentTime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1429805c0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_QualiPace_CalcSegmentTime(void *self, uint8_t vehicle_id, uint32_t tyre, float start, float end, float mass, uint32_t a7)",
+  "evidence": "decomp:re/decomp/1429805c0.c;xref:0x14297ef41,0x14297fff1,0x1429800f9,0x14298012e,0x142980163,0x142982647,0x142982940",
+  "notes": "Returns 0 if tyre >= 5. Else maps tyre (self+0x31c set and tyre <= 2 -> 0), mass' = mass + self+0x318; lazily computes a pace value self+0x3a4 (when < 0) from clamp(self+0x314, 0, 100) via Sess_VirtualSession_EstimateLapTime 0x142f6c8e0 (vehicle self+0x3b, per-car tables self+0xa8/+0xac, car data from 0x146ce86e0) and Sess_VirtualPerformance_CalcPace 0x1438a9d10. Then calls the lap model self+0x228 vcall +0x150 twice, (vehicle, start) and (vehicle, end), with a param block {tyre in 3..4 flag, value from model rec +0x1c, a7, mass', pace}; logs QUALI_PACE_DEBUG 'vehicleId %d, tyre %d, start %f, end %f, mass %f, tyreType %d, timeStart %f, timeEnd %f'; returns timeEnd - timeStart. Callers: 0x14297ed10, 0x14297fc20 (4x), 0x142982500, Game_TrackAcclimatisation_CalcTyreTarget. (renamed 2026-11-14 to the name signatures.json already listed; from Ai_QualiPace_Debug: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) Returns timeEnd - timeStart (vsubss at 0x1429809f5), so it is a segment time, not a lap time: renamed from Ai_QualiPace_EstimateLapTime (fixed 2026-11-14 after verifier ai-verify)."
+ },
+ "signature": {
+  "id": "ai.quali_pace_debug",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 78 29 AC 24 E0 00 00 00 C5 78 29 A4 24 D0 00 00 00 C5 78 29 9C 24 C0 00 00 00 C5 78 29 94 24 B0 00 00 00 C5 78 29 8C 24 A0 00 00 00 C5 78 29 84 24 90 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 C5 F8 57 C0",
+  "match": "0x1429805c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429805c0",
+  "kind": "func_start",
+  "names": [
+   "Ai_QualiPace_CalcSegmentTime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1429805c0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1429805c0.c;xref:0x14297ef41",
+   "notes": "V5160 Float-returning qualifying pace estimator (tyre/mass/lap-progress maths, vcalls +0x150 twice); the QUALI_PACE_DEBUG log is only a debug print. Better: Ai_QualiPace_EstimateLapTime"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1429805c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429805c0.c;xref:0x14297ef41",
+   "notes": "V7304 name fits; finding facts hold; 7 direct calls"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1429805c0",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x1429805c0-0x142980a53;xref:0x14297ef41,0x14297fff1,0x1429800f9,0x14298012e,0x142980163,0x142982647,0x142982940",
+   "notes": "V10575 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 0x14297ef41 (0x14297ed10), 4x in 0x14297fc20, 0x142982647 (0x142982500), 0x142982940 (0x142982740). 7 args (rcx, rdx, r8d tyre, xmm3, 3 stack). tyre > 4 -> 0 (cmp r8d,4), +0x31c/+0x318/+0x3a4/+0x314, two vcalls [model+0x150] via self+0x228, QUALI_PACE_DEBUG log, returns timeEnd - timeStart (0x1429809f5) confirmed. Correction: the result is the time between two distances (start, end), not a lap time; Ai_QualiPace_CalcSegmentTime (as the proto) fits better than EstimateLapTime."
+  }
+ ],
+ "proofs": []
+}

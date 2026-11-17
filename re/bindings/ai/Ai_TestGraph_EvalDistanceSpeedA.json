@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Ai_TestGraph_EvalDistanceSpeedA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140621620",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_GraphTable_EvalDistanceSpeed(void *table, float dist, float speed, void *key)",
+  "evidence": "decomp:re/decomp/140621620.c;xref:0x1405fc2c1,0x140615f25,0x1406176d4,0x140621120",
+  "notes": "Same family as 0x140606e60. Lazily resolves the shared ai.general_ai_settings block (guard 0x146046c78); uses only max_test_distance (0x146046c58) and max_test_speed (0x146046c68). Clamps xmm1 to +-max_test_distance and xmm2 to +-max_test_speed (0x14062169e..0x1406216be), then key+0xc == 0 -> Ai_Table_InterpolateA 0x14068b710 else Ai_Table_InterpolateB 0x14068bb70, cell callback 0x14063d5e0 (graph-cell evaluator at (dist, speed)). Returns the interpolated float. NOT a nearby-car query (corrected 2026-11-14: 0x14068bb70/0x14068b710 are table interpolators and the callback evaluates table cells). Callers: Ai_Calc_FollowSpeedForGap, Ai_Update_VehicleDriver (2x; key built by 0x14068ab50 at 0x140615f12), 0x140620e50. (renamed 2026-11-14 from Ai_Awareness_QueryByDistance: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.awareness_query_by_distance",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C4 C1 7A 5F F9 48 8B 76 60 48 89",
+  "match": "0x1405fc2c1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140621620",
+  "kind": "func_start",
+  "names": [
+   "Ai_TestGraph_EvalDistanceSpeedA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x140621620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140621620.c;xref:0x140615f25,0x1405fc2c1",
+   "notes": "V3434 resolves 5 ai.general_ai_settings tweaks (awareness_time, max_test_distance/radius/speed/time), clamps, branches on param_4+0xc to 0x14068bb70/0x14068b710 with callback 0x14063d5e0; callers confirmed"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140621620",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140621620-0x14062179b;xref:0x1405fc2c1,0x140615f25,0x1406176d4,0x140621120",
+   "notes": "V10562 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 0x1405fc2c1 (Ai_Calc_FollowSpeedForGap), 0x140615f25/0x1406176d4 (Ai_Update_VehicleDriver), 0x140621120 (in 0x140620e50). 4 args (rcx table, xmm1, xmm2, r9 key). xmm1 (saved in xmm6) clamped by max_test_distance [0x146046c58], xmm2 by max_test_speed [0x146046c68]; key+0xc==0 -> 0x14068b710 else 0x14068bb70, getter 0x14063d5e0. Rename fits. Cosmetic: proto name Ai_GraphTable_EvalDistanceSpeed differs from row name."
+  }
+ ],
+ "proofs": []
+}

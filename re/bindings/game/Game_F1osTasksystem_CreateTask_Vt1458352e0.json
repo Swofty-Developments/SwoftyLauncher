@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_CreateTask_Vt1458352e0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432c5d20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432c5d20.c;xref:0x141e06da8",
+  "notes": "F1OS task-system typed task allocator (template instance): allocates a 0x240-byte OnlineSubsystemTaskBase (base vtable 0x145834920, logs 'Created OnlineSubsystemTaskBase : @ %p' on F1OS) with final vtable 0x1458352e0 plus child list (vtable 0x145839a90), wraps it in a ref-counted holder (vtable 0x145837df0) and adds it via Game_F1osTasksystem_AddTask 0x1432dd060, logging 'Allocated new task %s' on F1OS-TASKSYSTEM. Callers: social hub friends tab view model. Addon: hook to see/create this task type. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3294)"
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_create_task_vt1458352e0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 4C 89 C7 48 89 D6 48",
+  "match": "0x1432c5d20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432c5d20",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_CreateTask_Vt1458352e0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1osTasksystem_CreateTask_Vt1458352e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432c5d20.c;xref:0x1432c5d20",
+   "notes": "V3294 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

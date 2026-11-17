@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Apply_PresetSetupMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407dfb60",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Apply_PresetSetupMode(void *game_mode, const char *prefix)",
+  "evidence": "str:s_cfg_GameSetupMode;decomp:re/decomp/1407dfb60.c;xref:0x1407dfba7,0x1407dfbae,0x1407dfbaf,0x14173d311",
+  "notes": "First of six preset appliers called in a row by 0x14173d1a0 (slot +0x28 = GetAction of the FeTile item class with vtable 0x145706650, the class of Ui_PresetEventItem_Populate 0x14173cd40) after it set the game mode with Game_Game_SetCurrentGameMode 0x1407d07a0; game_mode = the mode object returned by 0x1407d2150, prefix = the item NeStr at item+0x10 (chars at +9) or k_Ne_EmptyStrChars. Builds '<prefix>.Game.setup_mode' with Ne_StrBuf_Printf 0x1401009f0 ('%s.%s' 0x14565f074, name 0x1456485d3) and reads it with Ne_Config_GetString 0x143a44700 from config *(*(game_mode+0x1198)+0x210)+0x18, default empty; an empty value becomes 'f1'. Then walks the 16-byte slot array *(g_Game_Scenarios 0x146079b28)+0x48..+0x50, compares each object's *(obj+0xd8)+0x10 name with Ne_Crt_Strcmp 0x14535d850 and on the first match calls 0x14079f300(game_mode, setup, 0) (an .xtls jmp thunk to the .data1 body 0x148596c20, role not read). No return value. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.apply_preset_setup_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC F0 01 00 00",
+  "match": "0x1407dfb60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407dfb60",
+  "kind": "func_start",
+  "names": [
+   "Game_Apply_PresetSetupMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-1",
+   "kind": "func",
+   "item": "0x1407dfb60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407dfb60.c;xref:0x14173d312",
+   "notes": "V9320 Formats \"<prefix>.Game.setup_mode\", reads it via Ne_Config_GetString (default \"f1\" when empty), finds the setup mode with that name in the global list (Ne_Crt_Strcmp) and applies it via 0x14079f300; caller 0x14173d1a0 calls a row of preset appliers with the same (game_mode, prefix); arity matches."
+  }
+ ],
+ "proofs": []
+}

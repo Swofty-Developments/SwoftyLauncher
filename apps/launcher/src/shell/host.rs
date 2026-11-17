@@ -1,0 +1,17 @@
+use gpui_kit::*;
+
+/// A state the shell holds that starts background work of its own. It names what it borrows from
+/// the shell beside itself, and what it reports back when other features have to follow.
+pub(crate) trait Hosted: Sized + 'static {
+    type Needs<'a>;
+    type Change;
+}
+
+/// The shell as one of its states sees it. A state's methods that start background work take
+/// `&mut impl Host<Self>`, so they reach only the state and its [`Hosted::Needs`], and the work
+/// writes its result back through the same view once it finishes. `changed` is where the shell
+/// routes what the state reports to the other features.
+pub(crate) trait Host<T: Hosted>: Sized + 'static {
+    fn split(&mut self) -> (&mut T, T::Needs<'_>);
+    fn changed(&mut self, change: T::Change, cx: &mut Context<Self>);
+}

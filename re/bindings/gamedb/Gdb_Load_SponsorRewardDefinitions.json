@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Gdb_Load_SponsorRewardDefinitions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141117180",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "void *sponsors",
+  "evidence": "decomp:re/decomp/141117180.c;xref:0x142e1ab29",
+  "notes": "myteam-g1: Loads game-db table sponsors.sponsor_rewards (sponsor_reward_id, sponsor_reward) used by goals and loyalty tracks."
+ },
+ "signature": {
+  "id": "gamedb.load_sponsor_reward_definitions",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 04 00 00 C5 F8 29 B4 24 80 04 00 00 48 89 CE C7 84 24 70 02 00 00 FF FF FF FF",
+  "match": "0x141117180",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141117180",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Load_SponsorRewardDefinitions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x141117180",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141117180.c;xref:0x142e1ab29;str:\"sponsor_reward_id\"",
+   "notes": "V9660 Table sponsors.sponsors.sponsor_rewards with sponsor_reward_id, sponsor_reward, loyalty_xp."
+  }
+ ],
+ "proofs": []
+}

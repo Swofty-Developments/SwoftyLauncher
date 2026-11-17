@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_PresenceChangedResettingIndicesAndAuthentication",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140761f40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-TELEMETRY",
+  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Presence changed. Resetting indices and authentication.'"
+ },
+ "signature": {
+  "id": "game.analytics_presence_changed_resetting_indices_and_authentication",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 75 61 B8 2C 01 00 00",
+  "match": "0x140761f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140761f40",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_PresenceChangedResettingIndicesAndAuthentication"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140761f40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140761f40.c",
+   "notes": "V4278 log string and record name match; \"EA analytics event:\" prefix not in exe strings (added elsewhere/unverified), message text matches"
+  }
+ ],
+ "proofs": []
+}

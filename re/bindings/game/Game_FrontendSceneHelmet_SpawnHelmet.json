@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneHelmet_SpawnHelmet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428a3a50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name spawnHelmet (class from the log channel); log channel FRONTEND_SCENE_HELMET: 'spawnHelmet()' | caller 0x142e3f4c0"
+ },
+ "signature": {
+  "id": "game.frontend_scene_helmet_spawn_helmet",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 50 06 00 00 4C 89 CB",
+  "match": "0x1428a3a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428a3a50",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneHelmet_SpawnHelmet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428a3a50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428a3a50.c;xref:0x142e3f4e8",
+   "notes": "V5119 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

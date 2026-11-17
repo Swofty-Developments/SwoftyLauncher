@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_OptionsUI_BackPressIgnoredDonAllowBack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141dcfe30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-OPTIONS-UI",
+  "notes": "named from its log messages (channel OPTIONS-UI): 'Back press ignored: don't allow back'"
+ },
+ "signature": {
+  "id": "game.options_ui_back_press_ignored_don_allow_back",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 08 03 00 00 48 89 CE",
+  "match": "0x141dcfe30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141dcfe30",
+  "kind": "func_start",
+  "names": [
+   "Game_OptionsUI_BackPressIgnoredDonAllowBack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141dcfe30",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141dcfe30.c;xref:0x141dd1ae7",
+   "notes": "V5224 1195-line command handler (start_event, begin_braking_point, career_wizard, back_pressed...); back-press-ignored is one branch. Better Game_OptionsUI_OnCommandRaised_Menu"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141dcfe30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141dcfe30.c;xref:0x141dd1ae7",
+   "notes": "V7271 name fits; finding facts hold; 1 direct calls"
+  }
+ ],
+ "proofs": []
+}

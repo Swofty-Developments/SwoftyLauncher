@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Apply_PresetTimeOfDay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407e1040",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Apply_PresetTimeOfDay(void *game_mode, const char *prefix)",
+  "evidence": "str:s_cfg_GameTimeOfDay;decomp:re/decomp/1407e1040.c;xref:0x1407e1173,0x1407e117a,0x1407e117b,0x1407e1220,0x14173d332",
+  "notes": "Preset applier (caller 0x14173d1a0 at 0x14173d332). Finds the session-settings component: game_mode+0xf08 if its type (vtable +0x28 of +0x18) derives from descriptor 0x146076520, else the first child in +0x238..+0x240 that does; none -> return. Reads '<prefix>.Game.time_of_day' (Ne_Config_GetString 0x143a44700, default empty, lowercased with Ne_Crt_ToLower 0x14536123c). Empty: nothing. 'official' (0x14565b23c): component+0xbb1 = 0. Otherwise lowercase FNV-1a64 of the value is compared with 8 hashes; a known name sets +0xbb1 = 2 (custom) and +0xbb2 = slot: sunrise 0, morning 1, midday 2, afternoon 3, sunset 4, night1 5, night2 6, night3 7 (names recovered by hashing); an unknown name behaves like official. Writes only when component+0xbb8 is non-null. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.apply_preset_time_of_day",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 48 89 D7 48 89 CE 48 8B 99 08 0F 00 00",
+  "match": "0x1407e1040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407e1040",
+  "kind": "func_start",
+  "names": [
+   "Game_Apply_PresetTimeOfDay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-0",
+   "kind": "func",
+   "item": "0x1407e1040",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407e1040.c;xref:0x14173d332",
+   "notes": "V9305 Builds \"<prefix>.Game.time_of_day\", reads it with Ne_Config_GetString (default empty), lowercases it; \"official\" (or empty) sets mode 0 on the weather/ToD object, otherwise FNV-1a hash matches one of 7 presets -> mode 2 + preset id 1..7 at +0xbb2; 2 args (game mode, prefix) match"
+  }
+ ],
+ "proofs": []
+}

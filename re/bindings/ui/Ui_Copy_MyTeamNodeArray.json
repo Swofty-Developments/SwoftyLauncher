@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Copy_MyTeamNodeArray",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424cece0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Copy(void **dst, void *src, void **a, void **b)",
+  "evidence": "decomp:re/decomp/1424cece0.c;xref:0x140261475;xref:0x140af8736;xref:0x140c011ad",
+  "notes": "myteam-g2: memcpy-based copy of handle arrays; used by RnD pie and My Team contract negotiation views."
+ },
+ "signature": {
+  "id": "ui.copy_my_team_node_array",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 4C 89 4C 24 28 48 89 4C 24 30 48 8B 6A 08",
+  "match": "0x1424cece0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424cece0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Copy_MyTeamNodeArray"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1424cece0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424cece0.c",
+   "notes": "V10213 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

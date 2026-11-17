@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Upgrades_CollectEntrantKeys",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143522910",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void* (void *upgrades, void *out_vec)",
+  "evidence": "decomp:re/decomp/143522910.c;xref:0x140aa542f;xref:0x140fc72a9;xref:0x14123aecc",
+  "notes": "myteam-g2: Iterates the hash set at upgrades+0x1a68.. (param_1[0x34d..]) of packed 16-bit ids (low 14 bits team id, top 2 bits kind) and returns them as a vector via the allocator *upgrades. Used by the purchase simulation and R&D notifications to enumerate teams with upgrades."
+ },
+ "signature": {
+  "id": "career.upgrades_collect_entrant_keys",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 8B 01 48 89 44 24 20",
+  "match": "0x143522910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143522910",
+  "kind": "func_start",
+  "names": [
+   "Career_Upgrades_CollectEntrantKeys"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143522910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143522910.c;xref:0x140aa542f",
+   "notes": "V10287 Iterates hash set at param_1[0x34d] (+0x1a68), outputs u32 (id14<<16|kind2) vector."
+  }
+ ],
+ "proofs": []
+}

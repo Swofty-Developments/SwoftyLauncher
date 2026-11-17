@@ -1,6 +1,6 @@
 use std::collections::HashSet;
 
-use swofty_core::multiplayer::types::{
+use swofty_core::online::multiplayer::types::{
     GameStatus, MemberStage, MemberState, Phase, Problem, Progress, RoomAddon, RoomContent, RoomSettings,
     RoomSummary, Screen, SessionState, Step,
 };

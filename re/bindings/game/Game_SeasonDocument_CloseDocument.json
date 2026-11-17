@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SeasonDocument_CloseDocument",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14309cdb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14309cdb0.c;xref:0x140bb4d63,0x140fce2d3,0x140ff7c56,0x1436d8e4c,0x1436dcf9a,0x1436fea4a",
+  "notes": "network::GameSessionSeasonDocument::closeDocument: +0x769=0, +0x766=1, MOXSeasonParametersBroadcasted, +0x765 (open)=0, sends the close message ([this+0x420]+0x3d0, reliable 1). Addon: document open flag = +0x765. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2743)"
+ },
+ "signature": {
+  "id": "game.season_document_close_document",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 40 83 79 08 01 0F 8F ?? ?? ?? ?? 48 89 CE 80 B9 65 07 00 00 00 0F 84",
+  "match": "0x14309cdb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14309cdb0",
+  "kind": "func_start",
+  "names": [
+   "Game_SeasonDocument_CloseDocument"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_SeasonDocument_CloseDocument",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14309cdb0.c;xref:0x143095780",
+   "notes": "V2743 +0x769=0,+0x766=1,+0x765=0, close msg {7,0x12} via [[this+0x420]+0x3d0] rel 1 confirmed"
+  }
+ ],
+ "proofs": []
+}

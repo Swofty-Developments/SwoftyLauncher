@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_StrtokS",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14535f420",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14535f420.c;xref:0x140194330,0x1401943f7,0x140194427",
+  "notes": "Hypothesis: (byte* a, byte* b, long* out) string/path helper with null checks; 275 callers (livery/outfit asset paths in cutscene script). Named callers: Game_CutSceneScript_AddRaceCrewLiveryToAssetGroupPaths, Game_CutSceneScript_ResolveDriverOutfitAssets, Game_CutSceneScript_SpawnDynamicDriverActor, Game_DataDrivenCutSceneScript_CreateComponents. vp4-verify partial/disagree"
+ },
+ "signature": {
+  "id": "core.string_append_resolved_path",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 4D 85 C0 75 17 E8 ?? ?? ?? ?? C7 00",
+  "match": "0x14535f420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14535f420",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_StrtokS"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x14535f420",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/14535f420.c;xref:0x140194330",
+   "notes": "V7719 BetterName Ne_Crt_StrtokS: 32-byte delimiter bitmap, strtok_s(str,delims,ctx) with EINVAL 0x16; not path append"
+  }
+ ],
+ "proofs": []
+}

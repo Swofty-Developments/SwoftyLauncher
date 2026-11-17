@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreSystem_SwapTyreModel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403b8400",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403b8400.c;xref:0x1403ba414,0x1403b7f25",
+  "notes": "TyreSystem: swaps / shows the old or new tyre model of car param_2 (< 27, list +0xe0+car*8, disabled while +0x64 set) for tyre id *param_4, toggles visibility (vfunc +0x98, Game_CompoundModelSet_SetTyreVisibility), places tyres via 0x142e83130/0x142e87540; TRACE 'getOld/NewTyreModel(ForCutScene) failed', WARN 'Error cmsVehicleRepParts is null'. Callers Game_PitStopLogic_StateInGarage, 0x1403b6cf0, 0x1403b77c0. Addon: pit-stop tyre visuals. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2822)"
+ },
+ "signature": {
+  "id": "game.tyre_system_swap_tyre_model",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 83 FA 1A 0F",
+  "match": "0x1403b8400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403b8400",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreSystem_SwapTyreModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d9-verify",
+   "kind": "func",
+   "item": "Game_TyreSystem_SwapTyreModel",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403b8400.c;xref:0x1403b8400",
+   "notes": "V2822 strings/calls/offsets checked in decomp+disasm; role and name hold"
+  }
+ ],
+ "proofs": []
+}

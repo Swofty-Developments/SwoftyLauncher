@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Network_UploadedUsageRatioNaN",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431a03d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK",
+  "notes": "named from its log messages (channel NETWORK): '? Uploaded usageRatio is NaN'"
+ },
+ "signature": {
+  "id": "game.network_uploaded_usage_ratio_na_n",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 BB FF FF FF FF FF FF 00 00",
+  "match": "0x1431a03d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431a03d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_UploadedUsageRatioNaN"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x1431a03d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1431a03d0.c;xref:0x143a9ba40",
+   "notes": "V5909 Network_ParseUploadedBandwidthStats: validates usageRatio, backgroundTraffic, bandwidth; NaN is one check"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1431a03d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431a03d0.c",
+   "notes": "V7015 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

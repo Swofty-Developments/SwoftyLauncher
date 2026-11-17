@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ElasticSearchReporterModule_Report_LoadingTimesEnd",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140766110",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=ElasticSearchReporterModule::report_LoadingTimesEnd; log channel TELEMETRY: 'ElasticSearchReporterModule::report_LoadingTimesEnd(%s)'"
+ },
+ "signature": {
+  "id": "game.elastic_search_reporter_module_report_loading_times_end",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 49 89 D6 48 89 CE",
+  "match": "0x140766110",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140766110",
+  "kind": "func_start",
+  "names": [
+   "Game_ElasticSearchReporterModule_Report_LoadingTimesEnd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x140766110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140766110.c",
+   "notes": "V4280 log/string match decomp"
+  }
+ ],
+ "proofs": []
+}

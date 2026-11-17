@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_RetrieveConsumableEntitlementsTask_Ctor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140792740",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140792740.c;xref:0x145644bb0,0x145834920",
+  "notes": "Constructor of the consumable-entitlements online task: runs OnlineSubsystemTaskBase ctor inline (base vtable 0x145834920, allocator param_2 at +8/+0x10, logs 'Created OnlineSubsystemTaskBase : @ %p' on F1OS) then sets vtable 0x145644bb0 and clears the task fields +0x7920..+0x7990 (app-id list +0x7958/+0x7960, country-code flag +0x7970, child HTTP task +0x7978/+0x7980). Addon: identify the task object size/layout when hooking entitlement refresh. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3337)"
+ },
+ "signature": {
+  "id": "game.retrieve_consumable_entitlements_task_ctor",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 05 ?? ?? ?? ?? 48 8D 2D ?? ?? ?? ?? BA 28 00 00 00 41 B8 10 00 00 00 48 89 E9 FF 50 18 49 89 C7 48",
+  "match": "0x142b9565d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x140792740",
+  "kind": "func_start",
+  "names": [
+   "Game_RetrieveConsumableEntitlementsTask_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cs3-verify",
+   "kind": "func",
+   "item": "Game_RetrieveConsumableEntitlementsTask_Ctor",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140792740.c;xref:0x142b9565d",
+   "notes": "V3337 ctor body, vtables, field clears match; field roles inferred"
+  }
+ ],
+ "proofs": []
+}

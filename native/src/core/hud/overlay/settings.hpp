@@ -21,7 +21,6 @@ bool before_fg_wanted();
 // sees before the probe window exists.
 std::string device_hook_rival();
 std::vector<std::string> loaded_modules();
-std::wstring hardware_settings_path();
 float paper_white();
 UINT output_mode(IDXGISwapChain3 *sc, DXGI_FORMAT fmt, UINT color_space);
 

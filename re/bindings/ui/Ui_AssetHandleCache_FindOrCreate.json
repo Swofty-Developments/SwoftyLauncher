@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_AssetHandleCache_FindOrCreate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14250fc40",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_AssetHandleCache_FindOrCreate(void *cache, void *key, char *out_created)",
+  "evidence": "decomp:re/decomp/14250fc40.c;xref:0x141654289;xref:0x1416542bc;xref:0x1416544bf",
+  "notes": "myteam-g2: Thread-safe (EnterCriticalSection on cache+0x20) find-or-insert in a hash map (cache+0x50..) mapping a key to a cached asset/handle node. Generic cache helper used by container/contracts screens, sponsor livery apply and the PaddockPass transaction queue close."
+ },
+ "signature": {
+  "id": "ui.asset_handle_cache_find_or_create",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC D0 00 00 00 4C 89 C7",
+  "match": "0x14250fc40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14250fc40",
+  "kind": "func_start",
+  "names": [
+   "Ui_AssetHandleCache_FindOrCreate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x14250fc40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14250fc40.c",
+   "notes": "V10220 EnterCriticalSection on *(cache+0x20), hash lookup at cache+0x50, builds fixed string key and inserts; find-or-create cache."
+  }
+ ],
+ "proofs": []
+}

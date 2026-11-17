@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Libpng_DeflateEndChecked",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447a9ad0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447a9ad0.c;xref:0x143915590",
+  "notes": "Validates a zstream state (self-pointer check, magic status values 0x39..0x71, 0x29a, 0x2a) then frees buffers through the user free callback. 8 callers incl. Ne_Libpng_WriteImage (0x143915590). Hypothesis (zlib deflateEnd)."
+ },
+ "signature": {
+  "id": "core.libpng_deflate_end_checked",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 B8 FE FF FF FF 48 85 C9 0F 84 ?? ?? ?? ?? 48 89 CE 48",
+  "match": "0x1447a9ad0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447a9ad0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Libpng_DeflateEndChecked"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1447a9ad0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447a9ad0.c;xref:0x143915590",
+   "notes": "V8420 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

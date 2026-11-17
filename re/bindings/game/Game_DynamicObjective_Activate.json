@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DynamicObjective_Activate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14115d690",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-DYNAMIC_OBJECTIVES",
+  "notes": "Log channel DYNAMIC_OBJECTIVES: 'Attempting to activate the %s Dynamic Objective that's already active.'"
+ },
+ "signature": {
+  "id": "game.dynamic_objective_activate",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 C5 F9 29 74 24 40 48 89 CE 48 8B 01 48 8D 54 24 27",
+  "match": "0x14115d690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14115d690",
+  "kind": "func_start",
+  "names": [
+   "Game_DynamicObjective_Activate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14115d690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14115d690.c;xref:0x141191354",
+   "notes": "V4625 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

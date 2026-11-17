@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_ModuleSystem_CheckConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143adce20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-MODULE_SYSTEM;decomp:re/decomp/143adce20.c;xref:0x143add91b,0x143adf17b,0x143adffee",
+  "notes": "named from its log messages (channel MODULE_SYSTEM): 'Module \"%s\" excluded by \"config\" attribute.'"
+ },
+ "signature": {
+  "id": "core.module_system_check_config",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC C8 00 00 00 48 89 D6 48 8D 05",
+  "match": "0x143adce20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143adce20",
+  "kind": "func_start",
+  "names": [
+   "Ne_ModuleSystem_CheckConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_ModuleSystem_CheckConfig",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143adce20.c;xref:0x143add91b",
+   "notes": "V2046 reads config attr (master), returns bool; MODULE_SYSTEM log ok"
+  }
+ ],
+ "proofs": []
+}

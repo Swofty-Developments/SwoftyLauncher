@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Material_CountResourceSlots",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c07890",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c07890.c;xref:0x143b1b629,0x143b636da",
+  "notes": "Reads NeMaterialResource (string) slot table: base count 2 plus one per slot whose type field (|2)!=3 (stride 0x28 from +0x78 list, count +0x68), hashes names via Ne_HashedName_FromString. Hypothesis: computes/binds material resource slot layout for a pass."
+ },
+ "signature": {
+  "id": "render.material_count_resource_slots",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00 48 89 CE 83 79 30 01",
+  "match": "0x143c07890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143c07890",
+  "kind": "func_start",
+  "names": [
+   "Render_Material_CountResourceSlots"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143c07890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c07890.c;xref:0x143b1b629",
+   "notes": "V7853 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

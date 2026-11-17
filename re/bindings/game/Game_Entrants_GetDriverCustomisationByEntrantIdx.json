@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_Entrants_GetDriverCustomisationByEntrantIdx",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14024c370",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14024c370.c;xref:0x14024c6b0",
+  "notes": "Looks up a driver customisation by stat id; logs ENTRANTS_SYSTEM \"Driver customisation with stat id %s not found\" (format \"%s %u\"). Callers 0x14024c670, Game_Podium2019CutSceneScript_ChooseCutScenesToPlay, Game_Pod2019First_RequestPodiumThumbnails. vp4-verify partial: argument is an entrant index"
+ },
+ "signature": {
+  "id": "game.entrants_get_driver_customisation_by_stat_id",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 89 C7 48 8B 05 ?? ?? ?? ?? 48 8B 90 B0 00",
+  "match": "0x14024c6b0",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14024c370",
+  "kind": "func_start",
+  "names": [
+   "Game_Entrants_GetDriverCustomisationByEntrantIdx"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x14024c370",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14024c370.c;xref:0x14024c6b0",
+   "notes": "V7724 BetterName Game_Entrants_GetDriverCustomisationByEntrant: param is entrant index (same prologue as FindDriverStatId); strings ENTRANTS_SYSTEM ok"
+  }
+ ],
+ "proofs": []
+}

@@ -12,6 +12,7 @@
 #include "core/diagnostics/crash/process.hpp"
 #include "core/diagnostics/crash/symbolizer.hpp"
 #include "core/diagnostics/perf.hpp"
+#include "core/runtime/pages.hpp"
 
 namespace runtime {
 void hud_fatal();
@@ -230,7 +231,7 @@ uintptr_t scan_exe(const uint8_t *pat, size_t n, const fast_fail::Pattern *maske
             uintptr_t next = std::min(reinterpret_cast<uintptr_t>(m.BaseAddress) + m.RegionSize, end);
             if (next <= p)
                 break;
-            bool ok = m.State == MEM_COMMIT && !(m.Protect & (PAGE_GUARD | PAGE_NOACCESS)) && (m.Protect & 0xEE);
+            bool ok = runtime::pages::readable_region(m);
             auto *a = reinterpret_cast<const uint8_t *>(p), *hi = reinterpret_cast<const uint8_t *>(next);
             for (; ok && size_t(hi - a) >= n; a++) {
                 a = static_cast<const uint8_t *>(memchr(a, pat[0], size_t(hi - a) - n + 1));

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Sess_FormationLapLogic_IsActiveOtherType",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436184e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "doc:re/db/subsystems/session.md;decomp:re/decomp/1436184e0.c;xref:0x14020b370,0x1405f6cd9,0x1405faa6a,0x14061a1a5",
+  "notes": "warmup-static (agent warmup, unverified): predicate B = enabled && formation type != 0 cs-verify: extra guard: no player or flag +0xe30 set, and session type null or 15..17"
+ },
+ "signature": {
+  "id": "session.formation_lap_logic_is_active_other_type",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 84 DB 75 08 84 C0 75 04 31 ED EB",
+  "match": "0x14020b370",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1436184e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_FormationLapLogic_IsActiveOtherType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cs-verify",
+   "kind": "func",
+   "item": "Sess_FormationLapLogic_IsActiveOtherType",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436184e0.c;xref:0x14020b370",
+   "notes": "V2271 same as Type0 but returns opt0x17!=0; same guards"
+  }
+ ],
+ "proofs": []
+}

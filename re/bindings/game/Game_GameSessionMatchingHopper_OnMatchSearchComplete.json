@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingHopper_OnMatchSearchComplete",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307f900",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionMatchingHopper::onMatchSearchComplete; log channel NETWORK-SESSION: 'GameSessionMatchingHopper::onMatchSearchComplete(%s, %s)'"
+ },
+ "signature": {
+  "id": "game.game_session_matching_hopper_on_match_search_complete",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 44 89 CB 44 89 C7",
+  "match": "0x14307f900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307f900",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingHopper_OnMatchSearchComplete"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307f900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307f900.c;xref:0x14306130b",
+   "notes": "V5606 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

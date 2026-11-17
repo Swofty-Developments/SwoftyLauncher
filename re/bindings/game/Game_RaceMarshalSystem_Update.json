@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RaceMarshalSystem_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403d25a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_RaceMarshalSystem_Update(void *system, double *dt)",
+  "evidence": "decomp:re/decomp/1403d25a0.c;xref:0x14561ebd8",
+  "notes": "RaceMarshalSystem per-frame update (vtable slot ptr 0x14561ebd8; param_2 = {dt, time}). Ticks the marshal audio/anim bank self+0x848 (0x143ac0100, tag 0x14561eaed); for every marshal post in the array self+0x428 (8-byte pointers): shows/hides its scene ([post+0x68], visibility byte +0xa6 via 0x140190110), copies the 4x4 placement rows from the post record +0x140..+0x17c into the scene instance and activates it (0x1401e7aa0(inst,1)), updates the flag state (0x1403c2f50(post, post+0x9c)) unless the photo/replay flag ([g 0x14604c2c8+0x2a8]+0x138) is set; then accumulates self+0x830 += time. (used by vmknolle recovery: marshal flag / position hooks)"
+ },
+ "signature": {
+  "id": "game.race_marshal_system_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 78 29 BC 24 C0 00 00 00 C5 78 29 B4 24 B0 00 00 00 C5 78 29 AC 24 A0 00 00 00 C5 78 29 A4 24 90 00 00 00 C5 78 29 9C 24 80 00 00 00 C5 78 29 54 24 70 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 89 D7",
+  "match": "0x1403d25a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1403d25a0",
+  "kind": "func_start",
+  "names": [
+   "Game_RaceMarshalSystem_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-c",
+   "kind": "func",
+   "item": "0x1403d25a0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_c/decomp/1403d25a0.c;xref:0x14561ebd8",
+   "notes": "V1053 vtable slot 0xc8 Update: waits on job 'WAIT:RacemarshalSystem', reads dt=*arg2, updates marshal instances (+0x428[]) transforms/flags, accumulates arg2[1] in +0x830; neighbouring code is RaceMarshalInstance; void(system,double*) matches"
+  }
+ ],
+ "proofs": []
+}

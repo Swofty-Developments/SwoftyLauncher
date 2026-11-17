@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_ContractUpdate_OnEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436c1760",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ContractUpdate_OnEnter(void *state)",
+  "evidence": "decomp:re/decomp/1436c1760.c;xref:0x14585a350",
+  "notes": "Update onEnter (vtable 0x14585a310 slot +0x40): caches the components at +0xd60/+0xd68, sets +0xd5a/+0xd5b, opens team_hq_driver_career_contracts_negotiation (0x1436c01c0, 0x144426920, +0xc88 = 1, +0xd58 = 0) and returns true once the state phase +0xc18 is 3. Raised by native-1990 with --force in the career lane (owner career-re), approved by the developer on 2026-10-21 for the private F1 1990 build (doc:/mnt/work/.f1-1990/addon/native-requests.md#N1)."
+ },
+ "signature": {
+  "id": "career.contract_update_on_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 48 89 CE 48 8B 81 80 0C 00 00",
+  "match": "0x1436c1760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436c1760",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractUpdate_OnEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/contract_skip.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-a",
+   "kind": "func",
+   "item": "Career_ContractUpdate_OnEnter",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436c1760.c;decomp:re/decomp/1408438c0.c;decomp:re/decomp/144426920.c;decomp:re/decomp/1436c1110.c;decomp:re/decomp/140d80860.c;xref:0x14585a350;sig:career.contract_update_on_enter",
+   "notes": "V0975 Vtable 0x14585a310 slot +0x40 (abs ptr 0x14585a350, no rel32 callers); the vtable is set by factory 0x1408438c0 (0xd70-byte object) registered at 0x1408027b8 under djb2('StateDriverCareerContractNegotiations') = 0x45035ff6, so 'Update' is the KB's name for the unsuffixed state. Confirmed: +0xd60 = component 0x146060840, +0xd68 = contracts manager (desc 0x14605c0d8), +0xd5a = both non-null, +0xd5b = 0x140d80860(contracts) (local signed record status == 9). When +0xc88 is clear: 0x1436c01c0(state,1) (subscribes 0x1436c1110, which sets +0xd58 on MessageContractNegotiationFinished), a FlowChangeSubTask enter_driver_career_negotiation when +0xd60 is null or +0xd5b set, 0x144426920 (sets phase +0xc18 = 2), +0xd58 = 0, +0xc88 = 1. Returns (+0xc18 == 3). The screen name team_hq_driver_career_contracts_negotiation is not referenced by this state's code (data-driven; the string is used by 0x1422f1d50 and 0x141661f80), so that part is consistent but not shown here. sigcheck: 1 hit"
+  }
+ ],
+ "proofs": []
+}

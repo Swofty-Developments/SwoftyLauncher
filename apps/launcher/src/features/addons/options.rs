@@ -223,6 +223,7 @@ impl Shell {
 
     pub(crate) fn sync_sliders(&mut self, window: &mut Window, cx: &mut Context<Self>) {
         let Some(m) = self
+            .navigation
             .open_addon
             .as_ref()
             .and_then(|id| self.library.addons.iter().find(|m| &m.manifest.id == id))

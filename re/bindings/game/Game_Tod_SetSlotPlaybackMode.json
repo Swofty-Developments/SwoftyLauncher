@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Tod_SetSlotPlaybackMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14461cd20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14461cd20.c;xref:0x140c772b6,0x142d5263c",
+  "notes": "Time-of-day system (SRW lock this+0x2108): maps session type param_3 through table 0x14588c605 to a slot (stride 0x288 at +0x530); mode param_2 == 7 sets duration 7200.0 (+0x34c+slot, +0xb350+slot*4); applies via 0x14461b3d0 and bumps counter +0x538. Callers Sess_GameWeatherSystem_SetActiveSessionType, Sess_Loader_RequestCareerHubUnload."
+ },
+ "signature": {
+  "id": "game.tod_set_slot_playback_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 C6 89 D3 48 89 CF",
+  "match": "0x14461cd20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14461cd20",
+  "kind": "func_start",
+  "names": [
+   "Game_Tod_SetSlotPlaybackMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14461cd20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14461cd20.c;xref:0x140c772b6",
+   "notes": "V3678 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

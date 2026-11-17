@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_RndNotification_SetPartCard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14180fc60",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void FUN(void *view, void *ctx)",
+  "evidence": "decomp:re/decomp/14180fc60.c;xref:0x14180d616;xref:0x14180d737;xref:0x14180dd77",
+  "notes": "myteam-g1: UI binding code; lng_rnd_%s, lng_rnd_dept_%s, lng_rnd_unknown, rnd_card_bg, rnd_dept_icons_small. Static, string-key driven."
+ },
+ "signature": {
+  "id": "ui.rnd_notification_set_part_card",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 4C 89 CB 4D 89 C6 48 89 D6",
+  "match": "0x14180fc60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14180fc60",
+  "kind": "func_start",
+  "names": [
+   "Ui_RndNotification_SetPartCard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14180fc60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14180fc60.c;xref:0x14180d616",
+   "notes": "V9804 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

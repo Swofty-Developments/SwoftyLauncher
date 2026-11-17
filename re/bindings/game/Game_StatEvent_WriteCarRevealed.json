@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteCarRevealed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14373af50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-STATEVENT",
+  "notes": "named from its log messages (channel STATEVENT): 'Executing EventWriteCarRevealed with [%d] StatisticDataProviders registered.'"
+ },
+ "signature": {
+  "id": "game.stat_event_write_car_revealed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 02 00 00 0F B7 42 10",
+  "match": "0x14373af50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14373af50",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteCarRevealed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x14373af50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14373af50.c;xref:0x143725eb6",
+   "notes": "V6180 name/string, size and caller verified"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Particles_ResetEffectsByType",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143b05870",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143b05870.c;xref:0x143b08f94",
+  "notes": "Walks the effect vector back to front; for effects whose type char (def+0x10 first byte) - 99 is in mask 0x10003 (types 'c','d','s') clears flag bit0 on effect and emitter instances (inst+0x178 &= ~1, inst+0xdc = def+0x58c) and removes via Game_Particles_RemoveEffect. Caller Game_Particles_UpdateManager. Hypothesis."
+ },
+ "signature": {
+  "id": "render.particles_reset_effects_by_type",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 8B 81 98 8E 85 00",
+  "match": "0x143b05870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143b05870",
+  "kind": "func_start",
+  "names": [
+   "Render_Particles_ResetEffectsByType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143b05870",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143b05870.c;xref:0x143b08f94",
+   "notes": "V7881 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorsHqCard_GetText",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14197cb50",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *card",
+  "evidence": "decomp:re/decomp/14197cb50.c;xref:0x14571e710",
+  "notes": "myteam-g1: Returns lng_my_team_career_sponsors_description / lng_sponsors_1_title for the Team HQ sponsors card."
+ },
+ "signature": {
+  "id": "career.sponsors_hq_card_get_text",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE E8 ?? ?? ?? ?? 48 8D 4E 58 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 81 C6 98 00 00 00 48 8D 15 ?? ?? ?? ?? 48 89 F1 48 83 C4 20 5E E9 ?? ?? ?? ?? CC CC CC CC CC CC CC CC 56 57 53 48 83 EC 20 48 89 D6 48 83 C1 10 48 8D 7A 08 48 C7 42 08 00 00 00 00 C7 02 04 00 00 00",
+  "match": "0x14197cb50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14197cb50",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorsHqCard_GetText"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14197cb50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14197cb50.c;xref:0x14571e710",
+   "notes": "V9858 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

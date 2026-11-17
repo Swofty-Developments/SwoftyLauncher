@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetSafetyCarCinematic_UpdateIntroEnd",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143628b80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143628b80.c;xref:0x1458529a0",
+  "notes": "Host: when the SC intro end time changes sends the cinematic intro end message {0x9b}. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2780)"
+ },
+ "signature": {
+  "id": "game.net_safety_car_cinematic_update_intro_end",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 C5 F9 29 74 24 40 48 89 CE 48 8B 49 10",
+  "match": "0x143628b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143628b80",
+  "kind": "func_start",
+  "names": [
+   "Game_NetSafetyCarCinematic_UpdateIntroEnd"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_NetSafetyCarCinematic_UpdateIntroEnd",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143628b80.c;xref:0x143628b80",
+   "notes": "V2780 msg {0x9b} host when value changes confirmed"
+  }
+ ],
+ "proofs": []
+}

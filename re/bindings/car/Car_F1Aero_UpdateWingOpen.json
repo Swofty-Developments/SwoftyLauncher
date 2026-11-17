@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_F1Aero_UpdateWingOpen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446cb540",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "void Car_F1Aero_UpdateWingOpen(void *f1aero, float dt)",
+  "evidence": "doc:re/db/subsystems/car.md",
+  "notes": "DRS / 2026 straight-mode wing: clears open request F1Aero+0x1988 bit0 when brake [car+0x190] > 0.05 (0x1446cb65f) or throttle [car+0x188] < 0.9 (0x1446cb6d0); open fraction +0x19a8 moves at DRSOpenCloseSpeed ([+0x1868]^[+0x1870]) clamped 0..1; second fraction +0x19b0 targets 0 when +0x19ac (2026 Partial mode); bit1 = failed (skips checks); car = [F1Aero+8]. F1Aero = car+0x570, runtime field = data offset + 0x18, XOR pairs (agent aero, ap-verify claim 1) | findings from PR #477 by vogtmarcel07-cloud; independent check 2026-10-28 by ap-verify: agree"
+ },
+ "signature": {
+  "id": "car.f1_aero_update_wing_open",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 8B 81 48 18 00 00 33 81 50 18 00",
+  "match": "0x1446cb540",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446cb540",
+  "kind": "func_start",
+  "names": [
+   "Car_F1Aero_UpdateWingOpen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "ap-verify",
+   "kind": "func",
+   "item": "Car_F1Aero_UpdateWingOpen",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1446cb65f,0x1446cb6d0,0x1446cb709",
+   "notes": "V1664 recorded by engine-re from ap-verify (blind capstone): brake > 0.05 / throttle < 0.9 clear +0x1988 bit0; +0x19a8 moves at rate, clamped 0..1"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "ap-verify",
+   "kind": "func",
+   "item": "Car_F1Aero_UpdateWingOpen",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1446cb65f,0x1446cb6d0,0x1446cb709",
+   "notes": "V3901 recorded by engine-re from ap-verify (blind capstone): brake > 0.05 / throttle < 0.9 clear +0x1988 bit0; +0x19a8 moves at rate, clamped 0..1"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446cb540",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446cb540.c;xref:0x15546a71b",
+   "notes": "V6827 Brake>0.05/throttle<0.9 clear, open speed, +0x19ac partial confirmed; also DRS failure timers."
+  }
+ ],
+ "proofs": []
+}

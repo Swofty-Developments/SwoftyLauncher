@@ -26,6 +26,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace trk = swofty_core::apply::tracks;
 namespace mem = swofty::mem;
 
@@ -43,7 +44,7 @@ Handler *gp_orig, *tt_orig;
 std::atomic<uintptr_t> last_record{0};
 std::atomic<uint64_t> counter{0}, record_seq{0}, select_seq{0};
 std::atomic<bool> wanted, live;
-std::atomic<uint32_t> logged{0};
+guards::LogFirst<LOG_FIRST * 4> logged;
 std::mutex confirmed_lock;
 std::string confirmed_time_trial;
 
@@ -55,7 +56,7 @@ void site_matched(SwoftyContext *c)
 
 void note(const std::string &line)
 {
-    if (logged++ < LOG_FIRST * 4)
+    if (logged.note())
         swofty::log("%s", line.c_str());
 }
 
@@ -117,8 +118,6 @@ void *tt_entry(void *vm, uint32_t **cmd)
     return handle(tt_orig, vm, cmd, SELECT_PRESSED, true);
 }
 
-namespace guards = swofty_core::guards;
-
 class TrackSelectGuard final : public guards::Guard {
 public:
     TrackSelectGuard() : Guard(guards::CoreSetId::track_select) {}
@@ -127,8 +126,7 @@ private:
     void build(std::vector<runtime::CoreMixins> &out) override
     {
         char v[16] = {};
-        DWORD n = GetEnvironmentVariableA("SWOFTY_TRACK_GUARD", v, sizeof v);
-        if (n && n < sizeof v && (!strcmp(v, "0") || !strcmp(v, "off"))) {
+        if (guards::env_off("SWOFTY_TRACK_GUARD", v)) {
             swofty::log("[tracks] track select guard off (SWOFTY_TRACK_GUARD=%s)", v);
             return;
         }

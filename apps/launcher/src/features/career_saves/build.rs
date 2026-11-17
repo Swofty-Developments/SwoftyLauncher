@@ -114,8 +114,8 @@ pub(super) fn build_saves_untimed(
         launcher_saves::import_pending(&root),
     ) && launcher_saves::steam_save_pending(&root, &name);
     let steam_running = steam.as_ref().is_some_and(|_| {
-        swofty_core::platform::steam_client::status().state
-            != swofty_core::platform::steam_client::State::Stopped
+        swofty_core::platform::steam::client::status().state
+            != swofty_core::platform::steam::client::State::Stopped
     });
     let steam_warning = store.profile(&name).is_ok_and(|p| {
         swofty_core::saves::vault::guard::steam_save_warning(

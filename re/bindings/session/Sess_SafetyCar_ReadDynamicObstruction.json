@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCar_ReadDynamicObstruction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143631bd0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143631bd0.c;xref:0x15091ee54,0x145853670",
+  "notes": "rules.safety_car.logic.conditions.dynamic_obstruction.<race length>: min_time_between_dice_rolls (5 s, 300 s for 3/5 laps), obstruction_threshold_seconds 5-6, ..._high_congestion_areas 10-12, <x>.num_hazards, <x>.safey_car_type_probability."
+ },
+ "signature": {
+  "id": "session.safety_car_read_dynamic_obstruction",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 4C 24 28 48 BA 04 86 BD 29 46 F3 A1 6F",
+  "match": "0x143631bd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143631bd0",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCar_ReadDynamicObstruction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-b",
+   "kind": "func",
+   "item": "Sess_SafetyCar_ReadDynamicObstruction",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143631bd0.c;xref:0x143631bd0",
+   "notes": "V1838 all 5 key names match"
+  }
+ ],
+ "proofs": []
+}

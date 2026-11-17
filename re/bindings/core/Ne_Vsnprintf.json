@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Vsnprintf",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14016d400",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14016d400.c;xref:0x140187505",
+  "notes": "Varargs wrapper over __stdio_common_vsprintf (FUN_14532e54c, flags|1, size -1), returns -1 on error. 58 callers incl. Car_TyreDeformation_BuildModelKey, Game_CutSceneScript_RunCommand."
+ },
+ "signature": {
+  "id": "core.vsnprintf",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 D6 48 89 CF 4C 89 44",
+  "match": "0x14016d400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14016d400",
+  "kind": "func_start",
+  "names": [
+   "Ne_Vsnprintf"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14016d400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14016d400.c;xref:0x140187505",
+   "notes": "V7958 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -48,6 +48,7 @@
 
 namespace {
 
+namespace guards = swofty_core::guards;
 namespace mem = swofty::mem;
 
 constexpr const char *MIXIN = "swofty_core.dll (standings track guard)";
@@ -69,8 +70,8 @@ constexpr size_t NODE_FIRST_WORD = 0x8;
 
 uintptr_t track_done = 0, record_next = 0;
 runtime::track_record::Seen record_seen;
-std::mutex logged_lock;
-std::vector<uint32_t> logged;
+std::mutex record_lock;
+guards::FirstKeys<uint32_t, LOG_ROUNDS> logged{"rounds"};
 
 void track_load(SwoftyContext *c)
 {
@@ -82,18 +83,10 @@ void track_load(SwoftyContext *c)
     bool known = mem::read(c->rsp + FRAME_WEEKEND, weekend) && weekend && mem::read(weekend + WEEKEND_TRACK, track);
     uint32_t round = static_cast<uint32_t>(c->rbp) + 1;
     uint32_t key = (round << 9) | (known ? track : 0x100u);
-    bool last = false;
-    {
-        std::lock_guard<std::mutex> hold(logged_lock);
-        for (uint32_t k : logged)
-            if (k == key)
-                return;
-        if (logged.size() >= LOG_ROUNDS)
-            return;
-        logged.push_back(key);
-        last = logged.size() == LOG_ROUNDS;
-    }
-    const char *more = last ? " (further rounds are not logged)" : "";
+    auto line = logged.note(key);
+    if (!line)
+        return;
+    const char *more = line.tail;
     if (known)
         swofty::log("[career] standings: round %u has no track data (track %u is off); skipped%s", round, unsigned(track),
                     more);
@@ -129,7 +122,7 @@ void record_load(SwoftyContext *c)
     uint8_t track = static_cast<uint8_t>(r.track);
     bool first;
     {
-        std::lock_guard<std::mutex> hold(logged_lock);
+        std::lock_guard<std::mutex> hold(record_lock);
         first = record_seen.first(track);
     }
     if (!first)
@@ -141,8 +134,6 @@ void record_load(SwoftyContext *c)
                     unsigned(track), runtime::track_record::why(verdict), (unsigned long long)r.record,
                     (unsigned long long)r.node, (unsigned long long)r.table_count);
 }
-
-namespace guards = swofty_core::guards;
 
 class StandingsGuard final : public guards::SiteGuard {
 public:

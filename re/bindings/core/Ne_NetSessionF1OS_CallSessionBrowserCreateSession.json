@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSessionF1OS_CallSessionBrowserCreateSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144084170",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144084170.c;xref:0x144089400",
+  "notes": "call_SessionBrowserCreateSession(): fills the session browser record (+0x428 from +0x2c8, setHostName, hostId) and issues the create request. Addon: lobby name/host as advertised."
+ },
+ "signature": {
+  "id": "core.net_session_f1_o_s_call_session_browser_create_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC E0 0D 00 00 C5 F8",
+  "match": "0x144084170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144084170",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSessionF1OS_CallSessionBrowserCreateSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Ne_NetSessionF1OS_CallSessionBrowserCreateSession",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144084170.c;xref:0x144084170",
+   "notes": "V2644 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

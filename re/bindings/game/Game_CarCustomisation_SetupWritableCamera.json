@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_CarCustomisation_SetupWritableCamera",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1420027c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1420027c0.c;xref:0x145764c18",
+  "notes": "Finds 'WritableCamera' (Game_CameraCollection_FindByName) and adds a showroom rotation disabler. vtable slot 0x145764c18. Addon: menu camera control. d11-verify: also attaches the car render handle (+0x7268, +0x6a26) | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2941)"
+ },
+ "signature": {
+  "id": "game.car_customisation_setup_writable_camera",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE E8 ?? ?? ?? ?? 48 8B 9E 88 02",
+  "match": "0x1420027c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1420027c0",
+  "kind": "func_start",
+  "names": [
+   "Game_CarCustomisation_SetupWritableCamera"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_CarCustomisation_SetupWritableCamera",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1420027c0.c;xref:0x145764c18",
+   "notes": "V2941 Decomp strings, offsets and callees match the claim; name fits."
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_CarCustomisation_SetupWritableCamera",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1420027c0.c;xref:0x145764c18",
+   "notes": "V3972 Decomp strings, offsets and callees match the claim; name fits."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x1420027c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1420027c0.c;xref:0x140efe3f4",
+   "notes": "V4155 FRONTEND_SCENE_CAMERA_MANAGER rotation-disabler string and WritableCamera lookup confirmed"
+  }
+ ],
+ "proofs": []
+}

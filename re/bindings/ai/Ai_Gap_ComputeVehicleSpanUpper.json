@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Ai_Gap_ComputeVehicleSpanUpper",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060e6c0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_Gap_ComputeVehicleSpanUpper(void *ai_car_record, int vehicle)",
+  "evidence": "decomp:re/decomp/14060e6c0.c;xref:0x14064ebab,0x140664a57,0x140665300,0x140665b37,0x14066613f,0x140666833",
+  "notes": "(rec, v) -> E+4 + halfExtent + [rec+0x20]+0xc4 * vehicle_buffer, with E = [[rec+0x40]+0x108] + v*0xa70 (lateral position E+4, 0x14060e6ed). halfExtent = [rec+0x38]+0x30 when E+0 == 0, else the own car box projected by the relative heading E+8 (wrapped to +-pi, cos polynomial; corner vectors [rec+0x38]+0x1b0/+0x1c0/+0x1d0). vehicle_buffer = 64-step curve [[rec+0x230]+0xc8] = handling buffer_space_settings.vehicle_buffer (0x14060e86a) at |[rec+0x40]+0x160|. Code-identical twin 0x14060e460 returns E+4 - halfExtent - buffer, so the pair is the occupied lateral interval of vehicle v; Ai_Lateral_AddOpponentIntervals calls both and compares them with v's +0x908/+0x90c bounds. 6 call sites (old note listed 2). (corrected 2026-11-14: 'side margin' -> upper edge of a vehicle's occupied lateral span) (renamed 2026-11-14 from Ai_Gap_ComputeSideMarginAlt: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.gap_compute_side_margin_alt",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 8B 45 18 49 8B 8D 08 02 00 00",
+  "match": "0x14064ebab",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14060e6c0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Gap_ComputeVehicleSpanUpper"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x14060e6c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14060e6c0.c;xref:0x14066613f,0x140666833",
+   "notes": "V3430 identical to 0x14060e460 except final sign (gap plus margin) = opposite side; same callers"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14060e6c0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14060e6c0-0x14060e91e;xref:0x14064ebab,0x140664a57,0x140665300,0x140665b37,0x14066613f,0x140666833",
+   "notes": "V10598 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 6 call sites as listed. 2 args. E = [[rec+0x40]+0x108] + v*0xa70, E+4 lateral (0x14060e6ed), box corners [rec+0x38]+0x1b0/+0x1c0/+0x1d0, vehicle_buffer [[rec+0x230]+0xc8] (0x14060e86a) times [rec+0x20]+0xc4; twin 0x14060e460 subtracts. New name (upper edge of occupied span) fits."
+  }
+ ],
+ "proofs": []
+}

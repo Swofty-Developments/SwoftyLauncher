@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Tonemap_ComputeCurveParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bca600",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bca600.c;xref:0x143bafb6e",
+  "notes": "2894-byte computation of tonemap/exposure scalars (constants 0.02, 0.784, 4.8, 1e-7 etc) filling a param block at +0x44..+0x136. Callers Render_Tonemap_SetupEyeAdaptation, Render_Tonemap_Execute. Hypothesis on meaning."
+ },
+ "signature": {
+  "id": "render.tonemap_compute_curve_params",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 43 4C 48 8B 4E 30 48 8D 04 40",
+  "match": "0x143bafb6e",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143bca600",
+  "kind": "func_start",
+  "names": [
+   "Render_Tonemap_ComputeCurveParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143bca600",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bca600.c;xref:0x143bafb6e",
+   "notes": "V8277 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

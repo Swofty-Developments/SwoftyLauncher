@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Ghost_SetCollisions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f1cb00",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-GAME_GHOST",
+  "notes": "named from its log messages (channel GAME_GHOST): '%s: car[%d] vehicle collisions %s. | %s: car[%d] world collisions %s.'"
+ },
+ "signature": {
+  "id": "game.ghost_set_collisions",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 4C 8B 71 18",
+  "match": "0x142f1cb00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f1cb00",
+  "kind": "func_start",
+  "names": [
+   "Game_Ghost_SetCollisions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f1cb00",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f1cb00.c;xref:0x142f1bf5d",
+   "notes": "V5603 Computes/logs (checkCollisions pretty name) two out-flags, does not set anything; better Game_VehicleGhostComponent_CheckCollisions"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f1cb00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f1cb00.c;xref:0x142f1bf5d",
+   "notes": "V6912 69 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

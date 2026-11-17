@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamEngineering_TopLevelExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14234e940",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void f(void *ctx)",
+  "evidence": "decomp:re/decomp/14234e940.c;xref:0x145781818",
+  "notes": "myteam-g1: Posts my_team_exiting_engineering_top_level."
+ },
+ "signature": {
+  "id": "career.my_team_engineering_top_level_exit",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B B9 50 03 00 00",
+  "match": "0x14234e940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14234e940",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamEngineering_TopLevelExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x14234e940",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14234e940.c;str:\"my_team_exiting_engineering_top_level\"",
+   "notes": "V10160 The event name is used for a masked-tutorial trigger lookup/queue (tutorial_grouping, ONBOARDING, Masked Tutorial System: Tutorial Added to Queue, My_Team stage), not a posted exit event."
+  }
+ ],
+ "proofs": []
+}

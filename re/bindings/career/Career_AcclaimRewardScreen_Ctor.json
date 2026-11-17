@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_AcclaimRewardScreen_Ctor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1415c96d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *screen, void *a, void *b, char kind",
+  "evidence": "decomp:re/decomp/1415c96d0.c;xref:0x141a1982b;xref:0x141a1986c",
+  "notes": "myteam-g1: Constructs career_rewards.screens.driver_acclaim / team_acclaim reward screens."
+ },
+ "signature": {
+  "id": "career.acclaim_reward_screen_ctor",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 44 89 CB",
+  "match": "0x1415c96d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1415c96d0",
+  "kind": "func_start",
+  "names": [
+   "Career_AcclaimRewardScreen_Ctor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1415c96d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1415c96d0.c;xref:0x141a1982b;xref:0x141a1986c",
+   "notes": "V9720 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

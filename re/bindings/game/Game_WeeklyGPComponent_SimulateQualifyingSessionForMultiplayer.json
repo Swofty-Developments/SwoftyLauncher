@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_WeeklyGPComponent_SimulateQualifyingSessionForMultiplayer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140bef050",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=WeeklyGPComponent::simulateQualifyingSessionForMultiplayer; log channel NETWORK: 'WeeklyGPComponent::simulateQualifyingSessionForMultiplayer()'"
+ },
+ "signature": {
+  "id": "game.weekly_gp_component_simulate_qualifying_session_for_multiplayer",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 02 00 00 C5 78 29 94 24 10 02 00 00 C5 78 29 8C 24 00 02 00 00 C5 78 29 84 24 F0 01 00 00 C5 F8 29 BC 24 E0 01 00 00 C5 F8 29 B4 24 D0 01 00 00 48 89 CE 48 8B 81 90 02 00 00",
+  "match": "0x140bef050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140bef050",
+  "kind": "func_start",
+  "names": [
+   "Game_WeeklyGPComponent_SimulateQualifyingSessionForMultiplayer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140bef050",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140bef050.c",
+   "notes": "V4504 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

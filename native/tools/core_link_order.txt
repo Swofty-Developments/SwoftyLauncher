@@ -48,6 +48,7 @@ src/core/runtime/settings.cpp
 src/core/frontend/home_tiles.cpp
 src/core/frontend/ui.cpp
 src/core/frontend/ui_vm.cpp
+src/core/frontend/addon_page.cpp
 src/core/assets/items.cpp
 src/core/runtime/stage.cpp
 src/core/runtime/mem_pages.cpp
@@ -69,7 +70,7 @@ src/core/assets/resources.cpp
 src/core/assets/gamedb.cpp
 src/core/assets/overlay.cpp
 src/core/events/events.cpp
-src/core/hud/hud.cpp
+src/core/hud/overlay.cpp
 src/core/testing/focus.cpp
 src/core/render/d3d12/subscribers.cpp
 src/core/render/d3d12/swapchain_hooks.cpp
@@ -90,6 +91,7 @@ src/core/career/career.cpp
 src/core/career/career_content.cpp
 src/core/career/career_start.cpp
 src/core/frontend/popup.cpp
+src/core/frontend/popup/hud_data.cpp
 src/core/diagnostics/log_csv.cpp
 src/core/runtime/sdk.cpp
 src/core/diagnostics/perf.cpp

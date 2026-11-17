@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_CareerActivities_RemoveActivity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141267e30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_CareerActivities_RemoveActivity(void *calendar, const void *activity, uint16_t day)",
+  "evidence": "decomp:re/decomp/141267e30.c;decomp:re/decomp/140d8e0a0.c;decomp:re/decomp/1423f6230.c;xref:0x140d8e37a,0x1423f6577,0x14126bde9,0x141265c69,0x140bf1f99",
+  "notes": "The counterpart of Game_CareerActivities_AddActivity: removes from one calendar's activity list (+0x50..+0x58, 16-byte slots {allocator, instance}) the first instance of the matching class whose day (+0x0a, u16) is day and whose definition (+0x10) has the id (+0x08) of activity, destroying it (instance vtable +0x8, then the slot allocator's free), shifting the rest down and storing the new end (0x141267f63), then re-sorts the list. Callers: Career_ContractRenewal_RemoveEvent (0x140d8e37a, removing a renewal event from a human driver's calendar), the sponsor renewal view model 0x1423f6230 (0x1423f6577, after its event, on the calendar 0x14126f540 returns), the daily tick 0x14126a1a0 (0x14126bde9, 0x14126be19) 0x1412659e0/0x141265e40 and 0x140bf1e90 (0x140bf1f99); with no match it only re-sorts (V1099). Raised by laneS (Progressive Career follow mode: drop a saved contract event)."
+ },
+ "signature": {
+  "id": "game.career_activities_remove_activity",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 20 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 CE 48 8B 79 50",
+  "match": "0x141267e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141267e30",
+  "kind": "func_start",
+  "names": [
+   "Game_CareerActivities_RemoveActivity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-27",
+    "by": "laneS",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/progressive/native/src/ui/follow.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "laneS-verify4",
+   "kind": "func",
+   "item": "Game_CareerActivities_RemoveActivity",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141267e30.c;decomp:re/decomp/140d8e1e0.c;decomp:re/decomp/1423f6230.c;decomp:re/decomp/14128ec00.c;xref:0x140d8e37a,0x1423f6577,0x14126bde9,0x14126be19,0x141265c69,0x141265ca9,0x1412660d9,0x141266119,0x140bf1f99,0x141267f63,0x141267fb6",
+   "notes": "V1099 Re-derived from code: rcx=calendar, rdx=activity (null -> plain return, no sort), r8w=day; walks [calendar+0x50]..[calendar+0x58] in 16-byte steps, takes slot+8 as the instance, calls its vtable+0 (type getter) and walks the type chain: accepted only if it reaches 0x146063fd8 (= type 0x146063fd0 +8) before the root k_Ne_TypeRoot+8, i.e. IsA(0x146063fd0); the driver-calendar creator's instance vtable 0x1456d10d0 slot 0 (0x1413597b0) returns exactly 0x146063fd0. Match test: word [inst+0xa]==day (0x141267ece) and word [activity+8]==word [[inst+0x10]+8] (0x141267ed4..0x141267edd); first match only. Shift loop moves slot+8 instances down (nulling the source) and copies allocators; the matched instance is destroyed by its vtable+8 (edx=0) then allocator vtable+0x38 (rdx=instance); new end stored at 0x141267f63 (mov [rsi+0x58], r15-0x10); tail jmp 0x1412c70c0 (begin, end, count=(end-begin)>>4, calendar) at 0x141267fb6 = the same introsort the adder calls (insertion sort under 0x210 bytes, heap fallback, comparator 0x1412c7bf0 orders by word +0xa). The sort runs also when nothing matched. Proto arity/types agree (void, 3 args, day 16-bit). Callers by rel32 scan: 9 call sites in 6 functions: 0x140d8e37a in 0x140d8e1e0 (a helper called/tail-jumped by Career_ContractRenewal_RemoveEvent 0x140d8e0a0 at 0x140d8e147/0x140d8e1d6; calendar = a 200-byte entry of season +0x40 matched by driver key +0xc0, log CONTRACT_RENEWAL Removing a renewal event), 0x1423f6577 in 0x1423f6230 (calendar from 0x14126f540, day = clock(+0x2b0)/1440, activity type byte 0x0d), 0x14126bde9/0x14126be19 in 0x14126a1a0, 0x141265c69/0x141265ca9 in 0x1412659e0, 0x1412660d9/0x141266119 in 0x141265e40, plus 0x140bf1f99 in 0x140bf1e90 which the row's caller list omits (not in the KB). Sig game.career_activities_remove_activity: sigcheck OK hits=1 match=0x141267e30."
+  }
+ ],
+ "proofs": []
+}

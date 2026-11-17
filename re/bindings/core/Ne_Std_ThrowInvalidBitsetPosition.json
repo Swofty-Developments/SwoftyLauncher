@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_ThrowInvalidBitsetPosition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d325b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140d325b0.c;xref:0x140bc728c,0x140dc7393",
+  "notes": "No-return: std::_Xout_of_range('invalid bitset position') via 0x1449e16b4 then int3. 23 callers incl. Game_Parse_EventRuleRestrictionsJson, Sess_Build_MaxAiParticipantsOption."
+ },
+ "signature": {
+  "id": "core.std_throw_invalid_bitset_position",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 56 57 53 48 83 EC 20 48 89 D3 48 89",
+  "match": "0x140d325b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d325b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_ThrowInvalidBitsetPosition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x140d325b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140d325b0.c;xref:0x140bc728c,0x1427b8d99",
+   "notes": "V3356 noreturn stub with string invalid bitset position via 0x1449e16b4 + int3 correct; named callers ok, but fb finds 29 caller sites not 23"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x140d325b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d325b0.c;xref:0x140bc728c,0x1427b8d99",
+   "notes": "V3378 CORRECTION of V3356: callers in .xtls (data1 excluded) = 23 exactly; string invalid bitset position via 0x1449e16b4 + int3; named callers ok"
+  }
+ ],
+ "proofs": []
+}

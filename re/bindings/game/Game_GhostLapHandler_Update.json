@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLapHandler_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f98320",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f98320.c;xref:0x142f980f8",
+  "notes": "GhostLapHandler main update (tail-called by the storage system when [sys+0x278]+0x65 PB-pending flag is set). Runs updatePersonalBestLap (applyPersonalBest, corrupted-telemetry path), the rival-finder state machine (switch on finder+0xa0: Begin/FindTail*/FindHead/FindMid/EnumerateRivals/PickRival/DownloadGhostlap/Finished; findRival compares PB vs rival), leaderboard entry read/rank discovery/write (0x142fa0a60), remote storage download (0x142fa0320) and updateRacenet (serialise previous-lap telemetry s1/s2/s3/laptime, post ghost to Racenet). Addon: central TT ghost logic; hook to observe/override rival choice and PB upload. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2368)"
+ },
+ "signature": {
+  "id": "game.ghost_lap_handler_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 06 00 00 C5 F8 29 B4 24 60 06 00 00 48 89 CE 80",
+  "match": "0x142f98320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f98320",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLapHandler_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d3-verify",
+   "kind": "func",
+   "item": "Game_GhostLapHandler_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f98320.c;xref:tail-called (no vtable)",
+   "notes": "V2368 switch on finder+0xa0 cases 2-10; strings updatePersonalBestLap, applyPersonalBest, updateCorruptedTelemetry, findRival, startSessionRivalSearch, startLeaderboardEntryRead, startLeaderboardRankDiscovery, updateRacenet present; calls 142fa0a60, 142fa0320, 142f91dd0, 142f9f870, 142fa31e0."
+  }
+ ],
+ "proofs": []
+}

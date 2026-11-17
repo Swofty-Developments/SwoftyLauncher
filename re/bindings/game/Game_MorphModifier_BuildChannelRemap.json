@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MorphModifier_BuildChannelRemap",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a35370",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a35370.c;xref:0x143a35e0c",
+  "notes": "Allocates a 0x38-byte refcounted remap object (vtable 0x1458a16d8) holding a vector<u16>; for each channel of the source binding set (count vcall +0x28, name +0x30, type +0x38) calls Ne_BindingTable_FindChannel(table, type, name) and stores the u16 index. Sole caller Game_MorphModifier_BuildTargets."
+ },
+ "signature": {
+  "id": "game.morph_modifier_build_channel_remap",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 44 89 CE 4C",
+  "match": "0x143a35370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a35370",
+  "kind": "func_start",
+  "names": [
+   "Game_MorphModifier_BuildChannelRemap"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a35370",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a35370.c;xref:0x143a35e0c",
+   "notes": "V8539 allocs 0x38 refcounted object vtable 1458a16d8, vector<u16>, source channel count vcall+0x28; sole caller BuildTargets"
+  }
+ ],
+ "proofs": []
+}

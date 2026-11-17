@@ -24,7 +24,7 @@ impl Shell {
                 .iter()
                 .filter(|job| matches!(job.state, crate::services::download_queue::State::Failed(_)))
                 .count(),
-            on_downloads: self.page == Page::Downloads,
+            on_downloads: self.navigation.page == Page::Downloads,
         }
     }
 

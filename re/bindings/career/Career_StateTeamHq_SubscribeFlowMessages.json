@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_StateTeamHq_SubscribeFlowMessages",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1437020a0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_StateTeamHq_ApplyFlowMessages(void *state, char exiting)",
+  "evidence": "decomp:re/decomp/1437020a0.c;xref:0x1436ffd5a;xref:0x143704bc2",
+  "notes": "myteam-g2: Team HQ state enter/exit helper: resets the HQ sub-state (FUN_140df1ec0 at +0x1110) and posts the messages team_hq_set_scene, start_hq_flow, team_hq_enable_pause and is_masked_tutorial_playing_message on the bus (global 0x14618b3b8 +8); on error paths records code 0x58 in the thread error stack. Hook: posting team_hq_enable_pause lets a mod pause/unpause HQ time. DISPUTE(V9020) role per verifier: It does not post messages. After resetting +0x1110, with flag!=0 it calls Ne_Subscribe_BusMessage (0x143987810) and with flag==0 Ne_Unsubscribe (0x143988350, confirmed by the Bank unsubscribe site) for four names with delegates {callback, state}: FUN_143703370, FUN_143703d40 (Ui_EnterMyTeamCareer_Main), 0x1436ffac0, 0x1436ffad0; stores the flag at state+0x1244. So it is the Team HQ state subscribe/unsubscribe of those four messages."
+ },
+ "signature": {
+  "id": "career.state_team_hq_subscribe_flow_messages",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 89 D3 48 89 CE 48 81 C1 10 11 00 00",
+  "match": "0x1437020a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1437020a0",
+  "kind": "func_start",
+  "names": [
+   "Career_StateTeamHq_SubscribeFlowMessages"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-c",
+   "kind": "func",
+   "item": "0x1437020a0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1437020a0.c;xref:0x1436ffd5a;xref:0x143704bc2;str:\"team_hq_set_scene\";str:\"start_hq_flow\";str:\"team_hq_enable_pause\";str:\"is_masked_tutorial_playing_message\"",
+   "notes": "V9020 It does not post messages. After resetting +0x1110, with flag!=0 it calls Ne_Subscribe_BusMessage (0x143987810) and with flag==0 Ne_Unsubscribe (0x143988350, confirmed by the Bank unsubscribe site) for four names with delegates {callback, state}: FUN_143703370, FUN_143703d40 (Ui_EnterMyTeamCareer_Main), 0x1436ffac0, 0x1436ffad0; stores the flag at state+0x1244. So it is the Team HQ state subscribe/unsubscribe of those four messages."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1437020a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1437020a0.c;xref:0x1436ffd5a",
+   "notes": "V10310 Name right but role text wrong: it does not post; it subscribes (flag!=0) or unsubscribes four messages (team_hq_set_scene, start_hq_flow, team_hq_enable_pause, is_masked_tutorial_playing_message) and stores flag at +0x1244."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Read_ObjectivesConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141166160",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: objectives.dynamic_objectives.relevance_criteria.invalidating_assists, objectives.dynamic_objectives.settings.race_length_scaling.F1, objectives.dynamic_objectives.settings.race_length_scaling.F2'"
+ },
+ "signature": {
+  "id": "career.read_objectives_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 07 00 00 C5 78 29 B4 24 20 07 00 00",
+  "match": "0x141166160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141166160",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_ObjectivesConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141166160",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141166160.c;xref:0x1411435cc",
+   "notes": "V4637 reads race_length_scaling.F1/F2 plus trigger settings (min/max_duration, trigger_laps); invalidating_assists key not found in body"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x141166160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141166160.c",
+   "notes": "V9163 Reads the objectives DB keys; invalidating_assists is referenced at 0x1411668a2 inside the function, F1/F2 race_length_scaling strings are visible."
+  }
+ ],
+ "proofs": []
+}
