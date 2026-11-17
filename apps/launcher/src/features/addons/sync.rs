@@ -84,8 +84,13 @@ impl Shell {
                     .collect()
             })
             .unwrap_or_default();
-        let checked = self.addons.report.take().filter(|r| r.profile == profile);
-        self.addons.report = match (last, checked) {
+        let checked = self
+            .addons
+            .conflicts
+            .report
+            .take()
+            .filter(|r| r.profile == profile);
+        self.addons.conflicts.report = match (last, checked) {
             (Some(l), Some(c)) => Some(if c.built_at > l.built_at { c } else { l }),
             (l, c) => l.or(c),
         };
