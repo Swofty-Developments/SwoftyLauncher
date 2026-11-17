@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_WorkforceCappedAdvanceCard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419b30e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *card)",
+  "evidence": "decomp:re/decomp/1419b30e0.c;xref:0x1457229c8",
+  "notes": "myteam-g1: Builds the FACILITY advance-card for lng_advance_card_workforce_capped_description / lng_workforce_capped_subtitle (shown when the workforce cap blocks progress)."
+ },
+ "signature": {
+  "id": "career.build_workforce_capped_advance_card",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 04 00 00 C5 F8 29 B4 24 30 04 00 00 48 89 D3 48 89 CE",
+  "match": "0x1419b30e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419b30e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_WorkforceCappedAdvanceCard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419b30e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419b30e0.c;xref:0x1457229c8",
+   "notes": "V9895 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

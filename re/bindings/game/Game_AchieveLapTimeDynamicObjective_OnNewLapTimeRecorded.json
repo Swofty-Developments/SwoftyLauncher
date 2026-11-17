@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AchieveLapTimeDynamicObjective_OnNewLapTimeRecorded",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141191950",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=AchieveLapTimeDynamicObjective::onNewLapTimeRecorded; log channel DYNAMIC_OBJECTIVES: 'AchieveLapTimeDynamicObjective::onNewLapTimeRecorded called'"
+ },
+ "signature": {
+  "id": "game.achieve_lap_time_dynamic_objective_on_new_lap_time_recorded",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 C5 F8 29 74 24 20 80 79 18 01",
+  "match": "0x141191950",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141191950",
+  "kind": "func_start",
+  "names": [
+   "Game_AchieveLapTimeDynamicObjective_OnNewLapTimeRecorded"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141191950",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141191950.c",
+   "notes": "V4646 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

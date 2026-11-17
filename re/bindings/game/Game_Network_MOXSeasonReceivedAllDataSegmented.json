@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_MOXSeasonReceivedAllDataSegmented",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430a1740",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK/T",
+  "notes": "named from its log messages (channel NETWORK/T): 'MOX/Season: Received all data for a segmented season document - incorporating.'"
+ },
+ "signature": {
+  "id": "game.network_mox_season_received_all_data_segmented",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC A8 01 00 00 80 B9 6B 07 00 00 00",
+  "match": "0x1430a1740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430a1740",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_MOXSeasonReceivedAllDataSegmented"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430a1740",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430a1740.c;xref:0x143097e4c",
+   "notes": "V5315 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

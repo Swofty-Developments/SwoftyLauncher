@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Tyres_ResetStateByFlags",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446b1fb0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446b1fb0.c;xref:0x15543f46b",
+  "notes": "Resets a tyre/wheel state object (param_1) by reset flags param_3: 0x4 enables, 0x200 -> grip scale 1.0, 0x400 -> carcass and surface temperature = ambient (vcall +8 on world +0xd8+0x130) + 273.15 K, 0x1000 clears +0xf4; game mode 100 (+0x9f40) uses XOR-protected values. Called for front and rear by Car_SuspensionSystem_OnTuningChanged (only caller 0x15543f450 is in .data1, named only)."
+ },
+ "signature": {
+  "id": "car.tyres_reset_state_by_flags",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 44 89 C7",
+  "match": "0x1446b1fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446b1fb0",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyres_ResetStateByFlags"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1446b1fb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446b1fb0.c;xref:0x15543f466",
+   "notes": "V3704 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

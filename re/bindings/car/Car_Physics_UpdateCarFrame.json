@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Physics_UpdateCarFrame",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144642e20",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144642e20.c;xref:0x144642b2d,0x144642b99",
+  "notes": "(sys, carIdx): for global car table 0x146ce86e0 (count 0x146ce86dc) entry carIdx, rebuilds the 0x1f0-byte per-car frame cache at sys+0x170+idx*0x1f0 (chassis matrix via Car_Compute_ChassisMatrix from car+0x558 +0x1d0..+0x208, velocities +0x180, per-wheel data +0x2538, flags +0x260). Callers: Car_Physics_PostVehicleUpdate, Car_TyreDeformation_Dtor."
+ },
+ "signature": {
+  "id": "car.physics_update_car_frame",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 38 01 00 00 C5 78 29 BC",
+  "match": "0x144642e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144642e20",
+  "kind": "func_start",
+  "names": [
+   "Car_Physics_UpdateCarFrame"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144642e20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144642e20.c;xref:0x144642b2d",
+   "notes": "V3682 frame cache sys+0x170+idx*0x1f0 and car table 0x146ce86e0 match; Car_TyreDeformation_Dtor is not a caller (callers Car_Physics_PostVehicleUpdate + 0x14476ae00)"
+  }
+ ],
+ "proofs": []
+}

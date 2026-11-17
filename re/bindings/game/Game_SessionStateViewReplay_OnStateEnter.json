@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionStateViewReplay_OnStateEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d9d480",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onStateEnter (class from the log channel); log channel SessionStateViewReplay: 'onStateEnter'"
+ },
+ "signature": {
+  "id": "game.session_state_view_replay_on_state_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 90 01 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x142d9d480",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d9d480",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionStateViewReplay_OnStateEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142d9d480",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d9d480.c;xref:0x142d9d461",
+   "notes": "V5439 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

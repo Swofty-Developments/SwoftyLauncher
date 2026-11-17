@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTraffic_ReceiveBandwidthMessageFromConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143040cd0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name receiveBandwidthMessageFromConnection (class from the log channel); log channel NETWORK-TRAFFIC: '%s(%d, %p, %d).'"
+ },
+ "signature": {
+  "id": "game.network_traffic_receive_bandwidth_message_from_connection",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 44 89 CF 4C 89 C6",
+  "match": "0x143040cd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143040cd0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTraffic_ReceiveBandwidthMessageFromConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143040cd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143040cd0.c;xref:0x1430596e1",
+   "notes": "V5467 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

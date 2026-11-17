@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Assets_FindShortName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14465b020",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-VEHICLE_ASSETS",
+  "notes": "named from its log messages (channel VEHICLE_ASSETS): 'Shortname \"%s\" NOT found.'"
+ },
+ "signature": {
+  "id": "car.assets_find_short_name",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 81 EC 98 00 00 00 4C 89 C6 48 89 D7 49 89 C8",
+  "match": "0x14465b020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14465b020",
+  "kind": "func_start",
+  "names": [
+   "Car_Assets_FindShortName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14465b020",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14465b020.c;xref:0x1446572da",
+   "notes": "V6729 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

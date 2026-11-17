@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Chassis_UpdateWheelVisibility",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144631a50",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144631a50.c;xref:0x14462fa85,0x144632319,0x144632522",
+  "notes": "When +0xf78 set: picks a mode (3/7) from camera/LOD values (+0x58 +0x5c8 +0x34..+0x4c) and the wheel node state, updates wheel render flags. Hypothesis. Callers: Car_Parse_Chassis, Car_Physics_ApplyGroundedPose. (3 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "car.chassis_update_wheel_visibility",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC C0 00 00 00 C5 78 29 84 24 B0 00",
+  "match": "0x144631a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144631a50",
+  "kind": "func_start",
+  "names": [
+   "Car_Chassis_UpdateWheelVisibility"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x144631a50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144631a50.c;xref:0x14462fa85",
+   "notes": "V6797 Mode 3/7 plus per-wheel bits <<3..6 from +0x9e4..+0x9e7 confirmed; hypothesis."
+  }
+ ],
+ "proofs": []
+}

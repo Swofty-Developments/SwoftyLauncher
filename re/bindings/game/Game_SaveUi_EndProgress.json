@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SaveUi_EndProgress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143660840",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-GameSaveSystemUserInterface",
+  "notes": "named from its log messages (channel GameSaveSystemUserInterface): 'Finished displaying progress'"
+ },
+ "signature": {
+  "id": "game.save_ui_end_progress",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 63 B8 1C 00 00 00 48 8D 0D ?? ?? ?? ?? 0F 1F 80 00 00 00 00 8B 14 81 85 D2 74 49 81 FA DB 73 A8 63 74 2E 83 C0 18 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 83 F8 1C 75 C5 EB 13 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? E8 ?? ?? ?? ?? 90 48 83 C4 28 C3 CC CC CC CC CC CC CC CC CC CC 48 83 EC 28",
+  "match": "0x143660840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143660840",
+  "kind": "func_start",
+  "names": [
+   "Game_SaveUi_EndProgress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x143660840",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143660840.c",
+   "notes": "V6115 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

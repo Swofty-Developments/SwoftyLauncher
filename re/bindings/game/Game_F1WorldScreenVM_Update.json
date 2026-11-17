@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1WorldScreenVM_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141b1a2f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141b1a2f0.c;xref:0x1457301e0",
+  "notes": "F1 World screen view model vtable slot +0x60 (update; vtable 0x145730180). If pending flag this+0x16d1 and [this+0x730]+0x2c==0 fires route 'goto_fan_zone_choices'; when pending op this+0x15e0 is done (+0xa1) fires 'enable_input' and either selects the current tile (0x141b17730 / 0x141b1ae90, list this+0x15b8 stride 0x70) or sets game mode (Game_Game_SetCurrentGameMode on this+0x678); when this+0x1700 is set and its request finished stops busy spinner type 6, fires 'enable_input' and releases cached handles +0x16d8..+0x16f8. Addon: tick hook for the F1 World hub. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3261)"
+ },
+ "signature": {
+  "id": "game.f1_world_screen_v_m_update",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 78 48 89 CE 80 B9 D1 16 00",
+  "match": "0x141b1a2f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141b1a2f0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WorldScreenVM_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1WorldScreenVM_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141b1a2f0.c;xref:0x141b1a2f0",
+   "notes": "V3261 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

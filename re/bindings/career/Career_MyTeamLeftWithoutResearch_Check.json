@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamLeftWithoutResearch_Check",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14197fa60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *ctx)",
+  "evidence": "decomp:re/decomp/14197fa60.c;xref:0x14571ed80",
+  "notes": "myteam-g1: Checks whether the player leaves the engineering/R&D area without starting research (my_team_left_without_research) and arms the onboarding blob."
+ },
+ "signature": {
+  "id": "career.my_team_left_without_research_check",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 CE 4C 8B 41 08",
+  "match": "0x14197fa60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14197fa60",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamLeftWithoutResearch_Check"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14197fa60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14197fa60.c;xref:0x14571ed80",
+   "notes": "V9862 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

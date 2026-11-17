@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkBandwidth_SystemRequestReduceBandwidthUsage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14303fb80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-BANDWIDTH",
+  "notes": "named from its log messages (channel NETWORK-BANDWIDTH): '* System Request: reduce bandwidth usage immediately.'"
+ },
+ "signature": {
+  "id": "game.network_bandwidth_system_request_reduce_bandwidth_usage",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 80 3D ?? ?? ?? ?? 01 75 5F B8 E3 00 00 00",
+  "match": "0x14303fb80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14303fb80",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkBandwidth_SystemRequestReduceBandwidthUsage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14303fb80",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14303fb80.c;xref:0x143054e7f",
+   "notes": "V5455 body is duckBandwidth (32kbit hard stop, DUCK x to y of limit, decay timer reset); first log is just entry. Better: Game_NetworkBandwidth_DuckBandwidth"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x14303fb80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14303fb80.c;xref:0x143054e7e",
+   "notes": "V6937 154 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

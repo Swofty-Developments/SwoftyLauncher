@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Read_EnergyRecovery",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446cfcd0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "int (void *data, void *node)",
+  "evidence": "decomp:re/decomp/1446cfcd0.c;xref:0x145bfdb00",
+  "notes": "VTF EnergyRecoverySystem Common + modes + per-track TrackSettings: MaxDeployPower (2025 126.3 kW, 2026 350 kW), MaxDeratePower, DeployLimitMGUK (4 MJ / 13 MJ), EnergyStoreCapacity 4 MJ, harvest efficiencies, MaxBrakeTorqueMGUK, HarvestLimitMGUK/Qualifying, HotLap/MediumDeployFactor. Correction: this is the reader (component data vtable slot 2): it fetches each value by name with Game_Read_VtfFloat and stores it as a plain float straight at data+off (no XOR in this reader; proto and this sentence corrected per V1218); it runs for the base section and for every Upgrade block. | car-b: ERS data vtable 0x145bfdaf0 slot 2 (param = system+0x18). Values are plain floats (no XOR). Mode[0..3] via Car_Read_ErsMode_Thunk at data+0x1868 stride 0x40; TrackSettings read only for the current track name [[[0x146ce72b8]+0xd0]+0xe8]+0xa0 -> +0x1968..+0x1980, flag +0x1988; SpeedDeployOverrideSpline defaults to a copy of SpeedDeploySpline. Map in structs/CarErs.h  | defaults before the reads: data+0x40 (HarvestLimitQualifyingMGUK) is set to data+0x38 (HarvestLimitMGUK) and data+0x4c (EnergyDeployEfficiencyMGUK) to data+0x50 (EnergyHarvestEfficencyMGUK), so a file without the first key inherits the second (decomp lines after the 0x3c and 0x50 reads; matches Will's private findings)"
+ },
+ "signature": {
+  "id": "car.parse_energy_recovery",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 49 89 D7",
+  "match": "0x1446cfcd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446cfcd0",
+  "kind": "func_start",
+  "names": [
+   "Car_Read_EnergyRecovery"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v2",
+   "kind": "func",
+   "item": "Car_Read_EnergyRecovery",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446cfcd0.c;xref:0x145bfdb00",
+   "notes": "V1218 Role right (ERS data vt 0x145bfdaf0 slot 2; Common keys MaxDeployPower data+0x10, EnergyStoreCapacity +0x48, HarvestLimitMGUK +0x38, DeployLimitMGUK +0x44, ExhaustPowerCoefficient +0x5c; Mode[0..3] via 0x1446cf590 at data+0x1868 stride 0x40; TrackSettings matched against [[[0x146ce72b8]+0xd0]+0xe8]+0xa0 -> +0x197c/+0x1980, flag +0x1988). Wrong detail: the notes' 'stores it XOR-obfuscated' sentence does not hold here; every value is written straight through r8 = data+off (no xor in the body), as the car-b part says. Proto column is empty: void/int (void *data, void *node)."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446cfcd0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446cfcd0.c",
+   "notes": "V6831 Reader confirmed (35 Game_Read_VtfFloat) but values are stored PLAIN at data offsets (no XOR in decomp); the boilerplate stored-XOR-obfuscated part is wrong for this function. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

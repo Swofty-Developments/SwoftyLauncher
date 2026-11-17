@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_TyreModel_ClearBuffers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144743550",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144743550.c;xref:0x144747367,0x1556ab028",
+  "notes": "Frees the vectors of [this+0x1438] (+0x30, +0x50, +0x70 ...). Caller: Car_Parse_TyreModel. (2 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "car.tyre_model_clear_buffers",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 CE 48 8B B9 38 14",
+  "match": "0x144743550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144743550",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreModel_ClearBuffers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x144743550",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144743550.c;xref:0x144747367",
+   "notes": "V6631 frees/clears vector set of [this+0x1438] via allocator vcall +0x38 (+0x10,+0x30,+0x50,+0x70...); caller Car_Parse_TyreModel"
+  }
+ ],
+ "proofs": []
+}

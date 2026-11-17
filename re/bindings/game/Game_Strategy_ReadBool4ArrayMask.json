@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_Strategy_ReadBool4ArrayMask",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14283c3a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14283c3a0.c;xref:0x1427bdb73,0x1427bdb8a,0x1427bde58,0x1427bdfb8",
+  "notes": "JSON helper used by the race-strategy JSON reader 0x1427bc450 (keys strategy/compound/tyreSetIndex/stopWindowLatestLap/expectedLaps): member param_1 of object param_3 must be an array of exactly 4 (logs Wrong number of elements in array %s ... Expected %u, found %u); packs each bool (type 10 = true) into bits 0..3 of *param_2. Addon: strategy JSON format (4 bool flags)."
+ },
+ "signature": {
+  "id": "game.strategy_read_bool4_array_mask",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 4C 89 C3 48 89 D6 48 89 CF 49 BE",
+  "match": "0x14283c3a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14283c3a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Strategy_ReadBool4ArrayMask"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

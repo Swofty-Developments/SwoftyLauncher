@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlagSimulate_Enter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142dfb460",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "bool(SessionState*)",
+  "evidence": "decomp:re/decomp/142dfb460.c;xref:0x1481e3312,0x1457e8ee0",
+  "notes": "SessionStateRedFlagSimulate enter: Sess_RedFlagSystem_SimulateSessionTime; no session time left -> session ends (_session_time_exceeded); else every car Game_PitLane_PutVehicleInGarage and SC deployment type 3. sb2-verify-b correction: the safety-car record sent has +0x18 = 3 (phase: racing resumes) and +0x1c = 0 (type), per Sess_Set_SafetyCarDeploymentType 0x143608160"
+ },
+ "signature": {
+  "id": "session.red_flag_simulate_enter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 48 48 89 CE 48 8B 89 B0",
+  "match": "0x142dfb460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142dfb460",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlagSimulate_Enter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-b",
+   "kind": "func",
+   "item": "Sess_RedFlagSimulate_Enter",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142dfb460.c;xref:0x1457ea728",
+   "notes": "V1876 role holds; SC record sent has +0x18 (phase)=3 racing resumes, +0x1c (type)=0, not 'type 3'"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-b",
+   "kind": "func",
+   "item": "Sess_RedFlagSimulate_Enter",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142dfb460.c;xref:0x1457ea728",
+   "notes": "V3954 role holds; SC record sent has +0x18 (phase)=3 racing resumes, +0x1c (type)=0, not 'type 3'"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x142dfb460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142dfb460.c",
+   "notes": "V4159 vtable/indirect (0x1481e3312 ref is data). Calls Sess_RedFlagSystem_SimulateSessionTime, 'red_flag_session_time_exceeded', Game_PitLane_PutVehicleInGarage per car, Sess_Set_SafetyCarDeploymentType with record +0x18=3 (uStack 3) as the correction states"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StateFrontend_RecalculateFrontEndTransitionNotifcation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436d1430",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=StateFrontend::recalculateFrontEndTransitionNotifcation; log channel GAME: 'void game::StateFrontend::recalculateFrontEndTransitionNotifcation(NEuint) | %s: interrupt: %d'"
+ },
+ "signature": {
+  "id": "game.state_frontend_recalculate_front_end_transition_notifcation",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 5F 01 00 00",
+  "match": "0x1436d1430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436d1430",
+  "kind": "func_start",
+  "names": [
+   "Game_StateFrontend_RecalculateFrontEndTransitionNotifcation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436d1430",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436d1430.c",
+   "notes": "V6123 real function is 200 bytes (decomp merges the next one): logs recalculateFrontEndTransitionNotifcation then tail-jumps to 0x1436d1500; claim matches (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

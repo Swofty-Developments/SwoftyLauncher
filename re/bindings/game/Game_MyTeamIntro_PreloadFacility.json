@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamIntro_PreloadFacility",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143710ee0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/143710ee0.c;xref:0x143710e5c;xref:0x14371123d",
+  "notes": "myteam-g1: MyTeamIntro scene preload; calls Game_MyTeamFacilitiesScene_PreloadFacility."
+ },
+ "signature": {
+  "id": "game.my_team_intro_preload_facility",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6B B8 71 00 00 00",
+  "match": "0x143710ee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143710ee0",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamIntro_PreloadFacility"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143710ee0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143710ee0.c;xref:0x143710e5c",
+   "notes": "V10314 Strings TeamHQCutsceneSubTask preloading, MyTeamIntro, TeamHQV2; calls 142ab0ce0 PreloadFacility."
+  }
+ ],
+ "proofs": []
+}

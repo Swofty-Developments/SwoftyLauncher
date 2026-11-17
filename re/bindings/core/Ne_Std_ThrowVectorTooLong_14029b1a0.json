@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_ThrowVectorTooLong_14029b1a0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14029b1a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14029b1a0.c;xref:0x140101934",
+  "notes": "Throws std::length_error 'vector too long' (via Ne_Std_ThrowStdException) then int3; sibling of Ne_Std_ThrowVectorTooLong. Callers Ne_PtrVector_AssignOwned, 0x14012f256, 0x14014026d."
+ },
+ "signature": {
+  "id": "core.std_throw_vector_too_long_14029b1a0",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 48 8D 05 ?? ?? ?? ?? C3",
+  "match": "0x14029b1a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14029b1a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_ThrowVectorTooLong_14029b1a0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x14029b1a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14029b1a0.c;xref:0x140101934",
+   "notes": "V8444 ThrowStdException vector too long then int3; callers PtrVector_AssignOwned, 0x14012f256, 0x14014026d"
+  }
+ ],
+ "proofs": []
+}

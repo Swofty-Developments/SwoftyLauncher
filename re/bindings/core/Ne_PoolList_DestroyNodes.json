@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PoolList_DestroyNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143bfced0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143bfced0.c;xref:0x143ed2d18,0x143eba3a5",
+  "notes": "Destroys a node pool: frees node arrays (param_1[4], [2]) and per-node payloads via allocator vcall +0x38 / node vcall +8. Callers Ne_PoolList_Resize and 0x143eb9ca0."
+ },
+ "signature": {
+  "id": "core.pool_list_destroy_nodes",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 41 28 48 85 C0 74 4C 8B",
+  "match": "0x143bfced0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143bfced0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PoolList_DestroyNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143bfced0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143bfced0.c;xref:0x143eba3a5",
+   "notes": "V8330 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

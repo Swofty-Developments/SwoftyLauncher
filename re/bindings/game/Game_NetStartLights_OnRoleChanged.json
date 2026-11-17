@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetStartLights_OnRoleChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143273600",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143273600.c;xref:0x14582e748",
+  "notes": "On role change (param2 != 2) clears the network offset; when becoming host (1) sends start-lights message {7,0x2b} with byteswapped state u16 [+0x28]+0x28, [+0x28]+0x7c, +0x3c. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2773)"
+ },
+ "signature": {
+  "id": "game.net_start_lights_on_role_changed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 83 FA 02 0F 84",
+  "match": "0x143273600",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143273600",
+  "kind": "func_start",
+  "names": [
+   "Game_NetStartLights_OnRoleChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_NetStartLights_OnRoleChanged",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143273600.c;xref:0x143273600",
+   "notes": "V2773 role!=2 clears offset; role==1 sends {7,0x2b} with byteswapped u16 [+0x28]+0x28, [+0x28]+0x7c, +0x3c confirmed"
+  }
+ ],
+ "proofs": []
+}

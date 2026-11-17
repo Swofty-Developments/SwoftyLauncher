@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_RbTree_EraseSubtree",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140557350",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140557350.c;xref:0x143fd3322,0x143fd5280",
+  "notes": "Recursive std::map / RB-tree subtree erase (nil sentinel flag at node+0x19; recurses right child [2], frees node via 0x1405573b0). Callers include Game_EadpSDK_OnSignInStateChanged and many map destructors."
+ },
+ "signature": {
+  "id": "core.rb_tree_erase_subtree",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 41 80 78 19 00 75 37",
+  "match": "0x140557350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140557350",
+  "kind": "func_start",
+  "names": [
+   "Ne_RbTree_EraseSubtree"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x140557350",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140557350.c;xref:0x1404ad26c",
+   "notes": "V8446 recursive RB-tree subtree erase: node+0x19 nil flag, recurses [2], frees via 1405573b0, continues left; callers match"
+  }
+ ],
+ "proofs": []
+}

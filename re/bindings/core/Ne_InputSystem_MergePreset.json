@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_InputSystem_MergePreset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a8a5e0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-channel-INPUT;decomp:re/decomp/143a8a5e0.c;xref:0x1444308e8",
+  "notes": "named from its log messages (channel INPUT): 'NeInputSystem - merging preset=\"%s\" into action map \"%s\". binding device \"%s\".'"
+ },
+ "signature": {
+  "id": "core.input_system_merge_preset",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 B4 24 70 01 00 00 4C 89 C3 89 D7",
+  "match": "0x143a8a5e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a8a5e0",
+  "kind": "func_start",
+  "names": [
+   "Ne_InputSystem_MergePreset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_InputSystem_MergePreset",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a8a5e0.c;xref:0x1444308e8",
+   "notes": "V2014 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

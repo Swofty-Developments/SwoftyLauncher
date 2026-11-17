@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailTask_StateAbortingRTTTaskCompleteId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e3a7f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-THUMBNAIL_TASK",
+  "notes": "named from its log messages (channel THUMBNAIL_TASK): '[task=%p] State %s: Aborting on RTT Task Complete id %d'"
+ },
+ "signature": {
+  "id": "game.thumbnail_task_state_aborting_rtt_task_complete_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 48 89 D7 48 89 CE 48 8B 49 68",
+  "match": "0x142e3a7f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e3a7f0",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailTask_StateAbortingRTTTaskCompleteId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142e3a7f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e3a7f0.c;xref:0x14f346257",
+   "notes": "V5485 442-line RTT task complete handler (Single/Dynamic modes, hash map, cleanup); better Game_ThumbnailTask_OnRTTTaskComplete"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142e3a7f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e3a7f0.c",
+   "notes": "V6903 442 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

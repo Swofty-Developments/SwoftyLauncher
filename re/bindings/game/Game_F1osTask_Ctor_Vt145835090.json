@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTask_Ctor_Vt145835090",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432c7b10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432c7b10.c;xref:0x1432c550f,0x1432d5c2e",
+  "notes": "Constructor of an online task with vtable 0x145835090: OnlineSubsystemTaskBase part inline (vtable 0x145834920, 'Created OnlineSubsystemTaskBase' log), plus a child list object (vtable 0x145839a90 via 0x1433444d0) and 0x78/0x80 sub-allocations. Called from OnlineServer friends code (0x1432c550f) and the composite task spawner 0x1432d5a60. Addon: layout reference. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3298)"
+ },
+ "signature": {
+  "id": "game.f1os_task_ctor_vt145835090",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 89 51 08 48",
+  "match": "0x1432c7b10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432c7b10",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTask_Ctor_Vt145835090"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1osTask_Ctor_Vt145835090",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432c7b10.c;xref:0x1432c7b10",
+   "notes": "V3298 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

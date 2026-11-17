@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Std_ThrowLengthError_1421288a0",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1421288a0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "void (void)",
+  "evidence": "decomp:re/decomp/1421288a0.c;xref:0x141ee593c;xref:0x141ee723b;xref:0x141eea2fc",
+  "notes": "myteam-g2: Tiny noreturn thunk: calls Ne_Std_ThrowExceptionNoReturn with a fixed message then traps; the std::vector/string too-long style throw used by the accolades page code. No career logic."
+ },
+ "signature": {
+  "id": "core.std_throw_length_error_1421288a0",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC CC 56 57 53 48 83 EC 20 48 89 CE 48 8D 3D ?? ?? ?? ?? 48 89 B9 20 04 00 00",
+  "match": "0x1421288a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1421288a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Std_ThrowLengthError_1421288a0"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1421288a0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1421288a0.c;xref:0x141ee593c",
+   "notes": "V10058 Noreturn throw thunk confirmed, but message is \"invalid vector subscript\", not a length error; name should be vector-subscript throw."
+  }
+ ],
+ "proofs": []
+}

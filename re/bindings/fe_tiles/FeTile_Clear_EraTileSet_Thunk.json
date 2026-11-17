@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "FeTile_Clear_EraTileSet_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a6dd60",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "void FeTile_Clear_EraTileSet_Thunk(void *tiles)",
+  "evidence": "decomp:re/decomp/141a6dd60.c;decomp:re/decomp/153417330.c;decomp:re/decomp/141a6e980.c;xref:0x141a6eb62,0x141b432eb,0x141b435fb,0x141b4390b",
+  "notes": "5-byte jmp thunk into the .data1 body 0x14bd31910 (call only, never hook). Clears an era tile set laid out like view model+0x690: empties the list node held at tiles+0x8 through 0x14420cd60 (jmp 0x153417330), which for a list node calls 0x1442bc9c0(node, 0) until the node's child vector (+0x40..+0x48) is empty, unless the node's read-only bit +0x26&1 is set; destroys each {allocator, Tile*} entry of the vector [tiles+0x48, tiles+0x50) (Tile vt+0 with 0, then allocator vt+0x38), frees the vector buffer through the allocator at tiles+0x40, zeroes +0x48..+0x58, and unlinks and releases (0x1442b3d70) the node handles at tiles+0x28 and tiles+0x8. It writes the base vtable 0x145612e48 over +0x0 and +0x20 but calls no vtable of the set, so a set whose vector is empty only empties its list and releases its two nodes; +0x28 is zeroed through an obfuscated store (dword 0x1572a3004 + 0x3c50f0b8, 0 on this build). FeTile_Build_EraTiles calls it at 0x141a6eb62 on vm+0x690 when vm+0x6f0 is set, then writes its own vtables back. More callers, not read: 0x141b432eb in 0x141b43290, 0x141b435fb in 0x141b435a0, 0x141b4390b in 0x141b438b0, and from .data1 0x14bd36f70 (in 0x14bd36f40) and 0x14bddd9fe (in 0x14bddd9a0) (V1014)."
+ },
+ "signature": {
+  "id": "fe_tiles.clear_era_tile_set",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C6 86 F0 06 00 00 00 4C 8B BE 80 06 00 00",
+  "match": "0x141a6eb62",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x141a6dd60",
+  "kind": "call",
+  "names": [
+   "FeTile_Clear_EraTileSet_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-23",
+    "by": "era-picker",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/boxes/era_picker.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-23",
+   "verifier": "verify-era-picker",
+   "kind": "func",
+   "item": "FeTile_Clear_EraTileSet_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a6dd60.c;decomp:re/decomp/14bd31910.c;decomp:re/decomp/153417330.c;decomp:re/decomp/141a6e980.c;xref:0x141a6eb62,0x141b432eb,0x141b435fb,0x141b4390b,0x14bd36f70,0x14bddd9fe;sig:fe_tiles.clear_era_tile_set",
+   "notes": "V1014 0x141a6dd60 is a 5-byte jmp 0x14bd31910 with no .pdata entry. The body 0x14bd31910 (.data1, .pdata 0x14bd31910-0x14bd31a7a) reads only rcx, so the 1-arg void proto fits (eax at exit is junk). From the disassembly and a fresh decompile: it calls 0x14420cd60 (a jmp to 0x153417330) with (tiles, tiles+8). It then walks the 16-byte {allocator, Tile*} entries of [tiles+0x48, tiles+0x50). For each entry with both qwords non-null it calls Tile vt+0 (rcx=Tile, edx=0), then allocator vt+0x38(allocator, Tile). It sets +0x50 = +0x48 and, if that pointer is non-null, frees the buffer through (*(tiles+0x40)) vt+0x38. It zeroes +0x48, +0x50 and +0x58. Then it unlinks the handle at +0x28 from its node's handle list (head at node+0x28) and releases the node with 0x1442b3d70(g_Vm_Registry, node), and does the same for the handle at +0x8. The only indirect calls are Tile vt+0, allocator vt+0x38 and whatever 0x153417330 calls on child nodes, so it calls no vtable of the set. Additions and one correction. (1) It overwrites the set's vtable pointers at +0x20 and +0x0 with 0x145612e48 (written, not called). Build_EraTiles writes 0x14568e498 back at vm+0x690 and 0x14565f1f0 at vm+0x6b0 right after the call. (2) +0x28 is cleared through an obfuscated store: eax = dword[0x1572a3004] + 0x3c50f0b8, which is 0 on this build (the plaintext .data1 dword is 0xc3af0f48). +0x8 is set to 0 directly. (3) Correction: 0x153417330 dispatches on node type. For a list node (vt+0x10), which is what tiles+0x8 holds since Vm_GetOrCreate_ListChild only yields list nodes, it calls 0x1442bc9c0(node, 0) until node+0x48 == node+0x40, and skips this when read-only bit +0x26&1 is set. The child-table walk that posts change events (0x1442bd4f0 kinds 8 and 9) is its object-node branch, so the row's parenthetical describes the wrong branch. Layout check: Build_EraTiles writes a vtable at vm+0x690, the tiles handle at +0x698, a vtable at +0x6b0, the selected_tile handle at +0x6b8, allocator *(vm+0x270) at +0x6d0 and the vector at +0x6d8..+0x6e8. Those are tiles+0x8/+0x20/+0x28/+0x40/+0x48. FeTile_Press_EraTile reads the Tile* at vector + i*0x10 + 8. Call at 0x141a6eb62: rcx = rbx = vm+0x690 (0x141a6eb40), guarded by cmp byte [vm+0x6f0],0, and vm+0x6f0 is cleared after the call. Callers: the 4 .xtls calls in the row, plus 2 calls from .data1 that the row does not list (0x14bd36f70 in 0x14bd36f40, 0x14bddd9fe in 0x14bddd9a0). sigcheck: one hit"
+  }
+ ],
+ "proofs": []
+}

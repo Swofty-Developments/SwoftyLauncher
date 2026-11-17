@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_LapTimes_ReportSplit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f2ef60",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-LAPTIMES;decomp:re/decomp/142f2ef60.c;xref:0x142f2d840,0x142f2da1c",
+  "notes": "Log channel LAPTIMES: 'Reporting NEW SPLIT (%d/%d) for vehicle Ix %d (time %+1.2fs)'"
+ },
+ "signature": {
+  "id": "session.lap_times_report_split",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D7 48 89 CE 48 8B 41 78",
+  "match": "0x142f2ef60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f2ef60",
+  "kind": "func_start",
+  "names": [
+   "Sess_LapTimes_ReportSplit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_LapTimes_ReportSplit",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f2ef60.c;xref:0x142f2ef60",
+   "notes": "V1902 log strings confirmed by disassembly lea refs inside function"
+  }
+ ],
+ "proofs": []
+}

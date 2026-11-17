@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Rules_QueueInfringementEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435909a0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435909a0.c;xref:0x143571850,0x143574160",
+  "notes": "(rules, const Infringement *e): under critical section +0x68 allocates a 0x30 node from allocator +0x60 and copies the infringement (+0x10 etc.), then appends it to the pending list +0x98 (0x1439887b0); errno 0x16 on OOM. Callers: Sess_Issue_StopGo, Sess_Issue_DriveThrough, Sess_Rules_RemoveInvalidOvertake, corner cutting time gained, drive-through send data. Addon: hook to see every penalty before processing."
+ },
+ "signature": {
+  "id": "session.rules_queue_infringement_event",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 D7 48 89 CE 48 8B 49 68 FF 15",
+  "match": "0x1435909a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435909a0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Rules_QueueInfringementEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x1435909a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435909a0.c;xref:0x143574779,0x14359a42e,0x14359ec24",
+   "notes": "V3793 Critical section +0x68, 0x30-byte node from allocator +0x60, copies infringement, appends to list +0x98 (1439887b0), error 0x16 trace on OOM."
+  }
+ ],
+ "proofs": []
+}

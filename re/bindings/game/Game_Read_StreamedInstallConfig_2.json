@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_StreamedInstallConfig_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14379fe50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: streamed_install.install_progress_fract, streamed_install.install_progress_percentage, streamed_install.is_available'"
+ },
+ "signature": {
+  "id": "game.read_streamed_install_config_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 01 00 00 C5 F8 29 B4 24 20 01 00 00 48 89 CE 48 8B 05",
+  "match": "0x14379fe50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14379fe50",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_StreamedInstallConfig_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb18-verify",
+   "kind": "func",
+   "item": "0x14379fe50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14379fe50.c",
+   "notes": "V6280 6410-byte function; same 3 streamed_install keys but also hard-coded mipmap paths, game_setup_modes and 7 calls to findAndAddChunk (0x14379ed60): chunk registration init, not just a duplicate config read. Better name Game_StreamedInstall_InitChunkTable; vtable/indirect"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x14379fe50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14379fe50.c",
+   "notes": "V7110 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

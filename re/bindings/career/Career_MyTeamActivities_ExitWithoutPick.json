@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamActivities_ExitWithoutPick",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142314ef0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *ctx)",
+  "evidence": "decomp:re/decomp/142314ef0.c;xref:0x142313e10;xref:0x14231cf36",
+  "notes": "myteam-g1: Events my_team_exiting_activities_without_generic / _without_training."
+ },
+ "signature": {
+  "id": "career.my_team_activities_exit_without_pick",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? 45 31 C9 E8 ?? ?? ?? ?? 48 8B 38",
+  "match": "0x142314ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142314ef0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamActivities_ExitWithoutPick"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142314ef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142314ef0.c;xref:0x142313e10",
+   "notes": "V10110 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

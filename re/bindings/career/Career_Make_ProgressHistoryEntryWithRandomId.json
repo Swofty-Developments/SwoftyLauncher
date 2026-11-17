@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Make_ProgressHistoryEntryWithRandomId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14197b940",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void *Make(void *out, void *src, void *p3)",
+  "evidence": "decomp:re/decomp/14197b940.c;xref:0x14197b861;xref:0x14197fa83;xref:0x141f3f2cf",
+  "notes": "myteam-g2: Builds a progress-history entry with new random id (FUN_142458560); used by RnD progress history and tab vehicles init."
+ },
+ "signature": {
+  "id": "career.make_progress_history_entry_with_random_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 48 89 CE 48 B8 00 00 FF 3F 00 00 FF 3F",
+  "match": "0x14197b940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14197b940",
+  "kind": "func_start",
+  "names": [
+   "Career_Make_ProgressHistoryEntryWithRandomId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x14197b940",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14197b940.c;xref:0x14197b861",
+   "notes": "V9854 returns an id-like struct (default 0x3fff) found in the player team collection via FUN_142458560 with a random id block; not clearly a progress-history entry"
+  }
+ ],
+ "proofs": []
+}

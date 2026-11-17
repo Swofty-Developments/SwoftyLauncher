@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_UiMenuDataConfig_5",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142da0360",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: ui_menu_data.photo_mode_available, ui_menu_data.photo_mode_enabled, ui_menu_data.start_photo_mode'"
+ },
+ "signature": {
+  "id": "game.read_ui_menu_data_config_5",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 01 00 00 C5 F8 29 B4 24 60 01 00 00 48 89 D6 80 B9 D4 0E 00 00 00",
+  "match": "0x142da0360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142da0360",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_UiMenuDataConfig_5"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142da0360",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142da0360.c",
+   "notes": "V5445 photo mode/instant replay state handler (DisplayMessage, ListenerHandle, SubTask deactivate), not a config reader; better Game_SessionStatePhotoMode_OnStateUpdate"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142da0360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142da0360.c",
+   "notes": "V6896 434 decomp lines, strings match current name; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

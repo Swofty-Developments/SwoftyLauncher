@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Loader_SetupTrackAssets",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d48b70",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-SESSION_LOADER;decomp:re/decomp/142d48b70.c;xref:0x142d47291,0x142da7ec6",
+  "notes": "named from its log messages (channel SESSION_LOADER): 'Asset data has been set up to load track \"%s\", statid=%d'"
+ },
+ "signature": {
+  "id": "session.loader_setup_track_assets",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 CE 48 8B 81 30 02 00 00",
+  "match": "0x142d48b70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d48b70",
+  "kind": "func_start",
+  "names": [
+   "Sess_Loader_SetupTrackAssets"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb2-verify-b",
+   "kind": "func",
+   "item": "Sess_Loader_SetupTrackAssets",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d48b70.c;xref:0x142d48c60",
+   "notes": "V1859 string 'Asset data has been set up to load track...' on SESSION_LOADER at 0x142d48c60"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TyreSystem_InitialiseTyreCompounds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140238500",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=TyreSystem::initialiseTyreCompounds; log channel CUTSCENE_SCRIPT_VERBOSE: 'WARNING - TyreSystem::initialiseTyreCompounds failed, m_tyreList[%d] is null'"
+ },
+ "signature": {
+  "id": "game.tyre_system_initialise_tyre_compounds",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 89 D3 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140238500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140238500",
+  "kind": "func_start",
+  "names": [
+   "Game_TyreSystem_InitialiseTyreCompounds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140238500",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140238500.c",
+   "notes": "V4457 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

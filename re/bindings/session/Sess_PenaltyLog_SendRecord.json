@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_PenaltyLog_SendRecord",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143565170",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-RULES;decomp:re/decomp/143565170.c;xref:0x14c0e1740,0x14d52582c,0x14e7fba67",
+  "notes": "Log channel RULES: 'Sending Penalty Log Record  vehicle: %d infringement: %d penalty: %d lap: %d other vehicle id: %d time: %d places: %d points: %d safety rating points: %d'"
+ },
+ "signature": {
+  "id": "session.penalty_log_send_record",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 F8 29 B4 24 D0 00 00 00 44 88 4C 24 6C",
+  "match": "0x143565170",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143565170",
+  "kind": "func_start",
+  "names": [
+   "Sess_PenaltyLog_SendRecord"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-b",
+   "kind": "func",
+   "item": "Sess_PenaltyLog_SendRecord",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143565170.c;xref:0x143565170",
+   "notes": "V1915 RULES channel + record string confirmed"
+  }
+ ],
+ "proofs": []
+}

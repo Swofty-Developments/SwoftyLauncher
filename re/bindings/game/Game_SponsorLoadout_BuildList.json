@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SponsorLoadout_BuildList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ff1fa0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141ff1fa0.c;xref:0x145764578",
+  "notes": "MyTeam/MP sponsor loadouts screen (loadout_%I64u, lng_my_team_sponsors/lng_mp_sponsors, can_toggle_loadouts) with camera rotation disabler. vtable slot 0x145764578. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2939)"
+ },
+ "signature": {
+  "id": "game.sponsor_loadout_build_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 C5 F8 29 B4 24 A0 00 00 00 48 89 CE 48 8B 3D",
+  "match": "0x141ff1fa0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ff1fa0",
+  "kind": "func_start",
+  "names": [
+   "Game_SponsorLoadout_BuildList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_SponsorLoadout_BuildList",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141ff1fa0.c;xref:0x145764578",
+   "notes": "V2939 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

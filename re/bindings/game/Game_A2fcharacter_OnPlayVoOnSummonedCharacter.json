@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_A2fcharacter_OnPlayVoOnSummonedCharacter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14025cd30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onPlayVoOnSummonedCharacter (class from the log channel); log channel A2FCharacter: 'onPlayVoOnSummonedCharacter() - VO [%s] - on Character [%s] state [%s] canInterrupt [%s] shouldInterrupt [%s]'"
+ },
+ "signature": {
+  "id": "game.a2fcharacter_on_play_vo_on_summoned_character",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC D8 00 00 00 80 B9 00 04 00 00 00",
+  "match": "0x14025cd30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14025cd30",
+  "kind": "func_start",
+  "names": [
+   "Game_A2fcharacter_OnPlayVoOnSummonedCharacter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14025cd30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14025cd30.c",
+   "notes": "V4474 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

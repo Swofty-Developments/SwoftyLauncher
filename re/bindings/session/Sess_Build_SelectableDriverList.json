@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Build_SelectableDriverList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14245a0d0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "NeVecU32 *Sess_Build_SelectableDriverList(NeVecU32 *out, void *ctx, void *entrants, const void *filter, void *alloc, uint8_t flag)",
+  "evidence": "str:s_cfg_GameDriverSelectOverride;decomp:re/decomp/14245a0d0.c;xref:0x1407a3dac,0x140ba44e6,0x14245a055,0x14245a604,0x14245a605,0x14310ebba",
+  "notes": "Builds the list of selectable driver ids (u32 = id<<16 | sub) into out {alloc,begin,end,cap}, alloc from the 5th argument. Uses entrants+0xe10/+0xe18 lists and flags +0xe20..+0xe25, the 0x48-byte identity filter (Sess_Match_EntrantIdentity_Thunk 0x1431146d0), Sess_Entrant_PassesFilter 0x1424a0a90 (ctx as filter context), Ent_Get_Driver_Thunk 0x1423dbcf0 and push helper 0x1424a0db0. Override: Game.driverSelectOverride read once via Ne_Config_GetString 0x143a44700 on [g_Game_Manager+0x40]+0x18, default empty string, cached in 0x14606ea44 (flag 0x14606ea48). A non-empty value is a driver label looked up in GDB entrants.drivers (Gdb_Find_RowByLabel 0x1445a2bd0, Gdb_Get_FieldInt 0x1445a2cf0 stat_id) -> id = stat_id<<16. If that id is in the built list the list is cut to that single driver. Returns out. Callers: Sess_Build_ChampionshipEntrantSelection 0x140ba4390, 0x1407a38e0, 0x142459900, 0x14310ead0. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "session.build_selectable_driver_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 04 00 00 48 89 54 24 20",
+  "match": "0x14245a0d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14245a0d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Build_SelectableDriverList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-0",
+   "kind": "func",
+   "item": "0x14245a0d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14245a0d0.c;xref:0x1407a3dac,0x140ba44e6,0x14245a055,0x14310ebba",
+   "notes": "V9312 Fills an output u32 vector (allocator = arg5) with selectable driver ids: entrants passing Sess_Entrant_PassesFilter, team/extra driver lists gated by flag bits and arg6, plus Game.driverSelectOverride (string, default empty) handling; returns out; 6 args match"
+  }
+ ],
+ "proofs": []
+}

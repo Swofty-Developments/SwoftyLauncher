@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Car_Chassis_Build",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144628190",
+  "level": "L3",
+  "subsystem": "car",
+  "proto": "void (void *phys)",
+  "evidence": "decomp:re/decomp/144628190.c;xref:0x145bf73d8,0x144637a04;trace:T119/2026-10-28-gp:20;trace:T120/2026-10-28-gp:19",
+  "notes": "Builds the live car (CarLive) for a vehicle entity's physics component phys (vtable 0x145bf73a0 slot 7; phys is CarPhysicsRecord). Finds wheel nodes, allocates CarLive (0x9f60, allocator [phys+0x48]) and CarDynamics (0xa80, vt 0x145bff4d0, at car+0x900, dyn+0x18 = car), registers car in g_Sess_VehicleTable[g_Sess_VehicleCount++] with car+0xe8 = id (0x14462963e), stores car at phys+0x58, sets car+0x4a8 = [[phys+0x9e8]+0x28] vehicle asset and car+0x9f40 = handling version, runs Car_Assets_CreateSystemForPerformanceMode(asset, car+0x380), calls each system's vt+0x30(0), collects 7 phase callback lists (vt+0x28) into car+0x4f8..+0x528, calls vt+0x18(-1), then Car_Build_VtfComponents. Name is historical; it is the car create. Returns nothing (proto corrected per V1275). Also clamps g_Car_TyreContactSubStepCyclePlayer and g_Car_TyreContactSubStepCycleAi to at least 1 (v < 2 ? 1 : v, stores 0x1446295e1 / 0x1446295f3) Runtime 2026-10-28 (T119/T120): runs once per car at session load (21 cars incl. the safety car); its CreateSystemForPerformanceMode call returns to 0x1446296ea; nothing rebuilds a car during the race."
+ },
+ "signature": {
+  "id": "car.chassis_build",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 02 00 00 C5 78 29 BC 24 70 02 00 00 C5 78 29 B4 24 60 02 00 00 C5 78 29 AC 24 50 02 00 00 C5 78 29 A4 24 40 02 00 00 C5 78 29 9C 24 30 02 00 00 C5 78 29 94 24 20 02 00 00 C5 78 29 8C 24 10 02 00 00 C5 79 7F 84 24 00 02 00 00",
+  "match": "0x144628190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144628190",
+  "kind": "func_start",
+  "names": [
+   "Car_Chassis_Build"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "func",
+   "item": "Car_Chassis_Build",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144628190.c;xref:0x145bf73d8,0x144637a03",
+   "notes": "V1275 Role right: allocs CarLive 0x9f60 from [phys+0x48] (0x144628508), car+0x390=car (0x144628788), CarDynamics 0xa80 vt 0x145bff4d0 (lea 0x144629443) dyn+0x18=car, car+0x900=dyn, vehicle id byte car+0xe8 (0x14462963e), phys+0x58=car, car+0x4a8=[[phys+0x9e8]+0x28], +0x9f40 handling version via car+0x390, CreateSystemForPerformanceMode(asset, car+0x380), phase lists +0x4f8..+0x528. Proto wrong: returns nothing; the only rel32 caller 0x144637a03 overwrites rax at 0x144637a15 without reading it and Ghidra types it void, so proto should be void(void *phys)."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "tr-verify",
+   "kind": "func",
+   "item": "Car_Chassis_Build",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x14462979a,0x144629912,0x1446288bf",
+   "notes": "V1687 tr-verify: phase loop 0..6 call [rax+0x28], lists +0x4f8.., mov [rdi+0x5f0],rdi"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "tr-verify",
+   "kind": "func",
+   "item": "Car_Chassis_Build",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x14462979a,0x144629912,0x1446288bf",
+   "notes": "V3922 tr-verify: phase loop 0..6 call [rax+0x28], lists +0x4f8.., mov [rdi+0x5f0],rdi"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144628190",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144628190.c;xref:0x144637a03",
+   "notes": "V6710 vtable 0x145bf73a0 slot 7, 0..6 phase loop vt+0x28 over car+0x3a0/+0x398, +0x4dc counts, +0x5f0 verified"
+  }
+ ],
+ "proofs": []
+}

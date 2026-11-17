@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ghostlaps_FillFindTailByRank",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f84fe0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name fillFindTailByRank (class from the log channel); log channel GHOSTLAPS: '%s()'"
+ },
+ "signature": {
+  "id": "game.ghostlaps_fill_find_tail_by_rank",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 74 B8 12 01 00 00 48 8D 0D ?? ?? ?? ?? 66 66 66 66 66 66 2E 0F 1F 84 00 00 00 00 00 8B 14 81 85 D2 74 52 81 FA CC 56 63 16 74 30 83 C0 17 48 69 D0 43 43 66 5F 48 C1 EA 20 41 89 C0 41 29 D0 41 D1 E8 41 01 D0 41 C1 E8 08 41 69 D0 75 01 00 00 29 D0 3D 12 01 00 00 75 C3 EB 1A 48 8D 0D ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 05 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 8D 96 C0 00 00 00 48 89 F1 E8 ?? ?? ?? ?? 84 C0 74 5E",
+  "match": "0x142f84fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f84fe0",
+  "kind": "func_start",
+  "names": [
+   "Game_Ghostlaps_FillFindTailByRank"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f84fe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f84fe0.c;xref:0x142f9959d",
+   "notes": "V5674 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

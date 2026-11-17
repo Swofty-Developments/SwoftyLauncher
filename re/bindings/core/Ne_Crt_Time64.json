@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Time64",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14534f548",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14534f548.c;xref:0x141a84600,0x141be0e00",
+  "notes": "CRT _time64(t*): GetSystemTimeAsFileTime -> unix seconds (-1 beyond year 3000), optionally stored. Callers: challenge event tab, ranked division, F1 World rewards, custom driver replication."
+ },
+ "signature": {
+  "id": "core.crt_time64",
+  "section": ".xtls",
+  "pattern": "40 53 48 83 EC 20 48 83 64 24 30 00 48 8B D9 48",
+  "match": "0x14534f548",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14534f548",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Time64"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x14534f548",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14534f548.c;xref:0x1406ab4b9",
+   "notes": "V3751 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

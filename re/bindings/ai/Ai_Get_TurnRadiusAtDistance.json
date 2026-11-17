@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Get_TurnRadiusAtDistance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060d830",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_Get_TurnRadiusAtDistance(void *ai, float dist, float lateral_offset, int route_idx)",
+  "evidence": "decomp:re/decomp/14060d830.c;xref:0x140651335",
+  "notes": "was Ai_Get_SpeedLimitAtDistance (renamed 2026-11-16). Lane = [[[R+0x4f8]+0x78][[R+0x40]+0x178]]+0x58 (the car route, lane 4); dist wrapped with fmodf when lane+0x88 (closed loop), else clamped to [0, last node +0xb0]. Start index from the 512-bucket table (lane+0x8c scale, u16 lane+0x90), then scans nodes until +0xb4 <= dist <= +0xb0 and calls Ai_Get_SegmentTurnRadius(R, dist, node+0x20 or -1, lateral_offset, route_idx arg) and returns |result| (mask 0x145381190). Only caller Ai_Build_SpeedProfileAhead (0x140651335, lateral 0) clamps it to [0, ai.general_ai_settings.max_test_radius] and maps it through the radius->speed table: it is the turn radius ahead (500 = straight). L2 2026-11-16 (engine-re racing-line round): decomp read, claims checked against the disassembly, refs from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1; blind verifier agreed. raised by engine-re with --force 2026-11-16 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.get_speed_limit_at_distance",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 44 89 CE",
+  "match": "0x14060d830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14060d830",
+  "kind": "func_start",
+  "names": [
+   "Ai_Get_TurnRadiusAtDistance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14060d830",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14060d830.c;xref:0x140651335",
+   "notes": "V3545 fmodf wrap on closed loops (+0x88), u16 bucket table +0x90 scaled by +0x8c, segment range +0xb0/+0xb4, then calls FUN_14060dab0 (Ai_Get_SegmentSpeedLimit); caller Ai_Unk_140650f90 seen"
+  },
+  {
+   "date": "2026-11-17",
+   "verifier": "triage-verify",
+   "kind": "func",
+   "item": "0x14060d830",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own re/tools/decomp read on the KB build;xref:0x140651335",
+   "notes": "V10731 Own read. Lane = [[[ai+0x4f8]+0x78][[ai+0x40]+0x178]]+0x58, dist wrapped with fmodf when lane+0x88 else clamped to [0,last node +0xb0], 512-bucket u16 start index (+0x8c scale, +0x90 table), scans nodes to +0xb4<=dist<=+0xb0, calls Ai_Get_SegmentSpeedLimit with the node id or -1 and returns the absolute value (mask 0x145381190). Only caller 0x140650f90 (scan). Result feeds Ai_Table_InterpolateD after a clamp to the general settings entry [2] (max_test_radius), so it is a radius. Rename agrees."
+  }
+ ],
+ "proofs": []
+}

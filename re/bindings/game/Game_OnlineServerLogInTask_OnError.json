@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineServerLogInTask_OnError",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14336bcb0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14336bcb0.c;xref:0x14583c338",
+  "notes": "OnlineServerLogInTask override of slot 19 (base 0x1432c05e0, error path): calls vfunc +0xa0 to store the error (code param_2, text param_3) at +0x40 and vfunc +0x68; when that returns false and code != 0xb runs Game_OnlineSubsystemTaskBase_HandleError 0x1432c0fb0, then state 2, and unless 0x14336da00 defers applies 'Network.ForceMPMode' and finishes. Addon: hook to read log-in failure codes. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3320)"
+ },
+ "signature": {
+  "id": "game.online_server_log_in_task_on_error",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 4D 89 C1 89 D3 48 89 CE 48",
+  "match": "0x14336bcb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14336bcb0",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineServerLogInTask_OnError"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_OnlineServerLogInTask_OnError",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14336bcb0.c;xref:0x14336bcb0",
+   "notes": "V3320 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

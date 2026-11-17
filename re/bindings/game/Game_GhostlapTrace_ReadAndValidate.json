@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostlapTrace_ReadAndValidate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f8a730",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name readAndValidate (class from the log channel); log channel GHOSTLAP-TRACE: '%s(%d bytes) : ghostlap size(%d) is invalid.'"
+ },
+ "signature": {
+  "id": "game.ghostlap_trace_read_and_validate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 4D 89 C6 48 89 D6",
+  "match": "0x142f8a730",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f8a730",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostlapTrace_ReadAndValidate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f8a730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f8a730.c;xref:0x142f8ad2b",
+   "notes": "V5689 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

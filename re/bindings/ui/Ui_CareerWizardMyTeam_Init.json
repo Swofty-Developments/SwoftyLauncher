@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_CareerWizardMyTeam_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141734890",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/141734890.c;xref:0x145705418",
+  "notes": "myteam-g1: Career wizard entry: career_wizard_my_team_career, career_wizard_my_team_season_length and lng_save_slot_name_my_team strings."
+ },
+ "signature": {
+  "id": "ui.career_wizard_my_team_init",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 68 48 89 D6 48 89 CF 80 B9 69 01 00 00 00 0F 84 ?? ?? ?? ?? 48 8B 87 60 01 00 00 C6 80 F2 00 00 00 07",
+  "match": "0x141734890",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141734890",
+  "kind": "func_start",
+  "names": [
+   "Ui_CareerWizardMyTeam_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141734890",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141734890.c;xref:0x145705418",
+   "notes": "V9778 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

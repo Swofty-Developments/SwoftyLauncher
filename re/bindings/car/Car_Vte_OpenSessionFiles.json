@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Vte_OpenSessionFiles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14473a1c0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14473a1c0.c",
+  "notes": "VTESystem session start: creates the output folder, opens telemetry_data.csv and timing_data.csv ('Timestamp,Car no.,Timing loop,Position,Lap'); gate byte +0x120 (folder ready), path +0x122."
+ },
+ "signature": {
+  "id": "car.vte_open_session_files",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 38 02 00 00 48 89 CE C5 F9 EF C0",
+  "match": "0x14473a1c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14473a1c0",
+  "kind": "func_start",
+  "names": [
+   "Car_Vte_OpenSessionFiles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x14473a1c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14473a1c0.c",
+   "notes": "V6626 opens telemetry_data.csv and timing_data.csv via +0x122 path, gate byte +0x120, calls CreateOutputFolder; header string Timestamp,Car no.,Timing loop,Position,Lap present; vtable slot/indirect"
+  }
+ ],
+ "proofs": []
+}

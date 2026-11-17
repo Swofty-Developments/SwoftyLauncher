@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Skidmarks_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14471f650",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "pat:log-channel-SKIDMARKS",
+  "notes": "Log channel SKIDMARKS: 'Something has gone wrong during the mark update code.'"
+ },
+ "signature": {
+  "id": "render.skidmarks_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 03 00 00 C5 78 29 BC 24 F0 02 00 00 C5 78 29 B4 24 E0 02 00 00 C5 78 29 AC 24 D0 02 00 00 C5 78 29 A4 24 C0 02 00 00 C5 78 29 9C 24 B0 02 00 00 C5 78 29 94 24 A0 02 00 00 C5 78 29 8C 24 90 02 00 00 C5 78 29 84 24 80 02 00 00 C5 F8 29 BC 24 70 02 00 00 C5 F8 29 B4 24 60 02 00 00 48 8B 79 18",
+  "match": "0x14471f650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14471f650",
+  "kind": "func_start",
+  "names": [
+   "Render_Skidmarks_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x14471f650",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14471f650.c",
+   "notes": "V6609 main skidmark update, 16 KB, calls recordQuadMaker/FadeMaker/MarkKiller, has the Something has gone wrong during the mark update code log; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

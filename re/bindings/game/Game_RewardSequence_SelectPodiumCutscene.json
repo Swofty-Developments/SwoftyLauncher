@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RewardSequence_SelectPodiumCutscene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c74bf0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c74bf0.c;xref:0x142c7487b,0x142c75598",
+  "notes": "(seq) When seq+0x61: gets the event system (registry key 0x14607f1a0 on [0x14604c2c8]+0x30) and, if current event allows (+0x180 == 0, +0xf8, first entry name), writes the podium cutscene name into seq+0x18 ('pod_2019' ...) and the request block seq+0x25..+0x45. Callers Game_RewardSequence_PlayCutscene, PreloadRewardSequence, Sess_RetirementSequence_Update."
+ },
+ "signature": {
+  "id": "game.reward_sequence_select_podium_cutscene",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 80 79 61 00 0F 84",
+  "match": "0x142c74bf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c74bf0",
+  "kind": "func_start",
+  "names": [
+   "Game_RewardSequence_SelectPodiumCutscene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142c74bf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c74bf0.c;xref:0x142c7487b,0x142c75598,0x142d8666f,0x142d8a673",
+   "notes": "V3482 when seq+0x61: registry key 0x14607f1a0 on [0x14604c2c8]+0x30, +0x180==0 and +0xf8, writes 'pod_2019_1st' name at seq+0x18 and block seq+0x25..+0x45; 4 callers confirmed"
+  }
+ ],
+ "proofs": []
+}

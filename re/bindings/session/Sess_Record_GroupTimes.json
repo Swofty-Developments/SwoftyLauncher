@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "Sess_Record_GroupTimes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140af2880",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Record_GroupTimes(void *weekend, uint8_t group, void *entries)",
+  "evidence": "decomp:re/decomp/140af2880.c;xref:0x140bf00d7,0x148691f3b;decomp:re/decomp/140afaf50.c",
+  "notes": "per-driver best lap of a group: for each 0x128 classification entry in entries (vector {alloc, begin, end, cap} of pointers) writes {u32 driver key = entry+0x02, f32 best lap = entry+0xe8 XOR entry+0xf0} into GroupResult times (node+0x50..+0x58, i.e. result+0x28..+0x30), replacing an existing key. The Weekend serialiser 0x140afaf50 stores these as qualifying_times_* (group 1) and shootout_times_* (group 2). Callers: WeeklyGP 0x140bef050 and the .data1 session-results path 0x148691f3c (tail jmp after Career_Apply_SeasonResultsToStandings, current session id in an obfuscated 10-wide range)"
+ },
+ "signature": {
+  "id": "session.record_group_times",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 8B 81 88 04 00 00",
+  "match": "0x140af2880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140af2880",
+  "kind": "func_start",
+  "names": [
+   "Sess_Record_GroupTimes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/grid_best_of.cpp",
+   "native/src/core/boxes/box_grid.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-b",
+   "kind": "func",
+   "item": "Sess_Record_GroupTimes",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140af2880.c;decomp:re/decomp/140bef050.c;decomp:re/decomp/148691e00.c;decomp:re/decomp/140afaf50.c;xref:0x140bf00d7,0x148691f3b;sig:session.record_group_times",
+   "notes": "V0966 3 args (rcx weekend, dl group, r8 entries). Exact-key lookup in the Weekend+0x488 map (returns when absent); for each pointer in entries+0x08..+0x10 it writes {u32 entry+0x02, u32 entry+0xe8 XOR entry+0xf0} into the 8-byte pairs at node+0x50..+0x58 (cap +0x60, allocator +0x48, grows 1.5x), overwriting the value of a pair whose u8 +0 and u16 +2 match, else appending. Callers: 0x140bef050 at 0x140bf00d7 when the current session type - 5 < 10, and the .data1 tail jmp at 0x148691f3b (the notes give 0x148691f3c, which is its rel32 byte) in 0x148691e00 right after its call to Career_Apply_SeasonResultsToStandings 0x140ae8880, gated by type + (dword 0x156141164 XOR 0x50f0b60b) <= 9. Serialiser keys qualifying_times_stat_ids/_times (key 1) and shootout_times_* (key 2) confirmed. The 0x128 entry size was not re-derived. sigcheck: 1 hit"
+  }
+ ],
+ "proofs": []
+}

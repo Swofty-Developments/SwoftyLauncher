@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetReliableAsyncSocket_DeletingDtor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440ae100",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/1440ae100.c;xref:0x14fcc1cfe,0x145a54620",
+  "notes": "cxx=NeNetReliableAsyncSocket::Shutdown; log channel NETWORK-TRANSPORT: 'NeNetReliableAsyncSocket::Shutdown()' cb3-verify-b: scalar deleting destructor (param_2 = delete flag); Shutdown() is an inlined log"
+ },
+ "signature": {
+  "id": "core.net_reliable_async_socket_shutdown",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 89 D7 48 89 CE 48 8D 05 ?? ?? ?? ?? 48 89 01 48 8B 89 30 03 00 00",
+  "match": "0x1440ae100",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440ae100",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetReliableAsyncSocket_DeletingDtor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1440ae100",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440ae100.c",
+   "notes": "V4105 scalar deleting dtor with Shutdown log; confirmed (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

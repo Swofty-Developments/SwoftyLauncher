@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ThrustmasterLcd_ApplyUnitOptions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142fdd500",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142fdd500.c;xref:0x142fd9b01",
+  "notes": "Reads the options 'speed_unit' and 'temperature_unit' through Ne_RobinHoodMap_Str_FindIndex on the options store ([[param_1+0x5d0]+0x98]+0x270) and clamps via Game_Option_ClampValueIndex; used by the Thrustmaster wheel LCD (Game_ThrustmasterLcd_Update, Game_LightPeripheralThrustMasterDisplay_OnDeviceConnectionStatus)."
+ },
+ "signature": {
+  "id": "game.thrustmaster_lcd_apply_unit_options",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 80 B9 40 06 00 00 00 0F 85",
+  "match": "0x142fdd500",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142fdd500",
+  "kind": "func_start",
+  "names": [
+   "Game_ThrustmasterLcd_ApplyUnitOptions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142fdd500",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142fdd500.c;xref:0x142fd9b01",
+   "notes": "V7571 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

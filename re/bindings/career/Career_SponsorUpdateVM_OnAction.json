@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorUpdateVM_OnAction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1420d41d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm, void **cmd",
+  "evidence": "decomp:re/decomp/1420d41d0.c;xref:0x14576a730",
+  "notes": "myteam-g1: Handles open_details_sponsor_update / close_details_sponsor_update / skip_details_sponsor_update commands."
+ },
+ "signature": {
+  "id": "career.sponsor_update_vm_on_action",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D E1 F7 CF B5",
+  "match": "0x1420d41d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1420d41d0",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorUpdateVM_OnAction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1420d41d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1420d41d0.c;xref:0x14576a730",
+   "notes": "V10055 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

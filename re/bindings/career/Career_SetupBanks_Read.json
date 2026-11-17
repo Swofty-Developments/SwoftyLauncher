@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_SetupBanks_Read",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c03d00",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "int (void *a, void *json, int64_t is_modded)",
+  "evidence": "decomp:re/decomp/140c03d00.c;xref:0x14567f8a8",
+  "notes": "myteam-g1: Reads setup_banks (season_id, setups[]); when param_3==0 defaults to season_2025 via hash and calls 140c02120 to apply the per-season bank setups to the career. Hook for changing starting funds per season. CORRECTION(V8973): Structure matches: param_3==0 resolves season_2025 and calls 140c02120, otherwise loops setup_banks[] reading season_id + setups[] and calls 140c02120 per entry. Callee 140c02120 has no decompile here, so its 'applies bank setups / starting funds' role is unproven; in the param_3==0 path setups[] is read at the top level, not inside setup_banks."
+ },
+ "signature": {
+  "id": "career.setup_banks_read",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 02 00 00 C5 F8 29 B4 24 50 02 00 00 48 89 D7 4D 85 C0",
+  "match": "0x140c03d00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c03d00",
+  "kind": "func_start",
+  "names": [
+   "Career_SetupBanks_Read"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-a",
+   "kind": "func",
+   "item": "0x140c03d00",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c03d00.c;xref:0x14567f8a8;str:\"setup_banks\";str:\"season_2025\"",
+   "notes": "V8973 Structure matches: param_3==0 resolves season_2025 and calls 140c02120, otherwise loops setup_banks[] reading season_id + setups[] and calls 140c02120 per entry. Callee 140c02120 has no decompile here, so its 'applies bank setups / starting funds' role is unproven; in the param_3==0 path setups[] is read at the top level, not inside setup_banks."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c03d00",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c03d00.c;str:\"season_2025\"",
+   "notes": "V9494 Structure confirmed (param_3==0: season_2025 -> 140c02120, then setups[] parsed with FUN_140c046b0 and stored by FUN_140d372a0; otherwise per-entry). Starting-funds role is unproven."
+  }
+ ],
+ "proofs": []
+}

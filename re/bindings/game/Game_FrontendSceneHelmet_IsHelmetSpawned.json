@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FrontendSceneHelmet_IsHelmetSpawned",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428a3f80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name isHelmetSpawned (class from the log channel); log channel FRONTEND_SCENE_HELMET: 'isHelmetSpawned %s'"
+ },
+ "signature": {
+  "id": "game.frontend_scene_helmet_is_helmet_spawned",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 C8 44 0F B7 02 4C 89 C1 48 0F AF 88 20 01 00 00 48 89 CA 48 C1 EA 21 48 31 CA 44 8B 88 50 01 00 00 89 D7 83 E7 1F 0F B6 88 54 01 00 00 48 D3 EF 45 8D 14 39 48 C1 EA 05 4C 8B 98 40 01 00 00 4C 21 DA 48 8B 88 28 01 00 00 48 8B 80 30 01 00 00 0F B6 1C 10 43 8D 34 09 42 8D 3C 4F EB 1F 66 0F 1F 84 00 00 00 00 00 45 01 CA 45 01 CA 0F B6 5C 10 02 48 83 C2 02 01 F7 41 39 DA 77 2B 0F B6 DB 41 39 DA 75 0A 48 8B 1C D1 66 44 3B 03 74 2C 0F B6 5C 10 01 39 DF 75 CF 48 8B 5C D1 08 66 44 3B 03 75 C4 48 FF C2 EB 13 4D 85 DB 74 0C 48 89 C2 48 29 CA 48 C1 FA 03 EB 02 31 D2 48 8D 0C D1 48 39 C1 74 60",
+  "match": "0x1428a3f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428a3f80",
+  "kind": "func_start",
+  "names": [
+   "Game_FrontendSceneHelmet_IsHelmetSpawned"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1428a3f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428a3f80.c;xref:0x142e3f5c7",
+   "notes": "V5120 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

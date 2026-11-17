@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Sort_HeapSortDriverPairs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140e0da70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void Ne_Sort_HeapSortDriverPairs(int64_t *first, int64_t *last, uint64_t depth)",
+  "evidence": "decomp:re/decomp/140e0da70.c;xref:0x140d994d7;xref:0x140e0dec9;xref:0x140e0e4d0",
+  "notes": "myteam-g2: std::sort / make_heap fallback (0x20f threshold) over 16-byte pairs holding an owner pointer + refcounted payload; calls FUN_140e0e7b0 / FUN_140e0ec30. Generic sort helper for driver contract lists."
+ },
+ "signature": {
+  "id": "core.sort_heap_sort_driver_pairs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 D6 48 89 CB 49 89 D7 49 29 CF",
+  "match": "0x140e0da70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140e0da70",
+  "kind": "func_start",
+  "names": [
+   "Ne_Sort_HeapSortDriverPairs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140e0da70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140e0da70.c",
+   "notes": "V9567 Heap-sort fallback on 16-byte pairs, threshold 0x20f, calls FUN_140e0e7b0."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Gdb_Write_ReflectedFieldA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143932a40",
+  "level": "L1",
+  "subsystem": "gamedb",
+  "proto": "uint64_t Write(void *writer, uint8_t *key, void *value, void *out)",
+  "evidence": "decomp:re/decomp/143932a40.c;xref:0x1402ad838;xref:0x1402ad8b1;xref:0x1402ad91b",
+  "notes": "myteam-g2: Save-data writer helper: finds the reflected class (Ne_StringPool_FindObjectByCStr / InternByHash), builds the field list with TLS-cached type info and writes one record. Generic serialisation used by Bank/ContractRenewal/CostCap WriteSaveData."
+ },
+ "signature": {
+  "id": "gamedb.write_reflected_field_a",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 4C 89 CE",
+  "match": "0x143932a40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143932a40",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Write_ReflectedFieldA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x143932a40",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143932a40.c;xref:0x1402ad838",
+   "notes": "V10334 Allocates a new child node: checks key not present (error 0x11 on duplicate), grows the pointer array and creates the field; generic child-field creator rather than reflected-class writer."
+  }
+ ],
+ "proofs": []
+}

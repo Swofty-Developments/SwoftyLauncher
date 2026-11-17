@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_PenaltyLog_Print",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143565bc0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-PENALTY_LOG;decomp:re/decomp/143565bc0.c;xref:0x143563ce4,0x15059dbcf",
+  "notes": "Log channel PENALTY_LOG: '[Time: %f] [%d] %s. %s. Infringement: %s. Penalty: %s. %s.'"
+ },
+ "signature": {
+  "id": "session.penalty_log_print",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 02 00 00 C5 F9 29 B4 24 C0 02 00 00",
+  "match": "0x143565bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143565bc0",
+  "kind": "func_start",
+  "names": [
+   "Sess_PenaltyLog_Print"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-b",
+   "kind": "func",
+   "item": "Sess_PenaltyLog_Print",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143565bc0.c;xref:0x143565bc0",
+   "notes": "V1917 PENALTY_LOG channel + format confirmed"
+  }
+ ],
+ "proofs": []
+}

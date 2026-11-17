@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_OnSessionStarted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430f2f40",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onSessionStarted (class from the log channel); log channel NETWORK: '%s'"
+ },
+ "signature": {
+  "id": "game.network_on_session_started",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 CE 80 3D ?? ?? ?? ?? 01 75 66 B8 00 01 00 00",
+  "match": "0x1430f2f40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430f2f40",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_OnSessionStarted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430f2f40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430f2f40.c;xref:0x142d4ecef",
+   "notes": "V5393 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

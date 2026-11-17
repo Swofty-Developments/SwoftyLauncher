@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_AddVehicleCustomisation_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142477f90",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
+  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Vehicle customisation added with stat id %s | Couldn't find array to add vehicle customisation with type %s | Failed to add vehicle customisation with stat id %s'"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_add_vehicle_customisation_2",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 B8 70 4A 00 00 E8 ?? ?? ?? ?? 48 29 C4 4C 89 C3 48 8B B1 A8 03 00 00",
+  "match": "0x142477f90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142477f90",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_AddVehicleCustomisation_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142477f90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142477f90.c;xref:0x1411291bf",
+   "notes": "V5082 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Init_CarDriverTeamSelectors",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141758910",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "uint64_t Ui_Init_CarDriverTeamSelectors(void *self)",
+  "evidence": "str:s_cfg_UIPreviewEvent;decomp:re/decomp/141758910.c;xref:0x141758932,0x141758933,0x141eebe47",
+  "notes": "Lazily constructs and initialises five selector members of self, each guarded by its own constructed flag: 'car' at self+0x50 (vtable 0x145709660, flag +0x188; 0x1417515e0 then vtable +0x38), 'driver' at self+0x190 (vtable 0x1457096d0, flag +0x2c8), 'badge' at self+0x2d0 (vtable 0x145709740, flag +0x410, value 0x3fff0000), 'team_colours' at self+0x418 (vtable 0x1457097b0, flag +0x520, 0x141755240) and 'team_name' at self+0x528 (vtable 0x145708ec0, flag +0x650, 0x141755430). UI.PreviewEvent (lea 0x141758932) -> Ne_Get_SettingBool 0x143a43b90 on *(self+0x18)+0x18, default 0: the driver selector's enable byte +0x282 = (gate *(0x14604ea28)+0x38 == 0) and (UI.PreviewEvent == 0); the other selectors get 1. Returns 0. Caller 0x141eebe47 in unnamed 0x141eebd80. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "ui.init_car_driver_team_selectors",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 8B 05 ?? ?? ?? ?? 0F B6 58 38",
+  "match": "0x141758910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141758910",
+  "kind": "func_start",
+  "names": [
+   "Ui_Init_CarDriverTeamSelectors"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-3",
+   "kind": "func",
+   "item": "0x141758910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141758910.c;xref:0x141eebe47",
+   "notes": "V9354 Lazily constructs five selector members (guarded by init flags): 'car' (+0x50), 'driver' (+0x190, enable flag = !global flag && !UI.PreviewEvent, default false), 'badge' (+0x2d0), 'team_colours' (+0x418), 'team_name' (+0x528), each with a vtable and init call; returns 0. Name slightly understates (badge and team colours/name are included under 'Team'); arity 1 matches."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FacilityHeads_RegisterCommandMessages_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14025d1f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void f(void *facility_head_mgr)",
+  "evidence": "decomp:re/decomp/14025d1f0.c;xref:0x1455ede80",
+  "notes": "myteam-g1: Second, smaller registration of the same four facility-head command message names (Summon/Dismiss/PlayVO/StopVO); allocates the handler record via the engine allocator."
+ },
+ "signature": {
+  "id": "game.facility_heads_register_command_messages_2",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 80 01 00 00 48 89 CE 48 8B 05",
+  "match": "0x14025d1f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14025d1f0",
+  "kind": "func_start",
+  "names": [
+   "Game_FacilityHeads_RegisterCommandMessages_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x14025d1f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14025d1f0.c;str:\"MessageSummonFacilityHead\"",
+   "notes": "V9458 Same four facility-head message names, allocates handler record via allocator vcall."
+  }
+ ],
+ "proofs": []
+}

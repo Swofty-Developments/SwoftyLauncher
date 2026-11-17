@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineContract_IsLeadPlayerParticipatingCoOp",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ffd1c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-ONLINE_CONTRACT_NEGOTIATIONS",
+  "notes": "named from its log messages (channel ONLINE_CONTRACT_NEGOTIATIONS): 'isLeadPlayerParticipating() - Co-op career and the lead player isnt the current career owner %s'"
+ },
+ "signature": {
+  "id": "game.online_contract_is_lead_player_participating_co_op",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 CE 48 8B 89 90 0D 00 00 48 85 C9 0F 84 ?? ?? ?? ?? 48 C7 44 24 30 00 00 00 00 48 8B 01 48 8D 54 24 30 FF 50 10 48 8B 8E 90 0D 00 00 48 85 C9 0F 84 ?? ?? ?? ?? 48 BF 25 23 22 84 E4 9C F2 CB",
+  "match": "0x140ffd1c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffd1c0",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineContract_IsLeadPlayerParticipatingCoOp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x140ffd1c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ffd1c0.c;xref:0x140d79aaf",
+   "notes": "V4533 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

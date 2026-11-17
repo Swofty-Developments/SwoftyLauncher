@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_PursuitRuleset_ResetState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d33810",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d33810.c;xref:0x142d33718,0x142d39478",
+  "notes": "Pursuit ruleset reset core: resets 13 checkpoint entries (stride 0x30) and timers, then for each vehicle calls vcall +0x90(idx, isAI) where isAI = session player entry +0x4b bit 0x10 (online lobby slot +0xf88). Callers: Sess_PursuitRuleset_Reset, Sess_PursuitRuleset_Reset_2."
+ },
+ "signature": {
+  "id": "session.pursuit_ruleset_reset_state",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE B8 30 00 00",
+  "match": "0x142d33810",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d33810",
+  "kind": "func_start",
+  "names": [
+   "Sess_PursuitRuleset_ResetState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d33810",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d33810.c;xref:0x142d33718,0x142d39478",
+   "notes": "V3511 13 checkpoint entries stride 0x30 (0x30..0x270), timers, then per vehicle vcall +0x90(idx,isAI) with isAI from entry +0x4b bit 0x10 / lobby slot +0xf88; callers Reset and Reset_2"
+  }
+ ],
+ "proofs": []
+}

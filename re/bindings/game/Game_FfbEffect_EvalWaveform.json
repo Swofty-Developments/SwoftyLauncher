@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbEffect_EvalWaveform",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f0cc0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1446f0cc0.c;xref:0x1446ee84d,0x1446ee8bb",
+  "notes": "(effect, t) -> float: wraps t by period +0xa0, evaluates piecewise-linear curve +0x60..+0x68 (x,y pairs) and multiplies by envelope curve +0x80..+0x88. Callers: Game_FfbEffect_MixAndSend, Car_Ffb_SlipAngleInput."
+ },
+ "signature": {
+  "id": "game.ffb_effect_eval_waveform",
+  "section": ".xtls",
+  "pattern": "56 C5 FA 10 81 A0 00 00 00 C5 F8 2E C8 76 0B 90",
+  "match": "0x1446f0cc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f0cc0",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbEffect_EvalWaveform"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1446f0cc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f0cc0.c;xref:0x1446ee84d",
+   "notes": "V3725 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

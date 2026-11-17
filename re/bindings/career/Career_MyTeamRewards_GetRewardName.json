@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamRewards_GetRewardName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc5ef0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void* (void *reward_ref, void *out_str)",
+  "evidence": "decomp:re/decomp/140fc5ef0.c;xref:0x140fc607e;xref:0x140fc620e",
+  "notes": "myteam-g2: Copies the name string (obj+0x18 length, obj+0x20 chars) of a weak-referenced reward object into out_str (inline buffer 0x20) with the atomic weak-ref handling; empty if the reference has expired. Used by MyTeamRewards_Claim and Revoke for logging/UI."
+ },
+ "signature": {
+  "id": "career.my_team_rewards_get_reward_name",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 D6 48 8B 51 10 48 85 D2 0F 84 ?? ?? ?? ?? 8B 42 08 66 0F 1F 44 00 00 85 C0 0F 84 ?? ?? ?? ?? 44 8D 40 01 F0 44 0F B1 42 08 75 EC 48 8B 59 08 48 8B 79 10 48 85 DB 74 77",
+  "match": "0x140fc5ef0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc5ef0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamRewards_GetRewardName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fc5ef0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc5ef0.c;xref:0x140fc607e",
+   "notes": "V9614 Weak promote then copy name string (+0x18/+0x20/+0x28 fields) into out; empty when expired."
+  }
+ ],
+ "proofs": []
+}

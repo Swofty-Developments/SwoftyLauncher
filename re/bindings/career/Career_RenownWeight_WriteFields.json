@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownWeight_WriteFields",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f75fe0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int (void *rec, void *json)",
+  "evidence": "decomp:re/decomp/140f75fe0.c;xref:0x140f75fac;xref:0x140f76b6f;xref:0x140f7749f",
+  "notes": "myteam-g2: Save writer counterpart of 140f76120: writes the float at rec+0x14 and the u32 at rec+0x10 as two named fields."
+ },
+ "signature": {
+  "id": "career.renown_weight_write_fields",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 D6 48 89 CB 48 C7 44 24 28 00 00 00 00 4C 8B 35 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 4C 24 28 48 89 F1 4D 89 F0 E8 ?? ?? ?? ?? 85 C0 74 07 89 C7 E9 ?? ?? ?? ?? 48 8D 7B 14",
+  "match": "0x140f75fe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f75fe0",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownWeight_WriteFields"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f75fe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f75fe0.c;xref:0x140f75fac;str:\"flags\"",
+   "notes": "V9587 Writes \"value\" float from rec+0x14 and \"flags\" u32 from rec+0x10."
+  }
+ ],
+ "proofs": []
+}

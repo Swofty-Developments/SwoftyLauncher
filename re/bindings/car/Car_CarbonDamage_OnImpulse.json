@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_CarbonDamage_OnImpulse",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f13de0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "pat:log-channel-CARBON_DAMAGE",
+  "notes": "Log channel CARBON_DAMAGE: 'Vehicle %d - impulse %f (max impulse %f)'"
+ },
+ "signature": {
+  "id": "car.carbon_damage_on_impulse",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC C8 00 00 00 C5 78 29 B4 24 B0 00 00 00",
+  "match": "0x142f13de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f13de0",
+  "kind": "func_start",
+  "names": [
+   "Car_CarbonDamage_OnImpulse"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f13de0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f13de0.c;xref:0x142f1b58d",
+   "notes": "V5583 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

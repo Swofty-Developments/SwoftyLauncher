@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_GridConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f62120",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Read_GridConfig(void *placement)",
+  "evidence": "decomp:re/decomp/142f62120.c;decomp:re/decomp/142f61640.c;xref:0x142f619c2",
+  "notes": "VehiclePlacementSystem grid settings from the engine settings ([[self+0x960]+0x40]+0x18): Grid.CarsInRow string copied into self+0x9e3.. / +0xa23.. and parsed by 0x142f63510(self+0xa64); Grid.StaggerOffset float -> +0xacc (default 2.0), Grid.RowOffset -> +0xad0 (default 10.0), Grid.PoleLR string (default 'left') -> +0xad4 = contains 'left'. Only caller Game_VehiclePlacementSystem_Connect 0x142f61640 (0x142f619c2). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_grid_config",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 50 01 00 00 48 89 CE 48 8B 81 60 09 00 00",
+  "match": "0x142f62120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f62120",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_GridConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f62120",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f62120.c;xref:0x142f619c2",
+   "notes": "V5649 name/log strings and body scale match"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142f62120",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142f62120-0x142f62314;xref:0x142f619c2",
+   "notes": "V10391 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x142f619c2. settings = [[[self+0x960]+0x40]+0x18]; Grid.CarsInRow copies (byte terminators +0x9e3/+0xa23), 0x142f63510(self+0xa64); Grid.StaggerOffset default 2.0 -> +0xacc, Grid.RowOffset default 10.0 -> +0xad0 (0x143a44090), Grid.PoleLR default left (0x143a44700) then strstr 0x14532aaf8(...,left) != 0 -> byte +0xad4."
+  }
+ ],
+ "proofs": []
+}

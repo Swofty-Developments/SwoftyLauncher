@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_HardwareSettings_FindGraphicsDetailConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444a56f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1444a56f0.c;xref:0x141f108e1",
+  "notes": "934-byte lookup in 'hardware_settings_config' for graphicsDetail entries (Ne_Crt_Strnicmp on category/name, static TLS). 10 callers incl. Game_VideoExport_GatherSlotHandles (0x141f108e1). Hypothesis."
+ },
+ "signature": {
+  "id": "game.hardware_settings_find_graphics_detail_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 89 CE 8B 05",
+  "match": "0x1444a56f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444a56f0",
+  "kind": "func_start",
+  "names": [
+   "Game_HardwareSettings_FindGraphicsDetailConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1444a56f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444a56f0.c;xref:0x141f108e1",
+   "notes": "V8396 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

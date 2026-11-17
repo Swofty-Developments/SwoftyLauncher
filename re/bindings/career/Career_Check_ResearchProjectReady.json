@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Check_ResearchProjectReady",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411cf4c0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t (void *upgrades, uint32_t team_key)",
+  "evidence": "decomp:re/decomp/1411cf4c0.c;xref:0x14197b905;xref:0x14197b915;xref:0x14197fcf7",
+  "notes": "myteam-g2: For the team record matching team_key (list at upgrades+0x2a0, 0xA60-byte records) checks seven department slots: returns 1 when a slot has a project whose progress float is >= the threshold from the config table (upgrades+0x340, 0x250 stride per department) and its state (+0x28) is 0. Used by the LeftWithoutResearch check and the Vehicles tab. Read-only."
+ },
+ "signature": {
+  "id": "career.check_research_project_ready",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 8B 99 A0 02 00 00",
+  "match": "0x1411cf4c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411cf4c0",
+  "kind": "func_start",
+  "names": [
+   "Career_Check_ResearchProjectReady"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x1411cf4c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411cf4c0.c;xref:0x14197b905",
+   "notes": "V9670 Team record stride 0xA60 (list +0x2a0), 7 department slots, progress float vs table (+0x340, +0x50, stride 0x250) threshold and state +0x28==0."
+  }
+ ],
+ "proofs": []
+}

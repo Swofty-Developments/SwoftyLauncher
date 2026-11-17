@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RaceStrategy_SetPlanType",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436992b0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436992b0.c;xref:0x14369b180,0x14369b768,0x14369b789",
+  "notes": "Sets strategy type +0x1dc = param (1..4 index tables 0x145859a90..0x145859ac0 give compound order; default 4/1/2/3) and rebuilds stints if the plan does not already match. Hypothesis on meaning of type. Callers: strategy update/init paths incl. Sess_RaceStrategy_UpdateVehicle. (4 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.race_strategy_set_plan_type",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F9 7F 7C 24 40 C5 F9 7F 74 24 30 89 D7 48 89",
+  "match": "0x1436992b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436992b0",
+  "kind": "func_start",
+  "names": [
+   "Sess_RaceStrategy_SetPlanType"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1436992b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436992b0.c;xref:0x14369cec8",
+   "notes": "V6768 Sets +0x1dc, tables 0x145859a90..ac0 and default 4/1/2/3 confirmed; large stint rebuild, hypothesis on meaning only."
+  }
+ ],
+ "proofs": []
+}

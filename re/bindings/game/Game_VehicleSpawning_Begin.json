@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleSpawning_Begin",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f3b410",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-VEHICLE_SPAWNING_SYSTEM",
+  "notes": "named from its log messages (channel VEHICLE_SPAWNING_SYSTEM): 'Begin spawning for request %d | Spawning world for vehicle %d, worldResouceId=%s, instanceName=%s | Calling world unloadedCB for request %d | Calling forceUnload for request %d | There are %d requests'"
+ },
+ "signature": {
+  "id": "game.vehicle_spawning_begin",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 02 00 00 C5 78 29 94 24 00 02 00 00 C5 78 29 8C 24 F0 01 00 00 C5 78 29 84 24 E0 01 00 00 C5 F8 29 BC 24 D0 01 00 00 C5 F8 29 B4 24 C0 01 00 00 48 89 CE 48 8B 0D",
+  "match": "0x142f3b410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f3b410",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleSpawning_Begin"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f3b410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f3b410.c;xref:0x14bab8fd7",
+   "notes": "V5618 name/log strings and body scale match"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSession_PendingCreationGameStillWorkingOTC",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430717b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-SESSION",
+  "notes": "named from its log messages (channel NETWORK-SESSION): '%s: Pending creation of game, we are still working with the OTC'"
+ },
+ "signature": {
+  "id": "game.network_session_pending_creation_game_still_working_otc",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C3 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1430717b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430717b0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSession_PendingCreationGameStillWorkingOTC"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x1430717b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430717b0.c;xref:0x143166a27",
+   "notes": "V5562 pretty string is GameSessionMatchingCareer::createSession (96 lines). Better: Career_GameSessionMatchingCareer_CreateSession"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x1430717b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430717b0.c;xref:0x143166a26",
+   "notes": "V6947 96 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

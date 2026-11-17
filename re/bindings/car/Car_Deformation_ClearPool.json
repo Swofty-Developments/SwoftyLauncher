@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Deformation_ClearPool",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440cd610",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440cd610.c;xref:0x144643cef",
+  "notes": "Frees every particle record in the pool (mgr+0x30..+0x38, stride 400: frees sub-vectors +0x170 and object +0x100/+0x108), empties the pool, free count mgr+0xac0 = 0, logs 'There are now %I64u particles.' with 0. Called from 0x1446439d0 (deformation/physics shutdown or session reset). | #587: L2 by lead-authorised promotion for lane owner car-re (independent agree V2314)"
+ },
+ "signature": {
+  "id": "car.deformation_clear_pool",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 C5 F8 29 74 24 20 48 89 CE 48 8B 89 90 0A 00 00 FF",
+  "match": "0x1440cd610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440cd610",
+  "kind": "func_start",
+  "names": [
+   "Car_Deformation_ClearPool"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-b",
+   "kind": "func",
+   "item": "Car_Deformation_ClearPool",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440cd610.c;xref:0x1446439d0",
+   "notes": "V2314 Verified; note it always returns 0x16."
+  }
+ ],
+ "proofs": []
+}

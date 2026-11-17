@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Bind_TeamHqHubPage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423261e0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void Vm_Bind_TeamHqHubPage(void *vm)",
+  "evidence": "decomp:re/decomp/1423261e0.c;xref:0x142327878;xref:0x14233caad;xref:0x14234d97d",
+  "notes": "myteam-g2: Binds a team HQ hub page: Vm_TeamHqHub_Bind, Vm_Set_Bool, node handles (Vm_MoveAssign_NodeHandle) and the help prompt listener (Game_VirtualHelpPromptListener_OnGotoVirtualHelpPage). UI only."
+ },
+ "signature": {
+  "id": "vm.bind_team_hq_hub_page",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8B B9 A0 02 00 00",
+  "match": "0x1423261e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423261e0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Bind_TeamHqHubPage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1423261e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423261e0.c;xref:0x142327878",
+   "notes": "V10135 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

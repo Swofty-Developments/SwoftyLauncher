@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Http_CopyingFormattedDataSizeIntoHeader",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144050130",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-HTTP/V",
+  "notes": "named from its log messages (channel HTTP/V): 'Copying formatted data %s size %d into header data'"
+ },
+ "signature": {
+  "id": "game.http_copying_formatted_data_size_into_header",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 85 D2",
+  "match": "0x144050130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144050130",
+  "kind": "func_start",
+  "names": [
+   "Game_Http_CopyingFormattedDataSizeIntoHeader"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144050130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144050130.c;xref:0x14404f3a2",
+   "notes": "V6479 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

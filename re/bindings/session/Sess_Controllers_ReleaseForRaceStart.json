@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Controllers_ReleaseForRaceStart",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c764b0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142c764b0.c;xref:0x142d8fc2d,0x142dff749",
+  "notes": "(session): calls Sess_ControllerSet_ClearSessionNotStarted(+0xda8), clears bit 0x80 at vehicle+0x17c for every vehicle in +0xd40 list, clears bit 0x20 at human-controller state+0x1c ('Failed to get human controller %d' on VEHICLE channel). Callers: Sess_StartLights_Enter, Sess_RedFlagToRestart_Exit."
+ },
+ "signature": {
+  "id": "session.controllers_release_for_race_start",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 89 A8 0D 00 00 E8",
+  "match": "0x142c764b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c764b0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Controllers_ReleaseForRaceStart"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142c764b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c764b0.c;xref:0x142d8fc2d,0x142dff749",
+   "notes": "V3488 FUN_142f44750(+0xda8), clears bit 0x80 at vehicle+0x17c over +0xd40 list, clears 0x20 at controller state+0x1c, VEHICLE channel string; callers Sess_StartLights_Enter and Sess_RedFlagToRestart_Exit"
+  }
+ ],
+ "proofs": []
+}

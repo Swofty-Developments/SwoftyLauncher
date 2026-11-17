@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_VehicleProgressSystem_HandleVehicleProgressMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f09c20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f09c20.c;xref:0x1457f4598",
+  "notes": "was Game_Network_VehicleRemoveCachedSector (renamed 2026-11-14 to the name signature game.network_vehicle_remove_cached_sector already lists; per V5573/V10492): the whole network vehicle-progress message handler (handleVehicleProgressMessage, MIGRATING TO LOCAL/REMOTE AUTHORITY, netDelta, setUnmodifiedProgressLap, New best-lap; Remove Cached Sector is one of about 17 logs), slot 3 of the table 0x1457f4580 (abs64 0x1457f4598). Old text: named from its log messages (channel NETWORK): 'Vehicle(%d) : (Reconcile) Remove Cached Sector(%d,%d)' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x1457f4598); the body itself references 'PROGRESS' / 'Vehicle(%d) : (Reconcile) Remove Cached Sector(%d,%d)' / 'NETWORK' / '[PROGRESS(%02d)] MIGRATING TO LOCAL AUTHORITY.'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_vehicle_remove_cached_sector",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 01 00 00 C5 F8 29 BC 24 D0 01 00 00 C5 F8 29 B4 24 C0 01 00 00 49 89 CD",
+  "match": "0x142f09c20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f09c20",
+  "kind": "func_start",
+  "names": [
+   "Game_VehicleProgressSystem_HandleVehicleProgressMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142f09c20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f09c20.c",
+   "notes": "V5573 706-line vehicle progress message handler (handleVehicleProgressMessage, migrate local/remote authority, netDelta); remove-cached-sector is one log; better Game_VehicleProgressSystem_HandleVehicleProgressMessage"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f09c20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f09c20.c",
+   "notes": "V6907 706 decomp lines, strings match current name; vtable/indirect"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142f09c20",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x142f09c20-0x142f0b26c;xref:0x1457f4598",
+   "notes": "V10492 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only abs64 0x1457f4598 (slot 3 of the table at 0x1457f4580). DIFFERENCE name: the body is the whole network vehicle-progress message handler (handleVehicleProgressMessage - vehicleId..., MIGRATING TO LOCAL/REMOTE AUTHORITY, first progress message / netDelta logs, setUnmodifiedProgressLap, We have already received this data, New best-lap); Remove Cached Sector is one of ~17 logs. Better Game_VehicleProgressSystem_HandleVehicleProgressMessage."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_RenownFormLevelCard_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1420b6d90",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void* (void *out, void *data, void *ctx)",
+  "evidence": "decomp:re/decomp/1420b6d90.c;xref:0x14209a166;xref:0x14209b22a;xref:0x14209b728",
+  "notes": "myteam-g2: Binds the node references of a renown/form level card (Vm_Set_NodeRef, Vm_Set_Bool, Ne_IntrusiveNode_Reassign, helper 1420b5f20). Used by RenownFormDetails_BuildPills and RenownFormVM_Init/Refresh."
+ },
+ "signature": {
+  "id": "vm.renown_form_level_card_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F8 29 B4 24 B0 00 00 00 4C 89 C7 48 89 D3",
+  "match": "0x1420b6d90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1420b6d90",
+  "kind": "func_start",
+  "names": [
+   "Vm_RenownFormLevelCard_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1420b6d90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1420b6d90.c;xref:0x14209a166",
+   "notes": "V10049 Only strings panels/selected_panel/can_tab_left/can_tab_right/pips: a generic panel+pip carousel binding, not specifically a level card."
+  }
+ ],
+ "proofs": []
+}

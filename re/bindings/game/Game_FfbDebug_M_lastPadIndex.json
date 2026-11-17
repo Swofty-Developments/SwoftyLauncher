@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_FfbDebug_M_lastPadIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f5610",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name m_lastPadIndex (class from the log channel); log channel FFB_DEBUG: 'm_lastPadIndex == padIndex && m_lastForceFeedback == forceFeedback  %d'"
+ },
+ "signature": {
+  "id": "game.ffb_debug_m_last_pad_index",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 60 4C 8B 35",
+  "match": "0x1446f5610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f5610",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbDebug_M_lastPadIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f5610",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446f5610.c;xref:0x1446f5eea",
+   "notes": "V6852 Is RacingFFBEffectXInput::setWindowsGamingInputGamepadVibration (strings: set vibration pad, 10 ms Xbox One workaround, setGamepadVibration FORCEFEEDBACK); the named string is only a debug expression; better name Game_RacingFFBEffectXInput_SetGamepadVibration."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x1446f5610",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f5610.c;xref:0x1446f5eea",
+   "notes": "V7263 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Load_MyTeamStatRenown",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc8a20",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *team_stats, void *row",
+  "evidence": "decomp:re/decomp/140fc8a20.c;xref:0x1456b21a0",
+  "notes": "myteam-g1: Loads career.my_team_stats row (renown multiplier attribute: renown, renownMultAttribute, RenownPerStat) into a hash map at +0x2e8; modder hook: renown-per-stat definition. CORRECTION(V8989): Reads renownMultAttribute/stat/renown from a row and inserts into a hash map at param_1+0x2e8 (ne_hash_map.h assert). The table name my_team_stats and the RenownPerStat name were not resolvable (strings obfuscated), so those sub-claims are unproven."
+ },
+ "signature": {
+  "id": "career.load_my_team_stat_renown",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 04 00 00 C5 F8 29 BC 24 70 04 00 00 C5 F8 29 B4 24 60 04 00 00 48 89 D0",
+  "match": "0x140fc8a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc8a20",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_MyTeamStatRenown"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x140fc8a20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140fc8a20.c;xref:0x1456b21a0;str:\"renownMultAttribute\";str:\"stat\";str:\"renown\"",
+   "notes": "V8989 Reads renownMultAttribute/stat/renown from a row and inserts into a hash map at param_1+0x2e8 (ne_hash_map.h assert). The table name my_team_stats and the RenownPerStat name were not resolvable (strings obfuscated), so those sub-claims are unproven."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fc8a20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc8a20.c;xref:0x1456b21a0;str:\"renownMultAttribute\"",
+   "notes": "V9622 Strings renownMultAttribute, stat, renown; inserts into a hash map near +0x2e8; table-name claims are unproven as the note states."
+  }
+ ],
+ "proofs": []
+}

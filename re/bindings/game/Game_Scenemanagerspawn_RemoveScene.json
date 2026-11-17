@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Scenemanagerspawn_RemoveScene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14018ef80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name removeScene (class from the log channel); log channel SceneManagerSpawn_Verbose: 'removeScene %p -> %p [%s]'"
+ },
+ "signature": {
+  "id": "game.scenemanagerspawn_remove_scene",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 85 D2 74 6E",
+  "match": "0x14018ef80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14018ef80",
+  "kind": "func_start",
+  "names": [
+   "Game_Scenemanagerspawn_RemoveScene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x14018ef80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14018ef80.c",
+   "notes": "V4320 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Controller_UpdateStateAndDrive",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1405f5c50",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_Controller_UpdateStateAndDrive(void *ctl, float dt, void *ai_system)",
+  "evidence": "decomp:re/decomp/1405f5c50.c;xref:0x140605834,0x1406058b0,0x1406459d2",
+  "notes": "Per-car AI tick (0x177 bytes; the 2586-line decomp is Ghidra inlining the tail call). fsm = ctl+0x40. If fsm+0x10 (state id) != g_state 0x14604841c and fsm+8 != 0: id = vcall [state+0x18](state, ?, ai_system+0xa8 + ctl.byte8*0x508); if id != 0 -> Ai_StateMachine_SetStateById 0x140668d30(fsm, id) (0x1405f5c97). Then entry = ai_system+0xa8 + idx*0x508: only if (entry+0x50)->+0x19 bit7 set, (entry+0x40)->+0x185 == 0 and state != 0x14604841c, it resets the car output record ai_system+0x28[(ctl+0x10)->+0x78] (+0x74..+0x12f: zeros, FLT_MAX at +0xd8/+0x104, 1.0 at +0xf0, 0xff at +0xec) and tail-jumps (0x1405f5dc2) to Ai_Update_VehicleDriver((ctl+0x10)->+0x68, ai_system). Callers: parallel-for loop 0x1406057a0 (serial and job path, ctl = mgr+0x50[i], r8 = mgr+0x38) and job worker 0x140645990. (renamed 2026-11-14 from Ai_Unk_1405f5c50: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested) The dt argument (xmm1) is not used by this body (fixed 2026-11-14 after verifier ai-verify)."
+ },
+ "signature": {
+  "id": "ai.unk_1405f5c50",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 4C 89 C6 48 89 CF 48 8B 59 40 8B 2D",
+  "match": "0x1405f5c50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1405f5c50",
+  "kind": "func_start",
+  "names": [
+   "Ai_Controller_UpdateStateAndDrive"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1405f5c50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1405f5c50.c;xref:0x605834",
+   "notes": "V4680 short fn then jmp 0x140614d70 at 0x1405f5dc2; role TBD ok"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1405f5c50",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1405f5c50-0x1405f5dc7;xref:0x140605834,0x1406058b0,0x1406459d2",
+   "notes": "V10558 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Whole body read (0x177 B). fsm=[ctl+0x40], g_state 0x14604841c, vcall +0x18 with r8 = [ai+0xa8]+idx*0x508, SetStateById 0x140668d30 (0x1405f5c97); output-record reset at [ai+0x28][[ctl+0x10]+0x78] and tail jmp 0x140614d70 (0x1405f5dc2). Callers 0x140605834/0x1406058b0/0x1406459d2. Minor: xmm1 (dt in proto) is never read. Rename from Ai_Unk fits."
+  }
+ ],
+ "proofs": []
+}

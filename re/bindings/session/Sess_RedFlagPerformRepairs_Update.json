@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlagPerformRepairs_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142dfbd00",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint32_t*(SessionState*, uint32_t*)",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/142dfbd00.c;xref:0x141bd14d0,0x1457e9168",
+  "notes": "SessionStateRedFlagPerformRepairs update: Sess_RedFlagSystem_PerformRepairs, stays until every status >= 3."
+ },
+ "signature": {
+  "id": "session.red_flag_perform_repairs_update",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 8B 05 ?? ?? ?? ?? 89 81 90 0C 00 00 48 8B 89 B0",
+  "match": "0x142dfbd00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142dfbd00",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlagPerformRepairs_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_RedFlagPerformRepairs_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142dfbd00.c;xref:0x1457e9500",
+   "notes": "V1895 calls 143584710 (PerformRepairs), loops 2-byte entries, stays while any <3"
+  }
+ ],
+ "proofs": []
+}

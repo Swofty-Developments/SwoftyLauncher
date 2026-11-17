@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Set_RnDFocusedDepartment",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f4a760",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Set_RnDFocusedDepartment(void * self)",
+  "evidence": "decomp:re/decomp/141f4a760.c;xref:0x141f47ced;xref:0x141f49fec",
+  "notes": "myteam-g1: Writes focused_department.department_name and repopulates pie slices (Career_Populate_RnDPieSlices)."
+ },
+ "signature": {
+  "id": "career.set_rn_dfocused_department",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 81 EC 40 0C 00 00",
+  "match": "0x141f4a760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141f4a760",
+  "kind": "func_start",
+  "names": [
+   "Career_Set_RnDFocusedDepartment"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141f4a760",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f4a760.c;xref:0x141f47ced;xref:0x141f49fec",
+   "notes": "V10025 Resolves focused_department.department_name node and repopulates slices."
+  }
+ ],
+ "proofs": []
+}

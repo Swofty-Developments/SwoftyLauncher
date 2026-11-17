@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Career_Auction_ResolveAiOffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c4ab70",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Auction_ResolveAiOffer(void *self, void *teams, uint32_t a3, void *a4, bool a5, bool a6)",
+  "evidence": "decomp:re/decomp/140c4ab70.c;xref:0x140d9c32c",
+  "notes": "Channel AUCTION. If the team list (param_2) is empty -> Career_ContractRenewal_SimulateApproaches(self[0x8a]) only. Else: collects bidding teams (0x140c53930), 'Driver was already on this team so ALWAYS SUCCEEEDS', sorts (0x140d3f630), trims with 'Remove team %s from auction. Only %u teams allowed.', 0x140dbb690(self[0x86]+0x730, list, a3), auction record +0xa7c = a5; if a6: per-team AI offer type by random tiers (low/medium/high log lines), offers via 0x140c52c80/0x140c52ad0, 'SELECTED - Solo auction Offer ...', success roll ('Offer SUCCEEDED/FAILED. Random success chance ... Calculated ...'), 'Tried to offer more than the team has' fails, exit-negotiations roll -> Career_Auction_ExitNegotiations 0x140d9cbe0, then 0x140c53a60. Caller: Career_ContractRenewal_PostAiApproachMessage. (V9049 correction kept: broader than AiOfferChance.) (renamed 2026-11-14 to the name signatures.json already listed; from Career_Auction_AiOfferChance: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "career.auction_ai_offer_chance",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 01 00 00 C5 78 29 84 24 B0 01 00 00 C5 F8 29 BC 24 A0 01 00 00 C5 F8 29 B4 24 90 01 00 00 49 89 CE",
+  "match": "0x140c4ab70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c4ab70",
+  "kind": "func_start",
+  "names": [
+   "Career_Auction_ResolveAiOffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140c4ab70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c4ab70.c;xref:0x140d9c32c",
+   "notes": "V4582 better name Career_Auction_ResolveAiOffer: whole AI auction offer resolution: low/medium/high offer roll, solo auction, success/fail, over-budget fail, driver exit negotiations; not only the offer chance"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x140c4ab70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c4ab70.c;xref:0x140d9c32c",
+   "notes": "V7162 name fits; finding facts hold; 1 direct calls"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140c4ab70",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140c4ab70.c",
+   "notes": "V9049 Offer-chance random tiers (low/medium/high) match, but the function also handles Remove team from auction, Offer SUCCEEDED and Solo auction offer selection, so it is broader auction offer evaluation than AiOfferChance."
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140c4ab70",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140c4ab70-0x140c4c12c;xref:0x140d9c32c",
+   "notes": "V10574 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x140d9c32c (in 0x140d9bdb0 Career_ContractRenewal_AiApproach). 6 args (rcx, rdx teams, r8d, r9, 2 stack). Empty-list path -> [self+0x450] (= self[0x8a]) and Career_ContractRenewal_SimulateApproaches 0x140d99210; [self+0x430]+0x730 to 0x140dbb690; record +0xa7c byte store; AUCTION low/medium/high offer, success roll and exit strings confirmed. Rename from Career_Auction_AiOfferChance fits (resolves the whole auction)."
+  }
+ ],
+ "proofs": []
+}

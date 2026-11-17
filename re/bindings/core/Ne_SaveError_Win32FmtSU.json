@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveError_Win32FmtSU",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14414ad20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14414ad20.c;xref:0x14413e956,0x14413ea33",
+  "notes": "SAVE error helper, fixed code 0x58, fmt (char*, u32 Win32 error): security info open/read 'result was 0x%x', FindNextFile failure, cloud upload read/open failures (Game_Save_UnmountSave). 12 sites."
+ },
+ "signature": {
+  "id": "core.save_error_win32_fmt_s_u",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 48 08 00 00 48 89 C8 48 8D 4C 24 48 48 C7 44 24 38 00 08 00 00 48 89 4C 24 40 C6 44 24 48 00 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 45 8B 08 4C",
+  "match": "0x14414ad20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14414ad20",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveError_Win32FmtSU"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveError_Win32FmtSU",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14414ad20.c;xref:0x14414ab50",
+   "notes": "V2566 fixed code 0x58, fmt + string + u32"
+  }
+ ],
+ "proofs": []
+}

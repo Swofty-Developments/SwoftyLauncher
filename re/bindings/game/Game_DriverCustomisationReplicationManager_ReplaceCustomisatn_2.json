@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCustomisationReplicationManager_ReplaceCustomisatn_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14313ce20",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14313ce20.c;xref:0x142019016",
+  "notes": "replacePlayerNetworkReplicatedCustomisation overload (same desc copy +8..+0x48, then 0x14313c810). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2616)"
+ },
+ "signature": {
+  "id": "game.driver_customisation_replication_manager_replace_customisatn_2",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 B8 28 C6 00 00 E8 ?? ?? ?? ?? 48",
+  "match": "0x14313ce20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14313ce20",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCustomisationReplicationManager_ReplaceCustomisatn_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_DriverCustomisationReplicationManager_ReplaceCustomisatn_2",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14313ce20.c;xref:0x14313ce20",
+   "notes": "V2616 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

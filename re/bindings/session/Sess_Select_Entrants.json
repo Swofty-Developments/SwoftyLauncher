@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Select_Entrants",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424a2350",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Select_Entrants(void *ctx, EntrantsManager *mgr, void *player_sel, void *candidates)",
+  "evidence": "decomp:re/decomp/1424a2350.c;xref:0x1407a4275,0x14245ff4a,0x1424602c0,0x14256fccb,0x14256fe72;doc:research/grid24-cap.md#2",
+  "notes": "limit = max_entrants, or min(max_entrants, #candidates) if !reuse_entrants (0x1424a3075..0x1424a30a8); MT draw while count < limit; inserts players; prunes teams > max_teams and entrants > limit"
+ },
+ "signature": {
+  "id": "session.select_entrants",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 B8 29 00 00",
+  "match": "0x1424a2350",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424a2350",
+  "kind": "func_start",
+  "names": [
+   "Sess_Select_Entrants"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "re-infra",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-17",
+   "verifier": "re-infra",
+   "kind": "func",
+   "item": "Sess_Select_Entrants",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1424a2350.c;xref:0x14245fb70",
+   "notes": "V0001 not blind (verifier had read grid24-cap.md); re-read disassembly 0x1424a3070-0x1424a30b0 only: lea rax,[rcx+0x268]; cmp byte [rcx+0x280],0; candidate count (end-begin)>>3; cmovae; mov eax,[rax]. Consistent with the limit claim; rest of the selector not re-derived"
+  }
+ ],
+ "proofs": []
+}

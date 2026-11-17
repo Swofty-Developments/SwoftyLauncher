@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_TyreDamage_TransformContactPatch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144663930",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144663930.c;xref:0x14470daa6,0x14470ddcd",
+  "notes": "Large SIMD routine used by Car_TyreDamage_Update: inverts wheel transform param_3 (3x3 + translation param_3[3]) and transforms contact patch points into tyre space for damage evaluation. Callers: Car_TyreDamage_Update."
+ },
+ "signature": {
+  "id": "car.tyre_damage_transform_contact_patch",
+  "section": ".xtls",
+  "pattern": "48 81 EC A8 00 00 00 C5 78 29 BC 24 90 00 00 00 C5 78 29 B4 24 80 00 00 00 C5 78 29 6C 24 70 C5 78 29 64 24 60 C5 78 29 5C 24 50 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 C5 E8 57 D2",
+  "match": "0x144663930",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144663930",
+  "kind": "func_start",
+  "names": [
+   "Car_TyreDamage_TransformContactPatch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144663930",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144663930.c;xref:0x14470daa6",
+   "notes": "V3692 begins with the same matrix->quaternion sequence as 0x1445dae90; \"inverts wheel transform\" not supported by what was read; caller Car_TyreDamage_Update confirmed"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144663930",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144663930.c;xref:0x14470daa6",
+   "notes": "V4019 begins with the same matrix->quaternion sequence as 0x1445dae90; \"inverts wheel transform\" not supported by what was read; caller Car_TyreDamage_Update confirmed"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x144663930",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144663930.c;xref:0x14470daa6,0x14470ddcd",
+   "notes": "V4135 caller Car_TyreDamage_Update (4 sites) confirmed"
+  }
+ ],
+ "proofs": []
+}

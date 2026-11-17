@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PlayerInputProvider_BindToDeviceNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14442d470",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14442d470.c;xref:0x14442d27d",
+  "notes": "Event-graph node handler for NePlayerInputProvider::bindToDevice: inputs +0x10 (player id), +0x18 (device), +0x20 provider, +0x28 input system, +0x40 action-map preset name (default 'Preset1'); resolves the preset (0x143a8cb00), binds via 0x143a8cf90, fires the output pin via Ne_EventDispatcher_SendEvent. Addon: bind a device to a player with a named preset from event graphs."
+ },
+ "signature": {
+  "id": "core.player_input_provider_bind_to_device_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 4C 8B 41 10 4D",
+  "match": "0x14442d470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14442d470",
+  "kind": "func_start",
+  "names": [
+   "Ne_PlayerInputProvider_BindToDeviceNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Ne_PlayerInputProvider_BindToDeviceNode",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14442d470.c;xref:0x14442d470",
+   "notes": "V2514 preset default Preset1 from +0x40, 143a8cb00 resolve, event-dispatcher pin fire; inputs +0x10/+0x18/+0x20(16-byte provider uid)/+0x28 confirmed"
+  }
+ ],
+ "proofs": []
+}

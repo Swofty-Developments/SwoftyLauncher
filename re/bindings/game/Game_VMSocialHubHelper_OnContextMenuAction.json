@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VMSocialHubHelper_OnContextMenuAction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1418522f0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=VMSocialHubHelper::onContextMenuAction; log channel SOCIAL HUB: 'VMSocialHubHelper::onContextMenuAction (%s)'"
+ },
+ "signature": {
+  "id": "game.vm_social_hub_helper_on_context_menu_action",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 70 B8 2D 00 00 00",
+  "match": "0x1418522f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1418522f0",
+  "kind": "func_start",
+  "names": [
+   "Game_VMSocialHubHelper_OnContextMenuAction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x1418522f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1418522f0.c;xref:0x141851fe6",
+   "notes": "V4907 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

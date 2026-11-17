@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StateLaunch_DefineSubTasks",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436db620",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_StateLaunch_DefineSubTasks;xref:0x1436db7d3",
+  "notes": "cxx=game::StateLaunch::defineSubTasks; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.state_launch_define_sub_tasks",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 CE C5 FB 10 81 08 0C 00 00 C5 F1 57 C9 C5 F9 2E C1 0F 85",
+  "match": "0x1436db620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436db620",
+  "kind": "func_start",
+  "names": [
+   "Game_StateLaunch_DefineSubTasks"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1436db620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436db620.c",
+   "notes": "V6133 defineSubTasks log verified; function is bigger (flow state changes) but plausible as defineSubTasks; claim self-hedged (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

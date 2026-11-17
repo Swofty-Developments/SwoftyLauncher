@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_TelemetryChannel_Sample",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447279c0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447279c0.c;xref:0x144642c87,0x144740037",
+  "notes": "(chan, t): calls the channel's sampler fn, stores value/time in ring buffers (+0x80/+0xa0, index +0x1ec), updates min +0x60/max +0x64/last +0x70/running mean +0x74 and count +0x1f0; second path for derived channels. Caller: Car_Update."
+ },
+ "signature": {
+  "id": "car.telemetry_channel_sample",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 F1 48 89 CE 48 8B",
+  "match": "0x1447279c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447279c0",
+  "kind": "func_start",
+  "names": [
+   "Car_TelemetryChannel_Sample"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x1447279c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1447279c0.c;xref:0x144642c87",
+   "notes": "V3730 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

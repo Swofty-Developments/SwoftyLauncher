@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsor_GetModifierMultiplierForTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c44140",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t (void *comp, uint32_t *team_key_opt)",
+  "evidence": "decomp:re/decomp/140c44140.c;xref:0x140c42985;xref:0x140c6392c;xref:0x140d6b8b6",
+  "notes": "myteam-g2: Looks up the named team modifier (name string at comp+0x310) for the team (own key or *team_key_opt) in the modifier list at comp+0x2f8->+0x2c8 (0x30 stride), clamps to its min/max (floats +0xc/+0x10 or +0x7c) and returns the float multiplier (default 1.0). Used by sponsor cards and goal panels to display modified rewards."
+ },
+ "signature": {
+  "id": "career.sponsor_get_modifier_multiplier_for_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 D7 48 89 CE 0F B6 5A 04",
+  "match": "0x140c44140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c44140",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsor_GetModifierMultiplierForTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c44140",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c44140.c",
+   "notes": "V9501 Looks up modifier list at comp+0x2f8->+0x2c8 (0x30 stride), name key comp+0x310, clamps with vmin/vmax (floats +0xc/+0x10 or +0x7c), default 1.0."
+  }
+ ],
+ "proofs": []
+}

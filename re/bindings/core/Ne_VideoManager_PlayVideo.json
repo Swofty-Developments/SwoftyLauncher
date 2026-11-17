@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_VideoManager_PlayVideo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f90900",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143f90900.c;xref:0x143f938dd,0x1546096f0",
+  "notes": "play video '%s': finds handle *param_2 in open list (self+0xa0, entry+0x10), returns 0x16 (EINVAL, Ne errno) if missing, 0 if already in the playing list (self+0x60), else allocates a 400-byte play command and starts playback. Callers 0x143f938dd, 0x1546096f0."
+ },
+ "signature": {
+  "id": "core.video_manager_play_video",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 48 8B 89 A0 00",
+  "match": "0x143f90900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f90900",
+  "kind": "func_start",
+  "names": [
+   "Ne_VideoManager_PlayVideo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_VideoManager_PlayVideo",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f90900.c;xref:0x143f938dd",
+   "notes": "V2554 0x16 if handle missing, 0 if already in playing list +0x60, 400-byte command"
+  }
+ ],
+ "proofs": []
+}

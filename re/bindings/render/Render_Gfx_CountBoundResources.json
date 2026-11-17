@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx_CountBoundResources",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439ff9f0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439ff9f0.c;xref:0x142433c03",
+  "notes": "Counts non-null bound-resource pointer slots of a draw state (+0x20..+0x58, +0x68..) and forwards counts/pointers to 0x1439ffae0 (device at ctx+0x60). 64 callers (0x142433b80, 0x142a46250, 0x143b59380...). Hypothesis."
+ },
+ "signature": {
+  "id": "render.gfx_count_bound_resources",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 48 85 D2 0F 84 ?? ?? ?? ?? 48 89 D0",
+  "match": "0x1439ff9f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439ff9f0",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx_CountBoundResources"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439ff9f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439ff9f0.c;xref:0x142433c03",
+   "notes": "V7800 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

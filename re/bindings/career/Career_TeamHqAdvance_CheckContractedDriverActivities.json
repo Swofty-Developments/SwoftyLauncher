@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvance_CheckContractedDriverActivities",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140cb6150",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t (void *advance)",
+  "evidence": "decomp:re/decomp/140cb6150.c;xref:0x1422bf78e;xref:0x1422c0eee;xref:0x1422c65bc",
+  "notes": "myteam-g2: Reads the player driver contract list (func 142457460), keeps contracts with the active flag (+0x4b & 0x10) and checks whether an activity record with the driver key (+0xc0) exists in the current activity slot lists (comp+0x410, 0x80 stride; 200- and 0xd8-byte entries). Returns whether the day advance has an activity for a contracted driver. Used by TeamHqAdvance_AdvanceOneDay/OnTimer/PopulateButtons (medium confidence)."
+ },
+ "signature": {
+  "id": "career.team_hq_advance_check_contracted_driver_activities",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CE 48 8B 89 70 02 00 00",
+  "match": "0x140cb6150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140cb6150",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvance_CheckContractedDriverActivities"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140cb6150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140cb6150.c",
+   "notes": "V9517 Contract list via func_0x142457460, active flag +0x4b&0x10, activity key +0xc0 against driver key +0x50, lists at +0x410 (0x80 stride)."
+  }
+ ],
+ "proofs": []
+}

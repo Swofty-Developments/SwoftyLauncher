@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Sponsors_SerialiseLoyaltyTrack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141118df0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *track, void *save_node",
+  "evidence": "decomp:re/decomp/141118df0.c;xref:0x1410ffe39",
+  "notes": "myteam-g1: Writes teamSponsorLoyaltyTrack: vector of 120-byte loyalty level entries at +0x98..+0xa0."
+ },
+ "signature": {
+  "id": "career.sponsors_serialise_loyalty_track",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 48 89 D6 48 89 CB 48 8B 3A 48 C7 44 24 28 00 00 00 00 4C 8B 05 ?? ?? ?? ?? 48 8D 15 ?? ?? ?? ?? 4C 8D 4C 24 28 48 89 F1 E8 ?? ?? ?? ?? 85 C0 74 15",
+  "match": "0x141118df0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141118df0",
+  "kind": "func_start",
+  "names": [
+   "Career_Sponsors_SerialiseLoyaltyTrack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x141118df0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141118df0.c;xref:0x1410ffe39;str:\"teamSponsorLoyaltyTrack\"",
+   "notes": "V9662 Writes teamSponsorLoyaltyTrack: vector of 0x78-byte entries at +0x98..+0xa0 with claimed and reward_set."
+  }
+ ],
+ "proofs": []
+}

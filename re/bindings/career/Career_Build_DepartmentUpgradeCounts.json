@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_DepartmentUpgradeCounts",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422fe430",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Build_DepartmentUpgradeCounts(void * self)",
+  "evidence": "decomp:re/decomp/1422fe430.c;xref:0x1422fc94c;xref:0x1422fcd3c",
+  "notes": "myteam-g1: Builds per-department department_%d rows with total_upgrades and upgrades_fitted (Career_Query_EnabledUpgrades), rnd_dept_icons_small, lng_rnd_dept_%s."
+ },
+ "signature": {
+  "id": "career.build_department_upgrade_counts",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 08 26 00 00",
+  "match": "0x1422fe430",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422fe430",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_DepartmentUpgradeCounts"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422fe430",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422fe430.c;xref:0x1422fc94c",
+   "notes": "V10107 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

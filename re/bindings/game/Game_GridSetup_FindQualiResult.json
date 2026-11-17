@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GridSetup_FindQualiResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14120e620",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14120e620.c;xref:0x141211042,0x1412110d2",
+  "notes": "named from its log messages (channel GRID): 'Couldn't find qualifying result for driver %s' L2 2026-11-14 (engine-re round 2): decomp read; 2 reference(s) (0x141211042, 0x1412110d2); the body itself references '%s %u' / 'GRID' / 'Couldnt find qualifying result for driver %s'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.grid_setup_find_quali_result",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 4C 89 CE 4D 89 C6 48 89 D7",
+  "match": "0x14120e620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14120e620",
+  "kind": "func_start",
+  "names": [
+   "Game_GridSetup_FindQualiResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x14120e620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14120e620.c;xref:0x141211042",
+   "notes": "V4679 name and quoted log strings/pretty-function present in body"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x14120e620",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14120e620-0x14120e983;xref:0x141211042,0x1412110d2",
+   "notes": "V10473 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 2 callers in 0x141210610 (0x141211042, 0x1412110d2). GRID Couldnt find qualifying result for driver %s, %s %u. 4 args."
+  }
+ ],
+ "proofs": []
+}

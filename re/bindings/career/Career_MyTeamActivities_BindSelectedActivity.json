@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamActivities_BindSelectedActivity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14231d2f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *menu)",
+  "evidence": "decomp:re/decomp/14231d2f0.c;xref:0x142319d63;xref:0x14231c048",
+  "notes": "myteam-g2: Reads the currently selected activity slot (menu+0x898, via Career_MyTeamActivities_GetSelectedSlotRecord), looks its type byte (+0x1c8) up in an open-addressed hash at menu+0x8d0..0x908, then lays out the menu (Career_MyTeamActivities_MenuLayout) and sets VM string/bool nodes. UI binding only, no activity state change."
+ },
+ "signature": {
+  "id": "career.my_team_activities_bind_selected_activity",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 70 C5 F8 29 7C 24 60 C5 F8 29 74 24 50 48 8B 81 98 08 00 00",
+  "match": "0x14231d2f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14231d2f0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamActivities_BindSelectedActivity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14231d2f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14231d2f0.c;xref:0x142319d63",
+   "notes": "V10123 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_ElasticSearchReporterModuleReportBenchmarkResults",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407a80d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-TELEMETRY",
+  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: ElasticSearchReporterModule::report_BenchmarkResults(minMaxDataValid=%d) | Flushing'"
+ },
+ "signature": {
+  "id": "game.analytics_elastic_search_reporter_module_report_benchmark_results",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 38 12 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 79 7F 9C 24 20 12 00 00",
+  "match": "0x1407a80d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407a80d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_ElasticSearchReporterModuleReportBenchmarkResults"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb02-verify",
+   "kind": "func",
+   "item": "0x1407a80d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1407a80d0.c",
+   "notes": "V4298 logs GameModeBenchmark::onSessionExit and builds the benchmark results JSON/console table then report_BenchmarkResults flush; better Game_GameModeBenchmark_OnSessionExit"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x1407a80d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407a80d0.c",
+   "notes": "V7156 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

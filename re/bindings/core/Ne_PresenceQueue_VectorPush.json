@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_PresenceQueue_VectorPush",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144134df0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144134df0.c;xref:0x144134d9b",
+  "notes": "vector<16-byte pair> push_back with 1.5x growth (allocator vcall +0x18/+0x38), used by Ne_PresenceQueue_Enqueue for the (ptr,refcount) request list."
+ },
+ "signature": {
+  "id": "core.presence_queue_vector_push",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8D 4F 18 E8 ?? ?? ?? ?? 48 8B",
+  "match": "0x144134d9b",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x144134df0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PresenceQueue_VectorPush"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x144134df0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144134df0.c;xref:0x144134d9b",
+   "notes": "V8298 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

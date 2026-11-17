@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_RemoveDriverCustomisation",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14246f8d0",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
+  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Driver customisation removed with stat id %s | Couldn't find array to remove driver customisation with stat id %s | Couldn't find driver customisation to remove with stat id %s'"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_remove_driver_customisation",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 80 00 00 00 89 D6 C1 EE 10 81 E2 FF 00 00 00 0F 84 ?? ?? ?? ?? 89 D3 48 89 D8 48 C1 E0 04 48 8B 8C 01 98 02 00 00",
+  "match": "0x14246f8d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14246f8d0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_RemoveDriverCustomisation"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x14246f8d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14246f8d0.c;xref:0x140fe5d6d",
+   "notes": "V5282 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

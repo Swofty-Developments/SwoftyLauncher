@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NeUgc_OpenLegalAgreementInSteamOverlay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14415c150",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NeUgc",
+  "notes": "named from its log messages (channel NeUgc): 'openLegalAgreementInSteamOverlay - calling ActivateGameOverlayToWebPage \"%s\"'"
+ },
+ "signature": {
+  "id": "game.ne_ugc_open_legal_agreement_in_steam_overlay",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 8B 41 08",
+  "match": "0x14415c150",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14415c150",
+  "kind": "func_start",
+  "names": [
+   "Game_NeUgc_OpenLegalAgreementInSteamOverlay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x14415c150",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14415c150.c;xref:0x14449e0f8",
+   "notes": "V6560 better name Game_NeUgc_UpdateStateMachine: 7.7 KB NeUgc state machine: download item, install info, legal agreement overlay, playtime tracking; legal overlay is one part"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14415c150",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14415c150.c;xref:0x14449e0f8",
+   "notes": "V7181 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

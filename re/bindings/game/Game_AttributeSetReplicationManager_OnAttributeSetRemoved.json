@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AttributeSetReplicationManager_OnAttributeSetRemoved",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143126bf0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=AttributeSetReplicationManager::onAttributeSetRemoved; log channel NETWORK-ENTRANTS: 'neon::NeDispatchAction network::AttributeSetReplicationManager::onAttributeSetRemoved(neon::NeMessage &) | %s: Sent remove message for attribute set with key %u to the server.'"
+ },
+ "signature": {
+  "id": "game.attribute_set_replication_manager_on_attribute_set_removed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 48 8B 41 10",
+  "match": "0x143126bf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143126bf0",
+  "kind": "func_start",
+  "names": [
+   "Game_AttributeSetReplicationManager_OnAttributeSetRemoved"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143126bf0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143126bf0.c;xref:0x1431229df",
+   "notes": "V5858 Body matches the logged text/signature"
+  }
+ ],
+ "proofs": []
+}

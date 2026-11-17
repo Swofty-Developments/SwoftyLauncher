@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownLabel_BuildData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142098c60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *out, void *src",
+  "evidence": "decomp:re/decomp/142098c60.c;xref:0x1420945fa;xref:0x1420949fa;xref:0x142095665",
+  "notes": "myteam-g1: Builds renown_label property data."
+ },
+ "signature": {
+  "id": "career.renown_label_build_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 D7 48 89 CE 48 8B 42 08 4C 8D 70 08",
+  "match": "0x142098c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142098c60",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownLabel_BuildData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142098c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142098c60.c;xref:0x1420945fa",
+   "notes": "V10046 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiationsB_RegisterMessageHandlers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ffeec0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "void Career_OnlineNegotiationsB_RegisterMessageHandlers(void *neg)",
+  "evidence": "decomp:re/decomp/140ffeec0.c;xref:0x1456b6940",
+  "notes": "myteam-g1: Registers 7 handler pairs for the B negotiation class: OnNegotiationEventMsg (1410027e0), ProcessContractRecv (141002b30), ReceiveSecretMeeting (141002f20), ReceiveTeamSelect (141003050), ReceiveContractReviewed (141003420), ReceiveContractBroken (1410036a0) etc. Network dispatch table for online contract negotiations (state at neg+0x298)."
+ },
+ "signature": {
+  "id": "career.online_negotiations_b_register_message_handlers",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 10 01 00 00 48 89 CE 48 8B 05",
+  "match": "0x140ffeec0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ffeec0",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiationsB_RegisterMessageHandlers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140ffeec0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140ffeec0.c;xref:0x1456b6940;str:\"ProcessTeamSelectMessage\"",
+   "notes": "V9634 Subscribes handlers to ProcessNCSContractMessage, ProcessSMMessage, ProcessTeamSelectMessage, MessageContractBrk/Rv etc. via 143987810, but there are 13 subscriptions (not 7 pairs) and handler names are guesses."
+  }
+ ],
+ "proofs": []
+}

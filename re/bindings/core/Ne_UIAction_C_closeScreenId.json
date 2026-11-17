@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_UIAction_C_closeScreenId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144183660",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/144183660.c;xref:0x144057d1a,0x14418353c,0x14418642f,0x1441fc3f9",
+  "notes": "cxx=NeUIAction::c_closeScreenId; log channel UINodeTreeMessages: '***** Frame:%I64u NeUIAction::c_closeScreenId Node:%hs' cb4-verify-a: the quoted string is on channel UI_latency (with OnScreenDeactivated sent on %s)"
+ },
+ "signature": {
+  "id": "core.ui_action_c_close_screen_id",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 48 8D 81 30 01 00 00",
+  "match": "0x144183660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144183660",
+  "kind": "func_start",
+  "names": [
+   "Ne_UIAction_C_closeScreenId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-a",
+   "kind": "func",
+   "item": "Ne_UIAction_C_closeScreenId",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144183660.c;xref:0x144057b90",
+   "notes": "V2255 Close-screen action; the quoted string is on channel UI_latency (not UINodeTreeMessages; that channel carries 'OnScreenDeactivated sent on %s' in same function). Role matches."
+  }
+ ],
+ "proofs": []
+}

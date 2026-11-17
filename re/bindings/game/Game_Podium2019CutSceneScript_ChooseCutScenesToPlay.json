@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Podium2019CutSceneScript_ChooseCutScenesToPlay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140356a20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=Podium2019CutSceneScript::chooseCutScenesToPlay; log channel CUTSCENE_PODIUM: 'Podium2019CutSceneScript::chooseCutScenesToPlay | Podium2019CutSceneScript::getWorldName | Podium2019CutSceneScript::getMonacoBarrierWorldObject | setHidePrimaryWorld %p %s %s'"
+ },
+ "signature": {
+  "id": "game.podium2019_cut_scene_script_choose_cut_scenes_to_play",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 50 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140356a20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140356a20",
+  "kind": "func_start",
+  "names": [
+   "Game_Podium2019CutSceneScript_ChooseCutScenesToPlay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb00-verify",
+   "kind": "func",
+   "item": "0x140356a20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140356a20.c",
+   "notes": "V4488 log strings/channel/behaviour found inside function bounds; name matches"
+  }
+ ],
+ "proofs": []
+}

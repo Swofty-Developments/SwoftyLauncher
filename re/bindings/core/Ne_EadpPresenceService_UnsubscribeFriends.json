@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_EadpPresenceService_UnsubscribeFriends",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143fd7c00",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeEadpPresenceService_UnsubscribeFriends;xref:0x143fd7c80;decomp:re/decomp/143fd7c00.c",
+  "notes": "cxx=neon::NeEadpPresenceService::unsubscribeFriends; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.eadp_presence_service_unsubscribe_friends",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 48 8B 79 18 80 3D",
+  "match": "0x143fd7c00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143fd7c00",
+  "kind": "func_start",
+  "names": [
+   "Ne_EadpPresenceService_UnsubscribeFriends"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-a",
+   "kind": "func",
+   "item": "Ne_EadpPresenceService_UnsubscribeFriends",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143fd7c00.c;xref:0x142fa71b2",
+   "notes": "V2065 pretty-function string used in own body; resets service state, 'Restart Requested', clears friends cache"
+  }
+ ],
+ "proofs": []
+}

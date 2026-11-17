@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqFacilities_ReadFacilitiesSelectionConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140df3660",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *out, void *alloc)",
+  "evidence": "decomp:re/decomp/140df3660.c;xref:0x140de9ecc;xref:0x140dec01c;xref:0x140deea3f",
+  "notes": "myteam-g1: Constructor that loads facilities.facilities / FacilitiesSelection config (list of selectable facilities for the TeamHq scene)."
+ },
+ "signature": {
+  "id": "career.team_hq_facilities_read_facilities_selection_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 04 00 00 48 89 CE 48 89 11",
+  "match": "0x140df3660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140df3660",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqFacilities_ReadFacilitiesSelectionConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140df3660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140df3660.c;str:\"facilities\"",
+   "notes": "V9563 Builds config path facilities.facilities / FacilitiesSelection (inline stack strings) and reads the facilities list."
+  }
+ ],
+ "proofs": []
+}

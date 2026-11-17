@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Analytics_PlayGoSessionEntered",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140713050",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-TELEMETRY",
+  "notes": "named from its log messages (channel TELEMETRY): 'EA analytics event: Play Go Session Entered | reported ai driver choices for race weekend session'"
+ },
+ "signature": {
+  "id": "game.analytics_play_go_session_entered",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 F8 29 B4 24 F0 01 00 00 48 89 4C 24 30",
+  "match": "0x140713050",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140713050",
+  "kind": "func_start",
+  "names": [
+   "Game_Analytics_PlayGoSessionEntered"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140713050",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140713050.c;xref:0x6d84b4",
+   "notes": "V4764 name and event correct; logged text is the bare event string (no 'EA analytics event: ' prefix exists in the binary)"
+  }
+ ],
+ "proofs": []
+}

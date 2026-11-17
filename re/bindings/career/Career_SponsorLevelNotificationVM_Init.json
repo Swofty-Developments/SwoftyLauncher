@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorLevelNotificationVM_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141ce3c60",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/141ce3c60.c;xref:0x145744328",
+  "notes": "myteam-g1: Allocates the notification entries for MessageTitleSponsorLevelUp / SecondarySponsorLevelIncreaseNotification and registers them with the notification list."
+ },
+ "signature": {
+  "id": "career.sponsor_level_notification_vm_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 48 89 CE 48 8B B9 70 02 00 00 48 8B 07 BA 20 00 00 00",
+  "match": "0x141ce3c60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141ce3c60",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorLevelNotificationVM_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141ce3c60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141ce3c60.c;xref:0x145744328",
+   "notes": "V10003 Allocates notification entries for MessageTitleSponsorLevelUp / SecondarySponsorLevelIncreaseNotification."
+  }
+ ],
+ "proofs": []
+}

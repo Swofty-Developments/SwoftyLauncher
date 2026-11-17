@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_QualifyingConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e44b50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Read_QualifyingConfig(void *track_data_system)",
+  "evidence": "decomp:re/decomp/142e44b50.c;xref:0x142e5e05c;kb:subsystems/tracks.md#fields",
+  "notes": "Misnomer kept (signature game.read_qualifying_config names it): this is the TRACK_DATA set reader, not a qualifying config read. Only caller Game_TrackDataSystem_Init 0x142e5e010 (call 0x142e5e05c, rcx = the TrackDataSystem). Walks track_data.game_setup.TrackDataSet rows into TrackDataSystem +0x68..+0x70 (0x30 per set, masks from Game_Read_GameSetupModeEntry 0x142a0ddb0 at the call after 0x1445a28f0) and for each TrackData row allocates a 0x290 TrackDataTrack (0x142e459b2: alloc(0x290,0x10)) and fills it from the row and its sub-tables: compounds +0x48/+0x50/+0x58, chance_of_using_softer/harder_preset +0x60/+0x64 (0x142e46352/0x142e46376), number_of_intermediate/wet_tyres +0xd0/+0xd4, enforce_pitstops_in_wet_weather +0xd8 (0x142e46d93), number_of_laps value-slot pointer +0xe0 (0x142e46e8c mov [rsi],rax, rsi = rdi+0xe0), fuel_burn_per_lap +0xf0 (0x142e46fe7), weekend_month/day +0xf4/+0xf8 (0x142e47018/0x142e47040), use_split_qualifying +0xfc (0x142e470fa), weekend_format == 'sprint' (fnv1a64 lower 0x0b4d8c10d825b055) -> +0xfd (0x142e47a6c), p1..race3 start times {i32 hour, i32 minute} +0x1d0..+0x208 (race 0x142e47780), TrackPitData pitSpeedLimit/pitStopTime_Dry/pitStopTime_Wet +0x21c/+0x220/+0x224 (0x142e47833/0x142e4785b/0x142e4788d); also the Qualifying.* fuel values the old name came from (TrackFuelSettings). Field list: structs/TrackDataTrack.h. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.read_qualifying_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 88 21 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 78 29 BC 24 70 21 00 00",
+  "match": "0x142e44b50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e44b50",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_QualifyingConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "sp-verify",
+   "kind": "func",
+   "item": "Game_Read_QualifyingConfig",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e44b50.c;xref:0x142e4782c",
+   "notes": "V1712 claim 10 TrackPitData offsets"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142e44b50",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142e44b50-0x142e49f49;xref:0x142e5e05c",
+   "notes": "V10369 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref call 0x142e5e05c in 0x142e5e010 (rcx=rsi=self). Sets vector stored to [tds+0x68]/[tds+0x70] (0x142e44e1e/0x142e44e25), masks via call 0x142a0ddb0 (0x142e44f31). Per TrackData row: edx=0x290, r8d=0x10, call [alloc vt+0x18] (0x142e4599c/0x142e459b2), [obj]=record (0x142e459c1) found by strcmp of record+0xd0 (0x142e45926/0x142e45930) over tds+0x28..+0x30 (0x142e458e4/0x142e458e8). Writes match the key strings: compound_softer/medium/harder +0x48/+0x50/+0x58, chance_of_using_softer/harder_preset +0x60/+0x64, number_of_intermediate/wet_tyres +0xd0/+0xd4, enforce_pitstops_in_wet_weather +0xd8, number_of_laps slot ptr -> [rdi+0xe0] (0x142e46e6b lea rsi,[rdi+0xe0]; 0x142e46e8c), fuel_burn_per_lap +0xf0, +0xf4/+0xf8, use_split_qualifying +0xfc, lower-case fnv1a64 == 0x0b4d8c10d825b055 -> +0xfd (0x142e47a1e-0x142e47a6c), race_start_time 8 bytes -> +0x1f8, pitSpeedLimit/pitStopTime_Dry/Wet +0x21c/+0x220/+0x224. Qualifying.one_shot/short/full strings present. Misnomer note correct."
+  }
+ ],
+ "proofs": []
+}

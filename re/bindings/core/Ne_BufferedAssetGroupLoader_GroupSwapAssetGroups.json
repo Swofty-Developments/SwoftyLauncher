@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_BufferedAssetGroupLoader_GroupSwapAssetGroups",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a60200",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143a60200.c;xref:0x1458a2cb8",
+  "notes": "cxx=NeBufferedAssetGroupLoader::groupSwapAssetGroups; log channel NeBufferedAssetGroupLoader: 'NeBufferedAssetGroupLoader::groupSwapAssetGroups (currently buffered loads=%I64u, unloads=%I64u. Requests queued=%I64u, inflight=%I64u. this=%p.)'"
+ },
+ "signature": {
+  "id": "core.buffered_asset_group_loader_group_swap_asset_groups",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 4C 89 CF 4C 89 C3 49 89 D6 48 89 CE 48 8B 84 24 C8 00 00 00",
+  "match": "0x143a60200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a60200",
+  "kind": "func_start",
+  "names": [
+   "Ne_BufferedAssetGroupLoader_GroupSwapAssetGroups"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_BufferedAssetGroupLoader_GroupSwapAssetGroups",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a60200.c;xref:total",
+   "notes": "V2012 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Game_ContractTeamSelect_OnUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436c56a0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t *Game_ContractTeamSelect_OnUpdate(void *state, uint32_t *link)",
+  "evidence": "decomp:re/decomp/1436c56a0.c;xref:0x14585a6a8",
+  "notes": "TeamSelect onUpdate (vtable slot +0x48, abs ptr 0x14585a6a8). flow state StateDriverCareerContractNegotiationsTeamSelect (name string 0x14585a5b0, vtable 0x14585a660; the same layout as the Intro vtable 0x14585a470, whose slot +0x40 is Career_ContractIntro_OnEnter): the team select step of the Driver Career contract negotiation, entered after ContractNegotiationsDecision when the player's contract ends (before Intro, Update and Outro); it is absent from the start-of-career flow. Offline (+0xd69 clear or +0xd6a set) it writes g_Career_FlowLinkContinue to *link once the selection flag +0xc98 is set, else g_Game_FlowLinkStay; online it also syncs the players' team selection through the controller at +0xd70. Returns link. Raised by laneS."
+ },
+ "signature": {
+  "id": "game.contract_team_select_on_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 30 48 89 D6 48 89 CF 80 B9 69 0D 00 00 00",
+  "match": "0x1436c56a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436c56a0",
+  "kind": "func_start",
+  "names": [
+   "Game_ContractTeamSelect_OnUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-26",
+    "by": "laneS",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/progressive/native/src/ui/follow.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-26",
+   "verifier": "laneS-verify2",
+   "kind": "func",
+   "item": "Game_ContractTeamSelect_OnUpdate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436c56a0.c;xref:0x14585a6a8",
+   "notes": "V1086 Only reference is the abs pointer 0x14585a6a8 = vtable 0x14585a660 slot +0x48 (no rel32 refs); same slot as Career_ContractIntro_OnUpdate (0x14585a470+0x48) and Career_ContractOutro_OnUpdate (0x14585a530+0x48). Disasm: rsi=rdx (link), rdi=rcx; if byte +0xd69==0 or +0xd6a!=0 then +0xc98 nonzero -> lea 0x146cb2284 (g_Career_FlowLinkContinue, at 0x1436c57b4) else 0x146cb2280 (g_Game_FlowLinkStay, at 0x1436c57bd); *link = dword; returns rsi. Online path drives the controller at +0xd70 (0x140ffc7b0 / 0x140ffda70 / 0x140ffc990) and picks Continue/Stay from its state, not from +0xc98. Proto uint32_t *(void *, uint32_t *) matches; the Intro onUpdate 0x1436c2dc0 uses the same rdx out-link convention."
+  }
+ ],
+ "proofs": []
+}

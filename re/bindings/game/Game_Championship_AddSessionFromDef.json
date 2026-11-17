@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Championship_AddSessionFromDef",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140af9c30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140af9c30.c;xref:0x140af7341,0x140af7499,0x140af9794",
+  "notes": "Championship emplace_back of a championship::Session copying def fields: duration def+0x10 (only when def+0x14), ruleset def+0xc, sessionId def+8, def+0x28 -> Session+0x90, def+0x29 -> +0x91, def+0x34 -> +0x98. Also used by 0x140af9670 and 0x140afbef0. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2435)"
+ },
+ "signature": {
+  "id": "game.championship_add_session_from_def",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 49 89 D4 48 89 CF",
+  "match": "0x140af9c30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140af9c30",
+  "kind": "func_start",
+  "names": [
+   "Game_Championship_AddSessionFromDef"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_Championship_AddSessionFromDef",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140af9c30.c;xref:0x140af9c30",
+   "notes": "V2435 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

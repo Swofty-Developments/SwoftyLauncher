@@ -1,0 +1,65 @@
+{
+ "schema": 1,
+ "name": "Game_Career_IsDriverCareerMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14077cd40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_Career_IsDriverCareerMode(const void *championship)",
+  "evidence": "decomp:re/decomp/1438fb390.c;xref:0x1438fb3a4,0x140a90513",
+  "notes": "5-byte jmp thunk into VM-obfuscated code (0x1484fad70): 1 only for the 2025 and 2026 driver-career mode championships (coordinator gdb 2026-10-21: 0 for the other 18 registered modes, the 1990 mode and my_team_career_26 included). 40 callers: the driver-career save-slot predicate (0x1438fb3a4) and career/UI paths. Bound through the call at 0x140a90513 (rel32). The championship's +0x2a8 is its mode statId. Raised by native-1990 for the F1 1990 career tile"
+ },
+ "signature": {
+  "id": "game.career_is_driver_career_mode",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 85 F6 74 12 84 C0",
+  "match": "0x140a90513",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x0"
+  },
+  "target": "0x14077cd40",
+  "kind": "call",
+  "names": [
+   "Game_Career_IsDriverCareerMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/career_content.cpp",
+   "addons/f1-1990/native/src/career_menu_ui.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-content",
+   "kind": "func",
+   "item": "Game_Career_IsDriverCareerMode",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/exe/std-content/decomp/14077cd40.c;decomp:work/exe/std-content/decomp/1438fb390.c;xref:0x140a90513,0x1438fb3a4,0x14077a878;sig:game.career_is_driver_career_mode",
+   "notes": "V0909 Independent: 0x14077cd40 is a 5-byte jmp to the .data1 body 0x1484fad70 (outside .pdata: call it, never hook it; by PROTOCOL 3 the name would carry _Thunk). bool, 1 arg (the championship; the predicate passes its rdx). Static body: 1 needs CareerRecognitionComponent (desc 0x146060948, name set at 0x1410ef849) on champ+0x1030, helper 0x14077c790(champ,1) false, and no ChallengeCareerComponent (desc 0x14605b068), i.e. a driver-career gate. The per-mode result set (1 only for the 2025/2026 driver-career modes, 0 for the 1990 mode) is the coordinator gdb observation and was not re-derived. 41 call sites. sigcheck: rel32 call at 0x140a90513 resolves to it"
+  },
+  {
+   "date": "2026-10-21",
+   "verifier": "std-content",
+   "kind": "func",
+   "item": "Game_Career_IsDriverCareerMode",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/exe/std-content/decomp/14077cd40.c;decomp:work/exe/std-content/decomp/1438fb390.c;xref:0x140a90513,0x1438fb3a4,0x14077a877;sig:game.career_is_driver_career_mode",
+   "notes": "V0913 Supersedes V0909 only to fix the xref 0x14077a878 (the rel32, the call is at 0x14077a877); findings unchanged: 5-byte jmp thunk to the .data1 body 0x1484fad70 (call only, never hook; PROTOCOL 3 would name it _Thunk), bool(championship), body needs CareerRecognitionComponent (0x146060948), helper 0x14077c790(champ,1) false and no ChallengeCareerComponent (0x14605b068): a driver-career gate. The per-mode result set (2025/2026 driver-career modes only) is the coordinator gdb observation, not re-derived"
+  }
+ ],
+ "proofs": []
+}

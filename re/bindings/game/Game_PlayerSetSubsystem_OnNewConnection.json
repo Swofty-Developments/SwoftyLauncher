@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PlayerSetSubsystem_OnNewConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14316f830",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14316f830.c;xref:0x14305baab,0x14581f8c8",
+  "notes": "onNewConnection(conn id param_2): 'Sending initial data to connection ID %d' via Game_Playerset_SendPlayerSetInfoMessageInternal (sendPlayerSetInfoMessage). Also called from Game_Network_NewSessionToken. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2497)"
+ },
+ "signature": {
+  "id": "game.player_set_subsystem_on_new_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 89 D3 48 89 CE 80 3D ?? ?? ?? ?? 01 75 53 B8 6D",
+  "match": "0x14316f830",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14316f830",
+  "kind": "func_start",
+  "names": [
+   "Game_PlayerSetSubsystem_OnNewConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_PlayerSetSubsystem_OnNewConnection",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14316f830.c;xref:0x14581f8c8",
+   "notes": "V2497 logs onNewConnection and Sending initial data, sends per entry via 14316e8a0 sendPlayerSetInfoMessage"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_Serialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434fd990",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-RESOURCE_POINTS",
+  "notes": "named from its log messages (channel RESOURCE_POINTS): 'Serialised resource points wallet for driver %s containing %d points'"
+ },
+ "signature": {
+  "id": "career.resource_points_serialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 02 00 00 C5 78 29 84 24 F0 01 00 00 C5 F8 29 BC 24 E0 01 00 00 C5 F8 29 B4 24 D0 01 00 00 4C 89 C5",
+  "match": "0x1434fd990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434fd990",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePoints_Serialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1434fd990",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434fd990.c",
+   "notes": "V6071 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x1434fd990",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434fd990.c;str:\"RESOURCE_POINTS\";str:\"Serialised resource points wallet for driver %s containing %d points\"",
+   "notes": "V9230 Name matches the RESOURCE_POINTS log message."
+  }
+ ],
+ "proofs": []
+}

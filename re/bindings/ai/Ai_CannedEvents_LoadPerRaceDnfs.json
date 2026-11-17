@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_CannedEvents_LoadPerRaceDnfs",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409c2b10",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_CannedEvents_LoadPerRaceDnfs(void *cfg)",
+  "evidence": "decomp:re/decomp/1409c2b10.c;xref:0x1409bfa52,0x148ceaa9b",
+  "notes": "Row 'canned_events.Per-race DNFs' found with Gdb_Find_RowByLabel (db from [[[cfg+8]+0x10]+0x1a8]+0x30 +0x68, else default 0x14607fbe0); fields via Gdb_Get_FieldInt + Ne_StrBuf_Printf. can_lock_up_in_pits byte +0x1d0; Failures.minimum +0x10, maximum +0x14; Faults.<T>.minimum/maximum/minimumDuration/maximumDuration/generationChance for T = Engine, Gearbox, MissingGear, GearJammed, ERS, DRS, Tyre (tables 0x145671188 / 0x1456711c0, loop of 10 but only i < 7 used) at +0x18 + i*0x14; Accidents.SpinOut minimum/maximum/min_grip_threshold/max_grip_threshold +0xe0..+0xec, Accidents.SideSwipe +0xf0..+0xfc; LockUps.<W> for W = Dry, Intermediate, Wet (table 0x145671210) at +0x100 + w*0x18: MaxDuration +4, MinDuration +0, Random.<S> +8 where S = PracticeChance (session type 1..4), QualifyingChance (5..14) else RaceChance from [db+4], Pressure.Chance +0xc, Pressure.Distance +0x10, Pressure.FirstLapChance +0x14; MissingGears.0..10 -> list of enabled gear numbers at +0x150 (int[]), count +0x180. Caller 0x1409bf9a0 initialises cfg, calls this (0x1409bfa52) then 0x1409c32d0 and installs cfg at [x+0xf0]. (corrected 2026-11-14: LockUps are per tyre condition Dry/Intermediate/Wet from +0x100, the session only picks the Random key; added grip thresholds.) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.canned_events_load_per_race_dnfs",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 78 05 00 00 C5 F8 29 B4 24 60 05 00 00 48 89 CB 48 8B 41 08",
+  "match": "0x1409c2b10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409c2b10",
+  "kind": "func_start",
+  "names": [
+   "Ai_CannedEvents_LoadPerRaceDnfs"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1409c2b10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409c2b10.c",
+   "notes": "V4381 name/description match strings and code in decomp (log string verified via data read)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1409c2b10",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1409c2b10-0x1409c32c8;xref:0x1409bfa52,0x148ceaa9b",
+   "notes": "V10627 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 0x1409bfa52 (0x1409bf9a0) and 0x148ceaa9b (.data1). 1 arg. Row label built from 16-byte constant chunks (canned_events.Per-race DNFs), Gdb_Find_RowByLabel 0x1445a2bd0, default db 0x14607fbe0, can_lock_up_in_pits -> +0x1d0, Failures min/max +0x10/+0x14, fault name tables 0x145671188/0x1456711c0, lock-up table 0x145671210."
+  }
+ ],
+ "proofs": []
+}

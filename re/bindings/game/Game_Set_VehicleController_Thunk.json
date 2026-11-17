@@ -1,0 +1,101 @@
+{
+ "schema": 1,
+ "name": "Game_Set_VehicleController_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14389cc90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_Set_VehicleController_Thunk(void *system, uint64_t vehicle, uint32_t ai, int32_t flag)",
+  "evidence": "decomp:re/decomp/14389cc90.c;xref:0x1406bf694,0x1407a7b04,0x1407de018,0x14080e66c,0x1409be12c,0x1411f4059,0x141344af3,0x141344b10,0x142c1fc60,0x142c76295",
+  "notes": "jmp stub into .data1 (0x1519eb350). Sets controller of car slot (byte idx) on the vehicle manager: entry = [self+0x30][idx]; for slot < 2 with a controller present: applies controller type param_4 (0x143897e10, 0x1438974a0); when the type changed and type != 9 notifies [self+0x90] (0x142f44c30). Then updates the car's input record ([[self+0x90]+0x28][idx]+0x10 -> +0x58): +0x124 = (old != new), +0x134 bit7 = (old == new). 25+ callers (AI/player handover). (used by vmknolle race-start, red-flag-pit)"
+ },
+ "signature": {
+  "id": "game.set_vehicle_controller_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 28 E9 92 0F 9D 01 00 5A D0",
+  "match": "0x14389cc90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14389cc90",
+  "kind": "func_start",
+  "names": [
+   "Game_Set_VehicleController_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-a",
+   "kind": "func",
+   "item": "0x14389cc90",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_a/decomp/14389cc90.c;xref:0x1406bf694,0x1435714b7,0x142d6968d",
+   "notes": "V1020 sys+0x30 per-vehicle array; for slot<2 with controller present at entry+0x20+slot*8 calls set(entry,reason,slot==1)+0x1438974a0; if active controller pair changed and reason!=9 notifies 0x142f44c30(sys+0x90,vehicle,1); then updates vehicle object +0x124/+0x134 flags. 4-arg proto matches; 4th arg acts as a reason code (9 = no notify) rather than a flag"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "ts-v1",
+   "kind": "func",
+   "item": "0x14389cc90",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14389cc90.c;xref:0x1406bf694,0x142d5d7a5",
+   "notes": "V1495 ts-v1 re-read and correction: the 4th argument is a controller-set FLAG INDEX (bit in [ctrlset+0x30], name table at 0x14588cb50: 0 PIT_LANE 1 ROLLING_START 2 DISQUALIFIED 3 NOT_IN_SESSION 4 RETIRED 5 PAUSE 6 DEV 7 BENCHMARK 8 CUTSCENE 9 TERMINAL_DAMAGE 10 SESSION_NOT_STARTED ... 17 PDS), set when the 3rd argument (controller 0 human / 1 AI) is 1 and cleared when 0; then Game_ControllerSet_Transition and Car_Reset_VehicleSystems unless flag 9. The agent's 'reason 6' is the DEV flag. Callers pass flags 0..0x11 (a scan of the 60 direct callers). Agrees."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "re-ai",
+   "kind": "func",
+   "item": "0x14389cc90",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1519eb350.c;xref:0x14389cc91",
+   "notes": "V1508 Re-read the .data1 body: entry = [sys+0x30][vehicle byte]; for ai < 2 with a controller present it calls 0x143897e10 (set flag index = reason, value = ai==1) then Game_ControllerSet_Transition(set, ai); when reason != 9 and the mode (dword[+0x10] ^ dword[+0x18]) changed it calls Car_Reset_VehicleSystems(vehicle manager [sys+0x90], vehicle, 1). Finally writes the car's physics input state (+0x124 = mode != HUMAN, +0x134 bit 7 = mode == HUMAN). The 4th argument is a flag bit index 0..0x11 (PIT_LANE 0, ROLLING_START 1, DISQUALIFIED 2, NOT_IN_SESSION 3, RETIRED 4, PAUSE 5, DEV 6, BENCHMARK 7, CUTSCENE 8, TERMINAL_DAMAGE 9, SESSION_NOT_STARTED 10, SAFETY_CAR 11, DROP_IN 12, FORMATION_LAP_REFORM_GRID 13, ROBODRIVER 14, RESET_TO_TRACK 15, CINEMATIC_SAFETY_CAR 16, PDS 17; names from the table at 0x14588cb50), not a reason code enum of its own."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "ai-v1",
+   "kind": "func",
+   "item": "0x14389cc90",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1519eb350.c;decomp:re/decomp/1438974a0.c;decomp:re/decomp/1519c7650.c;xref:0x14389cc91",
+   "notes": "V1537 Independent re-check of flag-index semantics: body 0x1519eb350(system,vehicle,ai,flag): needs vehicle < set count and ai<2 with controller [set+0x20+ai*8] present; calls 0x1519c7650(set,flag,ai==1) which tests/sets/clears bit (1<<flag) of [set+0x30] (log names from the 18-entry table at 0x14588cb50: PIT_LANE,ROLLING_START,DISQUALIFIED,NOT_IN_SESSION,RETIRED,PAUSE,DEV,BENCHMARK,CUTSCENE,TERMINAL_DAMAGE,SESSION_NOT_STARTED,SAFETY_CAR,DROP_IN,FORMATION_LAP_REFORM_GRID,ROBODRIVER,RESET_TO_TRACK,CINEMATIC_SAFETY_CAR,PDS; index>=0x12 logs no name but still shifts). Then Transition(set,ai): ai==0 -> mode 0 only if flags==0 and a human controller exists, else 1 (AI exists) or 3 invalid; ai==1 -> 1 if an AI controller exists, else 0 if human else 3. When flag!=9 and the xor mode changed it calls Car_Reset_VehicleSystems(mgr,vehicle,1); finally sets car physics +0x124=(mode!=HUMAN) and +0x134 bit7=(mode==HUMAN) for any vehicle<0xff. The flag index is NOT range-checked: values >=32 wrap in the shift."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "aaa-verify",
+   "kind": "func",
+   "item": "Game_Set_VehicleController_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x14389cc90",
+   "notes": "V1758 recorded by engine-re from aaa-verify: jmp 0x1519eb350; reason table index 14 ROBODRIVER"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "cf-verify",
+   "kind": "func",
+   "item": "Game_Set_VehicleController_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14389cc90.c;xref:0x1519eb350",
+   "notes": "V1765 claim 6"
+  }
+ ],
+ "proofs": []
+}

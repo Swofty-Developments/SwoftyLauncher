@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_IntervalProfile_AddRamps",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14065e650",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_IntervalProfile_AddRamps(void *prof, void *other, float a, float b, float c, int id)",
+  "evidence": "decomp:re/decomp/14065e650.c;xref:0x14065e607,0x14065eb28,0x14065eec8,0x14065f729,0x14065f829,0x140662ae4,0x140662dbc,0x140662fd5,0x140663649,0x140663835,0x140664bf8,0x140664fb5",
+  "notes": "w = 0x14065fec0(other, id); returns if w <= 0 or the band prof+0xa0 == prof+0xa4. Normalises a, b, c into [0,1] over the band [prof+0xa0, prof+0xa4] (t0, t1, t2). If t0 < t1 inserts record {t0, t1, w - |t1-t0|*k, w, id} and if t1 < t2 inserts {t1, t2, w, w - |t2-t1|*k, id} into the interval list at prof+0x18 via 0x140661b20 (merge insert); slope k = prof+0xc8. So it adds a rising and a falling ramp of weight w peaking at b. Callers (15 sites) are slot 2 of the BehaviourRace list-A evaluators created in Ai_Build_BehaviourSystem (vtables 0x145638600, 0x145638660, 0x1456386c0, 0x1456386f0, 0x145638720, 0x145638750, 0x145638780, 0x1456387b0, 0x1456387e0, 0x145635050, 0x145634fc0), e.g. 0x1406636f0 calls it 4 times. (corrected 2026-11-14: callers are not in Ai_Parse_SpaceSeekingConfig; it does not split around a free band, it normalises into the band.) (renamed 2026-11-14 from Ai_SpaceSeeking_AddBlockedInterval: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.space_seeking_add_blocked_interval",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 98 00 00 00 C5 78 29 94 24 80 00",
+  "match": "0x14065e650",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14065e650",
+  "kind": "func_start",
+  "names": [
+   "Ai_IntervalProfile_AddRamps"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14065e650",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14065e650.c;xref:0x140662fd5",
+   "notes": "V3563 normalises another car's interval into the free band +0xa0/+0xa4 and calls Ai_Interval_MergeInsert (FUN_140661b20) on ss+0x18 in two branches; 15 call sites confirmed, parent name Ai_Parse_SpaceSeekingConfig not verifiable (callers unnamed)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14065e650",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14065e650-0x14065e826;xref:0x14065e607,0x14065eb28,0x14065eec8,0x14065f729,0x14065f829,0x140662ae4,0x140662dbc,0x140662fd5,0x140663649,0x140663835,0x14066385f,0x14066388c",
+   "notes": "V10550 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 6 args (rcx, rdx, xmm2, xmm3, stack c, stack id). w = 0x14065fec0(...); band [prof+0xa0, prof+0xa4]; slope prof+0xc8; two merge inserts 0x140661b20 into prof+0x18. 15 call sites (4 of them in 0x1406636f0). Rename from Ai_SpaceSeeking_AddBlockedInterval fits (generic ramp add)."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingProcessor_SearchCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143087780",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionMatchingProcessor::searchCallback; log channel NETWORK-MATCHING: 'GameSessionMatchingProcessor::searchCallback(%s)'"
+ },
+ "signature": {
+  "id": "game.game_session_matching_processor_search_callback",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 44 88 4C 24 2F",
+  "match": "0x143087780",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143087780",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingProcessor_SearchCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x143087780",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143087780.c;xref:0x14308772d",
+   "notes": "V5634 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

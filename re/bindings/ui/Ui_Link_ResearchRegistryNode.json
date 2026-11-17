@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_Link_ResearchRegistryNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416b53c0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *Link(void *vm)",
+  "evidence": "decomp:re/decomp/1416b53c0.c;xref:0x141c81e06",
+  "notes": "myteam-g2: Links node via Vm_Link_RegistryNode at vm+0x328; UI."
+ },
+ "signature": {
+  "id": "ui.link_research_registry_node",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 C7 44 24 28 00 00 00 00 48 8B 05",
+  "match": "0x1416b53c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416b53c0",
+  "kind": "func_start",
+  "names": [
+   "Ui_Link_ResearchRegistryNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x1416b53c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416b53c0.c;xref:0x141c81e06",
+   "notes": "V9755 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

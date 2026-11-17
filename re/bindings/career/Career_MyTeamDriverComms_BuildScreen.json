@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamDriverComms_BuildScreen",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14233ddc0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_MyTeamDriverComms_BuildScreen(void *screen)",
+  "evidence": "decomp:re/decomp/14233ddc0.c;xref:0x145780998",
+  "notes": "myteam-g1: Builds the My Team driver communications screen: resolves child nodes (screen+0x620..0x8b0 widget pairs), registers my_team_driver_comms and driver_contracts panels and fires my_team_entering_driver_comms_contract_window / my_team_exiting_driver_comms_contract_window transitions. UI construction only."
+ },
+ "signature": {
+  "id": "career.my_team_driver_comms_build_screen",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 01 00 00 C5 F8 29 B4 24 70 01 00 00 48 89 CE 0F B6 81 28 06 00 00",
+  "match": "0x14233ddc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14233ddc0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamDriverComms_BuildScreen"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x14233ddc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14233ddc0.c;str:\"my_team_driver_comms\"",
+   "notes": "V10148 Strings my_team_driver_comms, driver_contracts, entering/exiting contract window events all present; UI construction."
+  }
+ ],
+ "proofs": []
+}

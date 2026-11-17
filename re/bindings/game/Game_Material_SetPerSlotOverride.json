@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Material_SetPerSlotOverride",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14019cf30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14019cf30.c;xref:0x1401a9701",
+  "notes": "Applies a material override to a model instance slot: formats '%s.emb?context=%s' (context 'ACTOR'), resolves the multi-sub-material resource (NeMultiSubMaterialResourceFactory) and logs 'MISSING RESOURCE setPerSlotMaterialOverride \"%s\". Is it loaded?' when absent. Caller Game_DriverCustomiser_ApplySuitDecals (and others). Addon: per-slot material swaps (suits, liveries)."
+ },
+ "signature": {
+  "id": "game.material_set_per_slot_override",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 B8 12 00 00 E8 ?? ?? ?? ?? 48 29 C4 48 8B 79",
+  "match": "0x14019cf30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14019cf30",
+  "kind": "func_start",
+  "names": [
+   "Game_Material_SetPerSlotOverride"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x14019cf30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14019cf30.c;xref:0x1401a9701",
+   "notes": "V7970 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

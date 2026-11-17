@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvance_RestartTimer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422bb5c0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1422bb5c0.c;xref:0x1422cbdb8,0x142333dbb",
+  "notes": "AdvanceData timer restart (this, day:i16, notificationHolder, withFlag). Counts notifications for that day (holder+0xa0..+0xa8, each vcall +0x20 returns day); delay = cfg[*this]+4 (no notification) / +8 / +0xc (notification, flag); stamps QPC into this[2] (and this[3] if set), stores delay float at this+0x30; logs 'Timer restarted with delay' / 'New notification'. Called by AdvanceOneDay, both OnTimer state machines and ClearStopping. Addon: shorten Team HQ day-advance delays by patching the delay config floats. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3080)"
+ },
+ "signature": {
+  "id": "career.team_hq_advance_restart_timer",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 C5 F8 29 74 24 30 4D 85",
+  "match": "0x1422bb5c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422bb5c0",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvance_RestartTimer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_TeamHqAdvance_RestartTimer",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422bb5c0.c;xref:1422bc710",
+   "notes": "V3080 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

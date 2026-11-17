@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_CreateMyTeamCareer_Description",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a26750",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/141a26750.c;xref:0x145727388",
+  "notes": "myteam-g1: Create-career card: lng_create_my_team_career_desc; TLS init of a class pool."
+ },
+ "signature": {
+  "id": "ui.create_my_team_career_description",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 88 00 00 00 C5 F8 29 7C 24 70",
+  "match": "0x141a26750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a26750",
+  "kind": "func_start",
+  "names": [
+   "Ui_CreateMyTeamCareer_Description"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141a26750",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a26750.c;xref:0x145727388",
+   "notes": "V9922 Create-career card using lng_create_my_team_career_desc / lng_create_career_desc, confirm_button; calls career-setup helpers."
+  }
+ ],
+ "proofs": []
+}

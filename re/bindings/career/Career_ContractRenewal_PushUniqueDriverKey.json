@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractRenewal_PushUniqueDriverKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d990f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_ContractRenewal_PushUniqueDriverKey(void *list, uint32_t *key)",
+  "evidence": "decomp:re/decomp/140d990f0.c;xref:0x140d9a781;xref:0x140d9b67d;xref:0x140ff5018",
+  "notes": "myteam-g2: Appends a 6-byte driver/team key (u8 + u16) to the vector at list+0x18 if not already present (linear compare, x1.5 growth). Used by AI approach and retire logic."
+ },
+ "signature": {
+  "id": "career.contract_renewal_push_unique_driver_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D7 48 89 CE 48 8B 49 18",
+  "match": "0x140d990f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d990f0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractRenewal_PushUniqueDriverKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d990f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d990f0.c",
+   "notes": "V9545 Appends 6-byte key (u8+u16) if absent, x1.5 growth."
+  }
+ ],
+ "proofs": []
+}

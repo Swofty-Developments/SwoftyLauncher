@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_FrontWing_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14465f620",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void Car_FrontWing_Init(void *front_wing, char reset)",
+  "evidence": "decomp:re/decomp/14465f620.c;decomp:re/decomp/144660380.c;decomp:re/decomp/1446603a0.c;decomp:re/decomp/1446603d0.c;xref:0x145bf90d0,0x14462973d,0x1555bdfea;kb:subsystems/car.md#parts",
+  "notes": "cxx=game::FrontWing; fw+8 car; with reset == 0 and an empty part list (fw+0xb0..+0xb8) registers 11 detachable pieces via Car_Register_DetachablePart_Thunk with predicates 0x144660380 (centre: t*max <= L+R), 0x1446603a0 (left), 0x1446603d0 (right); fw+0x34/+0x38 per-side/total max, +0x48/+0x4c left/right damage (collision callback 0x14465fdc0, also car+0x5d0 +0x138/+0x13c); car+0x5c8 = this object. (used by the vmknolle addons parts-detach) | PR #453/#448 (vmknolle): Front wing component init (vtable slot ptr 0x145bf90d0; args (wing, bool rebuild)). Binds two callbacks (0x14465fdc0) on the car model (car-re fix: wing+8 is the CarLive) (wing+8: 0x1446510d0, 0x144651f90), caches car model +0x570 (car-re fix: CarLive+0x570 is the F1Aero system, CarLive.h L3) (wing+0x90), its node map (+0x98) (car-re fix: not a node map; +0x98 of the ConvexHull system's (CarLive+0x5b0) entry named FrontWing, the wing body, 0 when absent) and the physics actor [car+0x558]+0x3f0 (+0xa0). When not rebuilding and its part list wing+0xb0..+0xb8 is empty, registers 11 detachable wing parts with Car_Register_DetachablePart_Thunk(wing, callback 0x144660380 (car-re fix: three predicates, not one: 0x144660380 only for the 3 centre pieces, 0x1446603d0 for the 4 right, 0x1446603a0 for the 4 left), &Ne_Get_NameId(node name) (car-re fix: Game_Get_ModelNodeId), local matrix, mass factor (car-re fix: not a mass; the predicate multiplier k, see below)), e.g. 'frontspoiler_fm' (1.0), 'frontfin_fr' (0.6), 'frontfin_fl'. (used by vmknolle parts-detach) | car-re 2026-10-28 L2 (kb:subsystems/car.md#parts): slot 6 (+0x30 Init) of the F1WingDamage system vtable 0x145bf90a0; Car_Chassis_Build calls it with 0 for every system (0x14462973d), Car_Systems_Reset_Body with its reset argument (0x1555bdfea). Every call: fw+0x90 = CarLive+0x570 F1Aero (store 0x14465f6ba); fw+0x98 = ConvexHull entry FrontWing (0x145bf90e8) +0x98 or 0 (0x14465f71b); fw+0xa0 = [CarLive+0x558 Chassis]+0x3f0 (0x14465f731). Parts only when reset == 0 and fw+0xb0 == fw+0xb8 (0x14465f740), so once per car. Per piece (name k predicate): frontspoiler_fm 1.0, frontfin_fr 0.6, frontfin_fl 0.75 centre 0x144660380 (lea 0x14465f861); frontwing_fr_01 0.25, frontwing_fr_02 0.5, frontflap_fr 0.75, frontwingmoving_fr 0.5 right 0x1446603d0 (lea 0x14465f9d6); frontwing_fl_01 0.25, frontwing_fl_02 0.5, frontflap_fl 0.75, frontwingmoving_fl 0.5 left 0x1446603a0 (lea 0x14465fb4b). The fins use the centre predicate. Same 0x70-byte params for all 11 (int 2, float 0.4, identity at +0x10, 0.05 x3 at +0x50). After the 11 the hull entry gets {0x144660380, fw} at +0xa0/+0xa8. Prior evidence V1190 (verify-f, agree at L1)."
+ },
+ "signature": {
+  "id": "car.front_wing_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 06 00 00 C5 78 29 94 24 A0 06 00 00",
+  "match": "0x14465f620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14465f620",
+  "kind": "func_start",
+  "names": [
+   "Car_FrontWing_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-f",
+   "kind": "func",
+   "item": "0x14465f620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_f/decomp/14465f620.c;xref:0x145bf90d0",
+   "notes": "V1190 vtable slot of the class looked up by name 'FrontWing' (0x145bf90e8); stores callbacks/car pointers, then when reset==0 and part list empty registers 11 parts frontspoiler_fm, frontfin_fr/fl, frontwing_fr/fl_01/02, frontflap_fr/fl, frontwingmoving_fl/fr via 0x144660400 -> FrontWing init (void,(this,char reset)) fits"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v3",
+   "kind": "func",
+   "item": "0x14465f620",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14465f620.c;decomp:re/decomp/144660380.c;decomp:re/decomp/1446603a0.c;decomp:re/decomp/1446603d0.c;decomp:re/decomp/15537e070.c;xref:0x145bf90d0,0x14462973d,0x1555bdfea",
+   "notes": "V1450 Only reference is the vtable slot 0x145bf90d0 (0x145bf90a0 + 0x30; slot 0 dtor 0x144761440 -> 0x15564e840, slot 3 0x1446606e0 -> 0x15537e070 logs F1WingDamage::reset). Virtual +0x30 calls: 0x14462973d with edx = 0, 0x1555bdfea with edx = ebx = arg 2 of Car_Systems_Reset_Body. Stores fw+0x90 = [car+0x570] (0x14465f6ba), fw+0x98 = +0x98 of the hull entry 'FrontWing' or 0 (0x14465f71b), fw+0xa0 = [[car+0x558]+0x3f0] (0x14465f731); pieces only when reset == 0 and fw+0xb8 == fw+0xb0 (0x14465f740/0x14465f747). 11 calls to 0x144660400 with the claimed names and k; predicate leas 0x14465f861 -> 0x144660380 (L+R >= k*[+0x38]), 0x14465f9d6 -> 0x1446603d0 (k*[+0x34] <= R or [+0x38] <= L+R), 0x14465fb4b -> 0x1446603a0 (same with L). Hull entry +0xa0/+0xa8 = {0x144660380, fw} at 0x14465fd62. Params nit: Init writes only +0x0..+0x5f (int 2, 0.4f, identity +0x10..+0x4f, 0.05 x3 at +0x50); the callee copies 0x70 bytes, so +0x8..+0xf and +0x60..+0x6f are uninitialised stack. Proto void(void*, char) matches; sigcheck passes car.front_wing_init."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "kbverify-cars1",
+   "kind": "func",
+   "item": "Car_FrontWing_Init",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14465f620.c;xref:0x145bf90d0,0x14462973d,0x1555bdfea",
+   "notes": "V3865 (wing, char reset): stores CarLive+0x570 into wing+0x90, ConvexHull FrontWing entry +0x98 into +0x98, chassis+0x3f0 into +0xa0; with reset==0 and wing+0xb0==+0xb8 it registers the 11 pieces through Car_Register_DetachablePart_Thunk. Pointer to it at vtable 0x145bf90d0 found by scan."
+  }
+ ],
+ "proofs": []
+}

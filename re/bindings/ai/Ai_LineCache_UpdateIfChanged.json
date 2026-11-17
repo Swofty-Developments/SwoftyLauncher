@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_LineCache_UpdateIfChanged",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140686a40",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140686a40.c;xref:0x14063ece3,0x140651c1d",
+  "notes": "Compares a racing-line query key (param_3 vs param_2: ints 0..2, flag, floats 4..6); if changed resamples line indices from the distance table +0xd8 (count +0x178) through vcalls on +200. Callers: Ai_Job_UpdateCarsParallel, Ai_Unk_140650f90. L2 2026-11-14 (engine-re round 2): decomp read; 2 reference(s) (0x14063ece3, 0x140651c1d). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.line_cache_update_if_changed",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C6 48 89 D7 48 89 CB 41 8B 00 3B",
+  "match": "0x140686a40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140686a40",
+  "kind": "func_start",
+  "names": [
+   "Ai_LineCache_UpdateIfChanged"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140686a40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140686a40.c;xref:0x14063ece3,0x140651c1d",
+   "notes": "V3573 compares key ints [0..2], flag byte [3], floats [4..6]; on change resamples via distance table +0xd8 (count +0x178) and vcalls on +200; callers seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x140686a40",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140686a40-0x140686e44;xref:0x14063ece3,0x140651c1d",
+   "notes": "V10469 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 2 callers (0x14063ece3 Ai_Job_UpdateCarsParallel, 0x140651c1d Ai_Unk_140650f90). 3 args. Compares query r8 vs rdx: dwords +0/+4/+8, float +0x10, byte +0xc, floats +0x14/+0x18; on change uses table [this+0xd8] (count +0x178 >= 2) and vcalls."
+  }
+ ],
+ "proofs": []
+}

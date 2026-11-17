@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveError_SetFmtWS",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14414c9a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14414c9a0.c;xref:0x144148c40",
+  "notes": "SAVE error helper (code, fmt, wchar* by value, char*): 'DeleteFile failed to delete %S from %s because the device has been removed' in Ne_SaveSystem2Win_EmptyDirectory."
+ },
+ "signature": {
+  "id": "core.save_error_set_fmt_w_s",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC 40 08 00 00 89 CE 48 8D 44 24 40 48 C7 44 24 30 00 08 00 00 48 89 44 24 38 C6 44 24 40 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 28 4D 8B 09 48",
+  "match": "0x14414c9a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14414c9a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveError_SetFmtWS"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveError_SetFmtWS",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14414c9a0.c;xref:0x144148480",
+   "notes": "V2569 code param_1, fmt param_2, wchar by value + char*"
+  }
+ ],
+ "proofs": []
+}

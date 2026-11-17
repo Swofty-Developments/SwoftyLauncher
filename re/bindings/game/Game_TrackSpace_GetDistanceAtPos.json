@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TrackSpace_GetDistanceAtPos",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1405fc6d0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1405fc6d0.c;xref:0x14063e54b",
+  "notes": "(router, pos vec4*, routeRef* {u8 route, u32 volume idx +4} or null): finds the racing::TrackSpaceVolume with Game_TrackSpace_FindVolume 0x1445f3630 on router+8+route*8 (falls back to the other route), projects pos onto the volume gate planes (+0x60/+0x70 normals, +0xc0/+0xd0 ends) and returns the distance along the route (volume start + offset; router+0x48+route*4 = route length). Logs TRACKSPACE 'Could not find racing::TrackSpaceVolume for position (%.3f, %.3f, %.3f) volume index %u type %s' (route names table 0x145634fb0: 'Main', ...). Callers 0x14063e370, 0x142f108c0. Addon: lap distance of any world point (track limits, custom timing, distance-based events). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2278)"
+ },
+ "signature": {
+  "id": "game.track_space_get_distance_at_pos",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 38 4C 89 C7 48 89 D6 48 89 CB 4D 85 C0",
+  "match": "0x1405fc6d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1405fc6d0",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackSpace_GetDistanceAtPos"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-a",
+   "kind": "func",
+   "item": "Game_TrackSpace_GetDistanceAtPos",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1405fc6d0.c;xref:0x14063e54b",
+   "notes": "V2278 Confirmed: FindVolume on router+8+route*8 with fallback to other route, gate planes +0x60/+0x70, ends +0xc0/+0xd0, router+0x48+route*4 base; clamps to last volume."
+  }
+ ],
+ "proofs": []
+}

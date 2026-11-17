@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Sess_SpectatorDirector_SetCurrent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e19d50",
+  "level": "L1",
+  "subsystem": "session",
+  "proto": "void(SpectatorDirector*, uint8_t driver, int camera)",
+  "evidence": "decomp:re/decomp/142e19d50.c;xref:0x142e19d50",
+  "notes": "Writes the current driver [dir+0xd6] and camera [dir+0xd8]."
+ },
+ "signature": {
+  "id": "session.spectator_director_set_current",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 44 89 C7 89 D3 48 89 CE 88 91 D6 00 00 00",
+  "match": "0x142e19d50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e19d50",
+  "kind": "func_start",
+  "names": [
+   "Sess_SpectatorDirector_SetCurrent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "re-ai",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

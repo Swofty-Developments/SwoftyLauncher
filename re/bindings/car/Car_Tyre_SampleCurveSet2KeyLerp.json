@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Car_Tyre_SampleCurveSet2KeyLerp",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e7bfa0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142e7bfa0.c;xref:0x1414dc62a",
+  "notes": "Bilinear sampler over a 2D curve set (outer list [this+0x10], per-curve points +0x28 via FUN_142e7bd50 / 142e7c1c0 / 142e7c410): clamps t to 0..1, finds two bracketing curves by key param_3[0], samples both at param_3[1] and lerps by (x-x0)/(x1-x0). ~44 callers incl. HUD/virtual-session code. Hypothesis: tyre grip/wear vs lap curve evaluation. vp5-verify partial/disagree"
+ },
+ "signature": {
+  "id": "car.tyre_sample_wear_curve2_d",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C5 FA 58 0D ?? ?? ?? ?? 4C 89 E1",
+  "match": "0x1414dc62a",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142e7bfa0",
+  "kind": "func_start",
+  "names": [
+   "Car_Tyre_SampleCurveSet2KeyLerp"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x142e7bfa0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e7bfa0.c;xref:0x1414dc62a",
+   "notes": "V8103 Better name Car_Tyre_SampleCurveSet2KeyLerp: param_3[0] brackets outer curves, param_3[1] brackets inner curves, param_2 clamped 0..1 is the sample position; claim samples both at param_3[1] is wrong; nothing wear-specific in code"
+  }
+ ],
+ "proofs": []
+}

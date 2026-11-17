@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_InviteManager_OnJoinCompleted_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143165c90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143165c90.c;xref:0x143165f7d",
+  "notes": "onJoinCompleted(bool ok, err) delegate: completes the invite join as Host/Client or fails. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2628)"
+ },
+ "signature": {
+  "id": "game.invite_manager_on_join_completed_2",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 44 89 C6 48 89 CF 84 D2 74 13",
+  "match": "0x143165c90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143165c90",
+  "kind": "func_start",
+  "names": [
+   "Game_InviteManager_OnJoinCompleted_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_InviteManager_OnJoinCompleted_2",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143165c90.c;xref:0x143165c90",
+   "notes": "V2628 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

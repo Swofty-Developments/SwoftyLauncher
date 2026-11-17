@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PhotoModeHelper_CreateNormalPhoto",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142bd1e30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-PHOTO-MODE",
+  "notes": "named from its log messages (channel PHOTO-MODE): 'Creating the normal photo took %I64d microseconds'"
+ },
+ "signature": {
+  "id": "game.photo_mode_helper_create_normal_photo",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 F8 29 B4 24 D0 00 00 00 48 89 CE 48 8D 4C 24 68",
+  "match": "0x142bd1e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142bd1e30",
+  "kind": "func_start",
+  "names": [
+   "Game_PhotoModeHelper_CreateNormalPhoto"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142bd1e30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142bd1e30.c;xref:0x142bce45d",
+   "notes": "V5026 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

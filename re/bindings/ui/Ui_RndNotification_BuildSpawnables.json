@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_RndNotification_BuildSpawnables",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14180e1a0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_RndNotification_BuildSpawnables(void *self, void *a2, void *a3)",
+  "evidence": "decomp:re/decomp/14180e1a0.c;xref:0x14180cf0e;xref:0x14180d3d9;xref:0x14180d528",
+  "notes": "myteam-g2: Builds the spawnables binding list for the R&D notification card popups (string spawnables). UI only."
+ },
+ "signature": {
+  "id": "ui.rnd_notification_build_spawnables",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 44 89 C3 49 89 D0",
+  "match": "0x14180e1a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14180e1a0",
+  "kind": "func_start",
+  "names": [
+   "Ui_RndNotification_BuildSpawnables"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x14180e1a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14180e1a0.c;xref:0x14180cf0e;xref:0x14180d3d9",
+   "notes": "V9798 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

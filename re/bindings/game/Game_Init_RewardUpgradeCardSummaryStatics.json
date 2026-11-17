@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Init_RewardUpgradeCardSummaryStatics",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ccaee0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "void Game_Init_RewardUpgradeCardSummaryStatics(void)",
+  "evidence": "decomp:re/decomp/142ccaee0.c;xref:0x145d31cc8",
+  "notes": "myteam-g1: Static initialiser for RewardF1WUniqueUpgradeCardSummary / RewardF1WUpgradeCardSummary / RewardUpgradeCardResult globals (default floats 0.5/3.0, 0xffff markers)."
+ },
+ "signature": {
+  "id": "game.init_reward_upgrade_card_summary_statics",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 90 00 00 00 C5 F8 29 B4 24 80 00 00 00 C4 E2 79 18 05",
+  "match": "0x142ccaee0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ccaee0",
+  "kind": "func_start",
+  "names": [
+   "Game_Init_RewardUpgradeCardSummaryStatics"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142ccaee0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142ccaee0.c;str:\"mute_vehicle_bus\"",
+   "notes": "V10248 Big static initializer that sets many globals (0.5/3.0 floats, 0xffff markers) and also interns many unrelated system names (PaddockPass, PhotoMode, options managers); Reward*CardSummary role is only one part and unprovable."
+  }
+ ],
+ "proofs": []
+}

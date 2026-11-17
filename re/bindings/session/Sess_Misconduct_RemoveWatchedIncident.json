@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_Misconduct_RemoveWatchedIncident",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435b1550",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-MISCONDUCT;decomp:re/decomp/1435b1550.c;xref:0x1435b0176,0x1490927ca",
+  "notes": "overtake infringement filter: request {car, kind 0..3, other-car mask, result mask}; skips cars in the pit lane / retired / flagged; per other car: lapped (lap +0x4c / +0x64 and distance +0x74 compare), 'Blue Flag' (kind 3 and the car not yet under blue flags, also marks the car at [+0x40]+0x548), different class bit ([+0x218]+0x14) and flag 0x40 make the overtake legal and move the car from mask [1] to mask [2]. sb3-verify-b correction: [+0x218]+0x14 bit = pit-wall side mask ('On Opposite Sides Of Pit Wall'); flag 0x40 = xor of record+0x30 of both cars = 'In Opposite Pitting States'; lapped/distance compare = 'Position Handed Back'"
+ },
+ "signature": {
+  "id": "session.misconduct_remove_watched_incident",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 04 00 00 C5 F8 29 BC 24 D0 04 00 00 C5 F8 29 B4 24 C0 04 00 00 0F B6 02",
+  "match": "0x1435b1550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435b1550",
+  "kind": "func_start",
+  "names": [
+   "Sess_Misconduct_RemoveWatchedIncident"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-b",
+   "kind": "func",
+   "item": "Sess_Misconduct_RemoveWatchedIncident",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1435b1550.c;xref:0x1435b1550",
+   "notes": "V1932 Role and Blue Flag/mask [+0x40]+0x548 hold; but ([+0x218]+0x14) bit is a pit-wall-side mask ('On Opposite Sides Of Pit Wall'), not a class bit; flag 0x40 (record+0x30 xor) = 'In Opposite Pitting States'; bVar4 lap/distance compare = 'Position Handed Back'"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-b",
+   "kind": "func",
+   "item": "Sess_Misconduct_RemoveWatchedIncident",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1435b1550.c;xref:0x1435b1550",
+   "notes": "V3958 Role and Blue Flag/mask [+0x40]+0x548 hold; but ([+0x218]+0x14) bit is a pit-wall-side mask ('On Opposite Sides Of Pit Wall'), not a class bit; flag 0x40 (record+0x30 xor) = 'In Opposite Pitting States'; bVar4 lap/distance compare = 'Position Handed Back'"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la1-verify",
+   "kind": "func",
+   "item": "0x1435b1550",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435b1550.c",
+   "notes": "V4189 MISCONDUCT log 'Removing Watched incident for Vehicle ...', 'In Opposite Pitting States', 'On Opposite Sides Of Pit Wall', 'Blue Flag', 'Position Handed Back' strings match the sb3 correction; callers 0x1435b0176 (in 0x1435afc10) and data ref"
+  }
+ ],
+ "proofs": []
+}

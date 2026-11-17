@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDPendingFitUpgradeBlock",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c61940",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Build_RnDPendingFitUpgradeBlock(int64_t *self,uint8_t *a2,void * a3,char a4)",
+  "evidence": "decomp:re/decomp/141c61940.c;xref:0x141c5e7b0;xref:0x141c5e818",
+  "notes": "myteam-g1: Builds the pending_fit_upgrade_block widget (upgrades awaiting fitting)."
+ },
+ "signature": {
+  "id": "career.build_rn_dpending_fit_upgrade_block",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 4C 89 C3 4C 8B 21 49 8B 84 24 38 03 00 00",
+  "match": "0x141c61940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c61940",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDPendingFitUpgradeBlock"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c61940",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c61940.c;xref:0x141c5e7b0;xref:0x141c5e818",
+   "notes": "V9982 Builds pending_fit_upgrade_block widget with tile_1/tile_2, selected_tile_index."
+  }
+ ],
+ "proofs": []
+}

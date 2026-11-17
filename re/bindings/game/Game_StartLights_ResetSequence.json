@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StartLights_ResetSequence",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142cd5d80",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142cd5d80.c;xref:0x142cd7144,0x142d60116",
+  "notes": "(startLights, bool) when +0xbbd set: Game_StartLights_Reset, walks hashed listener set +0xa68..+0xa78 and sets their VM holder to 'start' (Vm_Holder_SetCStr) when entry+0x84 == 0, then rebuilds light state; called from Sess_FormationLapStartLights_OnStateEnter and MP start-lights paths (MOX count, skipping lights)."
+ },
+ "signature": {
+  "id": "game.start_lights_reset_sequence",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 80 B9 BD 0B 00",
+  "match": "0x142cd5d80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142cd5d80",
+  "kind": "func_start",
+  "names": [
+   "Game_StartLights_ResetSequence"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142cd5d80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142cd5d80.c;xref:0x142d60116,0x142cd7144,0x142d8fe26",
+   "notes": "V3502 +0xbbd gate, calls Game_StartLights_Reset 0x142cd4630, walks set +0xa68..+0xa78, entry+0x84==0 -> Vm_Holder_SetCStr(entry,'start'); callers FormationLapStartLights_OnStateEnter, MOXStartLightsECompleteCountTime, SkippingLightsMPReasons"
+  }
+ ],
+ "proofs": []
+}

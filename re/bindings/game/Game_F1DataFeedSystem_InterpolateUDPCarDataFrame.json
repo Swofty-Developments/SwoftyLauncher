@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1DataFeedSystem_InterpolateUDPCarDataFrame",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142c2f250",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=F1DataFeedSystem::interpolateUDPCarDataFrame; log channel F1-DATA-FEED: 'F1DataFeedSystem::interpolateUDPCarDataFrame called, time = %f, fileOffset1 = %I64u, fileOffset2 = %I64u, fract = %f'"
+ },
+ "signature": {
+  "id": "game.f1_data_feed_system_interpolate_udp_car_data_frame",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 B8 30 37 00 00",
+  "match": "0x142c2f250",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142c2f250",
+  "kind": "func_start",
+  "names": [
+   "Game_F1DataFeedSystem_InterpolateUDPCarDataFrame"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142c2f250",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142c2f250.c;xref:0x142c1b65d",
+   "notes": "V5044 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

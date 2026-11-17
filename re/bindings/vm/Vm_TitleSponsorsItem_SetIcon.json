@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TitleSponsorsItem_SetIcon",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423f9460",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t* (int64_t a, int64_t item, int64_t type)",
+  "evidence": "decomp:re/decomp/1423f9460.c;xref:0x1423f9206;xref:0x1423f9248",
+  "notes": "myteam-g1: Selects menu/item icons and labels for title sponsor items by type: income, owner_experience, activity (lng_new_activity_unlocked)."
+ },
+ "signature": {
+  "id": "vm.title_sponsors_item_set_icon",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 00 01 00 00 49 8B 40 20",
+  "match": "0x1423f9460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423f9460",
+  "kind": "func_start",
+  "names": [
+   "Vm_TitleSponsorsItem_SetIcon"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423f9460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423f9460.c",
+   "notes": "V10207 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

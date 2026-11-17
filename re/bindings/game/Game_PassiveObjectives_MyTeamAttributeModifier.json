@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_PassiveObjectives_MyTeamAttributeModifier",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1429534e0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/1429534e0.c;xref:0x14295dc73;xref:0x1429686c6",
+  "notes": "myteam-g1: Passive objective handling that references %s.passive_objectives.myTeamAttributeModifier (applies attribute modifier to My Team)."
+ },
+ "signature": {
+  "id": "game.passive_objectives_my_team_attribute_modifier",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 08 00 00 C5 78 29 94 24 C0 08 00 00",
+  "match": "0x1429534e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429534e0",
+  "kind": "func_start",
+  "names": [
+   "Game_PassiveObjectives_MyTeamAttributeModifier"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1429534e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429534e0.c;str:\"%s.passive_objectives.tyreWearMultiplier\"",
+   "notes": "V10236 Large builder/reader of %s.passive_objectives.* modifier keys; applies-to-My-Team not provable."
+  }
+ ],
+ "proofs": []
+}

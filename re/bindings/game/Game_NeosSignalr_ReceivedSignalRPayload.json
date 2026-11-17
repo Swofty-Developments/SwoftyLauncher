@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NeosSignalr_ReceivedSignalRPayload",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144441070",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NEOS_SIGNALR/V",
+  "notes": "named from its log messages (channel NEOS_SIGNALR/V): 'Received SignalR payload'"
+ },
+ "signature": {
+  "id": "game.neos_signalr_received_signal_r_payload",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 08 01 00 00 0F B6 81 28 02 00 00",
+  "match": "0x144441070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144441070",
+  "kind": "func_start",
+  "names": [
+   "Game_NeosSignalr_ReceivedSignalRPayload"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x144441070",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144441070.c;xref:0x1444409b0",
+   "notes": "V6604 size=1951; strings, callees and callers match claim"
+  }
+ ],
+ "proofs": []
+}

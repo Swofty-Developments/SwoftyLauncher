@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Session_BuildSessionTypeName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1407c31d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1407c31d0.c;xref:0x142da92cc,0x14309c4ff",
+  "notes": "(ctx) Gets the current session descriptor (vcall +0xa8 on ctx+0x1030) and maps its mode (+0xc) / session type (+8) to strings: TimeAttack, OvertakeChallenge, CheckpointChallenge, PursuitChallenge, DriftChallenge, AverageSpeedChallenge, RivalDuelChallenge, Elimination, F1CG, F1AMP, Race, Race2, Race3, TimeTrial, AutoCrossChallenge, ShortPractice, Qualifying1..3, ShortQualifying, OneShotQualifying, SprintShootout1..3, ShortSprintShootout, OneShotSprintShootout ('unknown'), formats with Ne_Crt_Snprintf and writes it to a registry node (Vm_Resolve_RegistryNode 0x1461029d0). Callers Sess_Loader_RequestTrackUnload, Game_Championship_ResetSessionsForRestart. Addon: session-type enum names."
+ },
+ "signature": {
+  "id": "game.session_build_session_type_name",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8D 99 30 10 00",
+  "match": "0x1407c31d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1407c31d0",
+  "kind": "func_start",
+  "names": [
+   "Game_Session_BuildSessionTypeName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x1407c31d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1407c31d0.c;xref:0x142da92cc,0x14309c4ff",
+   "notes": "V3792 all session/mode strings (TimeAttack..F1AMP, Practice/Qualifying/SprintShootout variants, Race/Race2/Race3/TimeTrial, 'unknown') present, Ne_Crt_Snprintf + Vm_Resolve_RegistryNode called; callers seen"
+  }
+ ],
+ "proofs": []
+}

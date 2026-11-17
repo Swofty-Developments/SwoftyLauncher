@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_Recordable_Register",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1445cce80",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/154f07b90.c;xref:0x140602ece,0x14060314d,0x1408031e4;doc:research/grid24-cap.md#ai-vehicle-cap;decomp:re/decomp/1445cce80.c;xref:0x140802dc0;doc:re/db/subsystems/session.md",
+  "notes": "jmp thunk to .data1 body 0x154f07b90 (do not hook the body). (registry, const char *name, recordable, u8 id, holder): appends a 0x688-byte entry {u8 id, name pointer (kept), recordable, holder, 0x660 data} via 0x1445e3aa0; no duplicate-id check. 121 direct call sites, all in .xtls (V0013): constant ids 0x00 (VehicleRecordable x3) and 0x01..0x8f; the AI loop alone produces 0x3d..0x5a. Free (no static caller): 0x0e 0x35 0x39 0x3b 0x6b 0x70 0x7c 0x87 0x8a and >0x8f. | fb-verify C1 (agent flashback): 94 of the 121 call sites are in Sess_Register_RaceRecordables 0x140802dc0; stack arg = per-recordable buffer object (alloc 0x180..0x20180, vtable init, +0x48 = 1). C7: outside the hub it also registers F1CarSetupDataManagerBase (0x140c06e00, id 0x2d, buffer 0x2180), TyreAllocation, ParcFermeRulesComponent, EngineManagementComponent, EngineFuelMixAvailability, GeneralAIData -> car setup data IS recorded and rewound by a flashback; no gamedb/options recordable found. Signature = the thunk (pattern includes junk bytes after the jmp: re-check on a new build)"
+ },
+ "signature": {
+  "id": "session.recordable_register",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 97 0F 8D ?? ?? ?? ?? 3E AF E9",
+  "match": "0x1445cce80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1445cce80",
+  "kind": "func_start",
+  "names": [
+   "Sess_Recordable_Register"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "fb-verify",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-17",
+   "verifier": "verify-ai30",
+   "kind": "func",
+   "item": "Sess_Recordable_Register",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1445cce80.c;decomp:re/decomp/154f07b90.c;decomp:re/decomp/1445e3aa0.c;xref:0x140803c6b,0x140804624,0x1408046d7,0x14060314d,0x140602ece;imm:0x688",
+   "notes": "V0013 V-AI30 PARTIAL. Holds: 0x1445cce80 is an E9 jmp to the .data1 body 0x154f07b90. Body args: rcx registry, rdx name (cmp byte [rdx],'#'), r8 recordable, r9b id (stored as a byte), 5th arg holder at [rsp+0x700] = entry rsp+0x28. It builds a 0x688-byte temp {u8 id, name, recordable, 0x670 zeroed holder+data} and calls 0x1445e3aa0 (jmp 0x154fba210, a push of 0x688 = 0xd1*8 byte elements; the vector {alloc,begin,end,cap} is at registry+0x10). It then moves the holder into entry end-0x670/-0x668, calls recordable vt+8(registry+0x118, registry+0x120) and zeroes the 0x660 data. Neither the body nor the push helper compares ids, so there is no duplicate check. Wrong: an E8/E9 scan of every exec section finds 121 direct call sites, all in .xtls and none in .data1. The only .data1 ref to the body is a lea at 0x14720b47c behind an always-taken opaque jle at 0x14720b46c (dead code). Of the 121: 1 is the AI loop (r9d=ebp), 117 pass mov r9b imm in 0x01..0x8f, and 3 pass id 0x00 via xor r9d,r9d (0x140803c6b, 0x140804624, 0x1408046d7, all named 'VehicleRecordable' in 0x140802dc0). So the constant range over all direct callers is 0x00..0x8f, not 0x01..0x8f. Confirmed: 0x0e 0x35 0x39 0x3b 0x6b 0x70 0x7c 0x87 0x8a are never passed, and no constant caller passes 0x3d..0x5a (neighbours: 0x3c GeneralAIData, 0x5b ResourcePoints x2 in 0x141229750, 0x5c EventDetectionSystem). 0x140802dc0 reuses the same id for the same name at two sites for 0x0b 0x0d 0x10 0x11 0x12 0x14 0x1c 0x27 0x60 0x6f 0x81 0x86."
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "fb-verify",
+   "kind": "func",
+   "item": "Sess_Recordable_Register",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "xref:0x140802dc0",
+   "notes": "V1799 C1 94 hub calls of 121; C7 setup data recordable"
+  }
+ ],
+ "proofs": []
+}

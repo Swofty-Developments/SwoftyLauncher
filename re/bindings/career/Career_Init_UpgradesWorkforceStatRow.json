@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Init_UpgradesWorkforceStatRow",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14205d910",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *row)",
+  "evidence": "decomp:re/decomp/14205d910.c;xref:0x14205b40e;xref:0x14205b424;xref:0x14205b43a",
+  "notes": "myteam-g1: Constructor of a stat row bound to upgrades and workforce values."
+ },
+ "signature": {
+  "id": "career.init_upgrades_workforce_stat_row",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 48 C5 F8 29 74 24 30 48 89 CE 48 8B 42 08 48 8D 50 08 48 85 C0 48 8D 3D ?? ?? ?? ?? 48 0F 44 D7 E8",
+  "match": "0x14205d910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14205d910",
+  "kind": "func_start",
+  "names": [
+   "Career_Init_UpgradesWorkforceStatRow"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x14205d910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14205d910.c;xref:0x14205b40e",
+   "notes": "V10037 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

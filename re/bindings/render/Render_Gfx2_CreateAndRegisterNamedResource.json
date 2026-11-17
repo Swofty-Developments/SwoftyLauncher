@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_CreateAndRegisterNamedResource",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140140e90",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140140e90.c;xref:0x14014e43b",
+  "notes": "Hashes a name (Ne_HashedName_FromString), looks up 0x143bdfd10 and registers via 0x1439932e0. Called from Game_Read_RendererGfxConfig (8+ sites). vp0-verify partial"
+ },
+ "signature": {
+  "id": "render.gfx2_register_named_resource",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 48 89 D3 48 89 CE 48 8B 49 08 48",
+  "match": "0x140140e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140140e90",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_CreateAndRegisterNamedResource"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140140e90",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140140e90.c;xref:0x14014e43b",
+   "notes": "V7953 Render_Gfx2_CreateAndRegisterNamedResource: 0x143bdfd10 is a ctor of a 0x810-byte object (alloc via vcall +0x18), not a lookup; then registers and pushes 16-byte entry"
+  }
+ ],
+ "proofs": []
+}

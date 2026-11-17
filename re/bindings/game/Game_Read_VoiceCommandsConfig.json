@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Read_VoiceCommandsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f748e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: voice_commands.active_command_list_size, voice_commands.command_list, voice_commands.command_recognised, voice_commands.command_unrecognised, voice_commands.feedback_time, voice_commands.is_strategy_list, voice_commands.show, voice_commands.show_next_page, voice_commands'"
+ },
+ "signature": {
+  "id": "game.read_voice_commands_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 80 79 40 00",
+  "match": "0x142f748e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f748e0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_VoiceCommandsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb11-verify",
+   "kind": "func",
+   "item": "0x142f748e0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142f748e0.c;xref:0x142f79668",
+   "notes": "V5656 838-line UI data-binding builder for voice commands (command_list, current_command, strategy reason), not a config read; better Game_VoiceCommands_UpdateUiData"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142f748e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f748e0.c;xref:0x142f79668",
+   "notes": "V6923 838 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

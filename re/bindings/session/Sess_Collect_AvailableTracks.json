@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Sess_Collect_AvailableTracks",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e5dc20",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Collect_AvailableTracks(void *track_data_system, const void *stat_id_bytes, void *out_ptr_vec)",
+  "evidence": "decomp:re/decomp/142e5dc20.c;xref:0x1413e4e78,0x142e5db56",
+  "notes": "Collects available TrackDataRecord pointers into the 8-byte vector out {alloc, begin, end, cap} (grows 1.5x through the allocator vt+0x18). With an empty filter (stat_id_bytes +0x08 == +0x10) it walks every record of TrackDataSystem +0x28..+0x30 (16-byte items, null skipped); otherwise for each filter byte it takes the record whose index byte (+0x01) equals it. A record is skipped when hidden (+0x2d8 != 0) or, unless the current game mode ([[[sys+0x228]+0x30]+0x88]+0x260) is or derives from RTTI 0x146129ca0, when the entitlement check 0x1437d2410(sys+0x228 owner, mode, record+0x78) fails. Callers: Sess_Apply_ContentAvailability (0x1413e4e78) and Sess_Load_TrackDatabase (0x142e5db56) - corrected from 2 Apply sites (V3665)."
+ },
+ "signature": {
+  "id": "session.collect_available_tracks",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 4C 89 C6 48 89 CF 4C 8B 62 08 4C 8B",
+  "match": "0x142e5dc20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e5dc20",
+  "kind": "func_start",
+  "names": [
+   "Sess_Collect_AvailableTracks"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e5dc20",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142e5dc20.c;xref:0x1413e4e78,0x142e5db56",
+   "notes": "V3665 Code matches (map +0x28..+0x30 stride 0x10, hidden +0x2d8, entitlement +0x78 via 1437d2410, RTTI 146129ca0, name filter) but callers: 1 site in Sess_Apply_ContentAvailability (0x1413e4e78) and 1 in Sess_Load_TrackDatabase (0x142e5db56); claim says 2 sites in Apply."
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x142e5dc20",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x142e5dc20-0x142e5e004;xref:0x1413e4e78,0x142e5db56",
+   "notes": "V10377 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Exactly 2 rel32 callers. Filter vec [rdx+8]..[rdx+0x10]; per byte matches record+1 over [tds+0x28]..[tds+0x30] 16-byte items with null skip (0x142e5dc6c/0x142e5dc70/0x142e5dcb2); empty filter -> walk all (0x142e5de1c). Skip if byte record+0x2d8 != 0; mode = [[[tds+0x228]+0x30]+0x88]+0x260, RTTI walk vs 0x146129ca0/0x146129ca8, else 0x1437d2410(tds+0x228 owner, mode, record+0x78) (0x142e5dd40). Push record ptr into out 8-byte vec, grow 1.5x via allocator vt+0x18 (0x142e5dd66-0x142e5dd93)."
+  }
+ ],
+ "proofs": []
+}

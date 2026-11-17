@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_Calc_GripLimitBlend",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060dd70",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_Calc_GripLimitBlend(float x, float y, uint64_t vehicle_key, uint8_t flags, void *zone_a, float t_a, void *zone_b, float t_b)",
+  "evidence": "decomp:re/decomp/14060dd70.c;xref:0x140606b6d,0x140606db9,0x1406150cb,0x14061529e,0x140615929,0x140616750,0x140616b47,0x1406517ea,0x142f5bfe1",
+  "notes": "Register use from disasm 0x14060dd70-0x14060ddf0: xmm0 x, xmm1 y, r8 key, r9b flags, stack zone_a [rsp+0xc0], t_a [rsp+0xc8], zone_b [rsp+0xd0], t_b [rsp+0xd8]. Finds the entry for key in both zone objects with Ai_ZoneMap_Find (0x14060dddf, 0x14060ddf0). No zone/entry -> 1.0. One entry -> piecewise curve at entry+0x20: 12-byte points (x first), binary search on x, interpolation via 0x14066bfc0. Both entries -> evaluates each with 0x14066c0e0 and blends linearly by the position between the two zones, result clamped between the two values. Key is the vehicle id (callers pass car+8). Callers: Ai_Calc_GripLimitScaleA/B (L2, use it as the grip curve), Ai_Update_VehicleDriver (5 sites), Ai_Build_SpeedProfileAhead 0x140650f90, Ai_SuggestedGear_ComputeForZone. (corrected 2026-11-14: param order and the full caller list.) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.calc_grip_limit_blend",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 C5 78 29 54 24 60 C5 78 29 4C 24 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 44",
+  "match": "0x14060dd70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14060dd70",
+  "kind": "func_start",
+  "names": [
+   "Ai_Calc_GripLimitBlend"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14060dd70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14060dd70.c;xref:0x140606b6d,0x140606db9",
+   "notes": "V3547 looks up key in both zone maps via FUN_14066b8a0 (Ai_ZoneMap_Find), blends via FUN_14066c0e0 and clamps, returns 1.0 when absent; callers Ai_Calc_GripLimitScaleA/B seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14060dd70",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14060dd70-0x14060df85;xref:0x140606b6d,0x140606db9,0x1406150cb,0x14061529e,0x140615929,0x140616750,0x140616b47,0x1406517ea,0x142f5bfe1",
+   "notes": "V10544 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). 8 args confirmed (xmm0, xmm1, r8, r9b, stack +0x20..+0x38). Calls Ai_ZoneMap_Find 0x14066b8a0 four times; no entry -> 1.0; one entry -> tail jmp 0x14066c0e0 (curve at entry+0x20; 0x14066c0e0 itself calls 0x14066bfc0); two entries -> blend + clamp between the two values. 9 call sites as listed."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1WRankedComponent_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142747e00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_F1WRankedComponent_Init(void *self, void *serviceProvider, void *componentMap)",
+  "evidence": "str:s_cfg_GameF1WorldRankedAutoUpdateCadence;decomp:re/decomp/142747e00.c;xref:0x14274809e,0x14274809f,0x14579e550",
+  "notes": "System/component init, slot 2 of the vtable at 0x14579e540 (pointer at 0x14579e550); the string F1WRankedComponent sits directly before the vtable (class-name convention, cxx=F1WRankedComponent probable). Resolves the config provider (type 0x146cb8278 via provider vcall +0x28) into +0x70, then seven components from the RobinHood map param_3 (Ne_RobinHoodMap_U64_FindIndex; keys 0x14604ed28 +0x78, 0x1460bed80 +0x80, 0x1460fdfe0 +0xa0, 0x14607c198 +0x90, 0x14607f1a0 +0x98, 0x146102708 +0xb8, 0x1460542b0 +0xb0); any missing one sets TLS errno 0x16 and returns 0x16 (EINVAL). Then gets a shared object via 0x1426b8290([+0x68]+0x40) into +0xe8/+0xf0; if present copies [+0x80]+0x3d8 to +0xa8 and [+0x80]+0x100 to +0x88, reads Game.F1World.Ranked.AutoUpdateCadence with Ne_Config_GetFloatOrDefault 0x143a44090 from settings node [[+0x70]+0x18], default 900.0f (0x44610000), into float +0x15c (auto-update cadence, seconds probable), registers callback 0x1427487c0 (delegate vtable 0x1457a36a0, ctx self) on that object via 0x142748520 and returns 0. No direct callers (vtable only). hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.f1_wranked_component_init",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 70 4C 89 C7 48 89 D0",
+  "match": "0x142747e00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142747e00",
+  "kind": "func_start",
+  "names": [
+   "Game_F1WRankedComponent_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-3",
+   "kind": "func",
+   "item": "0x142747e00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142747e00.c;xref:0x14579e550",
+   "notes": "V9359 First slot of the vtable that follows the 'F1WRankedComponent' name string; queries a service from the provider (param_2 vcall +0x28), looks up 7 sibling components in the component map (RobinHood find), fetches data, reads Game.F1World.Ranked.AutoUpdateCadence (float, default 900.0) and registers an update callback; returns 0 or 0x16 on missing dependency; arity 3 matches."
+  }
+ ],
+ "proofs": []
+}

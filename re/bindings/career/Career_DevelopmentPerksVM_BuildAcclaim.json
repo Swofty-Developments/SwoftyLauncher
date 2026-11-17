@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DevelopmentPerksVM_BuildAcclaim",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422d8c00",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm",
+  "evidence": "decomp:re/decomp/1422d8c00.c;xref:0x14577c288",
+  "notes": "myteam-g1: Builds acclaim / acclaim_level_progress values and lng_development_perks_description_my_team."
+ },
+ "signature": {
+  "id": "career.development_perks_vm_build_acclaim",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 07 00 00 C5 F8 29 B4 24 50 07 00 00 48 89 CE 48 8B 81 80 02 00 00",
+  "match": "0x1422d8c00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422d8c00",
+  "kind": "func_start",
+  "names": [
+   "Career_DevelopmentPerksVM_BuildAcclaim"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422d8c00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422d8c00.c;xref:0x14577c288",
+   "notes": "V10095 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

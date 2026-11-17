@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_SplineCursor_PlaceAtPosition",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14060c320",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_SplineCursor_PlaceAtPosition(void *c, const float *pos, void *a3)",
+  "evidence": "decomp:re/decomp/14060c320.c;xref:0x1405ff25a,0x1405ff4af,0x14060ae57,0x14063f421,0x140641dee,0x140641f7d,0x1406545f4,0x142d13cd0,0x142d13df2,0x142d16ebd,0x142d16fdc,0x142d2106f",
+  "notes": "(SplineCursor *c, const vec4 *pos, ?): projects pos onto line c[4] = [c+0x20] via 0x140679340 into node 4 (c+0x210), samples the other 8 lines c[0..3], c[5..8] via 0x14067a120 with float [c+0x264] and int [c+0x270] (node 4 +0x54 / +0x60) into +0x50, +0xc0, +0x130, +0x1a0, +0x280, +0x2f0, +0x360, +0x3d0, then writes the signed lateral distances to node 4 into c+0x440 + i*4 (slot 4 = 0) (corrected per V10466). Callers: Game_TrackSpline_ResolveRouteEnds, Sess_FormationLapLogic_Reset/OnSessionRestart, Sess_AverageSpeedRuleset_PlaceVehiclesAndGates, Ai_BehaviourTestRetire_Update. Addon: place/teleport onto the track spline. L2 2026-11-14 (engine-re round 2): decomp read; 18 reference(s) (0x1405ff25a, 0x1405ff4af, 0x14060ae57, 0x14063f421, 0x140641dee, 0x140641f7d, ...). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.spline_cursor_place_at_position",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC B8 00 00 00 C5 78 29 94 24 A0 00",
+  "match": "0x14060c320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14060c320",
+  "kind": "func_start",
+  "names": [
+   "Ai_SplineCursor_PlaceAtPosition"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x14060c320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14060c320.c;xref:0x1405ff25a,0x14063f421",
+   "notes": "V3541 projects position via 0x140679340, samples spline set via 0x14067a120 using c+0x270/+0x274 and refreshes node records and distances at c+0x440; callers ResolveRouteEnds, Job_UpdateCarsParallel, TestRetire_Update, AverageSpeed PlaceVehiclesAndGates, FormationLapLogic_Reset seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x14060c320",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:own capstone disasm 0x14060c320-0x14060c5d8;xref:0x1405ff25a,0x1405ff4af,0x14060ae57,0x14063f421,0x140641dee,0x140641f7d,0x1406545f4,0x142d13cd0,0x142d13df2,0x142d16ebd,0x142d16fdc,0x142d2106f",
+   "notes": "V10466 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 18 refs (12 listed). 3 args. Projects pos (rdx) on line c[4]=[c+0x20] via 0x140679340 into node 4 (c+0x210), samples the other 8 lines c[0..3],c[5..8] via 0x14067a120 into +0x50,+0xc0,+0x130,+0x1a0,+0x280,+0x2f0,+0x360,+0x3d0, then signed lateral distances to node 4 -> c+0x440+i*4 (slot 4 = 0). DIFFERENCE: sample args are float [c+0x264] and int [c+0x270] (node4+0x54/+0x60), not c+0x270/+0x274."
+  }
+ ],
+ "proofs": []
+}

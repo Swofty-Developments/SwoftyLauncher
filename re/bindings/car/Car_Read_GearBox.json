@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Car_Read_GearBox",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446a39a0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void (void *data, void *node)",
+  "evidence": "decomp:re/decomp/1446a39a0.c;xref:0x145bfa9f0",
+  "notes": "Re-reads the GearBox values by name through Game_Read_VtfFloat (overlay). Correction: this is the reader (component data vtable slot 2): it fetches each value by name with Game_Read_VtfFloat and stores it XOR-obfuscated (value ^ key 8 bytes later, e.g. Engine Mass -> +0x2f8 ^ +0x300); it runs for the base section and for every Upgrade block. | car-b: GearBox data vtable 0x145bfa9e0 slot 2 (param = system+0x18). GenericDownshiftMultiple multiplies GearDnSpeedMultiple2nd..9th and SecondToFirstSpeedMultiple multiplies 2nd before the per-gear reads; ratios R,N,1st..9th at data+0x20 stride 0x10, FinalDriveRatio data+0x10; map in structs/CarGearBox.h. Proto filled per V1227"
+ },
+ "signature": {
+  "id": "car.override_gear_box",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 C5 F8 29 74 24 30 48 89 D7 48 89 CE 48 8D 15",
+  "match": "0x1446a39a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446a39a0",
+  "kind": "func_start",
+  "names": [
+   "Car_Read_GearBox"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v2",
+   "kind": "func",
+   "item": "Car_Read_GearBox",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446a39a0.c;xref:0x145bfa9f0",
+   "notes": "V1227 GearBox data vt 0x145bfa9e0 (set by 0x14468f4d0) slot 2. GenericDownshiftMultiple scales the eight pairs +0x288..+0x2f8, SecondToFirstSpeedMultiple then scales +0x288; FinalDriveRatio XOR pair +0x10 (key +0x18), GearRatioReverse +0x20, 1st +0x40 .. 9th +0xc0 (stride 0x10, N slot +0x30 not read); MaxClutchTorque +0xd0, shift delays +0x158/+0x168. Proto column empty."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446a39a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446a39a0.c",
+   "notes": "V6808 Reader via 84 Game_Read_VtfFloat calls, XOR stores, MaxClutchTorque plain at data +0xd0, bite points XOR confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

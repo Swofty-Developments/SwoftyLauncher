@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TrackSpline_ResolveRouteEnds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1405fed10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1405fed10.c;xref:0x145634220",
+  "notes": "Vtable slot (0x145634220) of a track spline/path object (obj+0xa8 = data): finishes loading (state +0x28 1->2, 3->4), 0x14067d510, then resolves the TrackSpace route of the first and last points of its splines (lists +0x78..+0x80) with 0x1445f37b0 / 0x14060bf40 / 0x14060c320, storing route types at +0x170 / +0x174 (4 = none). Logs TRACKSPACE 'Unknown route type' / 'Could not find racing::TrackSpaceVolume'. Hypothesis: AI/pit spline set init. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2279)"
+ },
+ "signature": {
+  "id": "game.track_spline_resolve_route_ends",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 05 00 00 C5 78 29 A4 24",
+  "match": "0x1405fed10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1405fed10",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackSpline_ResolveRouteEnds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d1-verify-a",
+   "kind": "func",
+   "item": "Game_TrackSpline_ResolveRouteEnds",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1405fed10.c;xref:0x145634220",
+   "notes": "V2279 State +0x28 1->2, 3->4, route types +0x170/+0x174 (4=none) confirmed; role hypothesis only."
+  }
+ ],
+ "proofs": []
+}

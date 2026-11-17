@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkUi_OnViewProfileRequestedByPlayerDescription",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430b0910",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name onViewProfileRequestedByPlayerDescription (class from the log channel); log channel NETWORK-UI: '%s(%s).'"
+ },
+ "signature": {
+  "id": "game.network_ui_on_view_profile_requested_by_player_description",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 D6 48 89 CF 80 3D ?? ?? ?? ?? 01 0F 85",
+  "match": "0x1430b0910",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430b0910",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkUi_OnViewProfileRequestedByPlayerDescription"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430b0910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430b0910.c;xref:0x14220ada1",
+   "notes": "V5346 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

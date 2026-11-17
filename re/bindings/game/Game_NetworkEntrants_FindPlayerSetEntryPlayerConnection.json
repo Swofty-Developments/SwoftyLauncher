@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkEntrants_FindPlayerSetEntryPlayerConnection",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431bf560",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-ENTRANTS",
+  "notes": "named from its log messages (channel NETWORK-ENTRANTS): '%s : Could not find player set entry for player with connection id (%u)'"
+ },
+ "signature": {
+  "id": "game.network_entrants_find_player_set_entry_player_connection",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 0F 00 00 88 54 24 37",
+  "match": "0x1431bf560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431bf560",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkEntrants_FindPlayerSetEntryPlayerConnection"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x1431bf560",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1431bf560.c",
+   "notes": "V5933 EntrantReplicationManager_AddReplicatedPlayer: addReplicatedPlayer with requestCustomDriverInfo; missing-entry log is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1431bf560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431bf560.c",
+   "notes": "V7016 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Set_UpgradeFitted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435157d0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:cmp-byte-rcx+0x72-3-ja-ret@0x1435157e0;xref:0x1412469db,0x141248497,0x1412486d1,0x143517e90;kb:subsystems/rnd_ui.md#instances",
+  "notes": "Sets the fitted flag (+9) of the current state entry. Returns at once for department > 3 (cmp byte [rcx+0x72],3 ; ja @0x1435157e0), so a dept-4 (ENUM A Fake) instance never leaves the init sentinel."
+ },
+ "signature": {
+  "id": "career.set_upgrade_fitted",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 80 79 72 03 0F 87 ?? ?? ?? ?? 44 89 CF 44 89 C5",
+  "match": "0x1435157d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435157d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Set_UpgradeFitted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1435157d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435157d0.c;xref:0x1412469db",
+   "notes": "V6073 dept>3 early return verified (cmp [rcx+0x72],3); flag byte +9 set from param_3; also stamps entry time (+4) and +0xb; pushes new state entry when value changes"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x1435157d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435157d0.c;xref:0x1435157e0",
+   "notes": "V9232 cmp byte [rcx+0x72],3 / ja returns early; otherwise it writes the byte at entry+9 (fitted) of the last 0x10-byte state entry."
+  }
+ ],
+ "proofs": []
+}

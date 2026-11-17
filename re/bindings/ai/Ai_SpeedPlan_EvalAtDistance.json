@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Ai_SpeedPlan_EvalAtDistance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140681140",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "void Ai_SpeedPlan_EvalAtDistance(void *plan, float *out8, float dist, AiSystem *sys)",
+  "evidence": "decomp:re/decomp/140681140.c;xref:0x140645873",
+  "notes": "plan: car byte +0x74, start dist +4, up to 6 segments of 0x10 at +4+16i {end dist, speed +8, time +0xc, type +0x10}. dist below start wraps by [rec+0x28]+0x14 (lap length). Type 0: two Ai_Table_InterpolateC lookups on [rec+0x58] (getters 0x14063c830 speed, 0x14063c6a0 time; cursor rec+0x88); type 1: [rec+0x60] with InterpolateB/A by [rec+0x104] (getters 0x14063d5e0, 0x14063c980; cursor rec+0xf8); types 2/3: constant speed, time = d/v (3600 if v <= 1.19e-7). Table args are clamp(dist-in-seg, +-max_test_distance) and clamp(speed, +-max_test_speed). out = {speed, end, speed, time, 0, 0, seg idx, type}; past the last segment FLT_MAX/NaN. Caller 0x140645790 passes dist = [rec+0x28]+0xc and a 5th stack byte 1 (0x140645868). (corrected 2026-11-14: evidence xref was self; caller is 0x140645873) (renamed 2026-11-14 from Ai_Eval_LookaheadGraph: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.eval_lookahead_graph",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 78 29 54 24 70 C5 78 29 4C 24 60 C5 78 29 44 24 50 C5 F8 29 7C 24 40 C5 F8 29 74 24 30 48 89 D6",
+  "match": "0x140681140",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140681140",
+  "kind": "func_start",
+  "names": [
+   "Ai_SpeedPlan_EvalAtDistance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140681140",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140681140.c;xref:0x645873",
+   "notes": "V4730 piecewise 16-byte segments (up to 6) with 4 curve types, 8 float output confirmed; search is an unrolled linear scan, not binary; clamp vs max_test via Ai_Resolve_GeneralSettings (4 sites) ok"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x140681140",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140681140-0x1406817e3;xref:0x140645873",
+   "notes": "V10586 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only caller 0x140645873 in 0x140645790 (rcx plan, rdx out = rbx, xmm2 = [[rec+0x28]+0xc], r9 = sys, stack byte 1 not read by the body). Reads byte +0x74, [r9+0xa8] records, getters 0x14063c830/0x14063c6a0 (InterpolateC 0x140686e50), 0x14063d5e0/0x14063c980 with InterpolateA/B 0x14068b710/0x14068bb70 selected by [rec+0x104], 3600 constant. 4-arg proto agrees; new name fits."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_OptionsUI_SetDynamicTexturesUpdate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141dbd9d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-OPTIONS-UI",
+  "notes": "named from its log messages (channel OPTIONS-UI): 'set Dynamic Textures on update'"
+ },
+ "signature": {
+  "id": "game.options_ui_set_dynamic_textures_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 01 00 00 C5 78 29 84 24 90 01 00 00 C5 F8 29 BC 24 80 01 00 00 C5 F8 29 B4 24 70 01 00 00 C5 F8 28 F1",
+  "match": "0x141dbd9d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141dbd9d0",
+  "kind": "func_start",
+  "names": [
+   "Game_OptionsUI_SetDynamicTexturesUpdate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x141dbd9d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141dbd9d0.c",
+   "notes": "V5221 786-line SettingsEditScreenViewModel update (dynamic textures, enable_list, cat_ea_trax, Snap); log is first line only. Better Game_SettingsEditScreenViewModel_OnScreenUpdate (vtable/indirect)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x141dbd9d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141dbd9d0.c",
+   "notes": "V7268 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

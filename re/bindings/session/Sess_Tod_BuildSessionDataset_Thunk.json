@@ -1,0 +1,73 @@
+{
+ "schema": 1,
+ "name": "Sess_Tod_BuildSessionDataset_Thunk",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14479c710",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Tod_BuildSessionDataset_Thunk(void *tod_owner, const uint8_t *types, const float *hold_s, const float *trans_s, const uint8_t *random, uint32_t count, float len_s, uint16_t session, uint8_t use_count)",
+  "evidence": "decomp:re/decomp/155755570.c;decomp:re/decomp/155254f20.c;decomp:re/decomp/14461bea0.c;decomp:re/decomp/1438b7350.c;xref:0x1438b833a,0x1438b7725,0x1428c2a2b;doc:addons/career-editor/protocol/weather.md",
+  "notes": "thunk=jmp to .data1 body 0x155755570 (plaintext on Steam). 9-arg layout (V0246, V0313): rcx=*(ws+0x1da8) TOD owner (TOD=*(owner+0x2d0)), rdx=u8 engine types[6] (clear..stormy, 0x145bf6358), r8=f32 hold s[6], r9=f32 transition s[6], [rsp+20]=u8 random[6], [rsp+28]=u32 count, [rsp+30]=f32 dataset length s, [rsp+38]=u16 0x100|dataset (<0x100 = all 10 datasets, 0x14588c605), [rsp+40]=u8 use_count flag (0 = one state, else min(count,6)). Body sets TOD+0xb350+s*4 = len and TOD+0x34c+s*0x288 = max(len,0.01), then 0x14461bb70 -> body 0x155254f20, which does nothing if TOD+0xb432 is set or TOD+0xb429/+0xb42a is clear, else Tod_Build_WeatherScenario 0x14461bea0(tod,types,hold,trans,random,count,s,use,0), except that with TOD+0xb436 set it diverts when TOD+0xb42d is set (random 1..6-state build with null hold/trans) or else when TOD+0x2654 is set (0x14461b3d0); with +0xb436 set and both clear it runs the normal build (V0313). With TOD+0xb426 set and both arrays non-null: state end=(acc+hold)/len, trans=trans/len, no extra states. Callers: setupSession (2 sites) and 0x1428c1ce0 (frontend scene: dataset 0 clear). career-editor checks the same gates (TimeOfDaySystem busy, ready_a/ready_b, override_active && (random_override || scripted_scenario)) before calling and reports not_applied with the reason."
+ },
+ "signature": {
+  "id": "session.tod_build_session_dataset_thunk",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? 83 83 78 E9 98 EA 96",
+  "match": "0x14479c710",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14479c710",
+  "kind": "func_start",
+  "names": [
+   "Sess_Tod_BuildSessionDataset_Thunk"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-weather",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/weather.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Sess_Tod_BuildSessionDataset_Thunk",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14479c710.c;decomp:re/decomp/155755570.c;decomp:re/decomp/155254f20.c;decomp:re/decomp/14461bea0.c;xref:0x1438b7724,0x1438b833a,0x1428c2a2a",
+   "notes": "V0246 9-arg layout confirmed in the body (rsp+0xe0..0x100 after 8 pushes + 0x78), type names clear..stormy (0x145bf6358), 10 datasets (0x14588c605), exact-timing formula checks. Missing gates: the 0x14461bb70 body 0x155254f20 returns without building when TOD+0xb432 != 0 or TOD+0xb429 == 0 or TOD+0xb42a == 0, and TOD+0xb436 diverts to an alternate path. Corrected: ... Body sets TOD+0xb350+s*4 = len and TOD+0x34c+s*0x288 = max(len,0.01), then 0x14461bb70 -> body 0x155254f20, which does nothing if TOD+0xb432 is set or TOD+0xb429/+0xb42a is clear, else (TOD+0xb436 clear) Tod_Build_WeatherScenario 0x14461bea0(tod,types,hold,trans,random,count,s,use,0); use_count is a flag (0 = one state, else min(count,6)). With TOD+0xb426 set and both arrays non-null: state end=(acc+hold)/len, trans=trans/len, no extra states. Callers: setupSession (2 sites) and 0x1428c1ce0"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-3",
+   "kind": "func",
+   "item": "Sess_Tod_BuildSessionDataset_Thunk",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/155755570.c;decomp:re/decomp/155254f20.c;decomp:re/decomp/14461bea0.c;decomp:re/decomp/1438b7350.c;xref:0x1438b7724,0x1438b833a,0x1428c2a2a",
+   "notes": "V0313 Thunk jmp 0x155755570, 9-arg layout (body frame 8 pushes+0x78: [rsp+0xe0..0x100]), type table 0x145bf6358 clear..stormy, 10-dataset table 0x14588c605, len/0.01 stores, 0x14461bb70 gates +0xb432/+0xb429/+0xb42a, exact-timing formula (0x14461bea0) and the 3 callers check. Wrong: TOD+0xb436 alone does not divert: 0x155254fe0 je normal; with +0xb436 set it diverts only if +0xb42d (0x155254fed) or else +0x2654 (0x1552550e7) is set, otherwise je 0x155255140 = the normal Tod_Build_WeatherScenario call. Corrected: ... which does nothing if TOD+0xb432 is set or TOD+0xb429/+0xb42a is clear, else Tod_Build_WeatherScenario 0x14461bea0(tod,types,hold,trans,random,count,s,use,0), except that with TOD+0xb436 set it diverts when TOD+0xb42d is set (random 1..6-state build with null hold/trans) or else when TOD+0x2654 is set (0x14461b3d0); with +0xb436 set and both clear it runs the normal build. (A career-editor gate on +0xb436 alone is stricter than the game.)"
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-8",
+   "kind": "func",
+   "item": "Sess_Tod_BuildSessionDataset_Thunk",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/155755570.c;decomp:re/decomp/155254f20.c;decomp:re/decomp/14461bea0.c;decomp:re/decomp/1428c1ce0.c;xref:0x14479c710,0x14461bb70,0x1557555b9,0x1557555b1,0x1557555a8,0x155755598,0x1557555a0,0x1428c2a2a,0x1438b7724,0x1438b833a;sig:session.tod_build_session_dataset_thunk",
+   "notes": "V0876 sigcheck OK; jmp 0x155755570; body frame 8 pushes + 0x78 reads [rsp+0xe0] random, +0xe8 count, +0xf0 len float, +0xf8 u16 session, +0x100 u8 use; session < 0x100 loops the 10 datasets 0x14588c605; sets TOD+0xb350+s*4 = len and +0x34c+s*0x288 = max(len, 0.01); 0x14461bb70 -> 0x155254f20 returns on +0xb432 or !+0xb429 or !+0xb42a, diverts with +0xb436 only on +0xb42d (random 1..min(+0xb408,6)-state build, null hold/trans, last arg 1) or +0x2654 (0x14461b3d0), else 0x14461bea0(..,0); exact timing with +0xb426; callers 0x1428c2a2a (dataset 0x100, count 1, 7200 s), 0x1438b7724, 0x1438b833a. The career-editor clause is addon behaviour, not checked"
+  }
+ ],
+ "proofs": []
+}

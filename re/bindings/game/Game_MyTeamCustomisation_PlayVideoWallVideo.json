@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamCustomisation_PlayVideoWallVideo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428bed50",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint64_t Game_MyTeamCustomisation_PlayVideoWallVideo(void *self, void *a2, void *a3, uint32_t kind)",
+  "evidence": "decomp:re/decomp/1428bed50.c;xref:0x1416542d3;xref:0x142262141;xref:0x1436e1c01",
+  "notes": "myteam-g2: Builds the eaid:// video path (track_select, team_select, showroom, driver_select, fan_zone banners) and starts it on the video wall; kind 4 when no override. Used when applying the sponsor livery and customisation init."
+ },
+ "signature": {
+  "id": "game.my_team_customisation_play_video_wall_video",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 4D 89 C7 49 89 D6",
+  "match": "0x1428bed50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428bed50",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamCustomisation_PlayVideoWallVideo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1428bed50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428bed50.c;str:\"eaid://environment_package/core_assets/video/track_select/%s.video\"",
+   "notes": "V10229 eaid video paths for track/team/showroom/driver select and fan_zone banners present."
+  }
+ ],
+ "proofs": []
+}

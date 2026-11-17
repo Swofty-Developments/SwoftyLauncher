@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Register_TeamHqMyTeamScreens",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141661f80",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *screens)",
+  "evidence": "decomp:re/decomp/141661f80.c;xref:0x1456fc8d8",
+  "notes": "myteam-g1: Registers the TeamHq My Team screen ids: team_hq_my_team_container (+tab_controller), driver_contracts_counter_offers, driver_progression, driver_select, renew_young_driver_contract_screen."
+ },
+ "signature": {
+  "id": "career.register_team_hq_my_team_screens",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 B4 24 80 00 00 00 4C 89 C6 48 89 D5",
+  "match": "0x141661f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141661f80",
+  "kind": "func_start",
+  "names": [
+   "Career_Register_TeamHqMyTeamScreens"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141661f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141661f80.c;xref:0x1456fc8d8",
+   "notes": "V9735 Strings team_hq_my_team_container(.tab_controller), ..._driver_contracts_counter_offers, _driver_progression, _driver_select, renew_young_driver_contract_screen present."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ChallengeCareerLeaderboardReader_HandleGetCCLeaderboardRe",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140add940",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=ChallengeCareerLeaderboardReader::handleGetCCLeaderboardResponse; log channel LEADERBOARD: 'void game::ChallengeCareerLeaderboardReader::handleGetCCLeaderboardResponse(const online_services::challengecareerservice::GetCCLeaderboardOperationResult &) | %s: [%s]'"
+ },
+ "signature": {
+  "id": "career.challenge_career_leaderboard_reader_handle_get_cc_leaderboard_re",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 C5 F8 29 B4 24 40 02 00 00 49 89 D7 49 89 CC",
+  "match": "0x140add940",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140add940",
+  "kind": "func_start",
+  "names": [
+   "Career_ChallengeCareerLeaderboardReader_HandleGetCCLeaderboardRe"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x140add940",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140add940.c",
+   "notes": "V4415 name/description match strings and code in decomp (log string verified via data read)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140add940",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140add940.c",
+   "notes": "V9039 The log strings in the code match the claimed name and channel; the function is dominated by that behavior."
+  }
+ ],
+ "proofs": []
+}

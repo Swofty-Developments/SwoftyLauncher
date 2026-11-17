@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveError_NotDirectoryFmtSS",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144148260",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144148260.c;xref:0x144145f43",
+  "notes": "SAVE error helper, fixed code 2, fmt (char*, wchar*): 'Failed to mount %s, %S is not a directory' in Ne_SaveSystem2Win_Mount."
+ },
+ "signature": {
+  "id": "core.save_error_not_directory_fmt_s_s",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 48 08 00 00 48 89 C8 48 8D 4C 24 48 48 C7 44 24 38 00 08 00 00 48 89 4C 24 40 C6 44 24 48 00 48 8D 0D ?? ?? ?? ?? 48 89 4C 24 30 4D 8B 08 4C",
+  "match": "0x144148260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144148260",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveError_NotDirectoryFmtSS"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveError_NotDirectoryFmtSS",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144148260.c;xref:0x144147c9e",
+   "notes": "V2564 fixed code 2, fmt + 2 args"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SessionHud_OnSessionExit",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1414b3e90",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1414b3e90.c;xref:0x1456e84f0",
+  "notes": "Session HUD presenter onSessionExit: unbinds per-car (+0x188..+0x190, node +0x298) and per-player (+0x1a8..+0x1b0, +0x260) listeners, clears datastore [+0x158] nodes (+0x201ac, +0x20288..+0x20488). Logs on GHOSTLAP-TRACE. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2356)"
+ },
+ "signature": {
+  "id": "game.session_hud_on_session_exit",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 CE 48 8B B9 88 01 00",
+  "match": "0x1414b3e90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1414b3e90",
+  "kind": "func_start",
+  "names": [
+   "Game_SessionHud_OnSessionExit"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d3-verify",
+   "kind": "func",
+   "item": "Game_SessionHud_OnSessionExit",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1414b3e90.c;xref:0x1456e84f0",
+   "notes": "V2356 vtable slot +0x50; loops +0x188..0x190 (node +0x298) and +0x1a8..0x1b0 (+0x260), datastore +0x201ac/+0x20288/+0x20488 cleared as claimed."
+  }
+ ],
+ "proofs": []
+}

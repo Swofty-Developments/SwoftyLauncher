@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Car_Physics_StepVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446dceb0",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void(void *vehicle_sim)",
+  "evidence": "decomp:re/decomp/1446dceb0.c;xref:0x144740b66,0x145bff4e0",
+  "notes": "Per-car physics step: calls Car_Suspension_SolveWheels, the powertrain 0x1446e2290, aero; computes front downforce into F1Aero +0x19ec, rear into +0x19f0 and the drag force magnitude into +0x19d8 from aero curves (Car_Spline_EvalObfuscated on +0xf10, +0x11b8, +0x470, +0x718), wheel ride heights (wheel +0x248 - +0x168) and XOR-obfuscated coefficients (+0x1718^+0x1720, +0x18f8^+0x1900, +0x1938^+0x1940), scaled by +0x19a4. Wing damage factors live at F1Aero +0x1998 / +0x199c (written by Car_FrontWing_OnCollision and Car_Damage_SetComponentDamage).  car-a: vt_Car_Dynamics slot +0x10; vehicle_sim is CarDynamics (car+0x900, +0x18 = CarLive, +0xa48 substep dt). Called per substep by Car_Physics_AdvanceCar (0x144740b66, vtable slot 0x145bff4e0) only when byte 0x146ce89d8 == 0 and CarLive+0x128 != 1; otherwise AdvanceCar calls vt+0x18 0x1446e42c0 (0x144740b96) instead, so not every substep runs this (corrected per V1324); substep count = max(1, (int)(tick dt * 360)). Handling version (car+0x9f40) < 7 runs 0x1446e1920, 0x1446dafa0, Car_Suspension_SolveWheels; >= 7 runs 0x1446dafa0, Car_Suspension_SolveWheels, 0x1446e1920 (only 0x1446e1920 moves). The +0x18f8/+0x1938 terms apply only at handling version 100 (per V1324)"
+ },
+ "signature": {
+  "id": "car.physics_step_vehicle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 08 02 00 00 C5 78 29 BC 24 F0 01 00 00",
+  "match": "0x1446dceb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446dceb0",
+  "kind": "func_start",
+  "names": [
+   "Car_Physics_StepVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v1",
+   "kind": "func",
+   "item": "Car_Physics_StepVehicle",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446dceb0.c;decomp:re/decomp/14473fd80.c;xref:0x144740b66,0x145bff4e0;sig:car.physics_step_vehicle",
+   "notes": "V1324 Aero role right (F1Aero = car+0x570: splines +0xf10/+0x11b8/+0x470/+0x718 -> +0x19ec, rear set +0x9c0/+0xc68 -> +0x19f0, |v| -> +0x19d8, scale +0x19a4, +0x1998/+0x199c). Wrong details: (1) not run every substep: AdvanceCar calls vt+0x18 0x1446e42c0 instead when byte 0x146ce89d8 != 0 or CarLive+0x128 == 1; (2) handling < 7 runs 0x1446e1920, 0x1446dafa0, SolveWheels; >= 7 runs 0x1446dafa0, SolveWheels, 0x1446e1920 (only 0x1446e1920 moves). The +0x18f8/+0x1938 terms apply only when handling version == 100."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "car2-verify",
+   "kind": "func",
+   "item": "Car_Physics_StepVehicle",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x1446dcf20,0x1446dcf2c,0x1446dcf3c,0x1446dcf44",
+   "notes": "V1733 car2-verify: cmp [car+0x9f40],7; >=7 dafa0, dee60, e1920; <7 e1920, dafa0, dee60"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "su-verify",
+   "kind": "func",
+   "item": "Car_Physics_StepVehicle",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446dceb0.c;xref:0x145bff4e0",
+   "notes": "V1735 claim 5/6; no explicit rake input"
+  }
+ ],
+ "proofs": []
+}

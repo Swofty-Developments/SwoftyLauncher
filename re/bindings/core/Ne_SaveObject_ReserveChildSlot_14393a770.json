@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveObject_ReserveChildSlot_14393a770",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14393a770",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int (void *obj, void *child)",
+  "evidence": "decomp:re/decomp/14393a770.c;xref:0x1402adaf0;xref:0x1402adb3c;xref:0x1402aff30",
+  "notes": "myteam-g2: Grows the child pointer array (uint16 count at +0x10, capacity at +0x12, data at +8) of a save/proto object by doubling and appends child; frees child on allocation failure. Generic helper of the save serialiser used by ResourcePointsAward_WriteSaveData and Save_RndHeads."
+ },
+ "signature": {
+  "id": "core.save_object_reserve_child_slot_14393a770",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 0F B7 41 12",
+  "match": "0x14393a770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14393a770",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveObject_ReserveChildSlot_14393a770"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14393a770",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14393a770.c;xref:0x1402adaf0",
+   "notes": "V10336 Doubles capacity (ushort +0x10 count, +0x12 cap, data at +8) and appends child."
+  }
+ ],
+ "proofs": []
+}

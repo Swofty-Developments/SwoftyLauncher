@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GamePlayerManager_AnyKeyCallbackForSecondaryPlayerControlle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434df850",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GamePlayerManager::anyKeyCallbackForSecondaryPlayerControllerReconnection; log channel INPUT: 'GamePlayerManager::anyKeyCallbackForSecondaryPlayerControllerReconnection - calling forceRefresh()'"
+ },
+ "signature": {
+  "id": "game.game_player_manager_any_key_callback_for_secondary_player_controlle",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 4C 89 C0",
+  "match": "0x1434df850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434df850",
+  "kind": "func_start",
+  "names": [
+   "Game_GamePlayerManager_AnyKeyCallbackForSecondaryPlayerControlle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x1434df850",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434df850.c",
+   "notes": "V6067 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

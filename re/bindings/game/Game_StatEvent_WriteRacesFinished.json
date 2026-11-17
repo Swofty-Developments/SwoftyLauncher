@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteRacesFinished",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143799d10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143799d10.c;xref:0x151394e3a,0x15139705c",
+  "notes": "EventWriteCompletedRaceWithEmptyBattery + RacesFinished (by GameplayModeId/VehicleId/GameSetupModeStatId/WeeklyEventType/NetworkMatchingContext), RacesFinishedOnlineWithRating, RacesFinishedWithCockpitCamera, RacesFinishedExcludingInvitationals. Iterates the registered StatisticDataProviders (skips disabled ones) and writes stat keys built from GameplayModeId/SectionId/DriverStatId/IsInTeamCareer etc. Addon: listen to these stat/achievement events (career/progression telemetry) or add own stat keys. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2512)"
+ },
+ "signature": {
+  "id": "game.stat_event_write_races_finished",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 88 21 00 00 E8 ?? ?? ?? ?? 48 29 C4 4C 8B 79",
+  "match": "0x143799d10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143799d10",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteRacesFinished"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_StatEvent_WriteRacesFinished",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143799d10.c;xref:0x143799d10",
+   "notes": "V2512 CompletedRaceWithEmptyBattery, RacesFinished, OnlineWithRating, CockpitCamera, ExcludingInvitationals confirmed"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UnlockSystem_ForceUnlockItem",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142eca1e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name forceUnlockItem (class from the log channel); log channel UnlockSystem: 'forceUnlockItem() - Item [%s] is being forced unlocked'"
+ },
+ "signature": {
+  "id": "game.unlock_system_force_unlock_item",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 4C 89 C7 48 89 D6 48 89 CB 48 8B 02",
+  "match": "0x142eca1e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142eca1e0",
+  "kind": "func_start",
+  "names": [
+   "Game_UnlockSystem_ForceUnlockItem"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb10-verify",
+   "kind": "func",
+   "item": "0x142eca1e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142eca1e0.c;xref:0x142eca410",
+   "notes": "V5563 body, strings and callees match name/description"
+  }
+ ],
+ "proofs": []
+}

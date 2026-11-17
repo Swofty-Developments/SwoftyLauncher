@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Camera_SetForViewport",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144536880",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CAMERA",
+  "notes": "named from its log messages (channel CAMERA): 'Setting camera '%s' for viewport %d'"
+ },
+ "signature": {
+  "id": "game.camera_set_for_viewport",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 44 89 CF 48 89 CE 45 89 CF",
+  "match": "0x144536880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144536880",
+  "kind": "func_start",
+  "names": [
+   "Game_Camera_SetForViewport"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x144536880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144536880.c;xref:0x14453673c",
+   "notes": "V6678 name and log/strings match; body checked, no broader behaviour"
+  }
+ ],
+ "proofs": []
+}

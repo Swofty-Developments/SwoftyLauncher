@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomDecalModel_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a91720",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-CUSTOMISATION_DECALS",
+  "notes": "named from its log messages (channel CUSTOMISATION_DECALS): 'initialise CustomDecalModelComponent component for vehicle instance %d, vehicle stat id index %d and decal set %d'"
+ },
+ "signature": {
+  "id": "game.custom_decal_model_init",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 38 48 89 D7 48 89 CE 48 8B 59 10 48 8B 8A C8 00 00 00 48 85 C9 74 0E 48 8B 01 48 89 DA FF 50 10 49 89 C6 EB 03 45 31 F6 48 8B 8F B8 00 00 00 48 85 C9 74 0E 48 8B 01 48 89 DA FF 50 10 49 89 C7 EB 03 45 31 FF 48 8B 87 B0 00 00 00 48 85 C0 74 14 48 8B 48 60 48 85 C9 74 0B 48 8B 01 48 89 DA FF 50 10 EB 02 31 C0 48 89 87 E0 00 00 00 4C 89 BF E8 00 00 00 4C 89 B7 F0 00 00 00 48 89 9F F8 00 00 00 4C 8B 35",
+  "match": "0x142a91720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a91720",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomDecalModel_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a91720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a91720.c",
+   "notes": "V4987 name/strings/body match; log-based claim holds for this function size (vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Jpeg_SetQuality",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449d4404",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1449d4404.c;xref:0x14379cf74",
+  "notes": "libjpeg jpeg_set_quality: converts quality (0x1449d4594) and installs scaled standard quant tables 0 (std luminance 0x14539aec0) and 1 (chrominance 0x14539afc0) through 0x1449d448c. Caller Game_ThumbnailSystem_RequestAndWriteScreenshot. Addon: quality passed here controls screenshot JPEG compression."
+ },
+ "signature": {
+  "id": "render.jpeg_set_quality",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 57 48 83 EC 20 48 8B D9 41 8A F8",
+  "match": "0x1449d4404",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449d4404",
+  "kind": "func_start",
+  "names": [
+   "Render_Jpeg_SetQuality"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1449d4404",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449d4404.c;xref:0x14379cf74",
+   "notes": "V7709 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

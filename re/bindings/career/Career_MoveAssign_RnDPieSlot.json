@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Career_MoveAssign_RnDPieSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141f45500",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:17-handle-move-assign;xref:0x141f42ff1,0x141f484c8;kb:subsystems/rnd_ui.md#pie-object",
+  "notes": "Pie slot move-assign: Vm_MoveAssign_NodeHandle(dst+8+k*0x20, src+8+k*0x20) for the 17 handles. The populate moves its temp into slot idx @0x141f484c8; an unconstructed destination slot faults in the handle unlink."
+ },
+ "signature": {
+  "id": "career.move_assign_rn_d_pie_slot",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 89 F1 E8 ?? ?? ?? ?? 48 8D 0C",
+  "match": "0x141f42ff1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x141f45500",
+  "kind": "func_start",
+  "names": [
+   "Career_MoveAssign_RnDPieSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x141f45500",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f45500.c;xref:0x141f42ff1",
+   "notes": "V7337 name matches log/pretty-function string and body; sibling-consistent"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141f45500",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141f45500.c;xref:0x141f42ff1;xref:0x141f484c8",
+   "notes": "V9198 Does 17 handle move-assigns at offsets 8 + k*0x20 (k = 0..16) via FUN_1442bc170; both claimed call sites are calls to it."
+  }
+ ],
+ "proofs": []
+}

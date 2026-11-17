@@ -1,0 +1,60 @@
+{
+ "schema": 1,
+ "name": "Vm_Set_Bool",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140975db0",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void *Vm_Set_Bool(void *registry, void *parent, const char *name, uint8_t *value, int overwrite)",
+  "evidence": "decomp:work/exe/decomp/140975db0_vm_bool_getset.c;xref:0x1407cd408,0x1407d8c6c,0x1407d8d1b,0x140c15316,0x140c16524,0x140c165dc,0x140c1668c,0x140c18b47+3304;doc:research/exe.md#3.4",
+  "notes": "overwrite=1 -> Vm_NodeSet_Bool(node, v, 0, 1); runtime call without fault (T000 line 57)"
+ },
+ "signature": {
+  "id": "vm.set_bool",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70 44 89 44",
+  "match": "0x141697b90",
+  "anchor": "0x28f",
+  "resolve": {
+   "kind": "rel32",
+   "insn": "0x28e"
+  },
+  "target": "0x140975db0",
+  "kind": "call",
+  "names": [
+   "Vm_Set_Bool"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "exe-agent",
+    "how": "static"
+   },
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "T000/run1",
+    "how": "runtime scan, 1 hit"
+   }
+  ],
+  "used_by": [
+   "native/src/core/frontend/swofty_core.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-17",
+   "verifier": "mixin-verify",
+   "kind": "func",
+   "item": "Vm_Set_Bool",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140975db0.c;decomp:re/decomp/140973e20.c;decomp:re/decomp/14084d370.c;xref:0x140c15315,0x1407cd407,0x1407d8c6b+3309",
+   "notes": "V0006 Body is a clone of Vm_Set_String with the type check against 0x146129dc0 (bool holder vt 0x145660320 slot+8) and Vm_NodeSet_Bool 0x140973e20 at 0x140975f67; create-path ctor 0x14084d370 copies one byte *value into the holder and NodeSet_Bool compares bytes, so uint8_t* is right; overwrite is dword [rsp+0xa0] cmp 1. 3312 rel32 sites, all calls, rcx=g_Vm_Registry in 3311; r9 is lea of byte stack slots (odd offsets such as [rsp+0x2f]); 0x140c15315 sets 'visible' from byte [rsp+0x2f]=1 written at 0x140c14a61; arg5 dword 1 (3283) or 0 (29)."
+  }
+ ],
+ "proofs": []
+}

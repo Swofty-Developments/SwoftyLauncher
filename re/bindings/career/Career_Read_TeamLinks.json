@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Career_Read_TeamLinks",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435396e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void * Career_Read_TeamLinks(void *out, uint32_t mode, longlong ctx)",
+  "evidence": "decomp:re/decomp/1435396e0.c;xref:0x14122ff36,0x1434f6620,0x143539291,0x14353cec2;kb:subsystems/career.md#team-links",
+  "notes": "reads teams_linked_to and the links list, resolves a team's engine-supplier tree container (out[0]=vtable 0x145613538). Shared prefix helper called by the R&D loaders before reading upgrade/tweakables tables; 8 callers."
+ },
+ "signature": {
+  "id": "career.read_team_links",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 05 00 00 C5 F8 29 B4 24 E0 05 00 00 4C 89 C3 89 D5",
+  "match": "0x1435396e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435396e0",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_TeamLinks"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-19",
+    "by": "career-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

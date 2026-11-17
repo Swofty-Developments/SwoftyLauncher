@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveError_ThumbnailTooLarge",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1441532d0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1441532d0.c;xref:0x14413ea74",
+  "notes": "SAVE error helper, fixed code 0x56 and message 'Thumbnail size in the security info file for %s is too large - %u bytes is more than %u' with limit 0x4000 (16 KB). Called at 0x14413ea74 while reading save thumbnails. Addon: save thumbnails are capped at 16 KB."
+ },
+ "signature": {
+  "id": "core.save_error_thumbnail_too_large",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 48 08 00 00 48 8D 44 24 48 48 C7 44 24 38 00 08 00 00 48 89 44 24 40 C6 44 24 48 00 48 8D 05 ?? ?? ?? ?? 48 89 44 24 30 44 0F B7",
+  "match": "0x1441532d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1441532d0",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveError_ThumbnailTooLarge"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveError_ThumbnailTooLarge",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1441532d0.c;xref:0x14413ea74",
+   "notes": "V2576 fixed code 0x56, limit 0x4000, size is u16"
+  }
+ ],
+ "proofs": []
+}

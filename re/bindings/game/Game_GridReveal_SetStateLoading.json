@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GridReveal_SetStateLoading",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140341be0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140341be0.c;xref:0x145615a88",
+  "notes": "GridReveal (grid_lineup_camera, vt 0x1456159d0) setStateLoading: walks the session entrant list (game ctx+0xc0 -> +0x88 -> +0x260 vslot +0xa0, 0x88-byte entries) and for every grid car accepted by FUN_14024e410 adds its vehicle asset group (FUN_140234750 with entry+0x50 id), then starts loading, state +0x40 = 1. Addon: limit or extend which cars are loaded for the grid reveal. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3152)"
+ },
+ "signature": {
+  "id": "game.grid_reveal_set_state_loading",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 20 48 89 CE 48 8B 05",
+  "match": "0x140341be0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140341be0",
+  "kind": "func_start",
+  "names": [
+   "Game_GridReveal_SetStateLoading"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d13-verify",
+   "kind": "func",
+   "item": "Game_GridReveal_SetStateLoading",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140341be0.c;xref:0x145615a88",
+   "notes": "V3152 role/offsets/strings confirmed in decomp (INIT pattern calls thunks 140240410/140240700 -> alt copy 147562600 of advanceStartTimeOffset)"
+  }
+ ],
+ "proofs": []
+}

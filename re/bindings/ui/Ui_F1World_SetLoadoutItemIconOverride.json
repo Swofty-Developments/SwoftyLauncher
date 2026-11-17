@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_F1World_SetLoadoutItemIconOverride",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141709530",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void Ui_F1World_SetLoadoutItemIconOverride(void *self, void *card)",
+  "evidence": "decomp:re/decomp/141709530.c;xref:0x141709371;xref:0x141709393;xref:0x14171f201",
+  "notes": "myteam-g2: Builds #overrides.f1_world.loadout_item_icons_%s[%s_%s] and applies it for a loadout slot (empty or unique upgrade). UI only."
+ },
+ "signature": {
+  "id": "ui.f1_world_set_loadout_item_icon_override",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 80 F9 0C 77 20",
+  "match": "0x141709530",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141709530",
+  "kind": "func_start",
+  "names": [
+   "Ui_F1World_SetLoadoutItemIconOverride"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141709530",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141709530.c;xref:0x141709371;xref:0x141709393",
+   "notes": "V9775 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

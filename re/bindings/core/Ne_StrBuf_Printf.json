@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_StrBuf_Printf",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401009f0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401009f0.c;xref:0x140140fb0,0x14015f750",
+  "notes": "(StrBuf *b, fmt, ...): vsnprintf into b->buf (+0x10) with capacity b+0x8 via __stdio_common_vsprintf (0x14532e54c), forces NUL, returns length (or -1); on truncation (len >= cap) raises engine errno 0x54 (trace ring). Used by RTT camera registration, cutscene params, camera actor sync to build names."
+ },
+ "signature": {
+  "id": "core.str_buf_printf",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B 47 18 48 8D 1D",
+  "match": "0x1400fdaa6",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1401009f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_StrBuf_Printf"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1401009f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401009f0.c;xref:0x140141048",
+   "notes": "V3415 vsnprintf into *(b+0x10) cap *(b+8), NUL forced, -1 on error, errno 0x54 on truncation; callers incl Ne_Rtt_RegisterCameras, Game_CutsceneParams_*, CameraActorSyncJob_ApplyClipResults"
+  }
+ ],
+ "proofs": []
+}

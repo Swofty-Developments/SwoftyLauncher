@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Draw_ComputeInstanceLodScale",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d41770",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d41770.c;xref:0x143d40955,0x143d4b4ad",
+  "notes": "Hypothesis: float: distance to camera (param_1+0x120) via rsqrt, apparent size ratio, atan2f, threshold 0.2; used in Render_Draw_ProcessInstanceBatch (LOD/fade). Named callers: Render_Draw_ProcessInstanceBatch."
+ },
+ "signature": {
+  "id": "render.draw_compute_instance_lod_scale",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 CE C5 FA 10 42 0C C5",
+  "match": "0x143d41770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d41770",
+  "kind": "func_start",
+  "names": [
+   "Render_Draw_ComputeInstanceLodScale"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d41770",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d41770.c;xref:0x143d40955",
+   "notes": "V7917 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

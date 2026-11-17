@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Build_AudioBundleRegistry",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409f1b50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1409f1b50.c;imm:0x14566e107",
+  "notes": "walks every audio.audio_bundle_settings row (table cursor row_count): bundle_name, era, engine/exhaust/cabin flags; appends .bdl when missing and keys the entry by FNV-1a 64 of the lowered name, the key Game_AudioF1Car_Setup matches"
+ },
+ "signature": {
+  "id": "game.build_audio_bundle_registry",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 05 00 00 48 89 4C 24 30",
+  "match": "0x1409f1b50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409f1b50",
+  "kind": "func_start",
+  "names": [
+   "Game_Build_AudioBundleRegistry"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb03-verify",
+   "kind": "func",
+   "item": "0x1409f1b50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1409f1b50.c",
+   "notes": "V4385 name/description match strings and code in decomp (log string verified via data read)"
+  }
+ ],
+ "proofs": []
+}

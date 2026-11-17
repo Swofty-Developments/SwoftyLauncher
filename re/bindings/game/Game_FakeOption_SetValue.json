@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FakeOption_SetValue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142abe120",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142abe120.c;xref:0x1457c5190",
+  "notes": "Virtual of a placeholder (fake) option class (vt slot @0x1457c5190, near Game_OptionsWatched_OptionRawValueChangingCurrent): does nothing but log 'Option %s is fake or not implemented it has no value' with the option name [[this+0x10]+0x10]. Addon: identifies menu options with no backing value. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2473)"
+ },
+ "signature": {
+  "id": "game.fake_option_set_value",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 80 3D ?? ?? ?? ?? 01 75 6F B8 77 00",
+  "match": "0x142abe120",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142abe120",
+  "kind": "func_start",
+  "names": [
+   "Game_FakeOption_SetValue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-b",
+   "kind": "func",
+   "item": "Game_FakeOption_SetValue",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142abe120.c;xref:0x1457c5190",
+   "notes": "V2473 only logs OPTIONS fake warning"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEventReward_CreateUpgradeDiscount",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fc74b0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void FUN(void *self, void *owner, void *cfg)",
+  "evidence": "decomp:re/decomp/140fc74b0.c;xref:0x140f9b260",
+  "notes": "myteam-g1: Constructor of the department-event reward \"random upgrade discount\": reads department_groups list, hashes names into a 6-bit department mask at +0x60, percent at +0x58, type byte at +0x5c."
+ },
+ "signature": {
+  "id": "career.dept_event_reward_create_upgrade_discount",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 02 00 00 4C 89 C7 48 89 D3 48 89 CE",
+  "match": "0x140fc74b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fc74b0",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEventReward_CreateUpgradeDiscount"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140fc74b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fc74b0.c;xref:0x140f9b260;str:\"department_groups\"",
+   "notes": "V9617 department_groups/category/discount strings; percent at +0x58, bool at +0x5c (not a multi-value type byte), 6-bit mask at +0x60."
+  }
+ ],
+ "proofs": []
+}

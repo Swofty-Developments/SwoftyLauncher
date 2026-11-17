@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Actor_LoadModelResources",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140187560",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140187560.c;xref:0x1401cba91",
+  "notes": "10 KB actor build step: resolves model resources by id, tries \".idf?render\" and \".emb?context=default\" names, logs \"MISSING RESOURCE modelResourceID [%s] derived from %s derived from %s\" at ACTOR_WARN. Callers Game_MultipartActor_AddPart, Game_SceneManager_BuildMaterialActorForScene. Addon: shows which render model/emb files an actor needs."
+ },
+ "signature": {
+  "id": "game.actor_load_model_resources",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 03 00 00 49",
+  "match": "0x140187560",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140187560",
+  "kind": "func_start",
+  "names": [
+   "Game_Actor_LoadModelResources"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x140187560",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140187560.c;xref:0x1401cba91",
+   "notes": "V7962 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

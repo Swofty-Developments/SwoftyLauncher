@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Ffb_CreateDeviceController",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446eeb70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-ER_INPUT",
+  "notes": "named from its log messages (channel ER_INPUT): 'This device needs true force. Initialise anything we need. | FFB ERROR: Device %s does not support FFB but a controller was requested | And the logitech wheel handle is valid so all is well.'"
+ },
+ "signature": {
+  "id": "game.ffb_create_device_controller",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 4C 89 CF 48 89 D3",
+  "match": "0x1446eeb70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446eeb70",
+  "kind": "func_start",
+  "names": [
+   "Game_Ffb_CreateDeviceController"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446eeb70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446eeb70.c;xref:0x1446f80f4",
+   "notes": "V6837 Controller setup: device store, true-force and logitech log lines, called by OnDeviceConnected; arguably Init rather than Create."
+  }
+ ],
+ "proofs": []
+}

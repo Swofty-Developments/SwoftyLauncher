@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Parse_TyreModel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144743900",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144743900.c",
+  "notes": "parses the VTF tyre model: Wetness, WetnessGrip, WetnessWear, WetnessTarget, WearGrip, TemperatureGrip, Blister*, Pressure*, RollingResistance*, Camber, … (physics wetness is one value for the whole track)."
+ },
+ "signature": {
+  "id": "car.parse_tyre_model",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 02 00 00 C5 78 29 BC 24 80 02 00 00 C5 78 29 B4 24 70 02 00 00 C5 78 29 AC 24 60 02 00 00 C5 78 29 A4 24 50 02 00 00 C5 78 29 9C 24 40 02 00 00 C5 78 29 94 24 30 02 00 00 C5 78 29 8C 24 20 02 00 00 C5 78 29 84 24 10 02 00 00 C5 F8 29 BC 24 00 02 00 00 C5 F8 29 B4 24 F0 01 00 00 48 89 D0",
+  "match": "0x144743900",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144743900",
+  "kind": "func_start",
+  "names": [
+   "Car_Parse_TyreModel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb24-verify",
+   "kind": "func",
+   "item": "0x144743900",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144743900.c;xref:0x144747958",
+   "notes": "V6632 parses TyreModel/Compound: Wear*, Blister*, Wetness*, WearGrip, TemperatureGrip, Pressure*, RollingResistance*, Camber, LMNC ParametricData, ProTyreBinding, VCMPD asset factory"
+  }
+ ],
+ "proofs": []
+}
