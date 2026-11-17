@@ -11,8 +11,8 @@
 
 namespace crash {
 
-ModuleMap modules;
-SymbolTable symbol_table;
+constinit ModuleMap modules{};
+constinit SymbolTable symbol_table{};
 
 bool readable(uintptr_t a, size_t n)
 {

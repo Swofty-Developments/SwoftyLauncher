@@ -66,10 +66,10 @@ struct Text {
     }
 };
 
-Sampled *stall_threads;
-Pdata stall_pdata[ModuleMap::CAPACITY];
-Text stall_text;
-volatile LONG stall_busy;
+constinit Sampled *stall_threads{};
+constinit Pdata stall_pdata[ModuleMap::CAPACITY]{};
+constinit Text stall_text{};
+constinit volatile LONG stall_busy;
 
 PRUNTIME_FUNCTION stall_lookup(DWORD64 pc, DWORD64 *base)
 {

@@ -31,7 +31,7 @@ void placed_record_crash_text(char *out, size_t cap);
 
 namespace crash {
 
-ReportSections sections;
+constinit ReportSections sections{};
 
 void hex_dump(uintptr_t from, size_t n, uintptr_t mark)
 {

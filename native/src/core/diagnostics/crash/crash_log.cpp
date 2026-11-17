@@ -13,8 +13,8 @@ void load_stall_game_line(const char *line);
 
 namespace crash {
 
-CrashLog logger;
-Recorder recorder;
+constinit CrashLog logger{};
+constinit Recorder recorder{};
 
 std::wstring data_folder()
 {

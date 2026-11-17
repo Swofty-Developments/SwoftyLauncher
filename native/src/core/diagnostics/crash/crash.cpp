@@ -30,7 +30,7 @@ void on_stage(void (*fn)(int));
 
 namespace crash {
 
-ProcessInfo process;
+constinit ProcessInfo process{};
 
 namespace {
 
