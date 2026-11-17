@@ -6,14 +6,23 @@ use crate::shell::Shell;
 use crate::theme::{Palette, palette};
 use gpui_kit::assets::IconName;
 use gpui_kit::component::{Icon, h_flex};
+use gpui_kit::prelude::FluentBuilder;
 use gpui_kit::*;
 use std::collections::HashSet;
 use swofty_core::folders::{self, Entry, Key, Spot};
+use swofty_i18n::trn;
 
 #[derive(Clone, PartialEq)]
 pub(super) enum Dragging {
     Addon(String),
+    Addons(Vec<String>),
     Folder(Key),
+}
+
+impl Dragging {
+    fn carries(&self, id: &str) -> bool {
+        matches!(self, Self::Addons(ids) if ids.iter().any(|i| i == id))
+    }
 }
 
 #[derive(Clone)]
@@ -25,22 +34,54 @@ pub(super) struct Dragged {
 impl Render for Dragged {
     fn render(&mut self, _: &mut Window, cx: &mut Context<Self>) -> impl IntoElement {
         let p = palette(cx);
-        let icon = match self.item {
-            Dragging::Addon(_) => IconName::GripVertical,
-            Dragging::Folder(_) => IconName::Folder,
+        let (icon, count) = match &self.item {
+            Dragging::Addon(_) => (IconName::GripVertical, 1),
+            Dragging::Addons(ids) => (IconName::GripVertical, ids.len()),
+            Dragging::Folder(_) => (IconName::Folder, 1),
         };
-        h_flex()
-            .px(px(10.))
-            .py(px(6.))
-            .gap(px(6.))
-            .rounded(px(6.))
-            .bg(p.elevated)
-            .border_1()
-            .border_color(p.accent)
-            .text_size(px(13.))
-            .text_color(p.text)
+        let card = || {
+            h_flex()
+                .px(px(10.))
+                .py(px(6.))
+                .gap(px(6.))
+                .rounded(px(6.))
+                .bg(p.elevated)
+                .border_1()
+                .border_color(p.accent)
+                .text_size(px(13.))
+                .text_color(p.text)
+        };
+        let front = card()
             .child(Icon::new(icon).size(px(13.)).text_color(p.text_muted))
             .child(self.name.clone())
+            .when(count > 1, |d| {
+                d.child(
+                    div()
+                        .px(px(6.))
+                        .rounded(px(4.))
+                        .bg(p.accent)
+                        .text_size(px(11.))
+                        .font_weight(FontWeight::MEDIUM)
+                        .text_color(p.on_accent)
+                        .child(trn(count, "{count} addon", "{count} addons")),
+                )
+            });
+        if count < 2 {
+            return front.into_any_element();
+        }
+        div()
+            .relative()
+            .flex()
+            .child(
+                card()
+                    .absolute()
+                    .top(px(4.))
+                    .left(px(4.))
+                    .size_full()
+                    .border_color(p.accent.opacity(0.5)),
+            )
+            .child(front)
+            .into_any_element()
     }
 }
 
@@ -98,13 +139,39 @@ impl Shell {
             && !PINNED.contains(&m.manifest.id.as_str())
     }
 
+    /// What dragging the row `id` moves: every ticked addon that can move when
+    /// the row is one of two or more of them, else the row alone.
+    pub(super) fn drag_item(&self, id: &str) -> Dragging {
+        let single = || Dragging::Addon(id.to_owned());
+        if self.addons.selection.len() < 2 || !self.addons.selection.contains(id) {
+            return single();
+        }
+        let ids: Vec<String> = self
+            .addons
+            .selection
+            .ids()
+            .iter()
+            .filter(|s| {
+                self.library
+                    .addons
+                    .iter()
+                    .any(|a| &a.manifest.id == *s && self.movable(a))
+            })
+            .cloned()
+            .collect();
+        match ids.len() {
+            0 | 1 => single(),
+            _ => Dragging::Addons(ids),
+        }
+    }
+
     pub(super) fn move_step(&mut self, id: &str, up: bool, window: &mut Window, cx: &mut Context<Self>) {
         let Some(spot) = folders::step(&self.library.entries, id, up) else {
             return;
         };
         let mut entries = self.library.entries.clone();
         if folders::move_addon(&mut entries, id, &spot).is_some() {
-            self.save_order(entries, None, window, cx);
+            self.save_order(entries, Vec::new(), window, cx);
         }
     }
 
@@ -142,6 +209,7 @@ impl Shell {
                 key: Key::BuiltIn, ..
             } => None,
             AddonListItem::Folder { key, .. } if *dragging == Dragging::Folder(key.clone()) => None,
+            AddonListItem::Addon { id, .. } if dragging.carries(id) => None,
             AddonListItem::Folder { key, at, open, .. } => Some(match folder_drag {
                 true if frac < 0.5 => mark(Spot::Top(*at), ix, Edge::Above, false),
                 true => after(key, *at, ix),
@@ -207,38 +275,46 @@ impl Shell {
         match &d.item {
             Dragging::Addon(id) => {
                 if let Some(place) = folders::move_addon(&mut entries, id, &drop.spot) {
-                    self.save_order(entries, Some((id.clone(), place)), window, cx);
+                    self.save_order(entries, vec![(id.clone(), place)], window, cx);
+                }
+            }
+            Dragging::Addons(ids) => {
+                let placed = folders::move_addons(&mut entries, ids, &drop.spot);
+                if !placed.is_empty() {
+                    self.save_order(entries, placed, window, cx);
                 }
             }
             Dragging::Folder(key) => {
                 if let Spot::Top(to) = drop.spot
                     && folders::move_folder(&mut entries, key, to)
                 {
-                    self.save_order(entries, None, window, cx);
+                    self.save_order(entries, Vec::new(), window, cx);
                 }
             }
         }
         cx.notify();
     }
 
-    /// Saves a new list: `placed` is an addon that changed folder and the one it is in now.
+    /// Saves a new list: `placed` holds the moved addons and the folder each is in now.
     pub(super) fn save_order(
         &mut self,
         entries: Vec<Entry>,
-        placed: Option<(String, Option<Key>)>,
+        placed: Vec<(String, Option<Key>)>,
         window: &mut Window,
         cx: &mut Context<Self>,
     ) {
         let mut moved_folder = false;
-        if let Some((id, place)) = placed {
-            let default = self
-                .library
-                .addons
-                .iter()
-                .find(|a| a.manifest.id == id)
-                .and_then(|a| folders::default_place(a.source == Source::Builtin, a.category()));
+        if !placed.is_empty() {
             let mut f = self.library.folders.clone();
-            f.set_place(&id, place.as_ref(), default.as_ref());
+            for (id, place) in placed {
+                let default = self
+                    .library
+                    .addons
+                    .iter()
+                    .find(|a| a.manifest.id == id)
+                    .and_then(|a| folders::default_place(a.source == Source::Builtin, a.category()));
+                f.set_place(&id, place.as_ref(), default.as_ref());
+            }
             if f != self.library.folders {
                 if let Err(e) = self.store.save_folders(&f) {
                     crate::app_log::action("save folders").failed(&e);

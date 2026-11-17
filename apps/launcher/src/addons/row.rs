@@ -1,4 +1,4 @@
-use super::drag::{Dragged, Dragging, NESTED};
+use super::drag::{Dragged, NESTED};
 use crate::library::{AddonItem, Source, Type};
 use crate::pages::{addon_icon, badge, logo, track_badge};
 use crate::scale::{Hit, px};
@@ -181,7 +181,7 @@ impl Shell {
         let row = match draggable {
             true => {
                 let dragged = Dragged {
-                    item: Dragging::Addon(id.clone()),
+                    item: self.drag_item(&id),
                     name: man.name.clone().into(),
                 };
                 row.on_drag(dragged, |d, _, _, cx| cx.new(|_| d.clone()))
