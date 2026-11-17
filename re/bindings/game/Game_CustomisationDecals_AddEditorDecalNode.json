@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomisationDecals_AddEditorDecalNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14142dc70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name addEditorDecalNode (class from the log channel); log channel CUSTOMISATION_DECALS: 'addEditorDecalNode()'"
+ },
+ "signature": {
+  "id": "game.customisation_decals_add_editor_decal_node",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01 75 63 B8 54 01 00 00",
+  "match": "0x14142dc70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142dc70",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomisationDecals_AddEditorDecalNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x14142dc70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14142dc70.c;xref:0x14142e7c6",
+   "notes": "V4855 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

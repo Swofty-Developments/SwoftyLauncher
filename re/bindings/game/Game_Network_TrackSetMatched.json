@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Game_Network_TrackSetMatched",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430fa9b0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1430fa9b0.c;xref:0x143099620,0x1430f0208,0x1430f684a",
+  "notes": "named from its log messages (channel NETWORK): '[CONFIG] track set \"%s\" matched %p' L2 2026-11-14 (engine-re round 2): decomp read; 3 reference(s) (0x143099620, 0x1430f0208, 0x1430f684a); the body itself references 'settings.track_set[%d]' / 'seasons.current_season.track_list.%s.track_title' / 'NETWORK' / '[CONFIG] track set \"%s\" matched %p'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.network_track_set_matched",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 00 00 00 C5 F8 29 B4 24 E0 00 00 00 48 89 CE 48 8D 7C 24 48",
+  "match": "0x1430fa9b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430fa9b0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_TrackSetMatched"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430fa9b0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1430fa9b0.c;xref:0x143099620",
+   "notes": "V5421 better name Game_Network_ResolveConfigTrackSets: 285 lines: loops config track sets, matches by name, reads track_list.%s.track_title; matched log is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x1430fa9b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430fa9b0.c;xref:0x143099620",
+   "notes": "V6979 facts verified (strings, size, caller)"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1430fa9b0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1430fa9b0-0x1430fb07e;xref:0x143099620,0x1430f0208,0x1430f684a",
+   "notes": "V10525 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 3 callers 0x143099620 / 0x1430f0208 / 0x1430f684a. settings.track_set[%d], seasons.current_season.track_list.%s.track_title, [CONFIG] track set matched %p, track_list."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkReady_FlushPendingPeers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144074da0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144074da0.c;xref:0x14305fe35,0x143237a44",
+  "notes": "(sys, flag) Walks hashed set +0x20..+0x30 of peers, for each calls 0x1440b4340(sys+0xc0, peer, &out) and 0x1440b4940, computing a timeout ((n+0x48d)/0x48e*0x42). Callers Sess_StartLights_HandleReady, Game_NetworkReady_UpdateSpectatorSkip. Hypothesis."
+ },
+ "signature": {
+  "id": "game.network_ready_flush_pending_peers",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 58 89 D3 48 89 CE 88 54",
+  "match": "0x144074da0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144074da0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkReady_FlushPendingPeers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv3-verify",
+   "kind": "func",
+   "item": "0x144074da0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144074da0.c;xref:0x14305fe35",
+   "notes": "V3635 name, offsets and callers match decompile"
+  }
+ ],
+ "proofs": []
+}

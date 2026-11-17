@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqContractsVM_OnUiEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422f97f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_TeamHqContractsVM_OnUiEvent(void *vm, void *event)",
+  "evidence": "decomp:re/decomp/1422f97f0.c;xref:0x1422fa4b7;xref:0x14577d640",
+  "notes": "myteam-g1: Hash-switch UI event handler on the contracts VM (event hashes 0xadc27a4a, 0xcee1b829): selects a row by driver key (vm+0x758 vs row +0x50), refreshes via 1422f88f0, or toggles flag vm+0x12a0 when the focused item name matches one of two strings. References to_driver_career_contract_negotiations."
+ },
+ "signature": {
+  "id": "career.team_hq_contracts_vm_on_ui_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 48 8B 02",
+  "match": "0x1422f97f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422f97f0",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqContractsVM_OnUiEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422f97f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422f97f0.c;xref:0x1422fa4b7",
+   "notes": "V10105 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

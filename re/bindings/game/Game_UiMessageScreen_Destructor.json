@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UiMessageScreen_Destructor",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141a49260",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141a49260.c;xref:0x145729268",
+  "notes": "Dtor of a UI-message screen (vtable slot 0x145729268): invalidates UI_MESSAGE callbacks, stopCutscene on the frontend scene manager, updates driver decals (0x1428e5050). Addon: low. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2932)"
+ },
+ "signature": {
+  "id": "game.ui_message_screen_destructor",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 48 89 CE 48 8B 0D ?? ?? ?? ?? 48 8B 81",
+  "match": "0x141a49260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141a49260",
+  "kind": "func_start",
+  "names": [
+   "Game_UiMessageScreen_Destructor"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d11-verify",
+   "kind": "func",
+   "item": "Game_UiMessageScreen_Destructor",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141a49260.c;xref:0x145729268",
+   "notes": "V2932 Decomp strings, offsets and callees match the claim; name fits."
+  }
+ ],
+ "proofs": []
+}

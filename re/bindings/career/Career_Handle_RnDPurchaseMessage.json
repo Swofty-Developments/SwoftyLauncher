@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Handle_RnDPurchaseMessage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c8bcc0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:vtable-0x145740ac0-slot-0x50;imm:0x493fe92b;kb:subsystems/rnd_ui.md#back",
+  "notes": "Purchase panel message handler (vt+0x50). back_pressed (djb2 0x493fe92b) @0x141c8c150: name = dept <= 3 ? k_Career_RnDDeptNameTable[dept] : \"error_department\" (cmp rax,3 ; ja @0x141c8c158), then container vt+0x80(\"open\", name). For dept 4 the container ignores the name and Back does nothing."
+ },
+ "signature": {
+  "id": "career.handle_rn_d_purchase_message",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 50 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 9D 81 07",
+  "match": "0x141c8bcc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c8bcc0",
+  "kind": "func_start",
+  "names": [
+   "Career_Handle_RnDPurchaseMessage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141c8bcc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c8bcc0.c;xref:0x141c8d537",
+   "notes": "V4959 name/description match decomp: strings and callees consistent"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x141c8bcc0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c8bcc0.c;xref:0x141c8bd5e;xref:0x141c8c150",
+   "notes": "V9194 djb2 0x493fe92b branch goes to 0x141c8c150, loads dept from [rsi+0x6e8], cmp rax,3 / ja picks table entry else a fallback string, then calls the container command."
+  }
+ ],
+ "proofs": []
+}

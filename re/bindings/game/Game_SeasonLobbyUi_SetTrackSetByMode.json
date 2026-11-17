@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SeasonLobbyUi_SetTrackSetByMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14315e770",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14315e770.c;xref:0x14581ded8",
+  "notes": "Host with an open season document: sets the track set name to custom or AllTracks depending on document flag +0x41c. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2752)"
+ },
+ "signature": {
+  "id": "game.season_lobby_ui_set_track_set_by_mode",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 60 48 8B 41 10 48 8B B0 18 04 00 00 83 7E 08 02",
+  "match": "0x14315e770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14315e770",
+  "kind": "func_start",
+  "names": [
+   "Game_SeasonLobbyUi_SetTrackSetByMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_SeasonLobbyUi_SetTrackSetByMode",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14315e770.c;xref:0x14315e770",
+   "notes": "V2752 doc +0x418 open (+0x765) and role<2; +0x41c selects string custom or AllTracks at +0x3b0 confirmed"
+  }
+ ],
+ "proofs": []
+}

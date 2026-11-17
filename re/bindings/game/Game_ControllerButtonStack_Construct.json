@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ControllerButtonStack_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a561c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=ControllerButtonStack::ControllerButtonStack; log channel INPUT: 'Snap ControllerButtonStack::ControllerButtonStack'"
+ },
+ "signature": {
+  "id": "game.controller_button_stack_construct",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 CF 48 89 CE 48 8B 5C 24 70 E8",
+  "match": "0x142a561c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a561c0",
+  "kind": "func_start",
+  "names": [
+   "Game_ControllerButtonStack_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a561c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a561c0.c;xref:0x141dbb2a0",
+   "notes": "V5173 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

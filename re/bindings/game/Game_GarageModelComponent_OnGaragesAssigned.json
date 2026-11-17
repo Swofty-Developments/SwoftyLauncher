@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GarageModelComponent_OnGaragesAssigned",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a9e9d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GarageModelComponent::onGaragesAssigned; log channel GarageModelComponent: 'GarageModelComponent::onGaragesAssigned [m_garageId %d] | neon::NEerrno GarageModelComponent ~ setMultisubMaterialResourceID  [m_garageId %d] model [%s] | neon::NEerrno GarageModelComponent ~ setMulti'"
+ },
+ "signature": {
+  "id": "game.garage_model_component_on_garages_assigned",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 48 89 D7 48 89 CB 80 3D ?? ?? ?? ?? 01 75 62 B8 1D 00 00 00",
+  "match": "0x142a9e9d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a9e9d0",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageModelComponent_OnGaragesAssigned"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142a9e9d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a9e9d0.c;xref:0x142b0f55b",
+   "notes": "V4994 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

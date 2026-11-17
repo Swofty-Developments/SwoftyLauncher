@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Ne_Entity_FindComponent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143f9b3c0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "void *Ne_Entity_FindComponent(void *entity, const void *type)",
+  "evidence": "decomp:re/decomp/143f9b3c0.c;xref:0x150dc4bbd,0x14368fea9",
+  "notes": "first component of the entity (vector +0x38..+0x40, cache of up to 3 indices at +0x18/+0x1a, which it updates) whose type (vtable slot 1) is type or derives from it (node+0x10 chain reaches type+8 before k_Ne_TypeRoot+8); null when none"
+ },
+ "signature": {
+  "id": "core.entity_find_component",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D7 48 89 CE 0F B7 41 18",
+  "match": "0x143f9b3c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143f9b3c0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Entity_FindComponent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/fq_tyres.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-b",
+   "kind": "func",
+   "item": "Ne_Entity_FindComponent",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143f9b3c0.c;decomp:re/decomp/14368fde0.c;xref:0x14368fea9,0x150dc4bbd,0x140bcc9e3,0x143693359;sig:core.entity_find_component",
+   "notes": "V0963 2 args (rcx entity -> rsi, rdx type -> rdi), returns the component or 0. Pass 1 tries the cached indices (u16 count +0x18, s16 indices from +0x1a, each bounds-checked against the pointer vector +0x38..+0x40, null slots skipped); pass 2 scans the whole vector and on a hit appends the index to the cache when count < 3, else moves +0x1a/+0x1c to +0x1c/+0x1e and stores the new index at +0x1a. Match: vtbl[+8]() == type, or the chain from desc+8 via node+0x10 reaches type+8 before 0x146129ca8; a component whose own type is 0x146129ca0 never matches (sete on the cmp with r12). The xref scan finds about 980 rel32 callers including both cited ones. sigcheck: 1 hit, target 0x143f9b3c0"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_MyTeamSetup_FlowMain",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142055570",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void f(void *self)",
+  "evidence": "decomp:re/decomp/142055570.c;xref:0x145766710",
+  "notes": "myteam-g1: My Team creation main flow: lng_my_team_defaultname, enter/exit customisation, setup background/corporate/owner steps; calls Game_MyTeamSetup_Complete."
+ },
+ "signature": {
+  "id": "game.my_team_setup_flow_main",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC D0 00 00 00 48 8B 02 48 85 C0 0F 84 ?? ?? ?? ?? 48 89 CE 8B 00 3D 4E 2A 94 1F",
+  "match": "0x142055570",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142055570",
+  "kind": "func_start",
+  "names": [
+   "Game_MyTeamSetup_FlowMain"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142055570",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142055570.c;xref:0x145766710",
+   "notes": "V10033 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

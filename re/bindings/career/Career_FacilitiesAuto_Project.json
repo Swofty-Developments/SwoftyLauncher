@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_FacilitiesAuto_Project",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f8f690",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-FACILITIES_AUTO",
+  "notes": "named from its log messages (channel FACILITIES_AUTO): 'Projection: %d, Modified Cap: %f'"
+ },
+ "signature": {
+  "id": "career.facilities_auto_project",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 78 C5 F8 29 74 24 60 C5 F8 28 F1",
+  "match": "0x140f8f690",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f8f690",
+  "kind": "func_start",
+  "names": [
+   "Career_FacilitiesAuto_Project"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140f8f690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f8f690.c;xref:0x140f81804,0x140f82685",
+   "notes": "V4801 log/pretty strings and body checked in decomp"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x140f8f690",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f8f690.c;str:\"Projection: %d, Modified Cap: %f\"",
+   "notes": "V9106 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StoryHubObjectives_PlayCloseAnim",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141580a30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141580a30.c;xref:0x14157a418,0x14157b646",
+  "notes": "Logs 'playing Close Anim', sets state hidden. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3063)"
+ },
+ "signature": {
+  "id": "game.story_hub_objectives_play_close_anim",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 CE 80 B9 8B 07 00 00 00",
+  "match": "0x141580a30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141580a30",
+  "kind": "func_start",
+  "names": [
+   "Game_StoryHubObjectives_PlayCloseAnim"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Game_StoryHubObjectives_PlayCloseAnim",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141580a30.c;xref:0x141580a30",
+   "notes": "V3063 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

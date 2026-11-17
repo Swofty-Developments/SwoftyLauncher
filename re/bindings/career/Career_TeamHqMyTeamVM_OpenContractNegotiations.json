@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqMyTeamVM_OpenContractNegotiations",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422c8a50",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_TeamHqMyTeamVM_OpenContractNegotiations(void *vm)",
+  "evidence": "decomp:re/decomp/1422c8a50.c;xref:0x1422c4658;xref:0x1422cc2fb",
+  "notes": "myteam-g1: Opens contract negotiations from My Team HQ: looks up the team entry (vm+0x6e8 career, +0x278 game), sets #ui_menu_data.contract_negotiations.stat_id to the default stat, then routes to to_driver_career_contract_negotiations or to_team_career_contract_negotiations via the menu transition table."
+ },
+ "signature": {
+  "id": "career.team_hq_my_team_vm_open_contract_negotiations",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 01 00 00 48 89 CE C7 84 24 B0 00 00 00 01 00 00 00",
+  "match": "0x1422c8a50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422c8a50",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqMyTeamVM_OpenContractNegotiations"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422c8a50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422c8a50.c;xref:0x1422c4658",
+   "notes": "V10083 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

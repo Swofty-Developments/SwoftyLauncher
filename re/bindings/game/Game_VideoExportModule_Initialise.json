@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VideoExportModule_Initialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1444b1130",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_VideoExportModule_Initialise(void *module)",
+  "evidence": "str:s_cfg_VideoExportEnabled;decomp:re/decomp/1444b1130.c;xref:0x1444b1173,0x1444b1174,0x145a92fd0",
+  "notes": "VideoExportModule (vtable 0x145a92fb0, preceded by the string VideoExportModule) slot 4 (+0x20, pointer 0x145a92fd0). Gets service EGO_GFX_SCREEN_SHOT from the registry 0x14612a410 vt+8 into module+0x10 (missing -> returns 0xc). Setting VideoExport.Enabled -> Ne_Get_SettingBool 0x143a43b90 on node *(module+0x18)+0x18, default 1, stored straight into module+0x338. Then creates a 3-entry bind layout (Render_Gfx2_BindLayout_Create, callback 0x1444b15f0) into module+0x328, installs a std::function at module+0x2e8/+0x320, and names the three staging images eaid://ego_package/video_reel_staging_%d.image (0,1,2) via Ne_HashedName_FromString and layout vt+0x30. Returns 0. The riprel hit 0x1444b0ebc in Game_VideoExport_AddFrame is a byte coincidence, not a call. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.video_export_module_initialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC 58 01 00 00 48 89 CE 48 8B 0D",
+  "match": "0x1444b1130",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1444b1130",
+  "kind": "func_start",
+  "names": [
+   "Game_VideoExportModule_Initialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-3",
+   "kind": "func",
+   "item": "0x1444b1130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1444b1130.c;xref:0x145a92fd0",
+   "notes": "V9365 Vtable after the 'VideoExportModule' name string, module Initialise slot; gets the EGO_GFX_SCREEN_SHOT service, reads VideoExport.Enabled (default true) into self+0x338, creates a bind layout with callback, registers 3 staging images eaid://ego_package/video_reel_staging_%d.image; returns 0 (error path sets 0x16); arity 1 matches. (0x1444b0ebc riprel hit is a false positive inside mov rcx,[rsi+0x270].)"
+  }
+ ],
+ "proofs": []
+}

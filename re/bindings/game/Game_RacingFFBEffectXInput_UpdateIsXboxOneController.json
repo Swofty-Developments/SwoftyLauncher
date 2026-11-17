@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_RacingFFBEffectXInput_UpdateIsXboxOneController",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f6020",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=RacingFFBEffectXInput::updateIsXboxOneController; log channel FFB_DEBUG: 'RacingFFBEffectXInput::updateIsXboxOneController - Found Xbox Series pad'"
+ },
+ "signature": {
+  "id": "game.racing_ffb_effect_x_input_update_is_xbox_one_controller",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 68 48 89 CE 8B 05",
+  "match": "0x1446f6020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f6020",
+  "kind": "func_start",
+  "names": [
+   "Game_RacingFFBEffectXInput_UpdateIsXboxOneController"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f6020",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f6020.c",
+   "notes": "V6854 updateIsXboxOneController strings confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

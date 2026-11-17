@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlagToRestart_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142dff320",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint32_t*(SessionState*, uint32_t*)",
+  "evidence": "decomp:ghidra-headless-2026-10-25;decomp:re/decomp/142dff320.c;xref:0x1457e9518",
+  "notes": "SessionStateRedFlagToRestart update: with session time left: a participant not ready or a car whose state != 2 -> 0xf0e3665a, else Sess_RedFlagSystem_PrepareRestart -> 0x3f29fc8a; without: waits for the fade -> 0x3104125."
+ },
+ "signature": {
+  "id": "session.red_flag_to_restart_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 D6 48 89 CF 48 8B 81 B0 0D 00",
+  "match": "0x142dff320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142dff320",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlagToRestart_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_RedFlagToRestart_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142dff320.c;xref:0x1457e9520",
+   "notes": "V1897 ready/state!=2 -> f0e3665a, else 143584c00 -> 3f29fc8a; no time left waits [+0xc88]+0x790 +0x50==0 -> 3104125"
+  }
+ ],
+ "proofs": []
+}

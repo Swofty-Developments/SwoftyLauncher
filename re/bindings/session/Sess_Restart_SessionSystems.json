@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Restart_SessionSystems",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14080cd30",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14080cd30.c;xref:0x142d892d0;doc:re/db/subsystems/session.md",
+  "notes": "fb-verify C6 (PARTIAL: owner class name 'GameMode' not provable statically): session restart: vt+0x90(dl=1) over the list [[this+0xd0]+0x40], then over the list [this+0x18] vt+0x80 (pre), vt+0x88 (onSessionRestart), vt+0x90 (post) on every system. Caller 0x142d892d0 = slot +0x48 of SessionStateRestart (vt 0x1457e1c40, slot +0x28 uses 'session_restart') and SessionStateStorySessionRestart (vt 0x1457e29c0), passing [state+0xc98]; owner = the game object whose init 0x1407f7320 calls Sess_Register_RaceRecordables"
+ },
+ "signature": {
+  "id": "session.restart_session_systems",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 48 8B 81 80 00 00 00",
+  "match": "0x14080cd30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14080cd30",
+  "kind": "func_start",
+  "names": [
+   "Sess_Restart_SessionSystems"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "fb-verify",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "fb-verify",
+   "kind": "func",
+   "item": "Sess_Restart_SessionSystems",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "xref:0x142d892d0",
+   "notes": "V1804 C6 behaviour agree, class name not provable"
+  }
+ ],
+ "proofs": []
+}

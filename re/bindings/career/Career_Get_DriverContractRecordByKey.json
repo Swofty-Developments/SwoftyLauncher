@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Get_DriverContractRecordByKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f71230",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *Get(void *comp, uint32_t team_key, uint32_t driver_key)",
+  "evidence": "decomp:re/decomp/140f71230.c;xref:0x140c58597;xref:0x140c5aac1;xref:0x140daf13a",
+  "notes": "myteam-g2: Two-level Robin-Hood lookup: team key in comp+0x8e8 map (entry stride 0x18, value ptr +0x10), then driver key in that team's own map (entry+0x20..0x54). Returns the contract record pointer or 0. Hash=(id)*mult;h^=h>>33 open-addressing Robin-Hood map (key packed as u32: byte kind @+0, ushort id @+2)."
+ },
+ "signature": {
+  "id": "career.get_driver_contract_record_by_key",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 89 C8 44 89 C1 C1 E9 10 41 C1 E0 0E 41 09 C8 41 0F B7 C8 48 0F AF 88 E8 08 00 00",
+  "match": "0x140f71230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f71230",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_DriverContractRecordByKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-d",
+   "kind": "func",
+   "item": "0x140f71230",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f71230.c",
+   "notes": "V9033 Outer map at comp+0x8e8 (entry stride 0x18, value pointer at +0x10), inner map inside that record at +0x20..+0x54 with the same layout, returns inner value pointer or 0. Key is a ushort (kind<<14 | id) hashed multiplicatively with >>33 xor, Robin-Hood probing."
+  }
+ ],
+ "proofs": []
+}

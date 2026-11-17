@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineCareerMatching_OnSessionLobby",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143158ca0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=OnlineCareerMatching::onSessionLobby; log channel NETWORK-MATCHING: 'virtual void network::OnlineCareerMatching::onSessionLobby() | %s'"
+ },
+ "signature": {
+  "id": "career.online_career_matching_on_session_lobby",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 75 74 B8 EF 00 00 00",
+  "match": "0x143158ca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143158ca0",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineCareerMatching_OnSessionLobby"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb14-verify",
+   "kind": "func",
+   "item": "0x143158ca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143158ca0.c",
+   "notes": "V5991 Body matches the logged text/signature; vtable/indirect, no direct call site"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x143158ca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143158ca0.c;str:\"virtual void network::OnlineCareerMatching::onSessionLobby()\"",
+   "notes": "V9225 onSessionLobby cxx string on NETWORK-MATCHING present."
+  }
+ ],
+ "proofs": []
+}

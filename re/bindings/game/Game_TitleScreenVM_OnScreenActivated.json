@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_TitleScreenVM_OnScreenActivated",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141e9d630",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_TitleScreenVM_OnScreenActivated(void *vm)",
+  "evidence": "str:s_cfg_UIEnableAttract;decomp:re/decomp/141e9d630.c;xref:0x141e9e2ec,0x141e9e2ed,0x141e9e382,0x141e9e3a5",
+  "notes": "Vtable slot 0x68 (onScreenActivated position) of unnamed VM vtable 0x145757e50 (pointer 0x145757eb8). Binds the title/legal screen: show_attract, show_cars_legal_message, show_tracks_legal_message, show_dlc_content_legal_message, beta_enabled, show_theming_logo, theming_logo_colour, theming_ui_title, radial_values radial_a..f, boot_video / attract_video file names (Vm_Set_Bool 0x140975db0, Vm_Set_String 0x140846270, Ui_Resolve_TokenNodeByName_*). Settings via Ne_Get_SettingBool: UI.EnableAttract on [vm+0x270]+0x18, default 1 -> bool node [vm+0x2b0]+0x68 (show_attract); legal.using_placeholder_cars and legal.using_placeholder_tracks on [[vm+0x278]+0x40]+0x18, default 1 each -> nodes [vm+0x2b0]+0x88 / +0xa8. Then Game_Game_SetCurrentGameMode 0x1407d07a0([vm+0x280],0), clears a block at [0x146ca0810]+0x198, BUSY_SPINNER setHidden, and subscribes 0x141e9d5b0 to MessageWaitForFTUEEntered (Ne_Subscribe_BusMessage 0x143987810). hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.title_screen_vm_on_screen_activated",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 CE 48 8B B9 68 02 00 00",
+  "match": "0x141e9d630",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141e9d630",
+  "kind": "func_start",
+  "names": [
+   "Game_TitleScreenVM_OnScreenActivated"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-3",
+   "kind": "func",
+   "item": "0x141e9d630",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141e9d630.c;xref:0x145757eb8",
+   "notes": "V9357 Same vtable slot as Game_PauseAvailabilityVM_OnActivate; allocates the title screen's property set (boot_video=cm_f1_sting.bk2, attract_video=attract.bk2, show_attract, legal message flags, beta_enabled, theming logo, radial_a/b...), reads UI.EnableAttract (default true) and legal.using_placeholder_cars/tracks, sets game mode 0, posts 'frontend' analytics and subscribes to MessageWaitForFTUEEntered; arity 1 matches."
+  }
+ ],
+ "proofs": []
+}

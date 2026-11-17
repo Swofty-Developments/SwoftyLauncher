@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_ReplaceTeam",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424726f0",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
+  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Team replaced with stat id %s, existing entry? %s | Failed to add team with stat id %s whilst replacing'"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_replace_team",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 07 00 00 89 D7",
+  "match": "0x1424726f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424726f0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_ReplaceTeam"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x1424726f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424726f0.c;xref:0x140c2d5f0",
+   "notes": "V5058 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_MultiSubMaterialFactory_CreateFromSlots",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c19910",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c19910.c;xref:0x142a941cc",
+  "notes": "Larger sibling of 0x143c196f0 (209 lines): logs 'NeMultiSubMaterialResourceFactory' (hash 0x70850656) and allocates the multi-sub-material node set via plRam0000000146c621e0. Caller Game_CustomDecalModel_Bake. Hypothesis: material resource of a baked decal model."
+ },
+ "signature": {
+  "id": "render.multi_sub_material_factory_create_from_slots",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01 0F 85 ?? ?? ?? ?? B8 B9 00 00 00 66",
+  "match": "0x142a941cc",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143c19910",
+  "kind": "func_start",
+  "names": [
+   "Render_MultiSubMaterialFactory_CreateFromSlots"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143c19910",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143c19910.c;xref:0x142a941cc",
+   "notes": "V8147 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

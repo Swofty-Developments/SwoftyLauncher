@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Career_ResourcePoints_SetWallet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434fd730",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel-RESOURCE_POINTS",
+  "notes": "named from its log messages (channel RESOURCE_POINTS): 'Setting driver %s wallet to %d'"
+ },
+ "signature": {
+  "id": "career.resource_points_set_wallet",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 83 C6 08 4C 39 F6 74 7B 4C 8B",
+  "match": "0x1434fd038",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1434fd730",
+  "kind": "func_start",
+  "names": [
+   "Career_ResourcePoints_SetWallet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x1434fd730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434fd730.c;xref:0x1434fd038",
+   "notes": "V7360 name matches log/pretty-function string and body; sibling-consistent"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x1434fd730",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434fd730.c;str:\"RESOURCE_POINTS\";str:\"Setting driver %s wallet to %d\"",
+   "notes": "V9229 Name matches the RESOURCE_POINTS log message."
+  }
+ ],
+ "proofs": []
+}

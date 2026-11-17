@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ModelProxyList_Resolve",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14069c570",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14069c570.c;xref:0x141034a5d,0x1429cb654",
+  "notes": "Resizes pointer array param_1[8..10] to param_2 and for each index resolves a model proxy resource via resolver param_3 vtbl+8; logs 'Invalid proxy resource handle for proxy %s' / 'Failed to find model proxy resource' on failure; creates model instances (0x143d3c770). Used e.g. for FORMATION_LAP_PARKING_GATE. Addon: spawn track props from proxy names. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2867)"
+ },
+ "signature": {
+  "id": "game.model_proxy_list_resolve",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 4C 89 C7 89",
+  "match": "0x14069c570",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14069c570",
+  "kind": "func_start",
+  "names": [
+   "Game_ModelProxyList_Resolve"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_ModelProxyList_Resolve",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14069c570.c;xref:0x14069c570",
+   "notes": "V2867 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

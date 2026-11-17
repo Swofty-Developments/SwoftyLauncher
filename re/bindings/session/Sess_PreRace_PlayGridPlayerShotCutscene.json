@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_PreRace_PlayGridPlayerShotCutscene",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d83e30",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d83e30.c;xref:0x142d83360",
+  "notes": "Called from Sess_PreRace_Update: builds CutSceneParams for player and teammate, preloads (0x1402271d0) and plays (0x140227400) grid_plyshot via the CutsceneManager (state+0xdb8 -> +0xc0), sets next/prev script hints. Addon: skip the pre-race player grid shot or change its params."
+ },
+ "signature": {
+  "id": "session.pre_race_play_grid_player_shot_cutscene",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 28 03 00 00 48 89 CE 48",
+  "match": "0x142d83e30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d83e30",
+  "kind": "func_start",
+  "names": [
+   "Sess_PreRace_PlayGridPlayerShotCutscene"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d13-verify",
+   "kind": "func",
+   "item": "Sess_PreRace_PlayGridPlayerShotCutscene",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d83e30.c;xref:0x142d831e0",
+   "notes": "V3123 role/offsets/strings confirmed in decomp (INIT pattern calls thunks 140240410/140240700 -> alt copy 147562600 of advanceStartTimeOffset)"
+  }
+ ],
+ "proofs": []
+}

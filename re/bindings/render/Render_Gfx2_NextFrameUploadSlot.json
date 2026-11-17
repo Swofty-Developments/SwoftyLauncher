@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2_NextFrameUploadSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143d75270",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143d75270.c;xref:0x143af8fe1",
+  "notes": "Advances a triple-buffer index (+0x70, mod 3: three frames in flight) and with the slot's 0x18-byte descriptor array (+0x28) calls 0x1439ad480 on the graphics device global 0x14618caa8 to map/lock the upload buffer; returns status int (0x16 when no mapping). Callers Render_Particles_ReadbackVertexBuffer and 7 render helpers (0x143b21800). Hypothesis."
+ },
+ "signature": {
+  "id": "render.gfx2_next_frame_upload_slot",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 60 48 89 CF 8B 41 70 89 C1 FF",
+  "match": "0x143d75270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143d75270",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2_NextFrameUploadSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp3-verify",
+   "kind": "func",
+   "item": "0x143d75270",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143d75270.c;xref:0x143af8fe1",
+   "notes": "V7923 name and concrete claims match code"
+  }
+ ],
+ "proofs": []
+}

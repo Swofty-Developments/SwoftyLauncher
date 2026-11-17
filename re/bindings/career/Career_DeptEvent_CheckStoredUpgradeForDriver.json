@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_DeptEvent_CheckStoredUpgradeForDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140d6ca40",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void FUN(void *events, void *state, uint32_t idx)",
+  "evidence": "decomp:re/decomp/140d6ca40.c;xref:0x14568fcd8",
+  "notes": "myteam-g1: Validates the stored upgrade of a driver department event slot (state+0x78 -> +0xc0 + idx*0xd0); on missing upgrade logs \"DEPARTMENT_EVENTS: Failed to start department event for driver as the stored upgrade was ...\" with department names (+0x68/+0x60) and aborts the start."
+ },
+ "signature": {
+  "id": "career.dept_event_check_stored_upgrade_for_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC D0 00 00 00 48 89 D6 44 89 C0",
+  "match": "0x140d6ca40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140d6ca40",
+  "kind": "func_start",
+  "names": [
+   "Career_DeptEvent_CheckStoredUpgradeForDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140d6ca40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140d6ca40.c;str:\"DEPARTMENT_EVENTS\"",
+   "notes": "V9531 Reads stored upgrade slot state+0x78 -> +0xc0 + idx*0xd0 and logs Failed to start department event for driver as the stored upgrade was."
+  }
+ ],
+ "proofs": []
+}

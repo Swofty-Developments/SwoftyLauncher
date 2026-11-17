@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCarTether_UpdateProgress",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14360b550",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_SafetyCarTether_UpdateProgress(void *tether_entry)",
+  "evidence": "decomp:re/decomp/14360d700.c;decomp:re/decomp/14360b550.c;xref:0x14360d612,0x14360da69,0x14360df99",
+  "notes": "Renamed from Sess_SafetyCarTether_Detach after verify-b disagree (verify-b: per-frame progress update that runs while entry+0x69 (tether active); deactivation happens in the caller). Integrates entry+0x4c by (session clock - entry+0x54) * [0x1460fe680]+0x1c4; when the car's spline record (0x1446046a0(g 0x1460fe6b0, car)) passes the spline length (vcall +0x150 on [0x1460fe680]+0x150) starts a new lap (entry+0x54 = now, +0x4c = 0, +0x58 += 1). Writes entry+0x30 = progress gap in metres from (laps +0x58 - +0x5c), lap length and g_Game_TrackLength (0x146ce66b8). Callers 0x14360da69, 0x14360df99, tail jmp 0x14360d612. (used by vmknolle red-flag-pit)"
+ },
+ "signature": {
+  "id": "session.safety_car_tether_detach",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 78 29 94 24 80 00 00 00 C5 78 29 4C 24 70 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F9 29 74 24 40",
+  "match": "0x14360b550",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14360b550",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCarTether_UpdateProgress"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-b",
+   "kind": "func",
+   "item": "0x14360b550",
+   "claimed": "L2",
+   "verdict": "disagree",
+   "evidence": "decomp:work/verify_b/decomp/14360b550.c;xref:0x14360d612,0x14360da69,0x14360df99",
+   "notes": "V1041 no detach: per-frame tether progress update called by 0x14360d700/0x14360d4d0 only while obj+0x69 (tether active) is set; recomputes obj+0x30 from lap count (+0x58,+0x5c) and lap distance via track length, increments lap counter +0x58; the reset/deactivation (+0x69=0) is done in the caller; better: Sess_SafetyCarTether_UpdateProgress"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-d",
+   "kind": "func",
+   "item": "0x14360b550",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:work/verify_d/decomp/14360b550.c;decomp:work/verify_d/decomp2/14360d700.c;xref:0x14360d612,0x14360da69,0x14360df99",
+   "notes": "V1072 role ok: from session time vs +0x54 and lap length it advances lap counter +0x58 and writes progress/gap +0x30 of a safety-car tether entry (callers log Safety Car Tether msgs); but KB proto is '-' - should be void (void *tether_entry)"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-e",
+   "kind": "func",
+   "item": "0x14360b550",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_e/decomp/14360b550.c;decomp:work/verify_e/decomp/14360d700.c;decomp:work/verify_e/decomp/14360d4d0.c;xref:0x14360d612,0x14360da69,0x14360df99",
+   "notes": "V1081 one arg (tether entry); callers in NETWORK_SAFETY_CAR_TETHER code save +0x30 to +0x34, zero +0x30, then call it when +0x69 set; it recomputes +0x30 from elapsed session time since +0x54, lap counters +0x58/+0x5c and track-length virtual -> progress update; void(void*) matches (sig name 'detach' does not describe it)"
+  }
+ ],
+ "proofs": []
+}

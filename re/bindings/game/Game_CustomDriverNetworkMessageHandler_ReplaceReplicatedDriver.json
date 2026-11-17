@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14257ae80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14257ae80.c;xref:0x14256dab1,0x14257a9f6",
+  "notes": "replaceCustomNetworkReplicatedDriver(PlayerDescription): swaps a replicated online player's custom driver in the entrants system (Ent_EntrantsSystem_ReplaceDriver / AddDriver_2), writes desc +0x10..+0x48 (DriverStatId), +0x50 team/slot dword, +0x54=1; DriverInfo via 0x143132540. Addon: map online players to their custom driver (name/number) on the grid. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2579)"
+ },
+ "signature": {
+  "id": "game.custom_driver_network_message_handler_replace_replicated_driver",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 15 00",
+  "match": "0x14257ae80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14257ae80",
+  "kind": "func_start",
+  "names": [
+   "Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_CustomDriverNetworkMessageHandler_ReplaceReplicatedDriver",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14257ae80.c;xref:0x14257ae80",
+   "notes": "V2579 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

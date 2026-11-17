@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SettingsControlsScreenViewModel_ApplyFilterRebuildList",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141da3790",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141da3790.c;xref:0x14574cc48",
+  "notes": "Controls settings screen override of the filter/rebuild slot (vt slot @0x14574cc48): applies the filter, rebuilds the control scheme list (lng_controls_generic_settings, cat_controls_generic, #input_data.control_scheme_list_description0/1, required_devices_not_connected icon/text), calls Game_SettingsControlsScreenViewModel_WorkoutControlsAction and fires 'rebuilt_list'. Shares the inlined UIOptionsSystem::setSelectedFilter block: filter level global 0x14606aa34 (0=filter_basic,1=filter_advanced,2=filter_expert) is matched by name in the options list [this+0x630]+0x70..0x78, then UIOptionsSystem refresh 0x142adc6d0(this+0x640 if this[0x114]) and vcall this+0x118 (refresh view). Addon: hook to inject custom control-scheme entries or device warnings. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2460)"
+ },
+ "signature": {
+  "id": "game.settings_controls_screen_view_model_apply_filter_rebuild_list",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 49 89 CC 83",
+  "match": "0x141da3790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141da3790",
+  "kind": "func_start",
+  "names": [
+   "Game_SettingsControlsScreenViewModel_ApplyFilterRebuildList"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_SettingsControlsScreenViewModel_ApplyFilterRebuildList",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141da3790.c;xref:0x141da3790",
+   "notes": "V2460 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Read_CareerOwnerPerksConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141012d70",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: career.owner_perks.level_and_xp.gradient, career.owner_perks.level_and_xp.level_cap, career.owner_perks.level_and_xp.tp_per_level, career.owner_perks.level_and_xp.y_intercept'"
+ },
+ "signature": {
+  "id": "career.read_career_owner_perks_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 08 0F 00 00",
+  "match": "0x141012d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141012d70",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_CareerOwnerPerksConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x141012d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141012d70.c",
+   "notes": "V4571 name and quoted log strings/pretty-function present in body; no direct caller (vtable/indirect)"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x141012d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141012d70.c;str:\"Reads settings/game DB keys: career.owner_perks.level_and_xp\"",
+   "notes": "V9140 Decompile contains the claimed log string and the function is a small logger/wrapper whose name matches it."
+  }
+ ],
+ "proofs": []
+}

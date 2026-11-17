@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Get_RnDPurchaseBlockReason",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c8cbb0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Get_RnDPurchaseBlockReason(void * self,uint32_t a2)",
+  "evidence": "decomp:re/decomp/141c8cbb0.c;xref:0x141c8c414",
+  "notes": "myteam-g1: Returns the loc key for why an upgrade cannot be bought/cancelled: lng_cannot_cancel_team_mate_upgrade, lng_rnd_2p_player_cannot_develop, lng_rnd_insufficient_points, lng_rnd_part_adapted, lng_rnd_part_at_risk, lng_rnd_research_limit_reached."
+ },
+ "signature": {
+  "id": "career.get_rn_dpurchase_block_reason",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 89 D3",
+  "match": "0x141c8cbb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c8cbb0",
+  "kind": "func_start",
+  "names": [
+   "Career_Get_RnDPurchaseBlockReason"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x141c8cbb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c8cbb0.c;xref:0x141c8c414;str:\"lng_rnd_insufficient_points\";str:\"lng_rnd_part_adapted\";str:\"lng_rnd_part_at_risk\";str:\"lng_rnd_research_limit_reached\";str:\"lng_cannot_cancel_team_mate_upgrade\";str:\"lng_rnd_2p_player_cannot_develop\"",
+   "notes": "V8998 All six loc keys are present and returned as the block reason. Matches."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_ThrowLengthError_Decals2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14146b590",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14146b590.c;xref:0x141423cc1",
+  "notes": "Noreturn throw stub (same as ...Decals) for the second decals map. Callers Game_CustomisationDecals_LoadConfig, 0x14146b6e0."
+ },
+ "signature": {
+  "id": "core.hash_map_throw_length_error_decals2",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? E8 ?? ?? ?? ?? CC CC CC CC CC CC E9 ?? ?? ?? ?? FD 38 E6",
+  "match": "0x14146bd30",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14146b590",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_ThrowLengthError_Decals2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x14146b590",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14146b590.c;xref:0x141423cc1",
+   "notes": "V8080 decomp body and callers match claim"
+  }
+ ],
+ "proofs": []
+}

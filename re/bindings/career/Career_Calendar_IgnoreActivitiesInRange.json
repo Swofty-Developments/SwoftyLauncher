@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Calendar_IgnoreActivitiesInRange",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1412682d0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1412682d0.c;xref:0x14126b598,0x14126b5c8",
+  "notes": "Calendar (this, fromDay, toDay): walks schedule entries this+0x50..+0x58 (stride 0x10, entry+8), for ScheduleEntry objects with startDay (+0xa) >= from and endDay (vcall +0x10) <= to and activity type (def[+0x10]+0x10) outside the protected set sets state +0xc = 4 (ignored); logs 'Ignored activity: %u, Days(%u-%u)' (id = def+8). Addon: skip calendar activities in a day range. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3046)"
+ },
+ "signature": {
+  "id": "career.calendar_ignore_activities_in_range",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 66 44 89 44",
+  "match": "0x1412682d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1412682d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Calendar_IgnoreActivitiesInRange"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Career_Calendar_IgnoreActivitiesInRange",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1412682d0.c;xref:0x1412682d0",
+   "notes": "V3046 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

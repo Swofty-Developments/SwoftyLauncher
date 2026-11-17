@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSystemHelloMessage_Serialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14407a470",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSystemHelloMessage_Serialise;xref:0x14407a836;decomp:re/decomp/14407a470.c",
+  "notes": "cxx=neon::NeNetSystemHelloMessage::serialise; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_system_hello_message_serialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 40 48 89 D6 48 89 CF 0F B6 59 08",
+  "match": "0x14407a470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14407a470",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSystemHelloMessage_Serialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetSystemHelloMessage_Serialise",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14407a470.c;xref:0x14407a364",
+   "notes": "V2096 own pretty string; size/msgID/version written"
+  }
+ ],
+ "proofs": []
+}

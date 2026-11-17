@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_DriveThroughPenalty_SendData",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435a7200",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-DRIVE_THROUGH_PENALTY_MESSAGE;decomp:re/decomp/1435a7200.c;xref:0x14584c858",
+  "notes": "Log channel DRIVE_THROUGH_PENALTY_MESSAGE: 'Sending Data for Vehicle %d'"
+ },
+ "signature": {
+  "id": "session.drive_through_penalty_send_data",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 28 01 00 00 C5 78 29 BC 24 10 01 00 00 C5 78 29 B4 24 00 01 00 00 C5 78 29 AC 24 F0 00 00 00 C5 78 29 A4 24 E0 00 00 00 C5 78 29 9C 24 D0 00 00 00 C5 79 29 94 24 C0 00 00 00",
+  "match": "0x1435a7200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435a7200",
+  "kind": "func_start",
+  "names": [
+   "Sess_DriveThroughPenalty_SendData"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-b",
+   "kind": "func",
+   "item": "Sess_DriveThroughPenalty_SendData",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435a7200.c;xref:0x1435a7200",
+   "notes": "V1930 channel and format confirmed"
+  }
+ ],
+ "proofs": []
+}

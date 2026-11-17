@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GridRundown_ShouldPlay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ac6b30",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "bool Game_GridRundown_ShouldPlay(uint8_t variant, void *a2, void *a3, void *settings_ctx, void *a5)",
+  "evidence": "decomp:re/decomp/140ac6b30.c;xref:0x142d4d0a5,0x142d4d0be,0x142d96471,0x14f67c871",
+  "notes": "Decides whether the pre-race grid rundown (and its thumbnails) is needed: reads the Game.SkipGridRundown setting and session checks; 5 args: variant byte ecx (1 -> false), rdx, r8, r9 settings context ([r9+0x18] for Game.SkipGridRundown via 0x143a43b90), stack arg5 (0x140ac6b68). Callers: Sess_Loader_RequestLoadThumbnails (2), 0x142d96370, jmp 0x14f67c871 (per V10470). L2 2026-11-14 (engine-re round 2): decomp read; 4 reference(s) (0x142d4d0a5, 0x142d4d0be, 0x142d96471, 0x14f67c871); the body itself references 'Game.SkipGridRundown'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.grid_rundown_should_play",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 40 4C 89 C7 48 89 D6",
+  "match": "0x140ac6b30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ac6b30",
+  "kind": "func_start",
+  "names": [
+   "Game_GridRundown_ShouldPlay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140ac6b30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ac6b30.c;xref:0x142d4d0a5",
+   "notes": "V3838 reads setting 'Game.SkipGridRundown'; caller Sess_Loader_RequestLoadThumbnails seen"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x140ac6b30",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140ac6b30-0x140ac6e51;xref:0x142d4d0a5,0x142d4d0be,0x142d96471,0x14f67c871",
+   "notes": "V10470 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 4 refs (2 calls in Sess_Loader_RequestLoadThumbnails 0x142d4d040, 0x142d96471 in 0x142d96370, jmp 0x14f67c871). Reads Game.SkipGridRundown (0x143a43b90 on [r9+0x18]), variant byte ecx (==1 -> false), RTTI checks 0x146129ca0. Note: 5 args (ecx variant, rdx, r8, r9 settings ctx, stack +0x20 used at 0x140ac6b68)."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,62 @@
+{
+ "schema": 1,
+ "name": "Ai_TestGraph_EvalTimeSpeed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14063c130",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_TestGraph_EvalTimeSpeed(void *table, float time, float speed, float *cursor)",
+  "evidence": "decomp:re/decomp/14063c130.c;xref:0x1405fc27d,0x1405fc2eb",
+  "notes": "Same lazy ai.general_ai_settings block as 0x140619140. Clamps xmm1 to +-max_test_time (c70, key 0x1456341ad) and xmm2 to +-max_test_speed (c68). If cursor+0xc != 0 calls Ai_Table_InterpolateB (0x14068bb70) else Ai_Table_InterpolateA (0x14068b710), both with cell getter 0x14063c2b0 (reads cell +0xa8 searcher, +0xb8/+0xc0 axis, +0xe8 values). Caller 0x1405fbfd0 (KB name Ai_Calc_FollowSpeedForGap) prepares the cursor with 0x14068ab50 on table [x+0x60] before each call. No car query. (corrected 2026-11-14: was 'awareness query'.) (renamed 2026-11-14 from Ai_Awareness_QueryByTime: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.awareness_query_by_time",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C4 41 30 57 C9 C4 C1 7A 5F F9 48",
+  "match": "0x1405fc27d",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14063c130",
+  "kind": "func_start",
+  "names": [
+   "Ai_TestGraph_EvalTimeSpeed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x14063c130",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14063c130.c;xref:0x1405fc27d,0x1405fc2eb",
+   "notes": "V3437 uses max_test_speed/max_test_time (ptrs 0x146046c68/0x146046c70), branch on param_4+0xc, callback 0x14063c2b0; callers only Ai_Read_GeneralSettings_5"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x14063c130",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x14063c130-0x14063c2ab;xref:0x1405fc27d,0x1405fc2eb",
+   "notes": "V10615 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Both callers in 0x1405fbfd0. 4 args. Clamps by max_test_time [0x146046c70] and max_test_speed [0x146046c68]; float cursor+0xc compared with 0: zero -> InterpolateA 0x14068b710, nonzero -> InterpolateB 0x14068bb70, getter 0x14063c2b0. Rename from Ai_Awareness_QueryByTime fits. Detail: proto name still Ai_TestTable_LookupByTimeSpeed."
+  }
+ ],
+ "proofs": []
+}

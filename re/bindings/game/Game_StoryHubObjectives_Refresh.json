@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_StoryHubObjectives_Refresh",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14157c260",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14157c260.c;xref:0x1456efb18",
+  "notes": "Story objectives widget VM (vtable around 0x1456efae0, slot 0x1456efb18): builds primary/bonus/cap/spacer state arrays, objective, detailed_info, header/status icons, permanent_story_objectives; posts bus message; starts the delay timer. Addon: read or override story objective list. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3061)"
+ },
+ "signature": {
+  "id": "game.story_hub_objectives_refresh",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 C5 F8 29 74 24 60 48 89 CE E8 ?? ?? ?? ?? 48 8B BE B0 06 00",
+  "match": "0x14157c260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14157c260",
+  "kind": "func_start",
+  "names": [
+   "Game_StoryHubObjectives_Refresh"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d12-verify",
+   "kind": "func",
+   "item": "Game_StoryHubObjectives_Refresh",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14157c260.c;xref:0x1456efb18",
+   "notes": "V3061 strings/offsets/calls match claim"
+  }
+ ],
+ "proofs": []
+}

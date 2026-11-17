@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_F1WorldSafetyRatingConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141515ba0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: f1_world.safety_rating.negative_change_thresholds, f1_world.safety_rating.positive_change_thresholds, user_attributes.incident_points.Value'"
+ },
+ "signature": {
+  "id": "game.read_f1_world_safety_rating_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 89 D3 48 89 CE 48 8B 0D",
+  "match": "0x141515ba0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141515ba0",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_F1WorldSafetyRatingConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x141515ba0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141515ba0.c;xref:0x141508377",
+   "notes": "V4881 name/description match decomp: strings and callees consistent"
+  }
+ ],
+ "proofs": []
+}

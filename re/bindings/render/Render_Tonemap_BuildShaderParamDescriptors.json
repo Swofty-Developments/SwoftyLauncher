@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_Tonemap_BuildShaderParamDescriptors",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ecc110",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ecc110.c;xref:0x143bafc0f",
+  "notes": "Builds the tonemap shader binding table: g_scene, toneMapSettings, vignetteParams, lutSCurve00/10/01/11, lutSCurve, histogramSRV, photoModeLUT, inputRT, inputBloom, inputLensStreaks, inputGodRays, lut3DTextureSRV, toneMapSCurve, g_sceneLuminanceAndExposure, lutUAV, lut3DUAV, avgLumUAV, g_sceneLuminanceAndExposureUAV (name hashes as 64-bit constants). Addon: full list of tonemap/exposure/LUT shader inputs. Callers Render_Tonemap_Execute, Render_Tonemap_SetupEyeAdaptation."
+ },
+ "signature": {
+  "id": "render.tonemap_build_shader_param_descriptors",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 8B 44 24 34 43 89 44 3C 20 43 C6",
+  "match": "0x143bafc0f",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143ecc110",
+  "kind": "func_start",
+  "names": [
+   "Render_Tonemap_BuildShaderParamDescriptors"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x143ecc110",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ecc110.c;xref:0x143bafc0f",
+   "notes": "V8285 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

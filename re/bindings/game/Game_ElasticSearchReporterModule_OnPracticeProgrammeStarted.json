@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ElasticSearchReporterModule_OnPracticeProgrammeStarted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140718090",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=ElasticSearchReporterModule::onPracticeProgrammeStarted; log channel TELEMETRY: 'ElasticSearchReporterModule::onPracticeProgrammeStarted(%s)'"
+ },
+ "signature": {
+  "id": "game.elastic_search_reporter_module_on_practice_programme_started",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 D7 48 89 CE 48 8B 0D ?? ?? ?? ?? 0F B6 52 10 E8 ?? ?? ?? ?? 48 85 C0 0F 84 ?? ?? ?? ?? 80 3D ?? ?? ?? ?? 01",
+  "match": "0x140718090",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140718090",
+  "kind": "func_start",
+  "names": [
+   "Game_ElasticSearchReporterModule_OnPracticeProgrammeStarted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140718090",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140718090.c;xref:0x6d96b6",
+   "notes": "V4769 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

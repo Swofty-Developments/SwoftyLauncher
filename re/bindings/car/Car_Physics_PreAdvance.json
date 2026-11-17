@@ -1,0 +1,81 @@
+{
+ "schema": 1,
+ "name": "Car_Physics_PreAdvance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144641610",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144641610.c;xref:0x1552dac64,0x144643a20",
+  "notes": "Physics-world pre-advance hook (registered 2nd by Car_Physics_RegisterHooks_Body). Iterates g_Sess_VehicleTable (count < 0x20; the per-car stack arrays hold 32 entries, padded from count to 0x20 by the memsets at 0x14464182c..0x144641864; 0x1c and 0x11 are only SIMD path thresholds, corrected per V1322) and runs Car_Physics_AdvanceCar(car, dt) per car, sequentially or through parallelForEach job Car_Physics_AdvanceCarJob; this is where every car's systems and CarDynamics substeps run, once per physics tick"
+ },
+ "signature": {
+  "id": "car.physics_pre_advance",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 98 43 00 00",
+  "match": "0x144641610",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144641610",
+  "kind": "func_start",
+  "names": [
+   "Car_Physics_PreAdvance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v1",
+   "kind": "func",
+   "item": "Car_Physics_PreAdvance",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144641610.c;decomp:re/decomp/1552dac30.c;xref:0x1552dac64,0x144643a20;sig:car.physics_pre_advance",
+   "notes": "V1322 Role right: registered 2nd; AdvanceCar(table[i], dt) sequentially (0x1446424e8) when [[owner+0x140]+0x24]==0 or a flag is clear, else job Car_Physics_AdvanceCarJob named 'prePhysicsAdvance update' plus the caller's own share (0x144642593). Detail wrong: the per-car stack arrays are 32 entries (padded from count to 0x20 with 1e6 / 0 by the memsets at 0x14464182c..0x144641864), not 28; 0x1c and 0x11 are only SIMD-path thresholds."
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "tr-verify",
+   "kind": "func",
+   "item": "Car_Physics_PreAdvance",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "xref:0x14464252c",
+   "notes": "V1685 tr-verify: 'prePhysicsAdvance update' ref inside 0x144641610"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "dcso-verify",
+   "kind": "func",
+   "item": "Car_Physics_PreAdvance",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144641610.c;xref:0x144641dd0",
+   "notes": "V1690 claim 1 wake reset 1.0 + length max(0.1, 2|v.fwd|)"
+  },
+  {
+   "date": "2026-10-28",
+   "verifier": "dcso-verify",
+   "kind": "func",
+   "item": "Car_Physics_PreAdvance",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/144641610.c;xref:0x1446423b6",
+   "notes": "V1691 claim 2: s = 8/W clamped [1,80], f = 0 when x > 1"
+  }
+ ],
+ "proofs": []
+}

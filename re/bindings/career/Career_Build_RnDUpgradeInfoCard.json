@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDUpgradeInfoCard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141c73270",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "char * Career_Build_RnDUpgradeInfoCard(void * self,uint64_t *a2)",
+  "evidence": "decomp:re/decomp/141c73270.c;xref:0x14573ffb0",
+  "notes": "myteam-g1: Builds an info card for an upgrade (upgrade_hash_name, error_department fallback); uses Career_Query_EnabledUpgrades."
+ },
+ "signature": {
+  "id": "career.build_rn_dupgrade_info_card",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 00 00 00 48 89 CE 48 8B 89 40 03 00 00",
+  "match": "0x141c73270",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141c73270",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDUpgradeInfoCard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141c73270",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141c73270.c;xref:0x14573ffb0",
+   "notes": "V9987 Upgrade info card with hash_name, selected_entry.selected_tile.part_tex, error_department fallback."
+  }
+ ],
+ "proofs": []
+}

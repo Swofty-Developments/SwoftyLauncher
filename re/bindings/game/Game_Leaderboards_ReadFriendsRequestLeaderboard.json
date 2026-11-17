@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Leaderboards_ReadFriendsRequestLeaderboard",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144027470",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-LEADERBOARDS",
+  "notes": "named from its log messages (channel LEADERBOARDS): 'Read friends request for leaderboard %s, maxNumEntriesToRead = %d'"
+ },
+ "signature": {
+  "id": "game.leaderboards_read_friends_request_leaderboard",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 44 89 CD 4C 89 C3 48 89 D7 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x144027470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144027470",
+  "kind": "func_start",
+  "names": [
+   "Game_Leaderboards_ReadFriendsRequestLeaderboard"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144027470",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144027470.c;xref:0x1430e7c7c",
+   "notes": "V6385 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

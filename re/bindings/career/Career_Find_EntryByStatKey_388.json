@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Find_EntryByStatKey_388",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c40460",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void* (void *rf, void *out_shared, char *stat_key)",
+  "evidence": "decomp:re/decomp/140c40460.c;xref:0x140ab276c;xref:0x140ab2aac;xref:0x140c3baca",
+  "notes": "myteam-g2: Linear search of a vector of 16-byte shared_ptr entries at obj+0x388..0x390 for the entry whose +0x18 key matches the packed 3-byte key (short @+2, byte @+0); returns the ref-counted pointer (atomic refcount handling inline). Used by the renown/form view and accolades page to find a record by stat key."
+ },
+ "signature": {
+  "id": "career.find_entry_by_stat_key_388",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 28 48 89 54 24 20 4C 8B B9 88 03 00 00",
+  "match": "0x140c40460",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c40460",
+  "kind": "func_start",
+  "names": [
+   "Career_Find_EntryByStatKey_388"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c40460",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c40460.c",
+   "notes": "V9499 Same shared_ptr vector scan at +0x388..+0x390 keyed by entry+0x18 (u8 + u16)."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_TimeOfDayOwner_EvalRainIntensity",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14479ca80",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "float(TimeOfDayOwner*, uint32_t dataset, float time)",
+  "evidence": "decomp:re/decomp/14479c3f0.c;decomp:re/decomp/14479ca80.c;doc:re/db/subsystems/game.md;xref:0x140f62185,0x141bc95a0,0x141f82397,0x14479c461",
+  "notes": "rain intensity of one weather dataset at a time (curves owner+0xd0 + dataset*0x30); called by Sess_TimeOfDayOwner_UpdateRain. (vmknolle passing-showers) | RAIN INTENSITY: EvalAt(owner+0xd0+slot*0x30 weather/rainfall/intensity), NaN -> 0, per-state soft clamp (state TOD+0x26d8+slot*0xe00, f44/f40, knee owner+0x314); caller 0x14479c3f0 stores owner+0x318 (owner=[GWS+0x1da8]) and renderer [owner+0x2c8]+0x75ca4; 0x143386e50 treats >0.01 as raining. Track wetness is a separate curve (weather/track/wet_delta) (wx-drive round 4, static) sb5-verify: the '>0.01' test was not found in 0x143386e50"
+ },
+ "signature": {
+  "id": "session.time_of_day_owner_eval_rain_intensity",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 50 C5 78 29 44 24 40 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 C5 F8 28 CA",
+  "match": "0x14479ca80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14479ca80",
+  "kind": "func_start",
+  "names": [
+   "Sess_TimeOfDayOwner_EvalRainIntensity"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb5-verify",
+   "kind": "func",
+   "item": "Sess_TimeOfDayOwner_EvalRainIntensity",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14479ca80.c;xref:0x140f62185,0x141bc95a0,0x141f82397,0x14479c461",
+   "notes": "V1986 curve owner+0xd0+slot*0x30 (0x140b12c10), NaN->0, soft clamp state TOD+0x26d8+slot*0xe00 (+0x40/+0x44), knee owner+0x314; caller 0x14479c3f0 stores owner+0x318 and [owner+0x2c8]+0x75ca4. 0x143386e50 >0.01 not located"
+  }
+ ],
+ "proofs": []
+}

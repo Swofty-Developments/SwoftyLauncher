@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Claim_FacilityPerkRewards",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f8d8d0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140f8d8d0.c;xref:0x1456af488;doc:addons/career-editor/protocol/facilities.md#engine-paths",
+  "notes": "Facility node vtable (0x1456af450) slot +0x38, called from Career_Complete_PerkTreeNode: logs MY_TEAM_REWARDS 'Claiming rewards for facility perk %s' (node+0x88 name), applies the reward set (+0x70), stamps day_completed (+0xd8) and posts MessageFacilityUpgradeComplete (message vtable 0x1456b06b8, name getter 0x140fa7720). Design 9 proposed name MyTeamRewards_ClaimFacilityPerk."
+ },
+ "signature": {
+  "id": "career.claim_facility_perk_rewards",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 01 00 00 C5 F8 29 BC 24 40 01 00 00 C5 F8 29 B4 24 30 01 00 00 49 89 CF",
+  "match": "0x140f8d8d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f8d8d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Claim_FacilityPerkRewards"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb04-verify",
+   "kind": "func",
+   "item": "0x140f8d8d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f8d8d0.c",
+   "notes": "V4796 log/pretty strings and body checked in decomp; vtable/indirect callers"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-e",
+   "kind": "func",
+   "item": "0x140f8d8d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f8d8d0.c",
+   "notes": "V9105 Log string Claiming rewards for facility perk with node+0x88, +0x70 reward set, +0xd8 stamp present."
+  }
+ ],
+ "proofs": []
+}

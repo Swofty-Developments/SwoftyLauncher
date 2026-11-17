@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Issue_DriveThrough",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143574160",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "void Sess_Issue_DriveThrough(void *rules, uint8_t *incident, uint32_t reason)",
+  "evidence": "decomp:re/decomp/143574160.c;xref:0x143571b15,0x14357374d",
+  "notes": "Issue drive-through penalty: param_2 = infringement record (byte car idx at +0, +9 extra), param_3 = infringement reason (byte, < 0x3d; 0x22 special-cased). Tail-jumped from the penalty handlers 0x143571b15 and 0x14357374d. Skips when the session is not live ([+0x1c70]+0x50 +0x78). For a car whose participant +0x32 has bit 0x20: books it into the per-car penalty slots ([+0x1cc0]+0x68 stride 0x28, up to min(4, g 0x145f96454) entries, slot time from the session clock) or, when full, posts a warning message (vtable 0x1456d0840) and counts it; records the penalty (0x1435668e0, 0x143573400 with reason and lap), FUN_143573b40, posts the penalty bus message (vtable 0x14584ec18, reason byte) to [0x14618b3b8]+8, stores the reason in the HUD/UI object (+0x1100) and fires UI event 0x1458499d1. (used by vmknolle race-start to cancel start penalties)"
+ },
+ "signature": {
+  "id": "session.issue_drive_through",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 00 00 00 C5 F9 29 B4 24 B0 00 00 00 44 89 C3 48 89 D7",
+  "match": "0x143574160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143574160",
+  "kind": "func_start",
+  "names": [
+   "Sess_Issue_DriveThrough"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-b",
+   "kind": "func",
+   "item": "0x143574160",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_b/decomp/143574160.c;xref:0x143571b15,0x14357374d",
+   "notes": "V1031 logs 'Car %d ISSUE DRIVE THROUGH PENALTY' / 'ATTEMPTED TO ISSUE DRIVE THROUGH, BUT NONE AVAILABLE, SO ISSUING A POST_RACE PENALTY' with *param_2 (car idx byte of incident record), sends DRIVE_THROUGH_PENALTY_MESSAGE, passes param_3 (reason) to 0x1435668e0/0x143573400; void (rules,uint8_t*,uint32) matches"
+  }
+ ],
+ "proofs": []
+}

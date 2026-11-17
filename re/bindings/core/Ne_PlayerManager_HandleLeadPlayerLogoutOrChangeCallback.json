@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PlayerManager_HandleLeadPlayerLogoutOrChangeCallback",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14411aeb0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/14411aeb0.c;xref:0x1441185d6,0x1441187f6",
+  "notes": "cxx=NePlayerManager::handleLeadPlayerLogoutOrChangeCallback; log channel NETWORK: 'NePlayerManager::handleLeadPlayerLogoutOrChangeCallback - adding eInterruptSignOut'"
+ },
+ "signature": {
+  "id": "core.player_manager_handle_lead_player_logout_or_change_callback",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 80 3D ?? ?? ?? ?? 01 75 60 B8 00 01 00 00",
+  "match": "0x14411aeb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14411aeb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_PlayerManager_HandleLeadPlayerLogoutOrChangeCallback"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-b",
+   "kind": "func",
+   "item": "Ne_PlayerManager_HandleLeadPlayerLogoutOrChangeCallback",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14411aeb0.c;xref:0x14411aeb0",
+   "notes": "V2121 Logs, posts eInterruptSignOut to InterruptQueue object, sets flag +0x260"
+  }
+ ],
+ "proofs": []
+}

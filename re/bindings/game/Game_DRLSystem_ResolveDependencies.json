@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DRLSystem_ResolveDependencies",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14243a840",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "uint32_t Game_DRLSystem_ResolveDependencies(void *self, void *registry, void *systemMap)",
+  "evidence": "str:s_cfg_GameDRLIgnoreCarSpeed;decomp:re/decomp/14243a840.c;xref:0x14243aaef,0x14243aaf0",
+  "notes": "Slot 0x10 of the DRLSystem vtable 0x14578a860 (pointer 0x14578a870; the ASCII name DRLSystem sits right before the table; sibling Game_DRLSystem_OnMessagePlayerDroppedIn). Same init pattern as Game_HudVM_ResolveSystems: registry vt+0x28 lookups (keys 0x1460449f0, 0x14604ec98, 0x146cb8238, 0x14606eb10 -> self+0xb0..+0xc8), map lookups (k_Live_GameModeSystemKey, k_Live_PitLaneSystemKey, others -> +0x28..+0x50) and getters -> +0x58..+0x88; missing system -> error 0x16 returned. Setting: Game.DRL.IgnoreCarSpeed via Ne_Get_SettingBool on [[self+0xb8]+0x40]+0x18, out = self+0x140 and default = the current byte at self+0x140 (value kept if the key is absent). Then [self+0xd0]+8 = self+0x78 and +0x30 = self+0x50; returns 0. The riprel hit at 0x14242c817 is a false positive. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.drlsystem_resolve_dependencies",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C6 48 89 D3 48 89 CF 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 D9 FF 50 28 48 89 87 B0 00 00 00",
+  "match": "0x14243a840",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14243a840",
+  "kind": "func_start",
+  "names": [
+   "Game_DRLSystem_ResolveDependencies"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-2",
+   "kind": "func",
+   "item": "0x14243a840",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14243a840.c;xref:0x14578a870;str:0x14578a998",
+   "notes": "V9343 Vtable slot of the class named 'DRLSystem' (string immediately before the vtable): resolves registry systems and component-map entries, returns 0x16 on a missing one, reads bool 'Game.DRL.IgnoreCarSpeed' (default = field +0x140), wires two pointers into the +0xd0 object, returns 0. The riprel hit 0x14242c818 is a false positive (inside an add instruction). 3 args match."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_MyTeamWorkforce_Bind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423e4f00",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "void (void *vm)",
+  "evidence": "decomp:re/decomp/1423e4f00.c;xref:0x145786fc8",
+  "notes": "myteam-g1: Binds the workforce screen: total_weekly_income_text, total_weekly_cost_text, warning_text, show_warning, buttons (button_%d), show_accept_tool_tip, facility, strings lng_my_team_career_workforce_warning_negative_cash/significant. Workforce change preview vs weekly income and cost."
+ },
+ "signature": {
+  "id": "vm.my_team_workforce_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 F8 29 B4 24 50 01 00 00 48 89 CE 48 8B 81 B8 02 00 00",
+  "match": "0x1423e4f00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423e4f00",
+  "kind": "func_start",
+  "names": [
+   "Vm_MyTeamWorkforce_Bind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423e4f00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423e4f00.c",
+   "notes": "V10197 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

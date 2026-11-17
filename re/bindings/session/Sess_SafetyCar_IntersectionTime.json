@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_SafetyCar_IntersectionTime",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143645750",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-SAFETY_CAR;decomp:re/decomp/143645750.c;xref:0x145855080",
+  "notes": "Log channel SAFETY_CAR: 'static intersection time to vehicle %d - %f / %f - %s'"
+ },
+ "signature": {
+  "id": "session.safety_car_intersection_time",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 C5 78 29 A4 24 D0 00 00 00 C5 78 29 9C 24 C0 00 00 00 C5 78 29 94 24 B0 00 00 00 C5 78 29 8C 24 A0 00 00 00 C5 78 29 84 24 90 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 48 89 D7",
+  "match": "0x143645750",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143645750",
+  "kind": "func_start",
+  "names": [
+   "Sess_SafetyCar_IntersectionTime"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb-verify-b",
+   "kind": "func",
+   "item": "Sess_SafetyCar_IntersectionTime",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143645750.c;xref:0x143645750",
+   "notes": "V1840 log string matches"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_PlayCutScene_ParseParams",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d78c80",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint64_t Sess_PlayCutScene_ParseParams(void *state, void *params)",
+  "evidence": "str:s_cfg_GameSkipPreRace;decomp:re/decomp/142d78c80.c;xref:0x142d78cbb,0x142d78cbc,0x1457e0958",
+  "notes": "Slot 7 of vt_Sess_PlayCutScene 0x1457e0920 (pointer 0x1457e0958), cxx=SessionStatePlayCutScene. Clears +0xe88..+0xe8a, then reads Game.SkipPreRace (Ne_Get_SettingBool 0x143a43b90, node [[state+0xdb0]+0x18], default 0) into +0xe8b, the flag Sess_PlayCutScene_OnStateEnter 0x142d78f80 tests to skip the cutscene. Releases the shared cutscene at +0xdc8, clears +0xdc0 and copies params sceneName into the 0x40 inline string +0xde0/+0xde8/+0xdf0 and videoPlayCount into +0xe38/+0xe40/+0xe48. Returns 0. Game.SkipPreRace is also read in Sess_PreRaceGridState_OnEnter 0x142d81270. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "session.play_cut_scene_parse_params",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 80 00 00 00 48 89 D7",
+  "match": "0x142d78c80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d78c80",
+  "kind": "func_start",
+  "names": [
+   "Sess_PlayCutScene_ParseParams"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-1",
+   "kind": "func",
+   "item": "0x142d78c80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d78c80.c;xref:0x1457e0958",
+   "notes": "V9331 Slot before Sess_PlayCutScene_OnStateEnter in the vtable after \"SessionStatePlayCutScene\"; resets state fields, reads Game.SkipPreRace (default 0) into +0xe8b, then copies params \"sceneName\" and \"videoPlayCount\" from the key/value list into 64-byte buffers at +0xde8/+0xe40; arity matches."
+  }
+ ],
+ "proofs": []
+}

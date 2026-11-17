@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Ne_Detach_ChildNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436521b0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "int Ne_Detach_ChildNode(void *parent, void *child)",
+  "evidence": "decomp:re/decomp/1436521b0.c;decomp:re/decomp/143099650.c;decomp:re/decomp/140af1980.c;xref:0x140af19cf,0x143099813,0x1430999c3,0x140ae9e12;doc:addons/career-editor/protocol/season.md#season-calendar-set-round",
+  "notes": ".xtls jmp thunk to the .data1 body 0x150b26510 (called, never hooked): removes a child node from its parent's component tree; second step of every weekend removal (after Career_Teardown_Weekend, before erase + dtor + season allocator free); 73 call sites"
+ },
+ "signature": {
+  "id": "core.detach_child_node",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? BC E9 FB AA 48 03 E3",
+  "match": "0x1436521b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436521b0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Detach_ChildNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-season",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/season.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-1",
+   "kind": "func",
+   "item": "Ne_Detach_ChildNode",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436521b0.c;decomp:re/decomp/150b26510.c;decomp:re/decomp/140af1980.c;xref:0x140af19ce,0x143099812,0x140ae232a",
+   "notes": "V0243 jmp 0x150b26510; body drops parent from child+0x1f0..+0x1f8 and erases key child+0x70 from parent+0x138; returns 0, 0x58 when the key is not in the map, 0x16 for a null child; 73 xtls call/jmp sites plus 6 in .data1"
+  }
+ ],
+ "proofs": []
+}

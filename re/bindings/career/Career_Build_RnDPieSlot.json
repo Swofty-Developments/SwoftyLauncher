@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_Build_RnDPieSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14180b660",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:slot-handles-total_upgrades-upgrades_fitted;xref:0x141f42fe6,0x141f484bd;kb:subsystems/rnd_ui.md#pie-object",
+  "notes": "Builds a temporary pie slot for one department (handles total_upgrades @0x14180b6ac, upgrades_fitted @0x14180b746, upgrades_fitted_percent @0x14180b7d0, ...); the populate then move-assigns it into the object slot and destroys the temp."
+ },
+ "signature": {
+  "id": "career.build_rn_d_pie_slot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 D7 48 89 CE C7 44 24 30",
+  "match": "0x14180b660",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14180b660",
+  "kind": "func_start",
+  "names": [
+   "Career_Build_RnDPieSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb06-verify",
+   "kind": "func",
+   "item": "0x14180b660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14180b660.c;xref:0x141f42fe6",
+   "notes": "V4904 name/description match decomp: strings and callees consistent"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-f",
+   "kind": "func",
+   "item": "0x14180b660",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14180b660.c;xref:0x141f42fe6;xref:0x141f484bd",
+   "notes": "V9183 Constructs a slot object registering total_upgrades, upgrades_fitted, upgrades_fitted_percent and further department fields; callers are direct calls."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_RedFlagSimulate_ResetEntries",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140814c80",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140814c80.c;xref:0x142dfb5de",
+  "notes": "(sys) Iterates entries +0x30..+0x38 (stride per entry) clearing per-entry string fields (Ne_Make_StrFromCStr '') and zeroing +0x48..+0x88. Called from Sess_RedFlagSimulate_Enter. Hypothesis: clears simulated-entrant records before red-flag simulation."
+ },
+ "signature": {
+  "id": "session.red_flag_simulate_reset_entries",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 50 C5 F8 29 74 24 40 48 8B 59 30",
+  "match": "0x140814c80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140814c80",
+  "kind": "func_start",
+  "names": [
+   "Sess_RedFlagSimulate_ResetEntries"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140814c80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140814c80.c;xref:0x142dfb5de",
+   "notes": "V3797 iterates entries +0x30..+0x38, clears per-entry 0x18-byte sub-records and resets three string fields (+0x48,+0x60,+0x78) to '' and zeroes +0x88; Sess_RedFlagSimulate_Enter caller seen (hypothesis wording ok)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_VehicleProgress_IsPastLapFraction",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f5ef20",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f5ef20.c;xref:0x143614775",
+  "notes": "(sys, carIdx, frac) -> bool: progress record of carIdx (cache [sys+0x20]+0xa0, list +0x88..+0x90) and returns frac <= rec+0x84 or rec+0x32 bit 0x40. Used by formation-lap park logic. (1 xref site(s), fb.py callers.)"
+ },
+ "signature": {
+  "id": "session.vehicle_progress_is_past_lap_fraction",
+  "section": ".xtls",
+  "pattern": "56 80 FA FF 74 46 48 8B 41 20 0F B6 CA 4C 8B 84",
+  "match": "0x142f5ef20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f5ef20",
+  "kind": "func_start",
+  "names": [
+   "Sess_VehicleProgress_IsPastLapFraction"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x142f5ef20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f5ef20.c;xref:0x143614775",
+   "notes": "V6761 rec+0x84 compare and +0x32 bit 0x40 verified"
+  }
+ ],
+ "proofs": []
+}

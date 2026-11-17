@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_ContractOutro_ClearFlowHandlers",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436c39e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_ContractOutro_ClearFlowHandlers(void *state)",
+  "evidence": "decomp:re/decomp/1436c39e0.c;xref:0x1436c580a;xref:0x1437b42f5",
+  "notes": "myteam-g1: Unregisters the StartContractNegotiationsFlow handler 1436c4080 (and companion 1456117f8 handler) of the outro-state class when flag state+0xd68/0xd6a set, then clears +0xd68."
+ },
+ "signature": {
+  "id": "career.contract_outro_clear_flow_handlers",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 80 B9 68 0D 00 00 00",
+  "match": "0x1436c39e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436c39e0",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractOutro_ClearFlowHandlers"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1436c39e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436c39e0.c;xref:0x1436c580a",
+   "notes": "V10306 Unregisters StartContractNegotiationsFlow and ContractNegotiationsMessage handlers when +0xd68 set, clears it."
+  }
+ ],
+ "proofs": []
+}

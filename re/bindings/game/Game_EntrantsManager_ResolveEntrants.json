@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EntrantsManager_ResolveEntrants",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143109bc0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143109bc0.c;xref:0x140bb36b6,0x143109b6e",
+  "notes": "resolveEntrants / promotePlayer: host-side resolution of the online entrant list; per player desc registers entrant (RequestRegisterEntrant), assigns team/car (0x14310e070, 0x14310e1e0), promotes AI slots to players; skipped while document open (+0xdc). Addon: core of online grid composition; hook after it to read the final grid. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2605)"
+ },
+ "signature": {
+  "id": "game.entrants_manager_resolve_entrants",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 68 29 00 00 E8 ?? ?? ?? ?? 48 29 C4 C5 79 7F",
+  "match": "0x143109bc0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143109bc0",
+  "kind": "func_start",
+  "names": [
+   "Game_EntrantsManager_ResolveEntrants"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d6-verify",
+   "kind": "func",
+   "item": "Game_EntrantsManager_ResolveEntrants",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143109bc0.c;xref:0x143109bc0",
+   "notes": "V2605 role/offsets/log strings match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkPlayfabParty_InitializePlayFabPartyManager",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440a9d20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-PLAYFAB-PARTY",
+  "notes": "named from its log messages (channel NETWORK-PLAYFAB-PARTY): 'Failed to initialize the PlayFabParty manager: %hs'"
+ },
+ "signature": {
+  "id": "game.network_playfab_party_initialize_play_fab_party_manager",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC F0 00 00 00 48 89 CE 80 3D ?? ?? ?? ?? 01 75 59 B8 43 00 00 00",
+  "match": "0x1440a9d20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440a9d20",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkPlayfabParty_InitializePlayFabPartyManager"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb21-verify",
+   "kind": "func",
+   "item": "0x1440a9d20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440a9d20.c",
+   "notes": "V6540 size=697; strings, callees and callers match claim (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

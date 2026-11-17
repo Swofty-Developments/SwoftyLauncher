@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Gdb_Load_SponsorSlotDefinitions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411179c0",
+  "level": "L2",
+  "subsystem": "gamedb",
+  "proto": "void *sponsors",
+  "evidence": "decomp:re/decomp/1411179c0.c;xref:0x142e1ab64",
+  "notes": "myteam-g1: Loads game-db table sponsors.sponsor_slots (sponsor_type per slot); defines which slots exist for title/secondary sponsors."
+ },
+ "signature": {
+  "id": "gamedb.load_sponsor_slot_definitions",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 04 00 00 C5 F8 29 B4 24 80 04 00 00 48 89 CF E8",
+  "match": "0x1411179c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411179c0",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Load_SponsorSlotDefinitions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x1411179c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411179c0.c;xref:0x142e1ab64;str:\"sponsor_type\"",
+   "notes": "V9661 Table sponsor_slots with slot_id, sponsor_type, unlock_level."
+  }
+ ],
+ "proofs": []
+}

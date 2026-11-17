@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SpeechVo_RegisterDelegates",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140a2e9e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140a2e9e0.c;xref:0x142526d9d,0x142526ddc",
+  "notes": "Once (lock this+0x18, flag +0x10): registers setSpeechVODurationDelegate (0x140a2eab0) and setSpeechVOFinishedDelegate (0x140a2ec00) with the speech system [owner+0xa0]+0xc30. Callers Sess_DoughnutSequence_Enter, Game_VoPlaySoundEffectNode_Execute."
+ },
+ "signature": {
+  "id": "game.speech_vo_register_delegates",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 38 48 89 CE 48 8B 49 18 FF 15 ?? ?? ?? ?? 80 7E 10 00 0F 85",
+  "match": "0x140a2e9e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140a2e9e0",
+  "kind": "func_start",
+  "names": [
+   "Game_SpeechVo_RegisterDelegates"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140a2e9e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140a2e9e0.c;xref:0x142d59e0b",
+   "notes": "V3837 once-only (lock this+0x18, flag +0x10) registers setSpeechVODurationDelegate/setSpeechVOFinishedDelegate on [owner+0xa0]+0xc30; caller Sess_DoughnutSequence_Enter seen"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineLogInTask_Init",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143369930",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "int Game_OnlineLogInTask_Init(void *self, void *serviceProvider, void *componentMap)",
+  "evidence": "str:s_cfg_NetworkDevFailSteamAuthentication;decomp:re/decomp/143369930.c;xref:0x143369a8e,0x143369a8f,0x14583c2c8",
+  "notes": "Slot 5 of the vtable at 0x14583c2a0 (pointer 0x14583c2c8; string OnlineServerLogInTask directly before it, cxx=OnlineServerLogInTask probable). Resolves service 0x146cb8218 (entry [+0x160] < 0x13 of its table -> +0x548), map components 0x1460c4c48 +0x128, 0x146106a28 +0x130, 0x1460542b0 +0x138, 0x14604ea08 +0x140 (missing -> errno 0x16, return 0x16). Reads Network.Dev.FailSteamAuthentication with Ne_Config_GetFloatOrDefault 0x143a44090 from node [[self+0x38]+0x200], default 0.0, and stores it in the global float 0x14604e878, which 0x14077dc00 and 0x14077e150 compare against 0 (> 0 forces the Steam auth failure path in 0x14077e150: +0xc = 0, +8 = 1, +0x10a4 = 0). Returns 0. The ripref 0x14270566c is a false hit. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.online_log_in_task_init",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 4C 89 C7 48 89 D0 48 89 CE 4C 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 C1 41 FF 50 28 48 85 C0 0F 84 ?? ?? ?? ?? 8B 90 60 01 00 00 31 C9 48 83 FA 12 77 10 48 83 78 18 00 74 09 48 C1 E2 04 48 8B 4C 10 28 48 89 8E 48 05 00 00",
+  "match": "0x143369930",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143369930",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineLogInTask_Init"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-0",
+   "kind": "func",
+   "item": "0x143369930",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143369930.c;xref:0x14583c2c8",
+   "notes": "V9316 Init slot of the task class named \"OnlineServerLogInTask\" (string before vtable): resolves a service and 4 components from the component map, reads Network.Dev.FailSteamAuthentication (via Ne_Config_GetFloatOrDefault, default 0); returns 0 or 0x16; 3 args match. Name drops 'Server' but role fits"
+  }
+ ],
+ "proofs": []
+}

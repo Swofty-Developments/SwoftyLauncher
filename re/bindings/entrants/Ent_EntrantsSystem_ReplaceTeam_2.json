@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_ReplaceTeam_2",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142473f80",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
+  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Team replaced with stat id %s, existing entry? %s | Couldn't find array to replace driver with stat id %s | Failed to add team with stat id %s whilst replacing'"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_replace_team_2",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 30 01 00 00 89 D7 89 D6",
+  "match": "0x142473f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142473f80",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_ReplaceTeam_2"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142473f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142473f80.c;xref:0x141401ce7",
+   "notes": "V5065 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

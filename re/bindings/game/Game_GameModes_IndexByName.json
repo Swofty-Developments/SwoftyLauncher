@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_GameModes_IndexByName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1409763b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14172c840.c;xref:0x14172c8b4",
+  "notes": ".xtls jmp thunk (to 0x148a89770): (table = game mode context +0x30, const NeStr *name) -> index into the vector at context +0x58 (8-byte entries; entry+0x38 -> +0x260 is the mode entity). The name hash is case-insensitive FNV-1a. No bounds check and no miss value, so a caller checks the index against the vector. Called by the LAN tile getAction (0x14172c840) with \"online_custom\"."
+ },
+ "signature": {
+  "id": "game.game_modes_name_index",
+  "section": ".xtls",
+  "pattern": "E9 ?? ?? ?? ?? EF 7B F2 64 0F 84 ?? ?? ?? ?? 2B CA",
+  "match": "0x1409763b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1409763b0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameModes_IndexByName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-01",
+    "by": "room-headless",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

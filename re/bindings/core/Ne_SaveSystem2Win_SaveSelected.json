@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem2Win_SaveSelected",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144152070",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144152070.c;xref:0x14414014b,0x1441402ac",
+  "notes": "Logs Save selected requested for %s / result. Called by Ne_SaveSystem_SelectAndSave. When device+0x3e8 (m_storeInCloud) and the helper are set it brackets the save with ISteamRemoteStorage BeginFileWriteBatch +0x1c8 / EndFileWriteBatch +0x1d0 through helper+0x108, around Ne_SaveSystem2Win_Mount (for saving), Ne_SaveSystem2Win_ReadSecurityInfoFile and Game_Save_UnmountSave (which FileWrite +0x00s each mounted file). | Performs one selected save: logs 'Save selected requested for %s' (param_3+0x18 = save name), self vcall +0x60 lock, serialiser (self[2]) begin via vtable +0x50 or +0x30/+0x38 (param_5 path), optional UI busy via self[6]+0x108 vcall +0x1c8/+0x1d0 when self+0x3e8 set, then Ne_SaveSystem2Win_Mount(forSaving=1) -> Ne_SaveSystem2Win_ProcessSerialiserActions -> Game_Save_UnmountSave(commit), serialiser end vcall +0x58/+0x48, unlock vcall +0x68, logs 'Save selected result: 0x%x'. Callers Ne_SaveSystem_SelectAndSave 0x14414014b, 0x1441402ac. Addon: hook entry/exit to know when a save starts and finishes plus its result."
+ },
+ "signature": {
+  "id": "core.save_system2_win_save_selected",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 48 44 89 CD 4C 89 C3 48 89 D7 48 89 CE",
+  "match": "0x144152070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144152070",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem2Win_SaveSelected"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveSystem2Win_SaveSelected",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144152070.c;xref:0x14414014b",
+   "notes": "V2571 Save selected requested/result strings, lock vcall +0x60/+0x68, UI busy +0x1c8/+0x1d0, Mount/Process/Unmount chain"
+  }
+ ],
+ "proofs": []
+}

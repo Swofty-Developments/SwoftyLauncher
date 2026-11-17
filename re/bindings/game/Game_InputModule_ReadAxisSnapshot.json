@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_InputModule_ReadAxisSnapshot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142a577d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-INPUT",
+  "notes": "named from its log messages (channel INPUT): 'Can't find axis snapshot from ID | Snapshot unavailable reverting to 0 value. | Snapshot good %s is pressed %f. | couldn't find axis in DB looking for directional entries.'"
+ },
+ "signature": {
+  "id": "game.input_module_read_axis_snapshot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 D8 14 00 00",
+  "match": "0x142a577d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142a577d0",
+  "kind": "func_start",
+  "names": [
+   "Game_InputModule_ReadAxisSnapshot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142a577d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142a577d0.c;xref:0x140c8f3bc",
+   "notes": "V5175 5.4 KB: axis snapshot read plus UI icon/tooltip building (icon_raw, icons_tool_tips, key_pressed, num_more, #input_device.%s.axis.%s +/-). Better: Game_InputModule_BuildAxisSnapshotDisplay"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x142a577d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142a577d0.c;xref:0x140c8f3bc",
+   "notes": "V6874 993 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

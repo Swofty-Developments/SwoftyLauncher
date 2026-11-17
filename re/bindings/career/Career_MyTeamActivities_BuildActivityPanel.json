@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamActivities_BuildActivityPanel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142321f80",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *menu, void *slot_ref, char flag)",
+  "evidence": "decomp:re/decomp/142321f80.c;xref:0x14231b827;xref:0x14231c5d4;xref:0x14231cce2",
+  "notes": "myteam-g2: 1000-line builder of the MY_TEAM_ACTIVITIES detail panel for one selected activity: formats numbers with Ne_Crt_Snprintf, sets many VM string/bool nodes and queries Game_MyTeamTeamAttributeSet_MessageDispatch (team attribute set at +0x308->+0x2e8) to show the attribute effects. Display code; the actual activity pressed logic lives in Game_MyTeamActivities_OnActivityPressed."
+ },
+ "signature": {
+  "id": "career.my_team_activities_build_activity_panel",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 01 00 00 C5 F8 29 B4 24 D0 01 00 00 48 85 D2 0F 84",
+  "match": "0x142321f80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142321f80",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamActivities_BuildActivityPanel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142321f80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142321f80.c;xref:0x14231b827",
+   "notes": "V10131 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

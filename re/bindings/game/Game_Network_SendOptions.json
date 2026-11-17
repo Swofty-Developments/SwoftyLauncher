@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Network_SendOptions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143090ca0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name sendOptions (class from the log channel); log channel NETWORK: '%s(%d).'"
+ },
+ "signature": {
+  "id": "game.network_send_options",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 41 89 D1 48 89 CE",
+  "match": "0x143090ca0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143090ca0",
+  "kind": "func_start",
+  "names": [
+   "Game_Network_SendOptions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x143090ca0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143090ca0.c;xref:0x143090c57",
+   "notes": "V5295 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

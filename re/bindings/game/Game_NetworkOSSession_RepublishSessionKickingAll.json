@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkOSSession_RepublishSessionKickingAll",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1430fd620",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-OS-SESSION",
+  "notes": "named from its log messages (channel NETWORK-OS-SESSION): '[PUBLISH] Failed to republish session %s: %s --> kicking all connection'"
+ },
+ "signature": {
+  "id": "game.network_os_session_republish_session_kicking_all",
+  "section": ".xtls",
+  "pattern": "56 57 55 53 48 83 EC 28 84 D2 0F 85 ?? ?? ?? ?? 48 89 CE 80 3D ?? ?? ?? ?? 01",
+  "match": "0x1430fd620",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1430fd620",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkOSSession_RepublishSessionKickingAll"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb13-verify",
+   "kind": "func",
+   "item": "0x1430fd620",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1430fd620.c;xref:0x1430fd5b0",
+   "notes": "V5435 name/log strings and body consistent"
+  }
+ ],
+ "proofs": []
+}

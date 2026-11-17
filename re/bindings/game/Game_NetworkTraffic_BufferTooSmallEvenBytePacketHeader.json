@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkTraffic_BufferTooSmallEvenBytePacketHeader",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14404aa50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-TRAFFIC/T",
+  "notes": "named from its log messages (channel NETWORK-TRAFFIC/T): 'Buffer too small even for %u byte packet header, size %u'"
+ },
+ "signature": {
+  "id": "game.network_traffic_buffer_too_small_even_byte_packet_header",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 20 45 89 C1 48 89 CE 48 89 11",
+  "match": "0x14404aa50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14404aa50",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkTraffic_BufferTooSmallEvenBytePacketHeader"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x14404aa50",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14404aa50.c;xref:0x144046421",
+   "notes": "V6474 partial: better name Game_NetworkTraffic_ValidatePacketHeader; validates size header (too small/empty/mismatch)"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x14404aa50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14404aa50.c;xref:0x144046421",
+   "notes": "V7106 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

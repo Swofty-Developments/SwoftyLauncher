@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Libpng_ErrorCallbackThenAbort",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1447a04f0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1447a04f0.c;xref:0x142bd4bfc",
+  "notes": "Tiny forwarder: calls 1447a0530 with a field at +0x118 and param_2. Hypothesis: png/zlib stream helper; 146 callers (image codec code and 0x142bd4bfc). vq1-verify partial/disagree"
+ },
+ "signature": {
+  "id": "core.libpng_forward_with_field118",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 89 CF 48 85 C9 74",
+  "match": "0x1447a04f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1447a04f0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Libpng_ErrorCallbackThenAbort"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x1447a04f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1447a04f0.c;xref:0x142bd4bfc",
+   "notes": "V8403 Ne_Libpng_ErrorCallbackThenAbort: png_error forwarder, calls error_fn at +0x118 then 1447a0530 and traps"
+  }
+ ],
+ "proofs": []
+}

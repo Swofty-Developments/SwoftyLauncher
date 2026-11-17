@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailCarRequest_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1428bf4c0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1428bf4c0.c;xref:0x141bfd4d7",
+  "notes": "Constructs a car thumbnail request in place: calls 0x14096ccf0, sets +0x67b0=0, if param_3+0x30 set initialises vtables 0x145612fa0/0x145612fe0 and 0xffff-filled fields at +0x6780..+0x67a8. 9 call sites incl Game_Thumbnails_BuildCarRequests. Hypothesis."
+ },
+ "signature": {
+  "id": "game.thumbnail_car_request_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 44 89 CB 4C 89 C7 48 89 CE 4C",
+  "match": "0x1428bf4c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1428bf4c0",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailCarRequest_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x1428bf4c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1428bf4c0.c;xref:0x141bfd4d7",
+   "notes": "V7537 strings/offsets/constants and callers match decomp; hypothesis supported"
+  }
+ ],
+ "proofs": []
+}

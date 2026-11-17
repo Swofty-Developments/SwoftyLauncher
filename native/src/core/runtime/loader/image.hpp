@@ -9,6 +9,7 @@
 #include <cstdint>
 #include <string>
 
+#include "core/runtime/pages.hpp"
 #include "core/runtime/protection_spans_logic.hpp"
 
 namespace runtime::loader {
@@ -70,7 +71,7 @@ template <class F> void each_committed(uintptr_t lo, uintptr_t hi, F fn)
             next = hi;
         if (next <= a)
             break;
-        if (m.State == MEM_COMMIT && (m.Protect & 0xEE) && !(m.Protect & (PAGE_GUARD | PAGE_NOACCESS)))
+        if (pages::readable_region(m))
             fn(a, next - a);
         a = next;
     }

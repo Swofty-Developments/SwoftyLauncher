@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHqAdvance_GetStopTimeKey",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419b0340",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void **Career_TeamHqAdvance_GetStopTimeKey(void *advance, void **out_key)",
+  "evidence": "decomp:re/decomp/1419b0340.c;xref:0x1411c8940;xref:0x1457222e8",
+  "notes": "myteam-g1: Switch on the advance-stop reason (byte advance+0x1064, cases 0x1c..0x1f..) returning the localisation key; for driver contract reasons uses my_team_stop_time_driver_contract_accepted / declined / ai_team_approach / ai_team_approach_first_time / secret_..., my_team_driver_contracts_signed_by_ai (driver id at +0x1066 via 140dbbac0). Tells which contract event interrupted time advance."
+ },
+ "signature": {
+  "id": "career.team_hq_advance_get_stop_time_key",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC C0 00 00 00 48 89 D6 0F B6 81 64 10 00 00",
+  "match": "0x1419b0340",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419b0340",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHqAdvance_GetStopTimeKey"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419b0340",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419b0340.c;xref:0x1411c8940",
+   "notes": "V9894 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

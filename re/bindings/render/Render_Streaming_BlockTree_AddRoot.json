@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Streaming_BlockTree_AddRoot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143abdfe0",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143abdfe0.c;xref:0x143abec2d,0x143abd955",
+  "notes": "Allocates a 0x48-byte root block (allocator vcall +0x18), initialises it with Render_Streaming_BlockTree_Split(node, 0x40, -1) and inserts it into the block set (0x143acba50). Hypothesis. Caller Render_Streaming_ProcessRequest."
+ },
+ "signature": {
+  "id": "render.streaming_block_tree_add_root",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 30 48 89 CE 48 83 B9 D0 00 00",
+  "match": "0x143abdfe0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143abdfe0",
+  "kind": "func_start",
+  "names": [
+   "Render_Streaming_BlockTree_AddRoot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143abdfe0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143abdfe0.c;xref:0x143abd955",
+   "notes": "V8315 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

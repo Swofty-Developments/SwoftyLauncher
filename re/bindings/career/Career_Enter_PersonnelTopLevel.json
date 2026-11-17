@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Enter_PersonnelTopLevel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423d2160",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *flow)",
+  "evidence": "decomp:re/decomp/1423d2160.c;xref:0x145785f58",
+  "notes": "myteam-g1: Flow state: my_team_entering_personnel_top_level (+ post_weekend) with facility_ceremony."
+ },
+ "signature": {
+  "id": "career.enter_personnel_top_level",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC C0 00 00 00 C5 F8 29 B4 24 B0 00 00 00 48 89 CE E8 ?? ?? ?? ?? 48 8D BE 50 03 00 00",
+  "match": "0x1423d2160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423d2160",
+  "kind": "func_start",
+  "names": [
+   "Career_Enter_PersonnelTopLevel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423d2160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423d2160.c",
+   "notes": "V10179 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

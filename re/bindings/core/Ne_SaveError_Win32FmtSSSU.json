@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveError_Win32FmtSSSU",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144152850",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144152850.c;xref:0x14414dfa0,0x14414e0f4",
+  "notes": "SAVE error helper, fixed code 0x58, fmt (char*, char*, char*, u32 Win32 error): 'Failed to open/write to/read from %s (%s) in save %s, result was 0x%x' in ProcessSerialiserActions."
+ },
+ "signature": {
+  "id": "core.save_error_win32_fmt_s_s_s_u",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC 58 08 00 00 48 89 C8 48 8B 8C 24",
+  "match": "0x144152850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144152850",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveError_Win32FmtSSSU"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d5-verify",
+   "kind": "func",
+   "item": "Ne_SaveError_Win32FmtSSSU",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144152850.c;xref:0x144152850",
+   "notes": "V2574 fixed code 0x58, fmt + 3 strings + u32"
+  }
+ ],
+ "proofs": []
+}

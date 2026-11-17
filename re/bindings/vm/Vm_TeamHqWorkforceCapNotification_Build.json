@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_TeamHqWorkforceCapNotification_Build",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1419a4c50",
+  "level": "L2",
+  "subsystem": "vm",
+  "proto": "uint64_t* (void **vm, int64_t a, void **ctx)",
+  "evidence": "decomp:re/decomp/1419a4c50.c;xref:0x1419a6b0b;xref:0x1419a9784;xref:0x1419ab977",
+  "notes": "myteam-g1: Builds the NotificationMyTeamWorkforceCap popup/timeline entry: lng_cost_cap_workforce_capped_notification text, personnel icon overrides, button actions goto_workforce and dismiss. Cost-cap driven workforce cap notice UI."
+ },
+ "signature": {
+  "id": "vm.team_hq_workforce_cap_notification_build",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC B8 00 00 00 4C 89 C3 48 89 D7 48 89 CE 49 8B 00 4C 89 C1",
+  "match": "0x1419a4c50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1419a4c50",
+  "kind": "func_start",
+  "names": [
+   "Vm_TeamHqWorkforceCapNotification_Build"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-3",
+   "kind": "func",
+   "item": "0x1419a4c50",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1419a4c50.c;xref:0x1419a6b0b",
+   "notes": "V9889 name, key strings and callees in the code match the claimed role"
+  }
+ ],
+ "proofs": []
+}

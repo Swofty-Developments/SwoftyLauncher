@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SponsorsVM_Refresh",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1423f7790",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *vm, uint64_t flags",
+  "evidence": "decomp:re/decomp/1423f7790.c;xref:0x1423f6dd0;xref:0x1423f6f1f",
+  "notes": "myteam-g1: Refreshes my_team_sponsors page: sponsor_info per slot (title + secondary sponsors, loyalty, scouting state)."
+ },
+ "signature": {
+  "id": "career.sponsors_vm_refresh",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 01 00 00 C5 F9 29 BC 24 80 01 00 00",
+  "match": "0x1423f7790",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1423f7790",
+  "kind": "func_start",
+  "names": [
+   "Career_SponsorsVM_Refresh"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1423f7790",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1423f7790.c",
+   "notes": "V10206 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

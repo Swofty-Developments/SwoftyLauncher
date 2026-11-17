@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_RenownGraph_ReadPoints",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f75060",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int (void *json, void *graph)",
+  "evidence": "decomp:re/decomp/140f75060.c;xref:0x140f784b8;xref:0x140f79638;xref:0x140f7b0ce",
+  "notes": "myteam-g2: Save reader for the array child (key UNK_1456ae9d8) of renown_diff_graph / workforce_difference_graph: for each element reads the u16 field (UNK_14562475a, default 0xffff) and the second field (UNK_14568e278) with TLS error recording, appending points to graph+0x78. Shared by RenownData and WorkforceDifference deserialisers."
+ },
+ "signature": {
+  "id": "career.renown_graph_read_points",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 D6 4C 8D 05",
+  "match": "0x140f75060",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f75060",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownGraph_ReadPoints"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f75060",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f75060.c;xref:0x140f784b8;str:\"statistic_weights\"",
+   "notes": "V9586 Reads array \"statistic_weights\", per element stat_id (u16, default 0xffff) and weight, error 0x57/0x58 recorded in TLS error stack."
+  }
+ ],
+ "proofs": []
+}

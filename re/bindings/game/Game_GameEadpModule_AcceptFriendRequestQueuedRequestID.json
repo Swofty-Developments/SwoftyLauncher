@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameEadpModule_AcceptFriendRequestQueuedRequestID",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406d2470",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-GameEadpModule",
+  "notes": "named from its log messages (channel GameEadpModule): 'Accept friend request queued, requestID = %I64u, error = %d'"
+ },
+ "signature": {
+  "id": "game.game_eadp_module_accept_friend_request_queued_request_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 81 EC 80 00 00 00 4D 89 CF",
+  "match": "0x1406d2470",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406d2470",
+  "kind": "func_start",
+  "names": [
+   "Game_GameEadpModule_AcceptFriendRequestQueuedRequestID"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1406d2470",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406d2470.c;xref:0x18528bf",
+   "notes": "V4746 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

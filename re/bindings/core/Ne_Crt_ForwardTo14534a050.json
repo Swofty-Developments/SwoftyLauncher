@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_ForwardTo14534a050",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145349d08",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/145349d08.c;xref:0x144d57160",
+  "notes": "10-byte thunk to 14534a050 (CRT terminate/abort chain); 200 callers (unreachable throw sites)."
+ },
+ "signature": {
+  "id": "core.crt_forward_to14534a050",
+  "section": ".xtls",
+  "pattern": "48 83 EC 38 48 83 64 24 20 00 45 33 C9 45 33 C0 33 D2 33 C9 E8 ?? ?? ?? ?? 48 83 C4",
+  "match": "0x145349d08",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145349d08",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_ForwardTo14534a050"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x145349d08",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/145349d08.c;xref:0x144d57160",
+   "notes": "V8190 name+concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

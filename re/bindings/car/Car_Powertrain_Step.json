@@ -1,0 +1,87 @@
+{
+ "schema": 1,
+ "name": "Car_Powertrain_Step",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446e2290",
+  "level": "L2",
+  "subsystem": "car",
+  "proto": "void(void *powertrain)",
+  "evidence": "decomp:re/decomp/1446e2290.c;xref:0x1446dcf6e,0x1446e4312,0x1409d60be",
+  "notes": "Per-car engine/powertrain step (reads Turbo +0x5a0, FuelECU +0x548, GearBox +0x538, ERS +0x5a8, Engine +0x530, FuelTank +0x540 of the car). Engine power = Car_Spline_EvalObfuscated(engine +0x28 RevsPowerSpline, rpm / revs scale) * power scale / rpm. Active fuel mode scales live XOR-obfuscated in the FuelECU runtime object: +0x130^+0x138 fuel burn scale (it also scales the ERS exhaust power written to ERS (car+0x5a8) +0x1a2c = turbo +0x2fc * throttle * rpm * ExhaustPowerCoefficient (ERS +0x74) * burn scale; fuel flow is FuelTank +0x108, corrected per V1215), +0x140^+0x148 power scale, +0x150^+0x158 revs scale. FuelTank +0x100 < 0.08 with car flag +0x132 bit 2 clamps the throttle (fuel run-out). | car-b correction: the param is the per-car vehicle-dynamics system (its +0x18 = CarLive) and +0x80 is the Engine system (whose +8 = CarLive). Engine data offsets are system offsets (RevsPowerSpline at Engine+0x28). The +0x2208 switch is Engine TurboMode (Off 0, LagSpoof 1, Full 2), not an engine mode: Full multiplies drive torque by Turbo efficiency_factor +0x304. Drive torque = RevsPowerSpline(rad/s / revs_scale) x power_scale / rad/s; braking = RevsEngineBrakingSpline lerped by engine_braking_fraction +0x252c and the gear; ERS deploy = MaxDeployPower x modes[ers_mode].gear_modifier[gear] x (track or default) deploy factor, speed spline +0x88/+0x330. Also runs the BrakeECU ABS/TC spline lookups (car+0x550 +0x10/+0x1000). structs/CarEngine.h, CarErs.h. Also referenced by the lea 0x1409d60be in 0x1409d50b0 (per V1215)"
+ },
+ "signature": {
+  "id": "car.powertrain_step",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 01 00 00 C5 78 29 BC 24 70 01 00 00",
+  "match": "0x1446e2290",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446e2290",
+  "kind": "func_start",
+  "names": [
+   "Car_Powertrain_Step"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   },
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-29",
+    "by": "carlive-verify",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "car-v2",
+   "kind": "func",
+   "item": "Car_Powertrain_Step",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1446e2290.c;decomp:re/decomp/1446cfcd0.c;xref:0x1446dcf6e,0x1446e4312,0x1409d60be",
+   "notes": "V1215 The car-b reading is right: param+0x18 = CarLive, param+0x80 = Engine; drive torque from RevsPowerSpline (engine+0x28) at rad/s / revs scale x power scale / rad/s; Full TurboMode (engine+0x2208 == 2, reader +0x21f0) multiplies by Turbo [car+0x5a0]+0x304; braking lerp uses +0x252c and gear +0x680; ERS gear modifier at ers+0x1890 + mode*0x40 + gear*4. Wrong detail in the older text: the +0x1a2c store (0x1446e2290 decomp line ~619) is on the ERS system (car+0x5a8) and its factor +0x74 is ExhaustPowerCoefficient (ERS reader data+0x5c), so +0x1a2c is ERS exhaust power, not a fuel flow (fuel flow is FuelTank +0x108). Drop the superseded 'engine mode +0x2208' wording. Extra ref: lea 0x1409d60be in 0x1409d50b0."
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "carlive-verify",
+   "kind": "func",
+   "item": "Car_Powertrain_Step",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x1446e3a27;xref:0x1446e3e3d",
+   "notes": "V1809 C4/C5 turbo MaxBoost read only in mode 2; diff multiples read plain; every substep unproven"
+  },
+  {
+   "date": "2026-10-29",
+   "verifier": "carlive-verify",
+   "kind": "func",
+   "item": "Car_Powertrain_Step",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "xref:0x1446e3a27;xref:0x1446e3e3d",
+   "notes": "V3939 C4/C5 turbo MaxBoost read only in mode 2; diff multiples read plain; every substep unproven"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446e2290",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446e2290.c;xref:0x1409d60c0",
+   "notes": "V6836 Component offsets and fuel-mode scale offsets, throttle clamp +0x100<0.08, turbo +0x304 confirmed."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_UINodeBase_OnElementNodeUnBind",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14421c370",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/14421c370.c;xref:0x143801e68,0x14384cbb8,0x14421c229,0x14423c698",
+  "notes": "cxx=NeUINodeBase::onElementNodeUnBind; log channel UI_latency: '***** Frame:%I64u NeUINodeBase::onElementNodeUnBind Node:%hs'"
+ },
+ "signature": {
+  "id": "core.ui_node_base_on_element_node_un_bind",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 83 EC 28 48 89 CE 80 3D ?? ?? ?? ?? 01 0F 85",
+  "match": "0x14421c370",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14421c370",
+  "kind": "func_start",
+  "names": [
+   "Ne_UINodeBase_OnElementNodeUnBind"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb4-verify-b",
+   "kind": "func",
+   "item": "Ne_UINodeBase_OnElementNodeUnBind",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14421c370.c;xref:0x14421c370",
+   "notes": "V2199 string confirmed; logs then clears field +0x94 of first child of matching type"
+  }
+ ],
+ "proofs": []
+}

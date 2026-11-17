@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Read_UpgradeHashname",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14351a420",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Career_Read_UpgradeHashname(int64_t *self,uint64_t a2,uint64_t a3,void * a4)",
+  "evidence": "decomp:re/decomp/14351a420.c;xref:0x14351dbcf;xref:0x143520caf;xref:0x14352110f",
+  "notes": "myteam-g1: Reads upgrade_hashname."
+ },
+ "signature": {
+  "id": "career.read_upgrade_hashname",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 30 0C 00 00",
+  "match": "0x14351a420",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14351a420",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_UpgradeHashname"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14351a420",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14351a420.c;xref:0x14351dbcf",
+   "notes": "V10279 Reads upgrade_hashname, reason_for_no_recommendation, find_mode (with base/dev/fit)."
+  }
+ ],
+ "proofs": []
+}

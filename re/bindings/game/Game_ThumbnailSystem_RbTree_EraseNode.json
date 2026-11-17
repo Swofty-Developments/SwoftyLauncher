@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_ThumbnailSystem_RbTree_EraseNode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ee2c50",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ee2c50.c;xref:0x142e237d3,0x142e24386",
+  "notes": "Walks an RB-tree of pending thumbnail tasks (nodes with 0x19 nil flag) and dispatches/finishes each. Called by Game_ThumbnailSystem_UpdateTasks. Hypothesis. vp5-verify partial/disagree"
+ },
+ "signature": {
+  "id": "game.thumbnail_system_process_task_tree",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 49 89 C6 4C 8B 78 40 4D 85 FF 74 20 4D 8B 6E",
+  "match": "0x142e237d3",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x142ee2c50",
+  "kind": "func_start",
+  "names": [
+   "Game_ThumbnailSystem_RbTree_EraseNode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x142ee2c50",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/142ee2c50.c;xref:0x142e237d3",
+   "notes": "V8108 Better name Game_ThumbnailSystem_RbTree_EraseNode: red-black tree node unlink plus rebalance (size counter param_1[1]--); no task dispatch or finish"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Career_ContractOutro_OnEnter",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436c3330",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "uint64_t Career_ContractOutro_OnEnter(void *state)",
+  "evidence": "decomp:re/decomp/1436c3330.c;xref:0x14585a570",
+  "notes": "Outro onEnter (vtable 0x14585a530 slot +0x40): starts the outro camera/cutscene, returns 1; onExit 0x1436c3820 only undoes its subscription and returns 1. Raised by native-1990 with --force in the career lane (owner career-re), approved by the developer on 2026-10-21 for the private F1 1990 build (doc:/mnt/work/.f1-1990/addon/native-requests.md#N1)."
+ },
+ "signature": {
+  "id": "career.contract_outro_on_enter",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 80 B9 A0 0C 00 00 00",
+  "match": "0x1436c3330",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436c3330",
+  "kind": "func_start",
+  "names": [
+   "Career_ContractOutro_OnEnter"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/f1-1990/native/src/contract_skip.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-22",
+   "verifier": "verify-1990-a",
+   "kind": "func",
+   "item": "Career_ContractOutro_OnEnter",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436c3330.c;decomp:re/decomp/1436c3820.c;decomp:re/decomp/1436c3230.c;xref:0x14585a570;sig:career.contract_outro_on_enter",
+   "notes": "V0961 Vtable 0x14585a530 slot +0x40 (abs ptr 0x14585a570); factory 0x140843c30 registered at 0x140802854 under djb2('StateDriverCareerContractNegotiationsOutro') = 0xbca37e6f; the rel32 hit at 0x1436378eb is a byte coincidence, not a call. When +0xca0 is clear it subscribes 0x1436c3230 to ContractNegotiationsMessage (stage 3 requests a fade out, stage 4 sets +0xca1), posts ContractNegotiationsMessage(2), caches component 0x146060840 at +0xc90 and the contracts manager (desc 0x14605c0d8) at +0xc98; always returns 1 in the low byte. That the stage-2 message starts the outro sequence is inferred from the handler's stage 3/4 replies. onExit 0x1436c3820 unsubscribes (if +0xca2), clears +0xca0/+0xca1/+0xca2 and returns 1. sigcheck: 1 hit"
+  }
+ ],
+ "proofs": []
+}

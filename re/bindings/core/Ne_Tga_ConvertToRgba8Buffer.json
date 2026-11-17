@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Tga_ConvertToRgba8Buffer",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439e7fb0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439e7fb0.c;xref:0x1439e8e46",
+  "notes": "TGA pixel converter: (flag, width u32, height u16, bpp 0x10/0x18/0x20, origin-flag byte, src ptr, allocator, mip/format byte, out desc[16]); fills the output texture desc (desc[1]+8/+0xc = w/h, desc[3]=format|0xe), allocates the pixel buffer through allocator vcall +0x18 after Ne_Gfx2Texture_ClampBlockMinAndGetAllocInfo, memsets it and converts 16-bit (SIMD shuffle constants 0x14589a1b0..1e0), 24- and 32-bit source rows to 4-byte pixels, flipping rows when origin bit 0x20 is clear. Returns the pixel pointer. Addon: TGA loader path (texture import). Hypothesis on exact 16-bit layout."
+ },
+ "signature": {
+  "id": "core.tga_convert_to_rgba8_buffer",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 18 01 00 00 C5 79 7F BC 24",
+  "match": "0x1439e7fb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439e7fb0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Tga_ConvertToRgba8Buffer"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x1439e7fb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1439e7fb0.c;xref:0x1439e8e46",
+   "notes": "V8505 TGA converter with width/height/bpp, ClampBlockMin..., allocator vcall, output desc; caller DecodeHeaderAndConvert"
+  }
+ ],
+ "proofs": []
+}

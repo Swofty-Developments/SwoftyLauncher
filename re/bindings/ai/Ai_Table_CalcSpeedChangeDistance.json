@@ -1,0 +1,82 @@
+{
+ "schema": 1,
+ "name": "Ai_Table_CalcSpeedChangeDistance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406817f0",
+  "level": "L2",
+  "subsystem": "ai",
+  "proto": "float Ai_Table_CalcSpeedChangeDistance(float v0, float v1, float max_dist, void *table_a, void *table_b, void *cursor_a, void *cursor_b)",
+  "evidence": "decomp:re/decomp/1406817f0.c;xref:0x140617097,0x140680b41",
+  "notes": "Clamps max_dist (xmm2) to 0..5000 (0x459c4000); 0 -> returns 0. Uses x = max(v0, v1). Visits the 2x2x2 corners of table_a (strides +0x160..+0x188, cursor_a indices +0x20..+0x68, bracket +0x40/+0x48) and, per corner, cells of table_b (strides +0x190..+0x1b0, cursor_b brackets +0x28/+0x30, +0x38/+0x40, +0x48/+0x50); each cell is a curve searched via vtbl +8/+0x10 and evaluated at v0 and v1, difference f(v0)-f(v1) capped by max_dist with a 10-step iteration. Corners are blended multi-linearly with keys cursor_b+4 (axis +0xb8), +8 (axis +0xe8), +0xc (axis +0x118) and cursor_a+0x10 (axis +0xd8). Callers: Ai_Update_VehicleDriver (v0 = car+0x3c, v1 = cfg+200, max = zone+0x44; stores zone+0x44 - result at +0xf4 and feeds the result as the distance key of Ai_TestTable_LookupByDistanceSpeed) and Ai_Lookahead_AdvancePhase. (corrected 2026-11-14: +0x40/+0x48 are cursor bracket indices, not lanes; no racing-line sampling.) (renamed 2026-11-14 from Ai_Path_SampleLateralOffsets: the code contradicts the old name) L2 2026-11-14 (engine-re AI round): decomp read and claims checked against the disassembly; references from a full rel32/riprel/abs64 scan of .xtls/.xtext/.data1. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "ai.path_sample_lateral_offsets",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? C4 41 30 57 C9 C4 41 7A 5F C1 C5",
+  "match": "0x140617097",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1406817f0",
+  "kind": "func_start",
+  "names": [
+   "Ai_Table_CalcSpeedChangeDistance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1406817f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1406817f0.c;xref:0x140617097,0x140680b41",
+   "notes": "V3438 Clamp 0..5000 (0x459c4000) and two-sided loop over lanes +0x40/+0x48 seen; callers ok; but decompile has stack-passed args and nothing I read shows lateral-offset sampling, name is a guess"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1406817f0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1406817f0.c;xref:0x140617097,0x140680b41",
+   "notes": "V3985 Clamp 0..5000 (0x459c4000) and two-sided loop over lanes +0x40/+0x48 seen; callers ok; but decompile has stack-passed args and nothing I read shows lateral-offset sampling, name is a guess"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la0-verify",
+   "kind": "func",
+   "item": "0x1406817f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406817f0.c;xref:0x140617097,0x140680b41",
+   "notes": "V4095 0x459c4000 (5000) clamp present, callers Ai_Update_VehicleDriver and Ai_Unk_1406807b0 confirmed; lane offsets +0x40/+0x48 not individually checked"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "ai-verify",
+   "kind": "func",
+   "item": "0x1406817f0",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1406817f0-0x14068257a;xref:0x140617097,0x140680b41",
+   "notes": "V10622 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Callers 0x140617097 (0x140614d70) and 0x140680b41 (Ai_Lookahead_AdvancePhase). 7 args (xmm0, xmm1, xmm2, r9, 3 stack). max_dist clamped with 5000.0 (0x145489db8), 10-step iteration (mov esi,0xa), table strides from +0x160/+0x190. Rename from Ai_Path_SampleLateralOffsets is right."
+  }
+ ],
+ "proofs": []
+}

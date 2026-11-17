@@ -1,6 +1,8 @@
 #include <swofty/mem.hpp>
 #include <swofty_api.h>
 
+#include "core/runtime/pages.hpp"
+
 #include <atomic>
 
 namespace swofty::mem::shared {
@@ -32,11 +34,6 @@ QueryWorkingSet query_working_set()
     return fn;
 }
 
-bool readable_protection(DWORD p)
-{
-    return (p & 0xEE) && !(p & (PAGE_GUARD | PAGE_NOACCESS));
-}
-
 int resident(uintptr_t page)
 {
     QueryWorkingSet fn = query_working_set();
@@ -46,7 +43,7 @@ int resident(uintptr_t page)
     if (!fn(GetCurrentProcess(), &e, sizeof e) || !(e.flags & 1))
         return -1;
     resident_answers.fetch_add(1, std::memory_order_relaxed);
-    return readable_protection(DWORD((e.flags >> 4) & 0x7ff)) ? 1 : 0;
+    return runtime::pages::readable_protection(DWORD((e.flags >> 4) & 0x7ff)) ? 1 : 0;
 }
 
 bool committed(uintptr_t page)
@@ -55,7 +52,7 @@ bool committed(uintptr_t page)
     MEMORY_BASIC_INFORMATION m{};
     if (VirtualQuery(reinterpret_cast<const void *>(page << 12), &m, sizeof m) != sizeof m)
         return false;
-    return m.State == MEM_COMMIT && readable_protection(m.Protect);
+    return runtime::pages::readable_region(m);
 }
 
 bool page_readable(uintptr_t page, uint64_t now)
@@ -105,6 +102,15 @@ int export_readable(const void *p, size_t n)
 
 const SwoftyMem export_table = {SWOFTY_MEM_VERSION, export_readable, invalidate};
 
+}
+
+}
+
+namespace runtime {
+
+bool readable(const void *p, size_t n)
+{
+    return swofty::mem::readable(p, n);
 }
 
 }

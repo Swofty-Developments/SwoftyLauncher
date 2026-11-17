@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Init_ContractPreferenceTables",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f6b880",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *self, void *alloc)",
+  "evidence": "decomp:re/decomp/140f6b880.c;xref:0x149cca10b",
+  "notes": "myteam-g1: Initialises hash maps (seed 0xc4ceb9fe1a85ec53) for contract preference keys such as PreferredMaxEngWorkforce and PreferredRenown and the MessageDriverContractDeclined message."
+ },
+ "signature": {
+  "id": "career.init_contract_preference_tables",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 48 48 89 D7 48 89 CE 48 89 51 08",
+  "match": "0x140f6b880",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f6b880",
+  "kind": "func_start",
+  "names": [
+   "Career_Init_ContractPreferenceTables"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f6b880",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f6b880.c;xref:0x149cca10b;str:\"PreferredMaxEngWorkforce\"",
+   "notes": "V9582 Inits hash maps with seed 0xc4ceb9fe1a85ec53 and registers PreferredRenown/PreferredMaxEngWorkforce/ContractStatus and Message* names."
+  }
+ ],
+ "proofs": []
+}

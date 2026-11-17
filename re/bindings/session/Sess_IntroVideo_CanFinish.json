@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_IntroVideo_CanFinish",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d6d3b0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d6d3b0.c;xref:0x142d6cfd9,0x142d6d593",
+  "notes": "(introState) -> bool: true when skip flag +0xdc6 set or track/mode allows the video to end; checks session mode object (+0xca0->+0x88->+0x260) type, flags +0xdc2/+0xdc3, mode byte +0xe35 and controller +0xdb8 byte +0x126. Callers: Sess_IntroVideo_OnStateEnter, Sess_IntroVideo_OnVideoDoneFadeIn."
+ },
+ "signature": {
+  "id": "session.intro_video_can_finish",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 B3 01 80 B9 C6 0D 00 00 00",
+  "match": "0x142d6d3b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d6d3b0",
+  "kind": "func_start",
+  "names": [
+   "Sess_IntroVideo_CanFinish"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142d6d3b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d6d3b0.c;xref:0x142d6cfd9,0x142d6db4a",
+   "notes": "V3620 skip flag +0xdc6, session +0xca0->+0x88->+0x260 type check, +0xdc2/+0xdc3, mode byte +0xe35, controller +0xdb8 byte +0x126; callers Sess_IntroVideo_OnStateEnter and OnVideoDoneFadeIn"
+  }
+ ],
+ "proofs": []
+}

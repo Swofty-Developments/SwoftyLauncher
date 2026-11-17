@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_ResetAll_Upgrades",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14352e1c0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "pat:per-instance-reset-call-0x14352e223;xref:0x141238503,0x14123d06f;kb:subsystems/rnd_ui.md#instances",
+  "notes": "Resets every upgrade instance through 0x143517d80 (@0x14352e223). Mode 0 then sets the owner cache U+0x1aa8 = 0x3fff0000 so the next query re-runs Career_Set_UpgradesOwner; modes 1/2 refresh availability."
+ },
+ "signature": {
+  "id": "career.reset_all_upgrades",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 CE 48 8B 81 60 19 00",
+  "match": "0x14352e1c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14352e1c0",
+  "kind": "func_start",
+  "names": [
+   "Career_ResetAll_Upgrades"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14352e1c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14352e1c0.c;xref:0x141238503",
+   "notes": "V6080 loops all trees calling 0x143517d80; mode byte +8: 0 sets +0x1aa8=0x3fff0000, 1/2 call 0x14352f300 (Refresh_UpgradeAvailability) verified"
+  },
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-g",
+   "kind": "func",
+   "item": "0x14352e1c0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14352e1c0.c;xref:0x141238503;xref:0x14123d06f;xref:0x14352e223",
+   "notes": "V9240 Loops all trees calling 0x143517d80 per instance (stride 0xe0, trees stride 0xc40); mode 0 sets +0x1aa8, modes 1/2 call 0x14352f300; note the owner cache is also reset unconditionally at the end."
+  }
+ ],
+ "proofs": []
+}

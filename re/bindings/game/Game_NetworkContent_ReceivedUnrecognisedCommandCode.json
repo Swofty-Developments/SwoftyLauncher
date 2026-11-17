@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkContent_ReceivedUnrecognisedCommandCode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14303abb0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-CONTENT",
+  "notes": "named from its log messages (channel NETWORK-CONTENT): 'Received unrecognised command code %d from %d'"
+ },
+ "signature": {
+  "id": "game.network_content_received_unrecognised_command_code",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 89 D3 45 85 C9",
+  "match": "0x14303abb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14303abb0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkContent_ReceivedUnrecognisedCommandCode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14303abb0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14303abb0.c;xref:0x143059f88",
+   "notes": "V5440 1110-line command dispatcher: cmd_Client_ReportLanguage, cmd_Host_ReportDomain, ReportVerified, Peer_ReportItemAvailability; unrecognised code is only default case. Better: Game_ContentDomainVerifier_OnReceiveCommand"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc1-verify",
+   "kind": "func",
+   "item": "0x14303abb0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14303abb0.c;xref:0x143059f87",
+   "notes": "V6936 1110 decomp lines, strings match current name"
+  }
+ ],
+ "proofs": []
+}

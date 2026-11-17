@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_Component_ResolveProviderChain",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1403806a0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1403806a0.c;xref:0x140380593",
+  "notes": "Looks a component up through 3 chained resolvers ([this+0xf0],[+0xe8],[+0xe0], vcall +8) else error 0x57 with TLS error-context stack capture; then vcalls on result. Caller Game_PhysicsSystemComponent_Initialise and 9 others."
+ },
+ "signature": {
+  "id": "core.component_resolve_provider_chain",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 4C 8B 7E 30 49 8B 4F 10 48 8B 01",
+  "match": "0x140380593",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1403806a0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Component_ResolveProviderChain"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1403806a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1403806a0.c;xref:0x140380593",
+   "notes": "V7729 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

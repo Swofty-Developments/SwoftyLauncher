@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Vm_Build_UpgradeCardScreenNodes",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141aeefb0",
+  "level": "L1",
+  "subsystem": "vm",
+  "proto": "void Vm_Build_UpgradeCardScreenNodes(void *screen)",
+  "evidence": "decomp:re/decomp/141aeefb0.c;xref:0x141ae7e6b;xref:0x141aeb6cf;xref:0x141b914dc",
+  "notes": "myteam-g2: Big (584 lines) builder that links registry nodes (Vm_Link_RegistryNode), formats per-card text with Ne_Crt_Snprintf and walks the upgrade list (Ne_Ref_GetListElementOrEmpty). Builds the facility / loadout upgrade card screen."
+ },
+ "signature": {
+  "id": "vm.build_upgrade_card_screen_nodes",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC D8 00 00 00 C5 F8 29 B4 24 C0 00 00 00 49 89 CD 48 8D 81 30 03 00 00",
+  "match": "0x141aeefb0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141aeefb0",
+  "kind": "func_start",
+  "names": [
+   "Vm_Build_UpgradeCardScreenNodes"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-4",
+   "kind": "func",
+   "item": "0x141aeefb0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/141aeefb0.c;xref:0x141ae7e6b;xref:0x141aeb6cf",
+   "notes": "V9938 Builds card entry nodes (entry_%I64u via snprintf, registry node links) for the F1 World card list; calls to the list helper are minimal and the facility attribution is unprovable."
+  }
+ ],
+ "proofs": []
+}

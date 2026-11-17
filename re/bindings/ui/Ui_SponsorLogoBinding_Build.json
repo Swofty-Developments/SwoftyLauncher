@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ui_SponsorLogoBinding_Build",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141fe26f0",
+  "level": "L2",
+  "subsystem": "ui",
+  "proto": "void *vm, void *a, void *out",
+  "evidence": "decomp:re/decomp/141fe26f0.c;xref:0x14072dee4;xref:0x141fdcb86;xref:0x141fdd212",
+  "notes": "myteam-g1: Binds show_sponsor_logo / sponsor_logo_path properties for a UI element (short variant)."
+ },
+ "signature": {
+  "id": "ui.sponsor_logo_binding_build",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 C5 F8 29 74 24 30 48 89 CE 49 8B 00 48 8D 48 09 48 85 C0 4C 8D 05 ?? ?? ?? ?? 4C 0F 45 C1 48 89 F1",
+  "match": "0x141fe26f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fe26f0",
+  "kind": "func_start",
+  "names": [
+   "Ui_SponsorLogoBinding_Build"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x141fe26f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141fe26f0.c;xref:0x14072dee4",
+   "notes": "V10029 Strings loadout_name, show_sponsor_logo, sponsor_logo_path match; extra loadout_name binding."
+  }
+ ],
+ "proofs": []
+}

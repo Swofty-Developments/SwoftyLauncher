@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetFormationLap_SetVehicleLocal",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143259ce0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143259ce0.c;xref:0x14325a4c7,0x14325aec0,0x14325b2f0",
+  "notes": "Marks a formation-lap vehicle record (car idx rec+1) local or remote by lobby slot vs local machine id; resets the parking fields when it becomes local. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2764)"
+ },
+ "signature": {
+  "id": "game.net_formation_lap_set_vehicle_local",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 20 0F B6 42 01 48 3D FF 00 00",
+  "match": "0x143259ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143259ce0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetFormationLap_SetVehicleLocal"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d8-verify",
+   "kind": "func",
+   "item": "Game_NetFormationLap_SetVehicleLocal",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143259ce0.c;xref:0x143259e20",
+   "notes": "V2764 rec[1]=car idx, local = lobby slot==local machine id, resets rec +0x18..0x1a,+0x40 on becoming local confirmed"
+  }
+ ],
+ "proofs": []
+}

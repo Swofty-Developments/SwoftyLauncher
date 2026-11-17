@@ -1,4 +1,4 @@
-import json, os, shutil, sys, tempfile, time, unittest
+import json, os, shutil, sys, tempfile, unittest
 from unittest import mock
 
 TOOLS = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -6,7 +6,6 @@ sys.path.insert(0, TOOLS)
 import binding_record as br
 
 SAMPLES = ('session/site_Sess_StintTyreCheckPredictCall.json', 'core/Ne_Get_SettingDouble.json')
-WINDOW_NS = 50_000_000
 
 
 def sample(rel):
@@ -14,33 +13,32 @@ def sample(rel):
         return f.read()
 
 
+def strict_parse_forbidden():
+    return mock.patch.object(br.Record, 'from_bytes', side_effect=AssertionError('parsed a cached record'))
+
+
 class RecordCacheTest(unittest.TestCase):
     def setUp(self):
         self.dir = tempfile.mkdtemp()
+        self.addCleanup(shutil.rmtree, self.dir)
         self.root = os.path.join(self.dir, 'bindings')
         self.cache = os.path.join(self.dir, 'cache', 'records.json')
         for rel in SAMPLES:
             self.write(rel, sample(rel))
-        patcher = mock.patch.object(br.RecordCache, 'RACY_NS', WINDOW_NS)
-        patcher.start()
-        self.addCleanup(patcher.stop)
-        self.addCleanup(shutil.rmtree, self.dir)
 
-    def write(self, rel, data):
-        path = os.path.join(self.root, rel)
+    def write(self, rel, data, root=None):
+        path = os.path.join(root or self.root, rel)
         os.makedirs(os.path.dirname(path), exist_ok=True)
         with open(path, 'wb') as f:
             f.write(data)
         return path
 
-    def settle(self):
-        time.sleep(WINDOW_NS * 2 / 1e9)
+    def load(self, root=None):
+        return br.Store(root or self.root, cache_path=self.cache)
 
-    def load(self):
-        return br.Store(self.root, cache_path=self.cache)
-
-    def fresh(self):
-        return br.Store(self.root)
+    def fresh(self, root=None):
+        with mock.patch.dict(os.environ, {'SWOFTY_RECORD_CACHE': '0'}):
+            return br.Store(root or self.root)
 
     def entries(self):
         if not os.path.exists(self.cache):
@@ -51,13 +49,12 @@ class RecordCacheTest(unittest.TestCase):
     def view(self, store):
         return sorted((r.relpath, r.to_json()) for r in store.records), sorted(store.errors)
 
-    def same_as_fresh(self):
-        cached = self.load()
-        self.assertEqual(self.view(cached), self.view(self.fresh()))
+    def same_as_fresh(self, root=None):
+        cached = self.load(root)
+        self.assertEqual(self.view(cached), self.view(self.fresh(root)))
         return cached
 
     def cached_load(self):
-        self.settle()
         self.load()
         self.assertEqual(sorted(self.entries()), sorted(SAMPLES))
 
@@ -70,27 +67,27 @@ class RecordCacheTest(unittest.TestCase):
         self.assertNotEqual(data, sample(rel))
         return data, doc['row']['notes']
 
-    def test_a_settled_load_is_served_from_the_cache(self):
+    def test_a_second_load_is_served_from_the_cache(self):
         self.cached_load()
-        with mock.patch.object(br.Record, 'load', side_effect=AssertionError('parsed a cached record')):
+        with strict_parse_forbidden():
             store = self.load()
         self.assertEqual(len(store.records), len(SAMPLES))
         self.assertEqual(self.view(store), self.view(self.fresh()))
 
-    def test_a_changed_record_of_the_same_size_is_parsed_again(self):
+    def test_a_same_size_edit_right_after_a_load_is_parsed_again(self):
         self.cached_load()
         rel = SAMPLES[0]
-        data, swapped = self.same_size_edit(rel)
+        data, notes = self.same_size_edit(rel)
         self.write(rel, data)
         store = self.same_as_fresh()
-        self.assertEqual(store.by_relpath(rel).doc['row']['notes'], swapped)
+        self.assertEqual(store.by_relpath(rel).doc['row']['notes'], notes)
 
     def test_a_record_replaced_with_its_old_size_and_mtime_is_parsed_again(self):
         self.cached_load()
         rel = SAMPLES[0]
         path = os.path.join(self.root, rel)
         old = os.lstat(path)
-        data, swapped = self.same_size_edit(rel)
+        data, notes = self.same_size_edit(rel)
         tmp = os.path.join(self.dir, 'replacement.json')
         with open(tmp, 'wb') as f:
             f.write(data)
@@ -99,18 +96,7 @@ class RecordCacheTest(unittest.TestCase):
         new = os.lstat(path)
         self.assertEqual((new.st_size, new.st_mtime_ns), (old.st_size, old.st_mtime_ns))
         store = self.same_as_fresh()
-        self.assertEqual(store.by_relpath(rel).doc['row']['notes'], swapped)
-
-    def test_a_record_written_just_before_a_load_is_not_stored(self):
-        rel = SAMPLES[0]
-        self.write(rel, sample(rel))
-        with mock.patch.object(br.RecordCache, 'RACY_NS', 60_000_000_000):
-            self.load()
-        self.assertNotIn(rel, self.entries())
-        data, swapped = self.same_size_edit(rel)
-        self.write(rel, data)
-        store = self.same_as_fresh()
-        self.assertEqual(store.by_relpath(rel).doc['row']['notes'], swapped)
+        self.assertEqual(store.by_relpath(rel).doc['row']['notes'], notes)
 
     def test_an_added_record_is_served(self):
         self.cached_load()
@@ -134,52 +120,101 @@ class RecordCacheTest(unittest.TestCase):
         broken = self.same_as_fresh()
         self.assertIsNone(broken.by_relpath(rel))
         self.assertTrue(any(e.startswith(f'bindings/{rel}: invalid JSON') for e in broken.errors))
-        self.settle()
-        self.load()
-        self.assertTrue(self.entries()[rel]['errors'])
+        self.assertTrue(self.entries()[rel][1])
+        with strict_parse_forbidden():
+            again = self.load()
+        self.assertEqual(self.view(again), self.view(broken))
         self.write(rel, sample(rel))
         healed = self.same_as_fresh()
         self.assertIsNotNone(healed.by_relpath(rel))
         self.assertEqual(healed.errors, [])
 
+    def test_the_same_bytes_under_another_name_are_parsed_again(self):
+        self.cached_load()
+        other = 'session/site_Cache_Renamed.json'
+        os.rename(os.path.join(self.root, SAMPLES[0]), os.path.join(self.root, other))
+        with mock.patch.object(br.Record, 'from_bytes', wraps=br.Record.from_bytes) as parsed:
+            store = self.load()
+        self.assertEqual(parsed.call_count, 1)
+        self.assertEqual(self.view(store), self.view(self.fresh()))
+
+    def test_a_symlinked_or_oversized_record_is_never_cached(self):
+        self.cached_load()
+        link = os.path.join(self.root, 'session', 'site_Cache_Link.json')
+        os.symlink(os.path.join(self.root, SAMPLES[0]), link)
+        self.write('session/site_Cache_Big.json', b' ' * (br.MAX_BYTES + 1))
+        store = self.same_as_fresh()
+        self.assertTrue(any('site_Cache_Link.json: not a regular file' in e for e in store.errors))
+        self.assertTrue(any('site_Cache_Big.json: file is' in e for e in store.errors))
+        self.assertEqual(sorted(self.entries()), sorted(SAMPLES))
+
     def test_a_parser_change_drops_every_entry(self):
         self.cached_load()
         with mock.patch.object(br, 'parser_digest', return_value='0' * 64), \
-                mock.patch.object(br.Record, 'load', wraps=br.Record.load) as load:
+                mock.patch.object(br.Record, 'from_bytes', wraps=br.Record.from_bytes) as parsed:
             self.load()
-        self.assertEqual(load.call_count, len(SAMPLES))
+        self.assertEqual(parsed.call_count, len(SAMPLES))
 
     def test_an_entry_without_its_file_is_never_a_record(self):
         self.cached_load()
         with open(self.cache) as f:
             doc = json.load(f)
-        ghost = dict(doc['entries'][SAMPLES[0]])
-        ghost['doc'] = dict(ghost['doc'], name='site_Cache_Ghost')
-        doc['entries']['session/site_Cache_Ghost.json'] = ghost
+        doc['entries']['session/site_Cache_Ghost.json'] = doc['entries'][SAMPLES[0]]
         with open(self.cache, 'w') as f:
             json.dump(doc, f)
         store = self.same_as_fresh()
         self.assertIsNone(store.by_relpath('session/site_Cache_Ghost.json'))
         self.assertNotIn('session/site_Cache_Ghost.json', self.entries())
 
+    def test_a_forged_entry_for_changed_bytes_is_not_trusted(self):
+        self.cached_load()
+        rel = SAMPLES[0]
+        self.write(rel, b'{"schema": 1}')
+        with open(self.cache) as f:
+            doc = json.load(f)
+        doc['entries'][rel] = ['f' * 64, []]
+        with open(self.cache, 'w') as f:
+            json.dump(doc, f)
+        store = self.same_as_fresh()
+        self.assertIsNone(store.by_relpath(rel))
+        self.assertTrue(any(e.startswith(f'bindings/{rel}:') for e in store.errors))
+
     def test_an_unreadable_or_foreign_cache_is_ignored(self):
         self.cached_load()
-        for body in ('{not json', json.dumps({'schema': br.CACHE_SCHEMA, 'code': br.parser_digest(),
-                                               'root': os.path.join(self.dir, 'elsewhere'), 'entries': {}}),
+        for body in ('{not json', json.dumps({'schema': br.CACHE_SCHEMA, 'code': '0' * 64, 'entries': {}}),
+                     json.dumps({'schema': br.CACHE_SCHEMA + 1, 'code': br.parser_digest(), 'entries': {}}),
                      json.dumps([1, 2, 3])):
             with open(self.cache, 'w') as f:
                 f.write(body)
             self.same_as_fresh()
             self.assertEqual(sorted(self.entries()), sorted(SAMPLES))
 
-    def test_the_real_records_load_the_same_with_and_without_the_cache(self):
-        cache = os.path.join(self.dir, 'real.json')
-        first = br.Store(br.RECORDS, cache_path=cache)
-        again = br.Store(br.RECORDS, cache_path=cache)
+    def test_a_copy_of_the_tree_is_served_from_the_same_cache(self):
+        self.cached_load()
+        copy = os.path.join(self.dir, 'copy')
+        shutil.copytree(self.root, copy)
+        with strict_parse_forbidden():
+            store = self.load(copy)
+        self.assertEqual(self.view(store), self.view(self.fresh(copy)))
+
+    def test_the_environment_turns_the_cache_off_or_points_it_elsewhere(self):
+        other = os.path.join(self.dir, 'elsewhere.json')
+        with mock.patch.dict(os.environ, {'SWOFTY_RECORD_CACHE': other}):
+            br.Store(self.root)
+        self.assertTrue(os.path.exists(other))
         with mock.patch.dict(os.environ, {'SWOFTY_RECORD_CACHE': '0'}):
-            plain = br.Store(br.RECORDS)
-        self.assertEqual(self.view(first), self.view(plain))
-        self.assertEqual(self.view(again), self.view(plain))
+            self.assertIsNone(br.cache_path_for(br.RECORDS))
+        with mock.patch.dict(os.environ, {'SWOFTY_RECORD_CACHE': ''}):
+            self.assertEqual(br.cache_path_for(br.RECORDS), br.CACHE)
+            self.assertIsNone(br.cache_path_for(self.root))
+
+    def test_the_real_records_load_the_same_with_and_without_the_cache(self):
+        shared = br.Store.get()
+        cache = br.cache_path_for(br.RECORDS)
+        warm = br.Store(br.RECORDS, cache_path=cache) if cache else shared
+        plain = self.fresh(br.RECORDS)
+        self.assertEqual(self.view(shared), self.view(plain))
+        self.assertEqual(self.view(warm), self.view(plain))
 
 
 if __name__ == '__main__':

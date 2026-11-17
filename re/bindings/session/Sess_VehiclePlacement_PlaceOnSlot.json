@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_VehiclePlacement_PlaceOnSlot",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f343d0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-VEHICLE_PLACEMENT;decomp:re/decomp/142f343d0.c;xref:0x142a3c7b2,0x142a3f2e3,0x142d14e20,0x142d17447",
+  "notes": "named from its log messages (channel VEHICLE_PLACEMENT): 'Placing vehicle %-12s %2d on slot %2d at pos (%+f, %+f, %+f) with type %s'"
+ },
+ "signature": {
+  "id": "session.vehicle_placement_place_on_slot",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 44 89 CD 44 89 C6",
+  "match": "0x142f343d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f343d0",
+  "kind": "func_start",
+  "names": [
+   "Sess_VehiclePlacement_PlaceOnSlot"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb3-verify-a",
+   "kind": "func",
+   "item": "Sess_VehiclePlacement_PlaceOnSlot",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f343d0.c;xref:0x142f343d0",
+   "notes": "V1906 log strings confirmed by disassembly lea refs inside function"
+  }
+ ],
+ "proofs": []
+}

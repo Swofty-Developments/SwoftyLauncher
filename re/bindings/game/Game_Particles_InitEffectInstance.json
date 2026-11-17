@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Particles_InitEffectInstance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143af7160",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143af7160.c;xref:0x143af5d93,0x143b02efd",
+  "notes": "Initialises a particle effect instance from spawn params (8 qwords: position, velocity/orientation, scale) at node+0xc0; uses Ne_Crt_Sqrtf for direction normalisation. Callers Render_Particles_CreateCarEffect, Game_Particles_CreateEffectNode, 0x143adaf50. Hypothesis."
+ },
+ "signature": {
+  "id": "game.particles_init_effect_instance",
+  "section": ".xtls",
+  "pattern": "48 83 EC 68 C5 78 29 5C 24 50 C5 78 29 54 24 40 C5 78 29 4C 24 30 C5 78 29 44 24 20 C5 F8 29 7C 24 10 C5 F8 29 34 24 48 8B 81 C0 00",
+  "match": "0x143af7160",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143af7160",
+  "kind": "func_start",
+  "names": [
+   "Game_Particles_InitEffectInstance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x143af7160",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143af7160.c;xref:0x143adb75b",
+   "notes": "V7858 name, concrete offsets/strings/callers match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Issue_StopGo",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143571850",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "pat:log-channel-RULES;decomp:re/decomp/143571850.c;xref:0x143572a00;doc:re/db/subsystems/session.md",
+  "notes": "Log channel RULES: 'Car %d Assigning Post-Race Penalty' | 'Car %d ISSUE STOP-GO PENALTY' | 'Car %d ATTEMPTED TO ISSUE STOP-GO, BUT THEY ARE NOT AVAILABLE IN THE CURRENT SESSION TYPE, SO ISSUING A 5 SECOND TIME PENALTY' | tl-verify L2 (CORRECTED): penalty dispatcher on a level byte: 1 warning (0x143572a00, posts type 5), 2 warning or 3 s (when infringement byte 0x15 or param_3 == 7), 3 time penalty from table 0x145f95d50 (5/5/10/20 by [ctx+0x6c], rewritten at runtime by 0x143575df0) on one path else 5 s, 4/7 drive-through 0x143574160 if a flag is clear else 10 s, 5 = 10 s, 6 black flag 0x143573760 (car bit +0x1d08, posts type 7); second mapping via 0x143573690 (2->2, 3->3, 4->5, 5->10); seconds * float 0x145f96748 (1.0). Softer-penalty hook: rewrite the level byte here"
+ },
+ "signature": {
+  "id": "session.issue_stop_go",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 81 EC 88 00 00 00 44 89 C3 48 89 D7 48 89 CE 0F B6 12 48 81 FA FF 00 00 00",
+  "match": "0x143571850",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143571850",
+  "kind": "func_start",
+  "names": [
+   "Sess_Issue_StopGo"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-29",
+   "verifier": "tl-verify",
+   "kind": "func",
+   "item": "Sess_Issue_StopGo",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "xref:0x143572a00",
+   "notes": "V1785 L2; conditional mapping, table rewritten at runtime"
+  }
+ ],
+ "proofs": []
+}

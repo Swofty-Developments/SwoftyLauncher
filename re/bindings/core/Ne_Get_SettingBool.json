@@ -1,0 +1,53 @@
+{
+ "schema": 1,
+ "name": "Ne_Get_SettingBool",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a43b90",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "uint64_t Ne_Get_SettingBool(void *node, const char *name, uint8_t *out, uint8_t def)",
+  "evidence": "decomp:re/decomp/143a43b90.c;xref:0x1443cc6b7,0x1443cc6fa,0x1401056f3,0x14014d36d",
+  "notes": "generic engine setting getter, bool: locks node+0x10, looks name up in the map at node+8, converts the value into *out and returns 0; on a missing name or a type mismatch writes def to *out and returns 2 or 0x53. 350 direct call sites. Read names include Renderer.Gfx.enableVRS (0x1443cc6b7, def 1) and Renderer.Gfx.enableAsyncCompute (0x1443cc6fa). Same entry as xanpavle F1-25-RE-Optimization RVA 0x03a43b90"
+ },
+ "signature": {
+  "id": "core.setting_get_bool",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 38 44 89 CB 4C 89 C7 49 89 CE 48 89 54 24 30 48 8D 71 10 48 89 F1 E8 ?? ?? ?? ?? 4D 8B 76 08 4D 85 F6",
+  "match": "0x143a43b90",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a43b90",
+  "kind": "func_start",
+  "names": [
+   "Ne_Get_SettingBool"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "reopt-port",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/re-optimization/native/src/re_optimization.cpp (xanpavle.re-optimization)"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "reopt-verify",
+   "kind": "func",
+   "item": "0x143a43b90",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143a43b90.c;decomp:re/decomp/14391a0d0.c;xref:0x1443cc6b7,0x1443cc6fa,0x1401056f3,0x14014d36d;sig:core.setting_get_bool",
+   "notes": "V0021 Prologue keeps rcx/rdx/r8/r9d (4 args, def stored with mov byte [rdi],bl). Locks node+0x10 (0x1449e2298), map at node+8 searched by 0x143905280, entry+8 value string converted by 0x14391a0d0 (zeroes *out, parses 0/1 text into a byte) -> ret 0; null map or name missing -> *out=def, ret 2; conversion failure -> *out=def, ret 0x53; unlock 0x1449e22bc. Own E8 scan: 350 direct callers. 0x1443cc6b7: rcx=0x14604e8d8, rdx=Renderer.Gfx.enableVRS, r9b=1; 0x1443cc6fa: Renderer.Gfx.enableAsyncCompute. sigcheck core.setting_get_bool unique, target 0x143a43b90."
+  }
+ ],
+ "proofs": []
+}

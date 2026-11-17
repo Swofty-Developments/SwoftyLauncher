@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_CareerOnlineDoc_ResetAfterSync",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140fd04e0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140fd04e0.c;xref:0x140fcfe39",
+  "notes": "game::championship::CareerOnlineDocumentComponent::resetAfterSynchronisation (log CAREER_DATA_SYNC). Posts message 0x12/0x86 (desc 0x1456b4d60, error flag from result +0x88/+0x8, code +0x98) to [[this+0x290]+0x3d0], calls Game_CareerOnlineManagerComponent_SetCareerDataVersion; under lock this+0x3e0 if sync state (this+0x410 &3)==2 stops busy spinner type 0 ([this+0x3d8]+0x40), clears this+0x3b0 and +0x410; releases op handle +0x3a8 (alloc +0x3a0). lea-registered as callback at 0x140fcfe39. Addon: hook = online career document sync finished. | #587: L2 by lead-authorised promotion for lane owner career-re (independent agree V3256)"
+ },
+ "signature": {
+  "id": "career.career_online_doc_reset_after_sync",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 B8 12 00 00 00 86 00 00",
+  "match": "0x140fd04e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140fd04e0",
+  "kind": "func_start",
+  "names": [
+   "Career_CareerOnlineDoc_ResetAfterSync"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Career_CareerOnlineDoc_ResetAfterSync",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140fd04e0.c;xref:0x140fd04e0",
+   "notes": "V3256 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

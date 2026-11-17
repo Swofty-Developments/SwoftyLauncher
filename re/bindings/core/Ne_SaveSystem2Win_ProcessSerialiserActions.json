@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SaveSystem2Win_ProcessSerialiserActions",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14414cdd0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/14414cdd0.c;xref:0x14413f1e0,0x1441522c5",
+  "notes": "logged method name readSecurityInfoFile (class from the log channel); log channel NeSaveSystem2Win: 'readSecurityInfoFile claimed numFiles=%u' cb4-verify-a: 21 KB routine driving the save serialiser getNextAction (read/update/abort): read/write/delete save files, encryption, HMAC, header magic and size checks, decryption, security info file (readSecurityInfoFile inlined near the end); callers SelectAndLoad 0x14413ecd0 and writer 0x144152070"
+ },
+ "signature": {
+  "id": "core.save_system2_win_read_security_info_file",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 0E 00 00 C5 78 29 84 24 D0 0E 00 00",
+  "match": "0x14414cdd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14414cdd0",
+  "kind": "func_start",
+  "names": [
+   "Ne_SaveSystem2Win_ProcessSerialiserActions"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x14414cdd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14414cdd0.c;xref:0x14413f1e0,0x1441522c5",
+   "notes": "V4116 readSecurityInfoFile string; callers SelectAndLoad 0x14413f1e0 and SaveSelected 0x1441522c5 confirmed"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Render_CustomisationDecal_AddPassWithConst12",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143c74670",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143c74670.c;xref:0x143c69db8,0x143c73415",
+  "notes": "Hypothesis: bump allocator (cmpxchg +0x20, align 4, 0xc bytes) plus StringPool intern for a decal pass parameter block; fatal abort on failure. Named callers: Ne_CustomisationDecalRenderer_BakePasses. vp5-verify partial/disagree"
+ },
+ "signature": {
+  "id": "render.customisation_decal_alloc_pass_params",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 45 31 ED B0 01 48 8B 9C 24 48 01",
+  "match": "0x143c73415",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x143c74670",
+  "kind": "func_start",
+  "names": [
+   "Render_CustomisationDecal_AddPassWithConst12"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp5-verify",
+   "kind": "func",
+   "item": "0x143c74670",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143c74670.c;xref:0x143c69db8",
+   "notes": "V8148 Better name Render_CustomisationDecal_AddPassWithConst12: same template as 143bc6f50 (12-byte bump alloc plus pass record build and 143bdd920 call), not only a param block allocator"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverCustomisationReplicationManager_GenerateHostNetStatId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1431c22e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=DriverCustomisationReplicationManager::generateHostNetStatId; log channel NETWORK-ENTRANTS: 'void network::DriverCustomisationReplicationManager::generateHostNetStatId() | %s : There is no driver customisation assigned to the global slot.'"
+ },
+ "signature": {
+  "id": "game.driver_customisation_replication_manager_generate_host_net_stat_id",
+  "section": ".xtls",
+  "pattern": "56 57 53 B8 B0 C5 00 00 E8 ?? ?? ?? ?? 48 29 C4",
+  "match": "0x1431c22e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1431c22e0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverCustomisationReplicationManager_GenerateHostNetStatId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x1431c22e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1431c22e0.c",
+   "notes": "V5937 name and log/cxx claim match body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

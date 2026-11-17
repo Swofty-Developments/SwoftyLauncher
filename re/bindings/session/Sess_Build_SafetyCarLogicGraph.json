@@ -1,0 +1,71 @@
+{
+ "schema": 1,
+ "name": "Sess_Build_SafetyCarLogicGraph",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435f81a0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1435f81a0.c;xref:0x1435f906b",
+  "notes": "builds the SC state machine (Idle, Deploy, Group, Pacing, Return, Returned To Pit, VSC, Red Flag Intro/Deploy, Cinematic SC) with its transitions and conditions; sets vt_Sess_ScAheadOfLead at 0x1435f906b; AheadOfLead is the condition of Deploy_To_Group, Cars Grouped of Pacing_To_Return. sb4-verify correction: AheadOfLead (0x145f96c98) is attached only to Deploy_To_Group; Pacing_To_Return gets conditions 0x145f968c0 and Cars Grouped 0x145f96ca8"
+ },
+ "signature": {
+  "id": "session.build_safety_car_logic_graph",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC F8 03 00 00 C5 F8 29 B4 24 E0 03 00 00 49 89 D7 48 89 CE",
+  "match": "0x1435f81a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435f81a0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Build_SafetyCarLogicGraph"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "sb4-verify",
+   "kind": "func",
+   "item": "Sess_Build_SafetyCarLogicGraph",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1435f81a0.c;xref:0x1435f906b",
+   "notes": "V1942 states/transitions ok; vtable store at 906b ok. AheadOfLead (key 0x145f96c98) is attached only to Deploy_To_Group (block 4620); Pacing_To_Return gets 0x145f968c0 + Cars Grouped (0x145f96ca8), not AheadOfLead"
+  },
+  {
+   "date": "2026-10-30",
+   "verifier": "sb4-verify",
+   "kind": "func",
+   "item": "Sess_Build_SafetyCarLogicGraph",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1435f81a0.c;xref:0x1435f906b",
+   "notes": "V3959 states/transitions ok; vtable store at 906b ok. AheadOfLead (key 0x145f96c98) is attached only to Deploy_To_Group (block 4620); Pacing_To_Return gets 0x145f968c0 + Cars Grouped (0x145f96ca8), not AheadOfLead"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "la2-verify",
+   "kind": "func",
+   "item": "0x1435f81a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435f81a0.c",
+   "notes": "V4043 8227-line SC graph builder; AheadOfLead object 0x145f96c98 referenced (lines ~790-800); corrected attachment statement consistent; state strings not individually re-read (vtable/indirect or no direct callsite checked)"
+  }
+ ],
+ "proofs": []
+}

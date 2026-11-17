@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PresenceQueue_Enqueue",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144134d70",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144134d70.c;xref:0x143864070",
+  "notes": "Under critical section (+0x28) appends a (ptr,refcount) pair to the presence request list (+0x58) and wakes the worker; callers Game_ActivitiesUIDeeplinkManager_OnPresenceReady / Report*."
+ },
+ "signature": {
+  "id": "core.presence_queue_enqueue",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D6 48 83 79 10 00 74 33",
+  "match": "0x144134d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144134d70",
+  "kind": "func_start",
+  "names": [
+   "Ne_PresenceQueue_Enqueue"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144134d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144134d70.c;xref:0x143864070",
+   "notes": "V7639 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverStatisticsComp_IsOnlineCareerOwnerGrantingPermission",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1411469e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "str:s_Championship_DriverStatisticsComponent_IsOnlineCareerOwnerGrantingPerm;xref:0x141146ce7",
+  "notes": "cxx=game::championship::DriverStatisticsComponent::isOnlineCareerOwnerGrantingPermission; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "game.driver_statistics_comp_is_online_career_owner_granting_permission",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 81 EC F0 00 00 00 40 B6 01 80 B9 A8",
+  "match": "0x1411469e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1411469e0",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverStatisticsComp_IsOnlineCareerOwnerGrantingPermission"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb05-verify",
+   "kind": "func",
+   "item": "0x1411469e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1411469e0.c;xref:0x14a521e5d",
+   "notes": "V4613 name and quoted log strings/pretty-function present in body"
+  }
+ ],
+ "proofs": []
+}

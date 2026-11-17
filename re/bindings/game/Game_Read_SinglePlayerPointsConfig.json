@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Read_SinglePlayerPointsConfig",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14275af20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel--",
+  "notes": "named from its log messages (channel -): 'Reads settings/game DB keys: single_player_points.difficulty.above.range_lower, single_player_points.difficulty.above.range_upper, single_player_points.difficulty.below.range_lower, single_player_points.difficulty.below.range_upper, single_player_points.tech_level.above.range_lower, single_player_po'"
+ },
+ "signature": {
+  "id": "game.read_single_player_points_config",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 48 C5 F8 29 7C 24 30 C5 F8 29 74 24 20 48 89 D7 48 89 CE 48 8D 15",
+  "match": "0x14275af20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14275af20",
+  "kind": "func_start",
+  "names": [
+   "Game_Read_SinglePlayerPointsConfig"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x14275af20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14275af20.c",
+   "notes": "V5107 Name and logged strings/offsets match body"
+  }
+ ],
+ "proofs": []
+}

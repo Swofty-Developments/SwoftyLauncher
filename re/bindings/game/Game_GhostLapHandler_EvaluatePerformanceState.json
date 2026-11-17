@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GhostLapHandler_EvaluatePerformanceState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f9f870",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f9f870.c;xref:0x142f98320",
+  "notes": "evaluatePerformanceState: returns [ctx+0x130]+0x12c (0 Realistic, 1 Equal, else Invalid) = TT car performance setting stored with the leaderboard entry/ghost. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2372)"
+ },
+ "signature": {
+  "id": "game.ghost_lap_handler_evaluate_performance_state",
+  "section": ".xtls",
+  "pattern": "56 48 83 EC 30 48 8B 82 30 01 00 00 8B B0 2C 01",
+  "match": "0x142f9f870",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f9f870",
+  "kind": "func_start",
+  "names": [
+   "Game_GhostLapHandler_EvaluatePerformanceState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d3-verify",
+   "kind": "func",
+   "item": "Game_GhostLapHandler_EvaluatePerformanceState",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f9f870.c;xref:0x142f98320",
+   "notes": "V2372 returns [[ctx+0x130]+0x12c]; strings 0=Realistic,1=Equal,else Invalid verified; called from Update l.2392."
+  }
+ ],
+ "proofs": []
+}

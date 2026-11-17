@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkVoice_LeaveActiveChannel",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144036a30",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-method",
+  "notes": "logged method name leaveActiveChannel (class from the log channel); log channel NETWORK-VOICE: '%s: channel #%u removed'"
+ },
+ "signature": {
+  "id": "game.network_voice_leave_active_channel",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 80 79 08 00",
+  "match": "0x144036a30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144036a30",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkVoice_LeaveActiveChannel"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb20-verify",
+   "kind": "func",
+   "item": "0x144036a30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144036a30.c;xref:0x1440368bb",
+   "notes": "V6410 name and logged strings match body"
+  }
+ ],
+ "proofs": []
+}

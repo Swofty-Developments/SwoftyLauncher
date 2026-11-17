@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Gfx2CmdNode_EmitDebugRangeA",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143a04230",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143a04230.c;xref:0x143a063de",
+  "notes": "Writes the 8-byte header constant 0x200000002 into field +0x60 of a command node. Caller Render_Gfx2CmdContext_AllocCommandNodeA. vq0-verify partial/disagree"
+ },
+ "signature": {
+  "id": "render.gfx2_cmd_node_init_header_a",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 48 8B 05 ?? ?? ?? ?? 80 B8 CF",
+  "match": "0x143a04230",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143a04230",
+  "kind": "func_start",
+  "names": [
+   "Render_Gfx2CmdNode_EmitDebugRangeA"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143a04230",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/143a04230.c;xref:0x143a063de",
+   "notes": "V8524 no write of 0x200000002 to node+0x60: it is a local struct passed to a queried debug interface vcall +0x210, gated by flags +0x26f8; also called from AllocCommandNodeB; better name Render_Gfx2CmdNode_EmitDebugRangeA"
+  }
+ ],
+ "proofs": []
+}

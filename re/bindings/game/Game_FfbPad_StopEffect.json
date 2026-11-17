@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_FfbPad_StopEffect",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1446f3d70",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-FFB_DEBUG",
+  "notes": "named from its log messages (channel FFB_DEBUG): 'Called stop() on an already stopped PS pad effect'"
+ },
+ "signature": {
+  "id": "game.ffb_pad_stop_effect",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 58 80 B9 E0 01 00 00 00",
+  "match": "0x1446f3d70",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1446f3d70",
+  "kind": "func_start",
+  "names": [
+   "Game_FfbPad_StopEffect"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb23-verify",
+   "kind": "func",
+   "item": "0x1446f3d70",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1446f3d70.c",
+   "notes": "V6845 Stop-already-stopped log confirmed. (vtable/indirect, no direct call site)"
+  }
+ ],
+ "proofs": []
+}

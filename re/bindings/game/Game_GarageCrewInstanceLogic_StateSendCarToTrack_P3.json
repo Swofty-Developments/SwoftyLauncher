@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GarageCrewInstanceLogic_StateSendCarToTrack_P3",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140386320",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140386320.c;xref:0x145622ec8",
+  "notes": "cxx=GarageCrewInstanceLogic::StateSendCarToTrack_P3; log channel GARAGECREW: 'GarageCrewInstanceLogic::StateSendCarToTrack_P3::processEvent unexpected %d %s' L2 2026-11-14 (engine-re round 2): decomp read; 1 reference(s) (0x145622ec8); the body itself references 'GARAGECREW' / 'StateTransition setNextState %s' / 'GarageCrewInstanceLogic::StateSendCarToTrack_P3::processEvent unexpected %d %s' / 'ERequest_SendCarToTrack_Inst'. raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.garage_crew_instance_logic_state_send_car_to_track_p3",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 48 89 CF 80 BA 90 00 00 00 00 0F 84 ?? ?? ?? ?? 48 89 D6 48 8B 9A A0 00 00 00",
+  "match": "0x140386320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140386320",
+  "kind": "func_start",
+  "names": [
+   "Game_GarageCrewInstanceLogic_StateSendCarToTrack_P3"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x140386320",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140386320.c",
+   "notes": "V4584 string/behaviour in decomp matches name; vtable/indirect"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x140386320",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x140386320-0x140386720;xref:0x145622ec8",
+   "notes": "V10455 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Only ref abs64 0x145622ec8. GARAGECREW, StateTransition setNextState, StateSendCarToTrack_P3::processEvent unexpected, ERequest_SendCarToTrack_Inst; posts via 0x1439876c0. 2 args."
+  }
+ ],
+ "proofs": []
+}

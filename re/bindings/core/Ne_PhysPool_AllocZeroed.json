@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_PhysPool_AllocZeroed",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1440c0b80",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1440c0b80.c;xref:0x143fbc4b4",
+  "notes": "Fixed-size slab pool allocator under a critical section (param_1[7]): pops a free node from the first slab with free count, memsets block, else creates a new slab via allocator vcall +0x18. Used by Ne_PhysShape_CreateConvex etc and Game_AudioIo_OnReadDone."
+ },
+ "signature": {
+  "id": "core.phys_pool_alloc_zeroed",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 38 C5 F8 29 74 24 20 48 89 CE 48 8B 49 38 FF 15",
+  "match": "0x1440c0b80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1440c0b80",
+  "kind": "func_start",
+  "names": [
+   "Ne_PhysPool_AllocZeroed"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1440c0b80",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1440c0b80.c;xref:0x143fbc4b4",
+   "notes": "V7603 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

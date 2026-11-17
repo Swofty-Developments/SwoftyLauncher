@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_EadpSDK_ReceivedInviteUserId",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1406d3b20",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-EadpSDK",
+  "notes": "named from its log messages (channel EadpSDK): '%s: Received invite from user Id %I64u'"
+ },
+ "signature": {
+  "id": "game.eadp_sdk_received_invite_user_id",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC C0 00 00 00 48 89 CE FF 81 00 01 00 00",
+  "match": "0x1406d3b20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1406d3b20",
+  "kind": "func_start",
+  "names": [
+   "Game_EadpSDK_ReceivedInviteUserId"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb01-verify",
+   "kind": "func",
+   "item": "0x1406d3b20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1406d3b20.c;xref:0x6d3a61",
+   "notes": "V4752 string/behaviour in decomp matches name"
+  }
+ ],
+ "proofs": []
+}

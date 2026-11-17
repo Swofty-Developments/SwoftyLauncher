@@ -1,0 +1,54 @@
+{
+ "schema": 1,
+ "name": "FeTile_CareerDlcItem_Populate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141726680",
+  "level": "L2",
+  "subsystem": "fe_tiles",
+  "proto": "void FeTile_CareerDlcItem_Populate(HomeItem *item, void *node, uint32_t a7)",
+  "evidence": "decomp:re/decomp/141726680.c;xref:0x145704120;decomp:re/decomp/14173df80.c",
+  "notes": "Career menu 2026 content tile (career_dlc_content, vtable 0x145704100 slot +0x20, set at 0x1417416b2): as the 2025 populate with lng_career_dlc_content, then vtable slot +0x78 (FeTile_ItemBase_Slot78) with 3 = notification_type show_dlc, the 26 badge. Raised by native-1990 for the F1 1990 Career menu (doc:/mnt/work/.f1-1990/addon/native-requests.md#N6). Clone of the other content tile populate: the signature starts in the bytes before the function."
+ },
+ "signature": {
+  "id": "fe_tiles.career_dlc_item_populate",
+  "section": ".xtls",
+  "pattern": "03 8B 42 04 89 05 D8 05 ?? ?? ?? ?? F2 E8 ?? ?? ?? ?? 48 89 F0 48 83 C4 20 5E C3 CC CC CC CC CC 56 57 53 48 83 EC 50",
+  "match": "0x141726660",
+  "anchor": "0x20",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141726680",
+  "kind": "func_start",
+  "names": [
+   "FeTile_CareerDlcItem_Populate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-21",
+    "by": "native-1990",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "native/src/core/career/career_content.cpp",
+   "addons/f1-1990/native/src/career_menu_ui.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-21",
+   "verifier": "std-content",
+   "kind": "func",
+   "item": "FeTile_CareerDlcItem_Populate",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/exe/std-content/decomp/141726680.c;xref:0x145704120;sig:fe_tiles.career_dlc_item_populate",
+   "notes": "V0906 Independent: vtable 0x145704100 slot 4 (+0x20, abs ref 0x145704120), code identical to the 2025 populate (is_dlc_content from item+0x190, not +0x148 as the 2025 row says) with lng_career_dlc_content(_description), then vtable slot +0x78 with 3. 3 args. sigcheck: func_start 1 hit"
+  }
+ ],
+ "proofs": []
+}

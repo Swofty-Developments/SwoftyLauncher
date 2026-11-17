@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Tga_DecodeHeaderAndConvert",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1439e8cf0",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1439e8cf0.c;xref:0x151fbc6c7,0x15571825e,0x1591d44c7",
+  "notes": "Writes a packet header field sequence through a stream object (vtable +0x30); no direct callers (vtable use). Hypothesis. vp2-verify partial/disagree"
+ },
+ "signature": {
+  "id": "core.net_packet_write_header",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 70 4C 89 CF 44 89",
+  "match": "0x1439e8cf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1439e8cf0",
+  "kind": "func_start",
+  "names": [
+   "Ne_Tga_DecodeHeaderAndConvert"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp2-verify",
+   "kind": "func",
+   "item": "0x1439e8cf0",
+   "claimed": "L1",
+   "verdict": "disagree",
+   "evidence": "decomp:re/decomp/1439e8cf0.c;xref:0x151fbc6c7",
+   "notes": "V7787 better name Render_Tga_DecodeHeaderAndConvert: reads TGA-style header (id len, colormap, type, w/h u16, bpp>>3*w*h) via stream then calls pixel converter 0x1439e7fb0; not a packet header writer"
+  }
+ ],
+ "proofs": []
+}

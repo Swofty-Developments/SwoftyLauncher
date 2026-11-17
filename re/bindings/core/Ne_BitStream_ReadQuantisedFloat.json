@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_BitStream_ReadQuantisedFloat",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143925e20",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143925e20.c;xref:0x142e89ab0",
+  "notes": "Reads a quantised float from a bit stream (stream+0x10 data, +0x1c size, +0x24 bit pos, +0x28 error, +0x29 raw-mode): bit count = ceil(log2((max-min)/step)), value = bits*step+min clamped to [min,max]; raw mode path reads a full float via 143926090; escape code 0xF via Ne_BitStream_ReadRangedUInt. Addon: network/replay vehicle-state decode. Callers Car_TyreSets_ReadSetEntry, Game_Network_DeserialiseVehicle."
+ },
+ "signature": {
+  "id": "core.bit_stream_read_quantised_float",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 78 C5 78 29 44 24 60 C5 F8 29 7C 24 50 C5 F8 29 74 24 40 C5 F8",
+  "match": "0x143925e20",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143925e20",
+  "kind": "func_start",
+  "names": [
+   "Ne_BitStream_ReadQuantisedFloat"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq0-verify",
+   "kind": "func",
+   "item": "0x143925e20",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143925e20.c;xref:0x142e89ab0",
+   "notes": "V8481 bit-count from ceil(log2((max-min)/step)), bit reads from +0x10/+0x1c/+0x24, error +0x28, +0x29 flag, escape 0xF, raw path 143926090; callers ReadSetEntry"
+  }
+ ],
+ "proofs": []
+}

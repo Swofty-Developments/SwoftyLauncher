@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Car_Write_CoreAero",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14467cfd0",
+  "level": "L1",
+  "subsystem": "car",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14467cfd0.c",
+  "notes": "VTF CoreAero: slip streaming constants (SlipStreaming, SlipStreamWhileBraking). Correction: this is the serialiser (component data vtable slot 3): it writes the section back as XML through the writer object's vtable (+0x28 begin element, +0x68 attribute, +0x78 end, +0x98 comment); the field list above is what it writes. The reader is slot 2 (Game_Read_VtfFloat by name, values stored XOR-obfuscated)."
+ },
+ "signature": {
+  "id": "car.parse_core_aero",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D6 48 89 CF 48 8B 02 48 8D 15 ?? ?? ?? ?? 48 89 F1 FF 50 28 48 8B 06",
+  "match": "0x14467cfd0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14467cfd0",
+  "kind": "func_start",
+  "names": [
+   "Car_Write_CoreAero"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb22-verify",
+   "kind": "func",
+   "item": "0x14467cfd0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14467cfd0.c",
+   "notes": "V6744 name and log/strings match; body checked, no broader behaviour (vtable/indirect; no direct call site)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_SequenceAudioStreamPacket_PreloadAudioStream",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143668770",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/143668770.c;xref:0x154ad464e,0x145856f30",
+  "notes": "cxx=NeSequenceAudioStreamPacket::preloadAudioStream; log channel ACTOR_AUDIO: 'NeSequenceAudioStreamPacket::preloadAudioStream - Adding VO name [%s] - id [%d] - P[%p]'"
+ },
+ "signature": {
+  "id": "core.sequence_audio_stream_packet_preload_audio_stream",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 48 01 00 00 C5 F8 29 B4 24 30 01 00 00 C5 F8 28 F1",
+  "match": "0x143668770",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143668770",
+  "kind": "func_start",
+  "names": [
+   "Ne_SequenceAudioStreamPacket_PreloadAudioStream"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_SequenceAudioStreamPacket_PreloadAudioStream",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143668770.c;xref:0x154ad464e",
+   "notes": "V1997 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

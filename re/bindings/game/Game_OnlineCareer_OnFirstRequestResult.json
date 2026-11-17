@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OnlineCareer_OnFirstRequestResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1416d9760",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1416d9760.c;xref:0x1416d91ea",
+  "notes": "Online career flow callback (lea 0x1416d91ea) for a career-online manager request result (param_2: error string +0x8 valid if +0x88, id +0x98). Success: if no current session ([this+0x18]+0x188 equals default via 0x144121bc0, or +0x1c8==0) requests a session via 0x140fd97e0 (mgr this+0x40) with lambda Game_OnlineCareer_FadeOutForSessionRequest; else sends 0x140fd8a00(mgr, id, 0x40-byte session block +0x188..+0x1c0) with next step 0x1416d9fa0. Handle this+0x48/+0x50. Error: stops busy spinner type 6 ([this+0x20]+0x58) and calls completion functor this+0x68. Addon: online career join chain. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3258)"
+ },
+ "signature": {
+  "id": "game.online_career_on_first_request_result",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 48 89 CE 48 8D 42 08 80 BA 88 00 00 00 00 48 8D 0D ?? ?? ?? ?? 48 0F 45 C8 80 39 00 74",
+  "match": "0x1416d9760",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1416d9760",
+  "kind": "func_start",
+  "names": [
+   "Game_OnlineCareer_OnFirstRequestResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_OnlineCareer_OnFirstRequestResult",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1416d9760.c;xref:0x1416d91ea",
+   "notes": "V3258 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

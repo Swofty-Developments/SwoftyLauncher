@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTask_ProcessFriendsReply_Vt145834f90",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1432c94c0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1432c94c0.c;xref:0x1432c94c0",
+  "notes": "No static xref found (self address given). Result handler in the OnlineSystemGetFriends code block (param_2 = reply, param_3 = request): drops held refs in +0x210..+0x218, clears the unordered_map at +0x240..+0x270 ('unordered_map/set too long'), iterates reply entries ([param_2+0x10]+8..+0x10) building friend records (0x143282d40/0x143282dd0/0x1432891e0/0x143344720), inserts via 0x1432cb820 into +0x288, unregisters the OS operation (Ne_OSOperationHandle_UnregisterSelf 0x14443d110) and finishes ('setting finished', done +0xa1). HYPOTHESIS for the owner class. Addon: friends-list reply parsing. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3299)"
+ },
+ "signature": {
+  "id": "game.f1os_task_process_friends_reply_vt145834f90",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 02 00 00 C5 F8 29 BC 24 40 02 00 00 C5 F8 29 B4 24 30 02 00 00 4C 89 84",
+  "match": "0x1432c94c0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1432c94c0",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTask_ProcessFriendsReply_Vt145834f90"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_F1osTask_ProcessFriendsReply_Vt145834f90",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1432c94c0.c;xref:0x1432c94c0",
+   "notes": "V3299 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

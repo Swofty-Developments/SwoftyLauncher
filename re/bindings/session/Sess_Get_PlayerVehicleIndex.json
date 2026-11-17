@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Get_PlayerVehicleIndex",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1400fa590",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "uint8_t Sess_Get_PlayerVehicleIndex(void *ctx, int local_player)",
+  "evidence": "decomp:re/decomp/1400fa590.c;xref:0x140388c45,0x1403ad702,0x1406c1b57,0x140713574,0x14071f922,0x140720553,0x140775195,0x14077bdfb,0x1407c3705,0x14080c8b9",
+  "notes": "Player vehicle index (byte, 0xff = none) for local player slot param_2: when a session exists ([[self+0x30]+0x88]+0x260), takes the local player's id from g 0x14604c2c8 +0x140 +0x1c0+slot*8 -> +0x1c0 vcall +0x38, searches it in the session's player list +0x2e0..+0x2e8 (stride 0x88, match 0x1431146d0) and returns entry+0x82 (car index); online it only returns it when the lobby slot ([sess+0xf88]+0x101+idx*2) is the local machine. Many callers (HUD, session states, RaceStrategyViewModel populate). (used by vmknolle red-flag-pit strategy probe)"
+ },
+ "signature": {
+  "id": "session.player_vehicle_index",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC B8 00 00 00 48 8B 41 30 48 8B 80 88 00 00 00 B3 FF",
+  "match": "0x1400fa590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1400fa590",
+  "kind": "func_start",
+  "names": [
+   "Sess_Get_PlayerVehicleIndex"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-28",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-28",
+   "verifier": "verify-b",
+   "kind": "func",
+   "item": "0x1400fa590",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:work/verify_b/decomp/1400fa590.c;xref:0x142d5d598,0x142d8326d,0x140388c45,0x1434d3524",
+   "notes": "V1038 uses param_2 as local-player slot (+0x1c0+i*8) to get an id via vtbl+0x38, finds the matching entry (stride 0x88) in the vehicle list of session(+0x30)->+0x88->+0x260, returns its byte +0x82 (vehicle index, <0x20 validated) or 0xff; uint8 (ctx,int) matches"
+  }
+ ],
+ "proofs": []
+}

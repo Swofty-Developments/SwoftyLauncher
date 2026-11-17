@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Jpeg_WriteScanlines",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1449d46c8",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1449d46c8.c;xref:0x1435142da",
+  "notes": "libjpeg jpeg_write_scanlines(cinfo, scanlines, num_lines): requires state 0x65, warns 0x7e when next_scanline >= image_height, calls progress hook, runs the main controller ([0x3c] slot) and returns lines written. Caller Game_ThumbnailSystem_RequestAndWriteScreenshot (+1 other)."
+ },
+ "signature": {
+  "id": "render.jpeg_write_scanlines",
+  "section": ".xtls",
+  "pattern": "48 89 5C 24 08 48 89 74 24 10 57 48 83 EC 20 83 79 24 65 41",
+  "match": "0x1449d46c8",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1449d46c8",
+  "kind": "func_start",
+  "names": [
+   "Render_Jpeg_WriteScanlines"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x1449d46c8",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1449d46c8.c;xref:0x1435142da",
+   "notes": "V7711 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ent_EntrantsSystem_ReplaceBadge",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424710e0",
+  "level": "L1",
+  "subsystem": "entrants",
+  "proto": "-",
+  "evidence": "pat:log-channel-ENTRANTS_SYSTEM",
+  "notes": "named from its log messages (channel ENTRANTS_SYSTEM): 'Badge replaced with stat id %s, existing entry? %s | Couldn't find array to replace badge with stat id %s | Failed to add badge with stat id %s'"
+ },
+ "signature": {
+  "id": "entrants.entrants_system_replace_badge",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 81 EC 90 01 00 00 89 54 24 24",
+  "match": "0x1424710e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424710e0",
+  "kind": "func_start",
+  "names": [
+   "Ent_EntrantsSystem_ReplaceBadge"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb07-verify",
+   "kind": "func",
+   "item": "0x1424710e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424710e0.c;xref:0x141fca15c",
+   "notes": "V5286 name/cxx or log string and body match; body size consistent with name"
+  }
+ ],
+ "proofs": []
+}

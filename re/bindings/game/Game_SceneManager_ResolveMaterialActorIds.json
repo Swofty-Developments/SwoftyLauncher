@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SceneManager_ResolveMaterialActorIds",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1401ed220",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1401ed220.c;xref:0x1401a6401,0x1401ebb97",
+  "notes": "Takes a vector of u32 actor ids (param_3): empty -> 0xffffffff, single -> that id, else under critical section (+0x30) merges/looks up in the scene actor table (+200) and returns the combined id. Callers Game_SceneManagerSpawn_MergeScene, Game_SceneManager_BuildMaterialActorForScene. Hypothesis."
+ },
+ "signature": {
+  "id": "game.scene_manager_resolve_material_actor_ids",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 C5 F8 29 B4 24 90 00 00 00 48 89 CF 49",
+  "match": "0x1401ed220",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1401ed220",
+  "kind": "func_start",
+  "names": [
+   "Game_SceneManager_ResolveMaterialActorIds"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp0-verify",
+   "kind": "func",
+   "item": "0x1401ed220",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1401ed220.c;xref:0x1401a6401",
+   "notes": "V7976 name and concrete claims match decomp"
+  }
+ ],
+ "proofs": []
+}

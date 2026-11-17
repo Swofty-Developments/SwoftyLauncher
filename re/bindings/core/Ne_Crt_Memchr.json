@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_Crt_Memchr",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x145378320",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/145378320.c;xref:0x14018781a",
+  "notes": "memchr-style scan (broadcast byte via 0x01010101, 8-byte strides) over [param_1, param_3). Callers Game_Actor_LoadModelResources (path component search). Hypothesis on exact CRT name. vq2-verify partial"
+ },
+ "signature": {
+  "id": "core.str_find_byte_in_range",
+  "section": ".xtls",
+  "pattern": "0F B6 D2 69 D2 01 01 01 01 66 0F 6E C2 66 0F 70",
+  "match": "0x145378320",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x145378320",
+  "kind": "func_start",
+  "names": [
+   "Ne_Crt_Memchr"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq2-verify",
+   "kind": "func",
+   "item": "0x145378320",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/145378320.c;xref:0x14018781a",
+   "notes": "V8199 Ne_Crt_Memchr - body reads 16 bytes per stride (SSE-style, threshold 0x1f), not 8-byte strides"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Get_CarDriverName",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142f28c10",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142f28c10.c;xref:0x142f55040,0x143565bc0",
+  "notes": "(sess, byte carIdx): display name string of the car's driver (default empty 0x145612762): cached participant +0xa0+idx*8 (participant [+0x18]+0x58 +0xe8 = car index), human online players from session player list (+0x2e0 stride 0x88, name +200). Callers: Sess_Misconduct_OnCarToCarCollision, Sess_PenaltyLog_Print, Sess_Misconduct_RemoveWatchedIncident."
+ },
+ "signature": {
+  "id": "session.get_car_driver_name",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 8D 35 ?? ?? ?? ?? 80 FA FF",
+  "match": "0x142f28c10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142f28c10",
+  "kind": "func_start",
+  "names": [
+   "Sess_Get_CarDriverName"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142f28c10",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142f28c10.c;xref:0x142f55462,0x143565c4d,0x1435b172b",
+   "notes": "V3710 Cached participant +0xa0+idx*8, [+0x18]+0x58+0xe8 car index, empty string 145612762 default, online players list +0x2e0 stride 0x88 name +200."
+  }
+ ],
+ "proofs": []
+}

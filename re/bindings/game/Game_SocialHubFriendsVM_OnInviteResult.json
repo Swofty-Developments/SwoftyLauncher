@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SocialHubFriendsVM_OnInviteResult",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141dfd200",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/141dfd200.c;xref:0x141dfcd76",
+  "notes": "Callback of the online career friend invite (lea 0x141dfcd76 in Game_SocialHubFriendsVM_OnFriendSelected): stops busy spinner type 6 ([this+0x810]+0x58); success -> shows UI message 'online_career_friend_invited' (Game_UiMessage_DisplayMessage, close cb 0x141dfd3f0); error (result +0x88/+0x8) -> fires 'leave_screen'. Addon: detect invite sent/failed. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V3266)"
+ },
+ "signature": {
+  "id": "game.social_hub_friends_v_m_on_invite_result",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC E8 00 00 00 48 89 D7 48 89 CE 48 8B 89 10 08",
+  "match": "0x141dfd200",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141dfd200",
+  "kind": "func_start",
+  "names": [
+   "Game_SocialHubFriendsVM_OnInviteResult"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d16-verify",
+   "kind": "func",
+   "item": "Game_SocialHubFriendsVM_OnInviteResult",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141dfd200.c;xref:0x141dfcd76",
+   "notes": "V3266 role, offsets, calls and constants match decomp"
+  }
+ ],
+ "proofs": []
+}

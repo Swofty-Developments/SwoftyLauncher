@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSyncClock_IntegrateRemoteHostClock",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14405eaf0",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/14405eaf0.c;xref:0x14406dc2b,0x15782a296",
+  "notes": "cxx=NeNetSyncClock::integrateRemoteHostClock; log channel NETWORK-CLOCK/V: 'void neon::NeNetSyncClock::integrateRemoteHostClock(NEuint32, NEuint64) | %s: HOST %u/%llu OFFSET%+lld'"
+ },
+ "signature": {
+  "id": "core.net_sync_clock_integrate_remote_host_clock",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 40 4C 89 C3 89 D7",
+  "match": "0x14405eaf0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14405eaf0",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSyncClock_IntegrateRemoteHostClock"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetSyncClock_IntegrateRemoteHostClock",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14405eaf0.c;xref:0x14406dc2b",
+   "notes": "V2068 NETWORK-CLOCK/V HOST/OFFSET log; stores host time in 32-entry ring and computes offset sample (+0x148)"
+  }
+ ],
+ "proofs": []
+}

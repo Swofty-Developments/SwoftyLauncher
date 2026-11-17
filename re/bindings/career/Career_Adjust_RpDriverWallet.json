@@ -1,0 +1,63 @@
+{
+ "schema": 1,
+ "name": "Career_Adjust_RpDriverWallet",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1434fefe0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_Adjust_RpDriverWallet(void *wallets, uint32_t driver_key, int32_t delta)",
+  "evidence": "decomp:re/decomp/1434fefe0.c;decomp:re/decomp/141229e00.c;decomp:re/decomp/141229f40.c;decomp:re/decomp/1412291c0.c;xref:0x141229ebc,0x141229fa5,0x1412292f7;doc:addons/career-editor/protocol/economy.md#resource-points-both-modes",
+  "notes": "RESOURCE_POINTS 'Adjusting driver %s wallet by %d': wallets = ResourcePointsComponent+0x4b8 (per-driver mode, rp+0x4b0 == 0); map seed +0x38; entry +4 i32 value (clamped >= 0), entry +8 u8 lock (no change); then, if driver_key is not 0x3fffxxxx and its entrant is found in [wallets+0]+0x2e0..+0x2e8, posts resource_points_adjusted_message (vt 0x14584e360, +0x10 0x3fff0000, +0x14 driver) unless the entrant has a team position (+0x81) greater than 1 (+0x80 >= 2, a reserve seat); entrant +0x80 is the seat index (0x141229e00 and 0x140d8ecd0 use < 2 as race seat). Called by the RP message handlers (generation, passive objective, practice). Signature starts in the previous function's tail (clone of 0x1434fd730)"
+ },
+ "signature": {
+  "id": "career.adjust_rp_driver_wallet",
+  "section": ".xtls",
+  "pattern": "48 8D 0D ?? ?? ?? ?? E8 ?? ?? ?? ?? E9 ?? ?? ?? ?? CC CC CC CC CC 41 57 41 56 41 54 56 57 55 53 48 81 EC 80 00 00 00",
+  "match": "0x1434fefca",
+  "anchor": "0x16",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1434fefe0",
+  "kind": "func_start",
+  "names": [
+   "Career_Adjust_RpDriverWallet"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-20",
+    "by": "ce-econ",
+    "how": "static"
+   }
+  ],
+  "used_by": [
+   "addons/career-editor/native/src/economy.cpp"
+  ]
+ },
+ "verify": [
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-2",
+   "kind": "func",
+   "item": "Career_Adjust_RpDriverWallet",
+   "claimed": "L2",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/1434fefe0.c;decomp:re/decomp/141229e00.c;decomp:re/decomp/140d8ecd0.c;xref:0x141229ebc,0x141229fa5,0x1412292f7",
+   "notes": "V0289 proto, wallets rp+0x4b8 (mode rp+0x4b0==0, 0x141229e00), map seed +0x38, entry +4 clamp >= 0, +8 lock, signature tail start correct. Wrong: no \"online peer\" test. Corrected: \"... then, if driver_key is not 0x3fffxxxx and its entrant is found in [wallets+0]+0x2e0..+0x2e8, posts resource_points_adjusted_message (vt 0x14584e360, +0x10 0x3fff0000, +0x14 driver) unless the entrant has a team position (+0x81) greater than 1 (+0x80 >= 2, a reserve seat); entrant +0x80 is the seat index (0x141229e00 and 0x140d8ecd0 use < 2 as race seat)\""
+  },
+  {
+   "date": "2026-10-20",
+   "verifier": "ce-verify-4",
+   "kind": "func",
+   "item": "Career_Adjust_RpDriverWallet",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1434fefe0.c;decomp:re/decomp/141229e00.c;decomp:re/decomp/1434fd730.c;decomp:re/decomp/140d8ecd0.c;xref:0x141229ebb,0x141229fa4,0x1412292f6,0x141228f24,0x141241862",
+   "notes": "V0476 sigcheck OK (match 0x1434fefca, target 0x1434fefe0). Proto (rcx wallets, edx driver_key, r8d delta) matches. Log, seed +0x38, entry +4 clamp >=0 unless +8 set, post of 0x14584e360 {+0x10 0x3fff0000, +0x14 driver} only when the entry exists, key not 0x3fffxxxx, entrant found in [wallets]+0x2e0..+0x2e8, and not (+0x81 && +0x80 > 1) all confirmed; 0x140d8ecd0 uses the same +0x81/+0x80>1 test. Callers 0x141228ac0, 0x1412291c0, 0x141229e00, 0x141229f40, 0x141241770, 0x141241c10, 0x1412431a0; 0x1434fd730 is the same shape"
+  }
+ ],
+ "proofs": []
+}

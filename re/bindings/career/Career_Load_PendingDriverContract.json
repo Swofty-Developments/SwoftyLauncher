@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Load_PendingDriverContract",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c5b020",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Career_Load_PendingDriverContract(void *contract, void *save_node, uint64_t version)",
+  "evidence": "decomp:re/decomp/140c5b020.c;xref:0x145682c58",
+  "notes": "myteam-g1: Reader counterpart of Career_Save_PendingDriverContract: restores +0x210, +0x278, +0x292, +0x294, +0x3e4, +0x458, +0x460, +0x4a0 and the pending entry vector (+0x4e8..+0x500). Hook point to patch/migrate pending contract data on load."
+ },
+ "signature": {
+  "id": "career.load_pending_driver_contract",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 01 00 00 C5 78 29 84 24 50 01 00 00 C5 F8 29 BC 24 40 01 00 00 C5 F8 29 B4 24 30 01 00 00 4D 89 C4",
+  "match": "0x140c5b020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c5b020",
+  "kind": "func_start",
+  "names": [
+   "Career_Load_PendingDriverContract"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c5b020",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c5b020.c;str:\"pending_driver_contract\"",
+   "notes": "V9503 Reader uses +0x210,+0x278,+0x292,+0x294,+0x3e4,+0x458,+0x460,+0x4a0 and vector +0x4e8..+0x500; all offsets present."
+  }
+ ],
+ "proofs": []
+}

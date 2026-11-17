@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetReliableAsyncSocket_OnHandshakeCompleted",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144047070",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx;decomp:re/decomp/144047070.c;xref:0x14406004c",
+  "notes": "cxx=NeNetReliableAsyncSocket::onHandshakeCompleted; log channel NETWORK-TRANSPORT: 'void neon::NeNetReliableAsyncSocket::onHandshakeCompleted(NEuint32, ESSLConnectMode, ESSLHandshakeStatus) | %s: SSL status: %s'"
+ },
+ "signature": {
+  "id": "core.net_reliable_async_socket_on_handshake_completed",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 55 53 48 83 EC 30 44 89 CD 44 89 C3",
+  "match": "0x144047070",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144047070",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetReliableAsyncSocket_OnHandshakeCompleted"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb2-verify-b",
+   "kind": "func",
+   "item": "Ne_NetReliableAsyncSocket_OnHandshakeCompleted",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144047070.c;xref:0x144047070",
+   "notes": "V2027 logs SSL status; status!=0 -> vtable+0x10 on obj at +0x1b0 (failure/close); status 0 in connect mode finds channel and sets state=1 'connecting' with timestamp"
+  }
+ ],
+ "proofs": []
+}

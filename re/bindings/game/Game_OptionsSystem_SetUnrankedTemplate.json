@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_OptionsSystem_SetUnrankedTemplate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ad42e0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=OptionsSystem::setUnrankedTemplate; log channel OPTIONS: 'void game::OptionsSystem::setUnrankedTemplate(const options::OptionStateStore *) | %s: Resetting template restrictions!'"
+ },
+ "signature": {
+  "id": "game.options_system_set_unranked_template",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 D7 48 89 CE 48 8D 99 80 04 00 00",
+  "match": "0x142ad42e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ad42e0",
+  "kind": "func_start",
+  "names": [
+   "Game_OptionsSystem_SetUnrankedTemplate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb09-verify",
+   "kind": "func",
+   "item": "0x142ad42e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ad42e0.c;xref:0x142ac93bc",
+   "notes": "V5011 name/strings/body match; log-based claim holds for this function size"
+  }
+ ],
+ "proofs": []
+}

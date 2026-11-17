@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ChampSession_Reset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140af2a10",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140af2a10.c;xref:0x140af276c,0x143068b0f",
+  "notes": "championship::Session::reset(): Session+0x58 = 0, results vector end +0x48 = begin +0x40, +0x10 = 0, +0x8c = 0 (logs GAME 'Reset called for session'). Session object is 0xa0 bytes, vtable 0x14566eea0. Addon: clears one session's results (e.g. restart). | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2431)"
+ },
+ "signature": {
+  "id": "game.champ_session_reset",
+  "section": ".xtls",
+  "pattern": "48 83 EC 28 C6 41 58 00 48 8B 41 40 48 89 41 48",
+  "match": "0x140af2a10",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140af2a10",
+  "kind": "func_start",
+  "names": [
+   "Game_ChampSession_Reset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d4-verify-a",
+   "kind": "func",
+   "item": "Game_ChampSession_Reset",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140af2a10.c;xref:0x140af2a10",
+   "notes": "V2431 Role, offsets and calls checked against decomp; claim holds"
+  }
+ ],
+ "proofs": []
+}

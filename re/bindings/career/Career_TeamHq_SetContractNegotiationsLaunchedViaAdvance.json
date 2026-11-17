@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_TeamHq_SetContractNegotiationsLaunchedViaAdvance",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1422d7990",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_TeamHq_SetContractNegotiationsLaunchedViaAdvance(bool via_advance)",
+  "evidence": "decomp:re/decomp/1422d7990.c;xref:0x1422d70d1;xref:0x1422d71e9;xref:0x1422d724c",
+  "notes": "myteam-g1: Finds the UI menu data node (UNK_14577c107 = #ui_menu_data.contract_negotiations.launched_via_advance) and writes the bool when the node is valid and its owner type matches the current UI type. Tells the screen the talks were opened from the advance-time flow."
+ },
+ "signature": {
+  "id": "career.team_hq_set_contract_negotiations_launched_via_advance",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 88 4C 24 27 48 8B 0D",
+  "match": "0x1422d7990",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1422d7990",
+  "kind": "func_start",
+  "names": [
+   "Career_TeamHq_SetContractNegotiationsLaunchedViaAdvance"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x1422d7990",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1422d7990.c;xref:0x1422d70d1",
+   "notes": "V10094 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

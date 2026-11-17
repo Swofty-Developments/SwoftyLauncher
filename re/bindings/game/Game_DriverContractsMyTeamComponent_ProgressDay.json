@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_DriverContractsMyTeamComponent_ProgressDay",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140daec40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_DriverContractsMyTeamComponent_ProgressDay(void *comp)",
+  "evidence": "decomp:re/decomp/140daec40.c;xref:0x145692450",
+  "notes": "myteam-g1: Large per-day tick of the My Team driver contracts component: walks the 0x68-byte slots (state +0x4e4/+0x4e5, driver key +0x4dc), checks calendar days, runs AI approach and meeting scheduling (FUN_140db7e30/db7660/db90d0), updates days-to-decision (+0x4c8), posts bus messages and fires my_team_contract_window_opened. Central logic for contract talk timing."
+ },
+ "signature": {
+  "id": "game.driver_contracts_my_team_component_progress_day",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 58 03 00 00 C5 78 29 94 24 40 03 00 00",
+  "match": "0x140daec40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140daec40",
+  "kind": "func_start",
+  "names": [
+   "Game_DriverContractsMyTeamComponent_ProgressDay"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-11",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x140daec40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140daec40.c;xref:0x145692450;str:\"my_team_contract_window_opened\"",
+   "notes": "V8993 Per-day tick over 0x68-byte slots (+0x4dc key, +0x4e4/+0x4e5 state, +0x6f0 count), calls FUN_140db7e30/db7660/db90d0, writes short at +0x4c8, references the window-opened string."
+  }
+ ],
+ "proofs": []
+}

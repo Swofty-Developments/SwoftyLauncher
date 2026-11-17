@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_AutoTestSearcher_OnCustomSearchCompletedDelegate",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143160580",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=AutoTestSearcher::onCustomSearchCompletedDelegate; log channel NETWORK-INVITE: 'AutoTestSearcher::onCustomSearchCompletedDelegate(success=%d, neterr=%d)'"
+ },
+ "signature": {
+  "id": "game.auto_test_searcher_on_custom_search_completed_delegate",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 D7 48 89 CE C5 F9 57 C0",
+  "match": "0x143160580",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143160580",
+  "kind": "func_start",
+  "names": [
+   "Game_AutoTestSearcher_OnCustomSearchCompletedDelegate"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143160580",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143160580.c;xref:0x1430e95e9",
+   "notes": "V5776 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

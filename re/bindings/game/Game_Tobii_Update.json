@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Tobii_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143aafe60",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-EYETRACKING",
+  "notes": "named from its log messages (channel EYETRACKING): 'Connected = %d | Gaze pos = (%f, %f) | TOBII HEADTRACKING YAW  , m_yaw %f  Raw Yaw:%f --- m_pitch %f --- x = %f'"
+ },
+ "signature": {
+  "id": "game.tobii_update",
+  "section": ".xtls",
+  "pattern": "56 53 48 81 EC 88 00 00 00 C5 F8 29 74 24 70",
+  "match": "0x143aafe60",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143aafe60",
+  "kind": "func_start",
+  "names": [
+   "Game_Tobii_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143aafe60",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143aafe60.c",
+   "notes": "V6451 name/purpose and quoted strings/cxx confirmed in body; vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

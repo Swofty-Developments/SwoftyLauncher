@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Skidmarks_CreateTextureSrv",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144719970",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144719970.c;xref:0x144719524",
+  "notes": "Builds an SRV for a texture handle (param_4) with debug name 'SkidmarksGenerator textureSRV' (string-pool interned); uses device vcalls at +0x50 and 0x1439d6880/0x1439da200/0x1439fe470. Callers Render_Bind_WetnessSamplers (several)."
+ },
+ "signature": {
+  "id": "render.skidmarks_create_texture_srv",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 70 49 83 39 00 0F",
+  "match": "0x144719970",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144719970",
+  "kind": "func_start",
+  "names": [
+   "Render_Skidmarks_CreateTextureSrv"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp4-verify",
+   "kind": "func",
+   "item": "0x144719970",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/144719970.c;xref:0x144719524",
+   "notes": "V7697 decomp body matches name and concrete claims (offsets/consts/strings/callees checked)"
+  }
+ ],
+ "proofs": []
+}

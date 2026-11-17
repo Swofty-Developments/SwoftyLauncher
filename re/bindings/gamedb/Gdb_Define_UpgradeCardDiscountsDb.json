@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Gdb_Define_UpgradeCardDiscountsDb",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142726590",
+  "level": "L1",
+  "subsystem": "gamedb",
+  "proto": "void Gdb_Define_UpgradeCardDiscountsDb(void * self)",
+  "evidence": "decomp:re/decomp/142726590.c;xref:0x1425bcd0d",
+  "notes": "myteam-g1: Defines tables Upgrade_CarPart and Upgrade_TeamMember of f1_world.upgrade_cards.discounts.db (DiscountInfo schema, two sub-tables at +0 and +0x48)."
+ },
+ "signature": {
+  "id": "gamedb.define_upgrade_card_discounts_db",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 81 EC 40 0A 00 00",
+  "match": "0x142726590",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142726590",
+  "kind": "func_start",
+  "names": [
+   "Gdb_Define_UpgradeCardDiscountsDb"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x142726590",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142726590.c;str:\"Upgrade_CarPart\"",
+   "notes": "V10226 Defines four tables: Upgrade_CarPart, Upgrade_TeamMember, Dismantle_CarPart, Dismantle_TeamMember (not two)."
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_TrackData_GetTrack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142e60e00",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *Game_TrackData_GetTrack(void *system, const void *track_ref, const uint8_t *query)",
+  "evidence": "decomp:re/decomp/142e60e00.c;decomp:re/decomp/140b78000.c;decomp:re/decomp/142a0ddb0.c;xref:0x14036fe9c,0x140b780c4,0x1436aea72,0x142f72b02,0x142d1d74c;doc:addons/progressive/native/src/fuel_logic.hpp",
+  "notes": "TRACK_DATA getter (110 calls from 95 functions). Walks the track data sets at system+0x68..+0x70 (0x30 stride) and takes the first whose +0x20 mode, +0x24 season and +0x28 weekend format masks hold the query bits (query bytes: [0] mode stat_id bit, [1] mode used, [2] season statId bit, [3] season used, [4] format bit <2 (1 = sprint), [5] format used); returns the TrackDataTrack at set+0x08 items[track_ref[1]]+0x08 (16-byte items), else the first non-null track of that same set; 0 when no set matches. track_ref is a TrackDataRecord from system+0x28 (0x140b78095). Callers pass CareerEntity+0xf58 (0x14036fe70) or component+0x278 -> +0xf58 (0x140b78053). L2 from decomp; verified V1153."
+ },
+ "signature": {
+  "id": "game.rule_set_find_for_session_filter",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 20 4C 8B 59 68 48 8B",
+  "match": "0x142e60e00",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142e60e00",
+  "kind": "func_start",
+  "names": [
+   "Game_TrackData_GetTrack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-27",
+   "verifier": "fuel-verify",
+   "kind": "func",
+   "item": "0x142e60e00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e60e00.c;decomp:re/decomp/14036fe30.c;decomp:re/decomp/140b78000.c;decomp:re/decomp/142a0ddb0.c;xref:0x142e60e0e,0x142e60e12,0x142e60e60,0x142e60e7b,0x142e60e90,0x142e60ea4,0x142e60eb1,0x142e60ed0,0x142e60ef4;xref:0x14036fe9c,0x140b780c4,0x1436aea72,0x142d1d74c,0x142f72b02",
+   "notes": "V1153 Re-derived from the disassembly and a fresh decomp. rcx = system: sets [rcx+0x68]..[rcx+0x70] (0x142e60e0e/0x142e60e12), stride 0x30 (add r11,0x30 at 0x142e60e60). r8 = query: byte 0 mode bit (>=0x20 traps via 0x1411c04f0), byte 1 mode used, byte 2 season bit (>=0x20 traps), byte 3 season used, byte 4 format bit (>=2 traps via 0x1402bedf0), byte 5 format used; each used mask is a test dword [set+0x20]/[set+0x24]/[set+0x28] against 1<<bit (0x142e60e7b/0x142e60e90/0x142e60ea4) and the first set passing all of them wins. rdx = track record: movzx [rdx+1] (0x142e60eb1) indexes the set items [set+0x08]..[set+0x10], 16 bytes each, pointer at item+8 (0x142e60ed0); a null or out-of-range slot falls back to the first non-null item of the SAME set (loop 0x142e60ef0), never to a later set; 0 when no set matches or the matched set has no item. 110 rel32 calls (all E8) from 95 functions, as claimed. Proto arity and types hold. 0x140b78000 (call 0x140b780c4) passes rcx=[entity+0xf58], rdx=[system+0x28] item+8 picked by a byte index (0x140b78095) and r8 filled by entity vt+0xc8, which ties track_ref to TrackDataRecord. Mask meanings from the set filler 0x142a0ddb0: game_setup_modes rows stat_id -> +0x20, seasons rows statId -> +0x24, weekend_formats -> +0x28 with bit 1 when the lowercase FNV-1a64 of the name is 0x0b4d8c10d825b055 (sprint), else bit 0. Stock DB: f1 stat_id 0, f1_26 13, season_2025 statId 7, season_2026 8."
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x142e60e00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142e60e00.c;xref:0x1407b7e67,0x1407b8c47",
+   "notes": "V3667 Entries +0x68..+0x70 stride 0x30, masks +0x20/+0x24/+0x28, byte-pair filter, variant vector +8 stride 0x10 seen; 120 call sites (~85 distinct fns) vs claimed 110, named callers present."
+  }
+ ],
+ "proofs": []
+}

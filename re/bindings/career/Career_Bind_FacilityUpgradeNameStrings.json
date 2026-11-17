@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Bind_FacilityUpgradeNameStrings",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141673ce0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void f(void *view)",
+  "evidence": "decomp:re/decomp/141673ce0.c;xref:0x1423e4315",
+  "notes": "myteam-g1: Large localisation binding that pulls lng_facility_upgrade_<type>_NN_name strings (e.g. corporate_04) into the facility upgrade UI."
+ },
+ "signature": {
+  "id": "career.bind_facility_upgrade_name_strings",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 68 02 00 00 C5 78 29 84 24 50 02 00 00 C5 F8 29 BC 24 40 02 00 00 C5 F8 29 B4 24 30 02 00 00 48 8B 4A 08",
+  "match": "0x141673ce0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141673ce0",
+  "kind": "func_start",
+  "names": [
+   "Career_Bind_FacilityUpgradeNameStrings"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-2",
+   "kind": "func",
+   "item": "0x141673ce0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141673ce0.c;xref:0x1423e4315",
+   "notes": "V9738 Strings, callees and offsets in the decompile are consistent with the claimed name and role."
+  }
+ ],
+ "proofs": []
+}

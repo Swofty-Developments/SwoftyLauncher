@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkAsync_AsyncJobQueueSecondsLength",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143985820",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-ASYNC",
+  "notes": "named from its log messages (channel NETWORK-ASYNC): 'Async job queue seconds:%1.3f, length: %d'"
+ },
+ "signature": {
+  "id": "game.network_async_async_job_queue_seconds_length",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 C5 F8 29 74 24 40 48 89 CE 48 8B 59 10",
+  "match": "0x143985820",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143985820",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkAsync_AsyncJobQueueSecondsLength"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143985820",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143985820.c;xref:0x1430e093d",
+   "notes": "V6394 body has pretty string neon::NeNetwork::update; log is one line. Better Game_NeNetwork_Update"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc3-verify",
+   "kind": "func",
+   "item": "0x143985820",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143985820.c;xref:0x1430e093d",
+   "notes": "V7040 name fits, facts hold"
+  }
+ ],
+ "proofs": []
+}

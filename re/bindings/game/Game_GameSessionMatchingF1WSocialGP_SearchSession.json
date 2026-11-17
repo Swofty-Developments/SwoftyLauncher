@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_GameSessionMatchingF1WSocialGP_SearchSession",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14307d7b0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=GameSessionMatchingF1WSocialGP::searchSession; log channel NETWORK-SESSION/V: 'NEbool network::GameSessionMatchingF1WSocialGP::searchSession() | %s : still waiting download or session is busy'"
+ },
+ "signature": {
+  "id": "game.game_session_matching_f1_w_social_gp_search_session",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 48 89 CE 80 3D ?? ?? ?? ?? 01 75 6D",
+  "match": "0x14307d7b0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14307d7b0",
+  "kind": "func_start",
+  "names": [
+   "Game_GameSessionMatchingF1WSocialGP_SearchSession"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb12-verify",
+   "kind": "func",
+   "item": "0x14307d7b0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14307d7b0.c;xref:0x14307c288",
+   "notes": "V5602 name matches own log/pretty string and body; no broader behaviour found"
+  }
+ ],
+ "proofs": []
+}

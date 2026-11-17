@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Rnd_QueryPanelSlotState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14352f8d0",
+  "level": "L1",
+  "subsystem": "career",
+  "proto": "uint64_t Career_Rnd_QueryPanelSlotState(void *panel, uint32_t part_key, void *entry, uint8_t flag)",
+  "evidence": "decomp:re/decomp/14352f8d0.c;xref:0x141c52ee1;xref:0x141c8f237;xref:0x141c8f28b",
+  "notes": "myteam-g2: Reads the state byte of an R&D panel entry (entry+0xc8 vector end, state at -8: 3 = in progress, 4 = done) and decides whether the adapt-part / rush panels may be shown for the part. Read-only. Level 1."
+ },
+ "signature": {
+  "id": "career.rnd_query_panel_slot_state",
+  "section": ".xtls",
+  "pattern": "53 48 81 EC A0 00 00 00 89 54 24 24",
+  "match": "0x14352f8d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14352f8d0",
+  "kind": "func_start",
+  "names": [
+   "Career_Rnd_QueryPanelSlotState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x14352f8d0",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/14352f8d0.c;xref:0x141c52ee1",
+   "notes": "V10292 State checks right (4 returns 0, 3 with flag returns 0), but the result is a 0..100 clamped percentage from modifier kind 0x0e (or FUN_1435349a0), not a panel-visibility decision."
+  }
+ ],
+ "proofs": []
+}

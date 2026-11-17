@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_FormationLapLogic_IsRunning",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1436185e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1436185e0.c;xref:0x142c13953,0x143690f31",
+  "notes": "(logic) -> bool: (Sess_FormationLapLogic_IsActiveType0() or IsActiveOtherType(logic)) and not finished flag +0x42. Callers: Game_AiPitDecision_UpdateDroppedPlayerCar, Sess_RaceStrategy_UpdateVehicle."
+ },
+ "signature": {
+  "id": "session.formation_lap_logic_is_running",
+  "section": ".xtls",
+  "pattern": "56 53 48 83 EC 28 48 89 CE E8 ?? ?? ?? ?? 89 C3 48 89 F1 E8 ?? ?? ?? ?? 08 D8 80 7E",
+  "match": "0x1436185e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1436185e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_FormationLapLogic_IsRunning"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv2-verify",
+   "kind": "func",
+   "item": "0x1436185e0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1436185e0.c;xref:0x143690f31,0x14369cf96",
+   "notes": "V3825 Returns (1436183e0() | 1436184e0(logic)) & (+0x42 == 0)."
+  }
+ ],
+ "proofs": []
+}

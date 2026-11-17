@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Game_F1osTasksystem_CreateTask_CheckPrivilege",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14142f800",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/14142f800.c;xref:0x14142ed50,0x141739b70,0x141a7903e,0x141b1b33e,0x141fd6e05",
+  "notes": "F1OS task-system typed task allocator (template instance, 13 call sites): allocates a 0x1d0-byte task from allocator [this+0x10] vcall +0x18, constructs it via 0x14336fad0, wraps it in a ref-counted holder (vtable 0x1456e7150, global allocator 0x146129c00), logs 'Allocated new task %s' (name = task vcall +0x20 -> +8) on F1OS-TASKSYSTEM and adds it via Game_F1osTasksystem_AddTask 0x1432dd060; returns {task,holder} only if the added task's type chain reaches 0x1460f81b0 (else null pair). Callers: decal customisation asset-group swap, F1 World activity/screen VM, livery assign VM. Addon: hook to see cosmetic/F1 World online tasks being queued. d16-verify: ctor 0x14336fad0 builds the 0x1d0 child that gets SetPrivilegeCheckRequest(7)"
+ },
+ "signature": {
+  "id": "game.f1os_tasksystem_create_task_ctor14336fad0",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 53 48 83 EC 40 4C 89 C3 48 89 D6 49 89 CE 4C 8B 61 10 49 8B 04 24 BA D0 01 00",
+  "match": "0x14142f800",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14142f800",
+  "kind": "func_start",
+  "names": [
+   "Game_F1osTasksystem_CreateTask_CheckPrivilege"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

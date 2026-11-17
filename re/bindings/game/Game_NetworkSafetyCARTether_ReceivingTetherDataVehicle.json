@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkSafetyCARTether_ReceivingTetherDataVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14360d4d0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK_SAFETY_CAR_TETHER",
+  "notes": "named from its log messages (channel NETWORK_SAFETY_CAR_TETHER): 'Receiving Tether Data for Vehicle %d Deployment Time %f Message State %s'"
+ },
+ "signature": {
+  "id": "game.network_safety_car_tether_receiving_tether_data_vehicle",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 4C 8B 41 48 48 8B 49 50",
+  "match": "0x14360d4d0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14360d4d0",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkSafetyCARTether_ReceivingTetherDataVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb17-verify",
+   "kind": "func",
+   "item": "0x14360d4d0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14360d4d0.c",
+   "notes": "V6095 name/log string and function size match the code; strings verified via cstr (no direct call site; vtable/indirect)"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_UITrack_Select_DefaultTrack",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1438520f0",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_UITrack_Select_DefaultTrack(void *self, void *cfg)",
+  "evidence": "str:s_cfg_UIDefaultTrack;decomp:re/decomp/1438520f0.c;xref:0x143852103,0x143852104,0x143852134,0x143853ee0,0x143853f01,0x143853ff0,0x14587d838",
+  "notes": "Setting UI.defaultTrack -> string getter 0x143a44eb0 (not in KB; copies the value into the ref-counted string handle self+0x68, returns 0 when found) on the node passed as cfg, default 'unknown' (0x145612762). If the setting is missing, links VM node seasons.current_season.track_list[0].track_file_name (Vm_Resolve_RegistryNode 0x1442b1b60, Vm_Link_RegistryNode 0x144179360) and replaces self+0x68 with that string (ref counts at +4, freed via g_Ne_DefaultAllocator vt+0x38). Finally Game_UITrack_TrackFoundGameModeTracklistWill 0x143852230(self, string data +9, or empty 0x146ca5548). Callers: Game_UITrack_Apply_DevContractTrack 0x143853ef0 (call 0x143853f01), jmp thunks 0x143853ee0 and 0x143853ff0 (pointed to from 0x14565e148 and 0x14587dd20), and table pointer 0x14587d838. Existing L1 name Game_Read_UIDefaultTrackSetting. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.uitrack_select_default_track",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 83 EC 28 48 89 D0 48 89 CE 48 8D 79 68",
+  "match": "0x1438520f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1438520f0",
+  "kind": "func_start",
+  "names": [
+   "Game_UITrack_Select_DefaultTrack"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-2",
+   "kind": "func",
+   "item": "0x1438520f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1438520f0.c;xref:0x143853f01,0x143853ee0,0x143853ff0,0x14587d838;str:0x14587d87e,0x14587d88e",
+   "notes": "V9349 Reads string 'UI.defaultTrack' from cfg (param 2) into +0x68 via config getter 0x143a44eb0 (default ''); if absent takes 'seasons.current_season.track_list[0].track_file_name' from the VM registry; then selects that track via Game_UITrack_TrackFoundGameModeTracklistWill. Callers: Game_UITrack_Apply_DevContractTrack and two jmp thunks. 2 args match."
+  }
+ ],
+ "proofs": []
+}

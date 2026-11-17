@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_SavedOnlineChampionship_Construct",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14322c400",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-message-cxx",
+  "notes": "cxx=SavedOnlineChampionship::SavedOnlineChampionship; log channel NETWORK/F: 'SavedOnlineChampionship::SavedOnlineChampionship(%s,%s) at %p'"
+ },
+ "signature": {
+  "id": "game.saved_online_championship_construct",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC E8 00 00 00 4C 89 4C 24 48 4D 89 C6 48 89 D7",
+  "match": "0x14322c400",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14322c400",
+  "kind": "func_start",
+  "names": [
+   "Game_SavedOnlineChampionship_Construct"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x14322c400",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14322c400.c;xref:0x140fe2580",
+   "notes": "V6007 name and log/cxx claim match body"
+  }
+ ],
+ "proofs": []
+}

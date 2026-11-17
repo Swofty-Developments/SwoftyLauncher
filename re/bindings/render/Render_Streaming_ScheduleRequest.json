@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Render_Streaming_ScheduleRequest",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143ac1260",
+  "level": "L1",
+  "subsystem": "render",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/143ac1260.c;xref:0x143abd8d5",
+  "notes": "Streaming request scheduling (calls 143abf420 and 143acb7d0); callers Render_Streaming_ProcessRequest, Ne_JobQueue_TryAcquireJob."
+ },
+ "signature": {
+  "id": "render.streaming_schedule_request",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 4C 89 C6 48 89 D7 48 89 CB 4D 85 C0",
+  "match": "0x143ac1260",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143ac1260",
+  "kind": "func_start",
+  "names": [
+   "Render_Streaming_ScheduleRequest"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vq1-verify",
+   "kind": "func",
+   "item": "0x143ac1260",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143ac1260.c;xref:0x143abd8d5",
+   "notes": "V8318 name and concrete claims match decomp; callers checked"
+  }
+ ],
+ "proofs": []
+}

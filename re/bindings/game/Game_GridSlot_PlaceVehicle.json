@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_GridSlot_PlaceVehicle",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1429a2b40",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_GridSlot_PlaceVehicle(void *grid, uint32_t slot, const float *xform, void *a4, float yaw, void *a6, void *a7, void *a8)",
+  "evidence": "decomp:re/decomp/1429a2b40.c;xref:0x14299c3c1,0x14299c5e5,0x142d13d88,0x142d13ea3,0x142d16f79,0x142d17093,0x142d2112b,0x142d22088,0x142d3c968",
+  "notes": "Places a vehicle on spawn slot param_2 (slots +0x10, stride 0x10) with transform param_3, yaw param_5 (e.g. -pi/2 - heading) and flags; builds the rotation quat (0x1429ac1e0). 8 args (per V10479). 9 call sites in 0x14299b480 (2), 0x142d13a80 (2), Sess_AverageSpeedRuleset_PlaceVehiclesAndGates 0x142d16d50 (2, passes -1.5708 - heading as arg5 at 0x142d16f4e), 0x142d20ec0, 0x142d21890, 0x142d3c4b0. L2 2026-11-14 (engine-re round 2): decomp read; 9 reference(s) (0x14299c3c1, 0x14299c5e5, 0x142d13d88, 0x142d13ea3, 0x142d16f79, 0x142d17093, ...). raised by engine-re with --force 2026-11-14 at user request (lane owner review requested)"
+ },
+ "signature": {
+  "id": "game.grid_slot_place_vehicle",
+  "section": ".xtls",
+  "pattern": "56 57 48 81 EC C8 00 00 00 C5 78 29 AC 24 B0 00 00 00 C5 78 29 A4 24 A0 00 00 00 C5 78 29 9C 24 90 00 00 00 C5 78 29 94 24 80 00 00 00 C5 78 29 4C 24 70 C5 79 7F 44 24",
+  "match": "0x1429a2b40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1429a2b40",
+  "kind": "func_start",
+  "names": [
+   "Game_GridSlot_PlaceVehicle"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x1429a2b40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429a2b40.c;xref:0x142d16f79",
+   "notes": "V3405 slot index param_2 < (+0x18-+0x10)>>4 (16B slots at +0x10), transform param_3 4 floats, param_5 yaw blended into vector then rotation via 0x1429ac1e0; caller Sess_AverageSpeedRuleset_PlaceVehiclesAndGates (4 other callers exist); 'e.g. -pi/2-heading' not verified"
+  },
+  {
+   "date": "2026-11-14",
+   "verifier": "trk-verify",
+   "kind": "func",
+   "item": "0x1429a2b40",
+   "claimed": "L2",
+   "verdict": "agree",
+   "evidence": "decomp:own capstone disasm 0x1429a2b40-0x1429a2ec2;xref:0x14299c3c1,0x14299c5e5,0x142d13d88,0x142d13ea3,0x142d16f79,0x142d17093,0x142d2112b,0x142d22088,0x142d3c968",
+   "notes": "V10479 L2 check, blind re-derivation (own capstone disasm of work/exe/F1_25.exe, own rel32/riprel/abs64 scans over .xtls/.xtext/.data1). Same 9 call sites (riprel hit 0x142993e84 not an instruction); caller functions 0x14299b480 x2, 0x142d13a80 x2, 0x142d16d50 x2 (Sess_AverageSpeedRuleset_PlaceVehiclesAndGates), 0x142d20ec0, 0x142d21890, 0x142d3c4b0. Slots [+0x10..+0x18] stride 0x10, quat 0x1429ac1e0; caller passes -1.5708 - heading as stack arg5 (0x142d16f4e). Arity is 8 (rcx, edx slot, r8 transform, xmm3, stack +0x20/+0x28/+0x30/+0x38)."
+  }
+ ],
+ "proofs": []
+}

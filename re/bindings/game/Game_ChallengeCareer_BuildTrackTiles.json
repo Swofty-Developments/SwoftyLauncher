@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_ChallengeCareer_BuildTrackTiles",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x141fc0740",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void Game_ChallengeCareer_BuildTrackTiles(void *vm)",
+  "evidence": "str:s_cfg_UIChallengeCareerShouldValidateTracks;decomp:re/decomp/141fc0740.c;xref:0x141fbe3e3,0x141fbf671,0x141fc08ff,0x141fc0900,0x141fc2f41",
+  "notes": "Called from 0x141fbdee0, 0x141fbe700 and 0x141fc2e50 (all with the challenge-career VM in rcx). Returns early unless vm+0x478 and an episode at [vm+0x4a8]+0x68 (+0x5708 table, index +0x5760). Builds the episode track tiles: track_data.track_list count (stack+0xac), per round FeTile_Construct_Tile 0x1415a92d0 challenge_career_tile, track_%d, round_number, score (log Could Not Find Score For Race Weekend %d), has_completed_track, is_disabled, background_texture, #overrides.challenge_career.episode_tile_watermark.%d, Ui_Format_RenownText 0x1441ee1b0 / Ui_Format_ResourcePointsAmountText 0x1441ebbd0. Setting: UI.ChallengeCareer.shouldValidateTracks via Ne_Get_SettingBool on [vm+0x4c0]+0x18, default 1, kept at stack+0x47; 0 jumps to 0x141fc20eb (skips the validation pass that matches episode tracks against the available track list via [vm+0x4b0]+0x88 -> +0x260), and at 0x141fc1739 it gates the per-tile check (vm+0x4d8 set and round index < track count) that feeds is_disabled. hidden-modes 2026-11-13 (vmknolle-hidden-a): read from the Ghidra decompile."
+ },
+ "signature": {
+  "id": "game.challenge_career_build_track_tiles",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 38 03 00 00 C5 F8 29 BC 24 20 03 00 00",
+  "match": "0x141fc0740",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x141fc0740",
+  "kind": "func_start",
+  "names": [
+   "Game_ChallengeCareer_BuildTrackTiles"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-13",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-13",
+   "verifier": "verify-hm-1",
+   "kind": "func",
+   "item": "0x141fc0740",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/141fc0740.c;xref:0x141fbe3e4,0x141fbf672,0x141fc2f42",
+   "notes": "V9327 Builds the challenge career track list: track_data.track_list, track_%d entries with challenge_career_tile, round_number, background_texture, is_disabled, has_completed_track, episode watermark overrides, UI.ChallengeCareer.shouldValidateTracks; log \"Could Not Find Score For Race Weekend %d\"; 3 direct callers; arity matches."
+  }
+ ],
+ "proofs": []
+}

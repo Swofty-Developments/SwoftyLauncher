@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_NetworkReady_ExitingSuperReadyStateAsEnough",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143225040",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-NETWORK-READY",
+  "notes": "named from its log messages (channel NETWORK-READY): 'Exiting super ready state as not enough human players.'"
+ },
+ "signature": {
+  "id": "game.network_ready_exiting_super_ready_state_as_enough",
+  "section": ".xtls",
+  "pattern": "41 56 56 57 53 48 81 EC 98 00 00 00 C5 F9 29 BC 24 80 00 00 00",
+  "match": "0x143225040",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143225040",
+  "kind": "func_start",
+  "names": [
+   "Game_NetworkReady_ExitingSuperReadyStateAsEnough"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb15-verify",
+   "kind": "func",
+   "item": "0x143225040",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/143225040.c",
+   "notes": "V5957 ReadySystem_Update: 23KB update(): super-ready policy triggers/advance/clear; exiting-as-not-enough is one branch"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc2-verify",
+   "kind": "func",
+   "item": "0x143225040",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143225040.c",
+   "notes": "V7018 facts verified (strings, size); vtable/indirect"
+  }
+ ],
+ "proofs": []
+}

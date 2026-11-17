@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_NetSyncClock_RecalculateClockOffset",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14405ec50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "str:s_NeNetSyncClock_RecalculateClockOffset;xref:0x14405f0f4,0x14405f199;decomp:re/decomp/14405ec50.c",
+  "notes": "cxx=neon::NeNetSyncClock::recalculateClockOffset; named in bulk from a pretty-function or log string that may belong to an inlined callee"
+ },
+ "signature": {
+  "id": "core.net_sync_clock_recalculate_clock_offset",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 53 48 81 EC D8 00 00 00 C5 79 7F B4",
+  "match": "0x14405ec50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14405ec50",
+  "kind": "func_start",
+  "names": [
+   "Ne_NetSyncClock_RecalculateClockOffset"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb3-verify-a",
+   "kind": "func",
+   "item": "Ne_NetSyncClock_RecalculateClockOffset",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14405ec50.c;xref:0x14406dc33",
+   "notes": "V2069 NETWORK-CLOCK/V mean/stddev log over ring of up to 32 records; real recalculation (SIMD sums)"
+  }
+ ],
+ "proofs": []
+}

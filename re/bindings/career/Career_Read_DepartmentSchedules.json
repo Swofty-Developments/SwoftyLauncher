@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_Read_DepartmentSchedules",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1435121f0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int Career_Read_DepartmentSchedules(uint64_t self,uint64_t a2)",
+  "evidence": "decomp:re/decomp/1435121f0.c;xref:0x1412231ba",
+  "notes": "myteam-g1: Reads department and department_schedules."
+ },
+ "signature": {
+  "id": "career.read_department_schedules",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC A8 00 00 00 48 89 D0 48 89 CF",
+  "match": "0x1435121f0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1435121f0",
+  "kind": "func_start",
+  "names": [
+   "Career_Read_DepartmentSchedules"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-7",
+   "kind": "func",
+   "item": "0x1435121f0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1435121f0.c;xref:0x1412231ba",
+   "notes": "V10273 Reader of the supplier_schedules/department_schedules structure."
+  }
+ ],
+ "proofs": []
+}

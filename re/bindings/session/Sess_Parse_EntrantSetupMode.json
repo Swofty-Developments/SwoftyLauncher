@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Sess_Parse_EntrantSetupMode",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14249f190",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:work/exe/decomp/14249f190_max_entrants_a.c;xref:0x14cb3e58f;doc:research/grid24-cap.md#2;str:s_max_entrants;str:s_max_teams",
+  "notes": "parses an entrant_setup_mode row into EntrantSetupMode (0x288): max_entrants store at 0x1424a0348 (+0x268), max_teams +0x264, reuse_entrants +0x280; value < 1 -> -1"
+ },
+ "signature": {
+  "id": "session.parse_entrant_setup_mode",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC C8 04 00 00 C5 F8 29 B4 24 B0 04 00 00 4C 89 4C 24 30",
+  "match": "0x14249f190",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14249f190",
+  "kind": "func_start",
+  "names": [
+   "Sess_Parse_EntrantSetupMode"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-17",
+    "by": "re-infra",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

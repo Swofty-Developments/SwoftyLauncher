@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_SetupBanks_Write",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140c034a0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "int (void *unused, void *json_writer)",
+  "evidence": "decomp:re/decomp/140c034a0.c;xref:0x14567f8a0",
+  "notes": "myteam-g1: Writes the setup_banks list: entries with season_id and setups[] (initial bank data per season). Counterpart of Career_SetupBanks_Read."
+ },
+ "signature": {
+  "id": "career.setup_banks_write",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 58 48 89 D6 48 8B 3A",
+  "match": "0x140c034a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140c034a0",
+  "kind": "func_start",
+  "names": [
+   "Career_SetupBanks_Write"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-0",
+   "kind": "func",
+   "item": "0x140c034a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140c034a0.c;str:\"setup_banks\"",
+   "notes": "V9493 Writes setup_banks entries with season_id and setups."
+  }
+ ],
+ "proofs": []
+}

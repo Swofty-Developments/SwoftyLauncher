@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_LocationCutscene_HandleStoryEvent",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142df5300",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142df5300.c;xref:0x142daec35,0x142df8824",
+  "notes": "(state, out) When +0x1028 and not +0xee9: resolves story component (0x146063fb0) from the session, Game_Story_GetCurrentEvent, and may stop the async job (Ne_AsyncJob_StopAndNotify); throws on invalid state. Callers Sess_LocationLoadCutscene_OnStateUpdate, Sess_StartLightsSync_MustAdvance. Hypothesis."
+ },
+ "signature": {
+  "id": "session.location_cutscene_handle_story_event",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 20 48 89 D6 80 B9",
+  "match": "0x142df5300",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142df5300",
+  "kind": "func_start",
+  "names": [
+   "Sess_LocationCutscene_HandleStoryEvent"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv1-verify",
+   "kind": "func",
+   "item": "0x142df5300",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142df5300.c;xref:0x142df8824,0x142daec35",
+   "notes": "V3733 +0x1028 && !+0xee9, story component 0x146063fb0 from session, calls Game_Story_GetCurrentEvent 0x1413301b0, stops async job via 0x14416cf60 (Ne_AsyncJob_StopAndNotify); callers ok"
+  }
+ ],
+ "proofs": []
+}

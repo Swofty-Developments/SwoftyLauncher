@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Game_Overtakes_AddWatch",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142521720",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-OVERTAKES",
+  "notes": "Log channel OVERTAKES: 'Overtake watch added between cars %d (P%d) and %d (P%d)'"
+ },
+ "signature": {
+  "id": "game.overtakes_add_watch",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 81 EC 98 00 00 00 C5 F8 29 BC 24 80 00 00 00 C5 F8 29 74 24 70 48 89 CE 48 8D 81 40 01 00 00",
+  "match": "0x142521720",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142521720",
+  "kind": "func_start",
+  "names": [
+   "Game_Overtakes_AddWatch"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb08-verify",
+   "kind": "func",
+   "item": "0x142521720",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/142521720.c",
+   "notes": "V5092 1.7 KB overtake watch tracker: adds, removes (inactive/swapped) and records overtakes (3 more log strings). Better: Game_Overtakes_UpdateWatches"
+  },
+  {
+   "date": "2026-10-31",
+   "verifier": "lc0-verify",
+   "kind": "func",
+   "item": "0x142521720",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142521720.c",
+   "notes": "V7297 name fits; finding facts hold; vtable/indirect (no direct call)"
+  }
+ ],
+ "proofs": []
+}

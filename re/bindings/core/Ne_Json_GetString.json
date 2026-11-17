@@ -1,0 +1,40 @@
+{
+ "schema": 1,
+ "name": "Ne_Json_GetString",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x144435020",
+  "level": "L1",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/144435020.c;xref:0x140796609,0x1434ef2af,0x144441339",
+  "notes": "JSON helper: member param_1 must be a string (flag 0x400, inline short string flag 0x1000); copies into NeString param_2 (cap +8, data +0x10, grows via 0x1402b5650). Used by the Steam price parser, SignalR, trophies."
+ },
+ "signature": {
+  "id": "core.json_get_string",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 53 48 83 EC 30 4C 89 C6 49 89 D6 48 89 CB",
+  "match": "0x144435020",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x144435020",
+  "kind": "func_start",
+  "names": [
+   "Ne_Json_GetString"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [],
+ "proofs": []
+}

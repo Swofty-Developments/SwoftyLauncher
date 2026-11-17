@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_CutsceneScriptResourceFactory_DestroyResource",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14024ea50",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "pat:log-message-method;decomp:re/decomp/14024ea50.c;xref:0x1402429bb,0x149f39c70,0x1455ecde8",
+  "notes": "logged method name destroyResource (class from the log channel); log channel NeCutsceneScriptResourceFactory: 'destroyResource \"%s\"'"
+ },
+ "signature": {
+  "id": "core.cutscene_script_resource_factory_destroy_resource",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 4C 89 C6 48 89 CF 80 3D ?? ?? ?? ?? 01 75 5A",
+  "match": "0x14024ea50",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x14024ea50",
+  "kind": "func_start",
+  "names": [
+   "Ne_CutsceneScriptResourceFactory_DestroyResource"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "cb1-verify",
+   "kind": "func",
+   "item": "Ne_CutsceneScriptResourceFactory_DestroyResource",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14024ea50.c;xref:0x1402429bb",
+   "notes": "V1992 log strings and role confirmed in decomp"
+  }
+ ],
+ "proofs": []
+}

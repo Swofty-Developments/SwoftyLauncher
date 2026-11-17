@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_MyTeamContract_OnDriverSelected",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142307de0",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void Career_MyTeamContract_OnDriverSelected(void *screen, void **event)",
+  "evidence": "decomp:re/decomp/142307de0.c;xref:0x142306e8a",
+  "notes": "myteam-g1: Handles click event 0x106149d3 on a driver in the My Team contracts screen: reads the comp at screen+0x2d90 (DriverContractsMyTeamComponent); if the slot is already state 3 or no talk days remain it plays my_team_driver_contracts_wont_negotiate feedback, else calls FUN_140db66b0(comp, driver, state 2 or 3) to start early talks (my_team_driver_contracts_in_early_talks) and raises calendar event 0x22."
+ },
+ "signature": {
+  "id": "career.my_team_contract_on_driver_selected",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 54 56 57 55 53 48 83 EC 40 48 89 CE 48 8B 02",
+  "match": "0x142307de0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142307de0",
+  "kind": "func_start",
+  "names": [
+   "Career_MyTeamContract_OnDriverSelected"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-5",
+   "kind": "func",
+   "item": "0x142307de0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142307de0.c;xref:0x142306e8a",
+   "notes": "V10108 Strings/callees/offsets in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

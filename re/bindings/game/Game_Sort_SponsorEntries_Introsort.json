@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Sort_SponsorEntries_Introsort",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1424d5360",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "void *first, void *last, uint64_t depth, void *ctx",
+  "evidence": "decomp:re/decomp/1424d5360.c;xref:0x1423f5bb0;xref:0x1424d592c;xref:0x1424d6ed8",
+  "notes": "myteam-g1: Library code: std introsort loop over 16-byte sponsor list entries using a comparator that reads lng_sponsor_%s display data (sponsor list ordering)."
+ },
+ "signature": {
+  "id": "game.sort_sponsor_entries_introsort",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 78 4C 89 CE 49 89 D5",
+  "match": "0x1424d5360",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x1424d5360",
+  "kind": "func_start",
+  "names": [
+   "Game_Sort_SponsorEntries_Introsort"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-6",
+   "kind": "func",
+   "item": "0x1424d5360",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1424d5360.c",
+   "notes": "V10216 Strings/callees in the decompile match the claimed role."
+  }
+ ],
+ "proofs": []
+}

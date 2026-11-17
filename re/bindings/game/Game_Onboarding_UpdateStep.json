@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Onboarding_UpdateStep",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x143847410",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-ONBOARDING",
+  "notes": "named from its log messages (channel ONBOARDING): 'c_newStepReady | setStepState %s -> %s | c_skipTutorialStep 1 | c_notifyTutorialStep %s | c_skipTutorialStep 2 | ready_to_move_mask 1 | ready_to_move_mask 2 | Skip Key Listener: Disabled'"
+ },
+ "signature": {
+  "id": "game.onboarding_update_step",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 CE 41 8B 40 08",
+  "match": "0x143847410",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x143847410",
+  "kind": "func_start",
+  "names": [
+   "Game_Onboarding_UpdateStep"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-22",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "lb19-verify",
+   "kind": "func",
+   "item": "0x143847410",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/143847410.c;xref:0x143847373",
+   "notes": "V6307 name/purpose and quoted strings/cxx confirmed in body"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Career_OnlineNegotiations_LoadEventFromState",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140ff6d40",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void (void *event, void *state)",
+  "evidence": "decomp:re/decomp/140ff6d40.c;xref:0x140ff506c;xref:0x141001c1f;xref:0x141001d5d",
+  "notes": "myteam-g2: Copies the 16-byte pair for the event type (FUN_1410068a0 index into state+8) into event+0x28 and checks that the byte at event+0x10 exists in the std::map at state+0xa48; throws via Ne_Std_ThrowExceptionNoReturn otherwise. Helper for the OnlineNegotiations negotiation event messages."
+ },
+ "signature": {
+  "id": "career.online_negotiations_load_event_from_state",
+  "section": ".xtls",
+  "pattern": "56 57 48 83 EC 28 48 89 D7 48 89 CE 48 8D 4A 20",
+  "match": "0x140ff6d40",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140ff6d40",
+  "kind": "func_start",
+  "names": [
+   "Career_OnlineNegotiations_LoadEventFromState"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140ff6d40",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140ff6d40.c;xref:0x140ff506c;str:\"invalid map<K, T> key\"",
+   "notes": "V9629 Copies 16 bytes into event+0x28 and checks key byte event+0x10 in map at state+0xa48 (trap with \"invalid map<K, T> key\"); also fills +0x38/+0x40 from the map entry."
+  }
+ ],
+ "proofs": []
+}

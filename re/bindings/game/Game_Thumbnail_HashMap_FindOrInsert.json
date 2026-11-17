@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_Thumbnail_HashMap_FindOrInsert",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142ee45a0",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142ee45a0.c;xref:0x142e2da39",
+  "notes": "ne_hash_map find-or-insert for thumbnail requests (throws via Ne_Std_ThrowMapSetTooLong when full). Callers Game_ThumbnailSystem_AddingPendingDriverThumbnail, AddingPendingCarThumbnail, AddingPendingHelmetThumbnail, AddPendingCustomObjectThumbnail."
+ },
+ "signature": {
+  "id": "game.thumbnail_hash_map_find_or_insert",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 4C 89 C3 48 89 D6 48 89 CF 4C 8B 79 08 49 8B 57 08 31 ED 80 7A 19 00 74 0E 49 89 D6 4C 89 F8 80 78 19 00 75 48 EB 3B 8B 0B 4C 89 F8 0F 1F 84 00 00 00 00 00 49 89 D6 44 8B 42 20 48",
+  "match": "0x142ee45a0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142ee45a0",
+  "kind": "func_start",
+  "names": [
+   "Game_Thumbnail_HashMap_FindOrInsert"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "vp1-verify",
+   "kind": "func",
+   "item": "0x142ee45a0",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142ee45a0.c;xref:0x142e2da39",
+   "notes": "V7566 strings/offsets/constants and callers match decomp"
+  }
+ ],
+ "proofs": []
+}

@@ -1,0 +1,61 @@
+{
+ "schema": 1,
+ "name": "Career_RenownData_Deserialise",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140f7ac30",
+  "level": "L2",
+  "subsystem": "career",
+  "proto": "void *renown, void *node, uint64_t flags",
+  "evidence": "decomp:re/decomp/140f7ac30.c;xref:0x1456aed28",
+  "notes": "myteam-g1: Reads current_renown (+0xd0), renown_baseline, renown_constant, renown_diff_graph back from save data (structure returned by Career_Get_TeamRenownData). CORRECTION(V8988): Reader mirrors the writer; +0xd0 is age_weighting (first field read), current_renown is stored at +0x34 and renown_baseline at +0xe4. Role (deserialise renown data) correct, offset claim wrong."
+ },
+ "signature": {
+  "id": "career.renown_data_deserialise",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 56 57 55 53 48 83 EC 28 4D 89 C6 48 89 D3 48 89 CF E8 ?? ?? ?? ?? 89 C6 49 83 FE 02",
+  "match": "0x140f7ac30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140f7ac30",
+  "kind": "func_start",
+  "names": [
+   "Career_RenownData_Deserialise"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-11-12",
+    "by": "vmknolle",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-11-11",
+   "verifier": "verify-mt-b",
+   "kind": "func",
+   "item": "0x140f7ac30",
+   "claimed": "L1",
+   "verdict": "partial",
+   "evidence": "decomp:re/decomp/140f7ac30.c;xref:0x1456aed28;str:\"current_renown\";str:\"age_weighting\"",
+   "notes": "V8988 Reader mirrors the writer; +0xd0 is age_weighting (first field read), current_renown is stored at +0x34 and renown_baseline at +0xe4. Role (deserialise renown data) correct, offset claim wrong."
+  },
+  {
+   "date": "2026-11-12",
+   "verifier": "verify-mt3-1",
+   "kind": "func",
+   "item": "0x140f7ac30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140f7ac30.c;xref:0x1456aed28;str:\"current_renown\"",
+   "notes": "V9591 Reader mirrors writer with identical offsets (+0xd0 age_weighting, +0x34 current_renown, +0xe4 renown_baseline); correction text is right."
+  }
+ ],
+ "proofs": []
+}

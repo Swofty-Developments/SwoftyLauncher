@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Game_VoPlaySoundEffectNode_Execute",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142526a80",
+  "level": "L2",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142526a80.c;xref:0x1425268fb",
+  "notes": "World-editor event-graph node [VOPlaySoundEffect] execute (registered by lea in 0x1425268c0): plays sound this+0x20 through audio system [0x14606fa48+0x18] vtbl+0xb0 -> +0x10 (traces 'A null value was passed' if missing), then fires output pin this+0x28 via NeEventDispatcher (uid store/transaction). Addon: trigger custom sounds from track event graphs. | #587: L2 by lead-authorised promotion for lane owner re-career-teams (independent agree V2876)"
+ },
+ "signature": {
+  "id": "game.vo_play_sound_effect_node_execute",
+  "section": ".xtls",
+  "pattern": "56 57 53 48 83 EC 40 48 89 D6 48 89 CF 48 8B 59",
+  "match": "0x142526a80",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142526a80",
+  "kind": "func_start",
+  "names": [
+   "Game_VoPlaySoundEffectNode_Execute"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d10-verify",
+   "kind": "func",
+   "item": "Game_VoPlaySoundEffectNode_Execute",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142526a80.c;xref:0x142526a80",
+   "notes": "V2876 decomp checked: offsets/calls/strings match claim"
+  }
+ ],
+ "proofs": []
+}

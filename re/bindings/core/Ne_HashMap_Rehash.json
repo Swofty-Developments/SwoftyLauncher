@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Ne_HashMap_Rehash",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x1429fea00",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/1429fea00.c;xref:0x14290cda1,0x14290d010",
+  "notes": "ne_hash_map rehash/reserve to param_2 buckets (80 percent load factor, max probe 0xff) and reinserts the elements. Callers: Sess_Parse_CustomTeamConfig."
+ },
+ "signature": {
+  "id": "core.hash_map_rehash",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 48 8B 5C 24 28 0F 1F 44 00 00 41",
+  "match": "0x14290cda1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x1429fea00",
+  "kind": "func_start",
+  "names": [
+   "Ne_HashMap_Rehash"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv4-verify",
+   "kind": "func",
+   "item": "0x1429fea00",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/1429fea00.c;xref:0x14290cda1,0x14290d010",
+   "notes": "V3465 ne_hash_map rehash 80% load max probe 0xff reinserting elements; caller Sess_Parse_CustomTeamConfig only"
+  }
+ ],
+ "proofs": []
+}

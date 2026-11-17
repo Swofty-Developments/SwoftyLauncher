@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Sess_Complete_Update",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x142d573e0",
+  "level": "L2",
+  "subsystem": "session",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/142d573e0.c;xref:0x1457de378",
+  "notes": "SessionStateComplete slot 9 (update): clears fade reasons except 0x80108001 and releases fade reason UI (bit 0) -> fade in."
+ },
+ "signature": {
+  "id": "session.complete_update",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 48 83 EC 68 C5 F8 29 74 24 50 48 89 D6 8B 81 78",
+  "match": "0x142d573e0",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x142d573e0",
+  "kind": "func_start",
+  "names": [
+   "Sess_Complete_Update"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-30",
+   "verifier": "d7-verify",
+   "kind": "func",
+   "item": "Sess_Complete_Update",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/142d573e0.c;xref:0x142d573e0",
+   "notes": "V2703 fade/hide bit ids, offsets, states and curves checked against decomp; role as claimed"
+  }
+ ],
+ "proofs": []
+}

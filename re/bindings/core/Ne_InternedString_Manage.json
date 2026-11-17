@@ -1,0 +1,51 @@
+{
+ "schema": 1,
+ "name": "Ne_InternedString_Manage",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x140234f30",
+  "level": "L2",
+  "subsystem": "core",
+  "proto": "-",
+  "evidence": "decomp:re/decomp/140234f30.c;xref:0x14023b467,0x14023b644",
+  "notes": "(dst, src, other, op) Type-erased manager for an interned/ref-counted string handle (refcount u16 at +4, flag 0x200000 at +6): op 0 = copy (ref++), 1 = destroy (ref--, free via 0x146ca54a8 vcall +0x38), others move/compare. 87 callers. Hypothesis."
+ },
+ "signature": {
+  "id": "core.interned_string_manage",
+  "section": ".xtls",
+  "pattern": "41 57 41 56 41 55 41 54 56 57 55 53 B8 48 11 00 00 E8 ?? ?? ?? ?? 48 29 C4 44 89 CF 4C 89 C6 48",
+  "match": "0x140234f30",
+  "anchor": "0x0",
+  "resolve": {
+   "kind": "addr"
+  },
+  "target": "0x140234f30",
+  "kind": "func_start",
+  "names": [
+   "Ne_InternedString_Manage"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "cv0-verify",
+   "kind": "func",
+   "item": "0x140234f30",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/140234f30.c;xref:0x14023b467",
+   "notes": "V3515 type-erased manager: op 0 copy / op 1 destroy, flag 0x200000 at +6, free via global 0x146ca54a8 vcall +0x38 seen; 87 callers match; labelled hypothesis"
+  }
+ ],
+ "proofs": []
+}

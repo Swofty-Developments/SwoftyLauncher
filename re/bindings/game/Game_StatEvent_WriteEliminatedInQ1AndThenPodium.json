@@ -1,0 +1,52 @@
+{
+ "schema": 1,
+ "name": "Game_StatEvent_WriteEliminatedInQ1AndThenPodium",
+ "table": "functions",
+ "author": "kb-import",
+ "row": {
+  "addr": "0x14371f700",
+  "level": "L1",
+  "subsystem": "game",
+  "proto": "-",
+  "evidence": "pat:log-channel-STATEVENT",
+  "notes": "named from its log messages (channel STATEVENT): 'Executing EventWriteEliminatedInQ1AndThenPodium with [%d] StatisticDataProviders registered.'"
+ },
+ "signature": {
+  "id": "game.stat_event_write_eliminated_in_q1_and_then_podium",
+  "section": ".xtls",
+  "pattern": "E8 ?? ?? ?? ?? 41 BB 27 00 00 00 E9",
+  "match": "0x140b8b1d1",
+  "anchor": "0x1",
+  "resolve": {
+   "kind": "rel32",
+   "insn": 0
+  },
+  "target": "0x14371f700",
+  "kind": "func_start",
+  "names": [
+   "Game_StatEvent_WriteEliminatedInQ1AndThenPodium"
+  ],
+  "verified": [
+   {
+    "build": "d873a1c8d2044cef",
+    "date": "2026-10-30",
+    "by": "engine-re",
+    "how": "static"
+   }
+  ],
+  "used_by": []
+ },
+ "verify": [
+  {
+   "date": "2026-10-31",
+   "verifier": "ld0-verify",
+   "kind": "func",
+   "item": "0x14371f700",
+   "claimed": "L1",
+   "verdict": "agree",
+   "evidence": "decomp:re/decomp/14371f700.c;xref:0x140b8b1d1",
+   "notes": "V7371 name matches log/pretty-function string and body; sibling-consistent"
+  }
+ ],
+ "proofs": []
+}
